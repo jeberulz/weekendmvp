@@ -144,12 +144,14 @@ export function proseForSentences(body) {
     .replace(/`[^`]*`/g, " ")
     .replace(/^#+\s.+$/gm, " ")
     .replace(/^>\s?/gm, "")
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/!\[[^[\]]*\]\([^)]+\)/g, " ")
     // Link text is a page title, not prose: the same thread title legitimately
-    // appears under a quote and again in Sources.
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, " ")
-    .replace(/^\s*[-*]\s+/gm, "")
-    .replace(/^\s*\d+\.\s+/gm, "")
+    // appears under a quote and again in Sources. Link text stops at the next
+    // bracket and line-start patterns never cross a line break, so these stay
+    // linear on hostile text (WP54 round 4).
+    .replace(/\[([^[\]]+)\]\([^)]+\)/g, " ")
+    .replace(/^[^\S\n\r\u2028\u2029]*[-*]\s+/gm, "")
+    .replace(/^[^\S\n\r\u2028\u2029]*\d+\.\s+/gm, "")
     .replace(/\*\*/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -275,11 +277,11 @@ export function findHygieneIssues(prose) {
 export function auditHowItWorksNaming(solutionContent) {
   const errors = [];
   const steps = [
-    ...solutionContent.matchAll(/^\s*(\d+)\.\s+\*\*([^*]+)\*\*\s+[—-]\s+(.+)$/gm),
+    ...solutionContent.matchAll(/^[^\S\n\r\u2028\u2029]*(\d+)\.\s+\*\*([^*]+)\*\*\s+[—-]\s+(.+)$/gm),
   ];
   if (steps.length === 0) {
     // Fallback: numbered lines without bold titles
-    const numbered = solutionContent.match(/^\s*\d+\.\s+\S/gm) || [];
+    const numbered = solutionContent.match(/^[^\S\n\r\u2028\u2029]*\d+\.\s+\S/gm) || [];
     if (numbered.length > 0) {
       errors.push(
         "How-it-works steps must use named titles: `1. **Title** — description` (not bare numbered lines)",
@@ -303,7 +305,7 @@ export function auditHowItWorksNaming(solutionContent) {
 export function findTierMismatches(businessContent, promptsContent) {
   const errors = [];
   const tierNames = [
-    ...businessContent.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm),
+    ...businessContent.matchAll(/^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm),
   ].map((m) => m[1].trim());
   if (tierNames.length < 2) return errors;
 
@@ -408,7 +410,9 @@ export function countPhrase(prose, phrase) {
 /** `**N. Title**` prompt blocks → { title, words } using the text fence. */
 export function promptBlocks(promptsContent, countWords) {
   const out = [];
-  const re = /\*\*\d+\.\s+([^*]+)\*\*\s*```text\n([\s\S]*?)```/g;
+  // The title starts at a non-space character, so \s+ and the title never
+  // trade characters (quadratic on a long run of spaces otherwise).
+  const re = /\*\*\d+\.\s+([^*\s][^*]*)\*\*\s*```text\n([\s\S]*?)```/g;
   for (const m of promptsContent.matchAll(re)) {
     out.push({ title: m[1].trim(), text: m[2], words: countWords(m[2]) });
   }
@@ -417,7 +421,7 @@ export function promptBlocks(promptsContent, countWords) {
 
 /** Table names declared as `- name(` lines in a Setup prompt. */
 export function setupTableNames(setupText) {
-  return [...String(setupText).matchAll(/^\s*-\s*([a-z][a-z0-9_]*)\s*\(/gm)].map(
+  return [...String(setupText).matchAll(/^[^\S\n\r\u2028\u2029]*-\s*([a-z][a-z0-9_]*)\s*\(/gm)].map(
     (m) => m[1],
   );
 }

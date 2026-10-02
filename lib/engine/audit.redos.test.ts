@@ -10,14 +10,22 @@
  *     10 minutes;
  *   - the computation and money patterns took ~1 s on 20,000 digits;
  *   - pageProductName's " for …" cut took ~0.8 s on three 20,000-character
- *     titles, splitViaLabel ~1.2 s on 20,000 spaces around a label.
+ *     titles, splitViaLabel ~1.2 s on 20,000 spaces around a label;
+ *   - the base bar's line-start patterns took ~1.9 s on 20,000 blank
+ *     lines, its link count ~0.8 s on 20,000 "[", its heading split ~0.7 s
+ *     on a heading with 20,000 spaces, the frontmatter slug and section
+ *     split ~1 s on 20,000 spaces.
+ * After, only the MDX parser itself (third party) stays above 0.1 s at
+ * this size, on runs of underscores, dots or list markers.
  * Every case audits a 20,000-character run and must finish within
  * BUDGET_MS; one also checks that the rules still fire.
  */
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { auditEngineArtifact } from "./artifact-audit.ts";
-import { auditPage, cleanupTempDirs, compiledPage, pageBody, replaceOnce } from "./__fixtures__/auditHarness.ts";
+import { auditPage, cleanupTempDirs, compiledPage, pageBody, REPO_ROOT, replaceOnce } from "./__fixtures__/auditHarness.ts";
 import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
 import { pageProductName, parseYearOneLine, splitViaLabel } from "./page-format.ts";
 
@@ -33,6 +41,12 @@ function elapsedMs(fn: () => unknown): number {
   return performance.now() - started;
 }
 
+async function elapsedMsAsync(fn: () => Promise<unknown>): Promise<number> {
+  const started = performance.now();
+  await fn();
+  return performance.now() - started;
+}
+
 /** The page with `text` as its own block right before `## heading`. */
 function before(heading: string, text: string): string {
   return replaceOnce(page, `\n## ${heading}`, `\n${text}\n\n## ${heading}`);
@@ -45,6 +59,12 @@ function inPrompt(text: string): string {
   if (at < 0) throw new Error("fixture: the page has no build prompt fence");
   const start = at + fence.length;
   return `${page.slice(0, start)}${text}\n${page.slice(start)}`;
+}
+
+async function importScript(relative: string): Promise<Record<string, unknown>> {
+  const mod: unknown = await import(pathToFileURL(path.join(REPO_ROOT, relative)).href);
+  if (typeof mod !== "object" || mod === null) throw new Error(`${relative} did not load`);
+  return Object.fromEntries(Object.entries(mod));
 }
 
 beforeAll(async () => {
@@ -114,5 +134,181 @@ describe("page-format helpers are linear on hostile runs", () => {
     expect(elapsedMs(() => splitViaLabel(`a${SPACES}b`))).toBeLessThan(BUDGET_MS);
     expect(elapsedMs(() => splitViaLabel(`$12/user/month${SPACES}(via x.example)${SPACES}y`))).toBeLessThan(BUDGET_MS);
     expect(elapsedMs(() => parseYearOneLine(`45 × $100/mo = $54,000 ARR — ${"a ".repeat(RUN / 2)}x`))).toBeLessThan(BUDGET_MS);
+  });
+});
+
+describe("the base bar and the whole auditor are linear on hostile runs", () => {
+  const cases: Array<[string, string]> = [
+    ['"ARR" + 20,000 spaces in a build prompt', inPrompt(`ARR${SPACES}`)],
+    ["20,000 blank lines in The Solution", before("Market Research", `${"\n".repeat(RUN)}x`)],
+    ["20,000 blank lines in Competitive Landscape", before("Business Model", `${"\n".repeat(RUN)}x`)],
+    ["20,000 blank lines in Business Model", before("Recommended Tech Stack", `${"\n".repeat(RUN)}x`)],
+    ["20,000 blank lines in the build prompts", before("Sources", `${"\n".repeat(RUN)}x`)],
+    ['20,000 "[" in Sources', `${page}\n${"[".repeat(RUN)}\n`],
+    ['20,000 "[" in prose', before("The Solution", `${"[".repeat(RUN)}.`)],
+    ["a heading with 20,000 spaces", before("The Solution", `## x${SPACES}y`)],
+  ];
+  it.each(cases)("%s", async (_label, mdx) => {
+    expect(await elapsedMsAsync(() => auditPage(mdx, record))).toBeLessThan(BUDGET_MS);
+  });
+
+  it("the frontmatter slug and the section split on 20,000 spaces", async () => {
+    const audit = await importScript("scripts/audit-idea-mdx.mjs");
+    const { frontmatterSlug, splitSections } = audit;
+    if (typeof frontmatterSlug !== "function" || typeof splitSections !== "function") throw new Error("audit-idea-mdx exports missing");
+    expect(elapsedMs(() => frontmatterSlug(`---\nslug: a${SPACES}b\n---\n`))).toBeLessThan(BUDGET_MS);
+    expect(elapsedMs(() => splitSections(`## x${SPACES}y\n`))).toBeLessThan(BUDGET_MS);
+  });
+});
+
+/**
+ * The base bar's linear patterns find what the backtracking ones they
+ * replaced found (so no rule moved), checked on generated markdown-like text
+ * small enough for the old patterns to finish quickly.
+ */
+describe("the base bar's linear patterns match their predecessors", () => {
+  const LS = String.fromCharCode(0x2028);
+  const PIECES = [
+    "\n", "\n\n", " ", "  ", "\t", "\r\n", LS, "\u00a0", "## ", "##", "# ", "- ", "* ", "1. ", "12. ", "**", "x", "Title", "step 2",
+    "[", "]", "(", ")", "[a](https://a.example)", "](https://b.example)", "![", "```text\n", "```", " — ", "—", "(Pro)",
+    "**How it works:**", "**1. Project Setup**", "users(", "- users (", "slug:", "\"s\"", "'s'",
+    "- **Team** ($20/month)", "  * **Solo** (x)\n", "\n1. **Name** — does x", "2. **Step 2** - y\n", "**2. Build** ```text\nbody```",
+    "\n- **Acme**: $5", "\n  1. x",
+  ];
+  /** Deterministic pseudo-random concatenations of PIECES (mulberry32). */
+  function generated(count: number, maxPieces: number, seed: number): string[] {
+    let state = seed >>> 0;
+    const next = () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const out: string[] = [];
+    for (let i = 0; i < count; i += 1) {
+      const length = Math.floor(next() * (maxPieces + 1));
+      let text = "";
+      for (let j = 0; j < length; j += 1) text += PIECES[Math.floor(next() * PIECES.length)] ?? "";
+      out.push(text);
+    }
+    return out;
+  }
+  const texts = generated(8_000, 14, 2026);
+
+  type Fn = (...args: unknown[]) => unknown;
+  function fn(mod: Record<string, unknown>, name: string): Fn {
+    const value = mod[name];
+    if (typeof value !== "function") throw new Error(`${name} export missing`);
+    return (...args: unknown[]) => Reflect.apply(value, undefined, args);
+  }
+  const count = (text: string, re: RegExp) => (text.match(re) ?? []).length;
+  const groups = (text: string, re: RegExp) => [...text.matchAll(re)].map((m) => m.slice(1));
+
+  it("audit-idea-mdx: sections, links, slug, How-it-works steps, competitor rows, unit-economics bullets", async () => {
+    const audit = await importScript("scripts/audit-idea-mdx.mjs");
+    const splitSections = fn(audit, "splitSections");
+    const countMarkdownLinks = fn(audit, "countMarkdownLinks");
+    const frontmatterSlug = fn(audit, "frontmatterSlug");
+    const countHowToSteps = fn(audit, "countHowToSteps");
+    const countCompetitorMentions = fn(audit, "countCompetitorMentions");
+    const oldSections = (body: string) => {
+      const matches = [...body.matchAll(/^##[ \t]+(.+?)\s*$/gm)];
+      return matches.map((m, i) => ({
+        title: (m[1] ?? "").trim(),
+        content: body.slice((m.index ?? 0) + m[0].length, matches[i + 1]?.index ?? body.length),
+      }));
+    };
+    const oldSlug = (frontmatter: string) => /^slug:[ \t]*(.+?)[ \t]*$/m.exec(frontmatter)?.[1] ?? null;
+    const newSlug = (frontmatter: string) => frontmatterSlug(`---\n${frontmatter}\n---\n`);
+    const oldSlugValue = (frontmatter: string) => {
+      const value = oldSlug(`---\n${frontmatter}\n---`);
+      if (value === null) return null;
+      if (value.startsWith('"')) {
+        try {
+          const parsed: unknown = JSON.parse(value);
+          return typeof parsed === "string" ? parsed : null;
+        } catch {
+          return null;
+        }
+      }
+      return value.replace(/^'|'$/g, "");
+    };
+    const oldSteps = (content: string) => {
+      const at = content.indexOf("**How it works:**");
+      return at === -1 ? 0 : count(content.slice(at + "**How it works:**".length), /^\s*\d+\.\s+\S/gm);
+    };
+    const oldMentions = (content: string) => count(content, /^\s*[-*]\s+\*\*[^*]+\*\*/gm) || count(content, /^\s*[-*]\s+\S/gm);
+    for (const text of texts) {
+      expect(splitSections(text), JSON.stringify(text)).toEqual(oldSections(text));
+      expect(countMarkdownLinks(text), JSON.stringify(text)).toBe(count(text, /\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g));
+      expect(newSlug(text), JSON.stringify(text)).toBe(oldSlugValue(text));
+      expect(countHowToSteps(text), JSON.stringify(text)).toBe(oldSteps(text));
+      expect(countCompetitorMentions(text), JSON.stringify(text)).toBe(oldMentions(text));
+      // The unit-economics bullets (inline in auditIdeaFile).
+      expect(groups(text, /^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*([^*]+)\*\*/gm), JSON.stringify(text)).toEqual(
+        groups(text, /^\s*[-*]\s+\*\*([^*]+)\*\*/gm),
+      );
+    }
+  });
+
+  it("idea-quality: sentence prose, How-it-works naming, tier names, setup tables, prompt blocks", async () => {
+    const quality = await importScript("scripts/lib/idea-quality.mjs");
+    const proseForSentences = fn(quality, "proseForSentences");
+    const auditHowItWorksNaming = fn(quality, "auditHowItWorksNaming");
+    const findTierMismatches = fn(quality, "findTierMismatches");
+    const setupTableNames = fn(quality, "setupTableNames");
+    const promptBlocks = fn(quality, "promptBlocks");
+    const words = (text: unknown) => String(text).split(/\s+/).filter(Boolean).length;
+    /** proseForSentences up to its link step: code, headings and quote marks removed. */
+    const beforeLinks = (body: string) =>
+      body
+        .replace(/```[\s\S]*?```/g, "\n")
+        .replace(/`[^`]*`/g, " ")
+        .replace(/^#+\s.+$/gm, " ")
+        .replace(/^>\s?/gm, "");
+    const oldProse = (body: string) =>
+      beforeLinks(body)
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, " ")
+        .replace(/^\s*[-*]\s+/gm, "")
+        .replace(/^\s*\d+\.\s+/gm, "")
+        .replace(/\*\*/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    const oldNaming = (content: string) => {
+      const steps = [...content.matchAll(/^\s*(\d+)\.\s+\*\*([^*]+)\*\*\s+[—-]\s+(.+)$/gm)];
+      if (steps.length === 0) return count(content, /^\s*\d+\.\s+\S/gm) > 0 ? ["bare"] : [];
+      return steps.map((m) => (m[2] ?? "").trim()).filter((title) => /^step\s*\d+$/i.test(title));
+    };
+    const newNaming = (content: string) => {
+      const errors = auditHowItWorksNaming(content);
+      if (!Array.isArray(errors)) throw new Error("auditHowItWorksNaming result");
+      return errors.map((e) => (String(e).startsWith("How-it-works steps must use named titles") ? "bare" : (/'(.*)'/.exec(String(e))?.[1] ?? "")));
+    };
+    const oldTierNames = (content: string) => groups(content, /^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm).map((g) => (g[0] ?? "").trim());
+    const oldTables = (text: string) => groups(text, /^\s*-\s*([a-z][a-z0-9_]*)\s*\(/gm).map((g) => g[0]);
+    const oldBlocks = (content: string) =>
+      [...content.matchAll(/\*\*\d+\.\s+([^*]+)\*\*\s*```text\n([\s\S]*?)```/g)].map((m) => ({ title: (m[1] ?? "").trim(), text: m[2] }));
+    for (const text of texts) {
+      const label = JSON.stringify(text);
+      // Link text with a second "[" before its "]" now ends at that bracket: the
+      // text before it stays in the prose (more prose checked, never less).
+      if (!/\[[^\]]*\[/.test(beforeLinks(text))) expect(proseForSentences(text), label).toBe(oldProse(text));
+      expect(newNaming(text), label).toEqual(oldNaming(text));
+      expect(findTierMismatches(text, text), label).toEqual(findTierMismatchesWith(oldTierNames(text), text));
+      expect(setupTableNames(text), label).toEqual(oldTables(text));
+      // A title made only of spaces is no title: the old pattern let \s+ hand
+      // spaces back to it; such a block is no longer counted (stricter).
+      const expected = oldBlocks(text).filter((b) => b.title !== "");
+      const blocks = promptBlocks(text, words);
+      if (!Array.isArray(blocks)) throw new Error("promptBlocks result");
+      expect(blocks.map((b: { title: string; text: string }) => ({ title: b.title, text: b.text })), label).toEqual(expected);
+    }
+
+    /** findTierMismatches with the tier names given (the rest of its logic unchanged). */
+    function findTierMismatchesWith(tierNames: string[], promptsContent: string): unknown {
+      return findTierMismatches(tierNames.map((name) => `- **${name}** (x)`).join("\n"), promptsContent);
+    }
   });
 });
