@@ -8,7 +8,9 @@
  *   - the revenue-total rule took ~0.37 s on "ARR" followed by 1,000
  *     spaces, ~2.6 s on 2,000 and ~23 s on 4,000; 20,000 did not finish in
  *     10 minutes;
- *   - the computation and money patterns took ~1 s on 20,000 digits.
+ *   - the computation and money patterns took ~1 s on 20,000 digits;
+ *   - pageProductName's " for …" cut took ~0.8 s on three 20,000-character
+ *     titles, splitViaLabel ~1.2 s on 20,000 spaces around a label.
  * Every case audits a 20,000-character run and must finish within
  * BUDGET_MS; one also checks that the rules still fire.
  */
@@ -17,6 +19,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { auditEngineArtifact } from "./artifact-audit.ts";
 import { auditPage, cleanupTempDirs, compiledPage, pageBody, replaceOnce } from "./__fixtures__/auditHarness.ts";
 import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
+import { pageProductName, parseYearOneLine, splitViaLabel } from "./page-format.ts";
 
 const RUN = 20_000;
 const BUDGET_MS = 1_000;
@@ -90,5 +93,26 @@ describe("the final artifact audit is linear on hostile runs (deep bar)", () => 
       const body = pageBody(before("Recommended Tech Stack", text));
       expect(elapsedMs(() => auditEngineArtifact(body, null, {}))).toBeLessThan(BUDGET_MS);
     }
+  });
+});
+
+describe("page-format helpers are linear on hostile runs", () => {
+  it("pageProductName on a title with 20,000 spaces", () => {
+    // brief.title holds at most 20,000 characters.
+    const spaces = " ".repeat(RUN - 20);
+    for (const title of [`a${spaces}b`, `a for${spaces}b\nc`, `a${spaces}for b`]) {
+      const titled = buildFixtureRecord((r) => {
+        r.brief.title = title;
+        // Without editorial.productName the name comes from the title.
+        if (r.editorial) delete r.editorial.productName;
+      });
+      expect(elapsedMs(() => pageProductName(titled))).toBeLessThan(BUDGET_MS);
+    }
+  });
+
+  it("splitViaLabel and parseYearOneLine on 20,000 spaces", () => {
+    expect(elapsedMs(() => splitViaLabel(`a${SPACES}b`))).toBeLessThan(BUDGET_MS);
+    expect(elapsedMs(() => splitViaLabel(`$12/user/month${SPACES}(via x.example)${SPACES}y`))).toBeLessThan(BUDGET_MS);
+    expect(elapsedMs(() => parseYearOneLine(`45 × $100/mo = $54,000 ARR — ${"a ".repeat(RUN / 2)}x`))).toBeLessThan(BUDGET_MS);
   });
 });

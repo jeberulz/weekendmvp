@@ -21,6 +21,7 @@ import {
   parseYearOneLine,
   SECTION_TITLES,
   splitViaLabel,
+  withoutForClause,
   yearOneBaseLine,
   yearOneDownsideLine,
   yearOneFunnelLine,
@@ -150,5 +151,58 @@ describe("page formats shared by the compiler and the auditor", () => {
       text: "$24/user/month, billed annually (Pro)",
       via: null,
     });
+  });
+});
+
+/** Deterministic pseudo-random strings from `pieces` (mulberry32), for equivalence checks. */
+function samples(pieces: readonly string[], count: number, maxPieces: number, seed: number): string[] {
+  let state = seed >>> 0;
+  const next = () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const out: string[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const length = Math.floor(next() * (maxPieces + 1));
+    let text = "";
+    for (let j = 0; j < length; j += 1) text += pieces[Math.floor(next() * pieces.length)] ?? "";
+    out.push(text);
+  }
+  return out;
+}
+
+describe("linear helpers cut exactly where the expressions they replace did (WP54 round 4, security)", () => {
+  it("withoutForClause equals title.replace(/\\s+for\\s+.+$/i, \"\")", () => {
+    const pieces = [" ", "  ", "\t", "\n", "\r", "\u00a0", "\u2028", "for", "FOR", "For", "fo", "r", "x", "y z", "-", "forx"];
+    const titles = [
+      "AI Code Reviewer for Small Teams",
+      "a for b",
+      "a for ",
+      "a for  ",
+      "a for\nb",
+      "a for b\nc",
+      "x for a\ny for b",
+      "for x",
+      "a  FOR\t\tb",
+      ...samples(pieces, 20_000, 9, 46),
+    ];
+    for (const title of titles) {
+      expect(withoutForClause(title), JSON.stringify(title)).toBe(title.replace(/\s+for\s+.+$/i, ""));
+    }
+  });
+
+  it("splitViaLabel equals the leading-\\s* expression it replaced", () => {
+    const old = (text: string) => {
+      const m = /\s*\(via\s+([^()\s]+)\)\s*$/i.exec(text);
+      if (!m) return { text: text.trim(), via: null };
+      return { text: text.slice(0, m.index).trim(), via: (m[1] ?? "").toLowerCase() };
+    };
+    const pieces = ["(via x)", "(VIA\ty.example)", "(via  y.example) ", "(via", "(", ")", " ", "\t", "\n", "x", "y.example", "$12/month"];
+    for (const text of samples(pieces, 20_000, 9, 71)) {
+      expect(splitViaLabel(text), JSON.stringify(text)).toEqual(old(text));
+    }
   });
 });
