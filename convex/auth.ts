@@ -3,7 +3,7 @@ import { convexAuth, type Tokens } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { action, type ActionCtx } from "./_generated/server";
 import { isPrivateReturnPath } from "../lib/private-paths";
-import { createOrUpdateAuthUser } from "./authUser";
+import { createOrUpdateAuthUser, googleProfile } from "./authUser";
 import {
   emailMagicLinkProvider,
   normalizeMagicLinkEmail,
@@ -128,6 +128,8 @@ const configuredAuth = convexAuth({
       // The custom callback below is authoritative. This setting also makes
       // Auth.js reject implicit linking before any future callback changes.
       allowDangerousEmailAccountLinking: false,
+      // Keeps Google's verified-email claim (the default mapping drops it).
+      profile: googleProfile,
     }),
     emailMagicLinkProvider,
   ],
