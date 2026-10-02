@@ -253,3 +253,19 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
   - **Public 404 page:** its footer fails color contrast (pre-existing, public page).
   - **CI coverage:** `tests/editorial` is still not part of `npm test` (`package.json`).
 - Not done here: no deployment, bootstrap, seed or push to any real Convex deployment or Vercel, and nothing pushed to git. The branch is 6 commits behind `main`; a dry merge shows one conflict, `.env.example`, where both sides appended lines at the end (keep both).
+
+## 2026-10-02 - PR #92 review fixes
+
+- Branch synced with `main` (merge commit; the only conflict was `.env.example`, both sides' lines kept) and opened as PR #92. Checks on the merged branch: `npm test` exit 0, both typechecks, `tests/editorial` 253, lint 0 errors.
+- Codex review, three findings:
+  - **Carrying unsaved text into a new revision was two backend calls.** A transient failure after the first could leave a new draft without the text. The client then reset its request keys, so a retry was refused ("a working draft already exists"). Fixed:
+    - `createRevision` takes an optional `carry` and a `null` base (the idea's working revision, resolved inside the command).
+    - Creating the draft and applying the text happen in one command; the action makes that single call.
+    - The client keeps its request key until success, and mints a new one only when the conflict or the carried text changes.
+    - A contract case on all three backends covers the carry, a replayed request, a reused key with different text, and refusal while the draft exists. The action test replays a request.
+  - **Analytics already loaded could report an `/admin` URL after a client-side move from a public page and Back.** Fixed in `components/consent/AnalyticsScripts.tsx`:
+    - A page load that has shown an operator path never loads analytics.
+    - Analytics already running when one appears are stopped for that page load (GA's opt-out flag, revoked Pixel consent).
+    - Public visitors who never touch `/admin` are unaffected.
+    - Structure guard added. It supersedes the "found, not fixed" note in the E4f entry.
+  - **Google-only owners cannot be bootstrapped.** Not changed: mapping Google's verified-email flag changes the shared sign-in code for every customer, so it stays the owner's decision (runbook and contract say so).

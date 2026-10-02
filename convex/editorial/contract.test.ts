@@ -49,7 +49,7 @@ function transactional(t: TestConvex<typeof schema>, context: () => TransactionC
     listActivity: (filter, cursor, pageSize) => run((repo) => repo.listActivity(filter, cursor, pageSize)),
     getSettings: () => run((repo) => repo.getSettings()),
     importSubmission: (envelope, credential) => run((repo) => repo.importSubmission(envelope, credential)),
-    createRevision: (ideaId, fromRevisionId, key) => run((repo) => repo.createRevision(ideaId, fromRevisionId, key)),
+    createRevision: (ideaId, fromRevisionId, key, carry) => run((repo) => repo.createRevision(ideaId, fromRevisionId, key, carry)),
     discardRevision: (ideaId, revisionId, version, reason) =>
       run((repo) => repo.discardRevision(ideaId, revisionId, version, reason)),
     saveDraft: (ideaId, revisionId, baseVersion, patch, key) =>

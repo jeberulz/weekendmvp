@@ -8,6 +8,7 @@ import type {
   ActivityFilter,
   ApprovalInput,
   CandidateDecisionInput,
+  DraftCarry,
   FlagInput,
   IdeaFilter,
   ImportAck,
@@ -172,9 +173,9 @@ export class ConvexEditorialRepository implements EditorialRepository {
 
   /* Revisions -------------------------------------------------------------- */
 
-  createRevision(ideaId: string, fromRevisionId: string, idempotencyKey: string) {
+  createRevision(ideaId: string, fromRevisionId: string | null, idempotencyKey: string, carry: DraftCarry | null = null) {
     return guarded(() =>
-      fetchMutation(api.editorial.commands.createRevision, { ideaId, fromRevisionId, idempotencyKey }, this.auth),
+      fetchMutation(api.editorial.commands.createRevision, { ideaId, fromRevisionId, idempotencyKey, carry }, this.auth),
     );
   }
 

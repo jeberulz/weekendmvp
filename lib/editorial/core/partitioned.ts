@@ -6,6 +6,7 @@ import {
   type ActivityFilter,
   type ApprovalInput,
   type CandidateDecisionInput,
+  type DraftCarry,
   type FlagInput,
   type IdeaFilter,
   type ImportAck,
@@ -400,10 +401,10 @@ export class PartitionedEditorialRepository implements EditorialRepository {
 
   /* Revisions ----------------------------------------------------------------- */
 
-  createRevision(ideaId: string, fromRevisionId: string, idempotencyKey: string) {
+  createRevision(ideaId: string, fromRevisionId: string | null, idempotencyKey: string, carry: DraftCarry | null = null) {
     return this.command(
       { scope: { kind: "idea", ideaId }, idempotency: { scope: IDEMPOTENCY_SCOPES.createRevision, key: idempotencyKey } },
-      (core) => core.createRevision(ideaId, fromRevisionId, idempotencyKey),
+      (core) => core.createRevision(ideaId, fromRevisionId, idempotencyKey, carry),
     );
   }
 

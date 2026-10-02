@@ -303,6 +303,29 @@ export function defineRepositoryContract(name: string, factory: HarnessFactory) 
       expect(detail.idea.liveRevision?.id).toBe(revisionId);
     });
 
+    test("a fork can carry unsaved text in the same command, and the same request replays", async () => {
+      const h = await factory();
+      const { ideaId, revisionId } = await importCandidate(h);
+      const repo = h.editor();
+      const snapshot = value(await repo.getRevision(ideaId, revisionId));
+      const carry = { title: "Carried title", markdown: `${snapshot.markdown}\n\nCarried text.`, metadata: snapshot.metadata };
+      const forkKey = key("fork");
+      // No base given: the idea's working revision, resolved by the command.
+      const first = value(await repo.createRevision(ideaId, null, forkKey, carry));
+      const draft = value(await repo.getRevision(ideaId, first.revisionId));
+      expect(draft.parentRevisionId).toBe(revisionId);
+      expect(draft.title).toBe("Carried title");
+      expect(draft.markdown.endsWith("Carried text.")).toBe(true);
+      expect(value(await repo.getIdea(ideaId)).idea.title).toBe("Carried title");
+      // A lost response retried with the same request: the same draft, nothing new.
+      expect(value(await repo.createRevision(ideaId, null, forkKey, carry))).toEqual(first);
+      expect(value(await repo.getIdea(ideaId)).idea.workingRevision?.id).toBe(first.revisionId);
+      // The same key for different text is refused, not guessed at.
+      expect(code(await repo.createRevision(ideaId, null, forkKey, { ...carry, title: "Other" }))).toBe("IDEMPOTENCY_KEY_REUSED");
+      // A new request while that draft is the working revision.
+      expect(code(await repo.createRevision(ideaId, null, key("fork"), carry))).toBe("PRECONDITION_FAILED");
+    });
+
     test("a stale base version conflicts instead of overwriting (two tabs)", async () => {
       const h = await factory();
       const { ideaId, revisionId } = await importCandidate(h);

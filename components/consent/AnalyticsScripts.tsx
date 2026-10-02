@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { isSensitiveAuthPath } from "@/lib/auth-return";
 import { isOperatorPath } from "@/lib/private-paths";
@@ -28,10 +29,29 @@ const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 export function AnalyticsScripts() {
   const { consent } = useConsent();
   const pathname = usePathname();
+  const operator = isOperatorPath(pathname);
 
   // Operator surfaces (the editorial workspace) are never measured: their
-  // URLs carry private record ids even though their titles are generic.
-  if (consent !== true || isSensitiveAuthPath(pathname) || isOperatorPath(pathname)) {
+  // URLs carry private record ids even though their titles are generic. Once
+  // one has been shown, this document never loads analytics: scripts loaded
+  // after a client-side move to a public page would install history listeners
+  // that report the private URL again on Back.
+  const [operatorShown, setOperatorShown] = useState(operator);
+  if (operator && !operatorShown) setOperatorShown(true);
+
+  useEffect(() => {
+    if (!operator) return;
+    // Analytics already running in this document (a public page came first)
+    // stop here, for the rest of the document: GA's opt-out flag, and a
+    // revoked Pixel consent. Nothing is persisted; the next page load decides
+    // again from the visitor's stored choice.
+    const page = window as unknown as Record<string, unknown>;
+    if (GA_ID) page[`ga-disable-${GA_ID}`] = true;
+    const fbq = page.fbq;
+    if (typeof fbq === "function") fbq("consent", "revoke");
+  }, [operator]);
+
+  if (consent !== true || isSensitiveAuthPath(pathname) || operator || operatorShown) {
     return null;
   }
 

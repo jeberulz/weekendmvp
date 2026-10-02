@@ -4,6 +4,7 @@ import {
   candidateDecisionSchema,
   commandIdSchemas,
   cursorSchema,
+  draftCarrySchema,
   flagInputSchema,
   ideaFilterSchema,
   noteSchema,
@@ -15,6 +16,7 @@ import {
   type ActivityFilter,
   type ApprovalInput,
   type CandidateDecisionInput,
+  type DraftCarry,
   type FlagInput,
   type IdeaFilter,
   type ImportAck,
@@ -780,15 +782,26 @@ export abstract class EditorialCore implements EditorialRepository {
 
   /* Revisions ----------------------------------------------------------- */
 
-  async createRevision(ideaId: string, fromRevisionId: string, idempotencyKey: string) {
+  async createRevision(ideaId: string, fromRevisionId: string | null, idempotencyKey: string, carry: DraftCarry | null = null) {
     const guard = this.editor("revision.created", { ideaId });
     if (!guard.ok) return guard;
     if (!commandIdSchemas.idempotencyKey.safeParse(idempotencyKey).success) {
       return fail<{ revisionId: string; number: number }>("INVALID_INPUT", "Invalid request key.");
     }
-    return this.idempotent(IDEMPOTENCY_SCOPES.createRevision, idempotencyKey, { ideaId, fromRevisionId }, async () => {
+    const carried = carry === null ? null : draftCarrySchema.safeParse(carry);
+    if (carried && !carried.success) {
+      return fail<{ revisionId: string; number: number }>("INVALID_INPUT", carried.error.issues[0]?.message ?? "Invalid draft.");
+    }
+    const text = carried ? carried.data : null;
+    const request = { ideaId, fromRevisionId, carry: text } as Canonicalizable;
+    return this.idempotent(IDEMPOTENCY_SCOPES.createRevision, idempotencyKey, request, async () => {
       const idea = this.idea(ideaId);
-      const from = this.revision(fromRevisionId);
+      // No base given: the idea's working revision, resolved here so a retry repeats the same request.
+      const working = idea ? this.state.revisions.get(idea.workingRevisionId) : undefined;
+      if (fromRevisionId === null && working && working.kind === "draft" && !working.discarded) {
+        return fail<{ revisionId: string; number: number }>("PRECONDITION_FAILED", `A working draft already exists (v${working.number}).`);
+      }
+      const from = fromRevisionId === null ? (working ?? null) : this.revision(fromRevisionId);
       if (!idea || !from || from.ideaId !== idea.id) {
         return fail<{ revisionId: string; number: number }>("NOT_FOUND", "That revision does not exist.");
       }
@@ -798,7 +811,6 @@ export abstract class EditorialCore implements EditorialRepository {
       if (from.kind === "draft") {
         return fail("INVALID_TRANSITION", "That revision is already an editable draft.");
       }
-      const working = this.state.revisions.get(idea.workingRevisionId);
       if (working && working.kind === "draft" && !working.discarded) {
         return fail("PRECONDITION_FAILED", `A working draft already exists (v${working.number}).`);
       }
@@ -814,7 +826,8 @@ export abstract class EditorialCore implements EditorialRepository {
         );
       }
       const storedSoFar = existing.reduce((total, record) => total + storedBytes(record), 0);
-      if (storedSoFar + storedBytes(from) > REVISION_BYTES_PER_IDEA) {
+      const copied = text ? { ...from, title: text.title, markdown: text.markdown, metadata: text.metadata } : from;
+      if (storedSoFar + storedBytes(copied) > REVISION_BYTES_PER_IDEA) {
         return this.refuse(
           "revision.created",
           fail<{ revisionId: string; number: number }>(
@@ -848,6 +861,13 @@ export abstract class EditorialCore implements EditorialRepository {
         discarded: false,
         submissionKey: null,
       };
+      if (text) {
+        // The editor's unsaved text, in the same command: nothing in between can fail.
+        revision.title = text.title;
+        revision.markdown = text.markdown;
+        revision.metadata = text.metadata;
+        idea.title = text.title;
+      }
       this.state.revisions.set(revision.id, revision);
       idea.workingRevisionId = revision.id;
       idea.version += 1;
@@ -855,7 +875,7 @@ export abstract class EditorialCore implements EditorialRepository {
       this.record("revision.created", "succeeded", {
         ideaId,
         revisionId: revision.id,
-        detail: `v${revision.number} created from v${from.number}`,
+        detail: `v${revision.number} created from v${from.number}${text ? " with unsaved editor text" : ""}`,
       });
       return ok({ revisionId: revision.id, number });
     });

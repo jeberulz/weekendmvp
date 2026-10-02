@@ -2,6 +2,7 @@ import type {
   ActivityFilter,
   ApprovalInput,
   CandidateDecisionInput,
+  DraftCarry,
   FlagInput,
   IdeaFilter,
   ImportAck,
@@ -68,11 +69,17 @@ export interface EditorialRepository {
   importSubmission(envelope: unknown, credential: IngestionCredential): Promise<CommandResult<ImportAck>>;
 
   /* Revisions ------------------------------------------------------ */
-  /** Fork an editable draft from a submitted, approved or live snapshot. */
+  /**
+   * Fork an editable draft from a submitted, approved or live snapshot.
+   * `fromRevisionId: null` forks the idea's working revision, resolved inside
+   * the command. `carry` puts unsaved editor text into the new draft in the
+   * same command, so a retry with the same key never loses it.
+   */
   createRevision(
     ideaId: string,
-    fromRevisionId: string,
+    fromRevisionId: string | null,
     idempotencyKey: string,
+    carry?: DraftCarry | null,
   ): Promise<CommandResult<{ revisionId: string; number: number }>>;
   /** Drop a working draft; live content and earlier revisions are untouched. */
   discardRevision(

@@ -142,25 +142,22 @@ describe("editorial server actions against the fixture workspace", { timeout: 30
     const ideaId = env.scenarios.newCandidate;
     const snapshot = await working(ideaId);
     expect(snapshot.kind).not.toBe("draft");
-    const created = unwrap(
-      await createRevisionAction({
-        ideaId,
-        fromRevisionId: null,
-        idempotencyKey: "key-fork-0001",
-        carry: {
-          title: snapshot.title,
-          markdown: `${snapshot.markdown}\n\nCarried text.`,
-          metadata: snapshot.metadata,
-          idempotencyKey: "key-carry-0001",
-        },
-      }),
-    );
+    const request = {
+      ideaId,
+      fromRevisionId: null,
+      idempotencyKey: "key-fork-0001",
+      carry: { title: snapshot.title, markdown: `${snapshot.markdown}\n\nCarried text.`, metadata: snapshot.metadata },
+    };
+    const created = unwrap(await createRevisionAction(request));
     const draft = unwrap(await env.editor().getRevision(ideaId, created.revisionId));
     expect(draft.kind).toBe("draft");
     expect(draft.parentRevisionId).toBe(snapshot.id);
     expect(draft.markdown.endsWith("Carried text.")).toBe(true);
     // The snapshot it came from is untouched.
     expect(unwrap(await env.editor().getRevision(ideaId, snapshot.id)).markdown).toBe(snapshot.markdown);
+    // A retry after a lost response replays the same result: one draft, with the text.
+    expect(unwrap(await createRevisionAction(request))).toEqual(created);
+    expect(unwrap(await env.editor().getIdea(ideaId)).idea.workingRevision?.id).toBe(created.revisionId);
     // A second fork is refused while this draft is the working revision.
     const again = await createRevisionAction({ ideaId, fromRevisionId: snapshot.id, idempotencyKey: "key-fork-0002", carry: null });
     expect(again.ok ? null : again.error.code).toBe("PRECONDITION_FAILED");

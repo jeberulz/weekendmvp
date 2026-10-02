@@ -4,6 +4,7 @@ import { mutation } from "../_generated/server";
 import {
   approvalArgs,
   candidateDecisionArgs,
+  draftCarryArgs,
   flagArgs,
   releaseStateArgs,
   saveDraftPatchArgs,
@@ -26,9 +27,14 @@ import { nullableString } from "./validators";
 /* Revisions ---------------------------------------------------------------- */
 
 export const createRevision = mutation({
-  args: { ideaId: v.string(), fromRevisionId: v.string(), idempotencyKey: v.string() },
+  args: {
+    ideaId: v.string(),
+    fromRevisionId: nullableString,
+    idempotencyKey: v.string(),
+    carry: v.optional(v.union(draftCarryArgs, v.null())),
+  },
   handler: async (ctx, args) =>
-    (await commandRepository(ctx)).createRevision(args.ideaId, args.fromRevisionId, args.idempotencyKey),
+    (await commandRepository(ctx)).createRevision(args.ideaId, args.fromRevisionId, args.idempotencyKey, args.carry ?? null),
 });
 
 export const discardRevision = mutation({

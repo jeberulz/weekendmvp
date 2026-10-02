@@ -96,6 +96,18 @@ export const saveDraftPatchSchema = z
   );
 export type SaveDraftPatch = z.infer<typeof saveDraftPatchSchema>;
 
+/**
+ * Unsaved editor text carried into a new revision. It is applied by the same
+ * command that creates the revision, so a lost response can be retried with
+ * the same request key and never strands the text.
+ */
+export const draftCarrySchema = z.strictObject({
+  title: singleLineText(L.titleChars),
+  markdown: markdownBodySchema,
+  metadata: editorialMetadataSchema,
+});
+export type DraftCarry = z.infer<typeof draftCarrySchema>;
+
 export const candidateDecisionSchema = z.discriminatedUnion("decision", [
   z.strictObject({ decision: z.literal("accepted"), rationale: reasonSchema }),
   z.strictObject({ decision: z.literal("needs_research"), question: multiLineText(L.questionChars) }),

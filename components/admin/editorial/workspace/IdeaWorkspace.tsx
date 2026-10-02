@@ -112,7 +112,9 @@ export function IdeaWorkspace({
   const [discardOpen, setDiscardOpen] = useState(false);
   const editorRef = useRef<MarkdownEditorHandle>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
-  const keys = useRef<{ create: string | null; fork: { at: string; revision: string; carry: string } | null }>({
+  // Request keys survive failures: creating a revision is one idempotent command,
+  // so a retry replays the first result instead of creating a second draft.
+  const keys = useRef<{ create: string | null; fork: { at: string; carried: string; revision: string } | null }>({
     create: null,
     fork: null,
   });
@@ -284,10 +286,10 @@ export function IdeaWorkspace({
       return;
     }
     if (!result.ok) {
-      keys.current.create = null;
       setCommandError(result.error.message);
       return;
     }
+    keys.current.create = null;
     router.push(`${baseHref}?revision=${result.value.revisionId}&tab=write`);
   }, [view.ideaId, view.id, baseHref, router]);
 
@@ -300,14 +302,17 @@ export function IdeaWorkspace({
     }
     setBusy(true);
     setCommandError(null);
-    if (keys.current.fork?.at !== conflict.savedAt) {
-      keys.current.fork = { at: conflict.savedAt, revision: newKey(), carry: newKey() };
+    const carry = { title: current.title, markdown: current.markdown, metadata: current.metadata };
+    const carried = JSON.stringify(carry);
+    // Same conflict, same text: keep the key, so a retry replays a request that may already have run.
+    if (keys.current.fork?.at !== conflict.savedAt || keys.current.fork.carried !== carried) {
+      keys.current.fork = { at: conflict.savedAt, carried, revision: newKey() };
     }
     const result = await createRevisionAction({
       ideaId: view.ideaId,
       fromRevisionId: null,
       idempotencyKey: keys.current.fork.revision,
-      carry: { title: current.title, markdown: current.markdown, metadata: current.metadata, idempotencyKey: keys.current.fork.carry },
+      carry,
     }).catch(() => null);
     setBusy(false);
     if (!result) {
@@ -315,10 +320,10 @@ export function IdeaWorkspace({
       return;
     }
     if (!result.ok) {
-      keys.current.fork = null;
       setCommandError(`${result.error.message} Your text is still here.`);
       return;
     }
+    keys.current.fork = null;
     router.push(`${baseHref}?revision=${result.value.revisionId}&tab=write`);
   }, [state.conflict, metadataInvalid, view.ideaId, current, baseHref, router]);
 

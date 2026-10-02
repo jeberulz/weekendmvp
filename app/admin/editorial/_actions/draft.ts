@@ -2,17 +2,9 @@
 
 import { z } from "zod";
 
-import { reasonSchema, saveDraftPatchSchema, type SaveDraftAck } from "@/lib/editorial/contracts/commands";
-import { fail, ok, type CommandResult } from "@/lib/editorial/contracts/errors";
-import { EDITORIAL_LIMITS } from "@/lib/editorial/contracts/limits";
-import { editorialMetadataSchema } from "@/lib/editorial/contracts/metadata";
-import {
-  editorialIdSchema,
-  idempotencyKeySchema,
-  markdownBodySchema,
-  sha256Schema,
-  singleLineText,
-} from "@/lib/editorial/contracts/primitives";
+import { draftCarrySchema, reasonSchema, saveDraftPatchSchema, type SaveDraftAck } from "@/lib/editorial/contracts/commands";
+import { ok, type CommandResult } from "@/lib/editorial/contracts/errors";
+import { editorialIdSchema, idempotencyKeySchema, sha256Schema } from "@/lib/editorial/contracts/primitives";
 import type { RevisionView } from "@/lib/editorial/contracts/views";
 import { withWorkspace } from "@/lib/editorial/runtime/action-support";
 
@@ -54,44 +46,24 @@ export async function saveDraftAction(
 
 const createSchema = z.strictObject({
   ideaId: editorialIdSchema,
-  /** Null forks the idea's current working (or live) revision. */
+  /** Null forks the idea's current working revision, resolved by the command itself. */
   fromRevisionId: editorialIdSchema.nullable(),
   idempotencyKey: idempotencyKeySchema,
   /** Unsaved editor text to carry into the new draft, e.g. after an approval froze the old one. */
-  carry: z
-    .strictObject({
-      title: singleLineText(EDITORIAL_LIMITS.titleChars),
-      markdown: markdownBodySchema,
-      metadata: editorialMetadataSchema,
-      idempotencyKey: idempotencyKeySchema,
-    })
-    .nullable(),
+  carry: draftCarrySchema.nullable(),
 });
 
+/**
+ * One command: the new draft and any carried text are created together, and
+ * the same request key replays the first result, so a retry after a lost
+ * response can neither strand the text nor create a second draft.
+ */
 export async function createRevisionAction(
   input: z.input<typeof createSchema>,
 ): Promise<CommandResult<{ revisionId: string; number: number }>> {
-  return withWorkspace(createSchema, input, async ({ repository }, data) => {
-    let fromRevisionId = data.fromRevisionId;
-    if (fromRevisionId === null) {
-      const detail = await repository.getIdea(data.ideaId);
-      if (!detail.ok) return detail;
-      fromRevisionId = detail.value.idea.workingRevision?.id ?? detail.value.idea.liveRevision?.id ?? null;
-      if (fromRevisionId === null) return fail("NOT_FOUND", "This idea has no revision to start from.");
-    }
-    const created = await repository.createRevision(data.ideaId, fromRevisionId, data.idempotencyKey);
-    if (!created.ok || !data.carry) return created;
-    const draft = await repository.getRevision(data.ideaId, created.value.revisionId);
-    if (!draft.ok) return draft;
-    const carried = await repository.saveDraft(
-      data.ideaId,
-      created.value.revisionId,
-      draft.value.version,
-      { title: data.carry.title, markdown: data.carry.markdown, metadata: data.carry.metadata },
-      data.carry.idempotencyKey,
-    );
-    return carried.ok ? created : carried;
-  });
+  return withWorkspace(createSchema, input, ({ repository }, data) =>
+    repository.createRevision(data.ideaId, data.fromRevisionId, data.idempotencyKey, data.carry),
+  );
 }
 
 const discardSchema = z.strictObject({

@@ -203,6 +203,17 @@ describe("private route metadata", () => {
     expect(middleware).toMatch(/process\.env\.NODE_ENV !== "production" && process\.env\.EDITORIAL_FIXTURE_MODE === "local-demo"/);
   });
 
+  test("analytics stay off for the rest of a document that showed an operator path (WP46-E4f)", () => {
+    const source = read("components/consent/AnalyticsScripts.tsx");
+    // Never loaded after an operator path, even once the visitor moves to a public page.
+    expect(source).toMatch(/const \[operatorShown, setOperatorShown\] = useState\(operator\);/);
+    expect(source).toMatch(/if \(operator && !operatorShown\) setOperatorShown\(true\);/);
+    expect(source).toMatch(/\|\| operator \|\| operatorShown\) \{\s*return null;/);
+    // Already running when an operator path appears: stopped for the rest of the document.
+    expect(source).toMatch(/page\[`ga-disable-\$\{GA_ID\}`\] = true;/);
+    expect(source).toMatch(/fbq\("consent", "revoke"\)/);
+  });
+
   test("live settings never describe the demo's simulations (WP46-E4f)", () => {
     const settings = read("app/admin/editorial/settings/page.tsx");
     const branch = settings.indexOf('view.mode === "fixture" ? (');

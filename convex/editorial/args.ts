@@ -9,6 +9,7 @@ import {
   type ActivityFilter,
   type ApprovalInput,
   type CandidateDecisionInput,
+  type DraftCarry,
   type FlagInput,
   type IdeaFilter,
   type ReleaseFilter,
@@ -88,6 +89,13 @@ export const saveDraftPatchArgs = v.object({
   metadata: v.optional(metadataArgs),
 });
 export type SaveDraftPatchArgsMatch = Assert<Same<Infer<typeof saveDraftPatchArgs>, SaveDraftPatch>>;
+
+export const draftCarryArgs = v.object({
+  title: v.string(),
+  markdown: v.string(),
+  metadata: metadataArgs,
+});
+export type DraftCarryArgsMatch = Assert<Same<Infer<typeof draftCarryArgs>, DraftCarry>>;
 
 export const candidateDecisionArgs = v.union(
   v.object({ decision: v.literal("accepted"), rationale: v.string() }),
