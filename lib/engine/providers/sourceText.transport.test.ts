@@ -864,7 +864,109 @@ describe("redaction", () => {
     expect(text).toBe("GET https://x.example/a?… failed: Bearer [redacted] at [path]");
     expect(redactText("x".repeat(500), 50)).toHaveLength(50);
   });
+
+  it("redacts credential-like path segments and matrix parameters", () => {
+    for (const [url, redacted] of [
+      // A webhook secret: one long random run.
+      [
+        "https://hooks.example.com/services/T0A1B2C3D/B4E5F6G7H/aB3dE5fG7hJ9kL1mN3pQ5rS7",
+        "https://hooks.example.com/services/T0A1B2C3D/B4E5F6G7H/…",
+      ],
+      // A capability document id and a hex token, mid-path.
+      [
+        "https://docs.example.com/document/d/1AbC2dEf3GhI4jKl5MnO6pQr7StU8vWx9YzA0bCd/edit",
+        "https://docs.example.com/document/d/…/edit",
+      ],
+      [
+        "https://cdn.example/download/3f786850e387550fdab836ed7e6dc881de23001b/report.pdf",
+        "https://cdn.example/download/…/report.pdf",
+      ],
+      // Separators inside a random token do not make it a slug.
+      ["https://x.example/s/aB3dE-5fG7hJ9kL1_mN3pQ5rS7tU9vW", "https://x.example/s/…"],
+      ["https://x.example/gh/ghp_Ab12Cd34Ef56Gh78Ij90Kl12Mn34Op56Qr78", "https://x.example/gh/…"],
+      // Percent-encoded base64 is checked decoded.
+      ["https://x.example/t/dG9rZW4%2Bd2l0aCtwbHVz%2FYW5kL3NsYXNoZXM", "https://x.example/t/…"],
+      // Whatever follows a credential-like name, however short.
+      ["https://api.example/v1/token/abc123/refresh", "https://api.example/v1/token/…/refresh"],
+      ["https://api.example/api_key/k1", "https://api.example/api_key/…"],
+      ["https://x.example/reset/Session-ID/42", "https://x.example/reset/Session-ID/…"],
+      // Matrix parameters and name=value segments keep only the name.
+      ["https://host.example/a;jsessionid=SECRET7", "https://host.example/a;…"],
+      ["https://host.example/files/sig=c2VjcmV0/x", "https://host.example/files/sig=…/x"],
+    ] as const) {
+      expect(redactUrl(url), url).toBe(redacted);
+    }
+  });
+
+  it("keeps ordinary slugs, numeric ids and HN item ids readable", () => {
+    for (const url of [
+      "https://news.ycombinator.com/item?id=27515468",
+      "https://www.reddit.com/r/shopify/comments/1n2jsoc/meta_ad_landing_page_poor_conversion_rate/",
+      "https://tianpan.co/forum/t/ai-code-review-bottleneck-our-pr-queue-grew-91-and-nobody-knows-how-to-fix-it/2001",
+      "https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348",
+      "https://en.wikipedia.example/wiki/List_of_Software_as_a_Service_companies_in_the_United_States",
+      "https://medium.example/@writer/why-we-rewrote-our-billing-system-1a2b3c4d5e6f",
+      "https://x.example/status/1234567890123456789",
+      "https://x.example/best-SaaS-tools-for-startups-in-2024/",
+      "https://x.example/report_%28v2%29",
+      "https://x.example/",
+    ]) {
+      expect(redactUrl(url), url).toBe(url);
+    }
+  });
+
+  it("finds URLs in text exactly as the old regex did, on random input", () => {
+    const tokens = [
+      "https://", "http://", "a://", "Z.y-1+q://", "1abc://", "-x://", "://", ":", "/", "//", " ", "\t",
+      "\n", "\u00a0", "\u2028", '"', "'", "<", ">", "(", ")", "=", ",", ";", "a", "Z", "1", "_", "-",
+      ".", "+", "é", "user:pw@", "host.example", "?token=s3cret", "&id=7", "#frag", "Bearer ", "basic ",
+      "/Users/me/x", "C:\\x", "/home/u/.ssh", "%2F", "\u{1F600}",
+    ];
+    // Deterministic generator, so a failure is reproducible.
+    let seed = 0x7ed;
+    const random = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed / 0x80000000;
+    };
+    for (let i = 0; i < 5000; i += 1) {
+      const length = Math.floor(random() * 24);
+      let text = "";
+      for (let j = 0; j < length; j += 1) text += tokens[Math.floor(random() * tokens.length)];
+      expect(redactText(text, 10_000), JSON.stringify(text)).toBe(regexRedactText(text, 10_000));
+    }
+  });
+
+  it("stays linear on hostile text: 2 MiB redacts in well under the bound each", () => {
+    // The URL regex rescanned every scheme-like run from each word boundary:
+    // 64k characters of "a." took 1.8 s, and the cost grew with the square
+    // (2 MiB would take about half an hour). Linear work takes milliseconds
+    // here, ~200 ms for the URL-dense units; the bounds only separate the two.
+    const units = [
+      "a.", "a:", "a-1+", "1://", "a://", "a://b ", "https://h/a/b?token=1 ", "x?a=1&", "bearer \t",
+      "/Users/x ", "%",
+    ];
+    for (const unit of units) {
+      for (const size of [64 * 1024, 2 * MiB]) {
+        const text = unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
+        const started = performance.now();
+        redactText(text, 200);
+        const elapsed = performance.now() - started;
+        expect(elapsed, `${JSON.stringify(unit)} × ${size}`).toBeLessThan(size === 2 * MiB ? 3000 : 250);
+      }
+    }
+  });
 });
+
+/** The pre-fix URL matcher (quadratic), kept to prove the linear scan is equivalent. */
+function regexRedactText(text: string, maxChars: number): string {
+  const clean = text
+    .replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>]+/gi, (match) => redactUrl(match))
+    .replace(/\b(bearer|basic)\s+[^\s,;"']+/gi, "$1 [redacted]")
+    .replace(/(^|[\s("'=])(?:\/(?:Users|home|private|tmp|var|opt|root)\/|[A-Za-z]:\\)[^\s"'<>)]*/g, "$1[path]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return clean.length <= maxChars ? clean : `${clean.slice(0, maxChars - 1)}…`;
+}
 
 describe("child-process smoke", () => {
   type ChildResult = { code: number | null; signal: string | null; stdout: string; stderr: string };

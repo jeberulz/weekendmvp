@@ -153,10 +153,85 @@ const IDENTITY_QUERY_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * A URL safe for diagnostics: no userinfo or fragment, and only numeric
- * page-identifying query values kept (anything else becomes "…"), so tokens
- * and signed-URL parameters never reach a message. Non-http(s) URLs show
- * only their scheme, which also keeps local file paths out.
+ * A path segment name whose next segment is a credential (`/token/<value>`),
+ * compared lowercased with `-` and `_` removed.
+ */
+const SECRET_SEGMENT_NAME =
+  /^(?:(?:access|refresh|id|auth)?tokens?|apikeys?|keys?|secrets?|clientsecret|passwords?|passwd|pwd|auth|authorization|bearer|jwt|sig|signatures?|hmac|otp|sessions?|sessionid|sid|jsessionid|phpsessid|credentials?)$/;
+
+/** Base64 or base64url runs long enough to be a credential (24+ characters). */
+const LONG_TOKEN_RUN = /[A-Za-z0-9+/_-]{24,}/g;
+
+/**
+ * True when a long run reads as words: at least three `-`/`_`-separated
+ * parts, two thirds of them all letters or all digits, and no mixed part
+ * longer than 16 characters. A slug ("best-saas-tools-for-2024") or a slug
+ * with a short id ("why-we-rewrote-billing-1a2b3c4d5e6f") passes; a random
+ * token rarely has several separators between whole words.
+ */
+function isWordyRun(run: string): boolean {
+  const parts = run.split(/[-_]+/).filter((part) => part !== "");
+  if (parts.length < 3) return false;
+  let wordy = 0;
+  for (const part of parts) {
+    if (/^(?:[A-Za-z]+|\d+)$/.test(part)) wordy += 1;
+    else if (part.length > 16) return false;
+  }
+  return wordy * 3 >= parts.length * 2;
+}
+
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment; // malformed escapes: judge the raw text
+  }
+}
+
+function looksLikeCredential(segment: string): boolean {
+  for (const run of decodeSegment(segment).match(LONG_TOKEN_RUN) ?? []) {
+    if (!isWordyRun(run)) return true;
+  }
+  return false;
+}
+
+function isSecretSegmentName(segment: string): boolean {
+  return SECRET_SEGMENT_NAME.test(decodeSegment(segment).toLowerCase().replace(/[-_]/g, ""));
+}
+
+/** One path segment for a diagnostic: kept as is, cut back to its name, or "…". */
+function redactSegment(segment: string, afterSecretName: boolean): string {
+  if (segment === "") return segment;
+  if (afterSecretName) return "…";
+  // Matrix parameters (`a;jsessionid=…`) and `name=value` segments keep the name.
+  const cut = segment.search(/[;=]/);
+  if (cut !== -1) {
+    const name = segment.slice(0, cut);
+    return `${looksLikeCredential(name) ? "…" : name}${segment[cut]}…`;
+  }
+  return looksLikeCredential(segment) ? "…" : segment;
+}
+
+function redactPath(pathname: string): string {
+  let afterSecretName = false;
+  return pathname
+    .split("/")
+    .map((segment) => {
+      const out = redactSegment(segment, afterSecretName);
+      afterSecretName = isSecretSegmentName(segment);
+      return out;
+    })
+    .join("/");
+}
+
+/**
+ * A URL safe for diagnostics: no userinfo or fragment, only numeric
+ * page-identifying query values kept (anything else becomes "…"), and path
+ * segments that look like credentials replaced by "…": long random tokens,
+ * whatever follows a credential-like segment name (`/token/<value>`), and the
+ * values of matrix or `name=value` segments. Slugs and numeric ids stay
+ * readable. Non-http(s) URLs show only their scheme, which also keeps local
+ * file paths out.
  */
 export function redactUrl(url: string): string {
   let parsed: URL;
@@ -179,21 +254,72 @@ export function redactUrl(url: string): string {
   }
   if (dropped) kept.push("…");
   const query = kept.length > 0 ? `?${kept.join("&")}` : "";
-  return `${parsed.protocol}//${parsed.host}${parsed.pathname}${query}`;
+  return `${parsed.protocol}//${parsed.host}${redactPath(parsed.pathname)}${query}`;
 }
 
-const URL_IN_TEXT = /\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>]+/gi;
+function isAsciiLetter(c: string): boolean {
+  return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
+}
+
+function isSchemeChar(c: string): boolean {
+  return isAsciiLetter(c) || (c >= "0" && c <= "9") || c === "+" || c === "." || c === "-";
+}
+
+function isWordChar(c: string): boolean {
+  return isAsciiLetter(c) || (c >= "0" && c <= "9") || c === "_";
+}
+
+const URL_BODY_STOP = /[\s"'<>]/;
+
+/**
+ * `text.replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>]+/gi, redactUrl)` in linear
+ * time. The regex rescans a scheme-like run (`a.a.a.…`) from every word
+ * boundary inside it, which is quadratic: 64k characters took 1.8 s. Here
+ * each "://" is found once; its match starts at the leftmost letter at a word
+ * boundary in the scheme-character run before it (as the regex's would), and
+ * that run cannot reach back past the previous "://", so every character is
+ * scanned a bounded number of times.
+ */
+function redactUrlsInText(text: string): string {
+  let out = "";
+  let from = 0; // end of the last match: the regex's lastIndex
+  let search = 0;
+  for (;;) {
+    const sep = text.indexOf("://", search);
+    if (sep === -1) break;
+    search = sep + 1;
+    let end = sep + 3;
+    if (end >= text.length || URL_BODY_STOP.test(text.charAt(end))) continue;
+    let runStart = sep;
+    while (runStart > from && isSchemeChar(text.charAt(runStart - 1))) runStart -= 1;
+    let start = -1;
+    for (let p = runStart; p < sep; p += 1) {
+      if (isAsciiLetter(text.charAt(p)) && (p === 0 || !isWordChar(text.charAt(p - 1)))) {
+        start = p;
+        break;
+      }
+    }
+    if (start === -1) continue;
+    while (end < text.length && !URL_BODY_STOP.test(text.charAt(end))) end += 1;
+    out += text.slice(from, start) + redactUrl(text.slice(start, end));
+    from = end;
+    search = end;
+  }
+  return out + text.slice(from);
+}
+
+// Both run in linear time: a fixed keyword or prefix, then one greedy class.
 const CREDENTIAL_IN_TEXT = /\b(bearer|basic)\s+[^\s,;"']+/gi;
 const LOCAL_PATH_IN_TEXT =
   /(^|[\s("'=])(?:\/(?:Users|home|private|tmp|var|opt|root)\/|[A-Za-z]:\\)[^\s"'<>)]*/g;
 
 /**
  * Free text safe for diagnostics: URLs redacted, auth values and local paths
- * masked, collapsed to one line and capped at `maxChars`.
+ * masked, collapsed to one line and capped at `maxChars`. Linear in the
+ * length of `text`.
  */
 export function redactText(text: string, maxChars = 200): string {
-  const clean = text
-    .replace(URL_IN_TEXT, (match) => redactUrl(match))
+  const clean = redactUrlsInText(text)
     .replace(CREDENTIAL_IN_TEXT, "$1 [redacted]")
     .replace(LOCAL_PATH_IN_TEXT, "$1[path]")
     .replace(/\s+/g, " ")
