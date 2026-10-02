@@ -1130,6 +1130,79 @@ describe("source reads: redirects never leak credentials", () => {
   });
 });
 
+describe("source reads: comment bodies are separated by blank lines (R14)", () => {
+  // A blank line is a hard sentence boundary for the evidence code; a single
+  // line break inside one body stays exactly as the source wrote it.
+  const listing = JSON.stringify([
+    { data: { children: [{ data: { title: "Thread title", selftext: "Post body.\nSecond line" } }] } },
+    {
+      data: {
+        children: [
+          { data: { body: "First comment, first paragraph.\n\nSecond paragraph" } },
+          {
+            data: {
+              body: "Second comment\nwraps here",
+              replies: { data: { children: [{ data: { body: "A nested reply" } }] } },
+            },
+          },
+          { data: { body: "" } }, // a deleted comment adds nothing
+        ],
+      },
+    },
+  ]);
+  const redditText =
+    "Thread title\n\nPost body.\nSecond line\n\nFirst comment, first paragraph.\n\nSecond paragraph" +
+    "\n\nSecond comment\nwraps here\n\nA nested reply";
+
+  it("joins Reddit post and comment bodies with blank lines, on the public and OAuth paths", async () => {
+    const server = await serve((req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        req.url?.startsWith("/api/v1/access_token") ? JSON.stringify({ access_token: "dummy-bearer-token" }) : listing,
+      );
+    });
+    const ports = new Map([
+      ["www.reddit.com", server.port],
+      ["oauth.reddit.com", server.port],
+    ]);
+    for (const oauth of [false, true]) {
+      const reader = provider({
+        redditClientId: oauth ? "dummy-id" : "",
+        redditClientSecret: oauth ? "dummy-secret" : "",
+        fetchImpl: fakeTlsFetch(transport(), ports),
+      });
+      expect(await reader.fetchText("https://www.reddit.com/r/x/comments/abc/thread/"), oauth ? "OAuth" : "public").toBe(
+        redditText,
+      );
+    }
+  });
+
+  it("joins Hacker News story and comment texts with blank lines", async () => {
+    const item = {
+      id: 1,
+      title: "Ask HN: How do you review AI-written code?",
+      text: null,
+      children: [
+        {
+          id: 2,
+          text: "We pair on it.<p>It takes longer than writing it.",
+          children: [{ id: 3, text: "Same here &#x2F; agreed", children: [] }],
+        },
+        { id: 4, text: "Line one<br>line two", children: [] },
+      ],
+    };
+    const server = await serve((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(item));
+    });
+    const reader = provider({ fetchImpl: fakeTlsFetch(transport(), new Map([["hn.algolia.com", server.port]])) });
+    expect(await reader.fetchText("https://news.ycombinator.com/item?id=1")).toBe(
+      "Ask HN: How do you review AI-written code?\n\nWe pair on it. It takes longer than writing it." +
+        "\n\nSame here / agreed\n\nLine one\nline two",
+    );
+  });
+});
+
 /** The pre-WP54 regex chain, kept to prove the linear rewrite is equivalent. */
 function regexHtmlToText(html: string): string {
   return html

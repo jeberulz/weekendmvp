@@ -1329,10 +1329,17 @@ async function readJson(response: Response, describe: string, signal: AbortSigna
   }
 }
 
+/**
+ * Every string under `keys`, in document order, joined by blank lines: a
+ * post or comment body never runs into the next one, so the evidence code
+ * can treat a blank line as a hard sentence boundary and a single line break
+ * as a soft one (ruling R14). Each body's own text, line breaks included, is
+ * kept as it is; empty bodies (deleted comments, link posts) are skipped.
+ */
 function collectText(json: unknown, keys: string[]): string {
   const parts: string[] = [];
   collectStrings(json, new Set(keys), parts);
-  return parts.join("\n");
+  return parts.filter((part) => part.trim() !== "").join("\n\n");
 }
 
 // ---------------------------------------------------------------------------
