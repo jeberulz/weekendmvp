@@ -479,6 +479,50 @@ source acquisition statuses, accepted counts per kind, and rejected
 - **R12 (2026-10-01, from P3-7): the run report names the code revision.**
   `ResearchRunReport.codeRevision = { sha: string | null; dirty: boolean | null }`.
 
+- **R13 (2026-10-02, from the re-reviews): realistic writer text, one rule
+  set.** Standard and version names are not figures — one allowlist in
+  `tokens.ts` shared by parser and auditor: SOC 1/2/3, ISO and ISO/IEC
+  numbers, PCI DSS / WCAG / OAuth / TLS / SSL / HTTP versions, IPv4/IPv6,
+  24/7, Microsoft/Office 365, US tax forms (Form 1099, W-2, W-9), and
+  version numbers after a curated list of software names (Next.js, React,
+  Node, Postgres/PostgreSQL, MySQL, Python, Ruby, Rails, Django, Vue,
+  Angular, Svelte, Tailwind, TypeScript, Swift, Kotlin, Java, PHP, iOS,
+  Android, macOS, Windows, Ubuntu, Claude, GPT, Gemini, Llama, Mistral).
+  Digits inside snake_case identifiers are names. Otherwise R6 stands, and
+  it gains: quoted spans in single typographic quotes, single guillemets,
+  corner brackets and straight single quotes at word boundaries; any
+  currency symbol outside a token; and sub-/top-/under-/over-/up-to-N
+  hyphen forms. The parser also applies the auditor's revenue-total and
+  quoted-span rules to the numeric proposal slots, so a run regenerates or
+  fails at parse, never only at the final audit. The writer gets up to three
+  billable attempts in total (same rules each time, plus the issue list);
+  the pinned worst case stays under $4.00.
+- **R14 (2026-10-02): binding follows the page's structure.** A line break
+  starts a sentence only after terminal punctuation or at a blank line, and
+  HN/Reddit comment bodies are joined by blank lines. On every page the
+  claimed vendor (or its own plan name) must be the nearest brand-like name
+  before the price in its clause; a nearer capitalised brand token that is
+  not a plan or common word rejects the claim; vendor hints include
+  candidate vendors and names from citation titles and hosts; the cue list
+  adds moved/move to, migrated/migrate to, after, over and replaced by.
+  Billing toggles are page-scoped: a standalone toggle line (only billing
+  words such as Monthly, Yearly, Annually, Billed monthly/yearly, optionally
+  "save N%") anywhere above a per-month price requires an explicit billing
+  qualifier in that price's clause; ordinary feature lines that mention
+  "annual" do not count; a plan named after "from", "upgrade from" or
+  "than" never binds.
+- **R15 (2026-10-02): untrusted text and URLs.** Citation titles must be at
+  most 120 characters, figure-free, link-free and free of bidi or invisible
+  format controls, otherwise the source's host label is used; the parser
+  enforces it. Excerpts and any record text containing bidi or invisible
+  format controls (U+061C, U+200B–U+200F, U+202A–U+202E, U+2060–U+2064,
+  U+2066–U+2069, U+FEFF) are rejected. A citation whose path or query holds
+  an opaque credential-like value (the `redactUrl` detectors) is refused,
+  and the run report lists each refused citation by host and reason. For
+  engine rows the homepage uses generated highlights only (no MDX-parser
+  fallback), the MDX parser skips Year-One lines, and plain-text extraction
+  unescapes compiled MDX.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The
