@@ -24,9 +24,10 @@
  *   fails as `unsupported_encoding`. Nothing is decompressed, so a small
  *   compressed body can never expand past the cap. (node:http never decodes
  *   on its own; this is a decision, not a default.)
- * - Redirects: only GET/HEAD follow them. Authorization, Cookie and
- *   Proxy-Authorization are dropped when a hop changes origin, and an
- *   authenticated HTTPS→HTTP hop is refused. URL userinfo is never sent.
+ * - Redirects: only GET/HEAD follow them. Once a hop changes origin only
+ *   User-Agent, Accept and Accept-Language are forwarded (credentials, API
+ *   keys and any other header are dropped for good), and an authenticated
+ *   HTTPS→HTTP hop is refused. URL userinfo is never sent.
  * - Failures reject with `SourceFetchError`. Messages never carry header
  *   values; URLs in them lose userinfo and non-identifying query values.
  */
@@ -129,8 +130,11 @@ const NULL_BODY_STATUSES: ReadonlySet<number> = new Set([204, 205, 304]);
 
 const REDIRECT_STATUSES: ReadonlySet<number> = new Set([301, 302, 303, 307, 308]);
 
-/** Request headers that carry credentials; dropped when a redirect changes origin. */
+/** Request headers that carry credentials: a request with any of them never follows HTTPS→HTTP. */
 const CREDENTIAL_HEADERS = ["authorization", "cookie", "proxy-authorization"] as const;
+
+/** The only caller headers a redirect carries to another origin. */
+const CROSS_ORIGIN_HEADERS: ReadonlySet<string> = new Set(["user-agent", "accept", "accept-language"]);
 
 const DEFAULT_UA =
   "weekendmvp-idea-engine/1.0 (quote verification; +https://www.weekendmvp.app)";
@@ -1039,9 +1043,11 @@ function headerRecord(headers: Headers): Record<string, string> {
 
 /**
  * Send a request and follow its redirects. Every hop's host must be public.
- * Only GET and HEAD follow redirects. Credential headers are dropped for good
- * once a hop changes origin, and a request that started with credentials is
- * refused an HTTPS→HTTP hop outright. URL userinfo is never sent.
+ * Only GET and HEAD follow redirects. Once a hop changes origin, every header
+ * but User-Agent, Accept and Accept-Language is dropped for good (a later hop
+ * back to the first origin does not restore them), and a request that started
+ * with credentials is refused an HTTPS→HTTP hop outright. URL userinfo is
+ * never sent.
  */
 export async function sendWithRedirects(
   url: string,
@@ -1094,7 +1100,11 @@ export async function sendWithRedirects(
       );
     }
     if (next.origin !== from.origin) {
-      for (const name of CREDENTIAL_HEADERS) headers.delete(name);
+      for (const name of [...headers.keys()]) {
+        if (!CROSS_ORIGIN_HEADERS.has(name)) headers.delete(name);
+      }
+      // Our own coding request, not a caller header: compressed bodies are never decoded.
+      headers.set("accept-encoding", "identity");
     }
     current = next.href;
   }

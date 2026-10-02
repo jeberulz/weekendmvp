@@ -579,6 +579,69 @@ describe("source reads: redirects never leak credentials", () => {
     ]);
   });
 
+  it("forwards only User-Agent, Accept and Accept-Language once the origin changes", async () => {
+    const names = [
+      "user-agent", "accept", "accept-language", "accept-encoding", "x-api-key", "x-custom",
+      "content-type", "authorization", "cookie",
+    ] as const;
+    const seen: Array<Record<string, string | undefined>> = [];
+    const record = (req: http.IncomingMessage) => {
+      const headers: Record<string, string | undefined> = { path: req.url };
+      for (const name of names) {
+        const value = req.headers[name];
+        if (typeof value === "string") headers[name] = value;
+      }
+      seen.push(headers);
+    };
+    const first = await serve((req, res) => {
+      record(req);
+      if (req.url === "/start") res.writeHead(302, { location: "/same" });
+      else if (req.url === "/same") res.writeHead(302, { location: `${second.origin("second")}/hop` });
+      res.end("home");
+    });
+    const second = await serve((req, res) => {
+      record(req);
+      res.writeHead(302, { location: `${first.origin("first")}/home` });
+      res.end();
+    });
+    const sent = {
+      "User-Agent": "transport-test",
+      Accept: "text/html",
+      "Accept-Language": "en",
+      "X-Api-Key": "dummy-api-key",
+      "x-custom": "dummy-custom",
+      "content-type": "text/plain",
+      authorization: "Bearer dummy-token",
+      cookie: "session=dummy-cookie",
+    };
+    const res = await sendWithRedirects(`${first.origin("first")}/start`, { headers: sent }, deps());
+    expect(await res.text()).toBe("home");
+    const everything = {
+      "user-agent": "transport-test",
+      accept: "text/html",
+      "accept-language": "en",
+      "accept-encoding": "identity",
+      "x-api-key": "dummy-api-key",
+      "x-custom": "dummy-custom",
+      "content-type": "text/plain",
+      authorization: "Bearer dummy-token",
+      cookie: "session=dummy-cookie",
+    };
+    const safelisted = {
+      "user-agent": "transport-test",
+      accept: "text/html",
+      "accept-language": "en",
+      "accept-encoding": "identity",
+    };
+    expect(seen).toEqual([
+      { path: "/start", ...everything },
+      { path: "/same", ...everything },
+      { path: "/hop", ...safelisted },
+      // Returning to the first origin does not restore what was dropped.
+      { path: "/home", ...safelisted },
+    ]);
+  });
+
   it("keeps headers on a same-origin redirect", async () => {
     const seen: Seen[] = [];
     const server = await serve((req, res) => {
