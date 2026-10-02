@@ -562,6 +562,14 @@ describe("source transport: every response settles (F7)", () => {
     expect(errors.stop()).toEqual([]);
   });
 
+  it("settles at once when the connection closes with neither a response nor an error", async () => {
+    // Node treats the answer to CONNECT as a tunnel: with no 'connect'
+    // listener it destroys the socket and emits only 'close' on the request.
+    const server = await serveRaw((socket) => socket.write("HTTP/1.1 200 Connection Established\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("tunnel")}/`, { method: "CONNECT" }), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "network" } });
+  });
+
   it("settles a 101 without Upgrade headers as http_status", async () => {
     const server = await serveRaw((socket) => socket.write("HTTP/1.1 101 Switching Protocols\r\n\r\n"));
     const settled = await settleWithin(transport()(`${server.origin("up")}/`), 1000);
