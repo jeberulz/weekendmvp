@@ -293,11 +293,11 @@ type ItemRead<T> = { ok: true; value: T } | { ok: false; error: string; sourceUr
  * A rejected candidate's URL as operator records may keep it: canonical, or
  * stripped to origin and path when it has no canonical form (credentials,
  * signatures, userinfo), or nothing (review P3-6: a secret never lands in a
- * record or report).
+ * record or report). Never cut short: a record drops an over-long URL
+ * instead of storing a wrong one.
  */
 function recordableUrl(url: string): string | undefined {
-  const kept = canonicalSourceUrl(url) ?? strippedSourceUrl(url);
-  return kept ? clip(kept, 300) : undefined;
+  return canonicalSourceUrl(url) ?? strippedSourceUrl(url) ?? undefined;
 }
 
 function itemFailure<T>(record: Record<string, unknown>, error: string, claim: string): ItemRead<T> {

@@ -8,15 +8,22 @@
  *   npm run engine:research -- --brief path/to/brief.json --live [--out path]
  *
  * --fixture runs the hermetic synthetic fixture (mode "fixture"): no API keys,
- * no network, and only briefs the fixture describes. --live spends against the
- * real providers (mode "live"). There is no implicit mode.
+ * no network, and only the fixture's own briefs (engine/briefs/fixtures/,
+ * slug FIXTURE_BRIEF_SLUG, which no published idea uses). Its default output
+ * is engine/records/fixtures/{slug}.json, and it refuses to write a record
+ * straight into engine/records/ where published records live (ruling R11).
+ * --live spends against the real providers (mode "live"). There is no
+ * implicit mode.
  *
  * The record is validated with parseResearchRecord before it is written,
  * and an existing record is never overwritten without --force. The run report
- * is written on success AND failure. Output never includes secrets, page
- * bodies, stack traces or absolute local paths.
+ * is written on success AND failure and names the code revision (ruling
+ * R12: git HEAD and whether tracked files had changes; nulls when git is
+ * unavailable, which never fails the run). Output never includes secrets,
+ * page bodies, stack traces or absolute local paths.
  */
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -30,14 +37,15 @@ function usage(exit = 1) {
 
 Flags:
   --fixture name    Synthetic fixture providers (mode "fixture"; no API keys, no network).
-                    Loads engine/briefs/{name}.json; only briefs for the fixture's idea
-                    (slug ai-rfp-response-assistant). Cannot be combined with --brief or --live.
+                    Loads engine/briefs/fixtures/{name}.json; only briefs for the fixture's idea
+                    (slug fixture-rfp-response-assistant). Cannot be combined with --brief or --live.
   --brief path      Brief JSON: { title, audience, revenueModel, seedKeywords[], slug?, oneLiner? }.
                     Requires --live.
   --live            Live providers (mode "live"). Reads OPENAI_API_KEY, PERPLEXITY_API_KEY,
                     DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD from the shell, then .env.local,
                     then .env (shell values win).
-  --out path        Record JSON (default: engine/records/{slug}.json).
+  --out path        Record JSON (default: engine/records/{slug}.json; fixture runs:
+                    engine/records/fixtures/{slug}.json, never engine/records/ itself).
   --report path     Run report JSON (default: {out}.report.json). Written on success and failure.
   --force           Overwrite an existing record.
 `);
@@ -105,6 +113,33 @@ function fail(message) {
   process.exit(1);
 }
 
+const SHA_RE = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
+
+/**
+ * Ruling R12: the code revision that runs, from git. `sha` is HEAD; `dirty`
+ * is true when TRACKED files differ from HEAD (untracked outputs of earlier
+ * runs do not count). Each is null when git is unavailable or fails; the run
+ * goes on either way, so these catches are deliberate.
+ */
+function codeRevision() {
+  const git = (args) =>
+    execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 10_000 });
+  let sha = null;
+  let dirty = null;
+  try {
+    const head = git(["rev-parse", "HEAD"]).trim();
+    sha = SHA_RE.test(head) ? head : null;
+  } catch {
+    sha = null; // git missing, not a repository, or no PATH: the revision is unknown
+  }
+  try {
+    dirty = git(["status", "--porcelain", "--untracked-files=no"]).trim() !== "";
+  } catch {
+    dirty = null; // same: unknown, never a failure
+  }
+  return { sha, dirty };
+}
+
 function formatCounts(entries) {
   const parts = entries.filter(([, n]) => n > 0).map(([key, n]) => `${key} ${n}`);
   return parts.length > 0 ? parts.join(", ") : "none";
@@ -149,8 +184,19 @@ async function main() {
     usage(1);
   }
   const mode = args.live ? "live" : "fixture";
+  if (mode === "fixture" && !/^[a-z0-9-]+$/.test(args.fixtureName)) {
+    fail("--fixture takes a fixture brief name such as rfp-assistant (letters, digits and dashes only)");
+  }
 
-  const briefPath = args.briefPath ?? path.join(root, "engine", "briefs", `${args.fixtureName}.json`);
+  const [pipeline, providersModule, recordModule, fixtures, sourceText] = await Promise.all([
+    import(pathToFileURL(path.join(root, "lib/engine/pipeline.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/providers.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/providers/fixtures.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/providers/sourceText.ts")).href),
+  ]);
+
+  const briefPath = args.briefPath ?? path.join(root, fixtures.FIXTURE_BRIEFS_DIR, `${args.fixtureName}.json`);
   if (!fs.existsSync(briefPath)) fail(`brief not found: ${displayPath(briefPath)}`);
   let rawBrief;
   try {
@@ -161,14 +207,6 @@ async function main() {
   if (typeof rawBrief !== "object" || rawBrief === null || Array.isArray(rawBrief)) {
     fail(`brief must be a JSON object: ${displayPath(briefPath)}`);
   }
-
-  const [pipeline, providersModule, recordModule, fixtures, sourceText] = await Promise.all([
-    import(pathToFileURL(path.join(root, "lib/engine/pipeline.ts")).href),
-    import(pathToFileURL(path.join(root, "lib/engine/providers.ts")).href),
-    import(pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href),
-    import(pathToFileURL(path.join(root, "lib/engine/providers/fixtures.ts")).href),
-    import(pathToFileURL(path.join(root, "lib/engine/providers/sourceText.ts")).href),
-  ]);
   const { runResearch, normalizeBriefInput, PipelineError } = pipeline;
   const { parseResearchRecord } = recordModule;
   const { redactText } = sourceText;
@@ -193,7 +231,14 @@ async function main() {
     fail(`fixture data describes ${fixtures.FIXTURE_BRIEF_SLUG} only (brief slug ${slug}); research other briefs with --brief <path> --live`);
   }
 
-  const outPath = path.resolve(args.outPath || path.join(root, "engine", "records", `${slug}.json`));
+  const recordsDir = path.join(root, "engine", "records");
+  const defaultOut =
+    mode === "fixture" ? path.join(recordsDir, "fixtures", `${slug}.json`) : path.join(recordsDir, `${slug}.json`);
+  const outPath = path.resolve(args.outPath || defaultOut);
+  // Ruling R11: published records live directly in engine/records/; fixture output never does.
+  if (mode === "fixture" && path.dirname(outPath) === recordsDir) {
+    fail("a fixture record never goes to engine/records/ (published record paths); use engine/records/fixtures/ or a temp path");
+  }
   const reportPath = path.resolve(args.reportPath || `${outPath}.report.json`);
   if (reportPath === outPath) fail("--report must differ from --out");
   if (fs.existsSync(outPath) && !args.force) {
@@ -208,7 +253,7 @@ async function main() {
 
   let result;
   try {
-    result = await runResearch({ brief, providers, mode });
+    result = await runResearch({ brief, providers, mode, codeRevision: codeRevision() });
   } catch (error) {
     if (error instanceof PipelineError && error.report) {
       writeReport(reportPath, error.report);

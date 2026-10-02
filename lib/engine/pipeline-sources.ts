@@ -8,7 +8,8 @@
  * URL (its roles) and every citation, and produces:
  *   - `sources`  the SourceAcquisition list for the record and run report
  *                (one per distinct URL attempted; bodies are never stored)
- *   - `inputs`   acceptEvidence's source map (canonical URL → read result)
+ *   - `inputs`   acceptEvidence's source map (canonical URL → read result
+ *                and the roles of the searches that cited it; ruling R8)
  *   - `readable` the read pages handed to the extraction step
  *
  * buildExtractionSources fits bounded excerpts of the readable pages into
@@ -132,12 +133,18 @@ export function createSourceLedger(options: {
             retrievedAt: read.retrievedAt,
             textSha256: read.textSha256,
           });
-          inputs.set(url, { status: "read", text: read.text, retrievedAt: read.retrievedAt, textSha256: read.textSha256 });
+          inputs.set(url, {
+            status: "read",
+            text: read.text,
+            retrievedAt: read.retrievedAt,
+            textSha256: read.textSha256,
+            roles: sourceRoles,
+          });
           readable.push({ url, title: titles.get(url) ?? "", roles: sourceRoles, text: read.text });
         } else {
           const detail = oneLine(read.detail, DETAIL_CHARS);
           sources.push({ url, roles: sourceRoles, status: read.status, ...(detail ? { detail } : {}) });
-          inputs.set(url, { status: read.status });
+          inputs.set(url, { status: read.status, roles: sourceRoles });
         }
       }
       return { sources, inputs, citations: [...citations], readable };

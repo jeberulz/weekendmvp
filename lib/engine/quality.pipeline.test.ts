@@ -73,6 +73,7 @@ import { buildExtractionSources, utf8Bytes, type ExtractionSource } from "./pipe
 import { stepById } from "./pipeline-steps.ts";
 import {
   createFixtureProviders,
+  FIXTURE_BRIEF_SLUG,
   FIXTURE_EXTRACTION,
   FIXTURE_PAGES,
   FIXTURE_URLS,
@@ -94,7 +95,7 @@ const BRIEF: BriefInput = {
     "security questionnaire automation",
     "proposal management software",
   ],
-  slug: "ai-rfp-response-assistant",
+  slug: FIXTURE_BRIEF_SLUG,
   oneLiner: "Grounded RFP drafts with citations for SMB sales teams.",
 };
 
