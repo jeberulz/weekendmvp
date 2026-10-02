@@ -529,21 +529,33 @@ export function isBlockedAddress(ip: string): boolean {
   if (version !== 6) return true;
   const g = ipv6Groups(ip);
   if (!g) return true;
-  const embedded = () => `${g[6]! >> 8}.${g[6]! & 0xff}.${g[7]! >> 8}.${g[7]! & 0xff}`;
+  // ipv6Groups returns exactly eight groups, so these defaults never apply.
+  const [first = 0, second = 0, third = 0] = g;
+  /** Groups `hi` and `hi + 1` as a dotted IPv4 address. */
+  const ipv4At = (hi: number): string => {
+    const [high = 0, low = 0] = g.slice(hi, hi + 2);
+    return `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`;
+  };
   const zeroTo = (n: number) => g.slice(0, n).every((x) => x === 0);
   // ::a.b.c.d (IPv4-compatible, also covers :: and ::1) and ::ffff:a.b.c.d (mapped),
   // in dotted or hex form.
   if (zeroTo(6) || (zeroTo(5) && g[5] === 0xffff)) {
-    return zeroTo(7) ? true : ipv4Blocked(embedded());
+    return zeroTo(7) ? true : ipv4Blocked(ipv4At(6));
   }
+  // ::ffff:0:a.b.c.d (IPv4-translated, SIIT ::ffff:0:0/96).
+  if (zeroTo(4) && g[4] === 0xffff && g[5] === 0) return ipv4Blocked(ipv4At(6));
   // 64:ff9b::/96 NAT64 carries an IPv4 address in its last 32 bits.
-  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => x === 0)) {
-    return ipv4Blocked(embedded());
+  if (first === 0x64 && second === 0xff9b && g.slice(2, 6).every((x) => x === 0)) {
+    return ipv4Blocked(ipv4At(6));
   }
+  // 2002::/16 6to4 carries an IPv4 address in bits 16–47.
+  if (first === 0x2002) return ipv4Blocked(ipv4At(1));
   return (
-    (g[0]! & 0xfe00) === 0xfc00 || // unique local fc00::/7
-    (g[0]! & 0xffc0) === 0xfe80 || // link-local fe80::/10
-    (g[0]! & 0xff00) === 0xff00 // multicast
+    (first === 0x64 && second === 0xff9b && third === 1) || // local-use NAT64 64:ff9b:1::/48
+    (first & 0xfe00) === 0xfc00 || // unique local fc00::/7
+    (first & 0xffc0) === 0xfe80 || // link-local fe80::/10
+    (first & 0xffc0) === 0xfec0 || // deprecated site-local fec0::/10
+    (first & 0xff00) === 0xff00 // multicast
   );
 }
 
