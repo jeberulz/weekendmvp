@@ -1219,6 +1219,8 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
     candidates: extraction.candidates,
     citations: acquisition.citations,
     sources: acquisition.inputs,
+    // Ruling R14: names the competitor citations confirm, beside the candidates' vendors.
+    vendorHints: acquisition.vendorHints,
   });
   state.accepted = accepted.accepted;
   state.rejected = [...extraction.rejected, ...accepted.rejected];

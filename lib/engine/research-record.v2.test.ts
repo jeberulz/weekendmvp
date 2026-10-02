@@ -81,7 +81,8 @@ const PAGES = {
     url: "https://news.ycombinator.com/item?id=27515468",
     title: "Ask HN: AI code review",
     roles: ["community"],
-    text: "Comment\nAll these small teams need is a quiet sanity check on every pull request.\nReply: agreed, the rest is noise.",
+    // Blocks joined by blank lines, as sourceText reads an HN item (ruling R14).
+    text: "Comment\n\nAll these small teams need is a quiet sanity check on every pull request.\n\nReply: agreed, the rest is noise.",
   },
   forum: {
     url: "https://forum.example.com/t/ai-review-noise",
@@ -93,7 +94,7 @@ const PAGES = {
     url: "https://lobste.rs/s/abc123/review_noise",
     title: "Review noise",
     roles: ["community"],
-    text: "Quoting HN\nAll these small teams need is a quiet sanity check on every pull request.",
+    text: "Quoting HN\n\nAll these small teams need is a quiet sanity check on every pull request.",
   },
   // Cited by the community search but never read (no text): unreadable.
   reddit: {

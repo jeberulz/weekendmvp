@@ -89,20 +89,31 @@
  *
  * SENTENCES AND CLAUSES
  *   Sentences end at . ! ? … followed by whitespace (closing quotes/brackets
- *   allowed in between) and at every line break. A "." after a single letter
- *   (U.S., J.) or a listed abbreviation (e.g., i.e., etc., vs., approx., est.,
- *   inc., ltd., co., corp., no., mr., dr., month names) does not end one.
+ *   allowed in between). A "." after a single letter (U.S., J.) or a listed
+ *   abbreviation (e.g., i.e., etc., vs., approx., est., inc., ltd., co.,
+ *   corp., no., mr., dr., month names) does not end one. Line breaks:
+ *     sentenceAround (stats and prices): every line break ends a sentence,
+ *       so a claim never binds across lines of a pricing table or report;
+ *     proseSentenceAround (quotes, ruling R14): a line break starts a
+ *       sentence only after terminal punctuation or at a blank line
+ *       ("\n[ \t]*\n", CRLF included, or a paragraph separator), so the
+ *       second line of a soft-wrapped sentence is not a sentence of its own.
  *   Clauses also split at "|", tabs, ";" and before the contrast words while,
  *   whereas, but, versus, vs, compared to/with.
  *
- * COMPARISONS AND BILLING (ruling R9)
+ * COMPARISONS AND BILLING (rulings R9 and R14)
  *   comparisonCueFor: unlike, than, instead, versus/vs, compare(d)/comparison,
- *   alternative(s), competitor(s)/competing, switch(ed) from/to/away anywhere
- *   in the sentence(s) of a price's clause. ambiguousBilling: the price's line
- *   plus PRICE_BLOCK_LINES_ABOVE (3) non-blank lines above it show an annual
- *   cue (annual, annually, yearly) and a monthly one (monthly, or the price
- *   itself per month), and the clause names neither billing; a per-year or
- *   one-time price states its own term; negated cues do not count.
+ *   alternative(s), competitor(s)/competing, switch(ed) from/to/away,
+ *   move(d)/migrate(d) to/from, replace(d) by/with anywhere in the
+ *   sentence(s) of a price's clause, or in the soft-wrapped line above it
+ *   (bindingWindowStart). ambiguousBilling (page-scoped, ruling R14): a
+ *   billing toggle line (only billing words: Monthly, Yearly, Annually,
+ *   Billed monthly/yearly, optionally "save N%") or an annual-billing phrase
+ *   (billed/paid annually, annual billing/plan/subscription/contract, …)
+ *   anywhere above a per-month price, or on its line, needs the price's
+ *   clause to state its billing; ordinary feature lines that mention
+ *   "annual" do not count, a per-year or one-time price states its own
+ *   term, and negated cues do not count.
  */
 
 import type {
@@ -594,11 +605,38 @@ function isRealTerminal(text: string, index: number): boolean {
   return !ABBREVIATIONS.has(token);
 }
 
+/** How line breaks bound sentences (see SENTENCES AND CLAUSES above). */
+type LineBreaks = "line" | "prose";
+
+const HORIZONTAL_SPACE_RE = /[ \t]/;
+
+/**
+ * True when the line break at `index` is part of a blank line: another line
+ * break follows or precedes it with only spaces and tabs between ("\r\n"
+ * counts as one break), or it is a paragraph separator.
+ */
+function isParagraphBreak(text: string, index: number): boolean {
+  const ch = at(text, index);
+  if (ch === "\u2029") return true;
+  let j = index + 1;
+  if (ch === "\r" && at(text, j) === "\n") j += 1;
+  while (j < text.length && HORIZONTAL_SPACE_RE.test(at(text, j))) j += 1;
+  if (j < text.length && NEWLINE_RE.test(at(text, j))) return true;
+  let k = index - 1;
+  if (ch === "\n" && at(text, k) === "\r") k -= 1;
+  while (k >= 0 && HORIZONTAL_SPACE_RE.test(at(text, k))) k -= 1;
+  return k >= 0 && NEWLINE_RE.test(at(text, k));
+}
+
+function breakEndsSentence(text: string, index: number, breaks: LineBreaks): boolean {
+  return breaks === "line" || isParagraphBreak(text, index);
+}
+
 /** End of the sentence that contains `index` (exclusive, untrimmed). */
-function sentenceEndFrom(text: string, index: number): number {
+function sentenceEndFrom(text: string, index: number, breaks: LineBreaks = "line"): number {
   for (let i = index; i < text.length; i += 1) {
     const ch = at(text, i);
-    if (NEWLINE_RE.test(ch)) return i;
+    if (NEWLINE_RE.test(ch) && breakEndsSentence(text, i, breaks)) return i;
     if (!TERMINAL_RE.test(ch)) continue;
     let j = i + 1;
     while (j < text.length && (TERMINAL_RE.test(at(text, j)) || CLOSER_RE.test(at(text, j)))) j += 1;
@@ -610,10 +648,10 @@ function sentenceEndFrom(text: string, index: number): number {
 }
 
 /** Start of the sentence that contains `index` (inclusive, untrimmed). */
-function sentenceStartFrom(text: string, index: number): number {
+function sentenceStartFrom(text: string, index: number, breaks: LineBreaks = "line"): number {
   for (let i = Math.min(index, text.length) - 1; i >= 0; i -= 1) {
     const ch = at(text, i);
-    if (NEWLINE_RE.test(ch)) return i + 1;
+    if (NEWLINE_RE.test(ch) && breakEndsSentence(text, i, breaks)) return i + 1;
     if (!SPACE_RE.test(ch)) continue;
     let k = i - 1;
     while (k >= 0 && CLOSER_RE.test(at(text, k))) k -= 1;
@@ -633,10 +671,19 @@ function trimmedRange(text: string, start: number, end: number): TextRange {
   return { start: s, end: e, text: text.slice(s, e) };
 }
 
-/** The sentence containing `index` (see SENTENCES AND CLAUSES above). */
+/** The sentence containing `index`; every line break ends one (see SENTENCES AND CLAUSES above). */
 export function sentenceAround(text: string, index: number): TextRange {
   const i = Math.max(0, Math.min(index, text.length));
   return trimmedRange(text, sentenceStartFrom(text, i), sentenceEndFrom(text, i));
+}
+
+/**
+ * Ruling R14: the sentence containing `index` when a line break starts a
+ * sentence only after terminal punctuation or at a blank line (quotes).
+ */
+export function proseSentenceAround(text: string, index: number): TextRange {
+  const i = Math.max(0, Math.min(index, text.length));
+  return trimmedRange(text, sentenceStartFrom(text, i, "prose"), sentenceEndFrom(text, i, "prose"));
 }
 
 /** Every sentence of `text`, in order. */
@@ -1056,35 +1103,102 @@ export function comparePriceTerms(candidate: PriceTerms, source: PriceTerms): Re
 // ---------------------------------------------------------------------------
 
 /**
- * Words that make a sentence compare vendors (ruling R9): unlike, than,
- * instead (of), rather than, versus/vs, compare(d)/comparison,
- * alternative(s), competitor(s)/competing, switch(ed) from/to/away.
+ * Words that make a sentence compare vendors (rulings R9 and R14): unlike,
+ * than, instead (of), rather than, versus/vs, compare(d)/comparison,
+ * alternative(s), competitor(s)/competing, switch(ed) from/to/away,
+ * move(d)/migrate(d) to/from, replace(d) by/with. ("after" and "over" count
+ * only before a brand-like name; accept.ts checks those.)
  */
 const COMPARISON_CUE_RE =
-  /(?<![\p{L}\p{N}])(?:unlike|than|instead|versus|vs\.?|compar(?:e|ed|es|ing|ison|isons)|alternatives?|competitors?|competing|switch(?:es|ed|ing)?[ \t\u00A0]+(?:from|to|away))(?![\p{L}\p{N}])/iu;
+  /(?<![\p{L}\p{N}])(?:unlike|than|instead|versus|vs\.?|compar(?:e|ed|es|ing|ison|isons)|alternatives?|competitors?|competing|switch(?:es|ed|ing)?[ \t\u00A0]+(?:from|to|away)|mov(?:e|es|ed|ing)[ \t\u00A0]+(?:to|from)|migrat(?:e|es|ed|ing)[ \t\u00A0]+(?:to|from)|replac(?:e|es|ed|ing)[ \t\u00A0]+(?:by|with))(?![\p{L}\p{N}])/iu;
+
+/** A line that a sentence runs on from: it ends in , ; : or a dash. */
+const SOFT_WRAP_END_RE = /[,;:\-–—][ \t\u00A0]*$/u;
 
 /**
- * The comparison cue in the sentence(s) a price expression's clause spans,
- * lowercased with single spaces, or null. The whole sentence counts, not
- * only the clause: "versus" and "compared to" also split clauses, so the
- * cue would otherwise always sit in the neighbouring clause.
+ * Ruling R14: where the text that binds a price begins. Its clause start;
+ * or, when the clause starts its line and the line above runs on into it
+ * (that line ends in , ; : or a dash, or this one starts in lowercase), the
+ * start of that line's last clause.
  */
-export function comparisonCueFor(text: string, expression: { clauseStart: number; clauseEnd: number }): string | null {
-  const start = sentenceAround(text, expression.clauseStart).start;
-  const end = sentenceAround(text, Math.max(expression.clauseStart, expression.clauseEnd - 1)).end;
-  const m = COMPARISON_CUE_RE.exec(text.slice(start, end));
-  return m ? m[0].toLowerCase().replace(/\s+/g, " ") : null;
+export function bindingWindowStart(text: string, expression: { start: number; clauseStart: number }): number {
+  const own = lineAround(text, expression.start);
+  if (text.slice(own.start, expression.clauseStart).trim() !== "") return expression.clauseStart;
+  const above = lineAbove(text, own.start);
+  if (!above) return expression.clauseStart;
+  const aboveText = text.slice(above.start, above.end);
+  const ownFirst = text.slice(expression.clauseStart).trimStart().charAt(0);
+  const startsLower = ownFirst !== "" && ownFirst !== ownFirst.toUpperCase();
+  if (!SOFT_WRAP_END_RE.test(aboveText) && !startsLower) return expression.clauseStart;
+  const lastNonSpace = above.start + aboveText.trimEnd().length - 1;
+  return Math.min(expression.clauseStart, clauseAround(text, Math.max(above.start, lastNonSpace)).start);
 }
 
 /**
- * The block of a price (ruling R9, ambiguous billing): its own line plus up
- * to this many non-blank lines directly above it. A pricing toggle or an
- * "all plans are billed annually" line usually sits there.
+ * The comparison cue in the sentence(s) a price expression's clause spans
+ * (and the soft-wrapped line above it, bindingWindowStart), lowercased with
+ * single spaces, or null. The whole sentence counts, not only the clause:
+ * "versus" and "compared to" also split clauses, so the cue would otherwise
+ * always sit in the neighbouring clause.
+ */
+export function comparisonCueFor(
+  text: string,
+  expression: { start: number; clauseStart: number; clauseEnd: number },
+): string | null {
+  const range = comparisonRange(text, expression);
+  const m = COMPARISON_CUE_RE.exec(text.slice(range.start, range.end));
+  return m ? m[0].toLowerCase().replace(/\s+/g, " ") : null;
+}
+
+/** Where comparison cues count for a price: its clause's sentence(s) and the soft-wrapped line above. */
+export function comparisonRange(
+  text: string,
+  expression: { start: number; clauseStart: number; clauseEnd: number },
+): { start: number; end: number } {
+  const start = Math.min(sentenceAround(text, expression.clauseStart).start, bindingWindowStart(text, expression));
+  const end = sentenceAround(text, Math.max(expression.clauseStart, expression.clauseEnd - 1)).end;
+  return { start, end };
+}
+
+/**
+ * The block of a price (ruling R9): its own line plus up to this many
+ * non-blank lines directly above it. Billing phrases on lines that hold a
+ * price (another plan's "$12/month, billed annually") count only here;
+ * toggles and price-free billing lines count anywhere above (ruling R14).
  */
 export const PRICE_BLOCK_LINES_ABOVE = 3;
 
-const ANNUAL_CUE_RE = /(?<![\p{L}])(?:annual|annually|yearly)(?![\p{L}])/giu;
-const MONTHLY_CUE_RE = /(?<![\p{L}])monthly(?![\p{L}])/giu;
+/** Billing words a toggle line may hold (ruling R14). */
+const TOGGLE_WORDS: ReadonlySet<string> = new Set([
+  "monthly", "yearly", "annually", "annual", "billed", "billing", "bill", "pay", "paid", "month", "months", "year", "years",
+]);
+/** A savings note a toggle may carry: "(save 20%)", "save up to 15%", "-20%", "20% off", "2 months free". */
+const TOGGLE_SAVINGS_RE =
+  /\(?[ \t\u00A0]*(?:(?:save|get)[ \t\u00A0]+(?:up[ \t\u00A0]+to[ \t\u00A0]+)?\d{1,3}(?:\.\d+)?[ \t\u00A0]?%(?:[ \t\u00A0]+off)?|-?\d{1,3}(?:\.\d+)?[ \t\u00A0]?%(?:[ \t\u00A0]+off)?|(?:\d|one|two|three)[ \t\u00A0]+months?[ \t\u00A0]+free)[ \t\u00A0]*\)?/giu;
+const ANNUAL_WORD_RE = /(?<![\p{L}])(?:annual|annually|yearly)(?![\p{L}])/iu;
+const MONTHLY_WORD_RE = /(?<![\p{L}])monthly(?![\p{L}])/iu;
+
+/**
+ * Ruling R14: a standalone billing toggle line — only billing words such as
+ * Monthly, Yearly, Annually, Billed monthly/yearly, Pay yearly (at most six),
+ * optionally with a savings note — and which billings it names; else null.
+ */
+function billingToggle(line: string): { annual: boolean; monthly: boolean } | null {
+  const rest = line.replace(TOGGLE_SAVINGS_RE, " ");
+  if (/\p{N}/u.test(rest)) return null;
+  const words = rest.toLowerCase().match(/\p{L}+/gu) ?? [];
+  if (words.length === 0 || words.length > 6 || !words.every((w) => TOGGLE_WORDS.has(w))) return null;
+  const annual = ANNUAL_WORD_RE.test(rest);
+  const monthly = MONTHLY_WORD_RE.test(rest);
+  return annual || monthly ? { annual, monthly } : null;
+}
+
+/** Phrases that state annual billing outside a toggle (ruling R14); a bare "annual" in a feature line is not one. */
+const ANNUAL_BILLING_RE =
+  /(?<![\p{L}])(?:(?:billed|paid|pay|charged|invoiced)[ \t\u00A0]+(?:annually|yearly|per[ \t\u00A0]+year|each[ \t\u00A0]+year|once[ \t\u00A0]+a[ \t\u00A0]+year)|(?:annual|yearly)[ \t\u00A0]+(?:billing|plans?|subscriptions?|contracts?|commitments?|payments?|pricing|terms?))(?![\p{L}])/giu;
+/** Phrases that state monthly billing outside a toggle. */
+const MONTHLY_BILLING_RE =
+  /(?<![\p{L}])(?:(?:billed|paid|pay|charged|invoiced)[ \t\u00A0]+monthly|monthly[ \t\u00A0]+(?:billing|plans?|subscriptions?|payments?|pricing|terms?)|month[- ]to[- ]month)(?![\p{L}])/giu;
 
 /** [start, end) of the line holding `index` (line breaks excluded). */
 export function lineAround(text: string, index: number): { start: number; end: number } {
@@ -1115,14 +1229,35 @@ function hasBillingCue(re: RegExp, text: string): boolean {
   return false;
 }
 
+/** A currency amount on a line (it holds a price, so its billing words may be that price's qualifier). */
+const LINE_PRICE_RE = /[$€£][ \u00A0]?\d|\d[ \u00A0]?(?:USD|EUR|GBP|CAD|AUD)(?![\p{L}])|(?:USD|EUR|GBP|CAD|AUD)[ \u00A0]?\d/u;
+
 /**
- * Ruling R9: why a price's billing is ambiguous, or null. When the price's
- * block (its line and PRICE_BLOCK_LINES_ABOVE non-blank lines above) shows
- * both an annual cue (annual, annually, yearly) and a monthly one (monthly,
- * or the price itself being per month) and the price's clause states
- * neither billed annually nor billed monthly, a reader cannot tell which
- * billing the figure is. A per-year or one-time price states its own term.
- * Negated cues ("no annual contract") do not count.
+ * Which billings a line names: a toggle's words, or annual/monthly billing
+ * phrases (negated ones aside) — on a line that holds a price only when
+ * `withPrices` (the price's own block).
+ */
+function billingCues(line: string, withPrices: boolean): { annual: boolean; monthly: boolean } {
+  const toggle = billingToggle(line);
+  if (toggle) return toggle;
+  if (!withPrices && LINE_PRICE_RE.test(line)) return { annual: false, monthly: false };
+  return { annual: hasBillingCue(ANNUAL_BILLING_RE, line), monthly: hasBillingCue(MONTHLY_BILLING_RE, line) };
+}
+
+const LINE_SPLIT_RE = /\r\n|[\n\r\u2028\u2029]/u;
+
+/**
+ * Rulings R9 and R14: why a price's billing is ambiguous, or null. Annual
+ * billing shows when a billing toggle line or a price-free annual-billing
+ * line ("All plans are billed annually.") stands anywhere above the price,
+ * or an annual-billing phrase stands in its block (its line and
+ * PRICE_BLOCK_LINES_ABOVE lines above, where another price's "billed
+ * annually" counts too). When it shows and the price is per month (or the
+ * page shows monthly billing too) and the price's clause states neither
+ * billed annually nor billed monthly, a reader cannot tell which billing
+ * the figure is. A per-year or one-time price states its own term; feature
+ * lines that mention "annual" and negated cues ("no annual contract") do
+ * not count. Acceptance reads the page, re-validation the excerpt.
  */
 export function ambiguousBilling(text: string, expression: PriceExpression): string | null {
   const { qualifiers, period } = expression.terms;
@@ -1135,12 +1270,21 @@ export function ambiguousBilling(text: string, expression: PriceExpression): str
     line = lineAbove(text, line.start);
     if (line) blockStart = line.start;
   }
-  const block = text.slice(blockStart, own.end);
-  const lines = block.split(/[\n\r\u2028\u2029]+/);
-  const annual = lines.some((l) => hasBillingCue(ANNUAL_CUE_RE, l));
-  const monthly = period === "month" || lines.some((l) => hasBillingCue(MONTHLY_CUE_RE, l));
+  let annual = false;
+  let monthly = period === "month";
+  const scopes: Array<[string, boolean]> = [
+    [text.slice(0, blockStart), false],
+    [text.slice(blockStart, own.end), true],
+  ];
+  for (const [scope, withPrices] of scopes) {
+    for (const each of scope.split(LINE_SPLIT_RE)) {
+      const cues = billingCues(each, withPrices);
+      annual ||= cues.annual;
+      monthly ||= cues.monthly;
+    }
+  }
   if (!annual || !monthly) return null;
-  return "ambiguous billing: the price's block shows both monthly and annual billing and its clause states neither (ruling R9)";
+  return "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)";
 }
 
 const QUALIFIER_LABEL: Record<Exclude<PriceQualifier, "starting_at">, string> = {

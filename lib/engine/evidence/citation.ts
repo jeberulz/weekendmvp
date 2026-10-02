@@ -136,7 +136,7 @@ export function vendorKey(name: string): string {
 }
 
 /** The label left of the public suffix ("loopio" for app.loopio.co.uk), or null. */
-function registrableLabel(url: string): string | null {
+export function registrableLabel(url: string): string | null {
   const parsed = parseUrl(url);
   if (!parsed) return null;
   const host = parsed.hostname.toLowerCase().replace(/\.$/, "");

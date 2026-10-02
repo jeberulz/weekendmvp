@@ -132,23 +132,25 @@ export const FIXTURE_PAGES: Readonly<Record<string, string>> = {
     "$25/user/month",
     "Shared library and review workflow.",
   ].join("\n"),
-  // One comment per line, each starting with a space, as sourceText reads an HN item.
+  // Title and comments joined by blank lines, as sourceText reads an HN item
+  // (ruling R14: a line break starts a sentence only after terminal
+  // punctuation or at a blank line, so blocks are separated by blank lines).
   [FIXTURE_URLS.hnThread]: [
     "Ask: how do small sales teams handle RFPs and security questionnaires?",
-    " We burn weekends answering the same security questionnaire for every enterprise deal.",
-    " Our answers live in five spreadsheets and nobody knows which version legal approved.",
-    " The big proposal tools assume you have a proposal team, and we are three sales engineers.",
-  ].join("\n"),
+    "We burn weekends answering the same security questionnaire for every enterprise deal.",
+    "Our answers live in five spreadsheets and nobody knows which version legal approved.",
+    "The big proposal tools assume you have a proposal team, and we are three sales engineers.",
+  ].join("\n\n"),
   [FIXTURE_URLS.forumThread]: [
     "Topic: Security questionnaires every quarter",
     "I paste the same SOC 2 answers into a new portal every quarter and still miss a question.",
     "Generic chat tools invent controls we do not have, so legal rejects the draft.",
-  ].join("\n"),
+  ].join("\n\n"),
   [FIXTURE_URLS.supplementThread]: [
     "Topic: Questionnaire portals",
     "Every buyer uses a different portal, so we retype the same approved answers again and again.",
     "The answers exist, but finding the version legal signed off on takes longer than writing them.",
-  ].join("\n"),
+  ].join("\n\n"),
 };
 
 /** Named source-page sets for fixture briefs (engine/briefs/*.json `fixtureScenario`). */

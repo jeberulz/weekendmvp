@@ -31,7 +31,7 @@ import {
   type EditorialEvidenceItem,
   type RunResearchOptions,
 } from "./pipeline.ts";
-import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, type ExtractionSource } from "./pipeline-sources.ts";
+import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, vendorHintsFromCitations, type ExtractionSource } from "./pipeline-sources.ts";
 import { stepById } from "./pipeline-steps.ts";
 import {
   extractionWith,
@@ -39,6 +39,7 @@ import {
   F5_PACKS,
   F5_PAGES,
   F5_ROWS,
+  packsWith,
   REJECTED_FRAGMENTS,
 } from "./__fixtures__/scenarios.ts";
 import {
@@ -825,5 +826,47 @@ describe("writer instructions (ruling R13)", () => {
   it("names only examples the guards accept as names", () => {
     expect(findUnboundFigures("SOC 2, ISO 27001, Next.js 15, OAuth 2.0, B2B, GPT-4o, don't, teams'")).toEqual([]);
     expect(findQuotedSpans("Apostrophes in words such as don't and the teams' answers are fine.")).toEqual([]);
+  });
+});
+
+describe("R14: vendor hints from the competitor citations", () => {
+  it("names the brand a competitor citation's title shares with its own host, and nothing from listing sites", () => {
+    const competitors = (url: string, title: string) => ({ url, title, roles: ["competitors" as const] });
+    expect(
+      vendorHintsFromCitations([
+        competitors("https://www.coderabbit.ai/pricing", "CodeRabbit pricing"),
+        competitors("https://responsive.example/pricing", "Pricing | Responsive"),
+        competitors("https://answerdeck.example/pricing", "Answer Deck plans"),
+        competitors("https://blog.example.com/rfp-tools", "Best RFP tools this year"),
+        competitors("https://www.g2.com/products/loopio/reviews", "Loopio Reviews 2026 | G2"),
+        competitors("https://apps.shopify.com/rfp-helper", "RFP Helper - Shopify App Store"),
+        { url: "https://loopio.example/blog", title: "Loopio blog", roles: ["market" as const] },
+      ]),
+    ).toEqual(["CodeRabbit", "Responsive", "Answer Deck"]);
+  });
+
+  it("refuses a price claimed for one vendor from another cited vendor's own pricing page (ruling R5 with hints)", async () => {
+    const responsive = "https://responsive.example/pricing";
+    const h = harness({
+      pages: { ...FIXTURE_PAGES, [responsive]: "Responsive pricing\nPlans\nBidwell costs $49/user/month, billed annually." },
+      packs: packsWith({ competitors: [{ url: responsive, title: "Responsive pricing" }] }),
+      synthesis: {
+        extraction: extractionWith({
+          competitorPrices: [
+            {
+              vendor: "Bidwell",
+              sourceUrl: responsive,
+              supportingText: "Bidwell costs $49/user/month, billed annually.",
+              priceText: "$49/user/month, billed annually",
+            },
+          ],
+        }),
+      },
+    });
+    const { record } = await run(h);
+    expect(record.evidence.accepted.some((e) => e.sourceUrl === responsive)).toBe(false);
+    expect(record.evidence.rejected).toContainEqual(
+      expect.objectContaining({ kind: "competitor_price", reason: "ambiguous_attribution", sourceUrl: responsive }),
+    );
   });
 });

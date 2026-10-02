@@ -14,6 +14,7 @@ import {
   parseAmount,
   parsePriceTerms,
   priceToCents,
+  proseSentenceAround,
   sentenceAround,
   splitSentences,
 } from "./amount.ts";
@@ -368,6 +369,21 @@ describe("sentences, clauses and projection cues", () => {
       "Done!",
     ]);
     expect(sentenceAround(text, text.indexOf("$5B")).text).toBe("It will reach $5B by 2030; analysts agree.");
+  });
+
+  it("reads prose sentences across soft line breaks, ending them only at terminal punctuation or a blank line (ruling R14)", () => {
+    const wrapped = "Honestly, I would never say that\nsecurity questionnaires are the bottleneck.\nWe answer them fast.";
+    expect(proseSentenceAround(wrapped, wrapped.indexOf("security")).text).toBe(
+      "Honestly, I would never say that\nsecurity questionnaires are the bottleneck.",
+    );
+    expect(proseSentenceAround(wrapped, wrapped.indexOf("We answer")).text).toBe("We answer them fast.");
+    expect(sentenceAround(wrapped, wrapped.indexOf("security")).text).toBe("security questionnaires are the bottleneck.");
+    for (const gap of ["\n\n", "\n \t\n", "\r\n\r\n", "\n\n\n", "\u2029"]) {
+      const text = `Topic: questionnaires${gap}We answer every one by hand.`;
+      expect(proseSentenceAround(text, text.indexOf("We")).text, JSON.stringify(gap)).toBe("We answer every one by hand.");
+    }
+    const crlf = "Topic: questionnaires\r\nWe answer every one by hand.";
+    expect(proseSentenceAround(crlf, crlf.indexOf("We")).text).toBe(crlf);
   });
 
   it("ends a sentence after a magnitude letter", () => {
