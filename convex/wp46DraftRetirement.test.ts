@@ -8,6 +8,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { selectLibrary, type RankedCard } from "./platform/libraryResults";
+import { capabilityExpiresAt, generateCapabilityToken, hashCapabilityToken } from "./platform/preview/capabilities";
+import { normalizePreviewCustomisation, toSiteInput } from "./platform/preview/customisation";
+import { SITE_RENDER_SPEC_CONTRACT_VERSION, serializeSiteRenderSpec } from "./platform/preview/renderSpec";
 import schema from "./schema";
 
 /**
@@ -143,6 +146,15 @@ const ORDINARY: SeedItem[] = [
   }),
 ];
 const ORDINARY_NEWEST_FIRST = ["ai-code-reviewer", "rfp-desk", "shop-page-builder"];
+
+/** What a visitor typed into the anonymous preview form. */
+const PREVIEW_CUSTOMISATION = {
+  headline: "Review every pull request calmly",
+  subheadline: "Repository-aware review for small teams.",
+  problemStatement: "Small teams merge risky diffs because review queues pile up.",
+  keyBenefits: ["Flags the risky lines first"],
+  callToAction: "Get early access",
+};
 
 function slugsOf(rows: ReadonlyArray<{ slug: string }>) {
   return rows.map((row) => row.slug);
@@ -673,13 +685,7 @@ describe("anonymous preview generation", () => {
       slug,
       templateId: "editorial",
       clientKey: "ip:203.0.113.7",
-      customisation: {
-        headline: "Review every pull request calmly",
-        subheadline: "Repository-aware review for small teams.",
-        problemStatement: "Small teams merge risky diffs because review queues pile up.",
-        keyBenefits: ["Flags the risky lines first"],
-        callToAction: "Get early access",
-      },
+      customisation: PREVIEW_CUSTOMISATION,
     });
     await expect(
       t.mutation(api.platform.preview.generate.generateFromBridge, await sign(body(REVIEWER_DRAFT))),
@@ -690,5 +696,113 @@ describe("anonymous preview generation", () => {
       await sign(body("ai-code-reviewer")),
     );
     expect(token).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
+
+describe("claiming a preview minted before the drafts retired (review P3-13)", () => {
+  /**
+   * A capability exactly as `generateFromBridge` stored one before the
+   * backend deploy. That bridge had no draft guard and a capability lives
+   * 7 days, so one minted for a draft can still be live after the deploy.
+   */
+  async function mintPreview(t: TestConvex<typeof schema>, sourceIdeaId: Id<"ideas">) {
+    const token = generateCapabilityToken();
+    const tokenHash = await hashCapabilityToken(token);
+    const now = Date.now();
+    const capabilityId = await t.run((ctx) =>
+      ctx.db.insert("preview_capabilities", {
+        tokenHash,
+        sourceIdeaId,
+        templateId: "editorial",
+        renderSpec: serializeSiteRenderSpec({
+          contractVersion: SITE_RENDER_SPEC_CONTRACT_VERSION,
+          templateId: "editorial",
+          siteInput: toSiteInput(normalizePreviewCustomisation(PREVIEW_CUSTOMISATION)),
+        }),
+        expiresAt: capabilityExpiresAt(now),
+        createdAt: now,
+      }),
+    );
+    return { token, capabilityId };
+  }
+
+  /** The claim's error message, or "claimed" when it went through. */
+  async function claimOutcome(member: ReturnType<typeof asUser>, token: string): Promise<string> {
+    try {
+      await member.mutation(api.platform.preview.claim.claim, { token });
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error);
+    }
+    return "claimed";
+  }
+
+  async function ownedGraphRows(t: TestConvex<typeof schema>) {
+    return await t.run(async (ctx) => ({
+      projects: (await ctx.db.query("projects").take(10)).length,
+      documents: (await ctx.db.query("documents").take(10)).length,
+      siteConfigs: (await ctx.db.query("site_configs").take(10)).length,
+      siteVersions: (await ctx.db.query("site_versions").take(10)).length,
+    }));
+  }
+
+  test("a draft's preview is refused like an unknown token and its capability is left untouched", async () => {
+    const t = convexTest(schema, modules);
+    await seedThenReseedWithoutDrafts(t);
+    const member = asUser(t, await seedUser(t, "claimer@example.test"));
+    const { token, capabilityId } = await mintPreview(t, await ideaId(t, REVIEWER_DRAFT));
+    const before = await t.run((ctx) => ctx.db.get("preview_capabilities", capabilityId));
+
+    const refused = await claimOutcome(member, token);
+    expect(refused).toContain("RESOURCE_NOT_FOUND");
+    // One shape for every refusal: a draft reads exactly like a token that never existed.
+    expect(refused).toBe(await claimOutcome(member, generateCapabilityToken()));
+
+    expect(await ownedGraphRows(t)).toEqual({ projects: 0, documents: 0, siteConfigs: 0, siteVersions: 0 });
+    // Not claimed, deleted or rewritten: the row is exactly as it was.
+    expect(await t.run((ctx) => ctx.db.get("preview_capabilities", capabilityId))).toEqual(before);
+    // Refusing again is stable, and still writes nothing.
+    expect(await claimOutcome(member, token)).toBe(refused);
+    expect((await ownedGraphRows(t)).projects).toBe(0);
+  });
+
+  test("an ordinary idea's in-flight preview still claims into a new project (WP44 R5)", async () => {
+    const t = convexTest(schema, modules);
+    await seedThenReseedWithoutDrafts(t);
+    const member = asUser(t, await seedUser(t, "claimer@example.test"));
+    const ordinaryId = await ideaId(t, "ai-code-reviewer");
+    const { token, capabilityId } = await mintPreview(t, ordinaryId);
+
+    const graph = await member.mutation(api.platform.preview.claim.claim, { token });
+    expect(graph.created).toBe(true);
+    expect(await t.run((ctx) => ctx.db.get("projects", graph.projectId))).toMatchObject({
+      source: "repository_idea",
+      sourceIdeaId: ordinaryId,
+      status: "draft",
+    });
+    expect(await t.run((ctx) => ctx.db.get("preview_capabilities", capabilityId))).toMatchObject({
+      claimedProjectId: graph.projectId,
+    });
+    expect(await ownedGraphRows(t)).toEqual({ projects: 1, documents: 1, siteConfigs: 1, siteVersions: 1 });
+  });
+
+  test("a claim made before the retirement replays to the same project, but no new claim starts", async () => {
+    const t = convexTest(schema, modules);
+    await seedThenReseedWithoutDrafts(t);
+    const owner = asUser(t, await seedUser(t, "owner@example.test"));
+    const other = asUser(t, await seedUser(t, "other@example.test"));
+    const shopId = await ideaId(t, "shop-page-builder");
+    const { token } = await mintPreview(t, shopId);
+    const claimed = await owner.mutation(api.platform.preview.claim.claim, { token });
+    // The idea later turns out to be an engine draft (same row, draft slug).
+    await t.run((ctx) => ctx.db.patch("ideas", shopId, { slug: "engine-draft-shop-page-builder" }));
+
+    // The member's existing project is their work: a retried claim still finds it.
+    expect(await owner.mutation(api.platform.preview.claim.claim, { token })).toEqual({ ...claimed, created: false });
+    expect(await claimOutcome(other, token)).toContain("RESOURCE_NOT_FOUND");
+    // A second, unclaimed preview of the same idea starts nothing for anyone.
+    const { token: second } = await mintPreview(t, shopId);
+    expect(await claimOutcome(owner, second)).toContain("RESOURCE_NOT_FOUND");
+    expect(await claimOutcome(other, second)).toContain("RESOURCE_NOT_FOUND");
+    expect(await ownedGraphRows(t)).toEqual({ projects: 1, documents: 1, siteConfigs: 1, siteVersions: 1 });
   });
 });

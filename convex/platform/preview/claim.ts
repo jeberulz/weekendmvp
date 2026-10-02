@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
+import { isEngineDraftSlug } from "../catalogPolicy";
 import { resolveCapability } from "./capabilities";
 import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
@@ -18,10 +19,11 @@ import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
  * 2. **Exactly once.** A capability yields one project graph no matter how
  *    many times, or how concurrently, the claim is called.
  * 3. **One generic denial.** An expired capability, an unknown token, a
- *    malformed token, and a capability belonging to somebody else all raise
- *    the same `RESOURCE_NOT_FOUND` that `platform/authz.ts` uses everywhere
- *    else. A caller must not be able to tell "someone else owns this" from
- *    "this never existed".
+ *    malformed token, a capability belonging to somebody else, and a new
+ *    claim on a retired engine draft's preview (WP46-S5) all raise the same
+ *    `RESOURCE_NOT_FOUND` that `platform/authz.ts` uses everywhere else. A
+ *    caller must not be able to tell "someone else owns this" from "this
+ *    never existed".
  *
  * Reading is deliberately *not* restricted after a claim. S1 ruled that a
  * claimed capability still resolves while unexpired so the visitor can reload
@@ -59,6 +61,20 @@ const claimedGraphValidator = v.object({
   siteVersionId: v.id("site_versions"),
   created: v.boolean(),
 });
+
+/**
+ * WP46-S5 (review P3-13, ruling 2026-10-01): no new repository project starts
+ * from an engine draft. The bridge stopped minting draft previews at the
+ * backend deploy, but a capability minted before it stays live for up to
+ * 7 days, so the claim checks the source idea itself.
+ */
+async function sourceIsEngineDraft(
+  ctx: MutationCtx,
+  sourceIdeaId: Id<"ideas">,
+): Promise<boolean> {
+  const idea = await ctx.db.get("ideas", sourceIdeaId);
+  return idea !== null && isEngineDraftSlug(idea.slug);
+}
 
 function projectTitle(spec: SiteRenderSpec): string {
   const headline = spec.siteInput.headline.trim();
@@ -232,6 +248,14 @@ export const claim = mutation({
         });
       }
       return graph;
+    }
+
+    // A retry above still returns a project the member already holds, as
+    // repository intake does. A new one never starts from a draft: refused
+    // with the unknown-token denial, before any write, so the capability
+    // stays exactly as it was.
+    if (await sourceIsEngineDraft(ctx, capability.sourceIdeaId)) {
+      return denyNotFound();
     }
 
     return await createGraph(ctx, user._id, capability, idempotencyKey, now);
