@@ -231,7 +231,7 @@ function redactSegment(segment: string, afterSecretName: boolean): string {
   const cut = segment.search(/[;=]/);
   if (cut !== -1) {
     const name = segment.slice(0, cut);
-    return `${looksLikeCredential(name) ? "…" : name}${segment[cut]}…`;
+    return `${looksLikeCredential(name) ? "…" : name}${segment.charAt(cut)}…`;
   }
   return looksLikeCredential(segment) ? "…" : segment;
 }

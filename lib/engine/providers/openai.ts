@@ -138,7 +138,8 @@ export function createSynthesisProvider(
           }),
         });
       } catch {
-        // No reply arrived, so nothing was billed.
+        // No reply: treated as unbilled, as before. A request lost after the
+        // provider had run it is the one case this undercounts.
         throw new ProviderCallError("synthesis", "request failed", {
           retryable: true,
         });
