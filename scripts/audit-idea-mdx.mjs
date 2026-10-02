@@ -7,10 +7,11 @@
  * slug shape, and MDX JSX traps. Exit 0 on pass, 1 on any failure (2 on a
  * usage error).
  *
- * Engine pages (manifest source engine:*, engine-draft-* drafts in
- * engine/drafts/, or any page audited with --record) also get the deep bar,
- * which audits the final artifact against its contract v2 research record
- * (lib/engine/artifact-audit.ts) — see the --help text. Imports TypeScript
+ * Engine pages (frontmatter `engine: true`, manifest source engine:*,
+ * engine-draft-* drafts in engine/drafts/, or any page audited with
+ * --record) also get the deep bar, which audits the final artifact against
+ * its contract v2 research record (lib/engine/artifact-audit.ts) — see the
+ * --help text. Imports TypeScript
  * modules, so run it with `node --experimental-strip-types` (npm run audit:idea).
  *
  * Usage:
@@ -110,11 +111,25 @@ function manifestRowFor(slug, manifestPath) {
 /**
  * Engine pages get the full deep bar: engine-draft-* spot checks and every
  * published page whose manifest source is `engine:*`. Legacy hand-written
- * and Ideabrowser pages keep the base contract.
+ * and Ideabrowser pages keep the base contract. auditIdeaFile also applies
+ * the deep bar to a page whose frontmatter carries the engine marker
+ * (hasEngineMarker), whatever its slug and manifest row say.
  */
 export function isEnginePage(slug, row = manifestRows().get(slug)) {
   if (isEngineDraftSlug(slug)) return true;
   return typeof row?.source === "string" && row.source.startsWith("engine:");
+}
+
+const ENGINE_MARKER_RE = /^engine[ \t]*:[ \t]*(["']?)true\1[ \t]*(?:#.*)?$/im;
+
+/**
+ * True when the page's own frontmatter marks it as compiler output
+ * (`engine: true`, which engine:compile writes). A page renamed out of the
+ * engine-draft- namespace or published without an `engine:` manifest source
+ * still carries it, so it keeps the deep bar (P3-8).
+ */
+export function hasEngineMarker(raw) {
+  return ENGINE_MARKER_RE.test(splitFrontmatter(raw).frontmatter);
 }
 
 /** content/ideas/{slug}.mdx, else engine/drafts/{slug}.mdx. */
@@ -302,8 +317,10 @@ function withoutQuoteLines(prose) {
  * @param {string} [slugHint]
  * @param {{ recordPath?: string, engine?: boolean, otherBodies?: Record<string, string>, manifestPath?: string }} [options]
  *   recordPath: the page's research record (else engine/records/…);
- *   engine: force (true) or skip (false) the deep bar instead of looking the
- *   slug up in the manifests; otherBodies: sibling bodies for the cross-idea
+ *   engine: true forces the deep bar (--record); without it the page gets the
+ *   deep bar when its frontmatter marker, its manifest source or an
+ *   engine-draft- slug says engine, and nothing skips it then; otherBodies:
+ *   sibling bodies for the cross-idea
  *   check (defaults to every other engine page on disk); manifestPath: read
  *   the page's manifest row from this manifest instead of the repository's
  *   (its highlights and research mode are checked against the record).
@@ -402,7 +419,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   const wordCount = countWords(body);
   const manifest = manifestRowFor(slug, options.manifestPath);
   if (manifest.error) errors.push(manifest.error);
-  const deep = options.engine ?? isEnginePage(slug, manifest.row);
+  const deep = options.engine === true || hasEngineMarker(raw) || isEnginePage(slug, manifest.row);
   if (deep) {
     if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
       errors.push(
@@ -671,14 +688,14 @@ const HELP = `Usage:
   --json      one JSON result per audited page on stdout
   Exit codes: 0 every page passed, 1 any page failed, 2 usage error.
 
-Engine pages (manifest source engine:*, engine-draft-* drafts in
-engine/drafts/, or --record) get the deep bar: ≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock
-filler, no duplicate ≥8-word sentences (in-page or across engine pages),
-named How-it-works steps, niche sizing, four prompts with real content and
-an idea-specific schema, number-first unit economics, and the final
-artifact audit against the contract v2 record (engine/records/{slug}.json
-or --record; a legacy v1 record fails with a re-research message). The page
-holds only audited facts (ruling R10):
+Engine pages (frontmatter engine: true, manifest source engine:*,
+engine-draft-* drafts in engine/drafts/, or --record) get the deep bar:
+≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock filler, no duplicate ≥8-word sentences (in-page or
+across engine pages), named How-it-works steps, niche sizing, four prompts
+with real content and an idea-specific schema, number-first unit economics,
+and the final artifact audit against the contract v2 record
+(engine/records/{slug}.json or --record; a legacy v1 record fails with a
+re-research message). The page holds only audited facts (ruling R10):
   - structure: no JSX, HTML, images, footnotes, link definitions or raw
     evidence tokens; fenced code only in the build prompts; nothing before
     ## The Problem or after ## Sources; the proposal and assumption labels

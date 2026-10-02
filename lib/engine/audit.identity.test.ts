@@ -21,6 +21,7 @@ import {
   auditPage,
   cleanupTempDirs,
   compiledPage,
+  loadAuditor,
   pageBody,
   REPO_ROOT,
   writeManifest,
@@ -168,4 +169,30 @@ describe("manifest highlights are generated from the record (P2-9)", () => {
     },
     TIMEOUT,
   );
+});
+
+describe("the deep bar follows the page's own engine marker, not only the manifest (P3-8)", () => {
+  it("audits a page marked `engine: true` with the deep bar without a manifest row or a draft slug", async () => {
+    const live = buildFixtureRecord((r) => {
+      r.mode = "live";
+    });
+    const { mdx } = compileTo(live, PUBLIC_SLUG);
+    expect(mdx).toContain("\nengine: true\n");
+    const audit = await loadAuditor();
+
+    const marked = writePage(mdx, live, PUBLIC_SLUG);
+    const deep = audit(marked.file, PUBLIC_SLUG, { otherBodies: {}, manifestPath: writeManifest(marked, []) });
+    expect(deep.metrics?.deep).toBe(true);
+    expect(errorsOf(deep)).toContain(`no research record for ${PUBLIC_SLUG}`);
+
+    // Without the marker, a public slug and no engine manifest source get the base bar ...
+    const unmarked = writePage(mdx.replace("engine: true\n", ""), live, PUBLIC_SLUG);
+    expect(audit(unmarked.file, PUBLIC_SLUG, { otherBodies: {}, manifestPath: writeManifest(unmarked, []) }).metrics?.deep).toBe(false);
+    // ... and the manifest source alone still applies it.
+    const viaManifest = audit(unmarked.file, PUBLIC_SLUG, {
+      otherBodies: {},
+      manifestPath: writeManifest(unmarked, [{ slug: PUBLIC_SLUG, source: `engine:${PUBLIC_SLUG}` }]),
+    });
+    expect(viaManifest.metrics?.deep).toBe(true);
+  });
 });
