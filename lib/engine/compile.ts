@@ -250,9 +250,15 @@ function trimDot(s: string): string {
   return s.trim().replace(/\.+$/, "");
 }
 
+/** A whole markdown link as emitted by mdLink (escaped text, encoded URL). */
+const MD_LINK_RE = /\[(?:\\.|[^\]\\\n])*\]\([^)\s]*\)/g;
+
 /**
  * Drop later copies of any ≥8-word sentence (research sometimes restates
  * the same line in problem + market). Preserves code fences untouched.
+ * Markdown links are masked first: their titles and URLs contain `.`/`?`,
+ * and splitting inside one used to drop a repeated citation's head and
+ * leave an orphaned `…](https://…)` tail in the Sources list and quotes.
  */
 function collapseDuplicateSentences(text: string): string {
   const parts = text.split(/(```[\s\S]*?```)/g);
@@ -260,14 +266,23 @@ function collapseDuplicateSentences(text: string): string {
   return parts
     .map((part) => {
       if (part.startsWith("```")) return part;
-      return part.replace(/[^.!?\n]+[.!?]+/g, (sentence) => {
-        const words = sentence.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) || [];
-        if (words.length < 8) return sentence;
-        const key = words.join(" ").toLowerCase();
-        if (seen.has(key)) return "";
-        seen.add(key);
-        return sentence;
+      const links: string[] = [];
+      const masked = part.replace(MD_LINK_RE, (link) => {
+        links.push(link);
+        return `\u0000${links.length - 1}\u0000`;
       });
+      return masked
+        .replace(/[^.!?\n]+[.!?]+/g, (sentence) => {
+          // A sentence carrying a citation is never a duplicate to drop.
+          if (sentence.includes("\u0000")) return sentence;
+          const words = sentence.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) || [];
+          if (words.length < 8) return sentence;
+          const key = words.join(" ").toLowerCase();
+          if (seen.has(key)) return "";
+          seen.add(key);
+          return sentence;
+        })
+        .replace(/\u0000(\d+)\u0000/g, (_, i: string) => links[Number(i)]!);
     })
     .join("")
     .replace(/[ \t]+\n/g, "\n")
