@@ -640,6 +640,43 @@ describe("source transport: every response settles (F7)", () => {
     expect(getEventListeners(controller.signal, "abort")).toHaveLength(0);
   });
 
+  it("closes the connection when a read is aborted before any response", async () => {
+    // No response object exists yet, so only destroying the request can close it.
+    const closed: Array<Promise<void>> = [];
+    const server = await serveRaw((socket) => {
+      const gone = deferred<void>();
+      socket.on("close", () => gone.resolve());
+      closed.push(gone.promise);
+      // Never answers.
+    });
+    const controller = new AbortController();
+    const pending = transport()(`${server.origin("silent")}/`, { signal: controller.signal });
+    await sleep(50);
+    controller.abort(new SourceFetchError("timeout", "test deadline"));
+    await expect(pending).rejects.toMatchObject({ code: "timeout", message: "test deadline" });
+    expect(closed).toHaveLength(1);
+    expect(await settleWithin(Promise.all(closed), 1000)).toMatchObject({ state: "fulfilled" });
+  });
+
+  it("closes the connection when the socket cap is hit before any final response", async () => {
+    const closed: Array<Promise<void>> = [];
+    const server = await serveRaw((socket) => {
+      const gone = deferred<void>();
+      socket.on("close", () => gone.resolve());
+      closed.push(gone.promise);
+      const burst = Buffer.from("HTTP/1.1 102 Processing\r\n\r\n".repeat(1024));
+      const timer = setInterval(() => {
+        if (!socket.destroyed) socket.write(burst);
+      }, 1);
+      socket.on("close", () => clearInterval(timer));
+    });
+    await expect(
+      transport({ maxBodyBytes: 16 * 1024, maxSocketBytes: 64 * 1024 })(`${server.origin("flood")}/`),
+    ).rejects.toMatchObject({ code: "oversized" });
+    expect(closed).toHaveLength(1);
+    expect(await settleWithin(Promise.all(closed), 1000)).toMatchObject({ state: "fulfilled" });
+  });
+
   it("an abort mid-body rejects with its reason and destroys the connection", async () => {
     const closed = deferred<boolean>();
     const server = await serve((_req, res) => {
@@ -986,6 +1023,30 @@ describe("source reads: redirects never leak credentials", () => {
     expect(collector.connections()).toBe(0);
   });
 
+  it("refuses the downgrade for Authorization, Cookie and Proxy-Authorization each on its own", async () => {
+    const collector = await serve((_req, res) => res.end("collected"));
+    const secure = await serve((_req, res) => {
+      res.writeHead(302, { location: `${collector.origin("collector")}/collect` });
+      res.end();
+    });
+    const fetchImpl = fakeTlsFetch(transport(), new Map([["secure.source.test", secure.port]]));
+    for (const [name, value] of [
+      ["authorization", "Bearer dummy-token"],
+      ["cookie", "session=dummy-cookie"],
+      ["proxy-authorization", "Basic ZHVtbXk6ZHVtbXk="],
+    ] as const) {
+      await expect(
+        sendWithRedirects(
+          "https://secure.source.test/start",
+          { headers: { [name]: value, "user-agent": "transport-test" } },
+          deps(fetchImpl),
+        ),
+        name,
+      ).rejects.toMatchObject({ code: "redirect_rejected", status: 302 });
+    }
+    expect(collector.connections()).toBe(0);
+  });
+
   it("follows an HTTPS-to-HTTP redirect that carries no credentials", async () => {
     const collector = await serve((_req, res) => res.end("public page"));
     const secure = await serve((_req, res) => {
@@ -1127,6 +1188,79 @@ describe("source reads: redirects never leak credentials", () => {
       expect(seen.collector).toEqual([]);
       expect(collector.connections()).toBe(0);
     });
+  });
+});
+
+describe("source reads: comment bodies are separated by blank lines (R14)", () => {
+  // A blank line is a hard sentence boundary for the evidence code; a single
+  // line break inside one body stays exactly as the source wrote it.
+  const listing = JSON.stringify([
+    { data: { children: [{ data: { title: "Thread title", selftext: "Post body.\nSecond line" } }] } },
+    {
+      data: {
+        children: [
+          { data: { body: "First comment, first paragraph.\n\nSecond paragraph" } },
+          {
+            data: {
+              body: "Second comment\nwraps here",
+              replies: { data: { children: [{ data: { body: "A nested reply" } }] } },
+            },
+          },
+          { data: { body: "" } }, // a deleted comment adds nothing
+        ],
+      },
+    },
+  ]);
+  const redditText =
+    "Thread title\n\nPost body.\nSecond line\n\nFirst comment, first paragraph.\n\nSecond paragraph" +
+    "\n\nSecond comment\nwraps here\n\nA nested reply";
+
+  it("joins Reddit post and comment bodies with blank lines, on the public and OAuth paths", async () => {
+    const server = await serve((req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        req.url?.startsWith("/api/v1/access_token") ? JSON.stringify({ access_token: "dummy-bearer-token" }) : listing,
+      );
+    });
+    const ports = new Map([
+      ["www.reddit.com", server.port],
+      ["oauth.reddit.com", server.port],
+    ]);
+    for (const oauth of [false, true]) {
+      const reader = provider({
+        redditClientId: oauth ? "dummy-id" : "",
+        redditClientSecret: oauth ? "dummy-secret" : "",
+        fetchImpl: fakeTlsFetch(transport(), ports),
+      });
+      expect(await reader.fetchText("https://www.reddit.com/r/x/comments/abc/thread/"), oauth ? "OAuth" : "public").toBe(
+        redditText,
+      );
+    }
+  });
+
+  it("joins Hacker News story and comment texts with blank lines", async () => {
+    const item = {
+      id: 1,
+      title: "Ask HN: How do you review AI-written code?",
+      text: null,
+      children: [
+        {
+          id: 2,
+          text: "We pair on it.<p>It takes longer than writing it.",
+          children: [{ id: 3, text: "Same here &#x2F; agreed", children: [] }],
+        },
+        { id: 4, text: "Line one<br>line two", children: [] },
+      ],
+    };
+    const server = await serve((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(item));
+    });
+    const reader = provider({ fetchImpl: fakeTlsFetch(transport(), new Map([["hn.algolia.com", server.port]])) });
+    expect(await reader.fetchText("https://news.ycombinator.com/item?id=1")).toBe(
+      "Ask HN: How do you review AI-written code?\n\nWe pair on it. It takes longer than writing it." +
+        "\n\nSame here / agreed\n\nLine one\nline two",
+    );
   });
 });
 

@@ -97,6 +97,14 @@ export const SOURCE_LIMITS: SourceLimits = Object.freeze({
   // 16 KiB chunk) and Node caps headers at 16 KiB, so a full 2 MiB body
   // fits; 1-byte chunks (6 wire bytes per body byte), chunk extensions and
   // floods of 1xx responses stop here instead of costing parse work.
+  //
+  // Known limit (not redesigned): over TLS this counts decrypted bytes. A
+  // server that sends one byte per TLS record (about 23 bytes of ciphertext
+  // each) costs a decryption, a 'data' event and a parser call per byte:
+  // about 2 µs of CPU per record in testing, so a full socket cap is about
+  // 8 s and a 2 MiB body about 4 s; the 15 s deadline ends any slower read.
+  // Memory stays bounded, but the CPU is spent on the one event loop, so a
+  // few such reads at once can keep it busy until their deadlines.
   maxSocketBytes: 4 * 1024 * 1024,
   // Equal to the body cap because only identity encoding is accepted, so no
   // decoder runs. Kept separate so adding one cannot lift the memory bound;
@@ -973,7 +981,10 @@ function transportFetch(
       fail(new SourceFetchError("network", `Connection to ${label} closed without a complete response`));
     }
 
-    /** Counts every byte read off the connection, before the parser sees it. */
+    /**
+     * Counts every byte read off the connection (after TLS decryption, see
+     * `SOURCE_LIMITS.maxSocketBytes`), before the parser sees it.
+     */
     function onSocket(assigned: Socket): void {
       socket = assigned;
       if (!settled) assigned.prependListener("data", onSocketData);
@@ -1329,10 +1340,17 @@ async function readJson(response: Response, describe: string, signal: AbortSigna
   }
 }
 
+/**
+ * Every string under `keys`, in document order, joined by blank lines: a
+ * post or comment body never runs into the next one, so the evidence code
+ * can treat a blank line as a hard sentence boundary and a single line break
+ * as a soft one (ruling R14). Each body's own text, line breaks included, is
+ * kept as it is; empty bodies (deleted comments, link posts) are skipped.
+ */
 function collectText(json: unknown, keys: string[]): string {
   const parts: string[] = [];
   collectStrings(json, new Set(keys), parts);
-  return parts.join("\n");
+  return parts.filter((part) => part.trim() !== "").join("\n\n");
 }
 
 // ---------------------------------------------------------------------------
