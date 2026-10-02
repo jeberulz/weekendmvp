@@ -68,8 +68,10 @@ export type SourceFetchErrorCode =
 export class SourceFetchError extends Error { readonly code: SourceFetchErrorCode; readonly status?: number }
 ```
 
-Named limits (final values recorded in WP46 progress): 2 MiB wire bytes,
-2 MiB decoded bytes, 15 s whole-operation deadline including DNS, redirects
+Named limits (final values recorded in WP46 progress): 2 MiB body bytes
+(`maxBodyBytes`, renamed from `maxWireBytes`) plus a 4 MiB connection-byte
+cap (`maxSocketBytes`: status lines, headers, chunk framing and body), 2 MiB
+decoded bytes, 15 s whole-operation deadline including DNS, redirects
 and body, 5 redirects, 4 concurrent reads per run. HEAD and statuses 204, 205
 and 304, and empty bodies, are `no_content`.
 
