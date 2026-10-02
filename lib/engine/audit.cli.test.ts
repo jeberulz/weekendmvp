@@ -266,3 +266,56 @@ describe("scripts/engine-compile.mjs", () => {
     TIMEOUT,
   );
 });
+
+describe("scripts/engine-compile.mjs and fixture records (R11, P2-8)", () => {
+  function writeRecord(): { dir: string; recordPath: string; out: string } {
+    const dir = makeTempDir("engine-cli-");
+    const recordPath = path.join(dir, "fixture.json");
+    fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord(), null, 2));
+    return { dir, recordPath, out: path.join(dir, "out") };
+  }
+
+  it(
+    "refuses a fixture-mode record for its public brief slug (the reviewer's out-p8 compile) and writes nothing",
+    async () => {
+      const { recordPath, out } = writeRecord();
+      const run = await runNodeScript(COMPILER, ["--record", recordPath, "--ideas-dir", out, "--no-manifest", "--json"]);
+      expect(run.code).toBe(1);
+      const result = lastJson(run.stdout);
+      expect(isRecord(result) ? result.error : null).toBe("record cannot compile into a publishable page");
+      expect(isRecord(result) && Array.isArray(result.issues) ? result.issues.join("\n") : "").toContain(
+        `record mode is "fixture" (synthetic research): compile it only to an engine-draft-* or _temp slug, not 'signalpass' (ruling R11; tests may pass --allow-fixture)`,
+      );
+      expect(fs.existsSync(out)).toBe(false);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "compiles it to a _temp slug, or to any slug with the test-only --allow-fixture flag",
+    async () => {
+      const { recordPath, out } = writeRecord();
+      const temp = await runNodeScript(COMPILER, ["--record", recordPath, "--slug", "_engine-fixture-temp", "--ideas-dir", out, "--no-manifest", "--json"]);
+      expect(temp.code, temp.stderr).toBe(0);
+      const allowed = await runNodeScript(COMPILER, ["--record", recordPath, "--allow-fixture", "--ideas-dir", out, "--no-manifest", "--json"]);
+      expect(allowed.code, allowed.stderr).toBe(0);
+      expect(fs.readdirSync(out).sort()).toEqual(["_engine-fixture-temp.mdx", "signalpass.mdx"]);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "prints an unexpected error as one line, with no stack trace and no absolute path (security P3)",
+    async () => {
+      const { dir, recordPath } = writeRecord();
+      const blocker = path.join(dir, "not-a-dir");
+      fs.writeFileSync(blocker, "");
+      const run = await runNodeScript(COMPILER, ["--record", recordPath, "--slug", FIXTURE_PAGE_SLUG, "--ideas-dir", path.join(blocker, "ideas"), "--no-manifest"]);
+      expect(run.code).toBe(1);
+      expect(run.stderr).toMatch(/^engine:compile: unexpected error: ENOTDIR/m);
+      expect(run.stderr).not.toMatch(/\n\s+at /);
+      expect(`${run.stdout}${run.stderr}`).not.toContain(dir);
+    },
+    TIMEOUT,
+  );
+});
