@@ -360,6 +360,57 @@ describe("source transport: every response settles (F7)", () => {
     expect(errors.stop()).toEqual([]);
   });
 
+  it("settles 101 Switching Protocols promptly as http_status and closes the socket", async () => {
+    const errors = captureProcessErrors();
+    const closed: Array<Promise<void>> = [];
+    const server = await serveRaw((socket) => {
+      const gone = deferred<void>();
+      socket.on("close", () => gone.resolve());
+      closed.push(gone.promise);
+      // An upgrade nobody asked for; the socket stays open on the server side.
+      socket.write("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n");
+    });
+    // The bare transport has no timer of its own, so a hold would never end here.
+    const settled = await settleWithin(transport()(`${server.origin("up")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "http_status", status: 101 } });
+    // Through the provider it settles long before the read's deadline, freeing the slot.
+    const started = Date.now();
+    await expect(provider({ timeoutMs: 10_000 }).fetchText(`${server.origin("up")}/`)).rejects.toMatchObject({
+      code: "http_status",
+      status: 101,
+    });
+    expect(Date.now() - started).toBeLessThan(1000);
+    expect(closed).toHaveLength(2);
+    expect(await settleWithin(Promise.all(closed), 1000)).toMatchObject({ state: "fulfilled" });
+    await sleep(20);
+    expect(errors.stop()).toEqual([]);
+  });
+
+  it("settles a 101 without Upgrade headers as http_status", async () => {
+    const server = await serveRaw((socket) => socket.write("HTTP/1.1 101 Switching Protocols\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("up")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "http_status", status: 101 } });
+  });
+
+  it("reads the final response after 100, 102 and 103 informational responses", async () => {
+    for (const informational of [
+      "HTTP/1.1 100 Continue\r\n\r\n",
+      "HTTP/1.1 102 Processing\r\n\r\n",
+      "HTTP/1.1 103 Early Hints\r\nLink: </a.css>; rel=preload\r\n\r\n",
+    ]) {
+      const server = await serveRaw((socket) =>
+        socket.end(`${informational}HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello`),
+      );
+      expect(await provider().fetchText(`${server.origin("info")}/`), informational).toBe("hello");
+    }
+  });
+
+  it("settles an informational response followed by a closed connection at once", async () => {
+    const server = await serveRaw((socket) => socket.end("HTTP/1.1 103 Early Hints\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("info")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "network" } });
+  });
+
   it("rejects a malformed status line and conflicting length headers", async () => {
     const server = await serveRaw((socket) => socket.end("HTTP/1.1 2x0 Bad\r\n\r\n"));
     await expect(transport()(`${server.origin("page")}/`)).rejects.toMatchObject({ code: "network" });

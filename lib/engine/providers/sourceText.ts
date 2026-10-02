@@ -37,7 +37,7 @@ import { lookup as dnsLookup } from "node:dns";
 import { lookup } from "node:dns/promises";
 import http from "node:http";
 import https from "node:https";
-import type { LookupFunction } from "node:net";
+import type { LookupFunction, Socket } from "node:net";
 import { isIP } from "node:net";
 
 export type SourceTextProvider = {
@@ -812,11 +812,12 @@ function transportError(error: unknown, label: string): SourceFetchError {
 
 /**
  * One HTTP exchange. It settles exactly once: every path (body end, size cap,
- * bad status or encoding, response error or premature close, request or
- * socket error, abort) funnels through `succeed` or `fail`, which detach the
- * listeners and drop buffered chunks. `fail` destroys request and response;
- * the request keeps a no-op error listener for life, because a destroyed
- * socket can still emit an error and an unheard one crashes the process.
+ * bad status or encoding, an upgrade, response error or premature close,
+ * request or socket error, a close with no response, abort) funnels through
+ * `succeed` or `fail`, which detach the listeners and drop buffered chunks.
+ * `fail` destroys request and response; the request keeps a no-op error
+ * listener for life, because a destroyed socket can still emit an error and
+ * an unheard one crashes the process.
  */
 function transportFetch(
   input: string,
@@ -886,6 +887,25 @@ function transportFetch(
 
     function onPrematureClose(): void {
       fail(new SourceFetchError("network", `Connection closed before the response from ${label} was complete`));
+    }
+
+    /**
+     * A 101 with Upgrade headers: Node hands over the connection instead of
+     * a response (without a listener it would close the socket and emit
+     * nothing, holding the read until its deadline). Nothing here speaks
+     * another protocol, so the status fails at once and the socket closes.
+     */
+    function onUpgrade(incoming: http.IncomingMessage, upgraded: Socket): void {
+      upgraded.on("error", onFailure);
+      upgraded.destroy();
+      response = incoming;
+      const code = incoming.statusCode ?? 101;
+      fail(new SourceFetchError("http_status", `Unsupported HTTP status ${code} from ${label}`, code));
+    }
+
+    /** A close that no other path settled. */
+    function onRequestClose(): void {
+      fail(new SourceFetchError("network", `Connection to ${label} closed without a complete response`));
     }
 
     function onData(chunk: Buffer): void {
@@ -994,6 +1014,8 @@ function transportFetch(
       return;
     }
     request.on("error", onFailure);
+    request.on("upgrade", onUpgrade);
+    request.on("close", onRequestClose);
     request.end(body);
   });
 }
