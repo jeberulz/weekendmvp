@@ -257,7 +257,8 @@ Set `provenance.auditPassed: true` and `provenance.auditRunAt` (the time of the 
 Open, in a browser, the cited source of **every** competitor price and **every** market statistic on the page, plus **at least two** community quotes. The record keeps each item's excerpt (`evidence.accepted[].excerpt`), its `retrievedAt` and a hash of the page text; the page may have changed since. Confirm:
 - **Prices:** vendor, plan, amount, currency, billing period, per-user/flat basis and billing qualifiers. Watch page-level monthly/annual toggles and "billed annually" notes away from the price. A "(via host)" price comes from a third-party page: check that the page ties that price to that vendor.
 - **Statistics:** subject, metric, year, and whether the figure is a measurement or a projection.
-- **Quotes:** a whole statement read in its context — no dropped negation or condition, not two speakers merged.
+- **Niche fit:** each selected market statistic must measure the idea's product category, not a larger adjacent category presented as its market size. Recheck the surrounding prose for that implication even when the stat label itself is accurate.
+- **Quotes:** a whole statement read in its context — no dropped negation or condition, not two speakers merged. It must describe a concrete problem the target buyer faces in this workflow; a maker announcing a tool, a vendor reply or generic frustration does not count as buyer pain.
 - **Source type:** vendor marketing, independent research, review site or user anecdote; note any important qualification.
 
 A matching excerpt proves the page contained that text when it was read. It does not prove that the source is credible, independent or current, or that the claim holds everywhere; a vendor blog is not independent customer evidence. If anything is wrong, stale or unsupported, do not publish: re-run research — never patch the MDX or the record by hand.

@@ -28,7 +28,7 @@
 import { createSourceAcquirer, type SourceRead } from "./acquire.ts";
 import type { CitationInput, SourceInput } from "./evidence/accept.ts";
 import { scanAmounts, splitSentences } from "./evidence/amount.ts";
-import { canonicalSourceUrl, citationRefusal, isFirstPartyHost, registrableLabel, sourceHostLabel } from "./evidence/citation.ts";
+import { canonicalSourceUrl, citationRefusal, isComparisonPage, isFirstPartyHost, registrableLabel, sourceHostLabel } from "./evidence/citation.ts";
 import { withoutFormatControls, type SourceAcquisition, type SourceRole, type SourceStatus } from "./evidence/contract.ts";
 import type { SourceTextProvider } from "./providers/sourceText.ts";
 import type { Citation } from "./providers/types.ts";
@@ -331,6 +331,9 @@ function availabilityExcerpt(text: string, maxBytes: number): string {
   const cue = /\b(?:contact sales|talk to sales|custom (?:quote|pricing)|pricing on request|usage[- ]based pricing|pay[- ]as[- ]you[- ]go|credit packs?)\b/iu;
   for (const sentence of splitSentences(text)) {
     if (!cue.test(sentence.text) || utf8Bytes(sentence.text) > maxBytes) continue;
+    // A global header button says nothing about any offer. Prefer a plan or
+    // pricing sentence so the extractor sees the actual commercial context.
+    if (!/\b(?:plan|tier|edition|pricing|quote|subscription|credit|pack)\b/iu.test(sentence.text)) continue;
     return sentence.text.trim();
   }
   return "";
@@ -368,9 +371,22 @@ function excerptCap(source: ExtractionSource): number {
   return source.roles.includes("community") ? EXTRACTION_EXCERPT_BYTES.community : EXTRACTION_EXCERPT_BYTES.figures;
 }
 
+/** Put actual pricing/listing pages before vendor blogs and roundups. */
+function competitorSourcePriority(source: ExtractionSource): number {
+  let url: URL;
+  try { url = new URL(source.url); } catch { return 3; }
+  const path = url.pathname.toLowerCase();
+  if (isComparisonPage(source.url) || /^\/(?:blog|guides?|content-library|reviews?|alternatives?)(?:\/|$)/u.test(path)) return 3;
+  const singleShopifyApp = url.hostname.toLowerCase() === "apps.shopify.com" && /^\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/u.test(path);
+  if (/(?:^|\/)(?:pricing|plans?)(?:\/|$)/u.test(path) || singleShopifyApp) return 0;
+  if (path === "/" || path === "") return 1;
+  return 2;
+}
+
 /** Round-robin by first role (market, competitors, community), so dropping from the end keeps a mix. */
 function interleaveByRole(sources: ReadonlyArray<ExtractionSource>): ExtractionSource[] {
   const buckets = ROLE_ORDER.map((role) => sources.filter((s) => s.roles[0] === role));
+  buckets[1]?.sort((a, b) => competitorSourcePriority(a) - competitorSourcePriority(b));
   const other = sources.filter((s) => !ROLE_ORDER.some((role) => s.roles[0] === role));
   const out: ExtractionSource[] = [];
   const longest = Math.max(0, ...buckets.map((b) => b.length));

@@ -629,6 +629,23 @@ source acquisition statuses, accepted counts per kind, and rejected
   `priceText` even if its supporting passage describes multiple billing
   alternatives; it never combines alternatives into a fabricated term.
 
+- **Acquisition/extraction clarification (2026-10-03, later live probes).** The
+  final competitor search, after an initial supplement, may seek a fourth
+  distinct official pricing source as a buffer because citation does not imply
+  a parseable offer. A transient failure of this optional search does not
+  discard three already cited sources. It excludes only vendor domains already
+  represented by an official pricing page; a vendor seen only in a blog may
+  still be targeted for its missing pricing page. Within the bounded extraction prompt, canonical
+  pricing pages precede competitor blogs and roundups. An availability excerpt
+  favors a plan-specific price or quote statement over a site-wide contact
+  button. These are source-acquisition priorities, not evidence shortcuts:
+  every chosen item still needs exact retrieved-page binding and the same
+  three-vendor, one-numeric-vendor minimum. First-party comparison-page prices
+  and availability are rejected before the writer, matching the artifact
+  audit's existing roundup-link rule. Search, extraction and editorial prompts
+  prioritize the product's niche and concrete buyer pain over adjacent markets
+  or maker commentary.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

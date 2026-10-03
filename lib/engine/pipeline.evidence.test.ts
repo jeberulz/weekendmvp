@@ -31,7 +31,7 @@ import {
   type EditorialEvidenceItem,
   type RunResearchOptions,
 } from "./pipeline.ts";
-import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, vendorHintsFromCitations, type ExtractionSource } from "./pipeline-sources.ts";
+import { buildExtractionSources, extractionExcerpt, EXCERPT_GAP, utf8Bytes, vendorHintsFromCitations, type ExtractionSource } from "./pipeline-sources.ts";
 import { stepById } from "./pipeline-steps.ts";
 import {
   extractionWith,
@@ -828,6 +828,21 @@ describe("input budgets", () => {
     expect(block.text).toContain("$24/user/month");
     expect(block.text).toContain("Contact sales for a custom quote.");
     for (const passage of block.text.split("Text:\n")[1]!.split(EXCERPT_GAP)) expect(text.includes(passage)).toBe(true);
+  });
+
+  it("surfaces a plan-specific contact-sales statement ahead of a navigation button", () => {
+    const text = "Log in Contact sales Request demo. Growth Edition is for expanding teams. Growth Edition: Contact sales for a custom quote.";
+    const excerpt = extractionExcerpt({ url: "https://vendor.example/pricing", title: "Vendor pricing", roles: ["competitors"], text }, 1000);
+    expect(excerpt.split(EXCERPT_GAP)[0]).toBe("Growth Edition: Contact sales for a custom quote.");
+  });
+
+  it("shows an official pricing page before a comparison blog even when search returned the blog first", () => {
+    const pages: ExtractionSource[] = [
+      { url: "https://vendor.example/blog/vendor-vs-rival", title: "Vendor comparison", roles: ["competitors"], text: "Vendor Pro costs $29/month." },
+      { url: "https://vendor.example/pricing", title: "Vendor pricing", roles: ["competitors"], text: "Vendor Pro costs $29/month." },
+    ];
+    const block = buildExtractionSources(pages, 4000);
+    expect(block.text.indexOf("https://vendor.example/pricing")).toBeLessThan(block.text.indexOf("https://vendor.example/blog/vendor-vs-rival"));
   });
 });
 

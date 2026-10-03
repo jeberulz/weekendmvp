@@ -31,7 +31,7 @@ import {
 } from "./providers/fixtures.ts";
 import type { Fetcher } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
-import type { EngineProviders, SynthesisRequest } from "./providers/types.ts";
+import { ProviderCallError, type EngineProviders, type SynthesisRequest } from "./providers/types.ts";
 import { parseResearchRecord } from "./research-record.ts";
 
 const RFP_BRIEF: BriefInput = {
@@ -121,9 +121,16 @@ describe("runResearch (fixture)", () => {
       search: async (request) => {
         queries.push(request.query);
         const result = await search.search(request);
-        return request.query.includes("Identify at least three direct competitors")
-          ? { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } }
-          : result;
+        if (request.query.includes("Identify at least three direct competitors")) {
+          return { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } };
+        }
+        if (request.query.includes("first competitor search cited too few")) {
+          return { ...result, value: { ...result.value, citations: [
+            ...result.value.citations,
+            { url: "https://extra.example/pricing", title: "Extra pricing" },
+          ] } };
+        }
+        return result;
       },
     };
     const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
@@ -146,16 +153,41 @@ describe("runResearch (fixture)", () => {
           return { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } };
         }
         if (request.query.includes("first competitor search cited too few")) {
-          return { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 2) } };
+          return { ...result, value: { ...result.value, citations: [
+            ...result.value.citations.slice(0, 2),
+            { url: "https://rfpforge.example/blog/rfp-comparisons", title: "RFPForge RFP comparisons" },
+          ] } };
         }
         return result;
       },
     };
     const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
     expect(report.attempts.competitors).toBe(3);
-    expect(queries.find((query) => query.includes("NEW vendors"))).toMatch(/Exclude these already cited vendor domain labels/);
+    const third = queries.find((query) => query.includes("Previously cited vendors still missing an official pricing page"));
+    expect(third).toContain("RFPForge");
+    expect(third).toContain("bidwell, answerdeck");
     expect(record.competitors).toHaveLength(EVIDENCE_MINIMUMS.competitors);
     expect(report.costUsd).toBeLessThan(4);
+  });
+
+  it("keeps three already cited pricing pages when the optional spare search is rate limited", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        if (request.query.includes("Previously cited vendors still missing an official pricing page")) {
+          throw new ProviderCallError("search", "provider returned 429", { retryable: true, status: 429 });
+        }
+        const result = await search.search(request);
+        return request.query.includes("Identify at least three direct competitors")
+          ? { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } }
+          : result;
+      },
+    };
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(report.attempts.competitors).toBe(3);
+    expect(record.competitors).toHaveLength(EVIDENCE_MINIMUMS.competitors);
   });
 
   it("does not count a third vendor's comparison blog as an official pricing source", async () => {
@@ -181,7 +213,7 @@ describe("runResearch (fixture)", () => {
       },
     };
     const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
-    expect(report.attempts.competitors).toBe(2);
+    expect(report.attempts.competitors).toBe(3);
     expect(queries.some((query) => query.includes("first competitor search cited too few"))).toBe(true);
     expect(record.competitors).toHaveLength(EVIDENCE_MINIMUMS.competitors);
   });
