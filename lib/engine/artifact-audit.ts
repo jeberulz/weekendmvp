@@ -75,6 +75,8 @@
  *                 record's mode.
  */
 
+import { Buffer } from "node:buffer";
+
 import { createProcessor } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 
@@ -187,6 +189,21 @@ function toNode(raw: unknown): MdNode {
 }
 
 let processor: ReturnType<typeof createProcessor> | null = null;
+
+/**
+ * The largest page the auditor reads (ruling R16): 64 KiB. The MDX parser is
+ * quadratic on some character runs (a 64 KiB underscore run takes it about
+ * 2.5 s, 128 KiB about 13 s), so a larger page is refused before parsing.
+ * Published idea pages are under 25 KB and compiled pages about 20 KB.
+ */
+export const MAX_AUDIT_BYTES = 65_536;
+
+/** The refusal for a page of `bytes` UTF-8 bytes, or null when it is within MAX_AUDIT_BYTES. */
+export function auditSizeError(bytes: number): string | null {
+  if (bytes <= MAX_AUDIT_BYTES) return null;
+  const n = (value: number) => value.toLocaleString("en-US");
+  return `page is ${n(bytes)} bytes, over the ${n(MAX_AUDIT_BYTES)}-byte (64 KiB) audit limit (ruling R16); refused before parsing`;
+}
 
 /** Parse an MDX body (no frontmatter) the way the site does, or the parser's error. */
 export function parseMdxBody(body: string): { ok: true; root: MdNode } | { ok: false; error: string } {
@@ -1581,6 +1598,11 @@ export function auditEngineArtifact(
     competitorLinks: [],
     metrics: { verifiedQuotes: 0, marketRows: 0, competitorRows: 0, unboundFigures: 0 },
   };
+  const tooLarge = auditSizeError(Buffer.byteLength(body, "utf8"));
+  if (tooLarge) {
+    ctx.errors.push(tooLarge);
+    return result;
+  }
   const parsed = parseMdxBody(body);
   if (!parsed.ok) {
     ctx.errors.push(`MDX does not parse, so the factual blocks cannot be checked: ${clip(parsed.error, 160)}`);
