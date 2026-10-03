@@ -59,7 +59,7 @@ const MULTI_PART_SUFFIXES = new Set([
 
 /** Pages that compare vendors; a first-party host still has to name the vendor there. */
 const COMPARISON_PATH_RE =
-  /(?:^|[/_.-])(?:vs|versus|alternatives?|compare|comparison|competitors?|best|top)(?:[/_.-]|$)/i;
+  /(?:^|[/_.-])(?:vs|versus|alternatives?|compare|compared|compares|comparing|comparisons?|competitors?|best|top)(?:[/_.-]|$)/i;
 
 function parseUrl(url: string): URL | null {
   try {

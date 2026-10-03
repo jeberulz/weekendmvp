@@ -128,6 +128,7 @@ describe("vendor keys and first-party hosts", () => {
   it("flags comparison and roundup paths", () => {
     expect(isComparisonPage("https://loopio.com/blog/loopio-vs-responsive")).toBe(true);
     expect(isComparisonPage("https://loopio.com/alternatives/")).toBe(true);
+    expect(isComparisonPage("https://responsive.io/blog/responsive-pricing-compared-other-rfp-software")).toBe(true);
     expect(isComparisonPage("https://loopio.com/pricing")).toBe(false);
   });
 

@@ -365,7 +365,7 @@ describe("source, citation and context rules", () => {
     expect(must(own.accepted[0])).toMatchObject({ vendor: "RFP.ai", plan: "Starter", attribution: "first_party" });
   });
 
-  it("requires a first-party comparison page to name the vendor before the price", () => {
+  it("rejects a first-party comparison page even when it names the vendor before the price", () => {
     const vs = { url: "https://loopio.com/blog/loopio-vs-qvidian", text: "Our verdict: Qvidian runs $30/month. Loopio costs $20,000/year." };
     const result = run([vs], {
       competitorPrices: [
@@ -373,8 +373,8 @@ describe("source, citation and context rules", () => {
         priceCandidate({ vendor: "Loopio", sourceUrl: vs.url, supportingText: "Loopio costs $20,000/year", priceText: "$20,000/year" }),
       ],
     });
-    expect(reasons(result)).toEqual(["vendor_not_in_context"]);
-    expect(must(result.accepted[0])).toMatchObject({ vendor: "Loopio", attribution: "first_party" });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution", "ambiguous_attribution"]);
   });
 
   it("drops a plan name the excerpt does not contain", () => {
@@ -1760,6 +1760,17 @@ describe("PR96 review: evidence assertions retain their meaning", () => {
       competitorPrices: [priceCandidate({ vendor: "Replo AI Page Builder", sourceUrl: page.url, supportingText: "$39/month", priceText: "$39/month" })],
     });
     expect(rival.accepted).toEqual([]);
+  });
+
+  it("refuses first-party pricing claims from a comparison blog even when the sentence is literal", () => {
+    const url = "https://responsive.io/blog/responsive-pricing-compared-other-rfp-software";
+    const page = { url, text: "Responsive pricing\nResponsive costs $49/month.\nResponsive uses custom pricing for larger teams." };
+    const result = run([page], {
+      competitorPrices: [priceCandidate({ vendor: "Responsive", sourceUrl: url, supportingText: "Responsive costs $49/month.", priceText: "$49/month" })],
+      competitorAvailability: [{ vendor: "Responsive", sourceUrl: url, supportingText: "Responsive uses custom pricing for larger teams.", availability: "contact_sales" }],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution", "ambiguous_attribution"]);
   });
 
   it.each([

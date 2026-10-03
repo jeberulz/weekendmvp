@@ -1320,8 +1320,7 @@ function rivalSiteFailure(vendor: string, sourceUrl: string, vendors: ReadonlyAr
 
 /**
  * Who a price in `text` belongs to. No other known vendor may be named in
- * the price's clause. A first-party host (not a comparison page) needs no
- * name; otherwise the claimed vendor must be named before the price in its
+ * the price's clause. A first-party host needs no name; otherwise the claimed vendor must be named before the price in its
  * clause. On every page (ruling R14) the nearest brand-like name before the
  * price — in its clause or a soft-wrapped line above — must be the claimed
  * vendor or its plan, and no other name may follow the price after "for".
@@ -1362,7 +1361,7 @@ function attributeVendor(
       : null;
   };
   const firstParty = isFirstPartyHost(vendor, sourceUrl);
-  if (firstParty && !isComparisonPage(sourceUrl)) return nearer() ?? { ok: true, attribution: "first_party" };
+  if (firstParty) return nearer() ?? { ok: true, attribution: "first_party" };
   const priceOffset = expression.start - expression.clauseStart;
   if (!claimed.some((m) => m.end <= priceOffset)) {
     return fail("vendor_not_in_context", `${clip(vendor, 40)} is not named before the price in its clause`);
@@ -1441,6 +1440,9 @@ function checkPriceExcerpt(
   if (control) return fail("invalid_candidate", controlDetail("the price's sentence", control));
   const rivalSite = rivalSiteFailure(claim.vendor, sourceUrl, vendors);
   if (rivalSite) return rivalSite;
+  if (isFirstPartyHost(claim.vendor, sourceUrl) && isComparisonPage(sourceUrl)) {
+    return fail("ambiguous_attribution", "a vendor comparison page is not its pricing page");
+  }
   const expressions = priceExpressionsIn(excerpt);
   if (expressions.length === 0) {
     return fail("unparseable_amount", "excerpt has no supported price expression");
