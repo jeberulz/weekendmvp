@@ -554,7 +554,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       } else {
         for (const m of unit[1].matchAll(/^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*([^*]+)\*\*/gm)) {
           const lead = m[1].trim();
-          if (!/\d/.test(lead) || countWords(lead) > 10) {
+          if ((!/\d/.test(lead) && !/^free$/i.test(lead)) || countWords(lead) > 10) {
             errors.push(
               `Unit Economics bullet must lead with a short figure, not a sentence: "${lead.slice(0, 70)}"`,
             );

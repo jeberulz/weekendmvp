@@ -92,6 +92,20 @@ afterAll(cleanupTempDirs);
 
 describe("scripts/audit-idea-mdx.mjs on a compiler-generated page", () => {
   it(
+    "accepts Free as the value of a proposed unit-economics row",
+    async () => {
+      const free = structuredClone(record);
+      if (!free.editorial.unitEconomics?.[0]) throw new Error("fixture needs a unit economics row");
+      free.editorial.unitEconomics[0].value = "Free";
+      const mdx = replaceOnce(page, "**$0.04 per pull request** — Model cost per reviewed pull request", "**Free** — Model cost per reviewed pull request");
+      const { code, result } = await auditCli(writePage(mdx, free));
+      expect(result.errors).toEqual([]);
+      expect(code).toBe(0);
+    },
+    TIMEOUT,
+  );
+
+  it(
     "exits 0 on the clean page: the whole deep bar passes, including the 2,200-word floor",
     async () => {
       const { code, result } = await auditCli(writePage(page, record));
