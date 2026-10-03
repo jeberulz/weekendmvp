@@ -348,6 +348,27 @@ describe("R13: standard and version names are not figures", () => {
     expect(figures("Five9 sells to call centers.")).toEqual([]);
   });
 
+  it.each([
+    ["Python 4000 developers use it.", ["4000"]],
+    ["Claude 47 teams pay for it.", ["47"]],
+    ["React 300 times faster.", ["300"]],
+    ["Node 22 active users joined.", ["22"]],
+    ["React 19 developers pick it.", ["19"]],
+    ["TLS 1300 servers and OAuth 4000 apps.", ["1300", "4000"]],
+  ])("counts a number after a versioned name unless it looks like a version (review P3-3): %s", (text, expected) => {
+    expect(figures(text)).toEqual(expected);
+  });
+
+  it("keeps versions with decimals, model names and fixed-number standards as names (review P3-3 passing set)", () => {
+    for (const text of [
+      "SOC 2, ISO 27001, Next.js 15, React 19, Postgres 16, Node 22, OAuth 2.0, Microsoft 365, 24/7, Form 1099, W-9, Claude 3.5 and Five9.",
+      "Python 3.12, Ubuntu 24.04, Node 22.11.0, Tailwind v4, GPT-4o, Claude 3.5 Sonnet, Gemini 2.5 Pro and the Claude 3 models.",
+      "OAuth 2.0 apps, ISO 27001 teams and Microsoft 365 users stay names; so do TLS 1.3, WCAG 2.2 and PCI DSS 4.0.",
+    ]) {
+      expect(figures(text), text).toEqual([]);
+    }
+  });
+
   it("treats digits inside snake_case identifiers as names (review probe p20)", () => {
     expect(figures("Tables library_documents, tier_1_questionnaires and answers_v2.")).toEqual([]);
     expect(figures("A tier 1 plan for tier_1 buyers.")).toEqual(["1"]);

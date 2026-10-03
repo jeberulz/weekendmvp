@@ -58,7 +58,7 @@
  * reports indices into the ORIGINAL text.
  */
 
-import { formatAmount, formatPriceTerms } from "./amount.ts";
+import { COUNT_MODIFIERS, COUNT_NOUNS, formatAmount, formatPriceTerms } from "./amount.ts";
 import {
   EVIDENCE_TOKEN_RE,
   type AcceptedEvidence,
@@ -161,6 +161,19 @@ const DIGIT_RUN_RE = /\p{Nd}+(?:[.,:/]\p{Nd}+)*/gu;
 const VERSIONED_SOFTWARE = String.raw`Next\.js|React|Node(?:\.js)?|PostgreSQL|Postgres|MySQL|Python|Ruby|Rails|Django|Vue(?:\.js)?|Angular|SvelteKit|Svelte|Tailwind(?: CSS)?|TypeScript|Swift|Kotlin|Java|PHP|iOS|Android|macOS|Windows|Ubuntu|Claude|GPT|Gemini|Llama|Mistral`;
 
 /**
+ * A version as a name carries one (review P3-3): at most two integer digits,
+ * optionally with decimal parts ("15", "3.5", "24.04", "22.11.0"). A longer
+ * number ("Python 4000") is a figure.
+ */
+const VERSION = String.raw`\p{Nd}{1,2}(?:\.\p{Nd}+)*`;
+
+/** The version after a curated software name (VERSIONED_SOFTWARE): "Next.js 15", "GPT-4o", "Tailwind v4". */
+const VERSIONED_NAME_RE = new RegExp(
+  String.raw`(?<![\p{L}\p{N}])(?:${VERSIONED_SOFTWARE})(?:[ \u00A0]|-)?v?${VERSION}[a-z]?(?![\p{N}])`,
+  "gu",
+);
+
+/**
  * Ruling R13: standard and version names whose digits are part of the name,
  * not a figure. One list, read by the record parser and the auditor through
  * findUnboundFigures (applied to the NFKC text):
@@ -169,29 +182,49 @@ const VERSIONED_SOFTWARE = String.raw`Next\.js|React|Node(?:\.js)?|PostgreSQL|Po
  *   Microsoft 365 and Office 365; US tax forms (Form 1099, 1099-NEC, W-2,
  *   W-9); and the version after a curated software name (VERSIONED_SOFTWARE:
  *   Next.js 15, Postgres 16, Claude 3.5, GPT 5, Llama 3.1, Tailwind v4, …).
- * A name followed by a percent, magnitude or currency code is still a figure.
+ * A version is at most two integer digits with optional decimals (VERSION),
+ * and a software version followed by a count ("Claude 47 teams", "React 300
+ * times", COUNTED_AFTER_VERSION) is a figure (review P3-3). A name followed
+ * by a percent, magnitude or currency code is still a figure.
  */
 export const STANDARD_AND_VERSION_NAMES: readonly RegExp[] = [
   /(?<![\p{L}\p{N}])SOC[ \u00A0]?[123](?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])ISO(?:\/IEC)?[ \u00A0]?\p{Nd}{3,5}(?:[-:]\p{Nd}{1,4})*(?![\p{L}\p{N}])/gu,
-  /(?<![\p{L}\p{N}])PCI[ \u00A0-]?DSS[ \u00A0]?v?\p{Nd}+(?:\.\p{Nd}+)*(?![\p{L}\p{N}])/gu,
-  /(?<![\p{L}\p{N}])(?:WCAG|OAuth|TLS|SSL)[ \u00A0]?v?\p{Nd}+(?:\.\p{Nd}+)*a?(?![\p{L}\p{N}])/gu,
+  new RegExp(String.raw`(?<![\p{L}\p{N}])PCI[ \u00A0-]?DSS[ \u00A0]?v?${VERSION}(?![\p{L}\p{N}])`, "gu"),
+  new RegExp(String.raw`(?<![\p{L}\p{N}])(?:WCAG|OAuth|TLS|SSL)[ \u00A0]?v?${VERSION}a?(?![\p{L}\p{N}])`, "gu"),
   /(?<![\p{L}\p{N}])HTTP(?:\/|[ \u00A0])?\p{Nd}(?:\.\p{Nd})?(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])IPv[46](?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}/])24\/7(?![\p{L}\p{N}/])/gu,
   /(?<![\p{L}\p{N}])(?:Microsoft|Office)[ \u00A0]365(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])Form[ \u00A0](?:1099|1098|1095|1040|1065|1120|941|940|990|W-\p{Nd})(?:-[A-Z]{1,4})?(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])(?:1099|1098|1095)-[A-Z]{1,4}(?![\p{L}\p{N}])/gu,
-  new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${VERSIONED_SOFTWARE})(?:[ \u00A0]|-)?v?\p{Nd}+(?:\.\p{Nd}+)*[a-z]?(?![\p{N}])`, "gu"),
+  VERSIONED_NAME_RE,
 ];
+
+/** What a number counts when it stands right before one of these (review P3-3: "Claude 47 teams", "React 300 times"). */
+const COUNTED_AFTER_VERSION: readonly string[] = [
+  ...COUNT_NOUNS,
+  "time", "times", "second", "seconds", "minute", "minutes", "hour", "hours", "day", "days", "week", "weeks",
+  "month", "months", "year", "years",
+];
+
+/** A count right after a version: up to two count modifiers, then a counted noun ("47 active teams"). */
+const COUNT_AFTER_VERSION_SOURCE = String.raw`(?:[ \u00A0]+(?:${COUNT_MODIFIERS.join("|")})){0,2}[ \u00A0]+(?:${COUNTED_AFTER_VERSION.join("|")})(?![\p{L}\p{N}])`;
 
 /** 1 at every position of the text that STANDARD_AND_VERSION_NAMES match (one pass per pattern). */
 function standardNameMask(text: string): Uint8Array {
   const mask = new Uint8Array(text.length);
+  const countAfter = new RegExp(COUNT_AFTER_VERSION_SOURCE, "iuy");
   for (const re of STANDARD_AND_VERSION_NAMES) {
     for (const m of text.matchAll(new RegExp(re.source, re.flags))) {
       const start = m.index ?? 0;
-      mask.fill(1, start, start + m[0].length);
+      const end = start + m[0].length;
+      if (re === VERSIONED_NAME_RE) {
+        // Review P3-3: a software "version" that counts something is a figure.
+        countAfter.lastIndex = end;
+        if (countAfter.test(text)) continue;
+      }
+      mask.fill(1, start, end);
     }
   }
   return mask;
