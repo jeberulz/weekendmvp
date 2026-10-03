@@ -144,12 +144,37 @@ test("an exact private revision is activated once and emergency unpublish revoke
   expect(await t.query(api.editorial.public.visibility, { slug: record.brief.slug })).toBe("removed");
   expect(await t.query(api.editorial.public.bySlug, { slug: record.brief.slug })).toEqual({ state: "removed" });
 
+  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+    const pathname = new URL(url).pathname;
+    if (pathname === "/api/editorial/reader-health") return Response.json({ protocol: 1, commit: "local-e6-reader" });
+    if (pathname === `/ideas/${record.brief.slug}`) return new Response("stale page", { status: 200 });
+    return new Response("Unexpected probe", { status: 500 });
+  }));
   const removed = await editor.mutation(api.editorial.commands.unpublishIdea, {
     ideaId, expectedLiveReleaseId: releaseId, reason: "Emergency takedown test",
     idempotencyKey: "remove-release-gated-idea",
   });
   expect(removed.ok).toBe(true);
-  if (removed.ok) await t.action(internal.editorial.worker.run, { releaseId: removed.value.releaseId });
+  if (!removed.ok) throw new Error(removed.error.message);
+  await t.action(internal.editorial.worker.run, { releaseId: removed.value.releaseId });
+  const failedRemoval = await t.run(async (ctx) => ctx.db.query("editorial_releases")
+    .withIndex("by_key", (q) => q.eq("key", removed.value.releaseId)).unique());
+  expect(failedRemoval?.state).toBe("failed");
+  const retried = await editor.mutation(api.editorial.commands.retryRelease, {
+    releaseId: removed.value.releaseId, expectedState: "failed", idempotencyKey: "retry-removal-probe",
+  });
+  expect(retried.ok).toBe(true);
+  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+    const pathname = new URL(url).pathname;
+    if (pathname === "/api/editorial/reader-health") return Response.json({ protocol: 1, commit: "local-e6-reader" });
+    if (pathname === `/ideas/${record.brief.slug}`) return new Response("Not Found", { status: 404 });
+    if (pathname === "/sitemap.xml") return new Response("<urlset></urlset>", { status: 200 });
+    return new Response("Unexpected probe", { status: 500 });
+  }));
+  await t.action(internal.editorial.worker.run, { releaseId: removed.value.releaseId });
+  const verifiedRemoval = await t.run(async (ctx) => ctx.db.query("editorial_releases")
+    .withIndex("by_key", (q) => q.eq("key", removed.value.releaseId)).unique());
+  expect(verifiedRemoval?.state).toBe("succeeded");
   expect(await t.query(api.editorial.public.bySlug, { slug: record.brief.slug })).toEqual({ state: "removed" });
   expect(await t.query(api.ideas.bySlug, { slug: record.brief.slug })).toBeNull();
   const listing = await t.query(api.editorial.public.listing, {});

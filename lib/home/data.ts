@@ -28,6 +28,32 @@ const IDEAS_DIR = "content/ideas";
 const HERO_SLUG = "freelance-scope-creep-detector";
 
 type Loaded = { idea: ManifestIdea; extract: IdeaExtract; art: boolean };
+type PublicListing = Awaited<ReturnType<typeof fetchQuery<typeof api.editorial.public.listing>>>;
+
+/** A managed revision must not inherit evidence or art from the old manifest. */
+export function mergeHomeIdeas(manifestIdeas: ManifestIdea[], publications: PublicListing): ManifestIdea[] {
+  const merged = new Map(manifestIdeas.map((idea) => [idea.slug, idea]));
+  for (const row of publications) {
+    if (row.state === "removed") {
+      merged.delete(row.slug);
+    } else if (row.metadata && row.title) {
+      const prior = merged.get(row.slug);
+      merged.set(row.slug, {
+        slug: row.slug,
+        title: row.title,
+        description: row.metadata.description,
+        category: row.metadata.category,
+        buildTime: row.metadata.buildTime,
+        revenueGoal: row.metadata.revenueGoal,
+        tools: row.metadata.tools,
+        audiences: row.metadata.audiences,
+        publishedAt: prior?.publishedAt ?? row.firstPublishedAt ?? row.updatedAt,
+        highlights: row.metadata.highlights,
+      });
+    }
+  }
+  return [...merged.values()];
+}
 
 function toSpotlight({ idea, extract }: Loaded): SpotlightIdea {
   const category = normalizeCategorySlug(idea.category);
@@ -79,27 +105,7 @@ export async function getHomeData(): Promise<HomeData> {
   };
   const publications = await fetchQuery(api.editorial.public.listing, {});
   const publicBySlug = new Map(publications.map((row) => [row.slug, row]));
-  const merged = new Map((manifest.ideas ?? []).map((idea) => [idea.slug, idea]));
-  for (const row of publications) {
-    if (row.state === "removed") {
-      merged.delete(row.slug);
-    } else if (row.metadata && row.title) {
-      const prior = merged.get(row.slug);
-      merged.set(row.slug, {
-        ...prior,
-        slug: row.slug,
-        title: row.title,
-        description: row.metadata.description,
-        category: row.metadata.category,
-        buildTime: row.metadata.buildTime,
-        revenueGoal: row.metadata.revenueGoal,
-        tools: row.metadata.tools,
-        audiences: row.metadata.audiences,
-        publishedAt: row.firstPublishedAt ?? row.updatedAt,
-      });
-    }
-  }
-  const ideas = liveIdeas([...merged.values()]);
+  const ideas = liveIdeas(mergeHomeIdeas(manifest.ideas ?? [], publications));
 
   const loaded: Loaded[] = await Promise.all(
     ideas.map(async (idea) => {

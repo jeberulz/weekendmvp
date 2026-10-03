@@ -2,6 +2,10 @@
 
 Append-only progress log. The full E0–E4 history is in `docs/plans/editorial-admin/wp46-progress.md`.
 
+## 2026-10-04 — E6 PR #98 review follow-up
+
+- Review found three release-surface gaps before merge: homepage rows retained old manifest scores/provenance/highlights/OG after a managed update; `/_next/image` could serve an optimized copy of old idea art; a failed unpublish probe could not transition legally or retry back to verification. The released homepage row now uses only approved metadata and the original date, optimized local OG URLs pass through the same visibility gate, and unpublish verification can fail and retry without republishing. Targeted regression tests cover the stale optimizer path and failed-then-retried removal.
+
 ## 2026-10-04 — E6 private release bridge implemented locally
 
 - Private immutable `editorial_public_versions` now stage the exact approved markdown and metadata, with a protected super-admin preview. A public per-slug pointer and the `ideas` projection advance in the same Convex mutation as editorial activation. The projection retains its document ID for saved member references but replaces stale scores, provenance and OG claims.

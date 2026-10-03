@@ -348,6 +348,7 @@ describe("middleware matcher contract", () => {
     "/sitemap.xml",
     "/about",
     "/ideas/example",
+    "/_next/image?url=%2Fimage%2Fog%2Fidea%2Fexample.png&w=640&q=75",
     "/dashboard/report.js",
   ])(
     "runs for %s",
@@ -363,7 +364,6 @@ describe("middleware matcher contract", () => {
 
   it.each([
     "/_next/static/chunks/app.js",
-    "/_next/image?url=%2Flogo.png&w=640&q=75",
     "/favicon.ico",
     "/assets/logo.svg",
     "/styles/site.css",

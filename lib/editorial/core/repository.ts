@@ -1623,6 +1623,10 @@ export abstract class EditorialCore implements EditorialRepository {
       if (release.state !== "failed" || expectedState !== "failed") {
         return fail<Result>("PRECONDITION_FAILED", "Only a failed release can be retried.");
       }
+      if (release.operation === "unpublish" &&
+          (idea.publication.state !== "unpublished" || idea.generation !== release.generation)) {
+        return fail<Result>("GENERATION_FENCED", "A later public change superseded this removal probe.");
+      }
       if (release.operation !== "unpublish") {
         if (this.state.killSwitchEngaged) {
           return fail<Result>("KILL_SWITCH_ENGAGED", "Publishing is paused by the kill switch.");
@@ -1644,7 +1648,7 @@ export abstract class EditorialCore implements EditorialRepository {
       release.attempt += 1;
       release.error = null;
       release.generation = idea.generation;
-      transitionRelease(this.state, release, "publish_requested", `Retry attempt ${release.attempt}`);
+      transitionRelease(this.state, release, release.operation === "unpublish" ? "verifying" : "publish_requested", `Retry attempt ${release.attempt}`);
       this.stamp(idea);
       this.record("release.retried", "succeeded", { ideaId: idea.id, releaseId, detail: `Attempt ${release.attempt}` });
       return ok({ releaseId });

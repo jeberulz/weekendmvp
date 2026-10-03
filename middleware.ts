@@ -86,6 +86,15 @@ function publicIdeaSlug(pathname: string): string | null {
   return art?.[1] ?? null;
 }
 
+/** Next's image optimizer has a separate URL that can cache old idea art. */
+function optimizedIdeaSlug(request: NextRequest): string | null {
+  if (request.nextUrl.pathname !== "/_next/image") return null;
+  const source = request.nextUrl.searchParams.get("url");
+  if (!source?.startsWith("/image/og/idea/")) return null;
+  const pathname = source.split("?", 1)[0];
+  return /^\/image\/og\/idea\/([a-z0-9-]+)\.png$/.exec(pathname)?.[1] ?? "";
+}
+
 async function publicIdeaDecision(slug: string): Promise<"legacy" | "released" | "removed" | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -421,12 +430,14 @@ export async function middleware(
   // PPR may otherwise flush a 200 shell before route-level notFound(), and
   // public/ images bypass React entirely. A backend outage never falls back
   // to an unpublished file or stale CDN response.
-  const ideaSlug = publicIdeaSlug(request.nextUrl.pathname);
+  const optimizedSlug = optimizedIdeaSlug(request);
+  if (optimizedSlug === "") return hostRejectedResponse();
+  const ideaSlug = publicIdeaSlug(request.nextUrl.pathname) ?? optimizedSlug;
   if (ideaSlug !== null) {
     const decision = await publicIdeaDecision(ideaSlug);
     if (decision === null) return publicIdeaUnavailable();
     if (decision === "removed") return hostRejectedResponse();
-    if (request.nextUrl.pathname.startsWith("/image/og/idea/") && decision === "released") {
+    if ((request.nextUrl.pathname.startsWith("/image/og/idea/") || optimizedSlug !== null) && decision === "released") {
       return hostRejectedResponse();
     }
   }
@@ -473,6 +484,7 @@ export const config = {
     // which were already re-added here for the same reason.
     "/llms.txt",
     "/image/og/idea/:path*",
+    "/_next/image",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff2?|css|js|map)$).*)",
   ],
 };

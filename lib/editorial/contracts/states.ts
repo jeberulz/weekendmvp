@@ -168,9 +168,9 @@ export const UNPUBLISH_TRANSITIONS: Record<ReleaseState, readonly ReleaseState[]
   deploying: [],
   activating: ["verifying", "failed", "needs_reconciliation"],
   verifying_public: [],
-  verifying: ["succeeded", "needs_reconciliation"],
+  verifying: ["succeeded", "failed", "needs_reconciliation"],
   needs_reconciliation: ["succeeded", "failed"],
-  failed: ["publish_requested"],
+  failed: ["verifying"],
   succeeded: [],
   cancelled: [],
 };
