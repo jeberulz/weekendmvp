@@ -24,7 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { auditEngineArtifact, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
+import { auditEngineArtifact, auditSizeError, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
 import { hasEngineMarker as compiledPageHasEngineMarker } from "../lib/engine/compile.ts";
 import {
   CANONICAL_SECTION_TITLES,
@@ -348,6 +348,13 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       warnings,
       metrics: null,
     };
+  }
+
+  // Ruling R16: a page over 64 KiB is refused before it is read or parsed
+  // (the MDX parser is quadratic on some character runs).
+  const tooLarge = auditSizeError(fs.statSync(filePath).size);
+  if (tooLarge) {
+    return { ok: false, slug, errors: [...errors, tooLarge], warnings, metrics: null };
   }
 
   const raw = fs.readFileSync(filePath, "utf8");
@@ -693,6 +700,10 @@ const HELP = `Usage:
   --json      one JSON result per audited page on stdout
   Exit codes: 0 every page passed, 1 any page failed, 2 usage error.
 
+A page larger than 64 KiB (65,536 bytes) fails before it is parsed (ruling
+R16): the MDX parser slows sharply on long character runs. Published idea
+pages are under 25 KB.
+
 Engine pages (frontmatter engine: true, manifest source engine:*,
 engine-draft-* drafts in engine/drafts/, or --record) get the deep bar:
 ≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock filler, no duplicate ≥8-word sentences (in-page or
@@ -748,7 +759,9 @@ function main() {
   const targets = [];
   if (args.file) {
     const filePath = path.resolve(args.file);
-    const fromFrontmatter = fs.existsSync(filePath) ? frontmatterSlug(fs.readFileSync(filePath, "utf8")) : null;
+    // An oversized file is not read for its slug: auditIdeaFile refuses it (R16).
+    const readable = fs.existsSync(filePath) && auditSizeError(fs.statSync(filePath).size) === null;
+    const fromFrontmatter = readable ? frontmatterSlug(fs.readFileSync(filePath, "utf8")) : null;
     targets.push({
       filePath,
       slug: args.slug || fromFrontmatter || path.basename(filePath, path.extname(filePath)),

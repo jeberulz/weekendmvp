@@ -16,16 +16,28 @@
  *     on a heading with 20,000 spaces, the frontmatter slug and section
  *     split ~1 s on 20,000 spaces.
  * After, only the MDX parser itself (third party) stays above 0.1 s at
- * this size, on runs of underscores, dots or list markers.
+ * this size, on runs of underscores, dots or list markers; it is bounded by
+ * the 64 KiB input limit (ruling R16, the last block below).
  * Every case audits a 20,000-character run and must finish within
  * BUDGET_MS; one also checks that the rules still fire.
  */
+import { Buffer } from "node:buffer";
+import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { auditEngineArtifact } from "./artifact-audit.ts";
-import { auditPage, cleanupTempDirs, compiledPage, pageBody, REPO_ROOT, replaceOnce } from "./__fixtures__/auditHarness.ts";
+import { auditEngineArtifact, MAX_AUDIT_BYTES } from "./artifact-audit.ts";
+import {
+  auditCli,
+  auditPage,
+  cleanupTempDirs,
+  compiledPage,
+  pageBody,
+  REPO_ROOT,
+  replaceOnce,
+  writePage,
+} from "./__fixtures__/auditHarness.ts";
 import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
 import { pageProductName, parseYearOneLine, splitViaLabel } from "./page-format.ts";
 
@@ -310,5 +322,82 @@ describe("the base bar's linear patterns match their predecessors", () => {
     function findTierMismatchesWith(tierNames: string[], promptsContent: string): unknown {
       return findTierMismatches(tierNames.map((name) => `- **${name}** (x)`).join("\n"), promptsContent);
     }
+  });
+});
+
+/**
+ * Ruling R16: the third-party MDX parser is quadratic on some character runs
+ * (65,536 underscores take it seconds), so the auditor refuses a page larger
+ * than 64 KiB before parsing it. Published idea pages are under 25 KB and
+ * compiled pages about 20 KB.
+ */
+describe("the auditor refuses a page over 64 KiB before parsing it (R16)", () => {
+  const LIMIT_ERROR = /^page is 65,537 bytes, over the 65,536-byte \(64 KiB\) audit limit \(ruling R16\); refused before parsing$/;
+
+  /** The compiled page grown to exactly `bytes` bytes with trailing blank lines (harmless to every check). */
+  function paddedTo(bytes: number): string {
+    const size = Buffer.byteLength(page, "utf8");
+    if (size > bytes) throw new Error(`fixture: the compiled page is already ${size} bytes`);
+    return page + "\n".repeat(bytes - size);
+  }
+
+  /** The compiled page grown to exactly `bytes` bytes with an underscore run the parser needs seconds for. */
+  function slowToParse(bytes: number): string {
+    const head = `${page}\n`;
+    const run = bytes - Buffer.byteLength(head, "utf8") - 2;
+    return `${head}${"_".repeat(run)}x\n`;
+  }
+
+  it("is 64 KiB", () => {
+    expect(MAX_AUDIT_BYTES).toBe(65_536);
+  });
+
+  it("refuses a page of 64 KiB + 1 byte at once, without parsing it", async () => {
+    for (const mdx of [paddedTo(MAX_AUDIT_BYTES + 1), slowToParse(MAX_AUDIT_BYTES + 1)]) {
+      expect(Buffer.byteLength(mdx, "utf8")).toBe(MAX_AUDIT_BYTES + 1);
+      let result: { ok: boolean; errors: string[]; metrics: unknown } = { ok: true, errors: [], metrics: null };
+      const ms = await elapsedMsAsync(async () => {
+        result = await auditPage(mdx, record);
+      });
+      expect(ms).toBeLessThan(BUDGET_MS);
+      expect(result.ok).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toMatch(LIMIT_ERROR);
+      expect(result.metrics).toBeNull();
+    }
+  });
+
+  it("audits a page of exactly 64 KiB as usual", async () => {
+    const mdx = paddedTo(MAX_AUDIT_BYTES);
+    expect(Buffer.byteLength(mdx, "utf8")).toBe(MAX_AUDIT_BYTES);
+    const result = await auditPage(mdx, record);
+    expect(result.errors).toEqual([]);
+    expect(result.metrics?.deep).toBe(true);
+  });
+
+  it("refuses an oversized body in the deep audit itself, before parsing", () => {
+    const body = pageBody(slowToParse(MAX_AUDIT_BYTES + 200));
+    let errors: string[] = [];
+    expect(elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(BUDGET_MS);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(/^page is [\d,]+ bytes, over the 65,536-byte \(64 KiB\) audit limit \(ruling R16\); refused before parsing$/);
+    expect(auditEngineArtifact(pageBody(paddedTo(MAX_AUDIT_BYTES)), record, {}).errors).toEqual([]);
+  });
+
+  it("refuses an oversized file through the CLI (--file), exit 1", async () => {
+    const run = await auditCli(writePage(slowToParse(MAX_AUDIT_BYTES + 1), record));
+    expect(run.code).toBe(1);
+    expect(run.result.errors).toHaveLength(1);
+    expect(run.result.errors[0]).toMatch(LIMIT_ERROR);
+  }, 30_000);
+
+  it("changes no verdict of the published corpus: every idea page and engine draft is under the limit", () => {
+    const pages = [
+      ...fs.readdirSync(path.join(REPO_ROOT, "content", "ideas")).filter((f) => f.endsWith(".mdx") && !f.startsWith("_")).map((f) => path.join(REPO_ROOT, "content", "ideas", f)),
+      ...fs.readdirSync(path.join(REPO_ROOT, "engine", "drafts")).filter((f) => f.endsWith(".mdx")).map((f) => path.join(REPO_ROOT, "engine", "drafts", f)),
+    ];
+    expect(pages.length).toBeGreaterThan(200);
+    const over = pages.filter((file) => fs.statSync(file).size > MAX_AUDIT_BYTES).map((file) => path.relative(REPO_ROOT, file));
+    expect(over).toEqual([]);
   });
 });
