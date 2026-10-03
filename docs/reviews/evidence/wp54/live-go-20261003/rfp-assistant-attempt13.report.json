@@ -1,0 +1,404 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T21:37:28.212Z",
+  "finishedAt": "2026-10-03T21:38:44.119Z",
+  "failedStep": "evidence_acceptance",
+  "error": "market stats: 0 accepted, need 2. Top rejection reasons: metric_unit_mismatch ×3, qualifier_dropped ×3, span_bounds ×1, subject_not_in_context ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.004625000000000001
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.018596
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.022301
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.02488
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.19881
+    }
+  ],
+  "costUsd": 0.269213,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "a4bfef0624f4aaf1d0703b1a5bb0bdbbbf369cee",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://rfp.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:31.913Z",
+      "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+    },
+    {
+      "url": "https://proposalforge.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:31.612Z",
+      "textSha256": "4e218839e2f5f3e02db9400d24bc628ef3200d40d7b5cd238c9df54130ff45c2"
+    },
+    {
+      "url": "https://deeprfp.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:32.153Z",
+      "textSha256": "165159184288eb51e109fb916a2aedbab582da18d06537aa09b44babcdc16ab2"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:33.129Z",
+      "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+    },
+    {
+      "url": "https://www.responsive.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:31.796Z",
+      "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36488436",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:37.319Z",
+      "textSha256": "da534c14ecff35e514f524190004aa83661c66cdcb9cdcaaa986417cf6d6b9c7"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=26513040",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:37.090Z",
+      "textSha256": "7cbf25cd73fa5f0993606cc0e922cd298755e18da5448c1c8ae6aaac2af2d82f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=25793230",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:38.601Z",
+      "textSha256": "cd711dd09923b6ea11a04a12e552b57e322c9c9c34ba4810fbfffabab6ccc7e1"
+    },
+    {
+      "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.fortunebusinessinsights.com/proposal-management-software-market-108680"
+    },
+    {
+      "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:37.513Z",
+      "textSha256": "4a4d283ffb122e19fc353ec35294d37ac7a0de7b65558ea7c29af8c218a0c19b"
+    },
+    {
+      "url": "https://www.openpr.com/news/4643664/proposal-management-software-market-report-evaluates-growth",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.openpr.com/news/4643664/proposal-management-software-market-report-evaluates-growth"
+    },
+    {
+      "url": "https://marketintelo.com/report/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:37.852Z",
+      "textSha256": "d4a8b6e0587e0dda9e9c2ee9a4a0cb7a53bb2db17f7414e10a13b14e533a9926"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:38.141Z",
+      "textSha256": "ddc8320822ca9a8c579c5f7d15bc058eab96135e3b31679f325379f541863341"
+    },
+    {
+      "url": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:37.946Z",
+      "textSha256": "c1386759c269dbd246dcbc955d92d3521d6c38ef53348cea00d34305d86bad87"
+    },
+    {
+      "url": "https://www.reanin.com/reports/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:38.061Z",
+      "textSha256": "ae0cf95c927aeb429da4f1e8f538ac799d1f02b5d98800a4fd35cfd726d479b1"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:38.059Z",
+      "textSha256": "2b58bb51e2e5c68990d03b9531d1cc1763d52a2736c3cae5c67124b5a0aac68f"
+    },
+    {
+      "url": "https://www.sifthub.io/blog/loopio-responsive-qvidian-sifthub",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.464Z",
+      "textSha256": "c36289be611994b3058ef694c6584c6cfc8a121ee0116ee99c0ca661cd5f07be"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.470Z",
+      "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/rfp-software-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.460Z",
+      "textSha256": "23b4a5e767d7ced0510cd621674a0960c2135858ee42b95ed7700b5a44825dd4"
+    },
+    {
+      "url": "https://storyflow.so/blog/best-rfp-response-tools-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.708Z",
+      "textSha256": "901431b32715962c986774c3040576fed74cbcbaff71a0c242019dbc47aae529"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/qvidian-vs-loopio-vs-responsive",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.566Z",
+      "textSha256": "b39bf00f0056b9b6b300d774fdd41acf442f96bf81f87d7176f3401f41f8b17f"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.563Z",
+      "textSha256": "025888e663ffc9381ad2daa12bb11e7acbfa6452433d325649e231e8f025aaad"
+    },
+    {
+      "url": "https://autorfp.ai/blog/rfpio-competitors",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.588Z",
+      "textSha256": "899871f37c808c1859628818854d22b8ffb927791fb07141e8c7631d61eaf701"
+    },
+    {
+      "url": "https://www.responsive.io/blog/best-rfq-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:37:45.748Z",
+      "textSha256": "534c54446e23fc6b4066c8d9054db6eeeb8c4248ef67258cb39bfc7f8a1820c8"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/1qmjwqe/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1qmjwqe/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30932596",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:38:01.657Z",
+      "textSha256": "4a658ce9d6ad8dc06e8874e2b2ea17a3ec51806f5a0e0c9e63a83daa9d01d42d"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/z856tn/advice_for_enterprise_sales_and_rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/z856tn/advice_for_enterprise_sales_and_rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIENT_…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=906429",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:38:04.131Z",
+      "textSha256": "9d82cbe5f2ddad7e06ebf8d79f55cf5937d9b2aee02b8cc9e41e1a6f3682936a"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/n5sop7/saas_are_rfps_really_the_place_to_be_trying_to_do",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/n5sop7/saas_are_rfps_really_the_place_to_be_trying_to_do.json?… (Reddit blocks this network; set …"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIEN…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=33549151",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:38:02.519Z",
+      "textSha256": "b2a6105296a92f6e2ab5daf35d607e7af44bfd4878831863fcc6b4ab9109c05e"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 2,
+      "market_stat": 0,
+      "competitor_price": 11,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "year_not_in_context",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+        "detail": "2026 does not appear in the sentence as this figure's period"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+        "detail": "the sentence lacks \"request\", \"proposal\", \"rfp\", \"response\" of the subject \"request for proposal (rfp) response automation artificial i…\"; every subject word must be in it (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://rfp.ai/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://deeprfp.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://deeprfp.com/pricing",
+        "detail": "source says $149/user/month, billed monthly"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "span_bounds",
+        "sourceUrl": "https://www.responsive.io/pricing",
+        "detail": "pricing statement must fit in one sentence of at most 600 characters"
+      }
+    ]
+  }
+}

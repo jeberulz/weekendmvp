@@ -4,7 +4,10 @@
  * Idea bodies follow the seven-section contract in `ideas/SECTIONS.md`, so the
  * parts the homepage shows can be read without an LLM. Anything that does not
  * parse comes back empty and the matching tile hides. A curated `highlights`
- * block in the manifest (see `./highlights`) wins over these results.
+ * block in the manifest (see `./highlights`) wins over these results, and an
+ * engine-compiled idea shows its generated highlights only (ruling R15).
+ * Text comes back plain: emphasis and links stripped and the idea compiler's
+ * escaping undone (plainText).
  */
 import type { Competitor, IdeaExtract, MarketStat, Prompt, Tier } from "./types";
 import { plainText, splitSentences } from "./text";
@@ -50,10 +53,18 @@ function marketStats(body: string): MarketStat[] {
 
 function boldBullets(text: string): { name: string; rest: string }[] {
   return [...text.matchAll(/^- \*\*([^*]+)\*\*\s*[-–—:]?\s*(.*)$/gm)].map((m) => ({
-    name: m[1].trim(),
+    name: plainText(m[1]),
     rest: m[2] ?? "",
   }));
 }
+
+/**
+ * A Year-One Math computation, "45 × $100/mo = $54,000 ARR": a count times a
+ * per-account amount equals a total (the idea compiler's base and downside
+ * lines, or the same arithmetic on a handwritten page). It is never a pricing
+ * tier, even though its description names one.
+ */
+const YEAR_ONE_LINE_RE = /^\s*[\d,]+\s*[×xX*]\s*\$\s?[\d,.]+(?:\s*\/\s*[A-Za-z]+)*\s*=\s*\$?\s?\d/;
 
 function prompts(body: string): Prompt[] {
   const text = section(body, "AI Prompts to Build This");
@@ -78,6 +89,7 @@ export function extractIdea(body: string): IdeaExtract {
 
   const tiers: Tier[] = [];
   for (const { name, rest } of boldBullets(section(body, "Business Model"))) {
+    if (YEAR_ONE_LINE_RE.test(name)) continue;
     const price = firstPrice(rest.slice(0, 60));
     if (price) tiers.push({ name, price });
     if (tiers.length === 3) break;
@@ -85,7 +97,7 @@ export function extractIdea(body: string): IdeaExtract {
 
   return {
     problem: problemParas.length > 0 ? plainText(problemParas[0]) : "",
-    how: [...how.matchAll(/^\d+\.\s+\*\*([^*]+?)\*\*/gm)].map((m) => m[1].trim()).slice(0, 5),
+    how: [...how.matchAll(/^\d+\.\s+\*\*([^*]+?)\*\*/gm)].map((m) => plainText(m[1])).slice(0, 5),
     market: marketStats(body),
     competitors,
     tiers,

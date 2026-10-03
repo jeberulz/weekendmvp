@@ -1,0 +1,1044 @@
+{
+  "contractVersion": 2,
+  "pipelineVersion": 2,
+  "mode": "live",
+  "brief": {
+    "title": "AI RFP Response Assistant",
+    "slug": "ai-rfp-response-assistant",
+    "oneLiner": "Grounded RFP drafts with citations for SMB sales teams.",
+    "targetCustomer": "SMB SaaS sales and solutions engineers"
+  },
+  "evidence": {
+    "contractVersion": 2,
+    "accepted": [
+      {
+        "id": "q_757ab761a825",
+        "sourceUrl": "https://news.ycombinator.com/item?id=36488436",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!",
+        "excerptSha256": "0795fa59f58dd4c5f9fdbde106affd1d7595a0f6708566467f00a774fa6362b6",
+        "retrievedAt": "2026-10-03T08:05:28.833Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_af59c4a09587",
+        "sourceUrl": "https://news.ycombinator.com/item?id=26513040",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "Another tool that I've been happy with is Loopio. They do have the \"Magic\" capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.",
+        "excerptSha256": "f3b7444c9c4b8dc5fe3a3d61d4d84f580d8721e8001cb0f70c9c39ddc295795b",
+        "retrievedAt": "2026-10-03T08:05:29.297Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_4083763405a9",
+        "sourceUrl": "https://news.ycombinator.com/item?id=25793230",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "Huge companies might be able to afford real human-powered security audits and convince vendors to allow them, but small startups like ours don’t have a better option than relying on DSQs.",
+        "excerptSha256": "681a485c05c0948a3d254378afba4c00aaf94be3842f0ee60ed015c0547e5f7b",
+        "retrievedAt": "2026-10-03T08:05:29.431Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "s_2d8fa35922dd",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "sourceTitle": "RFP Software Market",
+        "excerpt": "Global RFP Software market size was valued at USD 1.45 billion in 2025.",
+        "excerptSha256": "136b8c072a742f8ceb1a66f65b8efd786edc5a009f74d777523d042cf493058c",
+        "retrievedAt": "2026-10-03T08:05:33.970Z",
+        "kind": "market_stat",
+        "subject": "Global RFP Software market size",
+        "metric": "market_size",
+        "amount": {
+          "value": "1.45",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_e9988ad7b612",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "sourceTitle": "RFP Software Market Size, Growth & Forecast 2034",
+        "excerpt": "The global RFP Software market was valued at US$ 3.55 billion in 2025 and is expected to reach US$ 7.61 billion by 2034; it is estimated to record a CAGR of 8.84% during 2026-2034.",
+        "excerptSha256": "e48d67e46c910f433191b6bc7361e4f39be5b89d84d5cfffe50c54cf292dfa1e",
+        "retrievedAt": "2026-10-03T08:05:33.155Z",
+        "kind": "market_stat",
+        "subject": "global RFP Software market",
+        "metric": "market_size",
+        "amount": {
+          "value": "3.55",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_853519819140",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "sourceTitle": "RFP Software Market Size, Growth & Forecast 2034",
+        "excerpt": "The global RFP Software market was valued at US$ 3.55 billion in 2025 and is expected to reach US$ 7.61 billion by 2034; it is estimated to record a CAGR of 8.84% during 2026-2034.",
+        "excerptSha256": "e48d67e46c910f433191b6bc7361e4f39be5b89d84d5cfffe50c54cf292dfa1e",
+        "retrievedAt": "2026-10-03T08:05:33.155Z",
+        "kind": "market_stat",
+        "subject": "global RFP Software market",
+        "metric": "market_size",
+        "amount": {
+          "value": "7.61",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_e505fb6c2fef",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "sourceTitle": "Proposal Management Software Market - 2035 - Future Market Insights",
+        "excerpt": "Proposal Management Software Market Key Insight The proposal management software market is projected to grow from USD 3.2 billion in 2025 to USD 9.0 billion by 2035, at a CAGR of 11.1%.",
+        "excerptSha256": "b7d3ab4ebf10bb02094b1b776f6c010e91974f87070a196584c55ab2971330b8",
+        "retrievedAt": "2026-10-03T08:05:33.288Z",
+        "kind": "market_stat",
+        "subject": "proposal management software market",
+        "metric": "market_size",
+        "amount": {
+          "value": "9.0",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_bdeb5b37ab5e",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "sourceTitle": "Proposal Management Software Market - 2035 - Future Market Insights",
+        "excerpt": "Proposal Management Software Market Key Insight The proposal management software market is projected to grow from USD 3.2 billion in 2025 to USD 9.0 billion by 2035, at a CAGR of 11.1%.",
+        "excerptSha256": "b7d3ab4ebf10bb02094b1b776f6c010e91974f87070a196584c55ab2971330b8",
+        "retrievedAt": "2026-10-03T08:05:33.288Z",
+        "kind": "market_stat",
+        "subject": "proposal management software market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "11.1",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_07d35504ecf0",
+        "sourceUrl": "https://marketintelo.com/report/proposal-management-software-market",
+        "sourceTitle": "Proposal Management Software Market Research Report 2034",
+        "excerpt": "Proposal Management Software Market Outlook 2025-2034 The global Proposal Management Software market was valued at $2.1 billion in 2025 and is projected to expand to $5.8 billion by 2034 , representing a robust compound annual growth rate (CAGR) of 14.2% throughout the forecast period.",
+        "excerptSha256": "0d337d727947511bdfe4585d3eda1eeaeb8bcd1d17bc3ee0158a7ac1e3891b6d",
+        "retrievedAt": "2026-10-03T08:05:33.421Z",
+        "kind": "market_stat",
+        "subject": "global Proposal Management Software market",
+        "metric": "market_size",
+        "amount": {
+          "value": "5.8",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_c695ac51063b",
+        "sourceUrl": "https://marketintelo.com/report/proposal-management-software-market",
+        "sourceTitle": "Proposal Management Software Market Research Report 2034",
+        "excerpt": "Proposal Management Software Market Outlook 2025-2034 The global Proposal Management Software market was valued at $2.1 billion in 2025 and is projected to expand to $5.8 billion by 2034 , representing a robust compound annual growth rate (CAGR) of 14.2% throughout the forecast period.",
+        "excerptSha256": "0d337d727947511bdfe4585d3eda1eeaeb8bcd1d17bc3ee0158a7ac1e3891b6d",
+        "retrievedAt": "2026-10-03T08:05:33.421Z",
+        "kind": "market_stat",
+        "subject": "global Proposal Management Software market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "14.2",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_3c20849879a2",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-software-market",
+        "sourceTitle": "RFP Software Market Trends & Growth Analysis 2035",
+        "excerpt": "The RFP Software Market was valued at USD 2.64 Billion in 2025 and is projected to grow to USD 5 Billion by 2035, at a CAGR of 6.6%.",
+        "excerptSha256": "0b7e028f962ba723f93d24bf178ca8dbb78b52b27a52ebab2a5b8149c3a10107",
+        "retrievedAt": "2026-10-03T08:05:34.332Z",
+        "kind": "market_stat",
+        "subject": "RFP Software Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "2.64",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "p_753b257ba5d5",
+        "sourceUrl": "https://rfp.ai/pricing",
+        "sourceTitle": "Rfp",
+        "excerpt": "€49 per month €49 /mo",
+        "excerptSha256": "9466f42d638c447d611ee1fd5801a7cbc64a181fc1303a3703e3dddc2d1f2e2e",
+        "retrievedAt": "2026-10-03T08:05:28.749Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "RFP.ai",
+        "price": {
+          "amount": {
+            "value": "49",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_af0dbce6d2ba",
+        "sourceUrl": "https://rfp.ai/pricing",
+        "sourceTitle": "Rfp",
+        "excerpt": "€49 per month €49 /mo\nor €40.83/mo billed annually",
+        "excerptSha256": "cabacd936a699084654955c5a9066cd25410cf81ad72a76dc7ab1af971768415",
+        "retrievedAt": "2026-10-03T08:05:28.749Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "RFP.ai",
+        "price": {
+          "amount": {
+            "value": "40.83",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_a3f372a72705",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$149 /month",
+        "excerptSha256": "6e4a41eb57510406bc8af7c2bf040f2f4f610e71490559a58c49b28af08088c6",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "149",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_327c79325629",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$149 /month\n$119/mo billed annually ($1,428/year)",
+        "excerptSha256": "e90f9b7bdea5483890485b18b1cade464eb5331feaf8f6c0a71930ac374802b4",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "119",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_07d66894ac2a",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$399 /month",
+        "excerptSha256": "85d4594fa036d14900bf00f9f64d899576e7bcdac90cbec17182746309b415d9",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "399",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_f5433e9e6815",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$399 /month\n$319/mo billed annually ($3,828/year)",
+        "excerptSha256": "0163f00d0b159f2d8504cb33553ff23acba23ba9361cdad6b375f03f86d6bec1",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "319",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_c14630efd323",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$799 /month",
+        "excerptSha256": "863502eb25ee37882e4e7cc6a19b5b03b2a6ce7eae5be0e69631969eff5fc133",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "799",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_dc3e37627374",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$799 /month\n$639/mo billed annually ($7,668/year)",
+        "excerptSha256": "238cbec2c6c5b6cf3c13530ab3a561867bbdd382368f0410867d7b7149009d2b",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "639",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "a_ea23ed0770ca",
+        "sourceUrl": "https://loopio.com/pricing",
+        "sourceTitle": "Loopio",
+        "excerpt": "Get Started with a Custom Quote",
+        "excerptSha256": "94fea521160bd3ebdae562566fd0b6db1c734d70d25ac4e0f2c804a76701a1d8",
+        "retrievedAt": "2026-10-03T08:05:29.925Z",
+        "kind": "competitor_availability",
+        "vendor": "Loopio",
+        "availability": "contact_sales",
+        "attribution": "first_party"
+      }
+    ],
+    "rejected": [
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "candidate": "market: USD 1.55 billion",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "candidate": "market: USD 3.10 billion",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "candidate": "market: 8.8%",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "candidate": "global RFP Software market: 8.84%",
+        "detail": "the sentence lacks \"global\", \"rfp\", \"software\", \"market\" of the subject \"global RFP Software market\"; every subject word must be in it (rulings R9, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/5980535/proposal-management-software-market-report",
+        "candidate": "proposal management software market size: $2.89 billion",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/5980535/proposal-management-software-market-report",
+        "candidate": "proposal management software market size: $4.66 billion",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/proposal-management-software-market",
+        "candidate": "global Proposal Management Software market: $2.1 billion",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-software-market",
+        "candidate": "RFP Software Market: USD 5 Billion",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-software-market",
+        "candidate": "RFP Software Market: 6.6%",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+        "candidate": "Proposal Management Software Market Revenue: USD 5.7 Billion",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+        "candidate": "Proposal Management Software Market Revenue: USD 7.1 Billion",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+        "candidate": "Proposal Management Software Market Revenue: 7%",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+        "candidate": "DeepRFP: $89/user/month, billed monthly",
+        "detail": "source says from $89/user/month, billed monthly"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "span_bounds",
+        "sourceUrl": "https://www.responsive.io/pricing",
+        "candidate": "Responsive: contact_sales",
+        "detail": "pricing statement must fit in one sentence of at most 600 characters"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://rfp.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:28.749Z",
+        "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+      },
+      {
+        "url": "https://proposalforge.io/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:28.700Z",
+        "textSha256": "4e218839e2f5f3e02db9400d24bc628ef3200d40d7b5cd238c9df54130ff45c2"
+      },
+      {
+        "url": "https://loopio.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:29.925Z",
+        "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+      },
+      {
+        "url": "https://www.responsive.io/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:28.428Z",
+        "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=36488436",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:28.833Z",
+        "textSha256": "26c99350b3d62b0f9b88c387d04ae2410feff05e172e4f94fae891e3aef660e2"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=26513040",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:29.297Z",
+        "textSha256": "62e354611cb5ee7053779199104a2137d49c3dc3264c2d0067d247156d35538e"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=25793230",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:29.431Z",
+        "textSha256": "41d5fd0f1cfe8b0996cf970fe911edb397c9025ae0ba3225ad24ac7b35b687bb"
+      },
+      {
+        "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
+        "roles": [
+          "market"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.fortunebusinessinsights.com/proposal-management-software-market-108680"
+      },
+      {
+        "url": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:33.970Z",
+        "textSha256": "c421fd94c34990739c6c1a06e36c339cd1eb49a0f8a720e8053a4656a4d7798a"
+      },
+      {
+        "url": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:33.155Z",
+        "textSha256": "ee20893743d4bfdc3ffbaf7ca3f8818b8824cc9463740127c663cbe4984dd17e"
+      },
+      {
+        "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:33.288Z",
+        "textSha256": "4a4d283ffb122e19fc353ec35294d37ac7a0de7b65558ea7c29af8c218a0c19b"
+      },
+      {
+        "url": "https://www.researchandmarkets.com/reports/5980535/proposal-management-software-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:32.757Z",
+        "textSha256": "6fc131ca220f98515dca150600102a7a2006d8f2a63321a07fe16f1c28e093b7"
+      },
+      {
+        "url": "https://marketintelo.com/report/proposal-management-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:33.421Z",
+        "textSha256": "d4a8b6e0587e0dda9e9c2ee9a4a0cb7a53bb2db17f7414e10a13b14e533a9926"
+      },
+      {
+        "url": "https://www.wiseguyreports.com/reports/rfp-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:34.332Z",
+        "textSha256": "a38813b1e1a8021b27d9e49ef33502178c351458f8d082e225580ec0f2f53dda"
+      },
+      {
+        "url": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:34.711Z",
+        "textSha256": "ddc8320822ca9a8c579c5f7d15bc058eab96135e3b31679f325379f541863341"
+      },
+      {
+        "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.684Z",
+        "textSha256": "025888e663ffc9381ad2daa12bb11e7acbfa6452433d325649e231e8f025aaad"
+      },
+      {
+        "url": "https://www.bidara.ai/comparison/top-ai-rfp-software-2026",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.999Z",
+        "textSha256": "4de13c73c8cfe5154ab52653d2501a34945032996759055504693270a4c95ddc"
+      },
+      {
+        "url": "https://www.inventive.ai/blog-posts/rfp-software-pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.656Z",
+        "textSha256": "23b4a5e767d7ced0510cd621674a0960c2135858ee42b95ed7700b5a44825dd4"
+      },
+      {
+        "url": "https://www.bidara.ai/comparison/ai-proposal-software",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.828Z",
+        "textSha256": "93d61e3bb10ab63040d1e5bfeff4d281de01318bbbbe669bb2e33130105e024c"
+      },
+      {
+        "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.754Z",
+        "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+      },
+      {
+        "url": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:40.822Z",
+        "textSha256": "5d9e0638bbff039c614a12709c2b724a6304d132538c85e68b09246bb807ba68"
+      },
+      {
+        "url": "https://www.linkedin.com/pulse/best-rfp-software-2026-buyers-guide-pricing-snehil-srivastava-wkzpf",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:41.484Z",
+        "textSha256": "6e053326bd46daf90b00fbef9dd8b0a0e240ec1d9631e080395b4bb87f32d990"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=30932596",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:55.980Z",
+        "textSha256": "f8b5612ed4d568aa8e6d35abdd4fac0f15d5d72f7a2b3fed543fae30a5ec58d2"
+      },
+      {
+        "url": "https://www.reddit.com/r/salesengineers/comments/1gy8g4x/process_advice_for_filling_out_rfps_security",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1gy8g4x/process_advice_for_filling_out_rfps_security.json?… (Reddit blocks this network; set REDD…"
+      },
+      {
+        "url": "https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled.json?… (Reddit blocks this network; set REDD…"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=37536361",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:56.198Z",
+        "textSha256": "6c81cbf4732ca38038b55284d1871f90afc2a9fd63137677a969cfa7f64f5639"
+      },
+      {
+        "url": "https://www.reddit.com/r/cybersecurity/comments/1gy8dwd/best_process_for_answering_security",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/cybersecurity/comments/1gy8dwd/best_process_for_answering_security.json?… (Reddit blocks this network; set REDDIT_CLIENT_…"
+      },
+      {
+        "url": "https://rfp-software-tools.com/guides/how-to-respond-to-a-security-questionnaire-in-2026",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:55.495Z",
+        "textSha256": "dd351ff03239aaef7c70f92f20a58f85efcdad8152fcd326ad033a34450e2586"
+      },
+      {
+        "url": "https://www.upguard.com/blog/what-is-an-rfp-response-a-guide-for-security-and-grc-teams",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:05:55.827Z",
+        "textSha256": "1f9d60f545bfd13f092c0e8d8afaa6941d3fa7388dc5d992467359cac877ec24"
+      }
+    ]
+  },
+  "market": {
+    "summary": "The niche is software that helps revenue teams answer RFPs, security questionnaires, due diligence forms, and related buyer requests from approved company knowledge. It sits between proposal management, sales enablement, and security review operations, but its defining job is producing defensible responses rather than generic sales copy. Published estimates place the current RFP software market at materially different levels: [[ev:s_2d8fa35922dd]], [[ev:s_e9988ad7b612]], and [[ev:s_3c20849879a2]]. That variation suggests a fragmented category definition, with researchers likely drawing different boundaries around proposal workflows, response libraries, procurement, and automation. Even so, every cited estimate describes an established software niche rather than an experimental feature category. A forward estimate also anticipates continued expansion in RFP software: [[ev:s_853519819140]]. For SMB SaaS vendors, the practical opportunity is narrower than the full category. These teams need fast drafts, clear evidence trails, lightweight approvals, and predictable per-seat purchasing. They often lack dedicated proposal operations staff, yet still face enterprise buyers expecting accurate product, privacy, security, legal, and implementation answers. The strongest wedge is therefore not broad document creation. It is grounded response assistance that retrieves approved material, exposes citations beside every proposed answer, routes uncertain claims to the right reviewer, and improves the reusable answer library after each submission. That focus can support a land-and-expand motion across sales, solutions engineering, security, and customer-facing operations.",
+    "statIds": [
+      "s_2d8fa35922dd",
+      "s_e9988ad7b612",
+      "s_853519819140",
+      "s_3c20849879a2"
+    ]
+  },
+  "competitors": [
+    {
+      "name": "RFP.ai",
+      "priceIds": [
+        "p_753b257ba5d5",
+        "p_af0dbce6d2ba"
+      ],
+      "notes": "RFP.ai publishes a monthly self-serve price [[ev:p_753b257ba5d5]] and a lower effective monthly price with annual billing [[ev:p_af0dbce6d2ba]]. That transparency gives smaller teams a visible entry point without requiring a sales conversation."
+    },
+    {
+      "name": "Proposal Forge",
+      "priceIds": [
+        "p_a3f372a72705",
+        "p_07d66894ac2a",
+        "p_c14630efd323"
+      ],
+      "notes": "Proposal Forge presents several monthly price points, spanning an accessible plan [[ev:p_a3f372a72705]], a larger plan [[ev:p_07d66894ac2a]], and a premium plan [[ev:p_c14630efd323]]. The range signals room for packaging around workflow depth and capacity."
+    },
+    {
+      "name": "Loopio",
+      "priceIds": [],
+      "availabilityId": "a_ea23ed0770ca",
+      "notes": "Loopio directs prospective customers to a custom quote rather than publishing a self-serve amount [[ev:a_ea23ed0770ca]]. That sales-led approach may suit complex evaluations while leaving space for simpler SMB purchasing."
+    }
+  ],
+  "community": {
+    "summary": "Buyer discussion shows that response teams are already experimenting with language models as a shortcut around repetitive questionnaire work. One practitioner describes pasting a security answer library and a customer question into GPT-4, then finding the resulting answers comparable with manual work [[ev:q_757ab761a825]]. That validates demand for assisted drafting, but the described workflow lacks durable sourcing, permissions, review history, and reusable learning. Another practitioner reports that Loopio automation achieved useful matching because security questions have consistent structure, while also finding the interface difficult to navigate [[ev:q_af59c4a09587]]. A separate small-startup perspective explains the limited options available when costly human security audits are impractical [[ev:q_4083763405a9]]. Together, these comments point toward a buyer who values speed but cannot sacrifice trust. The product opportunity is to turn ad hoc prompting into a controlled workflow where every draft is grounded, reviewable, and easy to approve.",
+    "quoteIds": [
+      "q_757ab761a825",
+      "q_af59c4a09587",
+      "q_4083763405a9"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "rfp response software",
+      "volume": 90,
+      "competition": 34,
+      "cpc": 45.6,
+      "source": "provider"
+    },
+    {
+      "term": "security questionnaire automation",
+      "volume": 90,
+      "competition": 17,
+      "cpc": 108.76,
+      "source": "provider"
+    },
+    {
+      "term": "proposal management software",
+      "volume": 320,
+      "competition": 23,
+      "cpc": 62.79,
+      "source": "provider"
+    },
+    {
+      "term": "RFP management software",
+      "volume": 260,
+      "competition": 25,
+      "cpc": 30.23,
+      "source": "provider"
+    },
+    {
+      "term": "RFP automation platform",
+      "volume": 20,
+      "competition": 64,
+      "cpc": 29.15,
+      "source": "provider"
+    },
+    {
+      "term": "due diligence questionnaire software",
+      "volume": 70,
+      "competition": 21,
+      "cpc": 26.7,
+      "source": "provider"
+    },
+    {
+      "term": "proposal response software",
+      "volume": 10,
+      "competition": 52,
+      "cpc": 105.73,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "Position CiteRFP as the grounded response workspace for SMB SaaS sales and solutions engineering teams that have outgrown spreadsheets and ad hoc prompting but do not want heavyweight proposal operations software. Lead with cited drafts, fast setup, visible uncertainty, and predictable per-seat packaging rather than broad content-generation claims.",
+    "channels": [
+      "Search-led content for RFP response and security questionnaire workflows",
+      "Solutions engineer communities and practitioner webinars",
+      "Partnerships with virtual CISOs and compliance consultancies",
+      "Founder-led outbound to SaaS sales and solutions leaders"
+    ],
+    "pricingNotes": "Use transparent per-seat pricing with capped active-questionnaire capacity, while keeping document ingestion and answer-library maintenance available across paid tiers. RFP.ai demonstrates a visible self-serve monthly entry point [[ev:p_753b257ba5d5]], while Proposal Forge publishes a broader price ladder beginning at a higher monthly level [[ev:p_a3f372a72705]] and extending to premium packaging [[ev:p_c14630efd323]]. Loopio instead requires a custom quote [[ev:a_ea23ed0770ca]]. CiteRFP should occupy the gap between lightweight self-service and sales-led enterprise procurement, with predictable upgrades tied to active workflow volume, approval controls, and integrations."
+  },
+  "whyNow": "The category already has meaningful software spending and published expectations of further expansion [[ev:s_853519819140]]. At the same time, practitioners are independently using GPT-4 with existing answer libraries [[ev:q_757ab761a825]], showing that buyer behavior has moved ahead of controlled workflow design. Grounding, citations, and approval routing can now turn that improvised behavior into an accountable product.",
+  "howItWorks": [
+    "Connect Knowledge — CiteRFP would ingest approved security documents, product references, implementation guides, prior responses, and policy material. It would preserve source ownership, freshness, access rules, and document locations so retrieval remains constrained to content the team is permitted to use.",
+    "Import Request — A seller or solutions engineer would upload a questionnaire, spreadsheet, or document. CiteRFP would separate questions, detect repeated themes, identify required response formats, and assign each item a workflow state without forcing the user to rebuild the buyer's original structure.",
+    "Draft With Evidence — The assistant would retrieve relevant passages, compose a concise answer in the requested style, and attach source citations beside the draft. Low-confidence or conflicting material would be flagged rather than silently converted into a confident claim.",
+    "Review And Reuse — Subject matter owners would approve, edit, or reject drafts from a focused queue. Approved language would become a governed answer candidate with provenance and review history, helping later requests benefit from completed work without treating every past answer as permanently valid."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 9,
+    "builderConfidence": 8,
+    "execution": 7
+  },
+  "editorial": {
+    "productName": "CiteRFP",
+    "dontBuildYet": "Do not build a full proposal design suite, procurement marketplace, or autonomous submission agent before the grounded drafting and approval loop is trusted.",
+    "problemNarrative": "SMB SaaS sales leaders and solutions engineers face a recurring conflict: enterprise opportunities demand detailed RFPs, security questionnaires, and due diligence responses, while the people holding the answers are already responsible for selling, implementation guidance, product work, security, and customer support. A questionnaire arrives as a spreadsheet or document, then triggers a hunt across old submissions, policy files, internal messaging, product documentation, and individual memory. The team may have an answer library, but it is often hard to know whether an entry is current, approved, or appropriate for the customer asking.\n\nThe writing itself is only part of the burden. Solutions engineers must distinguish reusable facts from customer-specific commitments. Sales representatives need momentum but may not know which security or legal language is safe. Security SMEs are pulled into repetitive review because provenance is unclear. RevOps lacks a consistent view of status, ownership, and blocked questions. When deadlines tighten, teams copy prior answers or paste material into a general model, creating drafts that sound credible without making verification easier.\n\nPractitioner behavior demonstrates the appeal of this shortcut. A community member describes combining a security answer library with GPT-4 and receiving answers judged comparable with manual work [[ev:q_757ab761a825]]. That result is encouraging, but the workflow described does not establish which passage supports each claim, whether the underlying source remains approved, or who accepted the final wording. Another buyer reports useful automated matching from Loopio while finding its interface difficult to navigate [[ev:q_af59c4a09587]]. The friction is therefore not simply a lack of generation. It is the absence of a lightweight system connecting generation, evidence, review, and reuse.\n\nSmall vendors also operate with fewer fallback options. One startup practitioner describes relying on due diligence questionnaires because human-powered security audits are not realistically available to the company [[ev:q_4083763405a9]]. For this buyer, accuracy and trust cannot depend on adding dedicated proposal staff. The core problem is turning scattered institutional knowledge into fast, defensible answers while keeping accountable humans in control of commitments.",
+    "solutionNarrative": "CiteRFP is a grounded RFP response assistant designed for SMB SaaS sales and solutions engineering teams. Its wedge is narrow: produce usable questionnaire drafts with visible citations to approved company material, then move uncertain answers through a lightweight review queue. It is not positioned as a general proposal writer or an autonomous agent that submits claims without oversight.\n\nA team connects its security policies, product documentation, implementation references, approved answer library, and selected prior responses. CiteRFP indexes passages with source ownership, freshness, and access metadata. When a user imports an RFP or security questionnaire, the product separates the request into answerable items, preserves the buyer's structure, and retrieves supporting material for each question. The draft appears beside its evidence so a solutions engineer can verify the claim without repeating the original search.\n\nThe product would distinguish grounded answers, conflicting evidence, and missing knowledge. Strongly supported drafts move quickly to review. Ambiguous questions are routed to the relevant security, legal, product, or implementation owner with context already attached. Reviewers can approve wording, edit it, request clarification, or mark it as customer-specific. Approved responses become governed candidates for later reuse while retaining their provenance and review date.\n\nThis creates a compounding workflow without assuming that past language is eternally correct. Every completed request improves retrieval quality, reveals documentation gaps, and clarifies ownership. The immediate value is faster drafting. The durable value is an auditable response system that helps a small revenue team behave with the discipline of a dedicated proposal function.",
+    "competitiveNarrative": "RFP.ai offers transparent self-serve pricing, including a monthly option [[ev:p_753b257ba5d5]] and an annual-billing alternative [[ev:p_af0dbce6d2ba]]. Proposal Forge publishes a broader ladder, with prices ranging from its entry plan [[ev:p_a3f372a72705]] through larger packages [[ev:p_07d66894ac2a]] and a premium level [[ev:p_c14630efd323]]. Loopio uses custom quoting [[ev:a_ea23ed0770ca]], reflecting a more sales-led buying motion.\n\nCiteRFP should not compete by claiming the broadest proposal suite. Its differentiation is a focused SMB workflow built around claim-level evidence, source freshness, uncertainty handling, and fast specialist approval. The interface should feel closer to an answer review desk than a document-design platform. Transparent per-seat plans and capped active work provide a simpler buying path, while integrations with common document, CRM, and collaboration systems reduce setup friction. The defensible layer is the governed relationship among source passages, generated drafts, reviewer decisions, and reusable approved answers.",
+    "stackNotes": "Use Next.js with TypeScript for the application and review interface, backed by PostgreSQL for workflow records, permissions, provenance, and answer history. Store original files in encrypted object storage and process spreadsheet, document, and PDF imports through isolated background workers. Use hybrid retrieval combining full-text search, embeddings, metadata filters, and freshness rules. Keep model providers behind an abstraction layer so drafting, extraction, and evaluation can use different models. Every generated answer should retain passage-level source links, model metadata, prompt version, reviewer action, and immutable audit records. Add SAML and SCIM only when the buying motion demonstrates sustained demand.",
+    "audienceShort": "SMB SaaS response teams",
+    "brandBrief": "Use a calm, precise visual system inspired by document review rather than futuristic AI branding. Favor warm white surfaces, dark ink, restrained blue accents, and clear evidence markers. Citations, confidence states, and reviewer ownership should be visually prominent without feeling alarmist. The voice should be concise, accountable, and technically literate. Avoid magical automation language; emphasize grounded assistance, control, and defensible answers.",
+    "pricingTiers": [
+      {
+        "name": "Pilot Seat",
+        "price": "$39/seat/month",
+        "includes": "10 active questionnaires per seat/month, cited drafts, source library, review queue"
+      },
+      {
+        "name": "Core Seat",
+        "price": "$69/seat/month",
+        "includes": "30 active questionnaires per seat/month, approval routing, answer governance, CRM sync"
+      },
+      {
+        "name": "Response Desk",
+        "price": "$99/seat/month",
+        "includes": "75 active questionnaires per seat/month, advanced permissions, audit exports, priority support"
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "Target gross margin",
+        "value": "At least 80%"
+      },
+      {
+        "label": "Model and retrieval cost",
+        "value": "Under $4 per active questionnaire"
+      },
+      {
+        "label": "Monthly support burden",
+        "value": "Under 45 minutes per account"
+      },
+      {
+        "label": "Target payback period",
+        "value": "Under 6 months"
+      }
+    ],
+    "dataModel": [
+      {
+        "table": "source_documents",
+        "columns": "id, workspace_id fk, title, source_type, storage_uri, checksum, owner_user_id fk, freshness_status: current, review due, archived, indexed_at"
+      },
+      {
+        "table": "source_passages",
+        "columns": "id, workspace_id fk, source_document_id fk, body, heading_path, page_ref, embedding_ref, access_scope, created_at"
+      },
+      {
+        "table": "questionnaires",
+        "columns": "id, workspace_id fk, account_name, title, input_format, status: imported, drafting, in review, completed, due_at, owner_user_id fk"
+      },
+      {
+        "table": "response_items",
+        "columns": "id, workspace_id fk, questionnaire_id fk, question_text, draft_text, confidence_status: grounded, conflicting, missing, workflow_status: draft, in review, approved, rejected, assignee_user_id fk"
+      },
+      {
+        "table": "response_citations",
+        "columns": "id, workspace_id fk, response_item_id fk, source_passage_id fk, support_type: direct, partial, conflicting, created_at"
+      },
+      {
+        "table": "review_decisions",
+        "columns": "id, workspace_id fk, response_item_id fk, reviewer_user_id fk, decision: approved, edited, rejected, clarification needed, rationale, decided_at"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Search content visitors",
+          "count": 12000
+        },
+        {
+          "stage": "Search content demo requests",
+          "count": 720
+        },
+        {
+          "stage": "Solutions engineer community trials",
+          "count": 180
+        },
+        {
+          "stage": "Founder led sales paying accounts",
+          "count": 60
+        }
+      ],
+      "tier": "Core Seat",
+      "payingAccounts": 60,
+      "seatsPerAccount": 4,
+      "assumptions": "Counts are planning assumptions for a focused launch. Search content captures active workflow demand, practitioner communities build credibility, and founder-led sales converts teams that complete a grounded trial using their own source material."
+    }
+  },
+  "provenance": {
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+        "costUsd": 0.005974999999999999
+      },
+      {
+        "provider": "perplexity",
+        "operation": "market_stats/search:sonar-pro",
+        "costUsd": 0.018377
+      },
+      {
+        "provider": "perplexity",
+        "operation": "competitors/search:sonar-pro",
+        "costUsd": 0.023072000000000002
+      },
+      {
+        "provider": "perplexity",
+        "operation": "community_signals/search:sonar-pro",
+        "costUsd": 0.027421
+      },
+      {
+        "provider": "openai",
+        "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+        "costUsd": 0.219545
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+        "costUsd": 0.1663495
+      }
+    ],
+    "costUsd": 0.550741,
+    "ranAt": "2026-10-03T08:05:23.657Z",
+    "models": {
+      "synthesis": "gpt-5.6-sol",
+      "search": "perplexity:sonar-pro",
+      "keywordData": "dataforseo"
+    },
+    "attempts": {
+      "brief_normalization": 1,
+      "market_stats": 1,
+      "competitors": 1,
+      "community_signals": 1,
+      "evidence_extraction": 1,
+      "keywords_demand": 1,
+      "editorial_synthesis": 1
+    },
+    "codeRevision": {
+      "sha": "2dc8cfed647afd64e28603be437e8a92d19ef231",
+      "dirty": false
+    }
+  }
+}

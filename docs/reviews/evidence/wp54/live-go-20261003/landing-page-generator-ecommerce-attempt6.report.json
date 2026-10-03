@@ -1,0 +1,476 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-landing-page-generator-ecommerce",
+  "briefSha256": "3a0e53419b70b8e5c4750284dd367b9a15a6e528332ce7e0b4a426438addbdad",
+  "startedAt": "2026-10-03T08:44:29.257Z",
+  "finishedAt": "2026-10-03T08:47:18.505Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00438
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.018533
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.023753
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.025837
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.035584
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.200765
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.17161949999999998
+    }
+  ],
+  "costUsd": 0.570472,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 2,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "d74202d1fc2bbb185e9003ffe5297bd38466352f",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dataintelo.com/report/global-landing-page-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:32.500Z",
+      "textSha256": "0134ec28ae324f32eff0e833ef14134c274b449c13837e4d82446049758ecc4a"
+    },
+    {
+      "url": "https://apps.shopify.com/instant-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:32.772Z",
+      "textSha256": "e87b76cd6bebf820ce89cbccd4e450a6a0085d60b7b7482f73fff54b3f9f25ed"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:32.803Z",
+      "textSha256": "2edf919e125160b97e0d1cb18926ffb7a8d40d8dd23fb4b56a27378d4a47a9a0"
+    },
+    {
+      "url": "https://apps.shopify.com/gempages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:32.834Z",
+      "textSha256": "eb8e3997f3ab488fb1f920bb96c1bf6c4bc2073008458fd0ee44e6f80b5398c7"
+    },
+    {
+      "url": "https://apps.shopify.com/webi-landing-page-builder-cod",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:32.915Z",
+      "textSha256": "5d7401efe17600a9aa6dd69d31309076d72ce7011a326e7695975f9b849b27bf"
+    },
+    {
+      "url": "https://apps.shopify.com/landify-v3",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:33.258Z",
+      "textSha256": "3892a88c9500fef7b8028d1f8ee6f332cc57763c27d36a8a064982b3e1236909"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:33.097Z",
+      "textSha256": "69d86d995bdc800dff677eb796ad0e2f9e682f4e774f194decaa228011af9bab"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:33.094Z",
+      "textSha256": "c48a6903a25ab7a90b436e787d682deac459a238a16ff966869d8bc414907f47"
+    },
+    {
+      "url": "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:33.199Z",
+      "textSha256": "45625bcec188b6daa0635d015a3df9cd6c2eacc7e36ca5bdf683f9e568433b24"
+    },
+    {
+      "url": "https://storeinspect.com/blog/best-shopify-page-builder-apps",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:38.924Z",
+      "textSha256": "14f89f4476013b9abf6626d46b34d7f13d09c3329ec15711ac70e3498ca827c5"
+    },
+    {
+      "url": "https://www.webtonic.io/blog/best-shopify-development-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:45.323Z",
+      "textSha256": "cf75d8504094a3083f5127208f0389f1378c1b48617a284535a60c4f1dae66d9"
+    },
+    {
+      "url": "https://www.aidesigner.ai/blog/best-ai-landing-page-builders",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:39.422Z",
+      "textSha256": "fe736ca79103b3c1fa2a7ed995ecced6e724f482aa403f0dea9d24e4b439b8ba"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/landing-page-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:38.949Z",
+      "textSha256": "23bba0b187d7f0c90c47d38597ab71f7ed4c0185bd368a3fa78e42febe4d8d64"
+    },
+    {
+      "url": "https://superagi.com/future-proof-your-sales-trends-and-innovations-in-ai-powered-landing-page-builders-for-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "timeout",
+      "detail": "Source read exceeded the 15000 ms deadline"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/landing-page-builder-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:39.834Z",
+      "textSha256": "bfc6643141d35026f96857b4410a950b89045e2e54909598b55ccdd6878091e2"
+    },
+    {
+      "url": "https://markwideresearch.com/landing-page-builders-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:39.742Z",
+      "textSha256": "085069036d5337c2fd04b0b7a82825f3bafe8d3bc86438d2b314c8c22f864f23"
+    },
+    {
+      "url": "https://www.landy-ai.com/blog/shopify-landing-page-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:46.331Z",
+      "textSha256": "20f6551dbb859e9f39ab47c28a27b2ccae89616002184e62b20f3cd4dc19d0ca"
+    },
+    {
+      "url": "https://fritz.ai/best-ai-website-builder-for-shopify",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:46.831Z",
+      "textSha256": "6b86ceb7594c062e2da11fc3ec158dabed45ecfbea5ee3e8efdce622a6026ca5"
+    },
+    {
+      "url": "https://ja.pagefly.io/blogs/shopify/shopify-pricing-plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 404 for https://ja.pagefly.io/blogs/shopify/shopify-pricing-plans"
+    },
+    {
+      "url": "https://ja.pagefly.io/blogs/shopify/how-to-build-a-landing-page",
+      "roles": [
+        "competitors"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 404 for https://ja.pagefly.io/blogs/shopify/how-to-build-a-landing-page"
+    },
+    {
+      "url": "https://help.pagefly.io/getting-started/pricing-and-billing/pricing-plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:46.748Z",
+      "textSha256": "8cdd2fe4478cb0227d2e3893b729969968e2eefe6c1fa203e7dd9a89735e29d6"
+    },
+    {
+      "url": "https://ja.pagefly.io/pages/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:46.623Z",
+      "textSha256": "db224aaa507a668f15b17697147da2a8dafb7ac8798f2adfb876a68e68909e63"
+    },
+    {
+      "url": "https://www.reddit.com/r/shopify/comments/wziejj/facebook_ads_are_performing_amazingly_well_right",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/shopify/comments/wziejj/facebook_ads_are_performing_amazingly_well_right.json?… (Reddit blocks this network; set REDDIT_C…"
+    },
+    {
+      "url": "https://www.reddit.com/r/FacebookAds/comments/18duoi5/facebook_data_different_than_shopifygoogle",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/FacebookAds/comments/18duoi5/facebook_data_different_than_shopifygoogle.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/shopify/comments/1dtofzp/how_to_split_test_ab_test_landing_pages_on",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/shopify/comments/1dtofzp/how_to_split_test_ab_test_landing_pages_on.json?… (Reddit blocks this network; set REDDIT_CLIENT…"
+    },
+    {
+      "url": "https://www.reddit.com/r/FacebookAds/comments/1dtocjf/how_to_split_test_ab_test_landing_pages",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/FacebookAds/comments/1dtocjf/how_to_split_test_ab_test_landing_pages.json?… (Reddit blocks this network; set REDDIT_CLIEN…"
+    },
+    {
+      "url": "https://www.reddit.com/r/shopify/comments/1p09sn8/how_are_you_building_dynamic_landing_pages_on/nph6nw8",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/shopify/comments/1p09sn8/how_are_you_building_dynamic_landing_pages_on/nph6nw8.json?… (Reddit blocks this network; set RE…"
+    },
+    {
+      "url": "https://community.shopify.com/t/got-lot-of-landing-page-clicks-but-no-add-to-chart-or-checkouts/365003",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:44:58.905Z",
+      "textSha256": "e4b09f518a811d1837ea5ee9f87a5ab8ec67cad886dfd74d0b43f4d6d8ad99f6"
+    },
+    {
+      "url": "https://www.reddit.com/r/shopify/comments/mmc2s5/not_getting_conversions_from_facebook_ads",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/shopify/comments/mmc2s5/not_getting_conversions_from_facebook_ads.json?… (Reddit blocks this network; set REDDIT_CLIENT_I…"
+    },
+    {
+      "url": "https://www.reddit.com/r/shopify/comments/1b3tujx/testing_everything_simultaneously",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/shopify/comments/1b3tujx/testing_everything_simultaneously.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and R…"
+    },
+    {
+      "url": "https://community.shopify.com/t/native-advertising/567262",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:15.998Z",
+      "textSha256": "68db9fe96d0f9e0cbcbef6c6453e15148e4f8ec07b2234375ac0980e3ffa28e6"
+    },
+    {
+      "url": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:16.012Z",
+      "textSha256": "07b47ec8c814a01d93150184ac91f2eb86cb4d891f8822959d4b4972f17aa8e1"
+    },
+    {
+      "url": "https://community.shopify.com/t/my-websites-conversion-rate-is-very-bad-near-0-05/315536",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:15.997Z",
+      "textSha256": "cf0079be3a0e44348e188b28269927ae072db3d9e769ff85f8ecd7e8e3354ce5"
+    },
+    {
+      "url": "https://community.shopify.com/t/lots-of-visit-but-no-conversions-or-add-to-cart/261793",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:15.970Z",
+      "textSha256": "de6ee0021f1427bd20f48d19bc0e22e5acfd7c04641474d0b7e0d774aaffa830"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=28693542",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:16.627Z",
+      "textSha256": "44c05d5345549ea8fb99b269ef38ad15d4d32d68729b9a2b84d04c340bf7a952"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=41307341",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:16.434Z",
+      "textSha256": "ac674d8cf67b5bcfac247c1b6de0f71e802edd9396073af9c906fcbd69a60c81"
+    },
+    {
+      "url": "https://community.shopify.com/t/review-on-my-store/338584",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:16.313Z",
+      "textSha256": "240e5133b55899b1001f1724e0003cb43c3e40c1465f13f1b3fa4bb0a4218759"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=23935731",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:45:16.648Z",
+      "textSha256": "52e00457f0020c43015ae567bc72ad6fef19d9d686dd7ba8971b619d3e0f46a4"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 5,
+      "market_stat": 8,
+      "competitor_price": 12,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/got-lot-of-landing-page-clicks-but-no-add-to-chart-or-checkouts/365003",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/my-websites-conversion-rate-is-very-bad-near-0-05/315536",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://storeinspect.com/blog/best-shopify-page-builder-apps",
+        "detail": "\"3,714\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://markwideresearch.com/landing-page-builders-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://markwideresearch.com/landing-page-builders-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://markwideresearch.com/landing-page-builders-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "over_cap",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "detail": "more than 12 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "over_cap",
+        "sourceUrl": "https://apps.shopify.com/landify-v3",
+        "detail": "more than 12 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "over_cap",
+        "sourceUrl": "https://apps.shopify.com/landify-v3",
+        "detail": "more than 12 accepted"
+      }
+    ]
+  }
+}

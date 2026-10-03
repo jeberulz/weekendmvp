@@ -1,0 +1,374 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T07:05:54.919Z",
+  "finishedAt": "2026-10-03T07:07:23.960Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 0 vendors with an accepted price, need 1; competitors: 0 vendors with accepted price or availability, need 3. Top rejection reasons: span_not_found ×5, unparseable_amount ×3, span_bounds ×2, subject_not_in_context ×2. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00696
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.02147
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.024209
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.035668000000000005
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.18073
+    }
+  ],
+  "costUsd": 0.269038,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "ed29d6615c3bad25c54e79144f2a5e029d2ac67d",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:08.963Z",
+      "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:08.887Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://www.ideaplan.io/blog/ai-code-review-tools-market-share-2026",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:09.801Z",
+      "textSha256": "a601ca7af8ef7a311b1fc6ebe654be8addf656cf6e8b52cc4f99ed727f5288ef"
+    },
+    {
+      "url": "https://dataintelo.com/report/ai-generated-code-review-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:08.739Z",
+      "textSha256": "3dd97e6a06ce315d3dede7977e44fc33d5d2cc78ffe2069288085630bdc32e88"
+    },
+    {
+      "url": "https://docs.github.com/en/copilot/concepts/agents/code-review",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:09.317Z",
+      "textSha256": "4a62f82ef2469499e8c0450da2954f80254109ffe6e87c96e47a0a368afed91b"
+    },
+    {
+      "url": "https://agentmarketcap.ai/blog/2026/04/08/ai-agents-automated-code-review-github-copilot-coderabbit-claude-code",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:09.870Z",
+      "textSha256": "c7de883c22d26b34e37f2b7a230b4b5f1a8f602e7472104e40467dac37b99dd8"
+    },
+    {
+      "url": "https://arxiv.org/html/2509.19708v1",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:09.225Z",
+      "textSha256": "0e0ea5f651fe9caadc8f766661bb08f5878e94ce3263ada8cb0ad8622a8c622a"
+    },
+    {
+      "url": "https://www.secondtalent.com/resources/ai-in-software-development-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:09.888Z",
+      "textSha256": "46a533f6e25a854ae4c3de7af4dd1f9b905767a84efb3facc79b03ebc57c99d5"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.618Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.633Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.611Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.623Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://www.coderabbit.ai/FAQ",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.746Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.coderabbit.ai/agent",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.801Z",
+      "textSha256": "6870ca11a4d87b838af6e1423dfd92ab3cdb7038c169921e2dbdcd2cc8d43f0e"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/github-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.733Z",
+      "textSha256": "6471427982999cb4f92ab6c028ad0b905c74b6c5ed73b72e0e643bec2143431b"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:16.777Z",
+      "textSha256": "1bb52fa2d8e47fe061b5556ddc27949441f69563a9c002b65cf829cd5df8560c"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:36.291Z",
+      "textSha256": "9331d0f83be141967a618b987cfb74966e3a2c7c7dd8fc2cc32507f9fdd3274f"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/ai-prs-have-a-32-7-acceptance-rate-vs-84-4-for-human-prs-is-the-review-bottleneck-canceling-out-ai-coding-gains/558",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:36.509Z",
+      "textSha256": "798b1d4ad0325f999a7104082cc52e1299cb55dae580ad1768a9ad4980ed48f9"
+    },
+    {
+      "url": "https://www.chrismdp.com/code-review-is-dying",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:35.153Z",
+      "textSha256": "0ec41c985419f3c97f3c83f03663bee4d4cefc69aadc39efc2b4cca184e98c35"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48501890",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:35.749Z",
+      "textSha256": "f212bcfd525f3bd87e0b2fdd96e0ac576d302ab6407dc43a9c22355ef2ed7d2f"
+    },
+    {
+      "url": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:35.731Z",
+      "textSha256": "0a364341f737303ffc169d1edcc6f83dfe063b7d1e5984ff68073c8e2ef1f716"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46315055",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:36.446Z",
+      "textSha256": "32cabc69c2ef5d2171fbd692686ab40dd644974ebf28f7dbfee3b6901944f341"
+    },
+    {
+      "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1kr8clp/ai_slop_prs_are_burning_me_and_my_team_out_hard",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/ExperiencedDevs/comments/1kr8clp/ai_slop_prs_are_burning_me_and_my_team_out_hard.json?… (Reddit blocks this network; set …"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49152222",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:06:37.262Z",
+      "textSha256": "d8bfbbc3acdfbfca0747b644f446dcceb4d5fe2a2680f96fa207a9a79e5c0406"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 2,
+      "competitor_price": 0,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/ai-prs-have-a-32-7-acceptance-rate-vs-84-4-for-human-prs-is-the-review-bottleneck-canceling-out-ai-coding-gains/558",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46315055",
+        "detail": "quote has 88 words; 6–80 allowed"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=48501890",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.ideaplan.io/blog/ai-code-review-tools-market-share-2026",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "year_not_in_context",
+        "sourceUrl": "https://www.ideaplan.io/blog/ai-code-review-tools-market-share-2026",
+        "detail": "2026 does not appear in the sentence as this figure's period"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/ai-generated-code-review-tools-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "detail": "\"$24 per developer per month billed annually, or $30 month-t…\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "detail": "\"$48 per developer per month billed annually, or $60 month-t…\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "detail": "\"$72 per developer per month billed annually, or $90 month-t…\" is not one supported price expression"
+      }
+    ]
+  }
+}

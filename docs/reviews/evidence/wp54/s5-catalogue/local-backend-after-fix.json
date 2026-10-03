@@ -1,0 +1,27 @@
+{
+  "backend": "http://127.0.0.1:3410",
+  "archive": {
+    "rows": 225,
+    "pages": 5,
+    "unique": 225,
+    "drafts": [],
+    "first3": [
+      "course-translation-resale-network",
+      "contractor-lead-refund-automation",
+      "marketplace-meetup-safety"
+    ]
+  },
+  "latest": "course-translation-resale-network",
+  "byToolReplitDrafts": [],
+  "byAudienceDevelopersDrafts": [],
+  "byCategoryDevToolsDrafts": [],
+  "byRevenue5kDrafts": [],
+  "relatedForAiCodeReviewer": [
+    "timed-tool-access-contractors",
+    "saas-feature-usage-auditor",
+    "code-audit-for-ai-built-apps",
+    "ai-merge-inspector"
+  ],
+  "sitemapDrafts": [],
+  "bySlugDraft": null
+}

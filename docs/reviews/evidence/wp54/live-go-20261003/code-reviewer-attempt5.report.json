@@ -1,0 +1,468 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T07:44:22.290Z",
+  "finishedAt": "2026-10-03T07:46:02.010Z",
+  "failedStep": "evidence_acceptance",
+  "error": "competitors: 2 vendors with accepted price or availability, need 3. Top rejection reasons: span_not_found ×5, ambiguous_attribution ×1, projection_as_measured ×1, span_bounds ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00405
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019736
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.024485
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025937
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.017087
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.033484
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.20507
+    }
+  ],
+  "costUsd": 0.329849,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 3,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "4df9e33ef7040ece2b80b60082d0d5c17e4e3c1b",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://marketintelo.com/report/ai-code-review-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.421Z",
+      "textSha256": "226ba66a739ec58015869cfdb921c0226afc35fe52563dbb441a4de1564984eb"
+    },
+    {
+      "url": "https://www.secondtalent.com/resources/ai-coding-assistant-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.187Z",
+      "textSha256": "487b562837c6ec1091faf3e6f37e147cd350258b413fb9c43733e70ef7f29829"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.311Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://axis-intelligence.com/ai-coding-assistant-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.124Z",
+      "textSha256": "2c6850f486b26f2788feb77dbb1b51b99d29ce6baa8b665f2c7d7e0618a48430"
+    },
+    {
+      "url": "https://windowsforum.com/news/stack-overflow-survey-ai-coding-use-soars-as-developer-trust-falls.446666",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.343Z",
+      "textSha256": "e0b07f83c360c7cb38637f37bfcd4876c35b8131c5268c6e230ad0cfc618ba0e"
+    },
+    {
+      "url": "https://sqmagazine.co.uk/best-ai-coding-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.404Z",
+      "textSha256": "f1f2b6fdbeefe503bb0e7a50b0afc26128156ad18c97327caf117502e39194cf"
+    },
+    {
+      "url": "https://www.secondtalent.com/resources/ai-in-software-development-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.408Z",
+      "textSha256": "46a533f6e25a854ae4c3de7af4dd1f9b905767a84efb3facc79b03ebc57c99d5"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-coding-adoption-statistics-2026-50-data-points",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:31.697Z",
+      "textSha256": "1486f50777b586a19627cc55c7827ea8cd6662d25806a91ba3064aed43578d13"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.290Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.251Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.246Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.qodo.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.218Z",
+      "textSha256": "3cfa559fa97b59bdd98c1267dd617a3b4971a0e9820f154c26348086c0e3d050"
+    },
+    {
+      "url": "https://www.coderabbit.ai/agent",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.370Z",
+      "textSha256": "6870ca11a4d87b838af6e1423dfd92ab3cdb7038c169921e2dbdcd2cc8d43f0e"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.346Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.400Z",
+      "textSha256": "1bb52fa2d8e47fe061b5556ddc27949441f69563a9c002b65cf829cd5df8560c"
+    },
+    {
+      "url": "https://www.coderabbit.ai/FAQ",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:38.437Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://github.com/features/copilot",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:46.924Z",
+      "textSha256": "12e3fd4c5d1fd55e42e62932e2025d583e83ced63e8f85699763d6382377864e"
+    },
+    {
+      "url": "https://github.com/features/copilot/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:46.920Z",
+      "textSha256": "ed61714eeeb38a218386ce7cb129adf8013d7b18b2bd50fd412f875e860e6494"
+    },
+    {
+      "url": "https://www.morphllm.com/github-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 429 for https://www.morphllm.com/github-ai-code-review"
+    },
+    {
+      "url": "https://tech-insider.org/coderabbit-vs-greptile-vs-qodo-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:46.809Z",
+      "textSha256": "6fbcc61899af334b59aa01dd34ea1de49a680bbbb71caebd23e0e61d4d48c49b"
+    },
+    {
+      "url": "https://github.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:47.247Z",
+      "textSha256": "cc9a3353f9f37dcd8be4d59d4266105bbd0e6e284b1135e5296148e9fbf11eba"
+    },
+    {
+      "url": "https://www.thegeeksclub.com/best-ai-code-review-tools-for-github-pull-requests-in-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:47.101Z",
+      "textSha256": "8afc74455571951d3caf9e3825298bb6a3ddd7e535e5daa77fc852b0b66dd815"
+    },
+    {
+      "url": "https://gitautoreview.com/blog/best-ai-code-review-tools-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:47.086Z",
+      "textSha256": "a3019eaa0d21397462c137f520ba82aaf060b4ea733326fdccd2ee5cbe8a8991"
+    },
+    {
+      "url": "https://www.itechguides.com/best/ai-code-review-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:47.129Z",
+      "textSha256": "db9e799d29840f78e9c6a9d4f3c11a9578438a79eea99299ddb0c1cc9e995866"
+    },
+    {
+      "url": "https://docs.github.com/en/copilot/concepts/agents/code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.754Z",
+      "textSha256": "4a62f82ef2469499e8c0450da2954f80254109ffe6e87c96e47a0a368afed91b"
+    },
+    {
+      "url": "https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.601Z",
+      "textSha256": "aed0564b5e5b020e9f22ce8c19b7d6981b39304b370d9f05b9c6298cc30eb402"
+    },
+    {
+      "url": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.387Z",
+      "textSha256": "044256d94245ba4f0d3c8a6be3fcb166842f194c5fe86aa1eb96a6f650de1a91"
+    },
+    {
+      "url": "https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-billing/models-and-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.660Z",
+      "textSha256": "e9ea81037c09e84fcb51733bfabe1372cab4500b3d7c5537aa54b29f26537cc8"
+    },
+    {
+      "url": "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.924Z",
+      "textSha256": "daaa7d220ec1187cec68dbe69a6de3783cfc50769247778199cd560673bccbae"
+    },
+    {
+      "url": "https://www.orcarouter.ai/blog/ai-pull-request-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:44:51.988Z",
+      "textSha256": "36a94c3bbff299710cf9b8c58bb426680bc614dabea8cb0488ee89a8d7bd5377"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:06.552Z",
+      "textSha256": "a60fe0a896298d69fc1dd00f6d5b957986fc9834d7f6f1e2a25110bfd58ab7b0"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=45310529",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:05.517Z",
+      "textSha256": "b58bc30ed612424e3d102c8e47cfc53f7402024c5588ae63aa39d08c9d8682bc"
+    },
+    {
+      "url": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:04.135Z",
+      "textSha256": "7d8c869cdeacac3991386d409e4ffde2846840c31a03538efec1049649025ced"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/76-of-developers-use-ai-tools-but-40-say-code-review-burden-increased-are-we-trading-velocity-for-quality-debt/4187",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:06.857Z",
+      "textSha256": "d7237b0ef01efd713c4efdcce549d8a4c65a257695641c348f0e823ae3f4b29b"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/43-million-prs-merged-monthly-on-github-but-code-review-is-the-bottleneck-should-we-accept-that-ai-generated-code-gets-less-review/846",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:06.737Z",
+      "textSha256": "64ddcb4ec4ff0ca8b67983b9fda256cdb366d9a9f6a1f3220894ea51683fd385"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49235859",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:06.579Z",
+      "textSha256": "2673a1924e6b16ad101a378f1fba6f8c609acb3c326784a1d0d6e5ace3994620"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47796818",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:07.446Z",
+      "textSha256": "bbb17d15120590fb32d9f5c036fbd00568141f9fae7cb554fa3a9028a3eafe56"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49491403",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:45:07.550Z",
+      "textSha256": "76c00bd437612b84e71b6c05eb6a80bf4d876c23b2259713102fdfba1fc4ad82"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 4,
+      "market_stat": 4,
+      "competitor_price": 2,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/76-of-developers-use-ai-tools-but-40-say-code-review-burden-increased-are-we-trading-velocity-for-quality-debt/4187",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/76-of-developers-use-ai-tools-but-40-say-code-review-burden-increased-are-we-trading-velocity-for-quality-debt/4187",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/43-million-prs-merged-monthly-on-github-but-code-review-is-the-bottleneck-should-we-accept-that-ai-generated-code-gets-less-review/846",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/ai-code-review-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "ambiguous_attribution",
+        "sourceUrl": "https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-billing/models-and-pricing",
+        "detail": "a pricing-availability statement requires the vendor's own non-comparison page"
+      }
+    ]
+  }
+}

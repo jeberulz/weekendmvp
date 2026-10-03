@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRef, type RefObject } from "react";
 import { api } from "@/convex/_generated/api";
 import { categoryName } from "@/components/ideas/idea-meta";
+import { ResearchTitle, RetiredTag, isResearchWithheld } from "@/components/platform/RetiredResearch";
 import { ModuleSkeleton, PersonalModule } from "./module-states";
 import { OfferCard } from "./OfferCard";
 
@@ -14,7 +15,8 @@ type HomeState = FunctionReturnType<typeof api.platform.dashboard.home>;
 const EYEBROW = "font-mono text-[11px] font-normal uppercase tracking-[0.08em] text-home-ink-3";
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-function SavedList({ home, headingRef }: { home: HomeState; headingRef: RefObject<HTMLHeadingElement | null> }) {
+/** Exported for tests. */
+export function SavedList({ home, headingRef }: { home: HomeState; headingRef: RefObject<HTMLHeadingElement | null> }) {
   const { latest, count } = home.saved;
   return (
     <section
@@ -42,15 +44,17 @@ function SavedList({ home, headingRef }: { home: HomeState; headingRef: RefObjec
         <ul className="flex flex-col">
           {latest.map((idea) => (
             <li key={idea.ideaId} className="border-b border-home-rule py-2 last:border-b-0">
-              <Link
-                href={`/ideas/${idea.slug}`}
+              <ResearchTitle
+                slug={idea.slug}
                 className={`block text-sm font-medium leading-snug text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline ${FOCUS}`}
+                textClassName="block text-sm font-medium leading-snug text-home-ink"
               >
                 {idea.title}
-              </Link>
+              </ResearchTitle>
               <span className="mt-0.5 block text-[12px] text-home-ink-3">
                 {categoryName(idea.category)} · {idea.buildTime} hrs
               </span>
+              {isResearchWithheld(idea.slug) && <RetiredTag className="mt-1" />}
             </li>
           ))}
         </ul>

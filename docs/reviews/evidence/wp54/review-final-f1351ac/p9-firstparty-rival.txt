@@ -1,0 +1,2 @@
+other candidate vendors: [] -> accepted [["Loopio","first_party","30","per_user"]] rejected []
+other candidate vendors: ["Responsive"] -> accepted [] rejected ["ambiguous_attribution","unknown_citation"]

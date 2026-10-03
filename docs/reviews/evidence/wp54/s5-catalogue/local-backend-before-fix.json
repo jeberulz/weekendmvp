@@ -1,0 +1,45 @@
+{
+  "backend": "http://127.0.0.1:3410",
+  "archive": {
+    "rows": 228,
+    "pages": 5,
+    "unique": 228,
+    "drafts": [
+      "engine-draft-ai-landing-page-generator-ecommerce",
+      "engine-draft-ai-code-reviewer",
+      "engine-draft-ai-rfp-response-assistant"
+    ],
+    "first3": [
+      "engine-draft-ai-landing-page-generator-ecommerce",
+      "engine-draft-ai-code-reviewer",
+      "engine-draft-ai-rfp-response-assistant"
+    ]
+  },
+  "latest": "engine-draft-ai-landing-page-generator-ecommerce",
+  "byToolReplitDrafts": [
+    "engine-draft-ai-code-reviewer"
+  ],
+  "byAudienceDevelopersDrafts": [
+    "engine-draft-ai-landing-page-generator-ecommerce"
+  ],
+  "byCategoryDevToolsDrafts": [
+    "engine-draft-ai-code-reviewer"
+  ],
+  "byRevenue5kDrafts": [
+    "engine-draft-ai-landing-page-generator-ecommerce",
+    "engine-draft-ai-code-reviewer",
+    "engine-draft-ai-rfp-response-assistant"
+  ],
+  "relatedForAiCodeReviewer": [
+    "engine-draft-ai-code-reviewer",
+    "timed-tool-access-contractors",
+    "saas-feature-usage-auditor",
+    "code-audit-for-ai-built-apps"
+  ],
+  "sitemapDrafts": [
+    "engine-draft-ai-landing-page-generator-ecommerce",
+    "engine-draft-ai-code-reviewer",
+    "engine-draft-ai-rfp-response-assistant"
+  ],
+  "bySlugDraft": "engine-draft-ai-code-reviewer"
+}

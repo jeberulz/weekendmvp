@@ -3,118 +3,92 @@
   "brief": {
     "title": "AI RFP Response Assistant",
     "slug": "ai-rfp-response-assistant",
-    "oneLiner": "BidRelay helps SMB SaaS teams answer RFPs faster with source-backed drafts, governed approvals, and buyer-format delivery.",
+    "oneLiner": "A source-grounded RFP response desk that lets SMB SaaS teams review exceptions instead of rewriting every answer.",
     "targetCustomer": "SMB SaaS sales and solutions engineers"
   },
   "market": {
-    "summary": "An AI RFP Response Assistant addresses a focused intersection of proposal management, RFP software, and sales enablement for SMB SaaS teams. The proposal-management software category was estimated at $3.26 billion in 2025 and is projected to reach $9.19 billion by 2034, representing 12.2% annual growth. A separate estimate values RFP software at $2.8 billion in 2025 and projects $7.6 billion by 2034 at an 11.7% CAGR. These estimates vary by methodology, but both indicate an established, expanding software category rather than an unproven AI niche.\n\nThe audience-specific signal is particularly attractive: small and medium-sized enterprises were identified as the fastest-growing organization-size segment in sales enablement, with a reported 26.6% CAGR. SMB SaaS sales and solutions engineering teams often face enterprise-grade questionnaires without dedicated proposal departments. Their alternative is usually manual search, recycled answers, spreadsheets, shared documents, and repeated coordination with security, legal, and product teams.\n\nThe strongest opportunity is below enterprise platforms that require large commitments and above basic proposal generators that lack source traceability, approval controls, and exact-format RFP handling. A seat-based product with transparent usage caps can fit teams with intermittent but expensive response workloads. However, success depends on reliable document ingestion, source-backed drafting, stale-answer detection, and exports that preserve customer templates. Generic text generation alone would not create sufficient differentiation.",
+    "summary": "AI-assisted RFP response software occupies a defined category between proposal management, sales enablement, and technical presales workflow tools. The closest direct estimate values proposal-management software at $3.26 billion in 2025 and projects it to reach $9.19 billion by 2034, representing a 12.2% CAGR. A narrower estimate values RFP software at $2.64 billion in 2025 and projects $5 billion by 2035 at a 6.6% CAGR. Analyst estimates vary materially, but both indicate an established, growing software category rather than a speculative AI niche.\n\nThe target wedge is SMB SaaS teams that handle complex questionnaires without dedicated proposal operations. These companies often rely on Sales Engineers, Account Executives, security specialists, product leaders, and legal reviewers to assemble responses across email, spreadsheets, shared drives, and prior submissions. Public pricing also exposes room between lightweight self-service tools and enterprise platforms requiring larger annual commitments. RFP.ai begins at €49/month, DeepRFP publishes $89/user/month, while Responsive starts at $5,000/year for 5 users.\n\nThe opportunity is therefore not simply faster text generation. A focused product can combine bid qualification, requirement extraction, source-grounded drafting, exception routing, approvals, and usage visibility in an accessible seat-based package. Transparent limits and a short onboarding path would suit SMB SaaS buyers that need control and verifiability but cannot justify enterprise implementation overhead.",
     "stats": [
       {
-        "claim": "Proposal-management software market size in 2025",
-        "value": "$3.26 billion",
+        "claim": "RFP software market size and projected growth",
+        "value": "$2.64 billion in 2025; $5 billion by 2035; 6.6% CAGR",
         "citation": {
-          "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
-          "title": "Proposal Management Software Market Size & Share, Report [2034]"
+          "url": "https://www.wiseguyreports.com/reports/rfp-software-market",
+          "title": "RFP Software Market Trends & Growth Analysis 2035"
         }
       },
       {
-        "claim": "Proposal-management software projected market size and growth through 2034",
-        "value": "$9.19 billion by 2034 at a 12.2% CAGR",
+        "claim": "Alternative estimate for the proposal-management software category",
+        "value": "USD 3.2 billion in 2025; USD 9.0 billion by 2035; 11.1% CAGR",
         "citation": {
-          "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
-          "title": "Proposal Management Software Market Size & Share, Report [2034]"
-        }
-      },
-      {
-        "claim": "RFP software market size in 2025",
-        "value": "$2.8 billion",
-        "citation": {
-          "url": "https://dataintelo.com/report/request-for-proposal-rfp-software-market",
-          "title": "Request for Proposal (RFP) Software Market Research Report 2034"
-        }
-      },
-      {
-        "claim": "RFP software projected market size and growth through 2034",
-        "value": "$7.6 billion by 2034 at an 11.7% CAGR",
-        "citation": {
-          "url": "https://dataintelo.com/report/request-for-proposal-rfp-software-market",
-          "title": "Request for Proposal (RFP) Software Market Research Report 2034"
-        }
-      },
-      {
-        "claim": "Software share of RFP software market revenue in 2025",
-        "value": "63.4%, equivalent to approximately $1.78 billion",
-        "citation": {
-          "url": "https://dataintelo.com/report/request-for-proposal-rfp-software-market",
-          "title": "Request for Proposal (RFP) Software Market Research Report 2034"
+          "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+          "title": "Proposal Management Software Market"
         }
       }
     ]
   },
   "competitors": [
     {
-      "name": "Loopio",
-      "pricing": "Foundations begins with 10 seats; dollar pricing is not publicly listed. Enhanced and Enterprise are quote-based.",
-      "url": "https://loopio.com/pricing/",
-      "notes": "Loopio is an established RFP response platform built around reusable content libraries, collaboration, and intelligent response workflows. Its 10-seat starting structure can be a substantial commitment for smaller SMB SaaS teams with only a few frequent contributors."
+      "name": "RFP.ai",
+      "pricing": "Starter €49/month; Professional €129/month; Enterprise €449/month",
+      "url": "https://rfp.ai/",
+      "notes": "RFP.ai is the closest accessible benchmark because it combines source-backed drafts, citations, confidence scores, approval workflows, a browser extension, and user limits. Its low entry price creates direct pressure on any SMB-focused self-service offering."
+    },
+    {
+      "name": "DeepRFP",
+      "pricing": "Pro $89/user/month; Elite $149/user/month",
+      "url": "https://rfp.ai/",
+      "notes": "DeepRFP offers the most directly comparable seat-based model, pairing per-user pricing with AI drafting for proposal and RFP teams. Its rates establish a clear reference range for an SMB SaaS product sold to Sales Engineers."
     },
     {
       "name": "AutoRFP.ai",
-      "pricing": "Scale is $899 per month billed annually for 24 projects per year; Accelerate is $1,299 per month billed annually for 50 projects per year. Enterprise pricing is custom.",
-      "url": "https://autorfp.ai/blog/rfpio-competitors",
-      "notes": "AutoRFP.ai is the closest AI-native competitor, covering RFPs, DDQs, and security questionnaires with cited answer generation and exact-format workflows. Its project-based allowances and unlimited-user approach differ materially from the proposed seat-based model."
-    },
-    {
-      "name": "Proposify",
-      "pricing": "Basic starts around $19 per user per month according to the supplied comparison; higher-functionality plans increase the per-user cost.",
-      "url": "https://www.inventive.ai/blog-posts/top-proposal-software-tools",
-      "notes": "Proposify primarily handles branded sales proposals rather than complex formal RFPs. It is an accessible alternative for SMB SaaS teams, but offers a weaker specialization in questionnaire ingestion, evidence-backed answers, compliance review, and cross-functional RFP governance."
+      "pricing": "Scale $899/month; Accelerate $1,299/month, billed annually; Enterprise custom",
+      "url": "https://autorfp.ai/blog/rfp-response-process",
+      "notes": "AutoRFP.ai positions itself as an end-to-end AI-first platform spanning generation, citations, content management, collaboration, DDQs, and security questionnaires. Its higher project-capacity pricing makes it a benchmark for expansion accounts with frequent response volume."
     }
   ],
   "community": {
-    "summary": "Community evidence indicates that RFP response pain is operationally specific and financially meaningful. Sales Engineers report workloads ranging from minutes to 80 collective hours, while another practitioner describes pursuits exceeding 100 hours despite a low probability of success. Compressed deadlines can require hundreds of essay responses within two business days, often delivered in difficult Word, spreadsheet, or PowerPoint formats. The recurring problem is not simply writing prose. Teams must locate previous answers, determine whether those answers remain current, coordinate subject-matter experts, secure approvals, and preserve the buyer’s required format. Manual reuse introduces version-control risk and approval delays, while coordination displaces actual selling. Users also question whether an RFP was influenced by their company or designed around an incumbent, creating demand for qualification before effort is committed. These signals support source-backed drafting, ownership workflows, stale-content alerts, exact-format import and export, and an early effort-versus-opportunity assessment.",
+    "summary": "The supplied community and industry material consistently identifies RFP response work as a coordination problem, not merely a writing problem. Teams must decide whether a deal deserves investment, inspect long document packages, extract mandatory requirements, locate approved evidence, and coordinate Sales, legal, compliance, technical, and other contributors under deadline pressure. Booma states that teams spend an average of 25-30 hours per RFP and describes email, Excel, shared drives, duplicated work, missed deadlines, and compliance errors as recurring failure modes. Arphie and Storylane emphasize disciplined bid or no-bid qualification before drafting. AutoRFP.ai highlights structured processes, content automation, and collaboration with subject-matter experts. This evidence supports a workflow product that reduces repetitive effort while keeping accountable humans in control. Validation is directionally strong but not conclusive: much of the accessible material comes from vendors and industry publishers rather than independent first-person discussions, so willingness to pay should be tested through paid SMB SaaS pilots.",
     "signals": [
       {
-        "quote": "I've spent 30 minutes on some small ones, and Ive also been a part of a team that spent 80 hours collectively on a large RFP.",
+        "quote": "Do not begin drafting simply because an RFP arrived. First decide whether the opportunity deserves your team's time and whether you can deliver what the buyer needs.",
         "citation": {
-          "url": "https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps/",
-          "title": "How long do you take to fill RFPs? : r/salesengineers"
-        }
+          "url": "https://www.arphie.ai/blog/mastering-the-art-of-response-how-do-you-respond-to-an-rfp-effectively",
+          "title": "How to Respond to an RFP: A Practical 9-Step Process"
+        },
+        "verified": true
       },
       {
-        "quote": "It's easily my least favourite task.",
+        "quote": "The most expensive RFP is the one you were never going to win. Every hour spent on an unwinnable bid is an hour taken from a winnable one, so apply the same qualification discipline you'd apply to any deal before a single word gets drafted.",
         "citation": {
-          "url": "https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps/",
-          "title": "How long do you take to fill RFPs? : r/salesengineers"
-        }
+          "url": "https://www.storylane.io/blog/rfp-response",
+          "title": "RFP Response: How to Respond to an RFP (Template + Process)"
+        },
+        "verified": true
       },
       {
-        "quote": "At least in my industry, it's pretty common to get 2 business days or less to answer upwards of 300 essay questions and a page or two of compliance.",
+        "quote": "Sales and proposal teams spend an average of 25-30 hours per RFP.",
         "citation": {
-          "url": "https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses/",
-          "title": "RFP Responses"
-        }
+          "url": "https://www.booma.ai/post/top-3-rfp-pain-points-in-2024-and-how-to-solve-them",
+          "title": "Top 3 RFP Pain Points Engineers Face and How to Fix Them"
+        },
+        "verified": true
       },
       {
-        "quote": "Often these are submitted in painful formats, sometimes even PowerPoint docs.",
+        "quote": "Responding to RFPs often requires input from multiple departments: sales, legal, compliance, technical, and more.",
         "citation": {
-          "url": "https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses/",
-          "title": "RFP Responses"
-        }
+          "url": "https://www.booma.ai/post/top-3-rfp-pain-points-in-2024-and-how-to-solve-them",
+          "title": "Top 3 RFP Pain Points Engineers Face and How to Fix Them"
+        },
+        "verified": true
       },
       {
-        "quote": "Even with the assistance of GenAI, they consume far too much of my time.",
+        "quote": "With RFP automation tools like AutoRFP.ai, you can automate up to 80% of responses, cutting turnaround time.",
         "citation": {
-          "url": "https://www.reddit.com/r/salesengineers/comments/1sf40sl/rfps_are_bullshit_except_in_very_specific/",
-          "title": "RFPs are bullshit except in very specific circumstances. Change my mind (or don't)"
-        }
-      },
-      {
-        "quote": "In my experience in tech sales, pursuing an RFP can consume over 100 hours, often with little to no chance of success.",
-        "citation": {
-          "url": "https://www.reddit.com/r/sales/comments/1pcjazc/rfp_hell_right_now_we_started_to_say_no_and_its/",
-          "title": "RFP hell right now. We started to say no (and it's working)"
-        }
+          "url": "https://autorfp.ai/blog/rfp-response",
+          "title": "Your 2026 Winning RFP Response Guide + How to Write One"
+        },
+        "verified": true
       }
     ]
   },
@@ -142,20 +116,21 @@
     }
   ],
   "goToMarket": {
-    "positioning": "Position BidRelay as the source-backed RFP workspace for SMB SaaS sales and solutions engineering teams that have enterprise questionnaire demands but no dedicated proposal department. Lead with faster retrieval, visible evidence, stale-answer controls, and preservation of buyer formats rather than generic AI writing.",
-    "pricingNotes": "Use transparent monthly pricing that sits below enterprise response platforms while preserving expansion through seats and question volume. Starter should serve an individual Sales Engineer handling occasional questionnaires. Team should be the default for cross-functional SMB SaaS teams and include approval workflows, integrations, and a larger question allowance. Scale should add governance, reporting, priority processing, and higher caps without pretending to be a full enterprise procurement suite. Meter generated or processed questions rather than tokens, because buyers can connect that unit directly to RFP workload. Offer additional question packs without forcing an immediate tier upgrade.",
+    "positioning": "Position the product as the deal-aware response desk for SMB SaaS teams that cannot dedicate a proposal manager to every opportunity. Lead with controlled requirement extraction and source-backed answers rather than generic AI writing. The promise is fewer Sales Engineer hours spent searching and formatting, with reviewers focused only on risky, unsupported, or deal-specific exceptions.",
+    "pricingNotes": "Use transparent per-seat pricing with monthly document caps, while allowing unlimited reviewers so customers do not resist inviting legal, security, or product specialists. Essential Response should support teams with occasional RFPs and a small approved-source library. Deal Desk should increase document capacity, integrations, governance, and analytics. Meter imported RFP pages or completed questionnaires rather than individual AI prompts, because buyers can forecast that unit more easily. Offer annual billing without requiring enterprise-style implementation, and charge separately for unusually large document-processing overages.",
     "channels": [
-      "Founder-led outbound to VP Sales, Heads of Solutions Engineering, Sales Engineering Managers, and Revenue Operations leaders at SMB SaaS companies",
-      "Search campaigns and comparison pages targeting rfp response software, proposal management software, and security questionnaire automation",
-      "Educational content showing how to qualify RFPs, maintain approved answer libraries, and reduce review bottlenecks",
-      "Partnerships with virtual CISOs, SOC 2 consultants, sales engineering communities, and revenue operations advisers",
-      "Product-led trials that let teams import one live RFP and generate a limited set of cited answers before purchasing"
+      "Founder-led outbound to Heads of Solutions Engineering at SMB SaaS companies",
+      "Presales Collective educational content and community sponsorships",
+      "SEO pages for rfp response software and proposal management software",
+      "Partner referrals from fractional Sales Engineering and RevOps consultants",
+      "CRM and knowledge-base integration marketplaces",
+      "Live teardown webinars using anonymized RFP workflows"
     ]
   },
-  "whyNow": "Proposal-management and RFP software are both showing double-digit category growth, while small and medium-sized businesses are the fastest-growing segment cited within adjacent sales enablement. At the same time, practitioners report that generic GenAI has not eliminated the work because retrieval, evidence, approvals, version control, qualification, and exact-format delivery remain unresolved. Improved document parsing and retrieval make a narrower, source-backed SMB SaaS workflow increasingly feasible.",
+  "whyNow": "Proposal-management and RFP software categories are growing, while source citations, confidence indicators, and AI-assisted drafting are becoming expected capabilities. SMB SaaS teams still face the same fragmented evidence and cross-functional review burden as larger enterprises but often lack dedicated proposal operations. Improving retrieval and document parsing now makes a focused, verifiable workflow practical without requiring a lengthy enterprise rollout.",
   "provenance": {
-    "costUsd": 0.347259,
-    "ranAt": "2026-09-24T09:38:08.411Z",
+    "costUsd": 0.407537,
+    "ranAt": "2026-10-01T09:42:30.829Z",
     "providerCalls": [
       {
         "provider": "openai",
@@ -165,17 +140,17 @@
       {
         "provider": "perplexity",
         "operation": "search:sonar-pro",
-        "costUsd": 0.022282999999999997
+        "costUsd": 0.020543
       },
       {
         "provider": "perplexity",
         "operation": "search:sonar-pro",
-        "costUsd": 0.022715
+        "costUsd": 0.023327
       },
       {
         "provider": "perplexity",
         "operation": "search:sonar-pro",
-        "costUsd": 0.028876
+        "costUsd": 0.025086999999999998
       },
       {
         "provider": "dataforseo",
@@ -185,16 +160,16 @@
       {
         "provider": "openai",
         "operation": "synthesis:gpt-5.6-sol",
-        "costUsd": 0.18134999999999998
+        "costUsd": 0.24654500000000001
       }
     ]
   },
   "howItWorks": [
-    "Knowledge Vault — BidRelay ingests approved RFP responses, product documentation, security materials, policies, and enablement content into a permission-aware library. Every extracted answer retains its source, owner, approval status, and review date so the system can distinguish governed knowledge from unverified material.",
-    "RFP Intake — A Sales Engineer uploads the buyer’s Word document, spreadsheet, presentation, or questionnaire export. BidRelay identifies questions, requirements, deadlines, and response fields while preserving structural references needed to return the completed response in the customer’s original working format.",
-    "Evidence Drafting — BidRelay retrieves the most relevant approved material and drafts answers that include visible supporting sources and confidence indicators. When evidence is missing, conflicting, or outdated, the product flags the question instead of presenting unsupported language as an authoritative company commitment.",
-    "Expert Review — Questions are routed to named owners across Solutions Engineering, security, legal, product, and sales. Reviewers can edit, approve, reject, or request clarification while BidRelay records decisions and promotes approved improvements back into the reusable answer library.",
-    "Delivery Analysis — BidRelay exports reviewed responses into the required file structure and summarizes effort, unresolved risks, answer coverage, and turnaround time. Teams can compare completed projects to understand where knowledge gaps or avoidable coordination repeatedly slow their response process."
+    "Deal Intake — A Sales Engineer uploads Word, Excel, PDF, or questionnaire files and attaches account context from the active opportunity. The system identifies deadlines, submission rules, mandatory sections, evaluation criteria, and missing materials before anyone begins drafting.",
+    "Bid Brief — The assistant scores customer fit, mandatory capability coverage, available evidence, response capacity, and commercial context. It produces a reviewable bid or no-bid brief rather than making the decision automatically, preserving accountability with sales and technical leadership.",
+    "Evidence Drafting — Each requirement is matched against approved product documentation, security material, prior answers, and case studies. Drafts display their supporting sources and confidence status, while unsupported claims, conflicting evidence, and possible roadmap promises are explicitly flagged.",
+    "Exception Review — Routine supported answers move through quickly, while technical gaps, security exceptions, legal language, and commercial questions are routed to named owners. Reviewers approve, revise, or reject content, and the system preserves the decision trail for future responses.",
+    "Submission Export — Approved responses are returned to the buyer's requested structure, including original spreadsheets or document sections. The response owner receives a final checklist covering unanswered requirements, unapproved claims, attachment obligations, formatting constraints, and deadline details."
   ],
   "scores": {
     "opportunity": 8,
@@ -204,49 +179,92 @@
     "execution": 7
   },
   "editorial": {
-    "productName": "BidRelay",
-    "dontBuildYet": "Do not build a full proposal-design suite, procurement marketplace, or autonomous bid-submission system before proving source-backed questionnaire completion.",
-    "problemNarrative": "SMB SaaS companies increasingly encounter enterprise-grade RFPs, security questionnaires, DDQs, and compliance requests before they have enough deal volume to justify a dedicated proposal team. The work therefore lands on Sales Engineers, Solutions Engineers, Account Executives, security leaders, product managers, and legal reviewers who already have full-time responsibilities.\n\nFor a Sales Engineer, the visible task is answering questions, but the underlying process is fragmented. One question may require a product capability description, another an approved security statement, and another a contractual commitment that only legal can authorize. Existing answers are scattered across old submissions, shared drives, internal documentation, chat threads, and individual memory. Teams frequently reuse prior language, but they cannot easily determine whether it remains accurate, approved, or appropriate for the current buyer.\n\nThe workload is unpredictable. Community reports range from 30 minutes for a small request to 80 collective hours for a large one, while another practitioner describes pursuits consuming more than 100 hours. Some teams receive two business days to complete more than 300 essay questions plus compliance material. The buyer may also impose a spreadsheet, Word document, or PowerPoint structure that cannot be replaced with a polished web proposal.\n\nCoordination compounds the writing burden. The Account Executive wants rapid completion because the opportunity appears valuable. The Sales Engineer must locate and draft responses. Security, legal, and product specialists receive urgent questions without context. Approvals happen in separate channels, creating conflicting copies and uncertainty about the final answer. Meanwhile, the team may have had no influence over the RFP and may be competing against requirements shaped around an incumbent.\n\nEnterprise response-management systems address many of these issues, but their seat minimums, sales-led purchasing, and annual commitments can be disproportionate for an SMB SaaS company with a small response team. Basic proposal software is more accessible but often emphasizes visual documents and signatures rather than evidence, questionnaire structure, stale-answer detection, and technical review. The resulting gap is a focused workflow that reduces response effort without imposing enterprise-level operational overhead.",
-    "solutionNarrative": "BidRelay is a source-backed RFP response workspace designed specifically for SMB SaaS sales and solutions engineering teams. Its initial wedge is technical and security-heavy questionnaires where answer accuracy, evidence, and cross-functional review matter more than visual proposal design.\n\nA team begins by adding approved prior responses, product documentation, security policies, compliance materials, and enablement content. BidRelay converts this material into a governed knowledge layer that records each source, owner, review date, and approval state. When a Sales Engineer uploads a new RFP, the product identifies the questions and drafts responses using the most relevant approved evidence. Each draft shows where its claims came from and flags missing, stale, or contradictory material.\n\nBidRelay then routes unresolved questions to the correct product, security, legal, or commercial owner. Reviewers work against a single response record rather than exchanging multiple document versions. Approved edits can update the reusable library, allowing the system to improve through completed work without treating every generated answer as trusted knowledge.\n\nThe product preserves the buyer’s required structure so the final response can be returned in the original spreadsheet, document, or presentation workflow. It also provides an intake summary covering question volume, evidence coverage, likely review burden, and unresolved requirements. That gives sales leadership an earlier view of expected effort before the organization commits dozens of hours.\n\nThe commercial wedge is transparent seat-based pricing with question caps. This aligns spending with the small number of people coordinating responses while allowing occasional contributors to participate in reviews. BidRelay does not need to replace every proposal workflow initially; it needs to make technical questionnaire completion faster, safer, and easier to govern.",
-    "competitiveNarrative": "Loopio and Responsive provide broad response-management platforms with mature content libraries and collaboration, but their seat structures, quote-based expansion, and enterprise orientation can exceed the needs of smaller SMB SaaS teams. AutoRFP.ai is a closer AI-native competitor, offering cited answers and exact-format workflows, although its published packages emphasize annual project allowances and unlimited users rather than a seat-based entry model.\n\nProposify is more accessible, but its center of gravity is branded sales proposals rather than evidence-heavy RFPs, DDQs, and security questionnaires. BidRelay should avoid competing on document design and instead own the lightweight governance layer for technical responses.\n\nIts differentiation is the combination of transparent SMB pricing, source-level evidence, stale-answer detection, named expert routing, and buyer-format preservation. The product should also surface likely effort and evidence gaps during intake, helping Sales Engineers and VP Sales leaders decide whether a pursuit deserves scarce technical resources before the full response process begins.",
-    "stackNotes": "BidRelay requires a document pipeline that can parse Word files, spreadsheets, presentations, PDFs, and irregular questionnaire tables while retaining cell, section, and question identifiers for export. Use permission-aware object storage, relational metadata for answers and approvals, and hybrid semantic plus keyword retrieval rather than relying on embeddings alone. Generation should require source attribution and structured confidence checks. Maintain immutable answer history, reviewer decisions, ownership, and expiration dates. Background workers should handle OCR, parsing, indexing, and export reconstruction. Tenant isolation, encryption, audit logging, role-based access, configurable retention, and careful prompt-injection defenses are essential because customers will upload sensitive security and product information.",
+    "productName": "ProofBid",
+    "dontBuildYet": "Do not build a full enterprise proposal-content suite, visual document designer, or autonomous submission agent before validating source-grounded drafting and exception routing.",
+    "problemNarrative": "When an RFP reaches an SMB SaaS company, ownership often lands between the Account Executive and a Sales Engineer. The VP Sales wants the opportunity advanced, the Head of Solutions Engineering wants scarce technical capacity protected, and legal, security, product, finance, and customer teams may all hold pieces of the required evidence. No single person owns a complete, current answer set.\n\nThe first problem is qualification. Teams can begin writing before confirming mandatory fit, competitive position, buyer access, delivery capacity, or likely deal economics. That turns an attractive pipeline entry into a large hidden labor commitment. Storylane describes an unwinnable RFP as the most expensive one, while Arphie recommends deciding whether the opportunity deserves the team's time before drafting begins.\n\nOnce the bid proceeds, the document itself becomes a project. Sales Engineers read long files, transfer questions into spreadsheets, identify submission rules, and separate reusable questions from deal-specific requirements. Booma reports that sales and proposal teams spend an average of 25-30 hours per RFP. That work competes directly with discovery, demonstrations, proof-of-concept support, and technical follow-up on other deals.\n\nKnowledge retrieval creates the next bottleneck. Product details may live in documentation, security answers in a separate questionnaire, commercial terms in email, and implementation evidence in old proposals. Copying a previous answer is fast but risky when the content is stale, unsupported, or written for another buyer. Generic AI drafting introduces another risk: fluent language can conceal an invented capability, an unsupported security claim, or an accidental roadmap commitment.\n\nReview then expands across departments. Security specialists must inspect controls, legal must review exceptions, product leaders must confirm capability claims, and executives may need to approve pricing or contractual positions. Without a central workflow, contributors duplicate effort, lose context, and respond through disconnected threads. The response owner cannot easily see which requirements remain unanswered, which claims lack evidence, or which sections have final approval.\n\nThe buyer ultimately evaluates one submission, but the vendor produces it through a fragmented internal process. For SMB SaaS teams without dedicated proposal operations, the central pain is converting scattered organizational knowledge into a complete, defensible response before the deadline without exhausting the people needed to win every other active deal.",
+    "solutionNarrative": "ProofBid is a deal-aware RFP response desk for SMB SaaS sales and solutions-engineering teams. Its initial wedge is the period between receiving a buyer questionnaire and routing the first informed draft for review. Instead of behaving like a general proposal writer, ProofBid turns each RFP into a controlled list of requirements, evidence, owners, risks, and approvals.\n\nA Sales Engineer uploads the buyer's files and connects the active opportunity. ProofBid extracts questions, deadlines, mandatory attachments, formatting constraints, and evaluation signals. It then creates a bid brief covering mandatory fit, available evidence, known gaps, contributor capacity, and commercial context. Sales leadership retains the bid or no-bid decision, but the hidden response cost becomes visible before drafting consumes the team.\n\nFor approved bids, ProofBid retrieves answers from designated product documentation, security material, prior submissions, case studies, and implementation references. Every generated response carries its supporting source and confidence status. Unsupported claims, inconsistent source material, and possible roadmap promises are held back as exceptions rather than polished into authoritative prose.\n\nThe product's core workflow routes only those exceptions requiring human judgment. Security questions go to security owners, capability gaps to product or Sales Engineering, terms to legal, and commercial questions to sales leadership. Contributors can approve or edit answers without learning a large proposal-management system. The response owner sees coverage, risk, ownership, and approval status in one view.\n\nProofBid then exports approved content into the buyer's requested structure and provides a submission checklist. This narrow wedge delivers measurable value through reduced search, transfer, and coordination work while preserving human accountability for claims that can affect revenue, delivery obligations, or trust.",
+    "competitiveNarrative": "ProofBid would enter a market with accessible AI tools and established enterprise platforms. RFP.ai already offers source-backed answers, citations, confidence scores, and low published prices, so ProofBid cannot differentiate through generated text alone. DeepRFP also establishes a direct per-user benchmark, while 1up provides published workflow tiers.\n\nAt the higher end, AutoRFP.ai spans response generation, content management, collaboration, DDQs, and security questionnaires. Responsive and Loopio bring deeper libraries, governance, integrations, and mature multi-contributor workflows, but their breadth can imply greater cost and process ownership.\n\nProofBid should differ through a deliberately narrow SMB SaaS operating model: connect each response to an active deal, expose bid economics before drafting, identify unsupported or risky requirements, and route only exceptions to busy specialists. Transparent seat pricing, predictable document caps, unlimited reviewers, and a short setup path would reinforce that position. The defensible experience is not a larger answer library; it is a faster path from buyer document to evidence-backed decision and controlled submission.",
+    "stackNotes": "Use a document-ingestion pipeline that preserves tables, question identifiers, workbook sheets, formatting constraints, and source locations across PDF, Word, and Excel. Retrieval should separate approved evidence from historical drafts and attach immutable source references to generated answers. A relational workflow store should track requirements, assignments, approvals, conflicts, and exports. Run model calls through structured schemas, maintain tenant-isolated vector indexes, encrypt uploaded deal documents, and log every source-to-answer relationship. CRM synchronization should import opportunity context without making the CRM the response system of record.",
+    "audienceShort": "SMB SaaS response teams",
+    "brandBrief": "ProofBid should feel like a controlled technical review surface, not a playful writing assistant. Use deep ink, muted slate, and a restrained amber risk color, with evidence links and approval states carrying more visual weight than generation controls. The mark should suggest a checked claim or connected proof trail. Voice should be concise, commercially aware, and explicit about uncertainty. Avoid robot imagery, magic metaphors, legalistic ornament, and enterprise dashboard clutter.",
     "pricingTiers": [
       {
-        "name": "Starter",
-        "price": "$49 per month",
-        "includes": "One full seat, two reviewer accounts, 1,000 processed questions per month, core knowledge-library ingestion, source-backed drafting, Word and spreadsheet import, and standard exports."
+        "name": "Essential Response",
+        "price": "$79/seat/month",
+        "includes": "Five active RFPs per month, source-backed drafting, requirement extraction, confidence flags, approved-source libraries, unlimited guest reviewers, and Word, Excel, and PDF export."
       },
       {
-        "name": "Team",
-        "price": "$249 per month",
-        "includes": "Five full seats, unlimited reviewer accounts, 6,000 processed questions per month, approval workflows, stale-answer alerts, collaboration integrations, reusable answer governance, and priority document processing."
-      },
-      {
-        "name": "Scale",
-        "price": "$699 per month",
-        "includes": "Fifteen full seats, unlimited reviewer accounts, 20,000 processed questions per month, advanced permissions, analytics, custom retention controls, priority support, expanded integrations, and organization-wide governance."
+        "name": "Deal Desk",
+        "price": "$149/seat/month",
+        "includes": "Fifteen active RFPs per month, CRM and knowledge-base connections, bid qualification briefs, approval routing, source-conflict detection, response analytics, priority processing, and unlimited guest reviewers."
       }
     ],
     "unitEconomics": [
       {
-        "label": "BidRelay Team target monthly recurring revenue",
-        "value": "$249 per account before question-pack expansion"
+        "label": "Model and parsing cost per account",
+        "value": "$24 per account per month"
       },
       {
-        "label": "BidRelay target gross margin",
-        "value": "82% at included usage caps, with retrieval, parsing, generation, storage, and support included"
+        "label": "Target gross margin",
+        "value": "82% at typical document volume"
       },
       {
-        "label": "BidRelay Team target acquisition payback",
-        "value": "Approximately 5.9 months at $1,200 blended acquisition cost and 82% gross margin"
+        "label": "Blended acquisition cost",
+        "value": "$950 per paying account"
       },
       {
-        "label": "BidRelay annualized Team contract value",
-        "value": "$2,988 before additional seats or question packs"
+        "label": "Typical seats per account",
+        "value": "4 seats per paying account"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Founder-led outbound named SMB SaaS prospects",
+          "count": 500
+        },
+        {
+          "stage": "Outbound and Presales Collective discovery calls",
+          "count": 120
+        },
+        {
+          "stage": "Live-workflow pilots from discovery calls",
+          "count": 60
+        },
+        {
+          "stage": "Essential Response paying accounts from pilots",
+          "count": 40
+        }
+      ],
+      "tier": "Essential Response",
+      "payingAccounts": 40,
+      "monthlyRevenuePerAccount": 316,
+      "assumptions": "The funnel assumes tightly targeted outreach to teams already processing recurring RFPs and a pilot using an active buyer document. Four paid seats per converted account is plausible because the core group typically includes a response owner, Sales Engineers, and a sales leader while specialist reviewers remain free."
+    },
+    "dataModel": [
+      {
+        "table": "rfp_projects",
+        "columns": "id uuid pk, workspace_id uuid fk, opportunity_external_id text, buyer_name text not null, title text not null, due_at timestamptz, status text check (status in ('intake','qualification','drafting','review','approved','submitted','declined')), bid_decision text check (bid_decision in ('pending','bid','no_bid')), created_at timestamptz not null"
       },
       {
-        "label": "BidRelay expansion mechanism",
-        "value": "Additional full seats plus prepaid question packs for temporary RFP volume spikes"
+        "table": "source_documents",
+        "columns": "id uuid pk, workspace_id uuid fk, rfp_project_id uuid fk null, source_type text check (source_type in ('rfp','product_docs','security','case_study','prior_response','legal','implementation')), file_name text not null, storage_key text not null, approval_status text check (approval_status in ('pending','approved','expired','rejected')), effective_at timestamptz, checksum text not null"
+      },
+      {
+        "table": "requirements",
+        "columns": "id uuid pk, workspace_id uuid fk, rfp_project_id uuid fk, parent_requirement_id uuid fk null, external_reference text, requirement_text text not null, category text, mandatory boolean not null default false, risk_level text check (risk_level in ('low','medium','high','blocking')), response_status text check (response_status in ('unanswered','drafted','exception','reviewed','approved'))"
+      },
+      {
+        "table": "response_drafts",
+        "columns": "id uuid pk, workspace_id uuid fk, requirement_id uuid fk, answer_text text not null, confidence numeric check (confidence >= 0 and confidence <= 1), unsupported_claim boolean not null default false, roadmap_risk boolean not null default false, version integer not null check (version > 0), created_at timestamptz not null"
+      },
+      {
+        "table": "answer_evidence",
+        "columns": "id uuid pk, workspace_id uuid fk, response_draft_id uuid fk, source_document_id uuid fk, source_locator text not null, evidence_excerpt text not null, support_type text check (support_type in ('direct','partial','conflicting')), created_at timestamptz not null"
+      },
+      {
+        "table": "review_assignments",
+        "columns": "id uuid pk, workspace_id uuid fk, requirement_id uuid fk, reviewer_member_id uuid fk, review_domain text check (review_domain in ('sales','technical','security','legal','product','commercial')), decision text check (decision in ('pending','approved','changes_requested','rejected')), decision_note text, due_at timestamptz, decided_at timestamptz"
       }
     ]
   }

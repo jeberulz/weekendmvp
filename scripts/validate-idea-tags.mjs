@@ -82,6 +82,9 @@ export const HIGHLIGHT_LIMITS = {
   competitorName: 32,
   competitorPrice: 16,
   maxCompetitors: 5,
+  tierName: 32,
+  tierPrice: 48,
+  maxTiers: 3,
 };
 
 const isText = (v) => typeof v === "string" && v.trim().length > 0;
@@ -93,7 +96,7 @@ export function validateHighlights(highlights) {
   if (!highlights || typeof highlights !== "object" || Array.isArray(highlights)) {
     return ["highlights must be an object"];
   }
-  const { problemQuote, stats, competitors } = highlights;
+  const { problemQuote, stats, competitors, tiers } = highlights;
   if (!isText(problemQuote)) {
     errors.push("highlights.problemQuote is required");
   } else if (problemQuote.length > L.problemQuote) {
@@ -125,6 +128,16 @@ export function validateHighlights(highlights) {
         if (!c || !isText(c.price) || c.price.length > L.competitorPrice) {
           errors.push(`highlights.competitors[${i}].price must be 1–${L.competitorPrice} chars`);
         }
+      });
+    }
+  }
+  if (tiers !== undefined) {
+    if (!Array.isArray(tiers) || tiers.length < 1 || tiers.length > L.maxTiers) {
+      errors.push(`highlights.tiers needs 1–${L.maxTiers} entries when present`);
+    } else {
+      tiers.forEach((tier, i) => {
+        if (!tier || !isText(tier.name) || tier.name.length > L.tierName) errors.push(`highlights.tiers[${i}].name must be 1–${L.tierName} chars`);
+        if (!tier || !isText(tier.price) || tier.price.length > L.tierPrice) errors.push(`highlights.tiers[${i}].price must be 1–${L.tierPrice} chars`);
       });
     }
   }
@@ -172,7 +185,16 @@ export function validateIdea(idea) {
 
 function main() {
   let ideas = manifest.ideas || [];
-  if (onlySlug) ideas = ideas.filter((i) => i.slug === onlySlug);
+  if (onlySlug) {
+    ideas = ideas.filter((i) => i.slug === onlySlug);
+    // Engine spot-check drafts keep their rows in engine/drafts/manifest.json.
+    const draftsManifest = path.join(root, "engine/drafts/manifest.json");
+    if (ideas.length === 0 && fs.existsSync(draftsManifest)) {
+      ideas = (
+        JSON.parse(fs.readFileSync(draftsManifest, "utf8")).ideas || []
+      ).filter((i) => i.slug === onlySlug);
+    }
+  }
   if (onlySlug && ideas.length === 0) {
     console.error(`No idea with slug '${onlySlug}'`);
     process.exit(1);

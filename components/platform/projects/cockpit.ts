@@ -1,3 +1,4 @@
+import { publicIdeaPath } from "../../../lib/engine-drafts";
 import { isValidTenantSlug } from "../../../lib/tenant-host";
 
 export type CockpitSite = {
@@ -31,8 +32,9 @@ export function suggestedTenantSlug(sourceSlug: string | undefined): string {
   return isValidTenantSlug(slug) ? slug : "";
 }
 
+/** The source idea's research page; null without one, or when it is a retired engine draft (WP54-S5). */
 export function ideaHref(sourceSlug: string | undefined): string | null {
-  return sourceSlug ? `/ideas/${sourceSlug}` : null;
+  return sourceSlug ? publicIdeaPath(sourceSlug) : null;
 }
 
 export function tenantUrlFromSite(site: CockpitSite | null): string | null {

@@ -1,0 +1,417 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-landing-page-generator-ecommerce",
+  "briefSha256": "3a0e53419b70b8e5c4750284dd367b9a15a6e528332ce7e0b4a426438addbdad",
+  "startedAt": "2026-10-03T21:12:25.998Z",
+  "finishedAt": "2026-10-03T21:15:00.398Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.004229999999999999
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.017795000000000002
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.026165
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.027184
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.19685
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.1686595
+    }
+  ],
+  "costUsd": 0.530884,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "2b79e326219fa90ad37739251cdfa7f034538ff5",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dataintelo.com/report/global-landing-page-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:29.325Z",
+      "textSha256": "0134ec28ae324f32eff0e833ef14134c274b449c13837e4d82446049758ecc4a"
+    },
+    {
+      "url": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:29.406Z",
+      "textSha256": "2850d024adb8d7f1ea005d4d0e77b7a9c62acc272fab2292bbc652bc657d2d73"
+    },
+    {
+      "url": "https://apps.shopify.com/instant-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:29.734Z",
+      "textSha256": "a346176f89a81a6f6720364b5e5c81c15d5e32f38830dd81df12826dad4d1afb"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:29.890Z",
+      "textSha256": "5d156a0d277ad25625737928368f4a454a53af48f59cd08268e68d07228d8dd0"
+    },
+    {
+      "url": "https://apps.shopify.com/gempages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.150Z",
+      "textSha256": "f3d573af21f7631e8a64a52721f10db18beb0f2b37aa3cbeaff3ae44ca9ee444"
+    },
+    {
+      "url": "https://apps.shopify.com/webi-landing-page-builder-cod",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.108Z",
+      "textSha256": "1d692a6cbf9629088670b62033d97aefc084b4771071fdcfe615ed0a7163237d"
+    },
+    {
+      "url": "https://apps.shopify.com/landify-v3",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.420Z",
+      "textSha256": "c84d476082a2f15adbda1b218990273ad246eccced337e5e2f82ec2bfe4d3fd5"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.218Z",
+      "textSha256": "69d86d995bdc800dff677eb796ad0e2f9e682f4e774f194decaa228011af9bab"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.378Z",
+      "textSha256": "c48a6903a25ab7a90b436e787d682deac459a238a16ff966869d8bc414907f47"
+    },
+    {
+      "url": "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:30.421Z",
+      "textSha256": "45625bcec188b6daa0635d015a3df9cd6c2eacc7e36ca5bdf683f9e568433b24"
+    },
+    {
+      "url": "https://www.flint.com/articles/best-ai-landing-page-builders-ecommerce",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:33.833Z",
+      "textSha256": "f6a177dcd5efd72508a6fcdf703b37d9386b6b1494a1022966a193b7c600650a"
+    },
+    {
+      "url": "https://datahorizzonresearch.com/landing-page-optimization-tool-market-59944",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:34.004Z",
+      "textSha256": "b6fdf4e7be538614f8e2cf915633eff13bdf33517f39dd043f4d92fd80381dc6"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/landing-page-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:34.312Z",
+      "textSha256": "23bba0b187d7f0c90c47d38597ab71f7ed4c0185bd368a3fa78e42febe4d8d64"
+    },
+    {
+      "url": "https://www.hdinresearch.com/reports/158970",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:34.845Z",
+      "textSha256": "924ea6065dd52342b979882315c1e06ff51042bc70077fdd49328b5b3d14afe6"
+    },
+    {
+      "url": "https://www.aidesigner.ai/blog/best-ai-landing-page-builders",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:35.050Z",
+      "textSha256": "fe736ca79103b3c1fa2a7ed995ecced6e724f482aa403f0dea9d24e4b439b8ba"
+    },
+    {
+      "url": "https://superagi.com/future-proof-your-sales-trends-and-innovations-in-ai-powered-landing-page-builders-for-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "timeout",
+      "detail": "Source read exceeded the 15000 ms deadline"
+    },
+    {
+      "url": "https://www.getlandra.com/blog/best-shopify-landing-page-builders",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:34.608Z",
+      "textSha256": "dc5bf46ab95fddb19a2a33c7a7315a3d051aa424d6824a63516bf1be26e7797b"
+    },
+    {
+      "url": "https://unbounce.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:42.144Z",
+      "textSha256": "b8d7cde0a4e344e8da6f6d51382717e2717ea645a099323468ff474919f97744"
+    },
+    {
+      "url": "https://unbounce.com/comparisons/unbounce-vs-leadpages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:42.151Z",
+      "textSha256": "17295080a39690aa4280911d560aa8eec78a9fb90fc864027b2656bb494fc0e5"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:43.351Z",
+      "textSha256": "7f601389f3f7bc92ae70a790a9e1170d578675a72d32cbeff3d2f8d47a134a19"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-generator",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:43.112Z",
+      "textSha256": "492011a7bd4692ad1e885b926e2c67b0ac2b1a515e775b77bbbb87495b7bdf67"
+    },
+    {
+      "url": "https://unbounce.com/comparisons",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:42.269Z",
+      "textSha256": "69d61039673850dcba7297481bbc2be49a7f1b5a8f1bdeac40c4bcb677a0de5d"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-builder-1",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:43.033Z",
+      "textSha256": "660b0bacd2dee701d4d80830031249a1efbb62fc5fd9c45490a3e0749b8f99cf"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=9440208",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:59.360Z",
+      "textSha256": "96c0eef3b895fbb70c816f7a88234a6c12c64b1f20945bc8c12a536fc0525050"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=9624956",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:01.111Z",
+      "textSha256": "4606b319acf8341525724df818a86964ccd5b1eb6df65a4783040b4dd2b70216"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=37190037",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:02.162Z",
+      "textSha256": "2628911ca1d57eefbd35097aa5f341a840b8d1d768b6c143da3d1559117775cd"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=27140440",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:12:59.731Z",
+      "textSha256": "e0995915b56062c77bfc9f3bd0ffe8887b479f983211fd6a8675078dab5d467e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=13404758",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:06.243Z",
+      "textSha256": "d883307739287ad06e1a5a71ff271c75b19813d459b2112dbb3e5099596201e9"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=22387911",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:03.450Z",
+      "textSha256": "f62e20433c937e3650d4c2c58ecc892a5062919b25414f38457110e56f2c9f1b"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=28481913",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:06.576Z",
+      "textSha256": "4d3340c55feceb125da09737779e0dcad531694450652995800c6361ee48591f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=16710952",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:13:06.568Z",
+      "textSha256": "fd978b6179818670b59e140245e061b751c217c1d94892d076b0848fa55a452b"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 8,
+      "competitor_price": 10,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "internal_ellipsis",
+        "sourceUrl": "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+        "detail": "an ellipsis inside the text would join separate fragments"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=9624956",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "detail": "supporting text has $2.83 billion, not $725.24 million"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "detail": "supporting text has $2.83 billion, not 14.6%"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketreports.com/product/landing-page-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder-1",
+        "detail": "Athena AI Landing Page Builder is not named before the price in its clause"
+      }
+    ]
+  }
+}

@@ -13,6 +13,7 @@ import { BuildersHubTag } from "@/components/platform/plan/BuildersHubTag";
 import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
 import { UpgradeSheet } from "@/components/platform/plan/UpgradeSheet";
 import { useUpsell } from "@/components/platform/plan/useUpsell";
+import { isResearchWithheld } from "@/components/platform/RetiredResearch";
 import { trackDashboardEvent, type DashboardSource } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { STAGE_COPY, dayName, planHref } from "./plan-copy";
@@ -45,6 +46,32 @@ function errorData(error: unknown): { code?: string; activeTitle?: string; activ
   return error instanceof ConvexError ? (error.data as { code?: string; activeTitle?: string; activePlanId?: string }) : null;
 }
 
+/**
+ * The start page when the idea cannot start a plan. A retired draft (WP54-S5)
+ * says so plainly; anything else reads as not found. Exported for tests.
+ */
+export function IdeaNotPlannable({ slug }: { slug: string }) {
+  const retired = isResearchWithheld(slug);
+  return (
+    <div className={CARD}>
+      <h2 className={TITLE}>{retired ? "This idea’s research was retired." : "We can’t find that idea."}</h2>
+      <p className="text-[15px] text-home-ink-2">
+        {retired
+          ? "It can’t start a new weekend plan. Anything you already saved or planned for it stays in Saved and Builds."
+          : "It may have moved. Pick one from your shortlist instead."}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Link href="/dashboard/saved" className={PRIMARY}>
+          Go to Saved
+        </Link>
+        <Link href="/dashboard/explore" className={SECONDARY}>
+          Browse ideas
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) {
   const preview = useQuery(api.platform.weekendPlans.startPreview, { slug });
   const start = useMutation(api.platform.weekendPlans.start);
@@ -59,22 +86,7 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
   if (preview === undefined) return <ModuleSkeleton label="Loading your plan" className="h-[320px]" />;
 
   const { idea, active } = preview;
-  if (idea === null) {
-    return (
-      <div className={CARD}>
-        <h2 className={TITLE}>We can’t find that idea.</h2>
-        <p className="text-[15px] text-home-ink-2">It may have moved. Pick one from your shortlist instead.</p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/dashboard/saved" className={PRIMARY}>
-            Go to Saved
-          </Link>
-          <Link href="/dashboard/explore" className={SECONDARY}>
-            Browse ideas
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  if (idea === null) return <IdeaNotPlannable slug={slug} />;
 
   async function begin(replaceActive: boolean, expectedActivePlanId?: string) {
     setPending(true);

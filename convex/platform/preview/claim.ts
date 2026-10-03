@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
-import { resolveCapability } from "./capabilities";
+import { resolveCapability, sourceIsEngineDraft } from "./capabilities";
 import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
 /**
@@ -18,10 +18,11 @@ import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
  * 2. **Exactly once.** A capability yields one project graph no matter how
  *    many times, or how concurrently, the claim is called.
  * 3. **One generic denial.** An expired capability, an unknown token, a
- *    malformed token, and a capability belonging to somebody else all raise
- *    the same `RESOURCE_NOT_FOUND` that `platform/authz.ts` uses everywhere
- *    else. A caller must not be able to tell "someone else owns this" from
- *    "this never existed".
+ *    malformed token, a capability belonging to somebody else, and a new
+ *    claim on a retired engine draft's preview (WP54-S5) all raise the same
+ *    `RESOURCE_NOT_FOUND` that `platform/authz.ts` uses everywhere else. A
+ *    caller must not be able to tell "someone else owns this" from "this
+ *    never existed".
  *
  * Reading is deliberately *not* restricted after a claim. S1 ruled that a
  * claimed capability still resolves while unexpired so the visitor can reload
@@ -232,6 +233,14 @@ export const claim = mutation({
         });
       }
       return graph;
+    }
+
+    // A retry above still returns a project the member already holds, as
+    // repository intake does. A new one never starts from a draft: refused
+    // with the unknown-token denial, before any write, so the capability
+    // stays exactly as it was.
+    if (await sourceIsEngineDraft(ctx, capability.sourceIdeaId)) {
+      return denyNotFound();
     }
 
     return await createGraph(ctx, user._id, capability, idempotencyKey, now);

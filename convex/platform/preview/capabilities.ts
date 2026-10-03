@@ -1,5 +1,8 @@
-import type { Doc } from "../../_generated/dataModel";
+import type { Doc, Id } from "../../_generated/dataModel";
 import type { QueryCtx } from "../../_generated/server";
+// The pure rule, not `../catalogPolicy`: this module also reaches client
+// bundles (lib/analytics-redaction.ts), and catalogPolicy loads the manifest.
+import { isEngineDraftSlug } from "../../../lib/engine-drafts";
 import { parseSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
 /**
@@ -101,6 +104,21 @@ export type ResolvedCapability = {
 
 /** Matches the `Pick<QueryCtx, ...>` convention used by `platform/authz.ts`. */
 type CapabilityReadCtx = Pick<QueryCtx, "db">;
+
+/**
+ * WP54-S5 (ruling 2026-10-01): whether a preview's source idea is a retired
+ * engine draft. The bridge stopped minting draft previews at the backend
+ * deploy, but one minted before it stays live for up to 7 days. No new
+ * project may start from it (the claim refuses), and the preview page says
+ * so instead of offering one.
+ */
+export async function sourceIsEngineDraft(
+  ctx: CapabilityReadCtx,
+  sourceIdeaId: Id<"ideas">,
+): Promise<boolean> {
+  const idea = await ctx.db.get("ideas", sourceIdeaId);
+  return idea !== null && isEngineDraftSlug(idea.slug);
+}
 
 /**
  * Resolves a plaintext token to its capability, or null.

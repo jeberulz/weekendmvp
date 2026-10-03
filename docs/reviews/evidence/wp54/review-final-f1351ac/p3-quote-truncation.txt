@@ -1,0 +1,12 @@
+
+candidate: "security questionnaires are the bottleneck for our team."
+accepted: ["security questionnaires are the bottleneck for our team."] rejected: []
+> "security questionnaires are the bottleneck for our team."
+>
+> — [Questionnaires thread](https://forum.example.net/t/questionnaires/1)
+
+candidate: "...security questionnaires are the bottleneck for our team."
+accepted: ["security questionnaires are the bottleneck for our team."] rejected: []
+> "security questionnaires are the bottleneck for our team."
+>
+> — [Questionnaires thread](https://forum.example.net/t/questionnaires/1)

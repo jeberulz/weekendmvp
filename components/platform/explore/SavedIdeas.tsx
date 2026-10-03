@@ -3,7 +3,7 @@
 import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { api } from "@/convex/_generated/api";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { CollectionView } from "@/components/platform/hub/CollectionView";
@@ -16,6 +16,7 @@ import { useUpsell } from "@/components/platform/plan/useUpsell";
 import { cn } from "@/lib/utils";
 import { IdeaRow } from "./IdeaCard";
 import { IDEAS_PATH } from "./library-params";
+import { isComparable } from "./saved-compare";
 
 type SavedItem = FunctionReturnType<typeof api.platform.dashboard.savedList>["items"][number];
 
@@ -83,6 +84,61 @@ function CompareBar({ picked, max, onCancel }: { picked: string[]; max: number; 
   );
 }
 
+/**
+ * The Saved rows. Builder's Hub rows carry the hub tools and, in compare
+ * mode, a compare checkbox wherever `isComparable` allows one. Exported so
+ * compare mode, which starts only from a click, can be rendered in tests.
+ */
+export function SavedRows({
+  rows,
+  hub,
+  comparing,
+  picked,
+  compareMax,
+  onPick,
+  onUpgrade,
+}: {
+  rows: SavedItem[];
+  hub: boolean;
+  comparing: boolean;
+  picked: string[];
+  compareMax: number;
+  onPick: (slug: string, checked: boolean) => void;
+  onUpgrade: ComponentProps<typeof HubRow>["onUpgrade"];
+}) {
+  return (
+    <ul className="divide-y divide-home-rule border-y border-home-ink">
+      {rows.map((item) => (
+        <li key={item.card.ideaId}>
+          {hub && item.card.saved ? (
+            <HubRow
+              item={item}
+              source="saved"
+              meta={savedOn(item.savedAt)}
+              onUpgrade={onUpgrade}
+              compare={
+                isComparable(item.card.slug, comparing)
+                  ? {
+                      checked: picked.includes(item.card.slug),
+                      disabled: !picked.includes(item.card.slug) && picked.length >= compareMax,
+                      onChange: (checked) => onPick(item.card.slug, checked),
+                    }
+                  : undefined
+              }
+            />
+          ) : (
+            <IdeaRow
+              idea={item.card}
+              source="saved"
+              meta={item.card.saved ? savedOn(item.savedAt) : "Removed. Save it again to keep it."}
+            />
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function LiveSaved() {
   const { results, status, loadMore } = usePaginatedQuery(api.platform.dashboard.savedPage, {}, { initialNumItems: PAGE });
   const rows = useKeptRows(status === "LoadingFirstPage" ? undefined : results);
@@ -135,38 +191,17 @@ function LiveSaved() {
       <p role="status" className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3">
         {total} saved {total === 1 ? "idea" : "ideas"}{status !== "Exhausted" ? " loaded; more available" : ""}
       </p>
-      <ul className="divide-y divide-home-rule border-y border-home-ink">
-        {rows.map((item) => (
-          <li key={item.card.ideaId}>
-            {hub && item.card.saved ? (
-              <HubRow
-                item={item}
-                source="saved"
-                meta={savedOn(item.savedAt)}
-                onUpgrade={(feature) => gate.openSheet(feature)}
-                compare={
-                  comparing
-                    ? {
-                        checked: picked.includes(item.card.slug),
-                        disabled: !picked.includes(item.card.slug) && picked.length >= compareMax,
-                        onChange: (checked) =>
-                          setPicked((current) =>
-                            checked ? [...current, item.card.slug] : current.filter((slug) => slug !== item.card.slug),
-                          ),
-                      }
-                    : undefined
-                }
-              />
-            ) : (
-              <IdeaRow
-                idea={item.card}
-                source="saved"
-                meta={item.card.saved ? savedOn(item.savedAt) : "Removed. Save it again to keep it."}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
+      <SavedRows
+        rows={rows}
+        hub={hub}
+        comparing={comparing}
+        picked={picked}
+        compareMax={compareMax}
+        onPick={(slug, checked) =>
+          setPicked((current) => (checked ? [...current, slug] : current.filter((other) => other !== slug)))
+        }
+        onUpgrade={(feature) => gate.openSheet(feature)}
+      />
       {comparing && (
         <CompareBar
           picked={picked}

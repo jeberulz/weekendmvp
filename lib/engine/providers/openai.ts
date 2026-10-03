@@ -21,41 +21,83 @@ const ENDPOINT = "https://api.openai.com/v1/responses";
 /** Injected so fixture mode needs no network and no key. */
 export type Fetcher = typeof fetch;
 
-type ResponsesPayload = {
-  output_text?: string;
-  output?: Array<{ content?: Array<{ text?: string }> }>;
-  usage?: {
-    input_tokens?: number;
-    output_tokens?: number;
-    input_tokens_details?: { cached_tokens?: number };
-  };
-};
+/**
+ * Headroom for the provider's own message framing when usage is unknown;
+ * the same allowance the pipeline keeps under each step's input budget.
+ */
+const FRAMING_TOKENS = 200;
+
+const utf8 = new TextEncoder();
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** A reported token count, or null when absent or not a non-negative integer. */
+function tokenCount(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+type TokenUsage = { inputTokens: number; cachedInputTokens: number; outputTokens: number };
 
 /**
- * Pulls the text out of a Responses payload.
+ * The tokens a billed reply (any 2xx) is charged for. Usage that is missing
+ * or malformed is never recorded as zero: each unknown count is the most this
+ * request could have been billed. Input: its UTF-8 bytes plus framing, since
+ * a token is never shorter than one byte. Output: `maxOutputTokens`, which
+ * the API enforces. Cached input: none, the dearest case, also when the
+ * reported count exceeds the input it belongs to.
+ */
+function billedUsage(usage: unknown, request: SynthesisRequest): TokenUsage {
+  const reported = isRecord(usage) ? usage : {};
+  const details = isRecord(reported.input_tokens_details) ? reported.input_tokens_details : {};
+  const inputTokens =
+    tokenCount(reported.input_tokens) ??
+    utf8.encode(request.instructions).byteLength + utf8.encode(request.input).byteLength + FRAMING_TOKENS;
+  const outputTokens = tokenCount(reported.output_tokens) ?? request.maxOutputTokens;
+  const cached = tokenCount(details.cached_tokens);
+  const cachedInputTokens = cached !== null && cached <= inputTokens ? cached : 0;
+  return { inputTokens, cachedInputTokens, outputTokens };
+}
+
+function costOf(usage: TokenUsage): ProviderCost {
+  return {
+    role: "synthesis",
+    provider: "openai",
+    billedAs: SYNTHESIS_MODEL,
+    usd: estimateSynthesisUsd(usage),
+    estimated: true,
+    units: { ...usage },
+  };
+}
+
+/**
+ * Pulls the text out of a Responses payload, whatever its shape.
  *
  * Fails closed on an empty result rather than returning `""`. An empty
  * synthesis is indistinguishable downstream from a model that legitimately
  * had nothing to add, and would produce a report with silently missing
- * sections.
+ * sections. Tokens were still billed, so the error carries the cost.
  */
-function readText(payload: ResponsesPayload, cost: ProviderCost): string {
-  if (typeof payload.output_text === "string" && payload.output_text.length > 0) {
-    return payload.output_text;
+function readText(payload: unknown, cost: ProviderCost): string {
+  if (isRecord(payload)) {
+    if (typeof payload.output_text === "string" && payload.output_text.length > 0) {
+      return payload.output_text;
+    }
+    const parts: string[] = [];
+    for (const item of Array.isArray(payload.output) ? payload.output : []) {
+      if (!isRecord(item) || !Array.isArray(item.content)) continue;
+      for (const part of item.content) {
+        if (isRecord(part) && typeof part.text === "string") parts.push(part.text);
+      }
+    }
+    const joined = parts.join("").trim();
+    if (joined.length > 0) return joined;
   }
-  const joined = (payload.output ?? [])
-    .flatMap((item) => item.content ?? [])
-    .map((part) => part.text ?? "")
-    .join("")
-    .trim();
-  if (joined.length === 0) {
-    // Tokens were still billed, so the error carries the cost.
-    throw new ProviderCallError("synthesis", "model returned no text", {
-      retryable: true,
-      cost,
-    });
-  }
-  return joined;
+  throw new ProviderCallError("synthesis", "model returned no text", {
+    retryable: true,
+    cost,
+  });
 }
 
 export function createSynthesisProvider(
@@ -95,10 +137,11 @@ export function createSynthesisProvider(
             max_output_tokens: request.maxOutputTokens,
           }),
         });
-      } catch (cause) {
+      } catch {
+        // No reply: treated as unbilled, as before. A request lost after the
+        // provider had run it is the one case this undercounts.
         throw new ProviderCallError("synthesis", "request failed", {
           retryable: true,
-          ...(cause instanceof Error ? {} : {}),
         });
       }
 
@@ -113,37 +156,32 @@ export function createSynthesisProvider(
         );
       }
 
-      let payload: ResponsesPayload;
+      // A 2xx means the request ran and was billed: from here on every
+      // failure carries a cost, so the pipeline settles it as spend.
+      let raw: string;
       try {
-        payload = (await response.json()) as ResponsesPayload;
+        raw = await response.text();
+      } catch {
+        throw new ProviderCallError("synthesis", "response body could not be read", {
+          retryable: true,
+          cost: costOf(billedUsage(undefined, request)),
+        });
+      }
+      let payload: unknown;
+      try {
+        payload = JSON.parse(raw);
       } catch {
         throw new ProviderCallError("synthesis", "unparseable response", {
           retryable: true,
+          cost: costOf(billedUsage(undefined, request)),
         });
       }
 
-      const inputTokens = payload.usage?.input_tokens ?? 0;
-      const outputTokens = payload.usage?.output_tokens ?? 0;
-      const cachedInputTokens =
-        payload.usage?.input_tokens_details?.cached_tokens ?? 0;
-      const cost: ProviderCost = {
-        role: "synthesis",
-        provider: "openai",
-        billedAs: SYNTHESIS_MODEL,
-        usd: estimateSynthesisUsd({
-          inputTokens,
-          cachedInputTokens,
-          outputTokens,
-        }),
-        estimated: true,
-        units: { inputTokens, cachedInputTokens, outputTokens },
-      };
+      const usage = billedUsage(isRecord(payload) ? payload.usage : undefined, request);
+      const cost = costOf(usage);
       const text = readText(payload, cost);
 
-      return {
-        value: { text, inputTokens, outputTokens, cachedInputTokens },
-        cost,
-      };
+      return { value: { text, ...usage }, cost };
     },
   };
 }
