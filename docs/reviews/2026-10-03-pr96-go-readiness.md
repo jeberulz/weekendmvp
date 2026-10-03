@@ -40,3 +40,9 @@ At clean `65755d9`, an RFP attempt stopped before source acquisition with Perple
 3. Re-run the final merge-stack gate and obtain independent review of the updated PR. CodeRabbit's apparent green check on PR #96 is a skipped review because the PR is draft. Then decide GO/NO-GO explicitly. PR #96 targets PR #71's branch, so merge order and PR #71's integration into `main` must be deliberate.
 
 Docs updated: `docs/wp/wp54-stories.md`, `docs/wp/wp54-progress.md`, `docs/wp/RULINGS.md`, the evidence-contract and publish workflow guidance in earlier repair commits, this report and the private live evidence. Production activation is separate from this work package.
+
+## Owner-directed release exception (2026-10-03)
+
+After receiving the NO-GO result, the owner explicitly directed merging and deploying the code to production to test the `/publish-idea` skill, accepting the RFP extraction reliability issue. This changes the **release authorization**, not the evidence verdict above: the three-brief quality gate remains 2/3, and the engine must still fail closed on inadequate evidence. It does not approve any particular idea page, production seed, automatic publication, or Builder's Hub activation. The skill's page-level audit and human source check still apply when the owner later tests a specific idea.
+
+The combined `origin/main` plus PR #96 tree was tested before rollout: 2,334 tests, typecheck, lint (0 errors, 35 baseline warnings), production build, server traces, engine replay and idea tags passed. A Convex production dry run from the PR branch would have removed newer editorial indexes from `main`; that branch must never be deployed directly. The combined tree's dry run passed schema/type validation and reported **no index deletion**. Deploy its Convex backend before merging PR #71 into `main`, then verify the production frontend and preserve this exception as an accepted risk rather than relabelling the failed live gate GO.
