@@ -1,0 +1,204 @@
+---
+slug: "prompt-regression-tests-indie-ai-builders"
+title: "Prompt Regression Tests for Indie AI Builders"
+engine: true
+---
+
+## The Problem
+
+Indie developers and small product teams shipping LLM applications face a testing mismatch. Their products are software, but an important layer of behavior is probabilistic, provider-dependent, and shaped by natural-language instructions. A prompt edit that looks harmless in review can alter tone, omit required fields, misuse a tool, weaken refusal behavior, or degrade an edge case. Conventional unit tests catch syntax and deterministic logic; they do not readily explain whether generated behavior became less useful.
+
+The resulting workflow is fragmented. One builder describes moving among Notion, Google Docs, and Jupyter Notebooks before running custom scripts against text iterations ["In 2023, I spent a lot of time between Notion, Google Docs, and Jupyter Notebooks editing paragraphs of texts and then running custom scripts to test the outputs of my iterations."](https://news.ycombinator.com/item?id=38835943). Another says existing scripts are copied and wired into the command prompt ["I just copy and paste existing scripts and wire them into the command prompt."](https://news.ycombinator.com/item?id=38835943). These approaches can produce spot checks, yet they make it difficult to preserve a trusted baseline, rerun the same cases in CI, compare outputs consistently, or understand why a release gate failed.
+
+The burden grows when a product uses LLMs for several important tasks. A production team reports applications across content generation, customer support, and code review assistance while finding significant limitations in every evaluation tool it tested ["We're running LLMs in production for content generation, customer support, and code review assistance. Been trying to build a proper evaluation pipeline for months but every tool we've tested has significant limitations."](https://news.ycombinator.com/item?id=44194187). That account highlights the gap between having scripts and having a dependable evaluation practice. The buyer needs representative cases, repeatable execution, scoring rules, output diffs, and a clear decision about whether a candidate change is safe.
+
+Discovery often arrives late. A production practitioner says weaknesses in assessment, evaluation, and observability became clear at general availability ["When we hit production general availability, we realized how bad the assessment/evaluation/observability of this technology is."](https://news.ycombinator.com/item?id=36787924). By then, quality issues are exposed to users and harder to isolate because prompt edits, model changes, retrieval updates, and tool behavior may have shifted together.
+
+For a SaaS founder, AI engineer, or product engineer in a small team, the core pain is not a lack of possible evaluation techniques. It is the operational cost of turning those techniques into a lightweight release habit. Existing broad platforms may introduce concepts and setup beyond the immediate job, while homemade scripts tend to lose history and consistency. The unmet need is a narrow guardrail that fits GitHub and CI, makes behavioral regressions visible, and helps a builder distinguish an intentional change from a quiet breakage before deployment.
+
+> "We're running LLMs in production for content generation, customer support, and code review assistance. Been trying to build a proper evaluation pipeline for months but every tool we've tested has significant limitations."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=44194187)
+
+> "In 2023, I spent a lot of time between Notion, Google Docs, and Jupyter Notebooks editing paragraphs of texts and then running custom scripts to test the outputs of my iterations."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=38835943)
+
+> "When we hit production general availability, we realized how bad the assessment/evaluation/observability of this technology is."
+>
+> — [How are you improving your use of LLMs in production?](https://news.ycombinator.com/item?id=36787924)
+
+## The Solution
+
+EvalLatch is a per-project prompt regression service for indie developers and small product teams. Its wedge is deliberately narrow: convert representative LLM interactions into a CI release gate that compares a candidate change with an approved baseline. The product would not ask builders to replace their application framework, centralize every production trace, or adopt a large evaluation program before receiving value.
+
+A builder connects a GitHub repository and adds a compact test manifest. Each case can define an input, relevant context, required output shape, assertions, rubric criteria, and tolerated variation. Prompt files and evaluation configuration remain linked to the code revision that produced them. When CI runs, EvalLatch executes baseline and candidate configurations under controlled settings, captures outputs, applies deterministic checks, invokes configured judges where interpretation is needed, and reports a pass, warning, or failure.
+
+The central interface is a regression review rather than a generic analytics dashboard. Changed outputs are grouped by likely cause, such as formatting drift, missing requirements, altered tool selection, rubric decline, or provider error. Reviewers can inspect the prompt diff beside output comparisons, annotate an edge case, rerun a disputed result, and promote an intentional change into the accepted baseline. That action preserves history without forcing every variation to remain a failure forever.
+
+The product earns recurring value through CI runs, retained test history, shared review, and confidence around releases. Local execution and a free sandbox lower adoption friction; paid projects add hosted runs, branch protection, longer history, scheduled checks, and collaboration. The initial promise stays concrete: catch the prompt change that quietly broke the application before users encounter it.
+
+The workflow below is EvalLatch's proposed first version: a plan to build, not a tested product.
+
+**How it works:**
+
+1. **Connect a Repository** — EvalLatch would install through GitHub, detect the application test configuration, and generate a repository-owned manifest. The builder would select prompt files, model settings, fixtures, and protected branches without moving application code or adopting a broad observability stack.
+2. **Define Regression Cases** — The builder would add representative inputs, expected properties, rubric checks, structured-output constraints, and tolerated variations. EvalLatch would version these cases beside prompt revisions while keeping secrets, provider credentials, and sensitive fixture payloads behind project-level access controls.
+3. **Gate Every Change** — A pull request would trigger controlled runs against the baseline and candidate configuration. EvalLatch would normalize provider responses, apply deterministic checks and configured judges, flag meaningful regressions, and return a concise GitHub status with links to inspect disputed results.
+4. **Review and Promote** — The comparison workspace would group changed outputs by failure type, expose prompt and model diffs, and let an authorized reviewer accept intentional behavior changes. Approved results would become the new baseline while preserving an audit trail for later debugging.
+
+What not to build yet (scope advice for EvalLatch's first version, not research):
+
+Don't build broad production tracing, enterprise governance, or a general prompt marketplace before the CI regression workflow proves habitual use.
+
+## Market Research
+
+Prompt regression testing occupies a focused wedge within AI model evaluation: helping indie developers and small product teams detect behavioral changes when prompts, models, retrieval settings, or tool instructions change. The buyer is not seeking a broad governance suite. The immediate job is repeatable comparison inside CI, with failures explained clearly enough to support a release decision.
+
+Available market research covers evaluation platforms and benchmarking rather than this indie segment directly, so it indicates category momentum without sizing the exact serviceable niche. One secondary estimate values the AI model evaluation and benchmarking market at [$350.7 million (AI model evaluation and benchmarking market, market size, 2025)](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market) and projects it to reach [$6,028.3 million by 2035 (AI model evaluation and benchmarking market, market size, projected)](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market), alongside a projected growth rate of [32\.9% (AI model evaluation and benchmarking market, growth rate, projected)](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market). Another secondary estimate values the broader AI model evaluation platforms market at [$1,350.2 million (Global AI Model Evaluation Platforms Market, market size, 2024)](https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market). These estimates differ in scope and methodology, but they place evaluation infrastructure within an expanding commercial category.
+
+The practical opportunity is narrower and more accessible than enterprise evaluation. Small builders often need a lightweight test manifest, versioned fixtures, deterministic CI behavior, judge configuration, and readable diffs rather than extensive observability or compliance controls. A per-project subscription aligns cost with shipped applications and avoids forcing a small team into a broad platform commitment. The strongest wedge is release confidence: make prompt evaluation feel like an ordinary software test workflow while preserving enough output history for investigation, collaboration, and gradual improvement.
+
+Why now: Evaluation infrastructure is receiving commercial attention, with category research projecting strong expansion [32\.9% (AI model evaluation and benchmarking market, growth rate, projected)](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market). At the same time, builders report that production evaluation remains inadequate ["When we hit production general availability, we realized how bad the assessment/evaluation/observability of this technology is."](https://news.ycombinator.com/item?id=36787924) and that assembling a proper pipeline can remain unresolved for months ["We're running LLMs in production for content generation, customer support, and code review assistance. Been trying to build a proper evaluation pipeline for months but every tool we've tested has significant limitations."](https://news.ycombinator.com/item?id=44194187). That combination creates room for a focused, low-friction release gate.
+
+**Market signals**
+
+- $350.7 million (AI model evaluation and benchmarking market, market size, 2025) ([AI Model Evaluation and Benchmarking Market Size \[2035\]](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market)).
+- $6,028.3 million by 2035 (AI model evaluation and benchmarking market, market size, projected) ([AI Model Evaluation and Benchmarking Market Size \[2035\]](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market)).
+- 32\.9% (AI model evaluation and benchmarking market, growth rate, projected) ([AI Model Evaluation and Benchmarking Market Size \[2035\]](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market)).
+- $1,350.2 million (Global AI Model Evaluation Platforms Market, market size, 2024) ([Congruencemarketinsights](https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **LLM evaluation** — 1000/mo, competition 40, CPC $20.37
+- **prompt testing tool** — 20/mo, competition 35, CPC $15.94
+- **LLM regression testing** — 10/mo, competition 55, CPC $29.71
+- **LLM evals** — 480/mo, competition 55, CPC $15.10
+- **prompt evaluation tool** — 30/mo, competition 54, CPC $18.61
+- **AI agent testing** — 90/mo, competition 52, CPC $32.65
+
+## Competitive Landscape
+
+Langfuse offers a production-oriented entry plan [$29/month (Langfuse)](https://langfuse.com/pricing) and is associated with a wider observability workflow. Promptlayer provides a small-team Pro offer [$49/month (Promptlayer Pro for small teams plan)](https://www.promptlayer.com/pricing) plus a higher Team offer [$500/month (Promptlayer Team for growing teams plan)](https://www.promptlayer.com/pricing), reflecting a broader prompt management ladder. Braintrust positions Pro for AI-native teams [$249/month (Braintrust Pro plan)](https://www.braintrust.dev/pricing) and addresses a substantial evaluation surface.
+
+EvalLatch should not compete by reproducing every platform capability. Its differentiation is workflow compression for a small shipping team: repository-owned cases, opinionated GitHub checks, baseline promotion, readable output diffs, and pricing attached to a live project. The landing experience should begin with a pull request and a failed regression, not an empty analytics dashboard. Observability integrations can export context later, while EvalLatch remains the focused release gate. This positioning gives builders a reason to adopt it alongside existing tracing tools or before their needs justify a broader evaluation platform.
+
+- **Langfuse** — Langfuse presents a production-oriented offer at [$29/month (Langfuse)](https://langfuse.com/pricing). Its accessible entry point creates a strong reference for builders who want evaluation alongside broader tracing and application observability. Published pricing: $29/month (Langfuse) [Langfuse](https://langfuse.com/pricing).
+- **Promptlayer** — Promptlayer supports small-team adoption through its Pro offer [$49/month (Promptlayer Pro for small teams plan)](https://www.promptlayer.com/pricing) and a materially higher Team offer [$500/month (Promptlayer Team for growing teams plan)](https://www.promptlayer.com/pricing). That ladder signals broader prompt management ambitions beyond a narrow CI regression gate. Published pricing: $49/month (Promptlayer Pro for small teams plan) [Promptlayer](https://www.promptlayer.com/pricing); $500/month (Promptlayer Team for growing teams plan) [Promptlayer](https://www.promptlayer.com/pricing).
+- **Braintrust** — Braintrust positions its Pro plan for AI-native teams at [$249/month (Braintrust Pro plan)](https://www.braintrust.dev/pricing). EvalLatch would differentiate through a simpler per-project workflow designed around pull requests, fixtures, release checks, and indie buying constraints. Published pricing: $249/month (Braintrust Pro plan) [Braintrust](https://www.braintrust.dev/pricing).
+
+**Your Opportunity**
+
+Position EvalLatch as the release gate for indie LLM products: a focused regression-testing layer that lives in GitHub, runs from CI, and explains behavioral drift without demanding an observability migration. Lead with quiet prompt breakage, fast setup, repository-owned tests, and per-project pricing.
+
+## Business Model
+
+Competitive entry offers span Langfuse at [$29/month (Langfuse)](https://langfuse.com/pricing) and Promptlayer Pro for small teams at [$49/month (Promptlayer Pro for small teams plan)](https://www.promptlayer.com/pricing), while Braintrust Pro sits at [$249/month (Braintrust Pro plan)](https://www.braintrust.dev/pricing). Promptlayer also provides a higher Team offer [$500/month (Promptlayer Team for growing teams plan)](https://www.promptlayer.com/pricing). EvalLatch should avoid matching broad platform scope. Its pricing should make a live project easy to approve, tie value to CI protection and retained history, and reserve portfolio management for builders shipping several applications.
+
+Proposed EvalLatch pricing to test with early buyers (an assumption, not observed market data):
+
+- **Local Sandbox** (Free) — 1 project, 100 local case runs, 7-day history
+- **Live Project** ($29/project/month) — 1 project, 2,500 hosted CI runs, 90-day history, GitHub checks
+- **Project Portfolio** ($99/month) — 5 projects, 12,000 hosted CI runs, 1-year history, shared review
+
+**Unit Economics**
+
+Planning estimates to verify, not measured results:
+
+- **80% or better** — Target gross margin
+- **$5 maximum per paid project** — Model and storage budget
+- **30 minutes per active account** — Monthly support target
+- **1 protected pull request** — Trial activation target
+
+**Year-One Math**
+
+EvalLatch's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.
+
+The model assumes technical search content and GitHub templates create qualified trials, with founder-led support helping active projects reach a protected pull request. An account represents one subscribed project under the selected plan.
+
+- **12,000** — Search content visitors
+- **1,800** — GitHub template installs
+- **360** — Product email trial projects
+- **90** — Self serve paid accounts
+- **90 × $29/mo = $31,320 ARR** — Live Project accounts paying by month 12
+- **45 × $29/mo = $15,660 ARR** — downside if the close rate halves (half of 90 accounts)
+
+**Channels**
+
+Channels to test (proposals, not measured results):
+
+- Search-led guides for LLM evaluation and prompt regression
+- GitHub templates and reusable CI actions
+- Launch partnerships with indie AI communities
+- Technical demos in developer newsletters and podcasts
+
+## Recommended Tech Stack
+
+A suggested stack for EvalLatch (a recommendation, not research):
+
+Use Next.js for the control plane and review interface, with Postgres storing projects, versioned cases, baselines, run metadata, and reviewer decisions. A separate worker service should execute provider calls from a durable queue, enforce concurrency limits, redact secrets, and record immutable artifacts in object storage. GitHub Apps should handle repository access, commit status updates, and pull-request comments. Evaluation adapters need deterministic validators, structured-output checks, semantic similarity, rubric judges, retries, and cost capture. Encrypt provider credentials, isolate project execution, support webhook replay, and make every baseline promotion auditable. OpenTelemetry can expose worker latency and failure causes without turning the product into a customer-facing tracing suite.
+
+- **Next.js + TypeScript** — screens for Connect a Repository, Define Regression Cases, Gate Every Change, Review and Promote
+- **Postgres (Supabase or Neon)** — prompt\_versions, test\_suites, test\_cases, ci\_runs, evaluation\_results, baseline\_promotions
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Local Sandbox / Live Project / Project Portfolio subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these EvalLatch build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named EvalLatch for indie LLM builders.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('local_sandbox','live_project','project_portfolio'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- prompt_versions(id, workspace_id fk, project_id fk, repository_sha, prompt_path, content_hash, provider, model_name, created_at)
+- test_suites(id, workspace_id fk, project_id fk, name, branch_pattern, status: draft, active, archived, created_at)
+- test_cases(id, workspace_id fk, suite_id fk, name, input_payload jsonb, expected_schema jsonb, rubric_text, severity: warning, blocking, created_at)
+- ci_runs(id, workspace_id fk, suite_id fk, commit_sha, pull_request_number, status: queued, running, passed, failed, cancelled, started_at, completed_at)
+- evaluation_results(id, workspace_id fk, ci_run_id fk, test_case_id fk, baseline_output jsonb, candidate_output jsonb, score numeric, verdict: pass, warning, fail, explanation, created_at)
+- baseline_promotions(id, workspace_id fk, project_id fk, prompt_version_id fk, source_run_id fk, status: pending, approved, rejected, approved_by, approved_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Local Sandbox at Free; Live Project at $29/project/month; Project Portfolio at $99/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_LOCAL_SANDBOX, STRIPE_PRICE_LIVE_PROJECT, STRIPE_PRICE_PROJECT_PORTFOLIO, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Don't build broad production tracing, enterprise governance, or a general prompt marketplace before the CI regression workflow proves habitual use.
+```
+
+**2. Core Feature**
+
+```text
+Build EvalLatch's core workflow as one screen per step, in this order:
+- Connect a Repository: EvalLatch would install through GitHub, detect the application test configuration, and generate a repository-owned manifest.
+- Define Regression Cases: The builder would add representative inputs, expected properties, rubric checks, structured-output constraints, and tolerated variations.
+- Gate Every Change: A pull request would trigger controlled runs against the baseline and candidate configuration.
+- Review and Promote: The comparison workspace would group changed outputs by failure type, expose prompt and model diffs, and let an authorized reviewer accept intentional behavior changes.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Connect a Repository → Define Regression Cases → Gate Every Change → Review and Promote without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for EvalLatch. Hero line: Catch the prompt change that quietly broke your AI app before your users do.
+Sections: the problem for indie LLM builders; how EvalLatch works (Connect a Repository, Define Regression Cases, Gate Every Change, Review and Promote); competitor strip (Langfuse: $29/month (Langfuse); Promptlayer: $49/month (Promptlayer Pro for small teams plan), $500/month (Promptlayer Team for growing teams plan); Braintrust: $249/month (Braintrust Pro plan)); pricing (Local Sandbox at Free; Live Project at $29/project/month; Project Portfolio at $99/month); a single CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand EvalLatch for indie LLM builders. Use a calm developer-tool aesthetic built around diffs, checks, and release confidence rather than futuristic AI imagery. Favor deep ink, warm white, restrained green for accepted changes, and amber for review states. Typography should feel compact and code-adjacent without becoming terminal cosplay. The voice is direct, technically literate, and reassuring: explain what changed, why it matters, and what action unblocks the release. Avoid enterprise jargon and exaggerated claims about eliminating nondeterminism.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product EvalLatch, never a generic AI platform.
+```
+
+## Sources
+
+- [Ycombinator](https://news.ycombinator.com/item?id=44194187)
+- [Ycombinator](https://news.ycombinator.com/item?id=38835943)
+- [How are you improving your use of LLMs in production?](https://news.ycombinator.com/item?id=36787924)
+- [AI Model Evaluation and Benchmarking Market Size \[2035\]](https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market)
+- [Congruencemarketinsights](https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market)
+- [Langfuse](https://langfuse.com/pricing)
+- [Promptlayer](https://www.promptlayer.com/pricing)
+- [Braintrust](https://www.braintrust.dev/pricing)

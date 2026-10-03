@@ -1,0 +1,1078 @@
+{
+  "contractVersion": 2,
+  "pipelineVersion": 2,
+  "mode": "live",
+  "brief": {
+    "title": "Prompt Regression Tests for Indie AI Builders",
+    "slug": "prompt-regression-tests-indie-ai-builders",
+    "oneLiner": "Catch the prompt change that quietly broke your AI app before your users do.",
+    "targetCustomer": "Indie developers and small product teams shipping LLM-powered apps and agents"
+  },
+  "evidence": {
+    "contractVersion": 2,
+    "accepted": [
+      {
+        "id": "q_b549806e99af",
+        "sourceUrl": "https://news.ycombinator.com/item?id=44194187",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "We're running LLMs in production for content generation, customer support, and code review assistance. Been trying to build a proper evaluation pipeline for months but every tool we've tested has significant limitations.",
+        "excerptSha256": "8aeb84c2d2df76014783aac1b7deb1b9f14d4226612c160255c3a41ebca4d8a1",
+        "retrievedAt": "2026-10-03T22:20:09.196Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_838ad1c841dc",
+        "sourceUrl": "https://news.ycombinator.com/item?id=38835943",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "In 2023, I spent a lot of time between Notion, Google Docs, and Jupyter Notebooks editing paragraphs of texts and then running custom scripts to test the outputs of my iterations.",
+        "excerptSha256": "9174ec191ae9df936510694c2f260b798c17b9cc1b5d0248aa06f26797623620",
+        "retrievedAt": "2026-10-03T22:20:08.740Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_95e2fe01b599",
+        "sourceUrl": "https://news.ycombinator.com/item?id=38835943",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "I just copy and paste existing scripts and wire them into the command prompt.",
+        "excerptSha256": "d72ac588900394f631a0e366d1bf71d4810b7ebb52ade05348e889d174564ab1",
+        "retrievedAt": "2026-10-03T22:20:08.740Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_705aca4a90c4",
+        "sourceUrl": "https://news.ycombinator.com/item?id=42366481",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "I've not had that experience when I include in the prompt for a coding LLM \"only respond with the code\". Though it's worth noting that I often do want an explanation, and currently my workflow is to just use a different LLM.",
+        "excerptSha256": "511dcbd80e67f062b93cd66fb42c553f228ca1e1082d17655f4bb4e1a977a157",
+        "retrievedAt": "2026-10-03T22:20:10.872Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_23f9732a3bf6",
+        "sourceUrl": "https://news.ycombinator.com/item?id=36787924",
+        "sourceTitle": "How are you improving your use of LLMs in production?",
+        "excerpt": "When we hit production general availability, we realized how bad the assessment/evaluation/observability of this technology is.",
+        "excerptSha256": "19d3e990f939e8bcb90123681fec18811d4d0f9d14851903278a9ce7a7289972",
+        "retrievedAt": "2026-10-03T22:20:44.875Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_024ec1202b93",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46701969",
+        "sourceTitle": "The Agentic AI Handbook: Production-Ready Patterns",
+        "excerpt": "I sometimes feel like the cognitive cost of agentic coding is so much higher than a skilled human.",
+        "excerptSha256": "4ae2e78e5b7b2d19cb0a83d401c9fb1678474d1332d919da9a1a26a13bcd340f",
+        "retrievedAt": "2026-10-03T22:20:45.915Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "s_8864f9129130",
+        "sourceUrl": "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+        "sourceTitle": "Congruencemarketinsights",
+        "excerpt": "Global AI Model Evaluation Platforms Market Report Overview The Global AI Model Evaluation Platforms Market was valued at USD 1,350.2 Million in 2024 and is anticipated to reach a value of USD 8,203.6 Million by 2032 expanding at a CAGR of 25.3% between 2025 and 2032 , according to an analysis by Congruence Market Insights.",
+        "excerptSha256": "dda968616a6c0e6e1b7a54edfd3d284055045c1e305404beec47c8c9b296cf5f",
+        "retrievedAt": "2026-10-03T22:20:05.008Z",
+        "kind": "market_stat",
+        "subject": "Global AI Model Evaluation Platforms Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "1350.2",
+          "magnitude": "million",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2024
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_d322d5b4c665",
+        "sourceUrl": "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+        "sourceTitle": "Congruencemarketinsights",
+        "excerpt": "Global AI Model Evaluation Platforms Market Report Overview The Global AI Model Evaluation Platforms Market was valued at USD 1,350.2 Million in 2024 and is anticipated to reach a value of USD 8,203.6 Million by 2032 expanding at a CAGR of 25.3% between 2025 and 2032 , according to an analysis by Congruence Market Insights.",
+        "excerptSha256": "dda968616a6c0e6e1b7a54edfd3d284055045c1e305404beec47c8c9b296cf5f",
+        "retrievedAt": "2026-10-03T22:20:05.008Z",
+        "kind": "market_stat",
+        "subject": "Global AI Model Evaluation Platforms Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "8203.6",
+          "magnitude": "million",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2032
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_59dad7d7e6e0",
+        "sourceUrl": "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+        "sourceTitle": "Congruencemarketinsights",
+        "excerpt": "Global AI Model Evaluation Platforms Market Report Overview The Global AI Model Evaluation Platforms Market was valued at USD 1,350.2 Million in 2024 and is anticipated to reach a value of USD 8,203.6 Million by 2032 expanding at a CAGR of 25.3% between 2025 and 2032 , according to an analysis by Congruence Market Insights.",
+        "excerptSha256": "dda968616a6c0e6e1b7a54edfd3d284055045c1e305404beec47c8c9b296cf5f",
+        "retrievedAt": "2026-10-03T22:20:05.008Z",
+        "kind": "market_stat",
+        "subject": "Global AI Model Evaluation Platforms Market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "25.3",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_c20ed3a865ab",
+        "sourceUrl": "https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market",
+        "sourceTitle": "AI Model Evaluation and Benchmarking Market Size [2035]",
+        "excerpt": "Market Scenario The AI model evaluation and benchmarking market is estimated at USD 350.7 million in 2025 and is projected to reach USD 6,028.3 million by 2035, growing at a CAGR of 32.9% over the forecast period 2026–2035.",
+        "excerptSha256": "7593c37000f57198c8bae29404d11eafbb0dbb55db5818b9f71f8053c014f5a2",
+        "retrievedAt": "2026-10-03T22:20:10.145Z",
+        "kind": "market_stat",
+        "subject": "AI model evaluation and benchmarking market",
+        "metric": "market_size",
+        "amount": {
+          "value": "350.7",
+          "magnitude": "million",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_7d38da2e0780",
+        "sourceUrl": "https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market",
+        "sourceTitle": "AI Model Evaluation and Benchmarking Market Size [2035]",
+        "excerpt": "Market Scenario The AI model evaluation and benchmarking market is estimated at USD 350.7 million in 2025 and is projected to reach USD 6,028.3 million by 2035, growing at a CAGR of 32.9% over the forecast period 2026–2035.",
+        "excerptSha256": "7593c37000f57198c8bae29404d11eafbb0dbb55db5818b9f71f8053c014f5a2",
+        "retrievedAt": "2026-10-03T22:20:10.145Z",
+        "kind": "market_stat",
+        "subject": "AI model evaluation and benchmarking market",
+        "metric": "market_size",
+        "amount": {
+          "value": "6028.3",
+          "magnitude": "million",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_c8c29f6dc9d3",
+        "sourceUrl": "https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market",
+        "sourceTitle": "AI Model Evaluation and Benchmarking Market Size [2035]",
+        "excerpt": "Market Scenario The AI model evaluation and benchmarking market is estimated at USD 350.7 million in 2025 and is projected to reach USD 6,028.3 million by 2035, growing at a CAGR of 32.9% over the forecast period 2026–2035.",
+        "excerptSha256": "7593c37000f57198c8bae29404d11eafbb0dbb55db5818b9f71f8053c014f5a2",
+        "retrievedAt": "2026-10-03T22:20:10.145Z",
+        "kind": "market_stat",
+        "subject": "AI model evaluation and benchmarking market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "32.9",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "p_f6468e4ca661",
+        "sourceUrl": "https://www.braintrust.dev/pricing",
+        "sourceTitle": "Braintrust",
+        "excerpt": "Pro For AI native teams\n\n$249 / month",
+        "excerptSha256": "cde1d17f9f353bc748124312854427da5971c01c75b0e249b5844d06acaf5e0e",
+        "retrievedAt": "2026-10-03T22:20:04.560Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Braintrust",
+        "plan": "Pro",
+        "price": {
+          "amount": {
+            "value": "249",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_4180b7de011b",
+        "sourceUrl": "https://langfuse.com/pricing",
+        "sourceTitle": "Langfuse",
+        "excerpt": "For production projects. Longer data access and unlimited users.\n\n$29 / month",
+        "excerptSha256": "af85362d84a824e4c5d40fa200141994365834435a27f8603b0b39b0b4b96d71",
+        "retrievedAt": "2026-10-03T22:20:04.763Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Langfuse",
+        "price": {
+          "amount": {
+            "value": "29",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_cb6b990880a3",
+        "sourceUrl": "https://www.langchain.com/pricing",
+        "sourceTitle": "Langchain",
+        "excerpt": "Plus\nFor teams building and deploying agents.\n\n$39 / seat per month",
+        "excerptSha256": "731d3da4896bf0b3be2e38623ab6cc53dc8474f51219699f292ee63ebcdb624b",
+        "retrievedAt": "2026-10-03T22:20:04.921Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Langchain",
+        "price": {
+          "amount": {
+            "value": "39",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "per_user",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_3acf08b7aaea",
+        "sourceUrl": "https://www.confident-ai.com/pricing",
+        "sourceTitle": "Confident-ai",
+        "excerpt": "Starter\n\n$200 / month Launch reliable AI into production.",
+        "excerptSha256": "e893bf13ff924fd45525aee376268ce2148bd220cab7e6c0cc23eaacd18652c1",
+        "retrievedAt": "2026-10-03T22:20:05.558Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Confident-ai",
+        "plan": "Starter",
+        "price": {
+          "amount": {
+            "value": "200",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_635740b8ca88",
+        "sourceUrl": "https://www.confident-ai.com/pricing",
+        "sourceTitle": "Confident-ai",
+        "excerpt": "Team\n\n$2,000 / month Scale AI quality across your organization.",
+        "excerptSha256": "3f6a86710efbbcc8a5d439b680473d1cf7e428d0176b36b3f3dcf7a62ab4fe6f",
+        "retrievedAt": "2026-10-03T22:20:05.558Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Confident-ai",
+        "plan": "Team",
+        "price": {
+          "amount": {
+            "value": "2000",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_0a42819bc2b4",
+        "sourceUrl": "https://www.promptlayer.com/pricing",
+        "sourceTitle": "Promptlayer",
+        "excerpt": "Pro for small teams\n\n$49\nper month",
+        "excerptSha256": "6b7c060f151f8c0988422c7f993136a0d07186cd80d44ad42906a8e5d9c392c9",
+        "retrievedAt": "2026-10-03T22:20:05.258Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Promptlayer",
+        "plan": "Pro for small teams",
+        "price": {
+          "amount": {
+            "value": "49",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_55d227b91181",
+        "sourceUrl": "https://www.promptlayer.com/pricing",
+        "sourceTitle": "Promptlayer",
+        "excerpt": "Team for growing teams\n\n$500\nper month",
+        "excerptSha256": "dfc4dbcbfbf6a4a062f73a9dc92aa5c8cf4b56eecf57640d8665ca35aa5d2743",
+        "retrievedAt": "2026-10-03T22:20:05.258Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Promptlayer",
+        "plan": "Team for growing teams",
+        "price": {
+          "amount": {
+            "value": "500",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_d23998ba5ab5",
+        "sourceUrl": "https://agenta.ai/pricing",
+        "sourceTitle": "Agenta",
+        "excerpt": "Unlimited users Pro For teams running agents in production.\n$29 /month",
+        "excerptSha256": "5e02c740936f3bf4d098594c2c044e36b1c63819f747740f098524baf29ddc7a",
+        "retrievedAt": "2026-10-03T22:20:05.232Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Agenta",
+        "plan": "Pro",
+        "price": {
+          "amount": {
+            "value": "29",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_13301bc51425",
+        "sourceUrl": "https://agenta.ai/pricing",
+        "sourceTitle": "Agenta",
+        "excerpt": "Unlimited users Business For teams that need governance, compliance, and priority support.\n$299 /month",
+        "excerptSha256": "84c550bad2bb3e06ae2617e31170f01517d7d48c97097aed89859cd7ab960061",
+        "retrievedAt": "2026-10-03T22:20:05.232Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Agenta",
+        "plan": "Business",
+        "price": {
+          "amount": {
+            "value": "299",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_8abe8d84befc",
+        "sourceUrl": "https://www.helicone.ai/pricing",
+        "sourceTitle": "Helicone",
+        "excerpt": "$79\nper month",
+        "excerptSha256": "ace623a274d18324e44dd55a612320f08d782e6fb9b5f4c942122b6a3d8e2566",
+        "retrievedAt": "2026-10-03T22:20:05.364Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Helicone",
+        "price": {
+          "amount": {
+            "value": "79",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_9067697ea303",
+        "sourceUrl": "https://www.comet.com/site/pricing",
+        "sourceTitle": "Comet",
+        "excerpt": "Expanded usage for teams\n\n$19\nPer month",
+        "excerptSha256": "637364e7e424852c5a71f0064bc569a52c4aa89aa31604e01289e6266b484844",
+        "retrievedAt": "2026-10-03T22:20:07.026Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Comet",
+        "price": {
+          "amount": {
+            "value": "19",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      }
+    ],
+    "rejected": [],
+    "sources": [
+      {
+        "url": "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.008Z",
+        "textSha256": "904d99acab95a0121821abf4b87ac2c85c00cf20b10c09fb8d31049c02467efa"
+      },
+      {
+        "url": "https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-model-evaluation-platform-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.091Z",
+        "textSha256": "43cbfb35e69daf6a4fec327d502279e41329657325fa5855ac53a02ca7f6425e"
+      },
+      {
+        "url": "https://www.technavio.com/report/model-evaluation-and-benchmarking-tools-market-industry-analysis",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:08.456Z",
+        "textSha256": "cc34c38df3dc72f161097b4a7d6688b9acfd468a1a0da4be61b0ee5175d8eac4"
+      },
+      {
+        "url": "https://www.researchandmarkets.com/reports/6231841/ai-model-evaluation-platform-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:03.965Z",
+        "textSha256": "d450911d027a7c1e94039938dd55953f3bddfb1498126f78ca910c3ecbc16f30"
+      },
+      {
+        "url": "https://www.braintrust.dev/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:04.560Z",
+        "textSha256": "efb45ecc76e6fb73290441375af0934a616ef3d87ed11693c98b5afa753d077b"
+      },
+      {
+        "url": "https://langfuse.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:04.763Z",
+        "textSha256": "afa9f72f0bc5e215b9d358e94fc3694ca3f60c757f159ca26f00c9bc9e29a40f"
+      },
+      {
+        "url": "https://www.langchain.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:04.921Z",
+        "textSha256": "5cf7169149043b7c6415585d0b9cc7910fb6bd8c242bc4d05b066ea7aa232c03"
+      },
+      {
+        "url": "https://www.confident-ai.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.558Z",
+        "textSha256": "802231977d7a6bca80358809b617a30ce7ea7f004b822b82ec1b39f063780769"
+      },
+      {
+        "url": "https://www.promptlayer.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.258Z",
+        "textSha256": "0f661c2b3faea2c58aa02cd959a54a702ca49ddcc8696ee706c597987a8d322d"
+      },
+      {
+        "url": "https://agenta.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.232Z",
+        "textSha256": "3606cad1de853937c6080839d4d3ea0cec550e03555ff75a7e4aa8643c0c7f4c"
+      },
+      {
+        "url": "https://www.helicone.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:05.364Z",
+        "textSha256": "0836b5ea81997173c1670560d15faa1d7a05a1088706459b0208eff8c6685923"
+      },
+      {
+        "url": "https://www.comet.com/site/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:07.026Z",
+        "textSha256": "8b061da369b1daf4c9d43b7cb20aefe7fc479ff9500e8f5c0c9921525f0f5642"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=48144593",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:08.148Z",
+        "textSha256": "400a2115a61520ef7b4afd411808c55c514d741716808b4cdc85e326895cf965"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=44194187",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:09.196Z",
+        "textSha256": "4b9144b58d5aea1f314c67b8a6118a0e51d7ea9952fe693b7eac29e0dacc7645"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=49430207",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:07.906Z",
+        "textSha256": "abd41744b6f124d613375c4c5f68ec04dd1ed131087238efcebdda044a327d94"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=38835943",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:08.740Z",
+        "textSha256": "6f317ce5bb23253db57281e558f3ee217d4f898a54fb4ed40642c280f1b21f8c"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=42366481",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.872Z",
+        "textSha256": "ed124a047c2a4286c0384b0cab8baa3e1557d275da646661e4029e1c4ca6dbc9"
+      },
+      {
+        "url": "https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.145Z",
+        "textSha256": "8f9fb96d12e0eb87653fc7a0fd189504f0c888ef1d39ec7fc4eefe06d1de24f1"
+      },
+      {
+        "url": "https://www.precedenceresearch.com/generative-ai-in-testing-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.458Z",
+        "textSha256": "dd48e39e44f67640446d946094f06483d5d6e57ec2d227142161bc7383916f69"
+      },
+      {
+        "url": "https://www.intelevoresearch.com/reports/prompt-engineering-tools-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.272Z",
+        "textSha256": "efad263df3aeb72735e2234c599d84ec49cb3562246e99e803dee521d3851fa7"
+      },
+      {
+        "url": "https://www.giikorea.co.kr/report/tbrc1981335-large-language-model-evaluation-service-global.html",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:12.357Z",
+        "textSha256": "2cbf03ea7b68df1144b6b3d93fa105e650567f177ee22821efda239439a37afd"
+      },
+      {
+        "url": "https://www.marketsandmarkets.com/blog/ICT/ai-test-automation-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.523Z",
+        "textSha256": "cd1335defa84595d16ac20762d8591d75e7673b2d94dda86832ed03777be3f9c"
+      },
+      {
+        "url": "https://www.openpr.com/news/4642266/large-language-model-evaluation-as-a-service-market-insights",
+        "roles": [
+          "market"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.openpr.com/news/4642266/large-language-model-evaluation-as-a-service-market-insights"
+      },
+      {
+        "url": "https://marketintelo.com/report/ai-model-evaluation-and-benchmarking-platform-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:11.189Z",
+        "textSha256": "bc45454269cd0f346fe1863dbf07db26149c79d744fbaa7de7b4b379d4e15613"
+      },
+      {
+        "url": "https://www.researchandmarkets.com/reports/6231919/rubric-based-llm-evaluation-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:10.629Z",
+        "textSha256": "4e94d41a3c98975f44fb8778222412dd534f400467093bb27695f7e19883a5b6"
+      },
+      {
+        "url": "https://pecollective.com/tools/best-ai-testing-tools",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:21.429Z",
+        "textSha256": "fa17952c2f1bda2164cbd5dae5bf4f859b915527a752ed924b5db0c6faa1ba49"
+      },
+      {
+        "url": "https://guptadeepak.com/tools/top-7-llm-evaluation-prompt-management-platforms-2026",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:21.465Z",
+        "textSha256": "c76c93775805481ebc1ac9404ccef2c85c3db77e644aa8bdb1367836b509cc1b"
+      },
+      {
+        "url": "https://prompt-eval.com/en/blog/best-prompt-evaluation-tools",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:21.624Z",
+        "textSha256": "f85341f8a323975ea251bb10af13b90f0da2243d3a1fcc76c47d555ce13c78f3"
+      },
+      {
+        "url": "https://www.braintrust.dev/articles/best-human-in-the-loop-llm-evaluation-platforms-2026",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:22.000Z",
+        "textSha256": "368bd882748ae4d67c1a26354a9cec91c64b5a9e0b8e00aa749fed328c58bb82"
+      },
+      {
+        "url": "https://www.braintrust.dev/articles/best-llm-evaluation-platforms-2025",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:22.215Z",
+        "textSha256": "c0e5ac7a819373f853e6d90e89aacf494667e52391bbe913f9b5fd2d03bb0df8"
+      },
+      {
+        "url": "https://www.braintrust.dev/articles/braintrust-vs-confident-ai",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:22.364Z",
+        "textSha256": "0582ed696a5da3b985acf3f6768fcf3b253c2ed9cb70a519f953a170b9ba8d10"
+      },
+      {
+        "url": "https://www.braintrust.dev/articles/best-self-hosted-ai-evals-tools-2026",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:22.321Z",
+        "textSha256": "4836636583c8f1521a56270d774d8f25de58d80eb77230f8e0c51939fc10a408"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=46635309",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:41.362Z",
+        "textSha256": "0d8d2f50f6c7b2e61a8d11091ce09a94c6e37d13ffa94328602ae07b3e1889fd"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=47319587",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:44.579Z",
+        "textSha256": "3f84b03380053a6dcf2104d037fea59e11f880ce6343ce5509a247bc4cb8dffc"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=36787924",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:44.875Z",
+        "textSha256": "5f47aeaf0589a71444d4496bd1e71a6c264fc16120314a287b92840d7c1a9302"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=47232903",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:44.477Z",
+        "textSha256": "d244ccb9dccb44c5fed82027b3138943e4ef189db3e4adea9c2c5e973bf25ead"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=43877923",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:43.617Z",
+        "textSha256": "ad6ccfc2865acbdc85c76a744457e7e5f9867eb15c7b9d9d9c0f7e745a6f7e71"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=46701969",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:45.915Z",
+        "textSha256": "cbc4111bfaafc6782b9c6b5afb3ef2f698d302411322338d4921e0071b25daf6"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=35445097",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:46.464Z",
+        "textSha256": "95857b62ddb02970d6bae67cb9c03c26a648ca443495c8681505fe551ce847d9"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=41936855",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T22:20:48.226Z",
+        "textSha256": "976c27c6f3a4997d7217a74017ec867e39f162d1133745051a8fd59e6deda36e"
+      }
+    ]
+  },
+  "market": {
+    "summary": "Prompt regression testing occupies a focused wedge within AI model evaluation: helping indie developers and small product teams detect behavioral changes when prompts, models, retrieval settings, or tool instructions change. The buyer is not seeking a broad governance suite. The immediate job is repeatable comparison inside CI, with failures explained clearly enough to support a release decision.\n\nAvailable market research covers evaluation platforms and benchmarking rather than this indie segment directly, so it indicates category momentum without sizing the exact serviceable niche. One secondary estimate values the AI model evaluation and benchmarking market at [[ev:s_c20ed3a865ab]] and projects it to reach [[ev:s_7d38da2e0780]], alongside a projected growth rate of [[ev:s_c8c29f6dc9d3]]. Another secondary estimate values the broader AI model evaluation platforms market at [[ev:s_8864f9129130]]. These estimates differ in scope and methodology, but they place evaluation infrastructure within an expanding commercial category.\n\nThe practical opportunity is narrower and more accessible than enterprise evaluation. Small builders often need a lightweight test manifest, versioned fixtures, deterministic CI behavior, judge configuration, and readable diffs rather than extensive observability or compliance controls. A per-project subscription aligns cost with shipped applications and avoids forcing a small team into a broad platform commitment. The strongest wedge is release confidence: make prompt evaluation feel like an ordinary software test workflow while preserving enough output history for investigation, collaboration, and gradual improvement.",
+    "statIds": [
+      "s_c20ed3a865ab",
+      "s_7d38da2e0780",
+      "s_c8c29f6dc9d3",
+      "s_8864f9129130"
+    ]
+  },
+  "competitors": [
+    {
+      "name": "Langfuse",
+      "priceIds": [
+        "p_4180b7de011b"
+      ],
+      "notes": "Langfuse presents a production-oriented offer at [[ev:p_4180b7de011b]]. Its accessible entry point creates a strong reference for builders who want evaluation alongside broader tracing and application observability."
+    },
+    {
+      "name": "Promptlayer",
+      "priceIds": [
+        "p_0a42819bc2b4",
+        "p_55d227b91181"
+      ],
+      "notes": "Promptlayer supports small-team adoption through its Pro offer [[ev:p_0a42819bc2b4]] and a materially higher Team offer [[ev:p_55d227b91181]]. That ladder signals broader prompt management ambitions beyond a narrow CI regression gate."
+    },
+    {
+      "name": "Braintrust",
+      "priceIds": [
+        "p_f6468e4ca661"
+      ],
+      "notes": "Braintrust positions its Pro plan for AI-native teams at [[ev:p_f6468e4ca661]]. EvalLatch would differentiate through a simpler per-project workflow designed around pull requests, fixtures, release checks, and indie buying constraints."
+    }
+  ],
+  "community": {
+    "summary": "The community evidence describes a workflow problem rather than abstract interest in evaluation. A production team reports using LLMs across content, support, and code review while struggling for months to establish a suitable evaluation pipeline [[ev:q_b549806e99af]]. Another builder describes moving among Notion, Google Docs, and Jupyter Notebooks, then relying on custom scripts to test text iterations [[ev:q_838ad1c841dc]]. A separate production account says evaluation and observability weaknesses became apparent after general availability [[ev:q_23f9732a3bf6]]. Together, these accounts point to fragmented authoring, improvised execution, and late discovery of quality risks. The target buyer needs less ceremony than an enterprise platform but more repeatability than copied scripts. A CI-native product can address that gap by turning representative examples, scoring rules, and accepted outputs into a durable release workflow.",
+    "quoteIds": [
+      "q_b549806e99af",
+      "q_838ad1c841dc",
+      "q_23f9732a3bf6"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "LLM evaluation",
+      "volume": 1000,
+      "competition": 40,
+      "cpc": 20.37,
+      "source": "provider"
+    },
+    {
+      "term": "prompt testing tool",
+      "volume": 20,
+      "competition": 35,
+      "cpc": 15.94,
+      "source": "provider"
+    },
+    {
+      "term": "LLM regression testing",
+      "volume": 10,
+      "competition": 55,
+      "cpc": 29.71,
+      "source": "provider"
+    },
+    {
+      "term": "LLM evals",
+      "volume": 480,
+      "competition": 55,
+      "cpc": 15.1,
+      "source": "provider"
+    },
+    {
+      "term": "prompt evaluation tool",
+      "volume": 30,
+      "competition": 54,
+      "cpc": 18.61,
+      "source": "provider"
+    },
+    {
+      "term": "AI agent testing",
+      "volume": 90,
+      "competition": 52,
+      "cpc": 32.65,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "Position EvalLatch as the release gate for indie LLM products: a focused regression-testing layer that lives in GitHub, runs from CI, and explains behavioral drift without demanding an observability migration. Lead with quiet prompt breakage, fast setup, repository-owned tests, and per-project pricing.",
+    "channels": [
+      "Search-led guides for LLM evaluation and prompt regression",
+      "GitHub templates and reusable CI actions",
+      "Launch partnerships with indie AI communities",
+      "Technical demos in developer newsletters and podcasts"
+    ],
+    "pricingNotes": "Competitive entry offers span Langfuse at [[ev:p_4180b7de011b]] and Promptlayer Pro for small teams at [[ev:p_0a42819bc2b4]], while Braintrust Pro sits at [[ev:p_f6468e4ca661]]. Promptlayer also provides a higher Team offer [[ev:p_55d227b91181]]. EvalLatch should avoid matching broad platform scope. Its pricing should make a live project easy to approve, tie value to CI protection and retained history, and reserve portfolio management for builders shipping several applications."
+  },
+  "whyNow": "Evaluation infrastructure is receiving commercial attention, with category research projecting strong expansion [[ev:s_c8c29f6dc9d3]]. At the same time, builders report that production evaluation remains inadequate [[ev:q_23f9732a3bf6]] and that assembling a proper pipeline can remain unresolved for months [[ev:q_b549806e99af]]. That combination creates room for a focused, low-friction release gate.",
+  "howItWorks": [
+    "Connect a Repository — EvalLatch would install through GitHub, detect the application test configuration, and generate a repository-owned manifest. The builder would select prompt files, model settings, fixtures, and protected branches without moving application code or adopting a broad observability stack.",
+    "Define Regression Cases — The builder would add representative inputs, expected properties, rubric checks, structured-output constraints, and tolerated variations. EvalLatch would version these cases beside prompt revisions while keeping secrets, provider credentials, and sensitive fixture payloads behind project-level access controls.",
+    "Gate Every Change — A pull request would trigger controlled runs against the baseline and candidate configuration. EvalLatch would normalize provider responses, apply deterministic checks and configured judges, flag meaningful regressions, and return a concise GitHub status with links to inspect disputed results.",
+    "Review and Promote — The comparison workspace would group changed outputs by failure type, expose prompt and model diffs, and let an authorized reviewer accept intentional behavior changes. Approved results would become the new baseline while preserving an audit trail for later debugging."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 8,
+    "builderConfidence": 9,
+    "execution": 8
+  },
+  "editorial": {
+    "productName": "EvalLatch",
+    "dontBuildYet": "Don't build broad production tracing, enterprise governance, or a general prompt marketplace before the CI regression workflow proves habitual use.",
+    "problemNarrative": "Indie developers and small product teams shipping LLM applications face a testing mismatch. Their products are software, but an important layer of behavior is probabilistic, provider-dependent, and shaped by natural-language instructions. A prompt edit that looks harmless in review can alter tone, omit required fields, misuse a tool, weaken refusal behavior, or degrade an edge case. Conventional unit tests catch syntax and deterministic logic; they do not readily explain whether generated behavior became less useful.\n\nThe resulting workflow is fragmented. One builder describes moving among Notion, Google Docs, and Jupyter Notebooks before running custom scripts against text iterations [[ev:q_838ad1c841dc]]. Another says existing scripts are copied and wired into the command prompt [[ev:q_95e2fe01b599]]. These approaches can produce spot checks, yet they make it difficult to preserve a trusted baseline, rerun the same cases in CI, compare outputs consistently, or understand why a release gate failed.\n\nThe burden grows when a product uses LLMs for several important tasks. A production team reports applications across content generation, customer support, and code review assistance while finding significant limitations in every evaluation tool it tested [[ev:q_b549806e99af]]. That account highlights the gap between having scripts and having a dependable evaluation practice. The buyer needs representative cases, repeatable execution, scoring rules, output diffs, and a clear decision about whether a candidate change is safe.\n\nDiscovery often arrives late. A production practitioner says weaknesses in assessment, evaluation, and observability became clear at general availability [[ev:q_23f9732a3bf6]]. By then, quality issues are exposed to users and harder to isolate because prompt edits, model changes, retrieval updates, and tool behavior may have shifted together.\n\nFor a SaaS founder, AI engineer, or product engineer in a small team, the core pain is not a lack of possible evaluation techniques. It is the operational cost of turning those techniques into a lightweight release habit. Existing broad platforms may introduce concepts and setup beyond the immediate job, while homemade scripts tend to lose history and consistency. The unmet need is a narrow guardrail that fits GitHub and CI, makes behavioral regressions visible, and helps a builder distinguish an intentional change from a quiet breakage before deployment.",
+    "solutionNarrative": "EvalLatch is a per-project prompt regression service for indie developers and small product teams. Its wedge is deliberately narrow: convert representative LLM interactions into a CI release gate that compares a candidate change with an approved baseline. The product would not ask builders to replace their application framework, centralize every production trace, or adopt a large evaluation program before receiving value.\n\nA builder connects a GitHub repository and adds a compact test manifest. Each case can define an input, relevant context, required output shape, assertions, rubric criteria, and tolerated variation. Prompt files and evaluation configuration remain linked to the code revision that produced them. When CI runs, EvalLatch executes baseline and candidate configurations under controlled settings, captures outputs, applies deterministic checks, invokes configured judges where interpretation is needed, and reports a pass, warning, or failure.\n\nThe central interface is a regression review rather than a generic analytics dashboard. Changed outputs are grouped by likely cause, such as formatting drift, missing requirements, altered tool selection, rubric decline, or provider error. Reviewers can inspect the prompt diff beside output comparisons, annotate an edge case, rerun a disputed result, and promote an intentional change into the accepted baseline. That action preserves history without forcing every variation to remain a failure forever.\n\nThe product earns recurring value through CI runs, retained test history, shared review, and confidence around releases. Local execution and a free sandbox lower adoption friction; paid projects add hosted runs, branch protection, longer history, scheduled checks, and collaboration. The initial promise stays concrete: catch the prompt change that quietly broke the application before users encounter it.",
+    "competitiveNarrative": "Langfuse offers a production-oriented entry plan [[ev:p_4180b7de011b]] and is associated with a wider observability workflow. Promptlayer provides a small-team Pro offer [[ev:p_0a42819bc2b4]] plus a higher Team offer [[ev:p_55d227b91181]], reflecting a broader prompt management ladder. Braintrust positions Pro for AI-native teams [[ev:p_f6468e4ca661]] and addresses a substantial evaluation surface.\n\nEvalLatch should not compete by reproducing every platform capability. Its differentiation is workflow compression for a small shipping team: repository-owned cases, opinionated GitHub checks, baseline promotion, readable output diffs, and pricing attached to a live project. The landing experience should begin with a pull request and a failed regression, not an empty analytics dashboard. Observability integrations can export context later, while EvalLatch remains the focused release gate. This positioning gives builders a reason to adopt it alongside existing tracing tools or before their needs justify a broader evaluation platform.",
+    "stackNotes": "Use Next.js for the control plane and review interface, with Postgres storing projects, versioned cases, baselines, run metadata, and reviewer decisions. A separate worker service should execute provider calls from a durable queue, enforce concurrency limits, redact secrets, and record immutable artifacts in object storage. GitHub Apps should handle repository access, commit status updates, and pull-request comments. Evaluation adapters need deterministic validators, structured-output checks, semantic similarity, rubric judges, retries, and cost capture. Encrypt provider credentials, isolate project execution, support webhook replay, and make every baseline promotion auditable. OpenTelemetry can expose worker latency and failure causes without turning the product into a customer-facing tracing suite.",
+    "audienceShort": "Indie LLM Builders",
+    "brandBrief": "Use a calm developer-tool aesthetic built around diffs, checks, and release confidence rather than futuristic AI imagery. Favor deep ink, warm white, restrained green for accepted changes, and amber for review states. Typography should feel compact and code-adjacent without becoming terminal cosplay. The voice is direct, technically literate, and reassuring: explain what changed, why it matters, and what action unblocks the release. Avoid enterprise jargon and exaggerated claims about eliminating nondeterminism.",
+    "pricingTiers": [
+      {
+        "name": "Local Sandbox",
+        "price": "Free",
+        "includes": "1 project, 100 local case runs, 7-day history"
+      },
+      {
+        "name": "Live Project",
+        "price": "$29/project/month",
+        "includes": "1 project, 2,500 hosted CI runs, 90-day history, GitHub checks"
+      },
+      {
+        "name": "Project Portfolio",
+        "price": "$99/month",
+        "includes": "5 projects, 12,000 hosted CI runs, 1-year history, shared review"
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "Target gross margin",
+        "value": "80% or better"
+      },
+      {
+        "label": "Model and storage budget",
+        "value": "$5 maximum per paid project"
+      },
+      {
+        "label": "Monthly support target",
+        "value": "30 minutes per active account"
+      },
+      {
+        "label": "Trial activation target",
+        "value": "1 protected pull request"
+      }
+    ],
+    "dataModel": [
+      {
+        "table": "prompt_versions",
+        "columns": "id, workspace_id fk, project_id fk, repository_sha, prompt_path, content_hash, provider, model_name, created_at"
+      },
+      {
+        "table": "test_suites",
+        "columns": "id, workspace_id fk, project_id fk, name, branch_pattern, status: draft, active, archived, created_at"
+      },
+      {
+        "table": "test_cases",
+        "columns": "id, workspace_id fk, suite_id fk, name, input_payload jsonb, expected_schema jsonb, rubric_text, severity: warning, blocking, created_at"
+      },
+      {
+        "table": "ci_runs",
+        "columns": "id, workspace_id fk, suite_id fk, commit_sha, pull_request_number, status: queued, running, passed, failed, cancelled, started_at, completed_at"
+      },
+      {
+        "table": "evaluation_results",
+        "columns": "id, workspace_id fk, ci_run_id fk, test_case_id fk, baseline_output jsonb, candidate_output jsonb, score numeric, verdict: pass, warning, fail, explanation, created_at"
+      },
+      {
+        "table": "baseline_promotions",
+        "columns": "id, workspace_id fk, project_id fk, prompt_version_id fk, source_run_id fk, status: pending, approved, rejected, approved_by, approved_at"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Search content visitors",
+          "count": 12000
+        },
+        {
+          "stage": "GitHub template installs",
+          "count": 1800
+        },
+        {
+          "stage": "Product email trial projects",
+          "count": 360
+        },
+        {
+          "stage": "Self serve paid accounts",
+          "count": 90
+        }
+      ],
+      "tier": "Live Project",
+      "payingAccounts": 90,
+      "seatsPerAccount": 1,
+      "assumptions": "The model assumes technical search content and GitHub templates create qualified trials, with founder-led support helping active projects reach a protected pull request. An account represents one subscribed project under the selected plan."
+    }
+  },
+  "provenance": {
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+        "costUsd": 0.003915
+      },
+      {
+        "provider": "perplexity",
+        "operation": "market_stats/search:sonar-pro",
+        "costUsd": 0.020204
+      },
+      {
+        "provider": "perplexity",
+        "operation": "competitors/search:sonar-pro",
+        "costUsd": 0.025244
+      },
+      {
+        "provider": "perplexity",
+        "operation": "community_signals/search:sonar-pro",
+        "costUsd": 0.036538
+      },
+      {
+        "provider": "openai",
+        "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+        "costUsd": 0.207335
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+        "costUsd": 0.175615
+      }
+    ],
+    "costUsd": 0.558851,
+    "ranAt": "2026-10-03T22:20:00.701Z",
+    "models": {
+      "synthesis": "gpt-5.6-sol",
+      "search": "perplexity:sonar-pro",
+      "keywordData": "dataforseo"
+    },
+    "attempts": {
+      "brief_normalization": 1,
+      "market_stats": 1,
+      "competitors": 1,
+      "community_signals": 1,
+      "evidence_extraction": 1,
+      "keywords_demand": 1,
+      "editorial_synthesis": 1
+    },
+    "codeRevision": {
+      "sha": "b6c0b1a4cf0957e9910871017010e35e25a72ef6",
+      "dirty": false
+    }
+  }
+}

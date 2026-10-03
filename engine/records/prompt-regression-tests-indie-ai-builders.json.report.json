@@ -1,0 +1,437 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "prompt-regression-tests-indie-ai-builders",
+  "briefSha256": "a47b680da4bf77b1d2f2ba7037a7f06d73ed8e9d430d5c53b5f10d2969b7396e",
+  "startedAt": "2026-10-03T22:20:00.701Z",
+  "finishedAt": "2026-10-03T22:22:48.869Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.003915
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.020204
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025244
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.036538
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.207335
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.175615
+    }
+  ],
+  "costUsd": 0.558851,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "b6c0b1a4cf0957e9910871017010e35e25a72ef6",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.008Z",
+      "textSha256": "904d99acab95a0121821abf4b87ac2c85c00cf20b10c09fb8d31049c02467efa"
+    },
+    {
+      "url": "https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-model-evaluation-platform-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.091Z",
+      "textSha256": "43cbfb35e69daf6a4fec327d502279e41329657325fa5855ac53a02ca7f6425e"
+    },
+    {
+      "url": "https://www.technavio.com/report/model-evaluation-and-benchmarking-tools-market-industry-analysis",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:08.456Z",
+      "textSha256": "cc34c38df3dc72f161097b4a7d6688b9acfd468a1a0da4be61b0ee5175d8eac4"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6231841/ai-model-evaluation-platform-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:03.965Z",
+      "textSha256": "d450911d027a7c1e94039938dd55953f3bddfb1498126f78ca910c3ecbc16f30"
+    },
+    {
+      "url": "https://www.braintrust.dev/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:04.560Z",
+      "textSha256": "efb45ecc76e6fb73290441375af0934a616ef3d87ed11693c98b5afa753d077b"
+    },
+    {
+      "url": "https://langfuse.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:04.763Z",
+      "textSha256": "afa9f72f0bc5e215b9d358e94fc3694ca3f60c757f159ca26f00c9bc9e29a40f"
+    },
+    {
+      "url": "https://www.langchain.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:04.921Z",
+      "textSha256": "5cf7169149043b7c6415585d0b9cc7910fb6bd8c242bc4d05b066ea7aa232c03"
+    },
+    {
+      "url": "https://www.confident-ai.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.558Z",
+      "textSha256": "802231977d7a6bca80358809b617a30ce7ea7f004b822b82ec1b39f063780769"
+    },
+    {
+      "url": "https://www.promptlayer.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.258Z",
+      "textSha256": "0f661c2b3faea2c58aa02cd959a54a702ca49ddcc8696ee706c597987a8d322d"
+    },
+    {
+      "url": "https://agenta.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.232Z",
+      "textSha256": "3606cad1de853937c6080839d4d3ea0cec550e03555ff75a7e4aa8643c0c7f4c"
+    },
+    {
+      "url": "https://www.helicone.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:05.364Z",
+      "textSha256": "0836b5ea81997173c1670560d15faa1d7a05a1088706459b0208eff8c6685923"
+    },
+    {
+      "url": "https://www.comet.com/site/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:07.026Z",
+      "textSha256": "8b061da369b1daf4c9d43b7cb20aefe7fc479ff9500e8f5c0c9921525f0f5642"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48144593",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:08.148Z",
+      "textSha256": "400a2115a61520ef7b4afd411808c55c514d741716808b4cdc85e326895cf965"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=44194187",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:09.196Z",
+      "textSha256": "4b9144b58d5aea1f314c67b8a6118a0e51d7ea9952fe693b7eac29e0dacc7645"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49430207",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:07.906Z",
+      "textSha256": "abd41744b6f124d613375c4c5f68ec04dd1ed131087238efcebdda044a327d94"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=38835943",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:08.740Z",
+      "textSha256": "6f317ce5bb23253db57281e558f3ee217d4f898a54fb4ed40642c280f1b21f8c"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=42366481",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.872Z",
+      "textSha256": "ed124a047c2a4286c0384b0cab8baa3e1557d275da646661e4029e1c4ca6dbc9"
+    },
+    {
+      "url": "https://www.astuteanalytica.com/industry-report/ai-model-evaluation-and-benchmarking-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.145Z",
+      "textSha256": "8f9fb96d12e0eb87653fc7a0fd189504f0c888ef1d39ec7fc4eefe06d1de24f1"
+    },
+    {
+      "url": "https://www.precedenceresearch.com/generative-ai-in-testing-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.458Z",
+      "textSha256": "dd48e39e44f67640446d946094f06483d5d6e57ec2d227142161bc7383916f69"
+    },
+    {
+      "url": "https://www.intelevoresearch.com/reports/prompt-engineering-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.272Z",
+      "textSha256": "efad263df3aeb72735e2234c599d84ec49cb3562246e99e803dee521d3851fa7"
+    },
+    {
+      "url": "https://www.giikorea.co.kr/report/tbrc1981335-large-language-model-evaluation-service-global.html",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:12.357Z",
+      "textSha256": "2cbf03ea7b68df1144b6b3d93fa105e650567f177ee22821efda239439a37afd"
+    },
+    {
+      "url": "https://www.marketsandmarkets.com/blog/ICT/ai-test-automation-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.523Z",
+      "textSha256": "cd1335defa84595d16ac20762d8591d75e7673b2d94dda86832ed03777be3f9c"
+    },
+    {
+      "url": "https://www.openpr.com/news/4642266/large-language-model-evaluation-as-a-service-market-insights",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.openpr.com/news/4642266/large-language-model-evaluation-as-a-service-market-insights"
+    },
+    {
+      "url": "https://marketintelo.com/report/ai-model-evaluation-and-benchmarking-platform-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:11.189Z",
+      "textSha256": "bc45454269cd0f346fe1863dbf07db26149c79d744fbaa7de7b4b379d4e15613"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6231919/rubric-based-llm-evaluation-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:10.629Z",
+      "textSha256": "4e94d41a3c98975f44fb8778222412dd534f400467093bb27695f7e19883a5b6"
+    },
+    {
+      "url": "https://pecollective.com/tools/best-ai-testing-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:21.429Z",
+      "textSha256": "fa17952c2f1bda2164cbd5dae5bf4f859b915527a752ed924b5db0c6faa1ba49"
+    },
+    {
+      "url": "https://guptadeepak.com/tools/top-7-llm-evaluation-prompt-management-platforms-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:21.465Z",
+      "textSha256": "c76c93775805481ebc1ac9404ccef2c85c3db77e644aa8bdb1367836b509cc1b"
+    },
+    {
+      "url": "https://prompt-eval.com/en/blog/best-prompt-evaluation-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:21.624Z",
+      "textSha256": "f85341f8a323975ea251bb10af13b90f0da2243d3a1fcc76c47d555ce13c78f3"
+    },
+    {
+      "url": "https://www.braintrust.dev/articles/best-human-in-the-loop-llm-evaluation-platforms-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:22.000Z",
+      "textSha256": "368bd882748ae4d67c1a26354a9cec91c64b5a9e0b8e00aa749fed328c58bb82"
+    },
+    {
+      "url": "https://www.braintrust.dev/articles/best-llm-evaluation-platforms-2025",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:22.215Z",
+      "textSha256": "c0e5ac7a819373f853e6d90e89aacf494667e52391bbe913f9b5fd2d03bb0df8"
+    },
+    {
+      "url": "https://www.braintrust.dev/articles/braintrust-vs-confident-ai",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:22.364Z",
+      "textSha256": "0582ed696a5da3b985acf3f6768fcf3b253c2ed9cb70a519f953a170b9ba8d10"
+    },
+    {
+      "url": "https://www.braintrust.dev/articles/best-self-hosted-ai-evals-tools-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:22.321Z",
+      "textSha256": "4836636583c8f1521a56270d774d8f25de58d80eb77230f8e0c51939fc10a408"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46635309",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:41.362Z",
+      "textSha256": "0d8d2f50f6c7b2e61a8d11091ce09a94c6e37d13ffa94328602ae07b3e1889fd"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47319587",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:44.579Z",
+      "textSha256": "3f84b03380053a6dcf2104d037fea59e11f880ce6343ce5509a247bc4cb8dffc"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36787924",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:44.875Z",
+      "textSha256": "5f47aeaf0589a71444d4496bd1e71a6c264fc16120314a287b92840d7c1a9302"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47232903",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:44.477Z",
+      "textSha256": "d244ccb9dccb44c5fed82027b3138943e4ef189db3e4adea9c2c5e973bf25ead"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43877923",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:43.617Z",
+      "textSha256": "ad6ccfc2865acbdc85c76a744457e7e5f9867eb15c7b9d9d9c0f7e745a6f7e71"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46701969",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:45.915Z",
+      "textSha256": "cbc4111bfaafc6782b9c6b5afb3ef2f698d302411322338d4921e0071b25daf6"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=35445097",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:46.464Z",
+      "textSha256": "95857b62ddb02970d6bae67cb9c03c26a648ca443495c8681505fe551ce847d9"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=41936855",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T22:20:48.226Z",
+      "textSha256": "976c27c6f3a4997d7217a74017ec867e39f162d1133745051a8fd59e6deda36e"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 6,
+      "market_stat": 6,
+      "competitor_price": 11,
+      "competitor_availability": 0
+    },
+    "rejected": []
+  }
+}
