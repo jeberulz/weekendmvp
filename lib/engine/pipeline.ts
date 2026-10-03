@@ -875,7 +875,7 @@ export const EDITORIAL_INSTRUCTIONS = [
   "The page title and description come from the operator's brief; do not write them.",
   "Evidence rules:",
   "- Select ids only from the accepted evidence list. marketStatIds: at least 2 market_stat ids. quoteIds: at least 2 community_quote ids, neither text containing the other. competitors: at least 3 distinct vendors. Each row has either priceIds of competitor_price items or one availabilityId of a competitor_availability item, with name exactly equal to the item's vendor. At least one vendor must have a numeric price. Omit availabilityId for priced rows; use [] for unpriced rows.",
-  "- Cite an evidence item inside text as [[ev:<id>]]. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
+  "- Cite an evidence item inside text as [[ev:<id>]], replacing <id> with an EXACT id copied from the accepted list. Each id is one kind letter, underscore, and exactly 12 lowercase hex digits (for example p_0123456789ab). Never extend, shorten, reconstruct or invent an id. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
   "- Where tokens may go: marketSummary cites market_stat items only; communitySummary cites community_quote items only; whyNow cites market_stat or community_quote items; problemNarrative cites any kind; competitiveNarrative and goToMarket.pricingNotes cite competitor_price or competitor_availability items only; competitors[].notes cites only that competitor's own priceIds or availabilityId. No other field takes tokens.",
   "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". " +
     // Review P3-4: exactly the names with numbers the record parser accepts.
@@ -1016,7 +1016,11 @@ export function editorialIssuesSection(issues: ReadonlyArray<string>): string {
   const lines: string[] = [];
   let bytes = 0;
   for (const issue of issues.slice(0, REGENERATION_ISSUES.count)) {
-    const line = `- ${oneLine(issue, REGENERATION_ISSUES.chars)}`;
+    // A malformed id is untrusted writer output. Repeating it verbatim in the
+    // repair prompt makes the writer copy the same invalid token again.
+    const repair = issue.replace(/malformed evidence token "[^"]*"/gu,
+      "malformed evidence token: remove it or recopy an exact id from the accepted list (12 lowercase hex digits)");
+    const line = `- ${oneLine(repair, REGENERATION_ISSUES.chars)}`;
     if (bytes + utf8Bytes(line) + 1 > REGENERATION_ISSUES.bytes) break;
     lines.push(line);
     bytes += utf8Bytes(line) + 1;

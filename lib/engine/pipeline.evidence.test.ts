@@ -346,6 +346,14 @@ const BAD_WRITERS: Array<[string, (evidence: EditorialEvidenceItem[]) => unknown
 ];
 
 describe("F1: writer output is validated before a record exists", () => {
+  it("does not echo a malformed writer token into the repair prompt", () => {
+    const bad = "[[ev:p_a30387597b4e7796]]";
+    const note = editorialIssuesSection([`editorial.competitiveNarrative: malformed evidence token "${bad}"`]);
+    expect(note).toContain("editorial.competitiveNarrative: malformed evidence token: remove it or recopy an exact id");
+    expect(note).not.toContain(bad);
+    expect(EDITORIAL_INSTRUCTIONS).toContain("exactly 12 lowercase hex digits");
+  });
+
   it.each(BAD_WRITERS)("refuses a writer that %s: two regenerations with the issues, then failure", async (_label, writer, issue) => {
     const h = harness({ synthesis: { editorial: editorialSequence(writer) } });
     const error = await failureOf(run(h));
