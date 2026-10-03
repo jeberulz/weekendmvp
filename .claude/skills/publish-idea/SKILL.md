@@ -163,7 +163,8 @@ Source-reading notes:
 ```bash
 npm run engine:compile -- --record engine/records/{slug}.json
 # --slug name   compile under another slug (engine-draft-{slug} for a spot check)
-# --force       replace an existing MDX file and manifest row
+# --force       replace an existing MDX file and manifest row that engine:compile wrote
+# --replace-handwritten   with --force, also replace a handwritten page or manifest row
 # --help        --ideas-dir, --manifest, --no-manifest, --json
 ```
 
@@ -173,7 +174,8 @@ The compiler parses the record first and refuses:
 - a record missing the editorial fields the deep audit needs (the three narratives, what not to build yet, stack notes, brand brief, ≥2 pricing tiers, ≥2 unit-economics rows, a Year-One plan, ≥3 idea-specific data-model tables) or citing fewer than 2 distinct sources — it does not pad with generic text;
 - a `mode: "fixture"` record under a slug that is not `engine-draft-*` (or `_`-prefixed temp);
 - an `engine-draft-*` slug aimed at `content/ideas/` or `ideas/manifest.json`, however the path is spelled;
-- an existing MDX file or manifest row without `--force`. With `--force` the whole manifest row is replaced, tagging included, so redo Step 4 after it. Never force a compile over a page that is not this idea's engine page.
+- an existing MDX file or manifest row without `--force`. With `--force` the whole manifest row is replaced, tagging included, so redo Step 4 after it. Never force a compile over a page that is not this idea's engine page;
+- a **handwritten** page or manifest row, even with `--force`: a page without the `engine: true` marker (and no `engine:*` row for it), or a row whose `source` is not `engine:*`. The manifest row is checked even with `--no-manifest`. The refusal suggests compiling to `engine-draft-{slug}` instead; `--replace-handwritten` together with `--force` replaces the handwritten idea on purpose.
 
 Writes:
 - `content/ideas/{slug}.mdx` — frontmatter `slug`, `title`, `engine: true` (the marker keeps the deep audit on; the site ignores it), **eight** `##` headings (seven canonical + `## Sources`).
