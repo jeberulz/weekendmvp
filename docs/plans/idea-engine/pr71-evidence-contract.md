@@ -573,6 +573,20 @@ source acquisition statuses, accepted counts per kind, and rejected
   measured takes about 1 s through the audit CLI (lists in 16 KiB blocks); a
   refused page returns in about 0.2 s.
 
+- **R13 amendment (2026-10-03, round 6, accepted by the orchestrator).** A
+  number after a versioned software name, or after PCI DSS / WCAG / OAuth /
+  TLS / SSL / SAML / SCIM, is a version only when it has at most two integer
+  digits with optional decimal parts (15, 3.5, 24.04, 22.11.0); a software
+  version followed by a count noun (optionally after one or two count
+  modifiers: "Node 22 active users", "React 19 developers") is a figure.
+  Fixed-number standards (SOC 2, ISO 27001, Form 1099, Microsoft 365, 24/7)
+  match exactly. SAML and SCIM versions and "two-factor" join the allowlist
+  ("two factors" still counts). The writer instruction lists exactly these
+  names, built from the same constants, and tells the writer to drop any
+  other number in a name (Claude Sonnet 4.5, Redis 7, Fortune 500). A live
+  brief's title and audience may hold no figure (the writer echoes both);
+  the CLI refuses such a brief before the first paid call.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The
