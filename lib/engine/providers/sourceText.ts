@@ -7,6 +7,7 @@
  *   listing. Reddit answers the public endpoint with 403 from most cloud
  *   networks, so set the credentials anywhere but a home connection.
  * - Hacker News items → the Algolia items API (story + comment tree).
+ * - Public Discourse topic JSON → individual cooked post bodies as text.
  * - Anything else → the HTML with scripts/styles/tags stripped.
  *
  * Citation URLs come from search results, so every byte, hop and second a
@@ -1358,6 +1359,23 @@ function collectText(json: unknown, keys: string[], clean: (part: string) => str
   return parts.map(clean).filter((part) => part.trim() !== "").join("\n\n");
 }
 
+/** Some public Discourse topic URLs respond with JSON rather than HTML. */
+function discourseTopicText(raw: string): string | null {
+  if (!raw.trimStart().startsWith("{")) return null;
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { return null; }
+  if (!value || typeof value !== "object" || !("post_stream" in value)) return null;
+  const stream = value.post_stream;
+  if (!stream || typeof stream !== "object" || !("posts" in stream) || !Array.isArray(stream.posts)) return null;
+  const parts: string[] = [];
+  for (const post of stream.posts) {
+    if (!post || typeof post !== "object" || !("cooked" in post) || typeof post.cooked !== "string") continue;
+    const body = htmlToText(post.cooked).trim();
+    if (body) parts.push(body);
+  }
+  return parts.join("\n\n");
+}
+
 // ---------------------------------------------------------------------------
 // Provider
 // ---------------------------------------------------------------------------
@@ -1468,7 +1486,8 @@ export function createSourceTextProvider(
       return collectText(await readJson(res, redactUrl(hn), signal), ["title", "text"], htmlToText);
     }
     const res = await send(url, { headers: accept }, signal);
-    return htmlToText(await readText(res, redactUrl(url), signal));
+    const raw = await readText(res, redactUrl(url), signal);
+    return discourseTopicText(raw) ?? htmlToText(raw);
   };
 
   return {

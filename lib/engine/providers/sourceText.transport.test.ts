@@ -1262,6 +1262,25 @@ describe("source reads: comment bodies are separated by blank lines (R14)", () =
         "\n\nSame here / agreed\n\nLine one\nline two",
     );
   });
+
+  it("decodes Discourse JSON topic posts into separate readable comment bodies", async () => {
+    const topic = {
+      post_stream: { posts: [
+        { cooked: "<p>Started my store a week ago. But nobody goes further then the landing page.</p>" },
+        { cooked: "<p>I am seeing traffic but no sales.</p>" },
+      ] },
+    };
+    const server = await serve((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(topic));
+    });
+    const reader = provider({ fetchImpl: fakeTlsFetch(transport(), new Map([["community.shopify.com", server.port]])) });
+    const text = await reader.fetchText("https://community.shopify.com/t/landing-page-help/123");
+    expect(text).toContain("But nobody goes further then the landing page.");
+    expect(text).toContain("landing page.\n\nI am seeing traffic");
+    expect(text).not.toContain("post_stream");
+    expect(text).not.toContain("cooked");
+  });
 });
 
 describe("htmlToText stays linear on hostile markup", () => {
