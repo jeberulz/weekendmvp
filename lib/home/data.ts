@@ -6,8 +6,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { categoryName, normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { readMdxFile } from "@/lib/mdx";
-import { extractIdea } from "./extract";
-import { applyHighlights, readHighlights } from "./highlights";
+import { ideaHomeExtract } from "./highlights";
 import {
   averageHours,
   categoryCounts,
@@ -86,7 +85,7 @@ export async function getHomeData(): Promise<HomeData> {
   const loaded: Loaded[] = await Promise.all(
     ideas.map(async (idea) => {
       const file = await readMdxFile(IDEAS_DIR, idea.slug);
-      const extract = applyHighlights(extractIdea(file?.content ?? ""), readHighlights(idea.highlights));
+      const extract = ideaHomeExtract(idea, file?.content ?? "");
       return { idea, extract, art: hasOgArt(idea) };
     }),
   );

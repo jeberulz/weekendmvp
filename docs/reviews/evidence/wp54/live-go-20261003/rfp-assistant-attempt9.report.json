@@ -1,0 +1,44 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T09:26:43.941Z",
+  "finishedAt": "2026-10-03T09:26:45.801Z",
+  "failedStep": "market_stats",
+  "error": "provider returned 401",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.001925
+    }
+  ],
+  "costUsd": 0.001925,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "65755d9dfbf75a8e5910422330fc018bd41a6ade",
+    "dirty": false
+  },
+  "sources": [],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 0,
+      "market_stat": 0,
+      "competitor_price": 0,
+      "competitor_availability": 0
+    },
+    "rejected": []
+  }
+}

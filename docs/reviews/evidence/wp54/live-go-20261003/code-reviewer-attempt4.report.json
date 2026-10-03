@@ -1,0 +1,44 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T07:22:00.331Z",
+  "finishedAt": "2026-10-03T07:22:04.120Z",
+  "failedStep": "market_stats",
+  "error": "provider returned 429",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.0039
+    }
+  ],
+  "costUsd": 0.0039,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 2
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "32717581f7006b0c72355fd5618af47d0206a381",
+    "dirty": false
+  },
+  "sources": [],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 0,
+      "market_stat": 0,
+      "competitor_price": 0,
+      "competitor_availability": 0
+    },
+    "rejected": []
+  }
+}

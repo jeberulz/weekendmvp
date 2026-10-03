@@ -1,0 +1,44 @@
+{
+  "qualifier": "(billed annually)",
+  "line": "- **45 × $100/mo = $54,000 ARR** — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed annually))",
+  "ok": false,
+  "errors": [
+    "Year-One Math is missing its computed ARR line",
+    "Business Model: unbound figure \"1,200\" near line 113 (\"…1,200 — GitHub Marketplace and outreach visit…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"120\" near line 114 (\"…120 — Private-repository trials…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"45\" near line 115 (\"…45 — Paying Crew accounts…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"45\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$100/mo\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts paying by…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$54,000\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts paying by month 12…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"12\" near line 116 (\"…000 ARR — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"5\" near line 116 (\"…ARR — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed ann…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$20/developer/month\" near line 116 (\"…accounts paying by month 12 (5 seats × $20/developer/month (billed annually))…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model states another revenue total at line 116 (\"$54,000 ARR\"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals",
+    "Business Model: a Year-One-style computation at line 116 (\"45 × $100/mo = $5\") outside Year-One Math; only its base and downside lines compute revenue"
+  ]
+}
+{
+  "qualifier": "(billed monthly)",
+  "line": "- **45 × $100/mo = $54,000 ARR** — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed monthly))",
+  "ok": false,
+  "errors": [
+    "Year-One Math is missing its computed ARR line",
+    "Business Model: unbound figure \"1,200\" near line 113 (\"…1,200 — GitHub Marketplace and outreach visit…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"120\" near line 114 (\"…120 — Private-repository trials…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"45\" near line 115 (\"…45 — Paying Crew accounts…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"45\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$100/mo\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts paying by…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$54,000\" near line 116 (\"…45 × $100/mo = $54,000 ARR — Crew accounts paying by month 12…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"12\" near line 116 (\"…000 ARR — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"5\" near line 116 (\"…ARR — Crew accounts paying by month 12 (5 seats × $20/developer/month (billed mon…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model: unbound figure \"$20/developer/month\" near line 116 (\"…accounts paying by month 12 (5 seats × $20/developer/month (billed monthly))…\") — not a rendering of the record's evidence (guard, not proof of truth)",
+    "Business Model states another revenue total at line 116 (\"$54,000 ARR\"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals",
+    "Business Model: a Year-One-style computation at line 116 (\"45 × $100/mo = $5\") outside Year-One Math; only its base and downside lines compute revenue"
+  ]
+}
+{
+  "qualifier": ", billed annually",
+  "line": "- **45 × $100/mo = $54,000 ARR** — Crew accounts paying by month 12 (5 seats × $20/developer/month , billed annually)",
+  "ok": true,
+  "errors": []
+}

@@ -1,0 +1,442 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T21:09:33.351Z",
+  "finishedAt": "2026-10-03T21:12:22.031Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.005705
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.018488
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.021683
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.024337
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.028039
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.200705
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.18993000000000002
+    }
+  ],
+  "costUsd": 0.578888,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 2,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "2b79e326219fa90ad37739251cdfa7f034538ff5",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://rfp.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:38.691Z",
+      "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+    },
+    {
+      "url": "https://proposalforge.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:38.541Z",
+      "textSha256": "4e218839e2f5f3e02db9400d24bc628ef3200d40d7b5cd238c9df54130ff45c2"
+    },
+    {
+      "url": "https://deeprfp.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:38.432Z",
+      "textSha256": "165159184288eb51e109fb916a2aedbab582da18d06537aa09b44babcdc16ab2"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:41.815Z",
+      "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+    },
+    {
+      "url": "https://www.responsive.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:38.744Z",
+      "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36488436",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:40.089Z",
+      "textSha256": "da534c14ecff35e514f524190004aa83661c66cdcb9cdcaaa986417cf6d6b9c7"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=26513040",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:40.947Z",
+      "textSha256": "7cbf25cd73fa5f0993606cc0e922cd298755e18da5448c1c8ae6aaac2af2d82f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=25793230",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:43.408Z",
+      "textSha256": "cd711dd09923b6ea11a04a12e552b57e322c9c9c34ba4810fbfffabab6ccc7e1"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:42.968Z",
+      "textSha256": "9fc4d515227c8d7d068e4d6acf70b3e1464e1a12586fbc339cda4b59c1496d60"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:42.974Z",
+      "textSha256": "2b58bb51e2e5c68990d03b9531d1cc1763d52a2736c3cae5c67124b5a0aac68f"
+    },
+    {
+      "url": "https://www.thebusinessresearchcompany.com/report/request-for-proposal-rfp-response-automation-artificial-intelligence-global-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:43.300Z",
+      "textSha256": "0e5e34379241e4acd10fb8ea2d96a092b0cd42c92d56cb3c478ccbe3f38c6c3d"
+    },
+    {
+      "url": "https://www.360iresearch.com/library/intelligence/rfp-response-management-software",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 503 for https://www.360iresearch.com/library/intelligence/rfp-response-management-software"
+    },
+    {
+      "url": "https://www.giiresearch.com/report/ires1946779-rfp-response-management-software-market-by.html",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:44.552Z",
+      "textSha256": "8c567d3288ce5dd1ea8783d698dd818161a513bc81904649deff4090d9460d25"
+    },
+    {
+      "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:44.116Z",
+      "textSha256": "4a4d283ffb122e19fc353ec35294d37ac7a0de7b65558ea7c29af8c218a0c19b"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:44.595Z",
+      "textSha256": "f777a277569f8066f02ad4b45ea9c145de1c102eba4af83ee79a4cf47c10be7f"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/5304118/proposal-management-software-global-strategic",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:44.196Z",
+      "textSha256": "2883989cf912041709eeb5b26ab0df49fe0ed1a096c148b00d867b44ca1f7a8a"
+    },
+    {
+      "url": "https://www.sifthub.io/blog/loopio-responsive-qvidian-sifthub",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:49.966Z",
+      "textSha256": "c36289be611994b3058ef694c6584c6cfc8a121ee0116ee99c0ca661cd5f07be"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:49.972Z",
+      "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/best-government-proposal-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:50.203Z",
+      "textSha256": "0ea8cdb1dc961c3183a93f4c7e3440f0bfe318eb6d00492a52bfe70727dd908e"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/qvidian-vs-loopio-vs-responsive",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:49.976Z",
+      "textSha256": "b39bf00f0056b9b6b300d774fdd41acf442f96bf81f87d7176f3401f41f8b17f"
+    },
+    {
+      "url": "https://storyflow.so/blog/best-rfp-response-tools-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:54.573Z",
+      "textSha256": "901431b32715962c986774c3040576fed74cbcbaff71a0c242019dbc47aae529"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-pricing-features-reviews",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:50.063Z",
+      "textSha256": "7d1ffe98a72c22c5e32ac2c3d294c3205a71f4239527c7aec94abfbfb25643d5"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/rfpio-competitors-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:09:50.208Z",
+      "textSha256": "df74bfc190661ee59b1d083206019ff210931a86fcd45b3fc0276c7b67bec1f3"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_S…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIEN…"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1h9foew/do_you_hate_rfps_with_a_passion/m10hfvc",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1h9foew/do_you_hate_rfps_with_a_passion/m10hfvc.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps.json?… (Reddit blocks this network; set REDDIT_CLIENT_I…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1n45gec/are_rfps_worth_it",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1n45gec/are_rfps_worth_it.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLI…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30932596",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:01.366Z",
+      "textSha256": "4a658ce9d6ad8dc06e8874e2b2ea17a3ec51806f5a0e0c9e63a83daa9d01d42d"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=906429",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:13.327Z",
+      "textSha256": "9d82cbe5f2ddad7e06ebf8d79f55cf5937d9b2aee02b8cc9e41e1a6f3682936a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=33549151",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:19.839Z",
+      "textSha256": "b2a6105296a92f6e2ab5daf35d607e7af44bfd4878831863fcc6b4ab9109c05e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=7000477",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:19.381Z",
+      "textSha256": "0eb1acbe82a5a01ad0a479764606b0645ad0924e174868ab6095828604a72df5"
+    },
+    {
+      "url": "https://discuss.huggingface.co/t/your-request-to-access-this-repo-has-been-successfully-submitted-and-is-pending-a-review-from-the-repos-authors/57698/3",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:13.364Z",
+      "textSha256": "48f16da851628a1f1743117ee05e89b94c4694d2adbde99cc5c4b9848bc932d3"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=2747876",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:16.107Z",
+      "textSha256": "307223161ca169e935f41e503f7d01d827f88c07e05c4954d7f46cd1e5637dd7"
+    },
+    {
+      "url": "https://community.shopify.com/sitemap_34.xml",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:13.995Z",
+      "textSha256": "58e4658ccdebad33e0a14cd18d61d237a1c763547ddfc12e0fd1be2e9f39632f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43199248",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:10:20.231Z",
+      "textSha256": "a20e3ea284c634d9152961d60b9e6c5a5712a60dc0aad0567f496d4b178e52f0"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 8,
+      "competitor_price": 8,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=30932596",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://deeprfp.com/pricing",
+        "detail": "\"$ 89 per user, per month\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://deeprfp.com/pricing",
+        "detail": "\"$ 149 per user, per month\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "span_bounds",
+        "sourceUrl": "https://www.responsive.io/pricing",
+        "detail": "pricing statement must fit in one sentence of at most 600 characters"
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+
+### v0 control (default fixture)
+research: ok (v2 record parsed)
+audit: PASS (words=2612)
+
+### v1 invented metrics in howItWorks/dontBuildYet/stackNotes/channels/assumptions
+research: ok (v2 record parsed)
+audit: PASS (words=2662)
+  page contains "47 questionnaires": YES -> 1. **Ingest** — Sales teams of 8 answer 47 questionnaires a quarter and lose 60% of their week to them, versus 25% selling. Upload past RFPs, questionnaires and approved policy documents into one answer library. CiteDraft splits each document into citable para
+  page contains "12 deals a year": YES -> Do not build CRM sync yet: 12 deals a year are lost to slow security reviews, and that is the pain to fix first.
+  page contains "40 hours per RFP": YES -> Next.js App Router with Postgres and pgvector for the answer library, a background queue for document parsing, and Stripe seats for the Team plan. Keep every draft answer linked to its source paragraph id so the review trail and the export come from the same d
+  page contains "30% of sales engineers": YES -> - Founder-led outreach to the 30% of sales engineers who answer questionnaires every week
+  page contains "already pay for a proposal tool": YES -> 64% of B2B SaaS sales teams already pay for a proposal tool, and trials convert at 25%.
+
+### v2 AnswerDeck notes cite Bidwell's price token
+research: ok (v2 record parsed)
+audit: PASS (words=2605)
+  page contains "**AnswerDeck**": YES -> - **AnswerDeck** — AnswerDeck's per-seat plan costs [$49/user/month, billed annually (Starter)](https://bidwell.example/pricing) for every proposal writer, which adds up quickly for small sales teams that only answer a few questionnaires per quarter. Published
+
+### v3 invented inline quote + spelled-out figures in problemNarrative
+research: ok (v2 record parsed)
+audit: PASS (words=2640)
+  page contains "forty seven questionnaires": YES -> As one Hacker News commenter put it, “our team of eight answers forty seven questionnaires a quarter and loses a dozen deals a year to slow security reviews.”
+
+### v4 fullwidth digits in problemNarrative and market.summary
+research: ok (v2 record parsed)
+audit: PASS (words=2636)
+  page contains "４７ questionnaires": YES -> The cost lands in several places at once. Deals wait while a questionnaire sits half-finished, and a buyer's security team reads a slow response as a weak security program. Answers drift between versions, so the company can end up promising different things to
+  page contains "𝟏𝟐 million": YES -> The established suites are built around a dedicated proposal function: a content owner who curates the library, reviewers assigned by section and a renewal negotiated by procurement. The opening is the small team that answers the same questions every quarter w
+
+### v5 survey stat token re-used as a churn/pay claim in market.summary
+research: ok (v2 record parsed)
+audit: PASS (words=2637)
+  page contains "churn of": YES -> The established suites are built around a dedicated proposal function: a content owner who curates the library, reviewers assigned by section and a renewal negotiated by procurement. The opening is the small team that answers the same questions every quarter w
+
+### v6 'Unlike Loopio, Qvidian costs $30/month' -> Loopio row
+research: ok (v2 record parsed)
+audit: PASS (words=2596)
+  page contains "**Loopio**": YES -> - **Loopio** — Loopio is a mature suite built for proposal desks with dedicated content owners and long annual contracts for teams. Published pricing: $30/month (via blog.example.com) [RFP tools compared](https://blog.example.com/rfp-tools-compared).

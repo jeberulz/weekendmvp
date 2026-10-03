@@ -1,0 +1,450 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T05:50:15.811Z",
+  "finishedAt": "2026-10-03T05:51:52.454Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 1 vendors with an accepted price, need 3. Top rejection reasons: unparseable_amount ×10, over_cap ×8, span_not_found ×4, span_bounds ×3. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00333
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019004
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.020912
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.033217
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.25016
+    }
+  ],
+  "costUsd": 0.326623,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "02cd9b84d23120782da5ee1711d26e29ad441398",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://marketintelo.com/report/ai-code-review-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:25.939Z",
+      "textSha256": "38657db533f32cbc41262c62da1671ea547b7090fcdddb54188201c4999aa154"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:25.757Z",
+      "textSha256": "c0dc64d2105256cecec73e061a335142c61604489884517711484280526b9a98"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:25.586Z",
+      "textSha256": "ae89cdacf0d3fabdaec4e33a6c011e3dc4b88076bf4b63f9839a0134ea130c0d"
+    },
+    {
+      "url": "https://www.mordorintelligence.com/industry-reports/secure-code-review-platforms-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:25.625Z",
+      "textSha256": "29e654f2f1c342ba269ae7962512a7c13a21dcff76ee018b76a643d6a47dc159"
+    },
+    {
+      "url": "https://www.intelmarketresearch.com/code-review-tool-market-36108",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:27.009Z",
+      "textSha256": "97208b4827b8f552fdc86e2c92a715e6ea90a36d76f80d3452a163baa4905d5d"
+    },
+    {
+      "url": "https://dataintelo.com/report/code-review-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:25.953Z",
+      "textSha256": "4139987345dd786e3fa3b4df1c2a24d016c59b013d23635fe2269409888196ab"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6216173/code-review-tools-global-market-insights",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:26.132Z",
+      "textSha256": "b5f40e985d043e4d238d032e109252b9aaacf188ca4736ca73036dcce3b61196"
+    },
+    {
+      "url": "https://www.globalgrowthinsights.com/market-reports/code-review-market-118106",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.globalgrowthinsights.com/market-reports/code-review-market-118106"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:31.784Z",
+      "textSha256": "9fe278c1c6c6ec2efe5cae650516d855cf2f33d7f0ad9e24425f6ff2e044a223"
+    },
+    {
+      "url": "https://bito.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.866Z",
+      "textSha256": "decc9d01938f233f909ad583482b5d8675ea8f757405fc61a157e1b22846b653"
+    },
+    {
+      "url": "https://macroscope.com/content/best-ai-code-review-tools-github-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.162Z",
+      "textSha256": "e02ef7ab5b786ed50e19b33aec016808d682296da704f88930d52ce141028001"
+    },
+    {
+      "url": "https://www.qodo.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:31.747Z",
+      "textSha256": "9c1ce0f9279563dfb0967a154246ead6a1bbff2b714b92ff099ac82afd742d57"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.148Z",
+      "textSha256": "767e8b022a4d4181af0982233fd603d398c8fb243108b375bc2c2cad6851aa8e"
+    },
+    {
+      "url": "https://docs.bito.ai/ai-code-reviews-in-git/overview",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.395Z",
+      "textSha256": "5250762f309f2ea14f330fc795548e50a55cd7a362181d5fb74e548337c1b102"
+    },
+    {
+      "url": "https://codeant.ai/blogs/best-ai-code-review-tools-for-developers",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.707Z",
+      "textSha256": "7c0c2d6922edd2bf8f9ab343319ec75bbc04982dbe926fe7146c6917a9faa729"
+    },
+    {
+      "url": "https://www.coderabbit.ai/FAQ",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:32.418Z",
+      "textSha256": "767e8b022a4d4181af0982233fd603d398c8fb243108b375bc2c2cad6851aa8e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36725137",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:44.461Z",
+      "textSha256": "4007373f9dae02305a2335680f718eb511bd4566a8c17443e4944edf648265ad"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47408205",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:44.958Z",
+      "textSha256": "594cb8a33457d2dd34b227862656d1c06f6444f908c8317a5fba1270c5215d1e"
+    },
+    {
+      "url": "https://community.atlassian.com/forums/discussion/3257440/protecting-critical-code-in-the-age-of-ai",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:44.673Z",
+      "textSha256": "c3970ff7812e112bbef47bf5996fba5fb4a383f1a75388c1b375137e20a0152a"
+    },
+    {
+      "url": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:44.706Z",
+      "textSha256": "8f4160676998843a493f8d9fccdf485cc6e3037a148633e33628ad9ae4a819b2"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47077676",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:44.930Z",
+      "textSha256": "fc9745bafe61c43ba00b3be990f1366e5bc7919bb96715b1b5fd2affe6ff976f"
+    },
+    {
+      "url": "https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review.json?… (Reddit blocks this network; set REDDIT…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49727245",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:45.201Z",
+      "textSha256": "eaf1344d19d98ac77b532a8dd5e4a9f6bc015318015a5b4971d3d716f0415616"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:50:46.251Z",
+      "textSha256": "367e18699b80d7e2d31e44f179a44bd7bf72e3e78eaac3264c59c4267cdaaba3"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 8,
+      "market_stat": 7,
+      "competitor_price": 3
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=36725137",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=47408205",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=47077676",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=47077676",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=49727245",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=49727245",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+        "detail": "subject \"market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+        "detail": "subject \"CAGR\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/code-review-tool-market-36108",
+        "detail": "\"USD 1.70 billion\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/code-review-tool-market-36108",
+        "detail": "\"USD 1.85 billion\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/code-review-tool-market-36108",
+        "detail": "\"USD 2.80 billion\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/code-review-tool-market-36108",
+        "detail": "subject \"CAGR\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6216173/code-review-tools-global-market-insights",
+        "detail": "\"USD 4.0 billion and USD 14.0 billion\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6216173/code-review-tools-global-market-insights",
+        "detail": "\"approximately 10% to 30%\" is not one supported amount"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.coderabbit.ai/pricing",
+        "detail": "\"$0.40 per agent minute\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://macroscope.com/content/best-ai-code-review-tools-github-2026",
+        "detail": "\"$0.05/KB reviewed\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.qodo.ai/pricing",
+        "detail": "\"$30\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.coderabbit.ai/faq",
+        "detail": "\"$0.25 per reviewed file\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.coderabbit.ai/faq",
+        "detail": "\"$0.40 per agent minute\" is not one supported price expression"
+      }
+    ]
+  }
+}

@@ -1,0 +1,409 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T07:11:15.793Z",
+  "finishedAt": "2026-10-03T07:12:54.834Z",
+  "failedStep": "evidence_acceptance",
+  "error": "competitors: 1 vendors with accepted price or availability, need 3. Top rejection reasons: over_cap ×9, unparseable_amount ×3, projection_as_measured ×1, span_bounds ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.0038399999999999997
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019808
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.023522
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.019331
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.022006
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.22844
+    }
+  ],
+  "costUsd": 0.316947,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 2,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "38f2152d447f0c0519af48b4bcc5347f32949bf3",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://jellyfish.co/blog/2025-ai-metrics-in-review",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:25.716Z",
+      "textSha256": "c1b0bf40727f602f53c1d884bf439492ce0b5db790d1b94ad0465f8d9945d66a"
+    },
+    {
+      "url": "https://dev.to/pullflow/coderabbit-vs-github-copilot-vs-gemini-which-ai-code-review-agent-should-your-team-use-3m67",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:25.678Z",
+      "textSha256": "f6141678db6ba61f48aed189af6f360d52fd9c87aa8a19647c9fdd08e13d5f70"
+    },
+    {
+      "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:25.819Z",
+      "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:25.592Z",
+      "textSha256": "d3ba5bb763d809e45d89ed3bfea872ef74acf73c87087e5e9b5d20c3aa390a61"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:25.666Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/ai-code-review-tool-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:26.886Z",
+      "textSha256": "6363241b1138cca374928b33093daa53b0ebd9a3b1930af2a0c7efc30ee02fa8"
+    },
+    {
+      "url": "https://zipdo.co/ai-code-review-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:26.251Z",
+      "textSha256": "fe4bc9d7a49123a197bce032b36a027b59aa76eecefc8998b206c85c680dd4e7"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/code-review-tool-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:26.932Z",
+      "textSha256": "318f157ba7a5b540bf0539c887987399035fd0cd4300eb3c85e7f212b95bf7b2"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.605Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.542Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.598Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.589Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.coderabbit.ai/blog/coderabbit-expands-its-commitment-to-open-source",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.846Z",
+      "textSha256": "e13e12f841d3a5bf1cf3e53b21ba4fb7aeafa176ce8dff42eb90fb28f479946b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/oss",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.865Z",
+      "textSha256": "3e5472e5713b70e3ec62763e6c3829f5b9db5e713ecc469bbda97c3a89d14b71"
+    },
+    {
+      "url": "https://dev.to/rahulxsingh/best-ai-code-review-tools-for-pull-requests-in-2026-2n4p",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:33.048Z",
+      "textSha256": "28ff941a396c084b25d5184d743484bf73f248e30b7cd28056c129ad90a10a22"
+    },
+    {
+      "url": "https://www.coderabbit.ai/FAQ",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:32.721Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.qodo.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:37.490Z",
+      "textSha256": "3cfa559fa97b59bdd98c1267dd617a3b4971a0e9820f154c26348086c0e3d050"
+    },
+    {
+      "url": "https://www.qodo.ai/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:37.486Z",
+      "textSha256": "16072a68201b9cfab0540cc148072b8a5c6f2f8ceaaefc3b18e94e1eb83e0b01"
+    },
+    {
+      "url": "https://docs.qodo.ai/pricing-and-usage",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:37.529Z",
+      "textSha256": "8fa4a3cad7e1eded47ea6b22a1084642a5737214167e3da34d283bfa00727894"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:37.544Z",
+      "textSha256": "1bb52fa2d8e47fe061b5556ddc27949441f69563a9c002b65cf829cd5df8560c"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49321400",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:50.077Z",
+      "textSha256": "bc41823cfed104445af5cb7f7f59f37abc92a74499019df22df05fda250a2f28"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49774795",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:50.511Z",
+      "textSha256": "de1ff532740e5d35c42eccc03fac4395cba5a16ee057f221b8df77dfcc4c988b"
+    },
+    {
+      "url": "https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review.json?… (Reddit blocks this network; set REDDIT…"
+    },
+    {
+      "url": "https://www.remio.ai/post/github-code-review-ai-adds-friction-to-developer-pull-requests",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:52.314Z",
+      "textSha256": "b005f9ff901aae2cd235137645b7c20939c302d70777a3e2dacbe3a9e7af7f7d"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47243272",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:50.443Z",
+      "textSha256": "b63c377e37140951cabb7e346b4422c0ae990ac230111c56042fd049dae8f87a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=31533180",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:50.498Z",
+      "textSha256": "30d921f06c74456339e30e32b27d9634360e619e96cf22b92c8c944d32a808e6"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=42612996",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:50.743Z",
+      "textSha256": "73a82c3de95695327bbe41b4531d41968f54dce2a0c47b5e6542489179c8ba88"
+    },
+    {
+      "url": "https://github.com/topics/pain-points?…",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:11:51.479Z",
+      "textSha256": "4f7117fade7bd3b2b4e81d357352e2f97a5e264902547ccc6cba92e782ee60a4"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 8,
+      "market_stat": 8,
+      "competitor_price": 3,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=49321400",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=47243272",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=31533180",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/code-review-tool-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://zipdo.co/ai-code-review-statistics",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.coderabbit.ai/pricing",
+        "detail": "\"$0.40 per agent minute\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.coderabbit.ai/faq",
+        "detail": "\"$0.25 per reviewed file\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.qodo.ai/",
+        "detail": "\"$0.012 per credit\" is not one supported price expression"
+      }
+    ]
+  }
+}

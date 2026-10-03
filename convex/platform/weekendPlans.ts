@@ -1,4 +1,4 @@
-import { isRetiredIdea } from "./catalogPolicy";
+import { inMemberCatalogue } from "./catalogPolicy";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
@@ -140,7 +140,9 @@ export const start = mutation({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
-    if (idea === null || isRetiredIdea(idea.slug))
+    // Retired ideas and engine drafts start no new plan. Existing plans on
+    // them stay readable and editable by their owner.
+    if (idea === null || !inMemberCatalogue(idea.slug))
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
 
     const now = Date.now();
@@ -294,7 +296,7 @@ export const startPreview = query({
     const shown = same ?? active[0];
     return {
       idea:
-        idea && !isRetiredIdea(idea.slug)
+        idea && inMemberCatalogue(idea.slug)
           ? {
               slug: idea.slug,
               title: idea.title,

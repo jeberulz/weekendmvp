@@ -1,4 +1,5 @@
 /** Small text helpers for fitting idea copy into homepage tiles. */
+import { AUTOLINK_BREAK_CHAR, unescapeMdxText } from "../engine/evidence/quote";
 
 /** Cut at a word boundary and add an ellipsis when `text` is longer than `max`. */
 export function clamp(text: string, max: number): string {
@@ -39,13 +40,21 @@ export function shortNumber(value: string): string {
   return value.replace(/\s*(billion|million|trillion)\b/gi, (_, unit: string) => units[unit.toLowerCase()]);
 }
 
-/** Strip markdown emphasis and links. */
+const AUTOLINK_BREAK_RE = new RegExp(AUTOLINK_BREAK_CHAR, "g");
+
+/**
+ * Markdown as plain text: emphasis and links stripped, then the escaping the
+ * idea compiler applies undone (unescapeMdxText: backslash escapes such as
+ * "\\*" or "\\@", character references such as "&#105;", and the invisible
+ * "&#x2060;" autolink break), and any remaining U+2060 dropped. An escaped
+ * "*", "[" or "]" is literal text, so the emphasis and link patterns skip it.
+ */
 export function plainText(markdown: string): string {
-  return markdown
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .trim();
+  const stripped = markdown
+    .replace(/(?<!\\)\*\*((?:\\.|[^*\\])+)(?<!\\)\*\*/g, "$1")
+    .replace(/(?<!\\)\*((?:\\.|[^*\\])+)(?<!\\)\*/g, "$1")
+    .replace(/(?<!\\)\[((?:\\.|[^\]\\])+)\]\([^)]*\)/g, "$1");
+  return unescapeMdxText(stripped).replace(AUTOLINK_BREAK_RE, "").trim();
 }
 
 /** "Next.js 14 + Vercel", "Postgres via Supabase" → short tech-stack chips. */

@@ -1,0 +1,153 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Private Idea Engine Preview</title></head><body><h2>The Problem</h2>
+<p>SMB SaaS sales leaders and solutions engineers face a recurring conflict: enterprise opportunities demand detailed RFPs, security questionnaires, and due diligence responses, while the people holding the answers are already responsible for selling, implementation guidance, product work, security, and customer support. A questionnaire arrives as a spreadsheet or document, then triggers a hunt across old submissions, policy files, internal messaging, product documentation, and individual memory. The team may have an answer library, but it is often hard to know whether an entry is current, approved, or appropriate for the customer asking.</p>
+<p>The writing itself is only part of the burden. Solutions engineers must distinguish reusable facts from customer-specific commitments. Sales representatives need momentum but may not know which security or legal language is safe. Security SMEs are pulled into repetitive review because provenance is unclear. RevOps lacks a consistent view of status, ownership, and blocked questions. When deadlines tighten, teams copy prior answers or paste material into a general model, creating drafts that sound credible without making verification easier.</p>
+<p>Practitioner behavior demonstrates the appeal of this shortcut. A community member describes combining a security answer library with GPT-4 and receiving answers judged comparable with manual work <a href="https://news.ycombinator.com/item?id=36488436">&quot;Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</a>. That result is encouraging, but the workflow described does not establish which passage supports each claim, whether the underlying source remains approved, or who accepted the final wording. Another buyer reports useful automated matching from Loopio while finding its interface difficult to navigate <a href="https://news.ycombinator.com/item?id=26513040">&quot;Another tool that I&#x27;ve been happy with is Loopio. They do have the &quot;Magic&quot; capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.&quot;</a>. The friction is therefore not simply a lack of generation. It is the absence of a lightweight system connecting generation, evidence, review, and reuse.</p>
+<p>Small vendors also operate with fewer fallback options. One startup practitioner describes relying on due diligence questionnaires because human-powered security audits are not realistically available to the company <a href="https://news.ycombinator.com/item?id=25793230">&quot;Huge companies might be able to afford real human-powered security audits and convince vendors to allow them, but small startups like ours don’t have a better option than relying on DSQs.&quot;</a>. For this buyer, accuracy and trust cannot depend on adding dedicated proposal staff. The core problem is turning scattered institutional knowledge into fast, defensible answers while keeping accountable humans in control of commitments.</p>
+<blockquote>
+<p>&quot;Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=36488436">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;Another tool that I&#x27;ve been happy with is Loopio. They do have the &quot;Magic&quot; capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=26513040">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;Huge companies might be able to afford real human-powered security audits and convince vendors to allow them, but small startups like ours don’t have a better option than relying on DSQs.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=25793230">Ycombinator</a></p>
+</blockquote>
+<h2>The Solution</h2>
+<p>CiteRFP is a grounded RFP response assistant designed for SMB SaaS sales and solutions engineering teams. Its wedge is narrow: produce usable questionnaire drafts with visible citations to approved company material, then move uncertain answers through a lightweight review queue. It is not positioned as a general proposal writer or an autonomous agent that submits claims without oversight.</p>
+<p>A team connects its security policies, product documentation, implementation references, approved answer library, and selected prior responses. CiteRFP indexes passages with source ownership, freshness, and access metadata. When a user imports an RFP or security questionnaire, the product separates the request into answerable items, preserves the buyer&#x27;s structure, and retrieves supporting material for each question. The draft appears beside its evidence so a solutions engineer can verify the claim without repeating the original search.</p>
+<p>The product would distinguish grounded answers, conflicting evidence, and missing knowledge. Strongly supported drafts move quickly to review. Ambiguous questions are routed to the relevant security, legal, product, or implementation owner with context already attached. Reviewers can approve wording, edit it, request clarification, or mark it as customer-specific. Approved responses become governed candidates for later reuse while retaining their provenance and review date.</p>
+<p>This creates a compounding workflow without assuming that past language is eternally correct. Every completed request improves retrieval quality, reveals documentation gaps, and clarifies ownership. The immediate value is faster drafting. The durable value is an auditable response system that helps a small revenue team behave with the discipline of a dedicated proposal function.</p>
+<p>The workflow below is CiteRFP&#x27;s proposed first version: a plan to build, not a tested product.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Connect Knowledge</strong> — CiteRFP would ingest approved security documents, product references, implementation guides, prior responses, and policy material. It would preserve source ownership, freshness, access rules, and document locations so retrieval remains constrained to content the team is permitted to use.</li>
+<li><strong>Import Request</strong> — A seller or solutions engineer would upload a questionnaire, spreadsheet, or document. CiteRFP would separate questions, detect repeated themes, identify required response formats, and assign each item a workflow state without forcing the user to rebuild the buyer&#x27;s original structure.</li>
+<li><strong>Draft With Evidence</strong> — The assistant would retrieve relevant passages, compose a concise answer in the requested style, and attach source citations beside the draft. Low-confidence or conflicting material would be flagged rather than silently converted into a confident claim.</li>
+<li><strong>Review And Reuse</strong> — Subject matter owners would approve, edit, or reject drafts from a focused queue. Approved language would become a governed answer candidate with provenance and review history, helping later requests benefit from completed work without treating every past answer as permanently valid.</li>
+</ol>
+<p>What not to build yet (scope advice for CiteRFP&#x27;s first version, not research):</p>
+<p>Do not build a full proposal design suite, procurement marketplace, or autonomous submission agent before the grounded drafting and approval loop is trusted.</p>
+<h2>Market Research</h2>
+<p>The niche is software that helps revenue teams answer RFPs, security questionnaires, due diligence forms, and related buyer requests from approved company knowledge. It sits between proposal management, sales enablement, and security review operations, but its defining job is producing defensible responses rather than generic sales copy. Published estimates place the current RFP software market at materially different levels: <a href="https://www.intelmarketresearch.com/rfp-software-market-63390">$1.45 billion (Global RFP Software market size, market size, 2025)</a>, <a href="https://www.theinsightpartners.com/reports/rfp-software-market">$3.55 billion (global RFP Software market, market size, 2025)</a>, and <a href="https://www.wiseguyreports.com/reports/rfp-software-market">$2.64 billion (RFP Software Market, market size, 2025)</a>. That variation suggests a fragmented category definition, with researchers likely drawing different boundaries around proposal workflows, response libraries, procurement, and automation. Even so, every cited estimate describes an established software niche rather than an experimental feature category. A forward estimate also anticipates continued expansion in RFP software: <a href="https://www.theinsightpartners.com/reports/rfp-software-market">$7.61 billion by 2034 (global RFP Software market, market size, projected)</a>. For SMB SaaS vendors, the practical opportunity is narrower than the full category. These teams need fast drafts, clear evidence trails, lightweight approvals, and predictable per-seat purchasing. They often lack dedicated proposal operations staff, yet still face enterprise buyers expecting accurate product, privacy, security, legal, and implementation answers. The strongest wedge is therefore not broad document creation. It is grounded response assistance that retrieves approved material, exposes citations beside every proposed answer, routes uncertain claims to the right reviewer, and improves the reusable answer library after each submission. That focus can support a land-and-expand motion across sales, solutions engineering, security, and customer-facing operations.</p>
+<p>Why now: The category already has meaningful software spending and published expectations of further expansion <a href="https://www.theinsightpartners.com/reports/rfp-software-market">$7.61 billion by 2034 (global RFP Software market, market size, projected)</a>. At the same time, practitioners are independently using GPT-4 with existing answer libraries <a href="https://news.ycombinator.com/item?id=36488436">&quot;Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</a>, showing that buyer behavior has moved ahead of controlled workflow design. Grounding, citations, and approval routing can now turn that improvised behavior into an accountable product.</p>
+<p><strong>Market signals</strong></p>
+<ul>
+<li>$1.45 billion (Global RFP Software market size, market size, 2025) (<a href="https://www.intelmarketresearch.com/rfp-software-market-63390">RFP Software Market</a>).</li>
+<li>$3.55 billion (global RFP Software market, market size, 2025) (<a href="https://www.theinsightpartners.com/reports/rfp-software-market">RFP Software Market Size, Growth &amp; Forecast 2034</a>).</li>
+<li>$7.61 billion by 2034 (global RFP Software market, market size, projected) (<a href="https://www.theinsightpartners.com/reports/rfp-software-market">RFP Software Market Size, Growth &amp; Forecast 2034</a>).</li>
+<li>$2.64 billion (RFP Software Market, market size, 2025) (<a href="https://www.wiseguyreports.com/reports/rfp-software-market">RFP Software Market Trends &amp; Growth Analysis 2035</a>).</li>
+</ul>
+<p><strong>Search demand</strong> (DataForSEO, US monthly)</p>
+<ul>
+<li><strong>rfp response software</strong> — 90/mo, competition 34, CPC $45.60</li>
+<li><strong>security questionnaire automation</strong> — 90/mo, competition 17, CPC $108.76</li>
+<li><strong>proposal management software</strong> — 320/mo, competition 23, CPC $62.79</li>
+<li><strong>RFP management software</strong> — 260/mo, competition 25, CPC $30.23</li>
+<li><strong>RFP automation platform</strong> — 20/mo, competition 64, CPC $29.15</li>
+<li><strong>due diligence questionnaire software</strong> — 70/mo, competition 21, CPC $26.70</li>
+<li><strong>proposal response software</strong> — 10/mo, competition 52, CPC $105.73</li>
+</ul>
+<h2>Competitive Landscape</h2>
+<p>RFP.ai offers transparent self-serve pricing, including a monthly option <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a> and an annual-billing alternative <a href="https://rfp.ai/pricing">€40.83/month, billed annually (RFP.ai)</a>. Proposal Forge publishes a broader ladder, with prices ranging from its entry plan <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a> through larger packages <a href="https://proposalforge.io/pricing">$399/month (Proposal Forge)</a> and a premium level <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>. Loopio uses custom quoting <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>, reflecting a more sales-led buying motion.</p>
+<p>CiteRFP should not compete by claiming the broadest proposal suite. Its differentiation is a focused SMB workflow built around claim-level evidence, source freshness, uncertainty handling, and fast specialist approval. The interface should feel closer to an answer review desk than a document-design platform. Transparent per-seat plans and capped active work provide a simpler buying path, while integrations with common document, CRM, and collaboration systems reduce setup friction. The defensible layer is the governed relationship among source passages, generated drafts, reviewer decisions, and reusable approved answers.</p>
+<ul>
+<li><strong>RFP.ai</strong> — RFP.ai publishes a monthly self-serve price <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a> and a lower effective monthly price with annual billing <a href="https://rfp.ai/pricing">€40.83/month, billed annually (RFP.ai)</a>. That transparency gives smaller teams a visible entry point without requiring a sales conversation. Published pricing: €49/month (RFP.ai) <a href="https://rfp.ai/pricing">Rfp</a>; €40.83/month, billed annually (RFP.ai) <a href="https://rfp.ai/pricing">Rfp</a>.</li>
+<li><strong>Proposal Forge</strong> — Proposal Forge presents several monthly price points, spanning an accessible plan <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a>, a larger plan <a href="https://proposalforge.io/pricing">$399/month (Proposal Forge)</a>, and a premium plan <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>. The range signals room for packaging around workflow depth and capacity. Published pricing: $149/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $399/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $799/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>.</li>
+<li><strong>Loopio</strong> — Loopio directs prospective customers to a custom quote rather than publishing a self-serve amount <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>. That sales-led approach may suit complex evaluations while leaving space for simpler SMB purchasing. Published pricing: Contact sales for pricing (Loopio) <a href="https://loopio.com/pricing">Loopio</a>.</li>
+</ul>
+<p><strong>Your Opportunity</strong></p>
+<p>Position CiteRFP as the grounded response workspace for SMB SaaS sales and solutions engineering teams that have outgrown spreadsheets and ad hoc prompting but do not want heavyweight proposal operations software. Lead with cited drafts, fast setup, visible uncertainty, and predictable per-seat packaging rather than broad content-generation claims.</p>
+<h2>Business Model</h2>
+<p>Use transparent per-seat pricing with capped active-questionnaire capacity, while keeping document ingestion and answer-library maintenance available across paid tiers. RFP.ai demonstrates a visible self-serve monthly entry point <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a>, while Proposal Forge publishes a broader price ladder beginning at a higher monthly level <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a> and extending to premium packaging <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>. Loopio instead requires a custom quote <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>. CiteRFP should occupy the gap between lightweight self-service and sales-led enterprise procurement, with predictable upgrades tied to active workflow volume, approval controls, and integrations.</p>
+<p>Proposed CiteRFP pricing to test with early buyers (an assumption, not observed market data):</p>
+<ul>
+<li><strong>Pilot Seat</strong> ($39/seat/month) — 10 active questionnaires per seat/month, cited drafts, source library, review queue</li>
+<li><strong>Core Seat</strong> ($69/seat/month) — 30 active questionnaires per seat/month, approval routing, answer governance, CRM sync</li>
+<li><strong>Response Desk</strong> ($99/seat/month) — 75 active questionnaires per seat/month, advanced permissions, audit exports, priority support</li>
+</ul>
+<p><strong>Unit Economics</strong></p>
+<p>Planning estimates to verify, not measured results:</p>
+<ul>
+<li><strong>At least 80%</strong> — Target gross margin</li>
+<li><strong>Under $4 per active questionnaire</strong> — Model and retrieval cost</li>
+<li><strong>Under 45 minutes per account</strong> — Monthly support burden</li>
+<li><strong>Under 6 months</strong> — Target payback period</li>
+</ul>
+<p><strong>Year-One Math</strong></p>
+<p>CiteRFP&#x27;s funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.</p>
+<p>Counts are planning assumptions for a focused launch. Search content captures active workflow demand, practitioner communities build credibility, and founder-led sales converts teams that complete a grounded trial using their own source material.</p>
+<ul>
+<li><strong>12,000</strong> — Search content visitors</li>
+<li><strong>720</strong> — Search content demo requests</li>
+<li><strong>180</strong> — Solutions engineer community trials</li>
+<li><strong>60</strong> — Founder led sales paying accounts</li>
+<li><strong>60 × $276/mo = $198,720 ARR</strong> — Core Seat accounts paying by month 12 (4 seats × $69/seat/month)</li>
+<li><strong>30 × $276/mo = $99,360 ARR</strong> — downside if the close rate halves (half of 60 accounts)</li>
+</ul>
+<p><strong>Channels</strong></p>
+<p>Channels to test (proposals, not measured results):</p>
+<ul>
+<li>Search-led content for RFP response and security questionnaire workflows</li>
+<li>Solutions engineer communities and practitioner webinars</li>
+<li>Partnerships with virtual CISOs and compliance consultancies</li>
+<li>Founder-led outbound to SaaS sales and solutions leaders</li>
+</ul>
+<h2>Recommended Tech Stack</h2>
+<p>A suggested stack for CiteRFP (a recommendation, not research):</p>
+<p>Use Next.js with TypeScript for the application and review interface, backed by PostgreSQL for workflow records, permissions, provenance, and answer history. Store original files in encrypted object storage and process spreadsheet, document, and PDF imports through isolated background workers. Use hybrid retrieval combining full-text search, embeddings, metadata filters, and freshness rules. Keep model providers behind an abstraction layer so drafting, extraction, and evaluation can use different models. Every generated answer should retain passage-level source links, model metadata, prompt version, reviewer action, and immutable audit records. Add SAML and SCIM only when the buying motion demonstrates sustained demand.</p>
+<ul>
+<li><strong>Next.js + TypeScript</strong> — screens for Connect Knowledge, Import Request, Draft With Evidence, Review And Reuse</li>
+<li><strong>Postgres (Supabase or Neon)</strong> — source_documents, source_passages, questionnaires, response_items, response_citations, review_decisions</li>
+<li><strong>Auth (Clerk or Supabase Auth)</strong> — workspace seats and roles</li>
+<li><strong>Stripe Billing</strong> — Pilot Seat / Core Seat / Response Desk subscriptions</li>
+<li><strong>Vercel</strong> — previews and production</li>
+</ul>
+<h2>AI Prompts to Build This</h2>
+<p>Copy these CiteRFP build prompts into Claude, Cursor, or your AI coding tool.</p>
+<p><strong>1. Project Setup</strong></p>
+<pre><code class="language-text">Create a Next.js App Router (TypeScript, Tailwind) app named CiteRFP for SMB SaaS response teams.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in (&#x27;pilot_seat&#x27;,&#x27;core_seat&#x27;,&#x27;response_desk&#x27;), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in (&#x27;owner&#x27;,&#x27;admin&#x27;,&#x27;member&#x27;))
+- source_documents(id, workspace_id fk, title, source_type, storage_uri, checksum, owner_user_id fk, freshness_status: current, review due, archived, indexed_at)
+- source_passages(id, workspace_id fk, source_document_id fk, body, heading_path, page_ref, embedding_ref, access_scope, created_at)
+- questionnaires(id, workspace_id fk, account_name, title, input_format, status: imported, drafting, in review, completed, due_at, owner_user_id fk)
+- response_items(id, workspace_id fk, questionnaire_id fk, question_text, draft_text, confidence_status: grounded, conflicting, missing, workflow_status: draft, in review, approved, rejected, assignee_user_id fk)
+- response_citations(id, workspace_id fk, response_item_id fk, source_passage_id fk, support_type: direct, partial, conflicting, created_at)
+- review_decisions(id, workspace_id fk, response_item_id fk, reviewer_user_id fk, decision: approved, edited, rejected, clarification needed, rationale, decided_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Pilot Seat at $39/seat/month; Core Seat at $69/seat/month; Response Desk at $99/seat/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PILOT_SEAT, STRIPE_PRICE_CORE_SEAT, STRIPE_PRICE_RESPONSE_DESK, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build a full proposal design suite, procurement marketplace, or autonomous submission agent before the grounded drafting and approval loop is trusted.
+</code></pre>
+<p><strong>2. Core Feature</strong></p>
+<pre><code class="language-text">Build CiteRFP&#x27;s core workflow as one screen per step, in this order:
+- Connect Knowledge: CiteRFP would ingest approved security documents, product references, implementation guides, prior responses, and policy material.
+- Import Request: A seller or solutions engineer would upload a questionnaire, spreadsheet, or document.
+- Draft With Evidence: The assistant would retrieve relevant passages, compose a concise answer in the requested style, and attach source citations beside the draft.
+- Review And Reuse: Subject matter owners would approve, edit, or reject drafts from a focused queue.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Connect Knowledge → Import Request → Draft With Evidence → Review And Reuse without leaving the app, and every generated item links back to its source.
+</code></pre>
+<p><strong>3. Landing Page</strong></p>
+<pre><code class="language-text">One-pager for CiteRFP. Hero line: Grounded RFP drafts with citations for SMB sales teams.
+Sections: the problem for SMB SaaS response teams; how CiteRFP works (Connect Knowledge, Import Request, Draft With Evidence, Review And Reuse); competitor strip (RFP.ai: €49/month (RFP.ai), €40.83/month, billed annually (RFP.ai); Proposal Forge: $149/month (Proposal Forge), $399/month (Proposal Forge), $799/month (Proposal Forge); Loopio: Contact sales for pricing (Loopio)); pricing (Pilot Seat at $39/seat/month; Core Seat at $69/seat/month; Response Desk at $99/seat/month); a single CTA into the first workflow step.
+</code></pre>
+<p><strong>4. Branding Package</strong></p>
+<pre><code class="language-text">Brand CiteRFP for SMB SaaS response teams. Use a calm, precise visual system inspired by document review rather than futuristic AI branding. Favor warm white surfaces, dark ink, restrained blue accents, and clear evidence markers. Citations, confidence states, and reviewer ownership should be visually prominent without feeling alarmist. The voice should be concise, accountable, and technically literate. Avoid magical automation language; emphasize grounded assistance, control, and defensible answers.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product CiteRFP, never a generic AI platform.
+</code></pre>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://news.ycombinator.com/item?id=36488436">Ycombinator</a></li>
+<li><a href="https://news.ycombinator.com/item?id=26513040">Ycombinator</a></li>
+<li><a href="https://news.ycombinator.com/item?id=25793230">Ycombinator</a></li>
+<li><a href="https://www.intelmarketresearch.com/rfp-software-market-63390">RFP Software Market</a></li>
+<li><a href="https://www.theinsightpartners.com/reports/rfp-software-market">RFP Software Market Size, Growth &amp; Forecast 2034</a></li>
+<li><a href="https://www.wiseguyreports.com/reports/rfp-software-market">RFP Software Market Trends &amp; Growth Analysis 2035</a></li>
+<li><a href="https://rfp.ai/pricing">Rfp</a></li>
+<li><a href="https://proposalforge.io/pricing">Proposalforge</a></li>
+<li><a href="https://loopio.com/pricing">Loopio</a></li>
+</ul></body></html>

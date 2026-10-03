@@ -1,0 +1,179 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 <repo>
+
+ ❯ lib/engine/providers/sourceText.red.test.ts (7 tests | 7 failed) 6162ms
+     × F7: HTTP 205 through the real transport settles with no uncaught exception 2013ms
+     × F7: an out-of-range status (999) settles instead of throwing in the 'end' listener 2005ms
+     × F4: an oversized chunked body (3 MiB, no Content-Length) is rejected while streaming 14ms
+     × F4: a huge declared Content-Length is rejected before any body byte 1503ms
+     × redirects: the dummy Reddit bearer never reaches a cross-origin redirect target 7ms
+     × redirects: an authenticated HTTPS-to-HTTP downgrade is rejected before the target is contacted 5ms
+     × deadline: a redirect chain does not reset the 400 ms operation deadline 614ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > F7: HTTP 205 through the real transport settles with no uncaught exception
+AssertionError: expected { outcome: 'still pending', …(1) } to deeply equal { outcome: 'resolved', uncaught: [] }
+
+- Expected
++ Received
+
+  {
+-   "outcome": "resolved",
+-   "uncaught": [],
++   "outcome": "still pending",
++   "uncaught": [
++     "TypeError: Response constructor: Invalid response status code 205",
++   ],
+  }
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:79:37
+     77|         2000,
+     78|       );
+     79|       expect({ outcome, uncaught }).toEqual({ outcome: "resolved", unc…
+       |                                     ^
+     80|     } finally {
+     81|       process.off("uncaughtException", onUncaught);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > F7: an out-of-range status (999) settles instead of throwing in the 'end' listener
+AssertionError: expected { settled: false, …(1) } to deeply equal { settled: true, uncaught: [] }
+
+- Expected
++ Received
+
+  {
+-   "settled": true,
+-   "uncaught": [],
++   "settled": false,
++   "uncaught": [
++     "RangeError: init[\"status\"] must be in the range of 200 to 599, inclusive.",
++   ],
+  }
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:98:66
+     96|     try {
+     97|       const outcome = await settlesWithin(publicOnlyFetch(`http://127.…
+     98|       expect({ settled: outcome !== "still pending", uncaught }).toEqu…
+       |                                                                  ^
+     99|         settled: true,
+    100|         uncaught: [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > F4: an oversized chunked body (3 MiB, no Content-Length) is rejected while streaming
+AssertionError: expected 'resolved with 3145728 bytes' to match /^rejected: .*exceed/i
+
+- Expected:
+/^rejected: .*exceed/i
+
++ Received:
+"resolved with 3145728 bytes"
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:130:23
+    128|         (e: unknown) => `rejected: ${String(e)}`,
+    129|       );
+    130|       expect(outcome).toMatch(/^rejected: .*exceed/i);
+       |                       ^
+    131|     } finally {
+    132|       await server.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > F4: a huge declared Content-Length is rejected before any body byte
+AssertionError: expected 'still pending' to match /^rejected: .*exceed/i
+
+- Expected:
+/^rejected: .*exceed/i
+
++ Received:
+"still pending"
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:147:23
+    145|         1500,
+    146|       );
+    147|       expect(outcome).toMatch(/^rejected: .*exceed/i);
+       |                       ^
+    148|     } finally {
+    149|       await server.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > redirects: the dummy Reddit bearer never reaches a cross-origin redirect target
+AssertionError: expected [ { path: '/collect', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "authorization": "bearer dummy-bearer-token",
++     "cookie": undefined,
++     "path": "/collect",
++   },
++ ]
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:189:70
+    187|       });
+    188|       await provider.fetchText("https://www.reddit.com/r/x/comments/ab…
+    189|       expect(collected.filter((c) => c.authorization !== undefined)).t…
+       |                                                                      ^
+    190|     } finally {
+    191|       await Promise.all([token.close(), collector.close(), api.close()…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > redirects: an authenticated HTTPS-to-HTTP downgrade is rejected before the target is contacted
+AssertionError: expected { outcome: 'resolved', …(1) } to deeply equal { Object (outcome, hits) }
+
+- Expected
++ Received
+
+  {
+-   "hits": [],
+-   "outcome": StringMatching /^rejected: .*(downgrade|HTTPS)/i,
++   "hits": [
++     "bearer dummy-bearer-token",
++   ],
++   "outcome": "resolved",
+  }
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:228:33
+    226|           (e: unknown) => `rejected: ${String(e)}`,
+    227|         );
+    228|       expect({ outcome, hits }).toEqual({
+       |                                 ^
+    229|         outcome: expect.stringMatching(/^rejected: .*(downgrade|HTTPS)…
+    230|         hits: [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  lib/engine/providers/sourceText.red.test.ts > RED: original-contract reproductions (must fail on the reviewed code) > deadline: a redirect chain does not reset the 400 ms operation deadline
+AssertionError: expected 'resolved after 613 ms: arrived' to match /^rejected: .*(timeout|timed out)/i
+
+- Expected:
+/^rejected: .*(timeout|timed out)/i
+
++ Received:
+"resolved after 613 ms: arrived"
+
+ ❯ lib/engine/providers/sourceText.red.test.ts:266:23
+    264|         (e: unknown) => `rejected: ${String(e)}`,
+    265|       );
+    266|       expect(outcome).toMatch(/^rejected: .*(timeout|timed out)/i);
+       |                       ^
+    267|     } finally {
+    268|       await Promise.all(servers.map((s) => s.close()));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  11:49:20
+   Duration  6.34s (transform 35ms, setup 0ms, import 47ms, tests 6.16s, environment 33ms)

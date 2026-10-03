@@ -1,0 +1,18 @@
+(node:15045) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/lib/engine/providers/sourceText.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:internal/deps/undici/undici:9689
+          throw webidl.errors.exception({
+          ^
+
+TypeError: Response constructor: Invalid response status code 205
+    at webidl.errors.exception (node:internal/deps/undici/undici:3762:14)
+    at initializeResponse (node:internal/deps/undici/undici:9689:31)
+    at new Response (node:internal/deps/undici/undici:9460:9)
+    at IncomingMessage.<anonymous> (file://<repo>/lib/engine/providers/sourceText.ts:264:19)
+    at IncomingMessage.emit (node:events:531:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+
+Node.js v22.23.1

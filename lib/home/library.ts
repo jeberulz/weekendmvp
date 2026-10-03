@@ -1,5 +1,6 @@
 /** Pure helpers over the idea manifest for the homepage. */
 import { categoryName, normalizeCategorySlug } from "../../components/ideas/idea-meta";
+import { isEngineDraftSlug } from "../engine-drafts";
 import type { CategoryCount, IdeaExtract, IndexRow, ManifestIdea } from "./types";
 
 export const ogArtPath = (slug: string) => `/image/og/idea/${slug}.png`;
@@ -7,8 +8,13 @@ export const ogArtPath = (slug: string) => `/image/og/idea/${slug}.png`;
 /** The OG generator flips `og.status` to "ready" once the card PNG is written. */
 export const hasOgArt = (idea: ManifestIdea) => idea.og?.status === "ready";
 
+/**
+ * The ideas every homepage list, pick and count reads. Retired ideas drop
+ * out, and so do engine drafts (WP54-S5) even if a row slips into the
+ * manifest: their page answers 404.
+ */
 export function liveIdeas(ideas: readonly ManifestIdea[]): ManifestIdea[] {
-  return ideas.filter((idea) => !idea._retiredAt);
+  return ideas.filter((idea) => !idea._retiredAt && !isEngineDraftSlug(idea.slug));
 }
 
 /** Oldest first; ties break on slug so the order is stable. */
@@ -62,9 +68,17 @@ export function newestRows(ideas: readonly ManifestIdea[], hasArt: (slug: string
     });
 }
 
+/** A manifest row the idea engine compiled (`source: "engine:<slug>"`). */
+export function isEngineIdea(idea: ManifestIdea): boolean {
+  return typeof idea.source === "string" && idea.source.startsWith("engine:");
+}
+
 /**
  * An idea can be featured weekly only when every tile it feeds has data:
- * art, How it works, 3+ prompts, pricing, a market number, and 3+ sources.
+ * art, How it works, 3+ prompts, pricing, a market number, and 3+ sources
+ * (owner ruling 2026-09-24, WP42 live homepage data). The rule is the same
+ * for every source. Engine ideas use generated highlights for proposed tiers
+ * and cited competitor pricing; they still need every other tile and art.
  */
 export function isFeatureReady(idea: ManifestIdea, extract: IdeaExtract, hasArt: boolean): boolean {
   return (

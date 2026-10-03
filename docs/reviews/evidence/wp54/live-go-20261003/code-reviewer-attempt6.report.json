@@ -1,0 +1,405 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T07:53:11.969Z",
+  "finishedAt": "2026-10-03T07:54:50.186Z",
+  "failedStep": "evidence_acceptance",
+  "error": "competitors: 2 vendors with accepted price or availability, need 3. Top rejection reasons: projection_as_measured ×1, unparseable_amount ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00405
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019088
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025162999999999998
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025622
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.019775
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.025567
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.20032
+    }
+  ],
+  "costUsd": 0.319585,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 3,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "5a5b3e24d233047ef1d105f1b6997c91bbca8c65",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.364Z",
+      "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+    },
+    {
+      "url": "https://www.secondtalent.com/resources/ai-in-software-development-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.420Z",
+      "textSha256": "46a533f6e25a854ae4c3de7af4dd1f9b905767a84efb3facc79b03ebc57c99d5"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.423Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://www.atlassian.com/zh/whitepapers/the-agentic-pivot",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:30.519Z",
+      "textSha256": "3151828baff0c693161ad3ba140ce0d1c596b18bb52ce7da64ee2894b7b5b053"
+    },
+    {
+      "url": "https://arxiv.org/html/2509.19708v1",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.467Z",
+      "textSha256": "0e0ea5f651fe9caadc8f766661bb08f5878e94ce3263ada8cb0ad8622a8c622a"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.566Z",
+      "textSha256": "d3ba5bb763d809e45d89ed3bfea872ef74acf73c87087e5e9b5d20c3aa390a61"
+    },
+    {
+      "url": "https://www.forbes.com/sites/technology/article/what-is-ai-coding-and-how-to-code-with-ai",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.forbes.com/sites/technology/article/what-is-ai-coding-and-how-to-code-with-ai/"
+    },
+    {
+      "url": "https://www.prnewswire.com/il/news-releases/despite-78-claiming-productivity-gains-two-in-three-developers-say-ai-misses-critical-context-according-to-qodo-survey-302480084.html",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:21.562Z",
+      "textSha256": "1a14409f2e2169f3a556b27d14eccc31afa988ce9f4d1df270ac8367030e707b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.038Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.029Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.012Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.coderabbit.ai/FAQ",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.016Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.coderabbit.ai/agent",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.164Z",
+      "textSha256": "6870ca11a4d87b838af6e1423dfd92ab3cdb7038c169921e2dbdcd2cc8d43f0e"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.139Z",
+      "textSha256": "1bb52fa2d8e47fe061b5556ddc27949441f69563a9c002b65cf829cd5df8560c"
+    },
+    {
+      "url": "https://macroscope.com/content/best-ai-code-review-tools-github-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.327Z",
+      "textSha256": "3a078e36bf233e091c537ed7dbf8ebb960785579331759afb8f191c30692b15b"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:32.157Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://macroscope.com/content/ai-code-review-cost-per-pull-request",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.784Z",
+      "textSha256": "a498fc41de3fe700dc1420dcc42083aaba4110694c15715afd7c79c9a36f01dc"
+    },
+    {
+      "url": "https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.749Z",
+      "textSha256": "aed0564b5e5b020e9f22ce8c19b7d6981b39304b370d9f05b9c6298cc30eb402"
+    },
+    {
+      "url": "https://docs.github.com/en/copilot/concepts/agents/code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.668Z",
+      "textSha256": "4a62f82ef2469499e8c0450da2954f80254109ffe6e87c96e47a0a368afed91b"
+    },
+    {
+      "url": "https://macroscope.com/content/best-greptile-alternatives-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.872Z",
+      "textSha256": "f8d417a74dd57c2de7bce75ff70630b4067b3bcaf59bfed0f2c691d03b43efac"
+    },
+    {
+      "url": "https://github.com/features/copilot",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.906Z",
+      "textSha256": "12e3fd4c5d1fd55e42e62932e2025d583e83ced63e8f85699763d6382377864e"
+    },
+    {
+      "url": "https://macroscope.com/content/usage-based-pricing-developer-tools-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:41.951Z",
+      "textSha256": "40dc0e75b7c50256c464b3633d5f01ecf04eb69400c77a1950ef2e490f89d74e"
+    },
+    {
+      "url": "https://docs.macroscope.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:47.405Z",
+      "textSha256": "f191d1e66edd46eff5ce50979452b31801b7fc6086ebab546b641cb4cbf48ca4"
+    },
+    {
+      "url": "https://macroscope.com/pricing.md",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:47.364Z",
+      "textSha256": "9d1df086a4c6af0da119ab560f9cd5e84d4c902cb9f59c85ed76a75967368a85"
+    },
+    {
+      "url": "https://macroscope.com/usage-based-pricing-for-devs",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:47.387Z",
+      "textSha256": "cd780012d1b240c87cf5fd3e11e1fa6865d3666d3f17a1f8552faae5996cbab8"
+    },
+    {
+      "url": "https://macroscope.com/content/usage-based-pricing-seat-based-pricing-dead-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:47.406Z",
+      "textSha256": "31ac166889606862f3eaab8e8d832ddb2fb2a4bfaeaf64c4d0860fe2cf5a917c"
+    },
+    {
+      "url": "https://macroscope.com/content/macroscope-vs-greptile-ai-code-review-comparison",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:47.889Z",
+      "textSha256": "ed020cf6d0896335256029ebf5b9274d0463d1c1048e1d1a1ea4e48301c83bc9"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46349684",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:57.675Z",
+      "textSha256": "bffd6d4e5b6f3c373aaa6557b54297712d6bbc7588602711ae1b9680a820739a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49573957",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:58.074Z",
+      "textSha256": "b0d03e92426965841f1faee06035fd2574899f0e436a610212f870d417cb043a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49575552",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:57.739Z",
+      "textSha256": "4377a706bead715566b97505117259c0097c800c4ec001380ad2adec278fe088"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=42484584",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:57.844Z",
+      "textSha256": "6b59b6e87e244108c902ac274a62c0bf1a8a36833a33ac0c31667bd89dee7f06"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49774795",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:58.940Z",
+      "textSha256": "de1ff532740e5d35c42eccc03fac4395cba5a16ee057f221b8df77dfcc4c988b"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43962154",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:57.992Z",
+      "textSha256": "70053cfb2dca26206ce263039cd0813c31739b5a7ebbea93b2f4a8b142b4bc1e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43857643",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:58.412Z",
+      "textSha256": "ba4e735e439c68c3d02ae00a46fe8f228e08e0a703a786bc1f8e33125e0c019e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49345154",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:53:58.704Z",
+      "textSha256": "7878ba0275aea770b661a8eb870fb2f006db3b29f447733c12206ac138be39c1"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 2,
+      "market_stat": 6,
+      "competitor_price": 3,
+      "competitor_availability": 2
+    },
+    "rejected": [
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.qodo.ai/blog/ai-code-review",
+        "detail": "\"11.4 hours a week\" is not one supported amount"
+      }
+    ]
+  }
+}

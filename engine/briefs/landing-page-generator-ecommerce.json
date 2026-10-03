@@ -7,6 +7,24 @@
     "ecommerce landing page generator",
     "shopify landing page ai"
   ],
+  "sourceHints": {
+    "market": [
+      "https://dataintelo.com/report/global-landing-page-software-market",
+      "https://www.researchnester.com/reports/landing-page-builder-market/4347"
+    ],
+    "competitors": [
+      "https://apps.shopify.com/instant-builder",
+      "https://apps.shopify.com/pagefly",
+      "https://apps.shopify.com/gempages",
+      "https://apps.shopify.com/webi-landing-page-builder-cod",
+      "https://apps.shopify.com/landify-v3"
+    ],
+    "community": [
+      "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+      "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+      "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171"
+    ]
+  },
   "slug": "ai-landing-page-generator-ecommerce",
   "oneLiner": "Conversion-aware AI landing pages for ecommerce campaigns, Shopify-first."
 }

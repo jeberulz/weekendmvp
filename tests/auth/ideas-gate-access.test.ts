@@ -5,6 +5,7 @@ import {
   STORAGE_KEY,
 } from "../../components/ideas/gate-access";
 import { SESSION_HINT_COOKIE } from "../../lib/auth-session-cookie";
+import { publicIdeaPath } from "../../lib/engine-drafts";
 import gateAccessSource from "../../components/ideas/gate-access.ts?raw";
 import emailGateSource from "../../components/ideas/EmailGate.tsx?raw";
 import ideaPageSource from "../../app/ideas/[slug]/page.tsx?raw";
@@ -167,7 +168,11 @@ describe("idea email gate — signed-in members skip lead capture", () => {
     // Dashboard research CTAs stay on the public canonical URL — no second corpus.
     expect(weeklyPickSource).toContain("href={`/ideas/${idea.slug}`}");
     expect(weeklyPickSource).toContain("Read the research");
-    expect(exploreCardSource).toContain("href={`/ideas/${idea.slug}`}");
+    // The explore card links through ResearchTitle, whose href is publicIdeaPath:
+    // the same canonical URL, withheld only for retired engine drafts (WP54-S5).
+    expect(exploreCardSource).toContain("<ResearchTitle");
+    expect(exploreCardSource).toContain("slug={idea.slug}");
+    expect(publicIdeaPath("weekly-pick")).toBe("/ideas/weekly-pick");
     expect(planDetailSource).toContain("href={`/ideas/${idea.slug}`}");
     expect(planDetailSource).toContain("Read the research");
   });

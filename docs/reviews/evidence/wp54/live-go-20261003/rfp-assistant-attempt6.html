@@ -1,0 +1,149 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Private Idea Engine Preview</title></head><body><h2>The Problem</h2>
+<p>SMB SaaS sales leaders and solutions engineers often receive RFPs when deal urgency is high and specialist capacity is limited. The request may combine product capabilities, implementation details, security controls, legal language, support practices, and company facts. The people coordinating the response rarely own every answer, yet they must produce a coherent document that reflects current policy and avoids accidental commitments.</p>
+<p>The underlying knowledge is fragmented across prior submissions, product documentation, security questionnaires, policy files, internal messages, and subject-matter experts. Search is unreliable because wording changes between buyers. Copying a prior answer is fast but risky when the old language is stale, customer-specific, or no longer aligned with the product. Asking experts to rewrite familiar material interrupts engineering, security, legal, and customer teams. Review then becomes a chase across files and communication threads.</p>
+<p>General AI can reduce drafting effort, but an informal workflow leaves important operational gaps. A community practitioner reported strong output after manually supplying an answer library and customer question <a href="https://news.ycombinator.com/item?id=36488436">&quot;I’ve already tried this - it worked great! Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</a>. That experience validates the usefulness of grounded context while exposing the burden of selecting, copying, and checking source material for every request. Without durable citations, a reviewer cannot quickly distinguish an approved claim from a plausible completion.</p>
+<p>Established response platforms address library matching and workflow, yet ease of use remains consequential. A user described useful automated matching in Loopio while also reporting navigation difficulty <a href="https://news.ycombinator.com/item?id=26513040">&quot;Another tool that I&#x27;ve been happy with is Loopio. They do have the &quot;Magic&quot; capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.&quot;</a>. For an SMB team with occasional contributors, interface complexity can undermine adoption and push work back into spreadsheets.</p>
+<p>The market context supports focused investment without proving that every vendor serves the same buyer. An AI-specific outlook projects <a href="https://marketintelo.com/report/rfp-response-automation-ai-market">$8.9 billion by 2034 (global RFP response automation AI market, market size, projected)</a>, while response-management research reports <a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">$2.64 billion (RFP Response Management Software Market, market size, 2025)</a>. ProofRFP should not chase the entire category. Its buyer is the lean SaaS deal team that needs accountable drafting, fast review, and simple purchasing without installing an enterprise proposal function.</p>
+<blockquote>
+<p>&quot;I’ve already tried this - it worked great! Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=36488436">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;Another tool that I&#x27;ve been happy with is Loopio. They do have the &quot;Magic&quot; capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=26513040">Ycombinator</a></p>
+</blockquote>
+<h2>The Solution</h2>
+<p>ProofRFP is a grounded RFP drafting assistant for SMB SaaS sales and solutions engineering teams. Its wedge is a citation-first answer workflow that turns approved company material into reviewable drafts without asking users to build a complex proposal-operations program.</p>
+<p>A team begins by uploading product documentation, policy material, security responses, implementation guidance, and selected prior answers. ProofRFP converts those sources into a controlled claim library while retaining document location, ownership, review status, and freshness. Imported RFP files are parsed into questions and sections, with surrounding instructions preserved so that answers reflect the buyer&#x27;s requested format rather than an isolated prompt.</p>
+<p>For each question, the assistant retrieves relevant approved claims and drafts an answer with visible source links. It marks unsupported language, conflicting evidence, stale material, and questions that require specialist judgment. Sales can progress through straightforward items while security, legal, product, and solutions engineering reviewers receive focused queues containing only material that needs their attention.</p>
+<p>The product should make abstention useful. Instead of filling a gap with persuasive language, ProofRFP explains what evidence is missing and suggests the appropriate owner or source category. Reviewers can edit, approve, reject, or request clarification. Approved changes can become reusable claims only through an explicit library workflow.</p>
+<p>Exports should preserve the original spreadsheet or document structure, limiting cleanup before submission. The result is not autonomous bid writing. It is a compact operating layer for evidence-backed drafting, accountable review, and reusable knowledge, packaged per seat with usage caps suitable for variable SMB deal flow.</p>
+<p>The workflow below is ProofRFP&#x27;s proposed first version: a plan to build, not a tested product.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Capture the request</strong> — ProofRFP would import spreadsheets, documents, and portal exports, detect individual questions, preserve section context, and assign owners. The intake screen would flag ambiguous fields, deadlines, mandatory attachments, and repeated questions before drafting begins.</li>
+<li><strong>Ground the library</strong> — The product would ingest approved policies, product documentation, security answers, prior responses, and implementation notes. It would split material into reviewable claims, retain source locations, track freshness, and prevent unapproved drafts from silently becoming trusted knowledge.</li>
+<li><strong>Draft with evidence</strong> — For each question, ProofRFP would retrieve relevant approved claims, compose a concise answer in the buyer&#x27;s requested style, and attach inspectable citations. When evidence is weak or conflicting, it would abstain, explain the gap, and route the item to an appropriate reviewer.</li>
+<li><strong>Review and export</strong> — Sales, solutions engineering, security, and legal reviewers would work from filtered queues showing changed language, source coverage, and unresolved risk. Approved responses would export into the original format while feeding reviewed claims back into the controlled library.</li>
+</ol>
+<p>What not to build yet (scope advice for ProofRFP&#x27;s first version, not research):</p>
+<p>Don&#x27;t build a full proposal design suite, procurement marketplace, or autonomous portal submission agent yet.</p>
+<h2>Market Research</h2>
+<p>RFP response automation is a focused software niche serving teams that must transform product knowledge, security material, policy language, and prior answers into buyer-ready responses. Market estimates vary because research firms draw different boundaries around AI drafting, proposal management, and response management. An AI-specific outlook projects <a href="https://marketintelo.com/report/rfp-response-automation-ai-market">$8.9 billion by 2034 (global RFP response automation AI market, market size, projected)</a> and reports projected growth of <a href="https://marketintelo.com/report/rfp-response-automation-ai-market">14.8% (global RFP response automation AI market, growth rate, projected)</a>. A broader response-management estimate reports <a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">$2.64 billion (RFP Response Management Software Market, market size, 2025)</a> and projects <a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">$5 billion by 2035 (RFP Response Management Software Market, market size, projected)</a>. These figures indicate meaningful commercial activity while also warning against treating every estimate as directly comparable.</p>
+<p>For SMB SaaS vendors, the practical niche is narrower than an enterprise proposal suite. The likely buyer is a sales or solutions engineering leader whose team handles RFPs and adjacent security questionnaires without dedicated proposal operations. Their requirement is not merely fluent text. They need answers grounded in approved internal material, citations that reviewers can inspect, clear handling of unsupported claims, and a workflow that fits a lean deal team.</p>
+<p>The product opportunity therefore sits between manual document work and heavyweight response-management platforms. A focused assistant can compete through rapid setup, transparent evidence, per-seat purchasing, and usage caps aligned with intermittent deal volume. The strongest wedge is trust: every generated claim should point back to approved source material, while uncertain questions should be routed to a knowledgeable reviewer rather than answered speculatively.</p>
+<p>Why now: The category has visible momentum: the AI-focused market outlook projects <a href="https://marketintelo.com/report/rfp-response-automation-ai-market">$8.9 billion by 2034 (global RFP response automation AI market, market size, projected)</a> alongside projected growth of <a href="https://marketintelo.com/report/rfp-response-automation-ai-market">14.8% (global RFP response automation AI market, growth rate, projected)</a>. Buyer behavior also shows that general models can already produce useful drafts from an existing answer library <a href="https://news.ycombinator.com/item?id=36488436">&quot;I’ve already tried this - it worked great! Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!&quot;</a>, while established automation can still create navigation friction <a href="https://news.ycombinator.com/item?id=26513040">&quot;Another tool that I&#x27;ve been happy with is Loopio. They do have the &quot;Magic&quot; capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.&quot;</a>. The timely wedge is therefore not raw generation alone, but reliable grounding, citations, and a lighter workflow for lean SaaS deal teams.</p>
+<p><strong>Market signals</strong></p>
+<ul>
+<li>$8.9 billion by 2034 (global RFP response automation AI market, market size, projected) (<a href="https://marketintelo.com/report/rfp-response-automation-ai-market">RFP Response Automation AI Market Research Report 2034</a>).</li>
+<li>14.8% (global RFP response automation AI market, growth rate, projected) (<a href="https://marketintelo.com/report/rfp-response-automation-ai-market">RFP Response Automation AI Market Research Report 2034</a>).</li>
+<li>$2.64 billion (RFP Response Management Software Market, market size, 2025) (<a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">RFP Response Management Software Market Growth Insights 2035</a>).</li>
+<li>$5 billion by 2035 (RFP Response Management Software Market, market size, projected) (<a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">RFP Response Management Software Market Growth Insights 2035</a>).</li>
+</ul>
+<p><strong>Search demand</strong> (DataForSEO, US monthly)</p>
+<ul>
+<li><strong>rfp response software</strong> — 90/mo, competition 34, CPC $45.60</li>
+<li><strong>security questionnaire automation</strong> — 90/mo, competition 17, CPC $108.76</li>
+<li><strong>proposal management software</strong> — 320/mo, competition 23, CPC $62.79</li>
+<li><strong>RFP automation software</strong> — 170/mo, competition 25, CPC $35.96</li>
+</ul>
+<h2>Competitive Landscape</h2>
+<p>RFP.ai establishes a lightweight published-price reference through <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a> and its annual-billing alternative <a href="https://rfp.ai/pricing">€40.83/month, billed annually (RFP.ai)</a>. Proposal Forge presents a wider pricing range, including <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a> and <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>, suggesting packaging for materially different proposal workloads. Loopio uses a custom-quote motion <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>, which is more consistent with guided enterprise purchasing.</p>
+<p>ProofRFP should differentiate on buyer fit rather than claiming broader feature coverage. The product would be designed for SMB SaaS sales and solutions engineering teams that need a controlled answer library without dedicated proposal administrators. Its central experience would expose the evidence behind every draft, highlight unsupported claims, and route exceptions to occasional reviewers through a simple queue.</p>
+<p>Transparent per-seat packages and usage caps would make adoption easier to approve and forecast. The product should remain deliberately narrower than a proposal suite: rapid source setup, grounded answer generation, lightweight review, and faithful export are the competitive core.</p>
+<ul>
+<li><strong>RFP.ai</strong> — RFP.ai publishes a monthly option at <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a> and an annual-billing equivalent at <a href="https://rfp.ai/pricing">€40.83/month, billed annually (RFP.ai)</a>. Its visible entry pricing creates a useful benchmark for a lightweight assistant aimed at cost-conscious SaaS deal teams. Published pricing: €49/month (RFP.ai) <a href="https://rfp.ai/pricing">Rfp</a>; €40.83/month, billed annually (RFP.ai) <a href="https://rfp.ai/pricing">Rfp</a>.</li>
+<li><strong>Proposal Forge</strong> — Proposal Forge spans several published price points, from <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a> through <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>, with annual-billing alternatives including <a href="https://proposalforge.io/pricing">$119/month, billed annually (Proposal Forge)</a>, <a href="https://proposalforge.io/pricing">$319/month, billed annually (Proposal Forge)</a>, and <a href="https://proposalforge.io/pricing">$639/month, billed annually (Proposal Forge)</a>. That range suggests packaging around differing levels of proposal activity. Published pricing: $149/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $119/month, billed annually (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $399/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $319/month, billed annually (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $799/month (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>; $639/month, billed annually (Proposal Forge) <a href="https://proposalforge.io/pricing">Proposalforge</a>.</li>
+<li><strong>Loopio</strong> — Loopio directs prospects to a custom quote rather than displaying a standard package price <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>. That sales-led motion leaves room for a transparent, self-serve option designed around lean SMB SaaS teams. Published pricing: Contact sales for pricing (Loopio) <a href="https://loopio.com/pricing">Loopio</a>.</li>
+</ul>
+<p><strong>Your Opportunity</strong></p>
+<p>ProofRFP is the grounded drafting workspace for SMB SaaS sales and solutions engineering teams that have outgrown copy-and-paste work but do not want heavyweight proposal operations. It emphasizes source-backed answers, fast reviewer handoff, transparent usage caps, and self-serve adoption for teams with intermittent RFP volume.</p>
+<h2>Business Model</h2>
+<p>Use transparent per-seat pricing with an included project allowance, then charge through a clearly disclosed usage tier rather than hidden overages. RFP.ai provides a visible lightweight benchmark through <a href="https://rfp.ai/pricing">€49/month (RFP.ai)</a> and <a href="https://rfp.ai/pricing">€40.83/month, billed annually (RFP.ai)</a>, while Proposal Forge publishes a broader price ladder including <a href="https://proposalforge.io/pricing">$149/month (Proposal Forge)</a> and <a href="https://proposalforge.io/pricing">$799/month (Proposal Forge)</a>. Loopio instead requires a custom quote <a href="https://loopio.com/pricing">Contact sales for pricing (Loopio)</a>. ProofRFP should occupy the self-serve middle ground: easier to purchase than a sales-led suite and more accountable than an unstructured general-purpose assistant.</p>
+<p>Proposed ProofRFP pricing to test with early buyers (an assumption, not observed market data):</p>
+<ul>
+<li><strong>Sales Desk</strong> ($39/seat/month) — 15 active RFP projects per seat monthly, grounded drafts, source citations, document export</li>
+<li><strong>Solutions Bench</strong> ($69/seat/month) — 40 active RFP projects per seat monthly, reviewer queues, claim approvals, freshness alerts</li>
+<li><strong>Revenue Pod</strong> ($99/seat/month) — 100 active RFP projects per seat monthly, SAML 2.0, audit exports, priority support</li>
+</ul>
+<p><strong>Unit Economics</strong></p>
+<p>Planning estimates to verify, not measured results:</p>
+<ul>
+<li><strong>$69 per seat monthly</strong> — Average seat price assumption</li>
+<li><strong>At least 80%</strong> — Gross margin target</li>
+<li><strong>Below $8 per active seat monthly</strong> — Model and retrieval cost target</li>
+<li><strong>Below $900 per account</strong> — Paid acquisition ceiling</li>
+</ul>
+<p><strong>Year-One Math</strong></p>
+<p>ProofRFP&#x27;s funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.</p>
+<p>The plan assumes founder-led onboarding, search content around response workflows, practitioner webinars, and a trial that demonstrates grounded drafting with the prospect&#x27;s own material. Most converted accounts are expected to adopt the Solutions Bench package because reviewer routing and claim governance support the core team workflow.</p>
+<ul>
+<li><strong>1,800</strong> — Search content visitors</li>
+<li><strong>700</strong> — Partner webinar leads</li>
+<li><strong>180</strong> — Product-led trial accounts</li>
+<li><strong>45</strong> — Paying accounts</li>
+<li><strong>45 × $276/mo = $149,040 ARR</strong> — Solutions Bench accounts paying by month 12 (4 seats × $69/seat/month)</li>
+<li><strong>22 × $276/mo = $72,864 ARR</strong> — downside if the close rate halves (half of 45 accounts, rounded down)</li>
+</ul>
+<p><strong>Channels</strong></p>
+<p>Channels to test (proposals, not measured results):</p>
+<ul>
+<li>Search content for RFP automation and security questionnaire workflows</li>
+<li>Solutions engineering community partnerships and webinars</li>
+<li>SaaS sales operations newsletters and practitioner podcasts</li>
+<li>Product-led trials from document upload templates</li>
+</ul>
+<h2>Recommended Tech Stack</h2>
+<p>A suggested stack for ProofRFP (a recommendation, not research):</p>
+<p>Use a TypeScript application with Next.js for the customer workspace and a Python document-processing service for spreadsheet, document, and PDF extraction. Store operational records and claim metadata in PostgreSQL, with object storage for original files and generated exports. Add vector retrieval beside strict metadata filters so drafting favors approved, current sources from the relevant product area. Run parsing, embedding, drafting, and export as durable background jobs. Preserve source spans and model inputs for auditability. Apply tenant isolation, encrypted storage, role-based review permissions, SAML 2.0 on the appropriate package, configurable retention, and redaction before model calls. Evaluation fixtures should test citation coverage, abstention behavior, stale-source handling, and format fidelity.</p>
+<ul>
+<li><strong>Next.js + TypeScript</strong> — screens for Capture the request, Ground the library, Draft with evidence, Review and export</li>
+<li><strong>Postgres (Supabase or Neon)</strong> — rfp_projects, source_documents, response_questions, answer_claims, claim_citations, review_decisions</li>
+<li><strong>Auth (Clerk or Supabase Auth)</strong> — workspace seats and roles</li>
+<li><strong>Stripe Billing</strong> — Sales Desk / Solutions Bench / Revenue Pod subscriptions</li>
+<li><strong>Vercel</strong> — previews and production</li>
+</ul>
+<h2>AI Prompts to Build This</h2>
+<p>Copy these ProofRFP build prompts into Claude, Cursor, or your AI coding tool.</p>
+<p><strong>1. Project Setup</strong></p>
+<pre><code class="language-text">Create a Next.js App Router (TypeScript, Tailwind) app named ProofRFP for SMB SaaS deal teams.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in (&#x27;sales_desk&#x27;,&#x27;solutions_bench&#x27;,&#x27;revenue_pod&#x27;), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in (&#x27;owner&#x27;,&#x27;admin&#x27;,&#x27;member&#x27;))
+- rfp_projects(id, workspace_id fk, owner_member_id fk, title, buyer_name, due_at, status: intake, drafting, review, submitted)
+- source_documents(id, workspace_id fk, uploaded_by_member_id fk, file_name, source_type: policy, product, security, prior response, processing_status, reviewed_at)
+- response_questions(id, workspace_id fk, rfp_project_id fk, section_path, question_text, draft_text, status: unassigned, drafting, blocked, review, approved)
+- answer_claims(id, workspace_id fk, source_document_id fk, claim_text, source_span, owner_member_id fk, status: draft, in review, approved, retired)
+- claim_citations(id, workspace_id fk, response_question_id fk, answer_claim_id fk, citation_label, support_status: strong, partial, conflicting)
+- review_decisions(id, workspace_id fk, response_question_id fk, reviewer_member_id fk, decision: approve, revise, reject, comment, decided_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Sales Desk at $39/seat/month; Solutions Bench at $69/seat/month; Revenue Pod at $99/seat/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_SALES_DESK, STRIPE_PRICE_SOLUTIONS_BENCH, STRIPE_PRICE_REVENUE_POD, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Don&#x27;t build a full proposal design suite, procurement marketplace, or autonomous portal submission agent yet.
+</code></pre>
+<p><strong>2. Core Feature</strong></p>
+<pre><code class="language-text">Build ProofRFP&#x27;s core workflow as one screen per step, in this order:
+- Capture the request: ProofRFP would import spreadsheets, documents, and portal exports, detect individual questions, preserve section context, and assign owners.
+- Ground the library: The product would ingest approved policies, product documentation, security answers, prior responses, and implementation notes.
+- Draft with evidence: For each question, ProofRFP would retrieve relevant approved claims, compose a concise answer in the buyer&#x27;s requested style, and attach inspectable citations.
+- Review and export: Sales, solutions engineering, security, and legal reviewers would work from filtered queues showing changed language, source coverage, and unresolved risk.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Capture the request → Ground the library → Draft with evidence → Review and export without leaving the app, and every generated item links back to its source.
+</code></pre>
+<p><strong>3. Landing Page</strong></p>
+<pre><code class="language-text">One-pager for ProofRFP. Hero line: Grounded RFP drafts with citations for SMB sales teams.
+Sections: the problem for SMB SaaS deal teams; how ProofRFP works (Capture the request, Ground the library, Draft with evidence, Review and export); competitor strip (RFP.ai: €49/month (RFP.ai), €40.83/month, billed annually (RFP.ai); Proposal Forge: $149/month (Proposal Forge), $119/month, billed annually (Proposal Forge), $399/month (Proposal Forge), $319/month, billed annually (Proposal Forge), $799/month (Proposal Forge), $639/month, billed annually (Proposal Forge); Loopio: Contact sales for pricing (Loopio)); pricing (Sales Desk at $39/seat/month; Solutions Bench at $69/seat/month; Revenue Pod at $99/seat/month); a single CTA into the first workflow step.
+</code></pre>
+<p><strong>4. Branding Package</strong></p>
+<pre><code class="language-text">Brand ProofRFP for SMB SaaS deal teams. Use a calm, evidence-led identity that feels native to solutions engineering rather than futuristic AI marketing. Favor deep ink, muted teal, warm neutral surfaces, and a restrained signal color for unsupported claims. Screens should foreground source trails, review state, and document structure. The voice is concise, candid, and operational: confident when evidence exists, explicit when it does not, and never breathless about automation.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product ProofRFP, never a generic AI platform.
+</code></pre>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://news.ycombinator.com/item?id=36488436">Ycombinator</a></li>
+<li><a href="https://news.ycombinator.com/item?id=26513040">Ycombinator</a></li>
+<li><a href="https://marketintelo.com/report/rfp-response-automation-ai-market">RFP Response Automation AI Market Research Report 2034</a></li>
+<li><a href="https://www.wiseguyreports.com/reports/rfp-response-management-software-market">RFP Response Management Software Market Growth Insights 2035</a></li>
+<li><a href="https://rfp.ai/pricing">Rfp</a></li>
+<li><a href="https://proposalforge.io/pricing">Proposalforge</a></li>
+<li><a href="https://loopio.com/pricing">Loopio</a></li>
+</ul></body></html>

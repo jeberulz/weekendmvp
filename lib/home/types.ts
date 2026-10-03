@@ -19,6 +19,8 @@ export type ManifestIdea = {
   audiences?: string[];
   scores?: IdeaScores;
   publishedAt?: string;
+  /** Where the idea came from; `engine:<slug>` marks an engine-compiled page (ruling R15). */
+  source?: string;
   provenance?: { citations?: number | null } | null;
   /** `status: "ready"` means `public/image/og/idea/{slug}.png` exists. */
   og?: { status?: string } | null;

@@ -1,0 +1,271 @@
+/**
+ * TEMPORARY red-evidence reproductions against the reviewed (original)
+ * sourceText.ts, using only the API that existed before WP46-S1:
+ * `publicOnlyFetch` and `createSourceTextProvider`. Each test asserts the
+ * behaviour the remediation requires, so every test here is expected to FAIL
+ * on the original code. Not committed.
+ */
+import http from "node:http";
+import net from "node:net";
+
+import { describe, expect, it } from "vitest";
+
+import { createSourceTextProvider, publicOnlyFetch } from "./sourceText.ts";
+
+const PUBLIC_DNS = async () => ["93.184.215.14"];
+const MiB = 1024 * 1024;
+
+type Started = { port: number; close: () => Promise<void> };
+
+async function startServer(handler: http.RequestListener): Promise<Started> {
+  const server = http.createServer(handler);
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const { port } = server.address() as net.AddressInfo;
+  return {
+    port,
+    close: () =>
+      new Promise<void>((r) => {
+        server.closeAllConnections();
+        server.close(() => r());
+      }),
+  };
+}
+
+async function settlesWithin(p: Promise<unknown>, ms: number): Promise<string> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const pending = new Promise<string>((r) => {
+    timer = setTimeout(() => r("still pending"), ms);
+  });
+  const outcome = await Promise.race([
+    p.then(
+      () => "resolved",
+      (e: unknown) => `rejected: ${e instanceof Error ? e.message : String(e)}`,
+    ),
+    pending,
+  ]);
+  clearTimeout(timer);
+  return outcome;
+}
+
+/**
+ * The original code can only reach a local server through publicOnlyFetch
+ * with an IP literal (Node skips `lookup` for IP hosts). This shim maps
+ * fake public hostnames (https included) onto local http ports, so the
+ * original redirect loop and transport callbacks run for real.
+ */
+function rewritingFetch(ports: Map<string, number>) {
+  return (url: string, init?: RequestInit) => {
+    const u = new URL(url);
+    const port = ports.get(u.hostname);
+    if (port === undefined) throw new Error(`no test server for ${u.hostname}`);
+    return publicOnlyFetch(`http://127.0.0.1:${port}${u.pathname}${u.search}`, init);
+  };
+}
+
+describe("RED: original-contract reproductions (must fail on the reviewed code)", () => {
+  it("F7: HTTP 205 through the real transport settles with no uncaught exception", async () => {
+    const uncaught: string[] = [];
+    const onUncaught = (e: unknown) => uncaught.push(String(e));
+    process.on("uncaughtException", onUncaught);
+    const server = await startServer((_req, res) => {
+      res.writeHead(205);
+      res.end();
+    });
+    try {
+      const outcome = await settlesWithin(
+        publicOnlyFetch(`http://127.0.0.1:${server.port}/`),
+        2000,
+      );
+      expect({ outcome, uncaught }).toEqual({ outcome: "resolved", uncaught: [] });
+    } finally {
+      process.off("uncaughtException", onUncaught);
+      await server.close();
+    }
+  });
+
+  it("F7: an out-of-range status (999) settles instead of throwing in the 'end' listener", async () => {
+    const uncaught: string[] = [];
+    const onUncaught = (e: unknown) => uncaught.push(String(e));
+    process.on("uncaughtException", onUncaught);
+    const raw = net.createServer((socket) => {
+      socket.on("error", () => undefined);
+      socket.once("data", () => socket.end("HTTP/1.1 999 Odd\r\nContent-Length: 2\r\n\r\nhi"));
+    });
+    await new Promise<void>((r) => raw.listen(0, "127.0.0.1", r));
+    const { port } = raw.address() as net.AddressInfo;
+    try {
+      const outcome = await settlesWithin(publicOnlyFetch(`http://127.0.0.1:${port}/`), 2000);
+      expect({ settled: outcome !== "still pending", uncaught }).toEqual({
+        settled: true,
+        uncaught: [],
+      });
+    } finally {
+      process.off("uncaughtException", onUncaught);
+      raw.close();
+    }
+  });
+
+  it("F4: an oversized chunked body (3 MiB, no Content-Length) is rejected while streaming", async () => {
+    let written = 0;
+    const server = await startServer((_req, res) => {
+      res.writeHead(200, { "content-type": "text/html" });
+      const chunk = Buffer.alloc(64 * 1024, "a");
+      const pump = () => {
+        while (written < 3 * MiB) {
+          written += chunk.length;
+          if (!res.write(chunk)) {
+            res.once("drain", pump);
+            return;
+          }
+        }
+        res.end();
+      };
+      pump();
+    });
+    try {
+      const outcome = await publicOnlyFetch(`http://127.0.0.1:${server.port}/`).then(
+        async (r) => `resolved with ${(await r.arrayBuffer()).byteLength} bytes`,
+        (e: unknown) => `rejected: ${String(e)}`,
+      );
+      expect(outcome).toMatch(/^rejected: .*exceed/i);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("F4: a huge declared Content-Length is rejected before any body byte", async () => {
+    const server = await startServer((_req, res) => {
+      res.writeHead(200, { "content-length": String(3 * 1024 * MiB) });
+      res.flushHeaders();
+      // The body never comes: a bounded reader must decide from the header.
+    });
+    try {
+      const outcome = await settlesWithin(
+        publicOnlyFetch(`http://127.0.0.1:${server.port}/`),
+        1500,
+      );
+      expect(outcome).toMatch(/^rejected: .*exceed/i);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("redirects: the dummy Reddit bearer never reaches a cross-origin redirect target", async () => {
+    const collected: Array<{ path: string; authorization?: string; cookie?: string }> = [];
+    const listing = JSON.stringify([
+      { data: { children: [{ data: { title: "t", selftext: "", body: "a comment body here" } }] } },
+    ]);
+    const token = await startServer((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ access_token: "dummy-bearer-token" }));
+    });
+    const collector = await startServer((req, res) => {
+      collected.push({
+        path: req.url ?? "",
+        authorization: req.headers.authorization,
+        cookie: req.headers.cookie,
+      });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(listing);
+    });
+    const api = await startServer((_req, res) => {
+      res.writeHead(302, { location: "https://collector.attacker.test/collect" });
+      res.end();
+    });
+    try {
+      const provider = createSourceTextProvider({
+        redditClientId: "dummy-id",
+        redditClientSecret: "dummy-secret",
+        resolveHost: PUBLIC_DNS,
+        fetchImpl: rewritingFetch(
+          new Map([
+            ["www.reddit.com", token.port],
+            ["oauth.reddit.com", api.port],
+            ["collector.attacker.test", collector.port],
+          ]),
+        ),
+      });
+      await provider.fetchText("https://www.reddit.com/r/x/comments/abc/y/").catch(() => "");
+      expect(collected.filter((c) => c.authorization !== undefined)).toEqual([]);
+    } finally {
+      await Promise.all([token.close(), collector.close(), api.close()]);
+    }
+  });
+
+  it("redirects: an authenticated HTTPS-to-HTTP downgrade is rejected before the target is contacted", async () => {
+    const hits: string[] = [];
+    const token = await startServer((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ access_token: "dummy-bearer-token" }));
+    });
+    const collector = await startServer((req, res) => {
+      hits.push(req.headers.authorization ?? "(none)");
+      res.end("[]");
+    });
+    const api = await startServer((_req, res) => {
+      res.writeHead(302, { location: "http://collector.attacker.test/collect" });
+      res.end();
+    });
+    try {
+      const provider = createSourceTextProvider({
+        redditClientId: "dummy-id",
+        redditClientSecret: "dummy-secret",
+        resolveHost: PUBLIC_DNS,
+        fetchImpl: rewritingFetch(
+          new Map([
+            ["www.reddit.com", token.port],
+            ["oauth.reddit.com", api.port],
+            ["collector.attacker.test", collector.port],
+          ]),
+        ),
+      });
+      const outcome = await provider
+        .fetchText("https://www.reddit.com/r/x/comments/abc/y/")
+        .then(
+          () => "resolved",
+          (e: unknown) => `rejected: ${String(e)}`,
+        );
+      expect({ outcome, hits }).toEqual({
+        outcome: expect.stringMatching(/^rejected: .*(downgrade|HTTPS)/i),
+        hits: [],
+      });
+    } finally {
+      await Promise.all([token.close(), collector.close(), api.close()]);
+    }
+  });
+
+  it("deadline: a redirect chain does not reset the 400 ms operation deadline", async () => {
+    const hops = new Map<string, number>();
+    const servers: Started[] = [];
+    // hop0 -> hop1 -> hop2 -> hop3 -> page, each answering after 150 ms.
+    for (let i = 3; i >= 0; i -= 1) {
+      const next = i === 3 ? "https://page.source.test/" : `https://hop${i + 1}.source.test/`;
+      const s = await startServer((_req, res) => {
+        setTimeout(() => {
+          res.writeHead(302, { location: next });
+          res.end();
+        }, 150);
+      });
+      servers.push(s);
+      hops.set(`hop${i}.source.test`, s.port);
+    }
+    const page = await startServer((_req, res) => res.end("<p>arrived</p>"));
+    servers.push(page);
+    hops.set("page.source.test", page.port);
+    try {
+      const provider = createSourceTextProvider({
+        resolveHost: PUBLIC_DNS,
+        timeoutMs: 400,
+        fetchImpl: rewritingFetch(hops),
+      });
+      const started = Date.now();
+      const outcome = await provider.fetchText("https://hop0.source.test/").then(
+        (t) => `resolved after ${Date.now() - started} ms: ${t.trim()}`,
+        (e: unknown) => `rejected: ${String(e)}`,
+      );
+      expect(outcome).toMatch(/^rejected: .*(timeout|timed out)/i);
+    } finally {
+      await Promise.all(servers.map((s) => s.close()));
+    }
+  });
+});

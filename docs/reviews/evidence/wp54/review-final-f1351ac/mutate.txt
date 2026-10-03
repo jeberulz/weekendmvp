@@ -1,0 +1,49 @@
+M1 F2: auditor ignores the attribution URL of a blockquote: 4 failing
+      - audit.cli.test.ts: scripts/audit-idea-mdx.mjs on a compiler-generated page exits nonzero with the specific error for each reporte
+      - audit.quotes.test.ts: quotes and their attribution (F2) fails a wrong source URL while the quote text is unchanged
+      - audit.quotes.test.ts: quotes and their attribution (F2) fails the same host with a different thread (HN item?id=…68 vs …69)
+      - replay.test.ts: replay: legacy records and page mutations exits nonzero on each reported mutation of the replayed page
+M2 F2: quote comparison becomes bidirectional substring: 5 failing
+      - audit.cli.test.ts: scripts/audit-idea-mdx.mjs on a compiler-generated page exits nonzero with the specific error for each reporte
+      - audit.quotes.test.ts: quotes and their attribution (F2) fails a fabricated sentence appended inside a verified quotation
+      - audit.quotes.test.ts: quotes and their attribution (F2) fails a changed number, an inserted negation, reordered fragments and an uns
+      - replay.test.ts: replay: legacy records and page mutations exits nonzero on each reported mutation of the replayed page
+M3 F6: auditor stops comparing the displayed ARR: 4 failing
+      - audit.cli.test.ts: scripts/audit-idea-mdx.mjs on a compiler-generated page exits nonzero with the specific error for each reporte
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) keeps cents exactly for a $24.99/month tier
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) fails an ARR changed to $5,400,000
+      - replay.test.ts: replay: legacy records and page mutations exits nonzero on each reported mutation of the replayed page
+M4 F6: downside clamps to at least one account: 3 failing
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) renders a zero-account downside for a one-account base, and the page pas
+      - finance.test.ts: computeYearOne a one-account base has a zero-account downside
+      - quality.compile.test.ts: Year-One Math from finance.ts gives a one-account base a zero-account downside (no minimum-one clamp)
+M5 F6: fractional accounts rounded instead of rejected: 4 failing
+      - finance.test.ts: computeYearOne throws a typed error for bad counts, prices and an ARR above the cap
+      - finance.test.ts: validateYearOnePlan rejects 0.4, 0, negative, NaN, Infinity and unsafe account counts without rounding
+      - finance.test.ts: validateYearOnePlan rejects seats > 1 on a flat or per-workspace tier
+      - research-record.v2.test.ts: parseResearchRecord: year-one plan rejects payingAccounts 0.4 instead of rounding it
+M6 F1: rejected candidates appended to the writer input: 1 failing
+      - pipeline.evidence.test.ts: F1: the writer sees accepted evidence only keeps rejected claims, search prose, unaccepted page text and old n
+M7 F1: fact-bearing figure rule disabled in the record parser: 24 failing
+      - pipeline.evidence.test.ts: F1: writer output is validated before a record exists refuses a writer that invents a metric in a fact-bearing
+      - pipeline.evidence.test.ts: spend is reserved before every attempt throws the cap error before a regeneration call when the budget is too
+      - research-record.v2.test.ts: parseResearchRecord: fact-bearing text carries figures only through tokens rejects "47 PRs on a team of 8" sta
+      - research-record.v2.test.ts: parseResearchRecord: fact-bearing text carries figures only through tokens rejects "60% of time reviewing vers
+M8 F5: other-vendor clause check removed: 5 failing
+      - quality.pipeline.test.ts: pricing cards and table rows keeps each vendor's price with that vendor in fetched page text
+      - accept.test.ts: F5 matrix: whole claims, not numbers rejects Loopio at Qvidian's $30/month and accepts Loopio's own $20,000/ye
+      - accept.test.ts: F5 matrix: whole claims, not numbers rejects Loopio at Qvidian's price from a flattened pricing table
+      - accept.test.ts: F5 matrix: whole claims, not numbers rejects an ambiguous comparative sentence even when the model marks it ve
+M9 F5: price comparison ignores the period: 0 failing
+M10 F5: a year can ground an amount (bare-year exclusion removed in stat check): 0 failing
+M11 F1: early stop on evidence minimums removed: 5 failing
+      - pipeline.cli.test.ts: engine:research CLI (fixture mode) writes a failure report and no record when the run fails, and exits nonzero
+      - pipeline.evidence.test.ts: F5: a wrong claim never enters the returned record fails closed when the wrong claims were the only prices, be
+      - pipeline.evidence.test.ts: too little accepted evidence stops before keyword and editorial spend names the shortfalls and the top rejecti
+      - pipeline.evidence.test.ts: run report on failure names the failed step and carries calls, cost, attempts, sources and rejections, without
+M12 cost: maxAttempts no longer enforced: 0 failing
+M13 F2: auditor stops counting distinct quote ids (counts blockquotes): 19 failing
+      - audit.cli.test.ts: scripts/audit-idea-mdx.mjs on a compiler-generated page exits 0 on the clean page: the whole deep bar passes,
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) 45 × $100/month is $54,000 ARR with a downside of 22 × $100 × 12 = $26,4
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) keeps cents exactly for a $24.99/month tier
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) renders a zero-account downside for a one-account base, and the page pas

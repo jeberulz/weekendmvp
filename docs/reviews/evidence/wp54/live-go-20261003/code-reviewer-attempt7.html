@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Private Idea Engine Preview</title></head><body><h2>The Problem</h2>
+<p>Indie developers and small engineering teams face an awkward consequence of faster code generation: producing a change can become easier while validating that change remains slow. A community account describes higher pull request volume from AI-generated code without a matching improvement in review time, turning review into the main bottleneck <a href="https://news.ycombinator.com/item?id=48329446">&quot;We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding.&quot;</a>. For a GitHub maintainer who is also writing features, handling support, and operating production, that bottleneck competes directly with product work.</p>
+<p>Current AI review does not automatically solve the problem because attention is scarce. If a bot posts generic advice, misunderstands repository conventions, or treats every possible improvement as a blocker, the maintainer must review the reviewer. A developer who uses AI code review every day reports that its output often does not make sense <a href="https://news.ycombinator.com/item?id=46348957">&quot;When AI says something - many a time, it doesnt make sense. And I use AI code review tools every day.&quot;</a>. Another user describes results as inconsistent, while still valuing the useful hits because misses are cheap to disregard <a href="https://news.ycombinator.com/item?id=46348957">&quot;Like a lot of my AI experiences it&#x27;s pretty hit or miss and it&#x27;s non-deterministic but it doesn&#x27;t have much cost to disregard the misses and I appreciate the hits.&quot;</a>. That tolerance can disappear when noisy comments arrive on every active pull request or create confusion for contributors.</p>
+<p>Small teams also need AI review to fit their existing process rather than dictate a new one. A team describes using draft pull requests and including AI review before the remaining human review begins <a href="https://news.ycombinator.com/item?id=46348957">&quot;My team uses draft PRs and goes through a process, including AI review, before removing the draft status thereby triggering any remaining human review.&quot;</a>. This workflow treats automation as preparation for human judgment, not a replacement for it. The product opportunity is therefore about triage and context: catch plausible defects, explain meaningful risk, and leave architecture, intent, and tradeoffs to people.</p>
+<p>Established products demonstrate that buyers already encounter paid per-user packaging. Greptile offers a Pro plan <a href="https://www.greptile.com/pricing">$30/user/month (Greptile Pro plan)</a>, while CodeRabbit sells several plans including Essentials <a href="https://docs.coderabbit.ai/management/plans">$24/user/month, billed annually (CodeRabbit Essentials plan)</a>, Team <a href="https://docs.coderabbit.ai/management/plans">$48/user/month, billed annually (CodeRabbit Team plan)</a>, and Advanced <a href="https://docs.coderabbit.ai/management/plans">$72/user/month, billed annually (CodeRabbit Advanced plan)</a>. The gap is not the absence of AI reviewers. It is the need for a quieter, easier-to-configure reviewer whose cost and workflow fit indie maintainers and compact GitHub teams.</p>
+<blockquote>
+<p>&quot;We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=48329446">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;When AI says something - many a time, it doesnt make sense. And I use AI code review tools every day.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=46348957">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;Like a lot of my AI experiences it&#x27;s pretty hit or miss and it&#x27;s non-deterministic but it doesn&#x27;t have much cost to disregard the misses and I appreciate the hits.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=46348957">Ycombinator</a></p>
+</blockquote>
+<blockquote>
+<p>&quot;My team uses draft PRs and goes through a process, including AI review, before removing the draft status thereby triggering any remaining human review.&quot;</p>
+<p>— <a href="https://news.ycombinator.com/item?id=46348957">Ycombinator</a></p>
+</blockquote>
+<h2>The Solution</h2>
+<p>MergeSift is a GitHub App that reviews pull requests before scarce human attention is spent. Its wedge is repository-aware triage for indie developers and small engineering teams: identify changes that plausibly affect correctness, security, reliability, or established project rules, then keep lower-value observations out of the main review path.</p>
+<p>Installation should require selecting repositories and granting the minimum practical GitHub permissions. MergeSift would read contribution guidance, repository structure, test patterns, ownership signals, and maintainer-approved rules. When a pull request changes, it would analyze the diff with nearby code and relevant repository context. Findings would be ranked by likely impact and confidence rather than published as an undifferentiated list.</p>
+<p>The GitHub experience would center on concise inline findings and a summary check. Each surfaced concern would explain what changed, why it might matter, and what evidence in the repository informed the assessment. Merge concerns would be separated from optional follow-up ideas, allowing authors to resolve important issues without debating minor suggestions. Uncertain architectural questions would be routed to humans rather than framed as authoritative defects.</p>
+<p>The learning loop is central to the product. Maintainers could dismiss a finding with a reason, approve a useful rule, or mark an observation as irrelevant for that repository. MergeSift would adapt future review behavior while preserving visible policy controls. Over time, the product should become quieter and more specific to the codebase. The outcome is not autonomous approval. It is a prepared pull request in which routine risks have been screened and human reviewers can focus on architecture, intent, and whether the change makes the product better.</p>
+<p>The workflow below is MergeSift&#x27;s proposed first version: a plan to build, not a tested product.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Repository Context</strong> — After installation, MergeSift would map repository structure, contribution guidance, ownership patterns, test conventions, and selected pull request history. Maintainers could approve the inferred context and add plain-language rules so reviews reflect local engineering expectations rather than generic style preferences.</li>
+<li><strong>Risk Triage</strong> — When a pull request opens or changes, MergeSift would inspect the diff alongside relevant files and configured policies. It would group potential findings by impact, suppress repetitive style observations, and identify uncertainty before deciding whether a comment deserves developer attention.</li>
+<li><strong>Review Delivery</strong> — MergeSift would publish concise GitHub comments attached to the relevant lines, explain the likely consequence, and suggest a practical correction when appropriate. A summary check would separate merge concerns, follow-up ideas, and areas that still require architectural judgment from a human reviewer.</li>
+<li><strong>Learning Loop</strong> — Developers could mark findings as useful, incorrect, irrelevant, or already understood directly in GitHub. MergeSift would use that feedback to adjust repository-specific preferences, surface recurring policy gaps, and reduce comments that the same team repeatedly dismisses.</li>
+</ol>
+<p>What not to build yet (scope advice for MergeSift&#x27;s first version, not research):</p>
+<p>Do not build a broad application security suite, autonomous merge agent, or general engineering analytics platform yet.</p>
+<h2>Market Research</h2>
+<p>AI code review is becoming a distinct developer tooling niche centered on pull request analysis, repository context, defect detection, and review workflow automation. The projected market outlook indicates substantial category expansion <a href="https://marketintelo.com/report/ai-code-review-market">$10.8 billion by 2034 (The AI Code Review market, market size, projected)</a>, while the associated growth forecast suggests sustained buyer and vendor interest <a href="https://marketintelo.com/report/ai-code-review-market">28.5% by 2034 (The AI Code Review market, growth rate, projected)</a>. Adoption among professional developers also shows that AI-assisted review is moving into routine engineering practice rather than remaining an experimental add-on <a href="https://www.qodo.ai/blog/ai-code-review">47% (professional developers, adoption, 2025)</a>.</p>
+<p>The relevant wedge is narrower than the full category: indie developers and small engineering teams maintaining GitHub repositories. These buyers often lack a dedicated review platform owner, have limited reviewer capacity, and need useful feedback without enterprise implementation work. Their purchase decision is likely shaped by comment quality, setup speed, predictable per-developer pricing, and the ability to keep human attention on architecture and product behavior.</p>
+<p>The market evidence does not isolate indie teams, so it should not be treated as a direct measure of this segment. It does, however, establish a growing AI code review category and meaningful developer adoption. That creates room for a focused entrant built around low-noise review, repository-specific rules, and transparent escalation. A credible product can compete by being easier to trust and easier to configure rather than trying to cover every security, governance, and software delivery workflow.</p>
+<p>Why now: AI-assisted review has entered professional developer workflows <a href="https://www.qodo.ai/blog/ai-code-review">47% (professional developers, adoption, 2025)</a>, yet rising AI-generated pull request volume can leave review as the main bottleneck <a href="https://news.ycombinator.com/item?id=48329446">&quot;We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding.&quot;</a>. The timing favors a focused product that improves review throughput without asking small teams to surrender judgment or adopt an enterprise platform.</p>
+<p><strong>Market signals</strong></p>
+<ul>
+<li>$10.8 billion by 2034 (The AI Code Review market, market size, projected) (<a href="https://marketintelo.com/report/ai-code-review-market">AI Code Review Market Research Report 2034</a>).</li>
+<li>28.5% by 2034 (The AI Code Review market, growth rate, projected) (<a href="https://marketintelo.com/report/ai-code-review-market">AI Code Review Market Research Report 2034</a>).</li>
+<li>47% (professional developers, adoption, 2025) (<a href="https://www.qodo.ai/blog/ai-code-review">AI Code Review and the Best AI Code Review Tools in 2026</a>).</li>
+</ul>
+<p><strong>Search demand</strong> (DataForSEO, US monthly)</p>
+<ul>
+<li><strong>AI code review</strong> — 1300/mo, competition 60, CPC $55.73</li>
+<li><strong>automated code review tool</strong> — 170/mo, competition 5, CPC $25.93</li>
+</ul>
+<h2>Competitive Landscape</h2>
+<p>Greptile competes with a paid Pro plan <a href="https://www.greptile.com/pricing">$30/user/month (Greptile Pro plan)</a>, while CodeRabbit offers a broader ladder spanning Essentials <a href="https://docs.coderabbit.ai/management/plans">$24/user/month, billed annually (CodeRabbit Essentials plan)</a>, Team <a href="https://docs.coderabbit.ai/management/plans">$48/user/month, billed annually (CodeRabbit Team plan)</a>, and Advanced <a href="https://docs.coderabbit.ai/management/plans">$72/user/month, billed annually (CodeRabbit Advanced plan)</a>. Qodo provides credit packs <a href="https://www.qodo.ai/pricing">Credit packs (Qodo)</a>, introducing a different consumption model. These vendors validate demand but also create an opportunity for sharper segmentation.</p>
+<p>MergeSift should differ through restraint rather than a larger checklist. Its target buyer is a maintainer or compact GitHub team that wants dependable triage without enterprise rollout work, complex credits, or a wide governance platform. Repository-specific suppression, plain-language review rules, and visible uncertainty should be core product behavior. The free public-repository tier can build trust among open-source maintainers, while private plans remain predictable per developer. The competitive message is not that existing tools lack capability; it is that MergeSift is intentionally quieter, easier to tune, and designed around limited reviewer attention.</p>
+<ul>
+<li><strong>Greptile</strong> — Greptile presents a paid team-oriented plan with per-seat pricing <a href="https://www.greptile.com/pricing">$30/user/month (Greptile Pro plan)</a>. That creates room for a leaner offer aimed at cost-conscious maintainers who want focused pull request feedback. Published pricing: $30/user/month (Greptile Pro plan) <a href="https://www.greptile.com/pricing">Greptile</a>.</li>
+<li><strong>CodeRabbit</strong> — CodeRabbit spans several paid plans, beginning with Essentials <a href="https://docs.coderabbit.ai/management/plans">$24/user/month, billed annually (CodeRabbit Essentials plan)</a>, extending through Team <a href="https://docs.coderabbit.ai/management/plans">$48/user/month, billed annually (CodeRabbit Team plan)</a>, and reaching Advanced <a href="https://docs.coderabbit.ai/management/plans">$72/user/month, billed annually (CodeRabbit Advanced plan)</a>. The range signals broad feature packaging and leaves an opening for simpler purchasing. Published pricing: $24/user/month, billed annually (CodeRabbit Essentials plan) <a href="https://docs.coderabbit.ai/management/plans">docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...</a>; $48/user/month, billed annually (CodeRabbit Team plan) <a href="https://docs.coderabbit.ai/management/plans">docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...</a>; $72/user/month, billed annually (CodeRabbit Advanced plan) <a href="https://docs.coderabbit.ai/management/plans">docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...</a>.</li>
+<li><strong>Qodo</strong> — Qodo makes credit packs available <a href="https://www.qodo.ai/pricing">Credit packs (Qodo)</a>, suggesting a consumption-oriented purchasing option. MergeSift can differentiate with predictable developer pricing and a workflow narrowly designed around GitHub pull requests. Published pricing: Credit packs (Qodo) <a href="https://www.qodo.ai/pricing">Qodo</a>.</li>
+</ul>
+<p><strong>Your Opportunity</strong></p>
+<p>Position MergeSift as the quiet GitHub reviewer for indie developers and small engineering teams. It should emphasize repository-aware findings, low-noise comments, fast installation, and clear escalation rather than generic code commentary. The promise is that humans regain attention for architecture, product behavior, and consequential tradeoffs.</p>
+<h2>Business Model</h2>
+<p>Competitor pricing supports a per-developer buying model. Greptile places its Pro offer at a paid seat price <a href="https://www.greptile.com/pricing">$30/user/month (Greptile Pro plan)</a>, while CodeRabbit offers Essentials <a href="https://docs.coderabbit.ai/management/plans">$24/user/month, billed annually (CodeRabbit Essentials plan)</a>, Team <a href="https://docs.coderabbit.ai/management/plans">$48/user/month, billed annually (CodeRabbit Team plan)</a>, and Advanced <a href="https://docs.coderabbit.ai/management/plans">$72/user/month, billed annually (CodeRabbit Advanced plan)</a> at progressively higher paid levels. Qodo also exposes credit packs <a href="https://www.qodo.ai/pricing">Credit packs (Qodo)</a>. MergeSift should avoid complex credits and lead with a free public-repository tier plus predictable private-repository plans.</p>
+<p>Proposed MergeSift pricing to test with early buyers (an assumption, not observed market data):</p>
+<ul>
+<li><strong>Open Source Maintainer</strong> (Free) — Unlimited public repositories; 1 GitHub organization; community support</li>
+<li><strong>Solo Repository</strong> ($12/developer/month) — Up to 5 private repositories; 1 developer; repository rules; review feedback controls</li>
+<li><strong>Pull Request Crew</strong> ($24/developer/month) — Unlimited private repositories; up to 10 developers; shared policies; priority review processing</li>
+</ul>
+<p><strong>Unit Economics</strong></p>
+<p>Planning estimates to verify, not measured results:</p>
+<ul>
+<li><strong>$12–$24 per developer monthly</strong> — Target paid seat price</li>
+<li><strong>80% or better</strong> — Target gross margin</li>
+<li><strong>Below $5 per paid developer monthly</strong> — Model cost guardrail</li>
+<li><strong>Under 3 months</strong> — Acquisition payback target</li>
+</ul>
+<p><strong>Year-One Math</strong></p>
+<p>MergeSift&#x27;s funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.</p>
+<p>Assumes acquisition begins with GitHub Marketplace discovery, practical search content, and open-source maintainer relationships. Conversion depends on fast installation, useful findings during the initial review experience, visible noise controls, and a clear upgrade path when private repositories or shared team policies become necessary.</p>
+<ul>
+<li><strong>1,200</strong> — Search and GitHub Marketplace visitors</li>
+<li><strong>300</strong> — Open-source and private installations</li>
+<li><strong>80</strong> — Activated repositories with completed reviews</li>
+<li><strong>30</strong> — Paid accounts from product conversion</li>
+<li><strong>30 × $48/mo = $17,280 ARR</strong> — Pull Request Crew accounts paying by month 12 (2 seats × $24/developer/month)</li>
+<li><strong>15 × $48/mo = $8,640 ARR</strong> — downside if the close rate halves (half of 30 accounts)</li>
+</ul>
+<p><strong>Channels</strong></p>
+<p>Channels to test (proposals, not measured results):</p>
+<ul>
+<li>GitHub Marketplace discovery</li>
+<li>Search content for pull request review workflows</li>
+<li>Open-source maintainer sponsorships</li>
+<li>Developer newsletters and technical communities</li>
+</ul>
+<h2>Recommended Tech Stack</h2>
+<p>A suggested stack for MergeSift (a recommendation, not research):</p>
+<p>Build MergeSift as a GitHub App with a TypeScript service handling installation events, pull request webhooks, check runs, and inline review comments. Use Postgres for repository policies, review state, findings, and feedback. Queue analysis jobs so webhook responses remain fast and duplicate events are idempotent. A diff parser should select relevant context before model calls, while a policy engine filters low-confidence findings. Encrypt installation credentials, minimize retained source content, record review provenance, and provide deletion controls for repository owners.</p>
+<ul>
+<li><strong>Next.js + TypeScript</strong> — screens for Repository Context, Risk Triage, Review Delivery, Learning Loop</li>
+<li><strong>Postgres (Supabase or Neon)</strong> — github_installations, tracked_repositories, pull_request_reviews, review_findings, repository_policies, finding_feedback</li>
+<li><strong>Auth (Clerk or Supabase Auth)</strong> — workspace seats and roles</li>
+<li><strong>Stripe Billing</strong> — Open Source Maintainer / Solo Repository / Pull Request Crew subscriptions</li>
+<li><strong>Vercel</strong> — previews and production</li>
+</ul>
+<h2>AI Prompts to Build This</h2>
+<p>Copy these MergeSift build prompts into Claude, Cursor, or your AI coding tool.</p>
+<p><strong>1. Project Setup</strong></p>
+<pre><code class="language-text">Create a Next.js App Router (TypeScript, Tailwind) app named MergeSift for indie GitHub maintainers.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in (&#x27;open_source_maintainer&#x27;,&#x27;solo_repository&#x27;,&#x27;pull_request_crew&#x27;), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in (&#x27;owner&#x27;,&#x27;admin&#x27;,&#x27;member&#x27;))
+- github_installations(id, workspace_id fk, github_installation_id, account_login, account_type: user, organization, status: active, suspended, removed, created_at, updated_at)
+- tracked_repositories(id, workspace_id fk, installation_id fk, github_repository_id, owner_login, repository_name, visibility: public, private, review_mode: observe, comment, enforce, created_at, updated_at)
+- pull_request_reviews(id, workspace_id fk, repository_id fk, github_pull_request_id, head_sha, status: queued, analyzing, in review, completed, failed, started_at, completed_at)
+- review_findings(id, workspace_id fk, review_id fk, file_path, line_number, category: correctness, security, reliability, maintainability, severity: note, concern, blocker, confidence_score, explanation, suggested_fix, status: draft, published, dismissed)
+- repository_policies(id, workspace_id fk, repository_id fk, policy_name, policy_text, scope_glob, status: draft, in review, approved, disabled, created_by, created_at, updated_at)
+- finding_feedback(id, workspace_id fk, finding_id fk, github_user_id, verdict: useful, incorrect, irrelevant, understood, feedback_note, created_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Open Source Maintainer at Free; Solo Repository at $12/developer/month; Pull Request Crew at $24/developer/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_OPEN_SOURCE_MAINTAINER, STRIPE_PRICE_SOLO_REPOSITORY, STRIPE_PRICE_PULL_REQUEST_CREW, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build a broad application security suite, autonomous merge agent, or general engineering analytics platform yet.
+</code></pre>
+<p><strong>2. Core Feature</strong></p>
+<pre><code class="language-text">Build MergeSift&#x27;s core workflow as one screen per step, in this order:
+- Repository Context: After installation, MergeSift would map repository structure, contribution guidance, ownership patterns, test conventions, and selected pull request history.
+- Risk Triage: When a pull request opens or changes, MergeSift would inspect the diff alongside relevant files and configured policies.
+- Review Delivery: MergeSift would publish concise GitHub comments attached to the relevant lines, explain the likely consequence, and suggest a practical correction when appropriate.
+- Learning Loop: Developers could mark findings as useful, incorrect, irrelevant, or already understood directly in GitHub.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Repository Context → Risk Triage → Review Delivery → Learning Loop without leaving the app, and every generated item links back to its source.
+</code></pre>
+<p><strong>3. Landing Page</strong></p>
+<pre><code class="language-text">One-pager for MergeSift. Hero line: GitHub App that auto-reviews PRs so humans focus on architecture.
+Sections: the problem for indie GitHub maintainers; how MergeSift works (Repository Context, Risk Triage, Review Delivery, Learning Loop); competitor strip (Greptile: $30/user/month (Greptile Pro plan); CodeRabbit: $24/user/month, billed annually (CodeRabbit Essentials plan), $48/user/month, billed annually (CodeRabbit Team plan), $72/user/month, billed annually (CodeRabbit Advanced plan); Qodo: Credit packs (Qodo)); pricing (Open Source Maintainer at Free; Solo Repository at $12/developer/month; Pull Request Crew at $24/developer/month); a single CTA into the first workflow step.
+</code></pre>
+<p><strong>4. Branding Package</strong></p>
+<pre><code class="language-text">Brand MergeSift for indie GitHub maintainers. Use a restrained developer-tool aesthetic built around diff views, muted repository colors, and a single clear accent for actionable risk. Avoid robot mascots, magical gradients, and alarm-heavy security imagery. The voice should be concise, technically humble, and specific about uncertainty. Product copy should sound like a trusted maintainer who explains consequences, respects local conventions, and knows when to leave a decision to humans.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product MergeSift, never a generic AI platform.
+</code></pre>
+<h2>Sources</h2>
+<ul>
+<li><a href="https://news.ycombinator.com/item?id=48329446">Ycombinator</a></li>
+<li><a href="https://news.ycombinator.com/item?id=46348957">Ycombinator</a></li>
+<li><a href="https://www.greptile.com/pricing">Greptile</a></li>
+<li><a href="https://docs.coderabbit.ai/management/plans">docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...</a></li>
+<li><a href="https://marketintelo.com/report/ai-code-review-market">AI Code Review Market Research Report 2034</a></li>
+<li><a href="https://www.qodo.ai/blog/ai-code-review">AI Code Review and the Best AI Code Review Tools in 2026</a></li>
+<li><a href="https://www.qodo.ai/pricing">Qodo</a></li>
+</ul></body></html>

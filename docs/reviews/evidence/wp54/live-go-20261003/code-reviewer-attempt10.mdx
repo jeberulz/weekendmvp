@@ -1,0 +1,199 @@
+---
+slug: "engine-draft-ai-code-reviewer"
+title: "AI Code Reviewer"
+engine: true
+---
+
+## The Problem
+
+Indie developers and small engineering teams can generate code faster than they can responsibly review it. Their limiting resource is often not implementation capacity but focused attention from someone who understands the repository, product intent, and architectural boundaries. Every pull request competes with feature work, support, releases, and maintenance. As generated code increases submission volume, review can become the point where work stalls. A practitioner describes precisely that shift: pull-request volume is rising while review time has not improved ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446).
+
+Existing AI review does not automatically remove the bottleneck. Another team reports flooding and surging pull requests while available AI reviewer tools do not deliver the expected efficiency ["We are facing flooding and surge in PRs across the teams. AI reviewer tools are good, but not exactly helping in efficiency."](https://news.ycombinator.com/item?id=48329446). Generic reviewers may produce long lists of low-confidence concerns, restate obvious changes, or miss why a local abstraction exists. Each weak comment creates another judgment call. Instead of shortening review, noise forces maintainers to verify the tool before they can verify the code.
+
+The hardest part of review is contextual. Maintainers ask whether a change fits the overall system, preserves architectural intent, introduces hidden coupling, and behaves correctly beyond the happy path. A reviewer explicitly frames code review around the effect on the broader codebase and architecture, then notes that language models have not yet met that standard ["A code review (at least in my opinion) is for your peers to check if the changes will have a positive or negative effect on the overall code + architecture. I have yet to see an LLM being good at this."](https://news.ycombinator.com/item?id=46348957). That skepticism matters because trust is the core adoption barrier. A tool that sounds certain while lacking repository context can be worse than silence.
+
+Open-source maintainers face an additional triage burden. Generated submissions can arrive without meaningful testing or contributor understanding. One maintainer recounts receiving an apparently AI-generated pull request whose code did not work ["We recently had someone open a pull request to our open source project and the code and the explanation of the code was clearly AI generated. It was obvious that the code doesn't work and the person had not tested the code. We do not know what the end goal of the person was but we confronted the person and closed the pull requests."](https://news.ycombinator.com/item?id=35357933). Even when maintainers reject such work, inspection consumes scarce time. Another maintainer says the stream of generated or assisted submissions is overwhelming and difficult to review carefully ["The current stream of AI generated (or AI aided) pull requests is a bit overwhelming to me. It is hard for me to review them carefully."](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728).
+
+The buyer therefore needs a filter, not an artificial gatekeeper. The product must identify where human attention has the highest value, ground concerns in repository evidence, and remain concise enough that reading its output is cheaper than independently rediscovering every issue.
+
+> "We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+
+> "The current stream of AI generated (or AI aided) pull requests is a bit overwhelming to me. It is hard for me to review them carefully."
+>
+> — [AI generated pull requests overwhelming, hard to review carefully - ITK](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728)
+
+> "A code review (at least in my opinion) is for your peers to check if the changes will have a positive or negative effect on the overall code + architecture. I have yet to see an LLM being good at this."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+
+> "We recently had someone open a pull request to our open source project and the code and the explanation of the code was clearly AI generated. It was obvious that the code doesn't work and the person had not tested the code. We do not know what the end goal of the person was but we confronted the person and closed the pull requests."
+>
+> — [Ask HN: AI-generated spam pull requests?](https://news.ycombinator.com/item?id=35357933)
+
+## The Solution
+
+MergeSage is a GitHub App that prepares architecture-aware pull-request reviews for indie developers and small engineering teams. Its wedge is a concise review brief rather than a flood of inline commentary. After installation, it builds repository memory from contribution guidance, code ownership, accepted patterns, directory boundaries, configured policies, and prior reviewer feedback. When a pull request changes, MergeSage examines the diff alongside the surrounding code and that maintained context.
+
+The product separates routine checks from decisions that require human judgment. Deterministic tooling remains responsible for formatting, linting, compilation, and existing test execution. MergeSage concentrates on suspicious behavior changes, architectural boundary violations, missing validation, risky dependency movement, inconsistent error handling, and mismatches between the pull-request explanation and the actual diff. Findings include code references, reasoning, severity, and a suggested verification action. The reviewer retains approval and merge authority.
+
+The primary interface is a compact GitHub check. It begins with an impact summary, then presents the most consequential findings and unanswered questions. Inline comments appear only when a precise location materially improves understanding. Developers can mark findings as useful, mistaken, resolved, or accepted by design. That feedback updates repository-specific preferences so repeated false positives can fade while important local rules remain visible.
+
+Public repositories receive a free path that helps maintainers triage contributions and demonstrates the product in real workflows. Private repositories pay per developer for retained repository memory, configurable review policies, feedback history, and team-level controls. MergeSage succeeds when maintainers open a review already knowing where to focus, not when it attempts to replace their architectural judgment.
+
+The workflow below is MergeSage's proposed first version: a plan to build, not a tested product.
+
+**How it works:**
+
+1. **Repository Memory** — After installation, MergeSage would map repository structure, contribution guidance, ownership patterns, recurring abstractions, and configured review policies. It would refresh this context as accepted changes land, while excluding paths and files that maintainers mark as sensitive or irrelevant.
+2. **Pull Request Triage** — When GitHub opens or updates a pull request, MergeSage would inspect the diff, changed dependencies, tests, nearby code, and repository policies. It would rank potential concerns by severity and suppress repetitive style commentary that existing automation can handle.
+3. **Evidence Brief** — MergeSage would publish a compact review brief that explains the change, highlights affected architectural boundaries, identifies missing validation, and links every concern to relevant code context. Maintainers could expand details without reading a sprawling stream of speculative comments.
+4. **Reviewer Feedback Loop** — Developers would mark findings as useful, mistaken, resolved, or intentionally accepted. MergeSage would use that repository-specific feedback to adjust future review priorities, preserve team conventions, and show maintainers which policies repeatedly catch meaningful issues.
+
+What not to build yet (scope advice for MergeSage's first version, not research):
+
+Do not build autonomous merge approval or a general coding agent before the review signal is consistently trusted.
+
+## Market Research
+
+AI code review occupies a focused part of the developer tooling market: software that examines proposed code changes before maintainers merge them. The relevant buyer is not a broad enterprise software department, but an indie developer or small engineering team whose review capacity is constrained by limited senior attention. The available market research projects substantial expansion for the global code review tools category [$14.2 billion by 2034 (global code review tools market, market size, projected)](https://dataintelo.com/report/code-review-tools-market) and reports a sustained projected growth rate through the forecast period [10\.5% by 2034 (global code review tools market, growth rate, projected)](https://dataintelo.com/report/code-review-tools-market). That evidence supports a growing category, although it covers code review tooling generally rather than isolating AI reviewers or small GitHub teams. The practical opportunity is therefore narrower than the headline market: win repositories where review queues create friction, maintainers need earlier defect detection, and existing solutions feel expensive or noisy. GitHub distribution makes this niche attractive because installation can happen within the workflow buyers already use. A free public-repository tier can seed adoption among maintainers, expose the product to contributors, and produce credible examples of useful findings. Paid adoption can then focus on private repositories, architecture-aware review policies, and collaboration features. The strongest wedge is not promising autonomous approval. It is reducing routine review effort while reserving architectural judgment, product context, and merge authority for humans.
+
+Why now: Code review tooling is projected to expand as a category [10\.5% by 2034 (global code review tools market, growth rate, projected)](https://dataintelo.com/report/code-review-tools-market), while maintainers already report that AI-generated code is increasing pull-request volume without reducing review time ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446). Another maintainer describes the incoming stream as overwhelming and difficult to review carefully ["The current stream of AI generated (or AI aided) pull requests is a bit overwhelming to me. It is hard for me to review them carefully."](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728). The immediate opening is a reviewer designed around scarce human attention rather than a promise to replace human approval.
+
+**Market signals**
+
+- $14.2 billion by 2034 (global code review tools market, market size, projected) ([Code Review Tools Market Research Report 2034](https://dataintelo.com/report/code-review-tools-market)).
+- 10\.5% by 2034 (global code review tools market, growth rate, projected) ([Code Review Tools Market Research Report 2034](https://dataintelo.com/report/code-review-tools-market)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **ai code review** — 1300/mo, competition 60, CPC $55.73
+
+## Competitive Landscape
+
+Greptile provides a paid per-user Pro benchmark [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing), while CodeRabbit spans Essentials [$30/user/month (CodeRabbit Essentials plan)](https://www.coderabbit.ai/faq), Team [$60/user/month (CodeRabbit Team plan)](https://www.coderabbit.ai/faq), and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans) offers. Qodo also exposes adjustable credit packs as a purchasing option [Credit packs (Qodo)](https://www.qodo.ai/pricing). MergeSage would differentiate through a deliberately narrow promise: deliver a compact, repository-grounded review brief for maintainers who still own architectural decisions.
+
+The product would avoid competing on comment volume or autonomous approval. Its interaction model prioritizes triage, explicit evidence, local policy memory, and aggressive suppression of low-value observations. Packaging would be simpler for indie developers and small teams, with predictable per-developer access for private repositories and a free public-repository path. This creates a focused alternative for buyers who want review leverage without enterprise packaging, credit anxiety, or another verbose participant in every pull request.
+
+- **Greptile** — Greptile presents a directly comparable per-user Pro offer [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing). That benchmark establishes a familiar purchasing unit while leaving room for a leaner product focused on concise, architecture-aware GitHub reviews. Published pricing: $30/user/month (Greptile Pro plan) [Greptile](https://www.greptile.com/pricing).
+- **CodeRabbit** — CodeRabbit documents several paid offers, from Essentials [$30/user/month (CodeRabbit Essentials plan)](https://www.coderabbit.ai/faq) through Team [$60/user/month (CodeRabbit Team plan)](https://www.coderabbit.ai/faq) and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). The breadth signals room for simpler packaging aimed at small teams that want predictable review assistance. Published pricing: $30/user/month (CodeRabbit Essentials plan) [AI Code Review Questions Answered - CodeRabbit FAQ](https://www.coderabbit.ai/faq); $60/user/month (CodeRabbit Team plan) [AI Code Review Questions Answered - CodeRabbit FAQ](https://www.coderabbit.ai/faq); $72/user/month, billed annually (CodeRabbit Advanced plan) [docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...](https://docs.coderabbit.ai/management/plans).
+- **Qodo** — Qodo visibly offers credit packs that customers may switch or add [Credit packs (Qodo)](https://www.qodo.ai/pricing). This is an evidenced purchasing option, while the proposed product would emphasize predictable per-developer access rather than credit management. Published pricing: Credit packs (Qodo) [Qodo](https://www.qodo.ai/pricing).
+
+**Your Opportunity**
+
+Position MergeSage as the quiet GitHub reviewer for indie developers and small engineering teams. It screens routine risks, connects findings to repository rules, and prepares a compact review brief so maintainers can spend their attention on architecture, intent, and consequential tradeoffs rather than repetitive inspection.
+
+## Business Model
+
+Use transparent per-developer pricing for private repositories and free access for qualifying public repositories. The paid entry point should remain visibly below Greptile Pro [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing) and CodeRabbit Essentials [$30/user/month (CodeRabbit Essentials plan)](https://www.coderabbit.ai/faq), while the collaboration tier can sit below CodeRabbit Team [$60/user/month (CodeRabbit Team plan)](https://www.coderabbit.ai/faq). Avoid credit accounting as the primary model even though Qodo offers adjustable credit packs [Credit packs (Qodo)](https://www.qodo.ai/pricing). Predictable access better matches small-team budgeting and removes hesitation about spending credits on ordinary pull requests.
+
+Proposed MergeSage pricing to test with early buyers (an assumption, not observed market data):
+
+- **Open Source Maintainer** (Free) — Public GitHub repositories, capped monthly reviews, review briefs, community support
+- **Solo Maintainer** ($12/developer/month) — Private repositories, repository memory, policy controls, review feedback
+- **Review Crew** ($24/developer/month) — Shared policies, ownership context, priority processing, team review history
+
+**Unit Economics**
+
+Planning estimates to verify, not measured results:
+
+- **Free** — Public repository acquisition
+- **$12/developer/month** — Solo Maintainer list price
+- **$24/developer/month** — Review Crew list price
+- **Below $0.40** — Target model cost per review
+- **At least 80%** — Target gross margin
+
+**Year-One Math**
+
+MergeSage's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.
+
+The funnel combines search-oriented technical content, GitHub Marketplace discovery, public repository exposure, and maintainer referrals. Conversion depends on producing concise reviews quickly, demonstrating repository awareness, and making installation reversible. The plan assumes most paying customers are small private-repository teams choosing predictable per-developer access.
+
+- **12,000** — Technical content visitors
+- **900** — GitHub Marketplace installations
+- **300** — Activated private repositories
+- **120** — Paying accounts
+- **120 × $48/mo = $69,120 ARR** — Review Crew accounts paying by month 12 (2 seats × $24/developer/month)
+- **60 × $48/mo = $34,560 ARR** — downside if the close rate halves (half of 120 accounts)
+
+**Channels**
+
+Channels to test (proposals, not measured results):
+
+- GitHub Marketplace discovery and public repository installs
+- Technical content targeting pull-request review bottlenecks
+- Maintainer partnerships in open-source communities
+- Developer referrals from shared review summaries
+
+## Recommended Tech Stack
+
+A suggested stack for MergeSage (a recommendation, not research):
+
+Build MergeSage as a GitHub App with webhook ingestion, installation-scoped permissions, Checks API publishing, and encrypted token storage. A TypeScript service can normalize pull-request events and schedule review jobs. PostgreSQL should hold repository policies, review state, findings, and feedback. Use an isolated worker pool for repository checkout, diff parsing, test metadata inspection, and language-specific syntax analysis. Store compact codebase snapshots in object storage and retrieve only relevant context for model calls. Add deterministic secret filtering before prompts, strict output schemas, retry controls, cost budgets, audit logs, and deletion workflows. A Next.js dashboard can manage policies, exclusions, billing, and review history without replacing the GitHub-native experience.
+
+- **Next.js + TypeScript** — screens for Repository Memory, Pull Request Triage, Evidence Brief, Reviewer Feedback Loop
+- **Postgres (Supabase or Neon)** — repository\_profiles, repository\_policies, pull\_request\_reviews, review\_findings, finding\_feedback, codebase\_snapshots
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Open Source Maintainer / Solo Maintainer / Review Crew subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these MergeSage build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named MergeSage for small GitHub teams.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('open_source_maintainer','solo_maintainer','review_crew'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- repository_profiles(id, workspace_id fk, github_repository_id, full_name, visibility: public, private, default_branch, installation_id, indexing_status: pending, active, failed)
+- repository_policies(id, workspace_id fk, repository_profile_id fk, policy_type: architecture, testing, dependency, security, custom, rule_text, severity: advisory, warning, blocking, status: draft, active, archived)
+- pull_request_reviews(id, workspace_id fk, repository_profile_id fk, github_pull_request_id, head_sha, base_sha, status: queued, analyzing, published, failed, summary, model_name, started_at, completed_at)
+- review_findings(id, workspace_id fk, pull_request_review_id fk, file_path, start_line, end_line, category: architecture, correctness, testing, dependency, maintainability, severity: low, medium, high, evidence, recommendation, publication_status: hidden, summary, inline)
+- finding_feedback(id, workspace_id fk, review_finding_id fk, github_actor_id, outcome: useful, mistaken, resolved, accepted, note, created_at)
+- codebase_snapshots(id, workspace_id fk, repository_profile_id fk, commit_sha, object_key, indexed_paths, excluded_paths, architecture_digest, created_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Open Source Maintainer at Free; Solo Maintainer at $12/developer/month; Review Crew at $24/developer/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_OPEN_SOURCE_MAINTAINER, STRIPE_PRICE_SOLO_MAINTAINER, STRIPE_PRICE_REVIEW_CREW, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build autonomous merge approval or a general coding agent before the review signal is consistently trusted.
+```
+
+**2. Core Feature**
+
+```text
+Build MergeSage's core workflow as one screen per step, in this order:
+- Repository Memory: After installation, MergeSage would map repository structure, contribution guidance, ownership patterns, recurring abstractions, and configured review policies.
+- Pull Request Triage: When GitHub opens or updates a pull request, MergeSage would inspect the diff, changed dependencies, tests, nearby code, and repository policies.
+- Evidence Brief: MergeSage would publish a compact review brief that explains the change, highlights affected architectural boundaries, identifies missing validation, and links every concern to relevant code context.
+- Reviewer Feedback Loop: Developers would mark findings as useful, mistaken, resolved, or intentionally accepted.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Repository Memory → Pull Request Triage → Evidence Brief → Reviewer Feedback Loop without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for MergeSage. Hero line: GitHub App that auto-reviews PRs so humans focus on architecture.
+Sections: the problem for small GitHub teams; how MergeSage works (Repository Memory, Pull Request Triage, Evidence Brief, Reviewer Feedback Loop); competitor strip (Greptile: $30/user/month (Greptile Pro plan); CodeRabbit: $30/user/month (CodeRabbit Essentials plan), $60/user/month (CodeRabbit Team plan), $72/user/month, billed annually (CodeRabbit Advanced plan); Qodo: Credit packs (Qodo)); pricing (Open Source Maintainer at Free; Solo Maintainer at $12/developer/month; Review Crew at $24/developer/month); a single CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand MergeSage for small GitHub teams. Use a restrained developer-tool aesthetic with graphite surfaces, warm neutral backgrounds, and a single amber accent for findings that deserve attention. Architecture maps and diff motifs should feel precise rather than futuristic. Avoid robot mascots, glowing AI gradients, and alarm-heavy severity colors. The voice should be calm, evidence-led, concise, and comfortable acknowledging uncertainty. MergeSage should resemble a trusted maintainer who points to context and then gets out of the way.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product MergeSage, never a generic AI platform.
+```
+
+## Sources
+
+- [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+- [AI generated pull requests overwhelming, hard to review carefully - ITK](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728)
+- [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+- [Ask HN: AI-generated spam pull requests?](https://news.ycombinator.com/item?id=35357933)
+- [Code Review Tools Market Research Report 2034](https://dataintelo.com/report/code-review-tools-market)
+- [Greptile](https://www.greptile.com/pricing)
+- [AI Code Review Questions Answered - CodeRabbit FAQ](https://www.coderabbit.ai/faq)
+- [docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...](https://docs.coderabbit.ai/management/plans)
+- [Qodo](https://www.qodo.ai/pricing)
