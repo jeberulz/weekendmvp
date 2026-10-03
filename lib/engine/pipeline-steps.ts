@@ -102,8 +102,8 @@ export const PIPELINE: readonly PipelineStep[] = [
       requests: 1,
       searchContextSize: "high",
     },
-    // Primary search (with a possible provider retry), then one diversity
-    // supplement when fewer than three vendor-owned sites were cited.
+    // Primary search and up to two diversity supplements when fewer than
+    // three vendor-owned sites were cited. Provider retries share this cap.
     maxAttempts: 3,
   },
   {

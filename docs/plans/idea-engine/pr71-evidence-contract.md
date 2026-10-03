@@ -26,7 +26,7 @@ code path upgrades a v1 record or marks its claims accepted.
 ```text
 0 brief_normalization   paid  synthesis
 1 market_stats          paid  search
-2 competitors           paid  search
+2 competitors           paid  search (primary + up to two diversity supplements; three attempts total)
 3 community_signals     paid  search (primary + optional supplement, 2 requests)
   source_acquisition    unpaid  bounded, deduplicated reads of market, competitor
                                 and community citations (one acquirer per run)

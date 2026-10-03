@@ -133,6 +133,31 @@ describe("runResearch (fixture)", () => {
     expect(report.costUsd).toBeLessThan(4);
   });
 
+  it("uses the last budgeted search for new vendor domains when two searches still cite only two", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    const queries: string[] = [];
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        queries.push(request.query);
+        const result = await search.search(request);
+        if (request.query.includes("Identify at least three direct competitors")) {
+          return { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } };
+        }
+        if (request.query.includes("first competitor search cited too few")) {
+          return { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 2) } };
+        }
+        return result;
+      },
+    };
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(report.attempts.competitors).toBe(3);
+    expect(queries.find((query) => query.includes("NEW vendors"))).toMatch(/Exclude these already cited vendor domain labels/);
+    expect(record.competitors).toHaveLength(EVIDENCE_MINIMUMS.competitors);
+    expect(report.costUsd).toBeLessThan(4);
+  });
+
   it("produces a v2 record and a run report from accepted evidence", async () => {
     const { record, report } = await runResearch({
       brief: RFP_BRIEF,
@@ -146,7 +171,7 @@ describe("runResearch (fixture)", () => {
     expect(record.mode).toBe("fixture");
     expect(record.brief.slug).toBe(FIXTURE_BRIEF_SLUG);
     expect(record.market.statIds.length).toBeGreaterThanOrEqual(EVIDENCE_MINIMUMS.marketStats);
-    expect(record.competitors.length).toBeGreaterThanOrEqual(EVIDENCE_MINIMUMS.pricedCompetitors);
+    expect(record.competitors.length).toBeGreaterThanOrEqual(EVIDENCE_MINIMUMS.competitors);
     expect(record.community.quoteIds.length).toBeGreaterThanOrEqual(EVIDENCE_MINIMUMS.distinctQuotes);
     expect(record.keywords.every((k) => k.source === "provider")).toBe(true);
     expect(record.provenance.ranAt).toBe("2026-10-01T00:00:00.000Z");
