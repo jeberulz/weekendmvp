@@ -23,7 +23,13 @@
  * or _temp slug unless the test-only --allow-fixture flag is passed (ruling
  * R11).
  *
- * Refuses to overwrite existing MDX unless --force.
+ * Refuses to overwrite existing MDX unless --force, and never replaces a
+ * handwritten idea (a page without the engine frontmatter marker, or a
+ * manifest row whose source is not engine:*) unless --replace-handwritten is
+ * passed with --force: the representative briefs share slugs with published
+ * handwritten gold pages, which --force alone would have overwritten along
+ * with their manifest rows and tagging. Compile those briefs to an
+ * engine-draft- slug instead.
  * Does not seed Convex, generate OG, or push git. Output never includes a
  * stack trace; paths in messages are repo-relative or reduced to a file name,
  * and the --json mdxPath is repo-relative inside the repository, else the
@@ -47,7 +53,13 @@ Flags:
   --manifest path     Manifest JSON (default: ideas/manifest.json;
                       engine/drafts/manifest.json for engine-draft-* slugs)
   --no-manifest       Do not write/update the manifest
-  --force             Overwrite existing MDX / manifest row
+  --force             Overwrite existing MDX / manifest row that engine:compile
+                      wrote
+  --replace-handwritten
+                      With --force, also replace a handwritten idea (a page
+                      without the engine marker or a manifest row whose source
+                      is not engine:*); otherwise compile to an engine-draft-
+                      slug
   --allow-fixture     Test only: compile a mode "fixture" record to any slug
                       (otherwise only engine-draft-* or _temp slugs; R11)
   --json              Print one JSON result line (ok, mdxPath, slug, wordCount,
@@ -131,6 +143,7 @@ function parseArgs(argv) {
     manifestPath: null,
     noManifest: false,
     force: false,
+    replaceHandwritten: false,
     allowFixture: false,
     json: false,
   };
@@ -154,6 +167,7 @@ function parseArgs(argv) {
     else if (a === "--manifest") out.manifestPath = path.resolve(value(++i, a));
     else if (a === "--no-manifest") out.noManifest = true;
     else if (a === "--force") out.force = true;
+    else if (a === "--replace-handwritten") out.replaceHandwritten = true;
     else if (a === "--allow-fixture") out.allowFixture = true;
     else if (a === "--json") out.json = true;
     else {
@@ -244,7 +258,10 @@ async function main() {
       ideasDir,
       manifestPath: args.noManifest ? undefined : manifestPath,
       writeManifest: !args.noManifest,
+      // Read even with --no-manifest, so a handwritten row is still seen.
+      ownershipManifestPath: manifestPath,
       force: args.force,
+      replaceHandwritten: args.replaceHandwritten,
       allowFixture: args.allowFixture,
     });
   } catch (err) {

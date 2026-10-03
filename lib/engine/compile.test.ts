@@ -413,14 +413,87 @@ describe("compile write safety", () => {
     const ideasDir = path.join(dir, "ideas");
     fs.mkdirSync(ideasDir);
     const mdxPath = path.join(ideasDir, "keep-me.mdx");
-    fs.writeFileSync(mdxPath, "ORIGINAL");
+    // Earlier engine output (frontmatter marker), so force may replace it.
+    const original = '---\nslug: "keep-me"\nengine: true\n---\n\nORIGINAL\n';
+    fs.writeFileSync(mdxPath, original);
     // Parent of the manifest path is a file, so the manifest write throws.
     const blocker = path.join(dir, "not-a-dir");
     fs.writeFileSync(blocker, "");
     expect(() =>
       writeCompiledIdea({ record, slug: "keep-me", ideasDir, manifestPath: path.join(blocker, "manifest.json"), force: true, allowFixture: true }),
-    ).toThrow();
-    expect(fs.readFileSync(mdxPath, "utf8")).toBe("ORIGINAL");
+    ).toThrow(/EEXIST|ENOTDIR|not a directory/);
+    expect(fs.readFileSync(mdxPath, "utf8")).toBe(original);
+  });
+});
+
+describe("compile never replaces a handwritten idea by accident (overwrite hazard)", () => {
+  const SLUG = "ai-code-reviewer";
+  const HANDWRITTEN_MDX = `---\nslug: "${SLUG}"\ntitle: "AI Code Reviewer"\n---\n\n## The Problem\n\nWritten by hand.\n`;
+  const HANDWRITTEN_ROW = { slug: SLUG, title: "AI Code Reviewer", source: "mode-b:backfill", category: "dev-tools", tools: ["cursor"], audiences: ["indie-hackers"] };
+
+  /** A temp ideas dir and manifest holding a handwritten page and/or its row. */
+  function handwritten(parts: { page: boolean; row: boolean }) {
+    const dir = tempDir();
+    const ideasDir = path.join(dir, "ideas");
+    fs.mkdirSync(ideasDir);
+    const mdxPath = path.join(ideasDir, `${SLUG}.mdx`);
+    if (parts.page) fs.writeFileSync(mdxPath, HANDWRITTEN_MDX);
+    const manifestPath = path.join(dir, "manifest.json");
+    const manifest = `${JSON.stringify({ ideas: parts.row ? [{ slug: "other-idea", source: "mode-b:backfill" }, HANDWRITTEN_ROW] : [] }, null, 2)}\n`;
+    fs.writeFileSync(manifestPath, manifest);
+    return { ideasDir, mdxPath, manifestPath, manifest };
+  }
+
+  it("refuses a handwritten page or manifest row even with force, and leaves both untouched", () => {
+    const record = buildFixtureRecord();
+    for (const parts of [{ page: true, row: true }, { page: true, row: false }, { page: false, row: true }]) {
+      const at = handwritten(parts);
+      expect(() =>
+        writeCompiledIdea({ record, slug: SLUG, ideasDir: at.ideasDir, manifestPath: at.manifestPath, force: true, allowFixture: true }),
+      ).toThrow(
+        /^refusing to replace the handwritten idea ai-code-reviewer: .*--slug engine-draft-ai-code-reviewer.*--replace-handwritten/,
+      );
+      expect(fs.existsSync(at.mdxPath) ? fs.readFileSync(at.mdxPath, "utf8") : null, JSON.stringify(parts)).toBe(parts.page ? HANDWRITTEN_MDX : null);
+      expect(fs.readFileSync(at.manifestPath, "utf8"), JSON.stringify(parts)).toBe(at.manifest);
+    }
+  });
+
+  it("reads the page's manifest row when it writes no manifest (--no-manifest)", () => {
+    const record = buildFixtureRecord();
+    const at = handwritten({ page: false, row: true });
+    expect(() =>
+      writeCompiledIdea({ record, slug: SLUG, ideasDir: at.ideasDir, writeManifest: false, ownershipManifestPath: at.manifestPath, force: true, allowFixture: true }),
+    ).toThrow(/^refusing to replace the handwritten idea ai-code-reviewer/);
+    expect(fs.existsSync(at.mdxPath)).toBe(false);
+  });
+
+  it("replaces a handwritten idea only when asked to explicitly", () => {
+    const record = buildFixtureRecord();
+    const at = handwritten({ page: true, row: true });
+    const written = writeCompiledIdea({
+      record,
+      slug: SLUG,
+      ideasDir: at.ideasDir,
+      manifestPath: at.manifestPath,
+      force: true,
+      replaceHandwritten: true,
+      allowFixture: true,
+    });
+    expect(fs.readFileSync(at.mdxPath, "utf8")).toBe(written.mdx);
+    const rows: unknown = JSON.parse(fs.readFileSync(at.manifestPath, "utf8")).ideas;
+    expect(rows).toEqual([{ slug: "other-idea", source: "mode-b:backfill" }, written.manifestEntry]);
+  });
+
+  it("lets force replace the compiler's own earlier output (marker or engine:* row)", () => {
+    const record = buildFixtureRecord();
+    for (const earlier of ["marker", "row"] as const) {
+      const at = handwritten({ page: false, row: false });
+      const marked = earlier === "marker" ? HANDWRITTEN_MDX.replace("---\n\n", "engine: true\n---\n\n") : HANDWRITTEN_MDX;
+      fs.writeFileSync(at.mdxPath, marked);
+      if (earlier === "row") fs.writeFileSync(at.manifestPath, JSON.stringify({ ideas: [{ slug: SLUG, source: `engine:${SLUG}` }] }));
+      const written = writeCompiledIdea({ record, slug: SLUG, ideasDir: at.ideasDir, manifestPath: at.manifestPath, force: true, allowFixture: true });
+      expect(fs.readFileSync(at.mdxPath, "utf8"), earlier).toBe(written.mdx);
+    }
   });
 });
 
