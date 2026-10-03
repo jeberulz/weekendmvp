@@ -1,0 +1,69 @@
+[
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=48329446",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=46348957",
+    "claims": [
+      "community_quote",
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=33285351",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://marketintelo.com/report/ai-code-review-market",
+    "claims": [
+      "market_stat",
+      "market_stat"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://www.greptile.com/pricing",
+    "claims": [
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://docs.coderabbit.ai/management/plans",
+    "claims": [
+      "competitor_price",
+      "competitor_price",
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://www.qodo.ai/pricing",
+    "claims": [
+      "competitor_availability"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  }
+]

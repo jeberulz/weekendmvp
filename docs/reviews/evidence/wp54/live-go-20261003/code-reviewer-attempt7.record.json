@@ -1,0 +1,799 @@
+{
+  "contractVersion": 2,
+  "pipelineVersion": 2,
+  "mode": "live",
+  "brief": {
+    "title": "AI Code Reviewer",
+    "slug": "ai-code-reviewer",
+    "oneLiner": "GitHub App that auto-reviews PRs so humans focus on architecture.",
+    "targetCustomer": "Indie developers and small engineering teams maintaining GitHub repos"
+  },
+  "evidence": {
+    "contractVersion": 2,
+    "accepted": [
+      {
+        "id": "q_1996cd906cb9",
+        "sourceUrl": "https://news.ycombinator.com/item?id=48329446",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding.",
+        "excerptSha256": "bb1d75ac001c566e1fafa6a0ba1675958411c6fd2cf9aa052a6acb78a8a6596c",
+        "retrievedAt": "2026-10-03T08:02:43.654Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_ab65c074869d",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46348957",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "We have AI code reviews enabled for some PR reviews and we discuss them from time to time on the PR to see if it’s worth doing it.",
+        "excerptSha256": "01a5205420bc11f3399b410543f21bcbd9b0f86a1dd0b2211d30715849f5d3d5",
+        "retrievedAt": "2026-10-03T08:02:43.912Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_60fb6b66272b",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46348957",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "My team uses draft PRs and goes through a process, including AI review, before removing the draft status thereby triggering any remaining human review.",
+        "excerptSha256": "639f89e4ca3dd1aca936d09938457710757b5b2f28cd1e3339857c450a845521",
+        "retrievedAt": "2026-10-03T08:02:43.912Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_7f9af3cd7720",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46348957",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "Like a lot of my AI experiences it's pretty hit or miss and it's non-deterministic but it doesn't have much cost to disregard the misses and I appreciate the hits.",
+        "excerptSha256": "5d0f4fe839b74a6b80cbb84481cdba5e075c29919336228029e7e40d9a86620a",
+        "retrievedAt": "2026-10-03T08:02:43.912Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_82677d4a37c0",
+        "sourceUrl": "https://news.ycombinator.com/item?id=46348957",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "When AI says something - many a time, it doesnt make sense. And I use AI code review tools every day.",
+        "excerptSha256": "536b0e44c4bb79a60c1dac3aac19e43e0aea3cd7fa5ee00994fd709114575569",
+        "retrievedAt": "2026-10-03T08:02:43.912Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_a06bc6bbdd08",
+        "sourceUrl": "https://news.ycombinator.com/item?id=37120911",
+        "sourceTitle": "How to run a miserable code review | Hacker Newsnews.ycombinator.com › item",
+        "excerpt": "I often add multiple comments and then approve the pr. My main question is always: does this make the codebase overall better or worse for some definition of good? If that bar is met, iterative improvements should not block deployment/merge. This way the value of the pr process is captured: preventing obviously bad changes from reaching prod and two-way knowledge sharing. Setting a higher bar for reviews more often than not blocks people for days without good reason.",
+        "excerptSha256": "45ae87a867d1c4817fc657a3e74db56c0498051bc804de156cf142ca1a90da10",
+        "retrievedAt": "2026-10-03T08:03:13.646Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "s_8d8abcd0dc25",
+        "sourceUrl": "https://marketintelo.com/report/ai-code-review-market",
+        "sourceTitle": "AI Code Review Market Research Report 2034",
+        "excerpt": "AI Code Review Market Outlook 2025-2034 The AI Code Review market is experiencing explosive growth, with the global market valued at $1.4 billion in 2025 and projected to expand to $10.8 billion by 2034, representing a compound annual growth rate of 28.5% .",
+        "excerptSha256": "f9e830fd231571ec1ba79521ab190fb247969a99a94affa90d1b7b038adb8985",
+        "retrievedAt": "2026-10-03T08:02:50.854Z",
+        "kind": "market_stat",
+        "subject": "The AI Code Review market",
+        "metric": "market_size",
+        "amount": {
+          "value": "10.8",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_44a00ccc0121",
+        "sourceUrl": "https://marketintelo.com/report/ai-code-review-market",
+        "sourceTitle": "AI Code Review Market Research Report 2034",
+        "excerpt": "AI Code Review Market Outlook 2025-2034 The AI Code Review market is experiencing explosive growth, with the global market valued at $1.4 billion in 2025 and projected to expand to $10.8 billion by 2034, representing a compound annual growth rate of 28.5% .",
+        "excerptSha256": "f9e830fd231571ec1ba79521ab190fb247969a99a94affa90d1b7b038adb8985",
+        "retrievedAt": "2026-10-03T08:02:50.854Z",
+        "kind": "market_stat",
+        "subject": "The AI Code Review market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "28.5",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_f34e3b447df8",
+        "sourceUrl": "https://www.qodo.ai/blog/ai-code-review",
+        "sourceTitle": "AI Code Review and the Best AI Code Review Tools in 2026",
+        "excerpt": "47% of professional developers used AI-assisted code review in the past year, up from 22% in 2024 (Stack Overflow 2025).",
+        "excerptSha256": "e1eeada0db3baf135c4a1f891e93bcca1079953256b9140fd837a3be761179bc",
+        "retrievedAt": "2026-10-03T08:03:00.495Z",
+        "kind": "market_stat",
+        "subject": "professional developers",
+        "metric": "adoption",
+        "amount": {
+          "value": "47",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "p_89d37dc077e4",
+        "sourceUrl": "https://www.greptile.com/pricing",
+        "sourceTitle": "Greptile",
+        "excerpt": "Recommended\nPro Best for teams\n$30 /seat/month",
+        "excerptSha256": "63c46987b37504b8bb2b0dd61ee4536718127b8dddd670933e4b6ce214f31cc4",
+        "retrievedAt": "2026-10-03T08:02:43.338Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Greptile",
+        "plan": "Pro",
+        "price": {
+          "amount": {
+            "value": "30",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "per_user",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_078c0d97421d",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "sourceTitle": "docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...",
+        "excerpt": "Essentials plan ⓘ $24 per developer per month billed annually",
+        "excerptSha256": "3084a4d5f8fa53e01a6211d02e11f1108ce8e974ecb7ca29476b759e181cbed5",
+        "retrievedAt": "2026-10-03T08:03:00.540Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "CodeRabbit",
+        "plan": "Essentials",
+        "price": {
+          "amount": {
+            "value": "24",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "per_user",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_69d8b80c75be",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "sourceTitle": "docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...",
+        "excerpt": "Team plan ⓘ $48 per developer per month billed annually",
+        "excerptSha256": "1fcae1c33e5b73bac57eb1d4cd9d8757b9fe3dd2ead213e8ebaa60c8ff42cb0d",
+        "retrievedAt": "2026-10-03T08:03:00.540Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "CodeRabbit",
+        "plan": "Team",
+        "price": {
+          "amount": {
+            "value": "48",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "per_user",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_f3cf8a4e7796",
+        "sourceUrl": "https://docs.coderabbit.ai/management/plans",
+        "sourceTitle": "docs.coderabbit.ai › management › plansCodeRabbit Documentation - AI code reviews on pull requests ...",
+        "excerpt": "Advanced plan $72 per developer per month billed annually",
+        "excerptSha256": "4e42bc18cb148269d7125532ec758fae129ed53bdbe42019ac691e7af8805832",
+        "retrievedAt": "2026-10-03T08:03:00.540Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "CodeRabbit",
+        "plan": "Advanced",
+        "price": {
+          "amount": {
+            "value": "72",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "per_user",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "a_a67db6bd90fa",
+        "sourceUrl": "https://www.qodo.ai/pricing",
+        "sourceTitle": "Qodo",
+        "excerpt": "Switch or add credit packs anytime",
+        "excerptSha256": "20a8a30f8199bedb36f069403e588a587d3f3894f5907034c4dd56fc58a9ed4b",
+        "retrievedAt": "2026-10-03T08:02:43.562Z",
+        "kind": "competitor_availability",
+        "vendor": "Qodo",
+        "availability": "credit_pack",
+        "attribution": "first_party"
+      }
+    ],
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035",
+        "candidate": "Fast forward to today: I estimate I spend about 60% of my time reviewing pull requests, 25% writing my own code, and 15…",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/ai-code-review-market",
+        "candidate": "The AI Code Review market: $1.4 billion",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.qodo.ai/blog/ai-code-review",
+        "candidate": "Developers: 11.4 hours a week",
+        "detail": "\"11.4 hours a week\" is not one supported amount"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.graphite.com/pricing",
+        "candidate": "Graphite: $ 20 Per user/month, billed annually",
+        "detail": "\"$ 20 Per user/month, billed annually\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.graphite.com/pricing",
+        "candidate": "Graphite: $ 40 Per user/month, billed annually",
+        "detail": "\"$ 40 Per user/month, billed annually\" is not one supported price expression"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.graphite.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.335Z",
+        "textSha256": "ca0f051e2bc133ebdccde5b0f064757a31788f15d880319939bcd86a0af28661"
+      },
+      {
+        "url": "https://www.greptile.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.338Z",
+        "textSha256": "da39c59b4c7bbbbe907cf1ea6ade23c70722466b9cd8fa78844269c5a8086186"
+      },
+      {
+        "url": "https://www.codeant.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.493Z",
+        "textSha256": "10b7a6b399fe78dd70c34145a3f152be20be28bc340d330d1c876e343611d9e3"
+      },
+      {
+        "url": "https://www.qodo.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.562Z",
+        "textSha256": "3cfa559fa97b59bdd98c1267dd617a3b4971a0e9820f154c26348086c0e3d050"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=48329446",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.654Z",
+        "textSha256": "328e2cf6fac79042323f2fc9a0dba3744d0f0e0bab45daa38127e375a868fadf"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=46348957",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:43.912Z",
+        "textSha256": "4dcad2a80471afba8a904c4d43e4626a891107028e478472b9bca28819d65437"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=46766961",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:44.788Z",
+        "textSha256": "26e94f55d075fa1904dcb86b46285c021cc4b93806d42a2d6396333612bf36a0"
+      },
+      {
+        "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.254Z",
+        "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+      },
+      {
+        "url": "https://marketintelo.com/report/ai-code-review-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.854Z",
+        "textSha256": "226ba66a739ec58015869cfdb921c0226afc35fe52563dbb441a4de1564984eb"
+      },
+      {
+        "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.535Z",
+        "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+      },
+      {
+        "url": "https://www.secondtalent.com/resources/ai-in-software-development-statistics",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.306Z",
+        "textSha256": "46a533f6e25a854ae4c3de7af4dd1f9b905767a84efb3facc79b03ebc57c99d5"
+      },
+      {
+        "url": "https://www.atlassian.com/zh/whitepapers/the-agentic-pivot",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.360Z",
+        "textSha256": "3151828baff0c693161ad3ba140ce0d1c596b18bb52ce7da64ee2894b7b5b053"
+      },
+      {
+        "url": "https://dataintelo.com/report/code-review-tools-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.455Z",
+        "textSha256": "62e3a7ac843f699a602663ae5842ee26208af968e2a88024cf7f3d0882663caa"
+      },
+      {
+        "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.509Z",
+        "textSha256": "d3ba5bb763d809e45d89ed3bfea872ef74acf73c87087e5e9b5d20c3aa390a61"
+      },
+      {
+        "url": "https://arxiv.org/html/2509.19708v1",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:02:50.593Z",
+        "textSha256": "0e0ea5f651fe9caadc8f766661bb08f5878e94ce3263ada8cb0ad8622a8c622a"
+      },
+      {
+        "url": "https://www.coderabbit.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.517Z",
+        "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+      },
+      {
+        "url": "https://www.qodo.ai/blog/ai-code-review",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.495Z",
+        "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+      },
+      {
+        "url": "https://docs.coderabbit.ai/management/plans",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.540Z",
+        "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+      },
+      {
+        "url": "https://codeant.ai/blogs/github-ai-code-review-tools-open-source",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.767Z",
+        "textSha256": "f3bf7b3a2e1d469a5ee98cda062301d89ce654a14d138e61020c1980ea1b3ae2"
+      },
+      {
+        "url": "https://codeant.ai/blogs/best-ai-code-review-tools",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.745Z",
+        "textSha256": "9ee29621f0715c143557e406dae753223b877460f40d53c4545cfcba807a83b3"
+      },
+      {
+        "url": "https://www.qodo.ai/blog/github-ai-code-review",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.606Z",
+        "textSha256": "6471427982999cb4f92ab6c028ad0b905c74b6c5ed73b72e0e643bec2143431b"
+      },
+      {
+        "url": "https://codeant.ai/blogs/best-ai-code-review-tools-for-developers",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.761Z",
+        "textSha256": "0c2c3961b3badd85eedf367d4d927d3694c0a9188bea3ef95927a6fd876dc315"
+      },
+      {
+        "url": "https://www.qodo.ai/blog/ai-code-review-tools",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:00.750Z",
+        "textSha256": "cd2a394d3a8952fb7e1d98c286e1d31c6d946211de9424a62936d789ca916994"
+      },
+      {
+        "url": "https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review.json?… (Reddit blocks this network; set REDDIT…"
+      },
+      {
+        "url": "https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:16.315Z",
+        "textSha256": "102f85b1c4e7f2e4cd7a99aaa52bc8fac57154d197f00bf1f24622552bb4277c"
+      },
+      {
+        "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1towli9/today_i_announced_that_i_wont_be_reviewing_ai",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/ExperiencedDevs/comments/1towli9/today_i_announced_that_i_wont_be_reviewing_ai.json?… (Reddit blocks this network; set RE…"
+      },
+      {
+        "url": "https://www.reddit.com/r/ClaudeAI/comments/1teuh5w/reviewing_aigenerated_pull_requests_in_2026",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/ClaudeAI/comments/1teuh5w/reviewing_aigenerated_pull_requests_in_2026.json?… (Reddit blocks this network; set REDDIT_CLIE…"
+      },
+      {
+        "url": "https://www.reddit.com/r/learnprogramming/comments/1oysbu9/dealing_with_ai_slop_in_pull_requests",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/learnprogramming/comments/1oysbu9/dealing_with_ai_slop_in_pull_requests.json?… (Reddit blocks this network; set REDDIT_CL…"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=49201515",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:13.050Z",
+        "textSha256": "3d072bb6c9fd02611aaa2ebccbee6a01149038fb6677903732262428c4b3c09c"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=47324087",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:13.793Z",
+        "textSha256": "009dfe7027a70cd78dee0654906eee6f33438ca3e6ceff58f30a2a3a9d09b113"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=37120911",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:03:13.646Z",
+        "textSha256": "327b123db4ff47eeb6cf4c25891910114bd82d5e6ab76cafd90de0cb24dfd531"
+      }
+    ]
+  },
+  "market": {
+    "summary": "AI code review is becoming a distinct developer tooling niche centered on pull request analysis, repository context, defect detection, and review workflow automation. The projected market outlook indicates substantial category expansion [[ev:s_8d8abcd0dc25]], while the associated growth forecast suggests sustained buyer and vendor interest [[ev:s_44a00ccc0121]]. Adoption among professional developers also shows that AI-assisted review is moving into routine engineering practice rather than remaining an experimental add-on [[ev:s_f34e3b447df8]].\n\nThe relevant wedge is narrower than the full category: indie developers and small engineering teams maintaining GitHub repositories. These buyers often lack a dedicated review platform owner, have limited reviewer capacity, and need useful feedback without enterprise implementation work. Their purchase decision is likely shaped by comment quality, setup speed, predictable per-developer pricing, and the ability to keep human attention on architecture and product behavior.\n\nThe market evidence does not isolate indie teams, so it should not be treated as a direct measure of this segment. It does, however, establish a growing AI code review category and meaningful developer adoption. That creates room for a focused entrant built around low-noise review, repository-specific rules, and transparent escalation. A credible product can compete by being easier to trust and easier to configure rather than trying to cover every security, governance, and software delivery workflow.",
+    "statIds": [
+      "s_8d8abcd0dc25",
+      "s_44a00ccc0121",
+      "s_f34e3b447df8"
+    ]
+  },
+  "competitors": [
+    {
+      "name": "Greptile",
+      "priceIds": [
+        "p_89d37dc077e4"
+      ],
+      "notes": "Greptile presents a paid team-oriented plan with per-seat pricing [[ev:p_89d37dc077e4]]. That creates room for a leaner offer aimed at cost-conscious maintainers who want focused pull request feedback."
+    },
+    {
+      "name": "CodeRabbit",
+      "priceIds": [
+        "p_078c0d97421d",
+        "p_69d8b80c75be",
+        "p_f3cf8a4e7796"
+      ],
+      "notes": "CodeRabbit spans several paid plans, beginning with Essentials [[ev:p_078c0d97421d]], extending through Team [[ev:p_69d8b80c75be]], and reaching Advanced [[ev:p_f3cf8a4e7796]]. The range signals broad feature packaging and leaves an opening for simpler purchasing."
+    },
+    {
+      "name": "Qodo",
+      "priceIds": [],
+      "availabilityId": "a_a67db6bd90fa",
+      "notes": "Qodo makes credit packs available [[ev:a_a67db6bd90fa]], suggesting a consumption-oriented purchasing option. MergeSift can differentiate with predictable developer pricing and a workflow narrowly designed around GitHub pull requests."
+    }
+  ],
+  "community": {
+    "summary": "Developers describe review capacity as a growing constraint when AI-generated code increases pull request volume without shortening review time [[ev:q_1996cd906cb9]]. The problem is not merely access to automation; it is whether automated comments deserve attention. A frequent user reports that AI review output often does not make sense [[ev:q_82677d4a37c0]], while another developer characterizes the experience as inconsistent but still appreciates useful findings when weak suggestions are easy to dismiss [[ev:q_7f9af3cd7720]]. Teams are already adapting their workflow by running AI review while a pull request remains in draft, then involving human reviewers after that pass [[ev:q_60fb6b66272b]]. Together, these comments suggest demand for an assistant that reduces noise, fits existing GitHub habits, and clearly separates likely blockers from optional improvements.",
+    "quoteIds": [
+      "q_1996cd906cb9",
+      "q_82677d4a37c0",
+      "q_7f9af3cd7720",
+      "q_60fb6b66272b"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "AI code review",
+      "volume": 1300,
+      "competition": 60,
+      "cpc": 55.73,
+      "source": "provider"
+    },
+    {
+      "term": "automated code review tool",
+      "volume": 170,
+      "competition": 5,
+      "cpc": 25.93,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "Position MergeSift as the quiet GitHub reviewer for indie developers and small engineering teams. It should emphasize repository-aware findings, low-noise comments, fast installation, and clear escalation rather than generic code commentary. The promise is that humans regain attention for architecture, product behavior, and consequential tradeoffs.",
+    "channels": [
+      "GitHub Marketplace discovery",
+      "Search content for pull request review workflows",
+      "Open-source maintainer sponsorships",
+      "Developer newsletters and technical communities"
+    ],
+    "pricingNotes": "Competitor pricing supports a per-developer buying model. Greptile places its Pro offer at a paid seat price [[ev:p_89d37dc077e4]], while CodeRabbit offers Essentials [[ev:p_078c0d97421d]], Team [[ev:p_69d8b80c75be]], and Advanced [[ev:p_f3cf8a4e7796]] at progressively higher paid levels. Qodo also exposes credit packs [[ev:a_a67db6bd90fa]]. MergeSift should avoid complex credits and lead with a free public-repository tier plus predictable private-repository plans."
+  },
+  "whyNow": "AI-assisted review has entered professional developer workflows [[ev:s_f34e3b447df8]], yet rising AI-generated pull request volume can leave review as the main bottleneck [[ev:q_1996cd906cb9]]. The timing favors a focused product that improves review throughput without asking small teams to surrender judgment or adopt an enterprise platform.",
+  "howItWorks": [
+    "Repository Context — After installation, MergeSift would map repository structure, contribution guidance, ownership patterns, test conventions, and selected pull request history. Maintainers could approve the inferred context and add plain-language rules so reviews reflect local engineering expectations rather than generic style preferences.",
+    "Risk Triage — When a pull request opens or changes, MergeSift would inspect the diff alongside relevant files and configured policies. It would group potential findings by impact, suppress repetitive style observations, and identify uncertainty before deciding whether a comment deserves developer attention.",
+    "Review Delivery — MergeSift would publish concise GitHub comments attached to the relevant lines, explain the likely consequence, and suggest a practical correction when appropriate. A summary check would separate merge concerns, follow-up ideas, and areas that still require architectural judgment from a human reviewer.",
+    "Learning Loop — Developers could mark findings as useful, incorrect, irrelevant, or already understood directly in GitHub. MergeSift would use that feedback to adjust repository-specific preferences, surface recurring policy gaps, and reduce comments that the same team repeatedly dismisses."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 9,
+    "builderConfidence": 8,
+    "execution": 7
+  },
+  "editorial": {
+    "productName": "MergeSift",
+    "dontBuildYet": "Do not build a broad application security suite, autonomous merge agent, or general engineering analytics platform yet.",
+    "problemNarrative": "Indie developers and small engineering teams face an awkward consequence of faster code generation: producing a change can become easier while validating that change remains slow. A community account describes higher pull request volume from AI-generated code without a matching improvement in review time, turning review into the main bottleneck [[ev:q_1996cd906cb9]]. For a GitHub maintainer who is also writing features, handling support, and operating production, that bottleneck competes directly with product work.\n\nCurrent AI review does not automatically solve the problem because attention is scarce. If a bot posts generic advice, misunderstands repository conventions, or treats every possible improvement as a blocker, the maintainer must review the reviewer. A developer who uses AI code review every day reports that its output often does not make sense [[ev:q_82677d4a37c0]]. Another user describes results as inconsistent, while still valuing the useful hits because misses are cheap to disregard [[ev:q_7f9af3cd7720]]. That tolerance can disappear when noisy comments arrive on every active pull request or create confusion for contributors.\n\nSmall teams also need AI review to fit their existing process rather than dictate a new one. A team describes using draft pull requests and including AI review before the remaining human review begins [[ev:q_60fb6b66272b]]. This workflow treats automation as preparation for human judgment, not a replacement for it. The product opportunity is therefore about triage and context: catch plausible defects, explain meaningful risk, and leave architecture, intent, and tradeoffs to people.\n\nEstablished products demonstrate that buyers already encounter paid per-user packaging. Greptile offers a Pro plan [[ev:p_89d37dc077e4]], while CodeRabbit sells several plans including Essentials [[ev:p_078c0d97421d]], Team [[ev:p_69d8b80c75be]], and Advanced [[ev:p_f3cf8a4e7796]]. The gap is not the absence of AI reviewers. It is the need for a quieter, easier-to-configure reviewer whose cost and workflow fit indie maintainers and compact GitHub teams.",
+    "solutionNarrative": "MergeSift is a GitHub App that reviews pull requests before scarce human attention is spent. Its wedge is repository-aware triage for indie developers and small engineering teams: identify changes that plausibly affect correctness, security, reliability, or established project rules, then keep lower-value observations out of the main review path.\n\nInstallation should require selecting repositories and granting the minimum practical GitHub permissions. MergeSift would read contribution guidance, repository structure, test patterns, ownership signals, and maintainer-approved rules. When a pull request changes, it would analyze the diff with nearby code and relevant repository context. Findings would be ranked by likely impact and confidence rather than published as an undifferentiated list.\n\nThe GitHub experience would center on concise inline findings and a summary check. Each surfaced concern would explain what changed, why it might matter, and what evidence in the repository informed the assessment. Merge concerns would be separated from optional follow-up ideas, allowing authors to resolve important issues without debating minor suggestions. Uncertain architectural questions would be routed to humans rather than framed as authoritative defects.\n\nThe learning loop is central to the product. Maintainers could dismiss a finding with a reason, approve a useful rule, or mark an observation as irrelevant for that repository. MergeSift would adapt future review behavior while preserving visible policy controls. Over time, the product should become quieter and more specific to the codebase. The outcome is not autonomous approval. It is a prepared pull request in which routine risks have been screened and human reviewers can focus on architecture, intent, and whether the change makes the product better.",
+    "competitiveNarrative": "Greptile competes with a paid Pro plan [[ev:p_89d37dc077e4]], while CodeRabbit offers a broader ladder spanning Essentials [[ev:p_078c0d97421d]], Team [[ev:p_69d8b80c75be]], and Advanced [[ev:p_f3cf8a4e7796]]. Qodo provides credit packs [[ev:a_a67db6bd90fa]], introducing a different consumption model. These vendors validate demand but also create an opportunity for sharper segmentation.\n\nMergeSift should differ through restraint rather than a larger checklist. Its target buyer is a maintainer or compact GitHub team that wants dependable triage without enterprise rollout work, complex credits, or a wide governance platform. Repository-specific suppression, plain-language review rules, and visible uncertainty should be core product behavior. The free public-repository tier can build trust among open-source maintainers, while private plans remain predictable per developer. The competitive message is not that existing tools lack capability; it is that MergeSift is intentionally quieter, easier to tune, and designed around limited reviewer attention.",
+    "stackNotes": "Build MergeSift as a GitHub App with a TypeScript service handling installation events, pull request webhooks, check runs, and inline review comments. Use Postgres for repository policies, review state, findings, and feedback. Queue analysis jobs so webhook responses remain fast and duplicate events are idempotent. A diff parser should select relevant context before model calls, while a policy engine filters low-confidence findings. Encrypt installation credentials, minimize retained source content, record review provenance, and provide deletion controls for repository owners.",
+    "audienceShort": "Indie GitHub maintainers",
+    "brandBrief": "Use a restrained developer-tool aesthetic built around diff views, muted repository colors, and a single clear accent for actionable risk. Avoid robot mascots, magical gradients, and alarm-heavy security imagery. The voice should be concise, technically humble, and specific about uncertainty. Product copy should sound like a trusted maintainer who explains consequences, respects local conventions, and knows when to leave a decision to humans.",
+    "pricingTiers": [
+      {
+        "name": "Open Source Maintainer",
+        "price": "Free",
+        "includes": "Unlimited public repositories; 1 GitHub organization; community support"
+      },
+      {
+        "name": "Solo Repository",
+        "price": "$12/developer/month",
+        "includes": "Up to 5 private repositories; 1 developer; repository rules; review feedback controls"
+      },
+      {
+        "name": "Pull Request Crew",
+        "price": "$24/developer/month",
+        "includes": "Unlimited private repositories; up to 10 developers; shared policies; priority review processing"
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "Target paid seat price",
+        "value": "$12–$24 per developer monthly"
+      },
+      {
+        "label": "Target gross margin",
+        "value": "80% or better"
+      },
+      {
+        "label": "Model cost guardrail",
+        "value": "Below $5 per paid developer monthly"
+      },
+      {
+        "label": "Acquisition payback target",
+        "value": "Under 3 months"
+      }
+    ],
+    "dataModel": [
+      {
+        "table": "github_installations",
+        "columns": "id, workspace_id fk, github_installation_id, account_login, account_type: user, organization, status: active, suspended, removed, created_at, updated_at"
+      },
+      {
+        "table": "tracked_repositories",
+        "columns": "id, workspace_id fk, installation_id fk, github_repository_id, owner_login, repository_name, visibility: public, private, review_mode: observe, comment, enforce, created_at, updated_at"
+      },
+      {
+        "table": "pull_request_reviews",
+        "columns": "id, workspace_id fk, repository_id fk, github_pull_request_id, head_sha, status: queued, analyzing, in review, completed, failed, started_at, completed_at"
+      },
+      {
+        "table": "review_findings",
+        "columns": "id, workspace_id fk, review_id fk, file_path, line_number, category: correctness, security, reliability, maintainability, severity: note, concern, blocker, confidence_score, explanation, suggested_fix, status: draft, published, dismissed"
+      },
+      {
+        "table": "repository_policies",
+        "columns": "id, workspace_id fk, repository_id fk, policy_name, policy_text, scope_glob, status: draft, in review, approved, disabled, created_by, created_at, updated_at"
+      },
+      {
+        "table": "finding_feedback",
+        "columns": "id, workspace_id fk, finding_id fk, github_user_id, verdict: useful, incorrect, irrelevant, understood, feedback_note, created_at"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Search and GitHub Marketplace visitors",
+          "count": 1200
+        },
+        {
+          "stage": "Open-source and private installations",
+          "count": 300
+        },
+        {
+          "stage": "Activated repositories with completed reviews",
+          "count": 80
+        },
+        {
+          "stage": "Paid accounts from product conversion",
+          "count": 30
+        }
+      ],
+      "tier": "Pull Request Crew",
+      "payingAccounts": 30,
+      "seatsPerAccount": 2,
+      "assumptions": "Assumes acquisition begins with GitHub Marketplace discovery, practical search content, and open-source maintainer relationships. Conversion depends on fast installation, useful findings during the initial review experience, visible noise controls, and a clear upgrade path when private repositories or shared team policies become necessary."
+    }
+  },
+  "provenance": {
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+        "costUsd": 0.007050000000000001
+      },
+      {
+        "provider": "perplexity",
+        "operation": "market_stats/search:sonar-pro",
+        "costUsd": 0.019739
+      },
+      {
+        "provider": "perplexity",
+        "operation": "competitors/search:sonar-pro",
+        "costUsd": 0.025034
+      },
+      {
+        "provider": "perplexity",
+        "operation": "community_signals/search:sonar-pro",
+        "costUsd": 0.023848
+      },
+      {
+        "provider": "openai",
+        "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+        "costUsd": 0.191535
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+        "costUsd": 0.175905
+      }
+    ],
+    "costUsd": 0.533112,
+    "ranAt": "2026-10-03T08:02:39.440Z",
+    "models": {
+      "synthesis": "gpt-5.6-sol",
+      "search": "perplexity:sonar-pro",
+      "keywordData": "dataforseo"
+    },
+    "attempts": {
+      "brief_normalization": 1,
+      "market_stats": 1,
+      "competitors": 1,
+      "community_signals": 1,
+      "evidence_extraction": 1,
+      "keywords_demand": 1,
+      "editorial_synthesis": 1
+    },
+    "codeRevision": {
+      "sha": "2dc8cfed647afd64e28603be437e8a92d19ef231",
+      "dirty": false
+    }
+  }
+}

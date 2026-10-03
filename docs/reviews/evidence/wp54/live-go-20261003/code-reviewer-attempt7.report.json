@@ -1,0 +1,384 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T08:02:39.440Z",
+  "finishedAt": "2026-10-03T08:05:19.272Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.007050000000000001
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019739
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025034
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.023848
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.191535
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.175905
+    }
+  ],
+  "costUsd": 0.533112,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "2dc8cfed647afd64e28603be437e8a92d19ef231",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.graphite.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.335Z",
+      "textSha256": "ca0f051e2bc133ebdccde5b0f064757a31788f15d880319939bcd86a0af28661"
+    },
+    {
+      "url": "https://www.greptile.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.338Z",
+      "textSha256": "da39c59b4c7bbbbe907cf1ea6ade23c70722466b9cd8fa78844269c5a8086186"
+    },
+    {
+      "url": "https://www.codeant.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.493Z",
+      "textSha256": "10b7a6b399fe78dd70c34145a3f152be20be28bc340d330d1c876e343611d9e3"
+    },
+    {
+      "url": "https://www.qodo.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.562Z",
+      "textSha256": "3cfa559fa97b59bdd98c1267dd617a3b4971a0e9820f154c26348086c0e3d050"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48329446",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.654Z",
+      "textSha256": "328e2cf6fac79042323f2fc9a0dba3744d0f0e0bab45daa38127e375a868fadf"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46348957",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:43.912Z",
+      "textSha256": "4dcad2a80471afba8a904c4d43e4626a891107028e478472b9bca28819d65437"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46766961",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:44.788Z",
+      "textSha256": "26e94f55d075fa1904dcb86b46285c021cc4b93806d42a2d6396333612bf36a0"
+    },
+    {
+      "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.254Z",
+      "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+    },
+    {
+      "url": "https://marketintelo.com/report/ai-code-review-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.854Z",
+      "textSha256": "226ba66a739ec58015869cfdb921c0226afc35fe52563dbb441a4de1564984eb"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.535Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://www.secondtalent.com/resources/ai-in-software-development-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.306Z",
+      "textSha256": "46a533f6e25a854ae4c3de7af4dd1f9b905767a84efb3facc79b03ebc57c99d5"
+    },
+    {
+      "url": "https://www.atlassian.com/zh/whitepapers/the-agentic-pivot",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.360Z",
+      "textSha256": "3151828baff0c693161ad3ba140ce0d1c596b18bb52ce7da64ee2894b7b5b053"
+    },
+    {
+      "url": "https://dataintelo.com/report/code-review-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.455Z",
+      "textSha256": "62e3a7ac843f699a602663ae5842ee26208af968e2a88024cf7f3d0882663caa"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.509Z",
+      "textSha256": "d3ba5bb763d809e45d89ed3bfea872ef74acf73c87087e5e9b5d20c3aa390a61"
+    },
+    {
+      "url": "https://arxiv.org/html/2509.19708v1",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:02:50.593Z",
+      "textSha256": "0e0ea5f651fe9caadc8f766661bb08f5878e94ce3263ada8cb0ad8622a8c622a"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.517Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.495Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.540Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://codeant.ai/blogs/github-ai-code-review-tools-open-source",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.767Z",
+      "textSha256": "f3bf7b3a2e1d469a5ee98cda062301d89ce654a14d138e61020c1980ea1b3ae2"
+    },
+    {
+      "url": "https://codeant.ai/blogs/best-ai-code-review-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.745Z",
+      "textSha256": "9ee29621f0715c143557e406dae753223b877460f40d53c4545cfcba807a83b3"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/github-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.606Z",
+      "textSha256": "6471427982999cb4f92ab6c028ad0b905c74b6c5ed73b72e0e643bec2143431b"
+    },
+    {
+      "url": "https://codeant.ai/blogs/best-ai-code-review-tools-for-developers",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.761Z",
+      "textSha256": "0c2c3961b3badd85eedf367d4d927d3694c0a9188bea3ef95927a6fd876dc315"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:00.750Z",
+      "textSha256": "cd2a394d3a8952fb7e1d98c286e1d31c6d946211de9424a62936d789ca916994"
+    },
+    {
+      "url": "https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/github/comments/1rofktt/is_ai_coding_making_pull_requests_harder_to_review.json?… (Reddit blocks this network; set REDDIT…"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:16.315Z",
+      "textSha256": "102f85b1c4e7f2e4cd7a99aaa52bc8fac57154d197f00bf1f24622552bb4277c"
+    },
+    {
+      "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1towli9/today_i_announced_that_i_wont_be_reviewing_ai",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/ExperiencedDevs/comments/1towli9/today_i_announced_that_i_wont_be_reviewing_ai.json?… (Reddit blocks this network; set RE…"
+    },
+    {
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1teuh5w/reviewing_aigenerated_pull_requests_in_2026",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/ClaudeAI/comments/1teuh5w/reviewing_aigenerated_pull_requests_in_2026.json?… (Reddit blocks this network; set REDDIT_CLIE…"
+    },
+    {
+      "url": "https://www.reddit.com/r/learnprogramming/comments/1oysbu9/dealing_with_ai_slop_in_pull_requests",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/learnprogramming/comments/1oysbu9/dealing_with_ai_slop_in_pull_requests.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49201515",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:13.050Z",
+      "textSha256": "3d072bb6c9fd02611aaa2ebccbee6a01149038fb6677903732262428c4b3c09c"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=47324087",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:13.793Z",
+      "textSha256": "009dfe7027a70cd78dee0654906eee6f33438ca3e6ceff58f30a2a3a9d09b113"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=37120911",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T08:03:13.646Z",
+      "textSha256": "327b123db4ff47eeb6cf4c25891910114bd82d5e6ab76cafd90de0cb24dfd531"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 6,
+      "market_stat": 3,
+      "competitor_price": 4,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/ai-code-review-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.qodo.ai/blog/ai-code-review",
+        "detail": "\"11.4 hours a week\" is not one supported amount"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.graphite.com/pricing",
+        "detail": "\"$ 20 Per user/month, billed annually\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.graphite.com/pricing",
+        "detail": "\"$ 40 Per user/month, billed annually\" is not one supported price expression"
+      }
+    ]
+  }
+}

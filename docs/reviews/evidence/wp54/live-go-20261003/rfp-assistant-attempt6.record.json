@@ -1,0 +1,888 @@
+{
+  "contractVersion": 2,
+  "pipelineVersion": 2,
+  "mode": "live",
+  "brief": {
+    "title": "AI RFP Response Assistant",
+    "slug": "ai-rfp-response-assistant",
+    "oneLiner": "Grounded RFP drafts with citations for SMB sales teams.",
+    "targetCustomer": "SMB SaaS sales and solutions engineers"
+  },
+  "evidence": {
+    "contractVersion": 2,
+    "accepted": [
+      {
+        "id": "q_1814922e60e0",
+        "sourceUrl": "https://news.ycombinator.com/item?id=36488436",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "I’ve already tried this - it worked great! Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!",
+        "excerptSha256": "925ab17fa821a61a6b2d9c949d620ba3022f66a10908babe30acce6e98c40622",
+        "retrievedAt": "2026-10-03T08:30:41.005Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_af59c4a09587",
+        "sourceUrl": "https://news.ycombinator.com/item?id=26513040",
+        "sourceTitle": "Ycombinator",
+        "excerpt": "Another tool that I've been happy with is Loopio. They do have the \"Magic\" capability that tries to automate answers. Given the consistent structure of security questions, they had a higher match / completion rate, but their UX was a little difficult to navigate.",
+        "excerptSha256": "f3b7444c9c4b8dc5fe3a3d61d4d84f580d8721e8001cb0f70c9c39ddc295795b",
+        "retrievedAt": "2026-10-03T08:30:41.556Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "s_b76d2bc82ce6",
+        "sourceUrl": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+        "sourceTitle": "RFP Response Automation AI Market Research Report 2034",
+        "excerpt": "RFP Response Automation AI Market Outlook 2025-2034 The global RFP response automation AI market was valued at $2.4 billion in 2025 and is projected to reach $8.9 billion by 2034 , expanding at a compound annual growth rate of 14.8% during the forecast period.",
+        "excerptSha256": "f547248f4c537782ecd7579a7b586ff297b41c0c1c31a37133783b77dd75450e",
+        "retrievedAt": "2026-10-03T08:30:45.980Z",
+        "kind": "market_stat",
+        "subject": "global RFP response automation AI market",
+        "metric": "market_size",
+        "amount": {
+          "value": "8.9",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_fe7a0b201cd5",
+        "sourceUrl": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+        "sourceTitle": "RFP Response Automation AI Market Research Report 2034",
+        "excerpt": "RFP Response Automation AI Market Outlook 2025-2034 The global RFP response automation AI market was valued at $2.4 billion in 2025 and is projected to reach $8.9 billion by 2034 , expanding at a compound annual growth rate of 14.8% during the forecast period.",
+        "excerptSha256": "f547248f4c537782ecd7579a7b586ff297b41c0c1c31a37133783b77dd75450e",
+        "retrievedAt": "2026-10-03T08:30:45.980Z",
+        "kind": "market_stat",
+        "subject": "global RFP response automation AI market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "14.8",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_1ca4a59c32e2",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+        "sourceTitle": "RFP Response Management Software Market",
+        "excerpt": "The RFP Response Management Software Market is projected to reach USD 233.65 Million in 2026.",
+        "excerptSha256": "d158204e10b11b804c67b91629dfdca8d43b3ac9749e491ef28873af9a2fcfe9",
+        "retrievedAt": "2026-10-03T08:30:45.482Z",
+        "kind": "market_stat",
+        "subject": "RFP Response Management Software Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "233.65",
+          "magnitude": "million",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2026
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_aa1ad1665c47",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+        "sourceTitle": "RFP Response Management Software Market Growth Insights 2035",
+        "excerpt": "The RFP Response Management Software Market was valued at USD 2.64 Billion in 2025 and is projected to grow to USD 5 Billion by 2035, at a CAGR of 6.6%.",
+        "excerptSha256": "c9ce0a9d79a682bb6af2a928d478d5ae73aadaf19a81e8e00fadb98e0b104a3e",
+        "retrievedAt": "2026-10-03T08:30:47.314Z",
+        "kind": "market_stat",
+        "subject": "RFP Response Management Software Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "2.64",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_f1f4237c1065",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+        "sourceTitle": "RFP Response Management Software Market Growth Insights 2035",
+        "excerpt": "The RFP Response Management Software Market was valued at USD 2.64 Billion in 2025 and is projected to grow to USD 5 Billion by 2035, at a CAGR of 6.6%.",
+        "excerptSha256": "c9ce0a9d79a682bb6af2a928d478d5ae73aadaf19a81e8e00fadb98e0b104a3e",
+        "retrievedAt": "2026-10-03T08:30:47.314Z",
+        "kind": "market_stat",
+        "subject": "RFP Response Management Software Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "5",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_288554bf928e",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+        "sourceTitle": "RFP Response Management Software Market Growth Insights 2035",
+        "excerpt": "The RFP Response Management Software Market was valued at USD 2.64 Billion in 2025 and is projected to grow to USD 5 Billion by 2035, at a CAGR of 6.6%.",
+        "excerptSha256": "c9ce0a9d79a682bb6af2a928d478d5ae73aadaf19a81e8e00fadb98e0b104a3e",
+        "retrievedAt": "2026-10-03T08:30:47.314Z",
+        "kind": "market_stat",
+        "subject": "RFP Response Management Software Market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "6.6",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected"
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "p_753b257ba5d5",
+        "sourceUrl": "https://rfp.ai/pricing",
+        "sourceTitle": "Rfp",
+        "excerpt": "€49 per month €49 /mo",
+        "excerptSha256": "9466f42d638c447d611ee1fd5801a7cbc64a181fc1303a3703e3dddc2d1f2e2e",
+        "retrievedAt": "2026-10-03T08:30:40.812Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "RFP.ai",
+        "price": {
+          "amount": {
+            "value": "49",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_af0dbce6d2ba",
+        "sourceUrl": "https://rfp.ai/pricing",
+        "sourceTitle": "Rfp",
+        "excerpt": "€49 per month €49 /mo\nor €40.83/mo billed annually",
+        "excerptSha256": "cabacd936a699084654955c5a9066cd25410cf81ad72a76dc7ab1af971768415",
+        "retrievedAt": "2026-10-03T08:30:40.812Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "RFP.ai",
+        "price": {
+          "amount": {
+            "value": "40.83",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_a3f372a72705",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$149 /month",
+        "excerptSha256": "6e4a41eb57510406bc8af7c2bf040f2f4f610e71490559a58c49b28af08088c6",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "149",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_327c79325629",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$149 /month\n$119/mo billed annually ($1,428/year)",
+        "excerptSha256": "e90f9b7bdea5483890485b18b1cade464eb5331feaf8f6c0a71930ac374802b4",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "119",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_07d66894ac2a",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$399 /month",
+        "excerptSha256": "85d4594fa036d14900bf00f9f64d899576e7bcdac90cbec17182746309b415d9",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "399",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_f5433e9e6815",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$399 /month\n$319/mo billed annually ($3,828/year)",
+        "excerptSha256": "0163f00d0b159f2d8504cb33553ff23acba23ba9361cdad6b375f03f86d6bec1",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "319",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "p_c14630efd323",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$799 /month",
+        "excerptSha256": "863502eb25ee37882e4e7cc6a19b5b03b2a6ce7eae5be0e69631969eff5fc133",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "799",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_dc3e37627374",
+        "sourceUrl": "https://proposalforge.io/pricing",
+        "sourceTitle": "Proposalforge",
+        "excerpt": "$799 /month\n$639/mo billed annually ($7,668/year)",
+        "excerptSha256": "238cbec2c6c5b6cf3c13530ab3a561867bbdd382368f0410867d7b7149009d2b",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "kind": "competitor_price",
+        "attribution": "first_party",
+        "vendor": "Proposal Forge",
+        "price": {
+          "amount": {
+            "value": "639",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": [
+            "billed_annually"
+          ]
+        }
+      },
+      {
+        "id": "a_ea23ed0770ca",
+        "sourceUrl": "https://loopio.com/pricing",
+        "sourceTitle": "Loopio",
+        "excerpt": "Get Started with a Custom Quote",
+        "excerptSha256": "94fea521160bd3ebdae562566fd0b6db1c734d70d25ac4e0f2c804a76701a1d8",
+        "retrievedAt": "2026-10-03T08:30:41.860Z",
+        "kind": "competitor_availability",
+        "vendor": "Loopio",
+        "availability": "contact_sales",
+        "attribution": "first_party"
+      }
+    ],
+    "rejected": [
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+        "candidate": "global RFP response automation AI market: $2.4 billion",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "span_bounds",
+        "sourceUrl": "https://www.responsive.io/pricing",
+        "candidate": "Responsive: contact_sales",
+        "detail": "pricing statement must fit in one sentence of at most 600 characters"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://rfp.ai/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:40.812Z",
+        "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+      },
+      {
+        "url": "https://proposalforge.io/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:40.609Z",
+        "textSha256": "4e218839e2f5f3e02db9400d24bc628ef3200d40d7b5cd238c9df54130ff45c2"
+      },
+      {
+        "url": "https://loopio.com/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:41.860Z",
+        "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+      },
+      {
+        "url": "https://www.responsive.io/pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:40.419Z",
+        "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=36488436",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:41.005Z",
+        "textSha256": "26c99350b3d62b0f9b88c387d04ae2410feff05e172e4f94fae891e3aef660e2"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=26513040",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:41.556Z",
+        "textSha256": "62e354611cb5ee7053779199104a2137d49c3dc3264c2d0067d247156d35538e"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=25793230",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:41.963Z",
+        "textSha256": "41d5fd0f1cfe8b0996cf970fe911edb397c9025ae0ba3225ad24ac7b35b687bb"
+      },
+      {
+        "url": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:45.980Z",
+        "textSha256": "0cee833899e718ad8fbbd36f96f3cb085d7ff972d988d2be3bdbe23d752cba70"
+      },
+      {
+        "url": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:45.402Z",
+        "textSha256": "802ae28d04fef049b1ea2a75d60ffa43bef51306d694f4695925063dbae5c772"
+      },
+      {
+        "url": "https://www.thebusinessresearchcompany.com/report/request-for-proposal-rfp-response-automation-artificial-intelligence-global-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:45.882Z",
+        "textSha256": "0e5e34379241e4acd10fb8ea2d96a092b0cd42c92d56cb3c478ccbe3f38c6c3d"
+      },
+      {
+        "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
+        "roles": [
+          "market"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.fortunebusinessinsights.com/proposal-management-software-market-108680"
+      },
+      {
+        "url": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:45.482Z",
+        "textSha256": "9fc4d515227c8d7d068e4d6acf70b3e1464e1a12586fbc339cda4b59c1496d60"
+      },
+      {
+        "url": "https://www.verifiedmarketreports.com/product/proposal-management-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:47.770Z",
+        "textSha256": "ddc8320822ca9a8c579c5f7d15bc058eab96135e3b31679f325379f541863341"
+      },
+      {
+        "url": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:47.314Z",
+        "textSha256": "f777a277569f8066f02ad4b45ea9c145de1c102eba4af83ee79a4cf47c10be7f"
+      },
+      {
+        "url": "https://www.giiresearch.com/report/tbrc1982935-proposal-management-software-global-market-report.html",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:47.509Z",
+        "textSha256": "229cfd2bf25c9458aeea0e43713d94e3fef6b5b520f62cd5d8c4496a45489444"
+      },
+      {
+        "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:54.456Z",
+        "textSha256": "025888e663ffc9381ad2daa12bb11e7acbfa6452433d325649e231e8f025aaad"
+      },
+      {
+        "url": "https://www.itechguides.com/best-rfp-software-in-2026-pricing-reviews-demo",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:55.136Z",
+        "textSha256": "6c3b905aafed7f2de3c78b1e2de521b8b0e457e77b0c30541a8ac92617f51bbc"
+      },
+      {
+        "url": "https://www.inventive.ai/blog-posts/rfp-software-pricing",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:54.451Z",
+        "textSha256": "23b4a5e767d7ced0510cd621674a0960c2135858ee42b95ed7700b5a44825dd4"
+      },
+      {
+        "url": "https://www.linkedin.com/pulse/best-rfp-software-2026-buyers-guide-pricing-snehil-srivastava-wkzpf",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:55.281Z",
+        "textSha256": "6e053326bd46daf90b00fbef9dd8b0a0e240ec1d9631e080395b4bb87f32d990"
+      },
+      {
+        "url": "https://www.bidara.ai/comparison/ai-proposal-software",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:54.769Z",
+        "textSha256": "93d61e3bb10ab63040d1e5bfeff4d281de01318bbbbe669bb2e33130105e024c"
+      },
+      {
+        "url": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:54.595Z",
+        "textSha256": "5d9e0638bbff039c614a12709c2b724a6304d132538c85e68b09246bb807ba68"
+      },
+      {
+        "url": "https://clickup.com/blog/ai-tools-for-rfp",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:30:56.129Z",
+        "textSha256": "d679966d868bab51117738e69702b01f75ee141532d979a0232a5f06c901cd8a"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=24271256",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:31:07.227Z",
+        "textSha256": "ce76386038377cc44abc03c2b85b3b36390ef343ccf5e0710549d3bf8208daac"
+      },
+      {
+        "url": "https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain.json?… (Reddit blocks this network; set REDDIT_CL…"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=30932596",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:31:07.761Z",
+        "textSha256": "f8b5612ed4d568aa8e6d35abdd4fac0f15d5d72f7a2b3fed543fae30a5ec58d2"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=48772388",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:31:07.636Z",
+        "textSha256": "29fa0eb4f88928efd7bc632ed5b11a22768647c5a4b66f67275844dee20b781d"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=21367151",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:31:07.766Z",
+        "textSha256": "bdba0cd8d313238a1f9bff6b93b5c410f9add843c4eb07eaf756dff36095ee94"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=24601579",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T08:31:07.993Z",
+        "textSha256": "0eb43a717377ae4df15fb09dbf1abb5d1f745fd75f7db7197e94e6bea90c20d8"
+      },
+      {
+        "url": "https://www.reddit.com/r/salesengineers/comments/n5sop7/saas_are_rfps_really_the_place_to_be_trying_to_do",
+        "roles": [
+          "community"
+        ],
+        "status": "http_error",
+        "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/n5sop7/saas_are_rfps_really_the_place_to_be_trying_to_do.json?… (Reddit blocks this network; set …"
+      }
+    ]
+  },
+  "market": {
+    "summary": "RFP response automation is a focused software niche serving teams that must transform product knowledge, security material, policy language, and prior answers into buyer-ready responses. Market estimates vary because research firms draw different boundaries around AI drafting, proposal management, and response management. An AI-specific outlook projects [[ev:s_b76d2bc82ce6]] and reports projected growth of [[ev:s_fe7a0b201cd5]]. A broader response-management estimate reports [[ev:s_aa1ad1665c47]] and projects [[ev:s_f1f4237c1065]]. These figures indicate meaningful commercial activity while also warning against treating every estimate as directly comparable.\n\nFor SMB SaaS vendors, the practical niche is narrower than an enterprise proposal suite. The likely buyer is a sales or solutions engineering leader whose team handles RFPs and adjacent security questionnaires without dedicated proposal operations. Their requirement is not merely fluent text. They need answers grounded in approved internal material, citations that reviewers can inspect, clear handling of unsupported claims, and a workflow that fits a lean deal team.\n\nThe product opportunity therefore sits between manual document work and heavyweight response-management platforms. A focused assistant can compete through rapid setup, transparent evidence, per-seat purchasing, and usage caps aligned with intermittent deal volume. The strongest wedge is trust: every generated claim should point back to approved source material, while uncertain questions should be routed to a knowledgeable reviewer rather than answered speculatively.",
+    "statIds": [
+      "s_b76d2bc82ce6",
+      "s_fe7a0b201cd5",
+      "s_aa1ad1665c47",
+      "s_f1f4237c1065"
+    ]
+  },
+  "competitors": [
+    {
+      "name": "RFP.ai",
+      "priceIds": [
+        "p_753b257ba5d5",
+        "p_af0dbce6d2ba"
+      ],
+      "notes": "RFP.ai publishes a monthly option at [[ev:p_753b257ba5d5]] and an annual-billing equivalent at [[ev:p_af0dbce6d2ba]]. Its visible entry pricing creates a useful benchmark for a lightweight assistant aimed at cost-conscious SaaS deal teams."
+    },
+    {
+      "name": "Proposal Forge",
+      "priceIds": [
+        "p_a3f372a72705",
+        "p_327c79325629",
+        "p_07d66894ac2a",
+        "p_f5433e9e6815",
+        "p_c14630efd323",
+        "p_dc3e37627374"
+      ],
+      "notes": "Proposal Forge spans several published price points, from [[ev:p_a3f372a72705]] through [[ev:p_c14630efd323]], with annual-billing alternatives including [[ev:p_327c79325629]], [[ev:p_f5433e9e6815]], and [[ev:p_dc3e37627374]]. That range suggests packaging around differing levels of proposal activity."
+    },
+    {
+      "name": "Loopio",
+      "priceIds": [],
+      "availabilityId": "a_ea23ed0770ca",
+      "notes": "Loopio directs prospects to a custom quote rather than displaying a standard package price [[ev:a_ea23ed0770ca]]. That sales-led motion leaves room for a transparent, self-serve option designed around lean SMB SaaS teams."
+    }
+  ],
+  "community": {
+    "summary": "Community evidence points to a compelling but incomplete workflow. A practitioner described copying an answer library and a customer question into a general model, then receiving useful output: [[ev:q_1814922e60e0]]. This suggests that approved historical answers can provide enough context for productive drafting, but the described process still depends on manual copying, informal source selection, and human judgment about accuracy.\n\nAnother evaluator reported that Loopio performed well against consistently structured security questions while finding its interface difficult to navigate: [[ev:q_af59c4a09587]]. The buyer pain is therefore not limited to answer generation. Teams also need low-friction intake, understandable matching, visible sources, and a review path that does not bury occasional contributors inside a complex proposal platform. A focused product should preserve the useful library-matching behavior while making provenance and handoff central to the experience.",
+    "quoteIds": [
+      "q_1814922e60e0",
+      "q_af59c4a09587"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "rfp response software",
+      "volume": 90,
+      "competition": 34,
+      "cpc": 45.6,
+      "source": "provider"
+    },
+    {
+      "term": "security questionnaire automation",
+      "volume": 90,
+      "competition": 17,
+      "cpc": 108.76,
+      "source": "provider"
+    },
+    {
+      "term": "proposal management software",
+      "volume": 320,
+      "competition": 23,
+      "cpc": 62.79,
+      "source": "provider"
+    },
+    {
+      "term": "RFP automation software",
+      "volume": 170,
+      "competition": 25,
+      "cpc": 35.96,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "ProofRFP is the grounded drafting workspace for SMB SaaS sales and solutions engineering teams that have outgrown copy-and-paste work but do not want heavyweight proposal operations. It emphasizes source-backed answers, fast reviewer handoff, transparent usage caps, and self-serve adoption for teams with intermittent RFP volume.",
+    "channels": [
+      "Search content for RFP automation and security questionnaire workflows",
+      "Solutions engineering community partnerships and webinars",
+      "SaaS sales operations newsletters and practitioner podcasts",
+      "Product-led trials from document upload templates"
+    ],
+    "pricingNotes": "Use transparent per-seat pricing with an included project allowance, then charge through a clearly disclosed usage tier rather than hidden overages. RFP.ai provides a visible lightweight benchmark through [[ev:p_753b257ba5d5]] and [[ev:p_af0dbce6d2ba]], while Proposal Forge publishes a broader price ladder including [[ev:p_a3f372a72705]] and [[ev:p_c14630efd323]]. Loopio instead requires a custom quote [[ev:a_ea23ed0770ca]]. ProofRFP should occupy the self-serve middle ground: easier to purchase than a sales-led suite and more accountable than an unstructured general-purpose assistant."
+  },
+  "whyNow": "The category has visible momentum: the AI-focused market outlook projects [[ev:s_b76d2bc82ce6]] alongside projected growth of [[ev:s_fe7a0b201cd5]]. Buyer behavior also shows that general models can already produce useful drafts from an existing answer library [[ev:q_1814922e60e0]], while established automation can still create navigation friction [[ev:q_af59c4a09587]]. The timely wedge is therefore not raw generation alone, but reliable grounding, citations, and a lighter workflow for lean SaaS deal teams.",
+  "howItWorks": [
+    "Capture the request — ProofRFP would import spreadsheets, documents, and portal exports, detect individual questions, preserve section context, and assign owners. The intake screen would flag ambiguous fields, deadlines, mandatory attachments, and repeated questions before drafting begins.",
+    "Ground the library — The product would ingest approved policies, product documentation, security answers, prior responses, and implementation notes. It would split material into reviewable claims, retain source locations, track freshness, and prevent unapproved drafts from silently becoming trusted knowledge.",
+    "Draft with evidence — For each question, ProofRFP would retrieve relevant approved claims, compose a concise answer in the buyer's requested style, and attach inspectable citations. When evidence is weak or conflicting, it would abstain, explain the gap, and route the item to an appropriate reviewer.",
+    "Review and export — Sales, solutions engineering, security, and legal reviewers would work from filtered queues showing changed language, source coverage, and unresolved risk. Approved responses would export into the original format while feeding reviewed claims back into the controlled library."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 8,
+    "builderConfidence": 8,
+    "execution": 7
+  },
+  "editorial": {
+    "productName": "ProofRFP",
+    "dontBuildYet": "Don't build a full proposal design suite, procurement marketplace, or autonomous portal submission agent yet.",
+    "problemNarrative": "SMB SaaS sales leaders and solutions engineers often receive RFPs when deal urgency is high and specialist capacity is limited. The request may combine product capabilities, implementation details, security controls, legal language, support practices, and company facts. The people coordinating the response rarely own every answer, yet they must produce a coherent document that reflects current policy and avoids accidental commitments.\n\nThe underlying knowledge is fragmented across prior submissions, product documentation, security questionnaires, policy files, internal messages, and subject-matter experts. Search is unreliable because wording changes between buyers. Copying a prior answer is fast but risky when the old language is stale, customer-specific, or no longer aligned with the product. Asking experts to rewrite familiar material interrupts engineering, security, legal, and customer teams. Review then becomes a chase across files and communication threads.\n\nGeneral AI can reduce drafting effort, but an informal workflow leaves important operational gaps. A community practitioner reported strong output after manually supplying an answer library and customer question [[ev:q_1814922e60e0]]. That experience validates the usefulness of grounded context while exposing the burden of selecting, copying, and checking source material for every request. Without durable citations, a reviewer cannot quickly distinguish an approved claim from a plausible completion.\n\nEstablished response platforms address library matching and workflow, yet ease of use remains consequential. A user described useful automated matching in Loopio while also reporting navigation difficulty [[ev:q_af59c4a09587]]. For an SMB team with occasional contributors, interface complexity can undermine adoption and push work back into spreadsheets.\n\nThe market context supports focused investment without proving that every vendor serves the same buyer. An AI-specific outlook projects [[ev:s_b76d2bc82ce6]], while response-management research reports [[ev:s_aa1ad1665c47]]. ProofRFP should not chase the entire category. Its buyer is the lean SaaS deal team that needs accountable drafting, fast review, and simple purchasing without installing an enterprise proposal function.",
+    "solutionNarrative": "ProofRFP is a grounded RFP drafting assistant for SMB SaaS sales and solutions engineering teams. Its wedge is a citation-first answer workflow that turns approved company material into reviewable drafts without asking users to build a complex proposal-operations program.\n\nA team begins by uploading product documentation, policy material, security responses, implementation guidance, and selected prior answers. ProofRFP converts those sources into a controlled claim library while retaining document location, ownership, review status, and freshness. Imported RFP files are parsed into questions and sections, with surrounding instructions preserved so that answers reflect the buyer's requested format rather than an isolated prompt.\n\nFor each question, the assistant retrieves relevant approved claims and drafts an answer with visible source links. It marks unsupported language, conflicting evidence, stale material, and questions that require specialist judgment. Sales can progress through straightforward items while security, legal, product, and solutions engineering reviewers receive focused queues containing only material that needs their attention.\n\nThe product should make abstention useful. Instead of filling a gap with persuasive language, ProofRFP explains what evidence is missing and suggests the appropriate owner or source category. Reviewers can edit, approve, reject, or request clarification. Approved changes can become reusable claims only through an explicit library workflow.\n\nExports should preserve the original spreadsheet or document structure, limiting cleanup before submission. The result is not autonomous bid writing. It is a compact operating layer for evidence-backed drafting, accountable review, and reusable knowledge, packaged per seat with usage caps suitable for variable SMB deal flow.",
+    "competitiveNarrative": "RFP.ai establishes a lightweight published-price reference through [[ev:p_753b257ba5d5]] and its annual-billing alternative [[ev:p_af0dbce6d2ba]]. Proposal Forge presents a wider pricing range, including [[ev:p_a3f372a72705]] and [[ev:p_c14630efd323]], suggesting packaging for materially different proposal workloads. Loopio uses a custom-quote motion [[ev:a_ea23ed0770ca]], which is more consistent with guided enterprise purchasing.\n\nProofRFP should differentiate on buyer fit rather than claiming broader feature coverage. The product would be designed for SMB SaaS sales and solutions engineering teams that need a controlled answer library without dedicated proposal administrators. Its central experience would expose the evidence behind every draft, highlight unsupported claims, and route exceptions to occasional reviewers through a simple queue.\n\nTransparent per-seat packages and usage caps would make adoption easier to approve and forecast. The product should remain deliberately narrower than a proposal suite: rapid source setup, grounded answer generation, lightweight review, and faithful export are the competitive core.",
+    "stackNotes": "Use a TypeScript application with Next.js for the customer workspace and a Python document-processing service for spreadsheet, document, and PDF extraction. Store operational records and claim metadata in PostgreSQL, with object storage for original files and generated exports. Add vector retrieval beside strict metadata filters so drafting favors approved, current sources from the relevant product area. Run parsing, embedding, drafting, and export as durable background jobs. Preserve source spans and model inputs for auditability. Apply tenant isolation, encrypted storage, role-based review permissions, SAML 2.0 on the appropriate package, configurable retention, and redaction before model calls. Evaluation fixtures should test citation coverage, abstention behavior, stale-source handling, and format fidelity.",
+    "audienceShort": "SMB SaaS deal teams",
+    "brandBrief": "Use a calm, evidence-led identity that feels native to solutions engineering rather than futuristic AI marketing. Favor deep ink, muted teal, warm neutral surfaces, and a restrained signal color for unsupported claims. Screens should foreground source trails, review state, and document structure. The voice is concise, candid, and operational: confident when evidence exists, explicit when it does not, and never breathless about automation.",
+    "pricingTiers": [
+      {
+        "name": "Sales Desk",
+        "price": "$39/seat/month",
+        "includes": "15 active RFP projects per seat monthly, grounded drafts, source citations, document export"
+      },
+      {
+        "name": "Solutions Bench",
+        "price": "$69/seat/month",
+        "includes": "40 active RFP projects per seat monthly, reviewer queues, claim approvals, freshness alerts"
+      },
+      {
+        "name": "Revenue Pod",
+        "price": "$99/seat/month",
+        "includes": "100 active RFP projects per seat monthly, SAML 2.0, audit exports, priority support"
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "Average seat price assumption",
+        "value": "$69 per seat monthly"
+      },
+      {
+        "label": "Gross margin target",
+        "value": "At least 80%"
+      },
+      {
+        "label": "Model and retrieval cost target",
+        "value": "Below $8 per active seat monthly"
+      },
+      {
+        "label": "Paid acquisition ceiling",
+        "value": "Below $900 per account"
+      }
+    ],
+    "dataModel": [
+      {
+        "table": "rfp_projects",
+        "columns": "id, workspace_id fk, owner_member_id fk, title, buyer_name, due_at, status: intake, drafting, review, submitted"
+      },
+      {
+        "table": "source_documents",
+        "columns": "id, workspace_id fk, uploaded_by_member_id fk, file_name, source_type: policy, product, security, prior response, processing_status, reviewed_at"
+      },
+      {
+        "table": "response_questions",
+        "columns": "id, workspace_id fk, rfp_project_id fk, section_path, question_text, draft_text, status: unassigned, drafting, blocked, review, approved"
+      },
+      {
+        "table": "answer_claims",
+        "columns": "id, workspace_id fk, source_document_id fk, claim_text, source_span, owner_member_id fk, status: draft, in review, approved, retired"
+      },
+      {
+        "table": "claim_citations",
+        "columns": "id, workspace_id fk, response_question_id fk, answer_claim_id fk, citation_label, support_status: strong, partial, conflicting"
+      },
+      {
+        "table": "review_decisions",
+        "columns": "id, workspace_id fk, response_question_id fk, reviewer_member_id fk, decision: approve, revise, reject, comment, decided_at"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Search content visitors",
+          "count": 1800
+        },
+        {
+          "stage": "Partner webinar leads",
+          "count": 700
+        },
+        {
+          "stage": "Product-led trial accounts",
+          "count": 180
+        },
+        {
+          "stage": "Paying accounts",
+          "count": 45
+        }
+      ],
+      "tier": "Solutions Bench",
+      "payingAccounts": 45,
+      "seatsPerAccount": 4,
+      "assumptions": "The plan assumes founder-led onboarding, search content around response workflows, practitioner webinars, and a trial that demonstrates grounded drafting with the prospect's own material. Most converted accounts are expected to adopt the Solutions Bench package because reviewer routing and claim governance support the core team workflow."
+    }
+  },
+  "provenance": {
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+        "costUsd": 0.003335
+      },
+      {
+        "provider": "perplexity",
+        "operation": "market_stats/search:sonar-pro",
+        "costUsd": 0.019154
+      },
+      {
+        "provider": "perplexity",
+        "operation": "competitors/search:sonar-pro",
+        "costUsd": 0.024719
+      },
+      {
+        "provider": "perplexity",
+        "operation": "community_signals/search:sonar-pro",
+        "costUsd": 0.024568
+      },
+      {
+        "provider": "openai",
+        "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+        "costUsd": 0.14915
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+        "costUsd": 0.1649395
+      }
+    ],
+    "costUsd": 0.475866,
+    "ranAt": "2026-10-03T08:30:37.683Z",
+    "models": {
+      "synthesis": "gpt-5.6-sol",
+      "search": "perplexity:sonar-pro",
+      "keywordData": "dataforseo"
+    },
+    "attempts": {
+      "brief_normalization": 1,
+      "market_stats": 1,
+      "competitors": 1,
+      "community_signals": 1,
+      "evidence_extraction": 1,
+      "keywords_demand": 1,
+      "editorial_synthesis": 1
+    },
+    "codeRevision": {
+      "sha": "b7c378f9ffa7b80eb790cf7bf8aabac9d0011116",
+      "dirty": true
+    }
+  }
+}

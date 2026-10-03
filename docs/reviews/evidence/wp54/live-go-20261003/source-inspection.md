@@ -1,0 +1,20 @@
+# WP54 live source inspection — 2026-10-03
+
+These are private, non-publishing research and rendering artifacts. All MDX was compiled under `engine-draft-*` slugs outside the public idea directory. No production manifest, Convex data, deployment, seed or public content was changed. Files named `*-attemptN.*` identify the exact run; the `private-draft-manifest-b7c378f.json` file is historical, not a release manifest.
+
+The clean `b7c378f` three-brief probe produced mechanically valid drafts (code reviewer attempt 8, RFP attempt 6, Shopify attempt 5), for $1.7421 combined. All 24 selected source URLs were readable on re-fetch, and all selected excerpts were still present; 23 complete text hashes were identical. The changed PageFly listing still contained every selected price. **These drafts failed editorial review**: Qodo's attributed Stack Overflow AI-code-review adoption figures were not supported by the published survey; Unbounce's custom-pricing option was incorrectly generalized to the vendor's whole pricing model; the RFP page chose weak buyer-pain quotes. See the matching record, report, audit, HTML and source-check files here. They are retained as regression evidence, not as publication candidates.
+
+Subsequent live probes exposed and repaired each concrete defect without weakening source or price binding:
+
+| Brief and attempt | Revision | Cost | Result | Human source finding |
+|---|---|---:|---|---|
+| Code reviewer 9 | `d74202d` | $0.6847 | 3,320-word private draft; deep audit pass | Misattributed adoption figures gone. Two projected figures came from one commercial market report; page labels them directional. All 7 selected URLs and excerpts refetched unchanged. |
+| RFP 7 | `d74202d` | $0.5158 | 3,360-word private draft; deep audit pass | Its two selected comments praise GPT-4 copying and Loopio matching more than they describe unmet buyer pain. All 6 selected URLs and excerpts refetched unchanged. |
+| Shopify 6 | `d74202d` | $0.5705 | Research record; 3 numerically priced Shopify apps and concrete merchant quotes | Its market figures came from an AI-design vendor's roundup, which linked to the original Research Nester report, and a StoreInspect roundup. All 9 selected URLs and excerpts refetched (PageFly's full text changed but its selected prices remained). The strengthened `d378a93` parser deliberately rejects these roundup market claims; this record cannot compile under current code. |
+| RFP 8 | `d378a93` | $0.2342 | Failed closed before writing | Original Hacker News post is now first in the bounded source excerpt and two direct buyer quotes passed, but only two distinct vendors had accepted price/status evidence. A third official numeric pricing URL was then curated. |
+| Code reviewer 10 | `d378a93` | $0.4560 | 3,445-word private draft; deep audit and static render pass on the subsequent narrow `Free` audit fix | Four selected first-person quotes directly concern review capacity/quality. Three vendors have official price/status pages. Both market figures describe broader code-review tools, not AI reviewers specifically; the page says so. All 9 selected URLs and excerpts refetched with identical hashes. |
+| RFP 9 | `65755d9` | $0.0019 | Blocked at search before acquisition | Perplexity returned HTTP 401 `insufficient_quota`; no research record or draft exists. |
+
+`source-check-*.json` verifies exact excerpt presence and source-text hash stability at re-read time, not the independence, methodology or general truth of a publication. The manually identified upstream errors are why the source-review step remains mandatory even after a deep audit passes. Commercial market forecasts should be labelled as forecasts and checked for category fit before any page is published.
+
+The final three-brief clean-revision gate is **not complete**. The search provider quota must be restored, then RFP, Shopify and code reviewer must each produce a source-inspected, deeply audited private draft on the final code. None of these saved artifacts is cleared for publication.
