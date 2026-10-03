@@ -1,0 +1,469 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T07:35:20.697Z",
+  "finishedAt": "2026-10-03T07:38:22.303Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.004595
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.02042
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.022229
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.030857000000000002
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.01967
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.030552999999999997
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.25213
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.14376650000000002
+    }
+  ],
+  "costUsd": 0.614223,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 3,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "b95e445a947303104294c4fe69e13fc6983f4e84",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:31.881Z",
+      "textSha256": "9fc4d515227c8d7d068e4d6acf70b3e1464e1a12586fbc339cda4b59c1496d60"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:31.887Z",
+      "textSha256": "802ae28d04fef049b1ea2a75d60ffa43bef51306d694f4695925063dbae5c772"
+    },
+    {
+      "url": "https://dataintelo.com/report/proposal-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:32.084Z",
+      "textSha256": "e2ce794a4172495a1e9ce838c38b881266686155012e1852e6e48218bc32b5b4"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:32.922Z",
+      "textSha256": "f777a277569f8066f02ad4b45ea9c145de1c102eba4af83ee79a4cf47c10be7f"
+    },
+    {
+      "url": "https://www.fortunebusinessinsights.com/proposal-management-software-market-108680",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.fortunebusinessinsights.com/proposal-management-software-market-108680"
+    },
+    {
+      "url": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:32.688Z",
+      "textSha256": "c1386759c269dbd246dcbc955d92d3521d6c38ef53348cea00d34305d86bad87"
+    },
+    {
+      "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:32.660Z",
+      "textSha256": "4a4d283ffb122e19fc353ec35294d37ac7a0de7b65558ea7c29af8c218a0c19b"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/5304118/proposal-management-software-global-strategic",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:32.540Z",
+      "textSha256": "2883989cf912041709eeb5b26ab0df49fe0ed1a096c148b00d867b44ca1f7a8a"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.031Z",
+      "textSha256": "025888e663ffc9381ad2daa12bb11e7acbfa6452433d325649e231e8f025aaad"
+    },
+    {
+      "url": "https://www.bidara.ai/comparison/top-ai-rfp-software-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.301Z",
+      "textSha256": "4de13c73c8cfe5154ab52653d2501a34945032996759055504693270a4c95ddc"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/rfp-software-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.058Z",
+      "textSha256": "23b4a5e767d7ced0510cd621674a0960c2135858ee42b95ed7700b5a44825dd4"
+    },
+    {
+      "url": "https://www.bidara.ai/comparison/ai-proposal-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:40.847Z",
+      "textSha256": "93d61e3bb10ab63040d1e5bfeff4d281de01318bbbbe669bb2e33130105e024c"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.122Z",
+      "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+    },
+    {
+      "url": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.191Z",
+      "textSha256": "5d9e0638bbff039c614a12709c2b724a6304d132538c85e68b09246bb807ba68"
+    },
+    {
+      "url": "https://www.linkedin.com/pulse/best-rfp-software-2026-buyers-guide-pricing-snehil-srivastava-wkzpf",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:39.906Z",
+      "textSha256": "6e053326bd46daf90b00fbef9dd8b0a0e240ec1d9631e080395b4bb87f32d990"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:40.153Z",
+      "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+    },
+    {
+      "url": "https://rfp.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:51.219Z",
+      "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+    },
+    {
+      "url": "https://rfp.ai/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:51.161Z",
+      "textSha256": "b08729ff47ba9d0325483e222618790d83a07d8ad7677a79a9314718610626aa"
+    },
+    {
+      "url": "https://www.rfp360.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:51.100Z",
+      "textSha256": "ede4345c8ec6c4a00d3c3fd216ce61232c67b615b52ce9f561a9d4f1f44a24ee"
+    },
+    {
+      "url": "https://www.responsive.io/blog/responsive-pricing-compared-other-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:51.103Z",
+      "textSha256": "4b8e67325944db7a21c28432b1181afa9aaa329c619e1f1bb7869ce9e425a5ea"
+    },
+    {
+      "url": "https://www.techtarget.com/enterprise-software/tip/The-top-10-RFP-response-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:52.285Z",
+      "textSha256": "b5255fc30aafd414c6ede628c589f4d4b89b7c05451a95778bbf7d185dc9d920"
+    },
+    {
+      "url": "https://www.responsive.io/solutions/ai-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:51.367Z",
+      "textSha256": "5c20ee5a4ef0a01e7a14f546bffafad745cbe979a1522d2dbd26b0f06bf3ee47"
+    },
+    {
+      "url": "https://proposalforge.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:58.012Z",
+      "textSha256": "4e218839e2f5f3e02db9400d24bc628ef3200d40d7b5cd238c9df54130ff45c2"
+    },
+    {
+      "url": "https://www.responsive.io/blog/best-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:35:57.594Z",
+      "textSha256": "3edf5f784f1ade6db8a26f72feccaa50be163e9fb99279b242e23f5166b252e4"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1gy8g4x/process_advice_for_filling_out_rfps_security",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1gy8g4x/process_advice_for_filling_out_rfps_security.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://www.reddit.com/r/cybersecurity/comments/1gy8dwd/best_process_for_answering_security",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/cybersecurity/comments/1gy8dwd/best_process_for_answering_security.json?… (Reddit blocks this network; set REDDIT_CLIENT_…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36736795",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:36:09.919Z",
+      "textSha256": "42ebeaa61cf39063c9a805f7a5eb1fd34a67eee91bba487f506133a3c646f047"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30932596",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:36:11.088Z",
+      "textSha256": "f8b5612ed4d568aa8e6d35abdd4fac0f15d5d72f7a2b3fed543fae30a5ec58d2"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=26513040",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:36:10.786Z",
+      "textSha256": "62e354611cb5ee7053779199104a2137d49c3dc3264c2d0067d247156d35538e"
+    },
+    {
+      "url": "https://rfp-software-tools.com/guides/how-to-respond-to-a-security-questionnaire-in-2026",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:36:10.341Z",
+      "textSha256": "dd351ff03239aaef7c70f92f20a58f85efcdad8152fcd326ad033a34450e2586"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=29094889",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:36:10.891Z",
+      "textSha256": "7cfba9d5dd7128492a330f18d09e324c89e831a287a96c9064e22a34ee8c1bfe"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 5,
+      "market_stat": 8,
+      "competitor_price": 9,
+      "competitor_availability": 2
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=30932596",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+        "detail": "the sentence lacks \"rfp\", \"response\", \"management\", \"software\" of the subject \"RFP Response Management Software Market\"; every subject word must be in it (rulings R9, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/proposal-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "span_not_found",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "span_not_found",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "span_not_found",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/5304118/proposal-management-software-global-strategic",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/5304118/proposal-management-software-global-strategic",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/5304118/proposal-management-software-global-strategic",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+        "detail": "source says from $89/user/month, billed monthly"
+      }
+    ]
+  }
+}

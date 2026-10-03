@@ -6,7 +6,7 @@
  * (writes Convex audit_events) or VALIDATION_REPORT_CREDITS.
  */
 
-import type { StepBudget } from "./pipeline-steps.ts";
+import type { PipelineStep, StepBudget } from "./pipeline-steps.ts";
 import {
   estimateKeywordUsd,
   estimateSearchUsd,
@@ -58,6 +58,16 @@ export function worstCaseMicroUsd(budget: StepBudget): number {
     case null:
       return 0;
   }
+}
+
+/**
+ * The most one run can spend: every step's `maxAttempts` billable attempts,
+ * each at its budget's worst case. The runner reserves that worst case before
+ * each attempt and refuses attempts past `maxAttempts`, so actual spend never
+ * exceeds this figure.
+ */
+export function worstCaseRunMicroUsd(steps: ReadonlyArray<PipelineStep>): number {
+  return steps.reduce((sum, step) => sum + step.maxAttempts * worstCaseMicroUsd(step.budget), 0);
 }
 
 export class CostCapExceededError extends Error {

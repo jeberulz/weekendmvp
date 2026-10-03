@@ -1,0 +1,384 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-landing-page-generator-ecommerce",
+  "briefSha256": "3a0e53419b70b8e5c4750284dd367b9a15a6e528332ce7e0b4a426438addbdad",
+  "startedAt": "2026-10-03T21:30:39.252Z",
+  "finishedAt": "2026-10-03T21:34:32.143Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00207
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019583
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.028478
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.026122
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.2328
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.1986245
+    }
+  ],
+  "costUsd": 0.597678,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "a4bfef0624f4aaf1d0703b1a5bb0bdbbbf369cee",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dataintelo.com/report/global-landing-page-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:41.381Z",
+      "textSha256": "0134ec28ae324f32eff0e833ef14134c274b449c13837e4d82446049758ecc4a"
+    },
+    {
+      "url": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:41.520Z",
+      "textSha256": "2850d024adb8d7f1ea005d4d0e77b7a9c62acc272fab2292bbc652bc657d2d73"
+    },
+    {
+      "url": "https://apps.shopify.com/instant-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:41.699Z",
+      "textSha256": "a346176f89a81a6f6720364b5e5c81c15d5e32f38830dd81df12826dad4d1afb"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:41.692Z",
+      "textSha256": "c7215738fdebadc5588a173df8e3342867f12a2ea3f14eb1584b7595678ee306"
+    },
+    {
+      "url": "https://apps.shopify.com/gempages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:41.878Z",
+      "textSha256": "f3d573af21f7631e8a64a52721f10db18beb0f2b37aa3cbeaff3ae44ca9ee444"
+    },
+    {
+      "url": "https://apps.shopify.com/webi-landing-page-builder-cod",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:42.193Z",
+      "textSha256": "1d692a6cbf9629088670b62033d97aefc084b4771071fdcfe615ed0a7163237d"
+    },
+    {
+      "url": "https://apps.shopify.com/landify-v3",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:42.692Z",
+      "textSha256": "c84d476082a2f15adbda1b218990273ad246eccced337e5e2f82ec2bfe4d3fd5"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:42.013Z",
+      "textSha256": "69d86d995bdc800dff677eb796ad0e2f9e682f4e774f194decaa228011af9bab"
+    },
+    {
+      "url": "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:42.152Z",
+      "textSha256": "c48a6903a25ab7a90b436e787d682deac459a238a16ff966869d8bc414907f47"
+    },
+    {
+      "url": "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:42.294Z",
+      "textSha256": "45625bcec188b6daa0635d015a3df9cd6c2eacc7e36ca5bdf683f9e568433b24"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/landing-page-builder-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:47.828Z",
+      "textSha256": "bfc6643141d35026f96857b4410a950b89045e2e54909598b55ccdd6878091e2"
+    },
+    {
+      "url": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:47.818Z",
+      "textSha256": "332f8a5310ce0f9e8a181960069637acb658344f434f8e6f44241147b2844477"
+    },
+    {
+      "url": "https://reports.valuates.com/market-reports/QYRE-Auto-14U7538/global-landing-page-builder-software",
+      "roles": [
+        "market"
+      ],
+      "status": "unreadable",
+      "detail": "Network error for https://reports.valuates.com/market-reports/QYRE-Auto-14U7538/global-landing-page-builder-software: read ECONNRESET"
+    },
+    {
+      "url": "https://www.aidesigner.ai/blog/best-ai-landing-page-builders",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:48.181Z",
+      "textSha256": "fe736ca79103b3c1fa2a7ed995ecced6e724f482aa403f0dea9d24e4b439b8ba"
+    },
+    {
+      "url": "https://shinedezigninfonet.com/blog/shopify-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:47.945Z",
+      "textSha256": "b0d01159d2a30569bc63f986090fb2133632d153cc8f42ed027d17d34680e2f7"
+    },
+    {
+      "url": "https://www.cognitivemarketresearch.com/landing-page-builder-software-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:48.367Z",
+      "textSha256": "8b7e834c826d2781f10b71ade6d61ac595b8e29aa184618f784b1fbadb27b9d9"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:49.010Z",
+      "textSha256": "fc9152a760499c72790cbfb6addc958ed5033888037e099b570cf3d500bb849a"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-generator",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:56.977Z",
+      "textSha256": "492011a7bd4692ad1e885b926e2c67b0ac2b1a515e775b77bbbb87495b7bdf67"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:56.755Z",
+      "textSha256": "7f601389f3f7bc92ae70a790a9e1170d578675a72d32cbeff3d2f8d47a134a19"
+    },
+    {
+      "url": "https://apps.shopify.com/foxify-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:30:57.177Z",
+      "textSha256": "e3215587d68471c748a34c3c583342f3d99e6a46f2d9fca12b0c2b22d6c183b6"
+    },
+    {
+      "url": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:09.565Z",
+      "textSha256": "07b47ec8c814a01d93150184ac91f2eb86cb4d891f8822959d4b4972f17aa8e1"
+    },
+    {
+      "url": "https://community.shopify.com/t/advice-on-marketing-and-increasing-sales/580828",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:09.665Z",
+      "textSha256": "4df71e6eff3016e9ba415aa33aed4afca2f56bdd255792f04d747675e9f67c9a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=27140440",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:14.627Z",
+      "textSha256": "e0995915b56062c77bfc9f3bd0ffe8887b479f983211fd6a8675078dab5d467e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=26193544",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:16.370Z",
+      "textSha256": "62531a9d158dac4d0a62d61c8d25b37b4d0b512b1e5e4df13a634a25ca251625"
+    },
+    {
+      "url": "https://community.shopify.com/c/ecommerce-marketing/seeking-advice-meta-ads-performance-issues/m-p/3079137",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:10.100Z",
+      "textSha256": "07b47ec8c814a01d93150184ac91f2eb86cb4d891f8822959d4b4972f17aa8e1"
+    },
+    {
+      "url": "https://community.shopify.com/t/store-review-needed-high-traffic-but-low-conversions/660701",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:09.978Z",
+      "textSha256": "5ad164048b7ef00672ce967a9a2a18d7ee7d25dbe020e97caae77900b0e76c94"
+    },
+    {
+      "url": "https://community.shopify.com/c/shopify-discussions/conversions/m-p/2783080",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:10.713Z",
+      "textSha256": "38e854550e3d8fb62a650339d9c957367085c51387136a9ea84ebdf5e9035a6f"
+    },
+    {
+      "url": "https://community.shopify.com/c/ecommerce-marketing/optimize-the-session-of-the-website/td-p/3057977",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:31:10.623Z",
+      "textSha256": "32e0065141a0c4856437eb0afba21a76af6560aeae2da49b316d9fe736758ff6"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 4,
+      "market_stat": 8,
+      "competitor_price": 12,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/store-review-needed-high-traffic-but-low-conversions/660701",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "detail": "supporting text has $2.83 billion, not $725.24 million"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "detail": "supporting text has $2.83 billion, not 14.6%"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "over_cap",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "detail": "more than 12 accepted"
+      }
+    ]
+  }
+}

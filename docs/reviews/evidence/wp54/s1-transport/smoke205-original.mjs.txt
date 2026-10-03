@@ -1,0 +1,17 @@
+// Original-contract 205 smoke: imports the reviewed sourceText.ts and reads a
+// local 205 through the real transport. Must exit 0 on its own.
+import http from "node:http";
+import { publicOnlyFetch } from "<repo>/lib/engine/providers/sourceText.ts";
+
+const server = http.createServer((_req, res) => { res.writeHead(205); res.end(); });
+await new Promise((r) => server.listen(0, "127.0.0.1", r));
+const { port } = server.address();
+let outcome = "resolved";
+try {
+  await publicOnlyFetch(`http://127.0.0.1:${port}/`);
+} catch (error) {
+  outcome = `rejected: ${error.message}`;
+} finally {
+  server.close();
+}
+console.log(JSON.stringify({ outcome }));

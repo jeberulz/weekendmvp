@@ -1,0 +1,407 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T05:51:52.908Z",
+  "finishedAt": "2026-10-03T05:53:38.159Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 1 vendors with an accepted price, need 3. Top rejection reasons: over_cap ×2, unparseable_amount ×2, metric_unit_mismatch ×1, projection_as_measured ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.004535
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.020012000000000002
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.0206
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.03322
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.028732
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.22293000000000002
+    }
+  ],
+  "costUsd": 0.330031,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 2,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "02cd9b84d23120782da5ee1711d26e29ad441398",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.wiseguyreports.com/reports/rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:04.351Z",
+      "textSha256": "b345926b17d76a2f3dbe3f836f89228343476f7e644de7aa64163d24c557a8cf"
+    },
+    {
+      "url": "https://marketintelo.com/report/rfp-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:03.921Z",
+      "textSha256": "8b4552dac8410e90383207f398e08a8c88d8d98115f5c843d06286d3652168f9"
+    },
+    {
+      "url": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:04.670Z",
+      "textSha256": "627b9f4b601165d64c95a142836799a7f5c7c6c3021b5176dc36b73772febc8f"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:03.399Z",
+      "textSha256": "ef506c23b0273e9c3ee198f0f70b84e2ce750a801ecc202c270514d0eee1687a"
+    },
+    {
+      "url": "https://www.futuremarketreport.com/industry-report/request-for-proposal-rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:05.425Z",
+      "textSha256": "20ea821f700cb12ceb1733900607a55a1234eb6666e91f9951da62303cee77b5"
+    },
+    {
+      "url": "https://www.marketresearchfuture.com/reports/proposal-management-software-market-32872",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:04.365Z",
+      "textSha256": "432990f51dcc6231522eb774a6f5c3de7e5c7e6778695c6db670b37b4944a30c"
+    },
+    {
+      "url": "https://www.globalgrowthinsights.com/market-reports/request-for-proposal-rfp-software-market-100919",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.globalgrowthinsights.com/market-reports/request-for-proposal-rfp-software-market-100919"
+    },
+    {
+      "url": "https://www.theinsightpartners.com/reports/rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:04.991Z",
+      "textSha256": "33b1fa6adb7fbf40974177b5475fa2133db0c8f174c9e9e526b6eb52dc943dae"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:10.325Z",
+      "textSha256": "d316c4c44af38f0bba5c9adf880dfac2be4541ed66857fe40fd63a4c1e311e5c"
+    },
+    {
+      "url": "https://www.responsive.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.120Z",
+      "textSha256": "dee3993c9a2005e7b7915bab7f03072ab89778dfbfc347261c56d11ef8f25e62"
+    },
+    {
+      "url": "https://loopio.com/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:10.014Z",
+      "textSha256": "5dd83ff6ebcf9d62488c3f1c714088d4fc8ab256f162d587d3caf2d60b1130a2"
+    },
+    {
+      "url": "https://www.responsive.io/blog/responsive-pricing-compared-other-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.181Z",
+      "textSha256": "fab56227537ea2cd83041b3ed26d6ccbd1810456fcf28c87cdbe9f91fa9f037e"
+    },
+    {
+      "url": "https://www.responsive.io/blog/rfp-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.419Z",
+      "textSha256": "257007ef8937dc85c1ab3c31a0f4c4f96ae3f39bbbe6b8395dcffa285cf0cb8f"
+    },
+    {
+      "url": "https://rfp.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.587Z",
+      "textSha256": "037e7b6d6de9ea85a8b41581ad8422c9fa52710639b7ddc2dc9a5ded925d26c4"
+    },
+    {
+      "url": "https://rfp.ai/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.655Z",
+      "textSha256": "05feda39f765281d71a6c97e3fecff059107a1bf60bcbcb892066002b8d49595"
+    },
+    {
+      "url": "https://clawnewbie.com/compare/loopio-vs-responsive-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:09.830Z",
+      "textSha256": "89f03ef21de684c43a01823ad6d64d2681a76eddda9768df12f46981f37f14da"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/suy7ae/rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_S…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1mwnadd/how_do_you_team_handle_rfp_responses.json?… (Reddit blocks this network; set REDDIT_CLIEN…"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1qmjw65/rfp_chaos_as_a_sales_engineer_is_this_a_real_pain.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/y4zre1/responding_to_rfps_can_be_exciting_and_filled.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1h9foew/do_you_hate_rfps_with_a_passion/m10hfvc",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1h9foew/do_you_hate_rfps_with_a_passion/m10hfvc.json?… (Reddit blocks this network; set REDDIT_CL…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1n45gec/are_rfps_worth_it",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1n45gec/are_rfps_worth_it.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLI…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1ch44tp/how_long_do_you_take_to_fill_rfps.json?… (Reddit blocks this network; set REDDIT_CLIENT_I…"
+    },
+    {
+      "url": "https://autorfp.ai/blog/rfp-response",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:26.364Z",
+      "textSha256": "a477d9541e7bc029ba5896da8e336f30e70314c274938441146bc00bf7f07a84"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30932596",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.651Z",
+      "textSha256": "620f65a233b32235b4f913068258d8929db9b64e1c667ccc2c4dd80a23914d67"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=29814371",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.096Z",
+      "textSha256": "bc082b8d9036f9ddc2ced44cddd1eeacdea9c12a0b6481562071d401fa3018b5"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=7000477",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.298Z",
+      "textSha256": "99b03ff8cb5c3dfc00f92b31dd8c5c842043ca9783050c430be290d4eb4bde02"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=41706050",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.469Z",
+      "textSha256": "bc7cfac02b96a5bcc22b1c3bfae63ee4b3a85a2f3ca826dcd043b2057a111af2"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=24314274",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.556Z",
+      "textSha256": "7c8a0fc39b8ddaedc7e3ec88fd17a545a99ec89df2510f93cec86d0c68989104"
+    },
+    {
+      "url": "https://discuss.huggingface.co/t/about-the-hugging-face-forums/24",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:39.915Z",
+      "textSha256": "1eb1456821906178935efb41280c8ab4a7b789b7f5e1e0dc1b6c7b69fcf85752"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=21367151",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:40.540Z",
+      "textSha256": "ced3017094151eb69b29df92355adbb4a122a5d22a6eed57b9f36cc0974df6eb"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=10771567",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:52:40.244Z",
+      "textSha256": "afab4d65146b89be53ac52ee22cea8e535faed608cbab2486b7976c59a3ba09a"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 8,
+      "competitor_price": 3
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=30932596",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "the sentence does not state market size (market, valued, worth, size or revenue) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "subject \"the market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "\"8.8 %\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "\"27 %\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "year_not_in_context",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "the figure is tied to 2026, not 2034"
+      }
+    ]
+  }
+}

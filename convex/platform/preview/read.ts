@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "../../_generated/api";
 import { action, internalQuery } from "../../_generated/server";
-import { resolveCapability } from "./capabilities";
+import { resolveCapability, sourceIsEngineDraft } from "./capabilities";
 import { serializeSiteRenderSpec } from "./renderSpec";
 
 /**
@@ -32,6 +32,7 @@ export type PreviewView = {
   renderSpec: string;
   expiresAt: number;
   claimed: boolean;
+  researchWithheld: boolean;
 };
 
 const previewViewValidator = v.object({
@@ -45,6 +46,11 @@ const previewViewValidator = v.object({
   expiresAt: v.number(),
   /** Whether S5 has already converted this into an owned project. */
   claimed: v.boolean(),
+  /**
+   * The source idea is a retired engine draft (WP54-S5): its research page
+   * is withheld and the claim refuses it, so the page offers no claim.
+   */
+  researchWithheld: v.boolean(),
 });
 
 export const resolveForView = internalQuery({
@@ -61,6 +67,7 @@ export const resolveForView = internalQuery({
       renderSpec: serializeSiteRenderSpec(capability.renderSpec),
       expiresAt: capability.expiresAt,
       claimed: capability.claimedByUserId !== undefined,
+      researchWithheld: await sourceIsEngineDraft(ctx, capability.sourceIdeaId),
     };
   },
 });

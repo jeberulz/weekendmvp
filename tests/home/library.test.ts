@@ -52,6 +52,14 @@ describe("library stats", () => {
     expect(toolCounts(live)).toEqual({ cursor: 3, claude: 2, v0: 1 });
   });
 
+  test("engine drafts never reach a list, pick or count, even from the manifest", () => {
+    const withDraft = [...ideas, idea("engine-draft-ai-code-reviewer", "2026-09-24", { tools: ["replit"] })];
+    const live = liveIdeas(withDraft);
+    expect(live.map((i) => i.slug)).toEqual(["a", "b", "d"]);
+    expect(toolCounts(live)).not.toHaveProperty("replit");
+    expect(newestRows(live, () => true, 8).map((r) => r.slug)).toEqual(["d", "b", "a"]);
+  });
+
   test("newest first, numbered by publish order", () => {
     const rows = newestRows(liveIdeas(ideas), (slug) => slug === "d", 2);
     expect(rows.map((r) => [r.slug, r.libraryNo, r.art])).toEqual([

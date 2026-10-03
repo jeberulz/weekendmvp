@@ -1,0 +1,377 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-landing-page-generator-ecommerce",
+  "briefSha256": "3a0e53419b70b8e5c4750284dd367b9a15a6e528332ce7e0b4a426438addbdad",
+  "startedAt": "2026-10-03T05:53:38.612Z",
+  "finishedAt": "2026-10-03T05:55:16.021Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 1 vendors with an accepted price, need 3. Top rejection reasons: vendor_not_in_context ×5, over_cap ×3, span_bounds ×3, span_not_found ×3. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00366
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019256000000000002
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.024329
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.026734
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.23767
+    }
+  ],
+  "costUsd": 0.31165,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "02cd9b84d23120782da5ee1711d26e29ad441398",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.shopify.com/ae/blog/ai-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:47.879Z",
+      "textSha256": "ac2865352bea4b8bf154c593c1182a934b836e59874eee16bcc9fe906df0113d"
+    },
+    {
+      "url": "https://www.shopify.com/blog/ai-marketing-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:47.357Z",
+      "textSha256": "dd59d8d07d2b905d1ea564326c8e251151e444b4be2de9792b0484588fcac3bf"
+    },
+    {
+      "url": "https://www.shopify.com/blog/ai-ecommerce",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:47.387Z",
+      "textSha256": "77f99da5ea08455263206cecb44e6d93c9217d19fff04c2603f7532300a824ff"
+    },
+    {
+      "url": "https://www.congruencemarketinsights.com/report/e-commerce-personalization-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:47.841Z",
+      "textSha256": "1b46aab1bd0e22dd4fc6a2821245a5e6033eaca9c67730210aa2ef56c051adbe"
+    },
+    {
+      "url": "https://elogic.co/blog/ai-in-ecommerce-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:48.188Z",
+      "textSha256": "18c69fc046e1c4ecb2eea3176da6ff8d6a9c2da3812ace51b06820916fa0c5b9"
+    },
+    {
+      "url": "https://www.globalgrowthinsights.com/market-reports/e-commerce-personalization-software-market-102550",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.globalgrowthinsights.com/market-reports/e-commerce-personalization-software-market-102550"
+    },
+    {
+      "url": "https://dataintelo.com/report/global-ecommerce-personalization-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:47.666Z",
+      "textSha256": "65e005775c2f77a756f1fb3649877c0dfaa22dd7991b062b7a0df295aa23be01"
+    },
+    {
+      "url": "https://www.datainsightsmarket.com/reports/ecommerce-personalization-software-1446962",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 410 for https://www.datainsightsmarket.com/reports/ecommerce-personalization-software-1446962"
+    },
+    {
+      "url": "https://pagefly.io/pages/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:54.967Z",
+      "textSha256": "db224aaa507a668f15b17697147da2a8dafb7ac8798f2adfb876a68e68909e63"
+    },
+    {
+      "url": "https://pagefly.io/blogs/shopify/shopify-pricing-plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 404 for https://pagefly.io/blogs/shopify/shopify-pricing-plans"
+    },
+    {
+      "url": "https://help.pagefly.io/getting-started/pricing-and-billing/pricing-plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.086Z",
+      "textSha256": "415d1465b7b6a2f74da7890cfd0f2baf3976c72fac476dc74bec64fae5e1dc51"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.281Z",
+      "textSha256": "b55b2978f8a16efde7e44fa45c10ddb278f8ad99e065f54db3faa90947de7e39"
+    },
+    {
+      "url": "https://unbounce.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.052Z",
+      "textSha256": "e0462db4d8fdd07effd6e103beb22f821c98259d4a05158022a19eafcdc2056b"
+    },
+    {
+      "url": "https://apps.shopify.com/instant-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.518Z",
+      "textSha256": "65351001c9bd335e90066f9264cc1e0c8d938605b6cfe0928136ad8402359afe"
+    },
+    {
+      "url": "https://help.pagefly.io/pagefly-help-center-japanese/hajimeni/pricing-and-billing/pricing-plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.501Z",
+      "textSha256": "ae5b47d94a063c1453d6f0745752c5ad61c7d30029ba5d7e353e9a4569502e29"
+    },
+    {
+      "url": "https://apps.shopify.com/alchemy",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:53:55.658Z",
+      "textSha256": "5fd95f6c7da4e2c30db07c56222063ba098d3fc2440a655c620c1fb70e92c518"
+    },
+    {
+      "url": "https://community.shopify.com/t/converting-problems/657431",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.684Z",
+      "textSha256": "3c55f6b973dffbe2f7004ff8454d6b6bd987baf0c36bcd2fdad7193d1c661eb9"
+    },
+    {
+      "url": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.621Z",
+      "textSha256": "f92e0779e75d18f1f3c16a694f25d6a3e987548eafeb351c2f24c04621218771"
+    },
+    {
+      "url": "https://community.shopify.com/t/no-conversion-high-traffic/362688",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.617Z",
+      "textSha256": "2b8515e3ed1c761f9e32215b18b2f08c2d7fe80fbf14d74075475337c17bf299"
+    },
+    {
+      "url": "https://community.shopify.com/t/no-sales/412305",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.618Z",
+      "textSha256": "8ace96c0052aeed3e13641b0783bf660f10b04f084228138ef2396ff142d0828"
+    },
+    {
+      "url": "https://community.shopify.com/t/ive-got-1-600-session-and-no-sales-and-have-done-everything-right/580410",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.946Z",
+      "textSha256": "8f8d110261ff4cd10caa7ed51f7d6695975399e1e83c97202f07688317bc32fd"
+    },
+    {
+      "url": "https://community.shopify.com/t/got-lot-of-landing-page-clicks-but-no-add-to-chart-or-checkouts/365003",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.898Z",
+      "textSha256": "a965e9adf8dd639717b1a9d6a04a7ea11d3a8ea5fbe495c8f6bcb89654b2a16f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=27140440",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:08.452Z",
+      "textSha256": "8d3c566c8b4e7413f549f011bfd0fa96393bf5dcf35ad7afd898d0799e6afee4"
+    },
+    {
+      "url": "https://community.shopify.com/t/sales/615497",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T05:54:07.982Z",
+      "textSha256": "122504b3599b192fed7de2490155658d6375ff30b7f9922d06eb9e294590f193"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 8,
+      "competitor_price": 8
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/no-conversion-high-traffic/362688",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/no-sales/412305",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/ive-got-1-600-session-and-no-sales-and-have-done-everything-right/580410",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/got-lot-of-landing-page-clicks-but-no-add-to-chart-or-checkouts/365003",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/sales/615497",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.shopify.com/blog/ai-marketing-statistics",
+        "detail": "spend cannot be a percent amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.shopify.com/blog/ai-ecommerce",
+        "detail": "\"Three out of four\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://dataintelo.com/report/global-ecommerce-personalization-tools-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://dataintelo.com/report/global-ecommerce-personalization-tools-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://dataintelo.com/report/global-ecommerce-personalization-tools-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/alchemy",
+        "detail": "Replo is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/alchemy",
+        "detail": "Replo is not named before the price in its clause"
+      }
+    ]
+  }
+}

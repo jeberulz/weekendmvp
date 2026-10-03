@@ -2,6 +2,16 @@
 
 Back: [overview](overview.md)
 
+> **WP54 status (2026-10-01).** The compiler now takes a contract v2 record
+> (`parseResearchRecord`; v1 records are refused with a re-research message),
+> renders every factual block from accepted evidence, labels pricing tiers,
+> unit economics and Year-One Math as assumptions, and refuses a record that
+> lacks the editorial fields instead of padding it. The auditor checks the
+> final page against the record (quotes with attribution, evidence rows,
+> unbound figures, recomputed Year-One Math). Notes below about filler and
+> fallbacks are superseded. Current rules:
+> [pr71-evidence-contract.md](pr71-evidence-contract.md) §9.
+
 ## Goal
 
 Turn a `ResearchRecord` into the two files `/publish-idea` already writes: `content/ideas/{slug}.mdx` and one `ideas/manifest.json` row. Existing seed, OG, and tag validation stay the next steps. The compiler does not seed production or push git.

@@ -23,6 +23,7 @@ import { stagePrompts } from "@/lib/dashboard/weekend-prompts";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { ExportPromptPack } from "@/components/platform/hub/ExportPromptPack";
+import { RetiredTag, isResearchWithheld } from "@/components/platform/RetiredResearch";
 import { PromptList } from "./PromptList";
 import {
   BUILDS_PATH,
@@ -557,6 +558,8 @@ function LivePlan({ planId }: { planId: string }) {
   const { plan, idea } = data;
   const editable = plan.status === "active";
   const count = progress(plan.doneKeys);
+  // A retired draft (WP54-S5) keeps its plan; its research page is withheld.
+  const retired = isResearchWithheld(idea.slug);
 
   function stageDone(stage: StageId | null) {
     if (stage) trackDashboardEvent({ name: "weekend_step_completed", props: { step: stage } });
@@ -624,15 +627,22 @@ function LivePlan({ planId }: { planId: string }) {
           <p className="shrink-0 font-mono text-[12px] text-home-ink-2">{progressLine(count)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          <Link href={`/ideas/${idea.slug}`} className={cn("inline-flex min-h-11 items-center", LINK)}>
-            Read the research
-          </Link>
+          {retired ? (
+            <p className="flex min-h-11 flex-wrap items-center gap-2 text-home-ink-2">
+              <RetiredTag />
+              Your plan and progress stay here. The research is no longer published.
+            </p>
+          ) : (
+            <Link href={`/ideas/${idea.slug}`} className={cn("inline-flex min-h-11 items-center", LINK)}>
+              Read the research
+            </Link>
+          )}
           {plan.status === "archived" && (
             <p className="text-home-ink-2">You archived this plan. It is read only.</p>
           )}
         </div>
         {/* WP44-S11: flag on only. Builder's Hub, with the sheet for Free members. */}
-        <ExportPromptPack slug={idea.slug} title={idea.title} />
+        {!retired && <ExportPromptPack slug={idea.slug} title={idea.title} />}
       </header>
 
       {plan.status === "done" && <Shipped plan={plan} focusOnMount={justFinished} />}

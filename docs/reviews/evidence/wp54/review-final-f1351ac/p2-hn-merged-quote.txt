@@ -1,0 +1,11 @@
+page text as acquired:
+"Ask HN: How do small teams handle security questionnaires?\n We answer every questionnaire by hand.\n\n Honestly it has never cost us a single deal, so we ignore it.\n"
+accepted: [{"kind":"community_quote","excerpt":"We answer every questionnaire by hand.\n\n Honestly it has never cost us a single deal"}]
+rejected: []
+
+compiled blockquote:
+> "We answer every questionnaire by hand.
+>
+> Honestly it has never cost us a single deal"
+>
+> — [Ask HN: How do small teams handle security questionnaires?](https://news.ycombinator.com/item?id=4101)

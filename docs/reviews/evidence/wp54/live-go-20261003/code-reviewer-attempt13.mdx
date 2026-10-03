@@ -1,0 +1,202 @@
+---
+slug: "engine-draft-ai-code-reviewer"
+title: "AI Code Reviewer"
+engine: true
+---
+
+## The Problem
+
+Indie developers and small engineering teams increasingly face an uncomfortable imbalance: producing a change can be quick, but accepting responsibility for that change still requires careful human attention. The reviewer must understand what the pull request is trying to accomplish, how it interacts with existing modules, whether tests cover the meaningful risk, and whether the implementation fits architectural direction. GitHub makes the collaboration visible, but it does not remove the cognitive work.
+
+Community accounts describe pull-request volume rising faster than review capacity. One developer says that increased AI-generated code has made review the main bottleneck because review time has not improved ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446). Another describes flooding across teams while gains in programming velocity fail to produce equivalent roadmap progress ["We are facing flooding and surge in PRs across the teams. AI reviewer tools are good, but not exactly helping in efficiency. Almost all developers are experiencing velocity gains in programming but it's not resulting into eventual productivity or velocity in roadmap."](https://news.ycombinator.com/item?id=48329446). For a small team, that gap can pull the most experienced engineer away from implementation, planning, and mentoring. For an indie maintainer, it can mean delaying contributions or skimming changes under pressure.
+
+Existing AI review approaches can worsen the problem when they post many low-value comments. A reviewer must then assess the code and audit the automated feedback. Generic style suggestions, weak certainty, duplicated linter output, and missing repository context make the tool another participant to supervise. The cost is not only time. Repeated noisy comments erode trust, making developers likely to ignore the system when it eventually identifies something consequential.
+
+The deeper challenge is context. Human reviewers know why a subsystem is fragile, which conventions are deliberate, and where a seemingly local edit can violate an architectural boundary. One account emphasizes that reviewing a colleague's work draws on knowledge of that person's style, strengths, weaknesses, and experience ["When I review code written by a colleague, I have context. I know their coding style, their strengths and weaknesses, their level of experience."](https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863). A skeptic similarly frames code review as evaluating the effect of a change on the overall codebase and architecture, then questions whether language models can do that reliably ["I still dont get the idea about AI code reviews. A code review (at least in my opinion) is for your peers to check if the changes will have a positive or negative effect on the overall code + architecture. I have yet to see an LLM being good at this."](https://news.ycombinator.com/item?id=46348957).
+
+The buyer therefore does not need a robot that claims authority over merging. The buyer needs a dependable filter that prepares the review, identifies credible risks, and makes repository context visible. Success means the human starts with a useful map of the change and spends judgment on architecture, intent, and tradeoffs rather than hunting through routine details.
+
+> "We are facing flooding and surge in PRs across the teams. AI reviewer tools are good, but not exactly helping in efficiency. Almost all developers are experiencing velocity gains in programming but it's not resulting into eventual productivity or velocity in roadmap."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+
+> "We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+
+> "I still dont get the idea about AI code reviews. A code review (at least in my opinion) is for your peers to check if the changes will have a positive or negative effect on the overall code + architecture. I have yet to see an LLM being good at this."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+
+> "When I review code written by a colleague, I have context. I know their coding style, their strengths and weaknesses, their level of experience."
+>
+> — [tianpan.co](https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863)
+
+## The Solution
+
+Pullloom is a GitHub App that prepares and prioritizes pull-request reviews for indie developers and small engineering teams. Its wedge is repository-specific triage: learn how a codebase is organized, apply maintainer-defined rules, and surface only the findings likely to change a review decision. The product does not present itself as an autonomous approver. Humans retain control over architecture, product intent, and merging.
+
+After installation, Pullloom maps modules, dependencies, test locations, ownership boundaries, contribution guidance, and selected architectural documentation. Maintainers can add plain-language review policies for sensitive paths, migrations, compatibility, generated files, or areas where any change deserves closer inspection. When a pull request arrives, Pullloom summarizes intent, identifies affected surfaces, checks the policy map, and creates a compact review brief.
+
+Inline comments are reserved for specific, actionable findings with a clear explanation of impact and a suggested verification path. Lower-confidence observations stay in the private review brief rather than cluttering the pull request. This distinction makes restraint part of the product rather than an optional setting. Reviewers can label each finding as useful, incorrect, intentional, or already covered, allowing the repository profile to improve without silently changing behavior.
+
+The free tier covers qualifying public repositories, creating visible examples of Pullloom working on real code and supporting open-source maintainers. Paid seats unlock private repositories, shared policy controls, and deeper review history. The initial product should optimize for fast GitHub installation, transparent permissions, predictable comments, and measurable reviewer trust. It should not attempt to replace continuous integration, static analysis, or human design review. Pullloom wins by coordinating those signals into a focused starting point for accountable review.
+
+The workflow below is Pullloom's proposed first version: a plan to build, not a tested product.
+
+**How it works:**
+
+1. **Repository Setup** — A maintainer installs the GitHub App, selects repositories, and approves narrowly scoped permissions. Pullloom indexes code structure, contribution guidance, ownership patterns, test conventions, and selected architectural notes while allowing sensitive paths to be excluded from model context.
+2. **Review Map** — Pullloom builds a repository-specific review map connecting modules, dependencies, ownership boundaries, tests, and declared conventions. Maintainers can add plain-language policies for risky areas, generated files, migration rules, compatibility expectations, and changes that always require human attention.
+3. **Pull Request Triage** — When a pull request opens or changes, Pullloom summarizes intent, traces affected components, checks repository policies, and posts only findings that cross a configurable confidence threshold. Each comment explains impact, points to relevant code, and proposes a verification path without approving the merge.
+4. **Learning Loop** — Reviewers mark findings as useful, incorrect, already known, or intentionally accepted. Pullloom uses that feedback to tune repository-level suppression and prioritization, while preserving an audit trail so maintainers can understand why recurring checks changed over time.
+
+What not to build yet (scope advice for Pullloom's first version, not research):
+
+Do not build autonomous merge approval, a standalone code host, or enterprise compliance workflows yet.
+
+## Market Research
+
+AI-assisted pull-request review is a focused developer-tools niche serving teams whose code-production pace is outrunning human review capacity. The relevant buyer is not every software organization, but an indie maintainer or small engineering team using GitHub and seeking dependable triage before a person evaluates architecture, product intent, and risk. A secondary forecast reports [$9.4 billion by 2034 (global AI-generated code review tools market, market size, projected)](https://dataintelo.com/report/ai-generated-code-review-tools-market) and projects market growth of [20\.2% by 2034 (global AI-generated code review tools market, growth rate, projected)](https://dataintelo.com/report/ai-generated-code-review-tools-market). These figures indicate commercial interest in AI-generated code review tools, although they come from the same forecast and should be treated as directional rather than independent validation.
+
+The practical opening is narrower than replacing peer review. Small teams need a GitHub-native reviewer that understands repository conventions, identifies likely defects, suppresses stylistic noise, and explains why a finding matters. Value comes from reducing review preparation and helping maintainers locate the changes deserving judgment. Trust is central because buyers remain accountable for merged code and may reject tools that produce vague, repetitive, or architecture-blind comments.
+
+The category already supports paid per-seat offers, confirming an established purchasing motion among developers. A free open-source tier can seed adoption where maintainers publicly demonstrate review quality, while paid private-repository seats align cost with the people receiving workflow benefits. The strongest wedge is therefore architecture-aware triage for small repositories, rather than a broad claim that an AI system can approve code autonomously.
+
+Why now: AI-assisted coding is increasing the amount of code awaiting verification, while human review capacity has not necessarily expanded with it. Developers report that higher pull-request volume has made review the bottleneck ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446), and teams describe programming velocity that fails to become roadmap velocity ["We are facing flooding and surge in PRs across the teams. AI reviewer tools are good, but not exactly helping in efficiency. Almost all developers are experiencing velocity gains in programming but it's not resulting into eventual productivity or velocity in roadmap."](https://news.ycombinator.com/item?id=48329446). At the same time, a secondary category forecast projects continued expansion in AI-generated code review tools [20\.2% by 2034 (global AI-generated code review tools market, growth rate, projected)](https://dataintelo.com/report/ai-generated-code-review-tools-market). The timely wedge is not more code generation; it is helping accountable humans evaluate generated changes with less noise and better repository context.
+
+**Market signals**
+
+- $9.4 billion by 2034 (global AI-generated code review tools market, market size, projected) ([AI-Generated Code Review Tools Market Research Report 2034](https://dataintelo.com/report/ai-generated-code-review-tools-market)).
+- 20\.2% by 2034 (global AI-generated code review tools market, growth rate, projected) ([AI-Generated Code Review Tools Market Research Report 2034](https://dataintelo.com/report/ai-generated-code-review-tools-market)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **ai code review** — 1300/mo, competition 60, CPC $55.73
+- **automated code review tool** — 170/mo, competition 5, CPC $25.93
+
+## Competitive Landscape
+
+Greptile sets a direct paid benchmark with its Pro seat offer [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing). CodeRabbit presents a broader ladder through Essentials [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans), Team [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans), and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). Qodo offers adjustable credit packs [Credit packs (Qodo)](https://www.qodo.ai/pricing), which can suit variable consumption.
+
+Pullloom should differentiate through restraint and a deliberately narrow buyer focus. Rather than maximizing the number of automated comments or packaging a broad enterprise platform, it should serve indie maintainers and small GitHub teams that need a trustworthy review brief. Repository policies, architectural boundaries, and reviewer feedback become the core context layer. Low-confidence observations remain out of the public pull-request thread, reducing the burden of supervising the reviewer.
+
+The commercial distinction is equally simple: free review for qualifying public repositories and predictable seats for private work. That approach turns open-source usage into product proof while avoiding credit management. The promise is not a smarter replacement for peers; it is a calmer queue that helps peers spend attention where judgment matters.
+
+- **Greptile** — Greptile presents a per-seat Pro offer at [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing). Its positioning establishes a direct paid benchmark for repository-aware review aimed at developers who want automated feedback inside their existing workflow. Published pricing: $30/user/month (Greptile Pro plan) [Greptile](https://www.greptile.com/pricing).
+- **CodeRabbit** — CodeRabbit documents an Essentials offer at [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans), a Team offer at [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans), and an Advanced offer at [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). The range signals a mature seat-based ladder spanning lighter review needs and deeper organizational controls. Published pricing: $24/user/month, billed annually (CodeRabbit Essentials plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans); $48/user/month, billed annually (CodeRabbit Team plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans); $72/user/month, billed annually (CodeRabbit Advanced plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans).
+- **Qodo** — Qodo explicitly offers adjustable credit packs [Credit packs (Qodo)](https://www.qodo.ai/pricing). That option suggests usage flexibility for variable review demand, but it does not establish whether other self-serve or contracted purchasing options appear elsewhere. Published pricing: Credit packs (Qodo) [Qodo](https://www.qodo.ai/pricing).
+
+**Your Opportunity**
+
+Position Pullloom as the quiet GitHub reviewer for indie developers and small engineering teams that need fewer distractions, not more automated commentary. The product learns repository rules, prioritizes consequential findings, and leaves architecture and product judgment with the human maintainer. Public repositories become visible proof of review quality and a natural path into paid private work.
+
+## Business Model
+
+Use a free public-repository plan as the adoption surface, then charge per developer for private repositories. Keep the paid ladder simpler and more accessible than the broader category menus. Greptile provides a direct per-seat comparison through [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing). CodeRabbit establishes several annual per-developer reference points through [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans), [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans), and [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). Qodo also demonstrates a flexible credit-pack option [Credit packs (Qodo)](https://www.qodo.ai/pricing). Pullloom should avoid credits initially because predictable seats are easier for a small team to understand and budget.
+
+Proposed Pullloom pricing to test with early buyers (an assumption, not observed market data):
+
+- **Open Source Maintainer** (Free) — Qualifying public repositories, review briefs, focused pull-request comments, and community support
+- **Maintainer Seat** ($12/developer/month) — Private repositories, repository policies, feedback learning, review history, and email support
+- **Review Crew** ($18/developer/month) — Shared policy controls, priority processing, ownership routing, team analytics, and priority support
+
+**Unit Economics**
+
+Planning estimates to verify, not measured results:
+
+- **$12 per developer monthly** — Core paid seat
+- **80% after model and hosting costs** — Target gross margin
+- **Under $3 per active developer monthly** — Model cost ceiling
+- **Under $120 per acquired account** — Target account acquisition cost
+
+**Year-One Math**
+
+Pullloom's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.
+
+The funnel is an editorial operating assumption anchored in technical content, GitHub Marketplace discovery, and public open-source examples. Paid conversion centers on maintainers who activate a private repository and see useful findings without noisy comments. Account size assumes small teams adopting together after a maintainer validates the workflow.
+
+- **4,800** — Technical content visitors
+- **1,200** — GitHub Marketplace installers
+- **600** — Activated repository maintainers
+- **180** — Paid developer accounts
+- **180 × $36/mo = $77,760 ARR** — Maintainer Seat accounts paying by month 12 (3 seats × $12/developer/month)
+- **90 × $36/mo = $38,880 ARR** — downside if the close rate halves (half of 180 accounts)
+
+**Channels**
+
+Channels to test (proposals, not measured results):
+
+- GitHub Marketplace discovery
+- Open-source maintainer partnerships
+- Technical teardown content
+- Developer community demonstrations
+
+## Recommended Tech Stack
+
+A suggested stack for Pullloom (a recommendation, not research):
+
+Build the GitHub App around webhook-driven ingestion with a durable queue for pull-request events, retries, and deduplication. Use TypeScript for the application layer, Postgres for repository policies and review history, and object storage for encrypted transient artifacts. Parse supported languages into syntax-aware chunks before retrieval, then combine changed files with dependency and policy context. Run deterministic linters and test metadata before model analysis so the model concentrates on semantic risk. Store finding provenance, confidence, prompt version, and reviewer feedback. Enforce installation-scoped tokens, least-privilege GitHub permissions, retention controls, secret redaction, and deletion workflows. Keep model providers behind an adapter so cost, latency, and privacy options can evolve without changing the review pipeline.
+
+- **Next.js + TypeScript** — screens for Repository Setup, Review Map, Pull Request Triage, Learning Loop
+- **Postgres (Supabase or Neon)** — repository\_policies, pull\_requests, review\_runs, review\_findings, finding\_feedback
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Open Source Maintainer / Maintainer Seat / Review Crew subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these Pullloom build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named Pullloom for indie GitHub maintainers.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('open_source_maintainer','maintainer_seat','review_crew'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- repository_policies(id, workspace_id fk, repository_id fk, title, rule_text, path_pattern, severity: advisory, important, blocking, status: draft, active, archived)
+- pull_requests(id, workspace_id fk, repository_id fk, github_pr_id, author_login, head_sha, base_sha, status: queued, analyzing, reviewed, failed, opened_at)
+- review_runs(id, workspace_id fk, pull_request_id fk, trigger: opened, synchronized, requested, model_provider, prompt_version, status: queued, running, completed, failed, started_at, completed_at)
+- review_findings(id, workspace_id fk, review_run_id fk, policy_id fk, file_path, line_start, line_end, category: defect, architecture, maintainability, testing, confidence, disposition: private, published, suppressed)
+- finding_feedback(id, workspace_id fk, finding_id fk, reviewer_github_login, label: useful, incorrect, intentional, covered, note, created_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Open Source Maintainer at Free; Maintainer Seat at $12/developer/month; Review Crew at $18/developer/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_OPEN_SOURCE_MAINTAINER, STRIPE_PRICE_MAINTAINER_SEAT, STRIPE_PRICE_REVIEW_CREW, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build autonomous merge approval, a standalone code host, or enterprise compliance workflows yet.
+```
+
+**2. Core Feature**
+
+```text
+Build Pullloom's core workflow as one screen per step, in this order:
+- Repository Setup: A maintainer installs the GitHub App, selects repositories, and approves narrowly scoped permissions.
+- Review Map: Pullloom builds a repository-specific review map connecting modules, dependencies, ownership boundaries, tests, and declared conventions.
+- Pull Request Triage: When a pull request opens or changes, Pullloom summarizes intent, traces affected components, checks repository policies, and posts only findings that cross a configurable confidence threshold.
+- Learning Loop: Reviewers mark findings as useful, incorrect, already known, or intentionally accepted.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Repository Setup → Review Map → Pull Request Triage → Learning Loop without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for Pullloom. Hero line: GitHub App that auto-reviews PRs so humans focus on architecture.
+Sections: the problem for indie GitHub maintainers; how Pullloom works (Repository Setup, Review Map, Pull Request Triage, Learning Loop); competitor strip (Greptile: $30/user/month (Greptile Pro plan); CodeRabbit: $24/user/month, billed annually (CodeRabbit Essentials plan), $48/user/month, billed annually (CodeRabbit Team plan), $72/user/month, billed annually (CodeRabbit Advanced plan); Qodo: Credit packs (Qodo)); pricing (Open Source Maintainer at Free; Maintainer Seat at $12/developer/month; Review Crew at $18/developer/month); a single CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand Pullloom for indie GitHub maintainers. Use a calm, technical identity that signals judgment rather than spectacle. The visual system should resemble a precise review workspace: warm neutral backgrounds, deep ink text, restrained green for verified checks, and amber for findings needing thought. Avoid robot mascots, neon gradients, and magical language. Voice should be concise, humble, and evidence-led, using direct explanations of impact and uncertainty. Product screens should prioritize diffs, dependency context, and reviewer control.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product Pullloom, never a generic AI platform.
+```
+
+## Sources
+
+- [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+- [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+- [tianpan.co](https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863)
+- [AI-Generated Code Review Tools Market Research Report 2034](https://dataintelo.com/report/ai-generated-code-review-tools-market)
+- [Greptile](https://www.greptile.com/pricing)
+- [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans)
+- [Qodo](https://www.qodo.ai/pricing)

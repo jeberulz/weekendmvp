@@ -5,6 +5,7 @@ import { fetchAction } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { parseSiteRenderSpec } from "@/convex/platform/preview/renderSpec";
+import { RETIRED_RESEARCH_LABEL } from "@/components/platform/RetiredResearch";
 import { PreviewTemplateRenderer } from "@/components/preview/templates";
 import { PreviewViewed } from "@/components/preview/PreviewViewed";
 
@@ -81,7 +82,7 @@ export const metadata: Metadata = {
  */
 export const instant = false;
 
-async function loadRenderSpec(token: string) {
+async function loadPreview(token: string) {
   // Shape-check before the round trip. Returns the same null as an unknown
   // token, so this is a cost optimisation with no observable difference.
   if (normalizeCapabilityToken(token) === null) return null;
@@ -89,9 +90,12 @@ async function loadRenderSpec(token: string) {
   try {
     const view = await fetchAction(api.platform.preview.read.view, { token });
     if (view === null) return null;
-    // Re-validated at the render boundary. The renderer never trusts a shape
-    // just because it arrived from our own backend.
-    return parseSiteRenderSpec(view.renderSpec);
+    return {
+      // Re-validated at the render boundary. The renderer never trusts a
+      // shape just because it arrived from our own backend.
+      spec: parseSiteRenderSpec(view.renderSpec),
+      researchWithheld: view.researchWithheld,
+    };
   } catch {
     // A transport failure or an unparseable stored spec collapses into the
     // same generic outcome. Surfacing "we found it but could not render it"
@@ -106,8 +110,9 @@ export default async function PreviewPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const spec = await loadRenderSpec(token);
-  if (spec === null) notFound();
+  const preview = await loadPreview(token);
+  if (preview === null) notFound();
+  const { spec, researchWithheld } = preview;
 
   return (
     // The bottom padding reserves scroll room under the claim bar. The consent banner is
@@ -120,9 +125,29 @@ export default async function PreviewPage({
       {/* Template only: no site nav, no footer, nothing that would let a
           visitor navigate out of the preview into the marketing site. */}
       <PreviewTemplateRenderer spec={spec} showPreviewChrome />
-      <PreviewClaimBar token={token} />
+      {researchWithheld ? <PreviewRetiredBar /> : <PreviewClaimBar token={token} />}
       <PreviewViewed template={spec.templateId} />
     </div>
+  );
+}
+
+/**
+ * WP54-S5. Replaces the claim bar when the preview's idea is a retired
+ * engine draft. Its research page is withheld and the claim refuses it, so
+ * "Keep this site" would only fail. This says so plainly, with no link to
+ * the withheld idea page. The preview itself stays viewable until it expires.
+ */
+function PreviewRetiredBar() {
+  return (
+    <aside aria-label="About this preview" className="border-t border-white/10 bg-black/90 px-5 py-6">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-zinc-400">{RETIRED_RESEARCH_LABEL}</p>
+        <p className="text-sm text-zinc-300">
+          This idea is no longer published, so its preview can’t be kept as a site. The preview expires 7 days
+          after it was made.
+        </p>
+      </div>
+    </aside>
   );
 }
 

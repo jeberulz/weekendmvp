@@ -1,0 +1,85 @@
+[
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=48329446",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=46348957",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://news.ycombinator.com/item?id=35357933",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://dataintelo.com/report/code-review-tools-market",
+    "claims": [
+      "market_stat",
+      "market_stat"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://www.greptile.com/pricing",
+    "claims": [
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://www.coderabbit.ai/faq",
+    "claims": [
+      "competitor_price",
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://docs.coderabbit.ai/management/plans",
+    "claims": [
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-code-reviewer",
+    "url": "https://www.qodo.ai/pricing",
+    "claims": [
+      "competitor_availability"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  }
+]

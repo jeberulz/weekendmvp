@@ -205,9 +205,10 @@ export type EngineProviders = {
   search: SearchProvider;
   keywordData: KeywordDataProvider;
   /**
-   * Reads cited pages to confirm community quotes are verbatim. Unbilled.
-   * When absent the pipeline records quotes without a verdict, and the
-   * auditor then refuses to publish them — live mode always sets it.
+   * Reads every cited page so evidence can be accepted against its text.
+   * Unbilled. When absent the pipeline fails closed before any paid call:
+   * no evidence can be accepted, so no record is written. Live and fixture
+   * modes always set it.
    */
   sourceText?: SourceTextProvider;
 };

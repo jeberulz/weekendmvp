@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { query } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { isEngineDraftSlug } from "./catalogPolicy";
 import { requireFeature } from "./entitlements";
 import { hoursOf } from "./ideaCards";
 
@@ -26,7 +27,10 @@ export const source = query({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
-    if (idea === null) throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    // An engine draft's research is withheld, so it exports no prompt pack.
+    if (idea === null || isEngineDraftSlug(idea.slug)) {
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    }
     return {
       slug: idea.slug,
       title: idea.title,

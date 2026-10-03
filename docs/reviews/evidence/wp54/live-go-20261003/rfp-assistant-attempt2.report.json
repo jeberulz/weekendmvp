@@ -1,0 +1,414 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T07:30:43.526Z",
+  "finishedAt": "2026-10-03T07:32:25.439Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 0 vendors with an accepted price, need 1; competitors: 2 vendors with accepted price or availability, need 3. Top rejection reasons: over_cap ×4, projection_as_measured ×3, span_bounds ×2, vendor_not_in_context ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.003755
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.020117
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.022781
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.02419
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.026347000000000002
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.23034000000000002
+    }
+  ],
+  "costUsd": 0.327532,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 2,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "07ed04fdd3cddea625e5cf4e34fc9e579ebd419d",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.278Z",
+      "textSha256": "0cee833899e718ad8fbbd36f96f3cb085d7ff972d988d2be3bdbe23d752cba70"
+    },
+    {
+      "url": "https://www.thebusinessresearchcompany.com/report/request-for-proposal-rfp-response-automation-artificial-intelligence-global-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.003Z",
+      "textSha256": "0e5e34379241e4acd10fb8ea2d96a092b0cd42c92d56cb3c478ccbe3f38c6c3d"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6215338/request-proposal-rfp-response-automation",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:52.788Z",
+      "textSha256": "2b58bb51e2e5c68990d03b9531d1cc1763d52a2736c3cae5c67124b5a0aac68f"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/rfp-response-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.778Z",
+      "textSha256": "f777a277569f8066f02ad4b45ea9c145de1c102eba4af83ee79a4cf47c10be7f"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6117707/rfp-response-management-software-market-global",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.600Z",
+      "textSha256": "9fc4d515227c8d7d068e4d6acf70b3e1464e1a12586fbc339cda4b59c1496d60"
+    },
+    {
+      "url": "https://www.globenewswire.com/news-release/2026/01/29/3228487/0/en/artificial-intelligence-request-for-proposal-rfp-response-automation-research-report-2025-2-43-bn-market-opportunities-trends-competitive-analysis-strategies-and-forecasts-2019-202.html",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.121Z",
+      "textSha256": "1084de8de4b18af3f14fdc60e4db3a22ee989fd52e1a0b2ee3ec32fd93219fbc"
+    },
+    {
+      "url": "https://www.openpr.com/news/4301931/future-of-the-request-for-proposal-rfp-response-automation",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.openpr.com/news/4301931/future-of-the-request-for-proposal-rfp-response-automation"
+    },
+    {
+      "url": "https://www.verifiedmarketresearch.com/product/request-for-proposal-rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:30:53.837Z",
+      "textSha256": "68476a424f0892f97936aaab709535bbd25f0e65aa919b71f09e8bd5c21a78a5"
+    },
+    {
+      "url": "https://www.bidara.ai/comparison/ai-proposal-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:00.679Z",
+      "textSha256": "93d61e3bb10ab63040d1e5bfeff4d281de01318bbbbe669bb2e33130105e024c"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:00.426Z",
+      "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.215Z",
+      "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+    },
+    {
+      "url": "https://loopio.com/blog/rfp-software-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.129Z",
+      "textSha256": "35822aa1bbd59c22a1576107a7272e64ef462bdd49998178152a5474cf570ce4"
+    },
+    {
+      "url": "https://checkthat.ai/brands/loopio/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.746Z",
+      "textSha256": "f77be2a6ab2055a9c9bbc0a8679371f9c69e03d1760ecb37d36a3ca9a35916d7"
+    },
+    {
+      "url": "https://www.responsive.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.033Z",
+      "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+    },
+    {
+      "url": "https://www.responsive.io/glossary/compare/loopio-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.288Z",
+      "textSha256": "418676b3244d6229666fd25bf79fc88d616c2c535bec3b7e6ba81e349d310fa4"
+    },
+    {
+      "url": "https://www.responsive.io/blog/responsive-pricing-compared-other-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:01.402Z",
+      "textSha256": "4b8e67325944db7a21c28432b1181afa9aaa329c619e1f1bb7869ce9e425a5ea"
+    },
+    {
+      "url": "https://www.reddit.com/r/AI_RFP_Software/comments/1rryhs6/nobody_uses_our_rfp_tool",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/AI_RFP_Software/comments/1rryhs6/nobody_uses_our_rfp_tool.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and RE…"
+    },
+    {
+      "url": "https://www.reddit.com/r/procurement/comments/1ch05fv/any_good_tools_for_automating_rfp_questionnaires",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/procurement/comments/1ch05fv/any_good_tools_for_automating_rfp_questionnaires.json?… (Reddit blocks this network; set RED…"
+    },
+    {
+      "url": "https://www.reddit.com/r/procurement/comments/1ptx0xk/rfp_ai_software",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/procurement/comments/1ptx0xk/rfp_ai_software.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_S…"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaSSales/comments/1oiz1j2/ai_rfp_response_software",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaSSales/comments/1oiz1j2/ai_rfp_response_software.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_C…"
+    },
+    {
+      "url": "https://www.reddit.com/r/SaaS/comments/1ptvysh/rfp_ai_response_software",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/SaaS/comments/1ptvysh/rfp_ai_response_software.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1p5j6of/rfps_take_a_lot_of_bandwith_from_me_thinking",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1p5j6of/rfps_take_a_lot_of_bandwith_from_me_thinking.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://www.reddit.com/r/salesengineers/comments/1aphxpu/use_of_ai_in_rfp_or_rfi",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/salesengineers/comments/1aphxpu/use_of_ai_in_rfp_or_rfi.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDD…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36736795",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:10.801Z",
+      "textSha256": "42ebeaa61cf39063c9a805f7a5eb1fd34a67eee91bba487f506133a3c646f047"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=32395076",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.223Z",
+      "textSha256": "a3248ab9b89e814f971affa46b61c14b4a748788a7b11d5abed0d200774ba112"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=7000477",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.432Z",
+      "textSha256": "cf300f0f529a69d39eaa6ed18f19e58da8a8a4c422c97f2430668d225e17bf64"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30932596",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.141Z",
+      "textSha256": "f8b5612ed4d568aa8e6d35abdd4fac0f15d5d72f7a2b3fed543fae30a5ec58d2"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=19876825",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.665Z",
+      "textSha256": "dc40832954642210dd38bb1b979c8e4a41b32b808cc5ad698e44f49c6a8dfa53"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=24397821",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.986Z",
+      "textSha256": "381cf3aa51b3ff9cbe0ec9f9c5c8adc27503e0d3d736c9151d8500f04a686d26"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=14155460",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.876Z",
+      "textSha256": "bbed3f8c3c50629aaced4d92e2daafb8ff9233c3a60905d848ca100e695efdf6"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=38478548",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:22.721Z",
+      "textSha256": "8386751fe8f4c048129dc8d8653962243273b12062f58920494d2c5b6360e9bc"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=24314274",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:31:23.343Z",
+      "textSha256": "ab9bb0ae381653191536e2c67dccec9e3fe87df2086fcd9e222708c5374ee75d"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 3,
+      "market_stat": 8,
+      "competitor_price": 0,
+      "competitor_availability": 2
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=30932596",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=38478548",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/rfp-response-automation-ai-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.globenewswire.com/news-release/2026/01/29/3228487/0/en/artificial-intelligence-request-for-proposal-rfp-response-automation-research-report-2025-2-43-bn-market-opportunities-trends-competitive-analysis-strategies-and-forecasts-2019-202.html",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.globenewswire.com/news-release/2026/01/29/3228487/0/en/artificial-intelligence-request-for-proposal-rfp-response-automation-research-report-2025-2-43-bn-market-opportunities-trends-competitive-analysis-strategies-and-forecasts-2019-202.html",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.globenewswire.com/news-release/2026/01/29/3228487/0/en/artificial-intelligence-request-for-proposal-rfp-response-automation-research-report-2025-2-43-bn-market-opportunities-trends-competitive-analysis-strategies-and-forecasts-2019-202.html",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.verifiedmarketresearch.com/product/request-for-proposal-rfp-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketresearch.com/product/request-for-proposal-rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.verifiedmarketresearch.com/product/request-for-proposal-rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://checkthat.ai/brands/loopio/pricing",
+        "detail": "Loopio is not named before the price in its clause"
+      }
+    ]
+  }
+}

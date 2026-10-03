@@ -1,0 +1,36 @@
+C0 audit=FAIL [as-expected] control: appended fabricated sentence inside the quote (review F2 mutation)
+     first error: blockquote at line 16: "We burn weekends answering the same security questionnaire for every enterprise deal. This product increased our revenue by nine million dollars overnight." is not a selected e
+Q1 audit=FAIL [as-expected] HTML/JSX <blockquote> with a fabricated quote
+     first error: body has bare '<' that MDX would parse as JSX (escape as \< outside code fences)
+Q2 audit=PASS [as-expected] fabricated quote as a plain paragraph with an attribution link (no blockquote)
+Q3 audit=PASS [as-expected] fabricated quote as a list item with attribution
+Q4 audit=PASS [as-expected] fabricated quote in a GFM table cell
+Q5 audit=PASS [as-expected] figures inside a blockquote attribution link title
+Q6 audit=FAIL [as-expected] nested blockquote around a real quote
+     first error: blockquote at line 16: must hold only the quote and its attribution line (found blockquote)
+F1 audit=FAIL [as-expected] figure typed into The Problem prose (control for the unbound-figure guard)
+     first error: The Problem: unbound figure "8" near line 10 ("…The buyer is specific: a team of 8 reviews 47 questionnaires a quarter. SM…") — not a rendering of the record's evidence (guard, not proof of truth)
+F2 audit=PASS [as-expected] fullwidth digits in The Problem prose
+F3 audit=PASS [as-expected] spelled-out figures in The Problem prose
+F4 audit=PASS [as-expected] figures in a fenced code block inside The Problem
+F5 audit=PASS [as-expected] figures in The Solution prose (section not guarded)
+F6 audit=PASS [as-expected] GFM footnote: reference in The Problem, definition with figures after Sources
+F7 audit=PASS [as-expected] prose added to ## Sources
+P1 audit=PASS [as-expected] Bidwell's price re-attributed to AnswerDeck in Competitive Landscape prose (rendering text is masked)
+P2 audit=PASS [as-expected] a second competitor row with a wrong price placed in The Solution
+P3 audit=PASS [as-expected] market signal row relabelled to a different subject/metric (label polish allowed)
+Y1 audit=FAIL [as-expected] control: ARR changed to $5,400,000 (review F6 mutation)
+     first error: Year-One Math shows $5,400,000 ARR; the record computes 15 × $100/mo = $18,000 ARR
+Y2 audit=PASS [as-expected] conflicting total in Business Model prose without ARR/MRR wording
+Y3 audit=PASS [as-expected] conflicting ARR total without a currency symbol (USD suffix)
+Y4 audit=PASS [as-expected] a second Year-One computation outside Business Model (in The Solution)
+Y5 audit=PASS [as-expected] displayed tier price changed in the Business Model tier list ($25 -> $20/seat/month)
+
+CLI exit codes (node --experimental-strip-types scripts/audit-idea-mdx.mjs --file … --record … --siblings … --json):
+  C0: exit 1 ok=false errors=3
+  Q2: exit 0 ok=true errors=0
+  Q5: exit 0 ok=true errors=0
+  F2: exit 0 ok=true errors=0
+  P1: exit 0 ok=true errors=0
+  Y2: exit 0 ok=true errors=0
+  Y5: exit 0 ok=true errors=0

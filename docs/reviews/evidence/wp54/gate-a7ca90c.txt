@@ -1,0 +1,65 @@
+# WP54 gate on a7ca90c (orchestrator run; logs kept outside the repo)
+
+sha=a7ca90cd3c20c722a9fd80986c0911e5fc96aeab date=2026-10-03T05:48:49Z node=v22.23.1
+typecheck exit=0 secs=4
+lint exit=0 secs=11
+test exit=0 secs=29
+validate-idea-tags exit=0 secs=0
+engine-eval exit=0 secs=0
+build exit=0 secs=15
+check-server-traces exit=0 secs=0
+npm-audit exit=0 secs=1
+diff-check exit=0 secs=0
+diff-check-mergebase exit=0 secs=0
+DONE
+engine-replay exit=0
+
+## npm test per suite (in order: og, links, redirects x2, auth, security x2, sitemap, convex, engine, home, platform)
+# tests 91
+# pass 91
+# fail 0
+# tests 6
+# pass 6
+# fail 0
+# tests 38
+# pass 38
+# fail 0
+Test Files  2 passed (2)
+Tests  76 passed (76)
+Test Files  7 passed (7)
+Tests  85 passed (85)
+# tests 82
+# pass 82
+# fail 0
+Test Files  3 passed (3)
+Tests  86 passed (86)
+# tests 11
+# pass 11
+# fail 0
+Test Files  30 passed (30)
+Tests  390 passed (390)
+Test Files  28 passed (28)
+Tests  1021 passed (1021)
+Test Files  6 passed (6)
+Tests  42 passed (42)
+Test Files  25 passed (25)
+Tests  245 passed (245)
+
+## lint
+✖ 35 problems (0 errors, 35 warnings)
+
+## validate:idea-tags
+225/225 ideas pass tagging contract (0 fail)
+
+## engine:eval
+engine-eval (legacy auditor regression): 3/3 handwritten gold pages ok
+
+## npm audit --omit=dev --audit-level=high
+found 0 vulnerabilities
+
+## engine:replay
+engine:replay: fixture rfp-assistant → compile → deep audit (no provider keys; temp dir removed afterwards)
+  research  exit 0  (mode fixture; accepted 3 quotes, 3 stats, 3 prices)
+  compile   exit 0  (2713 words)
+  audit     exit 0  PASS  (deep bar: 2713 words (floor 2200), 2 verified quotes, 0 unbound figures)
+engine:replay PASS

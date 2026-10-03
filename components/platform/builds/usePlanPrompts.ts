@@ -2,21 +2,26 @@
 
 import { useEffect, useState } from "react";
 import type { PlanPrompt } from "@/lib/dashboard/weekend-prompts";
+import { isResearchWithheld } from "@/components/platform/RetiredResearch";
 
 export type PromptsState =
   | { status: "loading" }
   | { status: "ready"; prompts: PlanPrompt[] }
-  | { status: "failed" };
+  | { status: "failed" }
+  /** The idea is a retired engine draft (WP54-S5): its prompts are not published. */
+  | { status: "retired" };
 
 /** An idea's build prompts, from the members-only prompts route. */
 export function usePlanPrompts(slug: string | null): PromptsState {
+  const retired = slug !== null && isResearchWithheld(slug);
   const [state, setState] = useState<{ slug: string | null; value: PromptsState }>({
     slug: null,
     value: { status: "loading" },
   });
 
   useEffect(() => {
-    if (!slug) return;
+    // A retired draft's prompts route answers 404, so there is nothing to fetch.
+    if (!slug || retired) return;
     const controller = new AbortController();
     fetch(`/api/ideas/prompts?slug=${encodeURIComponent(slug)}`, { signal: controller.signal })
       .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
@@ -29,7 +34,8 @@ export function usePlanPrompts(slug: string | null): PromptsState {
         setState({ slug, value: { status: "failed" } });
       });
     return () => controller.abort();
-  }, [slug]);
+  }, [slug, retired]);
 
+  if (retired) return { status: "retired" };
   return state.slug === slug ? state.value : { status: "loading" };
 }
