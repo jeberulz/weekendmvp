@@ -18,8 +18,9 @@
  * After, only the MDX parser itself (third party) stays above 0.1 s at
  * this size, on runs of underscores, dots or list markers; it is bounded by
  * the 64 KiB input limit (ruling R16, the last block below).
- * Every case audits a 20,000-character run and must finish within
- * BUDGET_MS; one also checks that the rules still fire.
+ * Every case audits a 12,000-character run (inside the R16 block limits, so
+ * it reaches the rule it targets rather than the pre-parse refusal) and must
+ * finish within BUDGET_MS; one also checks that the rules still fire.
  */
 import { Buffer } from "node:buffer";
 import fs from "node:fs";
@@ -27,7 +28,15 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { auditEngineArtifact, MAX_AUDIT_BYTES } from "./artifact-audit.ts";
+import {
+  auditComplexityError,
+  auditEngineArtifact,
+  MAX_AUDIT_BYTES,
+  MAX_BLOCK_BRACKETS,
+  MAX_BLOCK_BYTES,
+  MAX_BLOCK_DELIMITERS,
+  MAX_TABLE_LINES,
+} from "./artifact-audit.ts";
 import {
   auditCli,
   auditPage,
@@ -41,11 +50,18 @@ import {
 import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
 import { pageProductName, parseYearOneLine, splitViaLabel } from "./page-format.ts";
 
-const RUN = 20_000;
+/** A long run, kept inside the R16 block limits so every case reaches the rules it targets. */
+const RUN = 12_000;
+const BACKSLASH = String.fromCharCode(92);
 const BUDGET_MS = 1_000;
 const SPACES = " ".repeat(RUN);
 const record = buildFixtureRecord();
 const page = compiledPage(record);
+
+/** "12,000". */
+function k(n: number): string {
+  return n.toLocaleString("en-US");
+}
 
 function elapsedMs(fn: () => unknown): number {
   const started = performance.now();
@@ -90,30 +106,32 @@ afterAll(() => {
 
 describe("the final artifact audit is linear on hostile runs (deep bar)", () => {
   const cases: Array<[string, string]> = [
-    ['"ARR" + 20,000 spaces in prose', before("The Solution", `Plans ARR${SPACES}end.`)],
-    ['"ARR" + 20,000 spaces in a build prompt', inPrompt(`ARR${SPACES}`)],
-    ['"ARR" + 20,000 tabs and line breaks in a build prompt', inPrompt(`ARR${"\t\n".repeat(RUN / 2)}`)],
-    ['"revenue of" + 20,000 spaces + "~" in a build prompt', inPrompt(`revenue of${SPACES}~`)],
-    ['"$1" + 20,000 spaces + "in annual" in a build prompt', inPrompt(`$1${SPACES}in annual`)],
-    ['"annual " x 2,857 + "ARR $" in a build prompt', inPrompt(`${"annual ".repeat(Math.floor(RUN / 7))}ARR $`)],
-    ["20,000 digits in a build prompt", inPrompt("1".repeat(RUN))],
-    ["20,000 digits in prose", before("The Solution", `${"1".repeat(RUN)}.`)],
-    ['"1," x 10,000 in a build prompt', inPrompt("1,".repeat(RUN / 2))],
-    ['"$1," x 10,000 in a build prompt', inPrompt(`$${"1,".repeat(RUN / 2)}`)],
-    ['"1 × $1" + 20,000 spaces in a build prompt', inPrompt(`1 × $1${SPACES}`)],
-    ['"1 × $1" + "/a" x 10,000 in a build prompt', inPrompt(`1 × $1${"/a".repeat(RUN / 2)}`)],
-    ["20,000 quotation marks in a build prompt", inPrompt('"'.repeat(RUN))],
-    ['"[[" + 20,000 spaces in a build prompt', inPrompt(`[[${SPACES}ev`)],
-    ["a competitor name 1,818 times in prose", before("The Solution", `${"CodeRabbit ".repeat(Math.floor(RUN / 11))}.`)],
-    ["10,000 one-line paragraphs", before("The Solution", "word\n\n".repeat(RUN / 6))],
+    [`"ARR" + ${k(RUN)} spaces in prose`, before("The Solution", `Plans ARR${SPACES}end.`)],
+    [`"ARR" + ${k(RUN)} spaces in a build prompt`, inPrompt(`ARR${SPACES}`)],
+    [`"ARR" + ${k(RUN)} tabs and line breaks in a build prompt`, inPrompt(`ARR${"\t\n".repeat(RUN / 2)}`)],
+    [`"revenue of" + ${k(RUN)} spaces + "~" in a build prompt`, inPrompt(`revenue of${SPACES}~`)],
+    [`"$1" + ${k(RUN)} spaces + "in annual" in a build prompt`, inPrompt(`$1${SPACES}in annual`)],
+    [`"annual " x ${k(Math.floor(RUN / 7))} + "ARR $" in a build prompt`, inPrompt(`${"annual ".repeat(Math.floor(RUN / 7))}ARR $`)],
+    [`${k(RUN)} digits in a build prompt`, inPrompt("1".repeat(RUN))],
+    [`${k(RUN)} digits in prose`, before("The Solution", `${"1".repeat(RUN)}.`)],
+    [`"1," x ${k(RUN / 2)} in a build prompt`, inPrompt("1,".repeat(RUN / 2))],
+    [`"$1," x ${k(RUN / 2)} in a build prompt`, inPrompt(`$${"1,".repeat(RUN / 2)}`)],
+    [`"1 × $1" + ${k(RUN)} spaces in a build prompt`, inPrompt(`1 × $1${SPACES}`)],
+    [`"1 × $1" + "/a" x ${k(RUN / 2)} in a build prompt`, inPrompt(`1 × $1${"/a".repeat(RUN / 2)}`)],
+    [`${k(RUN)} quotation marks in a build prompt`, inPrompt('"'.repeat(RUN))],
+    [`"[[" + ${k(RUN)} spaces in a build prompt`, inPrompt(`[[${SPACES}ev`)],
+    [`a competitor name ${k(Math.floor(RUN / 11))} times in prose`, before("The Solution", `${"CodeRabbit ".repeat(Math.floor(RUN / 11))}.`)],
+    [`${k(RUN / 6)} one-line paragraphs`, before("The Solution", "word\n\n".repeat(RUN / 6))],
   ];
   it.each(cases)("%s", (_label, mdx) => {
     const body = pageBody(mdx);
+    expect(auditComplexityError(body)).toBeNull();
     expect(elapsedMs(() => auditEngineArtifact(body, record, {}))).toBeLessThan(BUDGET_MS);
   });
 
-  it("still flags a revenue total and a computation after 20,000 spaces", () => {
-    const body = pageBody(before("The Solution", `Plans ARR${SPACES}$54,000 a year, or 45${SPACES}× $100/mo = $54,000.`));
+  it(`still flags a revenue total and a computation after ${k(RUN)} spaces`, () => {
+    const body = pageBody(before("The Solution", `Plans ARR${SPACES}$54,000 a year.\n\nOr 45${SPACES}× $100/mo = $54,000.`));
+    expect(auditComplexityError(body)).toBeNull();
     let errors: string[] = [];
     expect(elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(BUDGET_MS);
     expect(errors.some((e) => e.includes("states another revenue total"))).toBe(true);
@@ -123,15 +141,15 @@ describe("the final artifact audit is linear on hostile runs (deep bar)", () => 
   it("is linear without a usable record too (Business Model revenue check)", () => {
     for (const text of [`${"1".repeat(RUN)} ARR`, `ARR ${"1,".repeat(RUN / 2)}`]) {
       const body = pageBody(before("Recommended Tech Stack", text));
+      expect(auditComplexityError(body)).toBeNull();
       expect(elapsedMs(() => auditEngineArtifact(body, null, {}))).toBeLessThan(BUDGET_MS);
     }
   });
 });
 
 describe("page-format helpers are linear on hostile runs", () => {
-  it("pageProductName on a title with 20,000 spaces", () => {
-    // brief.title holds at most 20,000 characters.
-    const spaces = " ".repeat(RUN - 20);
+  it(`pageProductName on a title with ${k(RUN)} spaces`, () => {
+    const spaces = SPACES;
     for (const title of [`a${spaces}b`, `a for${spaces}b\nc`, `a${spaces}for b`]) {
       const titled = buildFixtureRecord((r) => {
         r.brief.title = title;
@@ -142,7 +160,7 @@ describe("page-format helpers are linear on hostile runs", () => {
     }
   });
 
-  it("splitViaLabel and parseYearOneLine on 20,000 spaces", () => {
+  it(`splitViaLabel and parseYearOneLine on ${k(RUN)} spaces`, () => {
     expect(elapsedMs(() => splitViaLabel(`a${SPACES}b`))).toBeLessThan(BUDGET_MS);
     expect(elapsedMs(() => splitViaLabel(`$12/user/month${SPACES}(via x.example)${SPACES}y`))).toBeLessThan(BUDGET_MS);
     expect(elapsedMs(() => parseYearOneLine(`45 × $100/mo = $54,000 ARR — ${"a ".repeat(RUN / 2)}x`))).toBeLessThan(BUDGET_MS);
@@ -151,20 +169,22 @@ describe("page-format helpers are linear on hostile runs", () => {
 
 describe("the base bar and the whole auditor are linear on hostile runs", () => {
   const cases: Array<[string, string]> = [
-    ['"ARR" + 20,000 spaces in a build prompt', inPrompt(`ARR${SPACES}`)],
-    ["20,000 blank lines in The Solution", before("Market Research", `${"\n".repeat(RUN)}x`)],
-    ["20,000 blank lines in Competitive Landscape", before("Business Model", `${"\n".repeat(RUN)}x`)],
-    ["20,000 blank lines in Business Model", before("Recommended Tech Stack", `${"\n".repeat(RUN)}x`)],
-    ["20,000 blank lines in the build prompts", before("Sources", `${"\n".repeat(RUN)}x`)],
-    ['20,000 "[" in Sources', `${page}\n${"[".repeat(RUN)}\n`],
-    ['20,000 "[" in prose', before("The Solution", `${"[".repeat(RUN)}.`)],
-    ["a heading with 20,000 spaces", before("The Solution", `## x${SPACES}y`)],
+    [`"ARR" + ${k(RUN)} spaces in a build prompt`, inPrompt(`ARR${SPACES}`)],
+    [`${k(RUN)} blank lines in The Solution`, before("Market Research", `${"\n".repeat(RUN)}x`)],
+    [`${k(RUN)} blank lines in Competitive Landscape`, before("Business Model", `${"\n".repeat(RUN)}x`)],
+    [`${k(RUN)} blank lines in Business Model`, before("Recommended Tech Stack", `${"\n".repeat(RUN)}x`)],
+    [`${k(RUN)} blank lines in the build prompts`, before("Sources", `${"\n".repeat(RUN)}x`)],
+    // One "[" per block: within the block limits, and the link patterns' text classes cross lines.
+    [`${k(RUN)} "[" in Sources`, `${page}\n${"[\n\n".repeat(RUN)}`],
+    [`${k(RUN)} "[" in prose`, before("The Solution", "[\n\n".repeat(RUN))],
+    [`a heading with ${k(RUN)} spaces`, before("The Solution", `## x${SPACES}y`)],
   ];
   it.each(cases)("%s", async (_label, mdx) => {
+    expect(auditComplexityError(mdx)).toBeNull();
     expect(await elapsedMsAsync(() => auditPage(mdx, record))).toBeLessThan(BUDGET_MS);
   });
 
-  it("the frontmatter slug and the section split on 20,000 spaces", async () => {
+  it(`the frontmatter slug and the section split on ${k(RUN)} spaces`, async () => {
     const audit = await importScript("scripts/audit-idea-mdx.mjs");
     const { frontmatterSlug, splitSections } = audit;
     if (typeof frontmatterSlug !== "function" || typeof splitSections !== "function") throw new Error("audit-idea-mdx exports missing");
@@ -399,5 +419,91 @@ describe("the auditor refuses a page over 64 KiB before parsing it (R16)", () =>
     expect(pages.length).toBeGreaterThan(200);
     const over = pages.filter((file) => fs.statSync(file).size > MAX_AUDIT_BYTES).map((file) => path.relative(REPO_ROOT, file));
     expect(over).toEqual([]);
+  });
+});
+
+/**
+ * Ruling R16, second half: the MDX parser is quadratic within one block of
+ * text (a paragraph, list or table: lines with no blank line between them)
+ * and, for GFM tables, across the page. Just under 64 KiB, alternating
+ * emphasis delimiters ("*_", "_a*") took it 15-41 s, strikethrough pairs
+ * ("~_") as long, a run of "]" about 40 s, and 256 small tables 25 s. So
+ * before parsing, the auditor refuses a block with more than 1,024 emphasis
+ * or strikethrough delimiters, more than 1,024 brackets or more than 16 KiB,
+ * and a page with more than 1,024 lines holding a "|". On the published pages
+ * the largest block is about 3.2 KB, with at most 124 delimiters and 52
+ * brackets, and no page has more than 20 lines with a "|".
+ */
+describe("the auditor refuses a page the MDX parser cannot handle quickly (R16)", () => {
+  const BLOCK_ERROR =
+    /^(the text block at line \d+ (has [\d,]+ emphasis delimiters \(\*, _ or ~\), over the limit of 1,024|has [\d,]+ brackets \(\[ or \]\), over the limit of 1,024|is [\d,]+ bytes, over the limit of 16,384) per block|page has [\d,]+ lines with a table pipe \(\|\), over the limit of 1,024 per page) \(ruling R16\); refused before parsing$/;
+  const NBSP = String.fromCharCode(0xa0);
+
+  it("bounds a block at 1,024 delimiters, 1,024 brackets and 16 KiB, and a page at 1,024 table lines", () => {
+    expect([MAX_BLOCK_DELIMITERS, MAX_BLOCK_BRACKETS, MAX_BLOCK_BYTES, MAX_TABLE_LINES]).toEqual([1_024, 1_024, 16_384, 1_024]);
+  });
+
+  const probes: Array<[string, string]> = [
+    ['"*_" alternating (the reviewer\'s probe)', "*_".repeat(20_000)],
+    ['"_a*", delimiters apart', "_a*".repeat(13_000)],
+    ['"~_", strikethrough pairs', "~_".repeat(20_000)],
+    ['a run of "]"', "]".repeat(40_000)],
+    ['a run of "..." (block size)', "...".repeat(13_000)],
+    ["256 small tables (table lines)", Array.from({ length: 256 }, () => `a|b\n-|-\n${"a|b\n".repeat(30)}`).join("\n")],
+  ];
+  it.each(probes)("refuses %s at once, before parsing", async (_label, block) => {
+    const mdx = `${page}\n${block}\n`;
+    expect(Buffer.byteLength(mdx, "utf8")).toBeLessThanOrEqual(MAX_AUDIT_BYTES);
+    let result: { ok: boolean; errors: string[]; metrics: unknown } = { ok: true, errors: [], metrics: null };
+    const ms = await elapsedMsAsync(async () => {
+      result = await auditPage(mdx, record);
+    });
+    expect(ms).toBeLessThan(BUDGET_MS);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toMatch(BLOCK_ERROR);
+    expect(result.metrics).toBeNull();
+    let errors: string[] = [];
+    expect(elapsedMs(() => (errors = auditEngineArtifact(pageBody(mdx), record, {}).errors))).toBeLessThan(BUDGET_MS);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(BLOCK_ERROR);
+  });
+
+  it("counts per block, at the limits", () => {
+    expect(auditComplexityError("*a".repeat(1_024))).toBeNull();
+    expect(auditComplexityError("*a".repeat(1_025))).toMatch(/^the text block at line 1 has 1,025 emphasis delimiters/);
+    expect(auditComplexityError("~a_".repeat(512))).toBeNull();
+    expect(auditComplexityError("[a".repeat(1_024))).toBeNull();
+    expect(auditComplexityError("a]".repeat(1_025))).toMatch(/^the text block at line 1 has 1,025 brackets/);
+    expect(auditComplexityError("a".repeat(16_384))).toBeNull();
+    expect(auditComplexityError("a".repeat(16_385))).toMatch(/^the text block at line 1 is 16,385 bytes/);
+    // A blank line (nothing, spaces or tabs) ends a block; a line of non-breaking spaces does not.
+    expect(auditComplexityError(`${"*a".repeat(1_000)}\n\n${"*a".repeat(1_000)}`)).toBeNull();
+    expect(auditComplexityError(`${"*a".repeat(1_000)}\n \t\r\n${"*a".repeat(1_000)}`)).toBeNull();
+    expect(auditComplexityError(`${"*a".repeat(1_000)}\n${NBSP}\n${"*a".repeat(1_000)}`)).toMatch(/has 2,000 emphasis delimiters/);
+    // Escaped delimiters and brackets are text; an escaped backslash escapes nothing after it.
+    expect(auditComplexityError(`${BACKSLASH}*a`.repeat(2_000))).toBeNull();
+    expect(auditComplexityError(`${BACKSLASH}[${BACKSLASH}]`.repeat(1_000))).toBeNull();
+    expect(auditComplexityError(`${BACKSLASH}${BACKSLASH}*`.repeat(1_100))).toMatch(/has 1,100 emphasis delimiters/);
+    // The block's first line is reported.
+    expect(auditComplexityError(`a\n\nb\n${"]".repeat(1_100)}`)).toMatch(/^the text block at line 3 has 1,100 brackets/);
+    // Table lines count across the page, blank lines or not; an escaped pipe is text.
+    expect(auditComplexityError("a|b\n\n".repeat(1_024))).toBeNull();
+    expect(auditComplexityError("a|b\n\n".repeat(1_025))).toMatch(/^page has 1,025 lines with a table pipe/);
+    expect(auditComplexityError(`a${BACKSLASH}|b\n\n`.repeat(2_000))).toBeNull();
+  });
+
+  it("changes no verdict of the published corpus: every block of every MDX page is within the limits", () => {
+    const dirs = ["content/ideas", "engine/drafts", "content/articles", "content/newsletter-pages"];
+    const pages = dirs.flatMap((dir) =>
+      fs.existsSync(path.join(REPO_ROOT, dir))
+        ? fs.readdirSync(path.join(REPO_ROOT, dir)).filter((f) => f.endsWith(".mdx")).map((f) => path.join(REPO_ROOT, dir, f))
+        : [],
+    );
+    expect(pages.length).toBeGreaterThan(300);
+    const refused = pages
+      .map((file) => [path.relative(REPO_ROOT, file), auditComplexityError(fs.readFileSync(file, "utf8"))] as const)
+      .filter(([, error]) => error !== null);
+    expect(refused).toEqual([]);
   });
 });

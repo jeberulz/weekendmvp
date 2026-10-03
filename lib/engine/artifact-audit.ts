@@ -192,17 +192,110 @@ let processor: ReturnType<typeof createProcessor> | null = null;
 
 /**
  * The largest page the auditor reads (ruling R16): 64 KiB. The MDX parser is
- * quadratic on some character runs (a 64 KiB underscore run takes it about
- * 2.5 s, 128 KiB about 13 s), so a larger page is refused before parsing.
- * Published idea pages are under 25 KB and compiled pages about 20 KB.
+ * quadratic in places, so a larger page is refused before parsing, and so is
+ * a page auditComplexityError refuses. Published idea pages are under 25 KB
+ * and compiled pages about 20 KB.
  */
 export const MAX_AUDIT_BYTES = 65_536;
+
+const formatCount = (value: number) => value.toLocaleString("en-US");
 
 /** The refusal for a page of `bytes` UTF-8 bytes, or null when it is within MAX_AUDIT_BYTES. */
 export function auditSizeError(bytes: number): string | null {
   if (bytes <= MAX_AUDIT_BYTES) return null;
-  const n = (value: number) => value.toLocaleString("en-US");
-  return `page is ${n(bytes)} bytes, over the ${n(MAX_AUDIT_BYTES)}-byte (64 KiB) audit limit (ruling R16); refused before parsing`;
+  return `page is ${formatCount(bytes)} bytes, over the ${formatCount(MAX_AUDIT_BYTES)}-byte (64 KiB) audit limit (ruling R16); refused before parsing`;
+}
+
+/**
+ * Bounds the auditor checks before parsing (ruling R16), where the MDX parser
+ * is quadratic. Within a block (a run of lines with no blank line between
+ * them: a paragraph, list or table) it resolves emphasis, strikethrough and
+ * link brackets in quadratic time: just under 64 KiB, alternating delimiters
+ * ("*_", "_a*") took it 15-41 s, strikethrough pairs ("~_") as long, and a
+ * run of "]" about 40 s. Across the page, its GFM table step is quadratic in
+ * the number of table lines: 256 small tables in 64 KiB took 25 s. Within
+ * these bounds a 64 KiB page parses in about a second. On the published
+ * pages the largest block is about 3.2 KB, with at most 124 delimiters and
+ * 52 brackets, and no page has more than 20 lines with a "|".
+ */
+export const MAX_BLOCK_DELIMITERS = 1_024;
+export const MAX_BLOCK_BRACKETS = 1_024;
+export const MAX_BLOCK_BYTES = 16_384;
+export const MAX_TABLE_LINES = 1_024;
+
+/** A blank line ends a block: only spaces and tabs, as the MDX parser reads it. */
+const BLANK_LINE_RE = /^[ \t]*\r?$/;
+/** A backslash before one of these escapes it (CommonMark character escapes). */
+const ASCII_PUNCTUATION_RE = /[!-/:-@[-`{-~]/;
+
+/**
+ * The refusal for `text` past one of these bounds, or null: the first block
+ * with too many delimiters (unescaped "*", "_" or "~"), brackets (unescaped
+ * "[" or "]") or bytes, else too many lines holding an unescaped "|". A
+ * backslash before ASCII punctuation escapes it. One pass over the text.
+ * `lineOffset` is added to the reported line (the frontmatter's lines).
+ */
+export function auditComplexityError(text: string, lineOffset = 0): string | null {
+  let line = 0;
+  let blockLine = 0;
+  let bytes = 0;
+  let delimiters = 0;
+  let brackets = 0;
+  let tableLines = 0;
+  const verdict = (): string | null => {
+    if (blockLine === 0) return null;
+    const at = `the text block at line ${formatCount(blockLine + lineOffset)}`;
+    const tail = "per block (ruling R16); refused before parsing";
+    if (delimiters > MAX_BLOCK_DELIMITERS) {
+      return `${at} has ${formatCount(delimiters)} emphasis delimiters (*, _ or ~), over the limit of ${formatCount(MAX_BLOCK_DELIMITERS)} ${tail}`;
+    }
+    if (brackets > MAX_BLOCK_BRACKETS) {
+      return `${at} has ${formatCount(brackets)} brackets ([ or ]), over the limit of ${formatCount(MAX_BLOCK_BRACKETS)} ${tail}`;
+    }
+    if (bytes > MAX_BLOCK_BYTES) {
+      return `${at} is ${formatCount(bytes)} bytes, over the limit of ${formatCount(MAX_BLOCK_BYTES)} ${tail}`;
+    }
+    return null;
+  };
+  for (let start = 0; start <= text.length; ) {
+    const newline = text.indexOf("\n", start);
+    const end = newline === -1 ? text.length : newline;
+    const lineText = text.slice(start, end);
+    line += 1;
+    if (BLANK_LINE_RE.test(lineText)) {
+      const error = verdict();
+      if (error) return error;
+      blockLine = 0;
+      bytes = 0;
+      delimiters = 0;
+      brackets = 0;
+    } else {
+      bytes += Buffer.byteLength(lineText, "utf8") + (blockLine === 0 ? 0 : 1);
+      if (blockLine === 0) blockLine = line;
+      let pipe = false;
+      for (let i = 0; i < lineText.length; i += 1) {
+        const ch = lineText[i] ?? "";
+        if (ch === "\\" && ASCII_PUNCTUATION_RE.test(lineText[i + 1] ?? "")) {
+          i += 1;
+        } else if (ch === "*" || ch === "_" || ch === "~") {
+          delimiters += 1;
+        } else if (ch === "[" || ch === "]") {
+          brackets += 1;
+        } else if (ch === "|") {
+          pipe = true;
+        }
+      }
+      if (pipe) tableLines += 1;
+    }
+    if (newline === -1) break;
+    start = newline + 1;
+  }
+  const last = verdict();
+  if (last) return last;
+  if (tableLines > MAX_TABLE_LINES) {
+    return `page has ${formatCount(tableLines)} lines with a table pipe (|), over the limit of ${formatCount(MAX_TABLE_LINES)} per page (ruling R16); refused before parsing`;
+  }
+  return null;
 }
 
 /** Parse an MDX body (no frontmatter) the way the site does, or the parser's error. */
@@ -1598,7 +1691,7 @@ export function auditEngineArtifact(
     competitorLinks: [],
     metrics: { verifiedQuotes: 0, marketRows: 0, competitorRows: 0, unboundFigures: 0 },
   };
-  const tooLarge = auditSizeError(Buffer.byteLength(body, "utf8"));
+  const tooLarge = auditSizeError(Buffer.byteLength(body, "utf8")) ?? auditComplexityError(body, ctx.lineOffset);
   if (tooLarge) {
     ctx.errors.push(tooLarge);
     return result;

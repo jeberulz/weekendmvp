@@ -552,6 +552,27 @@ source acquisition statuses, accepted counts per kind, and rejected
   file larger than 64 KiB before parsing it (the largest published idea page
   is about 25 KB; compiled engine pages are about 20 KB).
 
+- **R16 implementation notes (2026-10-03).** The 64 KiB cap is checked from
+  the file size (`auditIdeaFile`: CLI `--file`, `--slug`, `--all`) and the
+  body's byte length (`auditEngineArtifact`) before anything is read or
+  parsed. The cap alone does not bound the parser: within one block (lines
+  with no blank line between them) it resolves emphasis, strikethrough and
+  link brackets in quadratic time, and its GFM table step is quadratic in
+  the page's table lines. Just under 64 KiB, alternating delimiters ("*_",
+  "_a*") took it 15-41 s (the audit CLI 19 s on the security reviewer's
+  probe), strikethrough pairs ("~_") as long, a run of "]" about 40 s, and
+  256 small tables 25 s; compiled engine text cannot produce these (its
+  escaped forms parse in about 0.1 s). So `auditComplexityError` also
+  refuses, in one linear pass before parsing, a block with more than 1,024
+  unescaped emphasis or strikethrough delimiters (`*`, `_`, `~`), more than
+  1,024 unescaped brackets or more than 16 KiB, and a page with more than
+  1,024 lines that hold an unescaped `|`. On the published pages the largest
+  block is about 3.2 KB with at most 124 delimiters and 52 brackets, and no
+  page has more than 20 lines with a `|`, so `npm run audit:idea -- --all`
+  keeps every verdict (196/225). Within these bounds the slowest page
+  measured takes about 1 s through the audit CLI (lists in 16 KiB blocks); a
+  refused page returns in about 0.2 s.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

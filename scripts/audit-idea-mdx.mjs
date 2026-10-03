@@ -24,7 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { auditEngineArtifact, auditSizeError, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
+import { auditComplexityError, auditEngineArtifact, auditSizeError, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
 import { hasEngineMarker as compiledPageHasEngineMarker } from "../lib/engine/compile.ts";
 import {
   CANONICAL_SECTION_TITLES,
@@ -350,14 +350,19 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     };
   }
 
-  // Ruling R16: a page over 64 KiB is refused before it is read or parsed
-  // (the MDX parser is quadratic on some character runs).
+  // Ruling R16: a page over 64 KiB is refused before it is read, and a page
+  // the MDX parser cannot handle quickly (auditComplexityError) before it is
+  // parsed: the parser is quadratic in places.
   const tooLarge = auditSizeError(fs.statSync(filePath).size);
   if (tooLarge) {
     return { ok: false, slug, errors: [...errors, tooLarge], warnings, metrics: null };
   }
 
   const raw = fs.readFileSync(filePath, "utf8");
+  const tooComplex = auditComplexityError(raw);
+  if (tooComplex) {
+    return { ok: false, slug, errors: [...errors, tooComplex], warnings, metrics: null };
+  }
   const { body } = splitFrontmatter(raw);
   const frontmatterLines = raw.slice(0, raw.length - body.length).split("\n").length - 1;
   const sections = splitSections(body);
@@ -701,8 +706,11 @@ const HELP = `Usage:
   Exit codes: 0 every page passed, 1 any page failed, 2 usage error.
 
 A page larger than 64 KiB (65,536 bytes) fails before it is parsed (ruling
-R16): the MDX parser slows sharply on long character runs. Published idea
-pages are under 25 KB.
+R16), and so does a page with a block of text (lines with no blank line
+between them) holding more than 1,024 emphasis delimiters (*, _ or ~), more
+than 1,024 brackets or more than 16 KiB, or with more than 1,024 lines that
+hold a table pipe (|): the MDX parser is quadratic in those places.
+Published idea pages are under 25 KB, their largest block about 3.2 KB.
 
 Engine pages (frontmatter engine: true, manifest source engine:*,
 engine-draft-* drafts in engine/drafts/, or --record) get the deep bar:
