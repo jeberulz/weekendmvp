@@ -1,3 +1,4 @@
+import { deriveRevision } from "./derive";
 import { approvalValidity, completeActivation, revokeApproval, transitionRelease } from "./rules";
 import { appendAudit, nowIso, simulatedSuffix, touch, type EditorialState, type ReleaseRecord } from "./state";
 
@@ -14,7 +15,7 @@ export type WorkerReport =
   /** The activation's outcome is unknown; `observation` is what a probe saw, if anything yet. */
   | { kind: "uncertain"; observation: { activated: boolean } | null };
 
-export const WORKER_STATES = ["preparing", "publish_requested", "deploying", "verifying", "activating"] as const;
+export const WORKER_STATES = ["preparing", "publish_requested", "deploying", "verifying", "activating", "verifying_public"] as const;
 
 export function isWorkerState(state: ReleaseRecord["state"]): boolean {
   return (WORKER_STATES as readonly string[]).includes(state);
@@ -82,6 +83,31 @@ export async function workerStep(state: EditorialState, release: ReleaseRecord, 
     return true;
   }
 
+  if (release.state === "verifying_public") {
+    if (report.kind === "failed") {
+      const firstFailure = release.error === null;
+      release.error = { code: report.code, message: report.message };
+      if (firstFailure) note(state, release, "Public page verification failed; the worker will retry");
+      return true;
+    }
+    if (report.kind !== "completed") return false;
+    release.error = null;
+    transitionRelease(state, release, "succeeded", "Exact released artifact verified on the public site");
+    appendAudit(state, {
+      actor: state.env.workerActor,
+      action: "release.succeeded",
+      outcome: "succeeded",
+      ideaId: release.ideaId,
+      revisionId: release.revisionId,
+      releaseId: release.id,
+      reason: null,
+      detail: "Exact released artifact verified on the public site",
+      code: null,
+    });
+    touch(state);
+    return true;
+  }
+
   // A later unpublish, trash or activation fences every older job.
   if (release.state !== "preparing" && idea.generation !== release.generation) {
     transitionRelease(state, release, "cancelled", "Superseded: the idea's release generation moved on");
@@ -146,6 +172,24 @@ export async function workerStep(state: EditorialState, release: ReleaseRecord, 
         failRelease(state, release, "KILL_SWITCH_ENGAGED", "Blocked by the publishing kill switch before activation");
         return true;
       }
+      if (release.operation === "rollback" && state.env.checks.externalRun) {
+        const revision = release.revisionId ? state.revisions.get(release.revisionId) : undefined;
+        const checkedAt = Date.parse(revision?.checksRunAt ?? "");
+        const derived = revision ? await deriveRevision(state, revision.id) : null;
+        if (!revision || !derived || !Number.isFinite(checkedAt) || state.clock.now() - checkedAt > 10 * 60_000 ||
+            !derived.checksCurrent || derived.issues.some((issue) => issue.severity === "blocker")) {
+          failRelease(state, release, "ROLLBACK_CHECKS_STALE", "Rollback safety checks are no longer current");
+          return true;
+        }
+      } else if (release.operation !== "rollback") {
+        const approval = release.approvalId ? state.approvals.get(release.approvalId) : undefined;
+        const validity = approval ? await approvalValidity(state, approval) : { valid: false as const, reason: "Missing approval" };
+        if (!validity.valid) {
+          if (approval) revokeApproval(state, approval, validity.reason, state.env.workerActor);
+          failRelease(state, release, "APPROVAL_NOT_ACTIVE", `Approval no longer valid: ${validity.reason}`);
+          return true;
+        }
+      }
       if (report.kind === "failed") {
         failRelease(state, release, report.code, report.message);
         return true;
@@ -161,7 +205,7 @@ export async function workerStep(state: EditorialState, release: ReleaseRecord, 
         note(state, release, `Activation outcome uncertain${sfx}`);
         return true;
       }
-      completeActivation(state, idea, release, `Live pointer advanced and public surfaces probed${sfx}`);
+      completeActivation(state, idea, release, `Live pointer advanced; checking public delivery${sfx}`, !state.env.simulated);
       return true;
     }
 

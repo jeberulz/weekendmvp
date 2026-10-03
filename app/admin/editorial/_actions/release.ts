@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { commandIdSchemas, reasonSchema } from "@/lib/editorial/contracts/commands";
+import { fail } from "@/lib/editorial/contracts/errors";
 import { editorialIdSchema, idempotencyKeySchema } from "@/lib/editorial/contracts/primitives";
 import { withWorkspace } from "@/lib/editorial/runtime/action-support";
 
@@ -75,9 +76,17 @@ const rollbackSchema = z.strictObject({
 });
 
 export async function requestRollbackAction(input: z.input<typeof rollbackSchema>) {
-  return withWorkspace(rollbackSchema, input, ({ repository }, data) =>
-    repository.requestRollback(data.ideaId, data.targetReleaseId, data.expectedLiveReleaseId, data.reason, data.idempotencyKey),
-  );
+  return withWorkspace(rollbackSchema, input, async ({ repository }, data) => {
+    const detail = await repository.getIdea(data.ideaId);
+    if (!detail.ok) return fail(detail.error.code, detail.error.message);
+    const target = detail.value.releases.find((release) => release.id === data.targetReleaseId);
+    if (!target?.revisionId) return fail("NOT_FOUND", "Choose an earlier release with a saved revision.");
+    const revision = await repository.getRevision(data.ideaId, target.revisionId);
+    if (!revision.ok) return fail(revision.error.code, revision.error.message);
+    const checked = await repository.runChecks(target.revisionId, revision.value.hashes.artifact);
+    if (!checked.ok) return fail(checked.error.code, checked.error.message);
+    return repository.requestRollback(data.ideaId, data.targetReleaseId, data.expectedLiveReleaseId, data.reason, data.idempotencyKey);
+  });
 }
 
 const unpublishSchema = z.strictObject({

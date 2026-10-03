@@ -1,6 +1,5 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
 import { extractIdea } from "@/lib/home/extract";
 import type { IdeaExtract, Prompt, Tier } from "@/lib/home/types";
 import { readCanonicalIdeaBody } from "@/lib/canonical-idea-body";
@@ -8,12 +7,10 @@ import { readCanonicalIdeaBody } from "@/lib/canonical-idea-body";
 /**
  * WP44-S9 and S11. Parts of an idea's MDX the dashboard needs: its build
  * prompts (weekend plans), the brief for a prompt pack, and its pricing tiers
- * (compare). Cached with the rest of the idea content.
+ * (compare). The visibility check runs on every request so an unpublish
+ * cannot leave a cached prompt pack or export available.
  */
 async function extractOf(slug: string): Promise<IdeaExtract | null> {
-  "use cache";
-  cacheTag("ideas");
-  cacheLife("hours");
   const body = await readCanonicalIdeaBody(slug);
   return body ? extractIdea(body.content) : null;
 }

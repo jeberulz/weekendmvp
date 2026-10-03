@@ -4,6 +4,7 @@ import type { IngestionPrincipal } from "../../lib/editorial/contracts/principal
 import { editorialSubmissionSchema, SUBMISSION_PRODUCERS } from "../../lib/editorial/contracts/submission";
 import { sha256Hex } from "../../lib/editorial/domain/hash";
 import { WORKER_STATES } from "../../lib/editorial/core/worker";
+import { activatePublicRelease } from "./publication";
 import { internalMutation, internalQuery } from "../_generated/server";
 import { serviceRepository } from "./session";
 import { literals } from "./validators";
@@ -16,8 +17,7 @@ import { literals } from "./validators";
  *   Validated engine submissions must use `ingest.validateAndImport` instead.
  * - `workerQueue` / `workerAdvance`: the release worker (WP46-E6) reports
  *   what happened outside; the shared rules re-check the kill switch,
- *   approval and generation fence before every move. Nothing calls them yet,
- *   and the live environment refuses release intents until E6.
+ *   approval and generation fence before every move.
  * - `setKillSwitch`: the operator's publishing stop.
  */
 
@@ -158,14 +158,52 @@ const workerReport = v.union(
 );
 
 export const workerAdvance = internalMutation({
-  args: { releaseId: v.string(), report: workerReport },
+  args: { releaseId: v.string(), expectedState: v.optional(literals(WORKER_STATES)), report: workerReport },
   returns: v.object({ moved: v.boolean() }),
   handler: async (ctx, args) => {
+    const before = await ctx.db.query("editorial_releases")
+      .withIndex("by_key", (q) => q.eq("key", args.releaseId)).unique();
+    if (!before || (args.expectedState && before.state !== args.expectedState)) return { moved: false };
     const report =
       args.report.kind === "failed"
         ? { kind: "failed" as const, code: args.report.code.slice(0, 64), message: args.report.message.slice(0, 600) }
         : args.report;
-    return serviceRepository(ctx).workerAdvance(args.releaseId, report);
+    const result = await serviceRepository(ctx).workerAdvance(args.releaseId, report);
+    if (result.moved && before.state === "activating" && report.kind === "completed") {
+      await activatePublicRelease(ctx, args.releaseId);
+    }
+    return result;
+  },
+});
+
+/** Internal, bounded work description for the durable coordinator. */
+export const workerItem = internalQuery({
+  args: { releaseId: v.string() },
+  returns: v.union(v.null(), v.object({
+    releaseId: v.string(),
+    slug: v.string(),
+    state: literals(WORKER_STATES),
+    operation: v.string(),
+    staged: v.boolean(),
+    artifactHash: v.union(v.string(), v.null()),
+  })),
+  handler: async (ctx, { releaseId }) => {
+    const release = await ctx.db.query("editorial_releases")
+      .withIndex("by_key", (q) => q.eq("key", releaseId)).unique();
+    if (!release || !WORKER_STATES.includes(release.state as typeof WORKER_STATES[number])) return null;
+    const idea = await ctx.db.query("editorial_ideas")
+      .withIndex("by_key", (q) => q.eq("key", release.ideaId)).unique();
+    if (!idea) return null;
+    const version = release.operation === "unpublish" ? null : await ctx.db.query("editorial_public_versions")
+      .withIndex("by_releaseId", (q) => q.eq("releaseId", releaseId)).unique();
+    return {
+      releaseId,
+      slug: idea.slug,
+      state: release.state as typeof WORKER_STATES[number],
+      operation: release.operation,
+      staged: Boolean(version),
+      artifactHash: version?.artifactHash ?? null,
+    };
   },
 });
 

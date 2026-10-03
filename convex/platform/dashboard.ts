@@ -173,6 +173,9 @@ export const setSaved = mutation({
     if (idea === null) {
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
     }
+    if (args.saved && idea.editorialVisibility === "removed") {
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    }
     const existing = await ownerIntentFor(ctx, user._id, idea._id);
     const version = existing?.saveVersion ?? 0;
     if (args.expectedVersion !== undefined) {

@@ -79,6 +79,35 @@ export function buildIdeaSlug(pathname: string): string | null {
   return match?.[1] ?? null;
 }
 
+function publicIdeaSlug(pathname: string): string | null {
+  const route = /^\/ideas\/([a-z0-9-]+)$/.exec(pathname);
+  if (route) return route[1];
+  const art = /^\/image\/og\/idea\/([a-z0-9-]+)\.png$/.exec(pathname);
+  return art?.[1] ?? null;
+}
+
+async function publicIdeaDecision(slug: string): Promise<"legacy" | "released" | "removed" | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timedOut = new Promise<null>((resolve) => {
+      timer = setTimeout(() => resolve(null), EDITORIAL_GATE_TIMEOUT_MS);
+    });
+    const result = await Promise.race([fetchQuery(api.editorial.public.visibility, { slug }), timedOut]);
+    return result ?? null;
+  } catch {
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function publicIdeaUnavailable(): NextResponse {
+  return new NextResponse("Temporarily Unavailable", {
+    status: 503,
+    headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
+  });
+}
+
 /**
  * WP28-S2. What a given `Host:` header is allowed to reach.
  *
@@ -388,13 +417,31 @@ export async function middleware(
     return NextResponse.redirect(target, 308);
   }
 
+  // Request-time publication gate precedes static MDX and image delivery.
+  // PPR may otherwise flush a 200 shell before route-level notFound(), and
+  // public/ images bypass React entirely. A backend outage never falls back
+  // to an unpublished file or stale CDN response.
+  const ideaSlug = publicIdeaSlug(request.nextUrl.pathname);
+  if (ideaSlug !== null) {
+    const decision = await publicIdeaDecision(ideaSlug);
+    if (decision === null) return publicIdeaUnavailable();
+    if (decision === "removed") return hostRejectedResponse();
+    if (request.nextUrl.pathname.startsWith("/image/og/idea/") && decision === "released") {
+      return hostRejectedResponse();
+    }
+  }
+
   // Genuine 404 for unknown `/build/{slug}`. Route-level `notFound()` is a
   // soft 404 under cacheComponents (PPR flushes 200 before it runs) — proven
   // on WP27. Middleware can set a real status. Known slugs come from the
   // manifest-derived set so this does not depend on Convex availability.
   const buildSlug = buildIdeaSlug(request.nextUrl.pathname);
-  if (buildSlug !== null && !isKnownIdeaSlug(buildSlug)) {
-    return hostRejectedResponse();
+  if (buildSlug !== null) {
+    const decision = await publicIdeaDecision(buildSlug);
+    if (decision === null) return isKnownIdeaSlug(buildSlug) ? publicIdeaUnavailable() : hostRejectedResponse();
+    if (decision === "removed" || (decision === "legacy" && !isKnownIdeaSlug(buildSlug))) {
+      return hostRejectedResponse();
+    }
   }
 
   const response = await platformAuthMiddleware(request, event);
@@ -425,6 +472,7 @@ export const config = {
     // the same crawler-directive class as robots.txt and sitemap.xml, both of
     // which were already re-added here for the same reason.
     "/llms.txt",
+    "/image/og/idea/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff2?|css|js|map)$).*)",
   ],
 };

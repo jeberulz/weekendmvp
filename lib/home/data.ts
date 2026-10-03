@@ -2,7 +2,8 @@ import "server-only";
 
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { cacheLife, cacheTag } from "next/cache";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 
 import { categoryName, normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { readMdxFile } from "@/lib/mdx";
@@ -68,24 +69,50 @@ function toInside({ idea, extract }: Loaded): InsideIdea {
 
 /**
  * Everything the homepage shows, from `ideas/manifest.json` and the idea MDX.
- * Cached for an hour, so a new week's picks land within the hour of Monday
- * 00:00 UTC and a new publish shows up without a manual step.
+ * The editorial visibility overlay is read on every request. A cached
+ * manifest-only homepage could keep an unpublished idea visible for hours.
  */
 export async function getHomeData(): Promise<HomeData> {
-  "use cache";
-  cacheTag("ideas");
-  cacheLife("hours");
-
   const now = new Date();
   const manifest = JSON.parse(await readFile(path.join(process.cwd(), "ideas/manifest.json"), "utf8")) as {
     ideas?: ManifestIdea[];
   };
-  const ideas = liveIdeas(manifest.ideas ?? []);
+  const publications = await fetchQuery(api.editorial.public.listing, {});
+  const publicBySlug = new Map(publications.map((row) => [row.slug, row]));
+  const merged = new Map((manifest.ideas ?? []).map((idea) => [idea.slug, idea]));
+  for (const row of publications) {
+    if (row.state === "removed") {
+      merged.delete(row.slug);
+    } else if (row.metadata && row.title) {
+      const prior = merged.get(row.slug);
+      merged.set(row.slug, {
+        ...prior,
+        slug: row.slug,
+        title: row.title,
+        description: row.metadata.description,
+        category: row.metadata.category,
+        buildTime: row.metadata.buildTime,
+        revenueGoal: row.metadata.revenueGoal,
+        tools: row.metadata.tools,
+        audiences: row.metadata.audiences,
+        publishedAt: row.firstPublishedAt ?? row.updatedAt,
+      });
+    }
+  }
+  const ideas = liveIdeas([...merged.values()]);
 
   const loaded: Loaded[] = await Promise.all(
     ideas.map(async (idea) => {
-      const file = await readMdxFile(IDEAS_DIR, idea.slug);
-      const extract = ideaHomeExtract(idea, file?.content ?? "");
+      const publication = publicBySlug.get(idea.slug);
+      let content: string;
+      if (publication?.state === "released") {
+        const selected = await fetchQuery(api.editorial.public.bySlug, { slug: idea.slug });
+        if (selected.state !== "released") throw new Error("Homepage publication changed during rendering.");
+        content = selected.markdown;
+      } else {
+        content = (await readMdxFile(IDEAS_DIR, idea.slug))?.content ?? "";
+      }
+      const extract = ideaHomeExtract(idea, content);
       return { idea, extract, art: hasOgArt(idea) };
     }),
   );

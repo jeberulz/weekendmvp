@@ -131,9 +131,10 @@ describe("WP44-S6 Save endpoint checks", () => {
 });
 
 describe("WP44-S6 idea page", () => {
-  test("the page stays static: no cookies or headers read on the server", () => {
+  test("the page reads publication state per request without reading a session", () => {
     expect(ideaPageSource).not.toMatch(/from "next\/headers"/);
-    expect(ideaPageSource).not.toContain("connection()");
+    expect(ideaPageSource).toContain("connection()");
+    expect(ideaPageSource).toContain("api.editorial.public.bySlug");
     expect(ideaPageSource).not.toContain("AuthPlatformProvider");
   });
 

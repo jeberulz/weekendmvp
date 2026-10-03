@@ -28,7 +28,7 @@ export const source = query({
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
     // An engine draft's research is withheld, so it exports no prompt pack.
-    if (idea === null || isEngineDraftSlug(idea.slug)) {
+    if (idea === null || isEngineDraftSlug(idea.slug) || idea.editorialVisibility === "removed") {
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
     }
     return {

@@ -1,4 +1,4 @@
-import { excludeEngineDrafts, inMemberCatalogue, isRetiredIdea } from "./catalogPolicy";
+import { excludeUnlistedIdeas, inMemberCatalogue, isRetiredIdea } from "./catalogPolicy";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 // Compatibility window: retain pre-WP44 clients and frontend rollback. Remove only in a later gated release.
 export { dashboardSummary, explore, setIntent } from "./legacyIdeas";
@@ -149,7 +149,7 @@ export const library = query({
     // Retired ideas and engine drafts never reach items, totals or facets.
     const base = candidates.filter(
       (idea) =>
-        inMemberCatalogue(idea.slug) &&
+        inMemberCatalogue(idea.slug, idea.editorialVisibility) &&
         (args.view !== "new" ||
           args.publishedAfter === undefined ||
           idea.publishedAt >= args.publishedAfter) &&
@@ -240,7 +240,7 @@ export const libraryPage = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .paginate(args.paginationOpts);
     const [savedIds, prefs, recent] = await Promise.all([
       savedAmong(

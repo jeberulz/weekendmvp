@@ -2,6 +2,21 @@
 
 Append-only progress log. The full E0–E4 history is in `docs/plans/editorial-admin/wp46-progress.md`.
 
+## 2026-10-04 — E6 private release bridge implemented locally
+
+- Private immutable `editorial_public_versions` now stage the exact approved markdown and metadata, with a protected super-admin preview. A public per-slug pointer and the `ideas` projection advance in the same Convex mutation as editorial activation. The projection retains its document ID for saved member references but replaces stale scores, provenance and OG claims.
+- A scheduled worker plus recovery cron validates the configured canonical reader origin and deployed commit, checks the current approval/generation/kill switch, activates atomically, and only marks success after the public HTML contains the selected artifact hash. A failed public probe remains `verifying_public` with a retryable error. Unpublish revokes the pointer before responding and later probes a real direct-route 404 and sitemap absence. Rollback targets an earlier E6 release and renews the engine audit; legacy Git baselines are deliberately ineligible without a separately audited recovery procedure.
+- Public HTML, RSC, listing, homepage, sitemap, hubs, dashboard discovery, build pages, OG paths, prompts and exports now consult release visibility. A backend outage fails closed for direct idea delivery; no removed MDX or stored body is used as fallback. The release switch defaults off and requires the canonical site origin and exact reader commit.
+- Local verification: Convex codegen and `convex dev --once` succeeded against the **local** deployment only; root typecheck, lint (0 errors, 35 existing warnings), full `npm test`, production build, server trace check and `git diff --check` passed. The release integration test exercises private staging, unauthorized preview denial, stale HTML retry, exact public hash, atomic unpublish and catalogue removal. Middleware tests cover real 404s for idea/build/OG routes and 503 on backend failure. A running local production build returned health protocol `1` with the runtime commit, legacy idea 200 with `no-store`, and sitemap 200. The local backend must be kept running for reader checks; a stopped local backend correctly gives the idea route 503.
+- E7 still must compare the actual deployed legacy baseline and production projection, deploy the reader/schema in order, rehearse first live release/update/unpublish/rollback and restore under warm caches, conduct independent review, then deliberately enable the Convex switch. No production deployment, import, seed, publication, or switch flip happened in E6.
+
+## 2026-10-03 — E6 release integration opened
+
+- Branch: `codex/wp46-e6-release` from merged E5 `main`; lane: Work Package. The unrelated root `convex-backup-before-wp46.zip` remains untouched.
+- The owner chose a private Convex version store for newly managed releases, with existing Git MDX remaining the legacy baseline. The repository is public, so an unreleased branch or public preview deployment would expose drafts. This narrows the original Git-backed design only for E6 managed revisions; it requires an exact activated-version pointer, private staging and a protected preview.
+- Audit found that public idea HTML, metadata and exports prefer filesystem MDX; the homepage, archive fallback and sitemap read the manifest/files directly; public and member catalogue reads use `ideas` independently of editorial publication state. See `docs/plans/editorial-admin/e6-public-reader-inventory.md`. Changing the Settings badge before every reader and worker path is connected would be false readiness.
+- E6 gate: release worker, version pointer, projection, all public readers, takedown, rollback and production-build probes. E7 still owns production activation, deployed-baseline comparison, restore rehearsal and final independent security review. No production data or deployment is changed by opening this branch.
+
 ## 2026-10-03 — E5 integration setup
 
 - Branch: continued draft PR #94 (`codex/wp46-admin-login-fix`), merged current `main` before edits. Root checkout has an unrelated untracked `convex-backup-before-wp46.zip`, left untouched.

@@ -6,7 +6,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
-import { excludeEngineDrafts } from "./catalogPolicy";
+import { excludeUnlistedIdeas } from "./catalogPolicy";
 import {
   intentFlagValidator,
   projectSourceValidator,
@@ -399,7 +399,7 @@ export const explore = query({
     // interested and building above are the member's own work and keep them.
     const result = await source
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .paginate(args.paginationOpts);
     const cards = await Promise.all(
       result.page.map((idea) => toExploreCard(ctx, user._id, idea)),

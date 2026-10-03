@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
+
+export const instant = false;
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
@@ -768,10 +770,6 @@ type ToolData = {
 };
 
 async function getToolData(slug: string): Promise<ToolData> {
-  "use cache";
-  cacheTag("ideas", "ref-tables", `tool:${slug}`);
-  cacheLife("hours");
-
   const page = TOOL_PAGES[slug];
   const ideasTool = page.ideasTool ?? slug;
   const [ideas, featured, toolRow] = await Promise.all([
@@ -793,8 +791,7 @@ async function getToolData(slug: string): Promise<ToolData> {
 }
 
 function pageTitle(page: ToolPage, ideaCount: number): string {
-  const count = ideaCount > 0 ? ideaCount : page.legacyCount;
-  return page.titlePattern.replace("{count}", String(count));
+  return page.titlePattern.replace("{count}", String(ideaCount));
 }
 
 /* ------------------------------------------------------------------ */
@@ -814,6 +811,7 @@ export async function generateMetadata({
   const { tool } = await params;
   const page = TOOL_PAGES[tool];
   if (!page) return {};
+  await connection();
   const { ideas } = await getToolData(tool);
   const title = pageTitle(page, ideas.length);
   const url = `${SITE}/build-with/${page.slug}`;
@@ -892,20 +890,17 @@ export default async function ToolHubPage({
 }) {
   const { tool } = await params;
   if (!TOOL_PAGES[tool]) notFound();
+  await connection();
   return <CachedToolHub slug={tool} />;
 }
 
 async function CachedToolHub({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag("ideas", "ref-tables", `tool:${slug}`);
-  cacheLife("hours");
-
   const page = TOOL_PAGES[slug];
   const data = await getToolData(slug);
   const color = COLOR_STYLES[page.color];
   const Icon = page.icon;
   const schema = buildSchema(page, data);
-  const ideaCount = data.ideas.length > 0 ? data.ideas.length : page.legacyCount;
+  const ideaCount = data.ideas.length;
 
   // Editorial curation. Slugs that no longer resolve (unpublished, retagged,
   // or below the byTool cap) are dropped, so the section either renders a

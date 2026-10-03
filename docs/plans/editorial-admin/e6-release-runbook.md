@@ -1,0 +1,22 @@
+# WP46-E6 private release runbook
+
+E6 changes code and local Convex schema. Production activation belongs to E7. The public repository must never receive unreleased revision text, candidate MDX, a candidate manifest row, or an unprotected preview. An E6 release stages the exact approved markdown and metadata in private `editorial_public_versions`; the protected admin preview reads only that staged version. The public site reads it only after the `editorial_public_pointers` entry and editorial publication state move together. Existing checked-in MDX remains the legacy baseline until a specific slug is released or removed.
+
+## Deploy order and switch
+
+1. Keep `EDITORIAL_RELEASE_ENABLED` unset on Convex. Take a fresh Convex backup. Record the current production app commit, deployed MDX/manifest slug set, and public `ideas` projection, then compare against the private legacy import. Resolve missing/extra slugs before switching the reader.
+2. Deploy the Next.js reader and Convex schema/functions while the switch is off. Confirm the Next deployment uses the intended Convex deployment. The app's `/api/editorial/reader-health` must return protocol `1` and the exact deployed commit SHA. Verify an existing legacy page still returns 200 and an unknown/removed slug cannot expose a candidate body. Its idea HTML response must be `Cache-Control: no-store`.
+3. In the **Convex deployment environment**, set `EDITORIAL_PUBLIC_SITE_URL=https://www.weekendmvp.app/` and `EDITORIAL_READER_COMMIT` to that exact deployed SHA. The worker accepts only this canonical HTTPS origin or local loopback. Do not infer a healthy reader from the Settings badge; the worker probes protocol and commit before moving each pointer.
+4. After E7 baseline and security gates pass, set `EDITORIAL_RELEASE_ENABLED=true` in Convex. The Settings page may then show publishing configured. The kill switch remains an independent operational stop. Strong sign-in, current engine audit, accepted candidate, item-level review, and explicit approval are still required for each publish.
+
+## Release and recovery
+
+- Preparing a release snapshots the exact approval hash, private markdown, metadata, expected prior release, and generation. The operator reviews `/admin/editorial/releases/{releaseId}/preview`, then explicitly publishes. No public pointer moves at preview time.
+- The scheduled worker and recovery cron recheck the kill switch, approval, artifact and generation; probe the public reader deployment; atomically activate the pointer and replace the public `ideas` row under its existing document ID. The public page embeds the selected artifact hash. The worker records success only after fetching that page and finding the exact marker. If the page is stale or unavailable, the release remains `verifying_public` with an error and is retried by the cron. Do not interpret this state as final success.
+- Unpublish immediately revokes the pointer and hides/empties the public projection in one transaction, even when the kill switch is engaged. The worker subsequently verifies a real 404 on the direct route and absence from the sitemap. Removed ideas cannot start new plans or exports; existing owner-scoped saved references remain intact.
+- Rollback selects a previous **E6 managed release**, reruns the current engine audit on that exact revision, and uses the same staged/verified activation path. A Git legacy baseline has no E5 receipt or approved private version and is deliberately not an eligible rollback target. Recover that baseline only through a separately audited operator procedure, never by silently falling back to MDX after removal.
+- If the reader or Convex is unavailable, new release activation stops. Idea routes and prompt exports fail closed instead of reviving old MDX. Restore the reader/deployment identity, observe the worker queue, and use the admin release history for failed or uncertain jobs. A delayed job cannot undo an unpublish because the generation fence is checked at activation.
+
+## E7 evidence still required
+
+Before declaring GO: compare the actual deployed legacy baseline and projection; exercise an approved live contract-v2 idea end to end on the intended environment; verify publish, update, warm-cache removal, sitemap, member routes and exports with HTTP probes; rehearse rollback and backup restore; complete independent security review. This E6 branch does not deploy production, import/seed content, flip the switch, or publish an idea.

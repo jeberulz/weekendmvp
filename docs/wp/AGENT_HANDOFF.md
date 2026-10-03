@@ -1,4 +1,22 @@
-# Current handoff — WP44 audit repairs (26 September 2026)
+# Current handoff — WP46 E6 private release bridge (4 October 2026)
+
+Branch `codex/wp46-e6-release` contains the E6 reader, private version store,
+worker, protected preview and visibility/takedown code. The owner selected
+private Convex versions because this GitHub repository is public; never put an
+unreleased draft in Git. Read `docs/wp/wp46-stories.md`,
+`docs/wp/wp46-progress.md`, and
+`docs/plans/editorial-admin/e6-release-runbook.md` before further release
+work. The Convex switch remains off. The production baseline audit, first
+deployed journey, restore rehearsal and independent review remain E7 gates;
+do not infer production readiness from a local passing test or Settings badge.
+The root `convex-backup-before-wp46.zip` is unrelated user data and must stay
+untouched.
+
+The WP44 section below is historical handoff context for PR #81.
+
+---
+
+# Historical handoff — WP44 audit repairs (26 September 2026)
 
 PR #81 (`claude/wizardly-rubin-a6m2th`), repair branch `codex/wp44-audit-fixes`, based on `6891d86d`. The owner explicitly authorized implementation of the audit and UX plan. Frozen repair scope is in the tail of `program-manifest.md`; WP44-R1–R4 are tracked in the existing stories/progress.
 

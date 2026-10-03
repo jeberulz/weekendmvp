@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
+
+export const instant = false;
 
 import { FAQS } from "@/components/home/content";
 import { HomeMotion } from "@/components/home/motion/HomeMotion";
@@ -37,6 +40,7 @@ function homeDescription(ideaCount: number) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  await connection();
   const { totals } = await getHomeData();
   const title = homeTitle(totals.ideas);
   const description = homeDescription(totals.ideas);
@@ -73,6 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
+  await connection();
   const data = await getHomeData();
   const title = homeTitle(data.totals.ideas);
   const description = homeDescription(data.totals.ideas);

@@ -1658,6 +1658,8 @@ export abstract class EditorialCore implements EditorialRepository {
     const release = this.state.releases.get(releaseId);
     const idea = release ? this.state.ideas.get(release.ideaId) ?? null : null;
     if (!release || !idea) return fail<Result>("NOT_FOUND", "That release does not exist.");
+    const reauth = this.needsStrongAuth(guard.editor);
+    if (reauth) return this.refuse("release.reconciled", reauth, { ideaId: idea.id, releaseId });
     if (release.state !== "needs_reconciliation") {
       return fail<Result>("INVALID_TRANSITION", "This release does not need reconciliation.");
     }
@@ -1670,6 +1672,9 @@ export abstract class EditorialCore implements EditorialRepository {
     const activated = release.observation.activated;
     const sfx = simulatedSuffix(this.state);
     if (activated) {
+      if (idea.generation !== release.generation || idea.publication.liveReleaseId !== release.expectedLiveReleaseId) {
+        return fail<Result>("GENERATION_FENCED", "A later public change superseded this uncertain release.");
+      }
       completeActivation(this.state, idea, release, `Probe found the release live${sfx}; recorded as succeeded`);
     } else {
       release.error = { code: "NOT_ACTIVATED", message: `Probe found the previous version still live${sfx}.` };
@@ -1722,15 +1727,39 @@ export abstract class EditorialCore implements EditorialRepository {
       const targetRevision = this.state.revisions.get(target.revisionId);
       if (!targetRevision) return fail<Result>("NOT_FOUND", "The target revision no longer exists.");
       const runChecks = this.state.env.checks.run;
-      if (!runChecks) return fail<Result>("PRECONDITION_FAILED", this.state.env.checks.unavailableReason);
       const hashes = await computeRevisionHashes(targetRevision);
-      const renewed = runChecks({
-        markdown: targetRevision.markdown,
-        sources: targetRevision.sources,
-        artifactHash: hashes.artifact,
-        policyVersion: this.state.policyVersion,
-        nowMs: this.state.clock.now(),
-      });
+      let renewed: readonly QualityCheck[];
+      if (runChecks) {
+        renewed = runChecks({
+          markdown: targetRevision.markdown,
+          sources: targetRevision.sources,
+          artifactHash: hashes.artifact,
+          policyVersion: this.state.policyVersion,
+          nowMs: this.state.clock.now(),
+        });
+      } else if (this.state.env.checks.externalRun) {
+        // The live Node audit was committed through its trusted mutation.
+        // A fresh run is required for every rollback; old success alone is
+        // never enough to reinstate content after sources may have changed.
+        const checkedAt = Date.parse(targetRevision.checksRunAt ?? "");
+        const derived = await deriveRevision(this.state, targetRevision.id);
+        if (!Number.isFinite(checkedAt) || this.state.clock.now() - checkedAt > 10 * 60_000 ||
+            !derived.checksCurrent || derived.hashes.artifact !== hashes.artifact ||
+            derived.issues.some((issue) => issue.severity === "blocker")) {
+          return fail<Result>("PRECONDITION_FAILED", "Run the current engine audit on the target revision before rollback.");
+        }
+        renewed = targetRevision.checks;
+      } else {
+        return fail<Result>("PRECONDITION_FAILED", this.state.env.checks.unavailableReason);
+      }
+      const failedRequired = this.state.env.checks.externalRun
+        ? this.state.env.checks.requiredCheckIds.find((id) =>
+          !renewed.some((check) => check.id === id && check.outcome === "pass"),
+        )
+        : undefined;
+      if (failedRequired) {
+        return fail<Result>("PRECONDITION_FAILED", `The target revision did not pass ${failedRequired}.`);
+      }
       const failingSafety = renewed.filter(
         (check) => check.category === "safety" && (check.outcome === "fail" || check.outcome === "error"),
       );

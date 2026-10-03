@@ -17,6 +17,11 @@ export function chooseIdeaBody(file: MdxFile | null, idea: StoredBody | null) {
 
 /** Backend failures propagate; an unavailable body is not an empty export. */
 export async function readCanonicalIdeaBody(slug: string) {
+  const publication = await fetchQuery(api.editorial.public.bySlug, { slug });
+  if (publication.state === "removed") return null;
+  if (publication.state === "released") {
+    return { source: "editorial" as const, content: publication.markdown };
+  }
   const file = await readMdxFile("content/ideas", slug);
   if (file) return chooseIdeaBody(file, null);
   const idea = await fetchQuery(api.ideas.bySlug, { slug });

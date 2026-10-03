@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
+
+export const instant = false;
 import type { LucideIcon } from "lucide-react";
 import {
   Briefcase,
@@ -648,14 +650,11 @@ export default async function AudienceHubPage({
 }) {
   const { audience } = await params;
   if (!AUDIENCE_PAGES[audience]) notFound();
+  await connection();
   return <CachedAudienceHub slug={audience} />;
 }
 
 async function CachedAudienceHub({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag("ideas", "ref-tables", `audience:${slug}`);
-  cacheLife("hours");
-
   const page = AUDIENCE_PAGES[slug];
   const [ideas, audienceRow] = await Promise.all([
     fetchIdeasByAudience(slug),

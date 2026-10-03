@@ -111,7 +111,7 @@ describe("denial matrix for every public editorial function", () => {
         .map(([name]) => name)
         .sort();
     expect(registered(readsModule, "isQuery")).toEqual(
-      ["getIdea", "getRevision", "listActivity", "listIdeas", "listReleases", "listTrash", "queueSummary", "session", "settings"],
+      ["getIdea", "getRevision", "listActivity", "listIdeas", "listReleases", "listTrash", "queueSummary", "session", "settings", "stagedPreview"],
     );
     expect(registered(commandsModule, "isMutation")).toHaveLength(22);
     expect(getFunctionName(api.editorial.reads.session)).toBe("editorial/reads:session");
@@ -185,6 +185,7 @@ describe("denial matrix for every public editorial function", () => {
       }
       const session = await caller.client(t).query(api.editorial.reads.session, { nowMs });
       expect(session.editor, `${caller.label} session`).toBeNull();
+      expect(await caller.client(t).query(api.editorial.reads.stagedPreview, { releaseId: "rel_x" }), `${caller.label} staged preview`).toBeNull();
       for (const [name, command] of commands) {
         const result = await command(caller.client(t));
         expect(code(result), `${caller.label} ${name}`).toBe(caller.expected);
@@ -205,6 +206,7 @@ describe("denial matrix for every public editorial function", () => {
     // A revoked owner is an account without the capability from the next request on.
     await t.mutation(internal.admin.superAdmin.revokeSuperAdmin, { reason: "Matrix revocation" });
     const revoked = t.withIdentity(identity(owner));
+    expect(await revoked.query(api.editorial.reads.stagedPreview, { releaseId: "rel_x" })).toBeNull();
     for (const [name, read] of reads) expect(code(await read(revoked)), `revoked ${name}`).toBe("FORBIDDEN");
     for (const [name, command] of commands) expect(code(await command(revoked)), `revoked ${name}`).toBe("FORBIDDEN");
 
