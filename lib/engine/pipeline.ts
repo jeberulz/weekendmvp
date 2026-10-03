@@ -495,6 +495,20 @@ function oneLinerIssues(oneLiner: string, fromTitle: boolean): string[] {
   return issues;
 }
 
+/**
+ * Rulings R6 and R13 for the operator's title and audience, checked before
+ * anything is billed: the writer's input opens with them (briefContext) and
+ * it echoes them into its own text, where every figure is refused, so a
+ * figure there ("sub-10 engineering teams") would fail every editorial
+ * attempt. The same detector as the one-liner's (findUnboundFigures).
+ */
+function echoedBriefIssues(title: string, audience: string): string[] {
+  return [
+    ...findUnboundFigures(title).map((f) => `brief.title: figure "${f.figure}"`),
+    ...findUnboundFigures(audience).map((f) => `brief.audience: figure "${f.figure}"`),
+  ];
+}
+
 /** The operator's brief, checked and normalized before anything is billed. */
 export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
   // Ruling R15: operator text with an invisible or bidirectional format control fails before any spend.
@@ -529,6 +543,13 @@ export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
   const slug = ((typeof input.slug === "string" && input.slug.trim()) || slugify(title)).toLowerCase();
   if (!SLUG_PATTERN.test(slug)) {
     throw new PipelineError("brief_normalization", `slug '${slug}' must match ${SLUG_PATTERN}`);
+  }
+  const echoed = echoedBriefIssues(title, audience);
+  if (echoed.length > 0) {
+    throw new PipelineError(
+      "brief_normalization",
+      `${echoed.join("; ")}. The writer reads the title and audience and echoes them into its text, where figures are refused: write them without figures, such as "small engineering teams" (rulings R6, R13)`,
+    );
   }
   const ownOneLiner = typeof input.oneLiner === "string" ? input.oneLiner.trim() : "";
   const oneLiner = ownOneLiner || title;

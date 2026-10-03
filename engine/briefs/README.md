@@ -4,8 +4,12 @@
   (record at `engine/records/<slug>.json` unless `--out` says otherwise). A
   live brief's title, audience, slug and one-liner are used as written (the
   brief-normalization model may only tidy the business model line and the
-  seed keywords), and the one-liner may hold no figures, quotations or
-  evidence tokens; the CLI refuses such a brief before any spend.
+  seed keywords). The one-liner may hold no figures, quotations or evidence
+  tokens, and the title and audience no figures: the writer reads them and
+  echoes them into its text, where every figure is refused, so write "small
+  engineering teams", not "sub-10 engineering teams". The CLI refuses such a
+  brief before any spend, and a test runs every brief in this folder through
+  that check.
 - `code-reviewer.json`, `landing-page-generator-ecommerce.json` and
   `rfp-assistant.json` are the representative live briefs. Their slugs
   (`ai-code-reviewer`, `ai-landing-page-generator-ecommerce`,
