@@ -158,6 +158,34 @@ describe("runResearch (fixture)", () => {
     expect(report.costUsd).toBeLessThan(4);
   });
 
+  it("does not count a third vendor's comparison blog as an official pricing source", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    const queries: string[] = [];
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        queries.push(request.query);
+        const result = await search.search(request);
+        if (!request.query.includes("Identify at least three direct competitors")) return result;
+        return {
+          ...result,
+          value: {
+            ...result.value,
+            citations: [
+              ...result.value.citations.slice(0, 2),
+              { url: "https://inventive.example/blog/alternatives", title: "Inventive alternatives" },
+            ],
+          },
+        };
+      },
+    };
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(report.attempts.competitors).toBe(2);
+    expect(queries.some((query) => query.includes("first competitor search cited too few"))).toBe(true);
+    expect(record.competitors).toHaveLength(EVIDENCE_MINIMUMS.competitors);
+  });
+
   it("produces a v2 record and a run report from accepted evidence", async () => {
     const { record, report } = await runResearch({
       brief: RFP_BRIEF,

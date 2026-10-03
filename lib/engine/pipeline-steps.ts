@@ -103,7 +103,8 @@ export const PIPELINE: readonly PipelineStep[] = [
       searchContextSize: "high",
     },
     // Primary search and up to two diversity supplements when fewer than
-    // three vendor-owned sites were cited. Provider retries share this cap.
+    // three official pricing/listing sources were cited. Blogs and comparison
+    // pages do not satisfy that acquisition precondition. Retries share cap.
     maxAttempts: 3,
   },
   {

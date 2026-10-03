@@ -612,6 +612,12 @@ source acquisition statuses, accepted counts per kind, and rejected
   vendor. The price must still pass exact amount, billing and comparison checks;
   attribution remains secondary and the final page names Shopify as the source.
 
+- **Acquisition clarification (2026-10-03, live RFP probe):** The conditional
+  competitor supplement counts distinct official pricing pages or single-app
+  marketplace listings. A vendor-owned comparison page, blog, glossary or
+  third-party profile is not a pricing-source slot merely because its domain
+  belongs to a vendor. The three-attempt search budget remains unchanged.
+
 - **R17 acquisition amendment (2026-10-03, first live GO probe).** When the
   initial competitor search cites fewer than three distinct vendor-owned
   sites, one supplement search seeks other official pricing domains and the

@@ -51,7 +51,7 @@ import {
   parseExtractionCandidates,
   sha256Hex,
 } from "./evidence/accept.ts";
-import { registrableLabel } from "./evidence/citation.ts";
+import { isComparisonPage, registrableLabel } from "./evidence/citation.ts";
 import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
@@ -633,9 +633,29 @@ function competitorsQuery(context: string): string {
   );
 }
 
+/** Search coverage, not accepted evidence: blogs and comparison pages cannot fill a pricing-source slot. */
+function competitorPricingSources(citations: ReadonlyArray<Citation>): Set<string> {
+  const found = new Set<string>();
+  for (const citation of citations) {
+    let url: URL;
+    try { url = new URL(citation.url); } catch { continue; }
+    const pathname = url.pathname.toLowerCase();
+    if (isComparisonPage(citation.url) || /^\/(?:blog|glossary|brands|reviews?|alternatives?)(?:\/|$)/u.test(pathname)) continue;
+    if (url.hostname.toLowerCase() === "apps.shopify.com" && /^\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/u.test(pathname)) {
+      found.add(`shopify:${pathname.replace(/\/$/u, "")}`);
+      continue;
+    }
+    if (!/(?:^|\/)(?:pricing|plans?)(?:\/|$)/u.test(pathname)) continue;
+    const ownName = vendorHintsFromCitations([{ ...citation, roles: ["competitors"] }]);
+    const label = registrableLabel(citation.url);
+    if (ownName.length > 0 && label) found.add(`vendor:${label}`);
+  }
+  return found;
+}
+
 function competitorsSupplementQuery(context: string, citedHosts: ReadonlyArray<string>): string {
   return (
-    `${context}\n\nThe first competitor search cited too few distinct vendor-owned sites. ` +
+    `${context}\n\nThe first competitor search cited too few distinct official pricing or single-app listing pages. ` +
     `Find direct competitors on DIFFERENT official vendor domains, plus the official /pricing pages ` +
     `for already named vendors when missing. Cite the exact pricing page for each vendor, not a blog, ` +
     `FAQ, roundup or comparison. A page stating Contact sales, custom quote, usage-based pricing ` +
@@ -1283,8 +1303,7 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   ledger.cite(competitors, "competitors");
   const competitorReads = ledger.read(competitors);
   const competitorCitations = [...competitors];
-  const namedVendors = () => vendorHintsFromCitations(competitorCitations.map((citation) => ({ ...citation, roles: ["competitors"] as const })));
-  if (namedVendors().length < EVIDENCE_MINIMUMS.competitors && attemptsLeft(state, stepById("competitors"))) {
+  if (competitorPricingSources(competitorCitations).size < EVIDENCE_MINIMUMS.competitors && attemptsLeft(state, stepById("competitors"))) {
     const citedHosts = [...new Set(competitors.map((citation) => {
       try { return new URL(citation.url).hostname.toLowerCase(); } catch { return ""; }
     }).filter(Boolean))].slice(0, MAX_CITATIONS_PER_SEARCH);
@@ -1293,7 +1312,7 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
     ledger.cite(supplement, "competitors");
     await ledger.read(supplement);
   }
-  if (namedVendors().length < EVIDENCE_MINIMUMS.competitors && attemptsLeft(state, stepById("competitors"))) {
+  if (competitorPricingSources(competitorCitations).size < EVIDENCE_MINIMUMS.competitors && attemptsLeft(state, stepById("competitors"))) {
     const labels = [...new Set(competitorCitations.map((citation) => registrableLabel(citation.url)).filter((label): label is string => !!label))];
     const supplement = await stepSearch(state, "competitors", competitorsDiversityQuery(context, labels));
     ledger.cite(supplement, "competitors");
