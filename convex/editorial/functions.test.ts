@@ -341,7 +341,7 @@ describe("the live environment", () => {
       idempotencyKey: "prepare-key-0001",
     });
     expect(code(prepare)).toBe("PRECONDITION_FAILED");
-    expect(prepare.ok ? "" : prepare.error.message).toMatch(/Publishing is not connected/);
+    expect(prepare.ok ? "" : prepare.error.message).toMatch(/Publishing remains disabled/);
 
     const activity = value(await editor.query(api.editorial.reads.listActivity, {
       filter: { ideaId, outcome: null },

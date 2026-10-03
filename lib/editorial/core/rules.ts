@@ -112,6 +112,7 @@ export function completeActivation(
   idea: IdeaRecord,
   release: ReleaseRecord,
   detail: string,
+  verifyPublic = false,
 ): void {
   const now = nowIso(state);
   idea.publication.state = "live";
@@ -122,8 +123,8 @@ export function completeActivation(
   idea.publication.unpublishedAt = null;
   idea.publication.unpublishReason = null;
   idea.generation += 1;
-  transitionRelease(state, release, "succeeded", detail);
-  appendAudit(state, {
+  transitionRelease(state, release, verifyPublic ? "verifying_public" : "succeeded", detail);
+  if (!verifyPublic) appendAudit(state, {
     actor: state.env.workerActor,
     action: "release.succeeded",
     outcome: "succeeded",

@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 import { fetchQuery } from "convex/nextjs";
 import { DollarSign } from "lucide-react";
 
@@ -29,6 +29,7 @@ import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
 import { SaveIdeaButton } from "@/components/ideas/SaveIdeaButton";
+import { SafeEditorialBody } from "@/components/ideas/SafeEditorialBody";
 import { ideaMdxComponents } from "@/components/ideas/mdx-light";
 import {
   CATEGORY_META,
@@ -49,10 +50,14 @@ import { excerpt, firstParagraph, howItWorksSteps, sectionBody } from "./schema-
 const CONTENT_DIR = "content/ideas";
 const DEFAULT_OG = "/image/og-image.png";
 
+// The visibility decision must finish before any shell streams, so a removed
+// idea has a genuine 404 and no cached RSC/body bytes.
+export const instant = false;
+
 type IdeaDoc = Doc<"ideas">;
 
 type ResolvedIdea = {
-  source: "mdx" | "convex";
+  source: "mdx" | "convex" | "editorial";
   title: string;
   description: string;
   content: string;
@@ -60,6 +65,7 @@ type ResolvedIdea = {
   idea: IdeaDoc | null;
   /** Site-relative OG path — per-idea when the file exists, else default. */
   ogImage: string;
+  artifactHash?: string;
 };
 
 /* ------------------------------------------------------------------ */
@@ -112,11 +118,28 @@ async function ideaOgImage(slug: string): Promise<string> {
 }
 
 async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
-  "use cache";
   // Engine spot-check drafts never render, even if a Convex row exists.
   if (isEngineDraftSlug(slug)) return null;
-  cacheTag(`idea:${slug}`, "ideas");
-  cacheLife("hours");
+
+  // This request-time gate precedes every filesystem fallback and cached
+  // public render. A backend outage fails closed rather than resurrecting a
+  // removed legacy MDX page.
+  const publication = await fetchQuery(api.editorial.public.bySlug, { slug });
+  if (publication.state === "removed") return null;
+  if (publication.state === "released") {
+    const idea = await fetchIdeaRow(slug);
+    return {
+      source: "editorial",
+      title: publication.title,
+      description: publication.metadata.description,
+      content: publication.markdown,
+      idea,
+      // The static legacy OG file may describe an earlier revision. An E6
+      // release uses the generic art until a versioned OG asset is verified.
+      ogImage: DEFAULT_OG,
+      artifactHash: publication.artifactHash,
+    };
+  }
 
   const [file, idea, ogImage] = await Promise.all([
     readMdxFile(CONTENT_DIR, slug),
@@ -153,6 +176,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  await connection();
   const resolved = await resolveIdea(slug);
   if (!resolved) {
     // Collection hub fallback (U11): use the collection's own copy.
@@ -283,6 +307,7 @@ export default async function IdeaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  await connection();
   const resolved = await resolveIdea(slug);
   if (!resolved) {
     // Not an idea — maybe a collection hub slug (U11 extension point).
@@ -290,7 +315,7 @@ export default async function IdeaPage({
     if (collection) return collection;
     notFound();
   }
-  return <CachedIdeaPage slug={slug} />;
+  return <IdeaContent slug={slug} resolved={resolved} />;
 }
 
 const SCORE_LABELS: Array<{
@@ -343,14 +368,8 @@ function IdeaMetaCard({ idea }: { idea: IdeaDoc }) {
   );
 }
 
-/** Data + render cached together; revalidated via `idea:<slug>` / `ideas`. */
-async function CachedIdeaPage({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag(`idea:${slug}`, "ideas");
-  cacheLife("hours");
-
-  const resolved = await resolveIdea(slug);
-  if (!resolved) notFound();
+/** The gate and the selected body must be from the same request. */
+function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea }) {
   const { title, description, content, idea } = resolved;
   const toc = tocFromMarkdown(content);
   const schema = buildSchema(slug, resolved);
@@ -372,7 +391,7 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
             </IdeaSidebar>
 
             {/* Main Content */}
-            <main className="flex-1 max-w-2xl min-w-0 break-words">
+            <main className="flex-1 max-w-2xl min-w-0 break-words" data-editorial-artifact-hash={resolved.artifactHash}>
               {/* Breadcrumb — member crumbs swap client-side via session hint */}
               <IdeaBreadcrumbs title={title} />
 
@@ -449,11 +468,11 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
               </header>
 
               {/* Body — server-rendered MDX (or Convex-stored markdown) */}
-              <Mdx
-                source={content}
-                components={ideaMdxComponents}
-                codeTheme="github-light"
-              />
+              {resolved.source === "editorial" ? (
+                <SafeEditorialBody markdown={content} />
+              ) : (
+                <Mdx source={content} components={ideaMdxComponents} codeTheme="github-light" />
+              )}
 
               {/* R5: the landing page preview CTA is parked for v1.1.
                   `PreviewIdeaCta` and `/build/{slug}` stay in the codebase. */}

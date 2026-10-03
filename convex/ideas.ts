@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, query } from "./_generated/server";
-import { excludeEngineDrafts, isEngineDraftSlug } from "./platform/catalogPolicy";
+import { excludeUnlistedIdeas, isEngineDraftSlug } from "./platform/catalogPolicy";
 import schema from "./schema";
 
 /*
@@ -58,10 +58,11 @@ export const bySlug = query({
   returns: v.union(ideaDoc, v.null()),
   handler: async (ctx, { slug }) => {
     if (isEngineDraftSlug(slug)) return null;
-    return await ctx.db
+    const idea = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .unique();
+    return idea?.editorialVisibility === "removed" ? null : idea;
   },
 });
 
@@ -89,7 +90,7 @@ export const list = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .paginate({ numItems: limit ?? 20, cursor: cursor ?? null });
   },
 });
@@ -103,7 +104,7 @@ export const byCategory = query({
       .query("ideas")
       .withIndex("by_category_publishedAt", (q) => q.eq("category", category))
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .collect();
   },
 });
@@ -119,7 +120,7 @@ export const byRevenueGoal = query({
         q.eq("revenueGoal", revenueGoal),
       )
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .collect();
   },
 });
@@ -137,7 +138,7 @@ export const byTool = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .collect();
     return all
       .filter((idea) => idea.tools.includes(tool))
@@ -163,7 +164,7 @@ export const byAudience = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .collect();
     return all
       .filter((idea) => idea.audiences.includes(audience))
@@ -185,7 +186,7 @@ export const latest = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .first();
   },
 });
@@ -212,7 +213,7 @@ export const relatedFor = query({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .unique();
-    if (!self) {
+    if (!self || self.editorialVisibility === "removed") {
       return [];
     }
 
@@ -225,7 +226,7 @@ export const relatedFor = query({
         q.eq("category", self.category),
       )
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .take(max + 1);
     const related = categoryCandidates
       .filter((idea) => idea.slug !== slug)
@@ -246,7 +247,7 @@ export const relatedFor = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts);
+      .filter(excludeUnlistedIdeas);
     for await (const idea of newestIdeas) {
       if (
         idea.slug === slug ||
@@ -273,7 +274,7 @@ export const allForSitemap = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
-      .filter(excludeEngineDrafts)
+      .filter(excludeUnlistedIdeas)
       .collect();
     return all.map(({ slug, publishedAt }) => ({ slug, publishedAt }));
   },

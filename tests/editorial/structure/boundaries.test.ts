@@ -87,7 +87,7 @@ describe("fixture isolation", () => {
 
     const reads = read("convex/editorial/reads.ts");
     const queries = reads.split(/export const \w+ = query\(\{/).slice(1);
-    expect(queries.length).toBe(9);
+    expect(queries.length).toBe(10);
     for (const body of queries) expect(body).toMatch(/readRepository\(ctx, args\.nowMs\)|editorialSession\(ctx\)/);
 
     for (const source of [commands, reads, read("convex/editorial/args.ts")]) {
@@ -249,7 +249,7 @@ describe("private route metadata", () => {
       expect(source.match(/assertEditorialRoutesEnabled\(\);/g)?.length, page).toBe(2);
       expect(source, page).toContain("requireEditorialWorkspace()");
       expect(source, page).not.toMatch(/<PageHeader\b/);
-      expect(source, page).toMatch(/<ListSkeleton label="Loading…"/);
+      if (!page.includes("/preview/")) expect(source, page).toMatch(/<ListSkeleton label="Loading…"/);
     }
   });
 

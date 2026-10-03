@@ -463,8 +463,10 @@ export function releaseView(state: EditorialState, release: ReleaseRecord): Rele
       ? {
           label: state.env.simulated
             ? "Simulated preview (editorial renderer, nothing was built)"
-            : "Editorial preview (public rendering not yet verified)",
-          href: `/admin/editorial/ideas/${release.ideaId}?revision=${release.revisionId}&tab=preview`,
+            : "Protected preview of the exact staged revision",
+          href: state.env.simulated
+            ? `/admin/editorial/ideas/${release.ideaId}?revision=${release.revisionId}&tab=preview`
+            : `/admin/editorial/releases/${release.id}/preview`,
         }
       : null,
     publicPath: `/ideas/${idea?.slug ?? ""}`,

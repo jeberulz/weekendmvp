@@ -133,6 +133,7 @@ export const addIdea = mutation({
     await requireFeature(ctx, user._id, "collections");
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     const idea = await ideaBySlug(ctx, args.slug);
+    if (idea.editorialVisibility === "removed") throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
     const existing = await itemFor(ctx, collection._id, idea._id);
     if (existing && existing.deletedAt === undefined) return null;
     if (collection.itemCount >= COLLECTION_ITEMS_MAX) throw new ConvexError({ code: "COLLECTION_FULL" });

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
+
+export const instant = false;
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fetchQuery } from "convex/nextjs";
@@ -209,7 +211,31 @@ function cardFromManifest(idea: ManifestIdea): IdeaCardData {
 }
 
 /** MDX-only fallback: slug + frontmatter title + first-paragraph excerpt. */
-async function loadFromMdx(): Promise<StartupIdeasData> {
+type PublicOverlay = Awaited<ReturnType<typeof fetchQuery<typeof api.editorial.public.listing>>>;
+
+function applyPublicOverlay(ideas: IdeaCardData[], publications: PublicOverlay): IdeaCardData[] {
+  const bySlug = new Map(ideas.map((idea) => [idea.slug, idea]));
+  for (const row of publications) {
+    if (row.state === "removed") {
+      bySlug.delete(row.slug);
+    } else if (row.metadata && row.title) {
+      const category = normalizeCategorySlug(row.metadata.category);
+      bySlug.set(row.slug, {
+        slug: row.slug,
+        title: row.title,
+        description: row.metadata.description,
+        category,
+        categoryLabel: categoryName(category),
+        researchLevel: bySlug.get(row.slug)?.researchLevel ?? "deep",
+        buildTime: row.metadata.buildTime,
+        publishedAt: Date.parse(row.firstPublishedAt ?? "") || Date.parse(row.updatedAt),
+      });
+    }
+  }
+  return [...bySlug.values()];
+}
+
+async function loadFromMdx(publications: PublicOverlay): Promise<StartupIdeasData> {
   const manifestBySlug = new Map(
     readManifestIdeas().map((idea) => [idea.slug, idea]),
   );
@@ -232,7 +258,8 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
       };
     }),
   );
-  const filters = await buildFilters(ideas);
+  const visible = applyPublicOverlay(ideas, publications);
+  const filters = await buildFilters(visible);
   const applicationCategories: Record<string, string> = {};
   for (const idea of readManifestIdeas()) {
     if (idea.applicationCategory) {
@@ -241,7 +268,7 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
   }
   return {
     source: "mdx",
-    ideas,
+    ideas: visible,
     filters,
     applicationCategories,
   };
@@ -252,14 +279,14 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
  * Convex (e.g. published but not yet prod-seeded) so search/filters stay
  * complete. Categories are normalized so legacy casing collapses.
  */
-async function loadStartupIdeas(): Promise<StartupIdeasData> {
+async function loadStartupIdeas(publications: PublicOverlay): Promise<StartupIdeasData> {
   let rows: IdeaDoc[];
   try {
     rows = await fetchAllIdeas();
   } catch {
-    return loadFromMdx();
+    return loadFromMdx(publications);
   }
-  if (rows.length === 0) return loadFromMdx();
+  if (rows.length === 0) return loadFromMdx(publications);
 
   const applicationCategories: Record<string, string> = {};
   const ideas: IdeaCardData[] = rows.map((idea) => {
@@ -294,8 +321,9 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
     }
   }
 
-  const filters = await buildFilters(ideas);
-  return { source: "convex", ideas, filters, applicationCategories };
+  const visible = applyPublicOverlay(ideas, publications);
+  const filters = await buildFilters(visible);
+  return { source: "convex", ideas: visible, filters, applicationCategories };
 }
 
 /* ------------------------------------------------------------------ */
@@ -367,17 +395,15 @@ function buildSchema(data: StartupIdeasData) {
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-export default function StartupIdeasPage() {
-  return <CachedStartupIdeasPage />;
+export default async function StartupIdeasPage() {
+  await connection();
+  // This read is authoritative even when the public ideas projection is down.
+  const publications = await fetchQuery(api.editorial.public.listing, {});
+  return <StartupIdeasContent publications={publications} />;
 }
 
-/** Data + render cached together; Convex mutations revalidate tag `ideas`. */
-async function CachedStartupIdeasPage() {
-  "use cache";
-  cacheTag("ideas");
-  cacheLife("hours");
-
-  const data = await loadStartupIdeas();
+async function StartupIdeasContent({ publications }: { publications: PublicOverlay }) {
+  const data = await loadStartupIdeas(publications);
   const schema = buildSchema(data);
 
   return (

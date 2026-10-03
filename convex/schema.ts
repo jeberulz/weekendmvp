@@ -9,6 +9,7 @@ import {
   ideaRecordValidator,
   ideaSummaryValidator,
   idempotencyValidator,
+  metadataValidator,
   noteRecordValidator,
   releaseRecordValidator,
   resolutionRecordValidator,
@@ -76,6 +77,8 @@ export default defineSchema({
     researchLevel: v.optional(v.string()),
     bodyMode: v.union(v.literal("mdx"), v.literal("convex")),
     body: v.optional(v.string()),
+    /** E6 public projection. Missing means an unchanged legacy row. */
+    editorialVisibility: v.optional(v.union(v.literal("live"), v.literal("removed"))),
   })
     .index("by_slug", ["slug"])
     .index("by_publishedAt", ["publishedAt"])
@@ -700,12 +703,38 @@ export default defineSchema({
   editorial_flags: defineTable(flagRecordValidator).index("by_ideaId", ["ideaId"]),
   editorial_resolutions: defineTable(resolutionRecordValidator).index("by_ideaId", ["ideaId"]),
   editorial_notes: defineTable(noteRecordValidator).index("by_ideaId", ["ideaId"]),
-  editorial_approvals: defineTable(approvalRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_approvals: defineTable(approvalRecordValidator)
+    .index("by_ideaId", ["ideaId"])
+    .index("by_key", ["key"]),
 
   editorial_releases: defineTable(releaseRecordValidator)
     .index("by_key", ["key"])
     .index("by_ideaId", ["ideaId"])
     .index("by_state", ["state"]),
+
+  /** Immutable, private until a pointer selects it; no public list/query exposes candidates. */
+  editorial_public_versions: defineTable(v.object({
+    releaseId: v.string(),
+    ideaId: v.string(),
+    revisionId: v.string(),
+    artifactHash: v.string(),
+    title: v.string(),
+    markdown: v.string(),
+    metadata: metadataValidator,
+    stagedAt: v.string(),
+  })).index("by_releaseId", ["releaseId"]),
+
+  /** One authoritative per-slug gate. Absence retains an unchanged Git legacy page. */
+  editorial_public_pointers: defineTable(v.object({
+    slug: v.string(),
+    state: v.union(v.literal("released"), v.literal("removed")),
+    releaseId: v.union(v.string(), v.null()),
+    generation: v.number(),
+    firstPublishedAt: v.union(v.string(), v.null()),
+    updatedAt: v.string(),
+    title: v.union(v.string(), v.null()),
+    metadata: v.union(metadataValidator, v.null()),
+  })).index("by_slug", ["slug"]),
 
   editorial_idempotency: defineTable(idempotencyValidator).index("by_storeKey", ["storeKey"]),
   editorial_submissions: defineTable(submissionKeyValidator).index("by_submissionKey", ["submissionKey"]),

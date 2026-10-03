@@ -85,6 +85,39 @@ export const getRevision = query({
   handler: async (ctx, args) => (await readRepository(ctx, args.nowMs)).getRevision(args.ideaId, args.revisionId),
 });
 
+/** Exact staged bytes for the protected release preview; never an anonymous API. */
+export const stagedPreview = query({
+  args: { releaseId: v.string() },
+  returns: v.union(v.null(), v.object({
+    title: v.string(),
+    markdown: v.string(),
+    description: v.string(),
+    slug: v.string(),
+    revisionNumber: v.number(),
+    artifactHash: v.string(),
+  })),
+  handler: async (ctx, { releaseId }) => {
+    const current = await editorialSession(ctx);
+    if (current.principal?.capability !== "editorial_admin") return null;
+    const release = await ctx.db.query("editorial_releases")
+      .withIndex("by_key", (q) => q.eq("key", releaseId)).unique();
+    if (!release || !release.revisionId || release.revisionNumber === null) return null;
+    const [idea, version] = await Promise.all([
+      ctx.db.query("editorial_ideas").withIndex("by_key", (q) => q.eq("key", release.ideaId)).unique(),
+      ctx.db.query("editorial_public_versions").withIndex("by_releaseId", (q) => q.eq("releaseId", releaseId)).unique(),
+    ]);
+    if (!idea || !version || version.ideaId !== idea.key || version.revisionId !== release.revisionId) return null;
+    return {
+      title: version.title,
+      markdown: version.markdown,
+      description: version.metadata.description,
+      slug: idea.slug,
+      revisionNumber: release.revisionNumber,
+      artifactHash: version.artifactHash,
+    };
+  },
+});
+
 export const listReleases = query({
   args: { filter: releaseFilterArgs, ...page, ...at },
   handler: async (ctx, args) =>

@@ -1,4 +1,7 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 
 import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
@@ -49,11 +52,14 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ideas, articles, newsletters, ideaDates] = await Promise.all([
+  await connection();
+  const [ideas, articles, newsletters, ideaDates, publications] = await Promise.all([
     listMdxFrontmatter("content/ideas"),
     listMdxFrontmatter("content/articles"),
     listMdxFrontmatter("content/newsletter-pages"),
     loadIdeaPublishedAtMap(),
+    // On backend failure, omit idea entries rather than listing removed pages.
+    fetchQuery(api.editorial.public.listing, {}).catch(() => null),
   ]);
 
   const rootPages: Entry[] = [
@@ -72,14 +78,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ];
 
-  const ideaPages: Entry[] = ideas.map((i) =>
-    entry(`/ideas/${i.slug}`, {
+  const editorialBySlug = new Map(publications?.map((row) => [row.slug, row]) ?? []);
+  const ideaPages: Entry[] = publications === null ? [] : ideas
+    .filter((i) => editorialBySlug.get(i.slug)?.state !== "removed")
+    .map((i) =>
+      entry(`/ideas/${i.slug}`, {
       // Idea MDX is body-only (slug/title); publish dates live in the manifest.
-      lastModified: ideaDates.get(i.slug) ?? i.publishedAt,
+      lastModified: (Date.parse(editorialBySlug.get(i.slug)?.updatedAt ?? "") || undefined) ?? ideaDates.get(i.slug) ?? i.publishedAt,
       changeFrequency: "monthly",
       priority: 0.8,
-    }),
-  );
+      }),
+    );
+  if (publications) {
+    const legacySlugs = new Set(ideas.map((idea) => idea.slug));
+    for (const row of publications) {
+      if (row.state !== "released" || legacySlugs.has(row.slug)) continue;
+      ideaPages.push(entry(`/ideas/${row.slug}`, {
+        lastModified: Date.parse(row.updatedAt),
+        changeFrequency: "monthly",
+        priority: 0.8,
+      }));
+    }
+  }
 
   const articlePages: Entry[] = articles.map((a) =>
     entry(`/articles/${a.slug}`, {

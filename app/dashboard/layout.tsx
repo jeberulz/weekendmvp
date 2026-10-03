@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { AuthPlatformProvider } from "../AuthPlatformProvider";
 import { WorkspaceShell } from "@/components/platform/shell/WorkspaceShell";
 import { getDashboardEditorial } from "@/lib/dashboard/editorial";
@@ -20,12 +21,15 @@ export const metadata: Metadata = {
   },
 };
 
+export const instant = false;
+
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // The homepage's hourly cache: the library total matches `/`.
+  await connection();
+  // The dashboard and homepage now use the same request-time visibility gate.
   const editorial = await getDashboardEditorial();
 
   return (

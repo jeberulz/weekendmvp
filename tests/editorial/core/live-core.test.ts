@@ -206,7 +206,7 @@ describe("live environment refusals", () => {
     ];
     for (const attempt of attempts) {
       expect(code(attempt)).toBe("PRECONDITION_FAILED");
-      expect(attempt.ok ? "" : attempt.error.message).toMatch(/Publishing is not connected/);
+      expect(attempt.ok ? "" : attempt.error.message).toMatch(/Publishing remains disabled/);
     }
     expect(w.state.releases.size).toBe(before);
     expect(value(await editor.getIdea(ideaId)).idea.publication).toBe("live");

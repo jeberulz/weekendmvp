@@ -191,7 +191,7 @@ export const generateFromBridge = mutation({
       .unique();
     // Engine drafts read as unknown: their research page is withheld, so no
     // new preview may start from one.
-    if (idea === null || isEngineDraftSlug(idea.slug)) {
+    if (idea === null || isEngineDraftSlug(idea.slug) || idea.editorialVisibility === "removed") {
       throw new ConvexError({ code: "IDEA_NOT_FOUND" });
     }
 

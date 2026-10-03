@@ -255,7 +255,7 @@ export const startRepositoryIdea = mutation({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .unique();
-    if (!idea) return denyNotFound();
+    if (!idea || idea.editorialVisibility === "removed") return denyNotFound();
     const projectKey = `wp25:repository:${normalizeIdempotencyKey(args.idempotencyKey)}`;
     const existing = await ctx.db
       .query("projects")

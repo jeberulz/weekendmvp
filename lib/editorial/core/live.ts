@@ -12,7 +12,7 @@ import { principalView } from "./derive";
 import { EditorialCore } from "./repository";
 import type { ActorRef, CheckPolicy, CoreEnvironment, EditorialState, ReleaseCapability } from "./state";
 
-/** The live environment: real accounts, with publication still gated on E6. */
+/** The live environment: real accounts; release activation requires an explicit operator switch. */
 
 export const LIVE_POLICY_VERSION = "engine-artifact-v2-2026-10-03";
 export const LIVE_REQUIRED_CHECK_IDS = ["engine-artifact-audit"] as const;
@@ -26,11 +26,18 @@ export const LIVE_CHECK_POLICY: CheckPolicy = {
     "Run the authenticated engine audit against the saved revision. Inline checks are unavailable.",
 };
 
-export const LIVE_RELEASE_CAPABILITY: ReleaseCapability = {
-  available: false,
-  reason:
-    "Publishing is not connected yet. The release worker arrives with WP46-E6; nothing was recorded and the public site is unchanged.",
-};
+export function liveReleaseCapability(): ReleaseCapability {
+  const configured =
+    process.env.EDITORIAL_RELEASE_ENABLED === "true" &&
+    Boolean(process.env.EDITORIAL_PUBLIC_SITE_URL) &&
+    Boolean(process.env.EDITORIAL_READER_COMMIT);
+  return {
+    available: configured,
+    reason: configured
+      ? "Private version store and release worker are configured."
+      : "Publishing remains disabled until the E6 reader, worker, site URL and expected deployed commit are configured and verified.",
+  };
+}
 
 export const LIVE_WORKER_ACTOR: ActorRef = { id: "release-worker", kind: "service", label: "Release worker" };
 
@@ -48,7 +55,7 @@ export function liveEnvironment(
     mode: "live",
     simulated: false,
     checks: seams.checks ?? LIVE_CHECK_POLICY,
-    releases: seams.releases ?? LIVE_RELEASE_CAPABILITY,
+    releases: seams.releases ?? liveReleaseCapability(),
     workerActor: LIVE_WORKER_ACTOR,
     measure: seams.measure ?? null,
   };
@@ -147,10 +154,12 @@ export class LiveEditorialCore extends EditorialCore {
         {
           id: "public_site",
           label: "Public site visibility gate",
-          configured: false,
+          configured: true,
           verified: false,
-          available: false,
-          detail: "Not built. Public pages ignore this workspace until WP46-E6.",
+          available: releases.available,
+          detail: releases.available
+            ? "Request-time gate is connected. The worker verifies deployed reader identity and public removal for each release."
+            : "Request-time gate is built; activation remains disabled until the E6 worker and deployed reader are configured.",
         },
       ],
       policy: {
@@ -162,8 +171,8 @@ export class LiveEditorialCore extends EditorialCore {
         readiness: releases.available ? "ready" : "unavailable",
         killSwitchEngaged: this.state.killSwitchEngaged,
         detail: releases.available
-          ? "Releases run through the release worker."
-          : "Nothing can be published or unpublished from this workspace yet.",
+          ? "Release requests run through the private version store and durable worker; each activation checks the deployed reader."
+          : "Nothing can be published or unpublished from this workspace until the E6 operator switch and deployment identity are configured.",
       },
     };
   }

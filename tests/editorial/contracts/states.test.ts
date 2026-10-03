@@ -42,7 +42,7 @@ describe("revision review", () => {
 describe("releases", () => {
   test("live comes only from activation, never from a click", () => {
     const into = RELEASE_STATES.filter((state) => canTransitionRelease("publish", state, "succeeded"));
-    expect(into.sort()).toEqual(["activating", "needs_reconciliation"]);
+    expect(into.sort()).toEqual(["activating", "needs_reconciliation", "verifying_public"]);
   });
 
   test("an uncertain activation is reconciled, not blindly retried", () => {

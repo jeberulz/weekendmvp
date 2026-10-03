@@ -142,7 +142,7 @@ export const start = mutation({
       .unique();
     // Retired ideas and engine drafts start no new plan. Existing plans on
     // them stay readable and editable by their owner.
-    if (idea === null || !inMemberCatalogue(idea.slug))
+    if (idea === null || !inMemberCatalogue(idea.slug, idea.editorialVisibility))
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
 
     const now = Date.now();
@@ -296,7 +296,7 @@ export const startPreview = query({
     const shown = same ?? active[0];
     return {
       idea:
-        idea && inMemberCatalogue(idea.slug)
+        idea && inMemberCatalogue(idea.slug, idea.editorialVisibility)
           ? {
               slug: idea.slug,
               title: idea.title,

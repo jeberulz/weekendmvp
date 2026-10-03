@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { cacheLife, cacheTag } from "next/cache";
 import {
   Boxes,
   Building2,
@@ -287,10 +286,6 @@ export async function renderCollection(
 }
 
 async function CachedCollectionHub({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag("ideas", `collection:${slug}`);
-  cacheLife("hours");
-
   const def = COLLECTIONS[slug];
   const ideas = await fetchIdeasForCollection(def);
   const color = COLOR_STYLES[def.color];

@@ -1,6 +1,7 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 
 import { mutation } from "../_generated/server";
+import { internal } from "../_generated/api";
 import {
   approvalArgs,
   candidateDecisionArgs,
@@ -11,6 +12,7 @@ import {
   targetArgs,
 } from "./args";
 import { commandRepository } from "./session";
+import { activatePublicRelease, removePublicIdea, stageRelease } from "./publication";
 import { nullableString } from "./validators";
 
 /**
@@ -118,14 +120,23 @@ export const approveRevision = mutation({
 
 export const prepareRelease = mutation({
   args: { revisionId: v.string(), expectedLiveReleaseId: nullableString, idempotencyKey: v.string() },
-  handler: async (ctx, args) =>
-    (await commandRepository(ctx)).prepareRelease(args.revisionId, args.expectedLiveReleaseId, args.idempotencyKey),
+  handler: async (ctx, args) => {
+    const result = await (await commandRepository(ctx)).prepareRelease(args.revisionId, args.expectedLiveReleaseId, args.idempotencyKey);
+    if (result.ok) {
+      await stageRelease(ctx, result.value.releaseId);
+      await ctx.scheduler.runAfter(0, internal.editorial.worker.run, { releaseId: result.value.releaseId });
+    }
+    return result;
+  },
 });
 
 export const publishRelease = mutation({
   args: { releaseId: v.string(), expectedState: releaseStateArgs, approvalId: v.string(), idempotencyKey: v.string() },
-  handler: async (ctx, args) =>
-    (await commandRepository(ctx)).publishRelease(args.releaseId, args.expectedState, args.approvalId, args.idempotencyKey),
+  handler: async (ctx, args) => {
+    const result = await (await commandRepository(ctx)).publishRelease(args.releaseId, args.expectedState, args.approvalId, args.idempotencyKey);
+    if (result.ok) await ctx.scheduler.runAfter(0, internal.editorial.worker.run, { releaseId: result.value.releaseId });
+    return result;
+  },
 });
 
 export const cancelRelease = mutation({
@@ -136,13 +147,32 @@ export const cancelRelease = mutation({
 
 export const retryRelease = mutation({
   args: { releaseId: v.string(), expectedState: releaseStateArgs, idempotencyKey: v.string() },
-  handler: async (ctx, args) =>
-    (await commandRepository(ctx)).retryRelease(args.releaseId, args.expectedState, args.idempotencyKey),
+  handler: async (ctx, args) => {
+    const result = await (await commandRepository(ctx)).retryRelease(args.releaseId, args.expectedState, args.idempotencyKey);
+    if (result.ok) await ctx.scheduler.runAfter(0, internal.editorial.worker.run, { releaseId: result.value.releaseId });
+    return result;
+  },
 });
 
 export const reconcileRelease = mutation({
   args: { releaseId: v.string() },
-  handler: async (ctx, args) => (await commandRepository(ctx)).reconcileRelease(args.releaseId),
+  handler: async (ctx, args) => {
+    const pending = await ctx.db.query("editorial_releases")
+      .withIndex("by_key", (q) => q.eq("key", args.releaseId)).unique();
+    const result = await (await commandRepository(ctx)).reconcileRelease(args.releaseId);
+    if (result.ok && result.value.state === "succeeded" &&
+        pending?.state === "needs_reconciliation" && pending.observation?.activated) {
+      const idea = await ctx.db.query("editorial_ideas")
+        .withIndex("by_key", (q) => q.eq("key", pending.ideaId)).unique();
+      const pointer = idea ? await ctx.db.query("editorial_public_pointers")
+        .withIndex("by_slug", (q) => q.eq("slug", idea.slug)).unique() : null;
+      if (pointer?.releaseId !== args.releaseId) {
+        throw new ConvexError({ code: "POINTER_CONFLICT", message: "No activated public pointer was found. Probe again before reconciling." });
+      }
+    }
+    if (result.ok && result.value.state === "succeeded") await activatePublicRelease(ctx, args.releaseId);
+    return result;
+  },
 });
 
 export const requestRollback = mutation({
@@ -153,20 +183,32 @@ export const requestRollback = mutation({
     reason: v.string(),
     idempotencyKey: v.string(),
   },
-  handler: async (ctx, args) =>
-    (await commandRepository(ctx)).requestRollback(
+  handler: async (ctx, args) => {
+    const result = await (await commandRepository(ctx)).requestRollback(
       args.ideaId,
       args.targetReleaseId,
       args.expectedLiveReleaseId,
       args.reason,
       args.idempotencyKey,
-    ),
+    );
+    if (result.ok) {
+      await stageRelease(ctx, result.value.releaseId);
+      await ctx.scheduler.runAfter(0, internal.editorial.worker.run, { releaseId: result.value.releaseId });
+    }
+    return result;
+  },
 });
 
 export const unpublishIdea = mutation({
   args: { ideaId: v.string(), expectedLiveReleaseId: v.string(), reason: v.string(), idempotencyKey: v.string() },
-  handler: async (ctx, args) =>
-    (await commandRepository(ctx)).unpublishIdea(args.ideaId, args.expectedLiveReleaseId, args.reason, args.idempotencyKey),
+  handler: async (ctx, args) => {
+    const result = await (await commandRepository(ctx)).unpublishIdea(args.ideaId, args.expectedLiveReleaseId, args.reason, args.idempotencyKey);
+    if (result.ok) {
+      await removePublicIdea(ctx, args.ideaId);
+      await ctx.scheduler.runAfter(0, internal.editorial.worker.run, { releaseId: result.value.releaseId });
+    }
+    return result;
+  },
 });
 
 export const trashIdea = mutation({

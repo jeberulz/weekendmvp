@@ -56,7 +56,7 @@ export const ideas = query({
             .unique(),
         ),
       )
-    ).filter((idea): idea is Doc<"ideas"> => idea !== null && !isEngineDraftSlug(idea.slug));
+    ).filter((idea): idea is Doc<"ideas"> => idea !== null && !isEngineDraftSlug(idea.slug) && idea.editorialVisibility !== "removed");
     const savedIds = await savedAmong(
       ctx,
       user._id,
