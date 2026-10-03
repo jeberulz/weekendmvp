@@ -1241,8 +1241,6 @@ describe("source reads: comment bodies are separated by blank lines (R14)", () =
   it("joins Hacker News story and comment texts with blank lines", async () => {
     const item = {
       id: 1,
-      title: "Ask HN: How do you review AI-written code?",
-      text: null,
       children: [
         {
           id: 2,
@@ -1251,6 +1249,8 @@ describe("source reads: comment bodies are separated by blank lines (R14)", () =
         },
         { id: 4, text: "Line one<br>line two", children: [] },
       ],
+      title: "Ask HN: How do you review AI-written code?",
+      text: "Reviewing generated code takes longer than writing it.",
     };
     const server = await serve((_req, res) => {
       res.writeHead(200, { "content-type": "application/json" });
@@ -1258,7 +1258,8 @@ describe("source reads: comment bodies are separated by blank lines (R14)", () =
     });
     const reader = provider({ fetchImpl: fakeTlsFetch(transport(), new Map([["hn.algolia.com", server.port]])) });
     expect(await reader.fetchText("https://news.ycombinator.com/item?id=1")).toBe(
-      "Ask HN: How do you review AI-written code?\n\nWe pair on it. It takes longer than writing it." +
+      "Ask HN: How do you review AI-written code?\n\nReviewing generated code takes longer than writing it." +
+        "\n\nWe pair on it. It takes longer than writing it." +
         "\n\nSame here / agreed\n\nLine one\nline two",
     );
   });

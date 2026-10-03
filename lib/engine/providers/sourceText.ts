@@ -391,7 +391,7 @@ function oversizedError(label: string, maxBytes: number): SourceFetchError {
 // Page text extraction
 // ---------------------------------------------------------------------------
 
-/** Collect every string under the given keys in a nested JSON value. */
+/** Collect each post before its children, even when a JSON API serializes children first. */
 function collectStrings(value: unknown, keys: Set<string>, out: string[]): void {
   if (Array.isArray(value)) {
     for (const v of value) collectStrings(v, keys, out);
@@ -400,7 +400,9 @@ function collectStrings(value: unknown, keys: Set<string>, out: string[]): void 
   if (typeof value !== "object" || value === null) return;
   for (const [k, v] of Object.entries(value)) {
     if (typeof v === "string" && keys.has(k)) out.push(v);
-    else if (typeof v === "object") collectStrings(v, keys, out);
+  }
+  for (const v of Object.values(value)) {
+    if (typeof v === "object") collectStrings(v, keys, out);
   }
 }
 

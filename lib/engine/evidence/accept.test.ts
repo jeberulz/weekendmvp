@@ -1734,6 +1734,22 @@ describe("R14: every subject word is in the stat's sentence", () => {
 });
 
 describe("PR96 review: evidence assertions retain their meaning", () => {
+  it("requires the original research page for market figures repeated in a roundup", () => {
+    const text = "The landing page builder market reached $725 million in 2025.";
+    const roundup = { url: "https://www.aidesigner.ai/blog/best-ai-landing-page-builders", text };
+    const original = { url: "https://www.researchnester.com/reports/landing-page-builder-market/4347", text };
+    const candidate = (sourceUrl: string) => stat({ sourceUrl, supportingText: text, subject: "landing page builder market", amountText: "$725 million", year: 2025 });
+    const secondhand = run([roundup], { marketStats: [candidate(roundup.url)] });
+    expect(secondhand.accepted).toEqual([]);
+    expect(reasons(secondhand)).toEqual(["unsupported_assertion"]);
+    const primary = run([original], { marketStats: [candidate(original.url)] });
+    expect(primary.accepted).toHaveLength(1);
+    const mutated = { ...primary.accepted[0], sourceUrl: roundup.url };
+    const checked = revalidateAcceptedEvidence(mutated, acquisitions([roundup]));
+    expect(checked.ok).toBe(false);
+    if (!checked.ok) expect(checked.issues.join(" ")).toContain("roundup page");
+  });
+
   it("requires the original publication for a statistic explicitly credited to it", () => {
     const text = "47% of professional developers used AI-assisted code review in the past year, up from 22% in 2024 (Stack Overflow 2025).";
     const vendor = { url: "https://www.qodo.ai/blog/ai-code-review", text };
