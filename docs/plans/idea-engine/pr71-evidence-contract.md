@@ -545,6 +545,13 @@ source acquisition statuses, accepted counts per kind, and rejected
   as Google Docs ids and UUID paths are refused too. The run report carries
   `refusedCitations` (host and reason only).
 
+- **R16 (2026-10-03, from the compiler fixer's timing work): bounded audit
+  input.** Every regex the auditor and base bar own runs in linear time
+  (timing tests in `lib/engine/audit.redos.test.ts`). The third-party MDX
+  parser is quadratic on some character runs, so the auditor refuses an MDX
+  file larger than 64 KiB before parsing it (the largest published idea page
+  is about 25 KB; compiled engine pages are about 20 KB).
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The
