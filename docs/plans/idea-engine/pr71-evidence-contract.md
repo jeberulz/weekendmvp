@@ -667,6 +667,16 @@ source acquisition statuses, accepted counts per kind, and rejected
   distinctness gate, and a failed retry still stops before keyword or writer
   spend. The maximum number and reservation of paid attempts do not change.
 
+- **Explicit upstream attribution (2026-10-03, source-inspection follow-up).**
+  A market-stat sentence with a parenthetical named publication and year may
+  not be sourced to a different vendor page merely because that vendor
+  repeats it. Acceptance and stored-record revalidation use the same narrow
+  check and reject the copy as `unsupported_assertion`. The original
+  publication's own page can support the claim if its text is read and the
+  ordinary assertion rules pass. Other attribution styles, methodology and
+  topical fit remain part of the mandatory human source check; this is not a
+  source-trust score.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

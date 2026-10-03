@@ -107,6 +107,7 @@ import {
   isComparisonPage,
   isFirstPartyHost,
   isVendorMarketplaceListing,
+  registrableLabel,
   sameSource,
   sourceHostLabel,
   strippedSourceUrl,
@@ -950,7 +951,7 @@ function yearIssue(
  * the retrieval year, otherwise measured); a declared year belongs to this
  * figure (see yearIssue); and a subject content word appears in the sentence.
  */
-function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number): StatCheck {
+function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number, sourceUrl: string): StatCheck {
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);
   }
@@ -958,6 +959,18 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
   if (shape) return fail("invalid_candidate", shape);
   const control = formatControlIn(excerpt);
   if (control) return fail("invalid_candidate", controlDetail("the supporting sentence", control));
+  // A copied sentence can still be a vendor's secondhand claim. When it
+  // explicitly credits a different named publication and year, require the
+  // original publication as the cited source rather than laundering its
+  // number through the vendor page. This is intentionally a narrow syntax;
+  // the human source check handles other forms of upstream attribution.
+  const sourceLabel = vendorKey(registrableLabel(sourceUrl) ?? "");
+  for (const match of excerpt.matchAll(/\(([A-Z][\p{L}]+(?:\s+[A-Z][\p{L}]+){1,3})\s+(?:19|20)\d{2}\)/gu)) {
+    const credited = vendorKey(match[1] ?? "");
+    if (credited && sourceLabel && credited !== sourceLabel && !credited.includes(sourceLabel) && !sourceLabel.includes(credited)) {
+      return fail("unsupported_assertion", "the excerpt attributes this figure to another publication; cite the original source");
+    }
+  }
   const laterDeclaredYear = claim.year !== undefined && claim.year > referenceYear;
   const amounts = scanAmounts(excerpt);
   let matched = false;
@@ -1066,7 +1079,7 @@ function acceptStat(candidate: MarketStatCandidate, context: Context): { ok: tru
       continue;
     }
     const excerpt = source.text.slice(range.start, range.end);
-    const check = checkStatExcerpt(excerpt, claim, source.referenceYear);
+    const check = checkStatExcerpt(excerpt, claim, source.referenceYear, source.url);
     if (!check.ok) {
       failure = closer(failure, check);
       continue;
@@ -1944,6 +1957,7 @@ function rederivationIssues(
         ...(year !== undefined ? { year } : {}),
       },
       referenceYear,
+      sourceUrl,
     );
     if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
     return samePeriod(check.period, period) ? [] : ["period: does not re-derive from the excerpt"];

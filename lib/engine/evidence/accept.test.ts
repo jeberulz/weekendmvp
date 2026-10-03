@@ -1734,6 +1734,23 @@ describe("R14: every subject word is in the stat's sentence", () => {
 });
 
 describe("PR96 review: evidence assertions retain their meaning", () => {
+  it("requires the original publication for a statistic explicitly credited to it", () => {
+    const text = "47% of professional developers used AI-assisted code review in the past year, up from 22% in 2024 (Stack Overflow 2025).";
+    const vendor = { url: "https://www.qodo.ai/blog/ai-code-review", text };
+    const original = { url: "https://survey.stackoverflow.co/2025/ai", text };
+    const candidate = (sourceUrl: string) => stat({ sourceUrl, supportingText: text, subject: "professional developers", metric: "adoption", amountText: "47%", periodKind: "measured" });
+    const secondhand = run([vendor], { marketStats: [candidate(vendor.url)] });
+    expect(secondhand.accepted).toEqual([]);
+    expect(reasons(secondhand)).toEqual(["unsupported_assertion"]);
+    const primary = run([original], { marketStats: [candidate(original.url)] });
+    expect(primary.accepted).toHaveLength(1);
+    expect(revalidateAcceptedEvidence(primary.accepted[0], acquisitions([original])).ok).toBe(true);
+    const mutated = { ...primary.accepted[0], sourceUrl: vendor.url };
+    const checked = revalidateAcceptedEvidence(mutated, acquisitions([vendor]));
+    expect(checked.ok).toBe(false);
+    if (!checked.ok) expect(checked.issues.join(" ")).toContain("another publication");
+  });
+
   it("accepts an exact app-listing price as labelled marketplace evidence", () => {
     const page = { url: "https://apps.shopify.com/instant", text: "Instant Landing Page Builder\nPricing\nStarter\n$39/month" };
     const result = run([page], {
