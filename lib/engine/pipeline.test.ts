@@ -91,7 +91,7 @@ describe("step table (PIPELINE_VERSION 2)", () => {
     expect(Object.fromEntries(PIPELINE.map((s) => [s.id, s.maxAttempts]))).toEqual({
       brief_normalization: 2,
       market_stats: 2,
-      competitors: 2,
+      competitors: 3,
       community_signals: 4,
       evidence_extraction: 2,
       keywords_demand: 2,
@@ -101,17 +101,38 @@ describe("step table (PIPELINE_VERSION 2)", () => {
     });
   });
 
-  it("keeps the worst case of every allowed billable attempt under the $4.00 cap ($3.922)", () => {
+  it("keeps the worst case of every allowed billable attempt under the $4.00 cap ($3.972)", () => {
     const worst = worstCaseRunMicroUsd(PIPELINE);
     expect(worst).toBe(PIPELINE.reduce((sum, s) => sum + s.maxAttempts * worstCaseMicroUsd(s.budget), 0));
     expect(worst).toBeLessThanOrEqual(CAP_MICRO_USD);
     // Pinned so any budget or attempt change is a deliberate, reviewed edit
     // (ruling R13 added the third editorial attempt: $3.262 + $0.660).
-    expect(worst).toBe(3_922_000);
+    expect(worst).toBe(3_972_000);
   });
 });
 
 describe("runResearch (fixture)", () => {
+  it("uses one bounded competitor supplement when the first search cites too few vendor sites", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    const queries: string[] = [];
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        queries.push(request.query);
+        const result = await search.search(request);
+        return request.query.includes("Identify at least three direct competitors")
+          ? { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 1) } }
+          : result;
+      },
+    };
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(report.attempts.competitors).toBe(2);
+    expect(queries.some((query) => query.includes("first competitor search cited too few"))).toBe(true);
+    expect(record.competitors).toHaveLength(3);
+    expect(report.costUsd).toBeLessThan(4);
+  });
+
   it("produces a v2 record and a run report from accepted evidence", async () => {
     const { record, report } = await runResearch({
       brief: RFP_BRIEF,

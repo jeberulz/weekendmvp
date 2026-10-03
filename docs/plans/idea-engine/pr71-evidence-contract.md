@@ -605,6 +605,17 @@ source acquisition statuses, accepted counts per kind, and rejected
   from validated `editorial.pricingTiers`, not parsed MDX or competitor prices.
   The per-report cost cap and pre-editorial fail-closed gate are unchanged.
 
+- **R17 acquisition amendment (2026-10-03, first live GO probe).** When the
+  initial competitor search cites fewer than three distinct vendor-owned
+  sites, one supplement search seeks other official pricing domains and the
+  missing pricing pages of named vendors. The competitor step permits at most
+  three billable attempts total, including any provider retries; worst-case
+  total run reservation is $3.972 under the unchanged $4 cap. A competitor
+  source excerpt reserves room for one explicit availability sentence as well
+  as numeric-price passages. The extractor copies one offer into each
+  `priceText` even if its supporting passage describes multiple billing
+  alternatives; it never combines alternatives into a fabricated term.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

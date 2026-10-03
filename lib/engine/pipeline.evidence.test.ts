@@ -813,6 +813,14 @@ describe("input budgets", () => {
       }
     }
   });
+
+  it("preserves an explicit pricing status behind a long competitor price table", () => {
+    const text = `${"Team costs $24/user/month. ".repeat(150)}\nContact sales for a custom quote.`;
+    const block = buildExtractionSources([{ url: "https://vendor.example/pricing", title: "Vendor pricing", roles: ["competitors"], text }], 1800);
+    expect(block.text).toContain("$24/user/month");
+    expect(block.text).toContain("Contact sales for a custom quote.");
+    for (const passage of block.text.split("Text:\n")[1]!.split(EXCERPT_GAP)) expect(text.includes(passage)).toBe(true);
+  });
 });
 
 describe("writer instructions (ruling R13)", () => {

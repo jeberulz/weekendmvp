@@ -326,6 +326,16 @@ function figureExcerpt(text: string, maxBytes: number): string {
   return out;
 }
 
+/** One explicit pricing-status sentence, even when a long page has no prices. */
+function availabilityExcerpt(text: string, maxBytes: number): string {
+  const cue = /\b(?:contact sales|talk to sales|custom (?:quote|pricing)|pricing on request|usage[- ]based pricing|pay[- ]as[- ]you[- ]go|credit packs?)\b/iu;
+  for (const sentence of splitSentences(text)) {
+    if (!cue.test(sentence.text) || utf8Bytes(sentence.text) > maxBytes) continue;
+    return sentence.text.trim();
+  }
+  return "";
+}
+
 /**
  * The excerpt of one page, at most `maxBytes` UTF-8 bytes: figure passages
  * for market and competitor pages (leading text when they hold none), the
@@ -342,6 +352,13 @@ export function extractionExcerpt(source: ExtractionSource, maxBytes: number): s
     const passages = rest > 0 ? figureExcerpt(source.text, rest) : "";
     if (!passages) return leadingExcerpt(source.text, maxBytes);
     return lead ? `${lead}${EXCERPT_GAP}${passages}` : passages;
+  }
+  if (source.roles.includes("competitors")) {
+    const status = availabilityExcerpt(source.text, Math.min(900, Math.floor(maxBytes / 3)));
+    const room = maxBytes - utf8Bytes(status) - (status ? utf8Bytes(EXCERPT_GAP) : 0);
+    const prices = figureExcerpt(source.text, status ? room : maxBytes);
+    if (status && prices) return `${status}${EXCERPT_GAP}${prices}`;
+    return status || prices || leadingExcerpt(source.text, maxBytes);
   }
   if (figures) return figureExcerpt(source.text, maxBytes) || leadingExcerpt(source.text, maxBytes);
   return leadingExcerpt(source.text, maxBytes);

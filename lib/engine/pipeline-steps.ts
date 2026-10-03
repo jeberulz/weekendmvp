@@ -102,7 +102,9 @@ export const PIPELINE: readonly PipelineStep[] = [
       requests: 1,
       searchContextSize: "high",
     },
-    maxAttempts: 2,
+    // Primary search (with a possible provider retry), then one diversity
+    // supplement when fewer than three vendor-owned sites were cited.
+    maxAttempts: 3,
   },
   {
     position: 3,
