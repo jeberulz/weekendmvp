@@ -67,7 +67,13 @@ import {
   type ResearchRunReport,
   type SourceAcquisition,
 } from "./evidence/contract.ts";
-import { evidenceRefs, findQuotedSpans, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import {
+  evidenceRefs,
+  findQuotedSpans,
+  findUnboundFigures,
+  renderEvidenceInline,
+  WRITER_NUMBER_NAME_RULE,
+} from "./evidence/tokens.ts";
 import { PIPELINE, PIPELINE_VERSION, stepAt, stepById, type PipelineStep, type PipelineStepId } from "./pipeline-steps.ts";
 import { redactText, redactUrl } from "./providers/sourceText.ts";
 import {
@@ -844,7 +850,10 @@ export const EDITORIAL_INSTRUCTIONS = [
   "- Select ids only from the accepted evidence list. marketStatIds: at least 2 market_stat ids. quoteIds: at least 2 community_quote ids, neither text containing the other. competitors: at least 3, each with priceIds of competitor_price items, and name exactly equal to the vendor of those items.",
   "- Cite an evidence item inside text as [[ev:<id>]]. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
   "- Where tokens may go: marketSummary cites market_stat items only; communitySummary cites community_quote items only; whyNow cites market_stat or community_quote items; problemNarrative cites any kind; competitiveNarrative and goToMarket.pricingNotes cite competitor_price items only; competitors[].notes cites only that competitor's own priceIds. No other field takes tokens.",
-  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". A bare year (1990–2039), product names with digits (B2B, GPT-4o) and standard or version names (SOC 2, ISO 27001, Next.js 15, OAuth 2.0) are fine. The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns; even there, state no ARR, MRR or revenue total and no computation (a count times a price equals a total).",
+  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". " +
+    // Review P3-4: exactly the names with numbers the record parser accepts.
+    WRITER_NUMBER_NAME_RULE +
+    " The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns; even there, state no ARR, MRR or revenue total and no computation (a count times a price equals a total).",
   "- No quotation marks of any kind in any field, the proposal slots and dataModel columns included: no straight or curly double or single quotes, guillemets or corner brackets around words (apostrophes inside words, such as don't or teams', are fine). Quotations reach the page only as quote evidence, so cite the quote with [[ev:<id>]] instead.",
   "- Never state a statistic, price, user count, quote or source that is not in the evidence list. When no item supports a point, say it qualitatively without numbers.",
   "Proposal rules (these are the product proposal and its assumptions, not measured facts):",
