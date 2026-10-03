@@ -1,7 +1,7 @@
 # PR #71 quote-gate live verification (re-run 4 — widened community)
 
-**Branch:** `cursor/phase-7-skill-flip-d6b7`  
-**Gate doc:** `engine/eval/quote-gate-live.md`  
+**Branch:** `cursor/phase-7-skill-flip-d6b7`
+**Gate doc:** `engine/eval/quote-gate-live.md`
 **Clear to merge (quote gate)? YES** (one pack green without Reddit)
 
 ## One-liner

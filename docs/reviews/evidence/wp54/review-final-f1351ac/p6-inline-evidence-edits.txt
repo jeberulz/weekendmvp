@@ -1,0 +1,9 @@
+I1: CLI exit 1 ok=false — append a fabricated sentence inside the inline quote link (review F2 mutation, inline form)
+     The Problem: unbound figure "nine million" near line 14 ("…ct increased our engineering revenue by nine million dollars overnight." Another described t…") — not a rendering of the record's evidence (guard, not proof of t
+I2: CLI exit 1 ok=false — point the inline quote link at a fake source (review F2 URL mutation, inline form)
+     evidence link ""We burn weekends answering the same security questionnaire…" near line 14 points to https://example.org/fake-source, but its evidence source is https://news.example.com/item?id=4101
+I3: CLI exit 0 ok=true — insert a negation into the inline quote link text
+I4: CLI exit 1 ok=false — change the inline market-stat link text ($1.9 billion -> $1.9 trillion)
+     Market Research: unbound figure "$1.9 trillion" near line 43 ("…SaaS market. The category was valued at $1.9 trillion (2024) , and analysts project it to rea…") — not a rendering of the record's evidence (guard, not proo
+I5: CLI exit 1 ok=false — change the inline competitor-price link text in a row's notes ($49 -> $19)
+     Competitive Landscape: unbound figure "$19" near line 66 ("…— Per-seat pricing at $19/user/month, billed annually (Starter) s…") — not a rendering of the record's evidence (guard, not proof of truth)

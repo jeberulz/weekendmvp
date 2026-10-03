@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation, requireOwnedProjectForMutation } from "./authz";
+import { isEngineDraftSlug } from "./catalogPolicy";
 import {
   assertBriefPayloadSource,
   briefDisplayTitle,
@@ -270,6 +271,9 @@ export const startRepositoryIdea = mutation({
         idea._id,
       );
     }
+    // A retry above returns the member's existing project; an engine draft
+    // starts no new one (its research page is withheld).
+    if (isEngineDraftSlug(idea.slug)) return denyNotFound();
     const snapshot = repositorySnapshot(idea);
     return await createInitialGraph(
       ctx,

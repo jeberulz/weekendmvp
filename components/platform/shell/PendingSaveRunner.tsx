@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
+import { publicIdeaPath } from "@/lib/engine-drafts";
 import { readPendingSave, persistPendingSave, dismissPendingSave, PENDING_SAVE_MAX_ATTEMPTS, type PendingSave } from "@/lib/pending-save";
 import { trackDashboardEvent } from "@/lib/track";
 
@@ -40,7 +41,11 @@ export function PendingSaveRunner() {
     void Promise.resolve().then(() => persistPendingSave(window.localStorage, save, Date.now(),
       (slug) => setSaved({ slug, saved: true })))
       .then((outcome) => {
-        if (document.activeElement === retryButton.current) ideaLink.current?.focus();
+        // The retry button is about to go. A retired draft has no idea link, so focus
+        // returns to the workspace, as it does after Dismiss.
+        if (document.activeElement === retryButton.current) {
+          (ideaLink.current ?? document.getElementById("workspace-main"))?.focus();
+        }
         if (outcome === "replaced") { setResult({ save, ok: false, replaced: true }); return; }
         setResult({ save, ok: true });
         trackDashboardEvent({ name: "explore_state_changed", props: { flag: "saved", value: true, source: "idea_page" } });
@@ -70,13 +75,18 @@ export function PendingSaveRunner() {
             <p className="min-w-0 flex-1 break-words">
               {result.replaced ? `The pending save for “${result.save.title}” changed in another tab. This request was not sent; any newer request is kept. `
                 : result.ok ? `Saved “${result.save.title}”. ` : `We couldn’t save “${result.save.title}”. `}
-              <Link
-                ref={ideaLink}
-                href={`/ideas/${result.save.slug}`}
-                className={`font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink ${FOCUS}`}
-              >
-                {result.ok || result.replaced ? "Back to the idea" : "Open it and try again"}
-              </Link>
+              {/* A retired draft (WP54-S5) has no page to go back to. */}
+              {publicIdeaPath(result.save.slug) === null ? (
+                "Its research was retired, so there is no page to open."
+              ) : (
+                <Link
+                  ref={ideaLink}
+                  href={`/ideas/${result.save.slug}`}
+                  className={`font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink ${FOCUS}`}
+                >
+                  {result.ok || result.replaced ? "Back to the idea" : "Open it and try again"}
+                </Link>
+              )}
             </p>
             {!result.ok && !result.replaced && <button ref={retryButton} type="button" aria-disabled={pending || !isAuthenticated} aria-busy={pending} onClick={() => { if (!pending && isAuthenticated) { setPending(true); void savePending(result.save); } }}
               className={`min-h-11 rounded px-3 text-sm font-medium text-home-orange-ink ${FOCUS}`}>

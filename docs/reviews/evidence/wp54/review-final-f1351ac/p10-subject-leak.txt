@@ -1,0 +1,2 @@
+row: - **RFP response software market, where 92% of buyers switch vendors every year (market size)**: $1.9 billion (2024) ([RFP response software market report 2025](https://research.example.com/rfp-response-software-market-2025)).
+audit: PASS []

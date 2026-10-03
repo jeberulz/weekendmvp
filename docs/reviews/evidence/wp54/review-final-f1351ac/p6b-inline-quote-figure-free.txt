@@ -1,0 +1,2 @@
+I1b append a figure-free sentence inside the inline quote: CLI exit 0 ok=true errors=0
+I6 replace the inline quote with a fabricated one, same link: CLI exit 0 ok=true errors=0

@@ -6,6 +6,11 @@
  *
  * Round 3: sentence-level + cross-idea 8+ word dedupe; ≥2200 words hard;
  * no compiler padding templates; proper audience casing.
+ *
+ * Plain JavaScript on purpose: seed-convex.mjs imports it under plain node.
+ * Quote, row and Year-One checks against the research record live in
+ * lib/engine/artifact-audit.ts (WP54-S4); the loose substring quote matcher
+ * that used to live here is gone.
  */
 
 /** Soft target for engine-draft-* (IB deep pages are ~2,300–2,600). */
@@ -87,18 +92,6 @@ export const COMPETITOR_ROUNDUP_HOST_PATH_RE =
   /\/(best|top)-[\w-]*(rfp|ai|software|tools|page|builder)/i;
 
 /**
- * Normalize quote text for fidelity checks (whitespace + curly quotes).
- */
-export function normalizeQuote(text) {
-  return String(text)
-    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
-    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
-
-/**
  * Split prose into paragraphs (blank-line separated), ignoring fenced code.
  */
 export function proseParagraphs(body) {
@@ -151,12 +144,14 @@ export function proseForSentences(body) {
     .replace(/`[^`]*`/g, " ")
     .replace(/^#+\s.+$/gm, " ")
     .replace(/^>\s?/gm, "")
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/!\[[^[\]]*\]\([^)]+\)/g, " ")
     // Link text is a page title, not prose: the same thread title legitimately
-    // appears under a quote and again in Sources.
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, " ")
-    .replace(/^\s*[-*]\s+/gm, "")
-    .replace(/^\s*\d+\.\s+/gm, "")
+    // appears under a quote and again in Sources. Link text stops at the next
+    // bracket and line-start patterns never cross a line break, so these stay
+    // linear on hostile text (WP54 round 4).
+    .replace(/\[([^[\]]+)\]\([^)]+\)/g, " ")
+    .replace(/^[^\S\n\r\u2028\u2029]*[-*]\s+/gm, "")
+    .replace(/^[^\S\n\r\u2028\u2029]*\d+\.\s+/gm, "")
     .replace(/\*\*/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -282,11 +277,11 @@ export function findHygieneIssues(prose) {
 export function auditHowItWorksNaming(solutionContent) {
   const errors = [];
   const steps = [
-    ...solutionContent.matchAll(/^\s*(\d+)\.\s+\*\*([^*]+)\*\*\s+[—-]\s+(.+)$/gm),
+    ...solutionContent.matchAll(/^[^\S\n\r\u2028\u2029]*(\d+)\.\s+\*\*([^*]+)\*\*\s+[—-]\s+(.+)$/gm),
   ];
   if (steps.length === 0) {
     // Fallback: numbered lines without bold titles
-    const numbered = solutionContent.match(/^\s*\d+\.\s+\S/gm) || [];
+    const numbered = solutionContent.match(/^[^\S\n\r\u2028\u2029]*\d+\.\s+\S/gm) || [];
     if (numbered.length > 0) {
       errors.push(
         "How-it-works steps must use named titles: `1. **Title** — description` (not bare numbered lines)",
@@ -310,7 +305,7 @@ export function auditHowItWorksNaming(solutionContent) {
 export function findTierMismatches(businessContent, promptsContent) {
   const errors = [];
   const tierNames = [
-    ...businessContent.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm),
+    ...businessContent.matchAll(/^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm),
   ].map((m) => m[1].trim());
   if (tierNames.length < 2) return errors;
 
@@ -365,33 +360,6 @@ export function isCompetitorRoundupUrl(url) {
   }
 }
 
-/**
- * Extract competitor markdown bullets' links from Competitive Landscape.
- */
-export function extractCompetitorLinks(competitiveContent) {
-  const links = [];
-  const lines = competitiveContent.split("\n");
-  for (const line of lines) {
-    if (!/^\s*[-*]\s+\*\*/.test(line)) continue;
-    for (const m of line.matchAll(/\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g)) {
-      links.push(m[1]);
-    }
-  }
-  return links;
-}
-
-/**
- * Extract blockquote bodies from MDX.
- */
-export function extractBlockquotes(body) {
-  const quotes = [];
-  for (const m of body.matchAll(/^>\s*"?([^"\n]+)"?/gm)) {
-    const q = m[1].replace(/\s*—\s*.*$/, "").trim();
-    if (q.length >= 12) quotes.push(q);
-  }
-  return quotes;
-}
-
 /** Tables every engine Setup prompt carries; the idea's own tables are extra. */
 export const GENERIC_SETUP_TABLES = new Set([
   "workspaces",
@@ -442,7 +410,9 @@ export function countPhrase(prose, phrase) {
 /** `**N. Title**` prompt blocks → { title, words } using the text fence. */
 export function promptBlocks(promptsContent, countWords) {
   const out = [];
-  const re = /\*\*\d+\.\s+([^*]+)\*\*\s*```text\n([\s\S]*?)```/g;
+  // The title starts at a non-space character, so \s+ and the title never
+  // trade characters (quadratic on a long run of spaces otherwise).
+  const re = /\*\*\d+\.\s+([^*\s][^*]*)\*\*\s*```text\n([\s\S]*?)```/g;
   for (const m of promptsContent.matchAll(re)) {
     out.push({ title: m[1].trim(), text: m[2], words: countWords(m[2]) });
   }
@@ -451,7 +421,7 @@ export function promptBlocks(promptsContent, countWords) {
 
 /** Table names declared as `- name(` lines in a Setup prompt. */
 export function setupTableNames(setupText) {
-  return [...String(setupText).matchAll(/^\s*-\s*([a-z][a-z0-9_]*)\s*\(/gm)].map(
+  return [...String(setupText).matchAll(/^[^\S\n\r\u2028\u2029]*-\s*([a-z][a-z0-9_]*)\s*\(/gm)].map(
     (m) => m[1],
   );
 }

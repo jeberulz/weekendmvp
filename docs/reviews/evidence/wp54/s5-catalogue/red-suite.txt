@@ -1,0 +1,298 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 <repo>
+
+ ❯ convex/wp46DraftRetirement.test.ts (12 tests | 10 failed) 225ms
+     × reseeding without a draft leaves its stored row but takes it out of the public archive 21ms
+     × stored drafts survive, but no public discovery query returns them 6ms
+     × catalogue pages, search, facets and totals describe visible ideas only 110ms
+     × compare leaves retired drafts out of the side-by-side view 8ms
+     × the public archive reaches every visible idea once, in order, and terminates 4ms
+     × a bounded member scan returns empty pages with isDone false and the cursor still reaches the rest 7ms
+     × the legacy explore view continues through a draft-only underlying page 4ms
+     × no new plan, project, preview or prompt export starts from a draft 5ms
+     × a repeated repository start stays idempotent after its idea retires, but no new one begins 15ms
+     × a retired draft is not eligible for a new preview 15ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > F3 probe (review 2026-10-01) > reseeding without a draft leaves its stored row but takes it out of the public archive
+AssertionError: expected [ …(2) ] to deeply equal [ 'ordinary-idea' ]
+
+- Expected
++ Received
+
+  [
++   "engine-draft-ai-code-reviewer",
+    "ordinary-idea",
+  ]
+
+ ❯ convex/wp46DraftRetirement.test.ts:237:51
+    235|
+    236|     const archive = await t.query(api.ideas.list, { limit: 20 });
+    237|     expect(archive.page.map((idea) => idea.slug)).toEqual(["ordinary-i…
+       |                                                   ^
+    238|   });
+    239| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > public discovery after the reseed > stored drafts survive, but no public discovery query returns them
+AssertionError: expected [ …(6) ] to deeply equal [ Array(3) ]
+
+- Expected
++ Received
+
+  [
++   "engine-draft-ai-landing-page-generator-ecommerce",
++   "engine-draft-ai-code-reviewer",
++   "engine-draft-ai-rfp-response-assistant",
+    "ai-code-reviewer",
+    "rfp-desk",
+    "shop-page-builder",
+  ]
+
+ ❯ convex/wp46DraftRetirement.test.ts:260:59
+    258|     // /startup-ideas, /solve/*, collection hubs: the drained archive.
+    259|     const archive = await drainPublicArchive(t, 2);
+    260|     expect(archive.flatMap((page) => slugsOf(page.page))).toEqual(ORDI…
+       |                                                           ^
+    261|
+    262|     // Category hubs and the revenue hubs.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > member discovery after the reseed > catalogue pages, search, facets and totals describe visible ideas only
+AssertionError: expected [ …(6) ] to deeply equal [ Array(3) ]
+
+- Expected
++ Received
+
+  [
++   "engine-draft-ai-landing-page-generator-ecommerce",
++   "engine-draft-ai-code-reviewer",
++   "engine-draft-ai-rfp-response-assistant",
+    "ai-code-reviewer",
+    "rfp-desk",
+    "shop-page-builder",
+  ]
+
+ ❯ convex/wp46DraftRetirement.test.ts:315:28
+    313|
+    314|     const cards: RankedCard[] = (await drainLibrary(member, { numItems…
+    315|     expect(slugsOf(cards)).toEqual(ORDINARY_NEWEST_FIRST);
+       |                            ^
+    316|
+    317|     const everything = selectLibrary(cards, { view: "all", sort: "newe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > member discovery after the reseed > compare leaves retired drafts out of the side-by-side view
+AssertionError: expected [ …(3) ] to deeply equal [ 'ai-code-reviewer', 'rfp-desk' ]
+
+- Expected
++ Received
+
+  [
++   "engine-draft-ai-code-reviewer",
+    "ai-code-reviewer",
+    "rfp-desk",
+  ]
+
+ ❯ convex/wp46DraftRetirement.test.ts:377:27
+    375|       slugs: [REVIEWER_DRAFT, "ai-code-reviewer", "rfp-desk"],
+    376|     });
+    377|     expect(slugsOf(rows)).toEqual(["ai-code-reviewer", "rfp-desk"]);
+       |                           ^
+    378|   });
+    379| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > pagination with hidden drafts ahead of visible ideas > the public archive reaches every visible idea once, in order, and terminates
+AssertionError: limit 1: expected [ 'engine-draft-hidden-0', …(9) ] to deeply equal [ 'visible-a', 'visible-b', …(1) ]
+
+- Expected
++ Received
+
+  [
++   "engine-draft-hidden-0",
++   "engine-draft-hidden-1",
++   "engine-draft-hidden-2",
++   "engine-draft-hidden-3",
++   "engine-draft-hidden-4",
++   "engine-draft-hidden-5",
++   "engine-draft-hidden-6",
+    "visible-a",
+    "visible-b",
+    "visible-c",
+  ]
+
+ ❯ convex/wp46DraftRetirement.test.ts:403:39
+    401|       const pages = await drainPublicArchive(t, limit);
+    402|       const slugs = pages.flatMap((page) => slugsOf(page.page));
+    403|       expect(slugs, `limit ${limit}`).toEqual(["visible-a", "visible-b…
+       |                                       ^
+    404|       expect(pages.at(-1)?.isDone).toBe(true);
+    405|       expect(pages.slice(0, -1).every((page) => !page.isDone)).toBe(tr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > pagination with hidden drafts ahead of visible ideas > a bounded member scan returns empty pages with isDone false and the cursor still reaches the rest
+AssertionError: expected { …(5) } to match object { page: [], isDone: false }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "isDone": false,
+-   "page": [],
++   "page": [
++     {
++       "buildTime": 10,
++       "category": "developer-tools",
++       "description": "An ordinary published idea: engine-draft-hidden-0.",
++       "hasArt": false,
++       "ideaId": "000000000000000000000010000ideas",
++       "publishedAt": 1790726400000,
++       "recommendationRank": 0,
++       "revenueGoal": "5k-month",
++       "saved": false,
++       "score": null,
++       "scores": null,
++       "slug": "engine-draft-hidden-0",
++       "title": "Ordinary engine-draft-hidden-0",
++       "tools": [
++         "cursor",
++         "claude",
++       ],
++     },
++     {
++       "buildTime": 10,
++       "category": "developer-tools",
++       "description": "An ordinary published idea: engine-draft-hidden-1.",
++       "hasArt": false,
++       "ideaId": "000000000000000000000010001ideas",
++       "publishedAt": 1790726399999,
++       "recommendationRank": 0,
++       "revenueGoal": "5k-month",
++       "saved": false,
++       "score": null,
++       "scores": null,
++       "slug": "engine-draft-hidden-1",
++       "title": "Ordinary engine-draft-hidden-1",
++       "tools": [
++         "cursor",
++         "claude",
++       ],
++     },
++   ],
+  }
+
+ ❯ convex/wp46DraftRetirement.test.ts:416:24
+    414|     const bounded = await drainLibrary(member, { numItems: 2, maximumR…
+    415|     // The first underlying pages hold nothing but hidden drafts.
+    416|     expect(bounded[0]).toMatchObject({ page: [], isDone: false });
+       |                        ^
+    417|     expect(bounded.filter((page) => page.page.length === 0 && !page.is…
+    418|     const slugs = bounded.flatMap((page) => slugsOf(page.page));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > pagination with hidden drafts ahead of visible ideas > the legacy explore view continues through a draft-only underlying page
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ convex/wp46DraftRetirement.test.ts:449:34
+    447|       cursor = page.continueCursor;
+    448|     }
+    449|     expect(sawEmptyContinuation).toBe(true);
+       |                                  ^
+    450|     expect(slugs).toEqual(["visible-a", "visible-b", "visible-c"]);
+    451|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > member work that references a retired draft > no new plan, project, preview or prompt export starts from a draft
+AssertionError: expected [Function] to throw error including 'RESOURCE_NOT_FOUND' but got '{"activePlanId":"0000000000000010016w…'
+
+Expected: "RESOURCE_NOT_FOUND"
+Received: "{"activePlanId":"0000000000000010016weekend_plans","activeTitle":"AI Code Reviewer","code":"UPGRADE_REQUIRED","feature":"weekend_plan"}"
+
+ ❯ convex/wp46DraftRetirement.test.ts:594:87
+    592|     const { t, owner } = await memberWithDraftWork();
+    593|
+    594|     await expect(owner.mutation(api.platform.weekendPlans.start, { slu…
+       |                                                                                       ^
+    595|       "RESOURCE_NOT_FOUND",
+    596|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > member work that references a retired draft > a repeated repository start stays idempotent after its idea retires, but no new one begins
+AssertionError: promise resolved "{ …(5) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "briefId": "00000000000000000000010024briefs",
++   "input": {
++     "audience": "marketers, solo-founders",
++     "constraints": "Target build time: 10 hours. Initial revenue goal: 5k-month.",
++     "outcome": "Create a focused first version of Shop Page Builder and test demand with a real audience.",
++     "problem": "Landing pages for every ad set in a small store.",
++     "title": "Shop Page Builder",
++   },
++   "projectId": "000000000000000000010021projects",
++   "revision": 1n,
++   "updatedAt": 1790851956051,
+  }
+
+ ❯ convex/wp46DraftRetirement.test.ts:637:6
+    635|         slug: "engine-draft-shop-page-builder",
+    636|       }),
+    637|     ).rejects.toThrow("RESOURCE_NOT_FOUND");
+       |      ^
+    638|     expect(await t.run((ctx) => ctx.db.query("projects").take(10))).to…
+    639|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  convex/wp46DraftRetirement.test.ts > anonymous preview generation > a retired draft is not eligible for a new preview
+AssertionError: promise resolved "{ token: '7f62327d5729a2e93d632a2cf6…' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "token": "7f62327d5729a2e93d632a2cf6a0e990240b67b91524d15d3bf3de601f06e0da",
+  }
+
+ ❯ convex/wp46DraftRetirement.test.ts:686:6
+    684|     await expect(
+    685|       t.mutation(api.platform.preview.generate.generateFromBridge, awa…
+    686|     ).rejects.toThrow("IDEA_NOT_FOUND");
+       |      ^
+    687|     expect(await t.run((ctx) => ctx.db.query("preview_capabilities").t…
+    688|     const { token } = await t.mutation(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 2 passed (12)
+   Start at  11:52:35
+   Duration  836ms (transform 453ms, setup 0ms, import 475ms, tests 225ms, environment 34ms)

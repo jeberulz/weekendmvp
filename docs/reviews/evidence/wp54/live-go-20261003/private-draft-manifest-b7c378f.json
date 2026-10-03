@@ -1,0 +1,243 @@
+{
+  "ideas": [
+    {
+      "slug": "engine-draft-ai-landing-page-generator-ecommerce",
+      "title": "AI Landing Page Generator for E-commerce",
+      "category": "uncategorized",
+      "description": "Conversion-aware AI landing pages for ecommerce campaigns, Shopify-first.",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [],
+      "audiences": [],
+      "source": "engine:engine-draft-ai-landing-page-generator-ecommerce",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "CartCue AI product still life, no people, no text",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "highlights": {
+        "problemQuote": "Also, one other major issue that we could notice is that in the last one week we had zero sales on the site inspite of incoming traffic and store visits.",
+        "stats": [
+          {
+            "value": "$2.8 billion",
+            "label": "Landing Page Builders Market (market size) projected for 2026",
+            "source": "markwideresearch.com"
+          },
+          {
+            "value": "11.70%",
+            "label": "Landing Page Builders Market (growth rate) projected for 2035",
+            "source": "markwideresearch.com"
+          },
+          {
+            "value": "$9.6 billion",
+            "label": "Global landing page software market (market size) projected for 2034",
+            "source": "Dataintelo"
+          }
+        ],
+        "tiers": [
+          {
+            "name": "Campaign Lab",
+            "price": "$49/month"
+          },
+          {
+            "name": "Growth Desk",
+            "price": "$129/month"
+          },
+          {
+            "name": "Portfolio Ops",
+            "price": "$299/month"
+          }
+        ]
+      },
+      "publishedAt": "2026-10-03",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:brief_normalization/synthesis:gpt-5.6-sol",
+          "perplexity:market_stats/search:sonar-pro",
+          "perplexity:competitors/search:sonar-pro",
+          "perplexity:community_signals/search:sonar-pro",
+          "perplexity:community_signals/search:sonar-pro",
+          "openai:evidence_extraction/synthesis:gpt-5.6-sol",
+          "dataforseo:keywords_demand/keywordData:google_ads/search_volume/live",
+          "openai:editorial_synthesis/synthesis:gpt-5.6-sol",
+          "openai:editorial_synthesis/synthesis:gpt-5.6-sol"
+        ],
+        "citations": 9,
+        "wordCount": 3638,
+        "auditPassed": false,
+        "auditRunAt": "2026-10-03T08:16:30.138Z",
+        "publishNotes": "engine compile; product=CartCue AI; costUsd=0.7509; tagging left for operator",
+        "researchMode": "live"
+      }
+    },
+    {
+      "slug": "engine-draft-ai-rfp-response-assistant",
+      "title": "AI RFP Response Assistant",
+      "category": "uncategorized",
+      "description": "Grounded RFP drafts with citations for SMB sales teams.",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [],
+      "audiences": [],
+      "source": "engine:engine-draft-ai-rfp-response-assistant",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "ProofRFP product still life, no people, no text",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "highlights": {
+        "problemQuote": "I’ve already tried this - it worked great! Copy/paste my library of security questions and answers into GPT-4, copy paste the customer question, answers were as accurate as a human doing it!",
+        "stats": [
+          {
+            "value": "$8.9 billion",
+            "label": "Global RFP response automation AI market (market size) projected for 2034",
+            "source": "marketintelo.com"
+          },
+          {
+            "value": "14.8%",
+            "label": "Global RFP response automation AI market (growth rate) projected",
+            "source": "marketintelo.com"
+          },
+          {
+            "value": "$5 billion",
+            "label": "RFP Response Management Software Market (market size) projected for 2035",
+            "source": "wiseguyreports.com"
+          }
+        ],
+        "competitors": [
+          {
+            "name": "RFP.ai",
+            "price": "€49/month"
+          },
+          {
+            "name": "Proposal Forge",
+            "price": "$149/month"
+          },
+          {
+            "name": "Loopio",
+            "price": "Contact sales"
+          }
+        ],
+        "tiers": [
+          {
+            "name": "Sales Desk",
+            "price": "$39/seat/month"
+          },
+          {
+            "name": "Solutions Bench",
+            "price": "$69/seat/month"
+          },
+          {
+            "name": "Revenue Pod",
+            "price": "$99/seat/month"
+          }
+        ]
+      },
+      "publishedAt": "2026-10-03",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:brief_normalization/synthesis:gpt-5.6-sol",
+          "perplexity:market_stats/search:sonar-pro",
+          "perplexity:competitors/search:sonar-pro",
+          "perplexity:community_signals/search:sonar-pro",
+          "openai:evidence_extraction/synthesis:gpt-5.6-sol",
+          "dataforseo:keywords_demand/keywordData:google_ads/search_volume/live",
+          "openai:editorial_synthesis/synthesis:gpt-5.6-sol"
+        ],
+        "citations": 7,
+        "wordCount": 3391,
+        "auditPassed": false,
+        "auditRunAt": "2026-10-03T08:30:37.683Z",
+        "publishNotes": "engine compile; product=ProofRFP; costUsd=0.4759; tagging left for operator",
+        "researchMode": "live"
+      }
+    },
+    {
+      "slug": "engine-draft-ai-code-reviewer",
+      "title": "AI Code Reviewer",
+      "category": "uncategorized",
+      "description": "GitHub App that auto-reviews PRs so humans focus on architecture.",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [],
+      "audiences": [],
+      "source": "engine:engine-draft-ai-code-reviewer",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "ReviewHarbor product still life, no people, no text",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "highlights": {
+        "problemQuote": "We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding.",
+        "stats": [
+          {
+            "value": "47%",
+            "label": "Professional developers (adoption) in 2025",
+            "source": "qodo.ai"
+          },
+          {
+            "value": "22%",
+            "label": "Professional developers (adoption) in 2024",
+            "source": "qodo.ai"
+          }
+        ],
+        "tiers": [
+          {
+            "name": "Open Source Dock",
+            "price": "Free"
+          },
+          {
+            "name": "Maintainer Desk",
+            "price": "$12/developer/month"
+          },
+          {
+            "name": "Repo Crew",
+            "price": "$22/developer/month"
+          }
+        ]
+      },
+      "publishedAt": "2026-10-03",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:brief_normalization/synthesis:gpt-5.6-sol",
+          "perplexity:market_stats/search:sonar-pro",
+          "perplexity:competitors/search:sonar-pro",
+          "perplexity:community_signals/search:sonar-pro",
+          "openai:evidence_extraction/synthesis:gpt-5.6-sol",
+          "dataforseo:keywords_demand/keywordData:google_ads/search_volume/live",
+          "openai:editorial_synthesis/synthesis:gpt-5.6-sol"
+        ],
+        "citations": 8,
+        "wordCount": 3286,
+        "auditPassed": false,
+        "auditRunAt": "2026-10-03T08:27:52.568Z",
+        "publishNotes": "engine compile; product=ReviewHarbor; costUsd=0.5153; tagging left for operator",
+        "researchMode": "live"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { isRetiredIdea } from "./catalogPolicy";
+import { excludeEngineDrafts, inMemberCatalogue, isRetiredIdea } from "./catalogPolicy";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 // Compatibility window: retain pre-WP44 clients and frontend rollback. Remove only in a later gated release.
 export { dashboardSummary, explore, setIntent } from "./legacyIdeas";
@@ -146,9 +146,10 @@ export const library = query({
     const building = new Set(active.map((plan) => plan.ideaId));
     const savedIds = new Set(saved.rows.map((row) => row.ideaId));
 
+    // Retired ideas and engine drafts never reach items, totals or facets.
     const base = candidates.filter(
       (idea) =>
-        !isRetiredIdea(idea.slug) &&
+        inMemberCatalogue(idea.slug) &&
         (args.view !== "new" ||
           args.publishedAfter === undefined ||
           idea.publishedAt >= args.publishedAfter) &&
@@ -232,10 +233,14 @@ export const libraryPage = query({
   returns: paginationResultValidator(ideaCardValidator.extend({ recommendationRank: v.number() })),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
+    // Engine drafts are filtered inside the native page (see catalogPolicy);
+    // the few manifest-retired ideas are still dropped below, so a page may
+    // come back short. useLibraryCatalogue loads until the cursor is done.
     const result = await ctx.db
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .paginate(args.paginationOpts);
     const [savedIds, prefs, recent] = await Promise.all([
       savedAmong(

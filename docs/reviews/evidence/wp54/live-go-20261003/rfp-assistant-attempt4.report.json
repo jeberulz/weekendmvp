@@ -1,0 +1,438 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-rfp-response-assistant",
+  "briefSha256": "14b8db84bb892f1e30f4231d7104bf2c5d1b6e636518b481125b299baeb2c14c",
+  "startedAt": "2026-10-03T07:42:15.522Z",
+  "finishedAt": "2026-10-03T07:43:49.739Z",
+  "failedStep": "evidence_acceptance",
+  "error": "competitors: 1 vendors with accepted price or availability, need 3; community quotes: 1 distinct accepted, need 2. Top rejection reasons: over_cap ×5, unparseable_amount ×2, ambiguous_attribution ×1, metric_unit_mismatch ×1. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.005045000000000001
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.01931
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.023024000000000003
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.026237
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.025213
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.20662000000000003
+    }
+  ],
+  "costUsd": 0.305452,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 2,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "4df9e33ef7040ece2b80b60082d0d5c17e4e3c1b",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://marketintelo.com/report/rfp-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:25.646Z",
+      "textSha256": "8f55faac495e133b3fdd1b677eaebb2be550c44bf44ad0bac0f4b8b0ab04774b"
+    },
+    {
+      "url": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:26.382Z",
+      "textSha256": "c421fd94c34990739c6c1a06e36c339cd1eb49a0f8a720e8053a4656a4d7798a"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:26.170Z",
+      "textSha256": "a38813b1e1a8021b27d9e49ef33502178c351458f8d082e225580ec0f2f53dda"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6218686/proposal-management-software-market-forecast",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:25.083Z",
+      "textSha256": "802ae28d04fef049b1ea2a75d60ffa43bef51306d694f4695925063dbae5c772"
+    },
+    {
+      "url": "https://www.globalgrowthinsights.com/market-reports/request-for-proposal-rfp-software-market-100919",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.globalgrowthinsights.com/market-reports/request-for-proposal-rfp-software-market-100919"
+    },
+    {
+      "url": "https://www.theinsightpartners.com/reports/rfp-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:25.768Z",
+      "textSha256": "ee20893743d4bfdc3ffbaf7ca3f8818b8824cc9463740127c663cbe4984dd17e"
+    },
+    {
+      "url": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:26.298Z",
+      "textSha256": "4a4d283ffb122e19fc353ec35294d37ac7a0de7b65558ea7c29af8c218a0c19b"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/5980535/proposal-management-software-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:25.866Z",
+      "textSha256": "6fc131ca220f98515dca150600102a7a2006d8f2a63321a07fe16f1c28e093b7"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.584Z",
+      "textSha256": "025888e663ffc9381ad2daa12bb11e7acbfa6452433d325649e231e8f025aaad"
+    },
+    {
+      "url": "https://www.bidara.ai/comparison/top-ai-rfp-software-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.695Z",
+      "textSha256": "4de13c73c8cfe5154ab52653d2501a34945032996759055504693270a4c95ddc"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/rfp-software-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.561Z",
+      "textSha256": "23b4a5e767d7ced0510cd621674a0960c2135858ee42b95ed7700b5a44825dd4"
+    },
+    {
+      "url": "https://www.bidara.ai/comparison/ai-proposal-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.777Z",
+      "textSha256": "93d61e3bb10ab63040d1e5bfeff4d281de01318bbbbe669bb2e33130105e024c"
+    },
+    {
+      "url": "https://www.inventive.ai/blog-posts/loopio-alternatives",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.660Z",
+      "textSha256": "bdbe34af1cd439e767abcf14f148ddcd3c1158dad0838d6363c49b94c8ba921d"
+    },
+    {
+      "url": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:32.715Z",
+      "textSha256": "5d9e0638bbff039c614a12709c2b724a6304d132538c85e68b09246bb807ba68"
+    },
+    {
+      "url": "https://www.linkedin.com/pulse/best-rfp-software-2026-buyers-guide-pricing-snehil-srivastava-wkzpf",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:33.392Z",
+      "textSha256": "2cd57567e83d024bb2398e19f2af6311768e1242b24f6141ace2953c9cf69598"
+    },
+    {
+      "url": "https://loopio.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:34.044Z",
+      "textSha256": "9f40dec640e4e769fbc847747133134fc2745531925718ffb085dc88e7f97188"
+    },
+    {
+      "url": "https://www.responsive.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.510Z",
+      "textSha256": "cc4fad87b4d947e2f2f8c54c58619512623319667e3577f613659ea6cbc25e6e"
+    },
+    {
+      "url": "https://www.responsive.io/blog/best-proposal-software-comparison",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.441Z",
+      "textSha256": "6d70debdee83a891d26e4ebf959519dc7295f228927ef33b79094b96bf3f74fb"
+    },
+    {
+      "url": "https://www.responsive.io/blog/responsive-pricing-compared-other-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.316Z",
+      "textSha256": "4b8e67325944db7a21c28432b1181afa9aaa329c619e1f1bb7869ce9e425a5ea"
+    },
+    {
+      "url": "https://rfp.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.528Z",
+      "textSha256": "8cf5acea660d5ae08824ae8407a9830762d2fdab6c069ba4965b4cd08de44f7a"
+    },
+    {
+      "url": "https://rfp.ai/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.617Z",
+      "textSha256": "b08729ff47ba9d0325483e222618790d83a07d8ad7677a79a9314718610626aa"
+    },
+    {
+      "url": "https://www.techtarget.com/enterprise-software/tip/The-top-10-RFP-response-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.565Z",
+      "textSha256": "b5255fc30aafd414c6ede628c589f4d4b89b7c05451a95778bbf7d185dc9d920"
+    },
+    {
+      "url": "https://www.responsive.io/solutions/ai-rfp-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:43.824Z",
+      "textSha256": "5c20ee5a4ef0a01e7a14f546bffafad745cbe979a1522d2dbd26b0f06bf3ee47"
+    },
+    {
+      "url": "https://www.linkedin.com/pulse/ai-rfp-software-explained-pricing-security-compliance-yash-kumar-zrnvc",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:44.516Z",
+      "textSha256": "72f43545b2ce628aed6482c9ab2f220995f8e1832bc655fc96b708292dc59f16"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=36736795",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.216Z",
+      "textSha256": "42ebeaa61cf39063c9a805f7a5eb1fd34a67eee91bba487f506133a3c646f047"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=42669754",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.751Z",
+      "textSha256": "9fc8d2d8a5856e87d38cbdeb7dd432c5efbe60f4300084a97596bf016ab38b9c"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=13840282",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.581Z",
+      "textSha256": "0a7ab3fe159c676862f2bd13e29991149acde501f48b1640fc7be4dd3a707f0b"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=11515307",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.754Z",
+      "textSha256": "e273412200c18df518c9fb2cb8e4387d65a2f1448075df0980ad0e908974e7ff"
+    },
+    {
+      "url": "https://www.reddit.com/r/msp/comments/111egdv/rfp_response_help",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/msp/comments/111egdv/rfp_response_help.json?… (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)"
+    },
+    {
+      "url": "https://alexberman.com/how-to-write-an-rfp-response",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.922Z",
+      "textSha256": "7184b38f01fea6cf013c3cac2cd3f84cb434056470df4f7222bb3c381b4ad2f0"
+    },
+    {
+      "url": "https://www.parsonsdialogue.com/resources/rfp-problem-no-one-talks-about",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:57.782Z",
+      "textSha256": "5a95646a2b02c371ab0d8ab13ed1cf4b81a7a03fa7e9eb3ed4c918764901e58e"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=32395076",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:42:58.674Z",
+      "textSha256": "a3248ab9b89e814f971affa46b61c14b4a748788a7b11d5abed0d200774ba112"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 1,
+      "market_stat": 8,
+      "competitor_price": 3,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/rfp-management-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "\"US$ 1.45 B\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "\"US$ 3.10 B\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "subject \"the market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.intelmarketresearch.com/rfp-software-market-63390",
+        "detail": "the sentence does not state adoption (adopt, use, using or share) (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "year_not_in_context",
+        "sourceUrl": "https://www.theinsightpartners.com/reports/rfp-software-market",
+        "detail": "the figure is tied to 2026, not 2034"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.futuremarketinsights.com/reports/proposal-management-software-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://deeprfp.com/blog/best-rfp-tools-comparison",
+        "detail": "source says from $89/user/month, billed monthly"
+      },
+      {
+        "kind": "competitor_availability",
+        "reason": "ambiguous_attribution",
+        "sourceUrl": "https://www.responsive.io/blog/responsive-pricing-compared-other-rfp-software",
+        "detail": "a pricing-availability statement requires the vendor's own non-comparison page"
+      }
+    ]
+  }
+}

@@ -1,0 +1,574 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-landing-page-generator-ecommerce",
+  "briefSha256": "3a0e53419b70b8e5c4750284dd367b9a15a6e528332ce7e0b4a426438addbdad",
+  "startedAt": "2026-10-03T07:22:00.331Z",
+  "finishedAt": "2026-10-03T07:23:40.555Z",
+  "failedStep": "evidence_acceptance",
+  "error": "priced competitors: 0 vendors with an accepted price, need 1; competitors: 1 vendors with accepted price or availability, need 3. Top rejection reasons: vendor_not_in_context ×22, span_not_found ×4, invalid_candidate ×2, over_cap ×2. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00207
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.020744
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.025987999999999997
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.024565999999999998
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.027209
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.037237
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.20539500000000002
+    }
+  ],
+  "costUsd": 0.34321,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 3,
+    "community_signals": 1,
+    "evidence_extraction": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "32717581f7006b0c72355fd5618af47d0206a381",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.shopify.com/blog/ai-marketing-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:08.996Z",
+      "textSha256": "87feadc19c466e1d7b4f406bb5da8c95b4fe063f521fa03abca452a4897d637b"
+    },
+    {
+      "url": "https://www.shopify.com/ae/blog/ai-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.005Z",
+      "textSha256": "8a199fe6ceb95c78856504c6c2d3af8b2bba82c910e63bd8d7ab277d4260a9cc"
+    },
+    {
+      "url": "https://www.mordorintelligence.com/industry-reports/landing-page-optimization-services-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.157Z",
+      "textSha256": "86fb5d08bd6303546de3d4dbe8765525c8a9912067be41930be4b8c1fead5ff6"
+    },
+    {
+      "url": "https://www.shopify.com/blog/ai-tools-for-ecommerce",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.010Z",
+      "textSha256": "0cfe1d6489a0dc7c4cbf23b54ea615a1b0c882b482f6e632fa542de85330f16a"
+    },
+    {
+      "url": "https://www.envive.ai/post/agentic-commerce-adoption-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.119Z",
+      "textSha256": "a8affc8f9e56b3579f5f9c683964897b199ecde570d69feedc1fbca44fe3c1fb"
+    },
+    {
+      "url": "https://www.shopify.com/blog/ai-ecommerce",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.176Z",
+      "textSha256": "999dc43cc7dde0239dfaa9ba4e8c469572af9c1cafa7c940fae618efc028e034"
+    },
+    {
+      "url": "https://elogic.co/blog/ai-in-ecommerce-statistics",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.847Z",
+      "textSha256": "025a671078c5067e5e916b8083e8b5d70a70df3173869febaefc6546c41fae61"
+    },
+    {
+      "url": "https://www.coreppc.com/blog/shopify-stores-ad-spend-survey",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:09.299Z",
+      "textSha256": "37ea971663423b9216ba3d74d73c0e165482b5221ad5e35ae05cf5809f8ba797"
+    },
+    {
+      "url": "https://unbounce.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.036Z",
+      "textSha256": "b8d7cde0a4e344e8da6f6d51382717e2717ea645a099323468ff474919f97744"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly%20",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.493Z",
+      "textSha256": "37c0e31b78b1008829b578528956ccf9ab21820d9fef416421b0a468694b02e3"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-generator",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.613Z",
+      "textSha256": "492011a7bd4692ad1e885b926e2c67b0ac2b1a515e775b77bbbb87495b7bdf67"
+    },
+    {
+      "url": "https://apps.shopify.com/webi-landing-page-builder-cod",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.406Z",
+      "textSha256": "2e3233d90e968160809bc1d803d44f5e55713064c37e5c06fd898534c70bba44"
+    },
+    {
+      "url": "https://apps.shopify.com/instant-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.534Z",
+      "textSha256": "8fbdb2f86036aa04cc3ab4116ae37803151814592caa6f47f43f0dbede74c77b"
+    },
+    {
+      "url": "https://ja.pagefly.io/pages/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.717Z",
+      "textSha256": "db224aaa507a668f15b17697147da2a8dafb7ac8798f2adfb876a68e68909e63"
+    },
+    {
+      "url": "https://pagefly.io/pages/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.648Z",
+      "textSha256": "db224aaa507a668f15b17697147da2a8dafb7ac8798f2adfb876a68e68909e63"
+    },
+    {
+      "url": "https://unbounce.com/comparisons/unbounce-vs-leadpages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:17.665Z",
+      "textSha256": "17295080a39690aa4280911d560aa8eec78a9fb90fc864027b2656bb494fc0e5"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:24.448Z",
+      "textSha256": "e4c69d9a5d4f9f76eddbfbf0fbced2ecdfded59e728743ffe2d9f624b05afd84"
+    },
+    {
+      "url": "https://apps.shopify.com/landify-v3",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:24.276Z",
+      "textSha256": "f99372a94a7c686cf4cf1fc2d4f232b18bb1467d35f7cea32e563534624bc4b4"
+    },
+    {
+      "url": "https://apps.shopify.com/pagecraft-landing-pages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:24.382Z",
+      "textSha256": "70d7c1224fe5f493398966e72e5209eabcad4f10cc79ab4a3685ad53dbc4df6f"
+    },
+    {
+      "url": "https://apps.shopify.com/gempages",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:24.349Z",
+      "textSha256": "31770cf106bb0eb606163723e78f386da4efe07d4bf752dae1f1159d56c58126"
+    },
+    {
+      "url": "https://apps.shopify.com/ai-page-builder-1",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:24.810Z",
+      "textSha256": "e7ad7322dd1949c64136e50651c3518f883e8e7dc2a0c78af90fe1968541ca9c"
+    },
+    {
+      "url": "https://apps.shopify.com/foxify-builder",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:25.053Z",
+      "textSha256": "6b7314e756ede1b1ca33cd637190263733aa1ac8cbf31bba4f4af2a8081278a6"
+    },
+    {
+      "url": "https://apps.shopify.com/pagefly",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:33.637Z",
+      "textSha256": "91492230a7e412eb837dea421cb6c4fae237aa8f63fa80b47674b0b601436418"
+    },
+    {
+      "url": "https://community.shopify.com/t/sales/615497/19",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:51.906Z",
+      "textSha256": "b47fcd6ceb0e9c84181fce7e41d6ac16ff51f766c33fe4982344013644467731"
+    },
+    {
+      "url": "https://community.shopify.com/t/7-shopify-store-conversion-mistakes-to-fix-before-running-more-ads/682923",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:51.883Z",
+      "textSha256": "4b538248c7f4a25a1db5a4c3a8005fbf76f819b7a19c3362f85d6c2ec740ad67"
+    },
+    {
+      "url": "https://community.shopify.com/t/converting-problems/657431",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:51.974Z",
+      "textSha256": "3c55f6b973dffbe2f7004ff8454d6b6bd987baf0c36bcd2fdad7193d1c661eb9"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=22888943",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:52.136Z",
+      "textSha256": "9f047fcc3e2e951e3cd905546ea90ba0528c601498f73bf8fb9ea0e3e534b197"
+    },
+    {
+      "url": "https://community.shopify.com/t/sales/615497",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:52.200Z",
+      "textSha256": "18cc08366d808d52835d301330a6b177664bb3eb81c48ba621cc0571eb0a5307"
+    },
+    {
+      "url": "https://community.shopify.com/t/no-sales/412305",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:52.208Z",
+      "textSha256": "8ace96c0052aeed3e13641b0783bf660f10b04f084228138ef2396ff142d0828"
+    },
+    {
+      "url": "https://community.shopify.com/c/ecommerce-marketing/seeking-advice-meta-ads-performance-issues/m-p/3009911",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:52.453Z",
+      "textSha256": "f209dbdd92fe39944a748c98862fd95eae86e39e30d3f5f3af201b9fcc5d32a0"
+    },
+    {
+      "url": "https://community.shopify.com/t/ive-got-1-600-session-and-no-sales-and-have-done-everything-right/580410",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T07:22:52.461Z",
+      "textSha256": "74783697e8100efcce7872ba76cb1d6196f7447237bb619abe6c4606f0e03c7d"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 8,
+      "market_stat": 8,
+      "competitor_price": 0,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/7-shopify-store-conversion-mistakes-to-fix-before-running-more-ads/682923",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/no-sales/412305",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/c/ecommerce-marketing/seeking-advice-meta-ads-performance-issues/m-p/3009911",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/c/ecommerce-marketing/seeking-advice-meta-ads-performance-issues/m-p/3009911",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_not_found",
+        "sourceUrl": "https://community.shopify.com/t/ive-got-1-600-session-and-no-sales-and-have-done-everything-right/580410",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "metric_unit_mismatch",
+        "sourceUrl": "https://www.shopify.com/blog/ai-marketing-statistics",
+        "detail": "spend cannot be a percent amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "period_mismatch",
+        "sourceUrl": "https://www.mordorintelligence.com/industry-reports/landing-page-optimization-services-market",
+        "detail": "no projection cue before the figure and no later year after it; label it measured"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.shopify.com/blog/ai-ecommerce",
+        "detail": "\"Three out of four\" is not one supported amount"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.shopify.com/blog/ai-ecommerce",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.coreppc.com/blog/shopify-stores-ad-spend-survey",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "invalid_candidate",
+        "sourceUrl": "https://www.coreppc.com/blog/shopify-stores-ad-spend-survey",
+        "detail": "subject must be plain words (no figures, links, emails or markup): \"25th percentile\" (ruling R9)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "invalid_candidate",
+        "sourceUrl": "https://www.coreppc.com/blog/shopify-stores-ad-spend-survey",
+        "detail": "subject must be plain words (no figures, links, emails or markup): \"75th percentile\" (ruling R9)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://apps.shopify.com/ai-page-generator",
+        "detail": "source says from $120/month"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "detail": "WEBI Ai Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "detail": "WEBI Ai Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "detail": "WEBI Ai Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "detail": "WEBI Ai Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant AI Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant AI Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "detail": "Instant AI Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/landify-v3",
+        "detail": "LandiFy landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/landify-v3",
+        "detail": "LandiFy landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://apps.shopify.com/pagecraft-landing-pages",
+        "detail": "\"$10 for each page\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/gempages",
+        "detail": "GemPages Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/gempages",
+        "detail": "GemPages Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/gempages",
+        "detail": "GemPages Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder-1",
+        "detail": "Athena AI Landing Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "detail": "Foxify AI Store Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "detail": "Foxify AI Store Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "detail": "Foxify AI Store Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "detail": "PageFly AI Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "detail": "PageFly AI Page Builder is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "detail": "PageFly AI Page Builder is not named before the price in its clause"
+      }
+    ]
+  }
+}

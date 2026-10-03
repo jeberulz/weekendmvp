@@ -1,0 +1,9 @@
+brief_normalization    maxAttempts 2 worst/attempt $ 0.0440 step total $ 0.0880
+market_stats           maxAttempts 2 worst/attempt $ 0.0500 step total $ 0.1000
+competitors            maxAttempts 2 worst/attempt $ 0.0500 step total $ 0.1000
+community_signals      maxAttempts 4 worst/attempt $ 0.0460 step total $ 0.1840
+evidence_extraction    maxAttempts 2 worst/attempt $ 0.7200 step total $ 1.4400
+keywords_demand        maxAttempts 2 worst/attempt $ 0.0150 step total $ 0.0300
+editorial_synthesis    maxAttempts 2 worst/attempt $ 0.6600 step total $ 1.3200
+provenance_parse       maxAttempts 0 worst/attempt $ 0.0000 step total $ 0.0000
+run worst case $ 3.262 cap $ 4

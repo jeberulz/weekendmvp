@@ -2,6 +2,7 @@ import { RateLimiter, MINUTE, HOUR } from "@convex-dev/rate-limiter";
 import { ConvexError, v } from "convex/values";
 import { components } from "../../_generated/api";
 import { env, mutation } from "../../_generated/server";
+import { isEngineDraftSlug } from "../catalogPolicy";
 import {
   capabilityExpiresAt,
   generateCapabilityToken,
@@ -188,7 +189,9 @@ export const generateFromBridge = mutation({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", bridge.slug))
       .unique();
-    if (idea === null) {
+    // Engine drafts read as unknown: their research page is withheld, so no
+    // new preview may start from one.
+    if (idea === null || isEngineDraftSlug(idea.slug)) {
       throw new ConvexError({ code: "IDEA_NOT_FOUND" });
     }
 

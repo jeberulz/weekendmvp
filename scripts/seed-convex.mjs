@@ -190,6 +190,9 @@ function buildIdeas() {
   const manifest = readJson('ideas/manifest.json');
   // Idea-engine spot-check drafts must never reach the live grid, even if a
   // row lands in the public manifest by mistake. They live in engine/drafts/.
+  // Leaving a row out never deletes it: the seed only upserts. The drafts
+  // seeded while public (2026-09-24) stay stored, and every Convex read hides
+  // them instead (convex/platform/catalogPolicy.ts, WP54-S5). No cleanup run.
   const notEngineDraft = (i) => {
     if (!String(i.slug).startsWith(ENGINE_DRAFT_PREFIX)) return true;
     console.warn(`  skip: ${i.slug} is an engine draft (engine/drafts/), not seeded`);

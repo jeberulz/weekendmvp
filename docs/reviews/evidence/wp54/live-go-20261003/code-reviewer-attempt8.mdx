@@ -1,0 +1,206 @@
+---
+slug: "engine-draft-ai-code-reviewer"
+title: "AI Code Reviewer"
+engine: true
+---
+
+## The Problem
+
+Indie developers and small engineering teams maintaining GitHub repositories face a review-capacity problem. Code can be drafted quickly, but every pull request still asks a human to reconstruct intent, inspect edge cases, understand local conventions, and decide whether the change belongs in the architecture. That responsibility often lands on the same maintainer who is shipping features, handling support, and planning the roadmap.
+
+The volume shift is visible in developer testimony. A community participant says AI-generated code has increased pull-request volume while review time has not improved, turning review into the main bottleneck ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446). Another maintainer describes the incoming stream as overwhelming and difficult to inspect carefully ["The current stream of AI generated (or AI aided) pull requests is a bit overwhelming to me. It is hard for me to review them carefully."](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728). For a small team, this pressure does not require a massive queue to become disruptive. A handful of dense or unfamiliar changes can interrupt focused work, delay releases, or encourage shallow approval.
+
+Existing AI assistance does not automatically restore confidence. A developer who uses AI code review tools every day says the output often does not make sense ["When AI says something - many a time, it doesnt make sense. And I use AI code review tools every day."](https://news.ycombinator.com/item?id=46348957). That observation captures the trust gap: a verbose automated review can consume attention without improving the merge decision. Generic style remarks, speculative defects, repeated comments, and advice detached from repository intent all create fresh work for the reviewer. When the submitted code itself appears unreadable, a reviewer may respond with AI-generated review output rather than personally reading it ["If the code is totally unreadable AI slop that does not appear to have been read by the person who created the PR, I will use AI to review the code and share the output, without reading it."](https://news.ycombinator.com/item?id=48329446), reinforcing a cycle in which neither side develops shared understanding.
+
+The buyer is therefore not simply purchasing bug detection. The buyer is purchasing disciplined attention. Indie maintainers need fast triage that identifies where human judgment matters. Small engineering teams need consistent enforcement of local rules without appointing a dedicated review administrator. Both need comments that explain risk in the context of their repository, not a generic lecture about ideal code.
+
+Without that layer, reviewers either inspect everything manually, skim risky changes, or ignore noisy automation. The unmet need is a restrained reviewer that understands repository policy, highlights consequential issues, and learns from maintainer decisions while leaving architecture, product intent, and final approval with humans.
+
+> "We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+
+> "The current stream of AI generated (or AI aided) pull requests is a bit overwhelming to me. It is hard for me to review them carefully."
+>
+> — [AI generated pull requests overwhelming, hard to review carefully - ITK](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728)
+
+> "When AI says something - many a time, it doesnt make sense. And I use AI code review tools every day."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+
+> "If the code is totally unreadable AI slop that does not appear to have been read by the person who created the PR, I will use AI to review the code and share the output, without reading it."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+
+## The Solution
+
+ReviewHarbor is a GitHub App that automatically reviews pull requests for indie maintainers and small engineering teams. Its wedge is attention-aware review: instead of trying to comment on every possible improvement, it prioritizes defects, security-sensitive changes, broken repository rules, risky dependency shifts, and architectural conflicts that deserve human inspection.
+
+Installation begins with repository selection and a short policy setup. ReviewHarbor reads designated guidance files, maps important paths, identifies ownership cues, and lets the maintainer add plain-language constraints. A team might describe protected boundaries, required tests, migration expectations, or areas where automated comments should remain silent. The resulting context is visible and editable rather than hidden behind model behavior.
+
+When a pull request opens or changes, ReviewHarbor evaluates the diff and posts a compact risk summary. Inline findings include an explanation, affected code, confidence, and a proposed next action. Blocking concerns remain distinct from advisory suggestions. Duplicate or low-confidence observations are withheld so the review surface stays useful. The author can address a finding, explain an intentional exception, or request a focused recheck without triggering unrelated commentary.
+
+The learning loop is repository-specific. Maintainers label findings as useful, incorrect, irrelevant, or accepted by design. ReviewHarbor converts repeated decisions into proposed policy adjustments that require approval before taking effect. This approach improves signal while ensuring the tool does not silently redefine team standards.
+
+The free open-source tier makes public repository review accessible and creates visible examples of product quality. Paid plans serve private repositories through per-developer pricing. ReviewHarbor wins by being the restrained reviewer that prepares the decision, not an autonomous gatekeeper that replaces accountable maintainers.
+
+The workflow below is ReviewHarbor's proposed first version: a plan to build, not a tested product.
+
+**How it works:**
+
+1. **Connect Repository** — A maintainer installs the GitHub App, selects repositories, chooses the branches that require review, and imports lightweight guidance from repository documentation. ReviewHarbor proposes sensible defaults while keeping permissions narrow and making every enabled capability visible before activation.
+2. **Build Review Context** — ReviewHarbor maps relevant files, ownership patterns, dependency boundaries, architectural notes, and accepted repository policies into a compact review context. Maintainers can correct assumptions, pin important constraints, and exclude generated files or paths that should not receive automated commentary.
+3. **Review Pull Requests** — On each eligible pull request, ReviewHarbor examines the diff against repository context, groups findings by risk, and posts a concise summary with actionable comments. It suppresses low-confidence style chatter, links each concern to affected code, and clearly separates blocking risks from optional suggestions.
+4. **Learn From Decisions** — Maintainers mark findings as useful, incorrect, irrelevant, or intentionally accepted. ReviewHarbor uses that feedback to tune repository rules, reduce repeated false alarms, and surface policy gaps, while preserving an audit trail showing why automated guidance changed over time.
+
+What not to build yet (scope advice for ReviewHarbor's first version, not research):
+
+Do not build an autonomous coding agent or enterprise compliance suite until the core review signal consistently earns maintainer trust.
+
+## Market Research
+
+AI code review for GitHub pull requests is a focused developer-tools niche serving maintainers who need faster feedback without surrendering judgment. The underlying demand comes from a widening gap between code production and human review capacity. Measured adoption among professional developers moved from [22% (professional developers, adoption, 2024)](https://www.qodo.ai/blog/ai-code-review) to [47% (professional developers, adoption, 2025)](https://www.qodo.ai/blog/ai-code-review), indicating that assisted review is becoming a familiar workflow rather than an experimental novelty. The projected market size is [$25.7 billion by 2030 (AI code review market, market size, projected)](https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025), supporting room for specialized products that address distinct repository types and buyer segments.
+
+For indie developers and small engineering teams, the attractive wedge is not maximum enterprise governance. It is dependable pull-request triage, repository-aware findings, low setup burden, and comments that respect limited reviewer attention. These buyers often lack a dedicated platform group and may rotate review responsibility among active contributors. A GitHub App can meet them inside the pull-request workflow, where value is visible before a merge decision.
+
+The niche remains competitive because review quality is subjective and poor comments quickly become noise. A viable entrant therefore needs a sharper promise than general AI analysis. It should emphasize concise, evidence-linked findings, configurable repository rules, architectural context, and transparent confidence. The commercial opportunity lies in converting maintainers who value saved attention, while a free open-source tier can seed adoption through public repositories and contributor communities.
+
+Why now: Professional developer adoption of assisted review rose from [22% (professional developers, adoption, 2024)](https://www.qodo.ai/blog/ai-code-review) to [47% (professional developers, adoption, 2025)](https://www.qodo.ai/blog/ai-code-review), while developers report that growing AI-generated pull-request volume has shifted the bottleneck toward review ["We’re seeing much higher PR volume from AI-generated code, but review time hasn’t improved, so PR review has become the main bottleneck instead of coding."](https://news.ycombinator.com/item?id=48329446). The timing favors a product that improves trust and attention management, not merely code generation speed.
+
+**Market signals**
+
+- $25.7 billion by 2030 (AI code review market, market size, projected) ([AI Code Review Automation: Complete Guide 2025](https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025)).
+- 47% (professional developers, adoption, 2025) ([AI Code Review and the Best AI Code Review Tools in 2026](https://www.qodo.ai/blog/ai-code-review)).
+- 22% (professional developers, adoption, 2024) ([AI Code Review and the Best AI Code Review Tools in 2026](https://www.qodo.ai/blog/ai-code-review)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **AI code review** — 1300/mo, competition 60, CPC $55.73
+
+## Competitive Landscape
+
+Greptile sets a direct paid reference with its Pro plan [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing), while CodeRabbit offers a broader progression through Essentials [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans), Team [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans), and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). Qodo also supports credit packs [Credit packs (Qodo)](https://www.qodo.ai/pricing), signaling a usage-oriented purchasing option.
+
+ReviewHarbor should not compete by claiming the broadest feature inventory. Its differentiation is restraint for indie developers and compact teams: repository-specific policy capture, aggressive suppression of low-confidence chatter, concise risk summaries, and a feedback trail controlled by maintainers. The product should feel ready after a brief GitHub installation rather than requiring a platform rollout.
+
+Commercially, the free open-source tier creates a public trust surface, while straightforward per-developer pricing gives private teams predictable budgeting. The strategic wedge is not cheaper generic review alone. It is a deliberately narrow experience in which every posted comment must help a maintainer make a merge decision.
+
+- **Greptile** — Greptile offers a clearly priced Pro plan [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing). That establishes a direct paid benchmark for repository-aware review and leaves room for a leaner maintainer-focused alternative. Published pricing: $30/user/month (Greptile Pro plan) [Greptile](https://www.greptile.com/pricing).
+- **CodeRabbit** — CodeRabbit spans Essentials [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans), Team [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans), and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans) plans. Its broad ladder creates an opening for simpler packaging aimed at compact teams. Published pricing: $24/user/month, billed annually (CodeRabbit Essentials plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans); $48/user/month, billed annually (CodeRabbit Team plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans); $72/user/month, billed annually (CodeRabbit Advanced plan) [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans).
+- **Qodo** — Qodo makes credit packs available [Credit packs (Qodo)](https://www.qodo.ai/pricing). Usage-oriented purchasing may suit variable demand, while a predictable developer subscription can be easier for small teams to budget. Published pricing: Credit packs (Qodo) [Qodo](https://www.qodo.ai/pricing).
+
+**Your Opportunity**
+
+Position ReviewHarbor as the quiet GitHub reviewer for maintainers who want fewer distractions and stronger merge decisions. Lead with repository-aware risk triage, concise evidence, and policy checks rather than generic code commentary. The promise is that humans retain architecture and product judgment while routine inspection happens automatically.
+
+## Business Model
+
+Anchor the paid offer below the established per-user benchmarks represented by Greptile Pro [$30/user/month (Greptile Pro plan)](https://www.greptile.com/pricing) and CodeRabbit Essentials [$24/user/month, billed annually (CodeRabbit Essentials plan)](https://docs.coderabbit.ai/management/plans). Keep packaging simpler than the broader CodeRabbit ladder, which also includes Team [$48/user/month, billed annually (CodeRabbit Team plan)](https://docs.coderabbit.ai/management/plans) and Advanced [$72/user/month, billed annually (CodeRabbit Advanced plan)](https://docs.coderabbit.ai/management/plans). Avoid credit anxiety in the core plans, even though Qodo supports credit packs [Credit packs (Qodo)](https://www.qodo.ai/pricing). Use the free open-source tier as distribution, then charge private-repository teams per active developer with clear limits on premium analysis rather than ordinary pull-request volume.
+
+Proposed ReviewHarbor pricing to test with early buyers (an assumption, not observed market data):
+
+- **Open Source Dock** (Free) — Unlimited public repositories, core pull-request reviews, community support
+- **Maintainer Desk** ($12/developer/month) — Private repositories, repository policies, feedback learning, standard analysis
+- **Repo Crew** ($22/developer/month) — Private repositories, advanced risk checks, priority analysis, shared policy controls
+
+**Unit Economics**
+
+Planning estimates to verify, not measured results:
+
+- **$12 per developer monthly** — Maintainer plan price
+- **$2 per active developer monthly** — Target analysis cost
+- **80%** — Target gross margin
+- **30 days** — Target acquisition payback
+
+**Year-One Math**
+
+ReviewHarbor's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.
+
+The plan assumes GitHub Marketplace discovery supplies broad awareness, open-source partnerships demonstrate review quality publicly, developer newsletters create focused trials, and founder-led outreach converts compact private teams. The selected paid tier reflects a small average seat count and demand for shared policy controls.
+
+- **4,000** — GitHub Marketplace listing visitors
+- **800** — Open-source partnership installs
+- **160** — Developer newsletter trial accounts
+- **40** — Founder-led outreach paying accounts
+- **40 × $66/mo = $31,680 ARR** — Repo Crew accounts paying by month 12 (3 seats × $22/developer/month)
+- **20 × $66/mo = $15,840 ARR** — downside if the close rate halves (half of 40 accounts)
+
+**Channels**
+
+Channels to test (proposals, not measured results):
+
+- GitHub Marketplace discovery
+- Open-source maintainer partnerships
+- Developer newsletter sponsorships
+- Founder-led GitHub community outreach
+
+## Recommended Tech Stack
+
+A suggested stack for ReviewHarbor (a recommendation, not research):
+
+Build the GitHub App with TypeScript and Next.js for installation, billing, policy management, and review dashboards. Use Node.js workers for webhook ingestion, diff preparation, repository indexing, and review orchestration. Store repository policies, findings, feedback, and audit records in Postgres. Keep source snapshots in encrypted object storage with short retention. Use a provider-agnostic model gateway so review tasks can route by language, context size, and risk. Add deterministic parsers, secret redaction, webhook signature validation, idempotent jobs, and strict installation-scoped access before expanding model sophistication.
+
+- **Next.js + TypeScript** — screens for Connect Repository, Build Review Context, Review Pull Requests, Learn From Decisions
+- **Postgres (Supabase or Neon)** — repository\_policies, pull\_request\_reviews, review\_findings, finding\_feedback, architecture\_notes, review\_suppressions
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Open Source Dock / Maintainer Desk / Repo Crew subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these ReviewHarbor build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named ReviewHarbor for indie GitHub maintainers.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('open_source_dock','maintainer_desk','repo_crew'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- repository_policies(id, workspace_id fk, repository_id, name, rule_text, severity: advisory, warning, blocking, status: draft, active, archived, created_at)
+- pull_request_reviews(id, workspace_id fk, repository_id, pull_request_ref, head_sha, status: queued, running, completed, failed, risk_level: low, medium, high, created_at)
+- review_findings(id, workspace_id fk, review_id fk, file_path, line_start, category: defect, security, policy, architecture, confidence_score, severity: advisory, warning, blocking, explanation, status: open, resolved, dismissed)
+- finding_feedback(id, workspace_id fk, finding_id fk, verdict: useful, incorrect, irrelevant, accepted, note, actor_id, created_at)
+- architecture_notes(id, workspace_id fk, repository_id, path_scope, title, guidance, status: proposed, approved, retired, created_at)
+- review_suppressions(id, workspace_id fk, repository_id, pattern, reason, scope: path, category, rule, status: active, expired, created_at)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Open Source Dock at Free; Maintainer Desk at $12/developer/month; Repo Crew at $22/developer/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_OPEN_SOURCE_DOCK, STRIPE_PRICE_MAINTAINER_DESK, STRIPE_PRICE_REPO_CREW, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build an autonomous coding agent or enterprise compliance suite until the core review signal consistently earns maintainer trust.
+```
+
+**2. Core Feature**
+
+```text
+Build ReviewHarbor's core workflow as one screen per step, in this order:
+- Connect Repository: A maintainer installs the GitHub App, selects repositories, chooses the branches that require review, and imports lightweight guidance from repository documentation.
+- Build Review Context: ReviewHarbor maps relevant files, ownership patterns, dependency boundaries, architectural notes, and accepted repository policies into a compact review context.
+- Review Pull Requests: On each eligible pull request, ReviewHarbor examines the diff against repository context, groups findings by risk, and posts a concise summary with actionable comments.
+- Learn From Decisions: Maintainers mark findings as useful, incorrect, irrelevant, or intentionally accepted.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Connect Repository → Build Review Context → Review Pull Requests → Learn From Decisions without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for ReviewHarbor. Hero line: GitHub App that auto-reviews PRs so humans focus on architecture.
+Sections: the problem for indie GitHub maintainers; how ReviewHarbor works (Connect Repository, Build Review Context, Review Pull Requests, Learn From Decisions); competitor strip (Greptile: $30/user/month (Greptile Pro plan); CodeRabbit: $24/user/month, billed annually (CodeRabbit Essentials plan), $48/user/month, billed annually (CodeRabbit Team plan), $72/user/month, billed annually (CodeRabbit Advanced plan); Qodo: Credit packs (Qodo)); pricing (Open Source Dock at Free; Maintainer Desk at $12/developer/month; Repo Crew at $22/developer/month); a single CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand ReviewHarbor for indie GitHub maintainers. Use a calm harbor metaphor without nautical novelty. The interface should feel like a trusted engineering console: deep slate backgrounds, restrained blue accents, warm warning colors, crisp monospace details, and generous spacing around findings. Voice should be concise, specific, and humble about uncertainty. Avoid robotic mascots, exaggerated intelligence claims, and alarm-heavy dashboards. Each review should visually separate blocking risk, useful context, and optional advice.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product ReviewHarbor, never a generic AI platform.
+```
+
+## Sources
+
+- [Ycombinator](https://news.ycombinator.com/item?id=48329446)
+- [AI generated pull requests overwhelming, hard to review carefully - ITK](https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728)
+- [Ycombinator](https://news.ycombinator.com/item?id=46348957)
+- [AI Code Review Automation: Complete Guide 2025](https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025)
+- [AI Code Review and the Best AI Code Review Tools in 2026](https://www.qodo.ai/blog/ai-code-review)
+- [Greptile](https://www.greptile.com/pricing)
+- [Plans and pricing - CodeRabbit Documentation](https://docs.coderabbit.ai/management/plans)
+- [Qodo](https://www.qodo.ai/pricing)
