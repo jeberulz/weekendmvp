@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://news.ycombinator.com/item?id=36488436",
+    "claims": [
+      "community_quote",
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://news.ycombinator.com/item?id=33549151",
+    "claims": [
+      "community_quote"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://www.giiresearch.com/report/ires1946779-rfp-response-management-software-market-by.html",
+    "claims": [
+      "market_stat",
+      "market_stat",
+      "market_stat"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://rfp.ai/pricing",
+    "claims": [
+      "competitor_price",
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://proposalforge.io/pricing",
+    "claims": [
+      "competitor_price",
+      "competitor_price",
+      "competitor_price"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  },
+  {
+    "slug": "ai-rfp-response-assistant",
+    "url": "https://loopio.com/pricing",
+    "claims": [
+      "competitor_availability"
+    ],
+    "hashStable": true,
+    "excerptsPresent": true
+  }
+]

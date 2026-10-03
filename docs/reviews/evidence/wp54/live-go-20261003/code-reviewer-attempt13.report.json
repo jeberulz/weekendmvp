@@ -1,0 +1,380 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "ai-code-reviewer",
+  "briefSha256": "031c3aa0f70dcb29a6e1d12f5c731247af44b829b486e6970952ac81f8d23315",
+  "startedAt": "2026-10-03T21:34:37.348Z",
+  "finishedAt": "2026-10-03T21:37:24.544Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00345
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.017783
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.022178
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.024982
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.236755
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.1627695
+    }
+  ],
+  "costUsd": 0.557918,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "a4bfef0624f4aaf1d0703b1a5bb0bdbbbf369cee",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.graphite.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:40.455Z",
+      "textSha256": "ca0f051e2bc133ebdccde5b0f064757a31788f15d880319939bcd86a0af28661"
+    },
+    {
+      "url": "https://www.greptile.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:40.473Z",
+      "textSha256": "da39c59b4c7bbbbe907cf1ea6ade23c70722466b9cd8fa78844269c5a8086186"
+    },
+    {
+      "url": "https://www.codeant.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:40.722Z",
+      "textSha256": "10b7a6b399fe78dd70c34145a3f152be20be28bc340d330d1c876e343611d9e3"
+    },
+    {
+      "url": "https://www.qodo.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:40.724Z",
+      "textSha256": "3cfa559fa97b59bdd98c1267dd617a3b4971a0e9820f154c26348086c0e3d050"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48329446",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:42.205Z",
+      "textSha256": "dd9ff4721dbb59d3e8caf6ddc7a009a592c74e4c10e5d54a2ef50132bb7ca107"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46348957",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:42.858Z",
+      "textSha256": "fa3d07751d78c71e76ab7cda97052e1aeed9acd3fbcdbd4cdabca505ccf6cf65"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46766961",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:46.455Z",
+      "textSha256": "2b5de33b5e30d19e02fb25e35c09dd95ab12402ef25468b62b984dfe1d00ff5f"
+    },
+    {
+      "url": "https://arxiv.org/html/2509.19708v1",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:45.447Z",
+      "textSha256": "0e0ea5f651fe9caadc8f766661bb08f5878e94ce3263ada8cb0ad8622a8c622a"
+    },
+    {
+      "url": "https://dev.to/rahulxsingh/the-state-of-ai-code-review-in-2026-trends-tools-and-whats-next-2gfh",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:45.534Z",
+      "textSha256": "5102fd14a59d73f4a853b08b501b09777dc4c24f8781c4caf3bd0c99cbbc3aaf"
+    },
+    {
+      "url": "https://zylos.ai/research/2026-01-19-ai-code-review-tools",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:45.913Z",
+      "textSha256": "ba486e958aa448d09b4c3b5ce756bf1bd28ac82f8c7cd76ade8604b37cad397d"
+    },
+    {
+      "url": "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:45.593Z",
+      "textSha256": "0dae3d4aa7d00640f561ae9def3b84272b79391fbdad34bdce7aa86d5ccad7b2"
+    },
+    {
+      "url": "https://www.businessresearchinsights.com/market-reports/code-review-market-123952",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.businessresearchinsights.com/market-reports/code-review-market-123952"
+    },
+    {
+      "url": "https://www.globalgrowthinsights.com/market-reports/code-review-market-118106",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.globalgrowthinsights.com/market-reports/code-review-market-118106"
+    },
+    {
+      "url": "https://dataintelo.com/report/ai-generated-code-review-tools-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:45.716Z",
+      "textSha256": "89203a34ac6901000b6f15b33adecc54c24ac8759538ae94f7b205bad593a329"
+    },
+    {
+      "url": "https://ventionteams.com/ai/sdlc/report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:46.447Z",
+      "textSha256": "29c6a7c0440707ae26e1aae514c6059c2a86a6e950e5d72d2781ff942a06d780"
+    },
+    {
+      "url": "https://www.coderabbit.ai/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.734Z",
+      "textSha256": "229214f712764b4d502253042b21a4cf5a2ca00c30c0241103552965af70abfe"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.726Z",
+      "textSha256": "f5a07b37e557e0f81eae784b364878fa77bd27ee9586ebfa1c54b1b332ad52ce"
+    },
+    {
+      "url": "https://docs.coderabbit.ai/management/plans",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.751Z",
+      "textSha256": "096004d2cb9fbf9d50690a7dcbdbf68856a0207de4e9595fc2bccb75c9e3e67b"
+    },
+    {
+      "url": "https://codeant.ai/blogs/github-ai-code-review-tools-open-source",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.781Z",
+      "textSha256": "f3bf7b3a2e1d469a5ee98cda062301d89ce654a14d138e61020c1980ea1b3ae2"
+    },
+    {
+      "url": "https://codeant.ai/blogs/best-ai-code-review-tools-for-developers",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:53.223Z",
+      "textSha256": "0c2c3961b3badd85eedf367d4d927d3694c0a9188bea3ef95927a6fd876dc315"
+    },
+    {
+      "url": "https://codeant.ai/blogs/best-ai-code-review-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.939Z",
+      "textSha256": "9ee29621f0715c143557e406dae753223b877460f40d53c4545cfcba807a83b3"
+    },
+    {
+      "url": "https://www.coderabbit.ai/faq",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.874Z",
+      "textSha256": "a3a1ace8e8eec91e0e6d1afdf2badef5f9392ca04062945d01b3dddb779a7a66"
+    },
+    {
+      "url": "https://www.qodo.ai/blog/github-ai-code-review",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:34:52.871Z",
+      "textSha256": "6471427982999cb4f92ab6c028ad0b905c74b6c5ed73b72e0e643bec2143431b"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=45310529",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:07.720Z",
+      "textSha256": "251309b756c6c6c8ef0128c39f4f9b928443db2f38adf51635bf6d2c0ab88269"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:06.321Z",
+      "textSha256": "53efac37345623e58d5fde76d35db08b7a9ff2cd78d36e06bd7f243d36f5439b"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=48497609",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:08.996Z",
+      "textSha256": "40c04d25096d39aadfa2084f1d3b31c8e4987516c87381d14298d2e951e93771"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:05.799Z",
+      "textSha256": "fb12ecac1ae4393c3c78e07af3010500f7ccbd45b9e379d76a30df0b571e72e9"
+    },
+    {
+      "url": "https://tianpan.co/forum/t/46-of-our-code-is-ai-generated-but-only-33-of-us-trust-it-are-we-building-on-quicksand/1416",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:07.102Z",
+      "textSha256": "b5422fbdab0e3a8c3b8db1ec5743b89c539f4ab5e71e61207c4998d674a5cb8f"
+    },
+    {
+      "url": "https://github.com/orgs/community/discussions/185387",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:07.744Z",
+      "textSha256": "5c6588236f7db5fbdf8631a24791f81b9908b9f036c74f9e04c5c3aa0ffb6bcd"
+    },
+    {
+      "url": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:07.896Z",
+      "textSha256": "d9e610a62af2d7438fddb6a07ebc3619eb676cbd6c0bd51c10cb544b00cd1c7a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49840300",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-03T21:35:12.631Z",
+      "textSha256": "a8a79d71778fbdb5d39ffc20c30fa09f6e8ba8f283e772e86d744d25ad25f917"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 8,
+      "market_stat": 2,
+      "competitor_price": 4,
+      "competitor_availability": 1
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://discourse.itk.org/t/ai-generated-pull-requests-overwhelming-hard-to-review-carefully/7728",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://tianpan.co/forum/t/46-of-our-code-is-ai-generated-but-only-33-of-us-trust-it-are-we-building-on-quicksand/1416",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/ai-generated-code-review-tools-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      }
+    ]
+  }
+}

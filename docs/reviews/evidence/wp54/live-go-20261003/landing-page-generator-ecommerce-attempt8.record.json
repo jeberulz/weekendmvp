@@ -1,0 +1,1051 @@
+{
+  "contractVersion": 2,
+  "pipelineVersion": 2,
+  "mode": "live",
+  "brief": {
+    "title": "AI Landing Page Generator for E-commerce",
+    "slug": "ai-landing-page-generator-ecommerce",
+    "oneLiner": "Conversion-aware AI landing pages for ecommerce campaigns, Shopify-first.",
+    "targetCustomer": "E-commerce marketers and Shopify operators running paid ads"
+  },
+  "evidence": {
+    "contractVersion": 2,
+    "accepted": [
+      {
+        "id": "q_c97c13eadd23",
+        "sourceUrl": "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+        "sourceTitle": "Shopify",
+        "excerpt": "Started my store a week ago, put sum money behinds ads. Got allot of clicks and redirects to the site. But nobody goes further then the landing page. I don’t know what I’m doing wrong. Can I get honest feedback about my website.",
+        "excerptSha256": "17083f425b1ed71f43d298197f10d98e7c3805dcb6ae5dfb3cd62a4e553e61b0",
+        "retrievedAt": "2026-10-03T21:30:42.013Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_99509d25d908",
+        "sourceUrl": "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171",
+        "sourceTitle": "Shopify",
+        "excerpt": "Most of the time, however, Shopify is showing as much as 80% less traffic than our Google paid click data or Meta landing page data individually, let alone combined. Due to this magnitude of discrepancy, the directionality of sales CVR most days seems to be inaccurate (due to wrong denominator). How can we investigate, how can this be better synched?",
+        "excerptSha256": "19a785cae03efc28fb8d51c495b1078b83a6d4bbe31eb8c500f36e673156a2fd",
+        "retrievedAt": "2026-10-03T21:30:42.294Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_5629a941483b",
+        "sourceUrl": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+        "sourceTitle": "Seeking Advice: Meta Ads Performance Issues",
+        "excerpt": "I’ve recently invested a significant budget (several hundred thousand) in Meta advertising, with half allocated to Advantage+.While our CTR (click-through rate) metrics are normal, we’re seeing very low conversion rates.",
+        "excerptSha256": "50d7fb022fea3f0cf0c690d360ac342264ce29901b15b5a9a2efbf1f8fdf61f9",
+        "retrievedAt": "2026-10-03T21:31:09.565Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "q_e7d831e3883a",
+        "sourceUrl": "https://community.shopify.com/c/shopify-discussions/conversions/m-p/2783080",
+        "sourceTitle": "Re: conversions",
+        "excerpt": "i am wondering what is wrong, have spent 8 months and a lot of money on paid ads and never gotten a single sale.",
+        "excerptSha256": "981598ace06fc0f1fb8d8295b0a9e72e34c8956b3b7c5a8ae53b3936e5623555",
+        "retrievedAt": "2026-10-03T21:31:10.713Z",
+        "kind": "community_quote",
+        "attribution": "community"
+      },
+      {
+        "id": "s_6d4f7caebada",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "sourceTitle": "Dataintelo",
+        "excerpt": "Landing Page Software Market Outlook 2025-2034 The global landing page software market was valued at $3.8 billion in 2025 and is projected to reach $9.6 billion by 2034, expanding at a compound annual growth rate (CAGR) of 10.8% over the forecast period from 2026 to 2034.",
+        "excerptSha256": "749c7c87f28a8e79cfce8196066b4f0a9f1eb9f4de8b6f88669890edcfbf307f",
+        "retrievedAt": "2026-10-03T21:30:41.381Z",
+        "kind": "market_stat",
+        "subject": "global landing page software market",
+        "metric": "market_size",
+        "amount": {
+          "value": "9.6",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_58dfc8b93969",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "sourceTitle": "Dataintelo",
+        "excerpt": "Landing Page Software Market Outlook 2025-2034 The global landing page software market was valued at $3.8 billion in 2025 and is projected to reach $9.6 billion by 2034, expanding at a compound annual growth rate (CAGR) of 10.8% over the forecast period from 2026 to 2034.",
+        "excerptSha256": "749c7c87f28a8e79cfce8196066b4f0a9f1eb9f4de8b6f88669890edcfbf307f",
+        "retrievedAt": "2026-10-03T21:30:41.381Z",
+        "kind": "market_stat",
+        "subject": "global landing page software market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "10.8",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_2fb54e64c958",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "sourceTitle": "Researchnester",
+        "excerpt": "Landing Page Builder Market Outlook: Landing Page Builder Market size was over USD 725.24 million in 2025 and is anticipated to cross USD 2.83 billion by 2035, witnessing more than 14.6% CAGR during the forecast period i.e., between 2026-2035.",
+        "excerptSha256": "9b557dc1ee5b7fe3aa6c9c89402ccf4c9880790c236ecf13941775cb09329086",
+        "retrievedAt": "2026-10-03T21:30:41.520Z",
+        "kind": "market_stat",
+        "subject": "Landing Page Builder Market size",
+        "metric": "market_size",
+        "amount": {
+          "value": "2.83",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_7178bd809bf2",
+        "sourceUrl": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+        "sourceTitle": "Landing Page Builders Market Size, Future Growth and ...",
+        "excerpt": "Landing Page Builders Market Outlook The Landing Page Builders market was valued at $786.42 million in 2025 and is projected to reach $2.50 billion by 2034 , growing at a CAGR of 13.7% during the forecast period 2026-2034.",
+        "excerptSha256": "72e1c8d6ac52444e289416e7e560c9d7e9a88f0eb9e9fdca48b912990a9dc528",
+        "retrievedAt": "2026-10-03T21:30:47.818Z",
+        "kind": "market_stat",
+        "subject": "The Landing Page Builders market",
+        "metric": "market_size",
+        "amount": {
+          "value": "2.50",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_507062dbc27e",
+        "sourceUrl": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+        "sourceTitle": "Landing Page Builders Market Size, Future Growth and ...",
+        "excerpt": "Landing Page Builders Market Outlook The Landing Page Builders market was valued at $786.42 million in 2025 and is projected to reach $2.50 billion by 2034 , growing at a CAGR of 13.7% during the forecast period 2026-2034.",
+        "excerptSha256": "72e1c8d6ac52444e289416e7e560c9d7e9a88f0eb9e9fdca48b912990a9dc528",
+        "retrievedAt": "2026-10-03T21:30:47.818Z",
+        "kind": "market_stat",
+        "subject": "The Landing Page Builders market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "13.7",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2034
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_665f53a17c92",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+        "sourceTitle": "Landing Page Builder Market Size, Share, Trends, Report 2035",
+        "excerpt": "The Landing Page Builder Market was valued at USD 3.15 Billion in 2025 and is projected to grow to USD 8 Billion by 2035, at a CAGR of 9.8%.",
+        "excerptSha256": "b722a4c3cd9b1cc90fc9f1110b357c56de13b4f6b5dd36ed90a9a5588c09fd41",
+        "retrievedAt": "2026-10-03T21:30:49.010Z",
+        "kind": "market_stat",
+        "subject": "The Landing Page Builder Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "3.15",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "measured",
+          "year": 2025
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_fc4a905c5e56",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+        "sourceTitle": "Landing Page Builder Market Size, Share, Trends, Report 2035",
+        "excerpt": "The Landing Page Builder Market was valued at USD 3.15 Billion in 2025 and is projected to grow to USD 8 Billion by 2035, at a CAGR of 9.8%.",
+        "excerptSha256": "b722a4c3cd9b1cc90fc9f1110b357c56de13b4f6b5dd36ed90a9a5588c09fd41",
+        "retrievedAt": "2026-10-03T21:30:49.010Z",
+        "kind": "market_stat",
+        "subject": "The Landing Page Builder Market",
+        "metric": "market_size",
+        "amount": {
+          "value": "8",
+          "magnitude": "billion",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "s_573a5fecc782",
+        "sourceUrl": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+        "sourceTitle": "Landing Page Builder Market Size, Share, Trends, Report 2035",
+        "excerpt": "The Landing Page Builder Market was valued at USD 3.15 Billion in 2025 and is projected to grow to USD 8 Billion by 2035, at a CAGR of 9.8%.",
+        "excerptSha256": "b722a4c3cd9b1cc90fc9f1110b357c56de13b4f6b5dd36ed90a9a5588c09fd41",
+        "retrievedAt": "2026-10-03T21:30:49.010Z",
+        "kind": "market_stat",
+        "subject": "The Landing Page Builder Market",
+        "metric": "growth_rate",
+        "amount": {
+          "value": "9.8",
+          "magnitude": "none",
+          "unit": "percent"
+        },
+        "period": {
+          "kind": "projected",
+          "toYear": 2035
+        },
+        "attribution": "secondary"
+      },
+      {
+        "id": "p_02be3a4a2f3f",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "sourceTitle": "Shopify",
+        "excerpt": "Starter\n$39 / month or $374.40/year and save 20%",
+        "excerptSha256": "025549f22f7177480798dbbfc4e365cbe8f632aa631fc94909ab2f7e827514ff",
+        "retrievedAt": "2026-10-03T21:30:41.699Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "Instant",
+        "plan": "Starter",
+        "price": {
+          "amount": {
+            "value": "39",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_0b7dd552c2a0",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "sourceTitle": "Shopify",
+        "excerpt": "Pro\n$99 / month or $950.40/year and save 20%",
+        "excerptSha256": "539c2a9971ad1bdf85ec983649f58ae04201a49cdf76db5649788dd47a576d83",
+        "retrievedAt": "2026-10-03T21:30:41.699Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "Instant",
+        "plan": "Pro",
+        "price": {
+          "amount": {
+            "value": "99",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_01d21b53b245",
+        "sourceUrl": "https://apps.shopify.com/instant-builder",
+        "sourceTitle": "Shopify",
+        "excerpt": "Business\n$249 / month or $2,390.40/year and save 20%",
+        "excerptSha256": "3cde3fb5dfe9d882d5029a63b2e71a9738b7a5925579823de4ff43138e8decba",
+        "retrievedAt": "2026-10-03T21:30:41.699Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "Instant",
+        "plan": "Business",
+        "price": {
+          "amount": {
+            "value": "249",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_b5f69765ae17",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "sourceTitle": "Shopify",
+        "excerpt": "Builder\n$24 / month",
+        "excerptSha256": "aa63ebde0c4de6d4c456f5ecd0692f39efc26f3f1f234481435b8776c089120e",
+        "retrievedAt": "2026-10-03T21:30:41.692Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "PageFly",
+        "plan": "Builder",
+        "price": {
+          "amount": {
+            "value": "24",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_7f7f2ead33b4",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "sourceTitle": "Shopify",
+        "excerpt": "Accelerate\n$99 / month or $990/year and save 17%",
+        "excerptSha256": "c8bbf7ea64827a1492978ccc300cd55c9d535de7f6261dbb9174aed44f7e8c3b",
+        "retrievedAt": "2026-10-03T21:30:41.692Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "PageFly",
+        "plan": "Accelerate",
+        "price": {
+          "amount": {
+            "value": "99",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_e05c9904cbb7",
+        "sourceUrl": "https://apps.shopify.com/pagefly",
+        "sourceTitle": "Shopify",
+        "excerpt": "Enterprise\n$299 / month",
+        "excerptSha256": "9eb42d079f11d9e640ebf5699fcac4f5d048b43c80beb4fcf47cfd3280066a9a",
+        "retrievedAt": "2026-10-03T21:30:41.692Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "PageFly",
+        "plan": "Enterprise",
+        "price": {
+          "amount": {
+            "value": "299",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_f1883209c4a1",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "sourceTitle": "Shopify",
+        "excerpt": "Starter\n$1 / month",
+        "excerptSha256": "bcc4bbf3e3485cda7ac4a39ab5710bdf438f5c5b9271bcd2920ffcec86c0398c",
+        "retrievedAt": "2026-10-03T21:30:42.193Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "WEBI Ai Landing Page Builder",
+        "plan": "Starter",
+        "price": {
+          "amount": {
+            "value": "1",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_58043ee56316",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "sourceTitle": "Shopify",
+        "excerpt": "Basic\n$4.99 / month",
+        "excerptSha256": "630a902d6e5ee4873736a655fed1e62defa67a1fd71ce2c10c0e2efbd282b2c2",
+        "retrievedAt": "2026-10-03T21:30:42.193Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "WEBI Ai Landing Page Builder",
+        "plan": "Basic",
+        "price": {
+          "amount": {
+            "value": "4.99",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_fe0adf7fa324",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "sourceTitle": "Shopify",
+        "excerpt": "Growth\n$9.99 / month",
+        "excerptSha256": "25f8d489158d9cdca639e964c2f74f616fe6d1cd4c14d141af4a1c987aecd22c",
+        "retrievedAt": "2026-10-03T21:30:42.193Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "WEBI Ai Landing Page Builder",
+        "plan": "Growth",
+        "price": {
+          "amount": {
+            "value": "9.99",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_019cd72a39f8",
+        "sourceUrl": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "sourceTitle": "Shopify",
+        "excerpt": "Enterprise\n$19.99 / month",
+        "excerptSha256": "89cc8f8e80078de00b23c53f19602c2424aea58aef672569426e12ef1a8eabbf",
+        "retrievedAt": "2026-10-03T21:30:42.193Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "WEBI Ai Landing Page Builder",
+        "plan": "Enterprise",
+        "price": {
+          "amount": {
+            "value": "19.99",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_51086d51ade6",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "sourceTitle": "apps.shopify.com › foxify-builderFoxify AI Store Builder - AI page builder for landing page ...",
+        "excerpt": "Starter\n$19 / month or $182.40/year and save 20%",
+        "excerptSha256": "e0648e0678f8063847c58e22c1f4d6392e5a96efa12b70dfd41e37df972ddad1",
+        "retrievedAt": "2026-10-03T21:30:57.177Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "Foxify AI Store Builder",
+        "plan": "Starter",
+        "price": {
+          "amount": {
+            "value": "19",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      },
+      {
+        "id": "p_6267846ac0f8",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "sourceTitle": "apps.shopify.com › foxify-builderFoxify AI Store Builder - AI page builder for landing page ...",
+        "excerpt": "Growth\n$39 / month or $374.40/year and save 20%",
+        "excerptSha256": "0b6d892551b599c6e236cf009b84cc475470b872f89e8b31e0c0b3d2e27f3d91",
+        "retrievedAt": "2026-10-03T21:30:57.177Z",
+        "kind": "competitor_price",
+        "attribution": "secondary",
+        "vendor": "Foxify AI Store Builder",
+        "plan": "Growth",
+        "price": {
+          "amount": {
+            "value": "39",
+            "magnitude": "none",
+            "unit": "currency",
+            "currency": "USD"
+          },
+          "period": "month",
+          "basis": "flat",
+          "qualifiers": []
+        }
+      }
+    ],
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://community.shopify.com/t/store-review-needed-high-traffic-but-low-conversions/660701",
+        "candidate": "We’re getting a good amount of traffic from paid ads and have received a few orders, but most visitors leave without bu…",
+        "detail": "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://dataintelo.com/report/global-landing-page-software-market",
+        "candidate": "global landing page software market: $3.8 billion",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "candidate": "Landing Page Builder Market size: USD 725.24 million",
+        "detail": "supporting text has $2.83 billion, not $725.24 million"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "amount_mismatch",
+        "sourceUrl": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "candidate": "Landing Page Builder Market size: 14.6%",
+        "detail": "supporting text has $2.83 billion, not 14.6%"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+        "candidate": "The Landing Page Builders market: $786.42 million",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "candidate": "Frontend AI: $39 / month",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "candidate": "Frontend AI: $119 / month",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://apps.shopify.com/ai-page-builder",
+        "candidate": "Frontend AI: $249 / month",
+        "detail": "Frontend AI is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "over_cap",
+        "sourceUrl": "https://apps.shopify.com/foxify-builder",
+        "candidate": "Foxify AI Store Builder: $99 / month",
+        "detail": "more than 12 accepted"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://dataintelo.com/report/global-landing-page-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:41.381Z",
+        "textSha256": "0134ec28ae324f32eff0e833ef14134c274b449c13837e4d82446049758ecc4a"
+      },
+      {
+        "url": "https://www.researchnester.com/reports/landing-page-builder-market/4347",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:41.520Z",
+        "textSha256": "2850d024adb8d7f1ea005d4d0e77b7a9c62acc272fab2292bbc652bc657d2d73"
+      },
+      {
+        "url": "https://apps.shopify.com/instant-builder",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:41.699Z",
+        "textSha256": "a346176f89a81a6f6720364b5e5c81c15d5e32f38830dd81df12826dad4d1afb"
+      },
+      {
+        "url": "https://apps.shopify.com/pagefly",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:41.692Z",
+        "textSha256": "c7215738fdebadc5588a173df8e3342867f12a2ea3f14eb1584b7595678ee306"
+      },
+      {
+        "url": "https://apps.shopify.com/gempages",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:41.878Z",
+        "textSha256": "f3d573af21f7631e8a64a52721f10db18beb0f2b37aa3cbeaff3ae44ca9ee444"
+      },
+      {
+        "url": "https://apps.shopify.com/webi-landing-page-builder-cod",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:42.193Z",
+        "textSha256": "1d692a6cbf9629088670b62033d97aefc084b4771071fdcfe615ed0a7163237d"
+      },
+      {
+        "url": "https://apps.shopify.com/landify-v3",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:42.692Z",
+        "textSha256": "c84d476082a2f15adbda1b218990273ad246eccced337e5e2f82ec2bfe4d3fd5"
+      },
+      {
+        "url": "https://community.shopify.com/t/why-is-my-landing-page-not-converting-visitors/282467",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:42.013Z",
+        "textSha256": "69d86d995bdc800dff677eb796ad0e2f9e682f4e774f194decaa228011af9bab"
+      },
+      {
+        "url": "https://community.shopify.com/t/why-am-i-not-seeing-any-sales-after-3-months-of-changes/204727",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:42.152Z",
+        "textSha256": "c48a6903a25ab7a90b436e787d682deac459a238a16ff966869d8bc414907f47"
+      },
+      {
+        "url": "https://community.shopify.com/t/shopify-sessions-are-woefully-less-than-google-ad-traffic-or-any-of-our-paid-sources-how-to-think-about-this-delta/615171",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:42.294Z",
+        "textSha256": "45625bcec188b6daa0635d015a3df9cd6c2eacc7e36ca5bdf683f9e568433b24"
+      },
+      {
+        "url": "https://www.verifiedmarketreports.com/product/landing-page-builder-software-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:47.828Z",
+        "textSha256": "bfc6643141d35026f96857b4410a950b89045e2e54909598b55ccdd6878091e2"
+      },
+      {
+        "url": "https://www.strategicrevenueinsights.com/industry/landing-page-builders-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:47.818Z",
+        "textSha256": "332f8a5310ce0f9e8a181960069637acb658344f434f8e6f44241147b2844477"
+      },
+      {
+        "url": "https://reports.valuates.com/market-reports/QYRE-Auto-14U7538/global-landing-page-builder-software",
+        "roles": [
+          "market"
+        ],
+        "status": "unreadable",
+        "detail": "Network error for https://reports.valuates.com/market-reports/QYRE-Auto-14U7538/global-landing-page-builder-software: read ECONNRESET"
+      },
+      {
+        "url": "https://www.aidesigner.ai/blog/best-ai-landing-page-builders",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:48.181Z",
+        "textSha256": "fe736ca79103b3c1fa2a7ed995ecced6e724f482aa403f0dea9d24e4b439b8ba"
+      },
+      {
+        "url": "https://shinedezigninfonet.com/blog/shopify-statistics",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:47.945Z",
+        "textSha256": "b0d01159d2a30569bc63f986090fb2133632d153cc8f42ed027d17d34680e2f7"
+      },
+      {
+        "url": "https://www.cognitivemarketresearch.com/landing-page-builder-software-market-report",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:48.367Z",
+        "textSha256": "8b7e834c826d2781f10b71ade6d61ac595b8e29aa184618f784b1fbadb27b9d9"
+      },
+      {
+        "url": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+        "roles": [
+          "market"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:49.010Z",
+        "textSha256": "fc9152a760499c72790cbfb6addc958ed5033888037e099b570cf3d500bb849a"
+      },
+      {
+        "url": "https://apps.shopify.com/ai-page-generator",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:56.977Z",
+        "textSha256": "492011a7bd4692ad1e885b926e2c67b0ac2b1a515e775b77bbbb87495b7bdf67"
+      },
+      {
+        "url": "https://apps.shopify.com/ai-page-builder",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:56.755Z",
+        "textSha256": "7f601389f3f7bc92ae70a790a9e1170d578675a72d32cbeff3d2f8d47a134a19"
+      },
+      {
+        "url": "https://apps.shopify.com/foxify-builder",
+        "roles": [
+          "competitors"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:30:57.177Z",
+        "textSha256": "e3215587d68471c748a34c3c583342f3d99e6a46f2d9fca12b0c2b22d6c183b6"
+      },
+      {
+        "url": "https://community.shopify.com/t/seeking-advice-meta-ads-performance-issues/407187",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:09.565Z",
+        "textSha256": "07b47ec8c814a01d93150184ac91f2eb86cb4d891f8822959d4b4972f17aa8e1"
+      },
+      {
+        "url": "https://community.shopify.com/t/advice-on-marketing-and-increasing-sales/580828",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:09.665Z",
+        "textSha256": "4df71e6eff3016e9ba415aa33aed4afca2f56bdd255792f04d747675e9f67c9a"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=27140440",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:14.627Z",
+        "textSha256": "e0995915b56062c77bfc9f3bd0ffe8887b479f983211fd6a8675078dab5d467e"
+      },
+      {
+        "url": "https://news.ycombinator.com/item?id=26193544",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:16.370Z",
+        "textSha256": "62531a9d158dac4d0a62d61c8d25b37b4d0b512b1e5e4df13a634a25ca251625"
+      },
+      {
+        "url": "https://community.shopify.com/c/ecommerce-marketing/seeking-advice-meta-ads-performance-issues/m-p/3079137",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:10.100Z",
+        "textSha256": "07b47ec8c814a01d93150184ac91f2eb86cb4d891f8822959d4b4972f17aa8e1"
+      },
+      {
+        "url": "https://community.shopify.com/t/store-review-needed-high-traffic-but-low-conversions/660701",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:09.978Z",
+        "textSha256": "5ad164048b7ef00672ce967a9a2a18d7ee7d25dbe020e97caae77900b0e76c94"
+      },
+      {
+        "url": "https://community.shopify.com/c/shopify-discussions/conversions/m-p/2783080",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:10.713Z",
+        "textSha256": "38e854550e3d8fb62a650339d9c957367085c51387136a9ea84ebdf5e9035a6f"
+      },
+      {
+        "url": "https://community.shopify.com/c/ecommerce-marketing/optimize-the-session-of-the-website/td-p/3057977",
+        "roles": [
+          "community"
+        ],
+        "status": "read",
+        "retrievedAt": "2026-10-03T21:31:10.623Z",
+        "textSha256": "32e0065141a0c4856437eb0afba21a76af6560aeae2da49b316d9fe736758ff6"
+      }
+    ]
+  },
+  "market": {
+    "summary": "Landing page builders are a recognizable software niche, but the supplied evidence does not isolate AI-generated pages for ecommerce or Shopify. The closest signals cover the broader builder category, so they indicate category momentum rather than a precise serviceable market for this product. A secondary report places the Landing Page Builder Market at [[ev:s_665f53a17c92]] and projects the category to [[ev:s_fc4a905c5e56]]. A separate forecast for the landing page builder market projects [[ev:s_2fb54e64c958]]. These estimates differ materially in scope and magnitude, which limits confidence in any headline market total. They nonetheless suggest sustained buyer spending around tools that create, publish, and optimize campaign destinations.\n\nThe proposed niche is narrower and operationally distinct. Its buyer is already acquiring traffic through Meta, Google, or related channels, operates a Shopify storefront, and needs campaign pages that align ad intent with product information. The opportunity is therefore not merely easier page design. It is a workflow layer joining campaign briefs, store catalog data, generation, publishing, and conversion feedback. That focus supports a specialized SaaS motion aimed at performance teams and hands-on operators rather than the entire website builder market. Validation should emphasize willingness to replace fragmented campaign workflows, because the available market reports do not establish demand specifically for conversion-aware Shopify generation.",
+    "statIds": [
+      "s_665f53a17c92",
+      "s_fc4a905c5e56",
+      "s_2fb54e64c958"
+    ]
+  },
+  "competitors": [
+    {
+      "name": "Instant",
+      "priceIds": [
+        "p_02be3a4a2f3f",
+        "p_0b7dd552c2a0",
+        "p_01d21b53b245"
+      ],
+      "notes": "Instant offers a visible progression from its Starter plan [[ev:p_02be3a4a2f3f]] through Pro [[ev:p_0b7dd552c2a0]] and Business [[ev:p_01d21b53b245]], providing a strong benchmark for professional Shopify page-building budgets."
+    },
+    {
+      "name": "PageFly",
+      "priceIds": [
+        "p_b5f69765ae17",
+        "p_7f7f2ead33b4",
+        "p_e05c9904cbb7"
+      ],
+      "notes": "PageFly anchors its Builder offer at [[ev:p_b5f69765ae17]], with Accelerate [[ev:p_7f7f2ead33b4]] and Enterprise [[ev:p_e05c9904cbb7]] options demonstrating room for plans tied to broader publishing and optimization needs."
+    },
+    {
+      "name": "Foxify AI Store Builder",
+      "priceIds": [
+        "p_51086d51ade6",
+        "p_6267846ac0f8"
+      ],
+      "notes": "Foxify AI Store Builder presents an accessible Starter offer [[ev:p_51086d51ade6]] and a Growth option [[ev:p_6267846ac0f8]], creating direct pressure on any product positioned around AI-assisted Shopify page creation."
+    }
+  ],
+  "community": {
+    "summary": "The community evidence points to a painful gap between paid traffic and storefront outcomes. One Shopify operator reports attracting clicks but losing visitors at the landing page and asks for candid diagnosis [[ev:q_c97c13eadd23]]. Another describes normal Meta click-through behavior alongside weak conversion after substantial campaign investment [[ev:q_5629a941483b]]. Measurement uncertainty compounds the creative problem: a merchant reports a large mismatch between Shopify sessions and traffic reported by Google and Meta, making daily conversion direction difficult to trust [[ev:q_99509d25d908]]. Another operator describes extended ad spending without a sale [[ev:q_e7d831e3883a]]. These are not requests for prettier templates alone. Buyers need help connecting ad promise, product context, page structure, trustworthy event capture, and actionable iteration. The recurring emotional pattern is uncertainty: traffic arrives, performance disappoints, and the operator cannot confidently identify whether the page, offer, audience, or measurement is responsible.",
+    "quoteIds": [
+      "q_c97c13eadd23",
+      "q_5629a941483b",
+      "q_99509d25d908",
+      "q_e7d831e3883a"
+    ]
+  },
+  "keywords": [
+    {
+      "term": "ai landing page builder",
+      "volume": 480,
+      "competition": 70,
+      "cpc": 27.29,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "Position Landerloom as the Shopify-first campaign page operator, not a general website builder. It turns an ad brief and selected products into grounded landing pages, publishes them into the merchant workflow, and returns page-level learning that helps performance marketers decide what to revise next.",
+    "channels": [
+      "Shopify App Store discovery",
+      "SEO around campaign landing page problems",
+      "Performance marketing agency partnerships",
+      "Live teardown webinars for Shopify operators"
+    ],
+    "pricingNotes": "Price around campaign workflow value rather than raw page count alone. Instant establishes professional monthly reference points across Starter [[ev:p_02be3a4a2f3f]], Pro [[ev:p_0b7dd552c2a0]], and Business [[ev:p_01d21b53b245]]. PageFly provides another broad range from Builder [[ev:p_b5f69765ae17]] to Accelerate [[ev:p_7f7f2ead33b4]]. Foxify AI Store Builder creates lower-priced pressure through Starter [[ev:p_51086d51ade6]] and Growth [[ev:p_6267846ac0f8]]. Landerloom should justify its subscription through campaign grounding, rapid variation, Shopify publishing, and conversion feedback rather than competing as the cheapest visual editor."
+  },
+  "whyNow": "Landing page builder forecasts indicate continued category expansion [[ev:s_fc4a905c5e56]], while Shopify operators publicly describe paid traffic reaching pages without producing desired action [[ev:q_c97c13eadd23]]. The immediate opening is a focused workflow that combines generation with campaign context and feedback, rather than adding another ungrounded page canvas.",
+  "howItWorks": [
+    "Campaign Intake — The operator selects a Shopify store, products, traffic source, audience, offer, and campaign objective. Landerloom converts this brief into a structured page strategy, flags missing inputs, and keeps the ad promise visible throughout generation so the resulting page remains aligned with visitor intent.",
+    "Catalog Grounding — Landerloom retrieves approved product titles, descriptions, imagery, variants, pricing context, and merchant brand rules from Shopify. It builds a controlled content source for generation, identifies conflicting claims, and prevents draft copy from silently inventing product attributes that are absent from the merchant's catalog.",
+    "Page Generation — The system proposes campaign-specific structures and copy variants using reusable conversion modules such as product proof, benefit framing, comparison, objection handling, and calls to action. The operator can lock approved sections, regenerate weak areas, preview responsive layouts, and route the preferred draft for approval.",
+    "Publish and Learn — Approved pages publish through the Shopify integration with campaign parameters and conversion events attached. Landerloom groups performance by page variant, traffic source, product, and message angle, then recommends focused revisions while preserving an audit trail of what changed and why."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 9,
+    "timing": 8,
+    "builderConfidence": 8,
+    "execution": 7
+  },
+  "editorial": {
+    "productName": "Landerloom",
+    "dontBuildYet": "Do not build a general storefront theme editor or autonomous media-buying system yet.",
+    "problemNarrative": "E-commerce marketers and Shopify operators can buy traffic faster than they can diagnose what happens after the click. Campaigns often begin with an ad concept, a product collection, and a deadline. The destination page may be copied from a product detail page, assembled from a generic template, or handed between a marketer, designer, and developer. That process separates the ad promise from the page structure and makes rapid learning difficult.\n\nThe visible symptom is traffic without progression. A Shopify operator describes receiving clicks and redirects while visitors stop at the landing page [[ev:q_c97c13eadd23]]. Another merchant reports normal Meta click-through behavior but very low conversion after a substantial advertising commitment [[ev:q_5629a941483b]]. These accounts reveal a practical diagnosis problem. The operator knows money is moving and visitors are arriving, but lacks a structured way to test whether the issue is message match, offer clarity, product proof, mobile presentation, page speed, checkout friction, or audience quality.\n\nMeasurement can be equally destabilizing. A Shopify merchant reports that platform sessions diverge sharply from Google paid clicks and Meta landing page data, making sales conversion direction unreliable [[ev:q_99509d25d908]]. When acquisition systems and storefront analytics disagree, a marketer may optimize the wrong page or pause a viable campaign. Manual spreadsheets and disconnected dashboards preserve data but rarely connect it to the exact page version, message angle, or product set a visitor encountered.\n\nThe deeper pain is operational uncertainty. Each campaign requires assembling product facts, images, social proof, layout, tracking, and publishing controls. Generic AI can draft copy, but it may not respect catalog truth or brand constraints. Generic page builders can publish polished layouts, but they still require the marketer to decide what should be said and how variants should differ. An operator who reports prolonged ad spending without a sale illustrates the emotional cost of this uncertainty [[ev:q_e7d831e3883a]]. The buyer needs a system that shortens the path from campaign idea to grounded page, then makes learning legible enough to guide the next revision.",
+    "solutionNarrative": "Landerloom is a Shopify-first AI landing page generator for paid ecommerce campaigns. Its wedge is not unrestricted design generation. It is conversion-aware campaign assembly grounded in the merchant's catalog, offer, audience, ad message, and approved brand rules. The operator begins with a campaign brief and selects relevant products. Landerloom then proposes a page strategy, identifies missing proof or claims, and creates editable variants that preserve message continuity from ad to destination.\n\nThe product pulls approved product content and imagery from Shopify, creating a controlled source for generated copy. Sections are assembled around the campaign objective rather than a generic homepage structure. Operators can lock accurate content, regenerate weak modules, compare message angles, and preview responsive layouts without rebuilding the entire page. Approval states make the workflow suitable for an in-house marketer, an agency, or a founder who still reviews every campaign.\n\nPublishing remains close to Shopify so operators do not need to maintain a disconnected site stack. Landerloom attaches campaign metadata and event definitions to each published variant. Its reporting then organizes outcomes by page, product set, traffic source, and message angle. Instead of presenting a generic analytics dashboard, it turns observed behavior into bounded revision suggestions, such as strengthening offer clarity or replacing an underperforming proof section.\n\nThe initial product should optimize for fast, trustworthy iteration. Catalog grounding reduces unsupported claims, reusable brand rules reduce review work, and variant lineage makes changes understandable. This creates a defensible workflow around campaign context and learning while leaving advanced storefront design, media buying, and broad personalization outside the initial scope.",
+    "competitiveNarrative": "Instant spans professional Shopify page-building plans from Starter [[ev:p_02be3a4a2f3f]] through Business [[ev:p_01d21b53b245]], while PageFly offers Builder [[ev:p_b5f69765ae17]] and higher-end Enterprise [[ev:p_e05c9904cbb7]] options. Foxify AI Store Builder competes more directly on AI-assisted creation with Starter [[ev:p_51086d51ade6]] and Growth [[ev:p_6267846ac0f8]] offers.\n\nLanderloom should not attempt to outmatch these vendors as a broad visual builder. Its differentiation is a narrower campaign loop: ingest the ad brief, ground claims in Shopify catalog data, generate controlled message variants, publish with campaign metadata, and connect outcomes back to the page strategy. This positioning favors paid acquisition teams that care about message match and iteration speed more than unrestricted design freedom. The durable advantage would come from accumulated campaign structure, variant lineage, approval rules, and product-aware learning rather than from template volume or generic AI copy.",
+    "stackNotes": "Use Next.js for the campaign workspace, responsive previews, and server-rendered public pages. Store briefs, page schemas, revision lineage, and reporting dimensions in Postgres. Keep generated layouts as validated structured blocks rather than unrestricted markup. Integrate with the Shopify Admin API for catalog retrieval, publishing, and app authentication. A background queue should handle generation, image processing, catalog refreshes, webhook retries, and analytics aggregation. Use isolated rendering, strict claim provenance, signed preview links, event deduplication, and an audit log for every generated or approved change.",
+    "audienceShort": "Shopify paid marketers",
+    "brandBrief": "Use a performance-minded visual system that feels precise without resembling an ad network dashboard. Favor warm neutrals, deep ink, and a vivid signal color for opportunities, warnings, and publish states. Layouts should foreground product imagery, campaign flow, and clear comparisons between variants. The voice is direct, diagnostic, and calm: practical enough for operators, credible for agencies, and never inflated with promises of effortless conversion.",
+    "pricingTiers": [
+      {
+        "name": "Campaign Lab",
+        "price": "$39/month",
+        "includes": "10 live pages, 40 monthly generations, Shopify publishing, campaign analytics"
+      },
+      {
+        "name": "Growth Studio",
+        "price": "$99/month",
+        "includes": "50 live pages, 250 monthly generations, reusable brand rules, variant experiments, priority support"
+      },
+      {
+        "name": "Performance Desk",
+        "price": "$249/month",
+        "includes": "200 live pages, 1000 monthly generations, approval workflows, multi-store controls, assisted onboarding"
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "Gross margin target",
+        "value": "80% after inference and hosting"
+      },
+      {
+        "label": "Blended acquisition target",
+        "value": "$300 per paying account"
+      },
+      {
+        "label": "Payback window target",
+        "value": "6 months or less"
+      },
+      {
+        "label": "Monthly variable cost target",
+        "value": "$8 per active workspace"
+      }
+    ],
+    "dataModel": [
+      {
+        "table": "campaign_briefs",
+        "columns": "id, workspace_id fk, store_id fk, name, traffic_source, audience, offer, objective, status: draft, in review, approved, archived"
+      },
+      {
+        "table": "product_sources",
+        "columns": "id, workspace_id fk, campaign_brief_id fk, shopify_product_id, title, source_payload, claim_status: pending, verified, blocked, synced_at"
+      },
+      {
+        "table": "page_variants",
+        "columns": "id, workspace_id fk, campaign_brief_id fk, parent_variant_id fk, schema_json, message_angle, status: draft, generating, ready, approved, published, archived"
+      },
+      {
+        "table": "publication_records",
+        "columns": "id, workspace_id fk, page_variant_id fk, shopify_resource_id, public_path, campaign_parameters, status: queued, publishing, live, failed, removed, published_at"
+      },
+      {
+        "table": "conversion_events",
+        "columns": "id, workspace_id fk, page_variant_id fk, publication_record_id fk, visitor_key, event_type: page view, product click, add to cart, checkout, purchase, source, occurred_at"
+      }
+    ],
+    "yearOne": {
+      "funnel": [
+        {
+          "stage": "Shopify App Store impressions",
+          "count": 12000
+        },
+        {
+          "stage": "SEO and partner webinar visits",
+          "count": 4000
+        },
+        {
+          "stage": "Email nurtured product trials",
+          "count": 600
+        },
+        {
+          "stage": "Founder assisted paid accounts",
+          "count": 90
+        }
+      ],
+      "tier": "Campaign Lab",
+      "payingAccounts": 90,
+      "seatsPerAccount": 1,
+      "assumptions": "Assumes a flat workspace subscription, founder-led onboarding for early merchants, organic discovery through Shopify, educational content around campaign diagnosis, and agency referrals from partners serving paid ecommerce teams."
+    }
+  },
+  "provenance": {
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+        "costUsd": 0.00207
+      },
+      {
+        "provider": "perplexity",
+        "operation": "market_stats/search:sonar-pro",
+        "costUsd": 0.019583
+      },
+      {
+        "provider": "perplexity",
+        "operation": "competitors/search:sonar-pro",
+        "costUsd": 0.028478
+      },
+      {
+        "provider": "perplexity",
+        "operation": "community_signals/search:sonar-pro",
+        "costUsd": 0.026122
+      },
+      {
+        "provider": "openai",
+        "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+        "costUsd": 0.2328
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+        "costUsd": 0.1986245
+      }
+    ],
+    "costUsd": 0.597678,
+    "ranAt": "2026-10-03T21:30:39.252Z",
+    "models": {
+      "synthesis": "gpt-5.6-sol",
+      "search": "perplexity:sonar-pro",
+      "keywordData": "dataforseo"
+    },
+    "attempts": {
+      "brief_normalization": 1,
+      "market_stats": 1,
+      "competitors": 1,
+      "community_signals": 1,
+      "evidence_extraction": 1,
+      "keywords_demand": 1,
+      "editorial_synthesis": 1
+    },
+    "codeRevision": {
+      "sha": "a4bfef0624f4aaf1d0703b1a5bb0bdbbbf369cee",
+      "dirty": false
+    }
+  }
+}
