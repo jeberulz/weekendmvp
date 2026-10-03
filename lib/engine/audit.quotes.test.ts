@@ -25,6 +25,14 @@ function errorsOf(result: { errors: string[] }): string {
 }
 
 describe("quotes and their attribution (F2)", () => {
+  it("allows SQL enum identifiers in a build prompt but still refuses fabricated prose", async () => {
+    const enumLine = "- plan text check plan in ('open_source_maintainer','solo_repository','pull_request_crew')\n";
+    const withEnums = compiledPage().replace("```text\n", `\`\`\`text\n${enumLine}`);
+    expect((await auditPage(withEnums)).errors).toEqual([]);
+    const withProse = replaceOnce(withEnums, enumLine, `${enumLine}- claim: \"our buyers love noisy reviews\"\n`);
+    expect(errorsOf(await auditPage(withProse))).toMatch(/quoted text "our buyers love noisy reviews".*not an accepted community quote/);
+  });
+
   it("passes the original page: every selected quote verified with its own source", async () => {
     const result = await auditPage(compiledPage());
     expect(result.errors).toEqual([]);

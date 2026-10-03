@@ -705,6 +705,10 @@ function applyRules(state: State): number {
       );
     }
     for (const { inner } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
+      // SQL enum values in a build prompt are code identifiers, not customer
+      // quotations. Keep this exemption confined to snake_case literals in
+      // fenced prompts; ordinary quoted prose still needs quote evidence.
+      if (piece.fence && /^[a-z][a-z0-9]*(?:_[a-z][a-z0-9]*){2,}$/.test(inner)) continue;
       if (ev.quotes.some((q) => quoteMatchesExcerpt(inner, q.excerpt))) continue;
       ctx.errors.push(
         `${piece.section}: quoted text "${clip(inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,

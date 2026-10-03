@@ -610,11 +610,17 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const tierKeys = tiers.map((t) => tierKey(t.name));
   const prose = (text: string, path: string) => proseMdx(text, ctx, path);
 
-  // --- The Problem: narrative, community summary, verbatim quotes ---------
+  // --- The Problem: narrative and verbatim quotes --------------------------
+  // The community summary remains in the validated record for research and
+  // editorial review. Print it only when it contributes evidence not already
+  // in the problem narrative or selected quote blocks; otherwise live drafts
+  // repeat the same buyer quotes and argument in adjacent paragraphs.
   const quotes = record.community.quoteIds.map((id) => quoteItem(ctx, id));
+  const problemEvidence = new Set([...evidenceRefs(ed.problemNarrative), ...record.community.quoteIds]);
+  const summaryAddsEvidence = evidenceRefs(record.community.summary).some((id) => !problemEvidence.has(id));
   const problemBody = joinBlocks([
     prose(ed.problemNarrative, "editorial.problemNarrative"),
-    prose(record.community.summary, "community.summary"),
+    summaryAddsEvidence ? prose(record.community.summary, "community.summary") : "",
     quotes.map(quoteBlock).join("\n\n"),
   ]);
 

@@ -73,6 +73,16 @@ function compileIssues(record: ResearchRecordV2, slug = FIXTURE_PAGE_SLUG): stri
 }
 
 describe("compileResearchRecord (contract v2)", () => {
+  it("keeps the research community summary in the record without repeating it beside the problem narrative", () => {
+    const record = buildFixtureRecord((r) => {
+      r.community.summary = "Editorial-only synthesis of the buyer discussion.";
+    });
+    const { mdx } = compileFixture(record);
+    expect(record.community.summary).toBe("Editorial-only synthesis of the buyer discussion.");
+    expect(mdx).not.toContain(record.community.summary);
+    expect(mdx).toContain(quoteBlock(EV.quoteHn));
+  });
+
   it("emits an engine: source, the eight headings in order, How it works and Sources", () => {
     const { mdx, manifestEntry, slug } = compileFixture();
     expect(slug).toBe(FIXTURE_PAGE_SLUG);
@@ -153,11 +163,11 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(price(EV.priceSourcery)).toContain("(via reviews.example.com) [Best AI code review tools]");
   });
 
-  it("expands evidence tokens into linked canonical renderings", () => {
+  it("expands rendered evidence tokens into linked canonical renderings", () => {
     const { mdx } = compileFixture();
     const link = (item: AcceptedEvidence) => mdLink(renderEvidenceInline(item), item.sourceUrl);
     expect(mdx).toContain(`sizes it at ${link(EV.statMeasured)} and expects ${link(EV.statProjected)}`);
-    expect(mdx).toContain(`summed up the daily load as ${link(EV.quoteHn)}`);
+    expect(mdx).toContain(quoteBlock(EV.quoteHn));
     expect(mdx).not.toMatch(/\[\[ev:/);
   });
 

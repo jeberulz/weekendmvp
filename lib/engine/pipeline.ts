@@ -791,11 +791,14 @@ export const EXTRACTION_INSTRUCTIONS = [
 /** Appended once when the first reply was not a JSON object. Same rules. */
 export const EXTRACTION_REASK =
   "Your previous reply was not one JSON object. Reply with the JSON object only, under the same rules.";
+const EXTRACTION_QUOTE_RETRY =
+  "The previous reply yielded too few exact buyer quotes. Return only quotes; set marketStats, competitorPrices and competitorAvailability to empty arrays. Copy complete first-person sentences character-for-character from one Text line on a community source. Do not repair spelling or punctuation, combine comments, or shorten a sentence.";
 
 async function stepExtraction(
   state: RunState,
   brief: NormalizedBrief,
   sources: ReadonlyArray<ExtractionSource>,
+  focus = "",
 ): Promise<{ candidates: ExtractionCandidates; rejected: RejectedEvidence[] }> {
   const step = stepById("evidence_extraction");
   const head = `${briefContext(brief)}\n\n`;
@@ -804,12 +807,13 @@ async function stepExtraction(
     stepInputBudgetBytes(step) -
     utf8Bytes(EXTRACTION_INSTRUCTIONS) -
     utf8Bytes(head) -
-    utf8Bytes(`\n\n${EXTRACTION_REASK}`);
+    utf8Bytes(`\n\n${EXTRACTION_REASK}`) -
+    utf8Bytes(focus ? `\n\n${focus}` : "");
   const block = buildExtractionSources(sources, available);
   if (block.included === 0) {
     throw new PipelineError(step.id, "no readable source fits the extraction budget");
   }
-  const base = `${head}${block.text}`;
+  const base = `${head}${block.text}${focus ? `\n\n${focus}` : ""}`;
   let input = base;
   for (;;) {
     assertInputFits(step, EXTRACTION_INSTRUCTIONS, input);
@@ -1413,7 +1417,33 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   });
   state.accepted = accepted.accepted;
   state.rejected = [...extraction.rejected, ...accepted.rejected];
-  const minimums = checkEvidenceMinimums(state.accepted);
+  let minimums = checkEvidenceMinimums(state.accepted);
+  if (
+    !minimums.ok &&
+    minimums.shortfalls.length === 1 &&
+    minimums.shortfalls[0]?.startsWith("community quotes:") &&
+    attemptsLeft(state, stepById("evidence_extraction"))
+  ) {
+    // Spend the remaining extraction attempt on exact quotes only. Preserve
+    // the already verified statistics and competitor claims; the retry cannot
+    // replace them or inflate their per-kind caps.
+    const quoteRetry = await stepExtraction(state, brief, acquisition.readable, EXTRACTION_QUOTE_RETRY);
+    const quotes = acceptEvidence({
+      candidates: { quotes: quoteRetry.candidates.quotes, marketStats: [], competitorPrices: [] },
+      citations: acquisition.citations,
+      sources: acquisition.inputs,
+      vendorHints: acquisition.vendorHints,
+    });
+    const seen = new Set(state.accepted.map((item) => item.id));
+    for (const item of quotes.accepted) {
+      if (item.kind !== "community_quote" || seen.has(item.id)) continue;
+      if (state.accepted.filter((acceptedItem) => acceptedItem.kind === "community_quote").length >= EVIDENCE_LIMITS.maxAccepted.community_quote) break;
+      state.accepted.push(item);
+      seen.add(item.id);
+    }
+    state.rejected.push(...quoteRetry.rejected, ...quotes.rejected);
+    minimums = checkEvidenceMinimums(state.accepted);
+  }
   if (!minimums.ok) {
     throw new PipelineError(
       "evidence_acceptance",

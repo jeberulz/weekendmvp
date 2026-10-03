@@ -658,6 +658,15 @@ source acquisition statuses, accepted counts per kind, and rejected
   Search remains active for coverage; hints can reduce unnecessary competitor
   supplements when they actually point to distinct official pricing pages.
 
+- **Quote-only extraction retry (2026-10-03, live GO follow-up).** If the
+  first extraction satisfies the market and competitor minimums but lacks two
+  exact community quotes, the remaining already-budgeted extraction attempt
+  asks only for whole, verbatim buyer statements from community pages. Its
+  market and competitor candidates are discarded; previously accepted items
+  are preserved. Both quote batches pass the same exact source matching and
+  distinctness gate, and a failed retry still stops before keyword or writer
+  spend. The maximum number and reservation of paid attempts do not change.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

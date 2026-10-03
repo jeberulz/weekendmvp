@@ -523,17 +523,17 @@ describe("too little accepted evidence stops before keyword and editorial spend"
     const error = await failureOf(run(h));
     expect(error.stepId).toBe("evidence_acceptance");
     expect(error.message).toMatch(/community quotes: 0 distinct accepted, need 2/);
-    expect(error.message).toMatch(/Top rejection reasons: (?:source_unreadable|span_not_found) ×1/);
+    expect(error.message).toMatch(/Top rejection reasons: (?:source_unreadable|span_not_found) ×2/);
     expect(error.message).toMatch(/Stopped before keyword and editorial spend/);
     expect(h.keywordLookups).toBe(0);
     expect(editorialRequests(h)).toHaveLength(0);
-    expect(h.synthesis).toHaveLength(2); // brief normalization + extraction
+    expect(h.synthesis).toHaveLength(3); // brief normalization + both bounded extraction attempts
     expect(error.report?.attempts).toEqual({
       brief_normalization: 1,
       market_stats: 1,
       competitors: 1,
       community_signals: 1,
-      evidence_extraction: 1,
+      evidence_extraction: 2,
     });
     expect(error.report?.evidence.accepted).toEqual({ community_quote: 0, market_stat: 3, competitor_price: 3, competitor_availability: 0 });
   });
