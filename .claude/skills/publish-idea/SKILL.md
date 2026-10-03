@@ -523,9 +523,11 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run editorial:submit-engine -- --slug={slug}` dry run passed; exact hash recorded
 - [ ] If specifically authorized, exact target/backup confirmed and private submission applied; editor ran current-revision checks and reviewed the evidence
 - [ ] New engine idea has not been pushed or production-seeded through the direct path while E6 is absent
-- [ ] `npm run seed:convex` (dev)
 - [ ] `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
-- [ ] Commit/push **only if operator asked**
-- [ ] `npm run seed:convex -- --prod` only on the operator's instruction, after the deploy returns 200
 - [ ] Preview at `http://localhost:3000/ideas/{slug}` (all 8 sections)
 - [ ] No Ideabrowser MCP calls were made
+
+### Legacy direct-publication steps — paused for new editorial candidates
+- [ ] `npm run seed:convex` (dev)
+- [ ] Commit/push **only if operator asked**
+- [ ] `npm run seed:convex -- --prod` only on the operator's instruction, after the deploy returns 200
