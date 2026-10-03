@@ -1,0 +1,11 @@
+# WP54 live run: landing-page-generator-ecommerce
+code_sha=02cd9b84d23120782da5ee1711d26e29ad441398 brief=engine/briefs/landing-page-generator-ecommerce.json brief_sha256=8558cc1bca2dd6a208d502aed55e0dd6315e993c9a21f8e11cbb4a55f1e9f17c started=2026-10-03T05:53:38Z
+$ npm run engine:research -- --brief engine/briefs/landing-page-generator-ecommerce.json --live --out engine/records/engine-draft-ai-landing-page-generator-ecommerce.json --report docs/reviews/evidence/wp54/live/ai-landing-page-generator-ecommerce.report.json
+engine:research FAILED at evidence_acceptance · mode live · slug ai-landing-page-generator-ecommerce
+  error: priced competitors: 1 vendors with an accepted price, need 3. Top rejection reasons: vendor_not_in_context ×5, over_cap ×3, span_bounds ×3, span_not_found ×3. Stopped before keyword and editorial spend.
+  cost $0.3116 · attempts brief_normalization 1, market_stats 1, competitors 1, community_signals 1, evidence_extraction 1
+  accepted: community_quote 3, market_stat 8, competitor_price 8
+  rejected: vendor_not_in_context 5, over_cap 3, span_bounds 3, span_not_found 3, metric_unit_mismatch 1, unparseable_amount 1
+  report: docs/reviews/evidence/wp54/live/ai-landing-page-generator-ecommerce.report.json
+exit=1
+research_finished=2026-10-03T05:55:16Z
