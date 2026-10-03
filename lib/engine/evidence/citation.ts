@@ -57,7 +57,7 @@ const MULTI_PART_SUFFIXES = new Set([
   "com.ng", "co.ke",
 ]);
 
-/** Pages that compare vendors; a first-party host still has to name the vendor there. */
+/** Pages that compare vendors; first-party prices and availability are rejected there. */
 const COMPARISON_PATH_RE =
   /(?:^|[/_.-])(?:vs|versus|alternatives?|compare|compared|compares|comparing|comparisons?|competitors?|best|top)(?:[/_.-]|$)/i;
 

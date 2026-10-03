@@ -95,6 +95,8 @@ Write `engine/briefs/{slug}.json` (or a temp path). Shape:
 
 The run keeps `title`, `audience`, `slug` and `oneLiner` exactly as written; without a `slug` it derives one from the title. The brief-normalization call may only tidy `revenueModel` into one line and refine the seed keywords (at most 20, each at most 80 characters, no links). The one-liner (the title when omitted) becomes the manifest `description` and the Landing Page prompt's hero line, so it may hold no figure, quotation or `[[ev:…]]` token: the run refuses such a brief before spending anything, as it does any brief text with an invisible or bidirectional control character. `fixtureScenario` belongs to fixture briefs only; a live run refuses a brief that has it.
 
+When broad search misses an official pricing page or a relevant buyer discussion, add optional `sourceHints` with public URLs grouped under `market`, `competitors` or `community` (up to eight per group). Open those pages first; supply URLs, not claims or hoped-for prices. The engine fetches and checks them, and they never replace the human source check. Do not use comparisons, roundups or generic market reports to force a minimum.
+
 **Idea gate (before spending on research).** Ideabrowser used to pre-validate ideas; now you do. Refuse the title and say why unless all three hold:
 1. A **named buyer who pays today** for a worse workaround (a tool, a contractor, or hours they can price).
 2. **Evidence the pain is public**: at least one Hacker News / forum / Reddit thread you can link, or a seed keyword you expect to carry search volume.
@@ -107,7 +109,7 @@ Also refuse if an existing idea already covers the same buyer + job (search `ide
 **From `--from-draft {folder}`:**
 - Require `ideas/drafts/{folder}/raw.md`.
 - Use the draft **title verbatim**.
-- Take the audience, revenue model and seed keywords from raw.md. The brief has no competitor or statistic fields: competitors, prices, statistics and quotes come only from pages the research run cites and accepts, never from the draft.
+- Take the audience, revenue model and seed keywords from raw.md. The brief has no competitor or statistic claims. Optional `sourceHints` may list vetted public page URLs; competitors, prices, statistics and quotes still come only from pages the research run fetches and accepts, never from draft prose.
 - Do **not** copy draft prose into the MDX. Optional `competitors.md` / `notes.md` inform seed keywords only.
 
 ### Step 2 — Research (live)
@@ -123,11 +125,11 @@ The mode is always explicit: `--brief` requires `--live`, `--fixture <name>` (be
 
 **What a run does, in order.** Evidence is extracted and accepted deterministically **before** anything is written:
 
-1. Brief normalization, then three searches (market statistics, competitors, community pain). Only the searches' citations survive (at most 8 each); their answer prose never reaches a later step. A citation carrying userinfo or a credential-like path or query value is never read (the report lists it by host and reason). When fewer than two community pages can be read, one non-Reddit supplement search runs.
+1. Brief normalization, then three searches (market statistics, competitors, community pain). Only search citations (at most 8 each) and validated operator `sourceHints` URLs reach acquisition; search answer prose never reaches a later step. A search citation carrying userinfo or a credential-like path or query value is never read (the report lists it by host and reason); a brief hint with one is refused before spending. When fewer than two community pages can be read, one non-Reddit supplement search runs.
 2. Source acquisition: every distinct cited page is read once per run — at most 2 MiB of body, 15 s per read including DNS and up to five redirects, four reads at a time, public addresses only. If no page can be read, the run stops at `source_acquisition`, before the extraction call.
-3. Evidence extraction: one schema-only call sees bounded excerpts of the read pages and proposes candidate quotes, market statistics and competitor prices copied from them. Its output is untrusted: unknown fields, prose and any verification flag are ignored, and acceptance re-derives every claim from the page.
+3. Evidence extraction: one schema-only call sees bounded excerpts of the read pages and proposes candidate quotes, market statistics, competitor prices and explicit pricing-availability statements copied from them. Its output is untrusted: unknown fields, prose and any verification flag are ignored, and acceptance re-derives every claim from the page.
 4. **Acceptance (deterministic code, no model)** against the full text of each candidate's own cited page — rules below. Rejections keep their reasons in the record and the report (operator-only; never shown to the writer or on the page).
-5. **Minimums on accepted evidence:** at least 2 market statistics, 3 competitors with an accepted price, and 2 distinct community quotes (neither text contains the other). If they are not met the run **stops at `evidence_acceptance`**: the report names the shortfall and the top rejection reasons, no record is written, and no keyword or writer call is made after that point.
+5. **Minimums on accepted evidence:** at least 2 market statistics, 3 distinct competitors with an accepted numeric price or first-party pricing-availability statement (at least 1 numeric-priced vendor), and 2 distinct community quotes (neither text contains the other). If they are not met the run **stops at `evidence_acceptance`**: the report names the shortfall and the top rejection reasons, no record is written, and no keyword or writer call is made after that point.
 6. Keyword volume, competition and CPC come only from DataForSEO; a keyword failure fails the run (nothing is estimated).
 7. The writer gets the brief, the accepted evidence and the keyword rows — nothing else — and must follow the writer text rules below. A reply that fails the record parse is regenerated with the issue list under the same rules; after three billable attempts the run fails at `editorial_synthesis`.
 8. The record is assembled and parsed as contract v2: every accepted item is re-derived from its own excerpt and every reference must resolve.

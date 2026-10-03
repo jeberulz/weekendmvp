@@ -7,6 +7,19 @@
     "github pr review bot",
     "automated pull request review"
   ],
+  "sourceHints": {
+    "competitors": [
+      "https://www.graphite.com/pricing",
+      "https://www.greptile.com/pricing",
+      "https://www.codeant.ai/pricing",
+      "https://www.qodo.ai/pricing"
+    ],
+    "community": [
+      "https://news.ycombinator.com/item?id=48329446",
+      "https://news.ycombinator.com/item?id=46348957",
+      "https://news.ycombinator.com/item?id=46766961"
+    ]
+  },
   "slug": "ai-code-reviewer",
   "oneLiner": "GitHub App that auto-reviews PRs so humans focus on architecture."
 }

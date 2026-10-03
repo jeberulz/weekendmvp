@@ -7,6 +7,19 @@
     "security questionnaire automation",
     "proposal management software"
   ],
+  "sourceHints": {
+    "competitors": [
+      "https://rfp.ai/pricing",
+      "https://proposalforge.io/pricing",
+      "https://loopio.com/pricing",
+      "https://www.responsive.io/pricing"
+    ],
+    "community": [
+      "https://news.ycombinator.com/item?id=36488436",
+      "https://news.ycombinator.com/item?id=26513040",
+      "https://news.ycombinator.com/item?id=25793230"
+    ]
+  },
   "slug": "ai-rfp-response-assistant",
   "oneLiner": "Grounded RFP drafts with citations for SMB sales teams."
 }

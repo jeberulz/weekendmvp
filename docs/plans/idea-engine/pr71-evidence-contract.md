@@ -646,6 +646,18 @@ source acquisition statuses, accepted counts per kind, and rejected
   prioritize the product's niche and concrete buyer pain over adjacent markets
   or maker commentary.
 
+- **Operator source hints (2026-10-03, live GO follow-up).** A live brief can
+  add up to eight public URL strings per `sourceHints.market`,
+  `sourceHints.competitors` and `sourceHints.community`. Invalid, credentialed
+  or overlong URLs fail at brief normalization before paid calls. These URLs
+  are fetched through the same public-only bounded reader and enter the same
+  citation ledger as search results; the run report and v2 record show their
+  read status and source hash. A hint never creates a statistic, quote, price
+  or availability claim by itself. Candidate extraction, exact acceptance,
+  stored revalidation, the minimums and final source inspection are unchanged.
+  Search remains active for coverage; hints can reduce unnecessary competitor
+  supplements when they actually point to distinct official pricing pages.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The

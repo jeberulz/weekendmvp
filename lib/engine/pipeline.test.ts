@@ -112,6 +112,63 @@ describe("step table (PIPELINE_VERSION 2)", () => {
 });
 
 describe("runResearch (fixture)", () => {
+  it("accepts operator-supplied source URLs only after fetching and verifying their claims", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        const result = await search.search(request);
+        return request.query.includes("Identify at least three direct competitors")
+          ? { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 2) } }
+          : result;
+      },
+    };
+    const { record, report } = await runResearch({
+      brief: { ...RFP_BRIEF, sourceHints: { competitors: [FIXTURE_URLS.rfpforge] } },
+      providers,
+      mode: "fixture",
+    });
+    expect(report.attempts.competitors).toBe(1);
+    expect(record.competitors).toHaveLength(3);
+    expect(record.evidence.sources.some((source) => source.url === FIXTURE_URLS.rfpforge && source.status === "read")).toBe(true);
+    expect(record.evidence.accepted.some((item) => item.kind === "competitor_price" && item.vendor === "RFPForge")).toBe(true);
+  });
+
+  it("refuses a credential-bearing source hint before any provider spend", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const error = await failureOf(runResearch({
+      brief: { ...RFP_BRIEF, sourceHints: { competitors: ["https://vendor.example/pricing?token=private"] } },
+      providers,
+      mode: "fixture",
+    }));
+    expect(error.stepId).toBe("brief_normalization");
+    expect(error.report?.providerCalls).toEqual([]);
+    expect(error.detail).not.toContain("private");
+  });
+
+  it("does not credit an unreadable source hint as competitor evidence", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const search = providers.search;
+    providers.search = {
+      ...search,
+      search: async (request) => {
+        const result = await search.search(request);
+        return /competitor/i.test(request.query)
+          ? { ...result, value: { ...result.value, citations: result.value.citations.slice(0, 2) } }
+          : result;
+      },
+    };
+    const error = await failureOf(runResearch({
+      brief: { ...RFP_BRIEF, sourceHints: { competitors: ["https://unreadable.example/pricing"] } },
+      providers,
+      mode: "fixture",
+    }));
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.detail).toMatch(/competitors: 2 vendors/);
+    expect(error.report?.sources.some((source) => source.url === "https://unreadable.example/pricing" && source.status !== "read")).toBe(true);
+  });
+
   it("uses one bounded competitor supplement when the first search cites too few vendor sites", async () => {
     const providers = createProviders({ mode: "fixture" });
     const search = providers.search;

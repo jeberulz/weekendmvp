@@ -10,6 +10,14 @@
   engineering teams", not "sub-10 engineering teams". The CLI refuses such a
   brief before any spend, and a test runs every brief in this folder through
   that check.
+- Optional `sourceHints` gives the operator public URLs to fetch under
+  `market`, `competitors` and `community` (up to eight per role). Search still
+  runs. A URL alone is not evidence: the public-only reader must fetch it,
+  extraction must copy an exact claim and acceptance must bind that claim to
+  the page. Invalid or credential-bearing URLs fail before paid calls;
+  unreadable or irrelevant pages do not satisfy a minimum. Use this path for
+  known official pricing pages or directly relevant user discussions that
+  broad search missed, then complete the human source check before publishing.
 - `code-reviewer.json`, `landing-page-generator-ecommerce.json` and
   `rfp-assistant.json` are the representative live briefs. Their slugs
   (`ai-code-reviewer`, `ai-landing-page-generator-ecommerce`,

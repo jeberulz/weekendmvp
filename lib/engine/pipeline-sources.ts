@@ -3,8 +3,8 @@
  * (WP54, evidence contract §2–§3).
  *
  * One ledger per run wraps one source acquirer keyed by canonical citation
- * URL, so a URL cited by the market, competitor and community searches (and
- * the supplement) is read once. The ledger remembers which search cited each
+ * URL, so a URL cited by the market, competitor and community searches,
+ * their supplements, or the operator's source hints is read once. The ledger remembers which role cited each
  * URL (its roles) and every citation, and produces:
  *   - `sources`  the SourceAcquisition list for the record and run report
  *                (one per distinct URL attempted; bodies are never stored)
@@ -41,7 +41,7 @@ export type Acquisition = {
   sources: SourceAcquisition[];
   /** acceptEvidence's source map, keyed by canonical URL. */
   inputs: Map<string, SourceInput>;
-  /** Every search citation, supplement included (acceptEvidence's citations). */
+  /** Every search citation and operator hint (acceptEvidence's citations). */
   citations: CitationInput[];
   /** Pages that were read, for the extraction prompt. */
   readable: ExtractionSource[];

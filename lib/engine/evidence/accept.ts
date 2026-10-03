@@ -615,7 +615,7 @@ function resolveSource(context: Context, sourceUrl: string): { ok: true; source:
   const url = canonicalSourceUrl(sourceUrl);
   if (!url) return fail("unknown_citation", "not an http(s) URL without credentials");
   const title = context.citations.get(url);
-  if (title === undefined) return fail("unknown_citation", "URL is not among the search citations");
+  if (title === undefined) return fail("unknown_citation", "URL is not among the cited research sources");
   const source = context.sources.get(url);
   if (!source) return fail("source_unreadable", "source was not acquired");
   if (source.status !== "read") {

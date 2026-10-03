@@ -51,7 +51,7 @@ import {
   parseExtractionCandidates,
   sha256Hex,
 } from "./evidence/accept.ts";
-import { isComparisonPage, isFirstPartyHost, registrableLabel } from "./evidence/citation.ts";
+import { canonicalSourceUrl, citationRefusal, isComparisonPage, isFirstPartyHost, registrableLabel } from "./evidence/citation.ts";
 import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
@@ -69,6 +69,7 @@ import {
   type ResearchRecordV2,
   type ResearchRunReport,
   type SourceAcquisition,
+  type SourceRole,
 } from "./evidence/contract.ts";
 import {
   evidenceRefs,
@@ -109,6 +110,8 @@ export type BriefInput = {
   /** Optional slug; derived from title when omitted. */
   slug?: string;
   oneLiner?: string;
+  /** Optional operator-curated URLs; each still needs a safe read and exact evidence acceptance. */
+  sourceHints?: Partial<Record<SourceRole, string[]>>;
 };
 
 export type NormalizedBrief = {
@@ -118,6 +121,7 @@ export type NormalizedBrief = {
   seedKeywords: string[];
   slug: string;
   oneLiner: string;
+  sourceHints?: Partial<Record<SourceRole, string[]>>;
 };
 
 export type RunResearchOptions = {
@@ -182,6 +186,8 @@ export const MIN_READABLE_SOURCES = 2;
 
 /** Citations kept per search call. */
 export const MAX_CITATIONS_PER_SEARCH = 8;
+const SOURCE_HINT_ROLES: readonly SourceRole[] = ["market", "competitors", "community"];
+const MAX_SOURCE_HINTS_PER_ROLE = 8;
 
 const LOCATION_CODE = 2840;
 const LANGUAGE_CODE = "en";
@@ -569,7 +575,32 @@ export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
       `${issues.join("; ")}. The one-liner is the page description: state it without figures, quotations or evidence tokens (ruling R6)`,
     );
   }
-  return { title, audience, model, seedKeywords: keywordList(input.seedKeywords), slug, oneLiner };
+  let sourceHints: Partial<Record<SourceRole, string[]>> | undefined;
+  if (input.sourceHints !== undefined) {
+    if (!isPlainObject(input.sourceHints)) {
+      throw new PipelineError("brief_normalization", "brief.sourceHints: expected an object of source URL arrays");
+    }
+    sourceHints = {};
+    for (const [role, rawUrls] of Object.entries(input.sourceHints)) {
+      if (!SOURCE_HINT_ROLES.includes(role as SourceRole) || !Array.isArray(rawUrls) || rawUrls.length > MAX_SOURCE_HINTS_PER_ROLE) {
+        throw new PipelineError("brief_normalization", `brief.sourceHints.${role}: expected at most ${MAX_SOURCE_HINTS_PER_ROLE} source URLs`);
+      }
+      const urls = rawUrls.map((rawUrl, index) => {
+        if (typeof rawUrl !== "string" || rawUrl.length > RESEARCH_RECORD_V2_LIMITS.urlChars) {
+          throw new PipelineError("brief_normalization", `brief.sourceHints.${role}[${index}]: invalid source URL`);
+        }
+        noControl(rawUrl, `sourceHints.${role}[${index}]`);
+        const canonical = canonicalSourceUrl(rawUrl);
+        if (!canonical) {
+          throw new PipelineError("brief_normalization", `brief.sourceHints.${role}[${index}]: ${citationRefusal(rawUrl) ?? "invalid source URL"}`);
+        }
+        return canonical;
+      });
+      if (urls.length > 0) sourceHints[role as SourceRole] = [...new Set(urls)];
+    }
+    if (Object.keys(sourceHints).length === 0) sourceHints = undefined;
+  }
+  return { title, audience, model, seedKeywords: keywordList(input.seedKeywords), slug, oneLiner, ...(sourceHints ? { sourceHints } : {}) };
 }
 
 export const BRIEF_INSTRUCTIONS =
@@ -1299,16 +1330,29 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   // soon as each search returns (one deduplicated, bounded acquirer per run).
   const ledger = createSourceLedger({ sourceText, now: state.clock });
   state.refusedCitations = ledger.refused;
+  const hintReads: Promise<unknown>[] = [];
+  const hinted = new Map<SourceRole, Citation[]>();
+  for (const role of SOURCE_HINT_ROLES) {
+    const citations = (brief.sourceHints?.[role] ?? []).map((url) => {
+      const label = registrableLabel(url) ?? "Source";
+      return { url, title: label.charAt(0).toUpperCase() + label.slice(1) };
+    });
+    hinted.set(role, citations);
+    if (citations.length > 0) {
+      ledger.cite(citations, role);
+      hintReads.push(ledger.read(citations));
+    }
+  }
   const market = await stepSearch(state, "market_stats", marketQuery(context));
   ledger.cite(market, "market");
   const marketReads = ledger.read(market);
   const competitors = await stepSearch(state, "competitors", competitorsQuery(context));
   ledger.cite(competitors, "competitors");
   const competitorReads = ledger.read(competitors);
-  const competitorCitations = [...competitors];
+  const competitorCitations = [...(hinted.get("competitors") ?? []), ...competitors];
   let supplementedCompetitors = false;
   if (competitorPricingSources(competitorCitations).size < EVIDENCE_MINIMUMS.competitors && attemptsLeft(state, stepById("competitors"))) {
-    const citedHosts = [...new Set(competitors.map((citation) => {
+    const citedHosts = [...new Set(competitorCitations.map((citation) => {
       try { return new URL(citation.url).hostname.toLowerCase(); } catch { return ""; }
     }).filter(Boolean))].slice(0, MAX_CITATIONS_PER_SEARCH);
     const supplement = await stepSearch(state, "competitors", competitorsSupplementQuery(context, citedHosts));
@@ -1348,7 +1392,7 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
     ledger.cite(supplement, "community");
     await ledger.read(supplement);
   }
-  await Promise.all([marketReads, competitorReads]);
+  await Promise.all([...hintReads, marketReads, competitorReads]);
 
   state.phase = "source_acquisition";
   const acquisition = ledger.collect();
