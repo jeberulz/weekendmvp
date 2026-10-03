@@ -16,11 +16,18 @@
  *     on a heading with 20,000 spaces, the frontmatter slug and section
  *     split ~1 s on 20,000 spaces.
  * After, only the MDX parser itself (third party) stays above 0.1 s at
- * this size, on runs of underscores, dots or list markers; it is bounded by
- * the 64 KiB input limit (ruling R16, the last block below).
- * Every case audits a 12,000-character run (inside the R16 block limits, so
- * it reaches the rule it targets rather than the pre-parse refusal) and must
- * finish within BUDGET_MS; one also checks that the rules still fire.
+ * this size, on runs of underscores, dots or list markers; R16 bounds it
+ * (the last two blocks below).
+ *
+ * The full gate runs this file alongside everything else, so no assertion is
+ * a tight wall-clock budget. Each case is timed at a run of n and of 4n
+ * characters (inside the R16 limits, so it reaches the rule it targets),
+ * three times each, interleaved; the fastest of each counts, so a load spike
+ * in one run does not. No single run may take CATASTROPHE_MS (catastrophic
+ * backtracking took minutes; the smaller size runs first, so it fails there
+ * instead of hanging), and the fastest time may grow at most GROWTH× from n
+ * to 4n: linear code grows at most 4× (less with its fixed costs), a
+ * quadratic rule up to 16×. Load slows both sizes alike, so the ratio holds.
  */
 import { Buffer } from "node:buffer";
 import fs from "node:fs";
@@ -50,10 +57,15 @@ import {
 import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
 import { pageProductName, parseYearOneLine, splitViaLabel } from "./page-format.ts";
 
-/** A long run, kept inside the R16 block limits so every case reaches the rules it targets. */
+/** The longest run a case uses (its 4n), kept inside the R16 block limits so every case reaches the rule it targets. */
 const RUN = 12_000;
+/** No single timed run may take this long; catastrophic backtracking took minutes. */
+const CATASTROPHE_MS = 5_000;
+/** The fastest time may grow at most this much from n to 4n (linear at most 4×, quadratic up to 16×). */
+const GROWTH = 6;
+/** Timer noise allowed on top of GROWTH, for runs of a few milliseconds. */
+const SLACK_MS = 50;
 const BACKSLASH = String.fromCharCode(92);
-const BUDGET_MS = 1_000;
 const SPACES = " ".repeat(RUN);
 const record = buildFixtureRecord();
 const page = compiledPage(record);
@@ -63,16 +75,48 @@ function k(n: number): string {
   return n.toLocaleString("en-US");
 }
 
-function elapsedMs(fn: () => unknown): number {
+type Run = () => unknown;
+
+async function elapsedMs(run: Run): Promise<number> {
   const started = performance.now();
-  fn();
+  await run();
   return performance.now() - started;
 }
 
-async function elapsedMsAsync(fn: () => Promise<unknown>): Promise<number> {
-  const started = performance.now();
-  await fn();
-  return performance.now() - started;
+/** The fastest of `rounds` interleaved timings of `small` (a run of n) and `large` (4n); no run may reach CATASTROPHE_MS. */
+async function fastestPair(small: Run, large: Run, n: number, rounds: number): Promise<[number, number]> {
+  let fastSmall = Number.POSITIVE_INFINITY;
+  let fastLarge = Number.POSITIVE_INFINITY;
+  for (let round = 0; round < rounds; round += 1) {
+    const smallMs = await elapsedMs(small);
+    expect(smallMs, `a run of ${k(n)} took ${Math.round(smallMs)} ms`).toBeLessThan(CATASTROPHE_MS);
+    fastSmall = Math.min(fastSmall, smallMs);
+    const largeMs = await elapsedMs(large);
+    expect(largeMs, `a run of ${k(4 * n)} took ${Math.round(largeMs)} ms`).toBeLessThan(CATASTROPHE_MS);
+    fastLarge = Math.min(fastLarge, largeMs);
+  }
+  return [fastSmall, fastLarge];
+}
+
+/**
+ * Times `at(n)` and `at(4 * n)` (each builds its input first and returns the
+ * run to time) and checks the fastest timings: no run reaches
+ * CATASTROPHE_MS, and the time grows at most GROWTH× (plus SLACK_MS) from n
+ * to 4n. A growth past that is measured once more before it counts: a load
+ * burst can slow every run of one size, a real regression shows again.
+ */
+async function expectNearLinear(at: (n: number) => Run, n: number): Promise<void> {
+  const small = at(n);
+  const large = at(4 * n);
+  let [fastSmall, fastLarge] = await fastestPair(small, large, n, 3);
+  if (fastLarge > GROWTH * fastSmall + SLACK_MS) {
+    const [againSmall, againLarge] = await fastestPair(small, large, n, 5);
+    fastSmall = Math.min(fastSmall, againSmall);
+    fastLarge = Math.min(fastLarge, againLarge);
+  }
+  expect(fastLarge, `fastest run: ${Math.round(fastSmall)} ms at ${k(n)}, ${Math.round(fastLarge)} ms at ${k(4 * n)}`).toBeLessThanOrEqual(
+    GROWTH * fastSmall + SLACK_MS,
+  );
 }
 
 /** The page with `text` as its own block right before `## heading`. */
@@ -95,6 +139,19 @@ async function importScript(relative: string): Promise<Record<string, unknown>> 
   return Object.fromEntries(Object.entries(mod));
 }
 
+/** The deep audit of `mdx` as a run, after checking R16 lets it through to the rules. */
+function deepRun(mdx: string, withRecord = true): Run {
+  const body = pageBody(mdx);
+  expect(auditComplexityError(body)).toBeNull();
+  return () => auditEngineArtifact(body, withRecord ? record : null, {});
+}
+
+/** The whole auditor on `mdx` as a run, after checking R16 lets it through to the rules. */
+function fullRun(mdx: string): Run {
+  expect(auditComplexityError(mdx)).toBeNull();
+  return () => auditPage(mdx, record);
+}
+
 beforeAll(async () => {
   // Load and warm the auditor once, so no case pays for module loading.
   await auditPage(page, record);
@@ -104,93 +161,126 @@ afterAll(() => {
   cleanupTempDirs();
 });
 
-describe("the final artifact audit is linear on hostile runs (deep bar)", () => {
-  const cases: Array<[string, string]> = [
-    [`"ARR" + ${k(RUN)} spaces in prose`, before("The Solution", `Plans ARR${SPACES}end.`)],
-    [`"ARR" + ${k(RUN)} spaces in a build prompt`, inPrompt(`ARR${SPACES}`)],
-    [`"ARR" + ${k(RUN)} tabs and line breaks in a build prompt`, inPrompt(`ARR${"\t\n".repeat(RUN / 2)}`)],
-    [`"revenue of" + ${k(RUN)} spaces + "~" in a build prompt`, inPrompt(`revenue of${SPACES}~`)],
-    [`"$1" + ${k(RUN)} spaces + "in annual" in a build prompt`, inPrompt(`$1${SPACES}in annual`)],
-    [`"annual " x ${k(Math.floor(RUN / 7))} + "ARR $" in a build prompt`, inPrompt(`${"annual ".repeat(Math.floor(RUN / 7))}ARR $`)],
-    [`${k(RUN)} digits in a build prompt`, inPrompt("1".repeat(RUN))],
-    [`${k(RUN)} digits in prose`, before("The Solution", `${"1".repeat(RUN)}.`)],
-    [`"1," x ${k(RUN / 2)} in a build prompt`, inPrompt("1,".repeat(RUN / 2))],
-    [`"$1," x ${k(RUN / 2)} in a build prompt`, inPrompt(`$${"1,".repeat(RUN / 2)}`)],
-    [`"1 × $1" + ${k(RUN)} spaces in a build prompt`, inPrompt(`1 × $1${SPACES}`)],
-    [`"1 × $1" + "/a" x ${k(RUN / 2)} in a build prompt`, inPrompt(`1 × $1${"/a".repeat(RUN / 2)}`)],
-    [`${k(RUN)} quotation marks in a build prompt`, inPrompt('"'.repeat(RUN))],
-    [`"[[" + ${k(RUN)} spaces in a build prompt`, inPrompt(`[[${SPACES}ev`)],
-    [`a competitor name ${k(Math.floor(RUN / 11))} times in prose`, before("The Solution", `${"CodeRabbit ".repeat(Math.floor(RUN / 11))}.`)],
-    [`${k(RUN / 6)} one-line paragraphs`, before("The Solution", "word\n\n".repeat(RUN / 6))],
-  ];
-  it.each(cases)("%s", (_label, mdx) => {
-    const body = pageBody(mdx);
-    expect(auditComplexityError(body)).toBeNull();
-    expect(elapsedMs(() => auditEngineArtifact(body, record, {}))).toBeLessThan(BUDGET_MS);
-  });
+const TIMEOUT = 60_000;
 
-  it(`still flags a revenue total and a computation after ${k(RUN)} spaces`, () => {
+describe(`the final artifact audit is linear on hostile runs (deep bar; runs of ${k(RUN / 4)} and ${k(RUN)})`, () => {
+  const cases: Array<[string, (n: number) => string]> = [
+    ['"ARR" + spaces in prose', (n) => before("The Solution", `Plans ARR${" ".repeat(n)}end.`)],
+    ['"ARR" + spaces in a build prompt', (n) => inPrompt(`ARR${" ".repeat(n)}`)],
+    ['"ARR" + tabs and line breaks in a build prompt', (n) => inPrompt(`ARR${"\t\n".repeat(n / 2)}`)],
+    ['"revenue of" + spaces + "~" in a build prompt', (n) => inPrompt(`revenue of${" ".repeat(n)}~`)],
+    ['"$1" + spaces + "in annual" in a build prompt', (n) => inPrompt(`$1${" ".repeat(n)}in annual`)],
+    ['"annual " repeated + "ARR $" in a build prompt', (n) => inPrompt(`${"annual ".repeat(Math.floor(n / 7))}ARR $`)],
+    ["digits in a build prompt", (n) => inPrompt("1".repeat(n))],
+    ["digits in prose", (n) => before("The Solution", `${"1".repeat(n)}.`)],
+    ['"1," repeated in a build prompt', (n) => inPrompt("1,".repeat(n / 2))],
+    ['"$1," repeated in a build prompt', (n) => inPrompt(`$${"1,".repeat(n / 2)}`)],
+    ['"1 × $1" + spaces in a build prompt', (n) => inPrompt(`1 × $1${" ".repeat(n)}`)],
+    ['"1 × $1" + "/a" repeated in a build prompt', (n) => inPrompt(`1 × $1${"/a".repeat(n / 2)}`)],
+    ["quotation marks in a build prompt", (n) => inPrompt('"'.repeat(n))],
+    ['"[[" + spaces in a build prompt', (n) => inPrompt(`[[${" ".repeat(n)}ev`)],
+    ["a competitor name repeated in prose", (n) => before("The Solution", `${"CodeRabbit ".repeat(Math.floor(n / 11))}.`)],
+    ["one-line paragraphs", (n) => before("The Solution", "word\n\n".repeat(n / 6))],
+  ];
+  it.each(cases)(
+    "%s",
+    async (_label, build) => {
+      await expectNearLinear((n) => deepRun(build(n)), RUN / 4);
+    },
+    TIMEOUT,
+  );
+
+  it(`still flags a revenue total and a computation after ${k(RUN)} spaces`, async () => {
     const body = pageBody(before("The Solution", `Plans ARR${SPACES}$54,000 a year.\n\nOr 45${SPACES}× $100/mo = $54,000.`));
     expect(auditComplexityError(body)).toBeNull();
     let errors: string[] = [];
-    expect(elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(BUDGET_MS);
+    expect(await elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(CATASTROPHE_MS);
     expect(errors.some((e) => e.includes("states another revenue total"))).toBe(true);
     expect(errors.some((e) => e.includes("a Year-One-style computation"))).toBe(true);
   });
 
-  it("is linear without a usable record too (Business Model revenue check)", () => {
-    for (const text of [`${"1".repeat(RUN)} ARR`, `ARR ${"1,".repeat(RUN / 2)}`]) {
-      const body = pageBody(before("Recommended Tech Stack", text));
-      expect(auditComplexityError(body)).toBeNull();
-      expect(elapsedMs(() => auditEngineArtifact(body, null, {}))).toBeLessThan(BUDGET_MS);
-    }
-  });
+  it.each([
+    ["digits + ARR", (n: number) => `${"1".repeat(n)} ARR`],
+    ['"ARR " + "1," repeated', (n: number) => `ARR ${"1,".repeat(n / 2)}`],
+  ])(
+    "is linear without a usable record too (Business Model revenue check): %s",
+    async (_label, text) => {
+      await expectNearLinear((n) => deepRun(before("Recommended Tech Stack", text(n)), false), RUN / 4);
+    },
+    TIMEOUT,
+  );
 });
 
 describe("page-format helpers are linear on hostile runs", () => {
-  it(`pageProductName on a title with ${k(RUN)} spaces`, () => {
-    const spaces = SPACES;
-    for (const title of [`a${spaces}b`, `a for${spaces}b\nc`, `a${spaces}for b`]) {
-      const titled = buildFixtureRecord((r) => {
-        r.brief.title = title;
-        // Without editorial.productName the name comes from the title.
-        if (r.editorial) delete r.editorial.productName;
-      });
-      expect(elapsedMs(() => pageProductName(titled))).toBeLessThan(BUDGET_MS);
-    }
-  });
+  it(
+    "pageProductName on titles with long runs of spaces",
+    async () => {
+      // brief.title holds at most 20,000 characters: runs of 4,000 and 16,000.
+      await expectNearLinear((n) => {
+        const spaces = " ".repeat(n);
+        const titled = [`a${spaces}b`, `a for${spaces}b\nc`, `a${spaces}for b`].map((title) =>
+          buildFixtureRecord((r) => {
+            r.brief.title = title;
+            // Without editorial.productName the name comes from the title.
+            if (r.editorial) delete r.editorial.productName;
+          }),
+        );
+        return () => titled.map((r) => pageProductName(r));
+      }, 4_000);
+    },
+    TIMEOUT,
+  );
 
-  it(`splitViaLabel and parseYearOneLine on ${k(RUN)} spaces`, () => {
-    expect(elapsedMs(() => splitViaLabel(`a${SPACES}b`))).toBeLessThan(BUDGET_MS);
-    expect(elapsedMs(() => splitViaLabel(`$12/user/month${SPACES}(via x.example)${SPACES}y`))).toBeLessThan(BUDGET_MS);
-    expect(elapsedMs(() => parseYearOneLine(`45 × $100/mo = $54,000 ARR — ${"a ".repeat(RUN / 2)}x`))).toBeLessThan(BUDGET_MS);
-  });
+  it(
+    "splitViaLabel and parseYearOneLine on long runs of spaces",
+    async () => {
+      await expectNearLinear((n) => {
+        const spaces = " ".repeat(n);
+        return () => [
+          splitViaLabel(`a${spaces}b`),
+          splitViaLabel(`$12/user/month${spaces}(via x.example)${spaces}y`),
+          parseYearOneLine(`45 × $100/mo = $54,000 ARR — ${"a ".repeat(n / 2)}x`),
+        ];
+      }, 5_000);
+    },
+    TIMEOUT,
+  );
 });
 
-describe("the base bar and the whole auditor are linear on hostile runs", () => {
-  const cases: Array<[string, string]> = [
-    [`"ARR" + ${k(RUN)} spaces in a build prompt`, inPrompt(`ARR${SPACES}`)],
-    [`${k(RUN)} blank lines in The Solution`, before("Market Research", `${"\n".repeat(RUN)}x`)],
-    [`${k(RUN)} blank lines in Competitive Landscape`, before("Business Model", `${"\n".repeat(RUN)}x`)],
-    [`${k(RUN)} blank lines in Business Model`, before("Recommended Tech Stack", `${"\n".repeat(RUN)}x`)],
-    [`${k(RUN)} blank lines in the build prompts`, before("Sources", `${"\n".repeat(RUN)}x`)],
+describe(`the base bar and the whole auditor are linear on hostile runs`, () => {
+  const cases: Array<[string, (n: number) => string, number]> = [
+    ['"ARR" + spaces in a build prompt', (n) => inPrompt(`ARR${" ".repeat(n)}`), RUN / 4],
+    ["blank lines in The Solution", (n) => before("Market Research", `${"\n".repeat(n)}x`), 5_000],
+    ["blank lines in Competitive Landscape", (n) => before("Business Model", `${"\n".repeat(n)}x`), 5_000],
+    ["blank lines in Business Model", (n) => before("Recommended Tech Stack", `${"\n".repeat(n)}x`), 5_000],
+    ["blank lines in the build prompts", (n) => before("Sources", `${"\n".repeat(n)}x`), 5_000],
     // One "[" per block: within the block limits, and the link patterns' text classes cross lines.
-    [`${k(RUN)} "[" in Sources`, `${page}\n${"[\n\n".repeat(RUN)}`],
-    [`${k(RUN)} "[" in prose`, before("The Solution", "[\n\n".repeat(RUN))],
-    [`a heading with ${k(RUN)} spaces`, before("The Solution", `## x${SPACES}y`)],
+    // Smaller runs: every "[" is a paragraph for the MDX parser.
+    ['"[" in Sources', (n) => `${page}\n${"[\n\n".repeat(n)}`, RUN / 8],
+    ['"[" in prose', (n) => before("The Solution", "[\n\n".repeat(n)), RUN / 8],
+    ["a heading with a long run of spaces", (n) => before("The Solution", `## x${" ".repeat(n)}y`), RUN / 4],
   ];
-  it.each(cases)("%s", async (_label, mdx) => {
-    expect(auditComplexityError(mdx)).toBeNull();
-    expect(await elapsedMsAsync(() => auditPage(mdx, record))).toBeLessThan(BUDGET_MS);
-  });
+  it.each(cases)(
+    "%s",
+    async (_label, build, n) => {
+      await expectNearLinear((size) => fullRun(build(size)), n);
+    },
+    TIMEOUT,
+  );
 
-  it(`the frontmatter slug and the section split on ${k(RUN)} spaces`, async () => {
-    const audit = await importScript("scripts/audit-idea-mdx.mjs");
-    const { frontmatterSlug, splitSections } = audit;
-    if (typeof frontmatterSlug !== "function" || typeof splitSections !== "function") throw new Error("audit-idea-mdx exports missing");
-    expect(elapsedMs(() => frontmatterSlug(`---\nslug: a${SPACES}b\n---\n`))).toBeLessThan(BUDGET_MS);
-    expect(elapsedMs(() => splitSections(`## x${SPACES}y\n`))).toBeLessThan(BUDGET_MS);
-  });
+  it(
+    "the frontmatter slug and the section split on long runs of spaces",
+    async () => {
+      const audit = await importScript("scripts/audit-idea-mdx.mjs");
+      const { frontmatterSlug, splitSections } = audit;
+      if (typeof frontmatterSlug !== "function" || typeof splitSections !== "function") throw new Error("audit-idea-mdx exports missing");
+      await expectNearLinear((n) => {
+        const spaces = " ".repeat(n);
+        return () => [frontmatterSlug(`---\nslug: a${spaces}b\n---\n`), splitSections(`## x${spaces}y\n`)];
+      }, 5_000);
+    },
+    TIMEOUT,
+  );
 });
 
 /**
@@ -376,10 +466,10 @@ describe("the auditor refuses a page over 64 KiB before parsing it (R16)", () =>
     for (const mdx of [paddedTo(MAX_AUDIT_BYTES + 1), slowToParse(MAX_AUDIT_BYTES + 1)]) {
       expect(Buffer.byteLength(mdx, "utf8")).toBe(MAX_AUDIT_BYTES + 1);
       let result: { ok: boolean; errors: string[]; metrics: unknown } = { ok: true, errors: [], metrics: null };
-      const ms = await elapsedMsAsync(async () => {
+      const ms = await elapsedMs(async () => {
         result = await auditPage(mdx, record);
       });
-      expect(ms).toBeLessThan(BUDGET_MS);
+      expect(ms).toBeLessThan(CATASTROPHE_MS);
       expect(result.ok).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0]).toMatch(LIMIT_ERROR);
@@ -395,10 +485,10 @@ describe("the auditor refuses a page over 64 KiB before parsing it (R16)", () =>
     expect(result.metrics?.deep).toBe(true);
   });
 
-  it("refuses an oversized body in the deep audit itself, before parsing", () => {
+  it("refuses an oversized body in the deep audit itself, before parsing", async () => {
     const body = pageBody(slowToParse(MAX_AUDIT_BYTES + 200));
     let errors: string[] = [];
-    expect(elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(BUDGET_MS);
+    expect(await elapsedMs(() => (errors = auditEngineArtifact(body, record, {}).errors))).toBeLessThan(CATASTROPHE_MS);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toMatch(/^page is [\d,]+ bytes, over the 65,536-byte \(64 KiB\) audit limit \(ruling R16\); refused before parsing$/);
     expect(auditEngineArtifact(pageBody(paddedTo(MAX_AUDIT_BYTES)), record, {}).errors).toEqual([]);
@@ -455,16 +545,16 @@ describe("the auditor refuses a page the MDX parser cannot handle quickly (R16)"
     const mdx = `${page}\n${block}\n`;
     expect(Buffer.byteLength(mdx, "utf8")).toBeLessThanOrEqual(MAX_AUDIT_BYTES);
     let result: { ok: boolean; errors: string[]; metrics: unknown } = { ok: true, errors: [], metrics: null };
-    const ms = await elapsedMsAsync(async () => {
+    const ms = await elapsedMs(async () => {
       result = await auditPage(mdx, record);
     });
-    expect(ms).toBeLessThan(BUDGET_MS);
+    expect(ms).toBeLessThan(CATASTROPHE_MS);
     expect(result.ok).toBe(false);
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0]).toMatch(BLOCK_ERROR);
     expect(result.metrics).toBeNull();
     let errors: string[] = [];
-    expect(elapsedMs(() => (errors = auditEngineArtifact(pageBody(mdx), record, {}).errors))).toBeLessThan(BUDGET_MS);
+    expect(await elapsedMs(() => (errors = auditEngineArtifact(pageBody(mdx), record, {}).errors))).toBeLessThan(CATASTROPHE_MS);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toMatch(BLOCK_ERROR);
   });
