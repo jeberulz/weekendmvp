@@ -284,3 +284,56 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
 - Checks: `convex/authUser.test.ts` 36 tests (5 new). The bootstrap test now covers a Google account refused before the flag and bound after it.
   - Mutation check: forcing `emailVerified` to false turned the mapping and sign-in tests red; restored with `cmp`, green again.
 - Docs: runbook, contract (Who, strong authentication) and stories (E4g).
+
+
+## 2026-10-02 - WP46-E4h live admin login diagnosis and deployment preparation
+
+- Owner reports Google sign-in reaches the dashboard but `/admin/editorial` is refused. Review at merged PR #93 (`6f8a259`), branch `codex/wp46-admin-login-fix`, Work Package lane.
+- Root cause: the live frontend uses `first-squirrel-244.eu-west-1.convex.cloud`, which has no editorial/admin functions. This checkout's `--prod` commands target a different backend. The live backend also lacks `SUPER_ADMIN_BOOTSTRAP_EMAIL`, and its existing Google owner account has no verified-email stamp. The owner email on the other backend matches exactly one live Google account; no PII is recorded.
+- Prepared an exact-target snapshot including file storage (integrity verified) and a successful exact-target deployment dry run: schema valid, 22 additive indexes, none deleted. No production deploy, environment write or bootstrap executed.
+- Checks: `npm test`, `npm run typecheck`, `npm run build`, Convex deploy dry run/typecheck, `git diff --check` passed. Bare `npm run lint` was stopped after it began traversing unrelated `.claude/worktrees` build output. `npm run lint -- --ignore-pattern '.claude/**' --ignore-pattern 'tmp/**'` passed with 0 errors and 35 baseline warnings.
+- Docs: runbook now requires resolving the live frontend backend and using explicit deployment names. Review, backup hash, exact repair sequence and remaining execution gates: [PR #93 admin login review](../../reviews/2026-10-02-pr93-admin-login.md). Stories updated before runbook changes. WP46 registry drift remains the already-recorded E0 integration item; no feature code or shared schema/auth seam changed.
+- Pending: owner approval for the exact production repair, pre-execution code/config recovery marker, deployment and owner setting, fresh owner Google sign-in, audited bootstrap and real editorial visit. E4h remains open. E5/E6 and publishing remain paused/unavailable.
+
+
+## 2026-10-03 - WP46-E4h approved live deployment
+
+- Owner explicitly approved the prepared deployment, owner configuration and subsequent binding (“go ahead”).
+- Fresh exact-target database/storage export verified; candidate Git tag and prior live module/config hashes saved. Details in the [execution record](../../reviews/2026-10-02-pr93-admin-login.md).
+- Successfully deployed unchanged `6f8a259` to `first-squirrel-244`; schema validation passed, 22 indexes added, none deleted. Set the owner email on that deployment after confirming its unique Google account match.
+- Post-deploy: binding status is configured with zero bindings; anonymous editorial session returns no editor. Live homepage/login return 200; anonymous admin returns 404 with private/no-store and noindex headers.
+- Pending owner action: sign out and back in with Google to record the verified-email claim. Then run the already-approved bootstrap and verify the real editorial visit. E4h remains open until those checks pass. No publishing, account linking or forced verification changes.
+
+
+## 2026-10-03 - WP46-E4h Google verification and owner binding complete
+
+- Owner completed fresh Google sign-in. Verified the configured account matches uniquely and now has `emailVerificationTime`.
+- Explicit-target bootstrap succeeded (`bound`, timestamp `1791002965476`); read-back confirms exactly one active binding and the successful immutable audit event.
+- Production backend/configuration/binding repair is complete. User directed to reload `/admin/editorial`; successful browser render remains owner verification, so E4h's final visit criterion is not claimed. No further permission is required for that verification.
+
+
+## 2026-10-03 - WP46-E5a opened: empty production editorial catalogue
+
+- Owner confirmed admin sign-in works but both review queue and library have no ideas. Read-only inventory of the live Convex deployment: 229 public `ideas` rows, zero `editorial_ideas` and zero `editorial_idea_summaries`. The checked-in manifest has 228 idea slugs and 228 matching MDX bodies. The extra public row (`ai-built-app-code-audit`) has no checked-in MDX/body and its public URL returns 404, so it is not a live page to import.
+- Cause: E4 supplied the private backend/UI; E5's legacy import has not run. This is expected for the unconnected backend, but it leaves the intended editorial library empty. E5a is a bounded importer and dry-run inventory; full WP45 engine/check integration and release worker remain separate.
+- Before any import code change, E5a story and file scope were added to `wp46-stories.md`. No production import is authorized by the earlier login repair approval.
+
+
+## 2026-10-03 - WP46-E5a importer candidate and dry-run inventory
+
+- Added an operator-only importer for the checked-in legacy manifest and canonical MDX bodies. Every entry is validated against Editorial DTO v1 and hashed with the same artifact function as the receiver; buyer/job/wedge absent from legacy structured data remain explicitly “Not recorded in legacy source”. Evidence, checks and recommendation are never invented. Pending OG cards with no subject remain `null`.
+- Read-only inventory: 228 manifest ideas, 228 matching canonical MDX bodies, 228 valid envelopes, zero skipped; digest `8dc8ab94074a18d6917b593873d0fd5ca33cb29c37df0b820acbafdf755bf4de`. Production has 229 public database rows; the extra `ai-built-app-code-audit` row has no body in this checkout and its public URL returns 404. It is excluded from the 228-item import.
+- Apply requires the exact digest, exact target name/URL, a backup path and an admin key passed through the process environment. Stable per-slug submission IDs allow an interrupted run to resume without creating duplicates; any rejected item or slug conflict stops the run. No production import has been performed.
+- Focused tests cover validated legacy shape, no fabricated evidence, missing body refusal, and digest change with stable submission ID. A deliberately wrong digest refused `--apply` before a backend connection.
+- `npm run typecheck`, focused Vitest, scoped lint and `npm run build` passed. The first `npm test` run failed solely because the new operator-only environment variable names were absent from `.env.example`; those names are now documented and the full suite was rerun. Final result is recorded below.
+- Full WP46 E5 engine/check bridge and E6 release worker are still pending. This import makes legacy pages visible and privately editable; it does not make a draft publishable.
+
+
+## 2026-10-03 - WP46-E5a approved production import completed
+
+- Owner explicitly authorized importing the 228 validated published pages to the live editorial workspace after reviewing the inventory and confirming that live pages would not change. The stale `ai-built-app-code-audit` public row was excluded because its URL is 404 and it has no canonical MDX body in this checkout.
+- Before mutation, `first-squirrel-244` held 229 public idea rows, zero private editorial ideas/summaries and one active super-admin. Fresh target-specific Convex export including file storage: snapshot `1791003741170335473`, ignored file `tmp/wp46-admin-login/first-squirrel-pre-legacy-import.zip`, SHA-256 `7930c9036c0c8feabc028ae37149d9aa433c726e7fbe84d8f11cc4341db3563a`; archive integrity passed.
+- Rechecked the 228-item inventory digest (`8dc8ab94074a18d6917b593873d0fd5ca33cb29c37df0b820acbafdf755bf4de`), authenticated explicitly to the live production deployment and applied the import. The command returned 228 imported, zero duplicates, no refusal.
+- Read-back: 228 `editorial_ideas`, 228 summaries, 228 submissions, 228 legacy releases/live baselines, 228 revisions and 228 successful `submission.imported` audit events. Zero slug conflicts. Nine imported MDX revisions were quarantined by the existing executable-markup check; they need review before making editable copies. Public `ideas` rows remain 229; no public page was edited or released.
+- Checks: full `npm test` passed after documenting the new operator-only env keys; `npm run typecheck`, focused inventory tests, scoped lint (0 errors, 35 baseline warnings), `npm run build`, and `git diff --check` passed. The first full test run's sole failure was the env-name documentation guard and was fixed before import.
+- E5a complete. Full E5 engine/check integration and E6 release worker are pending, so edits save privately and approvals/publishing remain blocked.
