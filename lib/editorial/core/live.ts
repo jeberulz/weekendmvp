@@ -12,20 +12,18 @@ import { principalView } from "./derive";
 import { EditorialCore } from "./repository";
 import type { ActorRef, CheckPolicy, CoreEnvironment, EditorialState, ReleaseCapability } from "./state";
 
-/**
- * The live environment (WP46-E4): real accounts, nothing simulated.
- *
- * Until WP45's check library is connected (WP46-E5) checks cannot run, so
- * nothing can be approved; until the release worker exists (WP46-E6) every
- * release intent is refused. Both say so instead of pretending.
- */
+/** The live environment: real accounts, with publication still gated on E6. */
+
+export const LIVE_POLICY_VERSION = "engine-artifact-v2-2026-10-03";
+export const LIVE_REQUIRED_CHECK_IDS = ["engine-artifact-audit"] as const;
 
 export const LIVE_CHECK_POLICY: CheckPolicy = {
-  label: "WP45 quality policy (not connected)",
-  requiredCheckIds: [],
+  label: "Idea Engine contract-v2 artifact audit",
+  requiredCheckIds: LIVE_REQUIRED_CHECK_IDS,
   run: null,
+  externalRun: true,
   unavailableReason:
-    "Quality checks are not connected yet. They arrive with the idea-engine integration (WP46-E5), so nothing can be approved before then.",
+    "Run the authenticated engine audit against the saved revision. Inline checks are unavailable.",
 };
 
 export const LIVE_RELEASE_CAPABILITY: ReleaseCapability = {
@@ -36,7 +34,7 @@ export const LIVE_RELEASE_CAPABILITY: ReleaseCapability = {
 
 export const LIVE_WORKER_ACTOR: ActorRef = { id: "release-worker", kind: "service", label: "Release worker" };
 
-/** Policy version recorded while no WP45 policy is connected. */
+/** Existing stored placeholder; never treated as a current check policy. */
 export const LIVE_POLICY_VERSION_UNSET = "not-connected";
 
 /**
@@ -125,10 +123,10 @@ export class LiveEditorialCore extends EditorialCore {
         {
           id: "engine",
           label: "Idea engine submissions",
-          configured: false,
-          verified: false,
-          available: false,
-          detail: "Not connected. Needs WP45's frozen record contract and receipt validation (WP46-E5).",
+          configured: true,
+          verified: true,
+          available: true,
+          detail: "Contract-v2 records and exact MDX are audited before private ingestion; saved revisions use the authenticated engine check runner.",
         },
         {
           id: "legacy_import",

@@ -328,7 +328,7 @@ describe("the live environment", () => {
 
     const checks = await editor.mutation(api.editorial.commands.runChecks, { revisionId: draftId, expectedArtifactHash: draft.hashes.artifact });
     expect(code(checks)).toBe("PRECONDITION_FAILED");
-    expect(checks.ok ? "" : checks.error.message).toMatch(/not connected/);
+    expect(checks.ok ? "" : checks.error.message).toMatch(/authenticated engine audit/);
     const approval = await editor.mutation(api.editorial.commands.approveRevision, {
       revisionId: draftId,
       artifactHash: draft.hashes.artifact,

@@ -241,6 +241,8 @@ export type CheckPolicy = {
   label: string;
   requiredCheckIds: readonly string[];
   run: ((input: CheckRunInput) => QualityCheck[]) | null;
+  /** The live deep audit runs in a Node action and commits with an artifact fence. */
+  externalRun?: boolean;
   unavailableReason: string;
 };
 

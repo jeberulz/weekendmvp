@@ -1,6 +1,6 @@
 ---
 name: publish-idea
-description: "Publish a startup idea page on the Next.js + MDX + Convex site. DEFAULT: /publish-idea {title} — write a brief, run npm run engine:research -- --brief <brief.json> --live --out engine/records/<slug>.json (candidate evidence is accepted against the cited pages before any writing; thin evidence stops the run), then npm run engine:compile. OPT-IN: /publish-idea --from-draft {folder-name} when the seed lives in ideas/drafts/. After compile: tagging, npm run audit:idea, npm run validate:idea-tags, a human source check, dev seed, OG; commit, push and the production seed only on the operator's explicit instruction. Ideabrowser MCP is not part of this skill."
+description: "Prepare a startup idea with the local engine and submit it for private editorial review. DEFAULT: /publish-idea {title} — brief, live research, compile, tagging, deep audit, human source check, then editorial:submit-engine dry run. Applying the private submission requires an exact target, backup and operator instruction. Public release remains gated by WP46-E6. OPT-IN: /publish-idea --from-draft {folder-name} when the seed lives in ideas/drafts/. Ideabrowser MCP is not part of this skill."
 ---
 
 # Publish Idea Skill
@@ -25,7 +25,7 @@ Practical consequences:
 - The `HowTo` schema is parsed from the MDX body: `## The Solution` **must** contain `**How it works:**` followed by a numbered list (`1.` / `2.` / `3.`).
 - Meta description comes from the manifest `description` field; compile copies the brief's one-liner into it.
 - Slugs must match `^[a-z0-9-]+$` (validated in `lib/mdx.tsx`). Files starting with `_` are excluded from the site, and `engine-draft-*` slugs never render.
-- **An idea is NOT live until seeded into the PRODUCTION Convex deployment** (`npm run seed:convex -- --prod`) **and** the MDX/OG are pushed so Vercel builds them. Dev seed alone is not enough for the live grid. The push and the production seed happen **only on the operator's explicit instruction** (Step 7).
+- The current public site still reads checked-in MDX and the production catalogue seed. A production push or seed can make a page visible **outside** editorial review. Until WP46-E6 installs the public visibility gate, keep new engine ideas private in the editorial workflow; do not use the older direct-publish steps for them.
 
 ---
 
@@ -67,10 +67,10 @@ If a live compile cannot clear the auditor on this machine, stop and report — 
 4. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og).
 5. **Gates:** `npm run audit:idea -- --slug {slug}` then `npm run validate:idea-tags -- --slug {slug}`.
 6. **Checks the sources by hand** (Step 4.1) — every competitor price and market statistic, plus at least two quotes.
-7. **Seeds Convex dev**; production only on the operator's explicit instruction, after the deploy returns 200.
+7. **Dry-runs the private editorial submission** with `npm run editorial:submit-engine -- --slug={slug}`; the operator-only apply path is Step 4.2.
 8. **Generates the OG card** (`npm run og:generate -- --slug {slug} --surface idea --non-blocking`).
-9. **Commits / pushes only when the operator explicitly asks** — never auto-push to `main`.
-10. **Reports** slug, record and report paths, cost and attempts, audit metrics, source-check result, seed/OG status, preview URL.
+9. **Stops at private editorial review** until the E6 release path exists. A push or production seed through the older direct path makes the page public independently of editorial approval.
+10. **Reports** slug, record and report paths, cost and attempts, audit metrics, source-check result, editorial submission/check state and preview status.
 
 ---
 
@@ -265,7 +265,24 @@ Open, in a browser, the cited source of **every** competitor price and **every**
 
 A matching excerpt proves the page contained that text when it was read. It does not prove that the source is credible, independent or current, or that the claim holds everywhere; a vendor blog is not independent customer evidence. If anything is wrong, stale or unsupported, do not publish: re-run research — never patch the MDX or the record by hand.
 
-### Step 5 — Seed Convex (dev now; prod only after deploy)
+### Step 4.2 — Private editorial submission (WP46-E5)
+
+After tagging, deep audit and the human source check, run `npm run editorial:submit-engine -- --slug={slug}`. It checks the contract-v2 live record, exact MDX and manifest row again, and prints the submission ID plus artifact and record hashes. It writes nothing on a dry run. A fixture, legacy record, changed evidence rendering or invalid metadata stops here.
+
+The operator may submit that exact artifact to the private editorial workspace only after the E5 backend is deployed, a fresh backup is verified and the target deployment is identified. Use the hash from the dry run:
+
+```bash
+EDITORIAL_ENGINE_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud \
+EDITORIAL_ENGINE_ADMIN_KEY=... \
+npm run editorial:submit-engine -- --slug={slug} --apply \
+  --confirm-submission={artifactHash} --target=YOUR-DEPLOYMENT --backup=/absolute/path/to/backup.zip
+```
+
+Set the admin key in the environment, never in a committed file or shell argument. The private backend re-audits the input and pins the research record in the same transaction as the candidate. Then sign in to `/admin/editorial`, accept or request research on the candidate, run the saved-revision checks, review sources and sections, and approve only a passing current revision. A stale or edited figure fails the required check. **Approval is private:** the Settings page still says Publishing readiness “Unavailable” until WP46-E6 adds the release worker and public visibility gate.
+
+Until E6, stop after private editorial review. Do not run the older production push or `seed:convex -- --prod` path for a new engine idea: it can bypass editorial release.
+
+### Step 5 — Legacy direct-publication path (paused for new engine ideas until E6)
 
 ```bash
 npm run seed:convex              # dev — staged work
@@ -503,6 +520,9 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run validate:idea-tags -- --slug {slug}` PASS
 - [ ] Human source check: every competitor price and market statistic source, plus ≥2 quotes, opened and confirmed (billing toggles, projections, whole statements, source type)
 - [ ] `provenance.auditPassed` set true only after both gates and the source check
+- [ ] `npm run editorial:submit-engine -- --slug={slug}` dry run passed; exact hash recorded
+- [ ] If specifically authorized, exact target/backup confirmed and private submission applied; editor ran current-revision checks and reviewed the evidence
+- [ ] New engine idea has not been pushed or production-seeded through the direct path while E6 is absent
 - [ ] `npm run seed:convex` (dev)
 - [ ] `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Commit/push **only if operator asked**

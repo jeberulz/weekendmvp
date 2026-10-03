@@ -3,8 +3,8 @@ import type { EvidenceFreshness } from "../contracts/views";
 
 /**
  * Display-side freshness windows by source type, in days since retrieval.
- * WP45 owns the authoritative evidence policy; until its adapter lands
- * (WP46-E5) these windows only colour the review queue and inspector.
+ * WP45 owns the authoritative evidence policy. These display windows colour
+ * the review queue and inspector; E5 also warns on stale pinned sources.
  * Retrieval age alone never proves a price is still current.
  */
 export const FRESHNESS_WINDOW_DAYS: Record<SourceType, number> = {

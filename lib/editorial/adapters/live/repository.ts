@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { fetchAction, fetchMutation, fetchQuery } from "convex/nextjs";
 import { ConvexError } from "convex/values";
 
 import { api } from "@/convex/_generated/api";
@@ -240,7 +240,7 @@ export class ConvexEditorialRepository implements EditorialRepository {
   }
 
   runChecks(revisionId: string, expectedArtifactHash: string) {
-    return guarded(() => fetchMutation(api.editorial.commands.runChecks, { revisionId, expectedArtifactHash }, this.auth));
+    return guarded(() => fetchAction(api.editorial.checks.run, { revisionId, expectedArtifactHash }, this.auth));
   }
 
   approveRevision(revisionId: string, artifactHash: string, input: ApprovalInput) {
