@@ -646,6 +646,18 @@ source acquisition statuses, accepted counts per kind, and rejected
   prioritize the product's niche and concrete buyer pain over adjacent markets
   or maker commentary.
 
+- **Final live source and extraction clarification (2026-10-03).** General
+  `/blog/` and `/guide/` pages, like comparison roundups, cannot establish
+  market-size or growth figures; trace a claim to the publisher's report page.
+  Initial acceptance and stored-record revalidation enforce this URL boundary.
+  When the first extraction has enough market statistics and buyer quotes but
+  lacks three verified competitors or a numeric priced vendor, the one remaining
+  already-budgeted extraction attempt focuses on official pricing sources.
+  Verified first-pass evidence is preserved and the normal three-vendor,
+  one-numeric-vendor minimum remains mandatory. This can improve recall, not
+  authorize an inferred price or any additional provider spend beyond the
+  existing $4 worst-case cap.
+
 - **Operator source hints (2026-10-03, live GO follow-up).** A live brief can
   add up to eight public URL strings per `sourceHints.market`,
   `sourceHints.competitors` and `sourceHints.community`. Invalid, credentialed

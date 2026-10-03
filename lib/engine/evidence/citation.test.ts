@@ -4,6 +4,7 @@ import {
   canonicalSourceUrl,
   citationRefusal,
   isComparisonPage,
+  isSecondaryMarketPage,
   isFirstPartyHost,
   isVendorMarketplaceListing,
   sameSource,
@@ -130,6 +131,13 @@ describe("vendor keys and first-party hosts", () => {
     expect(isComparisonPage("https://loopio.com/alternatives/")).toBe(true);
     expect(isComparisonPage("https://responsive.io/blog/responsive-pricing-compared-other-rfp-software")).toBe(true);
     expect(isComparisonPage("https://loopio.com/pricing")).toBe(false);
+  });
+
+  it("flags general blog and guide paths as secondary market sources", () => {
+    expect(isSecondaryMarketPage("https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025")).toBe(true);
+    expect(isSecondaryMarketPage("https://example.com/guides/landing-page-market")).toBe(true);
+    expect(isSecondaryMarketPage("https://example.com/blog/best-landing-page-builders")).toBe(true);
+    expect(isSecondaryMarketPage("https://dataintelo.com/report/ai-generated-code-review-tools-market")).toBe(false);
   });
 
   it("labels a source by its host", () => {

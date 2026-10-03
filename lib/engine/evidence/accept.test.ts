@@ -1747,12 +1747,27 @@ describe("PR96 review: evidence assertions retain their meaning", () => {
     const mutated = { ...primary.accepted[0], sourceUrl: roundup.url };
     const checked = revalidateAcceptedEvidence(mutated, acquisitions([roundup]));
     expect(checked.ok).toBe(false);
-    if (!checked.ok) expect(checked.issues.join(" ")).toContain("roundup page");
+    if (!checked.ok) expect(checked.issues.join(" ")).toContain("not the original research source");
+  });
+
+  it("rejects a market forecast copied into a general marketing guide", () => {
+    const text = "The AI code review market is projected to reach $25.7 billion by 2030.";
+    const guide = { url: "https://www.digitalapplied.com/blog/ai-code-review-automation-guide-2025", text };
+    const report = { url: "https://dataintelo.com/report/ai-generated-code-review-tools-market", text };
+    const candidate = (sourceUrl: string) => stat({ sourceUrl, supportingText: text, subject: "AI code review market", amountText: "$25.7 billion", year: 2030, periodKind: "projected" });
+    const secondary = run([guide], { marketStats: [candidate(guide.url)] });
+    expect(secondary.accepted).toEqual([]);
+    expect(reasons(secondary)).toEqual(["unsupported_assertion"]);
+    const primary = run([report], { marketStats: [candidate(report.url)] });
+    expect(primary.accepted).toHaveLength(1);
+    const checked = revalidateAcceptedEvidence({ ...primary.accepted[0], sourceUrl: guide.url }, acquisitions([guide]));
+    expect(checked.ok).toBe(false);
+    if (!checked.ok) expect(checked.issues.join(" ")).toContain("not the original research source");
   });
 
   it("requires the original publication for a statistic explicitly credited to it", () => {
     const text = "47% of professional developers used AI-assisted code review in the past year, up from 22% in 2024 (Stack Overflow 2025).";
-    const vendor = { url: "https://www.qodo.ai/blog/ai-code-review", text };
+    const vendor = { url: "https://www.qodo.ai/research/ai-code-review", text };
     const original = { url: "https://survey.stackoverflow.co/2025/ai", text };
     const candidate = (sourceUrl: string) => stat({ sourceUrl, supportingText: text, subject: "professional developers", metric: "adoption", amountText: "47%", periodKind: "measured" });
     const secondhand = run([vendor], { marketStats: [candidate(vendor.url)] });

@@ -303,6 +303,15 @@ export function isComparisonPage(url: string): boolean {
   return parsed !== null && COMPARISON_PATH_RE.test(parsed.pathname.toLowerCase());
 }
 
+/** General guides and blog posts repeat market figures without publishing the study. */
+export function isSecondaryMarketPage(url: string): boolean {
+  const parsed = parseUrl(url);
+  return parsed !== null && (
+    isComparisonPage(url) ||
+    /(?:^|\/)(?:blog|blogs|guide|guides)(?:\/|$)/.test(parsed.pathname.toLowerCase())
+  );
+}
+
 /** Host for display ("g2.com", "news.ycombinator.com"): no "www.", "" when unparseable. */
 export function sourceHostLabel(url: string): string {
   const parsed = parseUrl(url);

@@ -793,6 +793,8 @@ export const EXTRACTION_REASK =
   "Your previous reply was not one JSON object. Reply with the JSON object only, under the same rules.";
 const EXTRACTION_QUOTE_RETRY =
   "The previous reply yielded too few exact buyer quotes. Return only quotes; set marketStats, competitorPrices and competitorAvailability to empty arrays. Copy complete first-person sentences character-for-character from one Text line on a community source. Do not repair spelling or punctuation, combine comments, or shorten a sentence.";
+const EXTRACTION_COMPETITOR_RETRY =
+  "The previous reply yielded too few verified competitors. Return only competitorPrices and competitorAvailability from the already shown official pricing pages; set quotes and marketStats to empty arrays. Cover distinct vendors, including at least one numeric monthly or annual offer. Copy one price expression per priceText exactly as it appears in Text, with no invented amount or billing qualifier. Use an explicit contact-sales, usage-based or credit-pack statement only when no supported numeric offer is available for that vendor.";
 
 async function stepExtraction(
   state: RunState,
@@ -1443,6 +1445,35 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
       seen.add(item.id);
     }
     state.rejected.push(...quoteRetry.rejected, ...quotes.rejected);
+    minimums = checkEvidenceMinimums(state.accepted);
+  }
+  if (
+    !minimums.ok &&
+    minimums.shortfalls.every((shortfall) => shortfall.startsWith("priced competitors:") || shortfall.startsWith("competitors:")) &&
+    attemptsLeft(state, stepById("evidence_extraction"))
+  ) {
+    // Use the same second extraction attempt for a competitor-only miss.
+    // Previously accepted quotes and statistics cannot be replaced.
+    const competitorRetry = await stepExtraction(state, brief, acquisition.readable, EXTRACTION_COMPETITOR_RETRY);
+    const competitors = acceptEvidence({
+      candidates: {
+        quotes: [],
+        marketStats: [],
+        competitorPrices: competitorRetry.candidates.competitorPrices,
+        competitorAvailability: competitorRetry.candidates.competitorAvailability,
+      },
+      citations: acquisition.citations,
+      sources: acquisition.inputs,
+      vendorHints: acquisition.vendorHints,
+    });
+    const seen = new Set(state.accepted.map((item) => item.id));
+    for (const item of competitors.accepted) {
+      if ((item.kind !== "competitor_price" && item.kind !== "competitor_availability") || seen.has(item.id)) continue;
+      if (state.accepted.filter((acceptedItem) => acceptedItem.kind === item.kind).length >= EVIDENCE_LIMITS.maxAccepted[item.kind]) continue;
+      state.accepted.push(item);
+      seen.add(item.id);
+    }
+    state.rejected.push(...competitorRetry.rejected, ...competitors.rejected);
     minimums = checkEvidenceMinimums(state.accepted);
   }
   if (!minimums.ok) {

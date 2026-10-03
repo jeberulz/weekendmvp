@@ -105,6 +105,7 @@ import {
 import {
   canonicalSourceUrl,
   isComparisonPage,
+  isSecondaryMarketPage,
   isFirstPartyHost,
   isVendorMarketplaceListing,
   registrableLabel,
@@ -952,8 +953,8 @@ function yearIssue(
  * figure (see yearIssue); and a subject content word appears in the sentence.
  */
 function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number, sourceUrl: string): StatCheck {
-  if (isComparisonPage(sourceUrl)) {
-    return fail("unsupported_assertion", "a comparison or roundup page is not the original source for a market statistic");
+  if (isSecondaryMarketPage(sourceUrl)) {
+    return fail("unsupported_assertion", "a comparison, guide or blog page is not the original research source for a market statistic");
   }
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);

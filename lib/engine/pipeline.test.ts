@@ -131,6 +131,35 @@ describe("runResearch (fixture)", () => {
     expect(report.costUsd).toBeLessThan(4);
   });
 
+  it("uses the remaining extraction attempt for missing competitors without replacing accepted evidence", async () => {
+    let extractionCalls = 0;
+    const providers = createFixtureProviders({ synthesis: {
+      extraction: (input) => {
+        extractionCalls += 1;
+        if (extractionCalls === 1) return { ...FIXTURE_EXTRACTION, competitorPrices: [], competitorAvailability: [] };
+        expect(input).toContain("previous reply yielded too few verified competitors");
+        return { quotes: [], marketStats: [], competitorPrices: FIXTURE_EXTRACTION.competitorPrices, competitorAvailability: [] };
+      },
+    } });
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(extractionCalls).toBe(2);
+    expect(report.attempts.evidence_extraction).toBe(2);
+    expect(record.community.quoteIds.length).toBeGreaterThanOrEqual(2);
+    expect(report.evidence.accepted.market_stat).toBe(3);
+    expect(report.evidence.accepted.competitor_price).toBe(3);
+    expect(report.costUsd).toBeLessThan(4);
+  });
+
+  it("still fails closed when the competitor-only retry finds no verified offers", async () => {
+    const providers = createFixtureProviders({ synthesis: {
+      extraction: () => ({ ...FIXTURE_EXTRACTION, competitorPrices: [], competitorAvailability: [] }),
+    } });
+    const error = await failureOf(runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" }));
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.message).toContain("priced competitors:");
+    expect(error.report?.attempts.evidence_extraction).toBe(2);
+  });
+
   it("accepts operator-supplied source URLs only after fetching and verifying their claims", async () => {
     const providers = createProviders({ mode: "fixture" });
     const search = providers.search;
