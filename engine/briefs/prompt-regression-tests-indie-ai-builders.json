@@ -1,0 +1,39 @@
+{
+  "title": "Prompt Regression Tests for Indie AI Builders",
+  "audience": "Indie developers and small product teams shipping LLM-powered apps and agents",
+  "revenueModel": "Per-project SaaS subscription with a free tier for a small test suite and paid tiers for CI runs and history",
+  "seedKeywords": [
+    "llm evaluation",
+    "prompt testing tool",
+    "llm regression testing",
+    "prompt regression testing",
+    "llm evals"
+  ],
+  "sourceHints": {
+    "market": [
+      "https://www.congruencemarketinsights.com/report/ai-model-evaluation-platforms-market",
+      "https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-model-evaluation-platform-market-report",
+      "https://www.technavio.com/report/model-evaluation-and-benchmarking-tools-market-industry-analysis",
+      "https://www.researchandmarkets.com/reports/6231841/ai-model-evaluation-platform-market-report"
+    ],
+    "competitors": [
+      "https://www.braintrust.dev/pricing",
+      "https://langfuse.com/pricing",
+      "https://www.langchain.com/pricing",
+      "https://www.confident-ai.com/pricing",
+      "https://www.promptlayer.com/pricing",
+      "https://agenta.ai/pricing",
+      "https://www.helicone.ai/pricing",
+      "https://www.comet.com/site/pricing"
+    ],
+    "community": [
+      "https://news.ycombinator.com/item?id=48144593",
+      "https://news.ycombinator.com/item?id=44194187",
+      "https://news.ycombinator.com/item?id=49430207",
+      "https://news.ycombinator.com/item?id=38835943",
+      "https://news.ycombinator.com/item?id=42366481"
+    ]
+  },
+  "slug": "prompt-regression-tests-indie-ai-builders",
+  "oneLiner": "Catch the prompt change that quietly broke your AI app before your users do."
+}

@@ -175,6 +175,7 @@ export const IDEA_SLUGS: readonly string[] = [
   "phone-neck-score-app",
   "photo-meal-workout-tracker",
   "postpartum-recovery-platform",
+  "prompt-regression-tests-indie-ai-builders",
   "python-training-for-professionals",
   "quarterly-tax-estimator-freelancers",
   "quickbooks-escape-ramp",
