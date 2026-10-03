@@ -1123,6 +1123,12 @@ describe("parseResearchRecord: year-one plan", () => {
     expectRejected(input, /^editorial\.yearOne\.tier: "Enterprise" is not a pricing tier/m);
   });
 
+  it("rejects a tier name embellished with its price", () => {
+    const input = fresh();
+    setAt(input, "editorial.yearOne.tier", "Solo — $15/developer/month");
+    expectRejected(input, /^editorial\.yearOne\.tier: "Solo — \$15\/developer\/month" is not a pricing tier/m);
+  });
+
   it("rejects more than one seat on a flat tier", () => {
     const input = fresh();
     setAt(input, "editorial.yearOne.tier", "Solo");
