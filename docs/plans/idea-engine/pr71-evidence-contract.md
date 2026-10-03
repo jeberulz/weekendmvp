@@ -605,6 +605,13 @@ source acquisition statuses, accepted counts per kind, and rejected
   from validated `editorial.pricingTiers`, not parsed MDX or competitor prices.
   The per-report cost cap and pre-editorial fail-closed gate are unchanged.
 
+- **R18 (2026-10-03, live Shopify evidence):** A Shopify single-app listing
+  also identifies a vendor when the listing slug and longer product name begin
+  with the same distinctive brand token of at least four characters. Generic
+  category tokens (for example `page`, `landing`, `builder`) cannot identify a
+  vendor. The price must still pass exact amount, billing and comparison checks;
+  attribution remains secondary and the final page names Shopify as the source.
+
 - **R17 acquisition amendment (2026-10-03, first live GO probe).** When the
   initial competitor search cites fewer than three distinct vendor-owned
   sites, one supplement search seeks other official pricing domains and the

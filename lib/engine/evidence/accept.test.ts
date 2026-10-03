@@ -1748,6 +1748,20 @@ describe("PR96 review: evidence assertions retain their meaning", () => {
     expect(rival.accepted).toEqual([]);
   });
 
+  it("binds an app listing's distinctive brand slug to its longer product name", () => {
+    const page = { url: "https://apps.shopify.com/instant-builder", text: "Instant AI Page Builder\nPricing\nStarter\n$39/month" };
+    const result = run([page], {
+      competitorPrices: [priceCandidate({ vendor: "Instant AI Page Builder", sourceUrl: page.url, supportingText: "$39/month", priceText: "$39/month" })],
+    });
+    expect(result.accepted).toHaveLength(1);
+    expect(result.accepted[0]).toMatchObject({ vendor: "Instant AI Page Builder", attribution: "secondary" });
+    expect(revalidateAcceptedEvidence(result.accepted[0], acquisitions([page])).ok).toBe(true);
+    const rival = run([page], {
+      competitorPrices: [priceCandidate({ vendor: "Replo AI Page Builder", sourceUrl: page.url, supportingText: "$39/month", priceText: "$39/month" })],
+    });
+    expect(rival.accepted).toEqual([]);
+  });
+
   it.each([
     "The AI code review market was worth $1.4 million in 2024, while the unrelated gaming market was worth $9.4 billion in 2025.",
     "The AI code review market was worth $1.4 million in 2024, and the gaming market was worth $9.4 billion in 2025.",

@@ -273,18 +273,28 @@ export function isFirstPartyHost(vendor: string, url: string): boolean {
   return key === stripHq(label.replace(/[^\p{L}\p{N}]+/gu, ""));
 }
 
+const GENERIC_LISTING_TOKENS: ReadonlySet<string> = new Set([
+  "page", "pages", "landing", "builder", "store", "shop", "shopify", "ecommerce", "website", "webpage",
+]);
+
 /**
  * A marketplace controls the listing path and the app controls its offer.
- * Bind only an exact Shopify app slug to the claimed vendor; other marketplace
- * paths remain neutral sources. Listings retain secondary attribution in the
- * page so a reader can distinguish the marketplace from the vendor's site.
+ * Bind an exact Shopify app slug to the claimed name, or a distinctive first
+ * brand token in both the slug and a longer product name ("instant-builder"
+ * and "Instant AI Page Builder"). Generic category tokens cannot establish
+ * identity. Other marketplace paths remain neutral sources. Listings retain
+ * secondary attribution so readers can distinguish them from vendor sites.
  */
 export function isVendorMarketplaceListing(vendor: string, url: string): boolean {
   const key = vendorKey(vendor);
   const parsed = parseUrl(url);
   if (key.length < 3 || parsed?.hostname.toLowerCase() !== "apps.shopify.com") return false;
   const match = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i.exec(parsed.pathname);
-  return match !== null && key === match[1]?.replace(/-/g, "");
+  if (!match) return false;
+  if (key === match[1]?.replace(/-/g, "")) return true;
+  const brand = match[1]?.split("-")[0]?.toLowerCase() ?? "";
+  const firstName = /^[a-z0-9]+/iu.exec(vendor.trim())?.[0]?.toLowerCase() ?? "";
+  return brand.length >= 4 && !GENERIC_LISTING_TOKENS.has(brand) && brand === firstName;
 }
 
 /** True when the URL path looks like a comparison, roundup or alternatives page. */
