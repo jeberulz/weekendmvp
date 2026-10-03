@@ -16,7 +16,7 @@ import {
   worstCaseRunMicroUsd,
 } from "./cost.ts";
 import { EVIDENCE_MINIMUMS } from "./evidence/contract.ts";
-import { PipelineError, runResearch, type BriefInput } from "./pipeline.ts";
+import { normalizeBriefInput, PipelineError, runResearch, type BriefInput } from "./pipeline.ts";
 import { PIPELINE, PIPELINE_STEP_IDS, PIPELINE_VERSION } from "./pipeline-steps.ts";
 import { createProviders } from "./providers.ts";
 import {
@@ -386,6 +386,34 @@ describe("brief normalization (review P3-10)", () => {
     };
     await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
     expect(lookups).toEqual([RFP_BRIEF.seedKeywords]);
+  });
+
+  it("refuses an operator title or audience with a figure before any paid call, naming the field (rulings R6, R13)", async () => {
+    for (const [field, value, figure] of [
+      // The v1 code-reviewer audience: the writer echoed it into five fields, and R13 counts "sub-10".
+      ["audience", "Indie developers and sub-10 engineering teams maintaining GitHub repos", "10"],
+      ["audience", "Sales teams of 8 answering security questionnaires", "8"],
+      ["title", "Top 10 RFP Response Assistant", "10"],
+      ["title", "RFP Assistant for two-person sales teams", "two"],
+    ] as const) {
+      const providers = createProviders({ mode: "fixture" });
+      const requests = captureSynthesis(providers);
+      const error = await failureOf(runResearch({ brief: { ...RFP_BRIEF, [field]: value }, providers, mode: "fixture" }));
+      expect(error.stepId, value).toBe("brief_normalization");
+      expect(error.message, value).toContain(`brief.${field}: figure "${figure}"`);
+      expect(error.message, value).toMatch(/The writer reads the title and audience/);
+      expect(requests, value).toHaveLength(0);
+    }
+  });
+
+  it("passes every committed live brief (engine/briefs/*.json, not fixtures/) through the live-brief check", () => {
+    const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../engine/briefs");
+    const files = readdirSync(dir).filter((file) => file.endsWith(".json"));
+    expect(files.length).toBeGreaterThanOrEqual(3);
+    for (const file of files) {
+      const brief: unknown = JSON.parse(readFileSync(path.join(dir, file), "utf8"));
+      expect(() => normalizeBriefInput(brief as BriefInput), file).not.toThrow();
+    }
   });
 
   it("refuses an operator one-liner with a figure or a quotation before any paid call (ruling R6)", async () => {

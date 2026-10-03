@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 import { CostCapExceededError, worstCaseMicroUsd } from "./cost.ts";
 import { acceptEvidence } from "./evidence/accept.ts";
 import type { AcceptedEvidence, QuoteCandidate } from "./evidence/contract.ts";
-import { findQuotedSpans, findUnboundFigures } from "./evidence/tokens.ts";
+import { findQuotedSpans, findUnboundFigures, WRITER_NUMBER_NAME_RULE } from "./evidence/tokens.ts";
 import {
   buildEditorialInput,
   editorialIssuesSection,
@@ -818,7 +818,9 @@ describe("writer instructions (ruling R13)", () => {
   it("tell the writer how to stay figure- and quotation-free, and which names are fine", () => {
     expect(EDITORIAL_INSTRUCTIONS).toMatch(/no currency signs/);
     expect(EDITORIAL_INSTRUCTIONS).toMatch(/write "a few", "several" or "a couple of"/);
-    expect(EDITORIAL_INSTRUCTIONS).toMatch(/standard or version names \(SOC 2, ISO 27001, Next\.js 15, OAuth 2\.0\) are fine/);
+    // Review P3-4: the names with numbers it allows are exactly the ones the parser accepts.
+    expect(EDITORIAL_INSTRUCTIONS).toContain(WRITER_NUMBER_NAME_RULE);
+    expect(EDITORIAL_INSTRUCTIONS).not.toMatch(/standard or version names \(SOC 2, ISO 27001, Next\.js 15, OAuth 2\.0\) are fine/);
     expect(EDITORIAL_INSTRUCTIONS).toMatch(/No quotation marks of any kind/);
     expect(EDITORIAL_INSTRUCTIONS).toMatch(/no ARR, MRR or revenue total/);
   });

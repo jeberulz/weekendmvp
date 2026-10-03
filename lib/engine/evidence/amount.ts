@@ -284,7 +284,8 @@ const ISO_SUFFIX_RE = /^[ \u00A0]?(USD|EUR|GBP|CAD|AUD)(?![\p{L}\p{N}])/u;
 const DETACHED_LETTER_RE = /^[ \u00A0][kKmMbBtT](?![\p{L}\p{N}])/u;
 const PERCENT_RE = /^[ \u00A0]?(?:%|percent(?!\p{L})|per[ \u00A0]cent(?!\p{L}))/iu;
 
-const COUNT_MODIFIERS = [
+/** Words that may stand between a number and its count noun ("2 million active users"). */
+export const COUNT_MODIFIERS: readonly string[] = [
   "active", "monthly", "daily", "weekly", "paying", "paid", "registered", "total",
   "unique", "global", "new", "enterprise", "business", "existing", "current",
 ];

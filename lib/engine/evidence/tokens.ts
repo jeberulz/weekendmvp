@@ -58,7 +58,7 @@
  * reports indices into the ORIGINAL text.
  */
 
-import { formatAmount, formatPriceTerms } from "./amount.ts";
+import { COUNT_MODIFIERS, COUNT_NOUNS, formatAmount, formatPriceTerms } from "./amount.ts";
 import {
   EVIDENCE_TOKEN_RE,
   type AcceptedEvidence,
@@ -160,38 +160,95 @@ const DIGIT_RUN_RE = /\p{Nd}+(?:[.,:/]\p{Nd}+)*/gu;
 /** Software names whose version number is part of the name (ruling R13). */
 const VERSIONED_SOFTWARE = String.raw`Next\.js|React|Node(?:\.js)?|PostgreSQL|Postgres|MySQL|Python|Ruby|Rails|Django|Vue(?:\.js)?|Angular|SvelteKit|Svelte|Tailwind(?: CSS)?|TypeScript|Swift|Kotlin|Java|PHP|iOS|Android|macOS|Windows|Ubuntu|Claude|GPT|Gemini|Llama|Mistral`;
 
+/** VERSIONED_SOFTWARE as the writer instructions list it (a test checks that each one takes a version). */
+export const VERSIONED_SOFTWARE_NAMES: readonly string[] = [
+  "Next.js", "React", "Node.js", "Postgres", "PostgreSQL", "MySQL", "Python", "Ruby", "Rails", "Django", "Vue",
+  "Angular", "Svelte", "SvelteKit", "Tailwind", "TypeScript", "Swift", "Kotlin", "Java", "PHP", "iOS", "Android",
+  "macOS", "Windows", "Ubuntu", "Claude", "GPT", "Gemini", "Llama", "Mistral",
+];
+
+/**
+ * Ruling R13 for the writer (review P3-4): exactly the names with numbers
+ * that findUnboundFigures accepts, so the writer is never told that a name
+ * is fine which the record parser then refuses (each refusal costs a
+ * regeneration). pipeline.ts EDITORIAL_INSTRUCTIONS quotes it verbatim.
+ */
+export const WRITER_NUMBER_NAME_RULE =
+  "Names with numbers: letters and digits written as one name (B2B, Web3, GPT-4o, 2FA; but 10x, 5k and 3rd are figures) " +
+  "and a bare year (1990–2039) are fine, and so are exactly these: " +
+  "SOC 1, SOC 2 and SOC 3; ISO and ISO/IEC numbers (ISO 27001); PCI DSS, WCAG, OAuth, TLS, SSL, SAML and SCIM versions " +
+  "(OAuth 2.0, SAML 2.0, SCIM 2.0); HTTP/2; IPv4 and IPv6; 24/7; Microsoft 365 and Office 365; US tax forms (Form 1099, " +
+  "1099-NEC, W-2, W-9); two-factor; and version numbers only after " +
+  `${VERSIONED_SOFTWARE_NAMES.join(", ")}, at most two digits with optional decimals (Next.js 15, Claude 3.5) and never ` +
+  "right before a count such as users, teams or times. Any other number in a name is a figure (Claude Sonnet 4.5, Redis 7, " +
+  "Fortune 500): drop the number.";
+
+/**
+ * A version as a name carries one (review P3-3): at most two integer digits,
+ * optionally with decimal parts ("15", "3.5", "24.04", "22.11.0"). A longer
+ * number ("Python 4000") is a figure.
+ */
+const VERSION = String.raw`\p{Nd}{1,2}(?:\.\p{Nd}+)*`;
+
+/** The version after a curated software name (VERSIONED_SOFTWARE): "Next.js 15", "GPT-4o", "Tailwind v4". */
+const VERSIONED_NAME_RE = new RegExp(
+  String.raw`(?<![\p{L}\p{N}])(?:${VERSIONED_SOFTWARE})(?:[ \u00A0]|-)?v?${VERSION}[a-z]?(?![\p{N}])`,
+  "gu",
+);
+
 /**
  * Ruling R13: standard and version names whose digits are part of the name,
  * not a figure. One list, read by the record parser and the auditor through
  * findUnboundFigures (applied to the NFKC text):
  *   SOC 1/2/3; ISO and ISO/IEC numbers (ISO 27001, ISO/IEC 27001:2022);
- *   PCI DSS, WCAG, OAuth, TLS, SSL and HTTP versions; IPv4/IPv6; 24/7;
+ *   PCI DSS, WCAG, OAuth, TLS, SSL, SAML, SCIM and HTTP versions;
+ *   IPv4/IPv6; 24/7;
  *   Microsoft 365 and Office 365; US tax forms (Form 1099, 1099-NEC, W-2,
  *   W-9); and the version after a curated software name (VERSIONED_SOFTWARE:
  *   Next.js 15, Postgres 16, Claude 3.5, GPT 5, Llama 3.1, Tailwind v4, …).
- * A name followed by a percent, magnitude or currency code is still a figure.
+ * A version is at most two integer digits with optional decimals (VERSION),
+ * and a software version followed by a count ("Claude 47 teams", "React 300
+ * times", COUNTED_AFTER_VERSION) is a figure (review P3-3). A name followed
+ * by a percent, magnitude or currency code is still a figure.
  */
 export const STANDARD_AND_VERSION_NAMES: readonly RegExp[] = [
   /(?<![\p{L}\p{N}])SOC[ \u00A0]?[123](?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])ISO(?:\/IEC)?[ \u00A0]?\p{Nd}{3,5}(?:[-:]\p{Nd}{1,4})*(?![\p{L}\p{N}])/gu,
-  /(?<![\p{L}\p{N}])PCI[ \u00A0-]?DSS[ \u00A0]?v?\p{Nd}+(?:\.\p{Nd}+)*(?![\p{L}\p{N}])/gu,
-  /(?<![\p{L}\p{N}])(?:WCAG|OAuth|TLS|SSL)[ \u00A0]?v?\p{Nd}+(?:\.\p{Nd}+)*a?(?![\p{L}\p{N}])/gu,
+  new RegExp(String.raw`(?<![\p{L}\p{N}])PCI[ \u00A0-]?DSS[ \u00A0]?v?${VERSION}(?![\p{L}\p{N}])`, "gu"),
+  new RegExp(String.raw`(?<![\p{L}\p{N}])(?:WCAG|OAuth|TLS|SSL|SAML|SCIM)[ \u00A0]?v?${VERSION}a?(?![\p{L}\p{N}])`, "gu"),
   /(?<![\p{L}\p{N}])HTTP(?:\/|[ \u00A0])?\p{Nd}(?:\.\p{Nd})?(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])IPv[46](?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}/])24\/7(?![\p{L}\p{N}/])/gu,
   /(?<![\p{L}\p{N}])(?:Microsoft|Office)[ \u00A0]365(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])Form[ \u00A0](?:1099|1098|1095|1040|1065|1120|941|940|990|W-\p{Nd})(?:-[A-Z]{1,4})?(?![\p{L}\p{N}])/gu,
   /(?<![\p{L}\p{N}])(?:1099|1098|1095)-[A-Z]{1,4}(?![\p{L}\p{N}])/gu,
-  new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${VERSIONED_SOFTWARE})(?:[ \u00A0]|-)?v?\p{Nd}+(?:\.\p{Nd}+)*[a-z]?(?![\p{N}])`, "gu"),
+  VERSIONED_NAME_RE,
 ];
+
+/** What a number counts when it stands right before one of these (review P3-3: "Claude 47 teams", "React 300 times"). */
+const COUNTED_AFTER_VERSION: readonly string[] = [
+  ...COUNT_NOUNS,
+  "time", "times", "second", "seconds", "minute", "minutes", "hour", "hours", "day", "days", "week", "weeks",
+  "month", "months", "year", "years",
+];
+
+/** A count right after a version: up to two count modifiers, then a counted noun ("47 active teams"). */
+const COUNT_AFTER_VERSION_SOURCE = String.raw`(?:[ \u00A0]+(?:${COUNT_MODIFIERS.join("|")})){0,2}[ \u00A0]+(?:${COUNTED_AFTER_VERSION.join("|")})(?![\p{L}\p{N}])`;
 
 /** 1 at every position of the text that STANDARD_AND_VERSION_NAMES match (one pass per pattern). */
 function standardNameMask(text: string): Uint8Array {
   const mask = new Uint8Array(text.length);
+  const countAfter = new RegExp(COUNT_AFTER_VERSION_SOURCE, "iuy");
   for (const re of STANDARD_AND_VERSION_NAMES) {
     for (const m of text.matchAll(new RegExp(re.source, re.flags))) {
       const start = m.index ?? 0;
-      mask.fill(1, start, start + m[0].length);
+      const end = start + m[0].length;
+      if (re === VERSIONED_NAME_RE) {
+        // Review P3-3: a software "version" that counts something is a figure.
+        countAfter.lastIndex = end;
+        if (countAfter.test(text)) continue;
+      }
+      mask.fill(1, start, end);
     }
   }
   return mask;
@@ -305,6 +362,9 @@ const NUMBER_WORDS: ReadonlySet<string> = new Set([
 ]);
 const COMPOUND_ONLY_WORDS: ReadonlySet<string> = new Set(["one", "zero"]);
 
+/** What follows "two" in the standard term "two-factor" (a hyphen or space, then "factor", not "factors"). */
+const TWO_FACTOR_AFTER_RE = /^[-\u2011 \u00A0]factor(?![\p{L}\p{N}])/iu;
+
 const WORD_RE = /[\p{L}\p{M}]+/gu;
 
 /** Spelled figures in normalised text: number-word phrases and percent words. */
@@ -314,8 +374,13 @@ function wordFigures(text: string): Array<{ start: number; end: number }> {
   for (const m of text.matchAll(WORD_RE)) {
     const lower = m[0].toLowerCase();
     const start = m.index ?? 0;
-    // A word glued to digits ("Five9") is part of a name, never a number word.
-    if (/\p{N}/u.test(text[start + m[0].length] ?? "") || /\p{N}/u.test(text[start - 1] ?? "")) {
+    // A word glued to digits ("Five9") is part of a name, never a number word;
+    // so is "two-factor", a standard term (review P3-4; "two factors" counts).
+    if (
+      /\p{N}/u.test(text[start + m[0].length] ?? "") ||
+      /\p{N}/u.test(text[start - 1] ?? "") ||
+      (lower === "two" && TWO_FACTOR_AFTER_RE.test(text.slice(start + m[0].length, start + m[0].length + 8)))
+    ) {
       words.push({ start, end: start + m[0].length, kind: "other" });
       continue;
     }

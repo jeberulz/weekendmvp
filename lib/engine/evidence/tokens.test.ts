@@ -13,6 +13,8 @@ import {
   renderEvidenceInline,
   STANDARD_AND_VERSION_NAMES,
   validateEditorialText,
+  VERSIONED_SOFTWARE_NAMES,
+  WRITER_NUMBER_NAME_RULE,
 } from "./tokens.ts";
 
 const AT = "2026-09-30T12:00:00.000Z";
@@ -346,6 +348,64 @@ describe("R13: standard and version names are not figures", () => {
     expect(figures("SOC 4 audits, ISO 27001% compliance and Node 22 million installs.")).toEqual(["4", "27001%", "22 million"]);
     expect(figures("Two-person sales teams ship in two weekends; Seven Bridges sells too.")).toEqual(["Two", "two", "Seven"]);
     expect(figures("Five9 sells to call centers.")).toEqual([]);
+  });
+
+  it.each([
+    ["Python 4000 developers use it.", ["4000"]],
+    ["Claude 47 teams pay for it.", ["47"]],
+    ["React 300 times faster.", ["300"]],
+    ["Node 22 active users joined.", ["22"]],
+    ["React 19 developers pick it.", ["19"]],
+    ["TLS 1300 servers and OAuth 4000 apps.", ["1300", "4000"]],
+  ])("counts a number after a versioned name unless it looks like a version (review P3-3): %s", (text, expected) => {
+    expect(figures(text)).toEqual(expected);
+  });
+
+  it("keeps versions with decimals, model names and fixed-number standards as names (review P3-3 passing set)", () => {
+    for (const text of [
+      "SOC 2, ISO 27001, Next.js 15, React 19, Postgres 16, Node 22, OAuth 2.0, Microsoft 365, 24/7, Form 1099, W-9, Claude 3.5 and Five9.",
+      "Python 3.12, Ubuntu 24.04, Node 22.11.0, Tailwind v4, GPT-4o, Claude 3.5 Sonnet, Gemini 2.5 Pro and the Claude 3 models.",
+      "OAuth 2.0 apps, ISO 27001 teams and Microsoft 365 users stay names; so do TLS 1.3, WCAG 2.2 and PCI DSS 4.0.",
+    ]) {
+      expect(figures(text), text).toEqual([]);
+    }
+  });
+
+  it("accepts SAML and SCIM versions and two-factor, the stable standard terms pages need (review P3-4)", () => {
+    for (const text of ["SSO through SAML 2.0 and provisioning through SCIM 2.0.", "Two-factor sign-in, two-factor authentication and 2FA codes."]) {
+      expect(figures(text), text).toEqual([]);
+    }
+    // Still figures: a count of factors, and SAML with a number that is no version.
+    expect(figures("Two factors explain it, and SAML 3000 users signed in.")).toEqual(["Two", "3000"]);
+  });
+
+  it("states exactly what it accepts for the writer (review P3-4)", () => {
+    // Every listed software name takes a short version, and nothing else does.
+    for (const name of VERSIONED_SOFTWARE_NAMES) {
+      expect(figures(`It runs on ${name} 15 and ${name} 3.5.`), name).toEqual([]);
+      expect(figures(`It runs on ${name} 300.`), name).toEqual(["300"]);
+      expect(WRITER_NUMBER_NAME_RULE).toContain(name);
+    }
+    for (const text of [
+      "SOC 1, SOC 2, SOC 3, ISO 27001, ISO/IEC 27001, OAuth 2.0, SAML 2.0, SCIM 2.0, PCI DSS 4.0, WCAG 2.2, TLS 1.3, SSL 3.0, HTTP/2, IPv4, IPv6",
+      "24/7, Microsoft 365, Office 365, Form 1099, 1099-NEC, W-2, W-9, two-factor, B2B, Web3, GPT-4o, 2FA, 2026, Next.js 15, Claude 3.5",
+    ]) {
+      expect(figures(text), text).toEqual([]);
+    }
+    expect(figures("10x, 5k and 3rd")).toEqual(["10x", "5k", "3rd"]);
+    // The names the rule says to write without their number are figures, so the instruction is exact.
+    for (const [text, figure] of [
+      ["Claude Sonnet 4.5", "4.5"],
+      ["Redis 7", "7"],
+      ["Prisma 5", "5"],
+      ["MongoDB 7", "7"],
+      ["Expo SDK 52", "52"],
+      ["Xcode 16", "16"],
+      ["Fortune 500", "500"],
+    ] as const) {
+      expect(figures(text), text).toEqual([figure]);
+    }
+    expect(WRITER_NUMBER_NAME_RULE).toMatch(/Any other number in a name is a figure \(Claude Sonnet 4\.5, Redis 7, Fortune 500\): drop the number\./);
   });
 
   it("treats digits inside snake_case identifiers as names (review probe p20)", () => {

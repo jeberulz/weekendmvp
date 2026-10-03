@@ -67,7 +67,13 @@ import {
   type ResearchRunReport,
   type SourceAcquisition,
 } from "./evidence/contract.ts";
-import { evidenceRefs, findQuotedSpans, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import {
+  evidenceRefs,
+  findQuotedSpans,
+  findUnboundFigures,
+  renderEvidenceInline,
+  WRITER_NUMBER_NAME_RULE,
+} from "./evidence/tokens.ts";
 import { PIPELINE, PIPELINE_VERSION, stepAt, stepById, type PipelineStep, type PipelineStepId } from "./pipeline-steps.ts";
 import { redactText, redactUrl } from "./providers/sourceText.ts";
 import {
@@ -495,6 +501,20 @@ function oneLinerIssues(oneLiner: string, fromTitle: boolean): string[] {
   return issues;
 }
 
+/**
+ * Rulings R6 and R13 for the operator's title and audience, checked before
+ * anything is billed: the writer's input opens with them (briefContext) and
+ * it echoes them into its own text, where every figure is refused, so a
+ * figure there ("sub-10 engineering teams") would fail every editorial
+ * attempt. The same detector as the one-liner's (findUnboundFigures).
+ */
+function echoedBriefIssues(title: string, audience: string): string[] {
+  return [
+    ...findUnboundFigures(title).map((f) => `brief.title: figure "${f.figure}"`),
+    ...findUnboundFigures(audience).map((f) => `brief.audience: figure "${f.figure}"`),
+  ];
+}
+
 /** The operator's brief, checked and normalized before anything is billed. */
 export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
   // Ruling R15: operator text with an invisible or bidirectional format control fails before any spend.
@@ -529,6 +549,13 @@ export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
   const slug = ((typeof input.slug === "string" && input.slug.trim()) || slugify(title)).toLowerCase();
   if (!SLUG_PATTERN.test(slug)) {
     throw new PipelineError("brief_normalization", `slug '${slug}' must match ${SLUG_PATTERN}`);
+  }
+  const echoed = echoedBriefIssues(title, audience);
+  if (echoed.length > 0) {
+    throw new PipelineError(
+      "brief_normalization",
+      `${echoed.join("; ")}. The writer reads the title and audience and echoes them into its text, where figures are refused: write them without figures, such as "small engineering teams" (rulings R6, R13)`,
+    );
   }
   const ownOneLiner = typeof input.oneLiner === "string" ? input.oneLiner.trim() : "";
   const oneLiner = ownOneLiner || title;
@@ -823,7 +850,10 @@ export const EDITORIAL_INSTRUCTIONS = [
   "- Select ids only from the accepted evidence list. marketStatIds: at least 2 market_stat ids. quoteIds: at least 2 community_quote ids, neither text containing the other. competitors: at least 3, each with priceIds of competitor_price items, and name exactly equal to the vendor of those items.",
   "- Cite an evidence item inside text as [[ev:<id>]]. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
   "- Where tokens may go: marketSummary cites market_stat items only; communitySummary cites community_quote items only; whyNow cites market_stat or community_quote items; problemNarrative cites any kind; competitiveNarrative and goToMarket.pricingNotes cite competitor_price items only; competitors[].notes cites only that competitor's own priceIds. No other field takes tokens.",
-  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". A bare year (1990–2039), product names with digits (B2B, GPT-4o) and standard or version names (SOC 2, ISO 27001, Next.js 15, OAuth 2.0) are fine. The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns; even there, state no ARR, MRR or revenue total and no computation (a count times a price equals a total).",
+  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". " +
+    // Review P3-4: exactly the names with numbers the record parser accepts.
+    WRITER_NUMBER_NAME_RULE +
+    " The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns; even there, state no ARR, MRR or revenue total and no computation (a count times a price equals a total).",
   "- No quotation marks of any kind in any field, the proposal slots and dataModel columns included: no straight or curly double or single quotes, guillemets or corner brackets around words (apostrophes inside words, such as don't or teams', are fine). Quotations reach the page only as quote evidence, so cite the quote with [[ev:<id>]] instead.",
   "- Never state a statistic, price, user count, quote or source that is not in the evidence list. When no item supports a point, say it qualitatively without numbers.",
   "Proposal rules (these are the product proposal and its assumptions, not measured facts):",
