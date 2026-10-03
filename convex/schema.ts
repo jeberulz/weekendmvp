@@ -709,6 +709,18 @@ export default defineSchema({
 
   editorial_idempotency: defineTable(idempotencyValidator).index("by_storeKey", ["storeKey"]),
   editorial_submissions: defineTable(submissionKeyValidator).index("by_submissionKey", ["submissionKey"]),
+  /** Validated contract-v2 input for re-checking private engine revisions (WP46-E5). */
+  editorial_engine_records: defineTable(
+    v.object({
+      ideaId: v.string(),
+      submissionId: v.string(),
+      recordHash: v.string(),
+      recordJson: v.string(),
+      envelopeJson: v.string(),
+      manifestJson: v.string(),
+      createdAt: v.string(),
+    }),
+  ).index("by_ideaId", ["ideaId"]),
   editorial_slugs: defineTable(slugValidator).index("by_slug", ["slug"]),
   editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
 });

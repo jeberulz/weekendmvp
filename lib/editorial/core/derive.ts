@@ -304,9 +304,9 @@ export async function deriveRevision(state: EditorialState, revisionId: string):
     issues,
     reviewItems: itemViews,
   });
-  // No check runner connected (live mode before WP46-E5): nothing is approvable,
-  // whatever checks a submission carried.
-  if (state.env.checks.run === null) {
+  // An external runner is valid only when its results are committed by the
+  // trusted backend path; a missing runner still blocks every approval.
+  if (state.env.checks.run === null && !state.env.checks.externalRun) {
     blockers.unshift({
       code: "CHECKS_NOT_RUN",
       message: state.env.checks.unavailableReason,

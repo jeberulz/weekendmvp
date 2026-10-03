@@ -4,7 +4,7 @@ import type { ActivityFilter } from "../../lib/editorial/contracts/commands";
 import type { CommandResult } from "../../lib/editorial/contracts/errors";
 import { EDITORIAL_LIMITS } from "../../lib/editorial/contracts/limits";
 import type { StateChanges } from "../../lib/editorial/core/changes";
-import { LIVE_POLICY_VERSION_UNSET } from "../../lib/editorial/core/live";
+import { LIVE_POLICY_VERSION } from "../../lib/editorial/core/live";
 import { decodeCursor, encodeCursor } from "../../lib/editorial/core/listing";
 import type { ActivityPage, StoredSettings, WorkingSetStore } from "../../lib/editorial/core/partitioned";
 import type {
@@ -121,9 +121,9 @@ export class ConvexWorkingSetStore implements WorkingSetStore {
       .withIndex("by_key", (q) => q.eq("key", "settings"))
       .unique();
     this.settingsId = doc?._id ?? null;
-    return doc
-      ? { policyVersion: doc.policyVersion, killSwitchEngaged: doc.killSwitchEngaged }
-      : { policyVersion: LIVE_POLICY_VERSION_UNSET, killSwitchEngaged: false };
+    // Policy is code-owned. Old "not-connected" settings and submitted checks
+    // cannot become current merely because the backend was upgraded.
+    return { policyVersion: LIVE_POLICY_VERSION, killSwitchEngaged: doc?.killSwitchEngaged ?? false };
   }
 
   private ideaDoc(key: string) {

@@ -100,8 +100,9 @@ describe("fixture isolation", () => {
     expect(users.every((file) => file.startsWith("convex/editorial/") || file === "convex/schema.ts")).toBe(true);
   });
 
-  test("nothing Convex loads reaches the Markdown parser, React or Next.js (WP46-E4c)", () => {
-    // None of them belongs in a Convex bundle. The parser only loads there
+  test("no edge Convex function reaches the Markdown parser, React or Next.js (WP46-E4c/E5)", () => {
+    // The authenticated E5 Node actions may load the engine auditor, while
+    // queries and mutations must remain in the edge bundle. The parser only loads there
     // because one dependency maps the `convex` export condition to its plain
     // build; under the bare `browser` condition it touches `document` on load.
     const resolve = (from: string, specifier: string) => {
@@ -111,8 +112,12 @@ describe("fixture isolation", () => {
       );
     };
     const queue = listFiles("convex").filter(
-      (file) => file.endsWith(".ts") && !/\.test\.tsx?$/.test(file) && !file.startsWith("convex/_generated/"),
+      (file) => file.endsWith(".ts") && !/\.test\.tsx?$/.test(file) && !file.startsWith("convex/_generated/")
+        && !["convex/editorial/ingest.ts", "convex/editorial/checks.ts"].includes(file),
     );
+    for (const nodeFile of ["convex/editorial/ingest.ts", "convex/editorial/checks.ts"]) {
+      expect(fs.readFileSync(path.join(ROOT, nodeFile), "utf8").startsWith('"use node";')).toBe(true);
+    }
     const seen = new Set<string>();
     const reached: string[] = [];
     while (queue.length > 0) {
@@ -140,7 +145,10 @@ describe("fixture isolation", () => {
     for (const file of convexFiles) {
       const specifiers = [...read(file).matchAll(/from "([^"]*lib\/editorial\/[^"]*)"/g)].map((match) => match[1]);
       for (const specifier of specifiers) {
-        expect(specifier, file).toMatch(/lib\/editorial\/(?:contracts|domain|core|markdown)\//);
+        const allowed = /lib\/editorial\/(?:contracts|domain|core|markdown)\//.test(specifier)
+          || (["convex/editorial/ingest.ts", "convex/editorial/checks.ts"].includes(file)
+            && /lib\/editorial\/engine\//.test(specifier));
+        expect(allowed, `${file}: ${specifier}`).toBe(true);
       }
     }
   });

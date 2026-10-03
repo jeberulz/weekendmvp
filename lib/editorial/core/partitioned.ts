@@ -16,6 +16,7 @@ import {
   type SaveDraftPatch,
 } from "../contracts/commands";
 import { fail, ok, type CommandResult, type EditorialError, type EditorialTarget } from "../contracts/errors";
+import type { QualityCheck } from "../contracts/checks";
 import type { VerificationAuthority } from "../contracts/evidence";
 import {
   isEditorialAdmin,
@@ -473,6 +474,12 @@ export class PartitionedEditorialRepository implements EditorialRepository {
 
   runChecks(revisionId: string, expectedArtifactHash: string) {
     return this.command({ scope: { kind: "revision", revisionId } }, (core) => core.runChecks(revisionId, expectedArtifactHash));
+  }
+
+  applyTrustedChecks(revisionId: string, expectedArtifactHash: string, expectedPolicyVersion: string, checks: readonly QualityCheck[]) {
+    return this.command({ scope: { kind: "revision", revisionId } }, (core) =>
+      core.applyTrustedChecks(revisionId, expectedArtifactHash, expectedPolicyVersion, checks),
+    );
   }
 
   approveRevision(revisionId: string, artifactHash: string, input: ApprovalInput) {

@@ -56,5 +56,7 @@ export default defineConfig([
     "convex/_generated/**",
     "public/**",
     ".worktrees/**",
+    ".claude/worktrees/**",
+    "tmp/editorial-import/**",
   ]),
 ]);

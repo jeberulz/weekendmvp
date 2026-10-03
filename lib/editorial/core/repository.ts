@@ -26,6 +26,7 @@ import {
   type SaveDraftPatch,
 } from "../contracts/commands";
 import { fail, ok, type CommandResult, type EditorialTarget } from "../contracts/errors";
+import { qualityCheckInputSchema, type QualityCheck } from "../contracts/checks";
 import type { EditorialClaim, EditorialSource, VerificationAuthority } from "../contracts/evidence";
 import {
   hasFreshStrongAuth,
@@ -641,7 +642,7 @@ export abstract class EditorialCore implements EditorialRepository {
     // Checks travel with their authority: none means they are dropped, never trusted.
     const submittedChecks = untrusted
       ? []
-      : submission.checks.map((check) => ({
+      : submission.checks.filter((check) => check.policyVersion === this.state.policyVersion).map((check) => ({
           ...check,
           producer: established === "engine_receipt" ? ("engine" as const) : ("fixture_simulated" as const),
         }));
@@ -1341,6 +1342,62 @@ export abstract class EditorialCore implements EditorialRepository {
       ideaId: idea.id,
       revisionId,
       detail: `${this.state.env.simulated ? "Simulated checks" : "Checks"}: ${failing} failing, ${warnings} warning${warnings === 1 ? "" : "s"}`,
+    });
+    return ok({ checksRunAt: revision.checksRunAt });
+  }
+
+  /**
+   * Only a private backend mutation calls this after the Node deep audit.
+   * Re-checking the actor, current policy and exact saved artifact inside the
+   * write transaction prevents an edit or policy change racing the audit.
+   */
+  async applyTrustedChecks(
+    revisionId: string,
+    expectedArtifactHash: string,
+    expectedPolicyVersion: string,
+    checks: readonly QualityCheck[],
+  ): Promise<CommandResult<{ checksRunAt: string }>> {
+    const guard = this.editor("checks.run", { revisionId });
+    if (!guard.ok) return guard;
+    const revision = this.revision(revisionId);
+    const idea = revision ? this.state.ideas.get(revision.ideaId) ?? null : null;
+    if (!revision || !idea) return fail("NOT_FOUND", "That revision does not exist.");
+    if (!this.state.env.checks.externalRun || this.state.policyVersion !== expectedPolicyVersion) {
+      return fail("PRECONDITION_FAILED", "The editorial check policy changed. Run checks again.");
+    }
+    const hashes = await computeRevisionHashes(revision);
+    if (hashes.artifact !== expectedArtifactHash) {
+      return fail("STALE_REVIEW_TARGET", "The revision changed. Save and run checks on the latest version.");
+    }
+    const ids = new Set<string>();
+    if (checks.length === 0 || checks.length > EDITORIAL_LIMITS.checks) {
+      return fail("INVALID_INPUT", "The engine check result set is empty or oversized.");
+    }
+    for (const check of checks) {
+      const { producer, ...input } = check;
+      if (
+        producer !== "engine" ||
+        check.policyVersion !== expectedPolicyVersion ||
+        check.evaluatedHash !== expectedArtifactHash ||
+        ids.has(check.id) ||
+        !qualityCheckInputSchema.safeParse(input).success
+      ) {
+        return fail("INVALID_INPUT", "The engine check results do not match this revision and policy.");
+      }
+      ids.add(check.id);
+    }
+    if (this.state.env.checks.requiredCheckIds.some((id) => !ids.has(id))) {
+      return fail("INVALID_INPUT", "A required engine check is missing.");
+    }
+    revision.checks = checks.map((check) => ({ ...check }));
+    revision.checksRunAt = nowIso(this.state);
+    this.stamp(idea);
+    const failing = checks.filter((check) => check.outcome === "fail" || check.outcome === "error").length;
+    const warnings = checks.filter((check) => check.outcome === "warning").length;
+    this.record("checks.run", "succeeded", {
+      ideaId: idea.id,
+      revisionId,
+      detail: `Engine audit: ${failing} failing, ${warnings} warning${warnings === 1 ? "" : "s"}`,
     });
     return ok({ checksRunAt: revision.checksRunAt });
   }

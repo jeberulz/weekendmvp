@@ -96,14 +96,13 @@ describe("live receiver", () => {
     expect(view.checks).toHaveLength(0);
   });
 
-  test("a receipt-backed import keeps verification and records engine checks", async () => {
+  test("a receipt-backed import keeps verification but discards old-policy engine checks", async () => {
     const w = world();
     const { ideaId, revisionId } = value(await w.service().importTrusted(w.engine, await liveEnvelope(), "engine_receipt"));
     const view = value(await w.as(w.admin).getRevision(ideaId, revisionId));
     expect(view.sources.every((source) => source.verificationAuthority === "engine_receipt")).toBe(true);
     expect(view.sources.some((source) => source.verification.status === "verified")).toBe(true);
-    expect(view.checks.length).toBeGreaterThan(0);
-    expect(view.checks.every((check) => check.producer === "engine")).toBe(true);
+    expect(view.checks).toHaveLength(0);
   });
 
   test("legacy imports stay unverified whatever authority the caller passes", async () => {
@@ -126,7 +125,7 @@ describe("live receiver", () => {
 });
 
 describe("live environment refusals", () => {
-  test("checks are not connected, so approval stays blocked and says why", async () => {
+  test("inline checks refuse in live mode; the authenticated Node action is required", async () => {
     const w = world();
     const { ideaId, revisionId } = value(await w.service().importTrusted(w.engine, await liveEnvelope(), "none"));
     const editor = w.as(w.admin);
@@ -134,12 +133,12 @@ describe("live environment refusals", () => {
     const view = value(await editor.getRevision(ideaId, revisionId));
     const run = await editor.runChecks(revisionId, view.hashes.artifact);
     expect(code(run)).toBe("PRECONDITION_FAILED");
-    expect(run.ok ? "" : run.error.message).toMatch(/not connected/);
+    expect(run.ok ? "" : run.error.message).toMatch(/authenticated engine audit/);
     expect(view.eligibility.canApprove).toBe(false);
     expect(view.issues.some((issue) => issue.id === "checks:stale")).toBe(true);
   });
 
-  test("receipt-backed checks cannot make a revision approvable while no check runner is connected", async () => {
+  test("placeholder-policy checks cannot make a revision approvable", async () => {
     const w = world();
     const envelope = await buildFixtureEnvelope(receiptSplitter, {
       submissionId: "live-sub-placeholder",
@@ -165,7 +164,7 @@ describe("live environment refusals", () => {
     view = value(await editor.getRevision(ideaId, revisionId));
     // Everything a reviewer can do is done; only the missing check runner blocks.
     expect(view.eligibility.blockers.map((blocker) => blocker.code)).toEqual(["CHECKS_NOT_RUN"]);
-    expect(view.eligibility.blockers[0].message).toMatch(/not connected/);
+    expect(view.eligibility.blockers[0].message).toMatch(/Required check/);
     const approval = await editor.approveRevision(revisionId, view.hashes.artifact, { attest: true, note: null });
     expect(code(approval)).toBe("APPROVAL_BLOCKED");
   });
@@ -220,7 +219,7 @@ describe("live environment refusals", () => {
     expect(settings.capability.verified).toBe(true);
     expect(settings.publishing.readiness).toBe("unavailable");
     expect(settings.integrations.find((item) => item.id === "release_worker")?.available).toBe(false);
-    expect(settings.integrations.find((item) => item.id === "engine")?.available).toBe(false);
+    expect(settings.integrations.find((item) => item.id === "engine")?.available).toBe(true);
     expect(JSON.stringify(settings)).not.toMatch(/simulated/i);
   });
 
