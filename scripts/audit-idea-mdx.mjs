@@ -25,6 +25,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { auditEngineArtifact, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
+import { hasEngineMarker as compiledPageHasEngineMarker } from "../lib/engine/compile.ts";
 import {
   CANONICAL_SECTION_TITLES,
   HOW_IT_WORKS_LABEL,
@@ -120,16 +121,15 @@ export function isEnginePage(slug, row = manifestRows().get(slug)) {
   return typeof row?.source === "string" && row.source.startsWith("engine:");
 }
 
-const ENGINE_MARKER_RE = /^engine[ \t]*:[ \t]*(["']?)true\1[ \t]*(?:#.*)?$/im;
-
 /**
  * True when the page's own frontmatter marks it as compiler output
- * (`engine: true`, which engine:compile writes). A page renamed out of the
- * engine-draft- namespace or published without an `engine:` manifest source
- * still carries it, so it keeps the deep bar (P3-8).
+ * (`engine: true`, which engine:compile writes; lib/engine/compile.ts reads
+ * it for both). A page renamed out of the engine-draft- namespace or
+ * published without an `engine:` manifest source still carries it, so it
+ * keeps the deep bar (P3-8).
  */
 export function hasEngineMarker(raw) {
-  return ENGINE_MARKER_RE.test(splitFrontmatter(raw).frontmatter);
+  return compiledPageHasEngineMarker(raw);
 }
 
 /** content/ideas/{slug}.mdx, else engine/drafts/{slug}.mdx. */
@@ -177,8 +177,13 @@ export function siblingBodies(dir, slug) {
   return bodies;
 }
 
-const MD_LINK_RE = /\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g;
-const H2_RE = /^##[ \t]+(.+?)\s*$/gm;
+// Page-wide patterns stay linear on hostile text (WP54 round 4): link text
+// stops at the next bracket, a heading title is matched greedily up to its
+// last non-space character, and a line-start pattern never runs across line
+// breaks (`^\s*` with the m flag was quadratic on long runs of blank lines).
+// Each matches what its backtracking predecessor matched.
+const MD_LINK_RE = /\[[^[\]]*\]\((https?:\/\/[^)\s]+)\)/g;
+const H2_RE = /^##[ \t]+(.*\S|.)\s*$/gm;
 
 /** Strip YAML frontmatter. */
 export function splitFrontmatter(raw) {
@@ -195,7 +200,7 @@ export function splitFrontmatter(raw) {
 /** The frontmatter `slug:` value (bare or JSON-quoted), or null. */
 export function frontmatterSlug(raw) {
   const { frontmatter } = splitFrontmatter(raw);
-  const m = /^slug:[ \t]*(.+?)[ \t]*$/m.exec(frontmatter);
+  const m = /^slug:[ \t]*(.*[^ \t\n\r\u2028\u2029]|.)[ \t]*$/m.exec(frontmatter);
   if (!m) return null;
   const value = m[1];
   if (value.startsWith('"')) {
@@ -246,7 +251,7 @@ export function countHowToSteps(solutionContent) {
   const idx = solutionContent.indexOf(HOW_IT_WORKS_LABEL);
   if (idx === -1) return 0;
   const after = solutionContent.slice(idx + HOW_IT_WORKS_LABEL.length);
-  const steps = after.match(/^\s*\d+\.\s+\S/gm);
+  const steps = after.match(/^[^\S\n\r\u2028\u2029]*\d+\.\s+\S/gm);
   return steps ? steps.length : 0;
 }
 
@@ -255,9 +260,9 @@ export function countHowToSteps(solutionContent) {
  * Prefer `- **Name**` patterns; fall back to top-level list items.
  */
 export function countCompetitorMentions(competitiveContent) {
-  const boldNamed = competitiveContent.match(/^\s*[-*]\s+\*\*[^*]+\*\*/gm);
+  const boldNamed = competitiveContent.match(/^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*[^*]+\*\*/gm);
   if (boldNamed && boldNamed.length > 0) return boldNamed.length;
-  const items = competitiveContent.match(/^\s*[-*]\s+\S/gm);
+  const items = competitiveContent.match(/^[^\S\n\r\u2028\u2029]*[-*]\s+\S/gm);
   return items ? items.length : 0;
 }
 
@@ -535,7 +540,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       if (!unit) {
         errors.push("Business Model needs a **Unit Economics** list");
       } else {
-        for (const m of unit[1].matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*/gm)) {
+        for (const m of unit[1].matchAll(/^[^\S\n\r\u2028\u2029]*[-*]\s+\*\*([^*]+)\*\*/gm)) {
           const lead = m[1].trim();
           if (!/\d/.test(lead) || countWords(lead) > 10) {
             errors.push(

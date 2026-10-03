@@ -99,11 +99,42 @@ export function proposalLabels(productName: string): {
   };
 }
 
+const LINE_TERMINATOR_RE = /[\n\r\u2028\u2029]/;
+const WHITESPACE_RE = /\s/;
+
+/**
+ * The title without its first " for …" clause, exactly where
+ * title.replace(/\s+for\s+.+$/i, "") cuts it, found in linear time (that
+ * expression backtracked quadratically on a long run of spaces). A clause
+ * is whitespace, "for", whitespace, then at least one character, with no
+ * line break after the whitespace that follows "for".
+ */
+export function withoutForClause(title: string): string {
+  let lastBreak = -1;
+  for (let i = title.length - 1; i >= 0; i -= 1) {
+    if (LINE_TERMINATOR_RE.test(title[i] ?? "")) {
+      lastBreak = i;
+      break;
+    }
+  }
+  for (const m of title.matchAll(/(?<=\s)for(?=\s)/gi)) {
+    const after = m.index + 3;
+    let runEnd = after;
+    while (runEnd < title.length && WHITESPACE_RE.test(title[runEnd] ?? "")) runEnd += 1;
+    const clause = lastBreak < after ? title.length - after >= 2 : lastBreak < runEnd && lastBreak + 1 < title.length;
+    if (!clause) continue;
+    let start = m.index;
+    while (start > 0 && WHITESPACE_RE.test(title[start - 1] ?? "")) start -= 1;
+    return title.slice(0, start);
+  }
+  return title;
+}
+
 /** The product name the page uses: editorial.productName, else the brief title without "for …". */
 export function pageProductName(record: ResearchRecordV2): string {
   const named = record.editorial?.productName?.trim();
   if (named) return named;
-  return record.brief.title.replace(/\s+for\s+.+$/i, "").trim() || record.brief.title;
+  return withoutForClause(record.brief.title).trim() || record.brief.title;
 }
 
 /** The compiler's one prose tidy-up: a stray ".." becomes "." (an ellipsis "..." is kept). */
@@ -137,9 +168,13 @@ export function viaLabel(host: string): string {
   return `(via ${host})`;
 }
 
-/** A trailing "(via host)" label and the text before it. */
+/**
+ * A trailing "(via host)" label and the text before it. The pattern starts
+ * at "(" (the text before is trimmed anyway): a leading \s* made the search
+ * quadratic on a long run of spaces.
+ */
 export function splitViaLabel(text: string): { text: string; via: string | null } {
-  const m = /\s*\(via\s+([^()\s]+)\)\s*$/i.exec(text);
+  const m = /\(via\s+([^()\s]+)\)\s*$/i.exec(text);
   if (!m) return { text: text.trim(), via: null };
   return { text: text.slice(0, m.index).trim(), via: (m[1] ?? "").toLowerCase() };
 }

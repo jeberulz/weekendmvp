@@ -427,3 +427,40 @@ describe("scripts/engine-compile.mjs writes drafts only to drafts, however a pat
     TIMEOUT,
   );
 });
+
+describe("scripts/engine-compile.mjs never replaces a handwritten idea by accident (overwrite hazard)", () => {
+  it(
+    "refuses --force on a handwritten page and manifest row, suggests an engine-draft- slug, and replaces only with --replace-handwritten",
+    async () => {
+      const dir = makeTempDir("engine-cli-");
+      const recordPath = path.join(dir, "record.json");
+      fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord()));
+      const ideasDir = path.join(dir, "ideas");
+      fs.mkdirSync(ideasDir);
+      const mdxPath = path.join(ideasDir, "ai-code-reviewer.mdx");
+      const page = '---\nslug: "ai-code-reviewer"\ntitle: "AI Code Reviewer"\n---\n\nWritten by hand.\n';
+      fs.writeFileSync(mdxPath, page);
+      const manifestPath = path.join(dir, "manifest.json");
+      const manifest = JSON.stringify({ ideas: [{ slug: "ai-code-reviewer", source: "mode-b:backfill", tools: ["cursor"], audiences: ["indie-hackers"] }] });
+      fs.writeFileSync(manifestPath, manifest);
+      const args = ["--record", recordPath, "--slug", "ai-code-reviewer", "--ideas-dir", ideasDir, "--manifest", manifestPath, "--allow-fixture", "--force"];
+
+      const refused = await runNodeScript(COMPILER, [...args, "--json"]);
+      expect(refused.code).toBe(1);
+      const result = lastJson(refused.stdout);
+      expect(isRecord(result) ? String(result.error) : "").toMatch(
+        /^refusing to replace the handwritten idea ai-code-reviewer: .*--slug engine-draft-ai-code-reviewer.*--replace-handwritten/,
+      );
+      const human = await runNodeScript(COMPILER, args);
+      expect(human.code).toBe(1);
+      expect(human.stderr).toMatch(/refusing to replace the handwritten idea ai-code-reviewer/);
+      expect(fs.readFileSync(mdxPath, "utf8")).toBe(page);
+      expect(fs.readFileSync(manifestPath, "utf8")).toBe(manifest);
+
+      const replaced = await runNodeScript(COMPILER, [...args, "--replace-handwritten", "--json"]);
+      expect(replaced.code, replaced.stdout + replaced.stderr).toBe(0);
+      expect(fs.readFileSync(mdxPath, "utf8")).toContain("\nengine: true\n");
+    },
+    TIMEOUT,
+  );
+});

@@ -90,7 +90,7 @@ import {
   type ResearchRecordV2,
 } from "./evidence/contract.ts";
 import { AUTOLINK_BREAK_CHAR, quoteMatchesExcerpt } from "./evidence/quote.ts";
-import { findQuotedSpans, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import { findComputations, findQuotedSpans, findRevenueTotals, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
 import { computeYearOne, formatUsdCents, YearOneMathError, yearOneTierTerms, type YearOneMath } from "./finance.ts";
 import {
   ideaHighlights,
@@ -277,16 +277,34 @@ function sourceKey(url: string): string | null {
 
 type Ctx = {
   body: string;
+  /** Offsets of every "\n" in body, ascending: lineOf's index. */
+  newlines: number[];
   lineOffset: number;
   errors: string[];
   warnings: string[];
 };
 
+function newlineOffsets(text: string): number[] {
+  const out: number[] = [];
+  for (let at = text.indexOf("\n"); at >= 0; at = text.indexOf("\n", at + 1)) out.push(at);
+  return out;
+}
+
+/**
+ * The 1-based line of a body offset (plus lineOffset): the newlines before
+ * it, found by binary search, so a page with many blocks stays linear.
+ */
 function lineOf(ctx: Ctx, offset: number): number {
   if (offset < 0) return 0;
-  let line = 1;
-  for (let i = 0; i < offset && i < ctx.body.length; i += 1) if (ctx.body[i] === "\n") line += 1;
-  return line + ctx.lineOffset;
+  const limit = Math.min(offset, ctx.body.length);
+  let lo = 0;
+  let hi = ctx.newlines.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if ((ctx.newlines[mid] ?? limit) < limit) lo = mid + 1;
+    else hi = mid;
+  }
+  return 1 + lo + ctx.lineOffset;
 }
 
 type SourceEntry = { url: string; titles: Set<string>; items: AcceptedEvidence[] };
@@ -387,34 +405,6 @@ function relabel(segs: Seg[], from: SegKind, to: SegKind): Seg[] {
   return segs.map((s) => (s.kind === from ? { ...s, kind: to } : s));
 }
 
-/** Quote marks findQuotedSpans pairs (fullwidth ＂ included, as its NFKC reads it). */
-const QUOTE_MARKS_AROUND_RE = /^["“”„‟«»〝〞〟＂]([\s\S]*?)["“”„‟«»〝〞〟＂]?$/u;
-
-/** The text inside a span from findQuotedSpans (its marks removed; an unclosed span has no closing mark). */
-function spanInner(span: string): string {
-  return QUOTE_MARKS_AROUND_RE.exec(span)?.[1] ?? span;
-}
-
-const MONEY = String.raw`(?:(?:US|CA|AU|C|A)?[$€£]\s?\d[\d,]*(?:\.\d+)?|(?:USD|EUR|GBP|CAD|AUD)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:USD|EUR|GBP|CAD|AUD)\b)(?:\s?(?:k|m|mn|bn|b|thousand|million|billion|trillion)\b)?`;
-const REVENUE_NOUN = String.raw`(?:ARR|MRR|revenue|run[- ]?rate|sales|income)`;
-const REVENUE_MODIFIER = String.raw`(?:annual|annualized|yearly|monthly|recurring|new|total|gross|net|projected|expected)`;
-/**
- * A revenue total: a money amount beside revenue wording, either way round.
- * "$54,000 ARR", "$5.4 million in annual revenue", "$1.2M a year in sales",
- * "ARR of $60,000", "Target ARR: 5,400,000 USD", "annual run-rate of $250k".
- * Between the amount and the wording only "in"/"of" and revenue modifiers
- * (annual, recurring, …) may stand, so a tier whose description mentions ARR
- * after its price ("$12/month) — ARR dashboards") is not one. A bare
- * "annual"/"annually" beside a price is a billing period, not revenue.
- */
-const REVENUE_TOTAL_RE = new RegExp(
-  String.raw`${MONEY}(?:\s*\/\s*(?:mo|month|yr|year))?(?:\s+(?:a|per)\s+(?:year|month))?(?:\s+(?:in|of))?(?:\s+${REVENUE_MODIFIER})*\s+${REVENUE_NOUN}\b` +
-    String.raw`|\b(?:${REVENUE_MODIFIER}\s+)*${REVENUE_NOUN}\s*(?:[:=]|of|at|is|was|reaches|reaching|hits|hitting|to|totals?|totaling|near|around|about|over|above)?\s*(?:of\s+)?~?\s*${MONEY}`,
-  "i",
-);
-
-/** A Year-One-style computation: a count times a money amount (per period) equals an amount. */
-const YEAR_ONE_STYLE_RE = /\d[\d,]*\s*[×xX*]\s*(?:US)?[$€£]\s?\d[\d,]*(?:\.\d+)?(?:\s*\/\s*[A-Za-z]+)*\s*=\s*(?:US)?[$€£]?\s?\d/;
 
 type State = {
   ctx: Ctx;
@@ -439,15 +429,26 @@ function recordNames(record: ResearchRecordV2): string[] {
   return [...new Set(names)].sort((a, b) => b.length - a.length);
 }
 
-/** Text with every whole occurrence of a name blanked (same length), for the figure rule. */
+/**
+ * Text with every whole occurrence of a name blanked (same length), for the
+ * figure rule. One pass per name, assembled once (linear in the text): an
+ * occurrence right after a blanked one sees a space before it, as if the
+ * text were rewritten in place.
+ */
 function blankNames(text: string, names: ReadonlyArray<string>): string {
   let out = text;
   for (const name of names) {
+    if (name.length === 0) continue;
+    const parts: string[] = [];
+    let copied = 0;
     for (let at = out.indexOf(name); at >= 0; at = out.indexOf(name, at + name.length)) {
       const end = at + name.length;
-      if (isWordChar(out[at - 1] ?? "") || isWordChar(out[end] ?? "")) continue;
-      out = `${out.slice(0, at)}${" ".repeat(name.length)}${out.slice(end)}`;
+      const before = at > 0 && at === copied ? " " : (out[at - 1] ?? "");
+      if (isWordChar(before) || isWordChar(out[end] ?? "")) continue;
+      parts.push(out.slice(copied, at), " ".repeat(name.length));
+      copied = end;
     }
+    if (parts.length > 0) out = parts.join("") + out.slice(copied);
   }
   return out;
 }
@@ -593,24 +594,26 @@ function applyRules(state: State): number {
           : `${piece.section}: unbound figure "${hit.figure}" near line ${piece.line} ("…${context}…") — not a rendering of the record's evidence (guard, not proof of truth)`,
       );
     }
-    for (const { span } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
-      const inner = spanInner(span);
+    for (const { inner } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
       if (ev.quotes.some((q) => quoteMatchesExcerpt(inner, q.excerpt))) continue;
       ctx.errors.push(
         `${piece.section}: quoted text "${clip(inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,
       );
     }
+    // findRevenueTotals and findComputations (tokens.ts, ruling R13) run in
+    // linear time; the expressions they replaced backtracked for minutes on
+    // "ARR" followed by a long run of spaces.
     const moneyText = pieceText(piece, MONEY_MASK);
-    const revenue = REVENUE_TOTAL_RE.exec(moneyText);
+    const [revenue] = findRevenueTotals(moneyText);
     if (revenue) {
       ctx.errors.push(
-        `${piece.section} states another revenue total at line ${piece.line} ("${clip(revenue[0], 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
+        `${piece.section} states another revenue total at line ${piece.line} ("${clip(revenue.text, 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
       );
     }
-    const computation = YEAR_ONE_STYLE_RE.exec(moneyText);
+    const [computation] = findComputations(moneyText);
     if (computation) {
       ctx.errors.push(
-        `${piece.section}: a Year-One-style computation at line ${piece.line} ("${clip(computation[0], 80)}") outside Year-One Math; only its base and downside lines compute revenue`,
+        `${piece.section}: a Year-One-style computation at line ${piece.line} ("${clip(computation.text, 80)}") outside Year-One Math; only its base and downside lines compute revenue`,
       );
     }
   }
@@ -1429,10 +1432,10 @@ function auditRevenueWithoutRecord(ctx: Ctx, section: Section | undefined, yearO
   if (!section) return;
   for (const block of businessBlocks(section.nodes)) {
     if (yearOne.lines.has(block.node)) continue;
-    const revenue = REVENUE_TOTAL_RE.exec(block.text);
+    const [revenue] = findRevenueTotals(block.text);
     if (revenue) {
       ctx.errors.push(
-        `${section.title} states another revenue total at line ${lineOf(ctx, block.node.start)} ("${clip(revenue[0], 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
+        `${section.title} states another revenue total at line ${lineOf(ctx, block.node.start)} ("${clip(revenue.text, 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
       );
     }
   }
@@ -1571,7 +1574,7 @@ export function auditEngineArtifact(
   record: ResearchRecordV2 | null,
   options: ArtifactAuditOptions = {},
 ): ArtifactAudit {
-  const ctx: Ctx = { body, lineOffset: options.lineOffset ?? 0, errors: [], warnings: [] };
+  const ctx: Ctx = { body, newlines: newlineOffsets(body), lineOffset: options.lineOffset ?? 0, errors: [], warnings: [] };
   const result: ArtifactAudit = {
     errors: ctx.errors,
     warnings: ctx.warnings,

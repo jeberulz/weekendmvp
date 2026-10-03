@@ -261,4 +261,18 @@ describe("double-quoted text outside quote blocks must be accepted quote evidenc
     );
     expect((await auditPage(page, record)).errors).toEqual([]);
   });
+
+  it("compares a span in single quotes, single guillemets or corner brackets by the words inside its marks (R13)", async () => {
+    const record = recordCitingUnselectedQuote();
+    const anchor = "Everything else stays out of the thread.";
+    for (const [open, close] of [["‘", "’"], ["‹", "›"], ["「", "」"]]) {
+      const quoted = `${open}${escapeMdxText(EV.quoteUnselected.excerpt)}${close}`;
+      const page = replaceOnce(compile(record), anchor, `${anchor} One maintainer said it plainly: ${quoted}`);
+      expect((await auditPage(page, record)).errors, quoted).toEqual([]);
+    }
+    const fabricated = replaceOnce(compile(record), anchor, `${anchor} One maintainer called it ‘the reviewer we always wanted’ today.`);
+    expect(errorsOf(await auditPage(fabricated, record))).toMatch(
+      /The Solution: quoted text "the reviewer we always wanted" near line \d+ is not an accepted community quote this record uses/,
+    );
+  });
 });
