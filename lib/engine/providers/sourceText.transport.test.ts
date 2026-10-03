@@ -1264,30 +1264,19 @@ describe("source reads: comment bodies are separated by blank lines (R14)", () =
   });
 });
 
-/** The pre-WP54 regex chain, kept to prove the linear rewrite is equivalent. */
-function regexHtmlToText(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<\/(?:tr|li|p|div)\s*>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&#x([0-9a-f]+);/gi, (m: string, h: string) => {
-      const n = parseInt(h, 16);
-      return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : m;
-    })
-    .replace(/&#(\d+);/g, (m: string, d: string) => {
-      const n = Number(d);
-      return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : m;
-    })
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&");
-}
-
 describe("htmlToText stays linear on hostile markup", () => {
+  it("preserves rendered block boundaries without inventing lines from indented inline markup", () => {
+    const html = `<div><h3 aria-label="$39/month">
+      <span>$39</span>
+      <span>/ month</span>
+    </h3></div><div>Other plan <strong>$49</strong> / month</div>`;
+    const text = htmlToText(html);
+    expect(text).toContain("$39 / month");
+    expect(text).toContain("\n");
+    expect(text).not.toMatch(/\$39\s*\n\s*\/ month/);
+    expect(text).toContain("Other plan $49 / month");
+  });
+
   it("strips 2 MiB of unclosed tags in well under a second each", () => {
     // The regex version took ~38 s for 640k characters of "<script ".
     for (const hostile of [
@@ -1301,26 +1290,6 @@ describe("htmlToText stays linear on hostile markup", () => {
     }
   });
 
-  it("produces exactly what the regex chain produced, on random markup", () => {
-    const tokens = [
-      "<", ">", "/", " ", "\n", "a", "Zé", "<>", "x>y", "<b>", "</b>", "<p>", "</p>", "</p >",
-      "</div>", "</li>", "</tr\n>", "<br>", "<br/>", "<BR />", "<script>", "<script src=x>",
-      "<SCRIPT>", "</script>", "</SCRIPT>", "</script >", "<style>", "</style>", "</STYLE>",
-      "&amp;", "&amp;lt;", "&lt;", "&gt;", "&quot;", "&nbsp;", "&#x2F;", "&#39;", "&#99999999;",
-    ];
-    // Deterministic generator, so a failure is reproducible.
-    let seed = 0x5eed;
-    const random = () => {
-      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-      return seed / 0x80000000;
-    };
-    for (let i = 0; i < 5000; i += 1) {
-      const length = Math.floor(random() * 30);
-      let html = "";
-      for (let j = 0; j < length; j += 1) html += tokens[Math.floor(random() * tokens.length)];
-      expect(htmlToText(html), JSON.stringify(html)).toBe(regexHtmlToText(html));
-    }
-  });
 });
 
 describe("redaction", () => {

@@ -22,7 +22,7 @@ import type {
 
 export const RESEARCH_RECORD_CONTRACT_VERSION_V2 = 2 as const;
 export const PIPELINE_VERSION_V2 = 2 as const;
-export const EVIDENCE_CONTRACT_VERSION = 1 as const;
+export const EVIDENCE_CONTRACT_VERSION = 2 as const;
 
 // ---------------------------------------------------------------------------
 // Source acquisition
@@ -95,17 +95,18 @@ export type PriceTerms = {
 // Evidence items
 // ---------------------------------------------------------------------------
 
-export type EvidenceKind = "community_quote" | "market_stat" | "competitor_price";
+export type EvidenceKind = "community_quote" | "market_stat" | "competitor_price" | "competitor_availability";
 
 /**
  * Id prefix per kind:
  * `${prefix}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0, 12)}`, where
  * claimKey serializes the typed claim (contract §12, ruling R1).
  */
-export const EVIDENCE_ID_PREFIX: Record<EvidenceKind, "q" | "s" | "p"> = {
+export const EVIDENCE_ID_PREFIX: Record<EvidenceKind, "q" | "s" | "p" | "a"> = {
   community_quote: "q",
   market_stat: "s",
   competitor_price: "p",
+  competitor_availability: "a",
 };
 
 export type EvidenceAttribution = "first_party" | "secondary" | "community";
@@ -155,24 +156,35 @@ export type CompetitorPriceEvidence = EvidenceBase & {
   price: PriceTerms;
 };
 
+/** A first-party statement of the vendor's pricing model, with no amount implied. */
+export type CompetitorAvailability = "contact_sales" | "usage_based" | "credit_pack";
+export type CompetitorAvailabilityEvidence = EvidenceBase & {
+  kind: "competitor_availability";
+  attribution: "first_party";
+  vendor: string;
+  availability: CompetitorAvailability;
+};
+
 export type AcceptedEvidence =
   | CommunityQuoteEvidence
   | MarketStatEvidence
-  | CompetitorPriceEvidence;
+  | CompetitorPriceEvidence
+  | CompetitorAvailabilityEvidence;
 
 export const EVIDENCE_LIMITS = {
   quoteMinWords: 6,
   quoteMaxWords: 80,
   quoteMaxChars: 480,
   excerptMaxChars: 600,
-  maxAccepted: { community_quote: 8, market_stat: 8, competitor_price: 12 },
+  maxAccepted: { community_quote: 8, market_stat: 8, competitor_price: 12, competitor_availability: 8 },
   maxRejectedStored: 200,
   rejectedCandidateChars: 120,
 } as const;
 
 export const EVIDENCE_MINIMUMS = {
   marketStats: 2,
-  pricedCompetitors: 3,
+  pricedCompetitors: 1,
+  competitors: 3,
   distinctQuotes: 2,
 } as const;
 
@@ -182,6 +194,7 @@ export const EVIDENCE_MINIMUMS = {
 
 export type RejectionReason =
   | "invalid_candidate"
+  | "unsupported_assertion"
   | "unknown_citation"
   | "source_unreadable"
   | "source_oversized"
@@ -239,10 +252,18 @@ export type CompetitorPriceCandidate = {
   priceText: string;
 };
 
+export type CompetitorAvailabilityCandidate = {
+  vendor: string;
+  sourceUrl: string;
+  supportingText: string;
+  availability: CompetitorAvailability;
+};
+
 export type ExtractionCandidates = {
   quotes: QuoteCandidate[];
   marketStats: MarketStatCandidate[];
   competitorPrices: CompetitorPriceCandidate[];
+  competitorAvailability?: CompetitorAvailabilityCandidate[];
 };
 
 // ---------------------------------------------------------------------------
@@ -253,7 +274,7 @@ export type ExtractionCandidates = {
  * `[[ev:<id>]]` inside editorial text. Not global: build a `g` copy with
  * `new RegExp(EVIDENCE_TOKEN_RE.source, "g")` so no caller shares lastIndex.
  */
-export const EVIDENCE_TOKEN_RE = /\[\[ev:([qsp]_[0-9a-f]{12})\]\]/;
+export const EVIDENCE_TOKEN_RE = /\[\[ev:([qspa]_[0-9a-f]{12})\]\]/;
 
 /**
  * Ruling R15: invisible and bidirectional format controls no record text
@@ -340,16 +361,16 @@ export const WRITER_FIELD_TOKEN_KINDS: Readonly<Record<WriterTextField, Readonly
   "market.summary": ["market_stat"],
   "community.summary": ["community_quote"],
   whyNow: ["market_stat", "community_quote"],
-  "competitors[].notes": ["competitor_price"],
+  "competitors[].notes": ["competitor_price", "competitor_availability"],
   "goToMarket.positioning": [],
-  "goToMarket.pricingNotes": ["competitor_price"],
+  "goToMarket.pricingNotes": ["competitor_price", "competitor_availability"],
   "goToMarket.channels[]": [],
   "howItWorks[]": [],
   "editorial.productName": [],
   "editorial.audienceShort": [],
-  "editorial.problemNarrative": ["community_quote", "market_stat", "competitor_price"],
+  "editorial.problemNarrative": ["community_quote", "market_stat", "competitor_price", "competitor_availability"],
   "editorial.solutionNarrative": [],
-  "editorial.competitiveNarrative": ["competitor_price"],
+  "editorial.competitiveNarrative": ["competitor_price", "competitor_availability"],
   "editorial.dontBuildYet": [],
   "editorial.stackNotes": [],
   "editorial.brandBrief": [],
@@ -423,13 +444,14 @@ export type ResearchRecordV2 = {
   mode: ResearchMode;
   brief: ResearchBrief;
   evidence: {
-    contractVersion: typeof EVIDENCE_CONTRACT_VERSION;
+    /** Version 1 records remain readable; only version 2 may carry availability. */
+    contractVersion: 1 | typeof EVIDENCE_CONTRACT_VERSION;
     accepted: AcceptedEvidence[];
     rejected: RejectedEvidence[];
     sources: SourceAcquisition[];
   };
   market: { summary: string; statIds: string[] };
-  competitors: Array<{ name: string; priceIds: string[]; notes?: string }>;
+  competitors: Array<{ name: string; priceIds: string[]; availabilityId?: string; notes?: string }>;
   community: { summary: string; quoteIds: string[] };
   keywords: KeywordRow[];
   goToMarket: GoToMarket;

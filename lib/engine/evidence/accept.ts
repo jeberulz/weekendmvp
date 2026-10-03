@@ -19,6 +19,7 @@
  *   competitor_price from the start of the supporting span's sentence to the
  *                    end of the price's clause (≤600; falls back to the
  *                    clause alone when the sentence is too long)
+ *   competitor_availability one bounded pricing statement sentence (≤600)
  * Every stat/price check runs on that excerpt, so acceptance and offline
  * re-validation apply the identical rules to the identical text.
  *
@@ -80,6 +81,7 @@ import {
   ambiguousBilling,
   amountsEqual,
   bindingWindowStart,
+  clauseAround,
   comparePriceTerms,
   comparisonCueFor,
   comparisonRange,
@@ -104,6 +106,7 @@ import {
   canonicalSourceUrl,
   isComparisonPage,
   isFirstPartyHost,
+  isVendorMarketplaceListing,
   sameSource,
   sourceHostLabel,
   strippedSourceUrl,
@@ -119,6 +122,9 @@ import {
   type AcceptedEvidence,
   type Amount,
   type CommunityQuoteEvidence,
+  type CompetitorAvailability,
+  type CompetitorAvailabilityCandidate,
+  type CompetitorAvailabilityEvidence,
   type CompetitorPriceCandidate,
   type CompetitorPriceEvidence,
   type CurrencyCode,
@@ -190,7 +196,8 @@ export const CANDIDATE_LIMITS = {
   maxYear: 2100,
 } as const;
 
-const KINDS: readonly EvidenceKind[] = ["community_quote", "market_stat", "competitor_price"];
+const KINDS: readonly EvidenceKind[] = ["community_quote", "market_stat", "competitor_price", "competitor_availability"];
+const AVAILABILITY: readonly CompetitorAvailability[] = ["contact_sales", "usage_based", "credit_pack"];
 const METRICS: readonly MarketStatMetric[] = [
   "market_size",
   "growth_rate",
@@ -223,7 +230,8 @@ export function sha256Hex(text: string): string {
 export type EvidenceClaim =
   | { kind: "community_quote" }
   | { kind: "market_stat"; metric: MarketStatMetric; amount: Amount; period: MarketStatEvidence["period"] }
-  | { kind: "competitor_price"; vendor: string; plan?: string; price: PriceTerms };
+  | { kind: "competitor_price"; vendor: string; plan?: string; price: PriceTerms }
+  | { kind: "competitor_availability"; vendor: string; availability: CompetitorAvailability };
 
 /**
  * Ruling R1 claim key: "" for a quote;
@@ -247,6 +255,7 @@ export function evidenceClaimKey(claim: EvidenceClaim): string {
       period.toYear ?? "",
     ].join("|");
   }
+  if (claim.kind === "competitor_availability") return `${vendorKey(claim.vendor)}|${claim.availability}`;
   const { amount, period, basis, qualifiers } = claim.price;
   return [
     vendorKey(claim.vendor),
@@ -261,7 +270,7 @@ export function evidenceClaimKey(claim: EvidenceClaim): string {
   ].join("|");
 }
 
-/** Contract id (R1): `${q|s|p}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0, 12)}`. */
+/** Contract id (R1): `${q|s|p|a}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0, 12)}`. */
 export function evidenceId(kind: EvidenceKind, sourceUrl: string, excerpt: string, claimKey: string): string {
   return `${EVIDENCE_ID_PREFIX[kind]}_${sha256Hex(`${kind}\n${sourceUrl}\n${excerpt}\n${claimKey}`).slice(0, 12)}`;
 }
@@ -296,6 +305,7 @@ const REASON_RANK: Partial<Record<RejectionReason, number>> = {
   subject_not_in_context: 8,
   vendor_not_in_context: 9,
   ambiguous_attribution: 10,
+  unsupported_assertion: 11,
 };
 
 function closer(current: Failure | null, next: Failure): Failure {
@@ -438,6 +448,19 @@ function readPriceCandidate(item: unknown): ItemRead<CompetitorPriceCandidate> {
   };
 }
 
+function readAvailabilityCandidate(item: unknown): ItemRead<CompetitorAvailabilityCandidate> {
+  if (!isPlainObject(item)) return { ok: false, error: "expected an object" };
+  const vendor = readString(item, "vendor", CANDIDATE_LIMITS.nameChars);
+  const sourceUrl = readString(item, "sourceUrl", CANDIDATE_LIMITS.urlChars);
+  const supportingText = readString(item, "supportingText", CANDIDATE_LIMITS.textChars);
+  const availability = readEnum(item, "availability", AVAILABILITY);
+  const error = firstError(vendor, sourceUrl, supportingText, availability);
+  if (error || !vendor.ok || !sourceUrl.ok || !supportingText.ok || !availability.ok) {
+    return itemFailure(item, error ?? "invalid", `${textField(item, "vendor")}: ${textField(item, "availability")}`);
+  }
+  return { ok: true, value: { vendor: vendor.value, sourceUrl: sourceUrl.value, supportingText: supportingText.value, availability: availability.value } };
+}
+
 function readList<T>(
   root: Record<string, unknown>,
   key: string,
@@ -483,7 +506,7 @@ export function parseExtractionCandidates(raw: unknown): {
   candidates: ExtractionCandidates;
   rejected: RejectedEvidence[];
 } {
-  const candidates: ExtractionCandidates = { quotes: [], marketStats: [], competitorPrices: [] };
+  const candidates: ExtractionCandidates = { quotes: [], marketStats: [], competitorPrices: [], competitorAvailability: [] };
   const rejected: RejectedEvidence[] = [];
   if (!isPlainObject(raw)) {
     for (const kind of KINDS) {
@@ -494,6 +517,9 @@ export function parseExtractionCandidates(raw: unknown): {
   readList(raw, "quotes", "community_quote", readQuoteCandidate, candidates.quotes, rejected);
   readList(raw, "marketStats", "market_stat", readStatCandidate, candidates.marketStats, rejected);
   readList(raw, "competitorPrices", "competitor_price", readPriceCandidate, candidates.competitorPrices, rejected);
+  if (raw.competitorAvailability !== undefined) {
+    readList(raw, "competitorAvailability", "competitor_availability", readAvailabilityCandidate, candidates.competitorAvailability!, rejected);
+  }
   return { candidates, rejected };
 }
 
@@ -576,7 +602,7 @@ function createContext(input: AcceptEvidenceInput): Context {
   }
   const vendors = [
     ...new Set(
-      [...input.candidates.competitorPrices.map((c) => c.vendor), ...(input.vendorHints ?? [])]
+      [...input.candidates.competitorPrices.map((c) => c.vendor), ...(input.candidates.competitorAvailability ?? []).map((c) => c.vendor), ...(input.vendorHints ?? [])]
         .filter((v): v is string => typeof v === "string")
         .map((v) => v.trim())
         .filter((v) => vendorKey(v).length >= 2),
@@ -919,7 +945,7 @@ function yearIssue(
 /**
  * The stat rules applied to an excerpt (acceptance and re-validation alike).
  * Some amount of the excerpt equals the claim, and for that amount: metric
- * and unit agree; the claimed period kind equals the derived one (ruling R2:
+ * and unit agree in the amount's assertion; the claimed period kind equals the derived one (ruling R2:
  * projected when isProjectedAmount marks it or the declared year is after
  * the retrieval year, otherwise measured); a declared year belongs to this
  * figure (see yearIssue); and a subject content word appears in the sentence.
@@ -938,17 +964,20 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
   let failure: Failure | null = null;
   for (const sentence of splitSentences(excerpt)) {
     const inSentence = amounts.filter((a) => a.numberStart >= sentence.start && a.numberStart < sentence.end);
-    const spans = inSentence.map((a) => ({ start: Math.max(0, a.start - sentence.start), end: a.end - sentence.start }));
-    for (const [index, found] of inSentence.entries()) {
+    for (const found of inSentence) {
       if (!amountsEqual(found.amount, claim.amount)) continue;
       matched = true;
-      const metric = metricIssue(claim.metric, sentence.text);
+      const assertion = clauseAround(sentence.text, found.numberStart - sentence.start);
+      const inAssertion = inSentence.filter((a) => a.numberStart >= sentence.start + assertion.start && a.numberStart < sentence.start + assertion.end);
+      const spans = inAssertion.map((a) => ({ start: Math.max(0, a.start - sentence.start - assertion.start), end: a.end - sentence.start - assertion.start }));
+      const index = inAssertion.indexOf(found);
+      const metric = metricIssue(claim.metric, assertion.text);
       if (metric) {
         failure ??= fail("metric_unit_mismatch", metric);
         continue;
       }
       const span = spans[index] ?? { start: 0, end: 0 };
-      const projected = laterDeclaredYear || isProjectedAmount(sentence.text, span, referenceYear);
+      const projected = laterDeclaredYear || isProjectedAmount(assertion.text, span, referenceYear);
       if (claim.periodKind === "measured" && projected) {
         failure ??= fail(
           "projection_as_measured",
@@ -963,12 +992,12 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
         continue;
       }
       const yearProblem =
-        claim.year === undefined ? null : yearIssue(sentence.text, spans, index, claim.year, claim.periodKind, referenceYear);
+        claim.year === undefined ? null : yearIssue(assertion.text, spans, index, claim.year, claim.periodKind, referenceYear);
       if (yearProblem) {
         failure ??= fail("year_not_in_context", yearProblem);
         continue;
       }
-      const subject = subjectIssue(claim.subject, sentence.text);
+      const subject = subjectIssue(claim.subject, assertion.text);
       if (subject) {
         failure ??= fail("subject_not_in_context", subject);
         continue;
@@ -1318,6 +1347,7 @@ function attributeVendor(
       return fail("ambiguous_attribution", `the price's clause also names ${clip(other, 40)}`);
     }
   }
+  if (isVendorMarketplaceListing(vendor, sourceUrl)) return { ok: true, attribution: "secondary" };
   const nearest = nearestNameBefore(text, expression, vendor, plan, vendors);
   const nearer = (): Failure | null => {
     if (nearest && !nearest.claimed) {
@@ -1342,6 +1372,24 @@ function attributeVendor(
 
 type PriceClaim = { vendor: string; terms: PriceTerms };
 
+/** A price evidence item represents a current, exact offer, not speculation or history. */
+function priceAssertionFailure(text: string, expression: PriceExpression): Failure | null {
+  const assertion = text.slice(expression.clauseStart, expression.clauseEnd);
+  if (/\b(?:not|never|without|no longer|isn't|aren't|doesn't|didn't|won't|can't)\b/iu.test(assertion)) {
+    return fail("unsupported_assertion", "the source denies the price or describes an absence, not a current offer");
+  }
+  if (/\b(?:used to|formerly|previously|historically|historical|discontinued|old price|was priced|were priced)\b/iu.test(assertion)) {
+    return fail("unsupported_assertion", "the source describes a historical price, not a current offer");
+  }
+  if (/\b(?:if|might|could|would|may|hypothetically|potentially)\b/iu.test(assertion)) {
+    return fail("unsupported_assertion", "the source makes the price conditional or hypothetical");
+  }
+  if (/\b(?:about|around|roughly|approximately|approx|estimated|estimate|average)\b|[~≈]/iu.test(assertion)) {
+    return fail("unsupported_assertion", "the source gives an approximate or modelled price, not an exact offer");
+  }
+  return null;
+}
+
 /**
  * Rulings R9 and R14, for one price expression of `text` (the source page
  * at acceptance, the excerpt at re-validation): a comparison cue in the
@@ -1356,6 +1404,8 @@ function priceContextFailure(
   vendors: ReadonlyArray<string>,
   cues?: PageBillingCues,
 ): Failure | null {
+  const assertion = priceAssertionFailure(text, expression);
+  if (assertion) return assertion;
   const cue = comparisonCueFor(text, expression) ?? nameCueFor(text, expression, vendors);
   if (cue) {
     return fail(
@@ -1534,6 +1584,53 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
   return failure ?? fail("unparseable_amount", "supporting text has no supported price expression");
 }
 
+const AVAILABILITY_CUES: Record<CompetitorAvailability, RegExp> = {
+  contact_sales: /\b(?:contact sales|talk to sales|custom (?:quote|pricing)|get (?:a )?quote|pricing on request)\b/iu,
+  usage_based: /\b(?:usage[- ]based pricing|pay[- ]as[- ]you[- ]go|per KB(?: of diff)? reviewed|per commit processed)\b/iu,
+  credit_pack: /\b(?:credit packs?|packs? of \d[\d,]* credits)\b/iu,
+};
+
+function availabilityExcerptIssue(excerpt: string, vendor: string, availability: CompetitorAvailability, sourceUrl: string, vendors: ReadonlyArray<string>): Failure | null {
+  const control = formatControlIn(excerpt);
+  if (control) return fail("invalid_candidate", controlDetail("the pricing statement", control));
+  if (!isFirstPartyHost(vendor, sourceUrl) || isComparisonPage(sourceUrl)) {
+    return fail("ambiguous_attribution", "a pricing-availability statement requires the vendor's own non-comparison page");
+  }
+  for (const other of vendors) {
+    if (vendorKey(other) !== vendorKey(vendor) && nameMentions(excerpt, other).length > 0) {
+      return fail("ambiguous_attribution", `the pricing statement also names ${clip(other, 40)}`);
+    }
+  }
+  if (!/(?:price|pricing|plan|quote|billing|usage|credit)/iu.test(new URL(sourceUrl).pathname + " " + excerpt)) {
+    return fail("unsupported_assertion", "the statement is not in pricing context");
+  }
+  if (!AVAILABILITY_CUES[availability].test(excerpt)) {
+    return fail("unsupported_assertion", `the excerpt does not state ${availability.replace(/_/g, " ")}`);
+  }
+  return null;
+}
+
+function acceptAvailability(candidate: CompetitorAvailabilityCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
+  if (formatControlIn(candidate.vendor) || vendorKey(candidate.vendor).length < 2) return fail("invalid_candidate", "invalid vendor name");
+  const resolved = resolveSource(context, candidate.sourceUrl);
+  if (!resolved.ok) return resolved;
+  const source = resolved.source;
+  const rival = rivalSiteFailure(candidate.vendor, source.url, context.vendors);
+  if (rival) return rival;
+  const span = findContiguousSpanIn(candidate.supportingText, source.prepared);
+  if (!span.ok) return fail(span.reason, spanDetail(span.reason));
+  const sentence = sentenceAround(source.text, span.start);
+  if (span.end > sentence.end || sentence.end - sentence.start > EVIDENCE_LIMITS.excerptMaxChars) {
+    return fail("span_bounds", "pricing statement must fit in one sentence of at most 600 characters");
+  }
+  const excerpt = source.text.slice(sentence.start, sentence.end);
+  const issue = availabilityExcerptIssue(excerpt, candidate.vendor, candidate.availability, source.url, context.vendors);
+  if (issue) return issue;
+  const claim = { kind: "competitor_availability" as const, vendor: candidate.vendor, availability: candidate.availability };
+  const item: CompetitorAvailabilityEvidence = { ...baseFields(claim, source, excerpt), ...claim, attribution: "first_party" };
+  return { ok: true, item };
+}
+
 // ---------------------------------------------------------------------------
 // Acceptance
 // ---------------------------------------------------------------------------
@@ -1561,6 +1658,9 @@ function sameClaim(a: AcceptedEvidence, b: AcceptedEvidence): boolean {
       (a.plan ?? "") === (b.plan ?? "") &&
       comparePriceTerms(a.price, b.price) === null
     );
+  }
+  if (a.kind === "competitor_availability" && b.kind === "competitor_availability") {
+    return vendorKey(a.vendor) === vendorKey(b.vendor) && a.availability === b.availability;
   }
   return true;
 }
@@ -1599,7 +1699,7 @@ export function acceptEvidence(input: AcceptEvidenceInput): AcceptEvidenceResult
   const context = createContext(input);
   const accepted: AcceptedEvidence[] = [];
   const rejected: RejectedEvidence[] = [];
-  const counts: Record<EvidenceKind, number> = { community_quote: 0, market_stat: 0, competitor_price: 0 };
+  const counts: Record<EvidenceKind, number> = { community_quote: 0, market_stat: 0, competitor_price: 0, competitor_availability: 0 };
 
   const settle = (
     kind: EvidenceKind,
@@ -1642,6 +1742,11 @@ export function acceptEvidence(input: AcceptEvidenceInput): AcceptEvidenceResult
     const outcome = read.ok ? acceptPrice(read.value, context) : fail("invalid_candidate", read.error);
     settle("competitor_price", rawField(raw, "sourceUrl"), `${rawField(raw, "vendor")}: ${rawField(raw, "priceText")}`, outcome);
   }
+  for (const raw of input.candidates.competitorAvailability ?? []) {
+    const read = readAvailabilityCandidate(raw);
+    const outcome = read.ok ? acceptAvailability(read.value, context) : fail("invalid_candidate", read.error);
+    settle("competitor_availability", rawField(raw, "sourceUrl"), `${rawField(raw, "vendor")}: ${rawField(raw, "availability")}`, outcome);
+  }
   return { accepted, rejected };
 }
 
@@ -1654,6 +1759,7 @@ const ALLOWED_KEYS: Record<EvidenceKind, ReadonlySet<string>> = {
   community_quote: new Set(COMMON_KEYS),
   market_stat: new Set([...COMMON_KEYS, "subject", "metric", "amount", "period"]),
   competitor_price: new Set([...COMMON_KEYS, "vendor", "plan", "price"]),
+  competitor_availability: new Set([...COMMON_KEYS, "vendor", "availability"]),
 };
 const MAGNITUDES = ["none", "thousand", "million", "billion", "trillion"] as const;
 const UNITS = ["currency", "percent", "count"] as const;
@@ -1765,7 +1871,8 @@ type StoredClaim =
       vendor: string;
       plan?: string;
       price: PriceTerms;
-    };
+    }
+  | { kind: "competitor_availability"; vendor: string; availability: CompetitorAvailability };
 
 /** Shape-check the typed claim fields of a stored item; null (with issues) when invalid. */
 function readStoredClaim(kind: EvidenceKind, item: Record<string, unknown>, issues: string[]): StoredClaim | null {
@@ -1782,6 +1889,14 @@ function readStoredClaim(kind: EvidenceKind, item: Record<string, unknown>, issu
     const amount = readStoredAmount(item.amount, issues, "amount");
     const period = readStoredPeriod(item.period, issues);
     return subject !== null && metric && amount && period ? { kind, subject, metric, amount, period } : null;
+  }
+  if (kind === "competitor_availability") {
+    if (item.attribution !== "first_party") issues.push("attribution: availability statements must be first_party");
+    const vendor = nonEmptyString(item.vendor, CANDIDATE_LIMITS.nameChars) && vendorKey(item.vendor).length >= 2 ? item.vendor : null;
+    if (vendor === null) issues.push("vendor: required");
+    const availability = AVAILABILITY.find((v) => v === item.availability);
+    if (!availability) issues.push("availability: invalid");
+    return vendor && availability ? { kind, vendor, availability } : null;
   }
   const attribution = item.attribution === "first_party" || item.attribution === "secondary" ? item.attribution : null;
   if (!attribution) issues.push("attribution: prices are first_party or secondary");
@@ -1831,6 +1946,10 @@ function rederivationIssues(
     if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
     return samePeriod(check.period, period) ? [] : ["period: does not re-derive from the excerpt"];
   }
+  if (claim.kind === "competitor_availability") {
+    const issue = availabilityExcerptIssue(excerpt, claim.vendor, claim.availability, sourceUrl, vendors);
+    return issue ? [`claim: ${issue.reason} (${issue.detail})`] : [];
+  }
   const check = checkPriceExcerpt(
     excerpt,
     { vendor: claim.vendor, terms: claim.price, ...(claim.plan !== undefined ? { plan: claim.plan } : {}) },
@@ -1866,7 +1985,7 @@ export function revalidateAcceptedEvidence(
   if (!isPlainObject(item)) return { ok: false, issues: ["expected an object"] };
   const issues: string[] = [];
   const kind = KINDS.find((k) => k === item.kind);
-  if (!kind) return { ok: false, issues: ["kind: expected community_quote, market_stat or competitor_price"] };
+  if (!kind) return { ok: false, issues: ["kind: expected a known evidence kind"] };
 
   const extra = Object.keys(item).filter((k) => !ALLOWED_KEYS[kind].has(k));
   if (extra.length > 0) issues.push(`unexpected field ${extra.join(", ")}`);
@@ -1914,6 +2033,7 @@ export function revalidateAcceptedEvidence(
   };
   if (claim.kind === "community_quote") return { ok: true, item: { ...base, kind: claim.kind, attribution: "community" } };
   if (claim.kind === "market_stat") return { ok: true, item: { ...base, ...claim, attribution: "secondary" } };
+  if (claim.kind === "competitor_availability") return { ok: true, item: { ...base, ...claim, attribution: "first_party" } };
   return { ok: true, item: { ...base, ...claim } };
 }
 
@@ -1923,7 +2043,8 @@ export function revalidateAcceptedEvidence(
 
 /**
  * EVIDENCE_MINIMUMS over accepted items: ≥2 stats, ≥3 distinct vendors (by
- * vendorKey) with an accepted price, ≥2 distinct quotes, where two quotes
+ * vendorKey) with a price or first-party availability statement, ≥1 vendor
+ * with a numeric price, and ≥2 distinct quotes, where two quotes
  * are distinct only when neither contains the other (ruling R8,
  * distinctQuoteCount).
  */
@@ -1932,16 +2053,20 @@ export function checkEvidenceMinimums(accepted: ReadonlyArray<AcceptedEvidence>)
   shortfalls: string[];
 } {
   const stats = accepted.filter((e) => e.kind === "market_stat").length;
-  const vendors = new Set(
+  const pricedVendors = new Set(
     accepted.flatMap((e) => (e.kind === "competitor_price" ? [vendorKey(e.vendor)] : [])).filter(Boolean),
   );
+  const vendors = new Set(accepted.flatMap((e) => (e.kind === "competitor_price" || e.kind === "competitor_availability" ? [vendorKey(e.vendor)] : [])).filter(Boolean));
   const quotes = distinctQuoteCount(accepted.flatMap((e) => (e.kind === "community_quote" ? [e.excerpt] : [])));
   const shortfalls: string[] = [];
   if (stats < EVIDENCE_MINIMUMS.marketStats) {
     shortfalls.push(`market stats: ${stats} accepted, need ${EVIDENCE_MINIMUMS.marketStats}`);
   }
-  if (vendors.size < EVIDENCE_MINIMUMS.pricedCompetitors) {
-    shortfalls.push(`priced competitors: ${vendors.size} vendors with an accepted price, need ${EVIDENCE_MINIMUMS.pricedCompetitors}`);
+  if (pricedVendors.size < EVIDENCE_MINIMUMS.pricedCompetitors) {
+    shortfalls.push(`priced competitors: ${pricedVendors.size} vendors with an accepted price, need ${EVIDENCE_MINIMUMS.pricedCompetitors}`);
+  }
+  if (vendors.size < EVIDENCE_MINIMUMS.competitors) {
+    shortfalls.push(`competitors: ${vendors.size} vendors with accepted price or availability, need ${EVIDENCE_MINIMUMS.competitors}`);
   }
   if (quotes < EVIDENCE_MINIMUMS.distinctQuotes) {
     shortfalls.push(`community quotes: ${quotes} distinct accepted, need ${EVIDENCE_MINIMUMS.distinctQuotes}`);

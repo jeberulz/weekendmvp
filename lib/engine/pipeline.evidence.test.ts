@@ -455,7 +455,8 @@ describe("F5: a wrong claim never enters the returned record", () => {
     });
     const error = await failureOf(run(h));
     expect(error.stepId).toBe("evidence_acceptance");
-    expect(error.message).toMatch(/priced competitors: 0 vendors with an accepted price, need 3/);
+    expect(error.message).toMatch(/priced competitors: 0 vendors with an accepted price, need 1/);
+    expect(error.message).toMatch(/competitors: 0 vendors with accepted price or availability, need 3/);
     expect(h.keywordLookups).toBe(0);
     expect(editorialRequests(h)).toHaveLength(0);
     const reasons = error.report?.evidence.rejected.map((r) => r.reason) ?? [];
@@ -526,7 +527,7 @@ describe("too little accepted evidence stops before keyword and editorial spend"
       community_signals: 1,
       evidence_extraction: 1,
     });
-    expect(error.report?.evidence.accepted).toEqual({ community_quote: 0, market_stat: 3, competitor_price: 3 });
+    expect(error.report?.evidence.accepted).toEqual({ community_quote: 0, market_stat: 3, competitor_price: 3, competitor_availability: 0 });
   });
 
   it("stops at acquisition, before extraction spend, when no cited page can be read", async () => {

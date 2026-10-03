@@ -14,7 +14,7 @@ Where the two disagree, the TypeScript file wins and this document is fixed.
 |---|---|---|
 | `RESEARCH_RECORD_CONTRACT_VERSION` | `2` | Record shape below. v1 records are legacy. |
 | `PIPELINE_VERSION` | `2` | Evidence is accepted before editorial writing. |
-| `EVIDENCE_CONTRACT_VERSION` | `1` | Evidence item shape inside a v2 record. |
+| `EVIDENCE_CONTRACT_VERSION` | `2` | Current evidence shape inside a v2 record; version 1 remains readable without availability items. |
 
 A v1 record stays readable through an explicitly named legacy reader for
 history only. `parseResearchRecord` (the publish path: compile, audit, eval)
@@ -48,8 +48,9 @@ Rules:
   R13; originally 2), counting provider retries and regenerations after
   validation failure. Each regeneration repeats the same accepted bundle plus
   the list of validation issues. It is never more permissive.
-- Minimums apply to **accepted** evidence: ≥2 market stats, ≥3 competitors
-  each with ≥1 accepted price, ≥2 distinct accepted community quotes
+- Minimums apply to **accepted** evidence: ≥2 market stats, ≥3 distinct
+  competitors with price or first-party availability evidence (≥1 with a
+  numeric price), ≥2 distinct accepted community quotes
   (distinct = different normalized quote text). Readable-page counts remain an
   acquisition precondition for the supplement search only.
 - The editorial input never contains search answer prose, raw page text,
@@ -287,13 +288,13 @@ type ResearchRecordV2 = {
   mode: "live" | "fixture";
   brief: ResearchBrief;                                    // unchanged
   evidence: {
-    contractVersion: 1;
+    contractVersion: 1 | 2;                               // new runs write 2
     accepted: AcceptedEvidence[];
     rejected: RejectedEvidence[];                          // ≤200, operator-only
     sources: SourceAcquisition[];                          // one per distinct URL attempted
   };
   market: { summary: string; statIds: string[] };          // ≥2
-  competitors: Array<{ name: string; priceIds: string[]; notes?: string }>; // ≥3
+  competitors: Array<{ name: string; priceIds: string[]; availabilityId?: string; notes?: string }>; // ≥3; ≥1 priced
   community: { summary: string; quoteIds: string[] };      // ≥2 distinct
   keywords: KeywordRow[];                                  // provider only, unchanged
   goToMarket: GoToMarket;
@@ -586,6 +587,23 @@ source acquisition statuses, accepted counts per kind, and rejected
   other number in a name (Claude Sonnet 4.5, Redis 7, Fortune 500). A live
   brief's title and audience may hold no figure (the writer echoes both);
   the CLI refuses such a brief before the first paid call.
+
+- **R17 (2026-10-03, PR #96 GO repair): availability is evidence, not a price.**
+  Evidence contract version 2 adds `competitor_availability` with a first-party
+  citation, a source excerpt and exactly one status: `contact_sales`,
+  `usage_based` or `credit_pack`. Acceptance requires the vendor's own
+  non-comparison page, an explicit cue in a single bounded sentence, pricing
+  context and no other known vendor named there. Stored items re-derive the
+  status and hash; version 1 records without this kind stay readable. The
+  minimum is three distinct vendors with accepted price or availability,
+  including at least one vendor with an accepted numeric price. A competitor
+  row has numeric `priceIds` or one `availabilityId`, never both. The compiler
+  and final auditor render and verify the status as a linked statement, without
+  implying a numeric price. Shopify app prices count as secondary only when
+  the listing slug exactly identifies the vendor. Generated homepage
+  highlights may show these availability labels; proposed product tiers come
+  from validated `editorial.pricingTiers`, not parsed MDX or competitor prices.
+  The per-report cost cap and pre-editorial fail-closed gate are unchanged.
 
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,

@@ -875,11 +875,12 @@ export const RESEARCH_RECORD_V2_LIMITS = {
   acceptedItems:
     EVIDENCE_LIMITS.maxAccepted.community_quote +
     EVIDENCE_LIMITS.maxAccepted.market_stat +
-    EVIDENCE_LIMITS.maxAccepted.competitor_price,
+    EVIDENCE_LIMITS.maxAccepted.competitor_price +
+    EVIDENCE_LIMITS.maxAccepted.competitor_availability,
   /** evidence.rejected (operator-only). */
   rejected: EVIDENCE_LIMITS.maxRejectedStored,
   /** competitors: each needs its own accepted price, so at most the price cap. */
-  competitors: EVIDENCE_LIMITS.maxAccepted.competitor_price,
+  competitors: EVIDENCE_LIMITS.maxAccepted.competitor_price + EVIDENCE_LIMITS.maxAccepted.competitor_availability,
   /** keywords: the keyword step sends at most 50 terms; 100 leaves headroom. */
   keywords: 100,
   channels: 12,
@@ -946,7 +947,7 @@ const EDITORIAL_TEXT_KEYS = [
 const EDITORIAL_KEYS = [...EDITORIAL_TEXT_KEYS, "pricingTiers", "unitEconomics", "yearOne", "dataModel"] as const;
 const YEAR_ONE_KEYS = ["funnel", "tier", "payingAccounts", "seatsPerAccount", "assumptions"] as const;
 
-const EVIDENCE_KINDS: readonly EvidenceKind[] = ["community_quote", "market_stat", "competitor_price"];
+const EVIDENCE_KINDS: readonly EvidenceKind[] = ["community_quote", "market_stat", "competitor_price", "competitor_availability"];
 const SOURCE_ROLES: readonly SourceRole[] = ["market", "competitors", "community"];
 /** Typed as a total record so a new contract status or reason fails to compile until listed. */
 const SOURCE_STATUSES: Record<SourceStatus, true> = {
@@ -962,6 +963,7 @@ const SOURCE_STATUSES: Record<SourceStatus, true> = {
 };
 const REJECTION_REASONS: Record<RejectionReason, true> = {
   invalid_candidate: true,
+  unsupported_assertion: true,
   unknown_citation: true,
   source_unreadable: true,
   source_oversized: true,
@@ -1274,7 +1276,7 @@ function vendorNamesOf(input: Record<string, unknown>): string[] {
   }
   if (isPlainObject(input.evidence) && Array.isArray(input.evidence.accepted)) {
     for (const item of input.evidence.accepted.slice(0, RESEARCH_RECORD_V2_LIMITS.acceptedItems)) {
-      if (isPlainObject(item) && item.kind === "competitor_price") add(item.vendor);
+      if (isPlainObject(item) && (item.kind === "competitor_price" || item.kind === "competitor_availability")) add(item.vendor);
     }
   }
   return [...names];
@@ -1290,7 +1292,7 @@ function parseAccepted(
   const byId = new Map<string, AcceptedEvidence>();
   const list = readArray(value, "evidence.accepted", ctx, { max: RESEARCH_RECORD_V2_LIMITS.acceptedItems });
   if (!list) return { items, byId };
-  const counts: Record<EvidenceKind, number> = { community_quote: 0, market_stat: 0, competitor_price: 0 };
+  const counts: Record<EvidenceKind, number> = { community_quote: 0, market_stat: 0, competitor_price: 0, competitor_availability: 0 };
   const firstIndex = new Map<string, number>();
   for (const [i, entry] of list.entries()) {
     const path = `evidence.accepted[${i}]`;
@@ -1330,7 +1332,7 @@ function parseRejected(value: unknown, ctx: V2Context): RejectedEvidence[] | nul
     const raw = readObject(entry, path, ["kind", "reason", "sourceUrl", "candidate", "detail"], ctx);
     if (!raw) continue;
     const kind = EVIDENCE_KINDS.find((k) => k === raw.kind);
-    if (!kind) ctx.issues.push(`${path}.kind: expected community_quote, market_stat or competitor_price`);
+    if (!kind) ctx.issues.push(`${path}.kind: expected a known evidence kind`);
     const reason = isRejectionReason(raw.reason) ? raw.reason : null;
     if (reason === null) ctx.issues.push(`${path}.reason: unknown rejection reason ${describeValue(raw.reason)}`);
     const optional = (key: "sourceUrl" | "candidate" | "detail", max: number) =>
@@ -1359,18 +1361,21 @@ type ParsedEvidence = {
 function parseEvidenceV2(value: unknown, vendors: ReadonlyArray<string>, ctx: V2Context): ParsedEvidence {
   const raw = readObject(value, "evidence", ["contractVersion", "accepted", "rejected", "sources"], ctx);
   if (!raw) return { value: null, byId: new Map() };
-  const versionOk = raw.contractVersion === EVIDENCE_CONTRACT_VERSION;
+  const versionOk = raw.contractVersion === 1 || raw.contractVersion === EVIDENCE_CONTRACT_VERSION;
   if (!versionOk) {
     ctx.issues.push(
-      `evidence.contractVersion: expected ${EVIDENCE_CONTRACT_VERSION} (got ${describeValue(raw.contractVersion)})`,
+      `evidence.contractVersion: expected 1 or ${EVIDENCE_CONTRACT_VERSION} (got ${describeValue(raw.contractVersion)})`,
     );
   }
   const sources = parseSources(raw.sources, ctx);
   const accepted = parseAccepted(raw.accepted, sources ?? [], vendors, ctx);
   const rejected = parseRejected(raw.rejected, ctx);
+  if (raw.contractVersion === 1 && accepted.items.some((item) => item.kind === "competitor_availability")) {
+    ctx.issues.push("evidence.contractVersion: availability evidence requires version 2");
+  }
   if (!versionOk || !sources || !rejected) return { value: null, byId: accepted.byId };
   return {
-    value: { contractVersion: EVIDENCE_CONTRACT_VERSION, accepted: accepted.items, rejected, sources },
+    value: { contractVersion: raw.contractVersion as 1 | typeof EVIDENCE_CONTRACT_VERSION, accepted: accepted.items, rejected, sources },
     byId: accepted.byId,
   };
 }
@@ -1444,7 +1449,7 @@ function parseCompetitorsV2(
   ctx: V2Context,
 ): ResearchRecordV2["competitors"] | null {
   const list = readArray(value, "competitors", ctx, {
-    min: EVIDENCE_MINIMUMS.pricedCompetitors,
+    min: EVIDENCE_MINIMUMS.competitors,
     max: RESEARCH_RECORD_V2_LIMITS.competitors,
   });
   if (!list) return null;
@@ -1453,7 +1458,7 @@ function parseCompetitorsV2(
   const byVendorKey = new Map<string, number>();
   for (const [i, entry] of list.entries()) {
     const path = `competitors[${i}]`;
-    const raw = readObject(entry, path, ["name", "priceIds", "notes"], ctx);
+    const raw = readObject(entry, path, ["name", "priceIds", "availabilityId", "notes"], ctx);
     if (!raw) continue;
     const name = readEditorialText(raw.name, `${path}.name`, ctx, RESEARCH_RECORD_V2_LIMITS.identifierChars);
     if (name !== null) {
@@ -1468,7 +1473,6 @@ function parseCompetitorsV2(
       }
     }
     const prices = readEvidenceIds(raw.priceIds, `${path}.priceIds`, "competitor_price", byId, ctx, {
-      min: 1,
       max: EVIDENCE_LIMITS.maxAccepted.competitor_price,
     });
     if (prices && name !== null) {
@@ -1478,11 +1482,19 @@ function parseCompetitorsV2(
         }
       }
     }
-    if (prices) ctx.competitorPriceIds.set(i, new Set(prices.ids));
+    const availabilityId = raw.availabilityId === undefined ? undefined : readText(raw.availabilityId, `${path}.availabilityId`, ctx, 32);
+    const availability = availabilityId ? byId.get(availabilityId) : undefined;
+    if (availabilityId && availability?.kind !== "competitor_availability") ctx.issues.push(`${path}.availabilityId: must resolve to accepted competitor_availability evidence`);
+    if (availability?.kind === "competitor_availability" && availability.vendor.trim() !== name) ctx.issues.push(`${path}.availabilityId: statement is for ${availability.vendor}, not ${name}`);
+    if (prices && prices.ids.length === 0 && !availabilityId) ctx.issues.push(`${path}: needs a priceId or availabilityId`);
+    if (prices && prices.ids.length > 0 && availabilityId) ctx.issues.push(`${path}: use a priceId or availabilityId, not both`);
+    if (prices) ctx.competitorPriceIds.set(i, new Set([...prices.ids, ...(availabilityId ? [availabilityId] : [])]));
     const notes = raw.notes === undefined ? undefined : readEditorialText(raw.notes, `${path}.notes`, ctx);
-    if (name === null || !prices || notes === null) continue;
-    out.push({ name, priceIds: prices.ids, ...(notes !== undefined ? { notes } : {}) });
+    if (name === null || !prices || notes === null || availabilityId === null) continue;
+    out.push({ name, priceIds: prices.ids, ...(availabilityId ? { availabilityId } : {}), ...(notes !== undefined ? { notes } : {}) });
   }
+  const priced = out.filter((row) => row.priceIds.length > 0).length;
+  if (priced < EVIDENCE_MINIMUMS.pricedCompetitors) ctx.issues.push(`competitors: need ≥${EVIDENCE_MINIMUMS.pricedCompetitors} with accepted prices (got ${priced})`);
   return out;
 }
 

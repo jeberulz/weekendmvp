@@ -794,6 +794,10 @@ function priceOwner(item: CompetitorPriceEvidence): string {
 export function renderEvidenceInline(item: AcceptedEvidence): string {
   if (item.kind === "market_stat") return renderStat(item);
   if (item.kind === "competitor_price") return `${formatPriceTerms(item.price)} (${priceOwner(item)})`;
+  if (item.kind === "competitor_availability") {
+    const label = { contact_sales: "Contact sales for pricing", usage_based: "Usage-based pricing", credit_pack: "Credit packs" }[item.availability];
+    return `${label} (${item.vendor})`;
+  }
   return `"${item.excerpt.replace(/\s+/g, " ").trim()}"`;
 }
 

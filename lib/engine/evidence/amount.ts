@@ -75,8 +75,8 @@
  *     starting_at      starting/starts/start at|from, from, as low as — only
  *                      directly before the amount ("from just ~$9/month")
  *   A qualifier phrase preceded by no/not/without/never/zero is ignored.
- *   Every qualifier in the clause applies to every price in that clause, so
- *   a clause that names two billing terms makes each price claim need both.
+ *   A trailing qualifier belongs to the nearest preceding price. A qualifier
+ *   before multiple prices is ambiguous; those prices are not evidence.
  *
  * PROJECTIONS (contract §12, ruling R2)
  *   A projection cue (will, would, shall, could, might, should, lowercase
@@ -700,7 +700,7 @@ export function splitSentences(text: string): TextRange[] {
   return out;
 }
 
-const CONTRAST_RE = /(?<![\p{L}\p{N}])(?:while|whereas|but|versus|vs\.?|compared[ \t\u00A0]+(?:to|with))(?![\p{L}\p{N}])/giu;
+const CONTRAST_RE = /(?<![\p{L}\p{N}])(?:while|whereas|but|versus|vs\.?|compared[ \t\u00A0]+(?:to|with))(?![\p{L}\p{N}])|,[ \t\u00A0]+(?:and|or)[ \t\u00A0]+/giu;
 
 function clauseRanges(text: string, sentence: TextRange): TextRange[] {
   const cuts: Array<{ at: number; skip: number }> = [];
@@ -998,12 +998,16 @@ function sortQualifiers(set: Iterable<PriceQualifier>): PriceQualifier[] {
   return QUALIFIER_ORDER.filter((q) => present.has(q));
 }
 
-function clauseQualifiers(clause: string): Set<PriceQualifier> {
+function clauseQualifiers(clause: string, priceStarts: readonly number[], currentPriceStart: number): Set<PriceQualifier> | null {
   const found = new Set<PriceQualifier>();
   for (const [qualifier, pattern] of QUALIFIER_PATTERNS) {
     const re = new RegExp(pattern.source, pattern.flags);
     for (const m of clause.matchAll(re)) {
-      if (!NEGATION_BEFORE_RE.test(clause.slice(0, m.index ?? 0))) found.add(qualifier);
+      const at = m.index ?? 0;
+      if (NEGATION_BEFORE_RE.test(clause.slice(0, at))) continue;
+      if (priceStarts.length > 1 && at < (priceStarts[0] ?? 0)) return null;
+      const owner = [...priceStarts].reverse().find((start) => start <= at) ?? priceStarts[0];
+      if (owner === currentPriceStart) found.add(qualifier);
     }
   }
   return found;
@@ -1017,7 +1021,18 @@ function readPriceAt(text: string, found: FoundAmount): PriceExpression | null {
   const clauseStart = Math.min(first.start, last.start, found.start);
   const clauseEnd = Math.max(first.end, last.end, units.end);
   const clause = text.slice(clauseStart, clauseEnd);
-  const qualifiers = clauseQualifiers(clause);
+  // No accepted excerpt can contain a clause longer than this. Bounding it
+  // also prevents rescanning a giant minified HTML line for every price.
+  if (clause.length > 600) return null;
+  const priceStarts = scanAmounts(clause)
+    .filter((amount) => {
+      if (amount.amount.unit !== "currency") return false;
+      const priceUnits = readUnits(clause, amount.end);
+      return priceUnits !== null && priceUnits.period !== null;
+    })
+    .map((amount) => amount.start);
+  const qualifiers = clauseQualifiers(clause, priceStarts, found.start - clauseStart);
+  if (!qualifiers) return null;
   if (STARTING_AT_BEFORE_RE.test(text.slice(clauseStart, found.start))) qualifiers.add("starting_at");
   return {
     terms: {
@@ -1338,8 +1353,11 @@ export function ambiguousBilling(
   let annual = (cues.pageAnnualBefore[first] ?? 0) === 1;
   let monthly = period === "month" || (cues.pageMonthlyBefore[first] ?? 0) === 1;
   for (let i = first; i <= own; i += 1) {
-    annual ||= cues.blockAnnual[i] === 1;
-    monthly ||= cues.blockMonthly[i] === 1;
+    // Another offer on the same line does not qualify this offer. Headers and
+    // other lines above still count as page-level billing context.
+    const block = i === own ? billingCues(expression.clause, true) : { annual: cues.blockAnnual[i] === 1, monthly: cues.blockMonthly[i] === 1 };
+    annual ||= block.annual;
+    monthly ||= block.monthly;
   }
   if (!annual || !monthly) return null;
   return "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)";

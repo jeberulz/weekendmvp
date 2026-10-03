@@ -251,7 +251,7 @@ export function usedEvidenceIds(record: ResearchRecordV2): Set<string> {
   const ids = new Set<string>([
     ...record.community.quoteIds,
     ...record.market.statIds,
-    ...record.competitors.flatMap((c) => c.priceIds),
+    ...record.competitors.flatMap((c) => [...c.priceIds, ...(c.availabilityId ? [c.availabilityId] : [])]),
   ]);
   for (const field of WRITER_TEXT_FIELDS) {
     if (WRITER_FIELD_TOKEN_KINDS[field].length === 0) continue;
@@ -280,6 +280,9 @@ export const HIGHLIGHT_LIMITS = {
   competitorPrice: 16,
   minCompetitors: 3,
   maxCompetitors: 5,
+  tierName: 32,
+  tierPrice: 48,
+  maxTiers: 3,
 } as const;
 
 /** The manifest `highlights` block lib/home/highlights.ts reads. */
@@ -287,6 +290,8 @@ export type IdeaHighlights = {
   problemQuote: string;
   stats: Array<{ value: string; label: string; source?: string }>;
   competitors?: Array<{ name: string; price: string }>;
+  /** The record's proposed product tiers, never a competitor's observed price. */
+  tiers?: Array<{ name: string; price: string }>;
 };
 
 function collapse(text: string): string {
@@ -325,10 +330,11 @@ export function highlightStatLabel(item: MarketStatEvidence): string {
  *   - stats: up to three selected stats whose canonical amount (formatAmount)
  *     fits the value slot; the label is highlightStatLabel (subject, metric,
  *     period), the source its source title (or host) when it fits;
- *   - competitors: each competitor's first FIRST-PARTY price whose canonical
- *     terms (formatPriceTerms) fit the price slot, only when at least three
- *     competitors have one. A secondary price would lose its "(via host)"
- *     label on the homepage, so it is never used.
+ *   - competitors: each competitor's first first-party numeric price that
+ *     fits, or a verified first-party availability label; at least three
+ *     must fit. Secondary prices would lose their "(via host)" label, so
+ *     they are never used;
+ *   - tiers: validated proposal tiers, kept separate from competitor facts.
  * The auditor fails an engine page whose manifest row carries highlights
  * that differ from these.
  */
@@ -374,8 +380,24 @@ export function ideaHighlights(record: ResearchRecordV2): IdeaHighlights | undef
         break;
       }
     }
+    if (!competitors.some((c) => c.name === name) && competitor.availabilityId) {
+      const item = byId.get(competitor.availabilityId);
+      if (item?.kind === "competitor_availability") {
+        const price = { contact_sales: "Contact sales", usage_based: "Usage based", credit_pack: "Credit packs" }[item.availability];
+        competitors.push({ name, price });
+      }
+    }
   }
-  return competitors.length >= L.minCompetitors ? { problemQuote, stats, competitors } : { problemQuote, stats };
+  const tiers = (record.editorial?.pricingTiers ?? [])
+    .map((tier) => ({ name: collapse(tier.name), price: collapse(tier.price) }))
+    .filter((tier) => tier.name.length > 0 && tier.name.length <= L.tierName && tier.price.length > 0 && tier.price.length <= L.tierPrice)
+    .slice(0, L.maxTiers);
+  return {
+    problemQuote,
+    stats,
+    ...(competitors.length >= L.minCompetitors ? { competitors } : {}),
+    ...(tiers.length > 0 ? { tiers } : {}),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -439,7 +461,7 @@ const DASH = String.raw`\s*[—–-]{1,2}\s*`;
 const EQUATION = String.raw`${COUNT}${TIMES}${USD}${PER}\s*=\s*${USD}\s*ARR`;
 
 const BASE_LINE_RE = new RegExp(
-  String.raw`^${EQUATION}${DASH}(.+?)\s+accounts?\s+paying\s+by\s+month\s+12(?:\s*\(\s*${COUNT}\s+seats?${TIMES}([^()]+?)\s*\))?\s*\.?$`,
+  String.raw`^${EQUATION}${DASH}(.+?)\s+accounts?\s+paying\s+by\s+month\s+12(?:\s*\(\s*${COUNT}\s+seats?${TIMES}((?:[^()]|\([^()]*\))+?)\s*\))?\s*\.?$`,
   "i",
 );
 const DOWNSIDE_LINE_RE = new RegExp(

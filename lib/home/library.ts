@@ -77,9 +77,8 @@ export function isEngineIdea(idea: ManifestIdea): boolean {
  * An idea can be featured weekly only when every tile it feeds has data:
  * art, How it works, 3+ prompts, pricing, a market number, and 3+ sources
  * (owner ruling 2026-09-24, WP42 live homepage data). The rule is the same
- * for every source. Known limit: an engine idea shows tiers only from its
- * generated highlights (R15), which carry none, so it is not feature-ready
- * until a tier source exists; it still appears in the Index.
+ * for every source. Engine ideas use generated highlights for proposed tiers
+ * and cited competitor pricing; they still need every other tile and art.
  */
 export function isFeatureReady(idea: ManifestIdea, extract: IdeaExtract, hasArt: boolean): boolean {
   return (

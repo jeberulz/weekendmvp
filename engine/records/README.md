@@ -51,6 +51,12 @@ Do not edit a record by hand. Changing an accepted item or a selected id, or
 adding a figure or quotation to writer text, fails the parse; other edits
 bypass the research. A wrong record is re-researched.
 
+New v2 research records write evidence contract version 2. A competitor
+without a public numeric price may carry one accepted first-party pricing
+status (`contact_sales`, `usage_based` or `credit_pack`) with its own citation;
+the run still needs three distinct competitors and at least one numeric
+price. Existing v2 records with evidence contract version 1 remain readable.
+
 ## Legacy v1 records
 
 Records written before WP54 have `contractVersion: 1`. The three committed

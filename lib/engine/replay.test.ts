@@ -289,9 +289,9 @@ describe("replay: research → compile → audit through the real CLIs (fixture,
   it("is authentic against the fixture pages (ruling R4): excerpts are on their pages, read sources hash to them", () => {
     const record = parseResearchRecord(readJson(replay.recordPath));
     expect(record.mode).toBe("fixture");
-    const counts = { community_quote: 0, market_stat: 0, competitor_price: 0 };
+    const counts = { community_quote: 0, market_stat: 0, competitor_price: 0, competitor_availability: 0 };
     for (const item of record.evidence.accepted) counts[item.kind] += 1;
-    expect(counts).toEqual({ community_quote: 3, market_stat: 3, competitor_price: 3 });
+    expect(counts).toEqual({ community_quote: 3, market_stat: 3, competitor_price: 3, competitor_availability: 0 });
     expect(record.evidence.sources.filter((s) => s.status === "read")).toHaveLength(7);
     expect(authenticityIssues(record, FIXTURE_PAGES)).toEqual([]);
   });

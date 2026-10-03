@@ -273,6 +273,20 @@ export function isFirstPartyHost(vendor: string, url: string): boolean {
   return key === stripHq(label.replace(/[^\p{L}\p{N}]+/gu, ""));
 }
 
+/**
+ * A marketplace controls the listing path and the app controls its offer.
+ * Bind only an exact Shopify app slug to the claimed vendor; other marketplace
+ * paths remain neutral sources. Listings retain secondary attribution in the
+ * page so a reader can distinguish the marketplace from the vendor's site.
+ */
+export function isVendorMarketplaceListing(vendor: string, url: string): boolean {
+  const key = vendorKey(vendor);
+  const parsed = parseUrl(url);
+  if (key.length < 3 || parsed?.hostname.toLowerCase() !== "apps.shopify.com") return false;
+  const match = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i.exec(parsed.pathname);
+  return match !== null && key === match[1]?.replace(/-/g, "");
+}
+
 /** True when the URL path looks like a comparison, roundup or alternatives page. */
 export function isComparisonPage(url: string): boolean {
   const parsed = parseUrl(url);

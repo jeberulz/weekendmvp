@@ -1185,8 +1185,9 @@ function auditCompetitorRows(state: State, section: Section, links: CompetitorLi
   const owners = new Map<string, string>();
   for (const c of record.competitors) {
     for (const id of c.priceIds) owners.set(id, c.name);
+    if (c.availabilityId) owners.set(c.availabilityId, c.name);
   }
-  const allPrices = itemsOf([...owners.keys()], ev, "competitor_price");
+  const allPrices = [...owners.keys()].map((id) => ev.byId.get(id)).filter((item): item is Extract<AcceptedEvidence, { kind: "competitor_price" | "competitor_availability" }> => !!item && (item.kind === "competitor_price" || item.kind === "competitor_availability"));
   const seenNames = new Set<string>();
   const urlUse = new Map<string, Array<{ competitor: string; secondaryLabelled: boolean }>>();
 
@@ -1204,13 +1205,13 @@ function auditCompetitorRows(state: State, section: Section, links: CompetitorLi
     for (const link of linksIn(row.notes)) {
       const text = norm(visible(link));
       const cited = allPrices.find((p) => ev.rendering.get(p.id) === text && sameLinkedSource(link.url ?? "", p.sourceUrl));
-      if (cited && !competitor.priceIds.includes(cited.id)) {
+      if (cited && !competitor.priceIds.includes(cited.id) && competitor.availabilityId !== cited.id) {
         ctx.errors.push(
           `${where}: its notes cite ${owners.get(cited.id) ?? "another competitor"}'s price "${text}"; a competitor's notes may cite only its own prices`,
         );
       }
     }
-    const own = itemsOf(competitor.priceIds, ev, "competitor_price");
+    const own = allPrices.filter((item) => owners.get(item.id) === competitor.name);
     const shown = new Set<string>();
     for (const price of row.prices) {
       const sameText = own.filter((p) => norm(renderEvidenceInline(p)) === price.text);
@@ -1637,7 +1638,7 @@ function auditIdentity(ctx: Ctx, record: ResearchRecordV2, slug: string | undefi
   }
   const shown = manifestRow.highlights;
   if (stableJson(shown) === stableJson(generated)) return;
-  const keys = ["problemQuote", "stats", "competitors"] as const;
+  const keys = ["problemQuote", "stats", "competitors", "tiers"] as const;
   const shownObject = isRecord(shown) ? shown : {};
   const differing = keys.filter((key) => stableJson(shownObject[key]) !== stableJson(generated[key]));
   const key = differing[0];

@@ -162,7 +162,7 @@ describe("runResearch (fixture)", () => {
     expect(report.briefSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(report.failedStep).toBeUndefined();
     expect(report.costUsd).toBe(record.provenance.costUsd);
-    expect(report.evidence.accepted).toEqual({ community_quote: 3, market_stat: 3, competitor_price: 3 });
+    expect(report.evidence.accepted).toEqual({ community_quote: 3, market_stat: 3, competitor_price: 3, competitor_availability: 0 });
     expect(report.evidence.rejected.map((r) => r.reason).sort()).toEqual(["source_unreadable", "span_not_found"]);
     expect(report.sources.map((s) => s.status)).toEqual(record.evidence.sources.map((s) => s.status));
   });

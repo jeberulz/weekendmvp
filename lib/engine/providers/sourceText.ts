@@ -459,12 +459,17 @@ function stripTags(text: string): string {
 
 export function htmlToText(html: string): string {
   const withoutCode = stripElement(stripElement(html, "script"), "style");
-  // Keep block boundaries, so separate pricing cards or table rows stay on
-  // separate lines for per-competitor price checks.
+  // Source indentation is not a rendered line break. Collapse it before
+  // inserting boundaries for actual block elements, so inline price spans
+  // such as "$39" + "/ month" remain one price expression.
   const withBreaks = withoutCode
+    .replace(/\s+/gu, " ")
     .replace(/<\/(?:tr|li|p|div)\s*>/gi, "\n")
     .replace(/<br\s*\/?>/gi, "\n");
   return stripTags(withBreaks)
+    .replace(/[ \t]+/gu, " ")
+    .replace(/ *\n */gu, "\n")
+    .replace(/\n{3,}/gu, "\n\n")
     // Numeric entities (HN's Algolia text encodes "/" as &#x2F;, "'" as &#x27;).
     .replace(/&#x([0-9a-f]+);/gi, (m: string, h: string) => codePointOr(parseInt(h, 16), m))
     .replace(/&#(\d+);/g, (m: string, d: string) => codePointOr(Number(d), m))
@@ -1347,10 +1352,10 @@ async function readJson(response: Response, describe: string, signal: AbortSigna
  * as a soft one (ruling R14). Each body's own text, line breaks included, is
  * kept as it is; empty bodies (deleted comments, link posts) are skipped.
  */
-function collectText(json: unknown, keys: string[]): string {
+function collectText(json: unknown, keys: string[], clean: (part: string) => string = (part) => part): string {
   const parts: string[] = [];
   collectStrings(json, new Set(keys), parts);
-  return parts.filter((part) => part.trim() !== "").join("\n\n");
+  return parts.map(clean).filter((part) => part.trim() !== "").join("\n\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -1460,7 +1465,7 @@ export function createSourceTextProvider(
     const hn = hnApiUrl(url);
     if (hn) {
       const res = await send(hn, { headers: accept }, signal);
-      return htmlToText(collectText(await readJson(res, redactUrl(hn), signal), ["title", "text"]));
+      return collectText(await readJson(res, redactUrl(hn), signal), ["title", "text"], htmlToText);
     }
     const res = await send(url, { headers: accept }, signal);
     return htmlToText(await readText(res, redactUrl(url), signal));

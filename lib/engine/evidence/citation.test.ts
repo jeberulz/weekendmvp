@@ -5,6 +5,7 @@ import {
   citationRefusal,
   isComparisonPage,
   isFirstPartyHost,
+  isVendorMarketplaceListing,
   sameSource,
   sourceHostLabel,
   strippedSourceUrl,
@@ -90,6 +91,14 @@ describe("canonicalSourceUrl", () => {
 });
 
 describe("vendor keys and first-party hosts", () => {
+  it("binds a Shopify app price only to that app's exact listing", () => {
+    expect(isVendorMarketplaceListing("Instant", "https://apps.shopify.com/instant")).toBe(true);
+    expect(isVendorMarketplaceListing("Replo", "https://apps.shopify.com/replo")).toBe(true);
+    expect(isVendorMarketplaceListing("Instant", "https://apps.shopify.com/replo")).toBe(false);
+    expect(isVendorMarketplaceListing("Instant", "https://apps.shopify.com/instant/reviews")).toBe(false);
+    expect(isVendorMarketplaceListing("Instant", "https://www.g2.com/products/instant")).toBe(false);
+  });
+
   it("builds comparable vendor keys", () => {
     expect(vendorKey("RFP.ai")).toBe("rfp");
     expect(vendorKey("AutoRFP.ai")).toBe("autorfp");

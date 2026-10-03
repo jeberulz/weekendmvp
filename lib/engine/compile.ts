@@ -354,6 +354,12 @@ function priceItem(ctx: Ctx, id: string): CompetitorPriceEvidence {
   return item;
 }
 
+function availabilityItem(ctx: Ctx, id: string): Extract<AcceptedEvidence, { kind: "competitor_availability" }> {
+  const item = evidence(ctx, id, "competitor_availability");
+  if (item.kind !== "competitor_availability") throw new CompileError([`evidence ${id} is not a competitor availability statement`]);
+  return item;
+}
+
 /** Canonical inline rendering linked to its evidence source. */
 function evidenceLink(item: AcceptedEvidence): string {
   return mdLink(renderEvidenceInline(item), item.sourceUrl);
@@ -414,13 +420,13 @@ export function quoteBlock(item: CommunityQuoteEvidence): string {
 }
 
 /** One price of a competitor row: rendering, "(via host)" when secondary, evidence link. */
-function priceItemMdx(item: CompetitorPriceEvidence): string {
+function priceItemMdx(item: CompetitorPriceEvidence | Extract<AcceptedEvidence, { kind: "competitor_availability" }>): string {
   const via = item.attribution === "secondary" ? ` ${viaLabel(escapeMdxText(sourceHostLabel(item.sourceUrl)))}` : "";
   return `${escapeMdxText(renderEvidenceInline(item))}${via} ${mdLink(item.sourceTitle, item.sourceUrl)}`;
 }
 
 /** Plain competitor-strip text for the landing-page prompt (same renderings, no links). */
-function priceItemPlain(item: CompetitorPriceEvidence): string {
+function priceItemPlain(item: CompetitorPriceEvidence | Extract<AcceptedEvidence, { kind: "competitor_availability" }>): string {
   const via = item.attribution === "secondary" ? ` ${viaLabel(sourceHostLabel(item.sourceUrl))}` : "";
   return `${renderEvidenceInline(item)}${via}`;
 }
@@ -641,7 +647,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const competitorPrices = record.competitors.map((c) => ({
     name: c.name,
     notes: c.notes,
-    prices: c.priceIds.map((id) => priceItem(ctx, id)),
+    prices: [...c.priceIds.map((id) => priceItem(ctx, id)), ...(c.availabilityId ? [availabilityItem(ctx, c.availabilityId)] : [])],
   }));
   const competitorLines = competitorPrices
     .map((c, i) => {

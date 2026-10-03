@@ -328,10 +328,10 @@ describe("findPriceExpressions", () => {
     ]);
   });
 
-  it("applies a clause's qualifiers to every price in that clause", () => {
+  it("binds a trailing qualifier to its own price in a multi-price clause", () => {
     const found = findPriceExpressions("Starter $19/month, Pro $39/month billed annually; Enterprise $99/month.");
     expect(found.map((e) => formatPriceTerms(e.terms))).toEqual([
-      "$19/month, billed annually",
+      "$19/month",
       "$39/month, billed annually",
       "$99/month",
     ]);

@@ -51,7 +51,10 @@ describe("engine rows use generated highlights only (R15, P2-E)", () => {
     expect(shown.problem).toBe(highlights?.problemQuote);
     expect(shown.market).toEqual(applyHighlights(parsed, highlights).market);
     expect(shown.competitors).toEqual(highlights?.competitors ?? []);
-    expect(shown.tiers).toEqual([]);
+    expect(shown.tiers).toEqual([
+      { name: "Solo", price: "$12/month" },
+      { name: "Crew", price: "$20/developer/month" },
+    ]);
     const tiles = { problem: shown.problem, market: shown.market, competitors: shown.competitors, tiers: shown.tiers };
     expect(JSON.stringify(tiles)).not.toMatch(/"\$12"|× \$100|ARR/);
     // Structure still comes from the page: step titles, stack, prompts.
@@ -77,7 +80,7 @@ describe("engine rows use generated highlights only (R15, P2-E)", () => {
     expect(isFeatureReady(row, bare, true)).toBe(false);
   });
 
-  test("an engine row without pricing tiers is not feature-ready (WP42 live-data ruling), yet the Index still lists it", () => {
+  test("an engine row with typed proposed tiers can enter the weekly pool when the other tiles qualify", () => {
     const { body, row } = compiledEngineIdea();
     const sourced = { ...row, provenance: { citations: 9 } };
     const competitors = [
@@ -85,13 +88,11 @@ describe("engine rows use generated highlights only (R15, P2-E)", () => {
       { name: "Linear", price: "$8/user/month" },
       { name: "Height", price: "$9/user/month" },
     ];
-    // Every other tile complete, three competitor prices included: no tiers, so not in the weekly pool.
+    // The compiler supplies proposal tiers from the validated record, never from MDX parsing.
     const shown = ideaHomeExtract({ ...sourced, highlights: { ...readHighlights(row.highlights), competitors } }, body);
     const complete = { ...shown, stack: ["a", "b", "c"], how: ["a", "b", "c"] };
-    expect(complete.tiers).toEqual([]);
-    expect(isFeatureReady(sourced, complete, true)).toBe(false);
-    // The pool rule is the same for every source: with a tier the same tiles would qualify.
-    expect(isFeatureReady(sourced, { ...complete, tiers: [{ name: "Solo", price: "$12/month" }] }, true)).toBe(true);
+    expect(complete.tiers).toEqual([{ name: "Solo", price: "$12/month" }, { name: "Crew", price: "$20/developer/month" }]);
+    expect(isFeatureReady(sourced, complete, true)).toBe(true);
     expect(newestRows([sourced], () => true).map((r) => r.slug)).toEqual([row.slug]);
   });
 

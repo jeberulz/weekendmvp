@@ -658,10 +658,10 @@ describe("parseResearchRecord: legacy and unsupported versions", () => {
     expectRejected(input, /^pipelineVersion: expected 2/m);
   });
 
-  it("rejects an evidence block whose contractVersion is not 1", () => {
+  it("rejects an unsupported evidence contract version", () => {
     const input = fresh();
-    setAt(input, "evidence.contractVersion", 2);
-    expectRejected(input, /^evidence\.contractVersion: expected 1/m);
+    setAt(input, "evidence.contractVersion", 3);
+    expectRejected(input, /^evidence\.contractVersion: expected 1 or 2/m);
   });
 });
 
@@ -909,7 +909,7 @@ describe("parseResearchRecord: references resolve to accepted evidence", () => {
   it("rejects a competitor without a price", () => {
     const input = fresh();
     setAt(input, "competitors[1].priceIds", []);
-    expectRejected(input, /^competitors\[1\]\.priceIds: need ≥1/m);
+    expectRejected(input, /^competitors\[1\]: needs a priceId or availabilityId/m);
   });
 
   it.each([
@@ -1249,7 +1249,7 @@ describe("parseResearchRecord: closed schema and shape", () => {
 
   it.each([
     ["an unknown rejection reason", (r: Json) => setAt(r, "evidence.rejected[0].reason", "made_up"), /^evidence\.rejected\[0\]\.reason: unknown rejection reason/m],
-    ["an unknown kind", (r: Json) => setAt(r, "evidence.rejected[0].kind", "opinion"), /^evidence\.rejected\[0\]\.kind: expected community_quote, market_stat or competitor_price/m],
+    ["an unknown kind", (r: Json) => setAt(r, "evidence.rejected[0].kind", "opinion"), /^evidence\.rejected\[0\]\.kind: expected a known evidence kind/m],
     ["a candidate above 120 characters", (r: Json) => setAt(r, "evidence.rejected[0].candidate", "x".repeat(121)), /^evidence\.rejected\[0\]\.candidate: at most 120 characters/m],
     ["a detail above 200 characters", (r: Json) => setAt(r, "evidence.rejected[0].detail", "x".repeat(201)), /^evidence\.rejected\[0\]\.detail: at most 200 characters/m],
     ["more rejections than the bound", (r: Json) => setAt(r, "evidence.rejected", Array.from({ length: EVIDENCE_LIMITS.maxRejectedStored + 1 }, () => ({ kind: "market_stat", reason: "amount_mismatch" }))), new RegExp(`^evidence\\.rejected: at most ${EVIDENCE_LIMITS.maxRejectedStored} entries`, "m")],

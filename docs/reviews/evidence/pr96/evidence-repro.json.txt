@@ -1,0 +1,232 @@
+{
+  "name": "CROSS-SUBJECT: gaming value credited to AI code review",
+  "source": "The AI code review market was worth $1.4 million in 2024, while the unrelated gaming market was worth $9.4 billion in 2025.",
+  "candidate": {
+    "sourceUrl": "https://research.example/report",
+    "supportingText": "The AI code review market was worth $1.4 million in 2024, while the unrelated gaming market was worth $9.4 billion in 2025.",
+    "subject": "AI code review market",
+    "metric": "market_size",
+    "amountText": "$9.4 billion",
+    "periodKind": "measured",
+    "year": 2025
+  },
+  "accepted": [
+    {
+      "id": "s_3c19acfb977f",
+      "sourceUrl": "https://research.example/report",
+      "sourceTitle": "Source",
+      "excerpt": "The AI code review market was worth $1.4 million in 2024, while the unrelated gaming market was worth $9.4 billion in 2025.",
+      "excerptSha256": "a864c5e17ce0eb92432b210c63c27c4037a32485e26b455131c0a2054f54ec54",
+      "retrievedAt": "2026-10-03T00:00:00.000Z",
+      "kind": "market_stat",
+      "metric": "market_size",
+      "amount": {
+        "value": "9.4",
+        "magnitude": "billion",
+        "unit": "currency",
+        "currency": "USD"
+      },
+      "period": {
+        "kind": "measured",
+        "year": 2025
+      },
+      "attribution": "secondary",
+      "subject": "AI code review market"
+    }
+  ],
+  "rejected": [],
+  "revalidation": [
+    true
+  ],
+  "rendered": [
+    "$9.4 billion (AI code review market, market size, 2025)"
+  ]
+}
+{
+  "name": "NEGATION: denial becomes affirmative current price",
+  "source": "CodeRabbit does not cost $30/user/month.",
+  "candidate": {
+    "sourceUrl": "https://coderabbit.ai/pricing",
+    "supportingText": "CodeRabbit does not cost $30/user/month.",
+    "vendor": "CodeRabbit",
+    "priceText": "$30/user/month"
+  },
+  "accepted": [
+    {
+      "id": "p_d5bb05ccce9c",
+      "sourceUrl": "https://coderabbit.ai/pricing",
+      "sourceTitle": "Source",
+      "excerpt": "CodeRabbit does not cost $30/user/month.",
+      "excerptSha256": "aa8118f11ddf9e62b14e080a4350fc922db09cd2de662d415e5092ef70b952d6",
+      "retrievedAt": "2026-10-03T00:00:00.000Z",
+      "kind": "competitor_price",
+      "vendor": "CodeRabbit",
+      "price": {
+        "amount": {
+          "value": "30",
+          "magnitude": "none",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": "month",
+        "basis": "per_user",
+        "qualifiers": []
+      },
+      "attribution": "first_party"
+    }
+  ],
+  "rejected": [],
+  "revalidation": [
+    true
+  ],
+  "rendered": [
+    "$30/user/month (CodeRabbit)"
+  ]
+}
+{
+  "name": "FORMER: old price becomes current price",
+  "source": "CodeRabbit used to cost $30/user/month.",
+  "candidate": {
+    "sourceUrl": "https://coderabbit.ai/pricing",
+    "supportingText": "CodeRabbit used to cost $30/user/month.",
+    "vendor": "CodeRabbit",
+    "priceText": "$30/user/month"
+  },
+  "accepted": [
+    {
+      "id": "p_33e343a41359",
+      "sourceUrl": "https://coderabbit.ai/pricing",
+      "sourceTitle": "Source",
+      "excerpt": "CodeRabbit used to cost $30/user/month.",
+      "excerptSha256": "2a7018b9baef4569cee276e33d45575aeec9dc60166629833ffc0e398a0a8383",
+      "retrievedAt": "2026-10-03T00:00:00.000Z",
+      "kind": "competitor_price",
+      "vendor": "CodeRabbit",
+      "price": {
+        "amount": {
+          "value": "30",
+          "magnitude": "none",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": "month",
+        "basis": "per_user",
+        "qualifiers": []
+      },
+      "attribution": "first_party"
+    }
+  ],
+  "rejected": [],
+  "revalidation": [
+    true
+  ],
+  "rendered": [
+    "$30/user/month (CodeRabbit)"
+  ]
+}
+{
+  "name": "BILLING: incorrect annual qualifier accepted",
+  "source": "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.",
+  "candidate": {
+    "sourceUrl": "https://coderabbit.ai/faq",
+    "supportingText": "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.",
+    "vendor": "CodeRabbit",
+    "priceText": "$30/user/month, billed annually"
+  },
+  "accepted": [
+    {
+      "id": "p_e199b7bb5c43",
+      "sourceUrl": "https://coderabbit.ai/faq",
+      "sourceTitle": "Source",
+      "excerpt": "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.",
+      "excerptSha256": "ed6fac1d8299d75d966ba6619813588121b692cad278abcfd91ab1b7592316c3",
+      "retrievedAt": "2026-10-03T00:00:00.000Z",
+      "kind": "competitor_price",
+      "vendor": "CodeRabbit",
+      "price": {
+        "amount": {
+          "value": "30",
+          "magnitude": "none",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": "month",
+        "basis": "per_user",
+        "qualifiers": [
+          "billed_annually"
+        ]
+      },
+      "attribution": "first_party"
+    }
+  ],
+  "rejected": [],
+  "revalidation": [
+    true
+  ],
+  "rendered": [
+    "$30/user/month, billed annually (CodeRabbit)"
+  ]
+}
+{
+  "name": "BILLING: correct monthly price rejected",
+  "source": "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.",
+  "candidate": {
+    "sourceUrl": "https://coderabbit.ai/faq",
+    "supportingText": "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.",
+    "vendor": "CodeRabbit",
+    "priceText": "$30/user/month"
+  },
+  "accepted": [],
+  "rejected": [
+    {
+      "kind": "competitor_price",
+      "reason": "qualifier_dropped",
+      "sourceUrl": "https://coderabbit.ai/faq",
+      "candidate": "CodeRabbit: $30/user/month",
+      "detail": "source says $30/user/month, billed annually"
+    }
+  ],
+  "revalidation": [],
+  "rendered": []
+}
+{
+  "name": "HEDGE: estimate becomes exact list price",
+  "source": "Macroscope costs approximately $152/month at the historical average.",
+  "candidate": {
+    "sourceUrl": "https://macroscope.com/pricing",
+    "supportingText": "Macroscope costs approximately $152/month at the historical average.",
+    "vendor": "Macroscope",
+    "priceText": "$152/month"
+  },
+  "accepted": [
+    {
+      "id": "p_2fca4e4937b3",
+      "sourceUrl": "https://macroscope.com/pricing",
+      "sourceTitle": "Source",
+      "excerpt": "Macroscope costs approximately $152/month at the historical average.",
+      "excerptSha256": "1ee6080808a281efa97ae934b18c616be3e971b280c24627fa9ea6b517311621",
+      "retrievedAt": "2026-10-03T00:00:00.000Z",
+      "kind": "competitor_price",
+      "vendor": "Macroscope",
+      "price": {
+        "amount": {
+          "value": "152",
+          "magnitude": "none",
+          "unit": "currency",
+          "currency": "USD"
+        },
+        "period": "month",
+        "basis": "flat",
+        "qualifiers": []
+      },
+      "attribution": "first_party"
+    }
+  ],
+  "rejected": [],
+  "revalidation": [
+    true
+  ],
+  "rendered": [
+    "$152/month (Macroscope)"
+  ]
+}

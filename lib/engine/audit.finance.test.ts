@@ -42,6 +42,17 @@ function planOf(funnelLast: number, tier: string, seats = 1): YearOnePlanV2 {
 }
 
 describe("Year-One Math against finance.ts (F6)", () => {
+  it.each(["(billed annually)", "(billed monthly)"])("audits its own compiled seat price with %s", async (qualifier) => {
+    const record = buildFixtureRecord((r) => {
+      const crew = r.editorial?.pricingTiers?.find((tier) => tier.name === "Crew");
+      if (!crew) throw new Error("fixture: Crew tier missing");
+      crew.price = `$20/developer/month ${qualifier}`;
+    });
+    const page = compiledPage(record);
+    expect(page).toContain(`5 seats × $20/developer/month ${qualifier}`);
+    expect((await auditPage(page, record)).errors).toEqual([]);
+  });
+
   it("45 × $100/month is $54,000 ARR with a downside of 22 × $100 × 12 = $26,400, and the page passes", async () => {
     const record = buildFixtureRecord();
     const tiers = record.editorial?.pricingTiers ?? [];

@@ -138,7 +138,7 @@ function readReport(reportPath) {
 function acceptedSummary(report) {
   const accepted = report?.evidence?.accepted;
   if (!accepted) return "no report";
-  return `mode ${report.mode}; accepted ${accepted.community_quote} quotes, ${accepted.market_stat} stats, ${accepted.competitor_price} prices`;
+  return `mode ${report.mode}; accepted ${accepted.community_quote} quotes, ${accepted.market_stat} stats, ${accepted.competitor_price} prices${accepted.competitor_availability ? `, ${accepted.competitor_availability} availability statements` : ""}`;
 }
 
 const pad = (name) => name.padEnd(9);

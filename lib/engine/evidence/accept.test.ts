@@ -503,6 +503,7 @@ describe("parseExtractionCandidates", () => {
         },
       ],
       competitorPrices: [{ vendor: "Loopio", sourceUrl: BLOG.url, supportingText: "y", priceText: "$20,000/year" }],
+      competitorAvailability: [],
     });
   });
 
@@ -524,6 +525,7 @@ describe("parseExtractionCandidates", () => {
       "community_quote",
       "market_stat",
       "competitor_price",
+      "competitor_availability",
     ]);
   });
 });
@@ -1031,7 +1033,45 @@ describe("checkEvidenceMinimums", () => {
     });
     const withQuote = run([HN], { quotes: [quote("They flag potential issues, but you still have to check all of them.")] });
     expect(checkEvidenceMinimums([...result.accepted, ...withQuote.accepted])).toEqual({ ok: true, shortfalls: [] });
-    expect(checkEvidenceMinimums([]).shortfalls).toHaveLength(3);
+    expect(checkEvidenceMinimums([]).shortfalls).toHaveLength(4);
+  });
+});
+
+describe("first-party pricing availability", () => {
+  it("accepts explicit pricing statuses without turning them into numeric prices", () => {
+    const pages = [
+      { url: "https://loopio.com/pricing", text: "Loopio pricing is available by custom quote." },
+      { url: "https://responsive.io/pricing", text: "Contact sales for Responsive pricing." },
+      { url: "https://www.coderabbit.ai/pricing", text: "Pro costs $24/user/month." },
+    ];
+    const result = run(pages, {
+      competitorAvailability: [
+        { vendor: "Loopio", sourceUrl: pages[0]!.url, supportingText: pages[0]!.text, availability: "contact_sales" },
+        { vendor: "Responsive", sourceUrl: pages[1]!.url, supportingText: pages[1]!.text, availability: "contact_sales" },
+      ],
+      competitorPrices: [{ vendor: "CodeRabbit", sourceUrl: pages[2]!.url, supportingText: pages[2]!.text, priceText: "$24/user/month" }],
+    });
+    expect(result.rejected).toEqual([]);
+    expect(result.accepted.map((item) => item.kind)).toEqual(["competitor_price", "competitor_availability", "competitor_availability"]);
+    expect(checkEvidenceMinimums(result.accepted).shortfalls).toEqual(["market stats: 0 accepted, need 2", "community quotes: 0 distinct accepted, need 2"]);
+    for (const item of result.accepted) {
+      const parsed = revalidateAcceptedEvidence(item, acquisitions(pages), { vendors: ["CodeRabbit", "Loopio", "Responsive"] });
+      expect(parsed.ok).toBe(true);
+    }
+  });
+
+  it("rejects a mismatched status, a rival site, and a generic sales button", () => {
+    const own = { url: "https://loopio.com/pricing", text: "Loopio pricing is available by custom quote." };
+    const generic = { url: "https://responsive.io/about", text: "Contact sales to arrange a demo." };
+    const result = run([own, generic], {
+      competitorAvailability: [
+        { vendor: "Loopio", sourceUrl: own.url, supportingText: own.text, availability: "usage_based" },
+        { vendor: "Responsive", sourceUrl: own.url, supportingText: own.text, availability: "contact_sales" },
+        { vendor: "Responsive", sourceUrl: generic.url, supportingText: generic.text, availability: "contact_sales" },
+      ],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["unsupported_assertion", "ambiguous_attribution", "unsupported_assertion"]);
   });
 });
 
@@ -1690,6 +1730,69 @@ describe("R14: every subject word is in the stat's sentence", () => {
     );
     // A short word must appear as itself: "used" is no "US".
     expect(reasons(accepted(survey, "US developers using AI code review assistants", "62%", "adoption", 2025))).toEqual(["subject_not_in_context"]);
+  });
+});
+
+describe("PR96 review: evidence assertions retain their meaning", () => {
+  it("accepts an exact app-listing price as labelled marketplace evidence", () => {
+    const page = { url: "https://apps.shopify.com/instant", text: "Instant Landing Page Builder\nPricing\nStarter\n$39/month" };
+    const result = run([page], {
+      competitorPrices: [priceCandidate({ vendor: "Instant", sourceUrl: page.url, supportingText: "$39/month", priceText: "$39/month" })],
+    });
+    expect(result.accepted).toHaveLength(1);
+    expect(result.accepted[0]).toMatchObject({ vendor: "Instant", attribution: "secondary" });
+    expect(revalidateAcceptedEvidence(result.accepted[0], acquisitions([page])).ok).toBe(true);
+    const rival = run([page], {
+      competitorPrices: [priceCandidate({ vendor: "Replo", sourceUrl: page.url, supportingText: "$39/month", priceText: "$39/month" })],
+    });
+    expect(rival.accepted).toEqual([]);
+  });
+
+  it.each([
+    "The AI code review market was worth $1.4 million in 2024, while the unrelated gaming market was worth $9.4 billion in 2025.",
+    "The AI code review market was worth $1.4 million in 2024, and the gaming market was worth $9.4 billion in 2025.",
+  ])("rejects a statistic taken from another market in one sentence", (text) => {
+    const page = { url: REPORT.url, text };
+    const wrong = run([page], {
+      marketStats: [stat({ supportingText: text, amountText: "$9.4 billion", year: 2025 })],
+    });
+    expect(wrong.accepted).toEqual([]);
+    expect(reasons(wrong)).toEqual(["subject_not_in_context"]);
+    const right = run([page], {
+      marketStats: [stat({ supportingText: text, amountText: "$1.4 million", year: 2024 })],
+    });
+    expect(right.accepted).toHaveLength(1);
+  });
+
+  it.each([
+    "CodeRabbit does not cost $30/user/month.",
+    "CodeRabbit used to cost $30/user/month.",
+    "CodeRabbit might cost $30/user/month if its plans change.",
+    "CodeRabbit costs approximately $30/user/month.",
+  ])("rejects a price that is not a current exact assertion: %s", (text) => {
+    const page = { url: CODERABBIT.url, text };
+    const result = run([page], { competitorPrices: [priceCandidate({ vendor: "CodeRabbit", sourceUrl: page.url, supportingText: text, priceText: "$30/user/month" })] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["unsupported_assertion"]);
+  });
+
+  it("keeps an affirmative current exact price", () => {
+    const text = "CodeRabbit costs $30/user/month.";
+    const page = { url: CODERABBIT.url, text };
+    const result = run([page], { competitorPrices: [priceCandidate({ vendor: "CodeRabbit", sourceUrl: page.url, supportingText: text, priceText: "$30/user/month" })] });
+    expect(result.accepted).toHaveLength(1);
+    expect(revalidateAcceptedEvidence(result.accepted[0], acquisitions([page])).ok).toBe(true);
+  });
+
+  it("binds an annual qualifier to the second offer rather than the first", () => {
+    const text = "CodeRabbit costs $30 per developer per month, or $24 per developer per month when billed annually.";
+    const page = { url: CODERABBIT.url, text };
+    const candidate = (priceText: string) => priceCandidate({ vendor: "CodeRabbit", sourceUrl: page.url, supportingText: text, priceText });
+    const wrong = run([page], { competitorPrices: [candidate("$30/user/month, billed annually")] });
+    expect(wrong.accepted).toEqual([]);
+    const right = run([page], { competitorPrices: [candidate("$30/user/month"), candidate("$24/user/month, billed annually")] });
+    expect(right.accepted).toHaveLength(2);
+    for (const item of right.accepted) expect(revalidateAcceptedEvidence(item, acquisitions([page])).ok).toBe(true);
   });
 });
 
