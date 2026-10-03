@@ -25,6 +25,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { auditEngineArtifact, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
+import { hasEngineMarker as compiledPageHasEngineMarker } from "../lib/engine/compile.ts";
 import {
   CANONICAL_SECTION_TITLES,
   HOW_IT_WORKS_LABEL,
@@ -120,16 +121,15 @@ export function isEnginePage(slug, row = manifestRows().get(slug)) {
   return typeof row?.source === "string" && row.source.startsWith("engine:");
 }
 
-const ENGINE_MARKER_RE = /^engine[ \t]*:[ \t]*(["']?)true\1[ \t]*(?:#.*)?$/im;
-
 /**
  * True when the page's own frontmatter marks it as compiler output
- * (`engine: true`, which engine:compile writes). A page renamed out of the
- * engine-draft- namespace or published without an `engine:` manifest source
- * still carries it, so it keeps the deep bar (P3-8).
+ * (`engine: true`, which engine:compile writes; lib/engine/compile.ts reads
+ * it for both). A page renamed out of the engine-draft- namespace or
+ * published without an `engine:` manifest source still carries it, so it
+ * keeps the deep bar (P3-8).
  */
 export function hasEngineMarker(raw) {
-  return ENGINE_MARKER_RE.test(splitFrontmatter(raw).frontmatter);
+  return compiledPageHasEngineMarker(raw);
 }
 
 /** content/ideas/{slug}.mdx, else engine/drafts/{slug}.mdx. */

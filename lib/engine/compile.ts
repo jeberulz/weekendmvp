@@ -117,6 +117,22 @@ export const GENERIC_SETUP_TABLE_NAMES: readonly string[] = [
 
 export const COMPILE_SLUG_PATTERN = /^_?[a-z0-9-]+$/;
 
+/** The frontmatter line that marks a page as engine:compile output (P3-8). */
+export const ENGINE_MARKER_LINE = "engine: true";
+const ENGINE_MARKER_RE = /^engine[ \t]*:[ \t]*(["']?)true\1[ \t]*(?:#.*)?$/im;
+
+/**
+ * True when a page's own frontmatter carries the engine marker (any case,
+ * quoted or with a trailing comment). The auditor applies the deep bar to
+ * such a page; the compile writer may replace it with --force.
+ */
+export function hasEngineMarker(raw: string): boolean {
+  if (!raw.startsWith("---")) return false;
+  const end = raw.indexOf("\n---", 3);
+  if (end === -1) return false;
+  return ENGINE_MARKER_RE.test(raw.slice(0, end + 4));
+}
+
 /**
  * Slugs a fixture-mode record may compile to (ruling R11): engine-draft-*
  * drafts (withheld from the site) and _temp slugs (never loaded as pages).
@@ -768,14 +784,15 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
   );
 
-  // `engine: true` marks the page as compiler output, so the auditor holds it
-  // to the deep bar wherever it sits (P3-8). The site reads only title and
-  // publishedAt from frontmatter; the marker is ignored there.
+  // ENGINE_MARKER_LINE marks the page as compiler output, so the auditor
+  // holds it to the deep bar wherever it sits (P3-8) and a later compile
+  // knows it may replace it. The site reads only title and publishedAt from
+  // frontmatter; the marker is ignored there.
   const mdx = [
     "---",
     `slug: ${JSON.stringify(slug)}`,
     `title: ${JSON.stringify(record.brief.title)}`,
-    "engine: true",
+    ENGINE_MARKER_LINE,
     "---",
     "",
     body,
