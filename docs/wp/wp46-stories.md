@@ -39,7 +39,7 @@ The complete WP46 story contract remains in `docs/plans/editorial-admin/wp46-sto
 ## E7 — Launch gate
 
 - [x] `WP46-E7a` — Verify actual deployed reader and backend target, inventory production tables and baseline artifact hashes, and take target-specific full backups. Evidence: `docs/wp/wp46-e7-gate.md`.
-- [x] `WP46-E7b` — Repair the unknown-idea soft 404 and HTML cache header; preserve valid legacy/collection routes. Extend editorial metadata to retain the new public idea's bounded pricing tiers. Local production-build probes and configured checks pass; production verification follows merge.
+- [x] `WP46-E7b` — Repair the unknown-idea soft 404 and idea/build/art cache headers; preserve valid legacy, collection and `/ideas/today` routes. Extend editorial metadata to retain the new public idea's bounded pricing tiers. Local production-build and isolated Vercel preview probes pass; warm-cache removal and canonical production verification follow merge.
 - [ ] `WP46-E7c` — Deploy E7 backend before frontend to the verified live target; compare the final deployed reader SHA and probe every public visibility surface under warm caches and backend failure.
 - [ ] `WP46-E7d` — Re-run the 226-page import dry run and, after exact inventory approval, import the one missing private legacy baseline. Verify no public row or page changes.
 - [ ] `WP46-E7e` — Rehearse an isolated restore; execute a genuine contract-v2 publish/edit/republish/unpublish/rollback journey with source changes and failure recovery; complete independent security review.
