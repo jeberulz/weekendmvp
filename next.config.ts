@@ -61,6 +61,14 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
       {
+        source: "/build/:slug",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/image/og/idea/:slug.png",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
         source: "/preview/:token",
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0" },

@@ -76,6 +76,19 @@ describe("request-time editorial takedown", () => {
   });
 
   test.each([
+    "/build/phone-neck-score-app",
+    "/image/og/idea/phone-neck-score-app.png",
+    "/_next/image?url=%2Fimage%2Fog%2Fidea%2Fphone-neck-score-app.png&w=640&q=75",
+  ])("%s is not cacheable before an emergency takedown", async (path) => {
+    publication.mockResolvedValueOnce("legacy");
+    const response = await middleware(new NextRequest(`https://www.weekendmvp.app${path}`, {
+      headers: { host: "www.weekendmvp.app" },
+    }), event);
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("cache-control")).toBe("no-store");
+  });
+
+  test.each([
     "/ideas/abandoned-cart-recovery",
     "/build/abandoned-cart-recovery",
     "/image/og/idea/abandoned-cart-recovery.png",

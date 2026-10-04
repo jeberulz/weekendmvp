@@ -484,7 +484,7 @@ export async function middleware(
       syncSessionHintCookie(request, response ?? NextResponse.next()),
     ),
   );
-  if (publicIdeaSlug(request.nextUrl.pathname) !== null) {
+  if (ideaSlug !== null || buildSlug !== null) {
     finalResponse.headers.set("Cache-Control", "no-store");
   }
   return finalResponse;
