@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-/** Dry-run-first bridge from a checked-in engine artifact to private editorial. */
+/** Dry-run-first bridge from audited engine files to private editorial. */
 import { build } from "esbuild";
 import { ConvexHttpClient } from "convex/browser";
 import { existsSync } from "node:fs";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -18,10 +18,41 @@ if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.startsWith("engine
   throw new Error("Give a publishable idea slug with --slug=<slug>.");
 }
 const apply = args.includes("--apply");
-const recordJson = await readFile(path.join(root, "engine/records", `${slug}.json`), "utf8");
-const mdx = await readFile(path.join(root, "content/ideas", `${slug}.mdx`), "utf8");
-const manifest = JSON.parse(await readFile(path.join(root, "ideas/manifest.json"), "utf8"));
-const rows = Array.isArray(manifest.ideas) ? manifest.ideas.filter((row) => row?.slug === slug) : [];
+const privatePaths = [value("--record="), value("--mdx="), value("--manifest=")];
+const privateMode = privatePaths.some((source) => source !== undefined);
+if (privateMode && privatePaths.some((source) => !source)) {
+  throw new Error("Private submission requires --record=PATH, --mdx=PATH and --manifest=PATH together.");
+}
+const realRoot = await realpath(root);
+
+function inside(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return relative === "" || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+}
+
+async function privateInput(source) {
+  const resolved = await realpath(path.resolve(root, source));
+  if (inside(realRoot, resolved) && !inside(path.join(realRoot, "tmp"), resolved)) {
+    throw new Error("Private submission files must be outside the repository or under its ignored tmp/ directory.");
+  }
+  return readFile(resolved, "utf8");
+}
+
+const [recordJson, mdx, manifestText] = privateMode
+  ? await Promise.all(privatePaths.map((source) => privateInput(source)))
+  : await Promise.all([
+      readFile(path.join(root, "engine/records", `${slug}.json`), "utf8"),
+      readFile(path.join(root, "content/ideas", `${slug}.mdx`), "utf8"),
+      readFile(path.join(root, "ideas/manifest.json"), "utf8"),
+    ]);
+let manifest;
+try {
+  manifest = JSON.parse(manifestText);
+} catch {
+  throw new Error("Manifest JSON is invalid.");
+}
+const candidates = Array.isArray(manifest?.ideas) ? manifest.ideas : [manifest];
+const rows = candidates.filter((row) => row?.slug === slug);
 if (rows.length !== 1) throw new Error("Exactly one matching manifest row is required.");
 const manifestJson = JSON.stringify(rows[0]);
 
@@ -41,6 +72,7 @@ const { validateEngineSubmission } = await import(pathToFileURL(outputPath).href
 const validated = await validateEngineSubmission({ recordJson, mdx, manifestJson });
 console.log(JSON.stringify({
   slug,
+  source: privateMode ? "private-files" : "checked-in-baseline",
   submissionId: validated.envelope.submissionId,
   artifactHash: validated.envelope.artifactHash,
   recordHash: validated.recordHash,

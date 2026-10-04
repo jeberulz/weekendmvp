@@ -193,7 +193,7 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(mdx).toContain(
       `competitor strip (CodeRabbit: ${plain(EV.priceLite)}, ${plain(EV.pricePro)}; Graphite: ${plain(EV.priceGraphite)}; Qodo: ${plain(EV.priceQodo)}; Sourcery: ${plain(EV.priceSourcery)}; Codacy: ${plain(EV.priceCodacy)})`,
     );
-    expect(mdx).toContain("Stripe catalog must match the pricing tiers exactly: Open Source at Free; Solo at $12/month; Crew at $20/developer/month.");
+    expect(mdx).toContain("Stripe catalog must match the pricing tiers exactly: Open Source plan (Free); Solo plan ($12/month); Crew plan ($20/developer/month).");
     const fences = [...mdx.matchAll(/```text\n([\s\S]*?)```/g)].map((m) => m[1] ?? "");
     expect(fences).toHaveLength(4);
     for (const fence of fences) expect(fence).not.toMatch(/\\[*_#<{]|\]\(http/);
