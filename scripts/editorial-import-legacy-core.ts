@@ -73,6 +73,9 @@ export async function inventoryLegacyIdeas(root: string): Promise<LegacyImportIn
     }
 
     const og = idea.og && typeof idea.og === "object" ? idea.og as Record<string, unknown> : null;
+    const highlights = idea.highlights && typeof idea.highlights === "object" && !Array.isArray(idea.highlights)
+      ? idea.highlights as Record<string, unknown>
+      : null;
     const metadataResult = editorialMetadataSchema.safeParse({
       description: idea.description,
       category: idea.category,
@@ -80,7 +83,11 @@ export async function inventoryLegacyIdeas(root: string): Promise<LegacyImportIn
       revenueGoal: idea.revenueGoal,
       tools: idea.tools,
       audiences: idea.audiences,
-      highlights: idea.highlights ?? null,
+      // Public legacy cards may omit competitor tiles entirely. The editorial
+      // contract represents that absence as null rather than invented entries.
+      highlights: highlights && !("competitors" in highlights)
+        ? { ...highlights, competitors: null }
+        : idea.highlights ?? null,
       // Pending legacy cards have no subject; they are not an editorial input.
       og: og && typeof og.subject === "string" && og.subject.trim() !== ""
         ? { subject: og.subject, accent: og.accent }

@@ -220,6 +220,7 @@ describe("live environment refusals", () => {
     expect(settings.publishing.readiness).toBe("unavailable");
     expect(settings.integrations.find((item) => item.id === "release_worker")?.available).toBe(false);
     expect(settings.integrations.find((item) => item.id === "engine")?.available).toBe(true);
+    expect(settings.integrations.find((item) => item.id === "legacy_import")).toBeUndefined();
     expect(JSON.stringify(settings)).not.toMatch(/simulated/i);
   });
 

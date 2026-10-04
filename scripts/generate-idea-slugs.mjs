@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 /**
- * Emit lib/idea-slugs.generated.ts from ideas/manifest.json.
- * Used by Edge middleware to hard-404 unknown /build/{slug} paths.
+ * Emit or verify lib/idea-slugs.generated.ts from ideas/manifest.json.
+ * Used by Edge middleware to hard-404 unknown idea/build paths.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const args = process.argv.slice(2);
+if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) {
+  console.error("Usage: node scripts/generate-idea-slugs.mjs [--check]");
+  process.exit(2);
+}
+const checkOnly = args[0] === "--check";
 const manifest = JSON.parse(
   readFileSync(join(root, "ideas/manifest.json"), "utf8"),
 );
@@ -30,5 +36,20 @@ export function isKnownIdeaSlug(slug: string): boolean {
 }
 `;
 
-writeFileSync(join(root, "lib/idea-slugs.generated.ts"), body);
-console.log(`Wrote ${slugs.length} idea slugs → lib/idea-slugs.generated.ts`);
+const generatedPath = join(root, "lib/idea-slugs.generated.ts");
+if (checkOnly) {
+  let saved = "";
+  try {
+    saved = readFileSync(generatedPath, "utf8");
+  } catch {
+    // A missing generated set is stale too; the build must fail closed.
+  }
+  if (saved !== body) {
+    console.error("Idea slug set is stale. Run npm run generate:idea-slugs and commit the generated file.");
+    process.exit(1);
+  }
+  console.log(`Verified ${slugs.length} idea slugs in lib/idea-slugs.generated.ts`);
+} else {
+  writeFileSync(generatedPath, body);
+  console.log(`Wrote ${slugs.length} idea slugs → lib/idea-slugs.generated.ts`);
+}

@@ -27,6 +27,11 @@ export function buildSteps(env) {
   delete frontendEnv.CONVEX_DEPLOY_KEY;
   return [
     {
+      command: "node",
+      args: ["scripts/generate-idea-slugs.mjs", "--check"],
+      env: frontendEnv,
+    },
+    {
       command: "npx",
       args: ["convex", "deploy", "--typecheck", "enable", "--message", `Vercel production ${env.VERCEL_GIT_COMMIT_SHA ?? "manual"}`],
       env: deploymentEnv,

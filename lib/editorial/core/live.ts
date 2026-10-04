@@ -136,14 +136,6 @@ export class LiveEditorialCore extends EditorialCore {
           detail: "Contract-v2 records and exact MDX are audited before private ingestion; saved revisions use the authenticated engine check runner.",
         },
         {
-          id: "legacy_import",
-          label: "Legacy live-idea import",
-          configured: false,
-          verified: false,
-          available: false,
-          detail: "Not run. The read-only import inventory is WP46-E5.",
-        },
-        {
           id: "release_worker",
           label: "Release worker",
           configured: releases.available,

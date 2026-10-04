@@ -113,6 +113,7 @@ export const IDEA_SLUGS: readonly string[] = [
   "daily-ai-checkin-calls-for-seniors",
   "daily-standup-bot",
   "data-freelancer-bounty-board",
+  "dmarc-monitor-agencies-small-business",
   "email-to-todo",
   "etsy-seo-optimizer",
   "excel-formula-repair-ai",
