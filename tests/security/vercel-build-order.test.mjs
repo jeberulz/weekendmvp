@@ -28,24 +28,32 @@ test("production refuses missing or wrong-target credentials before running comm
   }
 });
 
-test("production deploys the exact backend first and never builds after a failed deploy", () => {
+test("production checks the idea index before deploying the exact backend", () => {
   const steps = buildSteps(live);
-  assert.equal(steps[0].command, "npx");
-  assert.deepEqual(steps[0].args.slice(0, 2), ["convex", "deploy"]);
-  assert.equal(steps[0].env.CONVEX_DEPLOYMENT, undefined);
-  assert.equal(steps[1].command, "npm");
-  assert.equal(steps[1].env.CONVEX_DEPLOY_KEY, undefined);
+  assert.equal(steps[0].command, "node");
+  assert.deepEqual(steps[0].args, ["scripts/generate-idea-slugs.mjs", "--check"]);
+  assert.equal(steps[0].env.CONVEX_DEPLOY_KEY, undefined);
+  assert.equal(steps[1].command, "npx");
+  assert.deepEqual(steps[1].args.slice(0, 2), ["convex", "deploy"]);
+  assert.equal(steps[1].env.CONVEX_DEPLOYMENT, undefined);
+  assert.equal(steps[2].command, "npm");
+  assert.equal(steps[2].env.CONVEX_DEPLOY_KEY, undefined);
   const calls = [];
   assert.throws(() => runBuild(steps, (command) => {
     calls.push(command);
     return { status: 1 };
   }), /frontend build stopped/);
-  assert.deepEqual(calls, ["npx"]);
+  assert.deepEqual(calls, ["node"]);
+  assert.throws(() => runBuild(steps, (command) => {
+    calls.push(command);
+    return { status: command === "npx" ? 1 : 0 };
+  }), /frontend build stopped/);
+  assert.deepEqual(calls.slice(1), ["node", "npx"]);
   runBuild(steps, (command) => {
     calls.push(command);
     return { status: 0 };
   });
-  assert.deepEqual(calls.slice(1), ["npx", "npm"]);
+  assert.deepEqual(calls.slice(3), ["node", "npx", "npm"]);
 });
 
 test("preview and local builds never deploy Convex", () => {
