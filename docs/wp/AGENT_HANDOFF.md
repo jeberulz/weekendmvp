@@ -17,9 +17,11 @@ repository.
 This branch also adds an ordered Vercel production build for E7h. A
 deployment-scoped `CONVEX_DEPLOY_KEY` for `first-squirrel-244` is now stored as a
 production-only Vercel Secret with `deployment:deploy` permission; the value was
-not logged. The first real Vercel production build still needs verification.
-If its target check or backend deploy fails, the production build stops. Never
-use the checkout's default `--prod` target or Convex `--verbose`.
+not logged. A staged Vercel production build with `--skip-domain` verified the
+backend-before-Next order without changing the canonical site. The first
+Git-backed build after merge still needs exact-SHA verification. If the target
+check or backend deploy fails, the production build stops. Never use the
+checkout's default `--prod` target or Convex `--verbose`.
 The root `convex-backup-before-wp46.zip` and untracked publish-idea plan are
 unrelated user data and must stay untouched.
 
