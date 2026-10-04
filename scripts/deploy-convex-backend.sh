@@ -4,10 +4,9 @@
 #   scripts/deploy-convex-backend.sh             checks, snapshot, dry run, deploy, verify
 #   scripts/deploy-convex-backend.sh --backfill  after the deploy: normalize legacy subscription emails
 #
-# Run on your own machine from a clean checkout of the PR branch. Either be
-# logged in (npx convex login, with CONVEX_DEPLOYMENT in .env.local) or export
-# CONVEX_DEPLOY_KEY set to a production deploy key. Nothing here prints secret
-# values. Snapshots hold member emails, so they are written outside the repo.
+# Run on your own machine from a clean checkout of the PR branch. Export a
+# deployment-scoped production CONVEX_DEPLOY_KEY for the live site's exact
+# target. Snapshots hold member emails, so they are written outside the repo.
 # Works with the bash 3.2 that ships on macOS.
 set -euo pipefail
 
@@ -26,13 +25,11 @@ confirm() {
   [ "$answer" = "yes" ] || fail "Not confirmed."
 }
 
-# With a deploy key the CLI targets that key's deployment. Otherwise use --prod.
-if [ -n "${CONVEX_DEPLOY_KEY:-}" ]; then
-  case "$CONVEX_DEPLOY_KEY" in prod:*) ;; *) fail "CONVEX_DEPLOY_KEY is not a production key." ;; esac
-  TARGET=""
-else
-  TARGET="--prod"
-fi
+# The checkout's default --prod deployment is not the site's live target.
+case "${CONVEX_DEPLOY_KEY:-}" in
+  prod:first-squirrel-244\|*) TARGET="" ;;
+  *) fail "Set CONVEX_DEPLOY_KEY for the verified first-squirrel-244 deployment." ;;
+esac
 
 in_repo_root() {
   [ -f package.json ] && [ -d convex ] || fail "Run this from the repo root."
@@ -116,7 +113,7 @@ deploy() {
   echo "Tagged origin/main as $tag. Push it with: git push origin $tag"
   snapshot pre-wp44
   step "Dry run (schema, index and function changes)"
-  npx convex deploy --dry-run --verbose --typecheck enable
+  npx convex deploy --dry-run --typecheck enable
   confirm "Push this backend to production?"
   step "Deploy"
   npx convex deploy --typecheck enable --message "WP44 dashboard backend $(git rev-parse --short HEAD)"

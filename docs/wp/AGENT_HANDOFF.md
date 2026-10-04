@@ -14,6 +14,12 @@ contract-v2 candidate was ingested only into the isolated staging backend,
 then removed by restoring its pre-test snapshot. No production idea has been
 published or imported in E7. Keep unreleased drafts out of this public
 repository.
+This branch also adds an ordered Vercel production build for E7h. A
+deployment-scoped `CONVEX_DEPLOY_KEY` for `first-squirrel-244` is now stored as a
+production-only Vercel Secret with `deployment:deploy` permission; the value was
+not logged. The first real Vercel production build still needs verification.
+If its target check or backend deploy fails, the production build stops. Never
+use the checkout's default `--prod` target or Convex `--verbose`.
 The root `convex-backup-before-wp46.zip` and untracked publish-idea plan are
 unrelated user data and must stay untouched.
 

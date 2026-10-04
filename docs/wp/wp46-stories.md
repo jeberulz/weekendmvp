@@ -44,6 +44,7 @@ The complete WP46 story contract remains in `docs/plans/editorial-admin/wp46-sto
 - [ ] `WP46-E7d` — Re-run the 226-page import dry run and, after exact inventory approval, import the one missing private legacy baseline. Verify no public row or page changes.
 - [ ] `WP46-E7e` — Full snapshot restored twice into an isolated expiring deployment with matching document/file counts. Functional auth and job recovery, genuine private contract-v2 submission, managed publish/edit/republish/unpublish/rollback and independent final security review remain open.
 - [ ] `WP46-E7g` — Private engine record/MDX/manifest inputs, exact-byte deep audit, public-path/symlink refusal and staging backend ingestion/idempotency passed on a genuine live contract-v2 record without staging it in public Git. Full configured checks pass. Independent review and production submission remain gated by human source review and owner action.
+- [ ] `WP46-E7h` — Enforce the verified Convex backend before Vercel's production frontend build. The build must refuse an absent or wrong-target production deploy key or public URL, use the deployment-scoped key for Convex, then build Next only after a successful backend deploy. Local and preview builds must not deploy Convex. Verify refusal and command ordering before configuring the production-only Vercel key.
 - [ ] `WP46-E7f` — With owner approval, configure the exact reader origin/SHA and enable the Convex release switch. Verify one explicitly approved real release before declaring GO.
 
 ## Out of scope
