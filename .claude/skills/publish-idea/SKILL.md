@@ -1,6 +1,6 @@
 ---
 name: publish-idea
-description: "Prepare a startup idea with the local engine and submit it for private editorial review. DEFAULT: /publish-idea {title} — brief, live research, compile, tagging, deep audit, human source check, then editorial:submit-engine dry run. Applying the private submission requires an exact target, backup and operator instruction. Public release remains gated by WP46-E6. OPT-IN: /publish-idea --from-draft {folder-name} when the seed lives in ideas/drafts/. Ideabrowser MCP is not part of this skill."
+description: "Prepare a startup idea with the local engine and submit it for private editorial review. DEFAULT: /publish-idea {title} — brief, live research, compile, tagging, deep audit, human source check, then editorial:submit-engine dry run. Applying the private submission requires an exact target, backup and operator instruction. Public release remains gated by WP46-E6. OPT-IN: /publish-idea --from-draft {folder-name} when the seed lives in ideas/drafts/. OPT-IN: /publish-idea --suggest {category|thinnest} to get a verified, deduplicated shortlist of idea candidates (Step 0; spends nothing, researches and writes nothing). Ideabrowser MCP is not part of this skill."
 ---
 
 # Publish Idea Skill
@@ -34,11 +34,13 @@ Practical consequences:
 ```
 /publish-idea {title}
 /publish-idea --from-draft {folder-name}
+/publish-idea --suggest {category|thinnest}
 ```
 
 Examples:
 - `/publish-idea AI invoice chaser for freelancers` — default engine path
 - `/publish-idea --from-draft nutrition-planner` — same engine path; brief built from `ideas/drafts/nutrition-planner/raw.md`
+- `/publish-idea --suggest automation` — verified shortlist for a thin category (Step 0); researches and writes nothing
 
 **Do not** pass Ideabrowser numeric `idea_id`s. There is no MCP Mode A in this skill.
 
@@ -47,6 +49,7 @@ Examples:
 | User gives a title / one-liner | **Default** — write brief → `engine:research` → `engine:compile` |
 | User passes `--from-draft {folder}` | **Draft** — read `ideas/drafts/{folder}/raw.md` → same engine pipeline |
 | User points at `ideas/drafts/` without the flag | Ask whether to run `--from-draft {folder}` |
+| User passes `--suggest {category}` or asks for idea suggestions | **Suggest** — Step 0 only: a shortlist, then wait for the operator's pick |
 | Research stops, compile refuses, or the page fails the auditor | **STOP** — surface the failure and the run report. Do not invent thin WebSearch filler to paper over it. Do not call Ideabrowser MCP. |
 
 Checks that need no keys and spend nothing:
@@ -54,6 +57,7 @@ Checks that need no keys and spend nothing:
 - `npm run test:engine` (part of `npm test`) runs the engine suites, including the same replay with authenticity and adversarial checks (`lib/engine/replay.test.ts`).
 - `npm run engine:eval` only re-audits three handwritten gold pages (a legacy auditor regression). It is not evidence of engine quality.
 - `npm run validate:idea-tags` checks the tagging allowlists and the shape of every `highlights` block.
+- `/publish-idea --suggest` (Step 0) uses only manifest reads, `curl`, WebSearch and the browser pane.
 
 If a live compile cannot clear the auditor on this machine, stop and report — do not start phase 9.
 
@@ -77,6 +81,50 @@ If a live compile cannot clear the auditor on this machine, stop and report — 
 ## ═══════════════════════════════════════════
 ## DEFAULT: Engine pipeline (title or draft)
 ## ═══════════════════════════════════════════
+
+### Step 0 — Suggest ideas (optional, spends nothing)
+
+Runs only for `/publish-idea --suggest {category|thinnest}` or when the operator asks for idea suggestions. `{category}` is one of the Step 4 category slugs. It ends with a shortlist for the operator to choose from: no brief is written, `engine:research` is not run, and no paid provider (OpenAI, Perplexity, DataForSEO) is called. Free tools only: manifest reads, `curl`, WebSearch, the browser pane.
+
+**0.1 Coverage and backlog.**
+- Count `ideas/manifest.json` rows per `category`; `thinnest` means the lowest count.
+- List slug and description of every existing idea in that category and its two nearest neighbours. This is the duplicate corpus.
+- Read the project's idea-publish backlog memory (`project_idea-publish-backlog.md`, "Engine-era shortlist"). Candidates already there are re-verified in 0.3 to 0.6, not re-brainstormed, and are never suggested twice.
+
+**0.2 Raw candidates.** Draft 6 to 8 one-line candidates beyond what the backlog holds: a named buyer, what that buyer uses today, and the wedge the incumbents skip. These come from model knowledge, so label the list "unverified" until 0.5 and 0.6 have run.
+
+**0.3 Duplicate filter.** Search the manifest titles and descriptions, `content/ideas/`, `engine/records/` and `ideas/drafts/` for each candidate's buyer and job, then read the hits. Drop on buyer + job overlap (the Step 1 rule), not on slug alone, and show every drop with the slug it collided with.
+
+**0.4 Pick evidence sources by buyer.** Look where the buyer actually complains, not where it is easiest to search. The engine has dedicated readers only for Hacker News (Algolia items API) and Reddit (needs `REDDIT_CLIENT_ID` and `REDDIT_CLIENT_SECRET`); every other site goes through the generic page fetch and is untested with `engine:research` until probed in 0.5.
+
+| Buyer | Look first | Engine reader |
+|---|---|---|
+| Developers, AI builders | Hacker News, GitHub issues/discussions, Stack Overflow | HN dedicated; others generic fetch |
+| Indie founders, creators | Hacker News, Indie Hackers, niche forums | HN dedicated; others generic fetch |
+| Small business, trades, local services | Niche trade forums, vendor review pages | generic fetch; often login-walled |
+| Consumers | App store reviews, Reddit | Reddit dedicated, credentials required |
+
+- Check whether the two Reddit variables are set (shell, `.env.local`, `.env`; presence only, never print a value). If either is missing, write **"Reddit: not checked"** for every candidate and do not claim pain lives on Reddit.
+- Every pain claim needs a linked page that was fetched. No link, no claim.
+
+**0.5 Reachability probe.** For each candidate, fetch every evidence URL the way the engine would: plain HTTP, no login, no JavaScript (use `https://hn.algolia.com/api/v1/items/{id}` for Hacker News items). Confirm the quoted sentence is in the returned text and comes from a single comment or block. Record readable Y/N. A page that only renders in a browser counts as unreadable. A candidate with fewer than 2 readable, distinct buyer-pain quotes is **high risk**: the engine would stop at `evidence_acceptance`.
+
+**0.6 Competitor and market check.**
+- For each named competitor, fetch the pricing page and record: a USD price in the page text (Y/N), a monthly/annual toggle (Y/N), the plan name. The engine needs 3 distinct vendors with a numeric price or a first-party pricing-availability statement, at least 1 numeric.
+- Market statistic: look for a research-firm report page with a one-sentence figure for the idea's own category, not an adjacent one. The engine rejects blogs, guides and roundups and needs at least 2 statistics. If none exists, write "no market stat found" and raise the risk rating.
+- Anything not fetched is labelled **"from memory"**.
+
+**0.7 Present.** A table of at most 4 candidates, best first. Columns: idea, category, buyer, wedge, community evidence (links, readable Y/N), competitors verified (n of 3), market stat found (Y/N), Reddit status, engine risk (low / medium / high), unverified claims. Recommend one and say why, then wait for the operator's pick.
+
+**0.8 Persist and hand off.**
+- Update the backlog memory in place: edit the existing "Engine-era shortlist" paragraph, never append a second one. One entry per candidate: title, category, buyer, engine risk, evidence links, date checked, status (`unverified`, `verified`, `published` or `dropped`). Keep at most 15 entries. Remove an entry that now collides with the manifest or whose evidence stopped being readable, and mark an idea `published` with its slug once it is live.
+- Re-run 0.3 against the current manifest before reusing any stored entry; the manifest may have moved since it was saved.
+- On the operator's pick, continue at Step 1, and put only URLs verified in 0.5 and 0.6 into `sourceHints`.
+
+**Rules for this step:**
+- Spend nothing; a live engine run only starts after the operator chooses.
+- Never state where pain lives, what a competitor charges or what a market is worth without a page fetched in this step.
+- Mark every unchecked claim "unverified" or "from memory" in the output.
 
 ### Step 1 — Build the brief
 
@@ -489,6 +537,7 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 ## Error Handling
 
 - Missing `ideas/drafts/{folder}/raw.md` → report and stop.
+- `--suggest` finds no candidate that clears 0.3 to 0.6 → say so and stop. Do not lower the bar or pad the table with unverified candidates.
 - `engine:research` refuses before running (mode flags, brief JSON, a one-liner with a figure or quotation, an existing record or report without `--force`, a fixture brief for another slug) → fix the input; nothing was spent.
 - `engine:research` exits 1 after starting → read the printed summary and the run report: `failedStep`, the redacted error, cost, attempts, accepted counts, rejection reasons, source statuses and refused citations.
   - `evidence_acceptance`: the cited pages did not support enough whole claims. Try a sharper brief or seed keywords once, or refuse the idea — never hand-write evidence.
@@ -508,6 +557,14 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 ---
 
 ## Checklist
+
+### Suggest path (`--suggest` only)
+- [ ] Category counted; existing ideas in it and its neighbours listed; backlog memory read
+- [ ] Every candidate duplicate-checked against the manifest, `content/ideas/`, `engine/records/` and `ideas/drafts/`
+- [ ] Evidence URLs fetched and the quoted sentences confirmed; Reddit marked "not checked" when credentials are missing
+- [ ] Competitor pricing pages and market-stat pages fetched; everything else labelled "from memory"
+- [ ] No paid provider and no `engine:research` run during the step
+- [ ] Backlog memory updated in place (statuses, at most 15 entries)
 
 ### Engine path
 - [ ] Idea gate passed (paying buyer, public pain, wedge) and no existing idea covers it; slug free in the manifest, `content/ideas/` and `engine/records/`
