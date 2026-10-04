@@ -5,7 +5,7 @@ This bridge makes a **private candidate and its saved-revision checks**. It does
 ## Prepare a candidate
 
 1. Run the live `/publish-idea` research and compile path on a new slug. A contract-v1 or fixture record cannot enter the live editorial workspace.
-2. Fill the manifest tagging, run `npm run audit:idea -- --slug=SLUG` and `npm run validate:idea-tags -- --slug=SLUG`, then open and verify every cited market statistic and competitor price plus at least two community quotes as the skill describes. The machine check does not establish source credibility on its own.
+2. Fill the manifest tagging and run `npm run generate:idea-slugs`: compile added a manifest row, and `lib/idea-slugs.generated.ts` must list SLUG or `/build/SLUG` answers 404 and `npm test` fails. Then run `npm run audit:idea -- --slug=SLUG` and `npm run validate:idea-tags -- --slug=SLUG` (no stale slug-set warning), then open and verify every cited market statistic and competitor price plus at least two community quotes as the skill describes. The machine check does not establish source credibility on its own.
 3. Run `npm run editorial:submit-engine -- --slug=SLUG`. This is local and read-only. Record the printed artifact hash, record hash and source/claim counts. An error means stop and correct the research or artifact; never bypass the audit by calling `editorial.service.importSubmission`.
 
 ## Submit to the private workspace
