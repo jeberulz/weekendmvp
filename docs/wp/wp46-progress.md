@@ -2,6 +2,11 @@
 
 Append-only progress log. The full E0–E4 history is in `docs/plans/editorial-admin/wp46-progress.md`.
 
+## 2026-10-04 — E7 post-merge activation gate
+
+- Lane: WP46 Work Package; branch `codex/wp46-e7-activation` from PR #100 merge `d4b53c2`. The Git-backed Vercel production build is Ready, passed CI, and its log shows Convex deploying to the verified `first-squirrel-244` target before Next compilation. The canonical reader-health endpoint reports protocol 1 and the exact merge commit. The owner binding is one active account; release worker, private ingestion and session functions are present. Known idea/build paths return 200/no-store, missing/draft idea paths 404/no-store, and sitemap 200. The release switch and reader origin/SHA are still absent.
+- E7d pre-execution: a new full live-target backup passed ZIP integrity and mode-600 checks; the annotated pre-import Git restore tag was pushed. The importer dry run is 226/226, digest `909c86ca13b3c1a252df9165ae4efc7585ec282fc77dba556c735012ee7294f2`; fresh snapshot comparison finds 225 matching private submissions, one missing, zero changed. The owner approved the ordered work in this conversation. Exact target, backup, expected counts, approval, stop and recovery conditions are recorded in `docs/wp/backup-restore.md`. Import execution and verification remain pending.
+
 ## 2026-10-04 — E7 preflight and repair branch
 
 - E7i credential handoff: `docs/wp/wp46-e7-credential-rotation.md` maps the four exposed secret dependencies and the paired JWKS update. A current production env-name inventory found `REVALIDATE_SECRET` on Vercel but no Vercel billing bridge variable. The plan requires an approved exact-target record, a fresh backup, matched auth keys, a new Vercel deployment for revalidation and fresh-login/bridge smoke checks. No credential was rotated or release switch enabled. Documentation updated: E7 rotation plan, gate, stories and progress.
