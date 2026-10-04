@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
+import matter from "gray-matter";
 
 import { inventoryLegacyIdeas } from "@/scripts/editorial-import-legacy-core";
 import { editorialSubmissionSchema } from "@/lib/editorial/contracts/submission";
@@ -16,7 +17,9 @@ async function sampleRoot(slug = "phone-neck-score-app") {
   roots.push(root);
   await mkdir(path.join(root, "ideas"));
   await mkdir(path.join(root, "content/ideas"), { recursive: true });
-  const all = JSON.parse(await readFile("ideas/manifest.json", "utf8")) as { ideas: Array<{ slug: string }> };
+  const all = JSON.parse(await readFile("ideas/manifest.json", "utf8")) as {
+    ideas: Array<{ slug: string; highlights?: Record<string, unknown> }>;
+  };
   const idea = all.ideas.find((candidate) => candidate.slug === slug);
   if (!idea) throw new Error("Missing stable sample idea");
   await writeFile(path.join(root, "ideas/manifest.json"), JSON.stringify({ ideas: [idea] }));
@@ -70,5 +73,24 @@ describe("legacy editorial import inventory", () => {
       { name: "Live Project", price: "$29/project/month" },
       { name: "Project Portfolio", price: "$99/month" },
     ]);
+  });
+
+  test("treats omitted legacy competitor tiles as none without changing the public body", async () => {
+    const { root, mdx } = await sampleRoot("dmarc-monitor-agencies-small-business");
+    const inventory = await inventoryLegacyIdeas(root);
+    expect(inventory.skipped).toEqual([]);
+    expect(inventory.entries[0].envelope.metadata.highlights?.competitors).toBeNull();
+    expect(inventory.entries[0].envelope.markdown).toBe(matter(mdx).content);
+  });
+
+  test("still rejects malformed competitor tiles when present", async () => {
+    const { root, idea } = await sampleRoot("dmarc-monitor-agencies-small-business");
+    const changed = { ...idea, highlights: { ...idea.highlights, competitors: [{ name: "Missing price" }] } };
+    await writeFile(path.join(root, "ideas/manifest.json"), JSON.stringify({ ideas: [changed] }));
+    const inventory = await inventoryLegacyIdeas(root);
+    expect(inventory.entries).toHaveLength(0);
+    expect(inventory.skipped).toHaveLength(1);
+    expect(inventory.skipped[0].slug).toBe("dmarc-monitor-agencies-small-business");
+    expect(inventory.skipped[0].reason).toContain("highlights.competitors.0.price");
   });
 });
