@@ -1,6 +1,6 @@
 # WP46-E7 production credential rotation plan
 
-Status: **partially executed; revalidation rotation remains open** (2026-10-04). This is the
+Status: **completed for the canonical live site; editorial launch remains NO-GO** (2026-10-04). This is the
 credential follow-up to the private operator log exposure recorded in
 [`wp46-e7-gate.md`](wp46-e7-gate.md). Do not copy credential values into this
 repository, a PR, a ticket, a shell transcript or a deployment log. A current
@@ -53,13 +53,32 @@ editorial release switch was absent throughout these changes.
   test prices and a matching bridge, so live checkout remains disabled. A
   complete test-mode billing flow is a separate future gate if billing is
   enabled.
-- `REVALIDATE_SECRET` is **not yet rotated**. The existing Convex sender put
-  it in the request URL. WP46-E7j changes both ends to an authenticated header
-  with a constant-time digest comparison and query-only refusal. Deploy the
-  sender/reader pair under a content-write pause, then replace the shared
-  production value on Vercel and exact-target Convex and prove a tagged page
-  refreshes. The old value must not be echoed in test URLs or logs. Until
-  this succeeds, credential rotation is incomplete and E7 remains NO-GO.
+- `REVALIDATE_SECRET` was rotated after PR #103 merged at
+  `b40687e20480289a2a5c90596ddacaa28d02020b`. The canonical route now
+  rejects a missing or query-only credential (401) and accepts the header
+  (200). The first replacement Vercel redeploy rejected the replacement value;
+  Convex was deliberately left on its previous value. Reapplying the Vercel
+  value **without a trailing stdin newline** and building a protected
+  production-target diagnostic deployment made the new header pass. A fresh
+  Git-backed production redeploy `dpl_3zAUL9BYgD6C2JxfKi1upsjFwAEQ` then
+  reached Ready on the canonical domains with the same reader commit. Only
+  after its header probe passed was the new value set on `first-squirrel-244`;
+  exact readback matched. A missing credential still returned 401. The
+  temporary local plaintext copy was deleted. This sequence does not prove
+  the original failure's precise cause; it proves the final paired values.
+- The Convex `revalidate:run` internal action then invalidated the `articles`
+  tag on the exact live target. A warmed canonical `/articles` response moved
+  from HIT (`age: 13`) to STALE (`age: 25`) and then a fresh HIT (`age: 8`).
+  This exercises Convex → Next rather than only calling the HTTP route.
+  Known and unknown idea pages, articles, sitemap and reader health remained
+  healthy; public pointers and managed versions remained zero. The release
+  switch, reader origin and reader SHA stayed absent. The local release
+  secret and pulled environment file were removed after verification.
+
+All four affected live credentials have been replaced. Historical Vercel
+deployment URLs can retain their original environment snapshot; the canonical
+domains now use the new value. The original procedural checklist below is
+retained as the operation plan; the execution record above is current status.
 
 ### Original preparation checklist
 
