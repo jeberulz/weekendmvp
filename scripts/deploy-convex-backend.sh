@@ -52,12 +52,7 @@ preflight() {
 check_env_names() {
   step "Production environment variables (names only)"
   local names missing=""
-  # Only names that look like variable names are kept. Values never leave node.
-  names="$(npx convex env list $TARGET | node -e '
-    const lines = require("fs").readFileSync(0, "utf8").split("\n");
-    const names = lines.map((l) => l.split("=")[0].trim()).filter((n) => /^[A-Z][A-Z0-9_]*$/.test(n));
-    console.log(names.join("\n"));
-  ')"
+  names="$(npx convex env list --names-only)"
   for name in $REQUIRED_ENV; do
     grep -qx "$name" <<<"$names" || missing="$missing $name"
   done
