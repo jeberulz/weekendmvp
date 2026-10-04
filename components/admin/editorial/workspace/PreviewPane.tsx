@@ -177,8 +177,8 @@ function HighlightsPreview({ metadata }: { metadata: EditorialMetadata }) {
         <>
           <h4 className="text-sm! font-semibold">Proposed pricing tiers</h4>
           <ul className="m-0! flex list-none! flex-wrap gap-2 pl-0!">
-            {highlights.tiers.map((tier) => (
-              <li key={tier.name} className="m-0! rounded border border-(--ed-border-strong) bg-(--ed-surface) px-2 py-0.5 text-sm">
+            {highlights.tiers.map((tier, index) => (
+              <li key={`${index}-${tier.name}`} className="m-0! rounded border border-(--ed-border-strong) bg-(--ed-surface) px-2 py-0.5 text-sm">
                 {tier.name} <span className="font-mono">{tier.price}</span>
               </li>
             ))}

@@ -9,7 +9,7 @@ vi.mock("@convex-dev/auth/nextjs/server", () => ({
     (request: unknown) => handler(request, { convexAuth: {} }),
 }));
 
-import { middleware } from "../../middleware";
+import { config, middleware } from "../../middleware";
 
 const event = { waitUntil() {}, passThroughOnException() {} } as unknown as NextFetchEvent;
 
@@ -27,6 +27,16 @@ describe("request-time editorial takedown", () => {
 
   test("an invalid idea slug returns a real 404 without querying publication", async () => {
     const response = await middleware(new NextRequest("https://www.weekendmvp.app/ideas/Unknown-Idea", {
+      headers: { host: "www.weekendmvp.app" },
+    }), event);
+    expect(response?.status).toBe(404);
+    expect(publication).not.toHaveBeenCalled();
+  });
+
+  test("extension-like idea and build slugs are included in the middleware matcher", async () => {
+    expect(config.matcher).toContain("/ideas/:path*");
+    expect(config.matcher).toContain("/build/:path*");
+    const response = await middleware(new NextRequest("https://www.weekendmvp.app/ideas/missing.js", {
       headers: { host: "www.weekendmvp.app" },
     }), event);
     expect(response?.status).toBe(404);

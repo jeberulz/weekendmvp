@@ -172,6 +172,9 @@ export async function validateEngineSubmission(input: EngineArtifactInput): Prom
         })
       : rawHighlights.stats,
     competitors: rawHighlights.competitors ?? null,
+    // Preserve optional pricing proposals through the same bounded metadata
+    // parse as legacy imports and editor revisions.
+    tiers: rawHighlights.tiers,
   };
   const rawOg = object(manifest.og);
   const metadata = editorialMetadataSchema.safeParse({

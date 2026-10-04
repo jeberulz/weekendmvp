@@ -62,4 +62,12 @@ describe("validateEngineSubmission", () => {
     await expect(validateEngineSubmission({ ...input, manifestJson: JSON.stringify({ ...manifest, source: "manual" }) })).rejects.toThrow(/Manifest identity/);
     await expect(validateEngineSubmission({ ...input, manifestJson: JSON.stringify({ ...manifest, tools: [] }) })).rejects.toThrow(/metadata is not editorial-ready/);
   });
+
+  it("preserves bounded pricing tiers from a live engine artifact", async () => {
+    const input = compiledInput();
+    const manifest = JSON.parse(input.manifestJson) as Record<string, unknown>;
+    const highlights = manifest.highlights as Record<string, unknown>;
+    const result = await validateEngineSubmission(input);
+    expect(result.envelope.metadata.highlights?.tiers).toEqual(highlights.tiers);
+  });
 });

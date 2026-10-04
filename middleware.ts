@@ -499,6 +499,10 @@ export const config = {
     // skip the editorial gate and its headers.
     "/admin",
     "/admin/:path*",
+    // Dynamic idea/build routes may have extension-like slugs. They must still
+    // hit the request-time 404 gate before a PPR shell can stream.
+    "/ideas/:path*",
+    "/build/:path*",
     "/robots.txt",
     "/sitemap.xml",
     // `public/llms.txt` is a static file, so the extension exclusion below
