@@ -718,7 +718,10 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   // --- AI Prompts (plain text inside fences; no figure or quote of our own) --
   const planCheck = tierKeys.map((k) => `'${k}'`).join(",");
   const priceEnv = tierKeys.map((k) => `STRIPE_PRICE_${k.toUpperCase()}`).join(", ");
-  const tierSummary = tiers.map((t) => `${t.name} at ${fenceText(t.price, ctx)}`).join("; ");
+  // A tier name may contain a finance word (for example "Trust Revenue").
+  // Keep "Revenue" away from its per-seat price so the page-wide guard does
+  // not misread a proposed tier price as an aggregate revenue total.
+  const tierSummary = tiers.map((t) => `${t.name} plan (${fenceText(t.price, ctx)})`).join("; ");
   const dontBuild = fenceText(ed.dontBuildYet, ctx);
   const coreFeatureLines = steps.map((s) => {
     const body = fenceText(s.body, ctx);

@@ -1,14 +1,19 @@
 # Current handoff — WP46 E7 launch gate (4 October 2026)
 
-Branch `codex/wp46-e7-launch` follows merged E6 PR #98. Read
+PR #99 from `codex/wp46-e7-launch` is merged at `81722bc`; the current
+follow-up branch is `codex/wp46-e7-verification` in `.worktrees/wp46-e7-preview`.
+Read
 `docs/wp/wp46-e7-gate.md` first: it records the actual live Convex target,
-backups, baseline hash comparison, deployed-reader recovery, current HTTP
-failure and remaining NO-GO gates. The frontend's live backend is
+backups, baseline hash comparison, canonical reader and staging verification,
+and remaining NO-GO gates. The frontend's live backend is
 `first-squirrel-244`; this checkout's `--prod` selects a different, paused
 project. Never deploy with `--prod` assuming it targets the public site.
-The release switch is off. This branch fixes the soft 404/cache response and
-supports pricing tiers in the private editorial baseline; it has not published
-or imported an idea. Keep unreleased drafts out of this public repository.
+The release switch is off. PR #99 fixed the soft 404/cache response and
+pricing tiers; this follow-up adds a private engine submission path. One live
+contract-v2 candidate was ingested only into the isolated staging backend,
+then removed by restoring its pre-test snapshot. No production idea has been
+published or imported in E7. Keep unreleased drafts out of this public
+repository.
 The root `convex-backup-before-wp46.zip` and untracked publish-idea plan are
 unrelated user data and must stay untouched.
 

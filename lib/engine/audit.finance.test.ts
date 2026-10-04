@@ -205,6 +205,17 @@ describe("Year-One Math against finance.ts (F6)", () => {
     expect((await auditPage(page, record)).errors).toEqual([]);
   });
 
+  it("compiles a tier named Revenue without presenting its seat price as a revenue total", async () => {
+    const record = buildFixtureRecord((r) => {
+      const solo = r.editorial?.pricingTiers?.find((tier) => tier.name === "Solo");
+      if (!solo) throw new Error("fixture: Solo tier missing");
+      solo.name = "Trust Revenue";
+    });
+    const page = compiledPage(record);
+    expect(page).toContain("Trust Revenue plan ($12/month)");
+    expect((await auditPage(page, record)).errors).toEqual([]);
+  });
+
   it("fails a missing base line or downside line", async () => {
     expect(errorsOf(await auditPage(replaceOnce(compiledPage(), `${BASE}\n`, "")))).toMatch(/Year-One Math is missing its computed ARR line/);
     expect(errorsOf(await auditPage(replaceOnce(compiledPage(), `${DOWNSIDE}\n`, "")))).toMatch(/Year-One Math is missing its downside case/);

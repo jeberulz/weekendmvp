@@ -90,7 +90,7 @@ describe("unbound figures in every section (R10, P1-1)", () => {
     const page = replaceOnce(compiledPage(), "Persist state between screens", "Target 47 reviews a day. Persist state between screens");
     expect(errorsOf(await auditPage(page))).toMatch(/AI Prompts to Build This: unbound figure "47" in a build prompt near line \d+/);
     const clean = compiledPage();
-    expect(clean).toContain("Crew at $20/developer/month");
+    expect(clean).toContain("Crew plan ($20/developer/month)");
     expect(clean).toContain(renderEvidenceInline(EV.priceGraphite));
   });
 
