@@ -24,6 +24,8 @@
  *                                                    # seed a named deployment (the live site)
  *   node scripts/seed-convex.mjs --include-drafts     # also seed manifest.draft.json ideas
  *   node scripts/seed-convex.mjs --only ideas         # ideas|articles|newsletters|refs
+ *   node scripts/seed-convex.mjs --deployment first-squirrel-244 --only ideas --slug idea-slug --dry-run
+ *                                                    # inspect one exact public idea
  *
  * NOTE: convex/seed.ts must be deployed (`npx convex dev` watcher or
  * `npx convex deploy`) before the seed functions can be run.
@@ -52,13 +54,25 @@ const only = onlyIdx !== -1 ? argv[onlyIdx + 1] : null;
 // reads `first-squirrel-244`.
 const deploymentIdx = argv.indexOf('--deployment');
 const deployment = deploymentIdx !== -1 ? argv[deploymentIdx + 1] : null;
-if (deploymentIdx !== -1 && !deployment) {
+const slugIdx = argv.indexOf('--slug');
+const slug = slugIdx !== -1 ? argv[slugIdx + 1] : null;
+if (deploymentIdx !== -1 && (!deployment || deployment.startsWith('--'))) {
   console.error('error: --deployment requires a deployment name');
   process.exit(1);
 }
 if (deployment && prod) {
   console.error('error: pass either --prod or --deployment <name>, not both');
   process.exit(1);
+}
+if (slugIdx !== -1) {
+  if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    console.error('error: --slug requires one valid idea slug');
+    process.exit(1);
+  }
+  if (only !== 'ideas' || includeDrafts || !deployment) {
+    console.error('error: --slug requires --only ideas and an explicit --deployment, without --include-drafts');
+    process.exit(1);
+  }
 }
 /** CLI flags selecting the target deployment, appended to every `convex run`. */
 const targetFlags = deployment ? ['--deployment', deployment] : prod ? ['--prod'] : [];
@@ -199,8 +213,10 @@ function buildIdeas() {
     return false;
   };
   const items = manifest.ideas
+    .filter((i) => !slug || i.slug === slug)
     .filter(notEngineDraft)
     .map((i) => buildIdea(i, { draft: false }));
+  if (slug && items.length !== 1) throw new Error(`Expected exactly one public manifest idea for --slug ${slug}.`);
   if (includeDrafts) {
     const draftPath = path.join(root, 'ideas/manifest.draft.json');
     if (fs.existsSync(draftPath)) {
@@ -359,6 +375,7 @@ function main() {
 
   if (want('ideas')) {
     const ideas = buildIdeas();
+    if (slug) console.log(`idea slug: ${slug}`);
     const mdx = ideas.filter((i) => i.bodyMode === 'mdx').length;
     const convexBody = ideas.filter((i) => i.bodyMode === 'convex' && i.body).length;
     const noBody = ideas.filter((i) => i.bodyMode === 'convex' && !i.body).length;
