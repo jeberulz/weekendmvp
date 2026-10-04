@@ -1,0 +1,38 @@
+{
+  "title": "Sales Tax Threshold Monitor for Indie Digital Sellers",
+  "audience": "Indie SaaS founders and digital product sellers who charge through Stripe and sell across US states and EU countries",
+  "revenueModel": "SaaS subscription priced by connected Stripe accounts, with a free tier that tracks a single account",
+  "seedKeywords": [
+    "economic nexus tracker",
+    "sales tax nexus",
+    "sales tax threshold",
+    "stripe sales tax",
+    "vat for saas"
+  ],
+  "sourceHints": {
+    "market": [
+      "https://www.thebusinessresearchcompany.com/report/sales-tax-software-global-market-report",
+      "https://www.researchandmarkets.com/reports/6076416/sales-tax-software-market-report",
+      "https://www.marketresearchfuture.com/reports/sales-tax-software-market-23983",
+      "https://www.researchandmarkets.com/reports/6184422/sales-tax-software-market-outlook-market"
+    ],
+    "competitors": [
+      "https://www.avalara.com/us/en/products/sales-and-use-tax/avatax.html",
+      "https://www.vatstack.com/pricing",
+      "https://www.taxjar.com/pricing",
+      "https://www.numeral.com/pricing",
+      "https://www.lemonsqueezy.com/pricing",
+      "https://www.quaderno.io/pricing",
+      "https://zamp.com/pricing"
+    ],
+    "community": [
+      "https://news.ycombinator.com/item?id=43298663",
+      "https://news.ycombinator.com/item?id=24572775",
+      "https://news.ycombinator.com/item?id=22102719",
+      "https://news.ycombinator.com/item?id=14137603",
+      "https://news.ycombinator.com/item?id=30535572"
+    ]
+  },
+  "slug": "sales-tax-threshold-monitor-digital-sellers",
+  "oneLiner": "Know which states and countries you owe sales tax in before the registration letter arrives."
+}
