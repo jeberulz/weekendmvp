@@ -34,6 +34,15 @@ export type LegacyImportInventory = {
   skipped: Array<{ slug: string; reason: string }>;
 };
 
+/** Narrow an approved full-manifest inventory to one existing baseline. */
+export function selectLegacyImportEntries(inventory: LegacyImportInventory, slug?: string): LegacyImportEntry[] {
+  if (slug === undefined) return inventory.entries;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error("Import refused: --slug must be a valid idea slug.");
+  const selected = inventory.entries.filter((entry) => entry.slug === slug);
+  if (selected.length !== 1) throw new Error(`Import refused: ${slug} is not one importable manifest idea.`);
+  return selected;
+}
+
 function digest(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
