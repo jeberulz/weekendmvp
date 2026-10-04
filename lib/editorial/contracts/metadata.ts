@@ -41,6 +41,10 @@ export const highlightsSchema = z.strictObject({
     .min(H.minCompetitors, `Add ${H.minCompetitors}–${H.maxCompetitors} competitors or none`)
     .max(H.maxCompetitors)
     .nullable(),
+  tiers: z.array(z.strictObject({
+    name: singleLineText(H.tierName),
+    price: singleLineText(H.tierPrice),
+  })).min(1).max(H.maxTiers).optional(),
 });
 
 /** Social card inputs. Generating the image belongs to the release pipeline. */

@@ -2,6 +2,14 @@
 
 Append-only progress log. The full E0–E4 history is in `docs/plans/editorial-admin/wp46-progress.md`.
 
+## 2026-10-04 — E7 preflight and repair branch
+
+- Lane: Work Package for launch-gate fixes, `codex/wp46-e7-launch` from merged E6 `main` (`f374c23`). The target inventory, backups, baseline hash comparison, local HTTP probes and remaining gate are in `docs/wp/wp46-e7-gate.md`.
+- The E6 frontend reached Vercel ahead of its backend; a known idea returned 503. The serving backend is `first-squirrel-244`, not this checkout's default `--prod` target. After a target-specific full backup, the serving backend received E6 functions and additive indexes with the release switch off; the known idea returned 200 again. The non-serving default target was also backed up and received E6 code before the mismatch was found; it remains paused. No public content, import or publishing switch changed.
+- The deployed unknown idea URL currently returns a soft 200. This branch moves the absence decision before PPR streaming and sets no-store for idea responses. Local production-build probes show real 404 for unknown, stale metadata-only and engine-draft slugs, 200/no-store for a legacy idea and collection hub, and 302/no-store for the `/ideas/today` email redirect.
+- Production has 228 historical private legacy ideas; 225 hashes match today's importable manifest, three are retired engine drafts. The one new public idea's pricing tiers initially made the importer refuse it. Bounded tier fields now pass through metadata, Convex validators, editor and preview; dry run is 226/226 importable, zero skipped. No import was applied.
+- Checks: root typecheck, lint (0 errors, 35 existing warnings), full test suite, build, server traces, focused launch tests, and diff whitespace pass. E7 is still NO-GO pending deployment of these repairs, a real restore and release journey, independent review and owner activation.
+
 ## 2026-10-04 — E6 PR #98 review follow-up
 
 - Review found three release-surface gaps before merge: homepage rows retained old manifest scores/provenance/highlights/OG after a managed update; `/_next/image` could serve an optimized copy of old idea art; a failed unpublish probe could not transition legally or retry back to verification. The released homepage row now uses only approved metadata and the original date, optimized local OG URLs pass through the same visibility gate, and unpublish verification can fail and retry without republishing. Targeted regression tests cover the stale optimizer path and failed-then-retried removal.

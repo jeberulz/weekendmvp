@@ -76,6 +76,7 @@ export const metadataArgs = v.object({
       problemQuote: v.string(),
       stats: v.array(v.object({ value: v.string(), label: v.string(), source: nullableString })),
       competitors: v.union(v.array(v.object({ name: v.string(), price: v.string() })), v.null()),
+      tiers: v.optional(v.array(v.object({ name: v.string(), price: v.string() }))),
     }),
     v.null(),
   ),

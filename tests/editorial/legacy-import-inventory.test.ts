@@ -11,13 +11,13 @@ afterEach(async () => {
   for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true });
 });
 
-async function sampleRoot() {
+async function sampleRoot(slug = "phone-neck-score-app") {
   const root = await mkdtemp(path.join(os.tmpdir(), "editorial-legacy-"));
   roots.push(root);
   await mkdir(path.join(root, "ideas"));
   await mkdir(path.join(root, "content/ideas"), { recursive: true });
   const all = JSON.parse(await readFile("ideas/manifest.json", "utf8")) as { ideas: Array<{ slug: string }> };
-  const idea = all.ideas.find((candidate) => candidate.slug === "phone-neck-score-app");
+  const idea = all.ideas.find((candidate) => candidate.slug === slug);
   if (!idea) throw new Error("Missing stable sample idea");
   await writeFile(path.join(root, "ideas/manifest.json"), JSON.stringify({ ideas: [idea] }));
   const mdx = await readFile(`content/ideas/${idea.slug}.mdx`, "utf8");
@@ -59,5 +59,16 @@ describe("legacy editorial import inventory", () => {
     const second = await inventoryLegacyIdeas(root);
     expect(second.digest).not.toBe(first.digest);
     expect(second.entries[0].envelope.submissionId).toBe(first.entries[0].envelope.submissionId);
+  });
+
+  test("retains validated pricing tiers from the current public baseline", async () => {
+    const { root } = await sampleRoot("prompt-regression-tests-indie-ai-builders");
+    const inventory = await inventoryLegacyIdeas(root);
+    expect(inventory.skipped).toEqual([]);
+    expect(inventory.entries[0].envelope.metadata.highlights?.tiers).toEqual([
+      { name: "Local Sandbox", price: "Free" },
+      { name: "Live Project", price: "$29/project/month" },
+      { name: "Project Portfolio", price: "$99/month" },
+    ]);
   });
 });

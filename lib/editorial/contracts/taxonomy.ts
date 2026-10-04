@@ -71,6 +71,9 @@ export const HIGHLIGHT_LIMITS = {
   competitorPrice: 16,
   minCompetitors: 3,
   maxCompetitors: 5,
+  tierName: 32,
+  tierPrice: 48,
+  maxTiers: 3,
 } as const;
 
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];

@@ -19,6 +19,8 @@ import {
 import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
 import { isOperatorRequestPath } from "./lib/private-paths";
 import { isKnownIdeaSlug } from "./lib/idea-slugs.generated";
+import { isIdeaCollectionSlug } from "./lib/idea-collection-slugs";
+import { isEngineDraftSlug } from "./lib/engine-drafts";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
 import { checkTenantSitePublished } from "./lib/tenant-publish-check";
 
@@ -80,6 +82,8 @@ export function buildIdeaSlug(pathname: string): string | null {
 }
 
 function publicIdeaSlug(pathname: string): string | null {
+  // A fixed redirect route, not an idea slug. Welcome emails link here.
+  if (pathname === "/ideas/today") return null;
   const route = /^\/ideas\/([a-z0-9-]+)$/.exec(pathname);
   if (route) return route[1];
   const art = /^\/image\/og\/idea\/([a-z0-9-]+)\.png$/.exec(pathname);
@@ -430,13 +434,30 @@ export async function middleware(
   // PPR may otherwise flush a 200 shell before route-level notFound(), and
   // public/ images bypass React entirely. A backend outage never falls back
   // to an unpublished file or stale CDN response.
+  const ideaPath = /^\/ideas\/([^/]+)$/.exec(request.nextUrl.pathname);
+  if (ideaPath && ideaPath[1] !== "today" && !/^[a-z0-9-]+$/.test(ideaPath[1])) {
+    return hostRejectedResponse();
+  }
   const optimizedSlug = optimizedIdeaSlug(request);
   if (optimizedSlug === "") return hostRejectedResponse();
   const ideaSlug = publicIdeaSlug(request.nextUrl.pathname) ?? optimizedSlug;
   if (ideaSlug !== null) {
+    if (isEngineDraftSlug(ideaSlug)) return hostRejectedResponse();
     const decision = await publicIdeaDecision(ideaSlug);
     if (decision === null) return publicIdeaUnavailable();
     if (decision === "removed") return hostRejectedResponse();
+    // Convex has a small number of legitimate legacy ideas without MDX.
+    // Resolve those explicitly; a missing slug must never reach the PPR page,
+    // where notFound() can yield a streamed 200 shell.
+    if (request.nextUrl.pathname.startsWith("/ideas/") && decision === "legacy" &&
+        !isKnownIdeaSlug(ideaSlug) && !isIdeaCollectionSlug(ideaSlug)) {
+      try {
+        const legacyRow = await fetchQuery(api.ideas.bySlug, { slug: ideaSlug });
+        if (legacyRow?.bodyMode !== "convex" || !legacyRow.body) return hostRejectedResponse();
+      } catch {
+        return publicIdeaUnavailable();
+      }
+    }
     if ((request.nextUrl.pathname.startsWith("/image/og/idea/") || optimizedSlug !== null) && decision === "released") {
       return hostRejectedResponse();
     }
@@ -456,13 +477,17 @@ export async function middleware(
   }
 
   const response = await platformAuthMiddleware(request, event);
-  return applyOperatorResponseHeaders(
+  const finalResponse = applyOperatorResponseHeaders(
     request.nextUrl.pathname,
     applySensitiveAuthResponseHeaders(
       request.nextUrl.pathname,
       syncSessionHintCookie(request, response ?? NextResponse.next()),
     ),
   );
+  if (publicIdeaSlug(request.nextUrl.pathname) !== null) {
+    finalResponse.headers.set("Cache-Control", "no-store");
+  }
+  return finalResponse;
 }
 
 export const config = {

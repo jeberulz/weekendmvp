@@ -1,16 +1,16 @@
-# Current handoff — WP46 E6 private release bridge (4 October 2026)
+# Current handoff — WP46 E7 launch gate (4 October 2026)
 
-Branch `codex/wp46-e6-release` contains the E6 reader, private version store,
-worker, protected preview and visibility/takedown code. The owner selected
-private Convex versions because this GitHub repository is public; never put an
-unreleased draft in Git. Read `docs/wp/wp46-stories.md`,
-`docs/wp/wp46-progress.md`, and
-`docs/plans/editorial-admin/e6-release-runbook.md` before further release
-work. The Convex switch remains off. The production baseline audit, first
-deployed journey, restore rehearsal and independent review remain E7 gates;
-do not infer production readiness from a local passing test or Settings badge.
-The root `convex-backup-before-wp46.zip` is unrelated user data and must stay
-untouched.
+Branch `codex/wp46-e7-launch` follows merged E6 PR #98. Read
+`docs/wp/wp46-e7-gate.md` first: it records the actual live Convex target,
+backups, baseline hash comparison, deployed-reader recovery, current HTTP
+failure and remaining NO-GO gates. The frontend's live backend is
+`first-squirrel-244`; this checkout's `--prod` selects a different, paused
+project. Never deploy with `--prod` assuming it targets the public site.
+The release switch is off. This branch fixes the soft 404/cache response and
+supports pricing tiers in the private editorial baseline; it has not published
+or imported an idea. Keep unreleased drafts out of this public repository.
+The root `convex-backup-before-wp46.zip` and untracked publish-idea plan are
+unrelated user data and must stay untouched.
 
 The WP44 section below is historical handoff context for PR #81.
 

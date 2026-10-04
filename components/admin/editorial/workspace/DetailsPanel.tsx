@@ -410,6 +410,65 @@ function MetadataForm({
                 ) : null}
               </div>
             ) : null}
+            <label className="flex min-h-9 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="size-4 accent-(--ed-text)"
+                checked={highlights.tiers !== undefined}
+                onChange={(event) => {
+                  const next = { ...highlights };
+                  if (event.target.checked) next.tiers = [{ name: "", price: "" }];
+                  else delete next.tiers;
+                  update({ ...draft, highlights: next });
+                }}
+              />
+              Include proposed pricing tiers (1–{H.maxTiers})
+            </label>
+            {highlights.tiers ? (
+              <div id={fieldId("highlights.tiers")} className="flex flex-col gap-2">
+                {error("highlights.tiers") ? <p className="text-xs text-(--ed-danger)">{error("highlights.tiers")}</p> : null}
+                {highlights.tiers.map((tier, index) => (
+                  <div key={index} className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2 rounded-md border border-(--ed-border) p-2">
+                    <TextField
+                      id={fieldId(`highlights.tiers.${index}.name`)}
+                      label={`Tier ${index + 1}`}
+                      value={tier.name}
+                      maxLength={H.tierName}
+                      error={error(`highlights.tiers.${index}.name`)}
+                      onChange={(name) => update({ ...draft, highlights: { ...highlights, tiers: highlights.tiers?.map((item, i) => i === index ? { ...item, name } : item) } })}
+                    />
+                    <TextField
+                      id={fieldId(`highlights.tiers.${index}.price`)}
+                      label="Price"
+                      value={tier.price}
+                      maxLength={H.tierPrice}
+                      error={error(`highlights.tiers.${index}.price`)}
+                      onChange={(price) => update({ ...draft, highlights: { ...highlights, tiers: highlights.tiers?.map((item, i) => i === index ? { ...item, price } : item) } })}
+                    />
+                    {(highlights.tiers?.length ?? 0) > 1 ? (
+                      <button
+                        type="button"
+                        className={cn(smallButtonClass, "self-start")}
+                        onClick={() => update({ ...draft, highlights: { ...highlights, tiers: highlights.tiers?.filter((_, i) => i !== index) } })}
+                      >
+                        <Trash2 aria-hidden="true" className="size-4" />
+                        Remove tier {index + 1}
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+                {highlights.tiers.length < H.maxTiers ? (
+                  <button
+                    type="button"
+                    className={cn(smallButtonClass, "self-start")}
+                    onClick={() => update({ ...draft, highlights: { ...highlights, tiers: [...(highlights.tiers ?? []), { name: "", price: "" }] } })}
+                  >
+                    <Plus aria-hidden="true" className="size-4" />
+                    Add tier
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </>
         ) : null}
       </fieldset>
