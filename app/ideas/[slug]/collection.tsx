@@ -31,6 +31,7 @@ import {
 import { HubCta } from "@/components/hubs/HubCta";
 import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
+import { IDEA_COLLECTION_SLUGS, isIdeaCollectionSlug, type IdeaCollectionSlug } from "@/lib/idea-collection-slugs";
 import {
   fetchAllIdeas,
   fetchIdeasByCategory,
@@ -65,7 +66,7 @@ type CollectionDef = {
 /* through to notFound() so unknown idea slugs still 404 correctly.    */
 /* ------------------------------------------------------------------ */
 
-const COLLECTIONS: Record<string, CollectionDef> = {
+const COLLECTIONS: Record<IdeaCollectionSlug, CollectionDef> = {
   // Category hubs (matches Convex idea.category values)
   saas: {
     slug: "saas",
@@ -256,7 +257,7 @@ const COLLECTIONS: Record<string, CollectionDef> = {
   },
 };
 
-export const COLLECTION_SLUGS = Object.keys(COLLECTIONS);
+export const COLLECTION_SLUGS: readonly string[] = IDEA_COLLECTION_SLUGS;
 
 /* ------------------------------------------------------------------ */
 /* Collection metadata (consumed by app/ideas/[slug]/page.tsx          */
@@ -267,8 +268,8 @@ export function getCollectionMeta(slug: string): {
   title: string;
   description: string;
 } | null {
+  if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
-  if (!def) return null;
   return { title: def.title, description: def.description };
 }
 
@@ -280,12 +281,12 @@ export function getCollectionMeta(slug: string): {
 export async function renderCollection(
   slug: string,
 ): Promise<ReactNode | null> {
-  const def = COLLECTIONS[slug];
-  if (!def) return null;
+  if (!isIdeaCollectionSlug(slug)) return null;
   return <CachedCollectionHub slug={slug} />;
 }
 
 async function CachedCollectionHub({ slug }: { slug: string }) {
+  if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
   const ideas = await fetchIdeasForCollection(def);
   const color = COLOR_STYLES[def.color];
@@ -346,7 +347,7 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
           Browse other collections
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {COLLECTION_SLUGS.filter((s) => s !== slug)
+          {IDEA_COLLECTION_SLUGS.filter((s) => s !== slug)
             .slice(0, 7)
             .map((other) => {
               const OtherIcon = COLLECTIONS[other].icon;

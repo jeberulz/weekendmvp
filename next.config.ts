@@ -55,6 +55,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Every idea request passes the live Convex visibility gate. A CDN
+        // must not replay a pre-removal HTML/RSC response after takedown.
+        source: "/ideas/:slug",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/build/:slug",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/image/og/idea/:slug.png",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
         source: "/preview/:token",
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0" },

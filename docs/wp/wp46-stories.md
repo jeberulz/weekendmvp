@@ -1,6 +1,6 @@
 # WP46 Stories — Engine to editorial release
 
-Branch: `codex/wp46-e6-release` (E6, based on merged E5 in `main`)
+Branch: `codex/wp46-e7-launch` (E7, based on merged E6 in `main`)
 Lane: Work Package
 Registry: `docs/PROJECT_STRATEGY.md`
 Definition of done for E6: an explicitly approved exact revision can be released through a durable worker; every public reader resolves the activated version, and unpublish/rollback cannot expose an unapproved or stale version. Settings must remain unavailable until the actual release and visibility gates pass.
@@ -36,9 +36,18 @@ The complete WP46 story contract remains in `docs/plans/editorial-admin/wp46-sto
 - [ ] `WP46-E6e` — Emergency unpublish and managed-version rollback are implemented and covered in local tests. A production removal probe, restore rehearsal and legacy-baseline recovery remain E7 gates.
 - [ ] `WP46-E6f` — Local typecheck, lint, tests, build, traces and HTTP probes pass. A full production-build release/takedown journey against the intended deployment, warm-cache removal and independent review remain E7 gates.
 
+## E7 — Launch gate
+
+- [x] `WP46-E7a` — Verify actual deployed reader and backend target, inventory production tables and baseline artifact hashes, and take target-specific full backups. Evidence: `docs/wp/wp46-e7-gate.md`.
+- [x] `WP46-E7b` — Repair the unknown-idea soft 404 and idea/build/art cache headers; preserve valid legacy, collection and `/ideas/today` routes. Extend editorial metadata to retain the new public idea's bounded pricing tiers. Local production-build and isolated Vercel preview probes pass; warm-cache removal and canonical production verification follow merge.
+- [ ] `WP46-E7c` — Deploy E7 backend before frontend to the verified live target; compare the final deployed reader SHA and probe every public visibility surface under warm caches and backend failure.
+- [ ] `WP46-E7d` — Re-run the 226-page import dry run and, after exact inventory approval, import the one missing private legacy baseline. Verify no public row or page changes.
+- [ ] `WP46-E7e` — Rehearse an isolated restore; execute a genuine contract-v2 publish/edit/republish/unpublish/rollback journey with source changes and failure recovery; complete independent security review.
+- [ ] `WP46-E7f` — With owner approval, configure the exact reader origin/SHA and enable the Convex release switch. Verify one explicitly approved real release before declaring GO.
+
 ## Out of scope
 
-- WP46-E7 launch activation, production data mutation, automatic publishing or a new public idea.
+- Automatic publishing or an unreviewed real idea.
 - Lowering the Idea Engine's strict evidence and $4/run gates to make a record pass.
 
 ## Notes
