@@ -22,10 +22,14 @@ await build({
   format: "esm",
   logLevel: "silent",
 });
-const { inventoryLegacyIdeas } = await import(pathToFileURL(outputPath).href);
+const { inventoryLegacyIdeas, selectLegacyImportEntries } = await import(pathToFileURL(outputPath).href);
 const inventory = await inventoryLegacyIdeas(root);
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
+const slugArgs = args.filter((arg) => arg === "--slug" || arg.startsWith("--slug="));
+if (slugArgs.length > 1 || slugArgs[0] === "--slug") throw new Error("Import refused: use one --slug=IDEA-SLUG argument.");
+const slug = slugArgs[0]?.slice("--slug=".length);
+const selected = selectLegacyImportEntries(inventory, slug);
 const confirm = args.find((arg) => arg.startsWith("--confirm-inventory="))?.split("=", 2)[1];
 const backupPath = args.find((arg) => arg.startsWith("--backup="))?.slice("--backup=".length);
 
@@ -34,6 +38,8 @@ console.log(JSON.stringify({
   digest: inventory.digest,
   manifestIdeas: inventory.total,
   importable: inventory.entries.length,
+  selected: selected.length,
+  ...(slug ? { selectedSlug: slug } : {}),
   skipped: inventory.skipped,
 }, null, 2));
 
@@ -61,7 +67,7 @@ const client = new ConvexHttpClient(deploymentUrl);
 client.setAdminAuth(adminKey);
 let imported = 0;
 let duplicate = 0;
-for (const { slug, envelope } of inventory.entries) {
+for (const { slug, envelope } of selected) {
   const result = await client.mutation(internal.editorial.service.importSubmission, {
     envelope: JSON.stringify(envelope),
     producer: "legacy-import",
@@ -74,4 +80,4 @@ for (const { slug, envelope } of inventory.entries) {
   else imported += 1;
   console.log(`${slug}: ${result.value.duplicate ? "already imported" : "imported"}${result.value.quarantined ? " (unsafe MDX quarantined)" : ""}`);
 }
-console.log(JSON.stringify({ deployment: target, imported, duplicate, total: inventory.entries.length }));
+console.log(JSON.stringify({ deployment: target, imported, duplicate, total: selected.length }));

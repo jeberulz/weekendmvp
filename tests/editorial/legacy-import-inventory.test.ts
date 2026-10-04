@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import matter from "gray-matter";
 
-import { inventoryLegacyIdeas } from "@/scripts/editorial-import-legacy-core";
+import { inventoryLegacyIdeas, selectLegacyImportEntries } from "@/scripts/editorial-import-legacy-core";
 import { editorialSubmissionSchema } from "@/lib/editorial/contracts/submission";
 
 const roots: string[] = [];
@@ -92,5 +92,14 @@ describe("legacy editorial import inventory", () => {
     expect(inventory.skipped).toHaveLength(1);
     expect(inventory.skipped[0].slug).toBe("dmarc-monitor-agencies-small-business");
     expect(inventory.skipped[0].reason).toContain("highlights.competitors.0.price");
+  });
+
+  test("selects exactly one approved baseline without weakening full inventory validation", async () => {
+    const { root } = await sampleRoot("dmarc-monitor-agencies-small-business");
+    const inventory = await inventoryLegacyIdeas(root);
+    expect(selectLegacyImportEntries(inventory)).toHaveLength(1);
+    expect(selectLegacyImportEntries(inventory, "dmarc-monitor-agencies-small-business")).toEqual(inventory.entries);
+    expect(() => selectLegacyImportEntries(inventory, "missing-idea")).toThrow("not one importable manifest idea");
+    expect(() => selectLegacyImportEntries(inventory, "../wrong-path")).toThrow("valid idea slug");
   });
 });
