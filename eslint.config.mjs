@@ -52,11 +52,12 @@ export default defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    ".vercel/**",
     "next-env.d.ts",
     "convex/_generated/**",
     "public/**",
     ".worktrees/**",
     ".claude/worktrees/**",
-    "tmp/editorial-import/**",
+    "tmp/**",
   ]),
 ]);
