@@ -1,0 +1,40 @@
+{
+  "title": "Plain-English DMARC Monitoring for Agencies and Small Businesses",
+  "audience": "Web agencies, IT freelancers and small businesses that manage email domains without a dedicated email admin",
+  "revenueModel": "SaaS subscription priced by monitored domains, with agency plans that cover many client domains under one login",
+  "seedKeywords": [
+    "dmarc monitoring",
+    "dmarc report analyzer",
+    "dmarc checker",
+    "dmarc for small business",
+    "email deliverability monitoring"
+  ],
+  "sourceHints": {
+    "market": [
+      "https://dimensionmarketresearch.com/report/dmarc-software-market/",
+      "https://market.us/report/dmarc-software-market/",
+      "https://www.wiseguyreports.com/reports/dmarc-software-market",
+      "https://www.verifiedmarketreports.com/product/global-dmarc-software-market-growth-status-and-outlook-2019-2024/"
+    ],
+    "competitors": [
+      "https://monitordmarc.com/pricing",
+      "https://www.mxtoolbox.com/c/products/mxtoolboxdelivery",
+      "https://www.uriports.com/pricing",
+      "https://dmarcreport.com/pricing",
+      "https://www.dmarcly.com/pricing",
+      "https://dmarc.postmarkapp.com/",
+      "https://easydmarc.com/pricing",
+      "https://www.redsift.com/pricing"
+    ],
+    "community": [
+      "https://news.ycombinator.com/item?id=34224066",
+      "https://news.ycombinator.com/item?id=30046840",
+      "https://news.ycombinator.com/item?id=46130506",
+      "https://news.ycombinator.com/item?id=43829927",
+      "https://news.ycombinator.com/item?id=16535149",
+      "https://news.ycombinator.com/item?id=43468995"
+    ]
+  },
+  "slug": "dmarc-monitor-agencies-small-business",
+  "oneLiner": "Find out why client email lands in spam and get the exact DNS fix in plain English."
+}
