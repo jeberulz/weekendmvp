@@ -9,6 +9,9 @@
  *   app/build-with/[tool]/page.tsx → TOOL_PAGES (minus claude-code alias)
  *   app/ideas-for/[audience]/page.tsx → AUDIENCE_PAGES
  *
+ * Also warns (without failing) when lib/idea-slugs.generated.ts no longer
+ * matches the manifest slugs; `next build` does not regenerate it.
+ *
  * Usage:
  *   node scripts/validate-idea-tags.mjs
  *   node scripts/validate-idea-tags.mjs --slug ai-slide-deck-maker
@@ -144,6 +147,37 @@ export function validateHighlights(highlights) {
   return errors;
 }
 
+/**
+ * Edge middleware 404s `/build/{slug}` for any slug missing from the
+ * generated module, which `npm run generate:idea-slugs` writes from the
+ * manifest. Returns null when its slug list equals the sorted manifest slugs.
+ */
+export const IDEA_SLUGS_MODULE = "lib/idea-slugs.generated.ts";
+
+export function ideaSlugsDrift(manifestSlugs, generatedSource) {
+  const expected = [...manifestSlugs].sort();
+  const match = /IDEA_SLUGS: readonly string\[\] = (\[[\s\S]*?\]);/.exec(
+    generatedSource ?? "",
+  );
+  let generated = null;
+  try {
+    generated = match ? JSON.parse(match[1]) : null;
+  } catch {
+    generated = null;
+  }
+  if (!Array.isArray(generated)) {
+    return { unreadable: true, missing: [], extra: [] };
+  }
+  if (JSON.stringify(generated) === JSON.stringify(expected)) return null;
+  const have = new Set(generated);
+  const want = new Set(expected);
+  return {
+    unreadable: false,
+    missing: expected.filter((slug) => !have.has(slug)),
+    extra: generated.filter((slug) => !want.has(slug)),
+  };
+}
+
 const argv = process.argv.slice(2);
 const slugIdx = argv.indexOf("--slug");
 const onlySlug = slugIdx !== -1 ? argv[slugIdx + 1] : null;
@@ -208,6 +242,29 @@ function main() {
       console.log(`FAIL ${idea.slug}`);
       for (const e of errors) console.log(`  - ${e}`);
     }
+  }
+
+  const slugsModule = path.join(root, IDEA_SLUGS_MODULE);
+  const drift = ideaSlugsDrift(
+    (manifest.ideas || []).map((i) => i.slug),
+    fs.existsSync(slugsModule) ? fs.readFileSync(slugsModule, "utf8") : null,
+  );
+  if (drift) {
+    const detail = drift.unreadable
+      ? "is missing or unreadable"
+      : `does not match ideas/manifest.json (${
+          [
+            drift.missing.length && `missing: ${drift.missing.join(", ")}`,
+            drift.extra.length && `extra: ${drift.extra.join(", ")}`,
+          ]
+            .filter(Boolean)
+            .join("; ") || "order or duplicates differ"
+        })`;
+    console.warn(
+      `\nWARN ${IDEA_SLUGS_MODULE} ${detail}.\n` +
+        "  Middleware 404s /build/{slug} for a missing slug, and npm test fails.\n" +
+        "  Run `npm run generate:idea-slugs` and commit the file.",
+    );
   }
 
   const total = ideas.length;

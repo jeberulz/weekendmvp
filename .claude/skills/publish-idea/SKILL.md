@@ -20,6 +20,7 @@ The site is **Next.js + MDX + Convex**. An idea page is two files plus automated
 | **Nav, footer, analytics** | shared App Router layout | ❌ global |
 | **Sitemap entry** | `app/sitemap.ts` auto-discovers `content/ideas/*.mdx` | ❌ automatic |
 | **OG card PNG** | `public/image/og/idea/{slug}.png` via `npm run og:generate` | ✅ automated step |
+| **Known-slug set** (real 404 for unknown `/build/{slug}` in Edge middleware) | `lib/idea-slugs.generated.ts` via `npm run generate:idea-slugs` — `next build` does **not** regenerate it | ✅ automated step (Step 4) |
 
 Practical consequences:
 - The `HowTo` schema is parsed from the MDX body: `## The Solution` **must** contain `**How it works:**` followed by a numbered list (`1.` / `2.` / `3.`).
@@ -53,7 +54,7 @@ Checks that need no keys and spend nothing:
 - `npm run engine:replay` runs the synthetic fixture through the real research → compile → deep-audit CLIs in a temp dir (empty environment; nothing is written to the repo) and prints each step's exit code and the verdict. Run it after pulling engine changes or before a batch; if it fails, the engine itself is broken — stop. A pass says the code paths agree on the fixture, not that live sources or live models will behave.
 - `npm run test:engine` (part of `npm test`) runs the engine suites, including the same replay with authenticity and adversarial checks (`lib/engine/replay.test.ts`).
 - `npm run engine:eval` only re-audits three handwritten gold pages (a legacy auditor regression). It is not evidence of engine quality.
-- `npm run validate:idea-tags` checks the tagging allowlists and the shape of every `highlights` block.
+- `npm run validate:idea-tags` checks the tagging allowlists and the shape of every `highlights` block, and warns when `lib/idea-slugs.generated.ts` no longer matches the manifest slugs.
 
 If a live compile cannot clear the auditor on this machine, stop and report — do not start phase 9.
 
@@ -64,7 +65,7 @@ If a live compile cannot clear the auditor on this machine, stop and report — 
 1. **Builds a brief** JSON (`title`, `audience`, `revenueModel`, `seedKeywords[]`, optional `slug` / `oneLiner`).
 2. **Runs** `npm run engine:research -- --brief {path} --live --out engine/records/{slug}.json` — a contract v2 research record plus a run report, or a run report and no record.
 3. **Runs** `npm run engine:compile -- --record engine/records/{slug}.json` → MDX + manifest row (`source: "engine:{slug}"`, generated `highlights`).
-4. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og).
+4. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og), then **regenerates the slug set** with `npm run generate:idea-slugs` (`lib/idea-slugs.generated.ts`).
 5. **Gates:** `npm run audit:idea -- --slug {slug}` then `npm run validate:idea-tags -- --slug {slug}`.
 6. **Checks the sources by hand** (Step 4.1) — every competitor price and market statistic, plus at least two quotes.
 7. **Dry-runs the private editorial submission** with `npm run editorial:submit-engine -- --slug={slug}`; the operator-only apply path is Step 4.2.
@@ -240,12 +241,22 @@ Compile stubs the tagging (`category: "uncategorized"`, empty `tools` / `audienc
 
 **Homepage `highlights` are generated, never written.** `engine:compile` builds the block from the first selected quote that fits 190 characters, up to three selected stats with their full typed labels, at least three competitors whose first-party numeric price or explicit first-party pricing status fits, and up to three proposed product tiers from the validated editorial record. Secondary competitor prices stay off the homepage because the compact tile cannot show their `(via host)` attribution. The status labels never imply a numeric price. `audit:idea` fails a row whose highlights differ from what the record generates; `validate:idea-tags` checks their shape. Do not add, edit or reorder them by hand. For engine rows the homepage shows these generated highlights only (no MDX fallback). An engine idea can enter the weekly feature pool when its other required tiles, citations and art are present; it is not featured automatically.
 
+**Regenerate the slug set.** Compile added a slug to `ideas/manifest.json`. Edge middleware reads `lib/idea-slugs.generated.ts` to return a genuine 404 for unknown `/build/{slug}` pages, and `next build` does not rebuild that file:
+
+```bash
+npm run generate:idea-slugs
+grep -c '"{slug}"' lib/idea-slugs.generated.ts   # expect 1
+```
+
+Until it is regenerated, `/build/{slug}` answers 404 and `tests/redirects/idea-slugs.test.mjs` ("matches ideas/manifest.json exactly") fails in `npm test`. Stage the file with the MDX, manifest, record and OG card (Step 7). Spot-check drafts (`engine-draft-*`) live in `engine/drafts/manifest.json` and need no regeneration.
+
 Then:
 
 ```bash
 npm run audit:idea -- --slug {slug}
 npm run validate:idea-tags -- --slug {slug}
-# expect: PASS, and "1/1 ideas pass tagging contract (0 fail)"
+# expect: PASS, and "1/1 ideas pass tagging contract (0 fail)" with no
+# "WARN lib/idea-slugs.generated.ts" line
 ```
 
 Set `provenance.auditPassed: true` and `provenance.auditRunAt` (the time of the passing audit; compile pre-fills the research time) only after both pass **and** the source check in Step 4.1 is done.
@@ -304,7 +315,8 @@ Commit + push MDX, research record + OG PNG **only if the operator explicitly as
 
 ```bash
 # The record is what audit:idea reads (Step 3.1); commit it so the audit can be re-run.
-git add content/ideas/{slug}.mdx ideas/manifest.json engine/records/{slug}.json
+# The slug set (Step 4) must ship with the manifest row, or /build/{slug} 404s and npm test fails.
+git add content/ideas/{slug}.mdx ideas/manifest.json engine/records/{slug}.json lib/idea-slugs.generated.ts
 # The OG card is non-blocking (Step 6): stage it only if it was generated.
 [ -f public/image/og/idea/{slug}.png ] && git add public/image/og/idea/{slug}.png
 git commit -m "content(idea): {title}"
@@ -336,6 +348,7 @@ Skipping `--prod` after deploy is the #1 "I can't see my idea" cause. The seed d
 - content/ideas/{slug}.mdx (8 headings including Sources; frontmatter engine: true)
 - ideas/manifest.json (tagged, provenance, og, generated highlights)
 - engine/records/{slug}.json
+- lib/idea-slugs.generated.ts (regenerated)
 - public/image/og/idea/{slug}.png (if og.status=ready)
 
 **Audit:** words={N} competitors={N} sources={N} howTo={N} — audit:idea PASS (warnings: …); validate:idea-tags PASS
@@ -500,6 +513,7 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - `engine:compile` refuses a **legacy v1 record** → re-run `engine:research … --live`; nothing upgrades a v1 record. Refuses an incomplete or invalid record → re-research. Refuses a fixture record → it compiles only as an `engine-draft-*` draft. Refuses an overwrite → pass `--force` only with operator OK and only for this idea's own engine page, or pick a new slug.
 - `audit:idea` fails → re-research or abandon; revert any hand edit to a factual block; never set `auditPassed: true`.
 - `validate:idea-tags` fails → fix the allowlist fields before seed. A `highlights` error on an engine row means the block was edited: restore the compiled one.
+- `validate:idea-tags` warns that `lib/idea-slugs.generated.ts` is stale, or `npm test` fails "matches ideas/manifest.json exactly" → `npm run generate:idea-slugs` and stage the file.
 - Source check finds a wrong, stale or unsupported claim → do not publish; re-research.
 - `seed:convex` fails → do not claim grid visibility.
 - `og:generate` fails → fine (`og.status: "failed"`); publish continues.
@@ -515,6 +529,7 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run engine:research -- --brief … --live --out engine/records/{slug}.json` — ok, under the $4.00 cap; cost, attempts and rejections noted from the report
 - [ ] `npm run engine:compile -- --record engine/records/{slug}.json`
 - [ ] Manifest tagging filled (category, ≥2 tools, ≥2 audiences, revenueGoal, buildTime, og); generated `highlights` left untouched
+- [ ] `npm run generate:idea-slugs` run; `lib/idea-slugs.generated.ts` lists `{slug}` and is staged with the MDX, manifest, record and OG card
 - [ ] Only unaudited wording polished; no hand edits to quotes, attributions, evidence rows, tier rows, unit-economics values, Year-One Math, Sources, labels or highlights; `audit:idea` re-run after every edit
 - [ ] `npm run audit:idea -- --slug {slug}` PASS on the deep bar (≥2,200 words, verified quotes, evidence rows, recomputed Year-One Math, no unbound figures, idea-specific schema, no broken links)
 - [ ] `npm run validate:idea-tags -- --slug {slug}` PASS
