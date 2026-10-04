@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/generate-idea-slugs.mjs --check && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "check:server-traces": "node scripts/check-server-traces.mjs",
