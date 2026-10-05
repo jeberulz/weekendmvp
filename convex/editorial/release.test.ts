@@ -124,13 +124,35 @@ test("an exact private revision is activated once and emergency unpublish revoke
     if (pathname === "/sitemap.xml") return new Response("<urlset></urlset>", { status: 200 });
     return new Response("Unexpected probe", { status: 500 });
   }));
-  await t.action(internal.editorial.worker.run, { releaseId });
+  // A restored database can retain a worker-state release while its pending
+  // scheduler invocation is absent. Model that loss with a canceled job, then
+  // let the recovery action find the persisted release independently.
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  try {
+    const lostJobId = await t.run((ctx) => ctx.scheduler.runAfter(60_000, internal.editorial.worker.run, { releaseId }));
+    const scheduled = await t.run((ctx) => ctx.db.system.get(lostJobId));
+    expect(scheduled?.state.kind).toBe("pending");
+    await t.run((ctx) => ctx.scheduler.cancel(lostJobId));
+    const canceled = await t.run((ctx) => ctx.db.system.get(lostJobId));
+    expect(canceled?.state.kind).toBe("canceled");
+  } finally {
+    vi.useRealTimers();
+  }
+  const queuedForRecovery = await t.query(internal.editorial.service.workerQueue, {});
+  expect(queuedForRecovery.some((row) => row.releaseId === releaseId && row.state === "verifying_public")).toBe(true);
+  await t.action(internal.editorial.worker.recover, {});
   const verified = await t.run(async (ctx) => ctx.db.query("editorial_releases")
     .withIndex("by_key", (q) => q.eq("key", releaseId)).unique());
   expect(verified?.state).toBe("succeeded");
   const live = await t.query(api.editorial.public.bySlug, { slug: record.brief.slug });
   expect(live.state).toBe("released");
   if (live.state !== "released") throw new Error("No public release");
+  const pointerAfterRecovery = await t.run(async (ctx) => ctx.db.query("editorial_public_pointers")
+    .withIndex("by_slug", (q) => q.eq("slug", record.brief.slug)).unique());
+  await t.action(internal.editorial.worker.recover, {});
+  const pointerAfterRepeat = await t.run(async (ctx) => ctx.db.query("editorial_public_pointers")
+    .withIndex("by_slug", (q) => q.eq("slug", record.brief.slug)).unique());
+  expect(pointerAfterRepeat).toEqual(pointerAfterRecovery);
   expect(live.markdown).toBe(checked.envelope.markdown);
   expect((await t.query(api.ideas.bySlug, { slug: record.brief.slug }))?.body).toBe(checked.envelope.markdown);
   expect((await step("activating")).moved).toBe(false);
