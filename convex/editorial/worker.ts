@@ -2,7 +2,7 @@ import { v } from "convex/values";
 
 import { internal } from "../_generated/api";
 import { env, internalAction, type ActionCtx } from "../_generated/server";
-import { matchesReaderHealth, readerTarget, type ReaderTarget } from "./reader-target";
+import { matchesReaderHealth, readerTarget, type ReaderTarget } from "./readerTarget";
 
 async function probeReader(target: ReaderTarget): Promise<void> {
   const expectedCommit = env.EDITORIAL_READER_COMMIT;

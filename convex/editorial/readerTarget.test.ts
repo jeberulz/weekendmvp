@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { matchesReaderHealth, readerTarget } from "./reader-target";
+import { matchesReaderHealth, readerTarget } from "./readerTarget";
 
 const canonical = "https://www.weekendmvp.app/";
 const preview = "https://weekendmvp-ab123456-john-iseghohis-projects.vercel.app/";
