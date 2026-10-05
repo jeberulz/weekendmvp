@@ -140,6 +140,14 @@ describe("vendor keys and first-party hosts", () => {
     expect(isSecondaryMarketPage("https://dataintelo.com/report/ai-generated-code-review-tools-market")).toBe(false);
   });
 
+  it("permits only a blog statistic whose own excerpt states original research", () => {
+    const excerpt = "Our survey found 61% of security teams use security questionnaires.";
+    expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", excerpt)).toBe(false);
+    expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", "61% of security teams use security questionnaires.")).toBe(true);
+    expect(isSecondaryMarketPage("https://publisher.example/blog/best-security-tools", excerpt)).toBe(true);
+    expect(isSecondaryMarketPage("https://publisher.example/guides/survey-findings", excerpt)).toBe(true);
+  });
+
   it("labels a source by its host", () => {
     expect(sourceHostLabel("https://www.g2.com/products/loopio/pricing")).toBe("g2.com");
     expect(sourceHostLabel("https://news.ycombinator.com/item?id=1")).toBe("news.ycombinator.com");

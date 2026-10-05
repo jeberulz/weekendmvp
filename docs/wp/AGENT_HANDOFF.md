@@ -1,10 +1,12 @@
 # Current handoff — WP46 E7 launch gate (5 October 2026)
 
-The current follow-up branch is `codex/wp46-e7-recovery-gate` in
+The current follow-up branch is `codex/wp46-e7-cloud-job-drill` in
 `.worktrees/wp46-e7-preview`. Read `docs/wp/wp46-e7-gate.md` and
 `docs/wp/backup-restore.md` first. PR #108 merged the E7m execution record at
-`d71c55c5`; the public DMARC catalogue row and private editorial baseline were
-inserted on the serving Convex deployment, `first-squirrel-244`. The verified
+`d71c55c5`; PR #109 merged the structural submission guard at `8457e75b`;
+PR #110 merged the lost-job recovery regression at `416642a9`. The public
+DMARC catalogue row and private editorial baseline were inserted on the
+serving Convex deployment, `first-squirrel-244`. The verified
 live counts are 231 public ideas, 230 private ideas/submissions and zero managed
 public pointers/versions. The E7m backup and exact merge SHAs are recorded;
 the missing pre-action Git restore tag is an explicit procedural gap. This
@@ -13,13 +15,14 @@ use it as shorthand for the live-site target, or use `convex --verbose` against
 production.
 
 Publishing is **NO-GO**. The release switch, public-site origin and reader SHA
-remain unset. PR #109 merged the structural submission guard at `8457e75b`,
-verified on the canonical reader. Private research retry #9 passed machine
-counts but failed human source review; retry #10 failed evidence acceptance
-before article writing. No new engine candidate has been submitted or approved
-in production. This branch tests the persisted-release recovery path after a
-pending scheduler job is lost. Managed Vercel release surfaces, non-empty
-cloud scheduled-job restore and independent final review remain open. Keep
+remain unset. Private retries #11 and #12 stopped before writing; #13 made a
+machine-valid record but failed human source review for same-publisher,
+adjacent-workflow figures and an off-topic quote. The E7o code on this branch
+improves extraction and stops those source-diversity failures before writing;
+it does not approve #13. No new engine candidate has been submitted or approved
+in production. Convex backups exclude scheduled jobs, so the remaining cloud
+drill must prove recovery from persisted release rows in an isolated deployment.
+Managed Vercel release surfaces and independent final review remain open. Keep
 unreleased drafts under ignored `tmp/` or outside this public repo.
 The production Vercel build already deploys the exact live Convex backend
 before building Next and has a deployment-scoped key. Do not copy any secret

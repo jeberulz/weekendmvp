@@ -524,16 +524,10 @@ describe("runResearch (fixture)", () => {
         return realSearch.search(request);
       },
     };
-    const { record } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    await expect(runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" }))
+      .rejects.toThrow(/Buyer quotes need two independent discussion URLs/);
     expect(queries.filter((q) => /Earlier community citations were mostly unreadable/.test(q))).toHaveLength(1);
     expect(queries.some((q) => /Do NOT cite Reddit/.test(q))).toBe(true);
-    expect(record.provenance.attempts.community_signals).toBe(2);
-    const supplement = record.evidence.sources.find((s) => s.url === FIXTURE_URLS.supplementThread);
-    expect(supplement).toMatchObject({ status: "read", roles: ["community"] });
-    const quoteSources = record.community.quoteIds.map(
-      (id) => record.evidence.accepted.find((e) => e.id === id)?.sourceUrl,
-    );
-    expect(quoteSources).toEqual([FIXTURE_URLS.supplementThread, FIXTURE_URLS.supplementThread]);
   });
 });
 

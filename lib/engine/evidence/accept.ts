@@ -953,8 +953,8 @@ function yearIssue(
  * figure (see yearIssue); and a subject content word appears in the sentence.
  */
 function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number, sourceUrl: string): StatCheck {
-  if (isSecondaryMarketPage(sourceUrl)) {
-    return fail("unsupported_assertion", "a comparison, guide or blog page is not the original research source for a market statistic");
+  if (isSecondaryMarketPage(sourceUrl, excerpt)) {
+    return fail("unsupported_assertion", "a comparison or guide, or a blog excerpt without first-party research provenance, is not the original research source for a market statistic");
   }
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);

@@ -102,6 +102,37 @@ function priceCandidate(overrides: Partial<CompetitorPriceCandidate> & { vendor:
   return { sourceUrl: BLOG.url, supportingText: BLOG.text, ...overrides };
 }
 
+describe("original research published on a blog", () => {
+  const page: Page = {
+    url: "https://publisher.example/blog/security-questionnaire-survey",
+    text: "Our survey found 61% of security teams use security questionnaires.",
+    roles: ["market"],
+  };
+  const candidate = stat({
+    sourceUrl: page.url,
+    supportingText: page.text,
+    subject: "security teams",
+    metric: "adoption",
+    amountText: "61%",
+  });
+
+  it("accepts a bound first-party survey statement and revalidates the stored claim", () => {
+    const result = run([page], { marketStats: [candidate] });
+    expect(result.rejected).toEqual([]);
+    const item = must(result.accepted[0]);
+    expect(item.kind).toBe("market_stat");
+    expect(revalidateAcceptedEvidence(item, acquisitions([page])).ok).toBe(true);
+  });
+
+  it("still refuses a blog statistic without provenance in its own sentence", () => {
+    const text = "61% of security teams use security questionnaires.";
+    const result = run([{ ...page, text: `Our survey studied security teams. ${text}` }], {
+      marketStats: [{ ...candidate, supportingText: text }],
+    });
+    expect(reasons(result)).toEqual(["unsupported_assertion"]);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // F5 test matrix (plan §6) at the acceptance level
 // ---------------------------------------------------------------------------
