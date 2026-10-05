@@ -12,6 +12,11 @@ export type WorkshopStickyBarProps = {
   ctaHoverClass: string;
   /** Wrap label visibility — shipable shows always, dare hides on sm. */
   labelHiddenSm?: boolean;
+  /**
+   * When set, replaces the live countdown label (used when seats are
+   * paused / next date TBA so the bar does not say "Starting now").
+   */
+  statusLabel?: string;
 };
 
 /**
@@ -24,22 +29,23 @@ export function WorkshopStickyBar({
   ctaBgClass,
   ctaHoverClass,
   labelHiddenSm = false,
+  statusLabel,
 }: WorkshopStickyBarProps) {
   const labelWrapClass = labelHiddenSm
     ? "hidden sm:flex items-center gap-2 min-w-0"
     : "flex items-center gap-2 min-w-0";
+  const labelClass = labelHiddenSm
+    ? "font-mono-eyebrow text-[11px] uppercase text-neutral-300 truncate"
+    : "font-mono-eyebrow text-[10px] sm:text-[11px] uppercase text-neutral-300 truncate";
   return (
     <div className="fixed bottom-4 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
       <div className="pointer-events-auto flex items-center justify-between gap-4 w-full max-w-2xl rounded-2xl bg-[#1a1a1a] text-white pl-5 pr-2 py-2 shadow-2xl border border-white/10">
         <div className={labelWrapClass}>
-          <StickyCountdownLabel
-            deadline={deadline}
-            className={
-              labelHiddenSm
-                ? "font-mono-eyebrow text-[11px] uppercase text-neutral-300 truncate"
-                : "font-mono-eyebrow text-[10px] sm:text-[11px] uppercase text-neutral-300 truncate"
-            }
-          />
+          {statusLabel ? (
+            <span className={labelClass}>{statusLabel}</span>
+          ) : (
+            <StickyCountdownLabel deadline={deadline} className={labelClass} />
+          )}
         </div>
         <a
           href={ctaHref}
