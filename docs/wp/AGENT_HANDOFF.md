@@ -1,10 +1,12 @@
 # Current handoff — WP46 E7 launch gate (5 October 2026)
 
-The current follow-up branch is `codex/wp46-e7-cloud-job-drill` in
+The current follow-up branch is `codex/wp46-e7-staging-reader` in
 `.worktrees/wp46-e7-preview`. Read `docs/wp/wp46-e7-gate.md` and
 `docs/wp/backup-restore.md` first. PR #108 merged the E7m execution record at
 `d71c55c5`; PR #109 merged the structural submission guard at `8457e75b`;
-PR #110 merged the lost-job recovery regression at `416642a9`. The public
+PR #110 merged the lost-job recovery regression at `416642a9`; PR #111 merged
+the evidence quality gate at `922aa536`, with that exact canonical reader SHA.
+The public
 DMARC catalogue row and private editorial baseline were inserted on the
 serving Convex deployment, `first-squirrel-244`. The verified
 live counts are 231 public ideas, 230 private ideas/submissions and zero managed
@@ -22,6 +24,8 @@ improves extraction and stops those source-diversity failures before writing;
 it does not approve #13. No new engine candidate has been submitted or approved
 in production. Convex backups exclude scheduled jobs, so the remaining cloud
 drill must prove recovery from persisted release rows in an isolated deployment.
+The current branch adds the protected staging-reader origin and exact backend
+check needed for the cloud recovery drill; it has not yet executed that drill.
 Managed Vercel release surfaces and independent final review remain open. Keep
 unreleased drafts under ignored `tmp/` or outside this public repo.
 The production Vercel build already deploys the exact live Convex backend

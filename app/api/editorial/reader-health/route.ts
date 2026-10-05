@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 
-/** Public capability probe: only protocol and deployment identity, never drafts. */
+/** Public capability probe: protocol, deployment and public backend identity, never drafts. */
 export async function GET() {
   // A static route would bake in a null/local commit during `next build`, so
   // the worker could verify a build other than the one actually serving it.
@@ -9,6 +9,7 @@ export async function GET() {
     {
       protocol: 1,
       commit: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.EDITORIAL_READER_COMMIT ?? null,
+      backend: process.env.NEXT_PUBLIC_CONVEX_URL ?? null,
     },
     { headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
   );
