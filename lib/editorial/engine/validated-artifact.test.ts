@@ -50,6 +50,16 @@ describe("validateEngineSubmission", () => {
     await expect(validateEngineSubmission({ ...input, recordJson: JSON.stringify(fixture) })).rejects.toThrow(/Fixture research/);
   });
 
+  it("refuses a live record whose selected market figures share one source host", async () => {
+    const input = compiledInput();
+    input.record.market.statIds = input.record.evidence.accepted
+      .filter((item) => item.kind === "market_stat" && item.sourceUrl === "https://research.example.com/ai-code-review-market")
+      .map((item) => item.id);
+    await expect(validateEngineSubmission({ ...input, recordJson: JSON.stringify(input.record) })).rejects.toThrow(
+      /Publication evidence needs review: Selected market figures need at least two distinct source hosts/,
+    );
+  });
+
   it("refuses changed market figures and swapped evidence links", async () => {
     const input = compiledInput();
     await expect(validateEngineSubmission({ ...input, mdx: input.mdx.replace("$1.4 billion", "$9.4 billion") })).rejects.toThrow(/Deep artifact audit/);

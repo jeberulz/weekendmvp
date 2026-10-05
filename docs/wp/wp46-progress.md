@@ -2,6 +2,12 @@
 
 Append-only progress log. The full E0–E4 history is in `docs/plans/editorial-admin/wp46-progress.md`.
 
+## 2026-10-05 — E7 baseline closure and evidence quality
+
+- PR #108 merged the E7m execution record at `d71c55c5`; CI and both automated reviews passed after the recovery document recorded an omitted pre-action Git restore tag as a procedural gap. The snapshots and exact merge SHAs exist; a later tag cannot retroactively satisfy that pre-action requirement. The canonical reader-health route returned the exact `d71c55c5d6fc3f25abcbbc504285f565d0b701b7` SHA. No release setting changed with this docs-only merge.
+- Private research retry #8 stopped at keyword demand after two attempts ($0.431956) and produced no record. Retry #9 passed the machine evidence counts ($0.674014), but human review again rejected two figures from one Dataintelo forecast, a ResponseHub one-time premium-onboarding fee used as a software-plan price, and a weak third quote about cloud-provider physical security. No retry #8/#9 record was compiled, submitted or published. E7n adds a fail-closed private submission check for repeated selected sources and setup/managed-service prices, plus research-selection guidance; a distinct buyer discussion alone still does not establish topical relevance. The human source gate remains open.
+- E7n local gate: the rejected retry #9 record triggers both the selected-market-host and non-software-price refusals. Focused engine/editorial tests, typecheck, lint (zero errors, 35 existing warnings), the full test suite, a clean standalone production build, server-trace check and `git diff --check` pass. An earlier concurrent test/build run caused unrelated timeout failures; rerunning those configured checks separately passed. No live engine submission or release activation followed.
+
 ## 2026-10-04 — E7 post-merge activation gate
 
 - E7j opened on the existing `codex/wp46-e7-activation` work-package branch. The Convex revalidation action currently puts `REVALIDATE_SECRET` in the query URL, which can be retained by request logs. Replace it with a header on both sides, test denial and success, deploy the sender/reader pair under a content-write pause, then rotate the shared value and prove a tagged page changes. This story is incomplete until the production refresh is observed.
