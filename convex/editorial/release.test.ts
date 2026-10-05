@@ -11,11 +11,20 @@ import schema from "../schema";
 const modules = import.meta.glob("/convex/**/*.ts");
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-test("an exact private revision is activated once and emergency unpublish revokes every public lookup", async () => {
+test.each(["canonical", "staging"] as const)("an exact private revision is activated once and emergency unpublish revokes every public lookup (%s)", async (target) => {
   vi.stubEnv("SUPER_ADMIN_BOOTSTRAP_EMAIL", "release-editor@example.test");
   vi.stubEnv("EDITORIAL_RELEASE_ENABLED", "true");
-  vi.stubEnv("EDITORIAL_PUBLIC_SITE_URL", "http://127.0.0.1:3000/");
+  const stagingBackend = "https://wonderful-armadillo-159.eu-west-1.convex.cloud";
+  vi.stubEnv("EDITORIAL_PUBLIC_SITE_URL", target === "staging"
+    ? "https://weekendmvp-ab123456-john-iseghohis-projects.vercel.app/"
+    : "http://127.0.0.1:3000/");
+  if (target === "staging") {
+    vi.stubEnv("CONVEX_CLOUD_URL", stagingBackend);
+    vi.stubEnv("EDITORIAL_STAGING_BACKEND_URL", stagingBackend);
+    vi.stubEnv("EDITORIAL_STAGING_BYPASS_SECRET", "staging-test-token");
+  }
   vi.stubEnv("EDITORIAL_READER_COMMIT", "local-e6-reader");
+  const health = () => Response.json({ protocol: 1, commit: "local-e6-reader", backend: stagingBackend });
   const t = convexTest(schema, modules);
   const owner = await t.run(async (ctx) => {
     const userId = await ctx.db.insert("users", {
@@ -98,9 +107,10 @@ test("an exact private revision is activated once and emergency unpublish revoke
     idempotencyKey: "publish-release-gated-idea",
   });
   expect(published.ok).toBe(true);
-  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+  vi.stubGlobal("fetch", vi.fn(async (url: URL, init?: RequestInit) => {
+    if (target === "staging") expect(init?.headers).toEqual({ "x-vercel-protection-bypass": "staging-test-token" });
     const pathname = new URL(url).pathname;
-    if (pathname === "/api/editorial/reader-health") return Response.json({ protocol: 1, commit: "local-e6-reader" });
+    if (pathname === "/api/editorial/reader-health") return health();
     if (pathname === `/ideas/${record.brief.slug}`) return new Response("stale cached page", { status: 200 });
     return new Response("Unexpected probe", { status: 500 });
   }));
@@ -110,10 +120,11 @@ test("an exact private revision is activated once and emergency unpublish revoke
   expect(pending?.state).toBe("verifying_public");
   expect(pending?.error?.code).toBe("RELEASE_WORKER_FAILED");
   expect((await t.query(api.editorial.public.bySlug, { slug: record.brief.slug })).state).toBe("released");
-  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+  vi.stubGlobal("fetch", vi.fn(async (url: URL, init?: RequestInit) => {
+    if (target === "staging") expect(init?.headers).toEqual({ "x-vercel-protection-bypass": "staging-test-token" });
     const pathname = new URL(url).pathname;
     if (pathname === "/api/editorial/reader-health") {
-      return Response.json({ protocol: 1, commit: "local-e6-reader" });
+      return health();
     }
     if (pathname === `/ideas/${record.brief.slug}`) {
       const publication = await t.query(api.editorial.public.bySlug, { slug: record.brief.slug });
@@ -166,9 +177,10 @@ test("an exact private revision is activated once and emergency unpublish revoke
   expect(await t.query(api.editorial.public.visibility, { slug: record.brief.slug })).toBe("removed");
   expect(await t.query(api.editorial.public.bySlug, { slug: record.brief.slug })).toEqual({ state: "removed" });
 
-  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+  vi.stubGlobal("fetch", vi.fn(async (url: URL, init?: RequestInit) => {
+    if (target === "staging") expect(init?.headers).toEqual({ "x-vercel-protection-bypass": "staging-test-token" });
     const pathname = new URL(url).pathname;
-    if (pathname === "/api/editorial/reader-health") return Response.json({ protocol: 1, commit: "local-e6-reader" });
+    if (pathname === "/api/editorial/reader-health") return health();
     if (pathname === `/ideas/${record.brief.slug}`) return new Response("stale page", { status: 200 });
     return new Response("Unexpected probe", { status: 500 });
   }));
@@ -186,9 +198,10 @@ test("an exact private revision is activated once and emergency unpublish revoke
     releaseId: removed.value.releaseId, expectedState: "failed", idempotencyKey: "retry-removal-probe",
   });
   expect(retried.ok).toBe(true);
-  vi.stubGlobal("fetch", vi.fn(async (url: URL) => {
+  vi.stubGlobal("fetch", vi.fn(async (url: URL, init?: RequestInit) => {
+    if (target === "staging") expect(init?.headers).toEqual({ "x-vercel-protection-bypass": "staging-test-token" });
     const pathname = new URL(url).pathname;
-    if (pathname === "/api/editorial/reader-health") return Response.json({ protocol: 1, commit: "local-e6-reader" });
+    if (pathname === "/api/editorial/reader-health") return health();
     if (pathname === `/ideas/${record.brief.slug}`) return new Response("Not Found", { status: 404 });
     if (pathname === "/sitemap.xml") return new Response("<urlset></urlset>", { status: 200 });
     return new Response("Unexpected probe", { status: 500 });

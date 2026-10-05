@@ -1,65 +1,52 @@
 import { v } from "convex/values";
 
 import { internal } from "../_generated/api";
-import { internalAction, type ActionCtx } from "../_generated/server";
+import { env, internalAction, type ActionCtx } from "../_generated/server";
+import { matchesReaderHealth, readerTarget, type ReaderTarget } from "./readerTarget";
 
-const READER_PROTOCOL = 1;
-
-function configuredSite(): URL {
-  const raw = process.env.EDITORIAL_PUBLIC_SITE_URL;
-  if (!raw) throw new Error("EDITORIAL_PUBLIC_SITE_URL is missing.");
-  const site = new URL(raw);
-  const local = site.protocol === "http:" && ["localhost", "127.0.0.1"].includes(site.hostname);
-  if (!(site.protocol === "https:" && site.hostname === "www.weekendmvp.app") && !local) {
-    throw new Error("Editorial public site must be the canonical HTTPS host or local loopback.");
-  }
-  if (site.username || site.password || site.search || site.hash || site.pathname !== "/") {
-    throw new Error("Editorial public site must be a bare origin.");
-  }
-  return site;
-}
-
-async function probeReader(site: URL): Promise<void> {
-  const expectedCommit = process.env.EDITORIAL_READER_COMMIT;
+async function probeReader(target: ReaderTarget): Promise<void> {
+  const expectedCommit = env.EDITORIAL_READER_COMMIT;
   if (!expectedCommit || !/^[a-z0-9-]{7,64}$/i.test(expectedCommit)) {
     throw new Error("EDITORIAL_READER_COMMIT is missing or invalid.");
   }
-  const response = await fetch(new URL("/api/editorial/reader-health", site), {
+  const response = await fetch(new URL("/api/editorial/reader-health", target.site), {
     cache: "no-store",
     redirect: "error",
     signal: AbortSignal.timeout(10_000),
+    headers: target.headers,
   });
   if (!response.ok) throw new Error(`Public reader health returned ${response.status}.`);
   const body: unknown = await response.json();
-  if (!body || typeof body !== "object" ||
-      (body as Record<string, unknown>).protocol !== READER_PROTOCOL ||
-      (body as Record<string, unknown>).commit !== expectedCommit) {
-    throw new Error("The deployed public reader does not match the expected protocol and commit.");
+  if (!matchesReaderHealth(body, expectedCommit, target)) {
+    throw new Error("The deployed public reader does not match the expected protocol, commit and backend.");
   }
 }
 
-async function probeRemoval(site: URL, slug: string): Promise<void> {
-  const route = await fetch(new URL(`/ideas/${encodeURIComponent(slug)}`, site), {
+async function probeRemoval(target: ReaderTarget, slug: string): Promise<void> {
+  const route = await fetch(new URL(`/ideas/${encodeURIComponent(slug)}`, target.site), {
     cache: "no-store",
     redirect: "error",
     signal: AbortSignal.timeout(10_000),
+    headers: target.headers,
   });
   if (route.status !== 404) throw new Error(`Removed idea still returned HTTP ${route.status}.`);
-  const sitemap = await fetch(new URL("/sitemap.xml", site), {
+  const sitemap = await fetch(new URL("/sitemap.xml", target.site), {
     cache: "no-store",
     redirect: "error",
     signal: AbortSignal.timeout(10_000),
+    headers: target.headers,
   });
   if (!sitemap.ok || (await sitemap.text()).includes(`/ideas/${slug}</loc>`)) {
     throw new Error("Removed idea is still present in the sitemap or sitemap is unavailable.");
   }
 }
 
-async function probePublished(site: URL, slug: string, artifactHash: string): Promise<void> {
-  const response = await fetch(new URL(`/ideas/${encodeURIComponent(slug)}`, site), {
+async function probePublished(target: ReaderTarget, slug: string, artifactHash: string): Promise<void> {
+  const response = await fetch(new URL(`/ideas/${encodeURIComponent(slug)}`, target.site), {
     cache: "no-store",
     redirect: "error",
     signal: AbortSignal.timeout(10_000),
+    headers: target.headers,
   });
   if (response.status !== 200) throw new Error(`Released idea returned HTTP ${response.status}.`);
   const html = await response.text();
@@ -88,12 +75,17 @@ async function processRelease(ctx: ActionCtx, releaseId: string): Promise<void> 
         if (!result.moved) return;
         continue;
       }
-      const site = configuredSite();
-      await probeReader(site);
-      if (item.operation === "unpublish") await probeRemoval(site, item.slug);
+      const target = readerTarget({
+        EDITORIAL_PUBLIC_SITE_URL: env.EDITORIAL_PUBLIC_SITE_URL,
+        EDITORIAL_STAGING_BACKEND_URL: env.EDITORIAL_STAGING_BACKEND_URL,
+        EDITORIAL_STAGING_BYPASS_SECRET: env.EDITORIAL_STAGING_BYPASS_SECRET,
+        CONVEX_CLOUD_URL: process.env.CONVEX_CLOUD_URL,
+      });
+      await probeReader(target);
+      if (item.operation === "unpublish") await probeRemoval(target, item.slug);
       if (item.state === "verifying_public") {
         if (!item.artifactHash) throw new Error("Activated artifact hash is missing.");
-        await probePublished(site, item.slug, item.artifactHash);
+        await probePublished(target, item.slug, item.artifactHash);
       }
       const result = await advance(ctx, releaseId, item.state);
       if (!result.moved) return;
