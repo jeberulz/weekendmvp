@@ -326,6 +326,33 @@ function figureExcerpt(text: string, maxBytes: number): string {
   return out;
 }
 
+/**
+ * A long report can put the questionnaire figures well after its opening
+ * pages. Give amount-bearing sentences that name the idea's job first; every
+ * selected passage remains an exact substring of the fetched source. When
+ * the brief supplies no useful match, retain the ordinary figure excerpt.
+ */
+function focusedFigureExcerpt(text: string, maxBytes: number, focus: string): string {
+  const words = [...new Set((focus.toLowerCase().match(/[a-z]{4,}/g) ?? []).map((word) => word.replace(/s$/, "")))];
+  if (words.length === 0) return figureExcerpt(text, maxBytes);
+  const patterns = words.map((word) => new RegExp(`\\b${word}[a-z]*\\b`, "iu"));
+  const ranked = splitSentences(text)
+    .map((sentence, index) => ({
+      sentence: sentence.text,
+      index,
+      score: patterns.filter((pattern) => pattern.test(sentence.text)).length,
+    }))
+    .filter((row) => row.score > 0 && scanAmounts(row.sentence).length > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+  let out = "";
+  for (const row of ranked) {
+    const piece = out ? `${EXCERPT_GAP}${row.sentence}` : row.sentence;
+    if (utf8Bytes(out) + utf8Bytes(piece) > maxBytes) continue;
+    out += piece;
+  }
+  return out || figureExcerpt(text, maxBytes);
+}
+
 /** One explicit pricing-status sentence, even when a long page has no prices. */
 function availabilityExcerpt(text: string, maxBytes: number): string {
   const cue = /\b(?:contact sales|talk to sales|custom (?:quote|pricing)|pricing on request|usage[- ]based pricing|pay[- ]as[- ]you[- ]go|credit packs?)\b/iu;
@@ -345,7 +372,7 @@ function availabilityExcerpt(text: string, maxBytes: number): string {
  * leading text for community pages, and half of each for a page cited by
  * both kinds of search.
  */
-export function extractionExcerpt(source: ExtractionSource, maxBytes: number): string {
+export function extractionExcerpt(source: ExtractionSource, maxBytes: number, focus = ""): string {
   if (maxBytes <= 0) return "";
   const community = source.roles.includes("community");
   const figures = source.roles.some((role) => role !== "community");
@@ -363,7 +390,7 @@ export function extractionExcerpt(source: ExtractionSource, maxBytes: number): s
     if (status && prices) return `${status}${EXCERPT_GAP}${prices}`;
     return status || prices || leadingExcerpt(source.text, maxBytes);
   }
-  if (figures) return figureExcerpt(source.text, maxBytes) || leadingExcerpt(source.text, maxBytes);
+  if (figures) return focusedFigureExcerpt(source.text, maxBytes, focus) || leadingExcerpt(source.text, maxBytes);
   return leadingExcerpt(source.text, maxBytes);
 }
 
@@ -432,10 +459,11 @@ function sourceLabel(source: ExtractionSource, n: number): string {
 export function buildExtractionSources(
   sources: ReadonlyArray<ExtractionSource>,
   availableBytes: number,
+  focus = "",
 ): { text: string; included: number } {
   const header = `${EXTRACTION_SOURCES_HEADING}\n`;
   let pages = interleaveByRole(sources);
-  const natural = new Map(pages.map((page) => [page, extractionExcerpt(page, excerptCap(page))] as const));
+  const natural = new Map(pages.map((page) => [page, extractionExcerpt(page, excerptCap(page), focus)] as const));
   while (pages.length > 0) {
     const labels = pages.map((page, i) => sourceLabel(page, i + 1));
     const fixed =
@@ -450,7 +478,7 @@ export function buildExtractionSources(
       const blocks = pages.map((page, i) => {
         const full = natural.get(page) ?? "";
         const bytes = alloc[i] ?? 0;
-        const excerpt = bytes >= utf8Bytes(full) ? full : extractionExcerpt(page, bytes);
+        const excerpt = bytes >= utf8Bytes(full) ? full : extractionExcerpt(page, bytes, focus);
         return `${labels[i] ?? ""}${excerpt}`;
       });
       return { text: `${header}${blocks.join(BLOCK_SEPARATOR)}`, included: pages.length };

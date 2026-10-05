@@ -303,12 +303,23 @@ export function isComparisonPage(url: string): boolean {
   return parsed !== null && COMPARISON_PATH_RE.test(parsed.pathname.toLowerCase());
 }
 
-/** General guides and blog posts repeat market figures without publishing the study. */
-export function isSecondaryMarketPage(url: string): boolean {
+/**
+ * A blog path alone does not make a publisher's own survey secondhand. The
+ * bound statistic sentence must identify first-party collection or analysis;
+ * a claim elsewhere on the page cannot lend provenance to this excerpt.
+ * Comparison pages and general guides never qualify for this exception.
+ */
+export function isSecondaryMarketPage(url: string, excerpt = ""): boolean {
   const parsed = parseUrl(url);
-  return parsed !== null && (
-    isComparisonPage(url) ||
-    /(?:^|\/)(?:blog|blogs|guide|guides)(?:\/|$)/.test(parsed.pathname.toLowerCase())
+  if (!parsed) return false;
+  const path = parsed.pathname.toLowerCase();
+  if (isComparisonPage(url) || /(?:^|\/)(?:guide|guides)(?:\/|$)/.test(path)) return true;
+  if (!/(?:^|\/)(?:blog|blogs)(?:\/|$)/.test(path)) return false;
+  return !(
+    /\bwe\s+(?:surveyed|analysed|analyzed|measured|observed|processed)\b/iu.test(excerpt) ||
+    /\bour\s+(?:survey|study|research|analysis|dataset)(?:\s+of\s+[^.,;:]{1,80})?\s+(?:found|shows?|showed|revealed|measured|observed)\b/iu.test(excerpt) ||
+    /\bour\s+platform\s+data\s+(?:shows?|showed|revealed)\b/iu.test(excerpt) ||
+    /\bin a sample dataset,?\s+we\s+(?:saw|found)\b/iu.test(excerpt)
   );
 }
 

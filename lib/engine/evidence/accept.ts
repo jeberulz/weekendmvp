@@ -953,9 +953,6 @@ function yearIssue(
  * figure (see yearIssue); and a subject content word appears in the sentence.
  */
 function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number, sourceUrl: string): StatCheck {
-  if (isSecondaryMarketPage(sourceUrl)) {
-    return fail("unsupported_assertion", "a comparison, guide or blog page is not the original research source for a market statistic");
-  }
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);
   }
@@ -984,6 +981,12 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
     for (const found of inSentence) {
       if (!amountsEqual(found.amount, claim.amount)) continue;
       matched = true;
+      // Stored excerpts can contain multiple sentences. Provenance must live
+      // in the same sentence as this figure, as it did at first acceptance.
+      if (isSecondaryMarketPage(sourceUrl, sentence.text)) {
+        failure ??= fail("unsupported_assertion", "a comparison or guide, or a blog excerpt without first-party research provenance, is not the original research source for a market statistic");
+        continue;
+      }
       const assertion = clauseAround(sentence.text, found.numberStart - sentence.start);
       const inAssertion = inSentence.filter((a) => a.numberStart >= sentence.start + assertion.start && a.numberStart < sentence.start + assertion.end);
       const spans = inAssertion.map((a) => ({ start: Math.max(0, a.start - sentence.start - assertion.start), end: a.end - sentence.start - assertion.start }));
