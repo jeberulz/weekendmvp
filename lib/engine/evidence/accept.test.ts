@@ -131,6 +131,22 @@ describe("original research published on a blog", () => {
     });
     expect(reasons(result)).toEqual(["unsupported_assertion"]);
   });
+
+  it("revalidation cannot borrow research provenance from another sentence", () => {
+    const item = must(run([page], { marketStats: [candidate] }).accepted[0]);
+    if (item.kind !== "market_stat") throw new Error("expected a market statistic");
+    const excerpt = "Our survey studied security teams. 64% of security teams use security questionnaires.";
+    const changed = {
+      ...item,
+      amount: { ...item.amount, value: "64" },
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+    };
+    const forged = { ...changed, id: evidenceId(changed.kind, changed.sourceUrl, excerpt, evidenceClaimKey(changed)) };
+    const result = revalidateAcceptedEvidence(forged, acquisitions([{ ...page, text: excerpt }]));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.issues.join(" ")).toContain("not the original research source");
+  });
 });
 
 // ---------------------------------------------------------------------------

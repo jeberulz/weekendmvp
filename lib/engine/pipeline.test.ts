@@ -529,6 +529,27 @@ describe("runResearch (fixture)", () => {
     expect(queries.filter((q) => /Earlier community citations were mostly unreadable/.test(q))).toHaveLength(1);
     expect(queries.some((q) => /Do NOT cite Reddit/.test(q))).toBe(true);
   });
+
+  it("accepts independent buyer discussions after the community supplement", async () => {
+    const pages = { ...FIXTURE_PAGES };
+    delete pages[FIXTURE_URLS.hnThread];
+    const extraction = {
+      ...FIXTURE_EXTRACTION,
+      quotes: [
+        { sourceUrl: FIXTURE_URLS.forumThread, text: "I paste the same SOC 2 answers into a new portal every quarter and still miss a question." },
+        { sourceUrl: FIXTURE_URLS.supplementThread, text: "Every buyer uses a different portal, so we retype the same approved answers again and again." },
+      ],
+    };
+    const providers = createFixtureProviders({ pages, synthesis: { extraction: () => extraction } });
+    const { record } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(record.provenance.attempts.community_signals).toBe(2);
+    expect(record.evidence.sources.find((source) => source.url === FIXTURE_URLS.supplementThread))
+      .toMatchObject({ status: "read", roles: ["community"] });
+    const quoteSources = record.evidence.accepted
+      .filter((item) => item.kind === "community_quote")
+      .map((item) => item.sourceUrl);
+    expect(new Set(quoteSources)).toEqual(new Set([FIXTURE_URLS.forumThread, FIXTURE_URLS.supplementThread]));
+  });
 });
 
 // ---------------------------------------------------------------------------
