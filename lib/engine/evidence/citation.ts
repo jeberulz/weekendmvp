@@ -316,7 +316,9 @@ export function isSecondaryMarketPage(url: string, excerpt = ""): boolean {
   if (isComparisonPage(url) || /(?:^|\/)(?:guide|guides)(?:\/|$)/.test(path)) return true;
   if (!/(?:^|\/)(?:blog|blogs)(?:\/|$)/.test(path)) return false;
   return !(
-    /\b(?:we\s+(?:surveyed|analysed|analyzed|measured|observed|processed)|our\s+(?:survey|study|research|analysis|data|dataset|platform data))\b/iu.test(excerpt) ||
+    /\bwe\s+(?:surveyed|analysed|analyzed|measured|observed|processed)\b/iu.test(excerpt) ||
+    /\bour\s+(?:survey|study|research|analysis|dataset)(?:\s+of\s+[^.,;:]{1,80})?\s+(?:found|shows?|showed|revealed|measured|observed)\b/iu.test(excerpt) ||
+    /\bour\s+platform\s+data\s+(?:shows?|showed|revealed)\b/iu.test(excerpt) ||
     /\bin a sample dataset,?\s+we\s+(?:saw|found)\b/iu.test(excerpt)
   );
 }

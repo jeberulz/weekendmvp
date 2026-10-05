@@ -143,7 +143,10 @@ describe("vendor keys and first-party hosts", () => {
   it("permits only a blog statistic whose own excerpt states original research", () => {
     const excerpt = "Our survey found 61% of security teams use security questionnaires.";
     expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", excerpt)).toBe(false);
+    expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", "Our analysis of 2 million answers found 61% of teams reuse questionnaire responses.")).toBe(false);
     expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", "61% of security teams use security questionnaires.")).toBe(true);
+    expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", "Our data partners report that 61% of security teams use questionnaires.")).toBe(true);
+    expect(isSecondaryMarketPage("https://publisher.example/blog/survey-findings", "Our research partners found that 61% of security teams use questionnaires.")).toBe(true);
     expect(isSecondaryMarketPage("https://publisher.example/blog/best-security-tools", excerpt)).toBe(true);
     expect(isSecondaryMarketPage("https://publisher.example/guides/survey-findings", excerpt)).toBe(true);
   });
