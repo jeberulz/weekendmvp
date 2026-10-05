@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 
 import { internal } from "../_generated/api";
-import { internalAction, type ActionCtx } from "../_generated/server";
+import { env, internalAction, type ActionCtx } from "../_generated/server";
 import { matchesReaderHealth, readerTarget, type ReaderTarget } from "./reader-target";
 
 async function probeReader(target: ReaderTarget): Promise<void> {
-  const expectedCommit = process.env.EDITORIAL_READER_COMMIT;
+  const expectedCommit = env.EDITORIAL_READER_COMMIT;
   if (!expectedCommit || !/^[a-z0-9-]{7,64}$/i.test(expectedCommit)) {
     throw new Error("EDITORIAL_READER_COMMIT is missing or invalid.");
   }
@@ -75,7 +75,12 @@ async function processRelease(ctx: ActionCtx, releaseId: string): Promise<void> 
         if (!result.moved) return;
         continue;
       }
-      const target = readerTarget(process.env);
+      const target = readerTarget({
+        EDITORIAL_PUBLIC_SITE_URL: env.EDITORIAL_PUBLIC_SITE_URL,
+        EDITORIAL_STAGING_BACKEND_URL: env.EDITORIAL_STAGING_BACKEND_URL,
+        EDITORIAL_STAGING_BYPASS_SECRET: env.EDITORIAL_STAGING_BYPASS_SECRET,
+        CONVEX_CLOUD_URL: process.env.CONVEX_CLOUD_URL,
+      });
       await probeReader(target);
       if (item.operation === "unpublish") await probeRemoval(target, item.slug);
       if (item.state === "verifying_public") {

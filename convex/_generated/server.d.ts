@@ -28,6 +28,10 @@ type Env = {
   readonly PLATFORM_BILLING_BRIDGE_SECRET: string;
   readonly PLATFORM_PREVIEW_BRIDGE_SECRET: string | undefined;
   readonly SUPER_ADMIN_BOOTSTRAP_EMAIL: string | undefined;
+  readonly EDITORIAL_PUBLIC_SITE_URL: string | undefined;
+  readonly EDITORIAL_READER_COMMIT: string | undefined;
+  readonly EDITORIAL_STAGING_BACKEND_URL: string | undefined;
+  readonly EDITORIAL_STAGING_BYPASS_SECRET: string | undefined;
 };
 
 /**
