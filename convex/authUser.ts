@@ -55,10 +55,18 @@ export function normalizeAuthEmail(value: string) {
   return normalizeEmail(value);
 }
 
+/** True for the empty user that email issuance creates (only system fields). */
+function isIssuancePlaceholder(user: Record<string, unknown>) {
+  return Object.keys(user).every((key) => key.startsWith("_"));
+}
+
 /**
- * Convex Auth normally auto-links trusted methods that share an email. The
- * owner explicitly ruled that linking must require a future verified,
- * signed-in flow, so a new provider account may never claim an existing user.
+ * Convex Auth normally auto-links trusted methods that share an email. Here a
+ * new provider account may never claim an existing user, with one exception
+ * (owner ruling, 2026-10-06): a redeemed email link proves inbox possession,
+ * so it signs in to the existing account when that account's email is
+ * already verified. Convex Auth then moves the email account from the
+ * issuance placeholder onto that user, and the empty placeholder is removed.
  */
 export async function createOrUpdateAuthUser(
   ctx: MutationCtx,
@@ -115,13 +123,23 @@ export async function createOrUpdateAuthUser(
     });
   }
 
-  if (emailOwner !== null && emailOwner._id !== args.existingUserId) {
-    throw new Error(AUTH_ACCOUNT_COLLISION_MESSAGE);
-  }
-
   const existingUser = await ctx.db.get("users", args.existingUserId);
   if (existingUser === null) {
     throw new Error("Unable to complete sign-in.");
+  }
+
+  if (emailOwner !== null && emailOwner._id !== args.existingUserId) {
+    const emailLinkToVerifiedOwner =
+      args.type === "verification" &&
+      args.provider.type === "email" &&
+      args.profile.emailVerified === true &&
+      emailOwner.emailVerificationTime !== undefined &&
+      isIssuancePlaceholder(existingUser);
+    if (!emailLinkToVerifiedOwner) {
+      throw new Error(AUTH_ACCOUNT_COLLISION_MESSAGE);
+    }
+    await ctx.db.delete("users", existingUser._id);
+    return emailOwner._id;
   }
 
   await ctx.db.patch("users", args.existingUserId, {
