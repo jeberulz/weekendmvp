@@ -1,40 +1,22 @@
-import { IdeaCard } from "@/components/primitives/IdeaCard";
 import type { IdeaDoc } from "@/components/hubs/hub-data";
-import { categoryColor, categoryLabel } from "@/components/hubs/hub-theme";
+import { PublicIdeaCard } from "@/components/public/IdeaCards";
+import { toPublicIdeas } from "@/lib/public/ideas";
 import { SITE } from "@/lib/seo";
 
 /**
- * Idea card grid for hub pages. Thin wrapper around the shared IdeaCard
- * primitive (variant="default", surface="translucent") — the per-card
- * category badge tint comes from hub-theme.ts's categoryColor() map.
+ * Plain idea card grid for hub pages that don't need the Cards/Rows switch
+ * (the pages themselves use `IdeaBrowser`). Renders the kit's card.
  */
-
-export function HubIdeaCard({ idea }: { idea: IdeaDoc }) {
-  const color = categoryColor(idea.category);
-  return (
-    <IdeaCard
-      surface="translucent"
-      idea={{
-        slug: idea.slug,
-        title: idea.title,
-        description: idea.description,
-        category: idea.category,
-        categoryLabel: categoryLabel(idea.category),
-        buildTimeLabel: `~${idea.buildTime || 8} hours`,
-        badgeClass: `${color.badge} rounded-full`,
-      }}
-    />
-  );
-}
-
 export function HubIdeasGrid({ ideas }: { ideas: IdeaDoc[] }) {
   if (ideas.length === 0) return null;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {ideas.map((idea) => (
-        <HubIdeaCard key={idea.slug} idea={idea} />
+    <ul className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {toPublicIdeas(ideas).map((idea) => (
+        <li key={idea.slug}>
+          <PublicIdeaCard idea={idea} />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 

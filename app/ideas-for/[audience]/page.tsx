@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 export const instant = false;
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowUpRight,
   Briefcase,
   Calendar,
-  Clock,
   Code2,
   HeartHandshake,
   Lightbulb,
@@ -27,24 +26,22 @@ import {
   Zap,
 } from "lucide-react";
 
+import { Container, Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
-import { HubRelatedTiles } from "@/components/hubs/HubRelatedTiles";
-import {
-  HubBreadcrumb,
-  HubChip,
-  HubCountChip,
-  HubHero,
-  HubShell,
-} from "@/components/hubs/HubShell";
 import { HubCta } from "@/components/hubs/HubCta";
-import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
+import { ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubTracker } from "@/components/hubs/HubTracker";
-import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
   fetchAudienceReference,
   fetchIdeasByAudience,
 } from "@/components/hubs/hub-data";
+import { IdeaBrowser } from "@/components/public/IdeaBrowser";
+import { LinkTabs } from "@/components/public/LinkTabs";
+import { PageHeader } from "@/components/public/PageHeader";
+import { PublicShell } from "@/components/public/PublicShell";
+import { InkBand, KeepBrowsing, SectionHeading } from "@/components/public/Sections";
+import { toPublicIdeas } from "@/lib/public/ideas";
 import {
   SITE,
   breadcrumbSchema,
@@ -73,13 +70,10 @@ type AudiencePage = {
   title: string;
   metaDescription: string;
   description: string;
-  color: HubColor;
   icon: LucideIcon;
   skillChip: string;
   timeChip: string;
   positioning: string;
-  /** When true, advantage icons use the audience accent (hand-built pages). */
-  accentAdvantages: boolean;
   advantages: Advantage[];
   resources: Resource[];
 };
@@ -103,13 +97,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas perfect for developers. Build technical products, developer tools, and complex applications that leverage your coding skills.",
     description:
       "Ideas that leverage your coding skills. Build technical products, developer tools, and complex applications that non-technical founders can't easily replicate.",
-    color: "emerald",
     icon: Terminal,
     skillChip: "Advanced skill level",
     timeChip: "8-12 hours build time",
     positioning:
       "As a developer, you have a massive unfair advantage: you can build your own products. While others need to hire developers, raise capital, or use limited no-code tools, you can turn ideas into reality in a weekend. Your technical skills let you build complex backends, integrate APIs, and create products with real moats.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Code2,
@@ -153,13 +145,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas perfect for designers. Filter by build time, revenue potential, and tech stack.",
     description:
       "Ideas that put your design skills front and center. Ship polished products, tools for creatives, and interfaces people pay for.",
-    color: "rose",
     icon: Palette,
     skillChip: "Intermediate skill level",
     timeChip: "Flexible build time",
     positioning:
       "Designers win when UX is the product. These ideas let you ship polished interfaces fast, sell to creative professionals, or build tools other designers pay for daily.",
-    accentAdvantages: false,
     advantages: traitsToAdvantages([
       "Strong visual and UX skills",
       "Understand user psychology",
@@ -186,13 +176,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas perfect for non-technical founders. Build without coding using no-code tools, AI builders, or hire developers for specific components.",
     description:
       "Ideas you can build without coding. Use no-code tools, AI builders, or hire developers for specific components.",
-    color: "amber",
     icon: Lightbulb,
     skillChip: "Beginner-friendly",
     timeChip: "8-12 hours with no-code",
     positioning:
       "Being non-technical isn't a weakness—it's a different kind of strength. You have deep domain expertise, strong customer empathy, and sales skills that many technical founders lack. With modern no-code tools and AI builders, you can now build functional products without writing a single line of code. Your advantage is understanding the business problem deeply while technical execution becomes a commodity.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Target,
@@ -234,13 +222,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas optimized for one person to build and run. Low operational complexity, scalable, and manageable without a team.",
     description:
       "Ideas optimized for one person to build and run. Low operational complexity, scalable, and manageable without a team.",
-    color: "blue",
     icon: User,
     skillChip: "Mixed skill levels",
     timeChip: "8-12 hours build time",
     positioning:
       "Going solo isn't a limitation—it's a superpower. You can move faster than any team, make decisions without meetings, and pivot on a dime. The best solo founder businesses are ones that leverage automation, have low customer support needs, and can scale without adding headcount. These ideas are specifically chosen because one person can build, launch, and grow them to meaningful revenue.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Rocket,
@@ -282,13 +268,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas perfect for weekend builders. Filter by build time, revenue potential, and tech stack.",
     description:
       "Tight-scope ideas you can take from Friday night to Sunday launch. Built for momentum, not perfection.",
-    color: "orange",
     icon: Calendar,
     skillChip: "Mixed skill level",
     timeChip: "8-10 hours build time",
     positioning:
       "Weekend builders trade perfection for momentum. These ideas have tight scope, obvious value props, and a realistic path from Friday night to Sunday launch.",
-    accentAdvantages: false,
     advantages: traitsToAdvantages([
       "Limited time availability",
       "Value shipping over perfection",
@@ -315,13 +299,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas perfect for side hustlers. Filter by build time, revenue potential, and tech stack.",
     description:
       "Low-maintenance ideas that earn while you keep your day job. Automation-first products with clear ROI for busy buyers.",
-    color: "purple",
     icon: Briefcase,
     skillChip: "Mixed skill level",
     timeChip: "Flexible build time",
     positioning:
       "Side hustlers need low-maintenance products that earn while you keep your day job. These ideas prioritize automation, async delivery, and clear ROI for busy buyers.",
-    accentAdvantages: false,
     advantages: traitsToAdvantages([
       "Time-constrained but consistent",
       "Looking for supplemental income",
@@ -348,13 +330,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Curated startup ideas for marketers and growth teams. Build content tools, campaign automation, and conversion products you can ship in a weekend.",
     description:
       "Ideas built for growth marketers, performance teams, and content operators. Ship tools that automate campaigns, repurpose content, and improve conversion.",
-    color: "pink",
     icon: Megaphone,
     skillChip: "Mixed skill level",
     timeChip: "8-12 hours build time",
     positioning:
       "Marketers have a unique edge: you know what channels convert, what copy resonates, and what workflows teams actually pay for. While engineers build features, you build distribution. These ideas let you productize that knowledge—content automation, landing page tools, ad workflows, and conversion products that solve problems you've lived firsthand.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Target,
@@ -396,13 +376,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Startup ideas for freelancers and SaaS ideas for freelancers: AI weekend MVPs that productize client pain, admin work, and niche expertise.",
     description:
       "AI-assisted MVP ideas freelancers can ship between client work: productized tools for outreach, proposals, reporting, and niche service workflows.",
-    color: "teal",
     icon: HeartHandshake,
     skillChip: "Mixed skill level",
     timeChip: "8-12 hours build time",
     positioning:
       "Freelancers see expensive workflow gaps before software teams do because clients explain them in every kickoff, revision, and invoice cycle. You already know which manual tasks buyers tolerate, which outcomes they pay for, and what language makes the pain obvious. Weekend MVPs let you turn repeated service work into focused SaaS ideas for freelancers without abandoning your client pipeline.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: HeartHandshake,
@@ -446,13 +424,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Startup ideas for creators and creator tool ideas: AI weekend MVPs for content repurposing, audience growth, and monetization workflows.",
     description:
       "Creator tool ideas you can build in a weekend: repurposing systems, audience analytics, sponsorship workflows, and products that turn content into revenue.",
-    color: "rose",
     icon: Video,
     skillChip: "Mixed skill level",
     timeChip: "8-12 hours build time",
     positioning:
       "Creators have an unfair advantage because you feel the content treadmill, platform shifts, and monetization pressure firsthand. You can test a tool with your own workflow, explain the value in public, and recruit early users from adjacent creators. AI-assisted weekend MVPs are especially strong here because the best creator products save time or unlock one more revenue stream immediately.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Video,
@@ -496,13 +472,11 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       "Startup ideas for small business owners and SMB SaaS ideas: AI weekend MVPs for local ops, lead follow-up, reviews, and admin automation.",
     description:
       "Weekend MVP ideas for small business owners who know local workflows firsthand. Build simple SaaS that saves time, captures leads, or automates repeat admin.",
-    color: "amber",
     icon: Store,
     skillChip: "Mixed skill level",
     timeChip: "8-12 hours build time",
     positioning:
       "Small business owners have unfair insight into the messy, high-value work hidden behind the counter: missed calls, late invoices, reviews, scheduling, and follow-up. You understand buyer urgency because you are the buyer, and you can test tools against real daily operations immediately. The best SMB SaaS ideas start narrow, save obvious time, and prove ROI without a long sales cycle.",
-    accentAdvantages: true,
     advantages: [
       {
         icon: Store,
@@ -542,23 +516,22 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
 
 export const AUDIENCE_SLUGS = Object.keys(AUDIENCE_PAGES);
 
-/** Legacy "Ideas For Other Audiences" tile colors/icons. */
+/** Every audience hub, in tab order. */
 const AUDIENCE_TILES: Array<{
   slug: string;
   label: string;
   icon: LucideIcon;
-  iconClass: string;
 }> = [
-  { slug: "developers", label: "Developers", icon: Terminal, iconClass: "text-emerald-400" },
-  { slug: "designers", label: "Designers", icon: Palette, iconClass: "text-pink-400" },
-  { slug: "non-technical", label: "Non-Technical", icon: Lightbulb, iconClass: "text-amber-400" },
-  { slug: "solo-founders", label: "Solo Founders", icon: User, iconClass: "text-blue-400" },
-  { slug: "weekend-builders", label: "Weekend Builders", icon: Calendar, iconClass: "text-purple-400" },
-  { slug: "side-hustlers", label: "Side Hustlers", icon: Briefcase, iconClass: "text-cyan-400" },
-  { slug: "marketers", label: "Marketers", icon: Megaphone, iconClass: "text-pink-400" },
-  { slug: "freelancers", label: "Freelancers", icon: HeartHandshake, iconClass: "text-teal-400" },
-  { slug: "creators", label: "Creators", icon: Video, iconClass: "text-rose-400" },
-  { slug: "small-business-owners", label: "Small Business Owners", icon: Store, iconClass: "text-amber-400" },
+  { slug: "developers", label: "Developers", icon: Terminal },
+  { slug: "designers", label: "Designers", icon: Palette },
+  { slug: "non-technical", label: "Non-Technical", icon: Lightbulb },
+  { slug: "solo-founders", label: "Solo Founders", icon: User },
+  { slug: "weekend-builders", label: "Weekend Builders", icon: Calendar },
+  { slug: "side-hustlers", label: "Side Hustlers", icon: Briefcase },
+  { slug: "marketers", label: "Marketers", icon: Megaphone },
+  { slug: "freelancers", label: "Freelancers", icon: HeartHandshake },
+  { slug: "creators", label: "Creators", icon: Video },
+  { slug: "small-business-owners", label: "Small Business Owners", icon: Store },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -654,6 +627,20 @@ export default async function AudienceHubPage({
   return <CachedAudienceHub slug={audience} />;
 }
 
+/** Italic tail appended to the H1 (WP56 ruling: the existing title stays verbatim first). */
+const AUDIENCE_TAIL: Record<string, string> = {
+  developers: "with an unfair advantage.",
+  designers: "built around your craft.",
+  "non-technical": "you can build with no-code.",
+  "solo-founders": "built to run alone.",
+  "weekend-builders": "to ship by Sunday.",
+  "side-hustlers": "to build around your day job.",
+  marketers: "that start with your audience.",
+  freelancers: "from the work you already do.",
+  creators: "built around your audience.",
+  "small-business-owners": "that fit how you run things.",
+};
+
 async function CachedAudienceHub({ slug }: { slug: string }) {
   const page = AUDIENCE_PAGES[slug];
   const [ideas, audienceRow] = await Promise.all([
@@ -669,153 +656,149 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
       (r) => r?.title && r?.url,
     ) ?? page.resources;
 
-  const color = COLOR_STYLES[page.color];
-  const Icon = page.icon;
   const schema = buildSchema(page, description, ideas);
+  const list = toPublicIdeas(ideas);
+  const tail = AUDIENCE_TAIL[slug];
+  const others = AUDIENCE_TILES.filter((tile) => tile.slug !== slug);
 
   return (
-    <HubShell>
+    <PublicShell>
       <JsonLd schema={schema} />
       <HubTracker
         event="view_audience_page"
         props={{ audience_name: page.name, idea_count: ideas.length }}
       />
 
-      <HubBreadcrumb
-        items={[
+      <PageHeader
+        crumbs={[
           { label: "Home", href: "/" },
           { label: `Ideas for ${page.name}` },
         ]}
-      />
-
-      <HubHero
-        icon={<Icon size={28} className={color.text} aria-hidden="true" />}
-        iconBoxClassName={color.bg10}
-        title={page.title}
-        description={description}
-        chips={
+        title={
           <>
-            {ideas.length > 0 ? (
-              <HubCountChip>{ideas.length} curated ideas</HubCountChip>
-            ) : null}
-            <HubChip>
-              <Zap size={14} aria-hidden="true" />
-              {page.skillChip}
-            </HubChip>
-            <HubChip>
-              <Clock size={14} aria-hidden="true" />
-              {page.timeChip}
-            </HubChip>
+            {page.title}
+            {tail && (
+              <>
+                {" "}
+                <Em>{tail}</Em>
+              </>
+            )}
           </>
         }
+        description={description}
+        meta={[
+          ideas.length > 0 ? (
+            <>
+              <span className="font-medium text-home-ink">{ideas.length}</span> curated ideas
+            </>
+          ) : null,
+          page.skillChip,
+          page.timeChip,
+        ]}
+      />
+
+      <LinkTabs
+        className="pt-10"
+        groups={[
+          {
+            ariaLabel: "Ideas for",
+            links: AUDIENCE_TILES.map((tile) => ({
+              href: `/ideas-for/${tile.slug}`,
+              label: tile.label,
+              current: tile.slug === slug,
+            })),
+          },
+        ]}
       />
 
       {/* Why This Audience */}
-      <section className="mb-16" aria-labelledby="why-heading">
-        <h2 id="why-heading" className="text-2xl font-medium text-white mb-6">
-          Why {page.name} Are Uniquely Positioned
-        </h2>
-        <div className="p-8 bg-white/5 border border-white/10 rounded-3xl">
-          <p className="text-neutral-300 leading-relaxed mb-6">
-            {page.positioning}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {page.advantages.map((advantage) => {
-              const AdvIcon = advantage.icon;
-              return (
-                <div
-                  key={advantage.title}
-                  className="p-4 bg-white/5 rounded-2xl"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                      page.accentAdvantages ? color.bg10 : "bg-white/5"
-                    }`}
-                  >
-                    <AdvIcon
-                      size={20}
-                      className={
-                        page.accentAdvantages ? color.text : "text-white/70"
-                      }
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <h3 className="text-white font-medium mb-1">
+      <InkBand inset labelledBy="why-heading">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[6fr_5fr] lg:gap-16">
+          <SectionHeading id="why-heading" dark intro={page.positioning} className="gap-5">
+            Why {page.name} Are <Em dark>Uniquely Positioned</Em>
+          </SectionHeading>
+          <ol className="flex flex-col self-start border-b border-home-dr">
+            {page.advantages.map((advantage, index) => (
+              <li key={advantage.title} className="flex gap-4 border-t border-home-dr py-5">
+                <span aria-hidden className="font-editorial text-[22px] italic leading-[1.2] text-home-orange-light">
+                  {index + 1}
+                </span>
+                <div className="flex flex-col gap-1.5">
+                  <h3 className="font-editorial text-[22px] font-normal leading-[1.2] text-home-d1 md:text-2xl">
                     {advantage.title}
                   </h3>
-                  <p className="text-neutral-500 text-sm">
-                    {advantage.description}
-                  </p>
+                  <p className="text-[15px] leading-[1.55] text-home-d2">{advantage.description}</p>
                 </div>
-              );
-            })}
-          </div>
+              </li>
+            ))}
+          </ol>
         </div>
-      </section>
+      </InkBand>
 
-      {/* Ideas Grid */}
-      {ideas.length > 0 ? (
-        <section aria-labelledby="ideas-heading">
-          <h2
-            id="ideas-heading"
-            className="text-2xl font-medium text-white mb-8"
-          >
-            Curated Ideas for {page.name}
-          </h2>
-          <HubIdeasGrid ideas={ideas} />
-        </section>
+      {/* Ideas */}
+      {list.length > 0 ? (
+        <Container className="py-14 lg:py-20">
+          <IdeaBrowser
+            ideas={list}
+            headingId="ideas-heading"
+            heading={
+              <>
+                Curated Ideas for <Em>{page.name}</Em>
+              </>
+            }
+          />
+        </Container>
       ) : null}
 
       {/* Resources */}
       {resources.length > 0 ? (
-        <section className="mt-24" aria-labelledby="resources-heading">
-          <h2
-            id="resources-heading"
-            className="text-2xl font-medium text-white mb-8"
-          >
-            Resources for {page.name}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {resources.map((resource) => (
-              <NavExternalLink
-                key={resource.url}
-                href={resource.url}
-                className="group block p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all"
-              >
-                <h3 className="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">
-                  {resource.title}
-                </h3>
-                <p className="text-neutral-500 text-sm">
-                  {resource.description}
-                </p>
-              </NavExternalLink>
-            ))}
-          </div>
+        <section aria-labelledby="resources-heading" className="py-14 lg:py-20">
+          <Container className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-14">
+            <h2
+              id="resources-heading"
+              className="font-editorial text-[32px] font-normal leading-[1.05] tracking-[-0.02em] text-balance text-home-ink md:text-[40px]"
+            >
+              Resources for <Em>{page.name}</Em>
+            </h2>
+            <ul className="border-t border-home-ink">
+              {resources.map((resource) => (
+                <li key={resource.url} className="border-b border-home-rule">
+                  <NavExternalLink
+                    href={resource.url}
+                    className="group flex flex-col gap-1.5 py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+                  >
+                    <span className="flex items-center gap-2 font-editorial text-[22px] leading-[1.2] text-home-ink md:text-2xl">
+                      {resource.title}
+                      <ArrowUpRight
+                        size={18}
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                        className="shrink-0 text-home-orange-ink transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+                      />
+                    </span>
+                    <span className="text-[15px] leading-[1.55] text-home-ink-2">{resource.description}</span>
+                  </NavExternalLink>
+                </li>
+              ))}
+            </ul>
+          </Container>
         </section>
       ) : null}
 
       {/* Other Audiences */}
-      <HubRelatedTiles
-        title="Ideas For Other Audiences"
-        headingId="other-audiences-heading"
-        items={AUDIENCE_TILES.filter((tile) => tile.slug !== slug).map(
-          (tile) => ({
-            slug: tile.slug,
-            label: tile.label,
-            href: `/ideas-for/${tile.slug}`,
-            icon: tile.icon,
-            iconClassName: tile.iconClass,
-          }),
-        )}
-        allHref="/startup-ideas"
-        allLabel="All Ideas"
-        columnsLgClassName="lg:grid-cols-6"
+      <KeepBrowsing
+        id="other-audiences-heading"
+        heading="Ideas For Other Audiences"
+        links={[
+          ...others.map((tile) => ({ href: `/ideas-for/${tile.slug}`, label: tile.label })),
+          { href: "/startup-ideas", label: "All Ideas" },
+        ]}
       />
 
       <HubCta
         heading="Ready to start building?"
         body={`Get the Weekend MVP Starter Kit with templates optimized for ${page.name.toLowerCase()}.`}
       />
-    </HubShell>
+    </PublicShell>
   );
 }
