@@ -99,7 +99,9 @@ export default async function AuthorPage() {
   const schema = buildGraph(
     {
       "@type": "ProfilePage",
-      "@id": `${SITE}${PERSON_PATH}`,
+      // Distinct from PERSON_ID — Google rich results FAIL when ProfilePage
+      // @id equals mainEntity @id ("Invalid duplicate ID").
+      "@id": `${SITE}${PERSON_PATH}#profilepage`,
       name: TITLE,
       description: DESCRIPTION,
       url: `${SITE}${PERSON_PATH}`,
@@ -122,7 +124,7 @@ export default async function AuthorPage() {
     ]),
     breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "John Iseghohi", href: PERSON_PATH },
+      { label: "John Iseghohi" },
     ]),
   );
 

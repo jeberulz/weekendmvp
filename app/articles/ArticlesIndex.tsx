@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Search, SearchX, X } from "lucide-react";
 
+import { SEO_PRIORITY_LINKS } from "@/components/hubs/HubCrawlLinks";
+
 export type ArticleCard = {
   slug: string;
   title: string;
@@ -136,6 +138,38 @@ export function ArticlesIndex({
 
       {/* Accent Line */}
       <div className="accent-line max-w-4xl mx-auto" aria-hidden="true" />
+
+      {/* Crawl-priority internal links — Demand GSC Sep 2026 */}
+      <section
+        className="px-6 pt-10 pb-2"
+        aria-labelledby="articles-priority-links"
+      >
+        <div className="max-w-4xl mx-auto">
+          <h2
+            id="articles-priority-links"
+            className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-4"
+          >
+            Start building
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {SEO_PRIORITY_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="block h-full rounded-xl border border-white/[0.06] bg-[#0A0A0A] p-4 transition-colors hover:border-[#CC5500]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CC5500]/50"
+                >
+                  <span className="block text-sm font-medium text-white">
+                    {link.label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-neutral-500">
+                    {link.blurb}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {/* All Articles List */}
       <section className="py-16 px-6">

@@ -58,6 +58,14 @@ export const WHAT_IS =
 
 export const START_HERE = [
   { href: "/startup-ideas", label: "Browse startup ideas" },
+  {
+    href: "/ideas/dmarc-monitor-agencies-small-business",
+    label: "DMARC monitor for agencies",
+  },
+  {
+    href: "/ideas/prompt-regression-tests-indie-ai-builders",
+    label: "Prompt regression tests for AI builders",
+  },
   { href: "/starter-kit", label: "Get the free Starter Kit" },
   { href: "/ideas-for/non-technical", label: "Ideas for non-technical founders" },
 ] as const;

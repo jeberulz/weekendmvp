@@ -150,10 +150,21 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
   const body = chooseIdeaBody(file, idea);
   if (!body) return null;
   const fmTitle = file?.frontmatter.title;
+  const fmDescription = file?.frontmatter.description;
+  // Prefer MDX frontmatter when present so git-deployed SEO title/meta
+  // wins over a stale Convex row until the next seed.
   return {
     ...body,
-    title: idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
-    description: idea?.description ?? excerpt(body.content),
+    title:
+      (typeof fmTitle === "string" && fmTitle.trim() ? fmTitle : null) ??
+      idea?.title ??
+      slug,
+    description:
+      (typeof fmDescription === "string" && fmDescription.trim()
+        ? fmDescription
+        : null) ??
+      idea?.description ??
+      excerpt(body.content),
     idea,
     ogImage,
   };
@@ -207,8 +218,9 @@ export async function generateMetadata({
   const { title, description, ogImage } = resolved;
   const url = `${SITE}/ideas/${slug}`;
   const ogImageAbs = `${SITE}${ogImage}`;
-  // Legacy published <title> pattern: "{title} | Startup Ideas | Weekend MVP"
-  const fullTitle = `${title} | Startup Ideas | Weekend MVP`;
+  // Query-first titles live in MDX/manifest; keep the brand suffix short so
+  // the concrete promise stays inside SERP display length.
+  const fullTitle = `${title} | Weekend MVP`;
   return {
     title: { absolute: fullTitle },
     description,
@@ -217,7 +229,7 @@ export async function generateMetadata({
     openGraph: {
       type: "article",
       url,
-      title: `${title} | Startup Ideas`,
+      title: fullTitle,
       description,
       images: [
         {
@@ -231,7 +243,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | Startup Ideas`,
+      title: fullTitle,
       description,
       images: [ogImageAbs],
     },
