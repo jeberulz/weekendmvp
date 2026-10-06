@@ -1,36 +1,37 @@
-"use client";
-
-import * as React from "react";
-
-import { PromptCopyButton } from "@/components/ideas/PromptCopyButton";
+import { CopyButton } from "@/components/home/client/CopyButton";
 
 /**
- * Dark-theme starter-prompt box with a copy button — ports the legacy
- * `.prompt-box` + `copyPrompt()` from the build-with pages.
+ * One starter prompt as a row inside the page's prompt panel (`bg-home-panel`,
+ * on the ink band): mono label, copy button, then the prompt text. Rows are
+ * divided by hairlines; the panel itself is drawn by the page.
  */
 export function HubPromptCard({
+  index,
   label,
   prompt,
+  location,
 }: {
+  /** 1-based position in the list. */
+  index: number;
   label: string;
   prompt: string;
+  /** Analytics location for the copy event. */
+  location: string;
 }) {
-  const ref = React.useRef<HTMLParagraphElement>(null);
   return (
-    <div className="relative group p-6 bg-white/5 border border-white/10 rounded-2xl">
-      <PromptCopyButton
-        targetRef={ref}
-        className="text-neutral-400 hover:text-white focus:ring-white/40"
-      />
-      <h4 className="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-500">
-        {label}
-      </h4>
-      <p
-        ref={ref}
-        className="text-sm text-neutral-300 font-mono leading-relaxed pr-8"
-      >
-        {prompt}
-      </p>
-    </div>
+    <li className="flex flex-col gap-3 border-t border-home-panel-rule px-5 py-5 first:border-t-0 md:px-6">
+      <div className="flex items-center justify-between gap-3">
+        <p className="min-w-0 font-mono text-[11px] uppercase tracking-[0.08em] text-home-d3">
+          <span className="text-home-orange-light">{index}</span> · {label}
+        </p>
+        <CopyButton
+          text={prompt}
+          label={`Copy prompt ${index}: ${label}`}
+          location={location}
+          className="-mr-2 min-h-11 shrink-0 px-3 text-home-d2 hover:text-home-d1"
+        />
+      </div>
+      <p className="font-mono text-[13px] leading-[1.7] text-home-d1 [overflow-wrap:anywhere] md:text-sm">{prompt}</p>
+    </li>
   );
 }

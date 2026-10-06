@@ -1,42 +1,36 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import { ButtonLink, Container } from "@/components/home/ui";
 
 /**
- * Closing starter-kit CTA panel. Default neutral gradient matches the
- * audience/tool/collection pages; pass `panelClassName` for accent
- * variants (e.g. the solve pages' green gradient).
+ * Closing starter-kit call, drawn as a ruled row on paper: heading and body
+ * on the left, the button on the right.
  */
 export function HubCta({
   heading,
   body,
-  panelClassName,
+  headingId = "hub-cta-heading",
 }: {
   heading: string;
   body: string;
-  panelClassName?: string;
+  headingId?: string;
 }) {
   return (
-    <section className="mt-24">
-      <div
-        className={cn(
-          "p-12 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-[3rem] text-center",
-          panelClassName,
-        )}
-      >
-        <h2 className="text-2xl font-medium text-white tracking-tight mb-4">
-          {heading}
-        </h2>
-        <p className="text-neutral-400 mb-8 max-w-xl mx-auto">{body}</p>
-        <Link
-          href="/starter-kit"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"
-        >
-          <span>Get the Starter Kit</span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
-      </div>
+    <section aria-labelledby={headingId} className="py-14 lg:py-20">
+      <Container>
+        <div className="flex flex-col gap-6 border-t border-home-ink pt-8 md:flex-row md:items-end md:justify-between md:gap-12">
+          <div className="flex max-w-[640px] flex-col gap-3">
+            <h2
+              id={headingId}
+              className="font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-balance text-home-ink md:text-[36px]"
+            >
+              {heading}
+            </h2>
+            <p className="text-pretty text-base leading-[1.55] text-home-ink-2 md:text-[17px]">{body}</p>
+          </div>
+          <ButtonLink href="/starter-kit" className="w-full shrink-0 md:w-auto">
+            Get the Starter Kit
+          </ButtonLink>
+        </div>
+      </Container>
     </section>
   );
 }

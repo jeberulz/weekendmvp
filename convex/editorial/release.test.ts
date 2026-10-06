@@ -155,6 +155,12 @@ test.each(["canonical", "staging"] as const)("an exact private revision is activ
   const verified = await t.run(async (ctx) => ctx.db.query("editorial_releases")
     .withIndex("by_key", (q) => q.eq("key", releaseId)).unique());
   expect(verified?.state).toBe("succeeded");
+  // WP56: activation and removal ask Next.js to refresh cached idea lists.
+  const revalidations = async () => (await t.run((ctx) => ctx.db.system.query("_scheduled_functions").collect()))
+    .filter((job) => job.name.startsWith("revalidate") &&
+      JSON.stringify(job.args).includes(`"idea:${record.brief.slug}"`)).length;
+  const afterActivation = await revalidations();
+  expect(afterActivation).toBeGreaterThan(0);
   const live = await t.query(api.editorial.public.bySlug, { slug: record.brief.slug });
   expect(live.state).toBe("released");
   if (live.state !== "released") throw new Error("No public release");
@@ -215,5 +221,6 @@ test.each(["canonical", "staging"] as const)("an exact private revision is activ
   const listing = await t.query(api.editorial.public.listing, {});
   expect(listing.find((row) => row.slug === record.brief.slug)?.state).toBe("removed");
   expect((await t.query(api.ideas.list, { limit: 20 })).page.some((row) => row.slug === record.brief.slug)).toBe(false);
+  expect(await revalidations()).toBeGreaterThan(afterActivation);
   expect((await step("activating")).moved).toBe(false);
 });

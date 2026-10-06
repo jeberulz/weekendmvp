@@ -6,18 +6,11 @@ import { connection } from "next/server";
 export const instant = false;
 import type { LucideIcon } from "lucide-react";
 import {
-  ArrowDown,
+  ArrowUpRight,
   Blocks,
-  Brain,
   Code2,
-  Database,
-  ExternalLink,
-  GitBranch,
   Heart,
-  Layers,
-  Lightbulb,
   MousePointer2,
-  Plug,
   Sparkles,
   Terminal,
   Triangle,
@@ -25,36 +18,34 @@ import {
   Zap,
 } from "lucide-react";
 
+import { ToolLogo, type ToolKey } from "@/components/home/tool-logos";
+import { ButtonLink, Container, Em, StepList } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
-import {
-  HubBreadcrumb,
-  HubChip,
-  HubHero,
-  HubShell,
-} from "@/components/hubs/HubShell";
 import { HubCta } from "@/components/hubs/HubCta";
 import { HubEmailCapture } from "@/components/hubs/HubEmailCapture";
-import {
-  HubFeaturedIdeas,
-} from "@/components/hubs/HubFeaturedIdeas";
+import { HubFeaturedIdeas } from "@/components/hubs/HubFeaturedIdeas";
 import {
   CURSOR_HYDRATION_LINK,
   HubCrawlLinks,
   SEO_PRIORITY_LINKS,
   type CrawlLink,
 } from "@/components/hubs/HubCrawlLinks";
-import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
+import { ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubPrimaryCta } from "@/components/hubs/HubPrimaryCta";
 import { HubPromptCard } from "@/components/hubs/HubPromptCard";
 import { HubTracker } from "@/components/hubs/HubTracker";
-import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
   fetchIdeasBySlugs,
   fetchIdeasByTool,
   fetchToolReference,
   type IdeaDoc,
 } from "@/components/hubs/hub-data";
+import { IdeaBrowser } from "@/components/public/IdeaBrowser";
+import { PageHeader } from "@/components/public/PageHeader";
+import { PublicShell } from "@/components/public/PublicShell";
+import { InkBand, SectionHeading } from "@/components/public/Sections";
+import { toPublicIdeas } from "@/lib/public/ideas";
 import {
   SITE,
   breadcrumbSchema,
@@ -111,10 +102,8 @@ type ToolPage = {
   metaDescription: string;
   description: string;
   url: string;
+  /** Tool mark for the header tile when the tool has no logo in `ToolLogo`. */
   icon: LucideIcon;
-  color: HubColor;
-  /** Hero logo box gradient (literal Tailwind classes). */
-  gradient: string;
   operatingSystem: string;
   schemaDescription: string;
   strengths: string[];
@@ -156,8 +145,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Build full-stack applications with AI pair programming. Cursor understands your codebase and helps you write, refactor, and debug code faster.",
     url: "https://cursor.sh",
     icon: MousePointer2,
-    color: "violet",
-    gradient: "bg-gradient-to-br from-violet-500/20 to-blue-500/20",
     operatingSystem: "Windows, macOS, Linux",
     schemaDescription:
       "AI-powered code editor that helps you build full-stack applications with AI pair programming",
@@ -224,8 +211,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Claude excels at understanding complex requirements, writing clean code, and explaining technical concepts. Great for planning, debugging, and code review.",
     url: "https://claude.ai",
     icon: Sparkles,
-    color: "orange",
-    gradient: "bg-gradient-to-br from-orange-500/20 to-amber-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "Anthropic's AI assistant for planning, writing, and reviewing code",
@@ -310,8 +295,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Claude Code is Anthropic's agentic coding tool in the terminal. Point it at a repo (or an empty folder), describe the product, and it plans, edits files, runs commands, and iterates until the MVP works. Best when you want real code — not a chat draft — and you're comfortable reviewing diffs.",
     url: "https://claude.ai/code",
     icon: Code2,
-    color: "orange",
-    gradient: "bg-gradient-to-br from-orange-600/20 to-amber-500/20",
     operatingSystem: "macOS, Linux, Windows (WSL)",
     schemaDescription:
       "Anthropic's agentic coding tool for building projects in the terminal",
@@ -383,8 +366,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Bolt.new turns a plain-English prompt into a full-stack web app in your browser — UI, logic, and deploy included. Ideal for weekend MVPs: landing pages, form tools, and simple SaaS you can share the same day.",
     url: "https://bolt.new",
     icon: Zap,
-    color: "yellow",
-    gradient: "bg-gradient-to-br from-yellow-500/20 to-orange-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "AI-powered full-stack builder that builds and deploys web apps in the browser",
@@ -449,8 +430,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Build full applications with natural language. Lovable handles the entire stack and deploys your app automatically.",
     url: "https://lovable.dev",
     icon: Heart,
-    color: "pink",
-    gradient: "bg-gradient-to-br from-pink-500/20 to-rose-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "AI software engineer that builds and deploys full applications from natural language",
@@ -515,8 +494,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Looking for the best no-code tools for an MVP? Start here. Bubble for complex web apps, Softr for Airtable-powered sites, Glide for mobile apps from spreadsheets. If you can use a spreadsheet, you can ship a validating MVP without writing code — or hiring an engineer yet.",
     url: "https://bubble.io",
     icon: Blocks,
-    color: "pink",
-    gradient: "bg-gradient-to-br from-pink-500/20 to-purple-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "Visual no-code builders (Bubble, Webflow, Softr, Glide) for building apps without code",
@@ -581,8 +558,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Code, create, and learn together with a powerful, simple, and collaborative IDE, compiler, and interpreter.",
     url: "https://replit.com",
     icon: Terminal,
-    color: "orange",
-    gradient: "bg-gradient-to-br from-orange-500/20 to-red-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "Collaborative browser IDE with instant hosting and AI assistance",
@@ -647,8 +622,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Generate React components and UI designs from text descriptions. Perfect for quickly building beautiful interfaces.",
     url: "https://v0.dev",
     icon: Triangle,
-    color: "white",
-    gradient: "bg-gradient-to-br from-white/20 to-neutral-500/20",
     operatingSystem: "Web",
     schemaDescription:
       "Vercel's AI-powered UI generator for React and Tailwind components",
@@ -697,8 +670,6 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Windsurf is Codeium's agentic IDE: Cascade understands your repo, edits across files, and pairs with you like a junior engineer who already read the codebase. Best for developers who want real projects — APIs, refactors, and multi-file MVPs — not chat-only drafts.",
     url: "https://codeium.com/windsurf",
     icon: Wind,
-    color: "cyan",
-    gradient: "bg-gradient-to-br from-cyan-500/20 to-blue-500/20",
     operatingSystem: "Windows, macOS, Linux",
     schemaDescription:
       "Codeium's agentic AI IDE with deep codebase understanding",
@@ -754,22 +725,75 @@ const TOOL_PAGES: Record<string, ToolPage> = {
 
 export const TOOL_SLUGS = Object.keys(TOOL_PAGES);
 
-/** Legacy "Explore Other Tools" tiles. */
+/** "Using a different tool?" tiles. */
 const TOOL_TILES: Array<{
   slug: string;
   label: string;
   sub: string;
   icon: LucideIcon;
-  iconClass: string;
 }> = [
-  { slug: "cursor", label: "Cursor", sub: "AI Code Editor", icon: MousePointer2, iconClass: "text-violet-400" },
-  { slug: "claude", label: "Claude", sub: "AI Assistant", icon: Sparkles, iconClass: "text-orange-400" },
-  { slug: "claude-code", label: "Claude Code", sub: "Terminal Agent", icon: Code2, iconClass: "text-orange-500" },
-  { slug: "bolt", label: "Bolt.new", sub: "Full-Stack Builder", icon: Zap, iconClass: "text-yellow-400" },
-  { slug: "no-code", label: "No-Code", sub: "Visual Builders", icon: Blocks, iconClass: "text-pink-400" },
+  { slug: "cursor", label: "Cursor", sub: "AI Code Editor", icon: MousePointer2 },
+  { slug: "claude", label: "Claude", sub: "AI Assistant", icon: Sparkles },
+  { slug: "claude-code", label: "Claude Code", sub: "Terminal Agent", icon: Code2 },
+  { slug: "bolt", label: "Bolt.new", sub: "Full-Stack Builder", icon: Zap },
+  { slug: "no-code", label: "No-Code", sub: "Visual Builders", icon: Blocks },
 ];
 
-const STRENGTH_ICONS: LucideIcon[] = [Layers, Brain, GitBranch, Database, Plug];
+/** Tools that have a mark in the homepage logo set. Others fall back to their lucide icon. */
+const TOOL_LOGO: Partial<Record<string, ToolKey>> = {
+  cursor: "cursor",
+  claude: "claude",
+  "claude-code": "claudecode",
+  lovable: "lovable",
+  v0: "v0",
+  replit: "replit",
+  windsurf: "windsurf",
+};
+
+/** Italic tail appended to the H1 (WP56 ruling: the existing h1 stays verbatim first). */
+const H1_TAIL: Record<string, string | null> = {
+  cursor: "to ship this weekend.",
+  claude: "worth building this weekend.",
+  "claude-code": "straight from your terminal.",
+  bolt: "to build in a weekend.",
+  lovable: "you can ship by Sunday.",
+  "no-code": null,
+  replit: "to build in the browser.",
+  v0: "this weekend.",
+  windsurf: "to ship this weekend.",
+};
+
+function ToolMark({ slug, Icon }: { slug: string; Icon: LucideIcon }) {
+  const logo = TOOL_LOGO[slug];
+  return (
+    <span aria-hidden className="flex size-24 items-center justify-center rounded-[20px] bg-home-ink text-home-d1 md:size-28">
+      {logo ? (
+        <ToolLogo tool={logo} size={52} idSuffix={`hub-${slug}`} />
+      ) : (
+        <Icon size={52} strokeWidth={1.4} />
+      )}
+    </span>
+  );
+}
+
+function OtherToolTile({ tile }: { tile: (typeof TOOL_TILES)[number] }) {
+  const logo = TOOL_LOGO[tile.slug];
+  const Icon = tile.icon;
+  return (
+    <Link
+      href={`/build-with/${tile.slug}`}
+      className="group flex h-32 flex-col justify-between rounded-2xl border border-home-rule bg-home-card p-4 text-home-ink transition-colors duration-200 hover:border-home-ink motion-reduce:transition-none lg:h-[168px] lg:p-[22px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+    >
+      <span className="flex items-start justify-between">
+        {logo ? <ToolLogo tool={logo} size={36} idSuffix={`other-${tile.slug}`} /> : <Icon size={36} strokeWidth={1.4} aria-hidden="true" />}
+      </span>
+      <span className="flex flex-col gap-1.5">
+        <span className="font-editorial text-[22px] leading-none lg:text-[28px]">{tile.label}</span>
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-home-ink-3 lg:text-[11px]">{tile.sub}</span>
+      </span>
+    </Link>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Cached data (shared by metadata + page render)                      */
@@ -912,17 +936,20 @@ export default async function ToolHubPage({
 async function CachedToolHub({ slug }: { slug: string }) {
   const page = TOOL_PAGES[slug];
   const data = await getToolData(slug);
-  const color = COLOR_STYLES[page.color];
-  const Icon = page.icon;
   const schema = buildSchema(page, data);
   const ideaCount = data.ideas.length;
+  const tail = H1_TAIL[slug] ?? null;
 
   // Editorial curation. Slugs that no longer resolve (unpublished, retagged,
   // or below the byTool cap) are dropped, so the section either renders a
-  // real set or disappears — the full grid below is unaffected either way.
+  // real set or disappears — the full list below is unaffected either way.
+  // The kit's "Start here" shows three cards; any further hand-picked ideas
+  // lead the list so none of them lose their link.
   const featuredIdeas = data.featured;
-  const featuredSlugs = new Set(featuredIdeas.map((idea) => idea.slug));
-  const restIdeas = data.ideas.filter((idea) => !featuredSlugs.has(idea.slug));
+  const featuredCards = toPublicIdeas(featuredIdeas.slice(0, 3));
+  const listed = new Set(featuredIdeas.map((idea) => idea.slug));
+  const featuredExtras = featuredIdeas.slice(3);
+  const browseIdeas = toPublicIdeas([...featuredExtras, ...data.ideas.filter((idea) => !listed.has(idea.slug))]);
 
   const emailCopy = page.emailCapture ?? {
     eyebrow: "Free newsletter",
@@ -931,117 +958,114 @@ async function CachedToolHub({ slug }: { slug: string }) {
     buttonLabel: "Send me ideas",
   };
 
+  const hasSteps = data.gettingStarted.length > 0;
+  const hasPrompts = page.prompts.length > 0;
+  const otherTools = TOOL_TILES.filter((tile) => tile.slug !== slug).slice(0, 4);
+
   return (
-    <HubShell>
+    <PublicShell>
       <JsonLd schema={schema} />
       <HubTracker event="view_tool_page" props={{ tool_name: page.name }} />
 
-      <HubBreadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          { label: `Build With ${page.name}` },
-        ]}
-      />
-
-      <HubHero
-        variant="tool"
-        icon={<Icon size={40} className={color.text} aria-hidden="true" />}
-        iconBoxClassName={page.gradient}
-        title={page.h1}
-        description={data.description}
-        chips={
+      <PageHeader
+        crumbs={[{ label: "Home", href: "/" }, { label: `Build With ${page.name}` }]}
+        lead={<ToolMark slug={slug} Icon={page.icon} />}
+        title={
           <>
-            <HubChip>
-              <Lightbulb size={14} aria-hidden="true" />
-              {ideaCount} project ideas
-            </HubChip>
-            {featuredIdeas.length > 0 ? (
-              <Link
-                href="#start-here"
-                className="inline-flex items-center gap-2 px-4 py-1.5 bg-white text-black border border-white rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
-              >
-                <ArrowDown size={14} aria-hidden="true" />
-                Start here
-              </Link>
-            ) : null}
+            {page.h1}
+            {tail && (
+              <>
+                {" "}
+                <Em>{tail}</Em>
+              </>
+            )}
           </>
         }
-      />
+        description={data.description}
+        meta={[
+          ideaCount > 0 ? (
+            <>
+              <span className="font-medium text-home-ink">{ideaCount}</span> project ideas
+            </>
+          ) : null,
+          hasPrompts ? `${page.prompts.length} starter prompts` : null,
+          page.operatingSystem,
+        ]}
+      >
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-1">
+          {featuredCards.length > 0 ? <ButtonLink href="#start-here">Start here</ButtonLink> : null}
+          {/* Outbound tool link — deliberately secondary: this page's job is to
+              send the visitor to an idea, not to the tool's homepage. */}
+          <NavExternalLink
+            href={data.url}
+            className="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+          >
+            Visit {page.name}
+            <ArrowUpRight size={15} aria-hidden="true" />
+          </NavExternalLink>
+        </div>
+      </PageHeader>
 
       {page.relatedHub ? (
-        <p className="mb-12 -mt-4 max-w-3xl text-sm text-neutral-400">
-          <span className="font-medium text-neutral-300">
-            {page.relatedHub.label}
-          </span>{" "}
-          {page.relatedHub.body}{" "}
-          <Link
-            href={page.relatedHub.href}
-            className="rounded text-white underline decoration-white/30 underline-offset-4 hover:decoration-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-          >
-            {page.relatedHub.cta}
-          </Link>
-        </p>
+        <Container className="pt-10">
+          <p className="max-w-3xl text-[15px] leading-[1.6] text-home-ink-2">
+            <span className="font-medium text-home-ink">{page.relatedHub.label}</span> {page.relatedHub.body}{" "}
+            <Link
+              href={page.relatedHub.href}
+              className="text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
+              {page.relatedHub.cta}
+            </Link>
+          </p>
+        </Container>
       ) : null}
 
-      {page.crawlLinks && page.crawlLinks.length > 0 ? (
-        <HubCrawlLinks className="mb-16" links={page.crawlLinks} />
-      ) : null}
+      {page.crawlLinks && page.crawlLinks.length > 0 ? <HubCrawlLinks links={page.crawlLinks} /> : null}
 
-      {/* Tool Strengths */}
+      {/* What the tool is best for: a ruled, numbered serif list */}
       {data.strengths.length > 0 ? (
-        <section className="mb-16" aria-labelledby="strengths-heading">
-          <h2
-            id="strengths-heading"
-            className="text-2xl font-medium text-white mb-6"
-          >
-            What {page.name} is Best For
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {data.strengths.slice(0, 5).map((strength, index) => {
-              const StrengthIcon =
-                STRENGTH_ICONS[index % STRENGTH_ICONS.length];
-              return (
-                <div
-                  key={strength}
-                  className="p-5 bg-white/5 border border-white/10 rounded-2xl"
-                >
-                  <StrengthIcon
-                    size={24}
-                    className={`${color.text} mb-3`}
-                    aria-hidden="true"
-                  />
-                  <p className="text-white font-medium text-sm">{strength}</p>
-                </div>
-              );
-            })}
-          </div>
+        <section aria-labelledby="strengths-heading" className="pt-14">
+          <Container>
+            <div className="flex flex-col gap-5 border-y border-home-rule border-t-home-ink py-7 lg:py-8">
+              <h2
+                id="strengths-heading"
+                className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink md:text-xs"
+              >
+                What {page.name} is Best For
+              </h2>
+              <ol className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
+                {data.strengths.slice(0, 5).map((strength, index) => (
+                  <li key={strength} className="flex gap-2.5 font-editorial text-[22px] leading-[1.2] text-home-ink">
+                    <span aria-hidden className="italic text-home-orange-ink">
+                      {index + 1}
+                    </span>
+                    {strength}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Container>
         </section>
       ) : null}
 
-      {/* Curated "start here" set — editorial, above the full grid */}
-      {page.featured && featuredIdeas.length > 0 ? (
-        <HubFeaturedIdeas
-          heading={page.featured.heading}
-          intro={page.featured.intro}
-          ideas={featuredIdeas}
-          panelClassName={color.border20}
-          eyebrowClassName={color.text}
-        />
+      {/* Curated "start here" set — editorial, above the full list */}
+      {page.featured && featuredCards.length > 0 ? (
+        <HubFeaturedIdeas heading={page.featured.heading} intro={page.featured.intro} ideas={featuredCards} />
       ) : null}
 
-      {/* Project Ideas */}
-      {restIdeas.length > 0 ? (
-        <section aria-labelledby="ideas-heading">
-          <h2
-            id="ideas-heading"
-            className="text-2xl font-medium text-white mb-8"
-          >
-            {featuredIdeas.length > 0
-              ? `More Project Ideas for ${page.name}`
-              : `Project Ideas for ${page.name}`}
-          </h2>
-          <HubIdeasGrid ideas={restIdeas} />
-        </section>
+      {/* Project ideas */}
+      {browseIdeas.length > 0 ? (
+        <Container className="py-14 lg:py-20">
+          <IdeaBrowser
+            ideas={browseIdeas}
+            headingId="ideas-heading"
+            heading={
+              <>
+                {featuredIdeas.length > 0 ? "More Project Ideas for" : "Project Ideas for"} <Em>{page.name}</Em>
+              </>
+            }
+          />
+        </Container>
       ) : null}
 
       {/* Newsletter capture — the only client boundary on this page */}
@@ -1051,76 +1075,44 @@ async function CachedToolHub({ slug }: { slug: string }) {
         body={emailCopy.body}
         buttonLabel={emailCopy.buttonLabel}
         trackingProps={{ tool_name: page.name, surface: "build_with_hub" }}
-        panelClassName={color.border20}
       />
 
-      {/* Getting Started */}
-      {data.gettingStarted.length > 0 ? (
-        <section className="mt-24" aria-labelledby="getting-started-heading">
-          <h2
-            id="getting-started-heading"
-            className="text-2xl font-medium text-white mb-8"
-          >
-            Getting Started with {page.name}
-          </h2>
-          <div className="p-8 bg-white/5 border border-white/10 rounded-3xl">
-            <ol className="space-y-6">
-              {data.gettingStarted.map((step, index) => (
-                <li key={step} className="flex gap-4">
-                  <span
-                    className={`flex-shrink-0 w-8 h-8 ${color.bg10} ${color.text} rounded-full flex items-center justify-center text-sm font-medium`}
-                  >
-                    {index + 1}
-                  </span>
-                  <div>
-                    <p className="text-white font-medium">{step}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+      {/* Getting started (left) and starter prompts (right) share one ink band */}
+      {hasSteps || hasPrompts ? (
+        <InkBand labelledBy={hasSteps ? "getting-started-heading" : "prompts-heading"}>
+          <div className={hasSteps && hasPrompts ? "grid grid-cols-1 gap-12 lg:grid-cols-[5fr_7fr] lg:gap-16" : "grid grid-cols-1 gap-12"}>
+            {hasSteps ? (
+              <div className="flex flex-col gap-7">
+                <SectionHeading id="getting-started-heading" dark>
+                  Getting Started with <Em dark>{page.name}</Em>
+                </SectionHeading>
+                <StepList steps={data.gettingStarted} dark className="gap-3.5" />
+              </div>
+            ) : null}
+            {hasPrompts ? (
+              <div className="flex flex-col gap-7">
+                <SectionHeading
+                  id="prompts-heading"
+                  dark
+                  intro="Copy and paste these prompts to kickstart your project."
+                >
+                  {page.name} <Em dark>Starter Prompts</Em>
+                </SectionHeading>
+                <ul className="overflow-hidden rounded-2xl border border-home-panel-rule bg-home-panel">
+                  {page.prompts.map((prompt, index) => (
+                    <HubPromptCard
+                      key={prompt.label}
+                      index={index + 1}
+                      label={prompt.label}
+                      prompt={prompt.prompt}
+                      location={`build-with-${slug}`}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
-        </section>
-      ) : null}
-
-      {/* Outbound tool link — deliberately quiet: useful, but this page's job
-          is to send the visitor to an idea, not to {page.name}'s homepage. */}
-      <p className="mt-6 text-sm text-neutral-400">
-        Need the tool itself?{" "}
-        <NavExternalLink
-          href={data.url}
-          className="rounded text-neutral-300 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-        >
-          Visit {page.name}
-          <ExternalLink
-            size={12}
-            className="inline ml-1 align-baseline"
-            aria-hidden="true"
-          />
-        </NavExternalLink>
-      </p>
-
-      {/* Starter Prompts */}
-      {page.prompts.length > 0 ? (
-        <section className="mt-24" aria-labelledby="prompts-heading">
-          <h2
-            id="prompts-heading"
-            className="text-2xl font-medium text-white mb-4"
-          >
-            {page.name} Starter Prompts
-          </h2>
-          <p className="text-neutral-400 mb-8">
-            Copy and paste these prompts to kickstart your project.
-          </p>
-          <div className="space-y-4">
-            {page.prompts.map((prompt) => (
-              <HubPromptCard
-                key={prompt.label}
-                label={prompt.label}
-                prompt={prompt.prompt}
-              />
-            ))}
-          </div>
-        </section>
+        </InkBand>
       ) : null}
 
       {/* Primary conversion path — /startup-ideas. This used to be the 8th
@@ -1133,53 +1125,31 @@ async function CachedToolHub({ slug }: { slug: string }) {
         href="/startup-ideas"
         ctaLabel="Browse all startup ideas"
         note="Every idea includes the stack, the build plan, and what it could earn."
-        panelClassName={`${page.gradient} ${color.border20}`}
-        iconClassName={color.text}
       />
 
-      {/* Other Tools — kept for internal linking, deliberately low-contrast
-          so it no longer competes with the CTA above. */}
-      <section className="mt-16" aria-labelledby="other-tools-heading">
-        <h2
-          id="other-tools-heading"
-          className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-4"
-        >
-          Using a different tool?
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {TOOL_TILES.filter((tile) => tile.slug !== slug)
-            .slice(0, 3)
-            .map((tile) => {
-              const TileIcon = tile.icon;
-              return (
-                <Link
-                  key={tile.slug}
-                  href={`/build-with/${tile.slug}`}
-                  className="group flex items-center gap-3 p-4 bg-white/[0.03] border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
-                >
-                  <TileIcon
-                    size={20}
-                    className={`${tile.iconClass} flex-shrink-0`}
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-neutral-200 font-medium text-sm truncate">
-                      {tile.label}
-                    </span>
-                    <span className="block text-neutral-400 text-xs truncate">
-                      {tile.sub}
-                    </span>
-                  </span>
-                </Link>
-              );
-            })}
-        </div>
+      {/* Other tools — kept for internal linking */}
+      <section aria-labelledby="other-tools-heading" className="py-14 lg:py-20">
+        <Container className="flex flex-col gap-6">
+          <h2
+            id="other-tools-heading"
+            className="font-editorial text-[32px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink md:text-[40px]"
+          >
+            Using a different tool?
+          </h2>
+          <ul className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-5">
+            {otherTools.map((tile) => (
+              <li key={tile.slug}>
+                <OtherToolTile tile={tile} />
+              </li>
+            ))}
+          </ul>
+        </Container>
       </section>
 
       <HubCta
         heading={`Ready to build with ${page.name}?`}
         body={`Get the Weekend MVP Starter Kit with prompts optimized for ${page.name} and other AI tools.`}
       />
-    </HubShell>
+    </PublicShell>
   );
 }

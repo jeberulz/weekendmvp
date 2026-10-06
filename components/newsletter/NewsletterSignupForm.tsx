@@ -3,34 +3,41 @@
 import { useState } from "react";
 
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
+import { cn } from "@/lib/utils";
 
 /**
  * The legacy `form[data-newsletter-subscribe]` (newsletter.html + issue
  * pages): single email field + Subscribe pill, no redirect — success is
  * announced inline ("Check your inbox to confirm — you're in.") and the
- * button flips to "Subscribed ✓".
+ * button flips to "Subscribed ✓". Styled for the research-desk paper ground.
  */
 export function NewsletterSignupForm({
   utmCampaign,
+  className,
 }: {
   utmCampaign: string;
+  className?: string;
 }) {
   const [subscribed, setSubscribed] = useState(false);
 
   return (
-    <div>
+    <div className={className}>
       <BeehiivSubscribeForm
         utmCampaign={utmCampaign}
         successHref={null}
         onSuccess={() => setSubscribed(true)}
         showFirstName={false}
         submitLabel={subscribed ? "Subscribed ✓" : "Subscribe"}
-        className="flex flex-col sm:flex-row gap-2 space-y-0 [&>div]:flex-1"
-        inputClassName="bg-white/[0.03] border-white/10 px-5 py-3 placeholder:text-neutral-600 focus:border-white/30"
-        buttonClassName="w-auto px-6 py-3 disabled:cursor-not-allowed"
+        className="flex flex-col gap-2.5 space-y-0 text-left sm:flex-row sm:items-end [&>div]:flex-1"
+        emailLabelClassName="mb-2 block font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-2"
+        inputClassName="h-[52px] border-home-ink-3 bg-home-card px-5 py-0 text-base text-home-ink placeholder:text-home-ink-3 focus:ring-home-orange-ink"
+        buttonClassName="h-[52px] w-full bg-home-orange-ink px-6 py-0 text-base text-white hover:bg-[#8f3f00] focus:ring-home-orange-ink focus:ring-offset-2 focus:ring-offset-home-paper disabled:cursor-not-allowed sm:w-auto motion-reduce:transition-none"
       />
       <p
-        className={`mt-3 text-xs ${subscribed ? "text-white" : "text-neutral-500"}`}
+        className={cn(
+          "mt-3 text-[13px] leading-[1.5]",
+          subscribed ? "font-medium text-home-ink" : "text-home-ink-3",
+        )}
         role="status"
         aria-live="polite"
       >

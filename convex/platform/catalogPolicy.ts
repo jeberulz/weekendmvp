@@ -8,6 +8,10 @@
  * - Engine drafts (WP54-S5, review F3): the rule in lib/engine-drafts.ts.
  * - Editorial removals (WP46-E6): the `ideas` projection is hidden in the
  *   same transaction as the authoritative public pointer revocation.
+ * - Stale rows (WP56): Convex rows with no manifest entry and no editorial
+ *   release whose public page answers 404. They are not in the library, so
+ *   they leave the member catalogue too and member counts match the homepage
+ *   and public hubs (which apply the full rule in lib/public/library.ts).
  *
  * Existing saves, notes, collections and plans stay readable by their owner
  * either way: member reads fetch rows by id, never through these filters.
@@ -26,9 +30,25 @@ export function isRetiredIdea(slug: string): boolean {
   return retired.has(slug);
 }
 
-/** Retired or draft ideas are neither listed in the member catalogue nor open for new weekend plans. */
+/**
+ * Convex rows that are not part of the library. `ai-built-app-code-audit`
+ * has no canonical body and answers 404 (WP46 E7 gate note); its row is
+ * still stored. Add a slug here when a row outlives its manifest entry
+ * without a `_retiredAt` marker, rather than deleting member history.
+ */
+export const STALE_CATALOGUE_ROWS: ReadonlySet<string> = new Set(["ai-built-app-code-audit"]);
+
+/**
+ * Retired, draft, withdrawn or unknown ideas are neither listed in the member
+ * catalogue nor open for new weekend plans.
+ */
 export function inMemberCatalogue(slug: string, editorialVisibility?: "live" | "removed"): boolean {
-  return !isRetiredIdea(slug) && !isEngineDraftSlug(slug) && editorialVisibility !== "removed";
+  return (
+    !STALE_CATALOGUE_ROWS.has(slug) &&
+    !isRetiredIdea(slug) &&
+    !isEngineDraftSlug(slug) &&
+    editorialVisibility !== "removed"
+  );
 }
 
 /**

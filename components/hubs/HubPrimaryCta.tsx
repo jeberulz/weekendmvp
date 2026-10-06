@@ -1,12 +1,9 @@
-import Link from "next/link";
-import { ArrowRight, Lightbulb } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import { ButtonLink, Container, Eyebrow } from "@/components/home/ui";
 
 /**
  * Loud, single-destination conversion panel for a hub page.
  *
- * Distinct from HubCta (the closing starter-kit panel): this one owns the
+ * Distinct from HubCta (the closing starter-kit row): this one owns the
  * primary internal path — /startup-ideas — which used to be an easily missed
  * 8th tile inside the "Explore Other Tools" grid on /build-with/{tool}.
  *
@@ -20,8 +17,6 @@ export function HubPrimaryCta({
   ctaLabel,
   note,
   headingId = "primary-cta-heading",
-  panelClassName,
-  iconClassName,
 }: {
   eyebrow: string;
   heading: string;
@@ -31,48 +26,29 @@ export function HubPrimaryCta({
   /** Small supporting line under the button. */
   note?: string;
   headingId?: string;
-  /** Accent gradient/border for the panel (literal Tailwind classes). */
-  panelClassName?: string;
-  /** Accent color for the icon (literal Tailwind classes). */
-  iconClassName?: string;
 }) {
   return (
-    <section className="mt-24" aria-labelledby={headingId}>
-      <div
-        className={cn(
-          "p-10 md:p-14 rounded-[3rem] border border-white/20 bg-gradient-to-br from-white/10 to-transparent text-center",
-          panelClassName,
-        )}
-      >
-        <span
-          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/10"
-          aria-hidden="true"
-        >
-          <Lightbulb size={26} className={cn("text-white", iconClassName)} />
-        </span>
-        <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-neutral-300">
-          {eyebrow}
-        </p>
-        <h2
-          id={headingId}
-          className="mt-4 text-3xl md:text-4xl font-medium text-white tracking-tight"
-        >
-          {heading}
-        </h2>
-        <p className="mt-4 mx-auto max-w-xl text-neutral-300 leading-relaxed">
-          {body}
-        </p>
-        <Link
-          href={href}
-          className="mt-8 inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-base font-semibold hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
-        >
-          <span>{ctaLabel}</span>
-          <ArrowRight size={18} aria-hidden="true" />
-        </Link>
-        {note ? (
-          <p className="mt-4 text-sm text-neutral-400">{note}</p>
-        ) : null}
-      </div>
+    <section aria-labelledby={headingId} className="py-10 lg:py-14">
+      <Container>
+        <div className="flex flex-col gap-8 rounded-2xl border border-home-rule bg-home-card p-7 md:p-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12 lg:p-12">
+          <div className="flex max-w-[640px] flex-col gap-3.5">
+            <Eyebrow>{eyebrow}</Eyebrow>
+            <h2
+              id={headingId}
+              className="font-editorial text-[32px] font-normal leading-[1.05] tracking-[-0.02em] text-balance text-home-ink md:text-[44px]"
+            >
+              {heading}
+            </h2>
+            <p className="text-pretty text-base leading-[1.55] text-home-ink-2 md:text-[17px]">{body}</p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3 lg:items-end">
+            <ButtonLink href={href} className="w-full lg:w-auto">
+              {ctaLabel}
+            </ButtonLink>
+            {note ? <p className="max-w-[320px] text-sm leading-[1.5] text-home-ink-3 lg:text-right">{note}</p> : null}
+          </div>
+        </div>
+      </Container>
     </section>
   );
 }

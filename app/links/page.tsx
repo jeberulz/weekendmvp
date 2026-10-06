@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 
+import { Em } from "@/components/home/ui";
 import { Logo } from "@/components/primitives/Logo";
 import {
   filterReleasedRows,
@@ -19,7 +20,9 @@ import {
   getReleasedVideoLinks,
   type VideoLink,
 } from "./_data";
+import { newsreaderEditorial } from "@/lib/fonts";
 import { SITE } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 const CAMPAIGN_TIME_ZONE = "Europe/London";
 const PAGE_SIZE = 8;
@@ -116,6 +119,14 @@ function archiveHref(state: Partial<ArchiveState>): string {
   return `${query ? `/links?${query}` : "/links"}#released-ideas`;
 }
 
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
+const MONO = "font-mono text-[11px] uppercase tracking-[0.08em]";
+const PILL =
+  "inline-flex items-center gap-1.5 rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-home-ink-2 transition-colors hover:border-home-ink hover:text-home-ink motion-reduce:transition-none";
+const SOLID_BUTTON =
+  "inline-flex min-h-12 items-center justify-center rounded-full bg-home-ink px-6 text-sm font-semibold text-home-d1 transition-colors hover:bg-home-ink-2 motion-reduce:transition-none";
+
 function VideoCard({
   link,
   featured = false,
@@ -128,14 +139,16 @@ function VideoCard({
   return (
     <Link
       href={link.href}
-      className={`group grid min-h-36 grid-cols-[7.5rem_1fr] overflow-hidden rounded-2xl border transition-[border-color,background-color,transform] duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[9rem_1fr] ${
+      className={cn(
+        "group grid min-h-36 grid-cols-[7.5rem_1fr] overflow-hidden rounded-2xl border transition-[border-color,background-color] duration-200 motion-reduce:transition-none sm:grid-cols-[9rem_1fr]",
+        FOCUS,
         featured
-          ? "border-[#cc5500]/55 bg-[#cc5500]/[0.075] hover:border-[#e2782f] hover:bg-[#cc5500]/[0.11]"
-          : "border-white/10 bg-white/[0.035] hover:border-[#cc5500]/70 hover:bg-white/[0.055]"
-      }`}
+          ? "border-home-ink bg-home-card hover:bg-home-sunk"
+          : "border-home-rule bg-home-card hover:border-home-ink",
+      )}
       aria-label={`${destination}: ${link.title}`}
     >
-      <div className="relative m-2 mr-0 min-h-32 overflow-hidden rounded-xl bg-neutral-900">
+      <div className="relative m-2 mr-0 min-h-32 overflow-hidden rounded-xl bg-home-sunk">
         <Image
           src={link.image}
           alt=""
@@ -148,18 +161,21 @@ function VideoCard({
 
       <div className="flex min-w-0 flex-col justify-between gap-4 p-4 sm:p-5">
         <div>
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             {featured ? (
-              <span className="rounded-full bg-[#cc5500] px-2.5 py-1 font-semibold text-white">
+              <span className="rounded-full bg-home-orange-ink px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-white">
                 Today
               </span>
             ) : null}
-            <span className="text-neutral-500">
+            <span className={cn(MONO, "text-home-ink-3")}>
               {link.day}, {link.date}
             </span>
           </div>
           <h3
-            className={`font-medium leading-snug tracking-tight text-neutral-100 ${featured ? "text-lg sm:text-xl" : "text-base sm:text-lg"}`}
+            className={cn(
+              "font-editorial font-normal leading-[1.15] tracking-[-0.01em] text-home-ink text-balance",
+              featured ? "text-[22px] sm:text-[26px]" : "text-xl sm:text-[22px]",
+            )}
           >
             {link.title}
           </h3>
@@ -167,20 +183,20 @@ function VideoCard({
 
         <div className="flex min-w-0 items-end justify-between gap-3 text-xs">
           <div className="min-w-0">
-            <p className="truncate font-medium text-neutral-400">
+            <p className="truncate font-medium text-home-ink-2">
               {link.categoryLabel}
             </p>
-            <p className="mt-1 truncate text-neutral-600">
+            <p className="mt-1 truncate text-home-ink-3">
               {formatLabel(link.format)}
             </p>
           </div>
-          <span className="flex shrink-0 items-center gap-1.5 font-medium text-[#e2782f]">
+          <span className="flex shrink-0 items-center gap-1.5 font-medium text-home-orange-ink">
             {destination}
             <ArrowUpRight
               size={14}
               strokeWidth={1.75}
               aria-hidden="true"
-              className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+              className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
             />
           </span>
         </div>
@@ -238,43 +254,48 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
   const activeFilterCount = [query, category, format].filter(Boolean).length;
 
   return (
-    <main className="min-h-[100dvh] bg-[#050505] text-neutral-100 selection:bg-[#cc5500]/40 selection:text-white">
+    <main
+      className={cn(
+        newsreaderEditorial.variable,
+        "theme-desk min-h-[100dvh] bg-home-paper font-sans text-home-ink selection:bg-home-orange-light/40",
+      )}
+    >
       <div className="mx-auto w-full max-w-5xl px-4 pb-20 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <header className="mb-12 sm:mb-16">
           <div className="flex items-center justify-between gap-6">
             <Link
               href="/"
-              className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]"
+              className={cn("inline-flex rounded-md", FOCUS)}
               aria-label="Weekend MVP home"
             >
-              <Logo className="h-6 w-40 text-white" />
+              <Logo className="h-6 w-40 text-home-ink" />
             </Link>
 
             <div className="flex items-center gap-3">
-              <p className="hidden max-w-40 text-right text-xs leading-relaxed text-neutral-500 sm:block">
+              <p className="hidden max-w-40 text-right text-xs leading-relaxed text-home-ink-3 sm:block">
                 A buildable startup idea, every day.
               </p>
-              <div className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-neutral-900">
+              <div className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-home-sunk">
                 <Image
                   src="/image/john-portrait.webp"
                   alt="John Iseghohi, creator of Weekend MVP"
                   fill
                   priority
                   sizes="44px"
-                  className="object-cover grayscale"
+                  className="object-cover"
                 />
               </div>
             </div>
           </div>
 
-          <div className="mt-12 max-w-2xl border-b border-white/10 pb-10 sm:mt-16 sm:pb-12">
-            <p className="mb-5 font-mono text-xs font-medium uppercase tracking-[0.18em] text-[#e2782f]">
+          <div className="mt-12 max-w-2xl border-b border-home-ink pb-10 sm:mt-16 sm:pb-12">
+            <p className="mb-5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink md:text-xs">
               I&apos;d Build This Weekend
             </p>
-            <h1 className="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-5xl md:text-6xl">
-              Today&apos;s idea. Every release behind it.
+            <h1 className="max-w-xl font-editorial text-[42px] font-normal leading-[1.02] tracking-[-0.03em] text-balance text-home-ink sm:text-5xl md:text-6xl">
+              Today&apos;s idea. <Em>Every release behind it.</Em>
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-neutral-400 sm:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-[1.55] text-home-ink-2 sm:text-lg">
               Start with today&apos;s short video, then explore every research-backed
               startup idea released so far.
             </p>
@@ -286,11 +307,11 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
             <div className="mb-6 max-w-xl">
               <h2
                 id="today-heading"
-                className="text-2xl font-semibold tracking-tight text-white sm:text-3xl"
+                className="font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[34px]"
               >
                 Today&apos;s startup idea
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-500 sm:text-base">
+              <p className="mt-2 text-sm leading-relaxed text-home-ink-2 sm:text-base">
                 The complete research, business model, and weekend build plan.
               </p>
             </div>
@@ -305,15 +326,15 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
             <div>
               <h2
                 id="released-heading"
-                className="text-2xl font-semibold tracking-tight text-white sm:text-3xl"
+                className="font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[34px]"
               >
                 Previously released
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-500 sm:text-base">
+              <p className="mt-2 text-sm leading-relaxed text-home-ink-2 sm:text-base">
                 Browse the ideas behind earlier daily videos.
               </p>
             </div>
-            <p className="font-mono text-xs text-neutral-600" aria-live="polite">
+            <p className={cn(MONO, "text-home-ink-3")} aria-live="polite">
               {pagination.totalCount} {pagination.totalCount === 1 ? "idea" : "ideas"}
               {activeFilterCount > 0 ? " found" : " released"}
             </p>
@@ -330,7 +351,7 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                 <Search
                   size={17}
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-home-ink-3"
                 />
                 <input
                   type="search"
@@ -338,59 +359,64 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                   defaultValue={query}
                   maxLength={80}
                   placeholder="Search released ideas"
-                  className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 hover:border-white/20 focus:border-[#cc5500] focus:ring-2 focus:ring-[#cc5500]/25"
+                  className={cn(
+                    "h-12 w-full rounded-full border border-home-ink-3 bg-home-card pl-11 pr-4 text-base text-home-ink transition-colors placeholder:text-home-ink-3 motion-reduce:transition-none",
+                    FOCUS,
+                  )}
                 />
               </label>
-              <button
-                type="submit"
-                className="h-12 shrink-0 rounded-xl bg-white px-5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] active:translate-y-px motion-reduce:transition-none"
-              >
+              <button type="submit" className={cn(SOLID_BUTTON, "shrink-0", FOCUS)}>
                 Search
               </button>
             </form>
 
             <details className="group relative sm:w-auto">
-              <summary className="flex h-12 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 text-sm font-medium text-neutral-300 transition-colors hover:border-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] [&::-webkit-details-marker]:hidden">
+              <summary
+                className={cn(
+                  "flex h-12 cursor-pointer list-none items-center justify-center gap-2 rounded-full border border-home-ink-3 bg-home-card px-5 text-sm font-medium text-home-ink transition-colors hover:border-home-ink motion-reduce:transition-none [&::-webkit-details-marker]:hidden",
+                  FOCUS,
+                )}
+              >
                 <SlidersHorizontal size={16} aria-hidden="true" />
                 Filters
                 {format ? (
-                  <span className="flex size-5 items-center justify-center rounded-full bg-[#cc5500] text-[11px] font-bold text-white">
+                  <span className="flex size-5 items-center justify-center rounded-full bg-home-orange-ink text-[11px] font-bold text-white">
                     1
                   </span>
                 ) : null}
               </summary>
-              <div className="z-10 mt-2 rounded-2xl border border-white/10 bg-[#111] p-4 shadow-2xl shadow-black/40 sm:absolute sm:right-0 sm:w-72">
+              <div className="z-10 mt-2 rounded-2xl border border-home-rule bg-home-card p-4 sm:absolute sm:right-0 sm:w-72">
                 <form action="/links" method="get">
                   {query ? <input type="hidden" name="q" value={query} /> : null}
                   {category ? (
                     <input type="hidden" name="category" value={category} />
                   ) : null}
                   <fieldset>
-                    <legend className="text-sm font-semibold text-white">
+                    <legend className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-2">
                       Video format
                     </legend>
-                    <div className="mt-3 space-y-2">
-                      <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm text-neutral-400 hover:bg-white/5 hover:text-white">
+                    <div className="mt-3 space-y-1">
+                      <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-2 text-sm text-home-ink-2 hover:bg-home-sunk hover:text-home-ink">
                         <input
                           type="radio"
                           name="format"
                           value=""
                           defaultChecked={!format}
-                          className="accent-[#cc5500]"
+                          className="accent-home-orange-ink"
                         />
                         All formats
                       </label>
                       {availableFormats.map((option) => (
                         <label
                           key={option}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm text-neutral-400 hover:bg-white/5 hover:text-white"
+                          className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-2 text-sm text-home-ink-2 hover:bg-home-sunk hover:text-home-ink"
                         >
                           <input
                             type="radio"
                             name="format"
                             value={option}
                             defaultChecked={format === option}
-                            className="accent-[#cc5500]"
+                            className="accent-home-orange-ink"
                           />
                           {formatLabel(option)}
                         </label>
@@ -399,7 +425,7 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                   </fieldset>
                   <button
                     type="submit"
-                    className="mt-4 w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    className={cn(SOLID_BUTTON, "mt-4 w-full", FOCUS)}
                   >
                     Apply filter
                   </button>
@@ -417,11 +443,13 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                 <Link
                   href={archiveHref({ ...state, category: undefined, page: 1 })}
                   aria-current={!category ? "page" : undefined}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] ${
+                  className={cn(
+                    "inline-flex min-h-11 items-center rounded-full border px-4 text-sm transition-colors motion-reduce:transition-none",
+                    FOCUS,
                     !category
-                      ? "border-white bg-white text-neutral-950"
-                      : "border-white/10 bg-white/[0.035] text-neutral-400 hover:border-white/25 hover:text-white"
-                  }`}
+                      ? "border-home-ink bg-home-ink text-home-d1"
+                      : "border-home-rule bg-home-card text-home-ink-2 hover:border-home-ink hover:text-home-ink",
+                  )}
                 >
                   All
                 </Link>
@@ -436,11 +464,13 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                         page: 1,
                       })}
                       aria-current={active ? "page" : undefined}
-                      className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] ${
+                      className={cn(
+                        "inline-flex min-h-11 items-center rounded-full border px-4 text-sm transition-colors motion-reduce:transition-none",
+                        FOCUS,
                         active
-                          ? "border-white bg-white text-neutral-950"
-                          : "border-white/10 bg-white/[0.035] text-neutral-400 hover:border-white/25 hover:text-white"
-                      }`}
+                          ? "border-home-ink bg-home-ink text-home-d1"
+                          : "border-home-rule bg-home-card text-home-ink-2 hover:border-home-ink hover:text-home-ink",
+                      )}
                     >
                       {option.label}
                     </Link>
@@ -452,11 +482,11 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
 
           {activeFilterCount > 0 ? (
             <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-neutral-600">Active:</span>
+              <span className="text-home-ink-3">Active:</span>
               {query ? (
                 <Link
                   href={archiveHref({ ...state, query: "", page: 1 })}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-neutral-400 hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500]"
+                  className={cn(PILL, FOCUS)}
                 >
                   &ldquo;{query}&rdquo;
                   <X size={12} aria-hidden="true" />
@@ -465,7 +495,7 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
               {format ? (
                 <Link
                   href={archiveHref({ ...state, format: undefined, page: 1 })}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-neutral-400 hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500]"
+                  className={cn(PILL, FOCUS)}
                 >
                   {formatLabel(format)}
                   <X size={12} aria-hidden="true" />
@@ -474,7 +504,7 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
               {category ? (
                 <Link
                   href={archiveHref({ ...state, category: undefined, page: 1 })}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-neutral-400 hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500]"
+                  className={cn(PILL, FOCUS)}
                 >
                   {availableCategories.find((option) => option.slug === category)
                     ?.label ?? category}
@@ -483,7 +513,10 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
               ) : null}
               <Link
                 href="/links#released-ideas"
-                className="rounded-full px-2 py-1.5 font-medium text-[#e2782f] hover:text-[#f08a45] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500]"
+                className={cn(
+                  "rounded-full px-2 py-1.5 font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink",
+                  FOCUS,
+                )}
               >
                 Clear all
               </Link>
@@ -502,24 +535,27 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
                 <div className="mt-8 flex flex-col items-center gap-3">
                   <Link
                     href={archiveHref({ ...state, page: pagination.page + 1 })}
-                    className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white/[0.045] px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-[#cc5500]/70 hover:bg-[#cc5500]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] sm:w-auto"
+                    className={cn(
+                      "inline-flex min-h-12 w-full items-center justify-center rounded-full border border-home-ink px-6 text-sm font-semibold text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper motion-reduce:transition-none sm:w-auto",
+                      FOCUS,
+                    )}
                   >
                     Load {pagination.nextBatchSize} more {pagination.nextBatchSize === 1 ? "idea" : "ideas"}
                   </Link>
-                  <p className="font-mono text-xs text-neutral-600">
+                  <p className={cn(MONO, "text-home-ink-3")}>
                     Showing {pagination.visibleCount} of {pagination.totalCount}
                   </p>
                 </div>
               ) : null}
             </>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-6 py-12 text-center">
-              <h3 className="text-lg font-semibold text-white">
+            <div className="rounded-2xl border border-home-rule bg-home-card px-6 py-12 text-center">
+              <h3 className="font-editorial text-2xl font-normal text-home-ink">
                 {previousLinks.length === 0
                   ? "The archive starts tomorrow"
                   : "No released ideas match"}
               </h3>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-neutral-500">
+              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-home-ink-2">
                 {previousLinks.length === 0
                   ? "Today's idea will move here when the next daily release goes live."
                   : "Try another search or clear the filters to see every released idea."}
@@ -527,7 +563,7 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
               {activeFilterCount > 0 ? (
                 <Link
                   href="/links#released-ideas"
-                  className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-950 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
+                  className={cn(SOLID_BUTTON, "mt-6", FOCUS)}
                 >
                   Clear filters
                 </Link>
@@ -536,12 +572,15 @@ export default async function LinksPage({ searchParams }: LinksPageProps) {
           )}
         </section>
 
-        <footer className="mt-20 border-t border-white/10 pt-8 sm:mt-28">
-          <div className="flex flex-col gap-2 text-sm text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="mt-20 border-t border-home-rule pt-8 sm:mt-28">
+          <div className="flex flex-col gap-2 text-sm text-home-ink-3 sm:flex-row sm:items-center sm:justify-between">
             <p>A new idea joins the archive every day.</p>
             <Link
               href="/"
-              className="w-fit text-neutral-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cc5500] motion-reduce:transition-none"
+              className={cn(
+                "inline-flex min-h-11 w-fit items-center text-home-ink-2 underline underline-offset-4 transition-colors hover:text-home-ink motion-reduce:transition-none",
+                FOCUS,
+              )}
             >
               Weekend MVP
             </Link>

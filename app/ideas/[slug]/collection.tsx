@@ -1,42 +1,22 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
-import {
-  Boxes,
-  Building2,
-  Clock,
-  DollarSign,
-  GraduationCap,
-  HeartPulse,
-  LayoutGrid,
-  Lightbulb,
-  Rocket,
-  ShoppingCart,
-  Sparkles,
-  Store,
-  Target,
-  TrendingUp,
-  Video,
-  Wallet,
-  Zap,
-} from "lucide-react";
 
+import { Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
-import {
-  HubBreadcrumb,
-  HubChip,
-  HubCountChip,
-  HubHero,
-  HubShell,
-} from "@/components/hubs/HubShell";
-import { HubCta } from "@/components/hubs/HubCta";
-import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
-import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
+import { ideasItemList } from "@/components/hubs/HubIdeasGrid";
+import { IdeaBrowser } from "@/components/public/IdeaBrowser";
+import { LinkTabs, type TabGroup } from "@/components/public/LinkTabs";
+import { PageHeader } from "@/components/public/PageHeader";
+import { PublicShell } from "@/components/public/PublicShell";
+import { FeaturedIdeas, InkBand, KeepBrowsing, SectionHeading } from "@/components/public/Sections";
+import { ButtonLink } from "@/components/home/ui";
+import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { IDEA_COLLECTION_SLUGS, isIdeaCollectionSlug, type IdeaCollectionSlug } from "@/lib/idea-collection-slugs";
 import {
   fetchAllIdeas,
   fetchIdeasByCategory,
   fetchIdeasByRevenueGoal,
 } from "@/components/hubs/hub-data";
+import { toPublicIdeas } from "@/lib/public/ideas";
 import {
   SITE,
   breadcrumbSchema,
@@ -54,8 +34,8 @@ type CollectionDef = {
   kind: CollectionKind;
   title: string;
   description: string;
-  color: HubColor;
-  icon: typeof Sparkles;
+  /** Short label for tabs and crumbs (defaults to the title minus "Startup Ideas"). */
+  tab: string;
   /** For buildTime collections, the manifest buildTime values that qualify. */
   buildTimeValues?: string[];
 };
@@ -70,189 +50,169 @@ const COLLECTIONS: Record<IdeaCollectionSlug, CollectionDef> = {
   // Category hubs (matches Convex idea.category values)
   saas: {
     slug: "saas",
+    tab: "SaaS",
     kind: "category",
     title: "SaaS Startup Ideas",
     description:
       "Recurring-revenue software businesses you can ship this weekend. Each one is scoped to launch, validate, and start charging customers within 8–12 hours.",
-    color: "blue",
-    icon: Boxes,
   },
   "ai-tools": {
     slug: "ai-tools",
+    tab: "AI tools",
     kind: "category",
     title: "AI Tool Startup Ideas",
     description:
       "AI-powered products with clear value props and obvious build paths. The kind of ideas you can prompt-engineer your way to MVP in a weekend.",
-    color: "purple",
-    icon: Sparkles,
   },
   automation: {
     slug: "automation",
+    tab: "Automation",
     kind: "category",
     title: "Automation Startup Ideas",
     description:
       "Workflow automation tools that eliminate manual work. Glue products, integration tools, and AI agents that replace expensive human steps.",
-    color: "emerald",
-    icon: Zap,
   },
   "developer-tools": {
     slug: "developer-tools",
+    tab: "Developer tools",
     kind: "category",
     title: "Developer Tool Startup Ideas",
     description:
       "Tools developers pay for because they live the problem daily. Highest builder confidence, smallest distribution gap.",
-    color: "emerald",
-    icon: Target,
   },
   productivity: {
     slug: "productivity",
+    tab: "Productivity",
     kind: "category",
     title: "Productivity Startup Ideas",
     description:
       "Apps that give knowledge workers their hours back. Note-takers, scheduling tools, calendar layers, focus aids — clear willingness to pay.",
-    color: "amber",
-    icon: Lightbulb,
   },
   marketplace: {
     slug: "marketplace",
+    tab: "Marketplace",
     kind: "category",
     title: "Marketplace Startup Ideas",
     description:
       "Two-sided marketplace ideas scoped to a weekend MVP. Start with one tight niche, seed the first listings by hand, and take a cut of every transaction.",
-    color: "purple",
-    icon: Store,
   },
   education: {
     slug: "education",
+    tab: "Education",
     kind: "category",
     title: "Education Startup Ideas",
     description:
       "EdTech and learning products you can ship in a weekend. Study tools, course layers, and tutoring helpers with clear demand and willing-to-pay learners.",
-    color: "teal",
-    icon: GraduationCap,
   },
   health: {
     slug: "health",
+    tab: "Health",
     kind: "category",
     title: "Health & Wellness Startup Ideas",
     description:
       "Health, fitness, and wellness products with obvious value and recurring engagement. Trackers, coaching layers, and habit tools you can launch this weekend.",
-    color: "green",
-    icon: HeartPulse,
   },
   b2b: {
     slug: "b2b",
+    tab: "B2B",
     kind: "category",
     title: "B2B Startup Ideas",
     description:
       "Business-to-business tools companies happily expense. Niche workflow products with short sales cycles and strong willingness to pay.",
-    color: "slate",
-    icon: Building2,
   },
   "creator-tools": {
     slug: "creator-tools",
+    tab: "Creator tools",
     kind: "category",
     title: "Creator Tool Startup Ideas",
     description:
       "Products that help creators make, publish, and monetize faster. Tight-scope tools for an audience that already pays for its stack.",
-    color: "rose",
-    icon: Video,
   },
   fintech: {
     slug: "fintech",
+    tab: "Fintech",
     kind: "category",
     title: "Fintech Startup Ideas",
     description:
       "Money tools with clear utility and high willingness to pay. Budgeting layers, invoicing, and finance automations scoped to a weekend build.",
-    color: "cyan",
-    icon: Wallet,
   },
   ecommerce: {
     slug: "ecommerce",
+    tab: "E-commerce",
     kind: "category",
     title: "E-commerce Startup Ideas",
     description:
       "Tools and storefronts for online sellers. Conversion helpers, store add-ons, and niche shops you can stand up in a weekend.",
-    color: "pink",
-    icon: ShoppingCart,
   },
 
   // Revenue goal hubs
   "1k-month": {
     slug: "1k-month",
+    tab: "$1K/mo",
     kind: "revenue",
     title: "Startup Ideas That Can Make $1k/Month",
     description:
       "Tight-scope ideas with realistic paths to $1,000 MRR. Perfect first targets for solo builders proving they can charge for software.",
-    color: "emerald",
-    icon: Wallet,
   },
   "5k-month": {
     slug: "5k-month",
+    tab: "$5K/mo",
     kind: "revenue",
     title: "Startup Ideas That Can Make $5k/Month",
     description:
       "Ideas with real unit economics targeting $5,000 MRR — replacement-income level for most solo founders.",
-    color: "amber",
-    icon: DollarSign,
   },
   "10k-month": {
     slug: "10k-month",
+    tab: "$10K/mo",
     kind: "revenue",
     title: "Startup Ideas That Can Make $10k/Month",
     description:
       "Ambitious ideas with paths to $10,000 MRR or beyond. These are real businesses — quit-your-job money built on a weekend foundation.",
-    color: "purple",
-    icon: TrendingUp,
   },
   "passive-income": {
     slug: "passive-income",
+    tab: "Passive income",
     kind: "revenue",
     title: "Passive Income Startup Ideas",
     description:
       "Low-maintenance products that earn while you sleep. Automation-first, async delivery, minimal customer support burden.",
-    color: "blue",
-    icon: Wallet,
   },
   "quick-wins": {
     slug: "quick-wins",
+    tab: "Quick wins",
     kind: "revenue",
     title: "Quick-Win Startup Ideas",
     description:
       "Ideas with the shortest path from build to first paying customer. Tight scope, obvious value, fast feedback.",
-    color: "orange",
-    icon: Rocket,
   },
 
   // Build time hubs (matches buildTime hour values from ideas/manifest.json)
   "build-in-weekend": {
     slug: "build-in-weekend",
+    tab: "A weekend",
     kind: "buildTime",
     title: "Build in a Weekend: Startup Ideas You Can Ship Friday–Sunday",
     description:
       "Build-in-a-weekend startup ideas scoped for Friday night to Sunday launch — tight MVPs, no infra rabbit holes, ready to validate Monday morning.",
-    color: "orange",
-    icon: Rocket,
     buildTimeValues: ["8", "10", "12"],
   },
   "build-in-8-hours": {
     slug: "build-in-8-hours",
+    tab: "8 hours",
     kind: "buildTime",
     title: "Startup Ideas You Can Build in 8 Hours",
     description:
       "Tightest scope possible. Single-day sprints that prove the idea works before you invest the full weekend.",
-    color: "rose",
-    icon: Clock,
     buildTimeValues: ["8"],
   },
   "build-in-1-week": {
     slug: "build-in-1-week",
+    tab: "1 week",
     kind: "buildTime",
     title: "Startup Ideas You Can Build in a Week",
     description:
       "Ideas needing more than a weekend but still shippable in a week of focused work. Slightly more complex backends, real auth, multi-step flows.",
-    color: "purple",
-    icon: Clock,
     buildTimeValues: ["20", "24", "30", "40"],
   },
 };
@@ -285,110 +245,139 @@ export async function renderCollection(
   return <CachedCollectionHub slug={slug} />;
 }
 
+/** Italic tail appended to the H1 (WP56 ruling: the existing title stays verbatim first). */
+const TAIL: Record<CollectionKind, string | null> = {
+  category: "you can ship by Sunday.",
+  revenue: "sized for a weekend.",
+  buildTime: null,
+};
+
+const KIND_GROUPS: { kind: CollectionKind; label: string; ariaLabel: string }[] = [
+  { kind: "category", label: "Category", ariaLabel: "Browse by category" },
+  { kind: "revenue", label: "Revenue goal", ariaLabel: "Browse by revenue goal" },
+  { kind: "buildTime", label: "Build time", ariaLabel: "Browse by build time" },
+];
+
+function collectionTabs(current: string, categoryCounts: Map<string, number>, total: number): TabGroup[] {
+  return KIND_GROUPS.map(({ kind, label, ariaLabel }) => ({
+    label,
+    ariaLabel,
+    links: [
+      ...(kind === "category" ? [{ href: "/startup-ideas", label: "All", count: total }] : []),
+      ...IDEA_COLLECTION_SLUGS.filter((s) => COLLECTIONS[s].kind === kind).map((s) => ({
+        href: `/ideas/${s}`,
+        label: COLLECTIONS[s].tab,
+        count: kind === "category" ? categoryCounts.get(s) : undefined,
+        current: s === current,
+      })),
+    ],
+  }));
+}
+
+const RELATED_HUBS = [
+  { href: "/build-with/cursor", label: "Build with Cursor" },
+  { href: "/ideas-for/developers", label: "Ideas for developers" },
+  { href: "/ideas-for/non-technical", label: "Ideas for non-technical founders" },
+  { href: "/solve/customer-support", label: "Solve customer support" },
+];
+
 async function CachedCollectionHub({ slug }: { slug: string }) {
   if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
-  const ideas = await fetchIdeasForCollection(def);
-  const color = COLOR_STYLES[def.color];
-  const Icon = def.icon;
+  const [ideas, all] = await Promise.all([fetchIdeasForCollection(def), fetchAllIdeas()]);
   const schema = buildCollectionSchema(def, ideas);
+  const list = toPublicIdeas(ideas);
+
+  const categoryCounts = new Map<string, number>();
+  for (const idea of all) {
+    const c = normalizeCategorySlug(idea.category);
+    categoryCounts.set(c, (categoryCounts.get(c) ?? 0) + 1);
+  }
+  const tail = TAIL[def.kind];
+  const more = IDEA_COLLECTION_SLUGS.filter((s) => s !== slug && COLLECTIONS[s].kind === def.kind)
+    .slice(0, 2)
+    .map((s) => ({ href: `/ideas/${s}`, label: COLLECTIONS[s].title }));
 
   return (
-    <HubShell>
+    <PublicShell>
       <JsonLd schema={schema} />
 
-      <HubBreadcrumb
-        items={[
+      <PageHeader
+        crumbs={[
           { label: "Home", href: "/" },
           { label: "Ideas", href: "/startup-ideas" },
           { label: def.title.replace(" Startup Ideas", "").trim() },
         ]}
-      />
-
-      <HubHero
-        icon={<Icon size={28} className={color.text} aria-hidden="true" />}
-        iconBoxClassName={color.bg10}
-        title={def.title}
+        title={
+          <>
+            {def.title}
+            {tail && (
+              <>
+                {" "}
+                <Em>{tail}</Em>
+              </>
+            )}
+          </>
+        }
         description={def.description}
-        chips={
-          ideas.length > 0 ? (
-            <>
-              <HubCountChip>{ideas.length} curated ideas</HubCountChip>
-              <HubChip>
-                <Zap size={14} aria-hidden="true" />
-                Sorted by builder confidence
-              </HubChip>
-            </>
-          ) : undefined
+        meta={
+          list.length > 0
+            ? [
+                <>
+                  <span className="font-medium text-home-ink">{list.length}</span> curated ideas
+                </>,
+                "Sorted by builder confidence",
+                "Updated weekly",
+              ]
+            : undefined
         }
       />
 
-      {/* Ideas grid */}
-      {ideas.length > 0 ? (
-        <section aria-labelledby="ideas-heading">
-          <h2 id="ideas-heading" className="sr-only">
-            Ideas in this collection
-          </h2>
-          <HubIdeasGrid ideas={ideas} />
-        </section>
+      <LinkTabs groups={collectionTabs(slug, categoryCounts, all.length)} className="pt-10" />
+
+      {list.length > 0 ? (
+        <>
+          <FeaturedIdeas
+            id="start-here-heading"
+            heading={
+              <>
+                Three to start with, <Em>highest builder confidence first.</Em>
+              </>
+            }
+            ideas={list.slice(0, 3)}
+          />
+          <div className="mx-auto w-full max-w-[1200px] px-5 py-14 md:px-10 lg:py-20 xl:px-0">
+            <IdeaBrowser ideas={list} heading={`All ${list.length} ideas`} headingId="ideas-heading" />
+          </div>
+        </>
       ) : (
-        <p className="text-neutral-500 italic">
-          Ideas in this collection will appear once the live data source is
-          reachable. Refresh in a moment.
+        <p className="mx-auto w-full max-w-[1200px] px-5 py-14 text-home-ink-2 md:px-10 xl:px-0">
+          Ideas in this collection will appear once the live data source is reachable. Refresh in a moment.
         </p>
       )}
 
-      {/* Browse other collections */}
-      <section className="mt-24" aria-labelledby="other-collections-heading">
-        <h2
-          id="other-collections-heading"
-          className="text-2xl font-medium text-white mb-8"
-        >
-          Browse other collections
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {IDEA_COLLECTION_SLUGS.filter((s) => s !== slug)
-            .slice(0, 7)
-            .map((other) => {
-              const OtherIcon = COLLECTIONS[other].icon;
-              return (
-                <Link
-                  key={other}
-                  href={`/ideas/${other}`}
-                  className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all"
-                >
-                  <OtherIcon
-                    size={20}
-                    className="text-neutral-400 mb-2"
-                    aria-hidden="true"
-                  />
-                  <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-                    {COLLECTIONS[other].title.replace(" Startup Ideas", "")}
-                  </p>
-                </Link>
-              );
-            })}
-          <Link
-            href="/startup-ideas"
-            className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all"
+      <InkBand labelledBy="ship-heading">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeading
+            id="ship-heading"
+            eyebrow="The Weekend MVP Starter Kit"
+            dark
+            intro="The Weekend MVP Starter Kit has the prompts, templates, and 48-hour plan that turn any of these ideas into a live product."
           >
-            <LayoutGrid
-              size={20}
-              className="text-neutral-400 mb-2"
-              aria-hidden="true"
-            />
-            <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-              All Ideas
-            </p>
-          </Link>
+            Ready to <Em dark>ship?</Em>
+          </SectionHeading>
+          <ButtonLink href="/starter-kit" tone="dark" className="w-full shrink-0 lg:w-auto">
+            Get the Starter Kit
+          </ButtonLink>
         </div>
-      </section>
+      </InkBand>
 
-      <HubCta
-        heading="Ready to ship?"
-        body="The Weekend MVP Starter Kit has the prompts, templates, and 48-hour plan that turn any of these ideas into a live product."
+      <KeepBrowsing
+        id="other-collections-heading"
+        heading="Browse other collections"
+        links={[...more, ...RELATED_HUBS, { href: "/startup-ideas", label: "All ideas" }]}
       />
-    </HubShell>
+    </PublicShell>
   );
 }
 
