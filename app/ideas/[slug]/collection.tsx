@@ -228,9 +228,9 @@ const COLLECTIONS: Record<IdeaCollectionSlug, CollectionDef> = {
   "build-in-weekend": {
     slug: "build-in-weekend",
     kind: "buildTime",
-    title: "Startup Ideas You Can Build in a Weekend",
+    title: "Build in a Weekend: Startup Ideas You Can Ship Friday–Sunday",
     description:
-      "Friday-night-to-Sunday-launch ideas. Tight scope, no infrastructure rabbit holes, ready to validate Monday morning.",
+      "Build-in-a-weekend startup ideas scoped for Friday night to Sunday launch — tight MVPs, no infra rabbit holes, ready to validate Monday morning.",
     color: "orange",
     icon: Rocket,
     buildTimeValues: ["8", "10", "12"],

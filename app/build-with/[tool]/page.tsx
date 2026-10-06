@@ -38,6 +38,12 @@ import { HubEmailCapture } from "@/components/hubs/HubEmailCapture";
 import {
   HubFeaturedIdeas,
 } from "@/components/hubs/HubFeaturedIdeas";
+import {
+  CURSOR_HYDRATION_LINK,
+  HubCrawlLinks,
+  SEO_PRIORITY_LINKS,
+  type CrawlLink,
+} from "@/components/hubs/HubCrawlLinks";
 import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubPrimaryCta } from "@/components/hubs/HubPrimaryCta";
 import { HubPromptCard } from "@/components/hubs/HubPromptCard";
@@ -124,6 +130,12 @@ type ToolPage = {
    */
   relatedHub?: { href: string; label: string; body: string; cta: string };
   /**
+   * Prominent crawl-priority internal links (hub + newest idea pages).
+   * Rendered under the hero so Google’s frequently crawled tool pages
+   * pass equity to URLs that are discovered but not yet indexed.
+   */
+  crawlLinks?: CrawlLink[];
+  /**
    * Convex `ideas.tools` value used for the ideas grid. Defaults to `slug`.
    * Claude Code reuses the `claude` tag until a dedicated retag ships.
    */
@@ -134,12 +146,12 @@ const TOOL_PAGES: Record<string, ToolPage> = {
   cursor: {
     slug: "cursor",
     name: "Cursor",
-    h1: "Cursor Project Ideas & Examples",
+    h1: "Cursor Projects & Examples",
     titlePattern:
-      "Cursor Project Ideas: {count} Examples of What to Build with Cursor",
+      "Cursor Projects & Examples: {count} Things to Build This Weekend",
     legacyCount: 30,
     metaDescription:
-      "Cursor project ideas and examples with ready-to-use prompts — MVPs and full-stack apps to build with Cursor's AI code editor this weekend.",
+      "Cursor projects and Cursor projects examples with copy-paste prompts — full-stack MVPs you can ship in a weekend with Cursor's AI code editor.",
     description:
       "Build full-stack applications with AI pair programming. Cursor understands your codebase and helps you write, refactor, and debug code faster.",
     url: "https://cursor.sh",
@@ -197,6 +209,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas lean on Cursor's strength — multi-file refactors, API work, and full-stack scaffolding — so you spend the weekend building product, not fighting the editor.",
     },
+    crawlLinks: [...SEO_PRIORITY_LINKS, CURSOR_HYDRATION_LINK],
   },
   claude: {
     slug: "claude",
@@ -282,6 +295,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       body: "If you want agentic coding in the terminal — CLIs, APIs, and full apps with real diffs — start on the Claude Code hub instead.",
       cta: "Browse Claude Code projects",
     },
+    crawlLinks: SEO_PRIORITY_LINKS,
   },
   "claude-code": {
     slug: "claude-code",
@@ -425,11 +439,12 @@ const TOOL_PAGES: Record<string, ToolPage> = {
   lovable: {
     slug: "lovable",
     name: "Lovable",
-    h1: "Best Lovable Projects & App Ideas",
-    titlePattern: "Best Lovable Projects & App Ideas ({count}) to Build This Weekend",
+    h1: "Lovable Projects & App Ideas",
+    titlePattern:
+      "Lovable Projects: {count} Best App Ideas You Can Ship This Weekend",
     legacyCount: 30,
     metaDescription:
-      "Best Lovable projects and app ideas you can ship this weekend. AI builds the full stack from your description — pick a starter prompt and go live.",
+      "Lovable projects with starter prompts — 30+ app ideas where Lovable builds the full stack from plain English. Pick one and go live this weekend.",
     description:
       "Build full applications with natural language. Lovable handles the entire stack and deploys your app automatically.",
     url: "https://lovable.dev",
@@ -966,6 +981,10 @@ async function CachedToolHub({ slug }: { slug: string }) {
             {page.relatedHub.cta}
           </Link>
         </p>
+      ) : null}
+
+      {page.crawlLinks && page.crawlLinks.length > 0 ? (
+        <HubCrawlLinks className="mb-16" links={page.crawlLinks} />
       ) : null}
 
       {/* Tool Strengths */}
