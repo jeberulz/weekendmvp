@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { CompareView } from "@/components/platform/hub/CompareView";
 import { getIdeaTiers } from "@/lib/dashboard/idea-prompts";
 import { isIdeaSlug } from "@/lib/pending-save";
@@ -23,7 +24,8 @@ function compareSlugs(value: string | string[] | undefined): string[] {
  */
 export default async function ComparePage({ searchParams }: { searchParams: SearchParams }) {
   const slugs = compareSlugs((await searchParams).ideas);
-  const tiers = Object.fromEntries(await Promise.all(slugs.map(async (slug) => [slug, await getIdeaTiers(slug)])));
+  const token = (await convexAuthNextjsToken()) ?? null;
+  const tiers = Object.fromEntries(await Promise.all(slugs.map(async (slug) => [slug, await getIdeaTiers(slug, token)])));
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <header className="mb-6 flex flex-col gap-1.5">

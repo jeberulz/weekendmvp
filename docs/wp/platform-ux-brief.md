@@ -4,7 +4,7 @@ Approved product and interaction contract for the signed-in Weekend MVP build pl
 
 ## Product Promise
 
-Weekend MVP is validation-first: people discover evidence-backed ideas, see a concrete landing-page preview, and only then decide whether to publish and keep building. The public content library remains the acquisition and SEO layer. The signed-in product adds personal state, project state, generated artifacts, billing, and an operating workspace.
+Weekend MVP is validation-first: people discover evidence-backed ideas, see a concrete landing-page preview, and only then decide whether to publish and keep building. Public idea teasers remain the acquisition and SEO layer; the full library and research require a verified free account (WP57 ruling). The signed-in product also adds personal state, project state, generated artifacts, billing, and an operating workspace.
 
 The activation path is:
 
@@ -16,8 +16,8 @@ For a repository idea, the free artifact is the landing-page preview. For a cust
 
 ### Public layer
 
-- `/startup-ideas`: crawlable discovery library.
-- `/ideas/{slug}`: the sole canonical, shareable research page for a published idea.
+- `/startup-ideas`: crawlable discovery teaser; the complete library appears only to verified members.
+- `/ideas/{slug}`: the sole canonical, shareable URL for a published idea, with an anonymous teaser and verified-member research body.
 - `/build`: platform marketing and example builds.
 - `/pricing`: prices in dollars, not internal credits.
 - `/build/{slug}`: anonymous preview setup for a repository idea.

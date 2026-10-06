@@ -47,8 +47,7 @@
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",
     "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs",
-    "gsc:inspect-indexing": "node scripts/gsc-inspect-indexing.mjs",
-    "test:gate-browser-smoke": "node scripts/gate-browser-smoke.mjs --confirm-disposable=wp44"
+    "gsc:inspect-indexing": "node scripts/gsc-inspect-indexing.mjs"
   },
   "keywords": [],
   "author": "",

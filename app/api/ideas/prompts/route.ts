@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     // Checks both the signed identity and the current session row. The package
     // isAuthenticated helper alone does not reject a revoked session's JWT.
     await convex.mutation(api.platform.dashboard.requireMember, {});
-    const prompts = await getIdeaPrompts(slug);
+    const prompts = await getIdeaPrompts(slug, token);
     if (prompts === null) {
       return Response.json({ code: "RESOURCE_NOT_FOUND" }, { status: 404, headers: { "Cache-Control": "no-store" } });
     }

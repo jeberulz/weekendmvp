@@ -15,6 +15,15 @@ export function isPrivateReturnPath(pathname: string): boolean {
   return PRIVATE_RETURN_PREFIXES.some((prefix) => underPrefix(pathname, prefix));
 }
 
+/** Only canonical idea destinations are admitted outside the private app. */
+export function isIdeaReturnPath(pathname: string): boolean {
+  return pathname === "/startup-ideas" || /^\/ideas\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
+}
+
+export function isAllowedAuthReturnPath(pathname: string): boolean {
+  return isPrivateReturnPath(pathname) || isIdeaReturnPath(pathname);
+}
+
 /** Operator surfaces: never indexed, cached, referred from or measured by analytics. */
 export function isOperatorPath(pathname: string): boolean {
   return underPrefix(pathname, "/admin");

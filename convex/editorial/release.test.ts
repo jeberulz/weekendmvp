@@ -170,8 +170,8 @@ test.each(["canonical", "staging"] as const)("an exact private revision is activ
   const pointerAfterRepeat = await t.run(async (ctx) => ctx.db.query("editorial_public_pointers")
     .withIndex("by_slug", (q) => q.eq("slug", record.brief.slug)).unique());
   expect(pointerAfterRepeat).toEqual(pointerAfterRecovery);
-  expect(live.markdown).toBe(checked.envelope.markdown);
-  expect((await t.query(api.ideas.bySlug, { slug: record.brief.slug }))?.body).toBe(checked.envelope.markdown);
+  expect("markdown" in live).toBe(false);
+  expect("body" in (await t.query(api.ideas.bySlug, { slug: record.brief.slug }))!).toBe(false);
   expect((await step("activating")).moved).toBe(false);
 
   // A damaged/missing pointer cannot resurrect an older checked-in page.

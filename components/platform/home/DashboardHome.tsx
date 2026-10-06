@@ -28,16 +28,16 @@ function WeeklyPickUnavailable() {
  * Convex in the browser, each behind its own skeleton and error state.
  */
 export function DashboardHome({ editorial }: { editorial: DashboardEditorial | null }) {
-  const weekly = editorial ? { slug: editorial.weekly.slug, title: editorial.weekly.title } : null;
+  const weekly = editorial?.weekly ? { slug: editorial.weekly.slug, title: editorial.weekly.title } : null;
   // Picks skip what Home already shows, so no idea appears twice.
-  const shown = editorial ? [editorial.weekly.slug, ...editorial.newest.map((row) => row.slug)] : [];
+  const shown = editorial ? [...(editorial.weekly ? [editorial.weekly.slug] : []), ...editorial.newest.map((row) => row.slug)] : [];
 
   return (
     <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10 xl:grid-cols-[minmax(0,1fr)_272px] xl:items-start">
       <div className="flex min-w-0 flex-col gap-8">
         <Greeting />
         <NextStepCard weekly={weekly} total={editorial?.total ?? null} />
-        {editorial ? (
+        {editorial?.weekly ? (
           <WeeklyPick idea={editorial.weekly} weekLabel={editorial.week.label} />
         ) : (
           <WeeklyPickUnavailable />

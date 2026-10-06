@@ -116,10 +116,10 @@ export default async function HomePage() {
       <Hero idea={data.hero} total={data.totals.ideas} />
       <WhatIs />
       <IdeaLibrary total={data.totals.ideas} categories={data.totals.categories} rows={data.newest} />
-      <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} />
+      {data.spotlight && <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} />}
       <WeekendTest averageHours={data.totals.averageHours} />
       <BuildWithAI toolCounts={data.totals.tools} idea={data.spotlight} />
-      <InsideEveryIdea idea={data.inside} weekLabel={data.week.label} />
+      {data.inside && <InsideEveryIdea idea={data.inside} weekLabel={data.week.label} />}
       <YourWeekend total={data.totals.ideas} />
       <StarterKit />
       <FounderNote />

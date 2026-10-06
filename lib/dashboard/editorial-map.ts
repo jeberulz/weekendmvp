@@ -8,7 +8,7 @@ export type DashboardEditorial = {
   total: number;
   week: HomeData["week"];
   /** Idea of the week: the homepage's section 03 pick. */
-  weekly: SpotlightIdea;
+  weekly: SpotlightIdea | null;
   /** Newest live ideas, the head of the homepage Index. */
   newest: IndexRow[];
 };

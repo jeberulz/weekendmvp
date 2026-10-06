@@ -1,4 +1,4 @@
-import { isPrivateReturnPath } from "../lib/private-paths";
+import { isAllowedAuthReturnPath, isIdeaReturnPath } from "../lib/private-paths";
 import { normalizeEmail } from "./authEmail";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { validatedSiteOrigin } from "./siteUrl";
@@ -42,8 +42,9 @@ function safeDashboardReturn(value: string) {
     const target = new URL(value, "https://platform.weekendmvp.invalid");
     if (
       target.origin === "https://platform.weekendmvp.invalid" &&
-      isPrivateReturnPath(target.pathname)
+      isAllowedAuthReturnPath(target.pathname)
     ) {
+      if (isIdeaReturnPath(target.pathname)) return target.search || target.hash ? "/dashboard" : target.pathname;
       return `${target.pathname}${target.search}${target.hash}`;
     }
   } catch {

@@ -1,4 +1,4 @@
-import { isPrivateReturnPath } from "./private-paths";
+import { isAllowedAuthReturnPath, isIdeaReturnPath } from "./private-paths";
 
 export const DEFAULT_AUTH_RETURN = "/dashboard";
 
@@ -32,8 +32,11 @@ export function safePlatformReturn(value: unknown) {
     const target = new URL(value, "https://platform.weekendmvp.invalid");
     if (
       target.origin === "https://platform.weekendmvp.invalid" &&
-      isPrivateReturnPath(target.pathname)
+      isAllowedAuthReturnPath(target.pathname)
     ) {
+      if (isIdeaReturnPath(target.pathname)) {
+        return target.search || target.hash ? DEFAULT_AUTH_RETURN : target.pathname;
+      }
       return `${target.pathname}${target.search}${target.hash}`;
     }
   } catch {

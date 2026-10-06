@@ -77,6 +77,34 @@ describe("Convex Auth user compatibility", () => {
 
       expect(await ctx.db.get("users", userId)).toMatchObject({ _id: userId });
       expect((await ctx.db.get("users", userId))?.email).toBeUndefined();
+      expect(await ctx.db.query("account_beehiiv_sync").collect()).toEqual([]);
+    });
+  });
+
+  test("queues one sync only after a new account becomes verified", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const emailId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null, type: "email", provider: emailProvider,
+        profile: { email: "reader@example.test" },
+      });
+      expect(await ctx.db.query("account_beehiiv_sync").collect()).toHaveLength(0);
+      await createOrUpdateAuthUser(ctx, {
+        existingUserId: emailId, type: "verification", provider: emailProvider,
+        profile: { email: "reader@example.test", emailVerified: true },
+      });
+      await createOrUpdateAuthUser(ctx, {
+        existingUserId: emailId, type: "verification", provider: emailProvider,
+        profile: { email: "reader@example.test", emailVerified: true },
+      });
+      const googleId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null, type: "oauth", provider: googleProvider,
+        profile: { email: "google@example.test", emailVerified: true },
+      });
+      const rows = await ctx.db.query("account_beehiiv_sync").collect();
+      expect(rows).toHaveLength(2);
+      expect(rows.map((row) => row.userId)).toEqual([emailId, googleId]);
+      expect(rows.every((row) => row.state === "pending" && row.attempts === 0)).toBe(true);
     });
   });
 
@@ -109,6 +137,8 @@ describe("Convex Auth user compatibility", () => {
 
       expect(signedIn).toBe(googleUserId);
       expect(await ctx.db.get("users", placeholderId)).toBeNull();
+      const syncRows = await ctx.db.query("account_beehiiv_sync").collect();
+      expect(syncRows.map((row) => row.userId)).toEqual([googleUserId]);
     });
   });
 

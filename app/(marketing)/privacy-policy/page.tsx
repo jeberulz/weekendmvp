@@ -81,7 +81,7 @@ export default function PrivacyPolicyPage() {
       <main id="main">
         <PageHeader
           title="Privacy Policy"
-          meta={["Last updated: January 2025"]}
+          meta={["Last updated: October 2026"]}
           size="md"
           className="pb-10 lg:pb-12"
         />
@@ -109,8 +109,14 @@ export default function PrivacyPolicyPage() {
           <SectionRow id="email-collection" heading="Email Collection">
             When you sign up for the Weekend MVP Starter Kit, we collect your
             email address and first name through Beehiiv. This information is
-            used solely to deliver the kit and occasional updates. You can
-            unsubscribe at any time.
+            used to deliver the kit and occasional updates. When you create a
+            Weekend MVP account, we use your verified email for sign-in and
+            access to the ideas library. We also send it to Beehiiv so you can
+            confirm a separate newsletter subscription and receive onboarding
+            emails. Beehiiv asks new subscribers to confirm before marketing
+            emails begin. You can unsubscribe from those emails without losing
+            your site account or ideas access. A previously unsubscribed
+            Beehiiv contact is not reactivated by creating a site account.
           </SectionRow>
 
           <SectionRow id="contact" heading="Contact">

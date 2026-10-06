@@ -38,7 +38,8 @@ import {
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
-import { StartupIdeasGate } from "./StartupIdeasGate";
+import { StartupIdeasTeaser } from "./StartupIdeasGate";
+import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import {
   IdeasExplorer,
   type CategoryFilter,
@@ -502,6 +503,7 @@ function buildSchema(data: StartupIdeasData) {
 
 export default async function StartupIdeasPage() {
   await connection();
+  if (!(await currentIdeaMemberToken())) return <StartupIdeasTeaser />;
   // This read is authoritative even when the public ideas projection is down.
   const publications = await fetchQuery(api.editorial.public.listing, {});
   return <StartupIdeasContent publications={publications} />;
@@ -519,9 +521,7 @@ async function StartupIdeasContent({ publications }: { publications: PublicOverl
     <>
       <JsonLd schema={schema} />
 
-      {/* Ideas content is server-rendered visible by default (SEO); the
-          gate swap happens client-side after hydration, like gate.js. */}
-      <StartupIdeasGate>
+      <>
         <header className="relative overflow-hidden">
           <div
             aria-hidden="true"
@@ -594,7 +594,7 @@ async function StartupIdeasContent({ publications }: { publications: PublicOverl
             </NavExternalLink>
           </div>
         </InkBand>
-      </StartupIdeasGate>
+      </>
     </>
   );
 }
