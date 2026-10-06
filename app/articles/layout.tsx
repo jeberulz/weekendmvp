@@ -1,28 +1,15 @@
-import { MegaNav } from "@/components/layout/MegaNav";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-
-import "./articles.css";
+import { PublicShell } from "@/components/public/PublicShell";
 
 /**
- * /articles + /articles/[slug] shell. Both legacy pages (articles.html and
- * articles/*.html) used the dark mega nav, the fixed grid-lines background
- * and the standard site footer, so the whole subtree shares them here.
+ * /articles + /articles/[slug] shell: the research-desk public chrome (cream
+ * nav, paper ground, warm-ink footer). The index ends on its own call and the
+ * detail page renders `FooterCta` itself, so the shared band is off here.
+ * `PublicShell` renders the page's `<main>`.
  */
 export default function ArticlesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="articles-accent">
-      {/* Background Grid */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0 grid-lines"
-        aria-hidden="true"
-      />
-      <MegaNav variant="dark" />
-      {children}
-      <SiteFooter />
-    </div>
-  );
+  return <PublicShell footerCta={false}>{children}</PublicShell>;
 }

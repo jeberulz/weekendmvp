@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, CircleCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
+import { Icon } from "@/components/home/icons";
+import { Container } from "@/components/home/ui";
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { trackEvent } from "@/lib/track";
 
@@ -31,7 +33,7 @@ export function AttemptedPath() {
   if (!path) return null;
 
   return (
-    <p className="text-sm text-neutral-600 font-mono mb-2">
+    <p className="font-mono text-xs uppercase tracking-[0.06em] text-home-ink-3">
       Couldn&apos;t find: {path}
     </p>
   );
@@ -75,38 +77,53 @@ export function NotFoundRecommendations() {
   }, [pathname]);
 
   return (
-    <section className="max-w-5xl mx-auto px-6 py-12">
-      <div className="text-center mb-10">
-        <p className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-3">
-          {ctx.eyebrow}
-        </p>
-        <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-white mb-2">
-          {ctx.heading}
-        </h2>
-        <p className="text-neutral-400 text-sm max-w-lg mx-auto">{ctx.sub}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ctx.cards.map((c) => (
-          <Link
-            key={c.href}
-            href={c.href}
-            className="group flex flex-col p-6 bg-neutral-950/60 border border-white/10 rounded-2xl hover:border-white/25 hover:bg-neutral-900/60 transition-all"
-            data-404-reco={c.title}
-          >
-            <div className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-white mb-4">
-              <c.icon size={20} aria-hidden="true" />
-            </div>
-            <h3 className="text-white font-medium text-sm mb-1">{c.title}</h3>
-            <p className="text-neutral-500 text-xs leading-relaxed flex-1">
-              {c.desc}
+    <section aria-labelledby="nf-reco" className="pb-16 pt-6 lg:pb-20">
+      <Container className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-3">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink md:text-xs">
+            {ctx.eyebrow}
+          </p>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+            <h2
+              id="nf-reco"
+              className="font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-balance text-home-ink md:text-[32px]"
+            >
+              {ctx.heading}
+            </h2>
+            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3 md:text-xs">
+              {ctx.sub}
             </p>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-400 group-hover:text-white transition-colors mt-4">
-              {c.cta} <ArrowRight size={13} aria-hidden="true" />
-            </span>
-          </Link>
-        ))}
-      </div>
+          </div>
+        </div>
+
+        <ul className="grid grid-cols-1 gap-x-10 md:grid-cols-2 lg:grid-cols-3">
+          {ctx.cards.map((c) => (
+            <li key={c.href} className="border-t border-home-ink">
+              <Link
+                href={c.href}
+                className="group flex flex-col gap-1.5 py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+                data-404-reco={c.title}
+              >
+                <span className="flex items-center justify-between gap-4 font-editorial text-[24px] leading-[1.15] text-home-ink md:text-[26px]">
+                  {c.title}
+                  <Icon
+                    name="arrow"
+                    size={20}
+                    strokeWidth={1.75}
+                    className="transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+                  />
+                </span>
+                <span className="text-[15px] leading-[1.5] text-home-ink-2">
+                  {c.desc}
+                </span>
+                <span className="text-sm font-medium text-home-orange-ink underline underline-offset-4">
+                  {c.cta}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Container>
     </section>
   );
 }
@@ -125,14 +142,17 @@ export function KitSignup404() {
 
   if (subscribed) {
     return (
-      <div className="flex flex-col items-center text-center pt-2">
-        <div className="w-14 h-14 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mb-4">
-          <CircleCheck size={28} aria-hidden="true" />
-        </div>
-        <h3 className="text-xl font-medium text-white tracking-tight mb-1">
+      <div className="flex flex-col items-center pt-2 text-center">
+        <CircleCheck
+          size={32}
+          strokeWidth={1.5}
+          aria-hidden="true"
+          className="mb-3 text-home-sage-ink"
+        />
+        <h3 className="mb-1 font-editorial text-2xl font-normal text-home-ink">
           Check your inbox!
         </h3>
-        <p className="text-neutral-400 text-sm">
+        <p className="text-[15px] text-home-ink-2">
           The Weekend MVP Starter Kit is on its way.
         </p>
       </div>
@@ -147,14 +167,14 @@ export function KitSignup404() {
         successHref={null}
         onSuccess={() => setSubscribed(true)}
         submitLabel="Send me the kit"
-        className="flex flex-col sm:flex-row items-stretch gap-3 max-w-md mx-auto space-y-0 [&>div]:flex-1"
-        inputClassName="rounded-xl px-4 py-3.5 placeholder:text-neutral-600"
-        buttonClassName="w-auto rounded-xl px-6 py-3.5 tracking-tight whitespace-nowrap"
+        className="mx-auto flex max-w-md flex-col items-stretch gap-3 space-y-0 sm:flex-row [&>div]:flex-1"
+        inputClassName="h-[52px] border-home-ink-3 bg-home-paper px-5 py-0 text-base text-home-ink placeholder:text-home-ink-3 focus:ring-home-orange-ink"
+        buttonClassName="h-[52px] w-full whitespace-nowrap bg-home-orange-ink px-6 py-0 text-base text-white hover:bg-[#8f3f00] focus:ring-home-orange-ink focus:ring-offset-2 focus:ring-offset-home-card sm:w-auto motion-reduce:transition-none"
       />
       <SignupCta
         buttonLocation="404-signup-card"
         utmCampaign="404-page"
-        className="mt-4 inline-flex items-center justify-center text-xs text-neutral-500 hover:text-white transition-colors underline decoration-neutral-700 underline-offset-4"
+        className="mt-4 inline-flex min-h-11 items-center justify-center text-sm text-home-ink-3 underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
       >
         Prefer the quick popup signup?
       </SignupCta>

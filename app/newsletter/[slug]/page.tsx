@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 
+import { articleMdxComponents } from "@/app/articles/article-prose";
+import { Icon } from "@/components/home/icons";
+import { ButtonLink, Container, buttonClass } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
+import { Breadcrumbs, MetaLine } from "@/components/public/PageHeader";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { SITE, articleSchema } from "@/lib/seo";
 
@@ -70,14 +73,13 @@ const EDITION_LABEL = { am: "Idea of the Day", pm: "Builder Brief" } as const;
 /**
  * Standalone CTA button inside an issue body — emitted as `<Cta href>` by
  * scripts/extract-newsletter-to-mdx.mjs + scripts/publish-newsletter.mjs,
- * mirroring the legacy `div.text-center > a` white pill.
+ * mirroring the legacy `div.text-center > a` pill (now the orange-ink primary).
  */
 function Cta({ href, children }: { href: string; children: React.ReactNode }) {
-  const className =
-    "inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all";
+  const className = buttonClass("primary", "h-12 text-[15px] no-underline");
   const external = /^https?:\/\//i.test(href);
   return (
-    <div className="my-8 text-center">
+    <div className="my-8">
       {external ? (
         <a
           href={href}
@@ -86,65 +88,23 @@ function Cta({ href, children }: { href: string; children: React.ReactNode }) {
           className={className}
         >
           <span>{children}</span>
-          <ArrowRight size={16} aria-hidden="true" />
+          <Icon name="arrow" size={18} strokeWidth={1.75} />
           <span className="sr-only"> (opens in new tab)</span>
         </a>
       ) : (
         <Link href={href} className={className}>
           <span>{children}</span>
-          <ArrowRight size={16} aria-hidden="true" />
+          <Icon name="arrow" size={18} strokeWidth={1.75} />
         </Link>
       )}
     </div>
   );
 }
 
+/** The article reading map plus the issue-only `<Cta>`. */
 const newsletterMdxComponents: MDXComponents = {
+  ...articleMdxComponents,
   Cta,
-  h2: (props: React.JSX.IntrinsicElements["h2"]) => (
-    <h2
-      className="text-2xl font-medium text-white mb-6 mt-10 tracking-tight"
-      {...props}
-    />
-  ),
-  h3: (props: React.JSX.IntrinsicElements["h3"]) => (
-    <h3
-      className="text-xl font-medium text-white mb-4 mt-10 tracking-tight"
-      {...props}
-    />
-  ),
-  h4: (props: React.JSX.IntrinsicElements["h4"]) => (
-    <h4 className="text-lg font-medium text-white mb-3 mt-6" {...props} />
-  ),
-  a: (props: React.JSX.IntrinsicElements["a"]) => (
-    <a
-      className="text-white underline decoration-neutral-600 underline-offset-2 hover:decoration-white transition-colors"
-      {...props}
-    />
-  ),
-  hr: (props: React.JSX.IntrinsicElements["hr"]) => (
-    <hr className="my-8 border-0 h-px bg-white/10" {...props} />
-  ),
-  ul: (props: React.JSX.IntrinsicElements["ul"]) => (
-    <ul
-      className="list-disc list-outside pl-6 space-y-2 text-neutral-300 leading-relaxed mb-6"
-      {...props}
-    />
-  ),
-  li: (props: React.JSX.IntrinsicElements["li"]) => (
-    <li className="leading-relaxed" {...props} />
-  ),
-  // Hero/illustration images (`![alt](src)`) — legacy full-width figure.
-  img: ({ alt, ...props }: React.JSX.IntrinsicElements["img"]) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt={alt ?? ""}
-      loading="lazy"
-      decoding="async"
-      className="w-full rounded-2xl border border-white/10 my-8"
-      {...props}
-    />
-  ),
 };
 
 /* ------------------------------------------------------------------ */
@@ -238,87 +198,79 @@ async function CachedIssue({ slug }: { slug: string }) {
   };
 
   return (
-    <article data-nl-slot={edition} className="relative z-10 pt-20 pb-24">
+    <article data-nl-slot={edition} className="pb-20 pt-28 md:pt-36">
       <JsonLd schema={schema} />
-      <div className="max-w-2xl mx-auto px-6">
-        {/* Breadcrumb */}
-        <nav className="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-white transition-colors">
-            Home
-          </Link>
-          <span className="mx-2">/</span>
-          <Link
-            href="/newsletter"
-            className="hover:text-white transition-colors"
-          >
-            Newsletter
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-neutral-400">
-            {displayDate} — {edition.toUpperCase()}
-          </span>
-        </nav>
+      <Container className="max-w-[760px] xl:px-0">
+        <Breadcrumbs
+          className="mb-8"
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Newsletter", href: "/newsletter" },
+            { label: `${displayDate} — ${edition.toUpperCase()}` },
+          ]}
+        />
 
         {/* Header */}
-        <header className="mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
-              {EDITION_LABEL[edition]}
-            </span>
-            <span className="text-neutral-600 text-xs">•</span>
-            <time className="text-neutral-600 text-xs" dateTime={fm.publishedAt}>
-              {displayDate}
-            </time>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+        <header className="mb-12 flex flex-col gap-5 md:mb-14">
+          <MetaLine
+            items={[
+              <span key="edition" className="text-home-orange-ink">
+                {EDITION_LABEL[edition]}
+              </span>,
+              <time key="date" dateTime={fm.publishedAt}>
+                {displayDate}
+              </time>,
+            ]}
+          />
+          <h1 className="font-editorial text-[38px] font-normal leading-[1.06] tracking-[-0.025em] text-balance text-home-ink md:text-[52px]">
             {fm.title}
           </h1>
-          <p className="text-xl text-neutral-400 font-light leading-relaxed">
+          <p className="text-pretty text-xl leading-[1.5] text-home-ink-2 md:text-[22px]">
             {fm.description}
           </p>
         </header>
 
         {/* Body */}
-        <div className="text-neutral-300 leading-relaxed">
+        <div className="max-w-[68ch]">
           <Mdx source={issue.content} components={newsletterMdxComponents} />
         </div>
 
-        {/* CTA card */}
-        <div className="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
-          <p className="text-neutral-400 text-sm mb-4">
-            Want more ideas like this?
-          </p>
-          <Link
-            href={ctaUrl}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"
-          >
-            <span>Browse 45+ startup ideas</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
+        {/* CTA */}
+        <div className="my-14 flex flex-col items-start gap-4 border-y border-home-rule py-8">
+          <p className="text-[15px] text-home-ink-2">Want more ideas like this?</p>
+          <ButtonLink href={ctaUrl} tone="secondary" arrow>
+            Browse 45+ startup ideas
+          </ButtonLink>
         </div>
 
         {/* Subscribe */}
-        <section className="mt-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl">
-          <h2 className="text-xl md:text-2xl font-medium text-white tracking-tight mb-2">
+        <section
+          aria-labelledby="issue-subscribe"
+          className="rounded-2xl border border-home-rule bg-home-card p-6 md:p-8"
+        >
+          <h2
+            id="issue-subscribe"
+            className="mb-2 font-editorial text-[26px] font-normal leading-[1.1] tracking-[-0.02em] text-home-ink md:text-[32px]"
+          >
             Get the next one in your inbox
           </h2>
-          <p className="text-sm text-neutral-400 mb-6">
+          <p className="mb-6 text-[15px] text-home-ink-2">
             Free. 2 emails a day. Unsubscribe anytime.
           </p>
           <NewsletterSignupForm utmCampaign={`newsletter-web-${edition}`} />
         </section>
 
         {/* Footer row: back to the archive */}
-        <div className="mt-12 text-center">
+        <div className="mt-10">
           <Link
             href="/newsletter"
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors"
+            className="inline-flex min-h-11 items-center gap-2 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
           >
-            <ArrowLeft size={14} aria-hidden="true" />
+            <Icon name="arrow" size={16} strokeWidth={1.75} className="rotate-180" />
             <span>All newsletters</span>
           </Link>
         </div>
-      </div>
+      </Container>
     </article>
   );
 }

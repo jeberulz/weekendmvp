@@ -1,29 +1,15 @@
-import "./newsletter.css";
+import { PublicShell } from "@/components/public/PublicShell";
 
 /**
- * /newsletter subtree shell. The two legacy page types use different chrome:
- *
- *   newsletter.html (archive)        → dark mega nav + full site footer
- *                                      (rendered by app/newsletter/page.tsx)
- *   newsletter/{slug}.html (issues)  → minimal reading nav + compact footer
- *                                      (rendered by app/newsletter/[slug]/layout.tsx)
- *
- * so this layout only carries what both share: the accent scope and the
- * fixed grid-lines background.
+ * /newsletter subtree shell: the research-desk public chrome (cream nav,
+ * paper ground, warm-ink footer) for both the archive and the issue pages.
+ * Both end on their own call, so the shared closing band is off.
+ * `PublicShell` renders the page's `<main>`.
  */
 export default function NewsletterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="newsletter-accent">
-      {/* Background Grid */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0 grid-lines"
-        aria-hidden="true"
-      />
-      {children}
-    </div>
-  );
+  return <PublicShell footerCta={false}>{children}</PublicShell>;
 }

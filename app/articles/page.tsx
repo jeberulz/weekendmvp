@@ -3,7 +3,9 @@ import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
+import { SEO_PRIORITY_LINKS } from "@/components/hubs/HubCrawlLinks";
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { KeepBrowsing } from "@/components/public/Sections";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { SITE, breadcrumbSchema, buildGraph } from "@/lib/seo";
 import { ArticlesIndex, type ArticleCard } from "./ArticlesIndex";
@@ -194,9 +196,19 @@ async function CachedArticlesPage() {
   );
 
   return (
-    <main className="relative z-10">
+    <>
       <JsonLd schema={schema} />
-      <ArticlesIndex articles={articles} updatedLabel={updatedLabel} />
-    </main>
+      <ArticlesIndex
+        articles={articles}
+        updatedLabel={updatedLabel}
+        priorityLinks={
+          <KeepBrowsing
+            id="articles-priority-links"
+            heading="Start building"
+            links={SEO_PRIORITY_LINKS}
+          />
+        }
+      />
+    </>
   );
 }

@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Search, SearchX, X } from "lucide-react";
 
-import { SEO_PRIORITY_LINKS } from "@/components/hubs/HubCrawlLinks";
+import { Container, Em, ButtonLink, Eyebrow } from "@/components/home/ui";
+import { Icon } from "@/components/home/icons";
+import { PageHeader } from "@/components/public/PageHeader";
+import { cn } from "@/lib/utils";
 
 export type ArticleCard = {
   slug: string;
@@ -16,19 +18,28 @@ export type ArticleCard = {
   readMinutes?: number;
 };
 
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
+const MONO = "font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3";
+
 /**
- * Archive hero + "All Articles" card list ported from articles.html,
- * including its client-side search filter ("/" focuses the input).
+ * Archive header, the latest article as a lead, and the ruled "All articles"
+ * list ported from articles.html, including its client-side search filter
+ * ("/" focuses the input). `priorityLinks` is a server-rendered slot for the
+ * crawl-priority links.
  */
 export function ArticlesIndex({
   articles,
   updatedLabel,
+  priorityLinks,
 }: {
   articles: ArticleCard[];
   updatedLabel?: string;
+  priorityLinks?: React.ReactNode;
 }) {
   const [query, setQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const searchId = React.useId();
 
   // Legacy behavior: pressing "/" anywhere focuses the search input.
   React.useEffect(() => {
@@ -55,221 +66,203 @@ export function ArticlesIndex({
     articles.map((a) => a.category).filter(Boolean),
   ).size;
 
+  // The lead is the newest article, shown only while the list is unfiltered.
+  const lead = q ? undefined : filtered[0];
+  const rows = lead ? filtered.slice(1) : filtered;
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative min-h-[50vh] flex items-center justify-center pt-32 pb-16 px-6 overflow-hidden">
-        {/* Background accent glow */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#CC5500]/5 blur-[120px] rounded-full pointer-events-none"
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 max-w-4xl mx-auto w-full">
-          {/* Terminal-style header */}
-          <div className="animate-enter mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] font-mono text-xs text-neutral-500">
-              <span
-                className="w-2 h-2 rounded-full bg-[#CC5500]/60 badge-pulse"
-                aria-hidden="true"
-              />
-              <span className="sr-only">Section:</span>
-              <span>~/articles</span>
-            </div>
-          </div>
-
-          {/* Main heading with search integrated */}
-          <div className="animate-enter stagger-1">
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-4">
-                <Search size={32} className="text-white/20" aria-hidden="true" />
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-none">
-                  Search for an article
-                  <span className="search-cursor text-[#CC5500]">_</span>
-                </h1>
-              </div>
-
-              {/* Search input */}
-              <div className="relative mt-8">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="search-input w-full text-2xl md:text-3xl text-white/90 border-b border-white/10 pb-4 focus:border-[#CC5500]/50 transition-colors"
-                  placeholder="Start typing to filter..."
-                  aria-label="Search articles"
-                />
-                <div className="absolute right-0 bottom-4 flex items-center gap-2">
-                  <kbd className="hidden md:inline-flex px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-500">
-                    /
-                  </kbd>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats bar */}
-          <div className="animate-enter stagger-2 mt-8 flex items-center gap-6 text-xs font-mono text-neutral-500">
-            <span>
-              <span className="text-white">{filtered.length}</span> articles
-            </span>
-            <span
-              className="w-1 h-1 rounded-full bg-neutral-700"
-              aria-hidden="true"
-            />
-            <span>
-              <span className="text-white">{categoryCount}</span> categories
-            </span>
-            {updatedLabel ? (
-              <>
-                <span
-                  className="w-1 h-1 rounded-full bg-neutral-700"
-                  aria-hidden="true"
-                />
-                <span>
-                  Updated <span className="text-white">{updatedLabel}</span>
-                </span>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
-      {/* Accent Line */}
-      <div className="accent-line max-w-4xl mx-auto" aria-hidden="true" />
-
-      {/* Crawl-priority internal links — Demand GSC Sep 2026 */}
-      <section
-        className="px-6 pt-10 pb-2"
-        aria-labelledby="articles-priority-links"
+      <PageHeader
+        eyebrow="Articles"
+        title={
+          <>
+            Search for an <Em>article</Em>
+          </>
+        }
+        meta={[
+          <>
+            <span className="text-home-ink">{filtered.length}</span> articles
+          </>,
+          <>
+            <span className="text-home-ink">{categoryCount}</span> categories
+          </>,
+          updatedLabel ? (
+            <>
+              Updated <span className="text-home-ink">{updatedLabel}</span>
+            </>
+          ) : null,
+        ]}
       >
-        <div className="max-w-4xl mx-auto">
-          <h2
-            id="articles-priority-links"
-            className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-4"
+        <div className="relative mt-1.5 w-full max-w-[560px]">
+          <label htmlFor={searchId} className="sr-only">
+            Search articles
+          </label>
+          <Icon
+            name="search"
+            size={18}
+            strokeWidth={1.75}
+            className="pointer-events-none absolute left-[18px] top-[17px] text-home-ink-3"
+          />
+          <input
+            ref={inputRef}
+            id={searchId}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Start typing to filter..."
+            className={cn(
+              "h-[52px] w-full rounded-full border border-home-ink-3 bg-home-card pl-12 pr-14 text-base text-home-ink placeholder:text-home-ink-3",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
+            )}
+          />
+          <kbd
+            aria-hidden="true"
+            className="pointer-events-none absolute right-5 top-[15px] hidden h-[22px] min-w-[22px] items-center justify-center rounded border border-home-rule bg-home-paper px-1.5 font-mono text-[11px] text-home-ink-3 md:inline-flex"
           >
-            Start building
-          </h2>
-          <ul className="grid gap-3 sm:grid-cols-3">
-            {SEO_PRIORITY_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="block h-full rounded-xl border border-white/[0.06] bg-[#0A0A0A] p-4 transition-colors hover:border-[#CC5500]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CC5500]/50"
-                >
-                  <span className="block text-sm font-medium text-white">
-                    {link.label}
-                  </span>
-                  <span className="mt-1 block text-xs leading-relaxed text-neutral-500">
-                    {link.blurb}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+            /
+          </kbd>
         </div>
-      </section>
+      </PageHeader>
 
-      {/* All Articles List */}
-      <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <header className="flex items-center justify-between mb-12">
-            <h2 className="text-2xl font-semibold text-white">All Articles</h2>
-            <span className="text-xs font-mono text-neutral-500">
-              Sorted by date
-            </span>
-          </header>
+      {lead ? (
+        <section aria-label="Latest article" className="mt-10 lg:mt-12">
+          <Container>
+            <Link
+              href={`/articles/${lead.slug}`}
+              className={cn(
+                "group grid grid-cols-1 gap-6 border-y border-t-home-ink border-b-home-rule py-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-12 lg:py-10",
+                FOCUS,
+              )}
+            >
+              <div className="flex flex-col gap-3.5">
+                <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-orange-ink md:text-xs">
+                  Latest
+                  {lead.readMinutes ? ` · ${lead.readMinutes} min read` : ""}
+                </span>
+                <span className="font-editorial text-[34px] leading-[1.06] tracking-[-0.02em] text-home-ink text-balance md:text-[44px] lg:text-[52px]">
+                  {lead.title}
+                </span>
+              </div>
+              <div className="flex flex-col gap-4">
+                <span className="text-[17px] leading-[1.6] text-home-ink-2">
+                  {lead.description}
+                </span>
+                <span className="inline-flex items-center gap-2 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 group-hover:text-home-ink">
+                  Read the guide
+                  <Icon name="arrow" size={16} strokeWidth={1.75} />
+                </span>
+              </div>
+            </Link>
+          </Container>
+        </section>
+      ) : null}
+
+      <section aria-labelledby="all-articles" className="pb-16 pt-12 lg:pb-24 lg:pt-14">
+        <Container className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2
+              id="all-articles"
+              className="font-editorial text-[32px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink md:text-[40px]"
+            >
+              All articles
+            </h2>
+            <span className={MONO}>Newest first</span>
+          </div>
 
           {filtered.length > 0 ? (
-            <div className="space-y-6">
-              {filtered.map((article) => (
-                <Link
-                  key={article.slug}
-                  href={`/articles/${article.slug}`}
-                  className="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {article.category ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">
-                            {article.category}
-                          </span>
-                        ) : null}
-                        {article.displayDate ? (
-                          <span className="text-xs font-mono text-neutral-600">
-                            {article.displayDate}
-                          </span>
-                        ) : null}
-                        {article.readMinutes ? (
-                          <span className="text-xs font-mono text-neutral-600">
-                            {article.readMinutes} min read
-                          </span>
-                        ) : null}
-                      </div>
-                      <h3 className="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">
+            <ol className="border-t border-home-rule">
+              {rows.map((article) => (
+                <li key={article.slug} className="border-b border-home-rule">
+                  <Link
+                    href={`/articles/${article.slug}`}
+                    className={cn(
+                      "group grid grid-cols-1 gap-2 rounded-[10px] px-0 py-6 transition-colors duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-home-card motion-reduce:transition-none lg:grid-cols-[120px_minmax(0,1fr)_104px_28px] lg:items-baseline lg:gap-6 lg:px-4",
+                      FOCUS,
+                    )}
+                  >
+                    <span className={MONO}>{article.displayDate}</span>
+                    <span className="flex flex-col gap-1.5">
+                      {article.category ? (
+                        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-orange-ink">
+                          {article.category}
+                        </span>
+                      ) : null}
+                      <span className="font-editorial text-[24px] leading-[1.15] text-home-ink text-balance md:text-[26px]">
                         {article.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-neutral-500 line-clamp-2">
+                      </span>
+                      <span className="line-clamp-2 max-w-[680px] text-[15px] leading-[1.55] text-home-ink-2">
                         {article.description}
-                      </p>
-                    </div>
-                    <ArrowRight
-                      size={20}
-                      className="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all"
+                      </span>
+                    </span>
+                    <span className={cn(MONO, "lg:text-right")}>
+                      {article.readMinutes ? `${article.readMinutes} min read` : null}
+                    </span>
+                    <span
                       aria-hidden="true"
-                    />
-                  </div>
-                </Link>
+                      className="hidden text-home-ink lg:block"
+                    >
+                      <Icon
+                        name="arrow"
+                        size={20}
+                        strokeWidth={1.75}
+                        className="transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+                      />
+                    </span>
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ol>
           ) : (
             /* No Results State */
-            <div className="py-24 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-                <SearchX size={24} className="text-neutral-600" aria-hidden="true" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">
+            <div className="border-t border-home-rule py-20 text-center">
+              <h3 className="font-editorial text-[28px] font-normal text-home-ink">
                 No articles found
               </h3>
-              <p className="text-sm text-neutral-500 mb-6">
+              <p className="mx-auto mt-2 max-w-md text-[15px] leading-[1.55] text-home-ink-2">
                 Try a different search term or browse all categories.
               </p>
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-colors"
+                className={cn(
+                  "mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-home-ink px-6 text-base font-semibold text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper motion-reduce:transition-none",
+                  FOCUS,
+                )}
               >
-                <X size={14} aria-hidden="true" />
                 Clear search
               </button>
             </div>
           )}
-        </div>
+        </Container>
       </section>
 
+      {/* Crawl-priority internal links — Demand GSC Sep 2026 */}
+      {priorityLinks}
+
       {/* CTA Section */}
-      <section className="py-24 border-t border-white/5 bg-gradient-to-b from-[#050505] to-[#0A0A0A]">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#CC5500]/10 border border-[#CC5500]/20 font-mono text-xs text-[#CC5500] mb-8">
-            Ready to ship?
+      <section aria-labelledby="articles-cta" className="bg-home-ink text-home-d1">
+        <Container className="flex flex-col gap-7 border-b border-home-dr py-14 lg:flex-row lg:items-end lg:justify-between lg:py-[72px]">
+          <div className="flex max-w-[640px] flex-col gap-3">
+            <Eyebrow dark>Ready to ship?</Eyebrow>
+            <h2
+              id="articles-cta"
+              className="font-editorial text-[34px] font-normal leading-[1.04] tracking-[-0.02em] text-balance lg:text-[48px]"
+            >
+              Stop reading. <Em dark>Start building.</Em>
+            </h2>
+            <p className="max-w-[560px] text-base leading-[1.55] text-home-d2 md:text-[17px]">
+              Get the Weekend MVP Starter Kit and turn your idea into something
+              real this weekend.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
-            Stop reading. Start building.
-          </h2>
-          <p className="text-lg text-neutral-400 font-light mb-10 max-w-xl mx-auto">
-            Get the Weekend MVP Starter Kit and turn your idea into something
-            real this weekend.
-          </p>
-          <Link
+          <ButtonLink
             href="/"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+            tone="dark"
+            className="w-full focus-visible:outline-home-orange-light lg:w-auto"
           >
-            <span>Get the Starter Kit</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </div>
+            Get the Starter Kit
+          </ButtonLink>
+        </Container>
       </section>
     </>
   );
