@@ -34,13 +34,23 @@ export function ScoreBars({ scores }: { scores: PublicScores }) {
   );
 }
 
-/** Four boxed scores for the larger featured cards. */
+const SHORT: Record<keyof PublicScores, string> = {
+  opportunity: "Opp.",
+  pain: "Pain",
+  timing: "Timing",
+  builder_confidence: "Build",
+};
+
+/** Four boxed scores for the larger featured cards. Short visible labels; full names for screen readers. */
 export function ScoreCells({ scores }: { scores: PublicScores }) {
   return (
     <dl className="grid grid-cols-4 gap-2">
       {SCORES.map(([label, key]) => (
-        <div key={key} className="flex flex-col gap-0.5 rounded-[10px] bg-home-paper px-2.5 py-2.5">
-          <dt className="truncate font-mono text-[10px] uppercase tracking-[0.06em] text-home-ink-3">{label}</dt>
+        <div key={key} className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-home-paper px-2.5 py-2.5">
+          <dt className="truncate font-mono text-[10px] uppercase tracking-[0.06em] text-home-ink-3">
+            <span aria-hidden>{SHORT[key]}</span>
+            <span className="sr-only">{label}</span>
+          </dt>
           <dd className="font-mono text-base font-medium text-home-ink">
             {scores[key]}
             <span className="text-xs text-home-ink-3">/10</span>
