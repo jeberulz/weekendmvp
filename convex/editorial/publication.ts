@@ -2,7 +2,17 @@ import { ConvexError } from "convex/values";
 
 import { computeRevisionHashes } from "../../lib/editorial/domain/artifact";
 import { editorialMetadataSchema } from "../../lib/editorial/contracts/metadata";
+import { internal } from "../_generated/api";
 import type { MutationCtx } from "../_generated/server";
+
+/**
+ * Public pages cache idea lists and library membership under the `ideas` tag
+ * (WP56). Activation and removal change both, so ask Next.js to refresh them
+ * after this transaction commits, as the content upsert in convex/ideas.ts does.
+ */
+async function revalidatePublicIdea(ctx: MutationCtx, slug: string): Promise<void> {
+  await ctx.scheduler.runAfter(0, internal.revalidate.run, { tags: [`idea:${slug}`, "ideas"] });
+}
 
 /** Store an exact approved artifact privately. It is unreachable from public queries until activation. */
 export async function stageRelease(ctx: MutationCtx, releaseId: string): Promise<void> {
@@ -109,6 +119,7 @@ export async function activatePublicRelease(ctx: MutationCtx, releaseId: string)
   };
   if (row) await ctx.db.replace("ideas", row._id, projected);
   else await ctx.db.insert("ideas", projected);
+  await revalidatePublicIdea(ctx, idea.slug);
 }
 
 /** Emergency removal is committed in the same mutation as the generation fence. */
@@ -134,4 +145,5 @@ export async function removePublicIdea(ctx: MutationCtx, ideaId: string): Promis
   else await ctx.db.insert("editorial_public_pointers", value);
   const row = await ctx.db.query("ideas").withIndex("by_slug", (q) => q.eq("slug", idea.slug)).unique();
   if (row) await ctx.db.patch("ideas", row._id, { editorialVisibility: "removed", body: "" });
+  await revalidatePublicIdea(ctx, idea.slug);
 }

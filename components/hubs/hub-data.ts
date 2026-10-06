@@ -46,16 +46,27 @@ export async function fetchToolReference(
   return safe(() => fetchQuery(api.referenceTables.toolBySlug, { slug }), null);
 }
 
+/** Hub grids show at most this many ideas (matches legacy). */
+const HUB_CAP = 30;
+/**
+ * Read the whole sorted set (the table is a few hundred rows) so excluded
+ * rows are replaced by the next public idea instead of shrinking the grid:
+ * filter first, then cap.
+ */
+const UNCAPPED = 1000;
+
 /** byAudience — builder_confidence sort, 30 cap (matches legacy). */
 export async function fetchIdeasByAudience(
   audience: string,
 ): Promise<IdeaDoc[]> {
-  return onlyPublicIdeas(await safe(() => fetchQuery(api.ideas.byAudience, { audience }), []));
+  const rows = await safe(() => fetchQuery(api.ideas.byAudience, { audience, limit: UNCAPPED }), []);
+  return (await onlyPublicIdeas(rows)).slice(0, HUB_CAP);
 }
 
 /** byTool — builder_confidence sort, 30 cap (matches legacy sync). */
 export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
-  return onlyPublicIdeas(await safe(() => fetchQuery(api.ideas.byTool, { tool }), []));
+  const rows = await safe(() => fetchQuery(api.ideas.byTool, { tool, limit: UNCAPPED }), []);
+  return (await onlyPublicIdeas(rows)).slice(0, HUB_CAP);
 }
 
 /**

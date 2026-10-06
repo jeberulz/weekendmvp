@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { IdeaRowsHead, PublicIdeaCard, PublicIdeaRow } from "./IdeaCards";
@@ -44,6 +44,20 @@ const getServerSnapshot = (): IdeaView => "cards";
  */
 export function useIdeaView(): [IdeaView, (view: IdeaView) => void] {
   const view = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // A rows preference restored from storage is mirrored into the URL too, so
+  // the address a visitor shares opens the view they are looking at.
+  useEffect(() => {
+    if (view !== "rows") return;
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("view") === "rows") return;
+      url.searchParams.set("view", "rows");
+      window.history.replaceState(window.history.state, "", url);
+    } catch {
+      /* history unavailable: the view itself is unaffected */
+    }
+  }, [view]);
 
   const setView = useCallback((next: IdeaView) => {
     memoryView = next;
