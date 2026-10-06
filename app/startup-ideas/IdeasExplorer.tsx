@@ -1,42 +1,39 @@
 "use client";
 
 /**
- * Search + category filter + paginated grid for /startup-ideas — a port of
- * the legacy inline filtering script (startup-ideas.html, IDEAS_PER_PAGE=12).
+ * Search + sort + category filter + paginated list for /startup-ideas — a
+ * port of the legacy inline filtering script (startup-ideas.html,
+ * IDEAS_PER_PAGE=12), drawn with the WP56 research-desk kit.
  *
  * Legacy filter set, replicated exactly:
  *   - free-text search over lowercased title + description
- *   - single-select category chips ("All Ideas" + per-category with counts)
- *   - 12-per-page reveal with a Load More button
- * (No sort controls, no tool/audience/revenue filters, no filter analytics —
- * the legacy page had none.)
+ *   - single-select category tabs ("All Ideas" + per-category with counts)
+ *   - 12-per-page reveal with a load-more button
+ * Plus the newest/oldest publish-date sort, and the kit's Cards/Rows view
+ * (shared with the hubs through useIdeaView).
  *
- * SEO: ALL idea cards are rendered in the server HTML, visible by default.
- * Pagination/filtering only hides cards (`hidden` class) after hydration —
- * the same display:none approach the legacy script used.
+ * SEO: ALL ideas are rendered in the server HTML, visible by default.
+ * Filtering and pagination only start after hydration; ideas that fall
+ * outside the current page or filter stay in the DOM as plain links inside
+ * a `hidden` list — the same display:none approach the legacy script used.
  *
- * Filter state lives in the URL (?category=…&q=…) via history.replaceState
- * so reload/back/forward restores it. The URL is read in an effect (not
- * useSearchParams) so the fully cached page needs no Suspense boundary and
- * the grid stays in the prerendered HTML.
+ * Filter state lives in the URL (?category=…&q=…&sort=…) via
+ * history.replaceState so reload/back/forward restores it. The URL is read
+ * in an effect (not useSearchParams) so the fully cached page needs no
+ * Suspense boundary and the list stays in the prerendered HTML.
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 
-import { IdeaCard as SharedIdeaCard } from "@/components/primitives/IdeaCard";
+import { Em, buttonClass } from "@/components/home/ui";
+import { IdeaList, ViewToggle, useIdeaView } from "@/components/public/IdeaBrowser";
+import type { PublicIdea } from "@/components/public/types";
+import { cn } from "@/lib/utils";
 
-export type IdeaCardData = {
-  slug: string;
-  title: string;
-  description: string;
-  /** null on the MDX build-time fallback path (no Convex metadata). */
-  category: string | null;
-  /** Legacy humanized label, e.g. "Developer Tools", "Ai Tools". */
-  categoryLabel: string | null;
-  /** "deep" → Deep Research badge, anything else → Quick Idea. */
-  researchLevel: string | null;
-  buildTime: string | null;
+/** A public list idea plus the publish timestamp the sort needs. */
+export type ExplorerIdea = PublicIdea & {
   /** Publish timestamp (ms) — drives the newest/oldest sort. 0 on the MDX
    *  fallback, where the sort control is hidden anyway. */
   publishedAt: number;
@@ -52,10 +49,20 @@ export type CategoryFilter = {
 
 const IDEAS_PER_PAGE = 12;
 
-const ACTIVE_BTN =
-  "filter-btn px-4 py-2 bg-white text-black rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-white/40";
-const INACTIVE_BTN =
-  "filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40";
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
+
+/** Mono underline toggle (sort + category tabs). */
+const TOGGLE =
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-[1.5px] font-mono text-[11px] uppercase tracking-[0.08em] transition-colors duration-150 ease-out motion-reduce:transition-none md:text-xs " +
+  FOCUS;
+const TOGGLE_ON = "border-home-orange-ink text-home-orange-ink";
+const TOGGLE_OFF = "border-transparent text-home-ink-2 hover:text-home-ink";
+
+const SORT_LABEL: Record<SortOrder, string> = {
+  newest: "Newest",
+  oldest: "Oldest",
+};
 
 function readUrlState(categories: Set<string>): {
   category: string;
@@ -91,7 +98,7 @@ function writeUrlState(category: string, query: string, sort: SortOrder) {
   }
 }
 
-function matches(idea: IdeaCardData, category: string, query: string): boolean {
+function matches(idea: ExplorerIdea, category: string, query: string): boolean {
   const matchesCategory = category === "all" || idea.category === category;
   const q = query.toLowerCase();
   const matchesSearch =
@@ -101,31 +108,12 @@ function matches(idea: IdeaCardData, category: string, query: string): boolean {
   return matchesCategory && matchesSearch;
 }
 
-/** One idea card — composes the shared IdeaCard primitive (elevated, dark). */
-function IdeaCard({ idea, hidden }: { idea: IdeaCardData; hidden: boolean }) {
-  return (
-    <SharedIdeaCard
-      surface="elevated"
-      hidden={hidden}
-      idea={{
-        slug: idea.slug,
-        title: idea.title,
-        description: idea.description,
-        category: idea.category ?? undefined,
-        categoryLabel: idea.categoryLabel,
-        buildTime: idea.buildTime ?? undefined,
-        researchLevel: idea.researchLevel,
-      }}
-    />
-  );
-}
-
 export function IdeasExplorer({
   ideas,
   filters,
   showFilters,
 }: {
-  ideas: IdeaCardData[];
+  ideas: ExplorerIdea[];
   filters: CategoryFilter[];
   /** false on the MDX build-time fallback (no category metadata). */
   showFilters: boolean;
@@ -134,7 +122,8 @@ export function IdeasExplorer({
   const [query, setQuery] = React.useState("");
   const [sort, setSort] = React.useState<SortOrder>("newest");
   const [page, setPage] = React.useState(1);
-  // Pre-hydration (and in the server HTML) every card is visible; the
+  const [view, setView] = useIdeaView();
+  // Pre-hydration (and in the server HTML) every idea is visible; the
   // legacy page behaved identically until its DOMContentLoaded filter ran.
   const [ready, setReady] = React.useState(false);
 
@@ -176,136 +165,207 @@ export function IdeasExplorer({
     writeUrlState(category, query, next);
   }
 
+  function clearFilters() {
+    setCategory("all");
+    setQuery("");
+    setPage(1);
+    writeUrlState("all", "", sort);
+  }
+
   // Reorder by publish date after hydration. Pre-hydration we keep the prop
   // order (Convex newest-first) so the client's first render matches the
-  // server HTML; React then reconciles the keyed cards into sorted order.
+  // server HTML.
   const ordered = React.useMemo(() => {
     if (!ready || sort === "newest") return ideas;
     return [...ideas].sort((a, b) => a.publishedAt - b.publishedAt);
   }, [ideas, ready, sort]);
 
-  const filtered = ordered.filter((idea) => matches(idea, category, query));
-  const shown = ready
-    ? new Set(
-        filtered.slice(0, page * IDEAS_PER_PAGE).map((idea) => idea.slug),
-      )
-    : null;
-  const hasMore = ready && filtered.length > page * IDEAS_PER_PAGE;
+  const filtered = ready
+    ? ordered.filter((idea) => matches(idea, category, query))
+    : ordered;
+  const shown = ready ? filtered.slice(0, page * IDEAS_PER_PAGE) : ordered;
+  const shownSlugs = new Set(shown.map((idea) => idea.slug));
+  const offPage = ready ? ordered.filter((idea) => !shownSlugs.has(idea.slug)) : [];
+  const hasMore = ready && filtered.length > shown.length;
+  const pages = Math.max(1, Math.ceil(filtered.length / IDEAS_PER_PAGE));
+  const nextCount = Math.min(IDEAS_PER_PAGE, filtered.length - shown.length);
+  const empty = ready && filtered.length === 0;
+
+  const categoryLabel =
+    category === "all" ? null : filters.find((f) => f.slug === category)?.label;
+  const resultLine = [
+    `Showing ${shown.length} of ${filtered.length}${categoryLabel ? ` ${categoryLabel} ideas` : ""}`,
+    query ? `Matching “${query}”` : null,
+    showFilters ? `${SORT_LABEL[sort]} first` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <>
-      {/* Search and Filters */}
-      {showFilters ? (
-        <div className="mb-8 space-y-4">
-          {/* Search + sort */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <Search
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                aria-hidden="true"
-              />
-              <input
-                type="text"
-                id="idea-search"
-                placeholder="Search ideas..."
-                aria-label="Search startup ideas"
-                value={query}
-                onChange={(e) => search(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
-              />
-            </div>
+      {/* Toolbar: search, sort, view, category tabs, live result line */}
+      <section aria-label="Find an idea" className="pt-11">
+        <div className="flex flex-col gap-[18px] border-t border-b border-t-home-ink border-b-home-rule py-5">
+          <div className="flex flex-wrap items-center gap-3">
+            {showFilters ? (
+              <>
+                <div className="relative min-w-0 flex-[1_1_360px]">
+                  <label htmlFor="idea-search" className="sr-only">
+                    Search startup ideas
+                  </label>
+                  <Search
+                    size={18}
+                    strokeWidth={1.75}
+                    className="pointer-events-none absolute left-[18px] top-1/2 -translate-y-1/2 text-home-ink-3"
+                    aria-hidden="true"
+                  />
+                  <input
+                    type="search"
+                    id="idea-search"
+                    placeholder="Search ideas..."
+                    value={query}
+                    onChange={(e) => search(e.target.value)}
+                    className="h-[52px] w-full rounded-full border border-home-ink-3 bg-home-card pl-12 pr-5 text-base text-home-ink placeholder:text-home-ink-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+                  />
+                </div>
 
-            {/* Sort by publish date */}
+                {/* Sort by publish date */}
+                <div
+                  className="flex items-center gap-1"
+                  role="group"
+                  aria-label="Sort ideas by publish date"
+                >
+                  <span
+                    className="pr-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3 md:text-xs"
+                    aria-hidden="true"
+                  >
+                    Sort
+                  </span>
+                  {(["newest", "oldest"] as const).map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={sort === value}
+                      onClick={() => selectSort(value)}
+                      className={cn(TOGGLE, "px-3", sort === value ? TOGGLE_ON : TOGGLE_OFF)}
+                    >
+                      {SORT_LABEL[value]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
+
+            <ViewToggle
+              view={view}
+              onChange={setView}
+              className={cn(!showFilters && "ml-auto")}
+            />
+          </div>
+
+          {/* Category filters (single-select) */}
+          {showFilters ? (
             <div
-              className="flex items-center gap-2 shrink-0"
+              className="flex gap-x-[22px] gap-y-1.5 max-md:-mx-5 max-md:overflow-x-auto max-md:px-5 max-md:no-scrollbar md:flex-wrap"
+              id="category-filters"
               role="group"
-              aria-label="Sort ideas by publish date"
+              aria-label="Filter by category"
             >
-              <span
-                className="text-xs text-neutral-500 shrink-0"
-                aria-hidden="true"
-              >
-                Sort
-              </span>
               <button
-                className={sort === "newest" ? ACTIVE_BTN : INACTIVE_BTN}
-                aria-pressed={sort === "newest"}
-                onClick={() => selectSort("newest")}
+                type="button"
+                aria-pressed={category === "all"}
+                onClick={() => selectCategory("all")}
+                className={cn(TOGGLE, category === "all" ? TOGGLE_ON : TOGGLE_OFF)}
               >
-                Newest
+                All Ideas
+                <span className={cn("ml-1.5", category !== "all" && "text-home-ink-3")}>
+                  {ideas.length}
+                </span>
               </button>
-              <button
-                className={sort === "oldest" ? ACTIVE_BTN : INACTIVE_BTN}
-                aria-pressed={sort === "oldest"}
-                onClick={() => selectSort("oldest")}
-              >
-                Oldest
-              </button>
+              {filters.map((filter) => {
+                const on = category === filter.slug;
+                return (
+                  <button
+                    key={filter.slug}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => selectCategory(filter.slug)}
+                    className={cn(TOGGLE, on ? TOGGLE_ON : TOGGLE_OFF)}
+                  >
+                    {filter.label}
+                    <span className={cn("ml-1.5", !on && "text-home-ink-3")}>
+                      {filter.count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-
-          {/* Category Filters */}
-          <div
-            className="flex flex-wrap gap-2"
-            id="category-filters"
-            role="group"
-            aria-label="Filter by category"
-          >
-            <button
-              className={category === "all" ? ACTIVE_BTN : INACTIVE_BTN}
-              aria-pressed={category === "all"}
-              onClick={() => selectCategory("all")}
-            >
-              All Ideas
-            </button>
-            {filters.map((filter) => (
-              <button
-                key={filter.slug}
-                className={category === filter.slug ? ACTIVE_BTN : INACTIVE_BTN}
-                aria-pressed={category === filter.slug}
-                onClick={() => selectCategory(filter.slug)}
-              >
-                {filter.label} ({filter.count})
-              </button>
-            ))}
-          </div>
+          ) : null}
         </div>
-      ) : null}
+        <p
+          aria-live="polite"
+          className="mt-4 font-mono text-[11px] uppercase tracking-[0.06em] text-home-ink-3 md:text-xs"
+        >
+          {resultLine}
+        </p>
+      </section>
 
-      {/* Ideas Grid — every card is in the HTML; filtering only hides */}
-      <div
+      {/* Results — every idea is in the HTML; filtering only hides */}
+      <section
+        aria-labelledby="ideas-heading"
         id="ideas-grid"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="flex flex-col gap-7 pb-16 pt-6 lg:pb-24"
       >
-        {ordered.map((idea) => (
-          <IdeaCard
-            key={idea.slug}
-            idea={idea}
-            hidden={shown !== null && !shown.has(idea.slug)}
-          />
-        ))}
-        {ready && filtered.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-neutral-500">
-              No ideas found. Try a different search or filter.
+        {/* Cards are h3s; this keeps the outline H1 → H2 → H3. */}
+        <h2 id="ideas-heading" className="sr-only">
+          All ideas
+        </h2>
+        {empty ? (
+          <div className="flex flex-col items-start gap-3.5 border-t border-home-rule py-14">
+            <p className="font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-balance text-home-ink md:text-[32px]">
+              No ideas found. <Em>Try a different search or filter.</Em>
             </p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className={buttonClass("secondary", "h-11 px-[18px] text-[15px] font-medium transition-colors duration-150 ease-out motion-reduce:transition-none")}
+            >
+              Show all ideas
+            </button>
+          </div>
+        ) : (
+          <IdeaList ideas={shown} view={view} />
+        )}
+
+        {offPage.length > 0 ? (
+          <ul hidden>
+            {offPage.map((idea) => (
+              <li key={idea.slug}>
+                <Link href={`/ideas/${idea.slug}`}>{idea.title}</Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {/* Load more (legacy script's #load-more pagination) */}
+        {ready && !empty ? (
+          <div className="flex flex-wrap items-center justify-between gap-3.5">
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-home-ink-3 md:text-xs">
+              Page {Math.min(page, pages)} of {pages} · {IDEAS_PER_PAGE} per page
+            </p>
+            {hasMore ? (
+              <button
+                type="button"
+                id="load-more"
+                onClick={() => setPage((p) => p + 1)}
+                className={buttonClass("secondary", "transition-colors duration-150 ease-out motion-reduce:transition-none")}
+              >
+                Show {nextCount} more
+              </button>
+            ) : null}
           </div>
         ) : null}
-      </div>
-
-      {/* Load More (legacy script's #load-more pagination) */}
-      {hasMore ? (
-        <div className="mt-10 text-center">
-          <button
-            id="load-more"
-            onClick={() => setPage((p) => p + 1)}
-            className="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-sm text-white font-medium hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
-          >
-            Load More Ideas
-          </button>
-        </div>
-      ) : null}
+      </section>
     </>
   );
 }

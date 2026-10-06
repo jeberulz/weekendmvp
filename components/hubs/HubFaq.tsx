@@ -1,33 +1,31 @@
-import { ChevronDown } from "lucide-react";
+import { RuledFaq } from "@/components/public/Sections";
+import { cn } from "@/lib/utils";
 
 export type HubFaqItem = { question: string; answer: string };
 
 /**
- * FAQ rendering for hub pages. Collection hubs use the legacy
- * <details>-accordion variant; audience/build-time hubs used flat cards —
- * pick with `variant`.
+ * FAQ rendering for hub pages. `accordion` is the kit's ruled `<details>`
+ * list (heading required); `cards` is the same ruled look with every answer
+ * open.
  */
 export function HubFaq({
   items,
   variant = "accordion",
+  className,
 }: {
   items: HubFaqItem[];
   variant?: "accordion" | "cards";
+  className?: string;
 }) {
   if (items.length === 0) return null;
 
   if (variant === "cards") {
     return (
-      <div className="space-y-4">
+      <div className={cn("border-t border-home-ink", className)}>
         {items.map((faq) => (
-          <div
-            key={faq.question}
-            className="p-6 bg-white/5 border border-white/10 rounded-2xl"
-          >
-            <h3 className="text-white font-medium mb-3">{faq.question}</h3>
-            <p className="text-neutral-400 text-sm leading-relaxed">
-              {faq.answer}
-            </p>
+          <div key={faq.question} className="border-b border-home-rule py-5">
+            <h3 className="font-editorial text-[20px] leading-[1.25] text-home-ink md:text-[22px]">{faq.question}</h3>
+            <p className="mt-3 max-w-[600px] text-base leading-[1.6] text-home-ink-2">{faq.answer}</p>
           </div>
         ))}
       </div>
@@ -35,24 +33,12 @@ export function HubFaq({
   }
 
   return (
-    <div className="space-y-4">
-      {items.map((faq) => (
-        <details
-          key={faq.question}
-          className="group p-6 bg-white/5 border border-white/10 rounded-2xl"
-        >
-          <summary className="flex items-center justify-between cursor-pointer list-none">
-            <span className="text-white font-medium">{faq.question}</span>
-            <ChevronDown
-              size={20}
-              className="text-neutral-400 group-open:rotate-180 transition-transform"
-              aria-hidden="true"
-            />
-          </summary>
-          <p className="mt-4 text-neutral-400 leading-relaxed">{faq.answer}</p>
-        </details>
-      ))}
-    </div>
+    <RuledFaq
+      id="hub-faq-heading"
+      heading="Questions, answered"
+      className={className}
+      items={items.map((faq) => ({ question: faq.question, answer: faq.answer }))}
+    />
   );
 }
 

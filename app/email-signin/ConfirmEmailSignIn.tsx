@@ -32,38 +32,38 @@ export function ConfirmEmailSignIn() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-8 text-zinc-100 shadow-2xl shadow-black/30">
-      <p className="text-xs font-medium uppercase tracking-[0.24em] text-amber-300">
+    <div className="w-full max-w-md rounded-2xl border border-home-rule bg-home-card p-8 text-home-ink sm:p-10">
+      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink">
         Confirm sign in
       </p>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+      <h1 className="mt-4 font-editorial text-[34px] font-normal leading-[1.08] tracking-[-0.02em] text-balance text-home-ink">
         Check the account first
       </h1>
       {ready ? (
         <>
-          <p className="mt-3 text-sm leading-6 text-zinc-400">
+          <p className="mt-3 text-[15px] leading-6 text-home-ink-2">
             This link will sign this browser in as:
           </p>
-          <p className="mt-3 break-all rounded-lg border border-white/10 bg-black px-4 py-3 text-sm text-zinc-100">
+          <p className="mt-3 break-all rounded-xl border border-home-rule bg-home-paper px-4 py-3 text-sm text-home-ink">
             {email}
           </p>
           <button
             type="button"
             onClick={confirm}
             disabled={pending}
-            className="mt-6 flex min-h-11 w-full items-center justify-center rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
+            className="mt-6 flex h-[52px] w-full items-center justify-center rounded-full bg-home-ink px-4 text-base font-semibold text-home-d1 transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
           >
             {pending ? "Confirming…" : "Yes, sign me in"}
           </button>
         </>
       ) : (
-        <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
+        <p role="alert" className="mt-4 text-sm leading-6 text-destructive">
           This sign-in link is incomplete or invalid. Request a new link from
           the login page.
         </p>
       )}
       {failed ? (
-        <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
+        <p role="alert" className="mt-4 text-sm leading-6 text-destructive">
           This sign-in link is invalid, expired, or already used. Request a new
           link and try again.
         </p>

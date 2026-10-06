@@ -8,15 +8,11 @@ import * as React from "react";
 import { ArrowRight } from "lucide-react";
 
 import {
-  SITE,
-  eventSchema,
   faqPageSchema,
   breadcrumbSchema,
   buildGraph,
   personSchema,
   organizationSchema,
-  PERSON_ID,
-  ORG_ID,
   type FaqEntry,
 } from "@/lib/seo";
 
@@ -30,26 +26,27 @@ import type {
 } from "@/components/marketing/workshop/WorkshopTicket";
 import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/WorkshopTimezones";
 
-export const WORKSHOP_DEADLINE = "2026-08-01T17:00:00+01:00";
+/** Placeholder ISO for sticky-bar prop API; statusLabel overrides the countdown. */
+export const WORKSHOP_DEADLINE = "2099-01-01T00:00:00+00:00";
 
-/* JSON-LD: Person + Organization + Event + FAQPage + Breadcrumb (SEO + AEO).
-   Person/Org come from lib/seo.ts (canonical /john-iseghohi + #organization). */
+/* JSON-LD: Person + Organization + FAQPage + Breadcrumb (SEO + AEO).
+   Event + Offer omitted while seats are paused — no past InStock event. */
 
 export const FAQS: FaqEntry[] = [
   {
     question: "What is the ship·able workshop?",
     answer:
-      "ship·able is a 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL by the end of the call. $9, live on Zoom, full replay included.",
+      "ship·able is a 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL by the end of the call. Live on Zoom, full replay included. Next date coming soon.",
   },
   {
     question: "When is the ship·able workshop?",
     answer:
-      "Saturday August 1, 2026 at 5:00 PM BST (12:00 PM EDT, 9:00 AM PDT, 5:00 PM WAT). Live on Zoom. If you can't make it live, you get the full lifetime replay.",
+      "Next date coming soon. Seats are paused until the next session is announced. Grab the free Weekend MVP Starter Kit on this page to get ready, and check back here for the date.",
   },
   {
     question: "How much does the workshop cost?",
     answer:
-      "$9 one-time. Includes the 90-minute live build, lifetime replay, the Ship Sheet worksheet, the 48-Hour Build Plan, and (live-only) the AI MVP Builder plus the Weekend MVP Starter Kit. Total stack value: $738.",
+      "When seats reopen, admission is $9 one-time. Includes the 90-minute live build, lifetime replay, the Ship Sheet worksheet, the 48-Hour Build Plan, and (live-only) the AI MVP Builder plus the Weekend MVP Starter Kit. Total stack value: $738. Seat sales are paused until the next date.",
   },
   {
     question: "Do I need to know how to code to attend?",
@@ -73,40 +70,9 @@ export const FAQS: FaqEntry[] = [
   },
 ];
 
-const SHIPABLE_EVENT = {
-  ...eventSchema({
-    name: "ship·able · Build your MVP live in 90 minutes",
-    description:
-      "A 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL. Non-technical welcome, built with AI tools. Includes the Ship Sheet, 48-hour build plan, AI MVP Builder, and the Weekend MVP Starter Kit.",
-    startDate: "2026-08-01T17:00:00+01:00",
-    endDate: "2026-08-01T19:00:00+01:00",
-    url: "/shipable",
-    location: {
-      name: "Zoom",
-      url: `${SITE}/shipable`,
-    },
-    offers: {
-      price: "9",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
-  }),
-  "@id": `${SITE}/shipable#event`,
-  image: [
-    `${SITE}/image/hero-cover-desktop.jpg`,
-    `${SITE}/image/og-image.png`,
-  ],
-  inLanguage: "en",
-  isAccessibleForFree: false,
-  maximumAttendeeCapacity: 100,
-  organizer: { "@id": ORG_ID },
-  performer: { "@id": PERSON_ID },
-};
-
 export const SCHEMA = buildGraph(
   personSchema(),
   organizationSchema(),
-  SHIPABLE_EVENT,
   faqPageSchema(FAQS),
   breadcrumbSchema([
     { label: "Home", href: "/" },
@@ -135,8 +101,8 @@ export const TLDR_ITEMS: WorkshopTldrItem[] = [
     lead: <>It&apos;s a 90-minute live workshop</>,
     rest: (
       <>
-        on Sat, Aug 1, 5:00 PM BST, on Zoom. Can&apos;t make it live? You get
-        the full replay.
+        on Zoom when the next date opens. Can&apos;t make it live? You get the
+        full replay.
       </>
     ),
   },
@@ -310,12 +276,12 @@ export const VALUE_STACK: WorkshopValueItem[] = [
 ];
 
 export const TICKET_DETAILS: WorkshopTicketDetail[] = [
-  { label: "Date", value: "Sat, Aug 1" },
+  { label: "Date", value: "Coming soon" },
   {
     label: "Start",
     value: (
       <>
-        5:00 PM <span className="accent-italic text-neutral-700">BST</span>
+        TBA <span className="accent-italic text-neutral-700">timezone</span>
       </>
     ),
   },
@@ -341,10 +307,10 @@ export const TICKET_LINES: WorkshopTicketLine[] = [
 ];
 
 export const TIMEZONES: WorkshopTimezoneRow[] = [
-  { city: "New York", date: "Sat Aug 1 · EDT", time: "12:00 PM" },
-  { city: "London", date: "Sat Aug 1 · BST", time: "5:00 PM" },
-  { city: "Lagos", date: "Sat Aug 1 · WAT", time: "5:00 PM" },
-  { city: "Los Angeles", date: "Sat Aug 1 · PDT", time: "9:00 AM" },
+  { city: "New York", date: "Next date · EDT", time: "TBA" },
+  { city: "London", date: "Next date · BST", time: "TBA" },
+  { city: "Lagos", date: "Next date · WAT", time: "TBA" },
+  { city: "Los Angeles", date: "Next date · PDT", time: "TBA" },
 ];
 
 export const TEACHER_CHIPS: React.ReactNode[] = [
@@ -402,12 +368,11 @@ export function ShipableHero() {
         <div className="md:ml-auto md:max-w-xl">
           <div className="inline-flex items-center gap-2 mb-8">
             <span
-              className="w-1.5 h-1.5 rounded-full bg-[#e9a06a] animate-pulse"
+              className="w-1.5 h-1.5 rounded-full bg-[#e9a06a]"
               aria-hidden="true"
             ></span>
-            <span className="sr-only">Live:</span>
             <span className="font-mono-eyebrow text-[11px] uppercase text-white/80">
-              Live Workshop
+              Next date coming soon
             </span>
           </div>
 
@@ -426,13 +391,14 @@ export function ShipableHero() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <p className="text-base font-medium text-white/80">
+              Next date coming soon
+            </p>
             <a
               href="#seat"
               className="group inline-flex items-center gap-3 rounded-2xl bg-white pl-7 pr-5 py-4 text-base font-semibold text-[#1a1a1a] hover:bg-neutral-100 transition-all focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] active:scale-[0.98] shadow-2xl"
             >
-              <span>Save my seat</span>
-              <span className="h-5 w-px bg-[#1a1a1a]/20" aria-hidden="true"></span>
-              <span className="text-[#A03D00]">$9</span>
+              <span>Get the free Starter Kit</span>
               <ArrowRight
                 size={18}
                 className="transition-transform group-hover:translate-x-0.5"
@@ -441,6 +407,41 @@ export function ShipableHero() {
             </a>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function ShipableNextDateCard() {
+  return (
+    <section className="px-5 pt-12 pb-16 md:pt-16 md:pb-20 max-w-5xl mx-auto">
+      <div className="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 max-w-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
+            Workshop schedule
+          </span>
+          <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
+            TBA
+          </span>
+        </div>
+        <p className="text-3xl md:text-4xl font-semibold tracking-tight">
+          Next date{" "}
+          <span className="accent-italic text-[#e9a06a]">coming soon</span>
+        </p>
+        <p className="mt-2 text-sm text-neutral-300">
+          90 minutes live · Q&amp;A after · Lifetime replay
+        </p>
+        <p className="mt-6 text-sm text-neutral-400">
+          Seat sales are paused. Get the free Starter Kit below — we&apos;ll
+          announce the next session here.
+        </p>
+        <a
+          href="#seat"
+          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#e9a06a] text-[#1a1a1a] px-5 py-3 text-sm font-semibold hover:bg-[#f0b380] transition-all focus:outline-none focus:ring-2 focus:ring-white/40"
+        >
+          Get the free Starter Kit
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
       </div>
     </section>
   );

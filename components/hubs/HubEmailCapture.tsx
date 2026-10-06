@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, Mail } from "lucide-react";
 
+import { Icon } from "@/components/home/icons";
+import { Container, Eyebrow, buttonClass } from "@/components/home/ui";
 import { subscribeViaApi } from "@/lib/beehiiv-client";
 import { trackEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
@@ -26,10 +27,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type Status = "idle" | "loading" | "success" | "error";
 
 const MESSAGE_CLASS: Record<Status, string> = {
-  idle: "text-neutral-400",
-  loading: "text-neutral-400",
-  success: "text-white",
-  error: "text-amber-300",
+  idle: "text-home-ink-2",
+  loading: "text-home-ink-2",
+  success: "text-home-ink",
+  error: "text-home-clay-ink",
 };
 
 export function HubEmailCapture({
@@ -40,7 +41,6 @@ export function HubEmailCapture({
   footnote = "Free. 2 emails a day. Unsubscribe in one click.",
   utmCampaign = "newsletter",
   trackingProps,
-  panelClassName,
 }: {
   eyebrow: string;
   heading: string;
@@ -51,8 +51,6 @@ export function HubEmailCapture({
   utmCampaign?: string;
   /** Extra GA/Pixel event props (e.g. tool_name, surface). */
   trackingProps?: Record<string, string>;
-  /** Accent gradient/border for the panel (literal Tailwind classes). */
-  panelClassName?: string;
 }) {
   const headingId = React.useId();
   const emailId = React.useId();
@@ -99,34 +97,25 @@ export function HubEmailCapture({
   }
 
   return (
-    <section className="mt-24" aria-labelledby={headingId}>
-      <div
-        className={cn(
-          "p-8 md:p-12 rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-white/[0.07] to-transparent",
-          panelClassName,
-        )}
-      >
-        <div className="max-w-2xl">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-neutral-300">
-            <Mail size={14} aria-hidden="true" />
-            {eyebrow}
-          </p>
-          <h2
-            id={headingId}
-            className="mt-4 text-2xl md:text-3xl font-medium text-white tracking-tight"
-          >
-            {heading}
-          </h2>
-          <p className="mt-3 text-neutral-400 leading-relaxed">{body}</p>
-
-          <form onSubmit={handleSubmit} noValidate className="mt-8">
-            <label
-              htmlFor={emailId}
-              className="block text-sm font-medium text-neutral-200"
+    <section className="py-10 lg:py-14" aria-labelledby={headingId}>
+      <Container>
+        <div className="grid grid-cols-1 gap-8 rounded-2xl border border-home-rule bg-home-card p-7 md:p-10 lg:grid-cols-2 lg:items-center lg:gap-14 lg:p-12">
+          <div className="flex flex-col gap-3.5">
+            <Eyebrow>{eyebrow}</Eyebrow>
+            <h2
+              id={headingId}
+              className="font-editorial text-[30px] font-normal leading-[1.08] tracking-[-0.02em] text-balance text-home-ink md:text-[40px]"
             >
+              {heading}
+            </h2>
+            <p className="text-pretty text-base leading-[1.55] text-home-ink-2 md:text-[17px]">{body}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate>
+            <label htmlFor={emailId} className="block text-sm font-medium text-home-ink">
               Email address
             </label>
-            <div className="mt-2 flex flex-col sm:flex-row gap-3">
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
               <input
                 id={emailId}
                 name="email"
@@ -145,42 +134,33 @@ export function HubEmailCapture({
                     setMessage("");
                   }
                 }}
-                /* border-white/40 keeps the field boundary at 3:1 against
-                   the panel (WCAG 1.4.11 non-text contrast). */
-                className="flex-1 rounded-full border border-white/40 bg-white/10 px-5 py-4 text-sm text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-white/60 focus:border-white transition-colors disabled:opacity-60"
+                className="h-[52px] min-w-0 flex-1 rounded-full border border-home-ink bg-home-paper px-5 text-base text-home-ink placeholder:text-home-ink-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:opacity-60 motion-reduce:transition-none"
               />
               <button
                 type="submit"
                 disabled={isSubmitting || isDone}
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] disabled:opacity-60 disabled:cursor-not-allowed"
+                className={buttonClass("primary", "disabled:cursor-not-allowed disabled:opacity-60")}
               >
                 <span>
-                  {isSubmitting
-                    ? "Signing you up…"
-                    : isDone
-                      ? "Subscribed ✓"
-                      : buttonLabel}
+                  {isSubmitting ? "Signing you up…" : isDone ? "Subscribed ✓" : buttonLabel}
                 </span>
-                {isDone ? null : <ArrowRight size={14} aria-hidden="true" />}
+                {isDone ? null : <Icon name="arrow" size={18} strokeWidth={1.75} />}
               </button>
             </div>
-            <p id={footnoteId} className="mt-3 text-xs text-neutral-400">
+            <p id={footnoteId} className="mt-3 text-xs text-home-ink-3">
               {footnote}
             </p>
             <p
               id={messageId}
               role="status"
               aria-live="polite"
-              className={cn(
-                "mt-2 min-h-5 text-sm",
-                MESSAGE_CLASS[status],
-              )}
+              className={cn("mt-2 min-h-5 text-sm", MESSAGE_CLASS[status])}
             >
               {message}
             </p>
           </form>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

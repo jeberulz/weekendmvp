@@ -1,7 +1,7 @@
 /**
  * Marketing section theme + accent variant tokens.
  *
- * Mirrors the proven pattern in `components/hubs/hub-theme.ts`: every
+ * Uses the literal-class-map pattern (Tailwind only sees literals): every
  * Tailwind class is spelled out as a literal so the v4 source scan can
  * see it. Sections read tokens at render via `tokensFor(theme, accent)`
  * instead of building class strings with template literals.

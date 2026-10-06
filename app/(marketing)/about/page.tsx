@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
-import { AuraBackground } from "@/components/marketing/AuraBackground";
+import { Icon } from "@/components/home/icons";
+import { ButtonLink, Container, Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { PageHeader } from "@/components/public/PageHeader";
+import { newsreaderEditorial } from "@/lib/fonts";
 import {
   SITE,
   breadcrumbSchema,
@@ -13,6 +15,7 @@ import {
   PERSON_PATH,
   personSchema,
 } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 const TITLE = "About Weekend MVP";
 const DESCRIPTION =
@@ -88,151 +91,167 @@ const FINDS = [
   },
 ] as const;
 
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-home-orange-ink";
+
+/** A ruled row: mono label in the left column, content on the right. */
+function Row({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby={id}
+      className="grid grid-cols-1 gap-4 border-t border-home-rule py-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12"
+    >
+      <h2
+        id={id}
+        className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3 md:text-xs"
+      >
+        {label}
+      </h2>
+      <div>{children}</div>
+    </section>
+  );
+}
+
 export default function AboutPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden pt-24 selection:bg-white/20 selection:text-white">
+    <div
+      className={cn(
+        newsreaderEditorial.variable,
+        "theme-desk relative min-h-screen overflow-x-clip bg-home-paper font-sans text-home-ink selection:bg-home-orange-light/40",
+      )}
+    >
       <JsonLd schema={SCHEMA} />
-      <AuraBackground />
-      <div className="fixed inset-0 pointer-events-none z-0 grid-lines" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
 
-      <main className="relative z-10 max-w-3xl mx-auto px-6 py-32 mb-24">
-        <p className="text-neutral-500 text-xs font-medium uppercase tracking-wider mb-4">
-          About
-        </p>
-        <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-6">
-          Weekend MVP
-        </h1>
-        <p className="text-lg md:text-xl text-neutral-400 font-light leading-relaxed mb-16">
-          A site for busy people who want to ship a real product in a weekend —
-          even if they&apos;ve never written code. Pick a validated idea, follow
-          a tight build plan, and leave Sunday with a live link and a waitlist.
-        </p>
-
-        <section className="mb-16" aria-labelledby="what-it-is">
-          <h2
-            id="what-it-is"
-            className="text-white font-medium text-xl mb-4 tracking-tight"
-          >
-            What it is
-          </h2>
-          <p className="text-neutral-400 leading-relaxed mb-4">
-            Weekend MVP is not another idea dump. Every idea is broken down into
-            the problem, who pays, how to build it with AI tools, and what to
-            ship first. Programmatic hubs group ideas by audience, tool, and
-            problem so you can start from where you already are.
+      <main id="main">
+        <PageHeader eyebrow="About" title="Weekend MVP" className="pb-12 lg:pb-14">
+          <p className="max-w-[760px] font-editorial text-[26px] leading-[1.25] tracking-[-0.01em] text-home-ink text-pretty md:text-[32px]">
+            A site for busy people who want to ship a real product in a weekend —
+            even if they&apos;ve never written code. Pick a validated idea, follow
+            a tight build plan, and{" "}
+            <Em>leave Sunday with a live link and a waitlist.</Em>
           </p>
-          <p className="text-neutral-400 leading-relaxed">
-            The free{" "}
-            <Link
-              href="/starter-kit"
-              className="text-neutral-200 hover:text-white underline underline-offset-2"
-            >
-              Starter Kit
-            </Link>{" "}
-            is the operating system: scorecard, one-page spec, 48-hour plan, and
-            copy-paste prompts.
-          </p>
-        </section>
+        </PageHeader>
 
-        <section className="mb-16" aria-labelledby="who-for">
-          <h2
-            id="who-for"
-            className="text-white font-medium text-xl mb-4 tracking-tight"
-          >
-            Who it&apos;s for
-          </h2>
-          <p className="text-neutral-400 leading-relaxed">
-            Non-technical founders, designers, freelancers, and side-project
-            builders who are tired of endless tutorials and want one concrete
-            thing live by Monday. If you can follow a checklist and talk to
-            customers, you can use this.
-          </p>
-        </section>
-
-        <section className="mb-16" aria-labelledby="what-youll-find">
-          <h2
-            id="what-youll-find"
-            className="text-white font-medium text-xl mb-6 tracking-tight"
-          >
-            What you&apos;ll find
-          </h2>
-          <ul className="space-y-6">
-            {FINDS.map((item) => (
-              <li key={item.href}>
+        <Container className="pb-20 lg:pb-28">
+          <Row id="what-it-is" label="What it is">
+            <div className="flex max-w-[680px] flex-col gap-4">
+              <p className="text-lg leading-[1.65] text-home-ink">
+                Weekend MVP is not another idea dump. Every idea is broken down
+                into the problem, who pays, how to build it with AI tools, and
+                what to ship first. Programmatic hubs group ideas by audience,
+                tool, and problem so you can start from where you already are.
+              </p>
+              <p className="text-lg leading-[1.65] text-home-ink-2">
+                The free{" "}
                 <Link
-                  href={item.href}
-                  className="group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40 rounded-sm"
+                  href="/starter-kit"
+                  className={cn(
+                    "text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink motion-reduce:transition-none",
+                    FOCUS,
+                  )}
                 >
-                  <span className="text-white font-medium group-hover:text-neutral-200 transition-colors inline-flex items-center gap-2">
-                    {item.title}
-                    <ArrowRight
-                      className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span className="block text-sm text-neutral-500 mt-1 leading-relaxed">
-                    {item.body}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+                  Starter Kit
+                </Link>{" "}
+                is the operating system: scorecard, one-page spec, 48-hour plan,
+                and copy-paste prompts.
+              </p>
+            </div>
+          </Row>
 
-        <section
-          className="mb-16 border-t border-white/10 pt-12"
-          aria-labelledby="built-by"
-        >
-          <h2
-            id="built-by"
-            className="text-white font-medium text-xl mb-4 tracking-tight"
-          >
-            Built by John Iseghohi
-          </h2>
-          <p className="text-neutral-400 leading-relaxed mb-6">
-            John runs Weekend MVP and a community of 400+ weekend builders. He
-            publishes idea breakdowns, workshops, and the starter kit so more
-            people ship instead of spiral.
-          </p>
-          <Link
-            href={PERSON_PATH}
-            className="inline-flex items-center gap-2 text-white font-medium hover:text-neutral-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40 rounded-sm"
-          >
-            About John
-            <ArrowRight className="w-4 h-4" aria-hidden="true" />
-          </Link>
-        </section>
+          <Row id="who-for" label="Who it's for">
+            <p className="max-w-[680px] text-lg leading-[1.65] text-home-ink">
+              Non-technical founders, designers, freelancers, and side-project
+              builders who are tired of endless tutorials and want one concrete
+              thing live by Monday. If you can follow a checklist and talk to
+              customers, you can use this.
+            </p>
+          </Row>
 
-        <section
-          className="rounded-2xl border border-white/10 bg-white/[0.02] p-8"
-          aria-labelledby="about-cta"
-        >
-          <h2
-            id="about-cta"
-            className="text-white font-medium text-lg mb-2 tracking-tight"
+          <Row id="what-youll-find" label="What you'll find">
+            <ul className="grid grid-cols-1 gap-x-10 md:grid-cols-2">
+              {FINDS.map((item, i) => (
+                <li
+                  key={item.href}
+                  className={cn(
+                    "border-t border-home-rule first:border-t-0 md:[&:nth-child(2)]:border-t-0",
+                    i > 1 ? "md:pt-7" : "",
+                  )}
+                >
+                  <Link
+                    href={item.href}
+                    className={cn("group flex flex-col gap-2 py-6 md:py-0 md:pb-7", FOCUS)}
+                  >
+                    <span className="flex items-center justify-between gap-4 font-editorial text-[24px] leading-[1.15] text-home-ink md:text-[28px]">
+                      {item.title}
+                      <Icon
+                        name="arrow"
+                        size={20}
+                        strokeWidth={1.75}
+                        color="var(--color-home-orange-ink)"
+                        className="transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+                      />
+                    </span>
+                    <span className="text-[15px] leading-[1.55] text-home-ink-2">
+                      {item.body}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Row>
+
+          <Row id="built-by" label="Built by John Iseghohi">
+            <div className="flex max-w-[680px] flex-col items-start gap-5">
+              <p className="text-lg leading-[1.65] text-home-ink-2">
+                John runs Weekend MVP and a community of 400+ weekend builders.
+                He publishes idea breakdowns, workshops, and the starter kit so
+                more people ship instead of spiral.
+              </p>
+              <ButtonLink href={PERSON_PATH} tone="secondary">
+                About John
+              </ButtonLink>
+            </div>
+          </Row>
+
+          <section
+            aria-labelledby="about-cta"
+            className="mt-6 flex flex-col gap-7 rounded-[22px] bg-home-ink p-7 text-home-d1 md:p-12 lg:flex-row lg:items-end lg:justify-between"
           >
-            Start this weekend
-          </h2>
-          <p className="text-neutral-400 text-sm leading-relaxed mb-6">
-            Grab the free kit, pick an idea, or skim a guide — then ship
-            something small enough to learn from.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/starter-kit"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-neutral-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Get the Starter Kit
-            </Link>
-            <Link
-              href="/startup-ideas"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-white/15 text-white text-sm font-medium hover:bg-white/5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Browse ideas
-            </Link>
-          </div>
-        </section>
+            <div className="flex max-w-[640px] flex-col gap-3">
+              <h2
+                id="about-cta"
+                className="font-editorial text-[32px] font-normal leading-[1.08] tracking-[-0.02em] text-balance md:text-[40px]"
+              >
+                Start <Em dark>this weekend</Em>
+              </h2>
+              <p className="text-base leading-[1.55] text-home-d2 md:text-[17px]">
+                Grab the free kit, pick an idea, or skim a guide — then ship
+                something small enough to learn from.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/starter-kit" tone="dark" className="focus-visible:outline-home-orange-light">
+                Get the Starter Kit
+              </ButtonLink>
+              <ButtonLink
+                href="/startup-ideas"
+                tone="ghost-dark"
+                arrow={false}
+                className="focus-visible:outline-home-orange-light"
+              >
+                Browse ideas
+              </ButtonLink>
+            </div>
+          </section>
+        </Container>
       </main>
     </div>
   );

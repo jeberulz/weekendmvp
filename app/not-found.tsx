@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Home, Lightbulb, Mail } from "lucide-react";
 
-import { MegaNav } from "@/components/layout/MegaNav";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { AuraBackground } from "@/components/marketing/AuraBackground";
+import { ButtonLink, Container, Em, Stamp } from "@/components/home/ui";
+import { PublicShell } from "@/components/public/PublicShell";
 import {
   AttemptedPath,
   KitSignup404,
@@ -47,40 +44,30 @@ export const metadata: Metadata = {
 
 /**
  * App-wide 404, ported from 404.html. Lives outside the (marketing) route
- * group, so the marketing layout does not wrap it — MegaNav and SiteFooter
- * are rendered directly here to recreate the chrome.
+ * group, so it brings its own chrome: the research-desk `PublicShell` (cream
+ * nav, paper ground, warm-ink footer). The page's closing call is the email
+ * capture below, so the shared band is off.
  */
 export default function NotFound() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden pt-24 selection:bg-white/20 selection:text-white">
-      <AuraBackground />
-
-      {/* Background Grid */}
-      <div className="fixed inset-0 pointer-events-none z-0 grid-lines" />
-
-      {/* Top Glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
-
-      <MegaNav />
-
-      <main className="relative z-10 mb-20">
-        {/* 404 Hero */}
-        <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center animate-enter">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-8 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-neutral-400">
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-amber-400"
-              aria-hidden="true"
-            />
+    <PublicShell footerCta={false}>
+      {/* 404 Hero */}
+      <header className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="home-dots absolute inset-0 opacity-60 [mask-image:linear-gradient(#000_50%,transparent)]"
+        />
+        <Container className="relative flex flex-col items-center gap-[22px] pb-14 pt-32 text-center md:pt-40 lg:pb-16">
+          <Stamp id="nf-ring" text="NOT FOUND · ERROR 404 · NOT FOUND · " icon="search" />
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink md:text-xs">
             <span className="sr-only">Error:</span>
             Error 404 — Page not found
-          </div>
-
-          <h1 className="text-6xl md:text-8xl font-medium tracking-tighter text-white mb-6">
-            This page didn&apos;t
-            <br className="hidden sm:block" /> ship.
+          </p>
+          <h1 className="font-editorial text-[46px] font-normal leading-none tracking-[-0.03em] text-balance text-home-ink md:text-[72px] lg:text-[88px]">
+            This page <Em>didn&apos;t ship.</Em>
           </h1>
 
-          <p className="text-lg text-neutral-400 max-w-xl mx-auto mb-2">
+          <p className="max-w-[540px] text-pretty text-lg leading-[1.55] text-home-ink-2 md:text-xl">
             We couldn&apos;t find the page you were looking for. It may have
             been moved, renamed, or never made it past the weekend.
           </p>
@@ -89,57 +76,48 @@ export default function NotFound() {
           <AttemptedPath />
 
           {/* Primary actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-            <Link
-              href="/"
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all w-full sm:w-auto"
-            >
-              <Home size={16} aria-hidden="true" />
-              <span>Back to home</span>
-            </Link>
-            <Link
+          <div className="flex w-full flex-col items-center justify-center gap-3 pt-1.5 sm:w-auto sm:flex-row">
+            <ButtonLink href="/" tone="primary" arrow={false} className="w-full sm:w-auto">
+              Back to home
+            </ButtonLink>
+            <ButtonLink
               href="/startup-ideas"
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/5 border border-white/10 text-white rounded-xl text-sm font-semibold tracking-tight hover:bg-white/10 transition-all w-full sm:w-auto"
+              tone="secondary"
+              arrow={false}
+              className="w-full sm:w-auto"
             >
-              <Lightbulb size={16} aria-hidden="true" />
-              <span>Browse all ideas</span>
-            </Link>
+              Browse all ideas
+            </ButtonLink>
           </div>
-        </section>
+        </Container>
+      </header>
 
-        {/* Contextual recommendations */}
-        <NotFoundRecommendations />
+      {/* Contextual recommendations */}
+      <NotFoundRecommendations />
 
-        {/* Email capture / conversion */}
-        <section className="max-w-3xl mx-auto px-6 py-12">
-          <div className="relative overflow-hidden bg-neutral-950/70 border border-white/10 rounded-3xl p-8 md:p-12">
-            {/* Glow */}
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-white/10 blur-[100px] rounded-full pointer-events-none" />
+      {/* Email capture / conversion */}
+      <section aria-labelledby="nf-kit" className="pb-20 lg:pb-28">
+        <Container className="max-w-[760px] xl:px-0">
+          <div className="rounded-2xl border border-home-rule bg-home-card p-7 text-center md:p-12">
+            <h2
+              id="nf-kit"
+              className="mb-2 font-editorial text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-home-ink md:text-[34px]"
+            >
+              Don&apos;t leave <Em>empty-handed</Em>
+            </h2>
+            <p className="mx-auto mb-8 max-w-md text-[15px] leading-[1.55] text-home-ink-2">
+              Get the free Weekend MVP Starter Kit plus a fresh build-ready
+              idea in your inbox each week. No spam, unsubscribe anytime.
+            </p>
 
-            <div className="relative text-center">
-              <div className="inline-flex w-12 h-12 items-center justify-center bg-white/5 border border-white/10 rounded-2xl text-white mb-5">
-                <Mail size={22} aria-hidden="true" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-white mb-2">
-                Don&apos;t leave empty-handed
-              </h2>
-              <p className="text-neutral-400 text-sm max-w-md mx-auto mb-8">
-                Get the free Weekend MVP Starter Kit plus a fresh build-ready
-                idea in your inbox each week. No spam, unsubscribe anytime.
-              </p>
+            <KitSignup404 />
 
-              <KitSignup404 />
-
-              <p className="text-[10px] text-neutral-600 mt-6">
-                By joining, you agree to receive the kit and occasional
-                updates.
-              </p>
-            </div>
+            <p className="mt-6 text-xs text-home-ink-3">
+              By joining, you agree to receive the kit and occasional updates.
+            </p>
           </div>
-        </section>
-      </main>
-
-      <SiteFooter />
-    </div>
+        </Container>
+      </section>
+    </PublicShell>
   );
 }

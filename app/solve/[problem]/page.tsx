@@ -15,17 +15,17 @@ import {
   Wrench,
 } from "lucide-react";
 
+import { Container, Em } from "@/components/home/ui";
+import { categoryName } from "@/components/ideas/idea-meta";
 import { JsonLd } from "@/components/primitives/JsonLd";
-import { HubRelatedTiles } from "@/components/hubs/HubRelatedTiles";
-import {
-  HubBreadcrumb,
-  HubHero,
-  HubShell,
-} from "@/components/hubs/HubShell";
 import { HubCta } from "@/components/hubs/HubCta";
-import { HubIdeasGrid } from "@/components/hubs/HubIdeasGrid";
-import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import { fetchAllIdeas } from "@/components/hubs/hub-data";
+import { IdeaBrowser } from "@/components/public/IdeaBrowser";
+import { PageHeader } from "@/components/public/PageHeader";
+import { PublicShell } from "@/components/public/PublicShell";
+import { InkBand, KeepBrowsing, SectionHeading } from "@/components/public/Sections";
+import { toPublicIdeas } from "@/lib/public/ideas";
+import { cn } from "@/lib/utils";
 import {
   SITE,
   breadcrumbSchema,
@@ -54,7 +54,6 @@ type SolvePage = {
   metaDescription: string;
   title: string; // page hero h1 — "How to Automate X" pattern
   description: string;
-  color: HubColor;
   icon: typeof CheckCircle2;
   problemIntro: string;
   problemStats: SolveStat[];
@@ -73,7 +72,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Customer Support",
     description:
       "Handle more support tickets without hiring more people. Build AI-powered tools that answer common questions, triage issues, and escalate when needed.",
-    color: "blue",
     icon: Headphones,
     problemIntro:
       'Customer support doesn\'t scale linearly. As your product grows, so does the volume of support requests—but most of them are asking the same 20 questions. Small teams get overwhelmed, response times suffer, and founder time gets eaten up answering "how do I reset my password?" for the hundredth time. Meanwhile, customers expect instant responses, 24/7.',
@@ -99,7 +97,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Lead Generation",
     description:
       "Turn scattered prospect lists into a repeatable pipeline. Build AI-powered lead research, scoring, and outreach workflows that help founders find buyers faster.",
-    color: "orange",
     icon: Target,
     problemIntro:
       "Lead generation breaks when founders rely on cold spreadsheets, generic lists, and one-off outreach bursts. The hard part is not finding more names — it is spotting high-intent buyers, personalizing the first message, and following up without losing context. AI can turn research, qualification, and reminders into a weekend build that creates pipeline while you focus on sales calls.",
@@ -125,7 +122,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Content Creation",
     description:
       "Move from blank page to publish-ready assets faster. Build AI tools that turn raw expertise into briefs, drafts, repurposed posts, and reusable content workflows.",
-    color: "violet",
     icon: PenLine,
     problemIntro:
       "Content creation slows down when every post starts from a blank page and every channel needs a different format. Founders and creators have ideas, calls, notes, and customer questions, but turning that raw material into consistent publishing takes hours. AI content creation tools can capture inputs, shape drafts, and repurpose assets so a weekend MVP becomes a repeatable content engine.",
@@ -151,7 +147,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Invoicing",
     description:
       "Stop chasing late invoices manually. Build automated reminder systems, payment tracking, and collection workflows that recover cash without awkward conversations.",
-    color: "emerald",
     icon: Receipt,
     problemIntro:
       "Cash flow is the #1 killer of small businesses, and late invoices are the #1 cause of cash flow problems. Manually chasing payments is awkward, time-consuming, and inconsistent — most freelancers and small teams give up after one or two reminders, leaving thousands on the table every quarter.",
@@ -177,7 +172,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Knowledge Transfer",
     description:
       "Stop losing institutional knowledge when people leave or move teams. Build AI-powered tools that capture, organize, and surface knowledge when it's needed.",
-    color: "amber",
     icon: Library,
     problemIntro:
       "Every team has critical knowledge trapped in someone's head, an old Slack thread, or a doc nobody can find. When that person leaves — or just goes on vacation — the team grinds to a halt rediscovering what should be obvious. Manual documentation rarely keeps up, and traditional wikis go stale within months.",
@@ -203,7 +197,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Meeting Notes",
     description:
       "Stop ending meetings with messy transcripts and no follow-through. Build AI tools that turn raw meeting audio into clean summaries, action items, and decisions.",
-    color: "purple",
     icon: FileText,
     problemIntro:
       "Most teams already record meetings, but the raw transcripts are unusable. Action items get lost, decisions get re-litigated, and the person who took the notes spends an hour cleaning them up after every call. AI can extract structure from the noise — the opportunity is the workflow around it.",
@@ -229,7 +222,6 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
     title: "How to Automate Scheduling",
     description:
       "Kill the back-and-forth of finding a meeting time. Build tools that share availability, handle timezones, and book directly into calendars — for use cases Calendly doesn't cover.",
-    color: "rose",
     icon: Calendar,
     problemIntro:
       "Calendly nailed the 1-on-1 booking link, but most scheduling pain is more complex than that: rotating availability across a team, coordinating across timezones, booking conditional on prep steps, or handling rescheduling cascades. Every vertical (interviews, healthcare, consulting, group classes) has its own quirks generic tools don't solve.",
@@ -330,6 +322,29 @@ export default async function SolveHubPage({
   return <CachedSolveHub slug={problem} />;
 }
 
+/** Italic tail appended to the H1 (WP56 ruling: the existing title stays verbatim first). */
+const PROBLEM_TAIL: Record<string, string> = {
+  "customer-support": "without hiring.",
+  "lead-generation": "without the busywork.",
+  "content-creation": "without starting from scratch.",
+  invoicing: "without chasing payments.",
+  "knowledge-transfer": "so it stays when people leave.",
+  "meeting-notes": "without taking notes.",
+  scheduling: "without the email ping-pong.",
+};
+
+/** "a, b & c" for the meta line. */
+function joinNames(names: string[]): string {
+  if (names.length < 2) return names.join("");
+  return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
+}
+
+/** Splits a stat that opens with a percentage ("70%+ of …") so the number can be set large. */
+function splitLeadingPercent(stat: string): { figure: string; plus: string; rest: string } | null {
+  const match = /^(\d[\d,.]*%)(\+?)\s+(.+)$/.exec(stat);
+  return match ? { figure: match[1], plus: match[2], rest: match[3] } : null;
+}
+
 async function CachedSolveHub({ slug }: { slug: string }) {
   const page = PROBLEM_PAGES[slug];
   const allIdeas = await fetchAllIdeas();
@@ -343,118 +358,117 @@ async function CachedSolveHub({ slug }: { slug: string }) {
     )
     .slice(0, 6);
 
-  const color = COLOR_STYLES[page.color];
-  const Icon = page.icon;
   const schema = buildSchema(page);
+  const list = toPublicIdeas(matched);
+  const tail = PROBLEM_TAIL[slug];
+  const lead = splitLeadingPercent(page.problemStats[0]?.stat ?? "");
+  const stats = lead ? page.problemStats.slice(1) : page.problemStats;
 
   return (
-    <HubShell>
+    <PublicShell>
       <JsonLd schema={schema} />
 
-      <HubBreadcrumb
-        items={[
+      <PageHeader
+        crumbs={[
           { label: "Home", href: "/" },
           { label: page.shortTitle },
         ]}
-      />
-
-      <HubHero
-        icon={<Icon size={28} className={color.text} aria-hidden="true" />}
-        iconBoxClassName={color.bg10}
-        title={page.title}
+        title={
+          <>
+            {page.title}
+            {tail && (
+              <>
+                {" "}
+                <Em>{tail}</Em>
+              </>
+            )}
+          </>
+        }
         description={page.description}
+        meta={[
+          `${page.steps.length}-step quickstart`,
+          `Ideas from ${joinNames(page.categoryMatches.map(categoryName))}`,
+        ]}
       />
 
-      {/* Problem framing */}
-      <section className="mb-16" aria-labelledby="overview-heading">
-        <h2
-          id="overview-heading"
-          className="text-2xl font-medium text-white mb-6"
-        >
-          The Problem
-        </h2>
-        <div className="p-8 bg-white/5 border border-white/10 rounded-3xl">
-          <p className="text-neutral-300 leading-relaxed mb-8">
-            {page.problemIntro}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {page.problemStats.map((stat) => (
-              <div
-                key={stat.stat}
-                className="p-5 bg-white/5 border border-white/10 rounded-2xl"
-              >
-                <p className="text-sm text-neutral-400">{stat.stat}</p>
-              </div>
-            ))}
+      {/* Problem framing: intro on the left, the stats as a ruled list on the right */}
+      <section aria-labelledby="overview-heading" className="pt-14 lg:pt-20">
+        <Container className="grid grid-cols-1 items-start gap-10 border-t border-home-ink pt-10 lg:grid-cols-2 lg:gap-16 lg:pt-12">
+          <SectionHeading id="overview-heading" intro={page.problemIntro} className="gap-5">
+            The Problem
+          </SectionHeading>
+          <div className="flex flex-col">
+            {lead ? (
+              <p className="mb-6 flex flex-col gap-2">
+                <span className="font-editorial text-[72px] leading-[0.9] tracking-[-0.04em] text-home-ink md:text-[96px]">
+                  {lead.figure}
+                  {lead.plus ? <span className="text-home-orange">{lead.plus}</span> : null}
+                </span>{" "}
+                <span className="max-w-[440px] text-lg leading-[1.5] text-home-ink">{lead.rest}</span>
+              </p>
+            ) : null}
+            <ul className="border-b border-home-rule">
+              {stats.map((stat) => (
+                <li
+                  key={stat.stat}
+                  className={cn(
+                    "border-t py-4 text-base leading-[1.5] text-home-ink-2",
+                    lead ? "border-home-rule" : "border-home-rule first:border-home-ink",
+                  )}
+                >
+                  {stat.stat}
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Solution Ideas — curated from Convex */}
-      {matched.length > 0 ? (
-        <section className="mb-16" aria-labelledby="solutions-heading">
-          <h2
-            id="solutions-heading"
-            className="text-2xl font-medium text-white mb-8"
-          >
-            Solution Ideas
-          </h2>
-          <HubIdeasGrid ideas={matched} />
-        </section>
+      {list.length > 0 ? (
+        <Container className="py-14 lg:py-20">
+          <IdeaBrowser ideas={list} headingId="solutions-heading" heading="Solution Ideas" />
+        </Container>
       ) : null}
 
-      {/* Quick Start Guide — HowTo steps */}
-      <section className="mb-16" aria-labelledby="quickstart-heading">
-        <h2
-          id="quickstart-heading"
-          className="text-2xl font-medium text-white mb-8"
-        >
-          Quick Start Guide
-        </h2>
-        <ol className="space-y-4">
-          {page.steps.map((step, i) => (
-            <li
-              key={step.name}
-              className="flex gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl"
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm flex-shrink-0 ${color.bg10} ${color.text}`}
-              >
-                {i + 1}
-              </div>
-              <div>
-                <h3 className="text-white font-medium mb-1">{step.name}</h3>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  {step.text}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {/* Quick Start Guide — HowTo steps, full-bleed ink */}
+      <InkBand labelledBy="quickstart-heading">
+        <div className="flex flex-col gap-10 lg:gap-12">
+          <SectionHeading id="quickstart-heading" dark>
+            Quick Start <Em dark>Guide</Em>
+          </SectionHeading>
+          <ol className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {page.steps.map((step, i) => (
+              <li key={step.name} className="flex flex-col gap-3 border-t border-home-dr pt-5">
+                <span aria-hidden className="font-editorial text-[40px] italic leading-none text-home-orange-light">
+                  {i + 1}
+                </span>
+                <h3 className="font-editorial text-2xl font-normal leading-[1.15] text-home-d1">{step.name}</h3>
+                <p className="text-[15px] leading-[1.55] text-home-d2">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </InkBand>
 
       {/* Related Problems */}
-      <HubRelatedTiles
-        title="Related Problems to Solve"
-        headingId="related-heading"
-        className="mt-0 mb-16"
-        items={PROBLEM_SLUGS.filter((s) => s !== slug).map((other) => ({
-          slug: other,
-          label: PROBLEM_PAGES[other].shortTitle.replace("Automate ", ""),
-          href: `/solve/${other}`,
-          icon: PROBLEM_PAGES[other].icon,
-          iconClassName: "text-neutral-400",
-        }))}
-        allHref="/startup-ideas"
-        allLabel="All Ideas"
-        columnsLgClassName="lg:grid-cols-5"
+      <KeepBrowsing
+        id="related-heading"
+        heading="Related Problems to Solve"
+        links={[
+          ...PROBLEM_SLUGS.filter((s) => s !== slug).map((other) => ({
+            href: `/solve/${other}`,
+            label: PROBLEM_PAGES[other].shortTitle.replace("Automate ", ""),
+          })),
+          { href: "/startup-ideas", label: "All Ideas" },
+        ]}
       />
 
       <HubCta
         heading={`Ready to solve ${page.shortTitle.replace("Automate ", "").toLowerCase()}?`}
         body="Get the Starter Kit and ship your first solution this weekend."
       />
-    </HubShell>
+    </PublicShell>
   );
 }
 

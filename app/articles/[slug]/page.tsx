@@ -3,9 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 
+import { Container } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { FooterCta } from "@/components/public/FooterCta";
+import { Breadcrumbs, MetaLine } from "@/components/public/PageHeader";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { SITE, articleSchema } from "@/lib/seo";
+import { articleMdxComponents } from "../article-prose";
 
 const CONTENT_DIR = "content/articles";
 
@@ -148,81 +152,69 @@ async function CachedArticle({ slug }: { slug: string }) {
   };
 
   return (
-    <article className="relative z-10 pt-32 pb-24">
-      <JsonLd schema={schema} />
-      <div className="max-w-2xl mx-auto px-6">
-        {/* Breadcrumb */}
-        <nav className="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-white transition-colors">
-            Home
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/articles" className="hover:text-white transition-colors">
-            Articles
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-neutral-400">{fm.title}</span>
-        </nav>
-
-        {/* Header */}
-        <header className="mb-16">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            {fm.category ? (
-              <span className="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
-                {fm.category}
-              </span>
-            ) : null}
-            <span className="text-neutral-600 text-xs">•</span>
-            <span className="text-neutral-600 text-xs">
-              By{" "}
-              <Link
-                href="/john-iseghohi"
-                className="hover:text-neutral-400 transition-colors"
-              >
-                John Iseghohi
-              </Link>
-            </span>
-            {displayDate ? (
-              <>
-                <span className="text-neutral-600 text-xs">•</span>
-                <span className="text-neutral-600 text-xs">{displayDate}</span>
-              </>
-            ) : null}
-            {fm.readMinutes ? (
-              <>
-                <span className="text-neutral-600 text-xs">•</span>
-                <span className="text-neutral-600 text-xs">
-                  {fm.readMinutes} min read
-                </span>
-              </>
-            ) : null}
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
-            {fm.title}
-          </h1>
-          <p className="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
-            {fm.description}
-          </p>
-        </header>
-
-        {/* Hero (same asset as og:image; served from the legacy /image path
-            until the U13 OG move) */}
-        <figure className="mb-16">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/image/og/article/${slug}.png`}
-            alt={fm.heroAlt ?? ""}
-            width={1200}
-            height={630}
-            loading="eager"
-            decoding="async"
-            className="w-full rounded-2xl border border-white/10 aspect-[1200/630] object-cover"
+    <>
+      <article className="pb-20 pt-28 md:pt-36">
+        <JsonLd schema={schema} />
+        <Container className="max-w-[760px] xl:px-0">
+          <Breadcrumbs
+            className="mb-8"
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Articles", href: "/articles" },
+              { label: fm.title },
+            ]}
           />
-        </figure>
 
-        {/* Body */}
-        <Mdx source={article.content} />
-      </div>
-    </article>
+          {/* Header */}
+          <header className="mb-12 flex flex-col gap-5 md:mb-14">
+            <MetaLine
+              items={[
+                fm.category ? (
+                  <span className="text-home-orange-ink">{fm.category}</span>
+                ) : null,
+                <>
+                  By{" "}
+                  <Link
+                    href="/john-iseghohi"
+                    className="underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+                  >
+                    John Iseghohi
+                  </Link>
+                </>,
+                displayDate,
+                fm.readMinutes ? `${fm.readMinutes} min read` : null,
+              ]}
+            />
+            <h1 className="font-editorial text-[38px] font-normal leading-[1.06] tracking-[-0.025em] text-balance text-home-ink md:text-[52px]">
+              {fm.title}
+            </h1>
+            <p className="text-pretty text-xl leading-[1.5] text-home-ink-2 md:text-[22px]">
+              {fm.description}
+            </p>
+          </header>
+
+          {/* Hero (same asset as og:image; served from the legacy /image path
+              until the U13 OG move) */}
+          <figure className="mb-12 md:mb-14">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/image/og/article/${slug}.png`}
+              alt={fm.heroAlt ?? ""}
+              width={1200}
+              height={630}
+              loading="eager"
+              decoding="async"
+              className="aspect-[1200/630] w-full rounded-2xl border border-home-rule object-cover"
+            />
+          </figure>
+
+          {/* Body */}
+          <div className="max-w-[68ch]">
+            <Mdx source={article.content} components={articleMdxComponents} />
+          </div>
+        </Container>
+      </article>
+      <FooterCta />
+    </>
   );
 }
