@@ -97,6 +97,13 @@ read the response as text before parsing JSON.
   `ideas/manifest.json` and idea MDX, caches for an hour, and rotates "Idea of
   the week" every Monday 00:00 UTC. Excerpts prefer a manifest `highlights`
   block (written by `/publish-idea`, checked by `npm run validate:idea-tags`)
+- `components/public/*` + `lib/public/ideas.ts` — the research-desk kit every
+  other public page uses (WP56): `PublicShell` (cream nav, paper, warm-ink
+  footer), `PageHeader`, `LinkTabs`, `IdeaBrowser` (Cards/Rows toggle,
+  `?view=rows`), `Sections`. Public pages use the `home-*` tokens only — the old
+  `#050505` dark palette is retired. Headings keep their existing words first;
+  only an italic `<Em>` tail may be appended (`scripts/seo-snapshot.mjs diff`
+  enforces it). The idea detail page keeps its own cream chrome.
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

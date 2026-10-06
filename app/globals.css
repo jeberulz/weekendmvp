@@ -188,46 +188,6 @@ body {
   }
 }
 
-@utility grid-lines {
-  background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px
-    ),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-}
-
-@utility gradient-border-button {
-  position: relative;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0)
-  );
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    border-radius: 9999px;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.2),
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.1)
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-}
-
 /* ===== Motion ===== */
 
 @keyframes fadeUp {
@@ -264,36 +224,6 @@ body {
   animation-delay: 0.5s;
 }
 
-/* Beam animation (hero SVG paths) */
-.beam-path {
-  stroke-dasharray: 100, 2000;
-  stroke-dashoffset: 2100;
-  animation: dash 5s linear infinite;
-  opacity: 0.6;
-}
-.beam-1 {
-  animation-duration: 7s;
-  animation-delay: 0s;
-}
-.beam-2 {
-  animation-duration: 9s;
-  animation-delay: 2s;
-}
-.beam-3 {
-  animation-duration: 6s;
-  animation-delay: 1.5s;
-}
-
-@keyframes dash {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.glow-filter {
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-}
-
 /* Flashlight hover effect (mouse-tracked via --x/--y) */
 @utility flashlight-bg {
   background: radial-gradient(
@@ -301,21 +231,6 @@ body {
     rgba(255, 255, 255, 0.06),
     transparent 40%
   );
-}
-
-@utility flashlight-border {
-  background: radial-gradient(
-    400px circle at var(--x, 0px) var(--y, 0px),
-    rgba(255, 255, 255, 0.4),
-    transparent 40%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-.perspective-1000 {
-  perspective: 1000px;
 }
 
 /* ===== Idea cards ===== */

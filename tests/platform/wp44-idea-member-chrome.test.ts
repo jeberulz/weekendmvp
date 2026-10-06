@@ -10,7 +10,7 @@ import {
 import layoutSource from "../../app/ideas/[slug]/layout.tsx?raw";
 import pageSource from "../../app/ideas/[slug]/page.tsx?raw";
 import collectionSource from "../../app/ideas/[slug]/collection.tsx?raw";
-import hubShellSource from "../../components/hubs/HubShell.tsx?raw";
+import publicShellSource from "../../components/public/PublicShell.tsx?raw";
 import ideaNavSource from "../../components/layout/IdeaNav.tsx?raw";
 import pageNavSource from "../../components/ideas/IdeaPageNav.tsx?raw";
 import memberNavSource from "../../components/ideas/IdeaMemberNav.tsx?raw";
@@ -142,9 +142,10 @@ describe("idea page member chrome wiring", () => {
     expect(pageSource).toContain('{ label: "Startup Ideas", href: "/startup-ideas" }');
   });
 
-  test("collection hubs still use HubShell / MegaNav, not member chrome", () => {
-    expect(collectionSource).toContain("<HubShell");
-    expect(hubShellSource).toContain("MegaNav");
+  test("collection hubs still use the public shell / MegaNav, not member chrome", () => {
+    // WP56: hubs moved from the dark HubShell to the research-desk PublicShell.
+    expect(collectionSource).toContain("<PublicShell");
+    expect(publicShellSource).toContain("<MegaNav");
     expect(collectionSource).not.toContain("IdeaPageNav");
     expect(collectionSource).not.toContain("IdeaMemberNav");
     expect(ideaNavSource).toContain("All Ideas");

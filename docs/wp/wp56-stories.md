@@ -9,25 +9,25 @@ Definition of done: every dark public page renders on the research-desk palette.
 
 ## Stories
 
-- [ ] `WP56-S0` - Safety net: SEO snapshot script plus baseline
+- [x] `WP56-S0` - Safety net: SEO snapshot script plus baseline
   - Scope: `scripts/seo-snapshot.mjs`, `tests/seo-snapshot/`
   - Acceptance criteria:
     - For each URL the snapshot records: title, meta description, canonical, robots, JSON-LD blocks, the H1 text, and internal `/ideas/` link targets.
     - A diff mode fails on any change, except an H1 that keeps its old text as a prefix.
   - Verification: run against a local `next start` build before and after.
-- [ ] `WP56-S1` - Shared public kit (light)
+- [x] `WP56-S1` - Shared public kit (light)
   - Scope: `components/public/*` (new); `components/hubs/HubShell.tsx` rewritten light; `components/layout/SiteFooter.tsx` moves to warm ink; `components/layout/MarketingNav.tsx` defaults to the cream variant.
   - Acceptance criteria:
     - The shell, page header, ideas browser (Cards/Rows toggle, `?view=rows`, remembered per visitor), public idea card, idea row, ink band, ruled FAQ and keep-browsing links all exist.
     - Score bars use `home-orange`.
     - Nothing in `components/home/**` or `components/platform/**` changes.
   - Verification: typecheck; the homepage looks the same apart from the footer.
-- [ ] `WP56-S2` - Browse collections `/ideas/{collection}` (category, revenue, build time)
+- [x] `WP56-S2` - Browse collections `/ideas/{collection}` (category, revenue, build time)
   - Scope: `app/ideas/[slug]/collection.tsx` only (the collection branch). The idea detail render path is untouched.
-- [ ] `WP56-S3` - `/build-with/*`, `/ideas-for/*`, `/solve/*` plus the remaining `components/hubs/*`
-- [ ] `WP56-S4` - `/startup-ideas` (explorer, chips, search, sort, gate)
-- [ ] `WP56-S5` - Wave 4 pages: articles (index and detail), newsletter (index and detail), about, john-iseghohi, privacy-policy, 404, login/signup/email-signin (AuthPageShell), links
-- [ ] `WP56-S6` - Cleanup
+- [x] `WP56-S3` - `/build-with/*`, `/ideas-for/*`, `/solve/*` plus the remaining `components/hubs/*`
+- [x] `WP56-S4` - `/startup-ideas` (explorer, chips, search, sort, gate)
+- [x] `WP56-S5` - Wave 4 pages: articles (index and detail), newsletter (index and detail), about, john-iseghohi, privacy-policy, 404, login/signup/email-signin (AuthPageShell), links
+- [x] `WP56-S6` - Cleanup
   - Flip `:root` and `body` to desk.
   - Delete dead dark utilities (`grid-lines`, beam, flashlight, gradient-border-button), the `IdeaCard` dark theme and the `hub-theme` rainbow, once nothing references them.
   - Docs.

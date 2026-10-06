@@ -177,7 +177,7 @@ const TOKENS: Record<
  * trigger) and on click outside, one dropdown open at a time.
  */
 export function MegaNav({
-  variant = "dark",
+  variant = "cream",
 }: {
   variant?: MegaNavVariant;
 }) {
