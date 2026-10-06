@@ -6,17 +6,11 @@
  * the homepage. Ideas missing from the manifest (engine publications) simply
  * render without art or a number.
  */
-import { cacheLife, cacheTag } from "next/cache";
-import { fetchQuery } from "convex/nextjs";
-
-import { api } from "@/convex/_generated/api";
-import manifestJson from "@/ideas/manifest.json";
 import type { IdeaDoc } from "@/components/hubs/hub-data";
 import { categoryName, normalizeCategorySlug, toolName } from "@/components/ideas/idea-meta";
 import type { PublicIdea } from "@/components/public/types";
-import { mergeHomeIdeas } from "@/lib/home/data";
 import { hasOgArt, liveIdeas, ogArtPath, publishOrder } from "@/lib/home/library";
-import type { ManifestIdea } from "@/lib/home/types";
+import { manifestIdeas } from "./library";
 
 type ManifestEntry = { no: number; art: boolean };
 
@@ -30,25 +24,7 @@ function manifestLookup(): Map<string, ManifestEntry> {
   return lookup;
 }
 
-function manifestIdeas(): ManifestIdea[] {
-  return (manifestJson as unknown as { ideas?: ManifestIdea[] }).ideas ?? [];
-}
-
-/**
- * Total live ideas, counted exactly as the homepage counts them (manifest
- * plus released editorial publications), so "Browse N ideas" matches.
- */
-export async function publicLibraryTotal(): Promise<number> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("ideas");
-  try {
-    const publications = await fetchQuery(api.editorial.public.listing, {});
-    return liveIdeas(mergeHomeIdeas(manifestIdeas(), publications)).length;
-  } catch {
-    return liveIdeas(manifestIdeas()).length;
-  }
-}
+export { publicLibraryTotal } from "./library";
 
 export function toPublicIdea(idea: IdeaDoc): PublicIdea {
   const entry = manifestLookup().get(idea.slug);

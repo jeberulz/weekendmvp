@@ -48,3 +48,18 @@ Append-only progress log. Do not rely on chat history for project state.
 - **Next:**
   - Owner review, then push and PR.
   - Resolve the stale `use cache` and revalidate-secret release risk before merge.
+
+## 2026-10-06 - Idea count consistency (owner request)
+
+- **Cause:** `/startup-ideas` and the hubs listed raw Convex `ideas` rows: 228 versus the homepage's 225. The three extras:
+  - `expense-report-generator` and `client-portal`: retired in the manifest on 2026-04-21, but still in Convex.
+  - `ai-built-app-code-audit`: a stale Convex-only row whose page answers 404 (see the WP46 E7 gate note).
+- **Fix:** `lib/public/library.ts` is the one membership rule (manifest live ideas plus released editorial publications, minus retired ideas, engine drafts and withdrawn ideas), identical to the homepage. Every list in `components/hubs/hub-data.ts` and `/startup-ideas` passes through `onlyPublicIdeas`; "Browse N ideas" uses `publicLibraryTotal`. Regression test: `tests/home/public-library.test.ts`.
+- **Result:**
+  - The homepage, `/startup-ideas` (numeral, result line, ItemList) and the footer band all read 225.
+  - Every category count on the hub tabs matches the homepage index.
+  - SEO diff: 16 pages changed JSON-LD and lost internal links, all of it accounted for by those 3 slugs leaving their lists. No other change.
+  - Checks: tests, lint (0 errors) and build pass; render modes are identical to `main`.
+- **Not changed:**
+  - The retired pages still answer 200 at their URLs, as before.
+  - The dashboard catalogue's counts were left alone (out of scope).

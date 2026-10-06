@@ -6,6 +6,10 @@
  * case hubs render hero copy from their static const maps and suppress the
  * ideas grid. Callers run inside "use cache" scopes (tagged `ideas` /
  * `ref-tables`), so a later revalidation re-fetches the live data.
+ *
+ * Every idea list here passes through `onlyPublicIdeas` (WP56): Convex keeps
+ * retired and stale rows, but hubs list only the public library, so their
+ * counts match the homepage and no card links to a withheld page.
  */
 
 import { fetchQuery } from "convex/nextjs";
@@ -13,6 +17,7 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
+import { onlyPublicIdeas } from "@/lib/public/library";
 
 export type IdeaDoc = Doc<"ideas">;
 
@@ -45,12 +50,12 @@ export async function fetchToolReference(
 export async function fetchIdeasByAudience(
   audience: string,
 ): Promise<IdeaDoc[]> {
-  return safe(() => fetchQuery(api.ideas.byAudience, { audience }), []);
+  return onlyPublicIdeas(await safe(() => fetchQuery(api.ideas.byAudience, { audience }), []));
 }
 
 /** byTool — builder_confidence sort, 30 cap (matches legacy sync). */
 export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
-  return safe(() => fetchQuery(api.ideas.byTool, { tool }), []);
+  return onlyPublicIdeas(await safe(() => fetchQuery(api.ideas.byTool, { tool }), []));
 }
 
 /**
@@ -70,11 +75,13 @@ export async function fetchIdeasBySlugs(
     slugs.map((slug) => safe(() => fetchQuery(api.ideas.bySlug, { slug }), null)),
   );
   const seen = new Set<string>();
-  return found.filter((idea): idea is IdeaDoc => {
-    if (!idea || seen.has(idea.slug)) return false;
-    seen.add(idea.slug);
-    return true;
-  });
+  return onlyPublicIdeas(
+    found.filter((idea): idea is IdeaDoc => {
+      if (!idea || seen.has(idea.slug)) return false;
+      seen.add(idea.slug);
+      return true;
+    }),
+  );
 }
 
 /**
@@ -95,7 +102,7 @@ export async function fetchIdeasByCategory(
 export async function fetchIdeasByRevenueGoal(
   revenueGoal: string,
 ): Promise<IdeaDoc[]> {
-  return safe(() => fetchQuery(api.ideas.byRevenueGoal, { revenueGoal }), []);
+  return onlyPublicIdeas(await safe(() => fetchQuery(api.ideas.byRevenueGoal, { revenueGoal }), []));
 }
 
 /**
@@ -121,7 +128,7 @@ export async function fetchAllIdeas(): Promise<IdeaDoc[]> {
       cursor = result.isDone ? null : result.continueCursor;
     } while (cursor);
   } catch {
-    return ideas;
+    return onlyPublicIdeas(ideas);
   }
-  return ideas;
+  return onlyPublicIdeas(ideas);
 }

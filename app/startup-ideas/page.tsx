@@ -16,6 +16,7 @@ import { Breadcrumbs } from "@/components/public/PageHeader";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
 import type { PublicIdea } from "@/components/public/types";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { onlyPublicIdeas } from "@/lib/public/library";
 import { hasOgArt, liveIdeas, ogArtPath, publishOrder } from "@/lib/home/library";
 import type { ManifestIdea as HomeManifestIdea } from "@/lib/home/types";
 import { toPublicIdea } from "@/lib/public/ideas";
@@ -280,7 +281,8 @@ async function loadFromMdx(publications: PublicOverlay): Promise<StartupIdeasDat
       };
     }),
   );
-  const visible = applyPublicOverlay(ideas, publications);
+  // WP56: list only the public library (homepage rule), never stale Convex rows.
+  const visible = await onlyPublicIdeas(applyPublicOverlay(ideas, publications));
   const filters = await buildFilters(visible);
   const applicationCategories: Record<string, string> = {};
   for (const idea of readManifestIdeas()) {
@@ -344,7 +346,8 @@ async function loadStartupIdeas(publications: PublicOverlay): Promise<StartupIde
     }
   }
 
-  const visible = applyPublicOverlay(ideas, publications);
+  // WP56: list only the public library (homepage rule), never stale Convex rows.
+  const visible = await onlyPublicIdeas(applyPublicOverlay(ideas, publications));
   const filters = await buildFilters(visible);
   return { source: "convex", ideas: visible, filters, applicationCategories, docs: rows };
 }
