@@ -47,7 +47,7 @@ export function NavAuthLinks({
         <Link
           href="/dashboard"
           onClick={onNavigate}
-          className="block px-4 py-3 rounded-lg text-center font-semibold text-zinc-950 bg-zinc-100 hover:bg-white transition-colors"
+          className="flex h-12 items-center justify-center rounded-full bg-home-ink px-4 font-semibold text-home-paper transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
         >
           Dashboard
         </Link>
@@ -59,14 +59,14 @@ export function NavAuthLinks({
         <Link
           href="/login"
           onClick={onNavigate}
-          className="block px-4 py-3 rounded-lg text-center font-medium text-neutral-200 border border-white/20 hover:border-white/40 hover:bg-white/5 transition-colors"
+          className="flex h-12 items-center justify-center rounded-full border border-home-ink px-4 font-medium text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
         >
           Login
         </Link>
         <Link
           href="/signup"
           onClick={onNavigate}
-          className="block px-4 py-3 rounded-lg text-center font-semibold text-zinc-950 bg-zinc-100 hover:bg-white transition-colors"
+          className="flex h-12 items-center justify-center rounded-full bg-home-ink px-4 font-semibold text-home-paper transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
         >
           Sign up
         </Link>
