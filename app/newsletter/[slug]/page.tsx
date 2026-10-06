@@ -206,7 +206,7 @@ async function CachedIssue({ slug }: { slug: string }) {
           items={[
             { label: "Home", href: "/" },
             { label: "Newsletter", href: "/newsletter" },
-            { label: `${displayDate} — ${edition.toUpperCase()}` },
+            { label: `${displayDate ?? fm.title} — ${edition.toUpperCase()}` },
           ]}
         />
 
@@ -217,9 +217,11 @@ async function CachedIssue({ slug }: { slug: string }) {
               <span key="edition" className="text-home-orange-ink">
                 {EDITION_LABEL[edition]}
               </span>,
-              <time key="date" dateTime={fm.publishedAt}>
-                {displayDate}
-              </time>,
+              displayDate ? (
+                <time key="date" dateTime={fm.publishedAt}>
+                  {displayDate}
+                </time>
+              ) : null,
             ]}
           />
           <h1 className="font-editorial text-[38px] font-normal leading-[1.06] tracking-[-0.025em] text-balance text-home-ink md:text-[52px]">

@@ -7,9 +7,12 @@
  *
  * Per URL it records status, <title>, meta description, canonical, robots,
  * every JSON-LD block, the H1 text and the sorted set of internal link
- * targets. `diff` fails on any change, with one allowance: an H1 may grow an
- * appended tail as long as the old H1 text is still its prefix (the WP56
- * italic-tail ruling).
+ * targets. `diff` fails on any change, with two allowances:
+ *   - an H1 may grow an appended tail when the old H1 text is still its prefix
+ *     and the tail is exactly the H1's italic (<em>/<i>) text (WP56 ruling);
+ *   - a page may gain internal links (the restyle adds navigation); gains are
+ *     listed but only fail with --strict-links. Lost links always fail, and
+ *     so does a page that appears in only one snapshot.
  */
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -94,6 +97,9 @@ function extract(html, base) {
     h1: $("h1")
       .map((_, el) => $(el).text().replace(/\s+/g, " ").trim())
       .get(),
+    h1Italic: $("h1")
+      .map((_, el) => $(el).find("em, i").map((__, em) => $(em).text()).get().join(" ").replace(/\s+/g, " ").trim())
+      .get(),
     jsonLd,
     links: [...links].sort(),
   };
@@ -116,16 +122,27 @@ async function capture() {
   console.log(`\n${paths.length} pages → ${out}`);
 }
 
-function sameH1(before = [], after = []) {
+/** Unchanged, or the old text plus a tail that is exactly the H1's italic text. */
+export function sameH1(before = [], after = [], afterItalic = []) {
   if (before.length !== after.length) return false;
-  return before.every((b, i) => after[i] === b || after[i].startsWith(`${b} `));
+  return before.every((b, i) => {
+    if (after[i] === b) return true;
+    if (!after[i].startsWith(`${b} `)) return false;
+    const tail = after[i].slice(b.length + 1).trim();
+    return tail.length > 0 && (afterItalic[i] ?? "").endsWith(tail);
+  });
 }
 
 async function diff() {
   const [, , , a, b] = process.argv;
   const before = JSON.parse(await readFile(a, "utf8"));
   const after = JSON.parse(await readFile(b, "utf8"));
+  const strictLinks = process.argv.includes("--strict-links");
   const problems = [];
+  const notes = [];
+  for (const path of Object.keys(after)) {
+    if (!before[path]) problems.push(`${path}: missing from before (new page in the snapshot)`);
+  }
   for (const [path, was] of Object.entries(before)) {
     const now = after[path];
     if (!now) {
@@ -136,10 +153,16 @@ async function diff() {
       if (was[key] !== now[key]) problems.push(`${path}: ${key} ${JSON.stringify(was[key])} → ${JSON.stringify(now[key])}`);
     }
     if (JSON.stringify(was.jsonLd) !== JSON.stringify(now.jsonLd)) problems.push(`${path}: JSON-LD changed`);
-    if (!sameH1(was.h1, now.h1)) problems.push(`${path}: h1 ${JSON.stringify(was.h1)} → ${JSON.stringify(now.h1)}`);
+    if (!sameH1(was.h1, now.h1, now.h1Italic)) problems.push(`${path}: h1 ${JSON.stringify(was.h1)} → ${JSON.stringify(now.h1)}`);
     const lost = (was.links ?? []).filter((l) => !(now.links ?? []).includes(l));
     if (lost.length) problems.push(`${path}: lost ${lost.length} internal link(s): ${lost.slice(0, 8).join(", ")}`);
+    const gained = (now.links ?? []).filter((l) => !(was.links ?? []).includes(l));
+    if (gained.length) {
+      const line = `${path}: gained ${gained.length} internal link(s): ${gained.slice(0, 8).join(", ")}`;
+      (strictLinks ? problems : notes).push(line);
+    }
   }
+  if (notes.length) console.log(`Link additions (allowed; --strict-links to fail):\n${notes.join("\n")}\n`);
   if (problems.length) {
     console.error(problems.join("\n"));
     console.error(`\n${problems.length} SEO difference(s).`);
@@ -151,7 +174,7 @@ async function diff() {
 const mode = process.argv[2];
 if (mode === "capture") await capture();
 else if (mode === "diff") await diff();
-else {
-  console.error("usage: seo-snapshot.mjs capture --base URL --out FILE | diff BEFORE AFTER");
+else if (import.meta.url === `file://${process.argv[1]}`) {
+  console.error("usage: seo-snapshot.mjs capture --base URL --out FILE | diff BEFORE AFTER [--strict-links]");
   process.exit(2);
 }

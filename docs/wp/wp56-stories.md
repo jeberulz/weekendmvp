@@ -13,7 +13,10 @@ Definition of done: every dark public page renders on the research-desk palette.
   - Scope: `scripts/seo-snapshot.mjs`, `tests/seo-snapshot/`
   - Acceptance criteria:
     - For each URL the snapshot records: title, meta description, canonical, robots, JSON-LD blocks, the H1 text, and internal `/ideas/` link targets.
-    - A diff mode fails on any change, except an H1 that keeps its old text as a prefix.
+    - A diff mode fails on any change, except:
+      - an H1 that keeps its old text as a prefix and whose appended tail is exactly its italic text;
+      - added internal links, which are listed and fail only with `--strict-links`.
+    - Lost links and pages present in only one snapshot always fail.
   - Verification: run against a local `next start` build before and after.
 - [x] `WP56-S1` - Shared public kit (light)
   - Scope: `components/public/*` (new); `components/hubs/HubShell.tsx` rewritten light; `components/layout/SiteFooter.tsx` moves to warm ink; `components/layout/MarketingNav.tsx` defaults to the cream variant.

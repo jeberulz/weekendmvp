@@ -29,14 +29,21 @@ export function librarySlugs(manifest: ManifestIdea[], publications: Publication
   return liveIdeas(mergeHomeIdeas(manifest, publications)).map((idea) => idea.slug);
 }
 
-/** Slugs of every publicly listed idea, homepage rule. */
+/**
+ * Slugs of every publicly listed idea, homepage rule. If the editorial
+ * listing is unreachable the manifest-only fallback is cached for minutes,
+ * not hours, so a short outage cannot hide released ideas for long. It is not
+ * rethrown: hubs and builds must still render when Convex is down.
+ */
 export async function publicIdeaSlugs(): Promise<string[]> {
   "use cache";
-  cacheLife("hours");
   cacheTag("ideas");
   try {
-    return librarySlugs(manifestIdeas(), await fetchQuery(api.editorial.public.listing, {}));
+    const publications = await fetchQuery(api.editorial.public.listing, {});
+    cacheLife("hours");
+    return librarySlugs(manifestIdeas(), publications);
   } catch {
+    cacheLife("minutes");
     return librarySlugs(manifestIdeas(), []);
   }
 }
