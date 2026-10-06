@@ -3,7 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { newsreaderEditorial } from "@/lib/fonts";
 import { isTenantHost } from "@/lib/tenant-host";
+import { cn } from "@/lib/utils";
 import { useConsent } from "./ConsentProvider";
 import { ConsentCustomizeModal } from "./ConsentCustomizeModal";
 
@@ -36,43 +38,46 @@ export function ConsentBanner() {
       <div
         role="region"
         aria-label="Cookie consent"
-        className="fixed bottom-0 left-0 right-0 z-[200] border-t border-white/10 bg-neutral-950/95 p-6 backdrop-blur-xl"
+        className={cn(
+          newsreaderEditorial.variable,
+          "fixed inset-x-0 bottom-0 z-[200] p-3 font-sans sm:p-4",
+        )}
       >
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-5 rounded-2xl border border-home-ink bg-home-card p-5 text-home-ink md:flex-row md:items-center md:gap-8 md:p-6">
           <div className="flex-1">
-            <h2 className="mb-2 text-sm font-medium text-white">
+            <h2 className="mb-1.5 font-editorial text-[22px] font-normal leading-tight text-home-ink">
               We use cookies
             </h2>
-            <p className="mb-2 text-xs leading-relaxed text-neutral-400">
+            <p className="mb-2 max-w-[640px] text-sm leading-[1.55] text-home-ink-2">
               We use analytics to understand how you use our site. You can
               accept, reject, or customize your preferences.
             </p>
             <Link
               href="/privacy-policy"
-              className="text-xs text-neutral-500 underline underline-offset-2 transition-colors hover:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-white/40 rounded"
+              className="rounded text-sm font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               Learn more in our Privacy Policy
             </Link>
           </div>
-          <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+          <div className="flex w-full flex-col gap-2.5 sm:flex-row md:w-auto">
             <button
               type="button"
               onClick={() => setConsent(false)}
-              className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
+              className="inline-flex h-11 items-center justify-center rounded-full border border-home-ink px-5 text-sm font-semibold text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               Reject
             </button>
             <button
               type="button"
               onClick={() => setCustomizeOpen(true)}
-              className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
+              className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-home-ink underline-offset-4 transition-colors hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               Customize
             </button>
             <button
               type="button"
               onClick={() => setConsent(true)}
-              className="rounded-xl bg-white px-6 py-2.5 text-xs font-semibold text-black transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-neutral-950"
+              className="inline-flex h-11 items-center justify-center rounded-full bg-home-ink px-5 text-sm font-semibold text-home-paper transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               Accept All
             </button>

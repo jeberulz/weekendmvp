@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { IconButton } from "@/components/primitives/IconButton";
+import { newsreaderEditorial } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 import {
   DEFAULT_AUTOMATION_ID,
   subscribeViaApi,
@@ -87,12 +89,15 @@ export function SignupModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-md rounded-3xl border border-white/10 bg-neutral-950 p-8 text-white shadow-2xl sm:max-w-md"
+        className={cn(
+          newsreaderEditorial.variable,
+          "max-w-md rounded-2xl border border-home-ink bg-home-card p-7 font-sans text-home-ink sm:max-w-md sm:p-8",
+        )}
       >
         <DialogClose asChild>
           <IconButton
             aria-label="Close modal"
-            className="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40 rounded"
+            className="absolute top-5 right-5 rounded-full text-home-ink-3 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
           >
             <X size={20} />
           </IconButton>
@@ -100,19 +105,19 @@ export function SignupModal({
 
         {status === "success" ? (
           <div className="flex flex-col items-center text-center py-8">
-            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mb-6">
+            <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-home-sage text-home-sage-ink">
               <CheckCircle size={32} aria-hidden="true" />
             </div>
-            <DialogTitle className="text-2xl font-medium text-white tracking-tight mb-2">
+            <DialogTitle className="mb-2 font-editorial text-[30px] font-normal leading-tight tracking-[-0.02em] text-home-ink">
               Check your inbox!
             </DialogTitle>
-            <DialogDescription className="text-neutral-400 text-sm mb-8">
+            <DialogDescription className="mb-8 text-sm leading-[1.55] text-home-ink-2">
               The Weekend MVP Starter Kit is on its way to you.
             </DialogDescription>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-sm font-semibold text-white hover:underline decoration-white/30 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-white/40 rounded"
+              className="inline-flex h-11 items-center rounded-full border border-home-ink px-6 text-sm font-semibold text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               Close
             </button>
@@ -120,10 +125,10 @@ export function SignupModal({
         ) : (
           <>
             <div className="mb-8">
-              <DialogTitle className="text-2xl font-medium text-white tracking-tight mb-2">
-                Get the Starter Kit
+              <DialogTitle className="mb-2 font-editorial text-[32px] font-normal leading-tight tracking-[-0.02em] text-home-ink">
+                Get the <em className="italic text-home-orange">Starter Kit</em>
               </DialogTitle>
-              <DialogDescription className="text-neutral-400 text-sm">
+              <DialogDescription className="text-sm leading-[1.55] text-home-ink-2">
                 Enter your details and we&apos;ll send the kit right over.
               </DialogDescription>
             </div>
@@ -132,7 +137,7 @@ export function SignupModal({
               <div>
                 <label
                   htmlFor={firstNameId}
-                  className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1"
+                  className="mb-2 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-2"
                 >
                   First Name
                 </label>
@@ -143,13 +148,13 @@ export function SignupModal({
                   placeholder="Jane"
                   maxLength={50}
                   autoComplete="given-name"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+                  className="h-[52px] w-full rounded-full border border-home-ink-3 bg-home-card px-5 text-base text-home-ink transition-colors placeholder:text-home-ink-3 focus-visible:border-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
                 />
               </div>
               <div>
                 <label
                   htmlFor={emailId}
-                  className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1"
+                  className="mb-2 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-2"
                 >
                   Email Address
                 </label>
@@ -161,7 +166,7 @@ export function SignupModal({
                   placeholder="jane@example.com"
                   autoComplete="email"
                   aria-describedby={status === "error" ? errorId : undefined}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+                  className="h-[52px] w-full rounded-full border border-home-ink-3 bg-home-card px-5 text-base text-home-ink transition-colors placeholder:text-home-ink-3 focus-visible:border-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
                 />
               </div>
 
@@ -169,7 +174,7 @@ export function SignupModal({
                 <p
                   id={errorId}
                   role="alert"
-                  className="text-sm text-red-400"
+                  className="text-sm text-[#b42318]"
                 >
                   {errorMessage}
                 </p>
@@ -178,7 +183,7 @@ export function SignupModal({
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="group relative w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all mt-4 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-neutral-950 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="group relative mt-4 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-home-orange-ink px-8 text-base font-semibold text-white transition-colors hover:bg-[#8f3f00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span>
                   {status === "submitting" ? "Sending..." : "Send me the kit"}
@@ -186,11 +191,11 @@ export function SignupModal({
                 <ArrowRight
                   size={16}
                   aria-hidden="true"
-                  className="transition-transform group-hover:translate-x-0.5"
+                  className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
                 />
               </button>
 
-              <p className="text-[10px] text-neutral-600 text-center mt-6">
+              <p className="mt-5 text-center text-xs text-home-ink-3">
                 By joining, you agree to receive the kit and occasional
                 updates.
               </p>
