@@ -9,7 +9,8 @@
  * every JSON-LD block, the H1 text and the sorted set of internal link
  * targets. `diff` fails on any change, with two allowances:
  *   - an H1 may grow an appended tail when the old H1 text is still its prefix
- *     and the tail is exactly the H1's italic (<em>/<i>) text (WP56 ruling);
+ *     and the tail is exactly the italic (<em>/<i>) element that ends the H1,
+ *     with nothing but whitespace after it (WP56 ruling);
  *   - a page may gain internal links (the restyle adds navigation); gains are
  *     listed but only fail with --strict-links. Lost links always fail, and
  *     so does a page that appears in only one snapshot.
@@ -64,6 +65,25 @@ async function collectionSlugs() {
   return new Set(block ? [...block[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]) : []);
 }
 
+const norm = (text) => text.replace(/\s+/g, " ").trim();
+
+/**
+ * Text of the italic element that ends this H1: the last <em>/<i> with no
+ * non-whitespace content after it anywhere inside the heading. "" otherwise,
+ * so plain text appended after an existing italic phrase is not mistaken for
+ * an italic tail.
+ */
+function trailingItalic($, h1) {
+  const em = $(h1).find("em, i").last();
+  if (em.length === 0) return "";
+  for (let node = em[0]; node && node !== h1; node = node.parent) {
+    for (let next = node.next; next; next = next.next) {
+      if (norm($(next).text()) !== "") return "";
+    }
+  }
+  return norm(em.text());
+}
+
 function extract(html, base) {
   const $ = cheerio.load(html);
   const host = new URL(base).host;
@@ -98,7 +118,7 @@ function extract(html, base) {
       .map((_, el) => $(el).text().replace(/\s+/g, " ").trim())
       .get(),
     h1Italic: $("h1")
-      .map((_, el) => $(el).find("em, i").map((__, em) => $(em).text()).get().join(" ").replace(/\s+/g, " ").trim())
+      .map((_, el) => trailingItalic($, el))
       .get(),
     jsonLd,
     links: [...links].sort(),
@@ -122,14 +142,16 @@ async function capture() {
   console.log(`\n${paths.length} pages → ${out}`);
 }
 
-/** Unchanged, or the old text plus a tail that is exactly the H1's italic text. */
+/** Unchanged, or the old text plus a tail that is exactly the H1's trailing italic element. */
+export { extract };
+
 export function sameH1(before = [], after = [], afterItalic = []) {
   if (before.length !== after.length) return false;
   return before.every((b, i) => {
     if (after[i] === b) return true;
     if (!after[i].startsWith(`${b} `)) return false;
     const tail = after[i].slice(b.length + 1).trim();
-    return tail.length > 0 && (afterItalic[i] ?? "").endsWith(tail);
+    return tail.length > 0 && (afterItalic[i] ?? "") === tail;
   });
 }
 
