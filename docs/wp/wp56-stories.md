@@ -28,9 +28,9 @@ Definition of done: every dark public page renders on the research-desk palette.
 - [x] `WP56-S4` - `/startup-ideas` (explorer, chips, search, sort, gate)
 - [x] `WP56-S5` - Wave 4 pages: articles (index and detail), newsletter (index and detail), about, john-iseghohi, privacy-policy, 404, login/signup/email-signin (AuthPageShell), links
 - [x] `WP56-S6` - Cleanup
-  - Flip `:root` and `body` to desk.
-  - Delete dead dark utilities (`grid-lines`, beam, flashlight, gradient-border-button), the `IdeaCard` dark theme and the `hub-theme` rainbow, once nothing references them.
-  - Docs.
+  - Deleted the dead dark utilities and the `hub-theme` rainbow; MegaNav now defaults to cream.
+  - Deferred, by decision: flipping `:root`/`body` (admin, preview and tenant pages still use the dark defaults) and the primitive `IdeaCard` dark theme (the file stays for `RelatedIdeas` on idea pages).
+  - Docs: CLAUDE.md key paths.
 
 ## Out Of Scope
 
