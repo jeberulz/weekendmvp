@@ -72,6 +72,7 @@ export function PageHeader({
   description,
   meta,
   aside,
+  lead,
   children,
   size = "lg",
   align = "start",
@@ -84,6 +85,8 @@ export function PageHeader({
   meta?: ReactNode[];
   /** Right-hand slot on wide screens (a tool mark, a CTA). */
   aside?: ReactNode;
+  /** Left of the title block on wide screens, above it on phones (a tool mark). */
+  lead?: ReactNode;
   /** Below the meta line (search, actions). */
   children?: ReactNode;
   size?: "lg" | "md";
@@ -105,6 +108,8 @@ export function PageHeader({
       >
         {crumbs && <Breadcrumbs items={crumbs} />}
         <div className={cn("flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between", centered && "items-center")}>
+          <div className={cn("flex flex-col gap-6 md:flex-row md:items-start md:gap-8", centered && "items-center")}>
+          {lead && <div className="shrink-0">{lead}</div>}
           <div className={cn("flex max-w-[960px] flex-col gap-5 md:gap-[22px]", centered && "items-center")}>
             {eyebrow && (
               <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink md:text-xs">
@@ -127,6 +132,7 @@ export function PageHeader({
               </p>
             )}
             {meta && <MetaLine items={meta} className={cn(centered && "justify-center")} />}
+          </div>
           </div>
           {aside && <div className="shrink-0">{aside}</div>}
         </div>

@@ -969,7 +969,7 @@ async function CachedToolHub({ slug }: { slug: string }) {
 
       <PageHeader
         crumbs={[{ label: "Home", href: "/" }, { label: `Build With ${page.name}` }]}
-        eyebrow={<ToolMark slug={slug} Icon={page.icon} />}
+        lead={<ToolMark slug={slug} Icon={page.icon} />}
         title={
           <>
             {page.h1}
