@@ -113,8 +113,8 @@ export type HomeData = {
   };
   week: { label: string; start: string };
   newest: IndexRow[];
-  hero: HeroIdea;
-  spotlight: SpotlightIdea;
-  inside: InsideIdea;
+  hero: HeroIdea | null;
+  spotlight: SpotlightIdea | null;
+  inside: InsideIdea | null;
   strip: { slug: string; title: string; art: string }[];
 };

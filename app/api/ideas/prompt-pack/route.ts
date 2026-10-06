@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 
   let content;
   try {
-    content = await getIdeaPackContent(slug);
+    content = await getIdeaPackContent(slug, token);
   } catch {
     return json({ code: "UNAVAILABLE" }, 503);
   }

@@ -1,8 +1,9 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { excludeUnlistedIdeas, isEngineDraftSlug } from "./platform/catalogPolicy";
 import schema from "./schema";
+import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./platform/authz";
 
 /*
  * Every public read below hides engine drafts (lib/engine-drafts.ts): rows
@@ -17,6 +18,28 @@ const ideaDoc = v.object({
   ...ideaFields,
   _id: v.id("ideas"),
   _creationTime: v.number(),
+});
+const publicIdeaDoc = ideaDoc.omit("body").omit("provenance");
+function publicIdea<T extends { body?: string; provenance?: unknown }>(idea: T): Omit<T, "body" | "provenance"> {
+  const { body: _body, provenance: _provenance, ...preview } = idea;
+  void _body;
+  void _provenance;
+  return preview;
+}
+
+function assertVerifiedMember(user: { email?: string; emailVerificationTime?: number }) {
+  if (!user.email || !user.emailVerificationTime) {
+    throw new ConvexError({ code: "UNAUTHENTICATED" });
+  }
+}
+
+/** Fresh server-side probe before any page HTML is rendered. */
+export const requireVerifiedMember = mutation({
+  args: {}, returns: v.null(),
+  handler: async (ctx) => {
+    assertVerifiedMember(await requireCurrentPlatformUserForMutation(ctx));
+    return null;
+  },
 });
 
 /** Card fields consumed by the related-ideas rail. */
@@ -55,14 +78,26 @@ function relatedIdeaCard(idea: {
  */
 export const bySlug = query({
   args: { slug: v.string() },
-  returns: v.union(ideaDoc, v.null()),
+  returns: v.union(publicIdeaDoc, v.null()),
   handler: async (ctx, { slug }) => {
     if (isEngineDraftSlug(slug)) return null;
     const idea = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .unique();
-    return idea?.editorialVisibility === "removed" ? null : idea;
+    return !idea || idea.editorialVisibility === "removed" ? null : publicIdea(idea);
+  },
+});
+
+/** Full body is available only to a current, verified platform session. */
+export const bySlugForMember = query({
+  args: { slug: v.string() },
+  returns: v.union(ideaDoc, v.null()),
+  handler: async (ctx, { slug }) => {
+    assertVerifiedMember(await requireCurrentPlatformUser(ctx));
+    if (isEngineDraftSlug(slug)) return null;
+    const idea = await ctx.db.query("ideas").withIndex("by_slug", (q) => q.eq("slug", slug)).unique();
+    return !idea || idea.editorialVisibility === "removed" ? null : idea;
   },
 });
 
@@ -73,7 +108,7 @@ export const list = query({
     cursor: v.optional(v.union(v.string(), v.null())),
   },
   returns: v.object({
-    page: v.array(ideaDoc),
+    page: v.array(publicIdeaDoc),
     isDone: v.boolean(),
     continueCursor: v.string(),
     splitCursor: v.optional(v.union(v.string(), v.null())),
@@ -86,35 +121,37 @@ export const list = query({
     ),
   }),
   handler: async (ctx, { limit, cursor }) => {
-    return await ctx.db
+    const page = await ctx.db
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
       .filter(excludeUnlistedIdeas)
       .paginate({ numItems: limit ?? 20, cursor: cursor ?? null });
+    return { ...page, page: page.page.map(publicIdea) };
   },
 });
 
 /** All ideas in a category, newest first. */
 export const byCategory = query({
   args: { category: v.string() },
-  returns: v.array(ideaDoc),
+  returns: v.array(publicIdeaDoc),
   handler: async (ctx, { category }) => {
-    return await ctx.db
+    const ideas = await ctx.db
       .query("ideas")
       .withIndex("by_category_publishedAt", (q) => q.eq("category", category))
       .order("desc")
       .filter(excludeUnlistedIdeas)
       .collect();
+    return ideas.map(publicIdea);
   },
 });
 
 /** All ideas with a revenue goal, newest first. */
 export const byRevenueGoal = query({
   args: { revenueGoal: v.string() },
-  returns: v.array(ideaDoc),
+  returns: v.array(publicIdeaDoc),
   handler: async (ctx, { revenueGoal }) => {
-    return await ctx.db
+    const ideas = await ctx.db
       .query("ideas")
       .withIndex("by_revenueGoal_publishedAt", (q) =>
         q.eq("revenueGoal", revenueGoal),
@@ -122,6 +159,7 @@ export const byRevenueGoal = query({
       .order("desc")
       .filter(excludeUnlistedIdeas)
       .collect();
+    return ideas.map(publicIdea);
   },
 });
 
@@ -132,7 +170,7 @@ export const byRevenueGoal = query({
  */
 export const byTool = query({
   args: { tool: v.string(), limit: v.optional(v.number()) },
-  returns: v.array(ideaDoc),
+  returns: v.array(publicIdeaDoc),
   handler: async (ctx, { tool, limit }) => {
     const all = await ctx.db
       .query("ideas")
@@ -147,7 +185,7 @@ export const byTool = query({
           (b.scores?.builder_confidence ?? -1) -
           (a.scores?.builder_confidence ?? -1),
       )
-      .slice(0, limit ?? 30);
+      .slice(0, limit ?? 30).map(publicIdea);
   },
 });
 
@@ -158,7 +196,7 @@ export const byTool = query({
  */
 export const byAudience = query({
   args: { audience: v.string(), limit: v.optional(v.number()) },
-  returns: v.array(ideaDoc),
+  returns: v.array(publicIdeaDoc),
   handler: async (ctx, { audience, limit }) => {
     const all = await ctx.db
       .query("ideas")
@@ -173,21 +211,22 @@ export const byAudience = query({
           (b.scores?.builder_confidence ?? -1) -
           (a.scores?.builder_confidence ?? -1),
       )
-      .slice(0, limit ?? 30);
+      .slice(0, limit ?? 30).map(publicIdea);
   },
 });
 
 /** Most recently published idea — powers /ideas/today. */
 export const latest = query({
   args: {},
-  returns: v.union(ideaDoc, v.null()),
+  returns: v.union(publicIdeaDoc, v.null()),
   handler: async (ctx) => {
-    return await ctx.db
+    const idea = await ctx.db
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
       .filter(excludeUnlistedIdeas)
       .first();
+    return idea ? publicIdea(idea) : null;
   },
 });
 

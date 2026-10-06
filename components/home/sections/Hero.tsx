@@ -13,7 +13,7 @@ const WORD_STEP = 0.045;
  * WP43): headline word by word, then the copy and buttons, then the build
  * window with its prompt pasting in, and the stamp pressing on last.
  */
-export function Hero({ idea, total }: { idea: HeroIdea; total: number }) {
+export function Hero({ idea, total }: { idea: HeroIdea | null; total: number }) {
   return (
     <section aria-labelledby="home-hero-title" className="relative overflow-hidden bg-home-paper">
       <div aria-hidden className="home-dots absolute inset-0 opacity-60" />
@@ -42,7 +42,7 @@ export function Hero({ idea, total }: { idea: HeroIdea; total: number }) {
           </SignupCta>
         </div>
       </Container>
-      <Container className="relative pb-12 pt-[72px] md:pb-16 lg:pb-0 lg:pt-16">
+      {idea && <Container className="relative pb-12 pt-[72px] md:pb-16 lg:pb-0 lg:pt-16">
         {/* The stamp inherits this --d; the window sets its own. */}
         <div className="relative lg:mx-10 lg:h-[456px]" style={introDelay(1.15)}>
           <div className="home-intro [--home-rise:36px]" style={introDelay(0.58)}>
@@ -54,7 +54,7 @@ export function Hero({ idea, total }: { idea: HeroIdea; total: number }) {
             className="home-press absolute -top-[58px] right-1 size-[72px] lg:-left-16 lg:-top-16 lg:right-auto lg:size-[120px]"
           />
         </div>
-      </Container>
+      </Container>}
     </section>
   );
 }

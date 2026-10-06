@@ -51,11 +51,14 @@ const COPY: Record<
 export function AuthCard({
   mode,
   returnTo,
+  embedded = false,
 }: {
   mode: AuthCardMode;
   returnTo: string;
+  embedded?: boolean;
 }) {
-  const copy = COPY[mode];
+  const [currentMode, setCurrentMode] = useState(mode);
+  const copy = COPY[currentMode];
   const { signIn } = useAuthActions();
   const emailFieldId = useId();
   const statusId = useId();
@@ -102,9 +105,15 @@ export function AuthCard({
   return (
     <div className="w-full max-w-md">
       <div className="rounded-2xl border border-home-rule bg-home-card p-8 text-home-ink sm:p-10">
-        <h1 className="text-balance text-center font-editorial text-[40px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[44px]">
-          {titleWords.join(" ")} <Em>{titleTail}</Em>
-        </h1>
+        {embedded ? (
+          <h2 className="text-balance text-center font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[38px]">
+            {titleWords.join(" ")} <Em>{titleTail}</Em>
+          </h2>
+        ) : (
+          <h1 className="text-balance text-center font-editorial text-[40px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[44px]">
+            {titleWords.join(" ")} <Em>{titleTail}</Em>
+          </h1>
+        )}
         <p className="mt-3 text-center text-[15px] leading-[1.55] text-home-ink-2">
           {copy.subtitle}
         </p>
@@ -180,13 +189,17 @@ export function AuthCard({
 
         <p className="mt-8 text-center text-sm text-home-ink-2">
           {copy.crossPrompt}{" "}
-          <Link
-            href={withReturnTo(copy.crossHref, returnTo)}
-            className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
-          >
-            {copy.crossLabel}
-          </Link>
+          {embedded ? (
+            <button type="button" onClick={() => { setCurrentMode(currentMode === "signup" ? "login" : "signup"); setEmailState("idle"); }} className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink">
+              {copy.crossLabel}
+            </button>
+          ) : (
+            <Link href={withReturnTo(copy.crossHref, returnTo)} className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none">
+              {copy.crossLabel}
+            </Link>
+          )}
         </p>
+        {currentMode === "signup" ? <p className="mt-5 text-center text-xs leading-5 text-home-ink-3">New accounts are added to the Weekend MVP newsletter. Beehiiv will ask you to confirm your email separately; account access starts when your site account is verified. <Link href="/privacy-policy#email-collection" className="underline underline-offset-2">Privacy Policy</Link></p> : null}
       </div>
 
       <div className="mt-8 flex justify-center">

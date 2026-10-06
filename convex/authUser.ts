@@ -2,6 +2,7 @@ import { normalizeEmail } from "./authEmail";
 import type { AuthProviderMaterializedConfig } from "@convex-dev/auth/server";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const AUTH_ACCOUNT_COLLISION_MESSAGE =
   "Unable to use this sign-in method. Sign in with the method already connected to this email.";
@@ -55,6 +56,16 @@ export function normalizeAuthEmail(value: string) {
   return normalizeEmail(value);
 }
 
+async function enqueueAccountBeehiiv(ctx: MutationCtx, userId: Id<"users">, email: string) {
+  const existing = await ctx.db.query("account_beehiiv_sync")
+    .withIndex("by_user", (q) => q.eq("userId", userId)).unique();
+  if (existing) return;
+  await ctx.db.insert("account_beehiiv_sync", {
+    userId, email, state: "pending", attempts: 0, updatedAt: Date.now(),
+  });
+  await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
+}
+
 /**
  * Convex Auth normally auto-links trusted methods that share an email. The
  * owner explicitly ruled that linking must require a future verified,
@@ -101,7 +112,7 @@ export async function createOrUpdateAuthUser(
       throw new Error(AUTH_ACCOUNT_COLLISION_MESSAGE);
     }
 
-    return await ctx.db.insert("users", {
+    const userId = await ctx.db.insert("users", {
       ...(email ? { email } : {}),
       ...(args.profile.emailVerified === true
         ? { emailVerificationTime: Date.now() }
@@ -113,6 +124,10 @@ export async function createOrUpdateAuthUser(
       ...(name ? { name } : {}),
       ...(image ? { image } : {}),
     });
+    if (email && args.profile.emailVerified === true) {
+      await enqueueAccountBeehiiv(ctx, userId, email);
+    }
+    return userId;
   }
 
   if (emailOwner !== null && emailOwner._id !== args.existingUserId) {
@@ -136,6 +151,10 @@ export async function createOrUpdateAuthUser(
     ...(name ? { name } : {}),
     ...(image ? { image } : {}),
   });
+
+  if (email && args.profile.emailVerified === true && !existingUser.emailVerificationTime) {
+    await enqueueAccountBeehiiv(ctx, args.existingUserId, email);
+  }
 
   return args.existingUserId;
 }

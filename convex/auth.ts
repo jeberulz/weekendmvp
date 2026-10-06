@@ -2,7 +2,7 @@ import Google from "@auth/core/providers/google";
 import { convexAuth, type Tokens } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { action, type ActionCtx } from "./_generated/server";
-import { isPrivateReturnPath } from "../lib/private-paths";
+import { isAllowedAuthReturnPath, isIdeaReturnPath } from "../lib/private-paths";
 import { createOrUpdateAuthUser, googleProfile } from "./authUser";
 import {
   emailMagicLinkProvider,
@@ -18,7 +18,8 @@ const DEFAULT_AUTH_REDIRECT = "/dashboard";
  * and the editorial workspace (WP46-E4e, its "confirm it's you" sign-in).
  */
 function safeDashboardTarget(pathname: string, search: string, hash: string) {
-  if (isPrivateReturnPath(pathname)) {
+  if (isAllowedAuthReturnPath(pathname)) {
+    if (isIdeaReturnPath(pathname)) return search || hash ? null : pathname;
     return `${pathname}${search}${hash}`;
   }
   return null;

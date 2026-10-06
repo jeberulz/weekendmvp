@@ -24,6 +24,7 @@ import {
   softwareApplicationSchema,
 } from "@/lib/seo";
 import { EmailGate } from "@/components/ideas/EmailGate";
+import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
 import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
@@ -98,7 +99,8 @@ function formatPublishedDate(ms: number): string {
 /* Convex-only sections (meta chips, Explore More, Related Ideas).     */
 /* ------------------------------------------------------------------ */
 
-async function fetchIdeaRow(slug: string): Promise<IdeaDoc | null> {
+async function fetchIdeaRow(slug: string, token?: string | null): Promise<IdeaDoc | null> {
+  if (token) return fetchQuery(api.ideas.bySlugForMember, { slug }, { token });
   try {
     return await fetchQuery(api.ideas.bySlug, { slug });
   } catch {
@@ -117,22 +119,24 @@ async function ideaOgImage(slug: string): Promise<string> {
   }
 }
 
-async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
+async function resolveIdea(slug: string, token?: string | null): Promise<ResolvedIdea | null> {
   // Engine spot-check drafts never render, even if a Convex row exists.
   if (isEngineDraftSlug(slug)) return null;
 
   // This request-time gate precedes every filesystem fallback and cached
   // public render. A backend outage fails closed rather than resurrecting a
   // removed legacy MDX page.
-  const publication = await fetchQuery(api.editorial.public.bySlug, { slug });
+  const publication = token
+    ? await fetchQuery(api.editorial.public.bySlugForMember, { slug }, { token })
+    : await fetchQuery(api.editorial.public.bySlug, { slug });
   if (publication.state === "removed") return null;
   if (publication.state === "released") {
-    const idea = await fetchIdeaRow(slug);
+    const idea = await fetchIdeaRow(slug, token);
     return {
       source: "editorial",
       title: publication.title,
       description: publication.metadata.description,
-      content: publication.markdown,
+      content: token && "markdown" in publication && typeof publication.markdown === "string" ? publication.markdown : "",
       idea,
       // The static legacy OG file may describe an earlier revision. An E6
       // release uses the generic art until a versioned OG asset is verified.
@@ -143,18 +147,19 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
 
   const [file, idea, ogImage] = await Promise.all([
     readMdxFile(CONTENT_DIR, slug),
-    fetchIdeaRow(slug),
+    fetchIdeaRow(slug, token),
     ideaOgImage(slug),
   ]);
 
   const body = chooseIdeaBody(file, idea);
-  if (!body) return null;
+  if (!body && !idea) return null;
   const fmTitle = file?.frontmatter.title;
   const fmDescription = file?.frontmatter.description;
   // Prefer MDX frontmatter when present so git-deployed SEO title/meta
   // wins over a stale Convex row until the next seed.
   return {
-    ...body,
+    source: body?.source ?? "convex",
+    content: token ? body?.content ?? "" : "",
     title:
       (typeof fmTitle === "string" && fmTitle.trim() ? fmTitle : null) ??
       idea?.title ??
@@ -164,7 +169,7 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
         ? fmDescription
         : null) ??
       idea?.description ??
-      excerpt(body.content),
+      excerpt(body?.content ?? ""),
     idea,
     ogImage,
   };
@@ -320,13 +325,15 @@ export default async function IdeaPage({
 }) {
   const { slug } = await params;
   await connection();
-  const resolved = await resolveIdea(slug);
+  const token = await currentIdeaMemberToken();
+  const resolved = await resolveIdea(slug, token);
   if (!resolved) {
     // Not an idea — maybe a collection hub slug (U11 extension point).
     const collection = await renderCollection(slug);
     if (collection) return collection;
     notFound();
   }
+  if (!token) return <EmailGate slug={slug} title={resolved.title} description={resolved.description} />;
   return <IdeaContent slug={slug} resolved={resolved} />;
 }
 
@@ -393,9 +400,7 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
     <>
       <JsonLd schema={schema} />
 
-      {/* R4: the idea body below is in the server HTML, visible by default.
-          EmailGate is a client overlay applied only after hydration. */}
-      <EmailGate slug={slug} title={title} description={description}>
+      <>
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 sm:pt-[7.5rem] pb-16">
             <IdeaSidebar sections={toc}>
@@ -613,7 +618,7 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
             </main>
           </div>
         </div>
-      </EmailGate>
+      </>
     </>
   );
 }

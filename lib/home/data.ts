@@ -112,9 +112,9 @@ export async function getHomeData(): Promise<HomeData> {
       const publication = publicBySlug.get(idea.slug);
       let content: string;
       if (publication?.state === "released") {
-        const selected = await fetchQuery(api.editorial.public.bySlug, { slug: idea.slug });
-        if (selected.state !== "released") throw new Error("Homepage publication changed during rendering.");
-        content = selected.markdown;
+        // The public editorial projection contains metadata only. Curated
+        // highlights supply the homepage's approved preview fields.
+        content = "";
       } else {
         content = (await readMdxFile(IDEAS_DIR, idea.slug))?.content ?? "";
       }
@@ -128,12 +128,12 @@ export async function getHomeData(): Promise<HomeData> {
     .filter((l) => isFeatureReady(l.idea, l.extract, l.art))
     .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
   const weekly = pickWeekly(pool, now);
-  if (!weekly) throw new Error("Homepage: no idea is complete enough to feature this week");
-
-  const picks = { spotlight: weekly.spotlight.loaded, inside: weekly.inside.loaded };
-  const heroSource = bySlug.get(HERO_SLUG) ?? picks.spotlight;
-  const libraryNo = publishOrder(ideas).findIndex((idea) => idea.slug === heroSource.idea.slug) + 1;
-  const heroCategory = normalizeCategorySlug(heroSource.idea.category);
+  const heroSource = bySlug.get(HERO_SLUG);
+  const featuredHero = heroSource && isFeatureReady(heroSource.idea, heroSource.extract, heroSource.art)
+    ? heroSource : weekly?.spotlight.loaded;
+  const libraryNo = featuredHero
+    ? publishOrder(ideas).findIndex((idea) => idea.slug === featuredHero.idea.slug) + 1 : 0;
+  const heroCategory = featuredHero ? normalizeCategorySlug(featuredHero.idea.category) : "";
 
   const strip = publishOrder(ideas)
     .reverse()
@@ -150,18 +150,18 @@ export async function getHomeData(): Promise<HomeData> {
     },
     week: { label: weekLabel(now), start: weekStartUtc(now).toISOString() },
     newest: newestRows(ideas, (slug) => bySlug.get(slug)?.art ?? false),
-    hero: {
-      slug: heroSource.idea.slug,
-      title: heroSource.idea.title,
+    hero: featuredHero ? {
+      slug: featuredHero.idea.slug,
+      title: featuredHero.idea.title,
       libraryNo,
       category: heroCategory,
       categoryName: heroCategory ? categoryName(heroCategory) : "",
-      buildTime: Number(heroSource.idea.buildTime) || 0,
-      promptTitles: heroSource.extract.prompts.map((p) => p.title).slice(0, 3),
-      firstPrompt: heroSource.extract.prompts[0]?.lines ?? [],
-    },
-    spotlight: toSpotlight(picks.spotlight),
-    inside: toInside(picks.inside),
+      buildTime: Number(featuredHero.idea.buildTime) || 0,
+      promptTitles: featuredHero.extract.prompts.map((p) => p.title).slice(0, 3),
+      firstPrompt: featuredHero.extract.prompts[0]?.lines ?? [],
+    } : null,
+    spotlight: weekly ? toSpotlight(weekly.spotlight.loaded) : null,
+    inside: weekly ? toInside(weekly.inside.loaded) : null,
     strip,
   };
 }

@@ -9,6 +9,7 @@
  */
 
 import type * as admin_superAdmin from "../admin/superAdmin.js";
+import type * as accountBeehiiv from "../accountBeehiiv.js";
 import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
@@ -92,6 +93,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  accountBeehiiv: typeof accountBeehiiv;
   "admin/superAdmin": typeof admin_superAdmin;
   articles: typeof articles;
   auth: typeof auth;

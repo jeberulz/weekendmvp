@@ -10,17 +10,17 @@ import { readCanonicalIdeaBody } from "@/lib/canonical-idea-body";
  * (compare). The visibility check runs on every request so an unpublish
  * cannot leave a cached prompt pack or export available.
  */
-async function extractOf(slug: string): Promise<IdeaExtract | null> {
-  const body = await readCanonicalIdeaBody(slug);
+async function extractOf(slug: string, token: string | null): Promise<IdeaExtract | null> {
+  const body = await readCanonicalIdeaBody(slug, token);
   return body ? extractIdea(body.content) : null;
 }
 
-export async function getIdeaPrompts(slug: string): Promise<Prompt[] | null> {
-  return (await extractOf(slug))?.prompts ?? null;
+export async function getIdeaPrompts(slug: string, token: string | null): Promise<Prompt[] | null> {
+  return (await extractOf(slug, token))?.prompts ?? null;
 }
 
-export async function getIdeaPackContent(slug: string) {
-  const extract = await extractOf(slug);
+export async function getIdeaPackContent(slug: string, token: string | null) {
+  const extract = await extractOf(slug, token);
   if (!extract) return null;
   return {
     problem: extract?.problem ?? "",
@@ -30,11 +30,11 @@ export async function getIdeaPackContent(slug: string) {
   };
 }
 
-export async function getIdeaTiers(slug: string): Promise<Tier[]> {
+export async function getIdeaTiers(slug: string, token: string | null): Promise<Tier[]> {
   // Compare is optional enrichment: unknown slugs must still render while
   // the fallback backend is unavailable. Prompt/export callers stay strict.
   try {
-    return (await extractOf(slug))?.tiers ?? [];
+    return (await extractOf(slug, token))?.tiers ?? [];
   } catch {
     return [];
   }
