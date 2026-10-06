@@ -37,6 +37,9 @@ function TwitterIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+const FOOTER_LINK =
+  "text-home-d2 transition-colors hover:text-home-d1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light";
+
 type FooterLink = { label: string; href: string; emphasis?: boolean };
 
 const BROWSE_IDEAS_LINKS: FooterLink[] = [
@@ -74,16 +77,16 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h4 className="text-white font-medium text-sm mb-4">{title}</h4>
-      <ul className="space-y-2 text-sm">
+      <h2 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-d3">{title}</h2>
+      <ul className="space-y-2.5 text-sm">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
               className={
                 link.emphasis
-                  ? "text-neutral-400 hover:text-white transition-colors"
-                  : "text-neutral-500 hover:text-white transition-colors"
+                  ? "text-home-orange-light underline underline-offset-4 transition-colors hover:text-home-d1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light"
+                  : FOOTER_LINK
               }
             >
               {link.label}
@@ -96,26 +99,26 @@ function FooterColumn({
   );
 }
 
-/** Site footer ported from the <footer> in index.html. */
+/** Site footer in the research-desk warm ink (WP56); every link from the legacy footer is kept. */
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 border-t border-white/10 bg-[#050505]">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <footer className="relative z-10 bg-home-ink text-home-d1">
+      <div className="mx-auto w-full max-w-[1200px] px-5 py-14 md:px-10 lg:py-16 xl:px-0">
         {/* Main Footer Grid */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/">
-              <Logo className="h-5 w-32 text-white mb-4" />
+              <Logo className="mb-4 h-5 w-32 text-home-d1" />
             </Link>
-            <p className="text-neutral-500 text-sm mb-4">
+            <p className="mb-4 text-sm leading-[1.55] text-home-d2">
               Ship your MVP in a weekend, even if you&apos;re non-technical.
             </p>
-            <p className="text-neutral-600 text-xs">
+            <p className="text-xs text-home-d3">
               Created by{" "}
               <Link
                 href="/john-iseghohi"
-                className="hover:text-neutral-400 transition-colors"
+                className="underline-offset-4 transition-colors hover:text-home-d1 hover:underline"
               >
                 John Iseghohi
               </Link>
@@ -128,12 +131,12 @@ export function SiteFooter() {
 
           {/* Resources Column */}
           <div>
-            <h4 className="text-white font-medium text-sm mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm">
+            <h2 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-d3">Resources</h2>
+            <ul className="space-y-2.5 text-sm">
               <li>
                 <Link
                   href="/about"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   About
                 </Link>
@@ -141,7 +144,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/john-iseghohi"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   John Iseghohi
                 </Link>
@@ -149,7 +152,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/starter-kit"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   Starter Kit
                 </Link>
@@ -157,7 +160,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/articles"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   Articles
                 </Link>
@@ -165,7 +168,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/newsletter"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   Newsletter
                 </Link>
@@ -173,7 +176,7 @@ export function SiteFooter() {
               <li>
                 <NavExternalLink
                   href="https://cal.com/switchtoux/mvp-sprint"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   Book a Sprint
                 </NavExternalLink>
@@ -181,7 +184,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/privacy-policy"
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className={FOOTER_LINK}
                 >
                   Privacy Policy
                 </Link>
@@ -191,14 +194,14 @@ export function SiteFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-neutral-600 text-xs">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-home-dr pt-8 md:flex-row">
+          <p className="font-mono text-[11px] tracking-[0.06em] text-home-d3">
             © <CopyrightYear /> Weekend MVP. Built to ship.
           </p>
           <div className="flex items-center gap-6">
             <NavExternalLink
               href="https://twitter.com/weekendmvp"
-              className="text-neutral-600 hover:text-white transition-colors"
+              className="text-home-d3 transition-colors hover:text-home-d1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light"
               aria-label="Follow Weekend MVP on Twitter"
             >
               <TwitterIcon size={18} />
