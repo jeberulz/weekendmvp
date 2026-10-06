@@ -63,3 +63,14 @@ Append-only progress log. Do not rely on chat history for project state.
 - **Not changed:**
   - The retired pages still answer 200 at their URLs, as before.
   - The dashboard catalogue's counts were left alone (out of scope).
+
+## 2026-10-06 - Dashboard idea counts aligned (owner request)
+
+- **Cause:** the member catalogue (`convex/platform/catalogPolicy.ts` → `inMemberCatalogue`) already dropped retired ideas and engine drafts. It still listed the stale Convex-only `ai-built-app-code-audit` row, so Explore showed 226 against a header total of 225 (the header comes from `getHomeData`).
+- **Fix:**
+  - `STALE_CATALOGUE_ROWS` is an explicit, documented exclusion inside `inMemberCatalogue`.
+  - `libraryPage` now applies `inMemberCatalogue`, not only `isRetiredIdea`. Weekend plans and compare already use `inMemberCatalogue`, so they inherit the change.
+- **Rejected alternative:** a manifest allow-list. It broke 32 Convex tests whose fixtures seed slugs that aren't in the manifest, and the public pages already apply the full allow-list in `lib/public/library.ts`.
+- **Test:** `convex/wp44Library.test.ts` "WP56 library membership".
+- **Checks:** tsc clean; lint 0 errors; `npm test` (including 476 Convex tests) passes; build passes.
+- **Deploy:** the Convex functions deploy with the Vercel production build (`scripts/vercel-build.mjs`), so no manual deploy is needed.

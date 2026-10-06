@@ -1,4 +1,4 @@
-import { excludeUnlistedIdeas, inMemberCatalogue, isRetiredIdea } from "./catalogPolicy";
+import { excludeUnlistedIdeas, inMemberCatalogue } from "./catalogPolicy";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 // Compatibility window: retain pre-WP44 clients and frontend rollback. Remove only in a later gated release.
 export { dashboardSummary, explore, setIntent } from "./legacyIdeas";
@@ -234,7 +234,7 @@ export const libraryPage = query({
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
     // Engine drafts are filtered inside the native page (see catalogPolicy);
-    // the few manifest-retired ideas are still dropped below, so a page may
+    // retired and non-library rows are still dropped below, so a page may
     // come back short. useLibraryCatalogue loads until the cursor is done.
     const result = await ctx.db
       .query("ideas")
@@ -262,7 +262,7 @@ export const libraryPage = query({
     });
     const page = await Promise.all(
       result.page
-        .filter((idea) => !isRetiredIdea(idea.slug))
+        .filter((idea) => inMemberCatalogue(idea.slug, idea.editorialVisibility))
         .map(async (idea) => ({
           ...toIdeaCard(
             idea,
