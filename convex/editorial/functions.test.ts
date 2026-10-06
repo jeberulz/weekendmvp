@@ -228,6 +228,18 @@ describe("who may use the workspace", () => {
     expect((await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).outcome).toBe("bound");
     const mine = await as(t, owner).query(api.editorial.reads.session, { nowMs: Date.now() });
     expect(mine.editor).toMatchObject({ signInMethod: "google" });
+
+    // An email link later signed in to the same account: Google stays the
+    // method used to confirm it's you.
+    await t.run(async (ctx) =>
+      ctx.db.insert("authAccounts", {
+        userId: owner.userId,
+        provider: "email",
+        providerAccountId: "google-owner@example.test",
+      }),
+    );
+    const linked = await as(t, owner).query(api.editorial.reads.session, { nowMs: Date.now() });
+    expect(linked.editor).toMatchObject({ signInMethod: "google" });
   });
 
   test("forged identities are anonymous, and revocation ends access at the next request", async () => {

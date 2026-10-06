@@ -108,7 +108,7 @@ describe("Convex Auth user compatibility", () => {
     });
   });
 
-  test("denies implicit linking only when verified email ownership is claimed", async () => {
+  test("a redeemed email link signs in to the existing verified account", async () => {
     const t = convexTest(schema, modules);
     await t.run(async (ctx) => {
       const googleUserId = await createOrUpdateAuthUser(ctx, {
@@ -124,16 +124,67 @@ describe("Convex Auth user compatibility", () => {
         profile: { email: "same@example.test" },
       });
 
+      // Issuance still reveals nothing about the existing account.
       expect(placeholderId).not.toBe(googleUserId);
       expect((await ctx.db.get("users", placeholderId))?.email).toBeUndefined();
+
+      const signedIn = await createOrUpdateAuthUser(ctx, {
+        existingUserId: placeholderId,
+        type: "verification",
+        provider: emailProvider,
+        profile: { email: "SAME@example.test", emailVerified: true },
+      });
+
+      expect(signedIn).toBe(googleUserId);
+      expect(await ctx.db.get("users", placeholderId)).toBeNull();
+      const syncRows = await ctx.db.query("account_beehiiv_sync").collect();
+      expect(syncRows.map((row) => row.userId)).toEqual([googleUserId]);
+    });
+  });
+
+  test("an email link never claims an account whose email is unverified", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("users", { email: "unverified-owner@example.test" });
+      const placeholderId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null,
+        type: "email",
+        provider: emailProvider,
+        profile: { email: "unverified-owner@example.test" },
+      });
+
       await expect(
         createOrUpdateAuthUser(ctx, {
           existingUserId: placeholderId,
           type: "verification",
           provider: emailProvider,
-          profile: { email: "same@example.test", emailVerified: true },
+          profile: { email: "unverified-owner@example.test", emailVerified: true },
         }),
       ).rejects.toThrow(AUTH_ACCOUNT_COLLISION_MESSAGE);
+      expect(await ctx.db.get("users", placeholderId)).not.toBeNull();
+    });
+  });
+
+  test("an email link never moves a user that is more than an issuance placeholder", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("users", {
+        email: "taken@example.test",
+        emailVerificationTime: 1,
+      });
+      const otherUserId = await ctx.db.insert("users", { name: "Someone else" });
+
+      await expect(
+        createOrUpdateAuthUser(ctx, {
+          existingUserId: otherUserId,
+          type: "verification",
+          provider: emailProvider,
+          profile: { email: "taken@example.test", emailVerified: true },
+        }),
+      ).rejects.toThrow(AUTH_ACCOUNT_COLLISION_MESSAGE);
+      expect(await ctx.db.get("users", otherUserId)).toMatchObject({
+        name: "Someone else",
+      });
     });
   });
 
