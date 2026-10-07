@@ -90,3 +90,24 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 22 tests pass, and the ratchet now lints 27 ideas.
 - Sampling: the end of `ai-chief-of-staff-consultants` was read as it renders (the kept notes sit after the Branding block and agree with the new Core Feature rule). The rest were checked by the lint and the diff, not re-read line by line.
 - Next: wave 3.
+
+## 2026-10-07 - WP61-S5, wave 3 (22 ideas)
+
+- Ideas: the 22 slugs of wave 3 in the manifest (`ai-material-estimator` to `ai-vocal-coach-realtime-pitch`). Same method as wave 2. All 22 passed the lint on the first dry run after the wave-2 rule changes.
+- Scope calls where an idea's own old prompts did not fit a weekend (each is a cut a reviewer can overrule):
+  - Embeddings: the old schemas use `vector(1536)` without naming a provider. Prompts say "an embeddings API that returns 1536 dimensions" with an `EMBEDDINGS_API_KEY`, and do not name one.
+  - Code sandboxes and long media jobs: VerifiedAI grades written work only (no sandboxed code runner). CutReady and PodcastPilot run ffmpeg in a small separate worker and fence the queue service, audiograms, music matching and partial re-rendering.
+  - Integrations cut to the idea's one core source: ProposalPro shares and tracks views in-app (no PDF, no email). MatchTutor records bookings and fences payments. MergeGate runs inline after replying to the webhook and fences Slack, Redis and billing. AgentLedger scans GitHub only and fences the usage APIs. SchemaLift's only inject method is a copyable script tag.
+  - Mobile and desktop: TaskFocus is iPhone only, with calendar blocks read on the device and only the blocks sent. The Mac widget, Google Calendar and RevenueCat are fenced. AI Protein Tracker fences gap-fill suggestions, and HeroTales fences print and subscriptions.
+  - Trust rules kept from the old prompts, because they are what the idea sells: HeroTales keeps photos private and deletable and never uses them for anything else, Collectible-style "never guaranteed" language was already in wave 2, MatchTutor stores a first name only, and Note By Note's "never invent an assignment".
+- Notes:
+  - `ai-prompt-optimization-marketers` carries one lint warning (`short`): its Landing Page prompt is brief because the page's one job is to link to the audit form.
+  - HeroTales, TaskFocus and the music-teacher app are the first pages whose subject involves children's photos or lesson audio. Their prompts add consent, deletion and discard rules from the old FAQs. A human should check these three first.
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22.
+  - `audit:idea --all`: 198 of 227, failing set identical to the baseline of 29.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 22 tests pass, and the ratchet now lints 49 ideas.
+- Sampling: the dry-run lint and the diff checked every page. No page from this wave was re-read line by line after applying.
+- Next: wave 4.

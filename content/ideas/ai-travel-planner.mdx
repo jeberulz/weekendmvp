@@ -82,25 +82,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 + TypeScript project for TripGenie, an AI-powered personalized travel planner. Set up: App Router with server components, Supabase schema with tables: users, trips, itinerary_days, activities, user_preferences. Authentication via Supabase Auth with email and Google OAuth. API routes: POST /api/plan-trip, GET+PUT /api/preferences, GET+POST /api/trips. Environment variables for ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET, STRIPE_SECRET_KEY. Include TypeScript types for Trip, ItineraryDay, Activity, and UserPreference. Wire up a basic middleware layer for auth-protected routes.
+Build the weekend MVP of "TripGenie": describe a trip in one sentence and get a complete day-by-day itinerary shaped by what the app already knows about you.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with Google sign-in), Claude (Anthropic API) for the parsing and the plan. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- user_preferences(id, user_id, hotel_tier, routing_prefs, dietary, past_destinations jsonb)
+- trips(id, user_id, request_text, destination, start_date, end_date, party_size, budget_level, created_at)
+- itinerary_days(id, trip_id, day_index, summary)
+- activities(id, day_id, slot, name, description, address, estimated_cost_cents, booking_url)  where slot is one of morning, afternoon, evening
+
+Screens: /login, /plan (the sentence box and the itinerary), /trips (saved trips).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+API routes: POST /api/plan-trip, GET and PUT /api/preferences, GET and POST /api/trips. A small middleware protects the signed-in routes.
+
+Do not build: billing or plans, live flight search, hotel booking or affiliate links, the post-trip debrief, a second login method.
+Done when: npm run dev starts, you can sign in with Google, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the trip-planning engine for TripGenie. When a user submits a natural-language request (e.g., "Food-focused long weekend in Lisbon with my partner, mid-range budget, we love walking and hate tourist traps"), the system should: (1) Parse destination, dates, travel style, budget signals, and party size from the text. (2) Fetch the user's stored preference profile from Supabase (past destinations, hotel tier, flight routing preferences, dietary restrictions). (3) Call the Claude API with a structured prompt combining the request and preferences, producing a day-by-day itinerary as JSON: array of days, each with morning/afternoon/evening activity objects containing name, description, address, estimated cost, and booking URL if available, plus a flight suggestion and hotel recommendation. (4) Store the itinerary in Supabase and return it to the client. User flow: textarea input → loading state with streaming → rendered day-view component with expandable activity cards.
+Build the one feature that proves TripGenie: one sentence in, a full itinerary out.
+1. POST /api/plan-trip takes a sentence such as "Food-focused long weekend in Lisbon with my partner, mid-range budget, we love walking and hate tourist traps". Parse the destination, dates, travel style, budget signals and party size.
+2. Load the user's stored preferences: past destinations, hotel tier, flight routing preferences and dietary needs.
+3. Call Claude with a structured prompt that combines the request and the preferences, and return JSON: an array of days, each with morning, afternoon and evening activities (name, description, address, estimated cost, booking URL if known), plus one flight suggestion and one hotel recommendation.
+4. Save the trip, its days and its activities, and stream the result to the page as a day-by-day view with expandable activity cards.
+Rules: label flights and hotels as suggestions with no live prices. Never invent a booking URL: leave it empty when unknown.
+Empty state: a new user sees the sentence box with an example filled in.
+Done when: the Lisbon example returns a 3-day plan with three slots a day, a stored dietary preference is respected, and the saved trip reopens from /trips.
 ```
 
 **3. Landing Page**
 
 ```text
-Create a landing page for TripGenie using Next.js and Tailwind CSS. Include: (1) Hero with headline "Your AI travel companion that plans the whole trip—not just the flights" and a live demo input pre-filled with "Food-focused long weekend in Lisbon with my partner, boutique hotels, we love walking". (2) Before/After section: "Old way: 47 browser tabs, 6 hours. New way: one sentence, 2 minutes." (3) How-it-works with 4 steps: Describe → Review → Refine & Book → Debrief. (4) Social proof with placeholder testimonials from a remote worker, a frequent flyer, and a travel blogger. (5) Pricing with Free / Solo ($15/mo) / Premium ($29/mo) tiers. (6) Email waitlist capture with CTA "Start planning your next trip." Warm off-white background (#fcfaf7), dark charcoal text, clean sans-serif typography, no hero illustration—just confident type and a subtle gradient.
+Build a one-page landing site for TripGenie, an AI travel companion.
+Hero: "Your AI travel companion that plans the whole trip, not just the flights." A live demo input pre-filled with "Food-focused long weekend in Lisbon with my partner, boutique hotels, we love walking". One button: Start planning your next trip, which joins the waitlist.
+Sections: a before and after ("Old way: 47 browser tabs, 6 hours. New way: one sentence, 2 minutes."), how it works in four steps (describe, review, refine and book, debrief), and three clearly marked placeholders for testimonials to be replaced with real ones.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: warm off-white #fcfaf7, dark charcoal text, clean sans-serif, no hero illustration, just confident type and a subtle gradient.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for TripGenie, an AI travel companion that turns a single sentence into a complete personalized itinerary. Logo: clean wordmark with a minimal route-path or compass-needle icon that works at 16px favicon scale. Color palette: warm sand primary (#F5EFE0), deep charcoal text (#1A1A1A), accent in terracotta (#C4622D) for CTAs and highlights, with a soft sky blue (#A8C8E8) secondary. Typography: Geist or Inter for UI copy paired with a slightly warmer display face (DM Serif Display or Playfair Display) for hero headings only. Provide hex codes, font names, pairing rationale, and guidance on minimum text sizes. Include icon style guidelines: line icons at 1.5px stroke weight, 24px base grid, rounded endcaps.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TripGenie: a clean wordmark with a minimal route-path or compass-needle icon that works as a 16px favicon.
+Colors: warm sand #F5EFE0, deep charcoal text #1A1A1A, terracotta #C4622D for buttons and highlights, and soft sky blue #A8C8E8 as the secondary. Type: Geist or Inter for the interface and a warmer display face (DM Serif Display or Playfair Display) for hero headings only.
+Icons: line icons at a 1.5px stroke, a 24px base grid and rounded end caps.
+Deliverables: wordmark, icon, a type spec with minimum text sizes, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon is readable at 16 px.
 ```
 
 ## Sources
