@@ -13,6 +13,9 @@
  * that used to live here is gone.
  */
 
+import { setupMentionsBilling } from "./prompt-standard.mjs";
+
+
 /** Soft target for engine-draft-* (IB deep pages are ~2,300–2,600). */
 export const MIN_DEEP_BODY_WORDS = 2200;
 /** Hard floor — Round 3: same as soft (no soft gap). */
@@ -314,6 +317,10 @@ export function findTierMismatches(businessContent, promptsContent) {
   );
   if (!setupBlock) return errors;
   const setup = setupBlock[1];
+
+  // The weekend prompt standard (WP61) keeps billing out of Project Setup, so a
+  // Setup that never mentions billing owes no tier names. Once it does, they must agree.
+  if (!setupMentionsBilling(setup)) return errors;
 
   for (const name of tierNames) {
     const key = name

@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "note": "Slugs whose build prompts passed weekend prompt standard v1 (WP61). Each must keep passing. npm run audit:prompts reads this list.",
+  "enforced": []
+}
