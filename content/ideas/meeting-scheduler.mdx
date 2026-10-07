@@ -80,81 +80,58 @@ Calendar OAuth + slot computation + AI layer. The hardest part is handling calen
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Calendar OAuth + Availability**
+**1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router scheduling SaaS. Supabase backend.
+Build the weekend MVP of the "Smart Meeting Scheduler": a booking page that reads your Google Calendar, never offers a time that is unreasonable for either side, and books the meeting with a Meet link. One host, one calendar.
 
-Schema:
-- users(id, email, username, timezone, working_hours JSONB, plan, stripe_customer_id)
-- calendars(id, user_id, provider ENUM[google,outlook,icloud], access_token_encrypted, refresh_token_encrypted, calendar_id_external, is_primary bool, is_availability_source bool)
-- event_types(id, user_id OR team_id, slug, title, duration_min, buffer_min, min_notice_hours, max_advance_days, location_type ENUM[zoom,meet,phone,in_person], location_config JSONB)
-- bookings(id, event_type_id, invitee_email, invitee_name, invitee_timezone, start_at, end_at, meeting_url, status ENUM[confirmed,canceled,rescheduled])
-- teams(id, name, plan)
-- team_members(id, team_id, user_id, role)
-- routing_rules(id, event_type_id, strategy ENUM[round_robin,load_balanced,collective], member_ids JSONB)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with Google sign-in that also asks for calendar access), the Google Calendar API for free and busy times and for creating events. Slot ranking is plain code with no model. Deploy on Vercel.
 
-OAuth flow:
-- /api/calendars/google/connect redirects to https://accounts.google.com/o/oauth2/v2/auth with scopes 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly'.
-- Callback stores refresh_token encrypted via Supabase Vault.
-- Similar for Microsoft Graph with scopes 'Calendars.ReadWrite offline_access'.
+Tables (Row Level Security on; a host reads only their own rows, and the booking page reads through a server route):
+- profiles(user_id, username, timezone, working_hours jsonb, google_refresh_token_encrypted)
+- event_types(id, user_id, slug, title, duration_min, buffer_min, min_notice_hours, max_advance_days)
+- bookings(id, event_type_id, invitee_name, invitee_email, invitee_timezone, start_at, end_at, meeting_url, google_event_id, status)  unique on event_type_id and start_at
 
-Availability computation:
-- For a booking request, fetch freebusy for each attendee from their calendars (cached 5 min).
-- Apply user.working_hours by day of week.
-- Subtract existing bookings from local DB (not-yet-synced double-booking protection).
-- Generate candidate slots matching event_type.duration_min at event_type.buffer_min spacing.
-- Filter: min_notice_hours satisfied, max_advance_days respected.
+Screens: /login, /settings (timezone, working hours, event types), /[username]/[slug] (the booking page), /bookings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or team pricing, round-robin or teams, an embeddable widget, Outlook or iCloud, Zoom, a model for ranking.
+Done when: npm run dev starts, you can sign in with Google, and the three tables exist with Row Level Security on.
 ```
 
-**2. AI Cross-Timezone Slot Resolver**
+**2. Core Feature**
 
 ```text
-Build the AI slot ranking feature for Pro+ tiers.
-
-When a booker arrives at a booking page, we have:
-- List of 50+ candidate slots from availability computation.
-- Attendee timezones (user's known tz; booker's tz from browser).
-- User working_hours preferences.
-- User's learned preferences (e.g., stored tags like "avoid Mondays before 10am", "prefer afternoons").
-
-Ranking via rule engine + Claude:
-1. Rule pass: filter slots that violate hard rules (outside working hours either side, weekends if not allowed, less than buffer_min after a prior meeting).
-2. Score pass: assign numeric scores by heuristic:
-   - +10 mid-morning (10am-11:30am local)
-   - +5 early afternoon (1:30pm-3pm)
-   - -5 end-of-day (within 30 min of working_hours end)
-   - -15 first-thing (within 30 min of working_hours start)
-   - -10 back-to-back with adjacent meeting
-   - -20 cross-timezone mismatch (one side outside normal working hours)
-3. Claude pass (Pro+ only): top 10 scored slots passed to Claude with user's preferences:
-   "Given these 10 slots and this user's stored preferences {preferences}, rank the top 5 for this meeting. Consider the booker is in {booker_tz} and user is in {user_tz}. Return JSON: {rankings: [{slot_start, reason}]}."
-4. Show top 5 in the booking UI with an optional 'why?' tooltip explaining the AI's reasoning.
-
-Feedback loop:
-- If user deletes/reschedules a booking with source='ai_suggested', note in preferences ('dispreferred Tuesday 4pm'). Claude reads preferences back next time.
-- Rate limit Claude calls: cache per (user, booker_tz, date_range) for 10 min to avoid thundering herd on popular booking pages.
+Build the one feature that proves the Smart Meeting Scheduler: timezone-aware slots that are never silly, and a booking that cannot double-book.
+1. Availability: fetch the host's free and busy times from Google Calendar (cache for 5 minutes). Apply the host's working hours by weekday in the host's timezone. Subtract existing confirmed bookings from the database too. Build candidate slots of the event's duration with its buffer, then apply min_notice_hours and max_advance_days.
+2. Rank in plain code with named constants. Add 10 for 10:00 to 11:30 local, add 5 for 13:30 to 15:00, subtract 5 within 30 minutes of the end of working hours, subtract 15 within 30 minutes of the start, subtract 10 for a slot back to back with another meeting, subtract 20 when either person would be outside 08:00 to 19:00 in their own timezone.
+3. The booking page detects the visitor's timezone from the browser, shows the top 5 slots as "Best for both of you" and the rest under "All times", in the visitor's timezone with the host's timezone beside it.
+4. Booking inserts the row first. The unique key on event_type_id and start_at stops two visitors taking the same slot, and the loser sees "That time was just taken, here are the next ones". Then create the Google event with a Meet link and the visitor as an attendee so Google sends the invite, and save meeting_url and google_event_id.
+5. Unit test the slot code across a daylight saving change and for a host in Sydney: a 06:00 Sydney slot is never offered even with an empty calendar.
+Rules: store times in UTC and convert only for display. Never show a slot the host's calendar marks busy.
+Empty state: with no event types, show a form to create the first one.
+Done when: the unit tests pass, a visitor in another timezone sees sensible slots, two simultaneous bookings for one slot produce one booking and one friendly refusal, and the visitor receives a Google invite with a Meet link.
 ```
 
-**3. Round-Robin + Embeddable Widget**
+**3. Landing Page**
 
 ```text
-Implement team round-robin routing and the embeddable widget.
+Build a one-page landing site for the Smart Meeting Scheduler, a booking page that respects everyone's clock.
+Hero: "Book meetings across timezones without the 6 a.m. surprise." Sub: "A booking page that reads your calendar and only offers times that work for both of you." One button: Join the waitlist.
+Sections: a sample booking page with "Best for both of you" slots, how it works in three steps (connect your calendar, share your link, get a booking with a Meet link), and an FAQ on what is coming next (teams, round-robin and an embed), which calendars work today (Google only) and how your calendar data is used.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean white background, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Round-robin routing:
-- event_types with team_id and routing_rules with strategy='round_robin' use the following logic:
-  1. On booking request, query all team_members assigned in routing_rules.member_ids who are in team_id.
-  2. Fetch each member's availability for requested slot.
-  3. Load last-booked-at timestamp per member (from bookings table).
-  4. Assign to member with OLDEST last-booked-at among available members (load balancing).
-  5. Create booking with that member as host.
-- Strategy 'collective': require ALL team members available. Strategy 'load_balanced': weight by capacity_per_day setting per member.
+**4. Branding Package**
 
-Failover: if chosen member unexpectedly declines (e.g., their calendar changed between query and commit), auto-reroute to next-best member before returning error to booker.
-
-Embeddable widget (scheduler.js):
-- ~30KB vanilla JS bundle hosted at https://cdn.product.com/scheduler.js.
-- Embed:
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Smart Meeting Scheduler: pick a short working name, then design a wordmark and an icon that suggest two clock faces that overlap in the middle.
+Colors: white, ink and one blue. Type: Geist, with tabular numbers for times.
+Deliverables: wordmark, icon, a slot button style with a "best for both" state that differs by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the best-for-both state is distinguishable without color.
 ```
 
 ## Sources

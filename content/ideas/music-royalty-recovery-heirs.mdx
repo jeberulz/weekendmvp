@@ -92,25 +92,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router TypeScript Tailwind app named Legato. Postgres via a hosted provider with tables: estates (id, legal_name, stage_name, death_year, status), aliases, works, matches (estate_id, source CHECK IN ('mlc_unmatched','soundexchange_unclaimed','pro_repertory'), raw_name, confidence, dollar_hint_cents), claims, fee_lines (kind CHECK IN ('private_15','state_capped'), cap_bps), documents. Row-level security so an estate user only sees their estate_id. Stripe product Catalog Monitoring at $199/year. DocuSign Connect webhook to /api/docusign. Env: STRIPE_SECRET_KEY, DOCUSIGN_*, DATABASE_URL. Do not add any authenticated scrape against MLC, SoundExchange, or PRO member portals.
+Build the weekend MVP of "Legato": the heir of an independent musician types a legal name, a stage name and a death year, and the operator gets a one-page list of possible matches against published lists of unclaimed royalties. Nothing is filed and no one is contacted automatically.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the operator). The public lists are CSV files you download by hand from each organization's public page and import with the page address and the date. The matching is plain code. Deploy on Vercel.
+
+Tables (Row Level Security on; only the signed-in operator reads any row, and the public form writes through a server route):
+- list_snapshots(id, source, source_url, fetched_on, row_count)  source is mlc_unmatched, soundexchange_unclaimed or pro_repertory
+- list_entries(id, snapshot_id, raw_name, normalized_name, work_title)
+- estates(id, legal_name, stage_name, death_year, contact_email, status, created_at)
+- matches(id, estate_id, entry_id, snapshot_id, confidence, needs_review boolean)
+
+Screens: /login, /lists (import a snapshot), /estates, /estates/[id] (the one-page result), and a public /check form.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, fee exhibits or contingency terms, e-signature, a scraper or any login to a member portal, claim filing, dollar estimates, monitoring.
+Done when: npm run dev starts, the operator can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Public-List Matcher + 48-Hour Check**
+**2. Core Feature**
 
 ```text
-Build POST /api/check. Input: legal_name, stage_name, death_year. Job queues three matchers that only read publicly published pages or bulk files: (1) MLC unmatched / historical unmatched name lists, (2) SoundExchange public unclaimed-account lists, (3) ASCAP and BMI repertory search result pages. Normalize punctuation and "The" prefixes. Return a one-page JSON result with hits, source, public URL, and a conservative dollar_range_label. If a source requires login, skip it and flag needs_human_filing. Rate-limit to 1 request per 3 seconds per source. Persist the snapshot used for the match so the 48-hour SLA is auditable. Never submit a claim from this endpoint.
+Build the one feature that proves Legato: an honest name check that shows its sources and never overstates.
+1. /lists imports a CSV of a public list with columns name, work_title. Save a snapshot with its source, its public address and the fetched date, and store each row with a normalized name.
+2. Normalize in one function: lowercase, remove diacritics and punctuation, drop a leading "the" and a trailing ", the", and sort the words so "Beatles, The" and "The Beatles" match. Unit test it.
+3. The public /check form takes legal name, stage name, death year and a contact email, saves an estate and runs the matcher against every list entry. An exact normalized match is confidence 1.0. A token overlap of 0.9 or more is a fuzzy match and sets needs_review.
+4. /estates/[id] is a one-page result for the operator: each hit with its source, the snapshot date, the public address of the list, the matched name and the work title, with fuzzy hits clearly marked "needs a human look". With no hits it says "No match in the lists we have, dated [dates]".
+5. The operator copies the result to an email by hand. The page has no send button.
+Rules: never show a dollar amount; the lists do not have one. Never claim the lists are complete. Use a quiet, plain voice, since the reader may be grieving. Keep estates visible only to the operator.
+Empty state: with no snapshots, show the import form and where to find each public list.
+Done when: the normalization tests pass, an imported sample list matches "The Beatles" to "Beatles, The" exactly, a near-miss is marked for review, a name that is not in the lists returns the no-match text with its list dates, and an anonymous visitor cannot read any estate.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page site for Legato. Hero: "Your parent’s songs are still earning. The money is in a system you have never heard of." Sub: "Free 48-hour artist-name check against The MLC unmatched list, SoundExchange unclaimed lists, and PRO repertory. We file. You get the check. 15 percent on private recoveries, 10 percent or the state cap on unclaimed property." Sections: the January 2027 MLC market-share cliff, how it works (five steps matching the product), who we will not take (living writers, catalogs under the recoverable floor), pricing vs a $250/hour lawyer, FAQ on finder-fee caps and "we do not scrape member portals." CTA is the name-check form, not a demo video. Quiet type, no grief photography.
+Build a one-page landing site for Legato, a name check for families of independent musicians.
+Hero: "Your parent's songs may still be earning. The money can sit in a list you have never heard of." Sub: "Type a name. We check published lists of unclaimed royalties and show you exactly where it matched." One button: Join the waitlist.
+Sections: how it works in four steps (enter the name, we check the public lists, you see the sources, a person helps with the next step), who this is for (families of independent musicians who have passed away) and who it is not for (living songwriters), and an FAQ on which lists are checked, why a match is not a promise of money and how your details are used.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, quiet type, a warm off-white background, one muted green accent, no photos of grief.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Engagement Letter + Case Tracker**
+**4. Branding Package**
 
 ```text
-Generate a DocuSign template with two fee exhibits: (A) 15 percent of amounts recovered from MLC, SoundExchange, PROs, publishers, and distributors; (B) 10 percent or the applicable state finder-fee cap, whichever is lower, on state unclaimed-property recoveries. Pass-through schedule for BMI $250 writer and $250 publisher estate fees. Build /app/estates/[id] showing matches, claim status per system, and a "ready to file" packet zip. Statuses: matched, packet_ready, filed, waiting, paid, rejected. Paid amounts write the contingency invoice in Stripe. Add a quarterly cron that re-runs the public matchers for monitoring subscribers only.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Legato: a wordmark and an icon that suggest a single sustained musical note, quiet and steady.
+Colors: warm off-white, deep ink and one muted green. Type: Geist, set calmly.
+Deliverables: wordmark, icon, two result labels (match, needs a human look) that differ by shape as well as color, a one-page result layout, and one launch graphic with no photography.
+Done when: each deliverable is saved in one folder and the two result labels are distinguishable without color.
 ```
 
 ## Sources

@@ -158,3 +158,31 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 22 tests pass, and the ratchet now lints 93 ideas.
 - Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: wave 6.
+
+## 2026-10-07 - WP61-S5, wave 6 (22 ideas)
+
+- Ideas: the 22 slugs of wave 6 in the manifest (`kdp-niche-finder` to `quickbooks-escape-ramp`). Same method as waves 2 to 5, written in four batches (6, 6, 6, 4). Every batch passed a dry run of the lint before it was applied, apart from two fixes the lint asked for: Fmttr's `documents` table became `posts` (a generic table name does not count toward the three idea tables), and TaskPatch's Project Setup named five no-code platforms that the lint read as five services, so the list moved to Core Feature. No lint warnings on any page.
+- Scope calls where an idea's own old prompts did not fit a weekend, or could not be built honestly (each is a cut a reviewer can overrule):
+  - **LeanScan** is the biggest cut. The old idea sold a muscle versus fat estimate from a phone scan. A photo without depth cannot support that, and the old page said "honesty is the feature". The prompts build a weekly photo read in the browser that charts shoulder and hip proportions as 4-week bands with a confidence cue, and fence body fat, muscle and DEXA claims. The owner should decide whether that is still the product.
+  - **ProofCheck** drops the composite score and the ranking of applicants that the old page described, because both look like a consumer report and invite fair-housing risk. It keeps flags that quote evidence, never approves or denies, stores no applicant details beyond a label, and drops public records and eviction searches.
+  - **CabinetSafe** has no model write any medical text. It shows the record as published with a link to its source, says "No record found in our data" and never "safe", and loads its interaction records from a CSV the builder assembles from published sources, since the old prompt did not say where they come from. The camera scan is fenced.
+  - **BirthBuddy** runs a deterministic safety check before anything else, uses no model, drops providers, video and chat, and shows crisis resources from one config file checked against official sources. It is written for a few trusted testers only.
+  - **Legato** shows no fees, dollar estimates or market-timing claims. It matches names against public list files imported by hand, with the snapshot date on every hit, and sends nothing on its own.
+  - **WellnessIQ** drops the engaged versus disengaged ROI comparison, HRIS imports and wearables. The employer sees department totals through a database function that returns nothing for a group under 5.
+  - **Downcrane** reads tilt only while a session is open (a web app cannot track all day), labels neck age an estimate, and asks for a physical therapist to review the stretches before launch.
+  - **Photo-Based Health Tracker** covers meals only. The model names foods and grams, and the calories and macros come from USDA data in code. Workouts and Health app writes are fenced.
+  - **Money kept out of the apps**: TaskPatch moves no money (no escrow or bump), the Escape Ramp writes nothing to a destination and only exports after the balances foot, and Legato has no fee exhibits.
+  - **One source or CSV in place of a connector set**: NicheFinder (pasted listings, no scraper), Ratingwire (CSV with a Replay button, no review-site API), Market Close (Square and generic CSV), the Quarterly Tax Estimator (manual entry and CSV), Workframe (the student runs Python locally and uploads the output file, so no student code runs on the server), the n8n Academy (vault and grader only), Staffer (three tools, one send tool behind an approval), the Smart Meeting Scheduler (Google only, one host) and the Microschool platform (CSV roster, no parent logins).
+  - **Claims dropped** because the old pages gave no source: the January 2027 MLC cliff, fee percentages, competitor prices, subreddit member counts and a lift or savings figure here and there.
+  - Ideas with no product name in the old page got "pick a short working name" in Branding: the Smart Meeting Scheduler, the Microschool platform, the non-toxic appliance platform, the Photo-Based Health Tracker, the Quarterly Tax Estimator and the Escape Ramp.
+- Notes:
+  - A human should read these first: ProofCheck (housing), CabinetSafe (medicines), BirthBuddy (postpartum mental health), Legato (bereaved families), WellnessIQ (employer and health data), the Microschool platform (children's records), LeanScan (body image) and the Quarterly Tax Estimator (tax constants come from IRS tables, not from the prompt).
+  - `one-star-attack-detection` has go-to-market notes after the last fence (the applier kept them in place). They still mention a yearly price.
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22.
+  - `audit:idea --all`: 199 of 227. The failing set is now 28: `one-star-attack-detection` left it (its old prompts were the cause) and none joined. The gate script prints DIFFERENT for that reason. The baseline file was replaced by the 28-item set; the original 29 are kept in the scratchpad.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 22 tests pass, and the ratchet now lints 115 ideas.
+- Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: wave 7.

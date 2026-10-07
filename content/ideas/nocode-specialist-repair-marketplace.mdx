@@ -93,52 +93,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app called TaskPatch: a specialist repair marketplace for no-code builders.
+Build the weekend MVP of "TaskPatch": a board where a no-code builder posts a break and one verified specialist claims it. Payment is settled between the two outside the app this weekend; the app holds no money.
 
-Roles: poster, specialist, admin.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for claim, confirm and dispute emails. Deploy on Vercel.
 
-Postgres (Supabase) tables:
-- users (id, role, email, stripe_account_id nullable)
-- specialist_profiles (user_id, platforms text[], bio, completed_count, avg_hours_to_close, accuracy_score, verified boolean)
-- tickets (id, poster_id, platform enum bubble|webflow|make|zapier|airtable, title, repro, budget_cents, bump_cents default 0, status enum open|claimed|in_progress|complete|disputed|cancelled, specialist_id nullable, created_at)
-- claims (id, ticket_id, specialist_id, claimed_at) unique on ticket_id where status is claimed or later
-- reviews (ticket_id, rating 1-5, hours_to_close, note)
-- escrow_events (ticket_id, stripe_payment_intent_id, stripe_transfer_id, state held|released|refunded)
+Tables (Row Level Security on; posters edit their own tickets, specialists read open tickets and their own claims):
+- profiles(user_id, role, display_name)  role is poster, specialist or admin
+- specialist_profiles(user_id, platforms text[], bio, completed_count, avg_hours_to_close, accuracy_score, verified boolean)  you set verified by hand
+- tickets(id, poster_id, platform, title, repro, budget_cents, status, specialist_id, created_at)  platform comes from a fixed list of no-code platforms kept in one file; status is open, claimed, in_progress, complete, disputed or cancelled
+- claims(id, ticket_id, specialist_id, claimed_at)  unique on ticket_id
+- reviews(id, ticket_id, rating, hours_to_close, note)
 
-Stripe Connect: poster pays budget_cents + optional bump into a PaymentIntent; on poster confirm, transfer 85 percent to the specialist Connect account and keep 15 percent application fee. Priority plan is a $99/month Stripe Price.
+Screens: /login, /board (public), /tickets/new, /tickets/[id], /inbox (specialist), /admin/disputes.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY.
 
-Auth via Supabase magic link. RLS: posters CRUD own tickets; specialists read open tickets plus their claimed rows; admin bypass.
-
-Env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY.
+Do not build: billing, escrow or payouts, Stripe, bumps or a priority tier, proposals, chat or hourly tracking, an Airtable back office, AI ticket rewriting.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Ticket Board + Claim Lock**
+**2. Core Feature**
 
 ```text
-Build the TaskPatch board.
-
-Public /board lists open tickets with platform badge, budget, age, bump flag. Filter by platform. Sort: bumped first, then newest.
-
-POST /tickets creates a ticket only after Stripe PaymentIntent succeeds for budget_cents + bump_cents. Default take 15 percent stored as application_fee_amount.
-
-POST /tickets/:id/claim: if status is open, lock specialist_id, set claimed, insert claims row, email both parties via Resend. Reject if already claimed (unique constraint). Poster can view the specialist profile (platforms, completed_count, accuracy_score) before the lock UI confirms.
-
-Specialist /inbox shows claimed + in_progress. Poster /tickets/:id has Confirm fix (releases transfer) and Open dispute (flags admin). Admin /disputes is a table, not a workflow engine.
-
-Do not build proposals, chat, or hourly tracking. One claim per ticket.
+Build the one feature that proves TaskPatch: a ticket that exactly one specialist can claim, and a trust score that grows from real fixes.
+1. /board is public and lists open tickets with a platform badge, the budget, the age and a Filter by platform control, newest first.
+2. A poster creates a ticket with a platform from the fixed list (Bubble, Webflow, Make, Zapier or Airtable to start), a title, a reproduction description and a budget the two sides have agreed in advance.
+3. A verified specialist presses Claim. Insert a claims row; the unique key on ticket_id means the second of two simultaneous claims fails with "Someone just claimed this". Set the ticket to claimed and email both sides through Resend. The poster sees the specialist's platforms, completed count and accuracy score.
+4. The specialist marks in_progress. The poster presses Confirm fix, which sets complete, or Open dispute, which sets disputed and lists it on /admin/disputes as a plain table.
+5. After a confirmed fix the poster leaves a 1 to 5 rating and the hours it took. Update the specialist's completed_count, average hours and accuracy score from all their reviews.
+6. Emails use plain templates for claimed, confirmed and disputed.
+Rules: one claim per ticket. Say on every ticket page: "TaskPatch does not hold or move money in this version. Agree payment with the specialist before work starts." Only verified specialists can claim.
+Empty state: an empty board says no breaks are open and links to the post form.
+Done when: two simultaneous claims produce one claim and one refusal, both parties get an email, a confirmed fix updates the specialist's stats, and a dispute appears on the admin table.
 ```
 
 **3. Landing Page**
 
 ```text
-Single-page marketing site for TaskPatch.
+Build a one-page landing site for TaskPatch, a repair board for no-code builders.
+Hero: "Post the break. A specialist who has fixed it before claims the ticket." Sub: "Bubble, Webflow, Make, Zapier and Airtable. No profile browsing, no proposals." Two buttons: Join the waitlist as a builder, Join as a specialist.
+Sections: a sample ticket card marked as an example, how it works in four steps (post the break, a specialist claims it, the fix, a score), a strip of the platforms covered, and an FAQ on how payment works today (between you and the specialist, outside the app), how disputes are handled and how specialists are verified.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lavender accent.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
 
-Headline: Post the break. A specialist who has already fixed it claims the ticket.
-Sub: Bubble, Webflow, Make. Escrow until the plugin stops looping. No profile browsing.
+**4. Branding Package**
 
-Sections: (1) the 80/20 problem with a fake ticket card (Stripe loop, Bubble, $350, claimed in 4h), (2) how it works matching the four steps, (3) specialist strip — ten named platforms and completion counts, (4) pricing: 15 percent take, $50–$200 bump, $99/month priority, (5) contrast vs Upwork 5–20 percent fees and Fiverr gig cards, (6) FAQ: escrow, disputes, why not Reddit, specialist vetting.
-
-Geist, off-white background, near-black type, one lavender accent. Primary CTA: Post a break. Secondary: Apply as specialist.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TaskPatch: a wordmark and an icon that suggest a square patch stitched over a crack.
+Colors: off-white, near-black and one lavender. Type: Geist, with tabular numbers for budgets.
+Deliverables: wordmark, icon, five platform tags that differ by shape and letter as well as color, four ticket status chips (open, claimed, complete, disputed), and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources
