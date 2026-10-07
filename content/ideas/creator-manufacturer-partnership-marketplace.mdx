@@ -69,22 +69,60 @@ Be the co-founder marketplace for creators: 7% of attributed sales + premium mat
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Marketplace Shell**
+**1. Project Setup**
 
 ```text
-Build Handsel: two-sided Next.js marketplace. Creators and operators have profiles. Operators submit Pitch objects (royalty_bps, equity_bps, timeline_weeks). Creators accept/reject. Store Deal with status draft|active|completed.
+Build the weekend MVP of "Handsel": a two-sided directory where creators and manufacturers find each other, agree terms in a pitch and track a deal through milestones both sides confirm. No money moves through the app.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link). Executed contracts are uploaded as PDFs. Deploy on Vercel. Start with beauty and apparel only.
+
+Tables (Row Level Security on; a deal is readable only by its two parties):
+- profiles(id, user_id, role, display_name, niche, audience_size, engagement_rate, verified_at)  role is creator or operator; you set verified_at by hand
+- pitches(id, operator_id, creator_id, royalty_bps, equity_bps, moq, timeline_weeks, status)
+- deals(id, pitch_id, status, signed_pdf_path, payout_disputed boolean)  status is draft, active or completed
+- milestones(id, deal_id, name, creator_confirmed_at, operator_confirmed_at)
+- reviews(id, deal_id, reviewer_id, reliability, communication)
+
+Screens: /login, /directory, /pitch/new, /deals/[id], /profile/[id].
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, take rates or escrow, milestone payouts, e-signature, sales tracking, AI matching, messaging.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Milestone Payouts**
+**2. Core Feature**
 
 ```text
-Implement Stripe Connect escrow-like flow: on deal accept, create payment schedule for milestones sample_approved, po_placed, first_shipment. Release funds only when both parties confirm milestone.
+Build the one feature that proves Handsel: a pitch that becomes a deal whose milestones both sides confirm, and a reputation that follows.
+1. An operator submits a pitch to a creator with royalty percent, equity percent, minimum order quantity and timeline in weeks. The creator accepts or rejects it. Accepting creates a deal as draft.
+2. A deal gets three milestones: sample_approved, po_placed and first_shipment. Each has two confirm buttons, one for each party. A milestone is done only when both have confirmed. When all three are done and a signed PDF is uploaded, the deal becomes completed.
+3. After completion, each party leaves a 1 to 5 score for reliability and communication, once per deal.
+4. A profile page shows the average scores, the number of completed deals and verified_at as a badge. Show "No deals yet" for a new profile.
+5. Either party can set payout_disputed on a deal. Block an operator from sending new pitches when more than 10 percent of their deals are disputed, and tell them why.
+Rules: only the two parties can read or change a deal, its milestones and its PDF. Text says plainly that Handsel holds no money and gives no legal advice.
+Empty state: an empty directory says no one matches yet and links to the pitch form.
+Done when: two test accounts take one pitch through accept, three confirmed milestones, a PDF and both reviews, the scores show on both profiles, and a third account cannot read the deal.
 ```
 
-**3. Reputation**
+**3. Landing Page**
 
 ```text
-After deal completion, both sides leave scores (1-5) for reliability and communication. Show aggregate on profiles. Block new pitches if operator payout dispute rate exceeds 10%.
+Build a one-page landing site for Handsel, where creators and manufacturers make partnership deals.
+Hero: "Turn your audience into a product line, with a partner who ships it." Sub: "Creators list their niche and audience. Manufacturers pitch royalty and equity terms. Both sides confirm each milestone." One button: Join the waitlist, with a creator or manufacturer choice.
+Sections: how it works in four steps (list, pitch, deal room, milestones), the trust angle (both sides confirm each milestone, and reviews stay on your profile), what is coming next (milestone payouts), and an FAQ on whether Handsel holds money (not yet), where contracts live (you upload the signed PDF) and who can see your deal (only the two parties).
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a cream background, ink type, one deep green accent. Say that the first deals are beauty and apparel.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Handsel: a wordmark and an icon that suggest two shapes locking together.
+Colors: ink, cream and one deep green. Type: Geist.
+Deliverables: wordmark, icon, a verified badge, two role chips (creator, operator) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two role chips are distinguishable without color.
 ```
 
 Trust is the scarce resource. Creators remember the brand that paid late; operators remember the creator who ghosted after samples. A reputation graph with on-time payout rates, sample-to-PO conversion, and completed deal counts becomes the moat that cold DMs cannot copy. Publish anonymized deal comps ("typical royalty for beauty creators with 100K–250K is X–Y%") so both sides arrive with realistic expectations and fewer dead pitches.

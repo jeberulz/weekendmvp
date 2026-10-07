@@ -111,3 +111,27 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 22 tests pass, and the ratchet now lints 49 ideas.
 - Sampling: the dry-run lint and the diff checked every page. No page from this wave was re-read line by line after applying.
 - Next: wave 4.
+
+## 2026-10-07 - WP61-S5, wave 4 (22 ideas)
+
+- Ideas: the 22 slugs of wave 4 in the manifest (`ai-website-launch-rescue` to `creator-manufacturer-partnership-marketplace`). Same method as waves 2 and 3, written in four batches (6, 6, 5, 5). Every batch passed a dry run of the lint before it was applied.
+- Scope calls where an idea's own old prompts did not fit a weekend (each is a cut a reviewer can overrule):
+  - One source in place of a connector set: Persist takes pipeline data by CSV (Bullhorn, Recruit CRM and Crelate fenced). Refundra takes leads and transcripts by CSV (CallRail, Twilio and audio transcription fenced). NudgeLearn takes progress by CSV (Zapier and platform APIs fenced, email only, no SMS). Revoice takes orders by CSV (YouTube analytics, Kajabi and Teachable webhooks fenced).
+  - Money kept out of the apps: Handsel moves no money. Escrow, milestone payouts and e-signature are fenced, and both parties confirm each milestone in the app. Revoice fences Connect splits and the 30 percent fee. Secondread gives fix effort in hours, not dollar quotes. BNPL for Digital Products keeps the plan test-mode only and records what would be advanced.
+  - Automation fenced where the old prompt filed or held something for the user: Refundra drafts each claim and the contractor files it on the platform's own form (no Playwright). SellerShield flags orders and never holds fulfillment or submits a dispute. Secondread reads public repos only through a read-only token (no GitHub App, no private code, no stored file contents).
+  - Embeddings dropped where full-text search is enough: HistoryPal uses Postgres full-text search over one figure's public-domain passages, so it needs one outside service, not two.
+  - Numbers the old pages stated without a source were not copied into landing prompts. Refundra, Revoice and NudgeLearn use placeholders for a recovery story, a market figure and a completion lift. Competitor prices were removed from Secondread and ChatTracker landings.
+  - Checks moved into code where the idea sells trust: ContractDecoder and Refundra drop any clause or quote that does not appear word for word in the source text. ChatTracker's briefing may cite only numbers in `insights.stats`. Secondread drops a finding whose file is not in the scanned tree.
+- Notes:
+  - Landing prompts that the old page used for a dashboard (NudgeLearn, Creator Launch Kit) were rewritten to the standard's landing shape.
+  - HistoryPal is the first page in the program that serves minors in a classroom. Its prompts join students by class code and first name through anonymous sign-in, collect no student email, keep students from reading each other's chats, and label every answer as an AI answering from sources. A human should check this one first.
+  - ContractDecoder (legal text) and BNPL for Digital Products (credit) carry "not legal advice" and test-mode rules. A human should check both.
+  - `creator-manufacturer-partnership-marketplace` has go-to-market notes after the last fence. The applier kept them in place.
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22, with no warnings after one fix (SellerShield's Core Feature said "billing address", so it now says "bill-to address").
+  - `audit:idea --all`: 198 of 227, failing set identical to the baseline of 29.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 22 tests pass, and the ratchet now lints 71 ideas.
+- Sampling: the dry-run lint and the diff checked every page. The 10 pages written in the last two batches were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: wave 5.
