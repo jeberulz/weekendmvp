@@ -186,3 +186,30 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 22 tests pass, and the ratchet now lints 115 ideas.
 - Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: wave 7.
+
+## 2026-10-07 - WP61-S5, wave 7 (22 ideas)
+
+- Ideas: the 22 slugs of wave 7 in the manifest (`quiet-creator-personal-branding` to `tiktok-trend-predictor-creators`). Same method as waves 2 to 6, written in four batches (6, 6, 6, 4). Every batch passed a dry run of the lint before it was applied. No lint warnings on any page.
+- One lint change, made because a prompt exposed a real false positive: the product "Catalog Clerk" tripped the Clerk login rule (and the Clerk with Supabase rule). `scripts/lib/prompt-standard.mjs` now strips that product name before it checks services and logins, and `tests/prompts` has a test that the name passes and a real "sign in with Clerk" still fails. The new test was checked to fail without the change. 23 tests pass.
+- Scope calls where an idea's own old prompts did not fit a weekend, or could not be built honestly (each is a cut a reviewer can overrule):
+  - **The Shopify apps** (Knownly, Catalog Clerk, ReviewIQ, the SEO Keyword Tool, Trust Layer) run against one development store with a custom app token. OAuth installation, App Bridge and the App Store path are fenced. Catalog Clerk stops at a scan, a dry-run plan and a runbook, because a wrong mutation changes a live store, so apply and rewind are the next package. The SEO tool reads the store and writes nothing back. Trust Layer reads public HTML only (5 pages, robots.txt honored, no screenshots or model) with a rubric file that names its sources.
+  - **ReviewIQ** takes reviews by CSV. The old page said the Admin API, but Shopify has no first-party review feed, so the review app's export is the real source.
+  - **Runway** takes invoice-line CSVs. The lint treats a payment processor named in Project Setup as billing, so the processor connection is the next step, which also fits a weekend.
+  - **Recur** fixes a gap in its own spec. The old detector dropped any group with under 3 charges, which hides annual charges (24 months holds at most 2). The prompt shows an annual pair as "possible" with confidence capped at 0.7. Cancellations count as done only when a later statement shows no new charge.
+  - **Verdicts and numbers decided in code**: the Feature Usage Auditor decides Keep, Investigate or Sunset by written rules and only asks the model for the paragraph. It reads the export in the browser and sends only hashed totals. Buildline, Coinstack, TextTrack and the Quarterly-style engines compute scores in code and check that a narrative only repeats real numbers.
+  - **Honest claims**: TrendScout no longer promises a peak time or scrapes anything, and measures how often its flags helped. ClearChain says "documents on file, confirmed by the brand" and encodes no named law. Buildline reads GitHub counts and a 10-second check-in (no wearables or calendar) and rejects clinical words. RentGuard says tamper-evident, not tamper-proof.
+  - **Sending and filing kept behind a person**: Transom sends nothing to a lead without an approval click. SlackToDoc reads only the thread it is mentioned in. Staffer-style approval pattern appears again in none of this wave.
+  - **Smaller cuts**: Monthlii is the operator console only (no client portal) and every percentage is typed by the operator, with no default salary or tax rate. ShopAutopilot imports Seller Center CSVs and uses the EasyPost test key. AdMotion renders in the browser with ffmpeg.wasm and uploads nothing.
+  - Ideas with no product name in the old page got "pick a short working name" in Branding where needed (the Auditor, the SEO tool, the photo and health tools of earlier waves).
+- Notes:
+  - A human should read these first: RentGuard (the state letter template needs a lawyer, and it is one state), Monthlii (the tax and CPA boundary), TextTrack (business texting rules), SlackToDoc (it reads work messages), ClearChain (what the public page may say), Buildline (wellbeing-adjacent), Recur and Coinstack (money habits) and Home Upkeep (it must not read as an inspection).
+  - AdMotion's biggest risk is browser limits: a 15-second 1080p render with ffmpeg.wasm may be slow or run out of memory. That is the first thing to test.
+  - `shopify-trust-scanner` and `tiktok-shop-fulfillment-automation` and `supply-chain-transparency-platform` have trailing go-to-market notes after the last fence on some pages (the applier kept them in place).
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22.
+  - `audit:idea --all`: 200 of 227. The failing set is now 27: `shopify-trust-scanner` left it and none joined. The baseline file was replaced by the 27-item set.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 23 tests pass, and the ratchet now lints 137 ideas.
+- Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: wave 8.

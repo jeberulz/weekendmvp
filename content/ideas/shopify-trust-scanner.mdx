@@ -66,22 +66,59 @@ Own "why won't they buy?" diagnosis at **$99 audit + $29/month monitoring**, wit
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Capture Pipeline**
+**1. Project Setup**
 
 ```text
-Build Trust Layer: API accepts a Shopify URL, enqueues a Playwright job that screenshots homepage, a product page, and cart. Store images in S3/R2 and HTML text in Postgres.
+Build the weekend MVP of "Trust Layer": paste a Shopify store address and get a ranked list of missing trust signals, each tied to a page and a concrete example. It reads public pages only and uses no model.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), cheerio to read the HTML of a few public pages. There is no headless browser and no screenshots this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- stores(id, user_id, url, last_scan_at)
+- scans(id, store_id, trust_score, pages jsonb, created_at)
+- findings(id, scan_id, signal, present boolean, severity, effort, evidence, fix, url)  severity and effort are 1 to 5
+
+Screens: /login, /scan/new (paste a URL), /scan/[id] (the score and the ranked fix list), /history (scans of one store over time).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, audit PDFs, a monitoring subscription, Playwright or screenshots, a model or vision, a public trust badge, batch scans for agencies.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Scoring**
+**2. Core Feature**
 
 ```text
-Send screenshots + extracted text to Claude. Return JSON findings: {signal, present:boolean, severity:1-5, effort:1-5, fix}. Compute trust_score 0-100 as weighted sum. Render a ranked fix list.
+Build the one feature that proves Trust Layer: findings a merchant can verify by opening a page.
+1. POST /api/scans takes a store URL. Allow https addresses only and refuse private or local network addresses. Read the store's robots.txt and skip any page it disallows. Fetch at most 5 pages at one request per second with a clear user agent: the homepage, the first product page found in /products.json, the cart page, /policies/refund-policy and /policies/shipping-policy.
+2. Run one detector per signal on the HTML in code: payment badges (images or text for common card and wallet brands), a review widget (known review app markers and a visible star count), the refund policy reachable from the footer, a shipping policy or a shipping cost or time stated on the product page, contact details (a mailto link, a phone number or a contact page) and a visible business address.
+3. Keep a rubric in one file: each signal's weight, severity and effort from 1 to 5, and the fix text with where to make it in the Shopify admin. Do not quote any study unless the rubric file gives its source.
+4. Save a finding for each signal with present or not, the page it was found on or checked, and evidence: the text or element found, or "not found on [URL]". trust_score is the weighted sum of signals present, from 0 to 100.
+5. /scan/[id] shows the score and a fix list ranked by severity over effort, each item with its evidence and the Shopify admin pointer. /history shows the score over time for one store.
+6. Write a fixture HTML file for each detector and test it passing and failing.
+Rules: never fetch more than 5 pages for a scan. Say that a signal can be missed when a store loads it with scripts. Never give a badge or a certification.
+Empty state: with no scans, show the URL field and the list of signals checked.
+Done when: the detector tests pass, a scan of a sample store lists findings with real URLs and evidence, a second scan after a change shows the new score, and a private address is refused.
 ```
 
-**3. Monetization**
+**3. Landing Page**
 
 ```text
-Stripe Checkout $99 for single audit PDF. After purchase, offer $29/month subscription that re-runs the scan monthly and emails deltas.
+Build a one-page landing site for Trust Layer, a trust signal checker for Shopify stores.
+Hero: "Find what makes shoppers hesitate on your store." Sub: "Paste your store address. Get a ranked list of missing trust signals, each one tied to a page you can open and a fix you can make." One button: Join the waitlist.
+Sections: a sample result with a score, three findings and their evidence, how it works in four steps (paste, scan, rank, fix and rescan), and an FAQ on what is checked (public pages only), what can be missed (anything loaded by scripts) and why there is no trust badge.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one teal accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Trust Layer: a wordmark and an icon that suggest a shield made of stacked horizontal layers.
+Colors: off-white, near-black and one teal. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, a score dial from 0 to 100, three finding chips (present, weak, missing) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the finding chips are distinguishable without color.
 ```
 
 Merchants ignore generic scores. Tie every finding to a concrete example: "Your shipping cost appears only on step 3 of checkout — Baymard associates late shipping reveals with elevated abandonment." Show a before/after mockup when possible. Offer a public trust badge only after score ≥ 80 to avoid becoming another meaningless icon. For agencies, batch scan twenty client stores overnight and drop a CSV of top gaps — that workflow alone justifies $199/month.

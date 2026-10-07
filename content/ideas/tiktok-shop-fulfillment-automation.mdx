@@ -85,19 +85,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "ShopAutopilot" for TikTok Shop fulfillment automation. Provision a Supabase Postgres database with these tables: sellers (id, tiktok_shop_id, email, plan TEXT default 'starter', order_count_this_month INT, created_at), products (id, seller_id, tiktok_product_id, sku, stock_qty INT, name), orders (id, seller_id, tiktok_order_id UNIQUE, status TEXT, buyer_address JSONB, items JSONB, tracking_number TEXT, carrier TEXT, created_at, shipped_at), carrier_accounts (id, seller_id, provider TEXT, credentials_encrypted TEXT). Enable row-level security so each seller can only access rows where seller_id matches their authenticated session. Set up Stripe with three subscription products: Starter $49/mo, Growth $99/mo, Scale $199/mo, each with a monthly order-count entitlement. Add env vars for TIKTOK_SHOP_APP_KEY, TIKTOK_SHOP_APP_SECRET, SHIPSTATION_API_KEY, and STRIPE_SECRET_KEY.
+Build the weekend MVP of "ShopAutopilot": a TikTok Shop seller imports orders and stock from CSV exports, and the app flags oversold items, buys shipping labels in one batch and exports tracking numbers to paste back. Labels use a test key until you trust it.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the EasyPost API for rates and labels (test mode first). Orders and inventory come in as the CSV files that Seller Center exports. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, kind, filename, row_count, created_at)  kind is orders or inventory
+- products(id, user_id, sku, name, stock_qty)
+- orders(id, user_id, tiktok_order_id, status, buyer_name, address jsonb, items jsonb, region, carrier, tracking_number, label_url, created_at, shipped_at)  tiktok_order_id is unique per user
+- sync_errors(id, user_id, order_id, error jsonb, created_at)
+
+Screens: /login, /import, /orders (select and ship), /inventory (stock and low-stock badges), /export (the tracking CSV), /calculator (public).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), EASYPOST_API_KEY.
+
+Do not build: billing, plans or order-count tiers, the TikTok Shop API or OAuth, a queue or Redis, carrier aggregator accounts, an analytics tab.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Order Sync &amp; Batch Shipping Engine**
+**2. Core Feature**
 
 ```text
-Build a background worker using BullMQ and Redis that polls the TikTok Shop Partner API for new orders every 60 seconds per connected seller (or subscribes to TikTok's order webhook if available in the seller's region). For each new order: upsert it into the orders table, decrement matching product stock in the products table, and flag any order where requested quantity exceeds available stock. Build a batch-shipping job that groups all orders with status 'pending' by destination region and carrier preference, calls the ShipStation or EasyPost API to generate labels in bulk, writes the resulting tracking_number and carrier back to each order row, and pushes the tracking number back to TikTok Shop via the Partner API's order-update endpoint. Handle TikTok API rate limits with exponential backoff and log every failed sync to a sync_errors table with the raw error payload for debugging.
+Build the one feature that proves ShopAutopilot: a spike of orders turns into labels and tracking numbers in a few clicks, without selling stock you do not have.
+1. Import an orders CSV and an inventory CSV from Seller Center. Insert orders idempotently by tiktok_order_id so a re-import changes nothing. Show rows that failed to parse and why.
+2. When an order is imported, reduce stock for each SKU. Flag any order whose quantity is more than the stock on hand as oversold and keep it out of the batch.
+3. The orders page lists pending orders with a select-all and a Ship button. Group the selected orders by destination region and the seller's carrier preference.
+4. For each group, create shipments and buy labels through the EasyPost API, a few at a time, retrying a rate limit with backoff. Save the tracking number, carrier and label URL on each order, set shipped_at and show a printable label sheet.
+5. Record every failure in sync_errors with the raw error and leave that order pending. A Retry button reruns only the failed ones.
+6. The export page downloads a CSV of order id, carrier and tracking number to paste back into Seller Center.
+7. Delete a buyer's address 30 days after shipping, checked whenever the orders page loads.
+8. The public calculator takes daily orders and minutes per order by hand and shows hours saved a week and the value at an hourly rate the visitor enters, with the formula shown.
+Rules: use the EasyPost test key until a live label is bought on purpose. Never buy a label for an oversold order. Never log a full address.
+Empty state: with no orders, show the two CSV formats and sample files.
+Done when: importing a sample of 50 orders twice creates 50 orders, an oversold order is flagged and excluded, a batch of 20 gets labels with tracking numbers, a forced EasyPost error lands in sync_errors and the export lists exactly the shipped orders.
 ```
 
-**3. Seller Dashboard &amp; Efficiency Calculator**
+**3. Landing Page**
 
 ```text
-Build a seller dashboard with three views: (1) Orders — a live table of orders with status, buyer info, and a "Ship Now" batch-select action; (2) Inventory — product list with stock levels and a low-stock warning badge; (3) Analytics — orders per day chart, average fulfillment time, and revenue by product for Growth/Scale tier sellers only. Also build a public, no-login "Efficiency Calculator" landing page tool: seller enters their current daily order volume and average manual processing time per order, and the page calculates estimated hours saved per week and dollars saved per month if automated, ending in a "Start Free Trial" CTA. Use a clean, high-contrast design with a dark navy and single orange accent color, no illustrations of people.
+Build a one-page landing site for ShopAutopilot, fulfillment help for TikTok Shop sellers.
+Hero: "Ship the spike without the spreadsheet." Sub: "Import your orders, catch oversold items, buy labels in one batch and get tracking numbers ready to paste back." One button: Join the waitlist.
+Sections: an efficiency calculator (daily orders and minutes per order in, hours saved out, with the formula shown), how it works in four steps (import, check stock, batch ship, export tracking), and an FAQ on which exports are supported, what is coming next (a direct connection to TikTok Shop) and how buyer addresses are handled (deleted 30 days after shipping).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean high-contrast look with dark navy and one orange accent, no illustrations of people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ShopAutopilot: a wordmark and an icon that suggest a parcel with an arrow that has already left.
+Colors: dark navy, off-white and one orange. Type: Geist, with tabular numbers for counts.
+Deliverables: wordmark, icon, four order status chips (pending, oversold, shipped, error) that differ by shape as well as color, a label sheet header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

@@ -103,6 +103,13 @@ describe("weekend prompt standard v1", () => {
     expect(codes(edit("Project Setup", (t) => `${t}\nAlso Auth0.`))).toContain("setup-auth");
   });
 
+  test("a product named Catalog Clerk is not the Clerk login", () => {
+    const named = edit("Project Setup", (t) => t.replace("Example Tracker", "Catalog Clerk"));
+    expect(codes(named)).not.toContain("setup-auth");
+    expect(codes(named)).not.toContain("setup-auth-rls");
+    expect(codes(edit("Project Setup", (t) => `${t}\nUse Catalog Clerk and also sign in with Clerk.`))).toContain("setup-auth-rls");
+  });
+
   test("three tables declared as `- name(columns)` lines, not counting the engine's generic ones", () => {
     expect(codes(edit("Project Setup", (t) => t.replace(/^- weeks\(.*\n/m, "")))).toContain("setup-tables");
     const generic = edit("Project Setup", (t) => t.replace(/^- (clients|weeks)\(/gm, "- members(").replace(/^- entries\(/m, "- workspaces("));

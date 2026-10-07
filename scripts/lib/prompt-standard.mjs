@@ -72,6 +72,10 @@ const AUTH_PROVIDERS = [
   ["supabase-auth", /\bsupabase\b[^.\n]{0,80}\bauth\b/i],
 ];
 
+/** Product names that contain a provider's name. "Catalog Clerk" is a product, not the Clerk login. */
+const PRODUCT_NAMES = /\bcatalog clerk\b/gi;
+const withoutProductNames = (text) => String(text).replace(PRODUCT_NAMES, "");
+
 // A bare "checkout" is not billing: Shopify calls an abandoned cart an abandoned checkout.
 const BILLING = /\b(stripe|paddle|lemon ?squeezy|billing|subscriptions?|checkout (?:flow|page|session)s?|paid plans?|pricing tiers?|pricing plans?)\b/i;
 // Only `Next.js 15` / `nextjs 15`. A bare "next 7 days" is prose, not a pin.
@@ -159,7 +163,7 @@ export function lintPrompts(blocks) {
   const branding = byTitle("Branding Package");
 
   if (setup) {
-    const built = withoutFence(setup.text);
+    const built = withoutProductNames(withoutFence(setup.text));
     const lines = nonEmptyLines(setup.text).length;
     if (lines < SETUP_MIN_LINES) error("setup-structure", `Project Setup has ${lines} lines (need ${SETUP_MIN_LINES}+, one idea per line)`);
 
