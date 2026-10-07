@@ -262,3 +262,29 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 23 tests pass, and the ratchet now lints 176 ideas, which is every `ideabrowser` idea.
 - Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: the program gate (S6).
+
+## 2026-10-07 - WP61-S6 and S7, program gate
+
+- Result: all 176 `ideabrowser` ideas have four build prompts that pass weekend prompt standard v1, and all 176 are on the ratchet list `ideas/prompt-standard.json`. `npm run audit:prompts -- --source ideabrowser` reports 176 of 176. Across all 225 live ideas it reports 176 of 225. The other 49 ideas (other sources) fail the standard, as scoped; they are reported, not rewritten.
+- The gate was run twice, each check on its own exit code (`program-gate.sh` prints one exit line per check).
+  - First run: `audit:prompts` 0, `typecheck` 2, `lint` 0, `npm test` 1, `build` 0. Two real findings, one more found while reading the output:
+    - `typecheck`: three `@ts-expect-error` comments in `tests/prompts/prompt-standard.test.ts` were unused, because `allowJs` types the `.mjs` modules. Removed.
+    - `npm test`: `lib/engine/replay.test.ts` failed. The warning added in S3 ("prompt standard v1: 7 issue(s)") fired on the engine's own compiled page, and that test expects a compiled page with no warnings. This was S7, which the manifest had left conditional. It was needed now, so it was done.
+    - `audit:prompts --json` cut its output off at 64 KB when piped, because the script called `process.exit` right after a large write. It now sets `process.exitCode`.
+  - Final run, on the final tree: `audit:prompts` 0 (176 of 176), `typecheck` 0, `lint` 0, `npm test` 0 (every sub-suite; the engine suite runs 1,076 tests and the prompts suite 23), `build` 0.
+- S7, the engine template (`lib/engine/compile.ts`): Project Setup no longer carries the Stripe catalog, the plan column, the Stripe price env vars or the `usage_events` table. Every prompt now has a `Do not build:` or `Done when:` line as the standard asks, Branding opens by saying to use a design tool, and the Landing prompt ends in a waitlist. The idea's pricing proposal and competitor strip stay in the Landing prompt. The prompts still hold no figure of their own, which the engine's own audit checks. Two `compile.test.ts` assertions were updated (the pricing string now sits in the Landing prompt, and Project Setup is checked against the standard). A new test compiles the engine fixture and lints it; it was checked to fail on the old template. One ruling row records the waitlist change, for the owner to overrule.
+- `audit:idea --all`: 200 of 227. The failing set is 27, a strict subset of the original 29: `one-star-attack-detection` and `shopify-trust-scanner` now pass, and no page joined it.
+- The branch: 193 files changed against `main`. The content change is the prompts section of 176 pages, the ratchet list, the lint and its tests, the auditor rule, the engine template and the docs. No `seed:convex`, no deploy, no Convex change, no manifest change and no PR.
+- Sampling, stated plainly: every page passed the lint on a dry run before it was applied, and a diff check showed only the prompts section changed on every page. The pages were re-read once as authored. The agent did not re-read any page line by line after applying, so the 176 pages have had a machine check and one authoring pass, and no human read.
+- What a human reviewer still owes (the pages where being wrong costs the most), grouped by why:
+  - Children and students: HeroTales, TaskFocus, the music-teacher app, HistoryPal, the Microschool platform, TeamComm, Highlight Reel.
+  - Health and the body: WellRing, HealthSync, CabinetSafe, BirthBuddy, WellnessIQ, LeanScan, the Nutrition Planner, Downcrane, the Photo-Based Health Tracker.
+  - Money, tax and law: BNPL for Digital Products, ContractDecoder, MyTaxGuy, the Income-Proof Generator, the Quarterly Tax Estimator, Monthlii, the First International Hire Assistant, ProofCheck, RentGuard, Legato, AccessCheck, the Ad Licensing Desk, the Retro Ad Generator.
+  - Safety and public claims: Vintage Ride Revival, Recall Radar, Vehicle Recall Alerts, ClearChain, the AI Search Publicist, Listening Brief (Reddit's terms).
+  - Messaging and capture: TextTrack, TourChat, Sayflow, SlackToDoc.
+- Product calls made by the agent that the owner may overrule are in each wave's entry. The biggest: LeanScan no longer promises a fat or muscle estimate, ProofCheck has no composite score, Fanstart records pledges and charges nothing, and every marketplace in the program moves no money.
+- Checks that only a person can do: import the Lightroom preset in Lightroom Classic and confirm the sliders land on the listed values, read a real Markmint export time, and try the platform-limit risks (AccessCheck's serverless Chromium on Vercel, AdMotion's in-browser video render).
+- Follow-ups, none started:
+  - Rewrite or retire the 49 other-source ideas, then flip the `audit:idea` warning to an error for any idea not on the ratchet list.
+  - The `/publish-idea` skill was not checked or changed in this program. It should point new ideas at the standard.
+  - No pull request is open for WP61. Its branch starts from `main`. The WP58, WP59 and WP60 branches are stacked on each other and also have no pull requests.

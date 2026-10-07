@@ -48,7 +48,7 @@ Definition of done: all 176 `ideabrowser` ideas have four build prompts that pas
   - Verification:
     - The same commands per wave. A sampled diff per wave is recorded in the progress log.
 
-- [ ] `WP61-S6` - Program gate
+- [x] `WP61-S6` - Program gate
   - Scope: the whole branch.
   - Acceptance criteria:
     - `npm run audit:prompts -- --source ideabrowser` shows 176 of 176 passing.

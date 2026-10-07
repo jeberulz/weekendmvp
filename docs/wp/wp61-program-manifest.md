@@ -54,3 +54,7 @@ Order: the pilot spans a single-line prompt, a payments idea, a five-prompt idea
 - Unreviewed AI rewrites of customer-facing content. A human samples each wave before merge. The program records the sampling it did, not a claim of review.
 - A rewrite that drifts from the page: Stack and Business Model sections still name Clerk, Stripe and tiers. The prompt says what to leave out this weekend, and the page keeps the full-product picture.
 - The auditor ratchet fails a later edit to a listed page that breaks the standard. That is intended.
+
+## Result
+
+All nine waves landed and passed their gates, and the program gate passed on the final tree (176 of 176; typecheck, lint, test and build each exit 0). The engine template was aligned too (S7). The evidence, the calls made and the human review still owed are in `docs/wp/wp61-progress.md`.
