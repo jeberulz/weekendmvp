@@ -46,6 +46,15 @@ Why this package exists: the hero tabs changed only the label and logo. The prom
   - `pkill -f "next dev"` killed the shell that contained that text. Not a repo issue.
 - Next: record the full check results.
 
-## 2026-10-07 - WP59-S5 (open)
+## 2026-10-07 - WP59-S5
 
-- Full `npm run typecheck`, `npm run lint`, `npm test` and `npm run build`: running. Results to be appended below.
+- Checks on the code in `b9dacbf`:
+  - `npm run lint`: exit 0.
+  - `npm test`: exit 0. No failures in any vitest group, including `tests/home` (11 files, 66 tests).
+  - `npm run typecheck`: exit 2 on the first run, exit 0 on the re-run.
+  - `npm run build`: exit 1 on the first run, exit 0 on the re-run.
+- The first-run failure was one error, `.next/dev/types/validator.ts` could not find `app/wp59-harness/page.js`. My earlier `next dev` run for the browser check generated that file, and `tsconfig.json` includes `.next/dev/types`. I had already deleted the temporary route. `.next/` is git-ignored, so no repo file was wrong. Removing the generated `.next/dev` folder fixed it. The re-run shows no reference to the harness.
+- Gotcha: the background task reported "exit code 0" for the first run even though two checks had failed, because the command ended with a `grep`. The per-check exit lines in the logs are the source of truth.
+- Not available: the `a11y-check` skill named in `CLAUDE.md` is not installed in this session. Checked by hand instead: contrast 7.10:1, the tabs keyboard pattern (arrows, Home, End, wrap) in a real browser, an accessible Copy name that starts with its visible label, and no overflow at 390px.
+- Result: all required checks pass. No PR is open.
+- Next: owner review.

@@ -44,7 +44,7 @@ Definition of done: each tab in the homepage hero build window changes what is s
   - Verification:
     - Browser check with a stubbed `gtag`, see S5.
 
-- [ ] `WP59-S5` - Browser check, docs and full checks
+- [x] `WP59-S5` - Browser check, docs and full checks
   - Scope: `docs/wp/wp59-progress.md`, `CLAUDE.md` (`lib/home/*` line).
   - Acceptance criteria:
     - A real browser at 390px and 1280px confirms the tab, header, row 1, clipboard and event behavior for all 7 tabs, plus ArrowRight wrap and End.
