@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 
 import { HeroBuildWindow } from "../../components/home/client/HeroBuildWindow";
+import { heroCta } from "../../lib/home/hero-cta";
 import { HERO_TOOL_NOTES } from "../../lib/home/hero-prompt";
 import type { HeroIdea } from "../../lib/home/types";
 
@@ -34,5 +35,29 @@ describe("hero build window, first paint", () => {
     expect(html.match(/role="tab"/g)).toHaveLength(7);
     expect(html).not.toContain(HERO_TOOL_NOTES.claude);
     expect(html).not.toContain(HERO_TOOL_NOTES.lovable);
+  });
+});
+
+describe("hero build window, idea link", () => {
+  // Server markup is the visitor's: the session hint is read on the client after hydration.
+  const html = renderToStaticMarkup(<HeroBuildWindow idea={idea} total={225} />);
+
+  test("links to the idea page, which shows a visitor the gate and a member the research", () => {
+    expect(html).toMatch(/<a [^>]*href="\/ideas\/example-idea"/);
+    expect(html.match(/href="\/ideas\//g)).toHaveLength(1);
+  });
+
+  test("first paint words it for a visitor", () => {
+    expect(html).toContain(heroCta(false).label);
+    expect(html).toContain(heroCta(false).note);
+    expect(html).not.toContain(heroCta(true).label);
+  });
+
+  test("the link's name carries the idea, so it is not a bare 'Unlock the full research'", () => {
+    expect(html).toContain(`${heroCta(false).label}<span class="sr-only"> for Example Idea</span>`);
+  });
+
+  test("the link follows the Copy button in reading order", () => {
+    expect(html.indexOf('aria-label="Copy prompt 1 for Cursor')).toBeLessThan(html.indexOf('href="/ideas/example-idea"'));
   });
 });
