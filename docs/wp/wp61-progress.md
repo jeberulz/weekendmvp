@@ -42,3 +42,24 @@ Append-only progress log. Do not rely on chat history for project state.
   - "Supabase (..., Auth with Google)" was not read as a login provider, and "nextjs 15" was not read as a pin.
   - The first pin regex would have flagged prose such as "next 7 days". It now needs `Next.js` or `nextjs` and a version.
 - Next: wave 1 (pilot).
+
+## 2026-10-07 - WP61-S4 (wave 1, pilot, 5 ideas)
+
+- Ideas: `meeting-mood-ai`, `marketplace-meetup-safety`, `ai-code-coach-tutor`, `contractor-ai-receptionist`, `tattoo-dm-booking-agent`.
+- Method: for each idea, printed a packet of its own facts (description, Solution, How it works, Tech Stack, Business Model tier names, the old prompts), wrote four prompts by hand, and applied them with a helper that rewrites only the prompts section, lints it, and refuses on any error. The helper and the per-wave source files live in the session scratchpad and are not committed, because the diff of the pages is the record.
+- What changed and what was kept:
+  - Kept each idea's own tables, columns, enums, copy, palette and rules (for example SafeMeet's rule that a spot is never shown as verified without a source and a date, and InkReply's rule never to invent an exact sleeve price).
+  - Removed billing, plans, a second calendar provider, Clerk, extra services and version pins. Added a `Do not build:` fence and a `Done when:` line to every prompt.
+  - Folded or dropped prompts outside the four: Code Coach's Freemium Gating (billing, now fenced), SafeMeet's Verified Spot Pipeline (an admin tool, now fenced, with its trust rule kept in Core Feature), the tattoo agent's separate Stripe and Calendar prompt (the deposit step moved into Core Feature, the calendar sync fenced).
+  - Added Landing Page and Branding Package where an idea had none (tattoo agent, contractor receptionist's brand, SafeMeet, Code Coach), using only the page's own headline, steps and tone.
+  - The standard flexes by stack. SafeMeet is Expo with Supabase, Code Coach is a local VS Code extension with no server (its "tables" are three local storage records from its own settings, cache and triggers), and the tattoo agent starts on a mock inbox because its own old Setup already did.
+- MeetingMood AI, the evaluation's example, now: Google Calendar only with read-only scope in the same sign-in, one login, four tables with row rules, the service-role key marked server only for the Sunday job (which resolves the old "no admin read path" contradiction), a 4-week backfill at first sign-in, buttons plus keys alongside the swipe, three SQL group-bys instead of a regression, an empty state, and no billing.
+- Checks run (gates in the manifest):
+  - `npm run audit:prompts -- --slugs <the five>`: 5 of 5 pass. One warning, `core-billing` on the tattoo agent, which is intended because deposits are its function.
+  - `npm run audit:idea -- --all`: 198 of 227, the failing set identical to the baseline of 29. None of the five pages carries a warning.
+  - `npx vitest run tests/prompts`: 21 tests pass, and the ratchet test now lints the five.
+  - Only the prompts section changed in each page, checked by comparing every other line against `HEAD`.
+  - The homepage's prompt reader parses each page as four real prompts, and the first prompt is 15 to 17 lines, so all five can now be a weekly hero.
+- Sampling: MeetingMood AI's section was read in full after applying. The other four were written from their packets and checked by the lint and the diff. They were not re-read line by line after applying.
+- The `*` payment tag in the manifest is a keyword match. `marketplace-meetup-safety` matched on "marketplace" and takes no payment, so its Core Feature has none.
+- Next: wave 2 (22 ideas).

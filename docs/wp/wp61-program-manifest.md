@@ -31,11 +31,11 @@ An audit of all 225 ideas found: 102 first prompts are a single line, 170 put St
 
 ## Rewrite rules
 
-A rewrite keeps what is specific to the idea (its tables, its core feature, its copy, its palette) and changes only what the standard asks. Billing, plans, extra providers and unneeded services go. Facts about the idea are never invented: a table, feature or claim must come from the page's own Solution, How it works, Tech Stack or existing prompts. Where the old prompts had a feature prompt that is not Core Feature or Landing Page, it folds into Core Feature as numbered steps. Ideas marked `*` below take payment as part of what they do. Their Core Feature may keep a payment step.
+A rewrite keeps what is specific to the idea (its tables, its core feature, its copy, its palette) and changes only what the standard asks. Billing, plans, extra providers and unneeded services go. Facts about the idea are never invented: a table, feature or claim must come from the page's own Solution, How it works, Tech Stack or existing prompts. Where the old prompts had a feature prompt that is not Core Feature or Landing Page, it folds into Core Feature as numbered steps. Ideas marked `*` matched a payment keyword in their title or description (invoice, payout, checkout, marketplace and similar). It is a hint, not a finding. Check each one. Only where taking payment really is the product's function may Core Feature keep a payment step.
 
 ## Waves
 
-| Wave | Name | Ideas | Slugs (`*` = payment is the product's function) |
+| Wave | Name | Ideas | Slugs (`*` = payment keyword match, check) |
 |---|---|---|---|
 | 1 | Pilot | 5 | `meeting-mood-ai`, `marketplace-meetup-safety`*, `ai-code-coach-tutor`, `contractor-ai-receptionist`, `tattoo-dm-booking-agent` |
 | 2 | Wave 2 | 22 | `adspark`, `adventure-date-night-app`*, `agent-storefront-platform`*, `ai-agency-automation-control-panel`, `ai-agent-workflow-platform`*, `ai-api-cost-optimizer-indie-builders`, `ai-api-docs-generator`, `ai-app-security-badge`, `ai-arbitrage-agent-resellers`*, `ai-bookkeeping-for-freelancers`, `ai-builder-hiring-marketplace`*, `ai-cart-rescue-emotional-emails`, `ai-chief-of-staff-consultants`, `ai-coding-agent-dashboard`, `ai-collectible-verification-platform`, `ai-content-factory-human-qc`, `ai-course-tutor-companion`, `ai-cpg-packaging-designer`, `ai-dance-form-coach`, `ai-fashion-lookbook-studio`, `ai-flash-sale-creator-for-shopify`, `ai-lesson-planner-teachers` |
