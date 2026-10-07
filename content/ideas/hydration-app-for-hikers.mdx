@@ -96,54 +96,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (SDK 51+, TypeScript) app named HydroTrail plus a Next.js 15 marketing site.
+Build the weekend MVP of "HydroTrail": a web app for hikers that turns heat, altitude and pace into a sip and electrolyte target while you walk, and keeps working when the trail has no signal. It gives wellness guidance, not medical advice.
 
-Mobile screens: onboarding quiz, hike setup (duration, elevation gain, packet inventory), live hike (sip target, next packet, elevation, last GPS fix age), post-hike recap.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the browser Geolocation API for position and altitude, Open-Meteo for one weather lookup at the trailhead. The hydration rules are a pure TypeScript function with no network call. It installs to the home screen as a PWA and works with the screen on. Deploy on Vercel.
 
-Supabase tables:
-- profiles (id, weight_kg, sex, default_sweat_ml_per_hour, units, plan)
-- hikes (id, user_id, started_at, ended_at, trailhead_lat, trailhead_lng, weather_json, status)
-- sip_events (id, hike_id, at, target_ml, actual_ml, source: 'watch'|'phone'|'manual')
-- packet_events (id, hike_id, sku, taken_at, snoozed)
-- weather_snapshots (id, hike_id, fetched_at, temp_c, humidity, source)
-Enable RLS so users only read their rows.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, weight_kg, sex, default_sweat_ml_per_hour, units)
+- hikes(id, user_id, started_at, ended_at, trailhead_lat, trailhead_lng, weather_json jsonb, status)
+- sip_events(id, hike_id, at, target_ml, actual_ml, source)
+- packet_events(id, hike_id, sku, taken_at, snoozed boolean)
 
-Stripe products: Free, Trail $9/mo, Summit $19/mo, Trail annual $79.
-Env: OPENWEATHER_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_SECRET_KEY, ANTHROPIC_API_KEY.
-Offline: persist the active hike and last weather snapshot in AsyncStorage; GPS continues when offline; sync sip_events when online.
+Screens: /login, /setup (weight, sweat rate or default, packets you carry), /hike/[id] (live: next sip, next packet, altitude), /hike/[id]/recap.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or an outfitter tier, a native app or background location, watch complications, HealthKit or Google Fit, a model or free-text plan parsing, a marketing quiz.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Hydration Engine + GPS Loop**
+**2. Core Feature**
 
 ```text
-Build a local hydration engine in TypeScript with no network on the hot path.
-
-Inputs: weight_kg, sweat_ml_per_hour, temp_c, humidity, altitude_m, grade_percent, moving_pace_min_per_km, minutes_since_last_sip, packets_remaining.
-
-Wellness rules (not medical):
-- Raise target ml/hour when temp is above 24C or altitude is above 2500m
-- Raise further when grade is above 8 percent for more than 10 minutes
-- Suggest an electrolyte packet when cumulative sweat estimate crosses a threshold from sweat_ml_per_hour
-- Never recommend more than 1.2 liters/hour; cap and show a “slow down / seek shade” flag instead
-- If GPS is stale more than 90 seconds, freeze altitude-based changes and keep last cadence
-
-Expo: TaskManager background location, 50-150m distance interval, haptic via expo-haptics. Watch: a complication-sized SIP / SALT state.
-
-Unit tests: sea-level cool walk, hot exposed climb, high-altitude cold, GPS dropout.
-Do not call Claude inside the GPS tick. Optional: one Claude call at hike start to parse a free-text plan into the structured inputs above.
+Build the one feature that proves HydroTrail: a rules engine that changes its advice with the trail, offline.
+1. Write the engine as a pure function. Inputs: weight_kg, sweat_ml_per_hour, temp_c, humidity, altitude_m, grade_percent, pace_min_per_km, minutes_since_last_sip, packets_remaining. Output: target_ml_per_hour, next_sip_in_minutes, packet_due boolean and flags.
+2. Rules, all wellness and not medical: raise the target when the temperature is above 24 C or the altitude is above 2,500 m; raise it again when the grade stays above 8 percent for more than 10 minutes; suggest an electrolyte packet when the cumulative sweat estimate crosses a threshold worked out from sweat_ml_per_hour; never recommend more than 1.2 liters an hour, and show "slow down and find shade" instead of going higher; if the last GPS fix is older than 90 seconds, freeze the altitude-based changes and keep the last cadence.
+3. Unit test four cases: a cool walk at sea level, a hot exposed climb, a cold high-altitude day and a GPS dropout.
+4. On starting a hike, fetch the Open-Meteo forecast once for the trailhead and store it in hikes.weather_json. Keep the active hike and that forecast in localStorage.
+5. The live screen reads Geolocation every 30 seconds, runs the engine and shows the next sip, the next packet and the age of the last GPS fix. A big Sipped button logs actual_ml. A packet card has Taken and Snooze buttons.
+6. Offline, the loop keeps running from the stored forecast, and events are queued locally and synced to Supabase when the connection returns. The recap compares the planned and the actual intake.
+Rules: show "Wellness guidance, not medical advice. If you feel dizzy, confused or sick, stop and get help" on the live screen. Never call a network service inside the GPS loop.
+Empty state: with no hikes, show the setup form and a simulated sample hike.
+Done when: the four engine tests pass, a simulated route raises the target above 24 C and again above 2,500 m, going offline keeps the advice updating, and queued events appear in Supabase after reconnecting.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page site for HydroTrail.
+Build a one-page landing site for HydroTrail, a hydration coach for hikers.
+Hero: "Your bladder is full. Your plan is already wrong." Sub: "Sip and electrolyte timing that follows heat, altitude and pace, even when the trail has no bars." One button: Join the waitlist.
+Sections: a demo watch-style card ticking sip and salt against elevation gain, the problem (a spreadsheet and alarms against a ridge that changed), how it works in four steps (profile the hike, walk with GPS on, confirm packets, debrief at the car), and an FAQ on offline use, battery and "not medical advice".
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, dark granite background, one lime accent, no stock photos of families.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Hero: “Your bladder is full. Your plan is already wrong.”
-Sub: “Sip and electrolyte timing that follows elevation, heat, and pace — even when the trail has no bars.”
+**4. Branding Package**
 
-Sections: problem (spreadsheet plus alarms vs a ridge that changed), live demo (fake watch face ticking sip/salt against gain), how it works (4 steps), pricing (Free / Trail $9 / Summit $19) anchored against MyHydrate $4.99–$9.99 and Moikit’s $200+ hardware, FAQ on offline, battery, and “not medical advice.”
-
-Visual: dark granite, lime accent, no stock families. CTA: “Plan your next hike free.”
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for HydroTrail: a wordmark and an icon that suggest a water drop resting on a ridge line.
+Colors: dark granite, off-white and one lime. Type: Geist, with tabular numbers for liters and meters.
+Deliverables: wordmark, icon, a sip state and a salt state for a small watch-style card that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the sip and salt states are distinguishable without color.
 ```
 
 ## Sources

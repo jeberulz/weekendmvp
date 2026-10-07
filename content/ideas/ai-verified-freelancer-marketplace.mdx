@@ -79,19 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router, TypeScript, Tailwind) marketplace app called "VerifiedAI." Provision Postgres with these tables: companies (id, name, email, plan TEXT default 'access', stripe_customer_id), freelancers (id, name, email, specialties TEXT[], verified BOOLEAN default false), challenges (id, specialty TEXT, prompt TEXT, rubric JSONB, time_limit_minutes INT), submissions (id, freelancer_id, challenge_id, content TEXT, score NUMERIC, grader_notes TEXT, status TEXT CHECK status IN ('pending','graded','flagged')), placements (id, company_id, freelancer_id, contract_value_cents INT, fee_cents INT, status TEXT). Enable row-level security so freelancers only see their own submissions and companies only see verified freelancer profiles. Wire Stripe with two subscription products (Access $99/mo, Priority $199/mo) plus a metered placement-fee product. Add env vars for the sandboxed code execution provider and the LLM grading API key.
+Build the weekend MVP of "VerifiedAI": a directory that lists only freelancers who passed a graded AI skills challenge.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with full-text search, Row Level Security, Auth with email magic link), Claude (Anthropic API) as the first-pass grader. Written-work challenges only this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on: freelancers see their own submissions, companies see only verified profiles):
+- companies(id, user_id, name)
+- freelancers(id, user_id, name, specialties, verified)
+- challenges(id, specialty, prompt, rubric jsonb, time_limit_minutes, pass_threshold)
+- submissions(id, freelancer_id, challenge_id, content, score, grader_notes, status, started_at, submitted_at)  where status is one of pending, graded, flagged
+- grading_runs(id, submission_id, raw_output jsonb, created_at)
+
+Screens: /login, /challenge/[id] (the timed task), /directory (search for companies).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or placement fees, sandboxed code execution, Algolia, in-app messaging or contracts, an admin area (review flagged submissions in the database).
+Done when: npm run dev starts, you can sign in as a freelancer or a company, and the five tables exist with Row Level Security on and two challenges seeded.
 ```
 
-**2. Challenge Grading Pipeline**
+**2. Core Feature**
 
 ```text
-Build a background job that grades freelancer challenge submissions. Input: a submission row with content (code or written work) and a challenge row with a rubric JSONB (criteria: array of {name, description, max_points}). Steps: (1) if the challenge involves code, run it in a sandboxed container against the challenge's fixed test suite and capture pass/fail per test; (2) send the submission plus rubric plus test results to an LLM with a strict JSON output schema: { scores: [{criterion: string, points: number, reasoning: string}], total_score: number, confidence: number, flags: string[] }; (3) if confidence is below 0.7 or total_score is within 5 points of the pass threshold, set submission status to 'flagged' for human review instead of auto-grading; (4) on a passing score, mark the freelancer verified for that specialty and store the graded submission as a public portfolio sample (with freelancer consent). Log every grading run for auditability.
+Build the one feature that proves VerifiedAI: no profile is listed until a graded challenge says so.
+1. /challenge/[id] shows the task with a timer. The server enforces time_limit_minutes and rejects a late submission.
+2. Grade a submission: send the content, the rubric and the pass threshold to Claude with a strict schema { scores: [{ criterion, points, reasoning }], total_score, confidence, flags: string[] }. Save every run to grading_runs.
+3. If confidence is below 0.7, or the total is within 5 points of the pass threshold, set the status to flagged for human review instead of grading it automatically.
+4. On a passing score, mark the freelancer verified for that specialty and, with their consent, store the graded submission as a public portfolio sample.
+5. /directory filters by specialty, minimum challenge score and availability. Each card shows a verified badge, the challenge score and a snippet of the graded sample.
+Rules: log every grading run for audit. Companies never see an unverified profile.
+Empty state: with no verified freelancers, show "Be the first to pass" and the challenge list.
+Done when: a strong test submission verifies the freelancer and lists them, a borderline one is flagged and not listed, and a late submission is rejected.
 ```
 
-**3. Directory Search and Landing Page**
+**3. Landing Page**
 
 ```text
-Design a two-part experience for VerifiedAI. First, a directory search page: filters for specialty (prompt engineering, AI app development, LLM fine-tuning, AI-augmented design/marketing), minimum challenge score, and availability; each result card shows a verified badge, challenge score, and a snippet from their graded work sample. Second, a marketing landing page. Hero headline: "Every freelancer here has proven it." Sub: "No self-reported skills. Every profile passed a real, graded AI challenge before they were listed." Sections: how verification works (the 4-step flow: apply, challenge, grade, list), a sample graded challenge shown publicly to build trust, pricing (Access $99/mo, Priority $199/mo) anchored against a Toptal custom-pricing callout, and an FAQ covering how challenges are graded, how often the roster is refreshed, and how freelancers get certified. Use a dark background, one accent color, generous whitespace, and a primary CTA of "Search verified AI talent."
+Build a one-page landing site for VerifiedAI, a directory of AI freelancers who passed a graded challenge.
+Hero: "Every freelancer here has proven it." Sub: "No self-reported skills. Every profile passed a real, graded AI challenge before they were listed." One button: Search verified AI talent, which joins the waitlist.
+Sections: how verification works in four steps (apply, challenge, grade, list), a sample graded challenge shown in public to build trust, and an FAQ on how challenges are graded, how often the roster is refreshed and how freelancers get certified.
+Waitlist: store the email in a waitlist table in Supabase, with a column for company or freelancer. No other service.
+Style: a dark background, one accent color, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for VerifiedAI: a wordmark and a verified-badge mark that reads as earned, not decorative.
+Colors: near-black, white and one accent for the verified state. Type: one sharp sans for the interface.
+Deliverables: wordmark, the badge mark at three sizes, a graded-score chip, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badge is readable at 24 px.
 ```
 
 ## Sources

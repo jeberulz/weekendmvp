@@ -76,25 +76,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 project with TypeScript and Tailwind CSS for an AI Landing Page Generator focused on e-commerce. Set up: app router structure, a Supabase client for auth and database (tables: users, pages, page_versions, ab_tests, analytics_events), Stripe subscriptions with Starter/Pro/Agency tiers, OpenAI client wrapper with GPT-4o structured outputs, Shopify Storefront API helper for fetching product data, and a server action for publishing generated pages to a managed subdomain. Include proper TypeScript types, error handling, and environment variables.
+Build the weekend MVP of "Pagely": describe a product, an audience and a goal in three short steps and get a responsive landing page from a fixed set of components, which you can edit and publish at its own address. It never makes up proof.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the copy and the section plan. Pages are rendered from JSON by a fixed set of components and published under /p/[slug], server-rendered. Deploy on Vercel.
+
+Tables (Row Level Security on, an owner reads only their own rows; published pages are readable by everyone through the public route):
+- pages(id, user_id, slug, brief jsonb, status, published_at)
+- page_versions(id, page_id, version, sections jsonb, created_at)
+- analytics_events(id, page_id, kind, created_at)  kind is view or cta_click
+
+Screens: /login, /pages (the list), /pages/new (the wizard), /pages/[id] (preview, edit and publish), /p/[slug] (the public page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an agency tier, Shopify or WordPress publishing, custom subdomains, automatic A/B testing, product imports.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the AI landing page generation flow. Requirements: (1) Wizard UI capturing product details, target audience, campaign goal, and brand aesthetic (3-step form), (2) Server action that calls GPT-4o with a structured-output schema returning sections (hero, social proof, features, FAQ, CTA), copy per section, and Tailwind class hints, (3) Renderer that maps the JSON output to a curated set of Tailwind-based components and produces a fully responsive page, (4) Save the generated page to Supabase and provide a preview URL plus a "publish" action that pushes the page to a configured subdomain or via Shopify/WordPress API. The user flow: open wizard → fill 3 steps → see live preview generating section-by-section (stream the response) → publish in one click.
+Build the one feature that proves Pagely: a page that is ready to publish, with copy that only says things the owner gave.
+1. The wizard has three steps: the product (name, what it does, price if the owner wants it shown, a link for the call to action), the audience and the goal, and the style (one of a few presets).
+2. A server action asks the Anthropic API for a JSON plan: { hero: { headline, subhead, cta_label }, features: [{ title, body }], faq: [{ q, a }], social_proof: [] }. The prompt says to use only facts the owner entered and to leave social_proof empty unless the owner pasted real quotes or numbers.
+3. Check in code: strings contain no HTML, the call-to-action link is an https address the owner typed, and every number or price in the copy appears in the owner's input. Drop social_proof entries that are not the owner's own text.
+4. Render the plan with a fixed set of Tailwind components (hero, features, proof, FAQ, call to action) that are responsive and meet AA contrast. Show the preview and let the owner edit any text.
+5. Save each change as a page_versions row. Publish sets the slug and publishes /p/[slug], rendered on the server so crawlers see it, with a title and description.
+6. Record a view and a call-to-action click on the public page as first-party events with no cookies. Show counts on the page's dashboard.
+Rules: never invent a testimonial, a statistic, a logo or a guarantee. Never promise a conversion lift anywhere. An unpublished page returns not found.
+Empty state: with no pages, show the wizard and a sample brief.
+Done when: a sample brief produces a page with no invented numbers, a made-up testimonial is dropped, editing and publishing creates a version and a public page, and views and clicks are counted.
 ```
 
 **3. Landing Page**
 
 ```text
-Create the marketing site for "Pagely" using Next.js 14 and Tailwind CSS. Include: hero section with headline "AI-built landing pages in minutes, not days" and subheadline emphasizing 15-30% conversion lift, an interactive demo showing the 3-step wizard producing a sample page in real time, problem/solution sections about ad waste and slow page iteration, feature highlights (Shopify + WordPress integrations, A/B testing, conversion-aware templates), a comparison table positioning against Unbounce/HubSpot/SiteKick, pricing section with Starter ($49) / Pro ($149) / Agency ($499) tiers, testimonial placeholders, and an email capture form. Use a clean modern design with a deep emerald and warm neutrals palette that feels premium without being intimidating.
+Build a one-page landing site for Pagely, a landing page builder for small online stores.
+Hero: "A landing page for your product in minutes." Sub: "Answer three questions. Get a clean, responsive page with copy based only on what you told us. Edit it and publish." One button: Join the waitlist.
+Sections: a three-step wizard demo producing a sample page, how it works in four steps (describe, generate, edit, publish), and an FAQ on what the copy is based on (only your input), why there are no made-up reviews and which store connections come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a deep emerald and warm neutrals that feel premium without being intimidating.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for Pagely, an AI landing page generator for e-commerce brands. Include: logo concept (a clean wordmark with a small abstract mark suggesting layers or a stacked page that works at favicon size), color palette (primary: deep emerald #047857, secondary: warm cream #FAF7F2, accent: signal orange #F97316 for CTAs, neutrals: stone gray scale), typography pairing (heading: Geist or Inter Display in 500-600 weight, body: Inter for readability), and usage guidelines. Provide hex codes, font recommendations, and example applications: app dashboard, marketing site hero, social media share card.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Pagely: a wordmark and a small abstract mark that suggests a stacked page, readable at favicon size.
+Colors: deep emerald (#047857), warm cream (#FAF7F2), signal orange (#F97316) for calls to action and stone neutrals. Type: Geist or a similar display face for headings and Inter for body.
+Deliverables: wordmark, mark, a color and type sheet with hex codes, an app dashboard header, and a social share card.
+Done when: each deliverable is saved in one folder and the mark is readable at favicon size.
 ```
 
 ## Sources

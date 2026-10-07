@@ -89,25 +89,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app called Buildline — a solo-founder operating-health score. Supabase tables: users (id, email, timezone, plan, score_weights jsonb default {shipping: 0.3, focus: 0.25, meetings: 0.2, recovery: 0.25}), connections (id, user_id, provider text check in ('github','google_calendar','rescuetime','toggl','oura','whoop','stripe'), status, scopes, last_synced_at), events (id, user_id, source, kind, occurred_at, numeric_value, payload_hash), weekly_scores (id, user_id, week_start date, momentum int, recovery int, flag text, confidence float, narrative text, action text), actions_taken (id, weekly_score_id, label, completed_at). RLS: user_id = auth.uid(). Stripe products: Free, Core $15, Pro $29, Coach $49, plus $144/$276/$468 annual. Env: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY, STRIPE_SECRET_KEY. Install Octokit, googleapis, Stripe, Vercel AI SDK.
+Build the weekend MVP of "Buildline": one weekly score for a solo founder from what they shipped and how they recovered, with one suggested action. It reads GitHub activity and a 10-second daily check-in. It is an operating tool, not a health tool, and never diagnoses.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the GitHub API with a read-only personal access token for commits and merged pull requests, the Anthropic API to write the narrative. The scoring is plain code. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- connections(id, user_id, provider, token_encrypted, repos text[], status, last_synced_at)
+- events(id, user_id, source, kind, occurred_at, numeric_value)  kind is commit or merged_pr
+- checkins(id, user_id, on_date, sleep_hours, energy, focus_hours)  energy is 1 to 5
+- weekly_scores(id, user_id, week_start, momentum, recovery, flag, confidence, narrative, action)
+
+Screens: /login, /connect (a token and the repos), /checkin (three fields), /week (this week's score and action).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or a coach tier, calendar, time tracker or wearable connections, OAuth apps, a weekly email or cron, revenue data.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scorer + Monday Briefing**
+**2. Core Feature**
 
 ```text
-Build the weekly scorer as a Vercel Cron at 05:00 in the user’s timezone. For each user with at least one healthy connection: aggregate last 7 days into shipping (commits + merged PRs), focus_hours, meeting_hours, after_hours_events, recovery_proxy (HRV or sleep if present, else calendar-derived rest). Compute momentum 0-100 and recovery 0-100 with the user’s score_weights. Set flag to 'burnout_risk' when recovery drops more than 15 vs the 4-week mean AND shipping is flat or down; otherwise 'stable' or 'up'. confidence = connected_sources / 4, capped at 1. Call gpt-4o-mini with response_format json_schema { narrative: string (max 3 sentences), action: string (one operational recommendation), rationale: string }. System prompt: you are an ops coach for a solo founder, not a clinician. Never diagnose. Never claim causation with revenue. Prefer one action over a list. Persist weekly_scores and email/Slack the briefing. If only calendar is connected, still score meetings vs focus using free/busy, and say so in narrative.
+Build the one feature that proves Buildline: a weekly pair of numbers that is honest about how much it knows.
+1. Connect: save the GitHub token encrypted and the list of repos. A Sync button reads the last 8 weeks of the user's commits and merged pull requests from those repos and saves them as events.
+2. The daily check-in takes sleep hours, energy from 1 to 5 and focus hours. It must take under 10 seconds.
+3. Score in code. Shipping this week is commits plus merged pull requests. Momentum is 50 plus 50 times (this week minus the mean of the previous 4 weeks) over the larger of that mean and 1, clamped to 0 to 100. Recovery is 100 times the average of (average sleep over 8, capped at 1) and (average energy over 5), over the week's check-ins.
+4. Set flag to "recovery_dip" when recovery is more than 15 points below its 4-week mean and shipping is flat or down (up by at most 5 percent). Otherwise "stable" or "up". Confidence is the number of sources with data this week divided by 2, so GitHub only is 0.5.
+5. Send only the numbers to the Anthropic API with a strict JSON schema { narrative: string of at most 3 sentences, action: string (one operational suggestion), rationale: string }. The system prompt says: you are an operations coach for a solo founder, not a clinician; never diagnose; never claim a cause; prefer one action to a list.
+6. Check that every number in the narrative appears in the input and that none of these words appears: diagnosis, disorder, treatment, depression, burnout. If it fails, show a plain template sentence.
+7. /week shows momentum and recovery side by side, the flag in plain words, the narrative and the action, and what is missing when confidence is under 1.
+Rules: always show momentum and recovery as a pair. Never moralize about hustle. Say "not medical advice" on the week page.
+Empty state: before connecting, show the connect form and what is read (counts of commits and pull requests, never code).
+Done when: a sync fills 8 weeks of events, the score matches a hand calculation, a recovery drop with flat shipping sets the flag, a narrative with a clinical word is replaced and confidence is 0.5 with GitHub only.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for Buildline. Hero: “One weekly number for the operator and the company.” Sub: “GitHub, calendar, hours, and recovery — scored overnight. Ninety seconds on Monday, then ship or rest on purpose.” Sections: the eight-tab problem, live mock of a score card (momentum 72, recovery 64, red flag on response time), how it works (4 steps), pricing Free / Core $15 / Pro $29 / Coach $49 anchored against RescueTime $12 and a $400/mo coach, FAQ on privacy (we store hashes and aggregates, not your mail), medical claims (we don’t make them), and what happens with missing sources. Geist, off-white background, emerald accent, near-black type. Primary CTA: “Connect GitHub and see this week’s score.”
+Build a one-page landing site for Buildline, a weekly operating-health score for solo founders.
+Hero: "One weekly number for you and your company." Sub: "What you shipped and how you recovered, scored together. Ninety seconds on Monday, then ship or rest on purpose." One button: Join the waitlist.
+Sections: a sample score card (momentum 72, recovery 64) with one suggested action, how it works in four steps (connect GitHub, check in daily, get your score, act and compare), and an FAQ on privacy (we count commits and pull requests and never read code), medical claims (we make none) and what happens with missing sources.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one emerald accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for Buildline: a wordmark and a small mark that reads as a single score pip, not a heart or a leaf. Primary near-black, one emerald accent, two warm neutrals. Geist for UI, IBM Plex Mono for the score digits. Voice rules: never moralize about hustle, always show momentum and recovery as a pair, never use clinical words (diagnosis, disorder, treatment). Output a one-page brand sheet plus three Monday-briefing copy variants under 80 words.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Buildline: a wordmark and a small mark that reads as a single score pip, not a heart or a leaf.
+Colors: near-black, one emerald and two warm neutrals. Type: Geist for the interface, IBM Plex Mono for score digits.
+Deliverables: wordmark, icon, a score card that always shows momentum and recovery as a pair, three Monday-briefing copy variants under 80 words each, and a one-page brand sheet. Voice rules: never moralize about hustle, never use clinical words.
+Done when: each deliverable is saved in one folder and each briefing variant is under 80 words.
 ```
 
 ## Sources

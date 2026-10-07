@@ -44,12 +44,19 @@ export const session = query({
     if (!current.account || !current.principal || current.principal.capability !== "editorial_admin") {
       return { signedIn: current.account !== null, editor: null };
     }
-    // Accounts are never linked across providers, so there is one sign-in method.
+    // An email link may sign in to a Google account (ruling 2026-10-06), so an
+    // account can hold both methods. Google stays the confirmation method then.
     const userId = current.account.user._id;
-    const providerAccount = await ctx.db
+    const googleAccount = await ctx.db
       .query("authAccounts")
-      .withIndex("userIdAndProvider", (q) => q.eq("userId", userId))
+      .withIndex("userIdAndProvider", (q) => q.eq("userId", userId).eq("provider", "google"))
       .first();
+    const providerAccount =
+      googleAccount ??
+      (await ctx.db
+        .query("authAccounts")
+        .withIndex("userIdAndProvider", (q) => q.eq("userId", userId))
+        .first());
     const provider = providerAccount?.provider;
     return {
       signedIn: true,

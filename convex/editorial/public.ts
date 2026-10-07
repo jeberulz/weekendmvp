@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { query, type QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { metadataValidator } from "./validators";
+import { requireCurrentPlatformUser } from "../platform/authz";
+import { ConvexError } from "convex/values";
 
 /**
  * The only anonymous view of editorial content. A staged version is private
@@ -15,16 +17,21 @@ const released = v.object({
   releaseId: v.string(),
   artifactHash: v.string(),
   title: v.string(),
-  markdown: v.string(),
   metadata: metadataValidator,
   firstPublishedAt: v.union(v.string(), v.null()),
   updatedAt: v.string(),
 });
+const memberReleased = v.object({ ...released.fields, markdown: v.string() });
 
 const decision = v.union(
   v.object({ state: v.literal("legacy") }),
   v.object({ state: v.literal("removed") }),
   released,
+);
+const memberDecision = v.union(
+  v.object({ state: v.literal("legacy") }),
+  v.object({ state: v.literal("removed") }),
+  memberReleased,
 );
 
 type Selection =
@@ -91,10 +98,27 @@ export const bySlug = query({
       releaseId: version.releaseId,
       artifactHash: version.artifactHash,
       title: version.title,
-      markdown: version.markdown,
       metadata: version.metadata,
       firstPublishedAt: pointer.firstPublishedAt,
       updatedAt: pointer.updatedAt,
+    };
+  },
+});
+
+export const bySlugForMember = query({
+  args: { slug: v.string() },
+  returns: memberDecision,
+  handler: async (ctx, { slug }) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    if (!user.email || !user.emailVerificationTime) throw new ConvexError({ code: "UNAUTHENTICATED" });
+    const selected = await selectPublicVersion(ctx, slug);
+    if (selected.state !== "released") return { state: selected.state };
+    const { pointer, version } = selected;
+    return {
+      state: "released" as const, slug,
+      releaseId: version.releaseId, artifactHash: version.artifactHash,
+      title: version.title, markdown: version.markdown, metadata: version.metadata,
+      firstPublishedAt: pointer.firstPublishedAt, updatedAt: pointer.updatedAt,
     };
   },
 });

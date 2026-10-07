@@ -1,0 +1,198 @@
+---
+slug: "dmarc-monitor-agencies-small-business"
+title: "Plain-English DMARC Monitoring for Agencies and Small Businesses"
+engine: true
+---
+
+## The Problem
+
+Web agencies, IT freelancers and small-business owners routinely inherit responsibility for email authentication because they control DNS, maintain the website or administer Microsoft 365. They may not operate the mail infrastructure, understand every sending service or have a dedicated email administrator. When messages begin landing in spam, a client expects the technical contact to explain why. The available evidence often arrives as XML reports, unfamiliar source addresses, alignment results and policy terminology rather than a direct diagnosis.
+
+Even the purpose of DMARC can remain unclear after SPF and DKIM are working. A self-hoster asks what benefit DMARC adds on top of those controls ["I am self-hosting my (secondary) email and have only implemented SPF and DKIM. This works fine on a practical level for me. What would be the benefit of setting up DMARC on top?"](https://news.ycombinator.com/item?id=49081783). That uncertainty matters because an operator may publish a record without understanding reporting, alignment or how policy changes affect legitimate senders. Fragmented software makes the task harder. One practitioner describes ticketing and marketing platforms that misunderstand SPF, DKIM and DMARC ["I have dealt with so many ticketing systems and marketing platforms that do not understand the roles of SPF/DKIM/DMARC at all."](https://news.ycombinator.com/item?id=40708476). A domain may therefore involve a mailbox provider, website forms, a help desk, invoicing software and a campaign platform, with no shared owner of authentication.
+
+The visible symptom is often vague and urgent. A company encountering Microsoft 365 delivery trouble suspected a keyword blacklist ["The company I work for (25friday.com) has been hit with what seems to be a keyword blacklist on Microsoft 365 email."](https://news.ycombinator.com/item?id=43829927). Without a clear workflow, the responsible freelancer may check DNS records, search blocklists, inspect headers and contact vendors without knowing which signal matters. Passing raw DMARC dashboards to the client does not resolve the communication problem. The buyer needs a prioritized explanation: which sender is failing, whether it appears legitimate, what DNS or platform setting should change and how to confirm that the repair worked.
+
+Agencies face an added portfolio burden. Every client can use a different registrar, DNS host and sending stack. The operator needs separation between domains, a record of approvals and a concise status update that can be forwarded without rewriting protocol output. The core pain is therefore not simple report collection. It is converting scattered authentication evidence into a safe action and a credible client explanation before deliverability trouble damages confidence.
+
+> "I am self-hosting my (secondary) email and have only implemented SPF and DKIM. This works fine on a practical level for me. What would be the benefit of setting up DMARC on top?"
+>
+> — [DMARC has been public since 2012 but most company ...](https://news.ycombinator.com/item?id=49081783)
+
+> "I have dealt with so many ticketing systems and marketing platforms that do not understand the roles of SPF/DKIM/DMARC at all."
+>
+> — [Understanding SPF, DKIM, and DMARC: A Simple Guide](https://news.ycombinator.com/item?id=40708476)
+
+> "The company I work for (25friday.com) has been hit with what seems to be a keyword blacklist on Microsoft 365 email."
+>
+> — [Ycombinator](https://news.ycombinator.com/item?id=43829927)
+
+## The Solution
+
+MailPlain would be a per-domain DMARC monitoring service designed around diagnosis and communication rather than protocol dashboards. Its wedge is a plain-English issue feed that identifies the likely sending service, explains the authentication failure, proposes the exact DNS or platform change and shows how the operator can verify the result. The interface would prioritize actionable exceptions while keeping raw evidence available for technical review.
+
+A user would connect a domain by publishing or updating a reporting address. MailPlain would ingest aggregate reports, normalize sender sources and correlate them with SPF, DKIM, alignment and current DNS records. Recognizable services would appear under human-readable labels. Unknown sources would enter a review queue where the user can mark them as approved, suspicious or needing client confirmation. Each diagnosis would include context about likely impact and a remediation checklist suited to the relevant DNS or sending provider.
+
+For agencies, the product would add portfolio triage and client communication. A shared dashboard would show domains needing action, domains awaiting approval and domains that appear stable. A client-ready summary would explain the problem, recommended fix and observed result without exposing unnecessary XML detail. Approval links would let the client confirm a sender or authorize a proposed DNS change while leaving publication under the operator's control.
+
+MailPlain should initially remain advisory. It can generate copyable record values, preserve previous configurations and monitor the effect of a change, but it should not silently edit production DNS. That boundary supports trust while the product learns how varied sender stacks behave. Over time, provider integrations can streamline implementation after the diagnosis, approval and verification loop is reliable.
+
+The workflow below is MailPlain's proposed first version: a plan to build, not a tested product.
+
+**How it works:**
+
+1. **Connect Domain** — The user adds a domain, confirms the reporting destination and follows provider-specific instructions for routing aggregate reports. MailPlain inspects the current SPF, DKIM and DMARC posture, maps visible senders and highlights configuration gaps without requiring the user to interpret raw XML.
+2. **Understand Senders** — MailPlain groups authentication traffic by recognizable service, domain alignment and outcome. Instead of exposing protocol-heavy tables as the main interface, it explains which system appears legitimate, which source needs investigation and why a failure may affect trust or delivery.
+3. **Apply the Fix** — For each issue, MailPlain proposes a plain-English remediation path with the exact DNS record change, expected effect and rollback guidance. The user can copy a provider-ready value, request approval from a client and record when the change was published.
+4. **Prove the Result** — After a change, MailPlain watches subsequent reports for alignment improvement, unexpected senders and policy impact. It creates a concise client summary showing what changed, what remains unresolved and which action deserves attention next, while retaining an audit trail for the agency.
+
+What not to build yet (scope advice for MailPlain's first version, not research):
+
+Do not build a full outbound email platform, blacklist removal service or autonomous DNS writer before the monitoring and guided-remediation workflow earns trust.
+
+## Market Research
+
+The relevant niche is DMARC software for organizations that need authentication visibility, policy guidance and remediation without specialist email staff. Published market estimates support meaningful demand, although their wide spread makes precise sizing uncertain. One estimate projects the market at [$736.0 million by 2025 (The global DMARC software market, market size, projected)](https://dimensionmarketresearch.com/report/dmarc-software-market), while another reports a measured market value of [$1.47 billion (The DMARC Software Market, market size, 2025)](https://www.wiseguyreports.com/reports/dmarc-software-market). The latter source also projects substantial expansion [$5 billion by 2035 (The DMARC Software Market, market size, projected)](https://www.wiseguyreports.com/reports/dmarc-software-market). These claims indicate an established category with room for continued adoption, but they do not isolate web agencies, IT freelancers or small businesses. That narrower segment should therefore be treated as a promising wedge rather than a proven market share claim. The opportunity comes from translating machine-oriented aggregate reports, DNS records and policy behavior into client-facing explanations and safe changes. Agencies also create a natural account structure because one operator may oversee several unrelated domains, sending platforms and DNS providers. The product can sit between basic record checkers and broader deliverability suites by emphasizing plain-English diagnosis, guided remediation and portfolio monitoring. A focused service does not need to replace every deliverability tool. It needs to make recurring DMARC work understandable, actionable and easy to communicate to a client who lacks an email administrator.
+
+Why now: DMARC software already has an established measured market and a growth outlook [$1.47 billion (The DMARC Software Market, market size, 2025)](https://www.wiseguyreports.com/reports/dmarc-software-market) [$5 billion by 2035 (The DMARC Software Market, market size, projected)](https://www.wiseguyreports.com/reports/dmarc-software-market), yet practical understanding remains uneven. Operators still report that connected business systems misunderstand SPF, DKIM and DMARC ["I have dealt with so many ticketing systems and marketing platforms that do not understand the roles of SPF/DKIM/DMARC at all."](https://news.ycombinator.com/item?id=40708476). That combination supports a timely usability wedge: simplify an existing technical category for buyers who manage domains as one responsibility among many.
+
+**Market signals**
+
+- $736.0 million by 2025 (The global DMARC software market, market size, projected) ([Dimensionmarketresearch](https://dimensionmarketresearch.com/report/dmarc-software-market)).
+- $1.47 billion (The DMARC Software Market, market size, 2025) ([Wiseguyreports](https://www.wiseguyreports.com/reports/dmarc-software-market)).
+- $5 billion by 2035 (The DMARC Software Market, market size, projected) ([Wiseguyreports](https://www.wiseguyreports.com/reports/dmarc-software-market)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **DMARC monitoring** — 170/mo, competition 39, CPC $30.95
+- **DMARC report analyzer** — 390/mo, competition 38, CPC $14.39
+- **DMARC checker** — 6600/mo, competition 36, CPC $2.93
+- **email deliverability monitoring** — 50/mo, competition 49, CPC $18.42
+- **DMARC monitoring service** — 110/mo, competition 29, CPC $37.24
+- **DMARC reporting tool** — 90/mo, competition 24, CPC $11.19
+- **DMARC aggregate report analyzer** — 10/mo, competition 23, CPC $7.41
+- **DMARC policy checker** — 50/mo, competition 32, CPC $4.66
+- **SPF DKIM DMARC checker** — 480/mo, competition 41, CPC $5.08
+
+## Competitive Landscape
+
+Monitordmarc already packages monitoring for small and growing businesses through distinct paid plans [$19.99/month, billed monthly (Monitordmarc Starter plan)](https://monitordmarc.com/pricing) [$49.99/month, billed monthly (Monitordmarc Professional plan)](https://monitordmarc.com/pricing). MailPlain would differentiate through agency workflow, client approvals and explanations centered on the exact remediation rather than presenting monitoring as the endpoint. Uriports offers a low-cost Sand plan [$15/year (Uriports Sand plan)](https://www.uriports.com/pricing), making it attractive for technically capable users who can interpret reports independently. MailPlain should not compete for hobbyist ingestion on price; it should serve operators who bill for resolving client problems. Mxtoolbox offers free access [$0/month (Mxtoolbox Free plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery) alongside paid Delivery Center packages [$129/month (Mxtoolbox Delivery Center plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery) [$399/month (Mxtoolbox Delivery Center Plus plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery), reflecting a broader deliverability toolset. MailPlain can remain narrower: DMARC-centered diagnosis, DNS change guidance, sender approval and client-ready proof of resolution. The durable distinction is not another checker. It is a structured handoff from technical evidence to an approved fix across an agency portfolio.
+
+- **Monitordmarc** — Monitordmarc offers a small-business entry plan [$19.99/month, billed monthly (Monitordmarc Starter plan)](https://monitordmarc.com/pricing), a growing-business option [$49.99/month, billed monthly (Monitordmarc Professional plan)](https://monitordmarc.com/pricing) and a broader business package [$99.99/month, billed monthly (Monitordmarc Business plan)](https://monitordmarc.com/pricing). Its plan ladder validates domain-based packaging across customer maturity levels. Published pricing: $19.99/month, billed monthly (Monitordmarc Starter plan) [Monitordmarc](https://monitordmarc.com/pricing); $49.99/month, billed monthly (Monitordmarc Professional plan) [Monitordmarc](https://monitordmarc.com/pricing); $99.99/month, billed monthly (Monitordmarc Business plan) [Monitordmarc](https://monitordmarc.com/pricing).
+- **Uriports** — Uriports provides a low-cost Sand offer for personal and hobby projects [$15/year (Uriports Sand plan)](https://www.uriports.com/pricing). That creates a strong price anchor for technically confident users who mainly need report processing. Published pricing: $15/year (Uriports Sand plan) [Uriports](https://www.uriports.com/pricing).
+- **Mxtoolbox** — Mxtoolbox spans a free entry offer [$0/month (Mxtoolbox Free plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery), a paid Delivery Center package [$129/month (Mxtoolbox Delivery Center plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery) and a higher-priced Plus option [$399/month (Mxtoolbox Delivery Center Plus plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery). This range frames it as a broader deliverability platform. Published pricing: $0/month (Mxtoolbox Free plan) [Mxtoolbox](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery); $129/month (Mxtoolbox Delivery Center plan) [Mxtoolbox](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery); $399/month (Mxtoolbox Delivery Center Plus plan) [Mxtoolbox](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery).
+
+**Your Opportunity**
+
+MailPlain is the DMARC monitoring desk for web agencies, IT freelancers and owner-led businesses that need an answer they can act on. It converts authentication evidence into prioritized DNS guidance, identifies the likely sending service involved and produces client-ready explanations without requiring deep deliverability expertise.
+
+## Business Model
+
+Price the product by monitored domain while making the agency package cheaper and easier than assembling many isolated subscriptions. Monitordmarc establishes paid entry and business anchors [$19.99/month, billed monthly (Monitordmarc Starter plan)](https://monitordmarc.com/pricing) [$99.99/month, billed monthly (Monitordmarc Business plan)](https://monitordmarc.com/pricing), while Uriports demonstrates an unusually low annual option for hobby use [$15/year (Uriports Sand plan)](https://www.uriports.com/pricing). Mxtoolbox pairs free entry with materially broader paid offers [$0/month (Mxtoolbox Free plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery) [$129/month (Mxtoolbox Delivery Center plan)](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery). MailPlain should charge for interpretation, guided remediation, client communication and portfolio workflow rather than raw report ingestion alone.
+
+Proposed MailPlain pricing to test with early buyers (an assumption, not observed market data):
+
+- **Solo Domain** ($19/month) — 1 domain, weekly plain-English digest, guided DNS fixes
+- **Client Desk** ($49/month) — 5 domains, client reports, approval links, priority alerts
+- **Agency Portfolio** ($99/month) — 20 domains, portfolio triage, branded summaries, collaborator access
+
+**Unit Economics**
+
+Planning estimates to verify, not measured results:
+
+- **80% gross margin target** — Gross margin before founder labor
+- **$8 per domain monthly ceiling** — Monitoring infrastructure target
+- **45 days target** — Customer acquisition payback
+- **5% monthly target** — Account churn planning ceiling
+
+**Year-One Math**
+
+MailPlain's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.
+
+Planning case centers on agency buyers adopting the portfolio plan after testing a client domain through the free checker. Acquisition relies on search intent, educational follow-up and freelancer referrals. The flat account model keeps seat administration out of the initial buying decision.
+
+- **6,000** — Organic search landing visitors
+- **900** — Free checker email leads
+- **240** — Email nurture guided trials
+- **60** — In product paid conversions
+- **60 × $99/mo = $71,280 ARR** — Agency Portfolio accounts paying by month 12
+- **30 × $99/mo = $35,640 ARR** — downside if the close rate halves (half of 60 accounts)
+
+**Channels**
+
+Channels to test (proposals, not measured results):
+
+- Search-led free DMARC checker with guided report capture
+- Agency partnerships with white-label client summaries
+- Educational content for Microsoft 365 and DNS troubleshooting
+- Referral outreach through web development and IT freelancer communities
+
+## Recommended Tech Stack
+
+A suggested stack for MailPlain (a recommendation, not research):
+
+Use a TypeScript application with Next.js for the dashboard and API routes, PostgreSQL for normalized authentication data, and a durable object store for original aggregate report files. A background queue should parse XML, enrich source addresses, refresh DNS records and generate summaries without blocking the interface. Isolate report ingestion from customer-facing requests, validate archive contents defensively and preserve parser errors for review. Add encrypted credentials for provider integrations, role-aware client approvals, immutable DNS change snapshots and structured observability around delayed reports, duplicate payloads and sender classification decisions.
+
+- **Next.js + TypeScript** — screens for Connect Domain, Understand Senders, Apply the Fix, Prove the Result
+- **Postgres (Supabase or Neon)** — monitored\_domains, aggregate\_reports, sender\_sources, remediation\_actions, client\_approvals, domain\_snapshots
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Solo Domain / Client Desk / Agency Portfolio subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these MailPlain build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named MailPlain for web agencies and SMBs.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('solo_domain','client_desk','agency_portfolio'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- monitored_domains(id, workspace_id fk, domain_name, dns_provider, reporting_address, status: pending, active, paused, last_checked_at)
+- aggregate_reports(id, workspace_id fk, monitored_domain_id fk, provider_name, report_external_id, period_start, period_end, raw_object_key, status: received, parsed, failed)
+- sender_sources(id, workspace_id fk, monitored_domain_id fk, source_ip, reverse_dns, service_label, disposition: unknown, approved, suspicious, alignment_status)
+- remediation_actions(id, workspace_id fk, monitored_domain_id fk, sender_source_id fk, action_type, explanation, proposed_dns_value, previous_dns_value, status: draft, in review, approved, applied, verified)
+- client_approvals(id, workspace_id fk, remediation_action_id fk, client_email, approval_token, decision: pending, approved, rejected, decided_at)
+- domain_snapshots(id, workspace_id fk, monitored_domain_id fk, spf_record, dmarc_record, dkim_selectors, captured_at, change_source)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Solo Domain at $19/month; Client Desk at $49/month; Agency Portfolio at $99/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_SOLO_DOMAIN, STRIPE_PRICE_CLIENT_DESK, STRIPE_PRICE_AGENCY_PORTFOLIO, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build a full outbound email platform, blacklist removal service or autonomous DNS writer before the monitoring and guided-remediation workflow earns trust.
+```
+
+**2. Core Feature**
+
+```text
+Build MailPlain's core workflow as one screen per step, in this order:
+- Connect Domain: The user adds a domain, confirms the reporting destination and follows provider-specific instructions for routing aggregate reports.
+- Understand Senders: MailPlain groups authentication traffic by recognizable service, domain alignment and outcome.
+- Apply the Fix: For each issue, MailPlain proposes a plain-English remediation path with the exact DNS record change, expected effect and rollback guidance.
+- Prove the Result: After a change, MailPlain watches subsequent reports for alignment improvement, unexpected senders and policy impact.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Connect Domain → Understand Senders → Apply the Fix → Prove the Result without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for MailPlain. Hero line: Find out why client email lands in spam and get the exact DNS fix in plain English.
+Sections: the problem for web agencies and SMBs; how MailPlain works (Connect Domain, Understand Senders, Apply the Fix, Prove the Result); competitor strip (Monitordmarc: $19.99/month, billed monthly (Monitordmarc Starter plan), $49.99/month, billed monthly (Monitordmarc Professional plan), $99.99/month, billed monthly (Monitordmarc Business plan); Uriports: $15/year (Uriports Sand plan); Mxtoolbox: $0/month (Mxtoolbox Free plan), $129/month (Mxtoolbox Delivery Center plan), $399/month (Mxtoolbox Delivery Center Plus plan)); pricing (Solo Domain at $19/month; Client Desk at $49/month; Agency Portfolio at $99/month); a single CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand MailPlain for web agencies and SMBs. Use a calm, diagnostic visual language that feels closer to a trusted IT worksheet than a security command center. Favor warm neutrals, crisp status colors, readable DNS snippets and generous spacing. Avoid fear-based shields, hacker imagery and dense protocol charts. The voice should be direct, reassuring and specific: explain the likely cause, name the safe next action and acknowledge uncertainty when evidence is incomplete. Client exports should look polished without feeling like automated marketing collateral.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product MailPlain, never a generic AI platform.
+```
+
+## Sources
+
+- [DMARC has been public since 2012 but most company ...](https://news.ycombinator.com/item?id=49081783)
+- [Understanding SPF, DKIM, and DMARC: A Simple Guide](https://news.ycombinator.com/item?id=40708476)
+- [Ycombinator](https://news.ycombinator.com/item?id=43829927)
+- [Dimensionmarketresearch](https://dimensionmarketresearch.com/report/dmarc-software-market)
+- [Wiseguyreports](https://www.wiseguyreports.com/reports/dmarc-software-market)
+- [Monitordmarc](https://monitordmarc.com/pricing)
+- [Uriports](https://www.uriports.com/pricing)
+- [Mxtoolbox](https://www.mxtoolbox.com/c/products/mxtoolboxdelivery)

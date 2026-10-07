@@ -1,6 +1,6 @@
 # WP46-E7 production credential rotation plan
 
-Status: **prepared, not approved or executed** (2026-10-04). This is the
+Status: **completed for the canonical live site; editorial launch remains NO-GO** (2026-10-04). This is the
 credential follow-up to the private operator log exposure recorded in
 [`wp46-e7-gate.md`](wp46-e7-gate.md). Do not copy credential values into this
 repository, a PR, a ticket, a shell transcript or a deployment log. A current
@@ -24,7 +24,63 @@ from the final exposure inventory. The live Convex target is
 `first-squirrel-244` (`https://first-squirrel-244.eu-west-1.convex.cloud`),
 not this checkout's default `--prod` target.
 
-## Approval and preparation
+## Execution record and remaining sequence
+
+The owner authorized the ordered E7 work in this conversation. A new full
+snapshot of the exact live target was captured immediately before rotation:
+`tmp/wp46-e7/live-before-credential-rotation-20261004.zip`, snapshot
+`1791123922265844827`, SHA-256
+`b6d86085a1d9afae0e22b4916d6beb29e29e4e8f65812b2b0ed72be1a2912ddf`.
+ZIP integrity passed; the file is ignored and mode `0600`. The canonical
+reader reported `d4b53c2367d14ebb7236692a57c79c88b70cf43f` and the
+editorial release switch was absent throughout these changes.
+
+- A second Google OAuth client secret was added to the **existing** production
+  client, matched to the live `AUTH_GOOGLE_ID` and Convex callback. Only the
+  new secret was set on `first-squirrel-244`. Fresh owner Google sign-in and
+  editorial access passed before and after disabling the former secret. The
+  former secret was then deleted in Google Cloud; only the new one remained
+  enabled. No secret value was placed in this repository.
+- `JWT_PRIVATE_KEY` and `JWKS` were replaced atomically on the exact live
+  Convex target using a one-hour `deployment:env:write` key, then read back
+  as an exact pair. That temporary key was revoked. The old session failed,
+  as expected; fresh owner Google sign-in succeeded, the same one active
+  super-admin binding remained, and editorial settings loaded.
+- `PLATFORM_BILLING_BRIDGE_SECRET` was replaced with a fresh random value on
+  the same live target and verified by exact readback without logging the
+  value. The current Vercel production environment inventory has no matching
+  bridge variable; the frontend requires explicit test mode, test Stripe key,
+  test prices and a matching bridge, so live checkout remains disabled. A
+  complete test-mode billing flow is a separate future gate if billing is
+  enabled.
+- `REVALIDATE_SECRET` was rotated after PR #103 merged at
+  `b40687e20480289a2a5c90596ddacaa28d02020b`. The canonical route now
+  rejects a missing or query-only credential (401) and accepts the header
+  (200). The first replacement Vercel redeploy rejected the replacement value;
+  Convex was deliberately left on its previous value. Reapplying the Vercel
+  value **without a trailing stdin newline** and building a protected
+  production-target diagnostic deployment made the new header pass. A fresh
+  Git-backed production redeploy `dpl_3zAUL9BYgD6C2JxfKi1upsjFwAEQ` then
+  reached Ready on the canonical domains with the same reader commit. Only
+  after its header probe passed was the new value set on `first-squirrel-244`;
+  exact readback matched. A missing credential still returned 401. The
+  temporary local plaintext copy was deleted. This sequence does not prove
+  the original failure's precise cause; it proves the final paired values.
+- The Convex `revalidate:run` internal action then invalidated the `articles`
+  tag on the exact live target. A warmed canonical `/articles` response moved
+  from HIT (`age: 13`) to STALE (`age: 25`) and then a fresh HIT (`age: 8`).
+  This exercises Convex → Next rather than only calling the HTTP route.
+  Known and unknown idea pages, articles, sitemap and reader health remained
+  healthy; public pointers and managed versions remained zero. The release
+  switch, reader origin and reader SHA stayed absent. The local release
+  secret and pulled environment file were removed after verification.
+
+All four affected live credentials have been replaced. Historical Vercel
+deployment URLs can retain their original environment snapshot; the canonical
+domains now use the new value. The original procedural checklist below is
+retained as the operation plan; the execution record above is current status.
+
+### Original preparation checklist
 
 1. In [`backup-restore.md`](backup-restore.md), append the dated production
    action record: exact Convex deployment, Vercel project, serving Git SHA,

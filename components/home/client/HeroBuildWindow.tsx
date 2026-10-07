@@ -2,24 +2,34 @@
 
 import { useRef, useState, type KeyboardEvent } from "react";
 
+import { HERO_TOOLS, heroPromptLines, type HeroTool } from "@/lib/home/hero-prompt";
 import type { HeroIdea } from "@/lib/home/types";
+import { trackEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
-import { TOOL_NAME, ToolLogo, type ToolKey } from "../tool-logos";
+import { TOOL_NAME, ToolLogo } from "../tool-logos";
 import { CategoryTag, WeekendMeter, introDelay } from "../ui";
 import { CopyButton } from "./CopyButton";
 
-const TOOLS: ToolKey[] = ["cursor", "claudecode", "claude", "lovable", "v0", "replit", "windsurf"];
+const TOOLS: readonly HeroTool[] = HERO_TOOLS;
 
 /**
  * The hero's "prompt to product" window: pick a tool, see the idea brief and
- * its first prompt, copy it. The prompt is the same for every tool; the tabs
- * show that it pastes into any of them. On first paint the prompt lines paste
- * in one by one from `pasteFrom` seconds (CSS, `.home-paste`); switching tabs
- * keeps the same lines, so it never replays.
+ * its first prompt, copy it. The idea's prompt is the same for every tool,
+ * but each tab leads it with one line that tells that tool how to treat it
+ * (`lib/home/hero-prompt.ts`), and the copied text matches what is shown. On
+ * first paint the rows paste in one by one from `pasteFrom` seconds (CSS,
+ * `.home-paste`). Every tab has the same number of rows, so switching tabs
+ * swaps text in place and never replays.
  */
 export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea; total: number; pasteFrom?: number }) {
-  const [active, setActive] = useState<ToolKey>("cursor");
+  const [active, setActive] = useState<HeroTool>("cursor");
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  function select(tool: HeroTool) {
+    if (tool === active) return;
+    setActive(tool);
+    trackEvent("hero_tool_selected", { tool });
+  }
 
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const i = TOOLS.indexOf(active);
@@ -27,11 +37,12 @@ export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea
     if (next === null) return;
     e.preventDefault();
     const n = (next + TOOLS.length) % TOOLS.length;
-    setActive(TOOLS[n]);
+    select(TOOLS[n]);
     tabs.current[n]?.focus();
   }
 
-  const prompt = idea.firstPrompt.join("\n");
+  const rows = heroPromptLines(active, idea.firstPrompt);
+  const prompt = rows.join("\n");
 
   return (
     <div className="relative overflow-hidden rounded-[18px] border border-home-rule bg-home-card shadow-[0_1px_0_rgba(26,24,20,0.04),0_40px_80px_-40px_rgba(26,24,20,0.35)] lg:rounded-[22px]">
@@ -61,7 +72,7 @@ export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea
                 aria-selected={selected}
                 aria-controls="hero-tabpanel"
                 tabIndex={selected ? 0 : -1}
-                onClick={() => setActive(tool)}
+                onClick={() => select(tool)}
                 className={cn(
                   "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[9px] border px-2.5 text-[13px] font-medium transition-colors lg:h-9 lg:px-3.5 lg:text-sm",
                   "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-home-orange-ink",
@@ -119,18 +130,19 @@ export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea
             </p>
             <CopyButton
               text={prompt}
-              label={`Copy prompt 1: ${idea.promptTitles[0] ?? "Project setup"}`}
+              label={`Copy prompt 1 for ${TOOL_NAME[active]}: ${idea.promptTitles[0] ?? "Project setup"}`}
               location="home-hero"
+              tool={active}
               className="h-[30px] shrink-0 bg-home-orange-light px-3 text-home-ink hover:bg-[#f5a266] lg:h-[34px] lg:px-3.5 lg:text-[13px]"
             />
           </div>
           <div className="relative h-[170px] overflow-hidden px-3.5 py-3.5 font-mono text-xs leading-[1.7] text-[#ede6da] lg:h-auto lg:flex-1 lg:px-5 lg:py-5 lg:text-sm lg:leading-[1.8]">
-            {idea.firstPrompt.slice(0, 13).map((line, i) => (
+            {rows.slice(0, 13).map((line, i) => (
               <div key={i} className="home-paste flex gap-3 lg:gap-[18px]" style={introDelay(pasteFrom + i * 0.04)}>
                 <span aria-hidden className="w-3.5 shrink-0 text-right text-home-d3 lg:w-5">
                   {i + 1}
                 </span>
-                <span className="whitespace-pre-wrap break-words">{line}</span>
+                <span className={cn("whitespace-pre-wrap break-words", i === 0 && "text-home-orange-light")}>{line}</span>
               </div>
             ))}
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-transparent to-home-ink" />

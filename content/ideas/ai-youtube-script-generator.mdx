@@ -85,50 +85,54 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) app for "ScriptFlow AI", a voice-matched
-YouTube script generator.
+Build the weekend MVP of "ScriptFlow AI": connect a YouTube channel, learn the creator's voice from their best videos, and write scripts that sound like them.
 
-Set up:
-- Supabase auth + Postgres schema for: users, channels, voice_profiles,
-  scripts, usage_events
-- YouTube OAuth flow to connect a creator's channel
-- Dashboard routes: Connect Channel, Generate Script, Script History, Settings
-- A landing page explaining voice-matched scriptwriting with a "Connect your
-  channel" CTA
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the YouTube Data API through Google OAuth, Claude (Anthropic API) with prompt caching on the voice profile. Server actions run the generation. Deploy on Vercel.
 
-Use TypeScript, server actions for generation, and environment variables for
-all API keys. Include proper error handling for YouTube API quota limits.
+Tables (Row Level Security on, each user reads only their own rows):
+- channels(id, user_id, youtube_channel_id, title, connected_at)
+- voice_profiles(id, channel_id, profile jsonb, updated_at)
+- scripts(id, channel_id, topic, hooks jsonb, body, cta, tokens_used, created_at)
+
+Screens: /login, /connect, /generate, /history.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or metering, trend alerts, repurposing into blog posts or threads, background job queues, an admin area.
+Done when: npm run dev starts, you can sign in, Google OAuth connects a test channel, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Voice Profile + Generation**
+**2. Core Feature**
 
 ```text
-Build the voice-matching pipeline for ScriptFlow AI:
-
-1. On channel connect, fetch the creator's top 10 videos and their transcripts
-   via the YouTube Data API.
-2. Send transcripts to Claude to extract a "voice profile": tone, pacing,
-   signature phrases, average hook style, typical CTA. Store as JSON.
-3. When the user requests a script for a topic, build a prompt that includes
-   the voice profile + 3 few-shot examples of the creator's own best lines,
-   then generate: 3 hook options, a structured body, and a CTA.
-4. Save the script and log token usage per generation for billing.
-
-Use prompt caching on the voice profile to keep per-script cost low.
+Build the one feature that proves ScriptFlow AI: a script in the creator's own voice.
+1. On channel connect, fetch the creator's top 10 videos and their transcripts through the YouTube Data API. Handle quota limits with a clear message.
+2. Send the transcripts to Claude to extract a voice profile as JSON: tone, pacing, signature phrases, typical hook style and typical CTA. Save it in voice_profiles.
+3. When the user asks for a script on a topic, build a prompt from the voice profile plus 3 few-shot examples of the creator's own best lines, and generate 3 hook options, a structured body and a CTA. Cache the voice profile in the prompt.
+4. Save the script and the tokens used, and show it in /history.
+Rules: never copy a full sentence from a transcript into a script. Say plainly when a channel has too few transcripts to learn from.
+Empty state: before a channel is connected, show the connect button and one sentence on what is read.
+Done when: a test channel produces a voice profile with real signature phrases, a topic returns 3 hooks, a body and a CTA in that voice, and the tokens used are saved.
 ```
 
-**3. Trend Alerts + Repurposing Add-on**
+**3. Landing Page**
 
 ```text
-Add two upsell features to ScriptFlow AI:
+Build a one-page landing site for ScriptFlow AI, a voice-matched YouTube script generator.
+Hero: "Scripts that sound like you, not like everyone." Sub: "ScriptFlow learns your cadence and signature phrases from your best videos and writes a first draft that is 80% there." One button: Connect your channel, which joins the waitlist.
+Sections: the problem (generic AI output that you rewrite from scratch), how it works in three steps (connect your channel, pick a topic, get a voice-matched script), a sample script with three hook options, and an FAQ on what is read from your channel.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: direct and creator-friendly.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Trend alerts: a daily job that pulls rising topics for the creator's niche
-  (from their YouTube category + search trends) and surfaces 5 script ideas.
-- Repurposing: a one-click action that turns a generated script into a blog
-  post, an email newsletter section, and a 5-tweet thread — all in the
-  creator's voice profile.
+**4. Branding Package**
 
-Gate both behind the Pro and Repurposing add-on tiers using Stripe entitlements.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ScriptFlow AI: a wordmark and an icon that suggest a play button and a waveform.
+Colors: near-black, warm white and one bold accent. Type: one confident sans for the interface.
+Deliverables: wordmark, icon, a hook-option card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

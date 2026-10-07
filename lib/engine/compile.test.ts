@@ -28,6 +28,7 @@ import {
   withEditorial,
 } from "./__fixtures__/recordV2.ts";
 import { CompileError, compileResearchRecord, GENERIC_SETUP_TABLE_NAMES, quoteBlock } from "./compile.ts";
+import { lintIdeaMdx } from "../../scripts/lib/prompt-standard.mjs";
 import { writeCompiledIdea } from "./compile-write.ts";
 import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
 import { canonicalSourceUrl, sourceHostLabel } from "./evidence/citation.ts";
@@ -193,7 +194,7 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(mdx).toContain(
       `competitor strip (CodeRabbit: ${plain(EV.priceLite)}, ${plain(EV.pricePro)}; Graphite: ${plain(EV.priceGraphite)}; Qodo: ${plain(EV.priceQodo)}; Sourcery: ${plain(EV.priceSourcery)}; Codacy: ${plain(EV.priceCodacy)})`,
     );
-    expect(mdx).toContain("Stripe catalog must match the pricing tiers exactly: Open Source plan (Free); Solo plan ($12/month); Crew plan ($20/developer/month).");
+    expect(mdx).toContain("pricing (Open Source plan (Free); Solo plan ($12/month); Crew plan ($20/developer/month))");
     const fences = [...mdx.matchAll(/```text\n([\s\S]*?)```/g)].map((m) => m[1] ?? "");
     expect(fences).toHaveLength(4);
     for (const fence of fences) expect(fence).not.toMatch(/\\[*_#<{]|\]\(http/);
@@ -254,7 +255,18 @@ describe("compileResearchRecord (contract v2)", () => {
     ];
     for (const value of values.sort((a, b) => b.length - a.length)) rest = rest.split(value).join(" ");
     expect(findUnboundFigures(rest)).toEqual([]);
-    expect(setup).toContain("Stripe catalog must match the pricing tiers exactly");
+    // Project Setup follows weekend prompt standard v1 (WP61): no billing, a fence line and a done line.
+    expect(setup).not.toMatch(/stripe|billing:|subscription/i);
+    expect(setup).toMatch(/^Do not build: billing or plans\./m);
+    expect(setup).toMatch(/^Done when: /m);
+    expect(setup).toMatch(/^Stack: .*Supabase/m);
+  });
+
+  it("compiles build prompts that pass weekend prompt standard v1 (WP61)", () => {
+    const { mdx } = compileFixture();
+    const lint = lintIdeaMdx(mdx);
+    expect(lint.errors).toEqual([]);
+    expect(lint.blocks.map((b: { title: string }) => b.title)).toEqual(["Project Setup", "Core Feature", "Landing Page", "Branding Package"]);
   });
 
   it("renders Year-One Math from finance.ts with the seats stated and a floor(base/2) downside", () => {

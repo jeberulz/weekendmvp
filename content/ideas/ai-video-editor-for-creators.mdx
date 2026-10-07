@@ -85,25 +85,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "CutReady." Provision Postgres with these tables: users (id, email, plan TEXT default 'free', render_minutes_used INT default 0), projects (id, user_id, title, status TEXT), clips (id, project_id, storage_url, duration_seconds, camera_label), renders (id, project_id, style_preset TEXT, prompt TEXT, output_url, status TEXT CHECK status IN ('queued','processing','done','failed'), created_at). Set up object storage on Cloudflare R2 with a signed-upload flow for raw video files up to 5GB. Wire Stripe with four products: Free, Creator $19/mo, Pro $49/mo, Studio $499/mo. Install the Vercel AI SDK and a queue library (BullMQ + Redis or Inngest) for background render jobs.
+Build the weekend MVP of "CutReady": upload raw clips, describe the vibe in a sentence, and get a rough cut with color and pacing applied.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Claude (Anthropic API) for the cut plan, FFmpeg in a small separate Node worker that polls the renders table. Deploy the app on Vercel. Keep uploads small this weekend.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- projects(id, user_id, title, status)
+- clips(id, project_id, storage_path, duration_seconds, camera_label)
+- renders(id, project_id, style_preset, prompt, edl jsonb, output_url, status)  where status is one of queued, processing, done, failed
+
+Screens: /login, /projects/[id] (clips, the brief box, the render and the refine box).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or render minutes, a queue service or Redis, Cloudflare R2, 5GB uploads, music matching, partial re-rendering.
+Done when: npm run dev starts, the worker runs ffmpeg, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. AI Rough-Cut Pipeline**
+**2. Core Feature**
 
 ```text
-Build a background job that takes a project's uploaded clips plus a natural-language brief (e.g. "fast-paced vlog style, cut the dead air, warm color grade") and produces a rough-cut render. Steps: (1) run scene detection on each clip to find cut points and flag low-motion/silent segments as trim candidates, (2) send the brief plus scene metadata to a multimodal model API with a strict JSON schema response: cuts as a list of clip_id/start/end, color_adjustments as temperature/contrast/saturation, music_mood as a string, pacing as slow/medium/fast, (3) use FFmpeg (or Remotion) to assemble the cuts, apply the color adjustments, and sync a stock music track matched to music_mood and pacing, (4) render three thumbnail candidates from high-motion frames, (5) update the renders table to 'done' with the output_url and notify the user. Handle failures by retrying the FFmpeg step twice before marking the render 'failed' with a user-facing error.
+Build the one feature that proves CutReady: a plain-language brief in, a rough cut out.
+1. Upload clips to Storage with a signed upload and create clips rows.
+2. A worker takes a queued render. Step 1: run scene detection on each clip to find cut points and mark low-motion or silent stretches as trim candidates.
+3. Step 2: send the brief plus the scene metadata to Claude with a strict JSON schema: cuts as a list of { clip_id, start, end }, color_adjustments { temperature, contrast, saturation }, and pacing as slow, medium or fast. Save it to renders.edl.
+4. Step 3: use FFmpeg to assemble the cuts and apply the color adjustments. Retry the FFmpeg step twice before marking the render failed with a message the user can read.
+5. Refine: POST /api/renders/[id]/refine takes a sentence such as "tighten the intro". Send the instruction and the current edl to Claude and ask for only the diff. Apply it to the edl and render the whole cut again.
+Rules: set the render to done with its output_url only after the file exists.
+Empty state: with no clips, show the upload box and an example brief.
+Done when: three test clips and the brief "fast-paced vlog, cut the dead air, warm color" produce a rendered cut, a failed FFmpeg step shows a clear error, and "tighten the intro" produces a shorter intro.
 ```
 
-**3. Natural-Language Refinement Loop**
+**3. Landing Page**
 
 ```text
-Add a refinement endpoint: POST /api/renders/:id/refine accepting a free-text instruction like "tighten the intro" or "swap the music for something calmer." Send the instruction plus the current render's edit-decision-list (cuts, color settings, music mood) to a multimodal model API, asking it to return only the diff — which specific cuts, color values, or music parameters should change — rather than a full re-plan. Apply the diff to the existing edit-decision-list, re-render only the affected timeline segments via FFmpeg, and stitch the unchanged segments back in without re-encoding them, to keep refinement renders fast (target under 30 seconds for a single-section change).
+Build a one-page landing site for CutReady, an AI video editor for creators.
+Hero: "Six hours of editing. Down to six minutes." Sub: "Upload your raw footage, describe the vibe, get a publish-ready cut." One button: Upload your first clip, which joins the waitlist.
+Sections: a before and after (a raw clip and a finished cut that plays on scroll), the problem (creators spend more time editing than filming), how it works in four steps (upload, AI rough cut, refine in plain language, export), and an FAQ on export quality, 16:9 and 9:16 formats, and whether the AI locks the timeline (it does not).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one warm accent color, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for CutReady. Hero headline: "Six hours of editing. Down to six minutes." Sub: "Upload your raw footage, describe the vibe, get a publish-ready cut." Sections: before/after demo (a raw-clip vs. finished-cut video comparison that plays on scroll), problem (creators spend more time editing than filming), how it works (4 steps mirroring the product's real pipeline: upload, AI rough cut, refine in plain language, export), pricing (Free / Creator $19 / Pro $49 / Studio $499) with a callout comparing against Adobe Premiere Pro's $20-50/mo floor, FAQ covering export quality, platform-specific formats (16:9 vs 9:16), and whether the AI locks the timeline (it doesn't). Use the Geist font, dark near-black background with a single warm accent color, generous whitespace. Primary CTA: "Upload your first clip free."
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CutReady: a wordmark and an icon that suggest a cut mark or a clapperboard edge.
+Colors: near-black, off-white and one warm accent. Type: Geist for the interface and a mono for timecodes.
+Deliverables: wordmark, icon, a render-status chip set (queued, processing, done, failed), and one launch graphic.
+Done when: each deliverable is saved in one folder and the four chips are distinguishable without color.
 ```
 
 ## Sources

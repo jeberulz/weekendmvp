@@ -83,44 +83,61 @@ Ship a thin control plane + thick local runtime.
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Local Doc Chat MVP**
+**1. Project Setup**
 
 ```text
-Build a local-first document Q&A app "On-Device Privacy AI".
+Build the weekend MVP of "LocalDocs": a document question-and-answer app that runs entirely on one computer. You point it at a folder of PDFs and ask questions; nothing is sent over the network. There is no login because it runs on localhost.
 
-Requirements:
-- Runs entirely on localhost
-- User selects a folder of PDFs
-- Ingest with local embeddings (sentence-transformers or Ollama embed model)
-- Chat UI cites filename + page/snippet
-- Explicit banner: "No data leaves this machine"
-- Settings: model name (ollama), temperature, retention days for chat history (local only)
+Stack: Python (FastAPI), a single-page web UI served by the same app, SQLite for storage, Ollama running locally for both the chat model and the embeddings, pypdf to read PDFs. Cosine search over a few thousand chunks is done in the app. No outside service and no cloud account.
 
-Tech: Python FastAPI + simple React UI, or Next.js pointing at local API.
-Include a LICENSE_KEY check that only validates online once per week (metadata ping), never uploads docs.
+Tables (SQLite):
+- files(id, path, sha256, page_count, indexed_at)
+- chunks(id, file_id, page, text, embedding blob)
+- chat_messages(id, role, content, cited_chunk_ids, created_at)
+- audit_log(id, ts, query_hash, files_touched, latency_ms)  append-only; add a trigger that blocks update and delete
+
+Screens: / (the chat with a banner "No data leaves this machine"), /index (choose a folder and see progress), /audit (the log and an export), /settings (model name, temperature, days to keep chat history, hash-only mode).
+Env vars (names only): OLLAMA_HOST (default http://localhost:11434), DATA_DIR.
+
+Do not build: billing or license keys, any network call except to Ollama on localhost, DOCX files, a desktop installer, seats or private cloud mode, user accounts.
+Done when: the app starts on localhost, Ollama answers a test prompt, and the four tables exist with the audit trigger in place.
 ```
 
-**2. Installer + Health Check**
+**2. Core Feature**
 
 ```text
-Write an install script and first-run wizard for macOS and Windows that:
-1. Detects Ollama; if missing, opens download instructions
-2. Pulls a default 7B-8B instruct model
-3. Runs a sample prompt "Reply with OK" as health check
-4. Creates default data directory for indexes
-5. Prints next step: open http://127.0.0.1:8787
-
-Fail loudly if less than 8GB RAM.
+Build the one feature that proves LocalDocs: answers that cite their pages, and a claim of privacy that is tested.
+1. Index a folder: read each PDF with pypdf, split every page into chunks of about 800 characters, embed each chunk with the Ollama embedding model and store the chunk with its file and page. Skip a file whose sha256 is unchanged.
+2. On a question, embed it, take the 5 most similar chunks and send them to the Ollama chat model with this instruction: answer only from these passages, cite the file name and page for each claim, and if the passages do not contain the answer, say "I can't find that in these files". If the best similarity is under a threshold you set, skip the model and say the same.
+3. Show each answer with its citations as file and page, and a way to open the cited passage.
+4. Write one audit_log row per question: the time, a SHA-256 of the question (or the question text when hash-only mode is off), the files touched and the latency. Add an export of the last 90 days as CSV and JSON.
+5. Delete chat messages older than the retention setting. Never delete the audit log.
+6. Add a test that blocks all outbound sockets except localhost, then runs indexing, a question and the export. The test fails if anything tries to reach another host.
+7. A first-run check detects Ollama, runs a "Reply with OK" prompt, and fails loudly if the machine has less than 8 GB of RAM.
+Rules: the banner must be true, and the test is how you know. Never log document text in the audit log.
+Empty state: with no folder indexed, show the index page and the line "Choose a folder of PDFs".
+Done when: a folder of sample PDFs indexes, a question returns an answer with file and page citations, a question outside the files returns "I can't find that in these files", the audit export lists the questions, and the network-blocking test passes.
 ```
 
-**3. Audit Log Export**
+**3. Landing Page**
 
 ```text
-Add compliance features:
-- Append-only local SQLite table: timestamp, user, query_hash, files_touched[], latency_ms
-- Export CSV/JSON for last 90 days
-- Redact query text option (hash-only mode for stricter policies)
-- Admin screen listing seat activity without sending data to cloud
+Build a one-page landing site for LocalDocs, document Q&A that never leaves your computer.
+Hero: "Ask your documents questions. Keep them on your machine." Sub: "For teams who cannot put client files into a cloud chatbot. Runs on your own computer, with a local model." One button: Join the waitlist.
+Sections: a sample question and a cited answer, how it works in four steps (install, point at a folder, ask, audit), a privacy block explaining how the claim is tested (a test blocks every outbound connection except localhost), and an FAQ on which file types work today (PDF), what model it uses and what the audit log records.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for LocalDocs: a wordmark and an icon that suggest a document sitting inside a closed circle.
+Colors: off-white, near-black and one blue. Type: Geist, with Geist Mono for file names and page numbers.
+Deliverables: wordmark, icon, a "No data leaves this machine" banner, a citation chip style (file and page), and one launch graphic.
+Done when: each deliverable is saved in one folder and the banner is readable in black and white.
 ```
 
 ## Sources

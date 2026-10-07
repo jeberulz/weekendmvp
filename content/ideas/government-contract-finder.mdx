@@ -80,26 +80,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Tendly" for a government contract matching platform. Provision Supabase with these tables: users (id, email, plan default 'basic'), profiles (id, user_id, naics_codes TEXT[], certifications TEXT[], state TEXT, capability_statement TEXT), opportunities (id, source TEXT CHECK source IN ('sam','grants','state'), external_id, title, agency, naics TEXT[], set_aside TEXT, response_deadline TIMESTAMPTZ, raw_text TEXT, embedding VECTOR(1536)), matches (id, user_id, opportunity_id, fit_score FLOAT, reason TEXT, status TEXT default 'new'). Enable row-level security so each user only reads their own profiles and matches. Wire Stripe with two products (Basic $29/mo, Pro $79/mo) plus a $19/mo alerts add-on. Add env vars SAM_API_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, RESEND_API_KEY, TWILIO_AUTH_TOKEN. Install the Anthropic SDK, the Supabase client, and Playwright.
+Build the weekend MVP of "Tendly": a small business enters its industry codes and certifications once, and a daily scan of SAM.gov shows the contracts it can actually bid on, ranked by fit and deadline.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the SAM.gov Opportunities API for postings, the Anthropic API to judge fit. A Vercel Cron route runs the scan. Deploy on Vercel.
+
+Tables (Row Level Security on; a user reads only their own profile and matches, and opportunities are read-only to signed-in users):
+- profiles(id, user_id, naics_codes text[], certifications text[], state, capability_statement)
+- opportunities(id, notice_id, title, agency, naics, set_aside, response_deadline, description, posted_at, url)  notice_id is unique
+- matches(id, user_id, opportunity_id, fit_score, eligible boolean, reason, missing_requirements text[], status)
+- scan_runs(id, started_at, finished_at, fetched integer, errors jsonb)
+
+Screens: /login, /profile, /matches (ranked, with days left), /matches/[id] (the reason and the missing requirements).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), SAM_API_KEY, ANTHROPIC_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or an alerts add-on, Grants.gov or state portals, a Playwright scraper, embeddings, email or SMS alerts, proposal writing.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build a daily Vercel Cron job at /api/scan that:
-1. Fetches new postings from the SAM.gov Opportunities API and Grants.gov, plus a Playwright crawl of two configured state portals, since the last run.
-2. Normalizes each posting into the opportunities table and generates an embedding of its scope-of-work text.
-3. For every active user profile, retrieves candidate opportunities by NAICS overlap and vector similarity, then sends each candidate to Claude with a strict JSON schema:
-   { fit_score: number 0-1, eligible: boolean, reason: string, missing_requirements: string[] }
-   Instruct Claude to check set-aside eligibility against the user's certifications and flag any hard disqualifiers.
-4. Writes rows to matches for any fit_score above 0.6, then queues a digest.
-Handle portal markup changes and API rate limits with retries and backoff so one failing source never blocks the run.
+Build the one feature that proves Tendly: a scan that finds real postings and says plainly why each one fits or does not.
+1. A cron route at /api/scan (protected by CRON_SECRET, also callable from a Run now button) reads the NAICS codes from every profile, then fetches postings from the SAM.gov Opportunities API for those codes since the last run, using its posted-from and posted-to date parameters.
+2. Upsert each posting into opportunities by notice_id and keep the deadline, set-aside and description.
+3. For each profile, take the postings with an overlapping NAICS code and a future deadline. Check the set-aside in plain code first: if it requires a certification the profile lacks (8(a), HUBZone, service-disabled veteran or women-owned), mark the match not eligible and skip the model.
+4. For the rest, send the posting text and the profile to the Anthropic API with a strict JSON schema { fit_score: number from 0 to 1, eligible: boolean, reason: string, missing_requirements: string[] }. Save a match for any fit_score above 0.6.
+5. /matches lists matches by days left, then fit. Each shows the agency, the deadline, the fit score as a number and the reason in one sentence.
+6. A rate limit or an error from SAM.gov retries with backoff and is recorded in scan_runs.errors. It never fails the whole run.
+Rules: the model sees the posting text and the profile, nothing else. Say plainly that fit is a suggestion and the solicitation is the source of truth. Link to the posting on SAM.gov from every match.
+Empty state: with no profile, show the profile form. With a profile and no matches, show the last scan time.
+Done when: a profile with one NAICS code and no certifications scans real postings, an 8(a)-only posting is excluded without a model call, matches above 0.6 show with their reasons, and a forced 429 retries and the run still finishes.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for Tendly. Hero headline: "The government already wants to buy from you. Tendly makes sure you see it in time." Sub: "Enter your industry and certifications once. We scan every federal, grant, and state posting daily and alert you only to the contracts you can actually win." Sections: problem (small businesses miss set-asides written for them because nobody watches the portal), how it works (the 4 profile-to-alert steps with icons), a live demo showing a matched contract card with a fit score and a document checklist, pricing (Basic $29 / Pro $79) anchored against a "capture managers cost $80,000 a year" callout, and an FAQ covering data freshness, SAM.gov registration help, and how fit scoring works. Use the Geist font, an off-white background, near-black text, and a single lime accent. Primary CTA: "Find my first contract" opening an email capture.
+Build a one-page landing site for Tendly, a government contract matcher for small businesses.
+Hero: "The government already wants to buy from you. Make sure you see it in time." Sub: "Enter your industry codes and certifications once. We scan the federal postings every day and show only the contracts you can bid on." One button: Join the waitlist.
+Sections: the problem (small businesses miss set-asides written for them because nobody watches the portal), how it works in four steps (profile, scan, match, deadline), a sample match card with a fit score, a reason and the missing requirements, a placeholder for what a capture manager costs (fill in a figure you can cite), and an FAQ on how fresh the data is, how fit is scored and where to register on SAM.gov.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Tendly: a wordmark and an icon that suggest a notice with a check at its corner.
+Colors: near-black, off-white and one lime. Type: Geist, with tabular numbers for scores and dates.
+Deliverables: wordmark, icon, three fit bands (strong, possible, long shot) that differ by shape and number as well as color, a match card layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the fit bands are distinguishable without color.
 ```
 
 ## Sources

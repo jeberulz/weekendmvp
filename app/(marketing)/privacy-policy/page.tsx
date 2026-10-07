@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
-import { AuraBackground } from "@/components/marketing/AuraBackground";
+import { Container } from "@/components/home/ui";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { PageHeader } from "@/components/public/PageHeader";
+import { newsreaderEditorial } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 
 const DESCRIPTION =
   "Privacy Policy for Weekend MVP. Learn about how we handle cookies, analytics, and your data.";
@@ -39,7 +42,7 @@ export const metadata: Metadata = {
  * or anchor ids; ids are added per section heading so deep links are possible
  * (e.g. /privacy-policy#email-collection).
  */
-function SectionCard({
+function SectionRow({
   id,
   heading,
   children,
@@ -49,72 +52,85 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div id={id} className="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
-      <h2 className="text-white font-medium mb-3 text-lg">{heading}</h2>
-      <p>{children}</p>
-    </div>
+    <section
+      id={id}
+      aria-labelledby={`${id}-heading`}
+      className="grid scroll-mt-28 grid-cols-1 gap-4 border-t border-home-rule py-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12"
+    >
+      <h2
+        id={`${id}-heading`}
+        className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3 md:text-xs"
+      >
+        {heading}
+      </h2>
+      <p className="max-w-[680px] text-base leading-[1.65] text-home-ink-2">
+        {children}
+      </p>
+    </section>
   );
 }
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden pt-24 selection:bg-white/20 selection:text-white">
-      <AuraBackground />
+    <div
+      className={cn(
+        newsreaderEditorial.variable,
+        "theme-desk relative min-h-screen overflow-x-clip bg-home-paper font-sans text-home-ink selection:bg-home-orange-light/40",
+      )}
+    >
+      <main id="main">
+        <PageHeader
+          title="Privacy Policy"
+          meta={["Last updated: October 2026"]}
+          size="md"
+          className="pb-10 lg:pb-12"
+        />
 
-      {/* Background Grid */}
-      <div className="fixed inset-0 pointer-events-none z-0 grid-lines" />
-
-      {/* Top Glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
-
-      {/* Privacy Policy Content */}
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-32 mb-32">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">
-            Privacy Policy
-          </h1>
-          <p className="text-neutral-400 text-sm">Last updated: January 2025</p>
-        </div>
-
-        <div className="space-y-8 text-sm text-neutral-400 leading-relaxed">
-          <SectionCard id="cookies-and-analytics" heading="Cookies and Analytics">
+        <Container className="pb-20 lg:pb-28">
+          <SectionRow id="cookies-and-analytics" heading="Cookies and Analytics">
             We use Google Analytics to understand how visitors interact with
             our site. This helps us improve the user experience. Analytics
             cookies are only loaded after you provide explicit consent.
-          </SectionCard>
+          </SectionRow>
 
-          <SectionCard id="your-choices" heading="Your Choices">
+          <SectionRow id="your-choices" heading="Your Choices">
             You can accept, reject, or customize your cookie preferences at any
             time using the cookie consent banner. Your preferences are saved in
             your browser&apos;s localStorage and will persist for 1 year.
-          </SectionCard>
+          </SectionRow>
 
-          <SectionCard id="data-collection" heading="Data Collection">
+          <SectionRow id="data-collection" heading="Data Collection">
             When you consent to analytics, we collect anonymized usage data
             including page views, time on site, and interaction events. This
             data is processed by Google Analytics and is subject to
             Google&apos;s privacy policy.
-          </SectionCard>
+          </SectionRow>
 
-          <SectionCard id="email-collection" heading="Email Collection">
+          <SectionRow id="email-collection" heading="Email Collection">
             When you sign up for the Weekend MVP Starter Kit, we collect your
             email address and first name through Beehiiv. This information is
-            used solely to deliver the kit and occasional updates. You can
-            unsubscribe at any time.
-          </SectionCard>
+            used to deliver the kit and occasional updates. When you create a
+            Weekend MVP account, we use your verified email for sign-in and
+            access to the ideas library. We also send it to Beehiiv so you can
+            confirm a separate newsletter subscription and receive onboarding
+            emails. Beehiiv asks new subscribers to confirm before marketing
+            emails begin. You can unsubscribe from those emails without losing
+            your site account or ideas access. A previously unsubscribed
+            Beehiiv contact is not reactivated by creating a site account.
+          </SectionRow>
 
-          <SectionCard id="contact" heading="Contact">
+          <SectionRow id="contact" heading="Contact">
             If you have questions about this privacy policy, please contact us
             at{" "}
             <NavExternalLink
               href="https://cal.com/switchtoux"
-              className="text-neutral-300 hover:text-white underline underline-offset-2"
+              className="text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
             >
               cal.com/switchtoux
             </NavExternalLink>
             .
-          </SectionCard>
-        </div>
+          </SectionRow>
+        </Container>
       </main>
     </div>
   );

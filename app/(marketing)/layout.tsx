@@ -8,7 +8,7 @@ export default function MarketingLayout({
 }) {
   return (
     <>
-      {/* Dark MegaNav by default; cream on light workshop pages (/shipable, /dare). */}
+      {/* Cream MegaNav on every marketing page (WP56). */}
       <MarketingNav />
       {children}
       <SiteFooter />

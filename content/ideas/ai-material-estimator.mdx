@@ -78,25 +78,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js (App Router, TypeScript, Tailwind) project called "EstiMate." Provision Supabase with these tables: users (id, email, plan default 'free', skill_level TEXT), projects (id, user_id, name, project_type TEXT, status TEXT), rooms (id, project_id, name, photo_urls TEXT[], estimated_area_sqft FLOAT), materials (id, room_id, material_type TEXT, unit TEXT, estimated_quantity FLOAT, waste_factor FLOAT, estimated_cost_cents INT), actuals (id, material_id, actual_quantity FLOAT, logged_at TIMESTAMPTZ). Enable row-level security so users only read/write rows tied to their own user_id via projects. Wire Stripe with three products: Free, Pro at $9.99/mo, and a Contractor tier starting at $50/mo. Add env vars for the vision model API key and Stripe keys. Install the Vercel AI SDK and a Postgres client.
+Build the weekend MVP of "EstiMate": upload a few room photos and get a waste-adjusted shopping list for tile, paint, concrete or drywall.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Claude (Anthropic API) with image input for the room reading. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only rows tied to their own projects):
+- projects(id, user_id, name, project_type, skill_level, status)
+- rooms(id, project_id, name, photo_urls, estimated_area_sqft)
+- materials(id, room_id, material_type, unit, estimated_quantity, waste_factor, estimated_cost_cents)
+- actuals(id, material_id, actual_quantity, logged_at)
+- waste_factors(id, material_type, skill_level, project_type, factor)
+
+Screens: /login, /new (photos and inputs), /project/[id] (the list and the actuals form).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, a separate computer-vision service, the daily job that adjusts shared waste factors, contractor accounts, store pricing lookups (use a flat cost per unit you set).
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on and a few conservative waste_factors rows seeded.
 ```
 
-**2. Photo-Based Room Estimation**
+**2. Core Feature**
 
 ```text
-Build POST /api/estimate as a server route. Accept one or more room photos plus basic manual inputs (room type, rough length/width if known, material selection, user skill_level). Send the photos to a vision-capable model with a strict JSON schema response: estimated_area_sqft as a number, obstacles as a string array, confidence as a number, notes as a string. Combine that with a waste-factor lookup keyed on material_type plus skill_level plus project_type from the waste_factors table (default to conservative factors when no logged history exists for that user). Return a structured shopping list with material, unit, base_quantity, waste_adjusted_quantity, and estimated_cost_cents per line item. Persist the estimate to the materials table. If confidence is below a threshold, flag the estimate for manual quantity confirmation instead of auto-accepting it.
+Build the one feature that proves EstiMate: photos in, an exact shopping list out.
+1. POST /api/estimate takes one or more room photos plus room type, rough length and width if known, the material, and the user's skill level.
+2. Send the photos to Claude with a strict JSON schema: estimated_area_sqft (number), obstacles (string array), confidence (number) and notes (string).
+3. Look up the waste factor by material_type, skill_level and project_type in waste_factors. With no match, use a conservative default.
+4. Return a shopping list with material, unit, base_quantity, waste_adjusted_quantity and estimated_cost_cents for each line, and save it to materials.
+5. If confidence is below a threshold, flag the estimate for manual quantity confirmation instead of accepting it.
+6. When a project is marked complete, ask what was actually bought and used for each line and save it to actuals.
+Empty state: with no projects, show the new-project form and a one-line photo tip.
+Done when: three photos of a room produce a list with a waste-adjusted quantity per line, a blurry photo gets flagged for confirmation, and logging actuals saves them.
 ```
 
-**3. Actuals Feedback Loop**
+**3. Landing Page**
 
 ```text
-Build a "log actuals" flow: after a project is marked complete, prompt the user to enter what they actually bought/used per material line item. Write these to the actuals table. Build a scheduled job (daily) that compares estimated_quantity to actual_quantity per material_type plus skill_level plus project_type combination across all users, and nudges the corresponding row in waste_factors up or down by a small step (bounded, so no single user's outlier data swings the shared model too far). Keep a per-user override so an individual user's own history is weighted more heavily for their own future estimates than the global average.
+Build a one-page landing site for EstiMate, a material estimator for home renovations.
+Hero: "Stop guessing how much material you need." Sub: "Upload a few photos, get an exact shopping list for tile, paint, concrete and drywall, with waste already accounted for." One button: Scan your first room free, which joins the waitlist.
+Sections: a before and after of a room scan turning into a shopping list, the problem (renovators overbuy because static calculators ignore skill level and cut waste), how it works in four steps (scan, set parameters, get the list, log actuals), and an FAQ on estimate accuracy, photo privacy and supported project types.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: a dark neutral background, one emerald accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for EstiMate. Hero headline: "Stop guessing how much material you need." Sub: "Upload a few photos, get an exact shopping list — tile, paint, concrete, drywall — with waste already accounted for." Sections: before/after photo demo showing a room scan turning into a shopping list, problem (renovators overbuy and waste money because static calculators don't account for skill level or cut waste), how it works (the four-step flow: scan, set parameters, get the list, log actuals), pricing (Free / Pro $9.99 / Contractor $50+) anchored against a "professional takeoff software costs thousands a year" callout, FAQ covering estimate accuracy, data privacy for uploaded photos, and supported project types. Use a dark neutral background with a single emerald accent, generous whitespace, and a primary CTA: "Scan your first room free."
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for EstiMate: a wordmark and an icon that suggest a tape measure over a room outline.
+Colors: a dark neutral, off-white and one emerald accent. Type: one sturdy sans for the interface and tabular figures for quantities.
+Deliverables: wordmark, icon, four material icons (tile, paint, concrete, drywall), and one launch graphic.
+Done when: each deliverable is saved in one folder and the four material icons are distinct at 24 px.
 ```
 
 ## Sources

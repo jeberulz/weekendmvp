@@ -1,6 +1,7 @@
 ---
 slug: "etsy-seo-optimizer"
-title: "EtsyRankBooster: Etsy SEO Visibility Tool for POD Sellers"
+title: "Etsy SEO Optimizer: Rank POD Listings Faster With Keyword Gaps"
+description: "Etsy SEO optimizer for print-on-demand sellers — listing analysis, keyword-gap tags, and title rewrites built for Etsy's algorithm so POD shops stop guessing."
 ---
 
 ## The Problem
@@ -82,19 +83,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "EtsyRankBooster." Provision Supabase with these tables: shops (id, etsy_shop_id UNIQUE, owner_email, access_token, refresh_token, plan TEXT default 'free', connected_at), listings (id, shop_id, etsy_listing_id, title, tags JSONB, category_id, views_30d INT, favorites_30d INT, orders_30d INT, quality_score FLOAT), keyword_snapshots (id, listing_id, gap_keywords JSONB, suggested_title TEXT, suggested_tags JSONB, generated_at), rank_history (id, listing_id, week_start, estimated_rank INT). Enable row-level security so a shop owner can only read/write rows tied to their shop_id. Wire Stripe with three products (Free, Starter $29/mo, Pro $99/mo). Add env vars ETSY_CLIENT_ID, ETSY_CLIENT_SECRET, ETSY_REDIRECT_URI, OPENAI_API_KEY. Implement Etsy OAuth 2.0 PKCE flow for the shop-connect step.
+Build the weekend MVP of "EtsyRankBooster": paste an Etsy listing and about 15 competing listings, and get the keywords you are missing and a rewritten title and tags that fit Etsy's limits.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the rewrite. The keyword gap is counted in code. Listings are pasted in or uploaded as a CSV this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- listings(id, user_id, title, tags text[], category, price_cents, created_at)
+- competitor_samples(id, listing_id, title, tags text[])
+- analyses(id, listing_id, gap_keywords jsonb, missing_attributes text[], suggested_title, suggested_tags text[], reasoning, warnings text[], created_at)
+
+Screens: /login, /analyze (paste the listing and the competitors), /analyses/[id] (the gaps and the rewrite side by side).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an agency tier, Etsy OAuth or the Etsy API, rank tracking, a weekly digest, a job queue or Redis, automatic competitor sampling.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Keyword Gap Engine + Listing Rewrite**
+**2. Core Feature**
 
 ```text
-Build the core analysis pipeline. Step 1: given a connected shop's listing, call the Etsy Open API to fetch that listing's title, tags, and category, plus a sample of 15-20 active listings in the same category and a similar price band (use the findAllListingsActive endpoint filtered by category_id and price range). Step 2: send both sets to an LLM with a strict JSON schema: { gap_keywords: string[], missing_attributes: string[], suggested_title: string, suggested_tags: string[], reasoning: string }. System prompt: "You are an Etsy SEO specialist. Compare this seller's listing against top-performing listings in their exact niche. Identify keywords and attributes competitors use that this listing is missing. Etsy titles must stay under 140 characters; tags are limited to 13 entries of 20 characters each. Preserve the seller's tone and product description style — do not invent product features that don't exist." Step 3: validate the suggested title/tags against Etsy's character and count limits before returning; if the LLM output violates a limit, truncate intelligently at a word boundary and flag it. Cache the competitor sample for 24 hours to control API cost.
+Build the one feature that proves EtsyRankBooster: show the keywords competitors use that this listing lacks, then rewrite within Etsy's limits.
+1. The analyze form takes the seller's title, tags (comma separated), category and price, plus 15 to 20 competitor listings pasted as one title and its tags per line. Save them.
+2. Count keyword gaps in plain code: split competitor titles and tags into words and two-word phrases, drop stop words, and count in how many competitor listings each appears. A gap is a term in at least 4 competitor listings that is not in this listing's title or tags. Rank by count and save the top 15 with their counts.
+3. Send the listing, the top gaps and their counts to the Anthropic API with a strict JSON schema { suggested_title: string, suggested_tags: string[], missing_attributes: string[], reasoning: string }. The prompt says: keep the seller's tone, only use gap terms that truly describe the product, and never invent a feature, size, material or claim.
+4. Check the output in code. A title is at most 140 characters, tags are at most 13 and each at most 20 characters. If the model breaks a limit, cut at a word boundary and add a line to warnings.
+5. Show the original and the rewrite side by side, each gap term with its count, and any warnings.
+Rules: this is a suggestion tool; say plainly that no tool can promise a rank.
+Empty state: with no analyses, show the form and one filled-in sample.
+Done when: a pasted listing with 15 competitors returns gap terms each with a count of 4 or more, a title of 140 characters or fewer and at most 13 tags of 20 characters or fewer, and a forced over-limit reply is cut and flagged.
 ```
 
-**3. Landing Page + Free Analysis Funnel**
+**3. Landing Page**
 
 ```text
-Design a single-page marketing site for EtsyRankBooster. Hero headline: "Find out why your Etsy listing isn't ranking — free." Sub: "Paste your listing URL. Get a specific, data-backed reason it's invisible, and exactly what to change." Primary CTA is the free analysis form itself (URL input, no signup wall) — show the result inline before ever asking for an email. Sections: live demo (before/after title and tag comparison for a sample POD listing), problem (Etsy's 8.1M sellers competing for a shrinking slice of GMS), how it works (4 steps matching the solution section), pricing (Free / Starter $29 / Pro $99) anchored against an EverBee Business $69/mo callout, FAQ covering Etsy API rate limits, how "quality score" is calculated, and data privacy for connected shops. Use Geist font, warm off-white background, one emerald accent color, generous whitespace, no stock photography of people.
+Build a one-page landing site for EtsyRankBooster, an SEO helper for print-on-demand sellers.
+Hero: "Find out why your Etsy listing isn't ranking." Sub: "See the keywords your competitors use that you don't, and get a title and tags that fit Etsy's limits." One button: Join the waitlist.
+Sections: a before and after title and tag comparison for a sample listing, the problem (guessing at tags while competitors fill all 13), how it works in four steps (paste, compare, rewrite, check the limits), and an FAQ on what is counted, why no tool can promise a rank and which Etsy connection is coming.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one emerald accent, generous whitespace, no stock photos of people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for EtsyRankBooster: a wordmark and an icon that suggest a price tag with an upward notch.
+Colors: warm off-white, ink and one emerald. Type: Geist.
+Deliverables: wordmark, icon, a tag chip style that shows a keyword and its count, and one launch graphic built from a before and after listing.
+Done when: each deliverable is saved in one folder and the chip is readable in black and white.
 ```
 
 ## Sources

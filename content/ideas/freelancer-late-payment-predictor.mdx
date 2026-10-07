@@ -89,48 +89,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “LatePay,” a freelancer late-payment predictor. Provision Supabase with:
+Build the weekend MVP of "LatePay": score a new client before you start work, track invoices, and send a polite three-step chase when one goes overdue.
 
-- users (id, email, plan TEXT default 'free', stripe_customer_id, timezone)
-- clients (id, user_id, name, domain, notes, last_score INT, last_scored_at)
-- invoices (id, user_id, client_id, source TEXT CHECK source IN ('stripe','csv','manual'), external_id, amount_cents INT, currency TEXT default 'usd', issued_at TIMESTAMPTZ, due_at TIMESTAMPTZ, status TEXT CHECK status IN ('draft','open','overdue','paid','void'), predicted_pay_at, risk INT, stripe_invoice_id)
-- scores (id, user_id, client_id, score INT, reasons JSONB, recommended_deposit_pct INT, recommended_net_days INT, model TEXT, created_at)
-- sequences (id, invoice_id, step INT, channel TEXT CHECK channel IN ('email','sms'), send_at, sent_at, body, provider_id)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API (a small model) to read a proposal, Resend to send the chase emails. Invoices come in by CSV or by hand this weekend. A Vercel Cron route runs daily. Deploy on Vercel.
 
-Enable RLS so every row is scoped by user_id. Wire Stripe Billing with Free, Solo ($9), Pro ($29), Agency ($79). Env: OPENAI_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY, NEXT_PUBLIC_APP_URL. Install the Vercel AI SDK and Stripe Node SDK.
+Tables (Row Level Security on, each user reads only their own rows):
+- clients(id, user_id, name, domain, domain_age, notes, last_score, last_scored_at)  domain_age is new, older or unknown
+- scores(id, client_id, score, reasons jsonb, recommended_deposit_pct, recommended_net_days, created_at)
+- invoices(id, user_id, client_id, external_id, amount_cents, currency, issued_at, due_at, status, paid_at)  status is open, overdue, paid or void
+- sequences(id, invoice_id, step, send_at, sent_at, subject, body)  unique on invoice_id and step
+
+Screens: /login, /clients, /clients/[id] (score and reasons), /invoices, /sequences.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or an agency tier, Stripe invoice syncing, SMS, a domain lookup service, a job queue, legal threats of any kind.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scoring Engine + Sequence State Machine**
+**2. Core Feature**
 
 ```text
-Build POST /api/score. Auth required. Body: { clientId, domain, proposalText, invoiceHistory?: { daysLate: number, amountCents: number }[] }.
-
-Call gpt-4o-mini with a strict JSON schema:
-{ score: number, reasons: string[], recommended_deposit_pct: number, recommended_net_days: number, confidence: number }
-
-System rubric (encode in the prompt, do not invent extra keys):
-- Missing written contract or vague payment terms: +20
-- Domain registered under 90 days or generic gmail-only contact: +15
-- Prior invoices averaging over 14 days late: +25
-- Proposal language that dodges deposits / Net-15: +15
-- Cap at 100. Always return at least two human-readable reasons.
-
-Persist to scores, patch clients.last_score. Then build a daily cron: for each open invoice, if due_at is within 3 days and risk >= 60, enqueue a user-facing warning; if status is overdue, advance sequences (step 1 day 3, step 2 day 10, step 3 day 21). POST /api/stripe/webhook: on invoice.paid, mark paid and cancel unsent sequence rows. Never send a step twice (unique on invoice_id, step).
+Build the one feature that proves LatePay: an explainable risk score before the contract, and a chase that never embarrasses you.
+1. POST /api/score takes { clientId, proposalText, domain_age } and sends the proposal to the OpenAI API with a strict JSON schema { has_written_contract: boolean, vague_payment_terms: boolean, dodges_deposit: boolean, notes: string }. The model reads the text; it does not score.
+2. Score in code from a fixed rubric: no written contract or vague payment terms adds 20, a domain that is new or an email from a generic mail provider adds 15, past invoices averaging more than 14 days late adds 25 (from the client's paid invoices), language that dodges a deposit or short terms adds 15. Cap at 100. Save the score and at least two plain reasons that name the points. Recommend a deposit percent and net days from the score band.
+3. Import invoices by CSV (client, external_id, amount, issued_at, due_at, status). A daily cron route (protected by CRON_SECRET) marks open invoices past due_at as overdue.
+4. For an overdue invoice, the user presses Start chase, which schedules three emails at 3, 10 and 21 days after the due date from three polite templates the user can edit. Nothing is scheduled until the user presses the button.
+5. The cron sends each due step through Resend with the user's reply-to address and sets sent_at. Marking an invoice paid removes unsent steps.
+Rules: never send a step twice (the unique key protects this). Templates never threaten legal action or mention collections. Show the user each email before the first one goes.
+Empty state: with no clients, show the proposal box and a sample proposal.
+Done when: scoring a sample proposal returns a score with at least two reasons that match the rubric, an imported overdue invoice schedules three steps only after Start chase, the cron sends a due step once, and marking paid cancels the rest.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for LatePay. Hero: “Know which clients will pay late — before you start the work.” Sub: “Score the prospect. Predict the invoice. Auto-chase the overdue. Stop writing the circling-back email.”
+Build a one-page landing site for LatePay, a late-payment predictor for freelancers.
+Hero: "Know which clients will pay late, before you start the work." Sub: "Score the prospect. Track the invoice. Send a polite chase without writing the circling-back email." One button: Join the waitlist.
+Sections: a sample client card that goes from "score 72, take a 50 percent deposit" to a three-step chase timeline, the problem (reminders arrive after the missed date), how it works in four steps (score, track, warn, chase), and an FAQ on data privacy (no bank credentials), "is this collections?" (no, the emails stay polite) and which invoice tools connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, one aubergine accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Sections:
-- Live demo: a fake client card that animates from “score 72 — take 50% deposit” to a three-step chase timeline
-- Problem: marketplace escrow only covers on-platform jobs; FreshBooks reminds you after the miss
-- How it works: four steps matching the product (score, track, warn, chase)
-- Pricing: Free / Solo $9 / Pro $29 / Agency $79, anchored against “one factoring haircut on a $3k invoice”
-- FAQ: data privacy (we never store bank credentials), FWPA audit log, “is this collections?” (no — templates stay polite; no legal threats)
+**4. Branding Package**
 
-Geist font, off-white background, aubergine accent. Primary CTA: “Score your next client free.”
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for LatePay: a wordmark and an icon that suggest a calendar tick that arrives on time.
+Colors: off-white, ink and one aubergine. Type: Geist, with tabular numbers for scores and amounts.
+Deliverables: wordmark, icon, three risk bands (low, watch, high) that differ by shape and number as well as color, three chase email headers in a polite voice, and one launch graphic.
+Done when: each deliverable is saved in one folder and the risk bands are distinguishable without color.
 ```
 
 ## Sources

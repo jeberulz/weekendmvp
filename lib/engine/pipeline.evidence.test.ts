@@ -551,6 +551,60 @@ describe("too little accepted evidence stops before keyword and editorial spend"
 });
 
 describe("extraction attempts", () => {
+  it("spends a market retry on a different source host when two figures came from one", async () => {
+    let calls = 0;
+    const h = harness({
+      synthesis: {
+        extraction: () => calls++ === 0
+          ? { ...FIXTURE_EXTRACTION, marketStats: FIXTURE_EXTRACTION.marketStats.slice(0, 2) }
+          : FIXTURE_EXTRACTION,
+      },
+    });
+    const { record } = await run(h);
+    const requests = extractionRequests(h);
+    expect(requests).toHaveLength(2);
+    expect(requests[1]?.input).toContain(FIXTURE_URLS.workloadSurvey);
+    expect(requests[1]?.input).not.toContain(FIXTURE_URLS.marketReport);
+    expect(new Set(record.evidence.accepted.filter((item) => item.kind === "market_stat").map((item) => item.sourceUrl)).size)
+      .toBe(2);
+  });
+
+  it("refuses same-host market figures before keyword or editorial spend after the retry", async () => {
+    const sameHost = { ...FIXTURE_EXTRACTION, marketStats: FIXTURE_EXTRACTION.marketStats.slice(0, 2) };
+    const h = harness({ synthesis: { extraction: () => sameHost } });
+    const error = await failureOf(run(h));
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.message).toContain("two independent source hosts");
+    expect(extractionRequests(h)).toHaveLength(2);
+    expect(h.keywordLookups).toBe(0);
+  });
+
+  it("uses the remaining attempt on market sources when only market figures are short", async () => {
+    let calls = 0;
+    const h = harness({
+      synthesis: {
+        extraction: () => calls++ === 0
+          ? { ...FIXTURE_EXTRACTION, marketStats: FIXTURE_EXTRACTION.marketStats.slice(0, 1) }
+          : FIXTURE_EXTRACTION,
+      },
+    });
+    const { record } = await run(h);
+    const requests = extractionRequests(h);
+    expect(requests).toHaveLength(2);
+    expect(requests[1]?.input).toContain("too few verified market statistics");
+    expect(record.evidence.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(3);
+    expect(record.provenance.attempts.evidence_extraction).toBe(2);
+  });
+
+  it("keeps the market shortfall fail closed after its bounded retry", async () => {
+    const h = harness({ synthesis: { extraction: () => ({ ...FIXTURE_EXTRACTION, marketStats: [] }) } });
+    const error = await failureOf(run(h));
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.message).toContain("market stats: 0 accepted, need 2");
+    expect(extractionRequests(h)).toHaveLength(2);
+    expect(h.keywordLookups).toBe(0);
+  });
+
   it("re-asks once after a reply that is not JSON, under the same rules", async () => {
     let calls = 0;
     const h = harness({
@@ -819,6 +873,24 @@ describe("input budgets", () => {
       for (const passage of excerpt.split(EXCERPT_GAP)) {
         expect(source.text.includes(passage)).toBe(true);
       }
+    }
+  });
+
+  it("keeps a late, job-specific survey figure ahead of generic figures", () => {
+    const relevant = "Our survey found that 61% of security teams use security questionnaires.";
+    const text = `${"The global software market grew 8% in 2025. ".repeat(100)}${relevant}`;
+    const source: ExtractionSource = {
+      url: "https://publisher.example/report/security-survey",
+      title: "Security survey",
+      roles: ["market"],
+      text,
+    };
+    const block = buildExtractionSources([source], 1100, "Vendor Security Questionnaire Copilot");
+    expect(block.included).toBe(1);
+    expect(block.text).toContain(relevant);
+    expect(utf8Bytes(block.text)).toBeLessThanOrEqual(1100);
+    for (const passage of block.text.split("Text:\n")[1]!.split(EXCERPT_GAP)) {
+      expect(text.includes(passage)).toBe(true);
     }
   });
 

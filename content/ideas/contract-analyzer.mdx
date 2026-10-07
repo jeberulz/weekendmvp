@@ -80,25 +80,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “ContractDecoder.” Provision Supabase with tables: workspaces, members, documents (file_path, doc_type, status), analyses (document_id, summary, risk_flags JSONB, unusual_clauses JSONB, plain_english_rewrite, confidence FLOAT, model, prompt_version), and audit_logs. Add row-level security so a member can only see rows in workspaces they belong to. Wire Stripe with three products (Free, Solo $19, Team $49), Resend for transactional email, and an Inngest client for async jobs. Add env vars for ANTHROPIC_API_KEY and OPENAI_API_KEY (fallback). Install pdf-parse, mammoth, and tesseract.js for ingestion.
+Build the weekend MVP of "ContractDecoder": upload a contract as a PDF and get a plain-English summary with the risky clauses quoted from the document. It explains; it does not give legal advice.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API for the analysis, pdf-parse for text PDFs. The analysis runs in a route handler. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- uploads(id, user_id, file_path, doc_type, page_count, created_at)
+- analyses(id, upload_id, status, summary, confidence, model, prompt_version, created_at)
+- clauses(id, analysis_id, ordinal, excerpt, severity, why_it_matters, suggested_question, unusual boolean)
+
+Screens: /login, /upload, /analysis/[id] (summary on top, clause cards under it, a delete button).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or overages, Word files, image or scanned pages, a baseline comparison, a job queue, email delivery, team workspaces.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Analyzer Pipeline**
+**2. Core Feature**
 
 ```text
-Build the analyze flow. On upload: extract text via pdf-parse (PDF), mammoth (DOCX), or Tesseract (image fallback). Detect doc_type via a small classifier prompt (NDA, MSA, employment, vendor, lease, SaaS subscription, other). Send the full text to Claude 3.5 Sonnet with a strict JSON schema: { summary: string (3 short paragraphs, 9th-grade reading level), risk_flags: Array<{ clause_excerpt, severity: "info"|"caution"|"red", why_it_matters, suggested_question }>, unusual_clauses: Array<{ clause_excerpt, why_unusual }>, plain_english_rewrite: string, confidence: 0–1, baseline_comparison: Array<{ topic, this_contract, typical }> }. Persist the result and the prompt version. Add a streaming UI that renders the summary first, then risk flags, then comparison. Include a clear “not legal advice” disclaimer near every output.
+Build the one feature that proves ContractDecoder: a summary and risk flags where every flag quotes the real text.
+1. On upload, store the PDF in a private Storage bucket and extract the text with pdf-parse. If a PDF has no text layer, say so and stop.
+2. Ask the Anthropic API to classify the doc_type (nda, services, employment, lease, other) from the first 2,000 characters.
+3. Send the full text with a strict JSON schema { summary: string (3 short paragraphs, a 9th-grade reading level), confidence: number from 0 to 1, clauses: [{ excerpt, severity: "info" | "caution" | "red", why_it_matters, suggested_question, unusual: boolean }] }. Save prompt_version with the result.
+4. Check every excerpt in code: it must appear word for word in the extracted text. Drop any clause that does not, and lower the shown confidence if more than a third were dropped.
+5. Render the summary first, then clause cards sorted by severity. Each card shows the excerpt, why it matters and a question to ask the other side. The severity badge carries a word, so color is not the only signal.
+6. Put "This is a summary, not legal advice" next to every analysis. A Delete button removes the analysis, the upload row and the stored file.
+Rules: never invent a clause. Never tell the user to sign or not to sign.
+Empty state: with no uploads, show the drop zone and say that only text PDFs work today.
+Done when: a sample NDA PDF returns a summary and at least three clause cards whose excerpts all appear in the text, the disclaimer shows on the analysis page, and Delete removes the stored file.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for ContractDecoder. Hero headline: “Read every contract you sign. Without paying $500/hour for it.” Sub: “Plain-English summaries, risk flags, and red-flag comparisons in 30 seconds.” Sections: live demo with a sample NDA the user can analyze without signing up; problem (founders skim contracts because lawyers are too expensive); how it works (4 steps with icons); pricing (Free / Solo $19 / Team $49) anchored against a $500/hr attorney callout; FAQ covering accuracy, “is this legal advice?”, and data privacy. Use the Geist font, white background, black accents, generous whitespace. CTA: “Decode a free contract” routes to the upload flow.
+Build a one-page landing site for ContractDecoder, a contract reader for people without a lawyer on call.
+Hero: "Read every contract you sign. Without paying $500 an hour for it." Sub: "Upload a PDF. Get a plain-English summary and the clauses worth asking about, each one quoted from your own document." One button: Join the waitlist.
+Sections: a static sample analysis of a made-up NDA (no live demo, no sign-up needed), the problem (founders skim contracts because lawyers cost too much), how it works in four steps (upload, read, flag, ask), and an FAQ on accuracy, "is this legal advice?" (no, and every result says so) and data privacy (you can delete a file and its analysis).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a white background, black accents, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for ContractDecoder: a wordmark and a small icon mark suggesting “decoded text.” Pick a primary near-black, a single accent (warm amber or muted green), and two neutrals. Type system: Geist for UI and headings, IBM Plex Mono for clause excerpts. Provide hex codes, font weights, a 6-icon usage set (upload, flag, clause, compare, export, history), and three voice rules: explain like a smart friend, never invent a clause, always disclose confidence. Output as a one-page brand sheet.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ContractDecoder: a wordmark and a small icon that suggest decoded text, such as a line of text with one highlighted span.
+Colors: near-black, one warm amber, two neutrals. Type: Geist for the interface, IBM Plex Mono for clause excerpts.
+Deliverables: wordmark, icon, a six-icon set (upload, flag, clause, ask, export, history), three severity badges (info, caution, red) that differ by shape as well as color, and a one-page brand sheet with three voice rules: explain like a smart friend, never invent a clause, always show confidence.
+Done when: each deliverable is saved in one folder and the severity badges are distinguishable without color.
 ```
 
 ## Sources

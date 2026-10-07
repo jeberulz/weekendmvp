@@ -96,22 +96,61 @@ Security posture: encrypt OAuth tokens at rest, scoped read-only helpdesk tokens
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Shopify App Scaffold and Data Model**
+**1. Project Setup**
 
 ```text
-Create a Next.js Shopify embedded app called "Knownly" using the official Shopify app template (App Bridge, Polaris, TypeScript). Provision Postgres with tables: shops (id, shop_domain, access_token_encrypted, plan), customers (id, shop_id, shopify_customer_id, email, phone, ltv_band), orders (id, shop_id, shopify_order_id, customer_id, financial_status, fulfillment_status, tracking_json, placed_at), returns (id, shop_id, order_id, status, rma_ref, provider), ticket_summaries (id, shop_id, customer_id, external_ticket_id, subject, status, updated_at), context_documents (id, shop_id, customer_id, schema_version, payload_json, summary_text, as_of). Implement Shopify OAuth, register webhooks for ORDERS_CREATE, ORDERS_UPDATED, REFUNDS_CREATE, CUSTOMERS_UPDATE with HMAC verification, and backfill jobs. Add Stripe Billing products: Frontend $49/seat/mo, Pro $99/seat/mo. Deploy target Vercel.
+Build the weekend MVP of "Knownly": one endpoint that, given a customer's email or order name, returns a short context summary of their orders and returns that a support agent or chatbot can use, so repeat customers never re-explain themselves. One store, through a custom app token.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Shopify Admin API with a custom app access token for one development store, the Anthropic API to write the summary. Context documents are cached in Postgres. Deploy on Vercel.
+
+Tables (Row Level Security on, an owner reads only their own shops; the context endpoint reads through a server route):
+- shops(id, user_id, shop_domain, access_token_encrypted, api_key_hash)
+- context_documents(id, shop_id, customer_ref, payload_json, summary_text, as_of, stale boolean)
+- webhook_events(id, shop_id, topic, customer_ref, received_at)
+- fetch_log(id, shop_id, cache_hit boolean, latency_ms, created_at)
+
+Screens: /login, /shop (connect the store and create an API key), /lookup (try a customer), /log (hits, misses and latency).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), SHOPIFY_WEBHOOK_SECRET, ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing or seats, OAuth app installation or App Bridge, helpdesk connectors for Gorgias, Tidio or Intercom, Redis, a job queue, a sidebar extension.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Context API and Claude Summary Pipeline**
+**2. Core Feature**
 
 ```text
-Build a GET /api/v1/context endpoint authenticated by shop API key. Input: email OR shopify_customer_id OR order_name. Load customer graph from Postgres (last 5 orders, open returns, open ticket_summaries, primary product signals). If as_of is older than 5 minutes or webhook flagged stale, refresh from Shopify Admin API. Pass structured payload to Claude with a fixed system prompt: return JSON { summary: string (max 120 words), suggested_actions: string[], guardrails: string[], do_not_say: string[] }. Cache result in Redis keyed by shop_id plus customer_id with invalidation on new webhook events. p95 latency target under 200ms on cache hit, under 800ms on miss. Expose the same payload as an OpenAI-style tool definition for agent runtimes.
+Build the one feature that proves Knownly: a context summary that is quick, right and never invents an order.
+1. GET /api/v1/context takes an email, a customer id or an order name and a shop API key (compare against api_key_hash). Reject a bad key.
+2. Load the customer's last 5 orders from the Shopify Admin API with their financial status, fulfillment status, tracking and refund state, and any return in progress. Build a structured payload from only those fields.
+3. Return the cached context document when its as_of is under 5 minutes old and it is not marked stale. Otherwise refetch, rebuild the payload and save it.
+4. Send the payload to the Anthropic API with a strict JSON schema { summary: string of at most 120 words, suggested_actions: string[], guardrails: string[], do_not_say: string[] }. Send no phone number, address or email, only order names, statuses and dates.
+5. Check in code that every order name in the summary exists in the payload. If not, return the structured payload with a plain template summary instead.
+6. A Shopify webhook route (orders create, orders update and refunds create) verifies the HMAC signature with SHOPIFY_WEBHOOK_SECRET, records the event and marks that customer's document stale.
+7. Log every request's cache hit and latency. Serve the same fields as a tool definition at /api/v1/tool for an agent to read.
+Rules: never return another customer's data for a lookup. Never include payment details. A demo mode serves fixture customers so you can test without a store.
+Empty state: before connecting a store, show the connect form and demo mode.
+Done when: a lookup by email returns the last orders and a summary whose order names all exist, a second call within 5 minutes is a cache hit, a signed webhook marks the document stale and a bad signature is rejected.
 ```
 
-**3. Gorgias Connector and Admin Sidebar**
+**3. Landing Page**
 
 ```text
-Implement read-only Gorgias integration: store API credentials per shop, poll or webhook-ingest tickets into ticket_summaries normalized schema (external_id, subject, status, channel, last_message_at). Build embedded Polaris sidebar app extension showing Customer Context Document for the customer on the current ticket; link out to Shopify order admin. Add onboarding checklist UI: connect Shopify (done on install), connect Gorgias, paste Tidio webhook URL for context push (Pro). Include a before/after demo mode using fixture customers ("repeat buyer with open return") for sales calls.
+Build a one-page landing site for Knownly, a customer context layer for ecommerce support.
+Hero: "Your support bot should remember your customer." Sub: "Knownly turns a customer's orders and returns into a short briefing that any agent or chatbot can read, so repeat buyers stop re-explaining." One button: Join the waitlist.
+Sections: a before and after of a repeat buyer with an open return, how it works in four steps (connect the store, a customer is looked up, a summary is built, your agent uses it), and an FAQ on what data is sent to the model (order names and statuses only), which helpdesks connect next and how fresh the context is.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one indigo accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Knownly: a wordmark and an icon that suggest a speech bubble with a small bookmark.
+Colors: off-white, near-black and one indigo. Type: Geist, with Geist Mono for order names.
+Deliverables: wordmark, icon, a context card layout, two freshness labels (fresh, stale) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the freshness labels are distinguishable without color.
 ```
 
 ## Sources

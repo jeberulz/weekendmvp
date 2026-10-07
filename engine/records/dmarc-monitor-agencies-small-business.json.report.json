@@ -1,0 +1,577 @@
+{
+  "ok": true,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "dmarc-monitor-agencies-small-business",
+  "briefSha256": "2363da972375fd44c568ed0d5f84a843dfab4d958ea692f2dcf03d4ab557368e",
+  "startedAt": "2026-10-04T14:47:11.757Z",
+  "finishedAt": "2026-10-04T14:49:50.657Z",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.004295
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019244
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.026668999999999998
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.024493
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.22937
+    },
+    {
+      "provider": "dataforseo",
+      "operation": "keywords_demand/keywordData:google_ads/search_volume/live",
+      "costUsd": 0.09
+    },
+    {
+      "provider": "openai",
+      "operation": "editorial_synthesis/synthesis:gpt-5.6-sol",
+      "costUsd": 0.176015
+    }
+  ],
+  "costUsd": 0.570086,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 1,
+    "keywords_demand": 1,
+    "editorial_synthesis": 1
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "9e8537e894092823ce1ce46effff5ade5b1d3930",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://dimensionmarketresearch.com/report/dmarc-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.782Z",
+      "textSha256": "74af62fdf353ce373165a7ee0997b86b9aa795f1dbcf7216c6fb184562c6b348"
+    },
+    {
+      "url": "https://market.us/report/dmarc-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:14.159Z",
+      "textSha256": "f203cd86ffdd972beb8deb423b21678ff417e202dc8099cf6bd1f9e20ff00491"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/dmarc-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.268Z",
+      "textSha256": "faeaf8fc83db9db95bf372c34e06cb5620b0473e91b8688cde820cd4a5293c8e"
+    },
+    {
+      "url": "https://www.verifiedmarketreports.com/product/global-dmarc-software-market-growth-status-and-outlook-2019-2024",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.736Z",
+      "textSha256": "13656586bbef610c3508b1328faff2b7c010419fc8d784dbe4e943950bab6783"
+    },
+    {
+      "url": "https://monitordmarc.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:14.385Z",
+      "textSha256": "7ea4e4976071296f547d4252bb2e13b2c91d22957af638b0869e8f13231055c8"
+    },
+    {
+      "url": "https://www.mxtoolbox.com/c/products/mxtoolboxdelivery",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.291Z",
+      "textSha256": "ca3d62799fec790691684c14cf4887a2c86eb92faf2498a6f34e1e338e7e2ba0"
+    },
+    {
+      "url": "https://www.uriports.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.481Z",
+      "textSha256": "925f58c79d9beff24b092f454f93b4b5c6a7b5e6baa4dd05b999200ba0873b41"
+    },
+    {
+      "url": "https://dmarcreport.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.452Z",
+      "textSha256": "c9461d7f2fab83f1c21bf6195383870e27094617bb33f773a90428ca4b50ae61"
+    },
+    {
+      "url": "https://www.dmarcly.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.664Z",
+      "textSha256": "0e96ed10fbc842a0c1fd2a9680b4fcb519b0b4faca8a5787834639273eb492d1"
+    },
+    {
+      "url": "https://dmarc.postmarkapp.com/",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.953Z",
+      "textSha256": "b09a0c741933699e1ee74256aae650f7fb9f90bf4a00ae9d6ca1eae504acf138"
+    },
+    {
+      "url": "https://easydmarc.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.137Z",
+      "textSha256": "e62703007acf8189d055fe325149d0a8eddd1a5367d7f6bc94f50bf74a061e19"
+    },
+    {
+      "url": "https://www.redsift.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.249Z",
+      "textSha256": "7ec7fcdd262ec1580e72d58b379ecfc9db7b0608e6d9827df2912a703b1fbe45"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=34224066",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.335Z",
+      "textSha256": "1c50086ad48258b3454415d57c6f33cfc675caad4cd0031b8c5eed8e50578fb1"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30046840",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.501Z",
+      "textSha256": "79f7e9d2c2b29b4fbe145d6a8ceb8965bf889160deb14bce90846440e206469a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=46130506",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.708Z",
+      "textSha256": "5aa4e6e5e7a653aff10f7aae3d830c0a18ff7c12908b982d6a0af08efd29ca40"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43829927",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.788Z",
+      "textSha256": "21e4125a8b9990712c530f5d98c04fb225ebae2ef0ff9c6448d06ccfa86774a7"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=16535149",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.141Z",
+      "textSha256": "7b3008e475dade51037829af72ff867b120c9cfa96451b440487284eaae589b8"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43468995",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.363Z",
+      "textSha256": "44c5f0d09f70cdf2ae75314eb46f3abea8ba4932eab6346b478f75430b71f032"
+    },
+    {
+      "url": "https://marketintelo.com/report/email-authentication-monitoring-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:20.961Z",
+      "textSha256": "003c4026229f83809e36247d5e16644e1b92c6d8ebae583ca64dd3e3fcd838b1"
+    },
+    {
+      "url": "https://marketintelo.com/report/dmarc-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:20.941Z",
+      "textSha256": "f3ac83a9ef5ad34345a52ec0a6220cd0b2c33b08b13a79ba807e857eaf17dab6"
+    },
+    {
+      "url": "https://www.valimail.com/blog/email-authentication-adoption",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:20.568Z",
+      "textSha256": "7cb6a31600b5985de037fc69c3cd73de2e2eccd01e006e6418ca419257fbdf2d"
+    },
+    {
+      "url": "https://www.marketreportanalytics.com/reports/dmarc-software-72540",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.marketreportanalytics.com/reports/dmarc-software-72540"
+    },
+    {
+      "url": "https://www.openpr.com/news/4330764/global-dmarc-software-industry-chain-analysis-report-2026",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.openpr.com/news/4330764/global-dmarc-software-industry-chain-analysis-report-2026"
+    },
+    {
+      "url": "https://www.marketreportanalytics.com/reports/dmarc-software-72529",
+      "roles": [
+        "market"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.marketreportanalytics.com/reports/dmarc-software-72529"
+    },
+    {
+      "url": "https://www.marketresearch.com/Deep-Insights-Research-Co-DIR-v4285/Global-DMARC-Software-Competitive-Landscape-43867737",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:20.699Z",
+      "textSha256": "3385b4c5194dd7e52504207b1c23e6f127bdd2413fbc552656b883ab33210dfb"
+    },
+    {
+      "url": "https://dmarcian.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.501Z",
+      "textSha256": "6d90094e2ee73a5202d39f55bf325e53257b346b47c2c5da299507b83463aca1"
+    },
+    {
+      "url": "https://easydmarc.com/pricing/businesses",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.421Z",
+      "textSha256": "e62703007acf8189d055fe325149d0a8eddd1a5367d7f6bc94f50bf74a061e19"
+    },
+    {
+      "url": "https://powerdmarc.com/power-dmarc-pricing-policy",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.419Z",
+      "textSha256": "6392c633e2ff6d9879a59749d6605b52a0cb18dc9272e01ca4d3bc59617b6375"
+    },
+    {
+      "url": "https://easydmarc.com/blog/best-dmarc-providers-in-2026",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.439Z",
+      "textSha256": "1fe1616a17ce04bba84cc063b0611e65e9b03a3fbb298b7ee379a501c69d3e8f"
+    },
+    {
+      "url": "https://www.dmarctrust.com/blog/how-to-choose-dmarc-vendor",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.526Z",
+      "textSha256": "580af0b8b75adf75c9d68936e6c3e236b8b0b714362670c2f62dfc1960ccae11"
+    },
+    {
+      "url": "https://easydmarc.com/au",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.577Z",
+      "textSha256": "01a4dc63a42496c4ff95752333fe70014357e7e0b21eae9aa879214ac1f34948"
+    },
+    {
+      "url": "https://dmarcguard.io/blog/free-vs-paid-dmarc-monitoring",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.589Z",
+      "textSha256": "f906aa79979fd5738c2a63fbb9a2b6b6e49d26fa79150b48b98dbe0aaf4937b7"
+    },
+    {
+      "url": "https://powerdmarc.com/best-dmarc-monitoring-tools",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:31.728Z",
+      "textSha256": "2a65f6892750fd3162b1e714fa9f71a19dc7a53fd67b9fe9b6bf37450c526a9f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=29869266",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:43.394Z",
+      "textSha256": "a104445f0170fbae751590a8097b494748c383d5c33cf9e8cdf8bcfdfe9e1241"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=34846606",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:43.764Z",
+      "textSha256": "bb701581d4c7fd561160d738fb4767a7ceb124951333265c83d5347b33ad6a5f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=49081783",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:43.877Z",
+      "textSha256": "4832319789da19c4de011f1ea6beb10ef45c84ac83da2b7876f9c5679c73c1a2"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=21420732",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:43.432Z",
+      "textSha256": "1c818c32d24948d3fcaf3ba59be0b5a1c2d20fe0cfc299c71fc43c79aae42bb3"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=20851880",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:44.974Z",
+      "textSha256": "3c40fabe4d6ef73c444fbd2e5b159cb928755213418e450c75a2494d475add8f"
+    },
+    {
+      "url": "https://forum.dmarcian.com/c/technical-help/23",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:43.918Z",
+      "textSha256": "5e35b83f30ad4ea4a312c31be5a2b370f7c19a34d9366f1e4afd7bfa30cb9e45"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=40708476",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:44.934Z",
+      "textSha256": "d00bda3bb4ccd3e95696f5b91f2d6a9b5ea4c52f6de3dfa341405d94ea51b543"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=17926738",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:44.881Z",
+      "textSha256": "c4f31e5d31c83becede51bc1f8a33b314c37c4792529d5e74c815b3a0b1735db"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 4,
+      "market_stat": 8,
+      "competitor_price": 9,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=34224066",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=30046840",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=21420732",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://market.us/report/dmarc-software-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://marketintelo.com/report/email-authentication-monitoring-market",
+        "detail": "subject \"The global market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://marketintelo.com/report/email-authentication-monitoring-market",
+        "detail": "subject \"The global market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "subject_not_in_context",
+        "sourceUrl": "https://marketintelo.com/report/email-authentication-monitoring-market",
+        "detail": "subject \"The global market\" has no specific content word"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "projection_as_measured",
+        "sourceUrl": "https://marketintelo.com/report/dmarc-market",
+        "detail": "a projection cue or a later year marks this figure; label it projected"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://marketintelo.com/report/dmarc-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://marketintelo.com/report/dmarc-market",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.marketresearch.com/Deep-Insights-Research-Co-DIR-v4285/Global-DMARC-Software-Competitive-Landscape-43867737",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.marketresearch.com/Deep-Insights-Research-Co-DIR-v4285/Global-DMARC-Software-Competitive-Landscape-43867737",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "over_cap",
+        "sourceUrl": "https://www.marketresearch.com/Deep-Insights-Research-Co-DIR-v4285/Global-DMARC-Software-Competitive-Landscape-43867737",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.dmarcly.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.dmarcly.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.dmarcly.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.redsift.com/pricing",
+        "detail": "\"$9 Per month / Billed annually\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://dmarcian.com/pricing",
+        "detail": "Pricing is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://dmarcian.com/pricing",
+        "detail": "Pricing is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://dmarcian.com/pricing",
+        "detail": "Pricing is not named before the price in its clause"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://dmarc.postmarkapp.com/",
+        "detail": "\"$14 a month per domain\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "vendor_not_in_context",
+        "sourceUrl": "https://powerdmarc.com/power-dmarc-pricing-policy",
+        "detail": "Pricing is not named before the price in its clause"
+      }
+    ]
+  }
+}

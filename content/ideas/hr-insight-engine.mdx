@@ -85,19 +85,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "HR Insight Engine," a no-code people-analytics dashboard for mid-sized companies. Provision Postgres (Neon or Supabase) with these tables: orgs (id, name, plan TEXT default 'starter', employee_count INT), connections (id, org_id, provider TEXT, unified_api_token TEXT, last_synced_at TIMESTAMPTZ), employees (id, org_id, external_id, name, department TEXT, title TEXT, manager_id, hired_at DATE, terminated_at DATE, termination_type TEXT CHECK termination_type IN ('regretted','non_regretted','active'), comp_cents INT), dashboards (id, org_id, template TEXT, config JSONB). Enable row-level security so every query is scoped to the org. Integrate Finch or Merge.dev as the unified HRIS/payroll API. Wire Stripe with three products: Starter $99/mo, Growth $349/mo, Scale $799/mo. Add env vars for the unified API key, ANTHROPIC_API_KEY, and Stripe keys.
+Build the weekend MVP of the "HR Insight Engine": upload an employee file, have messy department and job title names cleaned, and see turnover by department, tenure band and manager. Groups under 5 people are never shown.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to clean category names only, Recharts for charts. Data comes in by CSV. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- uploads(id, user_id, filename, row_count, created_at)
+- employees(id, user_id, upload_id, external_id, name, department, department_canonical, title, title_canonical, manager_external_id, hired_at, terminated_at, termination_type)  termination_type is regretted, non_regretted or active
+- taxonomy_maps(id, upload_id, kind, raw_value, canonical_value, approved boolean)  kind is department or title
+- data_quality_flags(id, upload_id, employee_id, flag)
+
+Screens: /login, /upload, /cleanup (review the mapping), /dashboard (turnover).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an integrations add-on, HRIS or payroll connections (Finch, Merge), compensation or pay analysis, attrition risk predictions per person, a natural-language query box, compliance badges.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the sync-and-clean pipeline. On a nightly Vercel Cron job, for each org connection: pull employees, departments, and compensation from the unified HRIS/payroll API. Then run an AI cleaning pass with Claude that (1) deduplicates employees by fuzzy-matching name plus external_id, (2) reconciles inconsistent department and title strings into one canonical taxonomy per org, and (3) flags records with missing manager_id or comp data. Return a strict JSON schema: { canonical_employees: [...], department_map: {...}, data_quality_flags: [...] }. Write the cleaned result into the employees table. Then compute the turnover dashboard: monthly and rolling-12-month attrition by department, by tenure band, and by manager, separating regretted from non-regretted exits. Expose it as a server-rendered dashboard page using Tremor charts.
+Build the one feature that proves the HR Insight Engine: a turnover dashboard a board can read, built on cleaned names and a privacy floor.
+1. Import a CSV with columns external_id, name, department, title, manager_external_id, hired_at, terminated_at, termination_type. Show rows that failed to parse and why.
+2. Collect the distinct department and title strings. Send only those strings, never names or ids, to the Anthropic API with a strict JSON schema { maps: [{ raw_value, canonical_value }] }, asking for one canonical list per kind. Save the maps to taxonomy_maps and apply them to employees once the user approves. The user can edit any mapping first.
+3. Flag in data_quality_flags any record with a missing manager, a termination before the hire date or a hire date in the future.
+4. Compute in code: monthly attrition and rolling 12-month attrition, each as leavers in the period divided by the average headcount over the period, split into regretted and non-regretted. Break it down by canonical department, by tenure band (under 1 year, 1 to 3, over 3) and by manager.
+5. Show the definition of each measure on the dashboard. Render each chart with Recharts and give it a table view as well.
+6. Any breakdown group with fewer than 5 employees shows "Too few people to show" and no number, in the chart and in the table.
+Rules: the model never sees a name, an id or a date of hire. Say plainly that this is descriptive and says nothing about any one person. A Delete this upload button removes the upload and its employees.
+Empty state: with no uploads, show the CSV columns and a sample file.
+Done when: a 200-row sample with messy department names maps to a short canonical list the user approves, the dashboard's rolling 12-month figure matches a hand calculation on the sample, a department of 4 people shows no number, and the model call contains no names.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for HR Insight Engine. Hero headline: "Answer the board's people questions in minutes, not weekends." Sub: "Connect your HRIS, payroll, and ATS. We clean the data and build the dashboards. No analyst required." Sections: a live demo showing a turnover-by-manager dashboard rendering from connected data; the problem (79% of HR leaders can't use their data effectively); how it works (4 steps matching the solution section); pricing (Starter $99 / Growth $349 / Scale $799) anchored against a "Visier starts at $6,000+/year" callout; a trust strip covering SOC 2, GDPR, and CCPA; and an FAQ on supported HRIS platforms and data security. Use the Geist font, an off-white background, near-black text, and a single emerald accent. Primary CTA: "Get your free workforce data audit."
+Build a one-page landing site for the HR Insight Engine, people analytics for mid-sized companies.
+Hero: "Answer the board's people questions in minutes, not weekends." Sub: "Upload your employee file. We clean the names and build the turnover dashboard. No analyst required." One button: Join the waitlist.
+Sections: a sample turnover-by-department chart with one group marked "Too few people to show", the problem (data in three systems and a board meeting on Thursday), how it works in four steps (upload, clean, review, read), and an FAQ on what is stored, what the model sees (category names only, no employee names), how to delete an upload and which HR systems connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one emerald accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the HR Insight Engine: pick a short working name, then design a wordmark and an icon that suggest a bar chart whose bars are people-shaped dots.
+Colors: off-white, near-black and one emerald. Type: Geist, with tabular numbers for rates.
+Deliverables: wordmark, icon, a chart style with a "too few people to show" state, three data quality flag chips that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the chips are distinguishable without color.
 ```
 
 ## Sources

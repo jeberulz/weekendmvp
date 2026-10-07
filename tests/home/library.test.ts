@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { validateHighlights } from "../../scripts/validate-idea-tags.mjs";
 import { applyHighlights, readHighlights } from "../../lib/home/highlights";
-import { categoryCounts, isFeatureReady, liveIdeas, newestRows, toolCounts } from "../../lib/home/library";
+import { HERO_MIN_LINES, categoryCounts, hasOgArt, isFeatureReady, isHeroReady, liveIdeas, newestRows, toolCounts } from "../../lib/home/library";
 import type { IdeaExtract, ManifestIdea } from "../../lib/home/types";
 
 const idea = (slug: string, publishedAt: string, extra: Partial<ManifestIdea> = {}): ManifestIdea => ({
@@ -74,6 +74,41 @@ describe("library stats", () => {
     expect(isFeatureReady(i, full, false)).toBe(false);
     expect(isFeatureReady(i, { ...full, prompts: full.prompts.slice(0, 2) }, true)).toBe(false);
     expect(isFeatureReady({ ...i, provenance: { citations: 2 } }, full, true)).toBe(false);
+  });
+});
+
+describe("hero-ready", () => {
+  const lines = (n: number) => Array.from({ length: n }, (_, i) => `line ${i + 1}`);
+  const prompts = (n: number, titles = ["Project Setup", "Core Feature", "Landing Page"]) =>
+    titles.map((title, i) => ({ title, lines: lines(i === 0 ? n : 4) }));
+  const ready: IdeaExtract = { ...full, prompts: prompts(HERO_MIN_LINES) };
+  const i = idea("a", "2026-01-01");
+
+  test("needs a first prompt long enough to paste in line by line", () => {
+    expect(isHeroReady(i, ready)).toBe(true);
+    expect(isHeroReady(i, { ...ready, prompts: prompts(HERO_MIN_LINES - 1) })).toBe(false);
+    expect(isHeroReady(i, { ...ready, prompts: prompts(1) })).toBe(false);
+  });
+
+  test("needs three prompts with real titles", () => {
+    expect(isHeroReady(i, { ...ready, prompts: ready.prompts.slice(0, 2) })).toBe(false);
+    expect(isHeroReady(i, { ...ready, prompts: prompts(HERO_MIN_LINES, ["Prompt 1", "Prompt 2", "Prompt 3"]) })).toBe(false);
+    expect(isHeroReady(i, { ...ready, prompts: prompts(HERO_MIN_LINES, ["Project Setup", "Prompt 2", "Landing Page"]) })).toBe(false);
+  });
+
+  test("needs the citations behind the Researched stamp and a build time", () => {
+    expect(isHeroReady({ ...i, provenance: { citations: 2 } }, ready)).toBe(false);
+    expect(isHeroReady({ ...i, provenance: undefined }, ready)).toBe(false);
+    expect(isHeroReady({ ...i, buildTime: "0" }, ready)).toBe(false);
+  });
+
+  test("ignores art, market, pricing and stack: the window shows none of them", () => {
+    // The WP58 regression: a failed OG card kept the pinned hero out of the window.
+    const failedArt = idea("b", "2026-01-01", { og: { status: "failed" } });
+    const thin: IdeaExtract = { ...ready, problem: "", how: [], market: [], competitors: [], tiers: [], stack: [] };
+    expect(hasOgArt(failedArt)).toBe(false);
+    expect(isFeatureReady(failedArt, ready, hasOgArt(failedArt))).toBe(false);
+    expect(isHeroReady(failedArt, thin)).toBe(true);
   });
 });
 

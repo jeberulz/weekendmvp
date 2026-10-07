@@ -91,63 +91,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router + TypeScript + Tailwind app called “Hold-Time Call Bot.”
+Build the weekend MVP of the "Hold-Time Call Bot": it dials a customer-service line, presses the saved menu digits, waits on hold, and texts you a link when a human answers. You tap the link and are connected.
 
-Supabase (or Convex) schema:
-- users (id, email, phone, plan, stripe_customer_id, monthly_wait_seconds_used)
-- destinations (id, user_id, nickname, e164, dtmf_macro TEXT, language TEXT default 'en-US')
-- calls (id, user_id, destination_id, twilio_call_sid, twilio_conference_sid, state TEXT CHECK state IN ('dialing','ivr','hold','human','bridged','failed','canceled'), started_at, human_at, bridged_at, ended_at, wait_seconds, error_code)
-- tree_nodes (id, vendor_key, prompt_transcript, digits, outcome, sample_count)
-- messages (id, call_id, direction, body, twilio_sid)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio Voice with a conference and real-time transcription that posts text to a webhook, Twilio SMS for the ping, the OpenAI API (a small model) to label what it hears. Twilio needs a public URL, so deploy early or use a tunnel. Deploy on Vercel.
 
-Env: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, OPENAI_API_KEY, STRIPE_SECRET_KEY.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, phone)
+- destinations(id, user_id, nickname, e164, dtmf_macro, language)
+- calls(id, user_id, destination_id, twilio_call_sid, conference_name, state, started_at, human_at, bridged_at, ended_at, wait_seconds, error_code)  state is dialing, ivr, hold, human, bridged, failed or canceled
+- call_events(id, call_id, label, confidence, created_at)  the label only; no transcript text is stored
 
-Twilio: Voice webhook POST /api/voice/outbound starts an outbound call into a named conference; status callback POST /api/voice/status updates calls.state. SMS ping via Messaging API when state flips to human.
+Screens: /login, /destinations, /call/[id] (live state), /history.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, OPENAI_API_KEY.
 
-Stripe products: Demo $0 (1 call), Line $19.99/mo (120 wait-minutes), Desk $29.99/mo (400 wait-minutes), metered overage $0.12/wait-minute. Hard cap 2 concurrent calls per user.
-
-Do not store audio by default. RLS so user_id matches auth.uid().
+Do not build: billing, plans or wait-minute metering, websockets or media streams, audio recording or storage, a shared menu-tree database, a bot that speaks to a person, a reaper job.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Hold Detector + Human Handoff**
+**2. Core Feature**
 
 ```text
-Build the weekend core: detect hold vs human, then bridge.
-
-Audio path: Twilio Media Stream WebSocket -> server. Every 1.5s, run a cheap classifier (prompt a small model on a Whisper transcript window, plus a simple music/speech energy heuristic):
-- labels: ivr_prompt | hold_music | please_wait_speech | live_agent | silence | unknown
-- live_agent if (not hold-music bed) AND (first-person greeting or name) AND (barge-in possible)
-
-IVR walker: while label is ivr_prompt, either send destination.dtmf_macro or ask gpt-4o-mini to pick one digit from the transcript ("press 0 for representative"). Never invent account numbers.
-
-On live_agent:
-1. PATCH calls.state = 'human', set human_at
-2. SMS the user a join URL /api/join/:callId (Twilio client or PSTN callback into the same conference)
-3. Play a short whisper to the agent only after the user is in: "Connecting the account holder now."
-4. Mute/drop the bot leg
-
-Watchdogs: if hold exceeds user.plan cap, SMS "still holding — tap to cancel"; if no speech for 45s after a ring, mark failed. Log tree_nodes on every successful digit so United becomes a preset.
-
-Return TwiML in under 1s; run Whisper/LLM in the background worker, not the webhook.
+Build the one feature that proves the Hold-Time Call Bot: tell hold from a human, then bridge the user in.
+1. Start creates a calls row and places an outbound Twilio call from TWILIO_FROM_NUMBER to the destination's number, with a time limit equal to the maximum wait (60 minutes) and the saved digits sent after it connects. The call joins a named conference and stays muted.
+2. Turn on Twilio's real-time transcription for the call, pointed at a webhook. For each chunk, ask the OpenAI API for JSON { label: "ivr_prompt" | "hold_music" | "please_wait" | "live_agent" | "silence" | "unknown", confidence: number from 0 to 1 }. Save only the label and the confidence to call_events.
+3. Move the state from dialing to ivr to hold as the labels change. Move to human only after two live_agent labels in a row, each at 0.8 confidence or more, so one stray greeting on a recording does not trigger it.
+4. On human, set human_at and SMS the user a join link to /api/join/[callId].
+5. When the user opens the link, have Twilio call their phone into the same conference, say to the agent "Connecting the account holder now" and drop the bot's leg. Set bridged_at.
+6. Return TwiML from every webhook in under a second. Do the model call after responding.
+Rules: the bot never speaks and never invents digits; it only sends the saved macro. Never store audio or transcript text. At most 2 active calls per user. A Cancel button ends the call and sets canceled.
+Empty state: with no destinations, show the form for a number, a nickname and the digits to press.
+Done when: a test call to a second Twilio number that plays music and then a scripted greeting reaches hold, flips to human once, sends one SMS, bridges the user on tap and drops the bot, and a third concurrent call is refused.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single marketing page for Hold-Time Call Bot.
+Build a one-page landing site for the Hold-Time Call Bot, a bot that waits on hold for you.
+Hero: "Sit on hold without sitting on hold." Sub: "A bot dials the number, presses the menu digits and texts you when a person picks up. You join for the part that matters." One button: Join the waitlist.
+Sections: the problem (thirty minutes of music, a six-minute conversation), a demo phone showing the text "A person is on the line. Tap to join", how it works in five steps (add the number, the bot dials, it waits, you get a text, you join), and an FAQ on recording (off, nothing is stored), what the bot says (nothing, it only presses digits), what happens if the agent hangs up and calling rules.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark background, one lime accent, a landline off the hook as the one image, no people, no tiny unreadable screenshots.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Hero: “Sit on hold without sitting on hold.”
-Sub: “A voice bot dials the airline, walks the tree, and texts you when a human picks up. You join for the part that matters.”
+**4. Branding Package**
 
-Sections:
-- Problem: speakerphone on the desk, 30 minutes of Kenny G, six-minute conversation
-- Demo: fake phone UI showing SMS “Human on the line — tap to join (22 min wait)”
-- How it works: 5 steps matching the product (drop number, walk tree, hold, ping, join)
-- Not Duplex: Pixel Call Screen is free and hardware-locked; this is outbound hold for any number
-- Pricing: Demo / Line $19.99 / Desk $29.99, wait-minutes called out so COGS is honest
-- FAQ: recording default off, bot discloses until handoff, what happens if the agent hangs up, TCPA
-
-Visual: dark desk, lime accent, landline off the hook, no people, no fake screenshots with tiny unreadable UI type. CTA: “Run one free hold” -> signup with a destination number field.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Hold-Time Call Bot: pick a short working name, then design a wordmark and an icon that suggest a phone cord that stays untangled.
+Colors: near-black, off-white and one lime. Type: Geist, with tabular numbers for wait times.
+Deliverables: wordmark, icon, four call state chips (holding, human, bridged, failed) that differ by shape as well as color, the join text message layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the state chips are distinguishable without color.
 ```
 
 ## Sources

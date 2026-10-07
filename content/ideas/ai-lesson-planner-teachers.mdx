@@ -90,78 +90,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "LessonPilot" — an AI lesson planner for K-12 teachers with retrieval-grounded standards alignment.
+Build the weekend MVP of "LessonPilot": a lesson planner for K-12 teachers where every lesson cites a real standard that was retrieved before the lesson was written.
 
-Supabase schema:
-- teachers(id, user_id, email, jurisdiction TEXT, grade_band TEXT, subjects JSONB, plan TEXT default 'free', style_profile JSONB, stripe_customer_id)
-- standards(id, jurisdiction TEXT, subject TEXT, grade TEXT, code TEXT, full_text TEXT, embedding VECTOR(1536))
-- lessons(id, teacher_id, title, topic TEXT, day_index INT, objective TEXT, warmup TEXT, main_activity TEXT, exit_ticket TEXT, differentiation JSONB, standard_ids UUID[], created_at)
-- lesson_edits(id, lesson_id, teacher_id, field TEXT, before TEXT, after TEXT, created_at)
-- departments(id, name, owner_teacher_id, seat_limit INT, stripe_subscription_id)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvector, Row Level Security, Auth with email magic link), Claude (Anthropic API) with structured output, and an embeddings API that returns 1536 dimensions. Deploy on Vercel.
+Scope: one jurisdiction's standards, loaded from a file you have.
 
-Enable pgvector on the standards table with an ivfflat index on embedding. RLS: teachers read/write only their own lessons; department members read shared department templates.
+Tables (Row Level Security on: a teacher reads and writes only their own lessons, everyone reads standards):
+- teachers(id, user_id, jurisdiction, grade_band, subjects jsonb, style_profile jsonb)
+- standards(id, jurisdiction, subject, grade, code, full_text, embedding vector(1536))
+- lessons(id, teacher_id, title, topic, day_index, objective, warmup, main_activity, exit_ticket, differentiation jsonb, standard_ids, flagged)
+Turn on pgvector with an ivfflat index on standards.embedding.
 
-Routes: /plan (generator), /library (saved lessons), /settings (jurisdiction + template), /api/classroom/callback (Google OAuth).
+Screens: /plan (generator), /library (saved lessons), /settings (jurisdiction, grade, subjects).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, EMBEDDINGS_API_KEY.
 
-Stripe products: Teacher $12/mo and $99/yr, Department $149/mo (8 seats). Env vars: ANTHROPIC_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SUPABASE_SERVICE_ROLE_KEY.
+Do not build: billing, plans or department seats, Google Classroom or Canvas delivery, Google Slides export, learning from teacher edits, multiple jurisdictions.
+Done when: npm run dev starts, you can sign in, the standards file loads with embeddings, and the three tables exist with Row Level Security on.
 ```
 
-**2. Retrieval-Grounded Lesson Generation**
+**2. Core Feature**
 
 ```text
-Build the core generator as a Server Action. This is the trust feature — it must be impossible to emit a standard code that was not retrieved.
-
-Step 1 — Retrieve:
-Embed the teacher's topic string plus grade and subject. Query the standards table with pgvector cosine similarity, filtered to WHERE jurisdiction = teacher.jurisdiction AND grade = teacher.grade. Take the top 8 matches. Build a candidate block: [{id, code, full_text}].
-
-Step 2 — Generate:
-Call the Anthropic Messages API with claude-sonnet-4-6 and a strict JSON schema:
-{days: [{day_index, objective, warmup, main_activity, exit_ticket, differentiation: {below, at, above}, standard_ids: string[]}]}
-System prompt: "You write standards-aligned lesson plans. You may ONLY reference standards from the CANDIDATE STANDARDS block provided. Use their id values in standard_ids. Never invent a standard code. If no candidate standard fits a day, return an empty standard_ids array and say so in the objective."
-Pass the candidate block and the teacher's style_profile in the user message. Stream the result to the UI.
-
-Step 3 — Verify:
-After generation, assert every id in every standard_ids array exists in the retrieved candidate set. If any id is unknown, discard that day and regenerate it once with the failure noted. If it fails twice, return the day flagged as "unaligned" rather than shipping a fabricated code.
-
-Render each lesson with the standard code AND its verbatim full_text in a collapsible block, so a department head can verify alignment without leaving the page.
+Build the one feature that proves LessonPilot: a lesson that cannot cite a standard it did not retrieve.
+1. Retrieve: embed the topic with the grade and subject. Query standards by cosine similarity filtered to the teacher's jurisdiction and grade, and take the top 8. Build a candidate block of { id, code, full_text }.
+2. Generate: call Claude with a strict JSON schema { days: [{ day_index, objective, warmup, main_activity, exit_ticket, differentiation: { below, at, above }, standard_ids: string[] }] }. System prompt: "You write standards-aligned lesson plans. You may ONLY reference standards from the CANDIDATE STANDARDS block. Use their id values in standard_ids. Never invent a standard code. If no candidate fits a day, return an empty standard_ids array and say so in the objective." Pass the candidate block and the teacher's style_profile. Stream the result.
+3. Verify: check that every id in every standard_ids array is in the retrieved set. If one is not, discard that day and regenerate it once. If it fails twice, return the day with flagged set to true rather than a made-up code.
+4. Render each lesson with the standard code and its verbatim full_text in a collapsible block, so a department head can check alignment without leaving the page.
+Empty state: with no jurisdiction set, send the teacher to /settings.
+Done when: a 5-day topic returns five days that each cite retrieved standards with verbatim text, and a forced bad id is caught and the day is regenerated or flagged.
 ```
 
-**3. Google Classroom Push + Slide Export**
+**3. Landing Page**
 
 ```text
-Implement one-click delivery from a saved lesson to the teacher's existing tools.
-
-Google Classroom:
-- OAuth scopes: classroom.courses.readonly, classroom.coursework.students, drive.file
-- On connect, list the teacher's active courses and let them map each course to a subject in their profile.
-- "Push to Classroom" creates courseWork via POST /v1/courses/{courseId}/courseWork with title = lesson objective, description = main_activity + exit_ticket, workType = ASSIGNMENT, and state = DRAFT so the teacher reviews before publishing.
-- Attach the generated PDF as a Drive file via driveFile materials.
-
-Google Slides:
-- Store a template presentation ID per teacher (default to a clean built-in template).
-- Copy the template with Drive files.copy, then batchUpdate with replaceAllText requests mapping placeholders: TITLE, OBJECTIVE, WARMUP, ACTIVITY, EXIT_TICKET.
-- Return the new presentation URL and open it in a new tab.
-
-Capture every teacher edit made after generation into lesson_edits, and roll those into style_profile weekly (a short Claude summarization of recurring changes) so later generations arrive pre-shaped to that teacher's habits.
+Build a one-page landing site for LessonPilot, aimed at middle and high school teachers.
+Hero: "Lesson plans that cite the actual standard." Sub: "Pick your state once. Every plan comes back grounded in your real standards document, quoted and not invented." One button: Generate your first week free, which joins the waitlist.
+Sections: the Sunday problem (a short, specific scene of planning five preps at 7pm, no smiling-classroom stock photos), a side-by-side of a generic AI lesson with a made-up standard code (marked with a red flag) and a LessonPilot lesson with the verbatim state text expanded beneath it, how it works in four steps, the supported jurisdictions (TEKS, B.E.S.T., SOL, Common Core) with a request-your-state form, and an FAQ on student data privacy, FERPA and what happens when a standard is missing.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: respectful of teacher expertise, never implies AI replaces judgment. Type: Geist. Palette: warm off-white, deep ink and one green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for LessonPilot targeting middle and high school teachers.
-
-Hero headline: "Lesson plans that cite the actual standard."
-Sub: "Pick your state once. Every plan comes back grounded in your real standards document — quoted, not invented. Push it to Google Classroom in one click."
-
-Sections:
-1. The Sunday problem — a short, specific scene about planning five preps at 7pm, no stock imagery of smiling classrooms.
-2. Side-by-side comparison: a generic AI lesson with a fabricated standard code (marked with a red flag) vs a LessonPilot lesson with the verbatim state standard text expanded beneath it.
-3. How it works — the four steps, with the state picker as step one.
-4. Supported jurisdictions — logos/names for TEKS, B.E.S.T., SOL, Common Core, with a "request your state" form.
-5. Pricing — Free / Teacher $12 / Department $149, with an annual toggle showing $99/year and an August back-to-school callout.
-6. FAQ — student data privacy and FERPA, whether administrators can see drafts, what happens if a standard is missing, district procurement process.
-
-Voice: respectful of teacher expertise, never implies AI replaces judgment. Type: Geist. Palette: warm off-white background, deep ink text, one green accent. Primary CTA: "Generate your first week free."
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for LessonPilot: a wordmark and an icon that suggest a margin note beside a page.
+Colors: warm off-white, deep ink text and one green accent. Type: Geist for the interface and a serif for quoted standards.
+Deliverables: wordmark, icon, a standard-citation block style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the citation block is readable at 14 px.
 ```
 
 ## Sources

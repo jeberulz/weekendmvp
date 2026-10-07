@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
-import { ArrowRight, Rocket } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import { JsonLd } from "@/components/primitives/JsonLd";
-import { MegaNav } from "@/components/layout/MegaNav";
-import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ButtonLink, Container, Em, Eyebrow } from "@/components/home/ui";
+import { Icon } from "@/components/home/icons";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { MetaLine, PageHeader } from "@/components/public/PageHeader";
+import { InkBand, Section, SectionHeading } from "@/components/public/Sections";
 import { SITE, buildGraph } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 const CONTENT_DIR = "content/newsletter-pages";
 const TITLE = "The Weekend MVP Newsletter | Daily Ideas for Weekend Builders";
@@ -150,56 +152,73 @@ async function getIssues(): Promise<IssueCard[]> {
   }
 }
 
-/** Archive card ported from the legacy newsletter-cards grid markup. */
-function IssueCardLink({ issue }: { issue: IssueCard }) {
-  const am = issue.edition === "am";
+const EDITION_TAG = {
+  am: {
+    short: "AM",
+    label: "AM · Idea of the Day",
+    className: "bg-home-ochre text-home-ochre-ink",
+  },
+  pm: {
+    short: "PM",
+    label: "PM · Builder Brief",
+    className: "bg-home-ink text-home-d1",
+  },
+} as const;
+
+/** Archive row: mono date, AM/PM tag, serif title (ported from the legacy card grid). */
+function IssueRow({ issue }: { issue: IssueCard }) {
+  const tag = EDITION_TAG[issue.edition];
   return (
-    <Link
-      href={`/newsletter/${issue.slug}`}
-      data-nl-card
-      data-nl-slot={issue.edition}
-      data-nl-date={issue.isoDate}
-      className="nl-card group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl hover:border-white/20 transition-all"
-    >
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <span
-          className={`px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider border ${
-            am
-              ? "bg-[#CC5500]/10 border-[#CC5500]/30 text-[#CC5500]"
-              : "bg-white/5 border-white/10 text-neutral-300"
-          }`}
-        >
-          {am ? "AM · Idea of the Day" : "PM · Builder Brief"}
+    <li className="border-b border-home-rule">
+      <Link
+        href={`/newsletter/${issue.slug}`}
+        data-nl-card
+        data-nl-slot={issue.edition}
+        data-nl-date={issue.isoDate}
+        className="group grid grid-cols-1 gap-2 rounded-[10px] py-5 transition-colors duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-home-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none lg:grid-cols-[140px_72px_minmax(0,1fr)_28px] lg:items-center lg:gap-6 lg:px-4 lg:py-[22px]"
+      >
+        <span className="flex items-center gap-3 lg:contents">
+          <time
+            className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3 md:text-xs"
+            dateTime={issue.isoDate}
+          >
+            {issue.displayDate}
+          </time>
+          <span
+            className={cn(
+              "inline-flex h-[22px] w-fit items-center rounded-full px-[9px] font-mono text-[11px] font-medium uppercase tracking-[0.06em]",
+              tag.className,
+            )}
+          >
+            <span aria-hidden="true">{tag.short}</span>
+            <span className="sr-only">{tag.label}</span>
+          </span>
         </span>
-        <time
-          className="text-[11px] font-mono text-neutral-500"
-          dateTime={issue.isoDate}
-        >
-          {issue.displayDate}
-        </time>
-      </div>
-      <h3 className="text-lg font-medium text-white mb-2 leading-snug group-hover:text-[#CC5500] transition-colors">
-        {issue.title}
-      </h3>
-      <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2">
-        {issue.description}
-      </p>
-      <div className="mt-4 flex items-center gap-2 text-xs text-neutral-600 group-hover:text-[#CC5500] transition-colors">
-        <span>Read</span>
-        <ArrowRight size={14} aria-hidden="true" />
-      </div>
-    </Link>
+        <span className="flex flex-col gap-1.5">
+          <span className="font-editorial text-[24px] leading-[1.15] text-home-ink text-balance md:text-[26px]">
+            {issue.title}
+          </span>
+          {issue.description ? (
+            <span className="line-clamp-2 max-w-[680px] text-[15px] leading-[1.55] text-home-ink-2">
+              {issue.description}
+            </span>
+          ) : null}
+        </span>
+        <span aria-hidden="true" className="hidden text-home-ink lg:block">
+          <Icon
+            name="arrow"
+            size={20}
+            strokeWidth={1.75}
+            className="transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+          />
+        </span>
+      </Link>
+    </li>
   );
 }
 
 export default async function NewsletterPage() {
-  return (
-    <>
-      <MegaNav variant="dark" />
-      <CachedNewsletterPage />
-      <SiteFooter />
-    </>
-  );
+  return <CachedNewsletterPage />;
 }
 
 async function CachedNewsletterPage() {
@@ -234,129 +253,88 @@ async function CachedNewsletterPage() {
   });
 
   return (
-    <main className="relative z-10">
+    <>
       <JsonLd schema={schema} />
 
-      {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center pt-32 pb-16 px-6 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#CC5500]/5 blur-[120px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10 max-w-3xl mx-auto w-full text-center">
-          {/* Terminal header */}
-          <div className="animate-enter mb-8 flex justify-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] font-mono text-xs text-neutral-500">
-              <span
-                className="w-2 h-2 rounded-full bg-[#CC5500]/60 badge-pulse"
-                aria-hidden="true"
-              />
-              <span className="sr-only">Status:</span>
-              <span>~/newsletter</span>
-            </div>
-          </div>
-
-          {/* Main heading */}
-          <div className="animate-enter stagger-1">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-[1.05] mb-6">
-              The Weekend&nbsp;MVP
-              <br />
-              Newsletter
-            </h1>
-            <p className="text-lg md:text-xl text-neutral-400 font-light leading-relaxed max-w-xl mx-auto mb-10">
-              Twice-daily ideas for weekend builders. Morning: a fresh idea to
-              ship this weekend. Afternoon: how to actually build it.
-            </p>
-          </div>
-
-          {/* Subscribe form */}
-          <div className="animate-enter stagger-2 max-w-md mx-auto">
-            <NewsletterSignupForm utmCampaign="newsletter" />
-          </div>
-
-          {/* Stats bar */}
-          <div className="animate-enter stagger-3 mt-10 flex items-center justify-center gap-6 text-xs font-mono text-neutral-500">
-            <span>
-              <span className="text-white">{issues.length}</span> sends
-            </span>
-            <span
-              className="w-1 h-1 rounded-full bg-neutral-700"
-              aria-hidden="true"
-            />
-            <span>AM + PM daily</span>
-            <span
-              className="w-1 h-1 rounded-full bg-neutral-700"
-              aria-hidden="true"
-            />
-            <span>Free forever</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Accent Line */}
-      <div className="accent-line max-w-4xl mx-auto" />
+      <PageHeader
+        align="center"
+        title={
+          <>
+            The Weekend&nbsp;MVP <Em>Newsletter</Em>
+          </>
+        }
+        description="Twice-daily ideas for weekend builders. Morning: a fresh idea to ship this weekend. Afternoon: how to actually build it."
+        className="pb-14 lg:pb-[72px]"
+      >
+        <NewsletterSignupForm
+          utmCampaign="newsletter"
+          className="mt-2 w-full max-w-[520px]"
+        />
+        <MetaLine
+          className="mt-2 justify-center"
+          items={[
+            <>
+              <span className="text-home-ink">{issues.length}</span> sends
+            </>,
+            "AM + PM daily",
+            "Free forever",
+          ]}
+        />
+      </PageHeader>
 
       {/* Archive / Feed */}
-      <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <header className="mb-12">
-            <h2 className="text-2xl md:text-3xl font-medium text-white tracking-tight mb-2">
-              Past sends
-            </h2>
-            <p className="text-neutral-500 text-sm">
-              Every newsletter we&apos;ve ever sent, archived for reading and
-              sharing.
-            </p>
-          </header>
-
-          <div
-            id="newsletter-grid"
-            className="grid grid-cols-1 md:grid-cols-2 gap-5"
-          >
-            {issues.map((issue) => (
-              <IssueCardLink key={issue.slug} issue={issue} />
-            ))}
-          </div>
-        </div>
-      </section>
+      <Section labelledBy="past-sends" className="pt-4 lg:pt-6">
+        <SectionHeading
+          id="past-sends"
+          intro="Every newsletter we've ever sent, archived for reading and sharing."
+          className="mb-6"
+        >
+          Past sends
+        </SectionHeading>
+        <ol id="newsletter-grid" className="border-t border-home-ink">
+          {issues.map((issue) => (
+            <IssueRow key={issue.slug} issue={issue} />
+          ))}
+        </ol>
+      </Section>
 
       {/* Mid CTA */}
-      <section className="py-16 px-6 border-t border-white/5">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-neutral-400 text-sm mb-4">
+      <section aria-label="Browse startup ideas" className="pb-16 lg:pb-20">
+        <Container className="flex flex-col items-center gap-4 text-center">
+          <p className="text-[15px] text-home-ink-2">
             Want to build one of the ideas we feature?
           </p>
-          <Link
-            href="/startup-ideas"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/[0.03] border border-white/10 text-white rounded-full text-sm font-medium hover:bg-white/[0.06] hover:border-white/20 transition-all"
-          >
-            <span>Browse 45+ startup ideas</span>
-            <ArrowRight size={14} aria-hidden="true" />
-          </Link>
-        </div>
+          <ButtonLink href="/startup-ideas" tone="secondary" arrow>
+            Browse 45+ startup ideas
+          </ButtonLink>
+        </Container>
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-24 border-t border-white/5 bg-gradient-to-b from-[#050505] to-[#0A0A0A]">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#CC5500]/10 border border-[#CC5500]/20 font-mono text-xs text-[#CC5500] mb-8">
-            <Rocket size={14} aria-hidden="true" />
-            Ready to ship?
+      <InkBand labelledBy="newsletter-cta">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex max-w-[640px] flex-col gap-3">
+            <Eyebrow dark>Ready to ship?</Eyebrow>
+            <h2
+              id="newsletter-cta"
+              className="font-editorial text-[34px] font-normal leading-[1.04] tracking-[-0.02em] text-balance lg:text-[48px]"
+            >
+              Stop reading. <Em dark>Start building.</Em>
+            </h2>
+            <p className="max-w-[560px] text-base leading-[1.55] text-home-d2 md:text-[17px]">
+              Get the Weekend MVP Starter Kit and turn your idea into something
+              real this weekend.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
-            Stop reading. Start building.
-          </h2>
-          <p className="text-lg text-neutral-400 font-light mb-10 max-w-xl mx-auto">
-            Get the Weekend MVP Starter Kit and turn your idea into something
-            real this weekend.
-          </p>
-          <Link
+          <ButtonLink
             href="/starter-kit"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+            tone="dark"
+            className="w-full focus-visible:outline-home-orange-light lg:w-auto"
           >
-            <span>Get the Starter Kit</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
+            Get the Starter Kit
+          </ButtonLink>
         </div>
-      </section>
-    </main>
+      </InkBand>
+    </>
   );
 }

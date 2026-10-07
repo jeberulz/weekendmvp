@@ -15,6 +15,7 @@ import type { SectionKey } from "../contracts/sections";
 import { submissionArtifactHash } from "../domain/artifact";
 import { sha256Hex } from "../domain/hash";
 import { splitSections } from "../domain/structure";
+import { publicationEvidenceIssues } from "./source-quality";
 
 /** Node-only boundary: never import this module into a Convex query or mutation. */
 const MAX_RECORD_BYTES = 512_000;
@@ -135,6 +136,10 @@ export async function validateEngineSubmission(input: EngineArtifactInput): Prom
   if (record.mode !== "live") throw new EngineSubmissionError("Fixture research cannot enter the live editorial workspace.");
   if (record.brief.slug.startsWith("engine-draft-") || record.brief.slug.startsWith("_")) {
     throw new EngineSubmissionError("An engine draft cannot enter the live editorial workspace.");
+  }
+  const evidenceIssues = publicationEvidenceIssues(record);
+  if (evidenceIssues.length > 0) {
+    throw new EngineSubmissionError(`Publication evidence needs review: ${evidenceIssues.join(" ")}`);
   }
   if (Buffer.byteLength(input.mdx, "utf8") > MAX_MDX_BYTES) throw new EngineSubmissionError("Idea MDX exceeds its size limit.");
   const manifest = jsonObject(input.manifestJson, "Manifest row", MAX_MANIFEST_BYTES);

@@ -86,39 +86,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) + TypeScript app called "Quarterly Tax Estimator for Freelancers".
+Build the weekend MVP of the "Quarterly Tax Estimator": a US freelancer enters income and expenses and sees their next federal quarterly payment, the due date and a safe-harbor plan. The math is plain code and every figure shows its steps. It is an estimate, not tax advice.
 
-Set up:
-- Supabase Postgres: users, connections, income, estimates, reminders
-- Plaid Link onboarding pulling year-to-date transactions from bank, Stripe, and PayPal
-- Auth with Clerk (email + Google), MFA for paid users
-- A dashboard showing: YTD net profit, federal + self-employment tax, and the next quarterly payment with its IRS due date
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for deadline reminders. Income and expenses are entered by hand or by CSV. The tax tables live in one constants file labeled with the tax year and source. A Vercel Cron route sends reminders. Deploy on Vercel.
 
-Include Plaid webhook validation and env var handling.
+Tables (Row Level Security on, each user reads only their own rows):
+- tax_profiles(user_id, tax_year, filing_status, prior_year_tax_cents, prior_year_agi_cents, other_withholding_cents)
+- income_entries(id, user_id, received_on, amount_cents, kind, note)
+- expense_entries(id, user_id, spent_on, amount_cents, category, note)
+- estimates(id, user_id, tax_year, computed_at, inputs jsonb, results jsonb)
+- reminders(id, user_id, due_on, amount_cents, sent_at)
+
+Screens: /login, /profile, /entries (income and expenses, CSV import), /estimate (the next payment and the steps), /plan (safe-harbor slider).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans, Plaid, Stripe or PayPal connections, state taxes, the qualified business income deduction, the annualized income method, a model for any figure.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build a DETERMINISTIC quarterly estimated-tax engine (no LLM math).
-
-1. Compute year-to-date net self-employment profit from classified income minus expenses
-2. Apply current federal income tax brackets plus the 15.3% self-employment tax
-3. Implement safe-harbor logic: pay the lesser of 90% of current-year tax or 100%/110% of last year's
-4. Output the exact next quarterly payment and the IRS due date
-
-Expose a scenario function: given a projected Q4 income, return the adjusted total and per-quarter payment. Unit-test against known IRS examples.
+Build the one feature that proves the Estimator: a deterministic payment number with its working shown, and a plan to avoid a penalty.
+1. Put the tax-year constants in one file: the federal brackets and standard deduction by filing status, the Social Security wage base and the four payment due dates. Copy them from the IRS's published tables, and write the tax year and the source address in the file. Do not write them from memory.
+2. Write pure functions: net self-employment profit (income minus expenses); self-employment tax (15.3 percent on 92.35 percent of net profit, with the Social Security part capped at the wage base); half of that tax as a deduction; taxable income after the standard deduction; income tax from the brackets; total tax.
+3. Safe harbor: the amount that avoids an underpayment penalty is the lesser of 90 percent of this year's tax and 100 percent of last year's tax (110 percent when last year's adjusted gross income was above the threshold in your constants file). Subtract other withholding. Divide what is left across the quarters not yet paid.
+4. A scenario function takes a projected income for the rest of the year and returns the new total and the per-quarter amount. Unit test every function against worked examples from the IRS instructions for Form 1040-ES.
+5. /estimate shows the next payment, its due date and each step of the working as a short list. /plan has a slider for projected income and a toggle between paying the safe-harbor minimum and 100 percent of this year's estimate.
+6. A daily cron route (protected by CRON_SECRET) emails a reminder 7 days before each due date with the exact amount, and a note when the user is behind safe harbor ("pay an extra amount to stay penalty-safe"). Set sent_at so each is sent once.
+Rules: a due date that falls on a weekend or holiday is shown as the next business day, taken from the constants file. Say "an estimate, not tax advice" on every result and email. Never use a model for any number.
+Empty state: with no entries, show the profile form and a sample year.
+Done when: the unit tests pass against the IRS examples, the next payment matches a hand calculation, the slider changes the per-quarter amount, and a reminder is sent once.
 ```
 
-**3. Reminders + Explanations**
+**3. Landing Page**
 
 ```text
-Add reminders and plain-English explanations.
+Build a one-page landing site for the Quarterly Tax Estimator, for freelancers who pay estimated tax.
+Hero: "Know what to pay the IRS this quarter, and why." Sub: "Enter your income and expenses. See your next payment, its due date and a plan to avoid a penalty, with every step of the math shown." One button: Join the waitlist.
+Sections: a sample estimate with its working steps, the problem (the April surprise for people who have been burned before), how it works in four steps (enter, see, plan, get reminded), and an FAQ on what it covers (federal estimated tax only), which situations it does not handle yet and why it is an estimate and not tax advice.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Schedule reminders before each IRS quarterly deadline (Apr 15, Jun 15, Sep 15, Jan 15) with the exact amount due
-- Send a safe-harbor-progress alert if the user is behind ("pay an extra $X to stay penalty-safe")
-- Use Claude to generate a short "why this number?" explanation from the rules-engine output, in plain English, with no tax jargon
-- Never let the model alter the computed figures; it only explains them
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Quarterly Tax Estimator: pick a short working name, then design a wordmark and an icon that suggest a calendar page cut into four quarters.
+Colors: off-white, near-black and one blue. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a payment card that shows the amount, the due date and a "see the working" link, a reminder email header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the payment card is readable in black and white.
 ```
 
 ## Sources

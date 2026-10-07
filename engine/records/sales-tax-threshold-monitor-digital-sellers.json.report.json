@@ -1,0 +1,485 @@
+{
+  "ok": false,
+  "pipelineVersion": 2,
+  "recordContractVersion": 2,
+  "mode": "live",
+  "briefSlug": "sales-tax-threshold-monitor-digital-sellers",
+  "briefSha256": "9c3e360e52de5698a94df84336a482d4daf624794cea1613f8dd6b5c67a8a9fb",
+  "startedAt": "2026-10-04T14:47:11.757Z",
+  "finishedAt": "2026-10-04T14:49:15.551Z",
+  "failedStep": "evidence_acceptance",
+  "error": "competitors: 1 vendors with accepted price or availability, need 3. Top rejection reasons: qualifier_dropped ×7, unparseable_amount ×3, ambiguous_attribution ×2, span_not_found ×2. Stopped before keyword and editorial spend.",
+  "providerCalls": [
+    {
+      "provider": "openai",
+      "operation": "brief_normalization/synthesis:gpt-5.6-sol",
+      "costUsd": 0.00774
+    },
+    {
+      "provider": "perplexity",
+      "operation": "market_stats/search:sonar-pro",
+      "costUsd": 0.019076000000000003
+    },
+    {
+      "provider": "perplexity",
+      "operation": "competitors/search:sonar-pro",
+      "costUsd": 0.024266000000000003
+    },
+    {
+      "provider": "perplexity",
+      "operation": "community_signals/search:sonar-pro",
+      "costUsd": 0.029695
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.20151000000000002
+    },
+    {
+      "provider": "openai",
+      "operation": "evidence_extraction/synthesis:gpt-5.6-sol",
+      "costUsd": 0.13201000000000002
+    }
+  ],
+  "costUsd": 0.414301,
+  "attempts": {
+    "brief_normalization": 1,
+    "market_stats": 1,
+    "competitors": 1,
+    "community_signals": 1,
+    "evidence_extraction": 2
+  },
+  "models": {
+    "synthesis": "gpt-5.6-sol",
+    "search": "perplexity:sonar-pro",
+    "keywordData": "dataforseo"
+  },
+  "codeRevision": {
+    "sha": "9e8537e894092823ce1ce46effff5ade5b1d3930",
+    "dirty": false
+  },
+  "sources": [
+    {
+      "url": "https://www.thebusinessresearchcompany.com/report/sales-tax-software-global-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.270Z",
+      "textSha256": "094357ec15c87f7c18d1fe77c68ebdd37ca5ecc51154de30ad05c65e7bace519"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6076416/sales-tax-software-market-report",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.791Z",
+      "textSha256": "a3e7b3a805390f666bacbf0362996769ebde71ca77729c0af25408a549e6471c"
+    },
+    {
+      "url": "https://www.marketresearchfuture.com/reports/sales-tax-software-market-23983",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.361Z",
+      "textSha256": "d4201e0f7005a5def57d137f305a28c55aa1b0a399a1e03b9a5ae76f01f777e1"
+    },
+    {
+      "url": "https://www.researchandmarkets.com/reports/6184422/sales-tax-software-market-outlook-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:15.798Z",
+      "textSha256": "e3945d04fda5291c9d20f2d80cde8ada307dd710f4363979a438ac99f8381f69"
+    },
+    {
+      "url": "https://www.avalara.com/us/en/products/sales-and-use-tax/avatax.html",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:20.755Z",
+      "textSha256": "aaa4526ce73427303bb3727a3f0d8cfc25c8d768f353140e4a4d068207d9b384"
+    },
+    {
+      "url": "https://www.vatstack.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.223Z",
+      "textSha256": "c7faf7e1e1d36738a663abd8f08f87c0f6f0b30c93770f4e742c3ee8b62b5795"
+    },
+    {
+      "url": "https://www.taxjar.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.761Z",
+      "textSha256": "fc0d0dfb226eefa403815235716c5ab49114ffb8a7b19d655d99be3e3afd52e9"
+    },
+    {
+      "url": "https://www.numeral.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.393Z",
+      "textSha256": "8c4cb34a2d7b4a779836a8d85aa4e7f9864d1d410ef10e9e1fc9379c5bd7516c"
+    },
+    {
+      "url": "https://www.lemonsqueezy.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.500Z",
+      "textSha256": "c5a47b6f4f98b5aefa8f631dcf5281a820f4fbd6f097b812bee7deb314fe0bcd"
+    },
+    {
+      "url": "https://www.quaderno.io/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.755Z",
+      "textSha256": "dd6bd262b45bcb5aaf0b1f8dc0197594b3551754951978ac5ead2d6d571c6414"
+    },
+    {
+      "url": "https://zamp.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:16.624Z",
+      "textSha256": "0cb3b2ce9a7caed952c4f7b138c745be33d59605035b621a8e9f8e4c86f07285"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=43298663",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.366Z",
+      "textSha256": "64c81fcc38b64c4ad86e1ae3e7589fe33ddc404a46f9ebcc6997d659613c1fd5"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=24572775",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.013Z",
+      "textSha256": "bd2c5b7fae977b7431d35dd7f8ef24124297842bf7039d191e5cecad214198e3"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=22102719",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.256Z",
+      "textSha256": "9cbf86aa0d640b0fa7f02de33ce179ce4e53899921b8e56671b5cb40ebd475b6"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=14137603",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:17.362Z",
+      "textSha256": "10b41318118f7006276a19fb894c4d9c4f90cc3b4962477e5a30bd0a5272591a"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=30535572",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:18.177Z",
+      "textSha256": "3ff2cead4a6340e98949c96b9975a057c90179bb9b0f120e5bc75d431be1c783"
+    },
+    {
+      "url": "https://stripe.com/resources/more/digital-product-tax",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:23.183Z",
+      "textSha256": "f4c3918f3f22cc47eae8bece801d1a0bb504d44096d597ffc87d294ee9da32d8"
+    },
+    {
+      "url": "https://growthmarketreports.com/report/vat-compliance-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:23.367Z",
+      "textSha256": "2e4735bee2fec9e78f021b780ab62478ee23895cef8933ecb90865cd885dcc91"
+    },
+    {
+      "url": "https://www.custommarketinsights.com/report/sales-tax-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:23.591Z",
+      "textSha256": "e020a9e739b47992552be381df07a03046361955645516483fed4d5417e36bfa"
+    },
+    {
+      "url": "https://docs.stripe.com/payments/managed-payments/tax-compliance?…",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:22.845Z",
+      "textSha256": "d57f053d5526f345c72a73f09e7f6f0b6a5c8b67a6a9a020f1d8e3c0b707fd7f"
+    },
+    {
+      "url": "https://stripe.com/tax",
+      "roles": [
+        "market",
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:23.522Z",
+      "textSha256": "de423c2d5972a214d4d7037e63d48db7b5eba55ff94cdec3cfc1b55572503b75"
+    },
+    {
+      "url": "https://www.wiseguyreports.com/reports/tax-vat-compliance-software-market",
+      "roles": [
+        "market"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:24.395Z",
+      "textSha256": "6bb0ec7a6e0373fb6f89aba1c6d090e4e425144094aad2aa74f580c3d72a78c9"
+    },
+    {
+      "url": "https://stripe.com/tax/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.554Z",
+      "textSha256": "722eab8a19a825cf407fc521dd82abfc734217c702baef59f6d218b28f943d9d"
+    },
+    {
+      "url": "https://support.stripe.com/questions/understanding-stripe-tax-pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.540Z",
+      "textSha256": "c47c263d2e749dc626faf0739b30214aed26a25f53757a46dfd32d35baeaff83"
+    },
+    {
+      "url": "https://taxcloud.com/blog/sales-tax-compliance-software",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.244Z",
+      "textSha256": "e53aff7d5f8c98c0f733c53f04a7f86e75bd90a31eb6bb09e0dd7be9e1b37a35"
+    },
+    {
+      "url": "https://docs.stripe.com/tax/monitoring.md",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.383Z",
+      "textSha256": "bbfd316939d9009090ac52a2609075af42701c1c60e00fc3bd707471fdaf1934"
+    },
+    {
+      "url": "https://docs.stripe.com/tax",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.566Z",
+      "textSha256": "803a0dd46ce603b12dd10d8b60a0cf2821b3e78dc1f2aca273ec7c9989dc2a61"
+    },
+    {
+      "url": "https://stripe.com/pricing",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:35.918Z",
+      "textSha256": "9a2b9185a2ab4c16da56d556ef8f1584d520a3405d7a90c28b0d369c396b1a4d"
+    },
+    {
+      "url": "https://marketplace.stripe.com/apps/avalara-avatax",
+      "roles": [
+        "competitors"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:36.090Z",
+      "textSha256": "00596abd97b3d2a654efb9c2fe3a704994a399d5f88efeb78465a429ce81e1d8"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=32558191",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:51.760Z",
+      "textSha256": "897f77e01f49705b4dcc00b68342be8892f9a1b877d2e41fc64fb0e61c49596f"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=27459712",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:51.868Z",
+      "textSha256": "d264720c6a16a6786642bba3c757ea56792cfe56083ac69483728624b00885d7"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=19986501",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:50.955Z",
+      "textSha256": "e87a9634cfaed77d2f9e65a3cdb864dc9cc03474fecf291b3bf2cb810c16c283"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=33920019",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:51.756Z",
+      "textSha256": "468416cc31dedf40bc239bc2ea7212cad5c44a46330318f7f1c2bd507e12c43d"
+    },
+    {
+      "url": "https://www.reddit.com/r/microsaas/comments/1uddgsi/would_you_pay_9_for_a_stripebased_sales_tax_nexus",
+      "roles": [
+        "community"
+      ],
+      "status": "http_error",
+      "detail": "HTTP 403 for https://www.reddit.com/r/microsaas/comments/1uddgsi/would_you_pay_9_for_a_stripebased_sales_tax_nexus.json?… (Reddit blocks this network; set REDD…"
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=27459924",
+      "roles": [
+        "community"
+      ],
+      "status": "read",
+      "retrievedAt": "2026-10-04T14:47:51.928Z",
+      "textSha256": "c7fca0b678ca09d16e08162530f9a61d4f9e98865c751f536aaee35f3aff4140"
+    }
+  ],
+  "refusedCitations": [],
+  "evidence": {
+    "accepted": {
+      "community_quote": 8,
+      "market_stat": 7,
+      "competitor_price": 1,
+      "competitor_availability": 0
+    },
+    "rejected": [
+      {
+        "kind": "community_quote",
+        "reason": "span_bounds",
+        "sourceUrl": "https://news.ycombinator.com/item?id=43298663",
+        "detail": "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)"
+      },
+      {
+        "kind": "community_quote",
+        "reason": "over_cap",
+        "sourceUrl": "https://news.ycombinator.com/item?id=19986501",
+        "detail": "more than 8 accepted"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "span_not_found",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/sales-tax-software-market-23983",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "market_stat",
+        "reason": "span_not_found",
+        "sourceUrl": "https://www.marketresearchfuture.com/reports/sales-tax-software-market-23983",
+        "detail": "text is not a contiguous span of the fetched source"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.vatstack.com/pricing",
+        "detail": "source says from $15/month"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.vatstack.com/pricing",
+        "detail": "source says from $150/month"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.taxjar.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.numeral.com/pricing",
+        "detail": "\"one-time $150 registration fee per state\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "ambiguous_attribution",
+        "sourceUrl": "https://stripe.com/tax/pricing",
+        "detail": "the source is Stripe's own site (stripe.com); a vendor's own site is not evidence for Stripe Tax's price (ruling R5)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.avalara.com/us/en/products/sales-and-use-tax/avatax.html",
+        "detail": "source says from $69/month"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.vatstack.com/pricing",
+        "detail": "source says from $15/month"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.taxjar.com/pricing",
+        "detail": "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.numeral.com/pricing",
+        "detail": "\"one-time $150 registration fee per state\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "unparseable_amount",
+        "sourceUrl": "https://www.lemonsqueezy.com/pricing",
+        "detail": "\"5% + 50¢\" is not one supported price expression"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "ambiguous_attribution",
+        "sourceUrl": "https://stripe.com/tax/pricing",
+        "detail": "the source is Stripe's own site (stripe.com); a vendor's own site is not evidence for Stripe Tax's price (ruling R5)"
+      },
+      {
+        "kind": "competitor_price",
+        "reason": "qualifier_dropped",
+        "sourceUrl": "https://www.avalara.com/us/en/products/sales-and-use-tax/avatax.html",
+        "detail": "source says from $69/month"
+      }
+    ]
+  }
+}

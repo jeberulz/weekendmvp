@@ -79,35 +79,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 customized lead-magnet builder.
+Build the weekend MVP of "Customized Lead Magnets": lock in an offer, generate a different lead magnet for each visitor segment from the same landing page, host the PDFs and give the owner one script tag that serves the right one and logs which was served.
 
-Set up:
-- Clerk + Stripe ($49 one-time, $99/month, $20 analytics)
-- Supabase: offers, segments, magnets, submissions
-- react-pdf renderer
-- Embeddable form that picks a segment and returns the right PDF URL
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API for outlines and copy, @react-pdf/renderer to build the PDFs on the server. The emails collected stay in this app this weekend. Deploy on Vercel.
 
-No CRM. Push the email to Kit/Klaviyo via webhook.
+Tables (Row Level Security on, an owner reads only their own rows; the embed writes through a server route):
+- offers(id, user_id, name, landing_text, icp, transformation, locked_at)
+- segments(id, offer_id, name, hook, outline jsonb)
+- magnets(id, segment_id, title, pdf_path, created_at)
+- submissions(id, offer_id, segment_id, magnet_id, email, created_at)
+- form_views(id, segment_id, page_url, created_at)
+
+Screens: /login, /offers/new (paste the landing page and lock the offer), /offers/[id] (segments, previews and the embed code), /offers/[id]/stats.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, one-time or monthly plans, an analytics add-on, a webhook to Kit or Klaviyo, a CRM, a PDF made from a screenshot.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build Offer Lock → Segment Hooks → Ship.
-
-Requirements:
-- Refuse generation until offer, ICP, and transformation exist
-- Produce 3–5 segment variants that sell the same backend
-- Host the files; embed is a single script tag
-- Log which variant was served
-
-User flow: paste landing page → confirm offer lock → generate variants → embed.
+Build the one feature that proves Lead Magnets: the same offer, a different magnet for each kind of visitor, and proof of which one was served.
+1. Offer lock: the owner pastes the landing page text and confirms the offer, the ideal customer and the one transformation. Refuse to generate anything until all three exist, then set locked_at.
+2. Ask the Anthropic API for 3 to 5 segments as JSON { segments: [{ name, hook, outline: [{ heading, points: string[] }] }] }. Every segment sells the same backend offer. The prompt says to use only facts in the landing text and never to invent a statistic, a client or a result.
+3. Check in code that every number and name in a segment appears in the landing text. Drop any sentence that fails and show what was dropped.
+4. For each segment build a PDF on the server with @react-pdf/renderer from its outline, with a clean cover and the owner's offer on the last page. Save it to Storage and record a magnet.
+5. The embed is one script tag. It shows a short form with a segment choice (or reads a data-segment attribute), collects an email with a consent line and returns the right PDF address. Log a form view when it loads and a submission when it is used, with the segment served.
+6. /offers/[id]/stats shows opt-in rate by segment and by page for the last 7 and 30 days, flags a segment with at least 50 views and a rate under half the average, and offers Regenerate for that segment only.
+Rules: no email is stored without the consent line. Never ship a magnet with an unverified claim. Say what happens to the emails.
+Empty state: with no offers, show the paste box and what a good landing page gives it.
+Done when: generation refuses without a locked offer, a segment with an invented number is cleaned, the embed on a test page serves the right PDF for each segment and logs it, and Regenerate replaces one segment only.
 ```
 
-**3. Analytics Add-on**
+**3. Landing Page**
 
 ```text
-Add a $20/month view: opt-in rate by segment, by landing page, by last 7 / 30 days. Flag the dead variant. One-click regenerate for that segment only.
+Build a one-page landing site for Customized Lead Magnets, lead magnets that change with the visitor.
+Hero: "Give each visitor the magnet that fits them." Sub: "Paste your landing page. Get a different PDF for each kind of visitor, hosted for you, with one script tag to serve it." One button: Join the waitlist.
+Sections: one offer with three segment variants side by side, how it works in three steps (lock your offer, generate segment magnets, embed and read the stats), and an FAQ on how claims are kept honest (only your own text), where the emails go and which email tools connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one coral accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Customized Lead Magnets: pick a short working name, then design a wordmark and an icon that suggest a magnet whose two arms point at different pages.
+Colors: off-white, near-black and one coral. Type: Geist.
+Deliverables: wordmark, icon, a segment tag style (role, tool, pain) that differs by shape as well as color, a PDF cover layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the segment tags are distinguishable without color.
 ```
 
 ## Sources

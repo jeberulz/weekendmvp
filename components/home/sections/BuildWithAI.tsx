@@ -69,14 +69,14 @@ function PeekCard({ tool, n, title, className }: { tool: ToolKey; n: number; tit
 }
 
 /** 05 · Works with the AI you already use, plus this week's prompts. */
-export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, number>; idea: SpotlightIdea }) {
+export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, number>; idea: SpotlightIdea | null }) {
   const tiles: Tile[] = TILES.map((t) => ({
     key: t.key,
     href: `/build-with/${t.hub}`,
     name: t.key === "no-code" ? "No-code tools" : TOOL_NAME[t.key],
     count: t.countKey ? (toolCounts[t.countKey] ?? 0) : null,
   }));
-  const [first, second, third] = idea.prompts;
+  const [first, second, third] = idea?.prompts ?? [];
   return (
     <section aria-labelledby="home-ai-title" data-scene="ai" className="bg-home-paper py-14 lg:py-24">
       <Container className="flex flex-col gap-7 lg:gap-12">
@@ -100,7 +100,7 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
           ))}
         </ul>
 
-        {first && (
+        {first && idea && (
           <div data-m="panel" className="mt-2 flex flex-col gap-5 rounded-3xl bg-home-ink px-5 pb-6 pt-8 lg:relative lg:mt-4 lg:block lg:h-[620px] lg:overflow-hidden lg:rounded-[32px] lg:p-0">
             <div data-m="copy" className="flex flex-col gap-5 lg:absolute lg:left-16 lg:top-[72px] lg:w-[400px] lg:gap-6">
               <Eyebrow dark>This week&rsquo;s prompts</Eyebrow>

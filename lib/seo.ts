@@ -81,11 +81,16 @@ export function breadcrumbSchema(items: BreadcrumbItem[]) {
         position: i + 1,
         name: item.label,
       };
-      // Schema.org convention: omit `item` on the final crumb.
+      // Nest name inside `item` — bare URL strings show as "Unnamed item"
+      // in Google's rich-result sample (GSC Sep 2026).
       if (item.href !== undefined) {
-        entry.item = item.href.startsWith("http")
+        const url = item.href.startsWith("http")
           ? item.href
           : `${SITE}${item.href.startsWith("/") ? item.href : `/${item.href}`}`;
+        entry.item = {
+          "@id": url,
+          name: item.label,
+        };
       }
       return entry;
     }),

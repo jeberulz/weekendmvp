@@ -92,77 +92,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 app (App Router) for an AI Agency Automation Control Panel called ClientStack.
+Build the weekend MVP of "ClientStack": one dashboard where an automation agency sees every client's workflow health.
 
-The app needs:
-- Landing page with hero, pricing tiers ($50 trial, $250 Pro, $499 Agency), and email capture for free guide
-- Agency dashboard (protected): client list with health status badges, unified execution feed, error alerts panel
-- Client portal (read-only, subdomain or /portal/[clientId]): uptime stats, execution volume chart, latest ROI report
-- Settings page: connect Make, n8n, or Zapier via OAuth; map clients to platform workspace IDs
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Realtime, Auth with email magic link), the n8n API for executions. Deploy on Vercel.
+Platforms: n8n first, with an API key per client. Make and Zapier come later.
 
-Use Tailwind CSS. Auth via Clerk or NextAuth with agency-scoped roles (owner, member, client-viewer).
-Database: Supabase with RLS policies isolating data by agency_id.
+Tables (Row Level Security on, each agency reads only its own rows):
+- agencies(id, user_id, name, logo_url, primary_color)
+- clients(id, agency_id, name, n8n_base_url, n8n_api_key_encrypted)
+- executions(id, client_id, workflow_name, status, started_at, duration_ms, error_message)  where status is success or error
+- alerts(id, client_id, kind, created_at)
+
+Screens: /login, /clients (health badges), /feed (execution feed).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ENCRYPTION_KEY.
+
+Do not build: billing or plans, Make or Zapier connections, template deploys, ROI reports, a client portal, roles beyond the one agency owner.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Platform Integration**
+**2. Core Feature**
 
 ```text
-Build a unified execution ingestion service for Make, n8n, and Zapier.
-
-Requirements:
-1. OAuth flow for each platform — store refresh tokens encrypted in Supabase
-2. Webhook endpoint POST /api/webhooks/[platform] — validate signature, normalize payload to:
-   { clientId, platform, scenarioName, status: "success"|"error", timestamp, errorMessage?, durationMs? }
-3. Polling fallback: cron job every 5 minutes fetches recent executions from each platform API
-4. Insert normalized events into executions table; trigger real-time update via Supabase Realtime
-5. Error events increment client error_count; if error_rate > 5% in 24h, create alert record
-
-Make API: GET /scenarios, GET /logs. n8n API: GET /executions. Zapier: polling via Zap history API.
-Handle rate limits with exponential backoff per platform.
+Build the one feature that proves ClientStack: a unified execution feed with a health status per client.
+1. A client form saves the n8n base URL and API key (encrypted at rest).
+2. A scheduled job every 5 minutes calls GET /executions for each client, normalizes each one to { client_id, workflow_name, status, started_at, duration_ms, error_message } and inserts it into executions, skipping ones already stored. Back off on rate limits.
+3. /feed lists executions across all clients, newest first, and updates live through Realtime.
+4. /clients shows a green, yellow or red badge per client from the error rate over the last 24 hours: green under 2%, yellow 2 to 5%, red above 5%. A client that goes red writes one row to alerts.
+Empty state: with no clients, show the add-client form and a one-line n8n API key hint.
+Done when: connecting a test n8n instance fills the feed within 5 minutes, and forcing failed executions turns that client red and writes an alert.
 ```
 
-**3. ROI Report Generator**
+**3. Landing Page**
 
 ```text
-Build a monthly ROI report generator for agency clients.
-
-Input (JSON per client, last 30 days):
-- totalExecutions, successfulExecutions, errorCount, uptimePercent
-- topScenarios: [{ name, runCount, avgDurationMs }]
-- estimatedHoursSaved (calculated: executions × avg manual time per task type)
-- agencyBranding: { logoUrl, primaryColor, agencyName }
-
-Process:
-1. Call Claude API with structured prompt:
-   "Write a 3-paragraph client-facing ROI summary. Tone: professional, confident, data-driven.
-    Paragraph 1: headline wins (executions, uptime). Paragraph 2: top automations and impact.
-    Paragraph 3: recommendation for next month. Do not invent numbers not in the input."
-2. Render PDF with React-PDF: agency logo header, client name, stats cards, AI narrative, scenario breakdown table
-3. Store PDF in Supabase Storage; email download link to client contact via Resend
-4. Schedule via Vercel Cron: run on 1st of each month for all active clients
-
-Include churn-risk flag: if totalExecutions dropped >30% vs prior month, add agency alert (not client-facing).
+Build a one-page landing site for ClientStack, an operations dashboard for AI automation agencies.
+Hero: "Every client's automations, one screen." Sub: "See which workflows are healthy, which broke and for whom, before the client emails you." One button: Join the waitlist.
+Sections: the problem (agencies find out a client's automation broke when the client does), how it works in five steps (connect platforms, monitor the portfolio, deploy templates, prove ROI, retain clients), and a mock portfolio with green, yellow and red clients.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical and plain, written for an agency owner.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Template Deploy**
+**4. Branding Package**
 
 ```text
-Build a template deployment flow for agency automation patterns.
-
-Data model:
-- templates table: { id, agencyId, name, description, platform: "make"|"n8n"|"zapier", templateJson, version }
-- templateJson stores the exportable scenario/workflow definition per platform format
-
-Deploy flow:
-1. Agency selects template + target client from dashboard
-2. System loads client's platform OAuth token for the template's platform
-3. Make: POST /scenarios with blueprint JSON, activate scenario
-4. n8n: POST /workflows with workflow JSON, activate workflow
-5. Zapier: guide agency through manual clone (Zapier lacks full programmatic create) OR use Zapier CLI if available
-6. Record deployment: { templateId, clientId, deployedScenarioId, deployedAt, status }
-7. Show deployment status in client detail view; link to scenario in native platform UI
-
-Start with 3 templates: Lead Capture to CRM, Invoice Payment Reminder, Slack Alert on Form Submit.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ClientStack: a wordmark and an icon that suggest a stack of client tiles.
+Colors: a near-black, white, and green, yellow and red used only for health status. Type: one clean sans for the interface and a mono for workflow names.
+Deliverables: wordmark, icon, three status badge designs, and one launch graphic of a portfolio of clients.
+Done when: each deliverable is saved in one folder and the three badges are distinguishable without color.
 ```
 
 ## Sources

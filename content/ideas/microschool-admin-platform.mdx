@@ -78,19 +78,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js TypeScript SaaS for microschool administration. Use Convex or Supabase for schools, staff, students, guardians, enrollment_documents, attendance_events, tuition_invoices, family_updates, and compliance_tasks. Enforce school_id on every record. Add staff roles for director, teacher, and read-only assistant; parent magic links must only expose that family's records. Include Stripe subscription fields, private file storage, audit timestamps, and seeded demo data for one 20-student microschool.
+Build the weekend MVP of the "Microschool Admin Platform": a director imports a roster, teachers take attendance on a phone, and a weekly family update is drafted from the notes a teacher chose to share. This holds children's records, so every row belongs to one school and parents never log in.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for staff only), the Anthropic API to draft updates, Resend to send them. Deploy on Vercel.
+
+Tables (Row Level Security on; staff read only rows with their school_id):
+- schools(id, name, state, created_by)
+- staff(id, school_id, user_id, role)  role is director, teacher or assistant; an assistant is read-only
+- students(id, school_id, first_name, last_name, guardian_email, grade, enrolled_on)
+- attendance_events(id, school_id, student_id, on_date, status, note, note_shareable boolean)  status is present, absent, late or excused
+- family_updates(id, school_id, student_id, week_start, draft jsonb, status, sent_at)  status is draft, approved or sent
+- compliance_tasks(id, school_id, student_id, kind, done_at)  kind is guardian_consent, emergency_contact, medical_note or state_document
+
+Screens: /login, /roster (mobile attendance), /import, /updates (drafts beside their source notes), /compliance.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY.
+
+Do not build: billing, tuition or reminders, parent accounts or portals, document storage, PDF reports, a compliance rules engine for any state.
+Done when: npm run dev starts, a director can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Attendance and Family Update Workflow**
+**2. Core Feature**
 
 ```text
-Build a mobile-first attendance flow for a microschool roster. A teacher can mark present, absent, late, or excused and add a short private note. At the end of the week, generate a draft family update only from notes explicitly marked shareable. Return structured JSON with summary, wins, next_steps, and source_note_ids. Never invent student progress. Show the draft beside source notes and require a teacher click before sending through Resend.
+Build the one feature that proves the Microschool Admin Platform: a teacher keeps notes private by default and a parent only hears what the teacher approved.
+1. Import a CSV with columns student_name, guardian_email, grade, enrollment_date. Show a preview of how the columns map, mark duplicate students, validate required fields and import only after the director confirms.
+2. After the import, create compliance_tasks for each student for guardian consent, emergency contact, medical note and state documents. The app does not know any state's rules: the director types in the state document names for the school.
+3. /roster is mobile first. A teacher taps present, absent, late or excused for each student and can add a short note. Notes are private unless the teacher ticks Shareable.
+4. At week's end, for each student with at least one shareable note, send the student's first name and those notes to the Anthropic API with a strict JSON schema { summary, wins: string[], next_steps: string[], source_note_ids: string[] }. Check in code that every source_note_id belongs to that student and that week; otherwise reject the draft.
+5. /updates shows each draft beside its source notes. The teacher can edit and must press Approve and Send. Only then does Resend email the guardian, and the row becomes sent with sent_at.
+6. Export the compliance checklist as CSV.
+Rules: the model never sees a last name, a guardian email or a private note. Never invent progress. An assistant cannot edit or send. Every query is filtered by school_id.
+Empty state: with no students, show the import box and the CSV columns.
+Done when: a 20-student sample imports with duplicates flagged, a private note never appears in any draft, a draft cites only note ids from its own student, nothing is emailed before Approve and Send, and a staff member of another school cannot read any row.
 ```
 
-**3. Roster Migration and Compliance Checklist**
+**3. Landing Page**
 
 ```text
-Build an import wizard that accepts CSV columns such as student_name, guardian_email, grade, enrollment_date, tuition_plan, and attendance_status. Preview the mapping, detect duplicate students, validate required fields, and import only after confirmation. After import, create a school-specific checklist for missing guardian consent, emergency contact, medical note, and required state documents. Provide exportable CSV and PDF reports.
+Build a one-page landing site for the Microschool Admin Platform, a calm control panel for small schools.
+Hero: "Run your microschool without a district's paperwork." Sub: "Import your roster, take attendance on your phone and send families a weekly update from the notes you chose to share." One button: Join the waitlist.
+Sections: a sample roster on a phone, a sample weekly update next to its source notes, how it works in four steps (import, take attendance, review the draft, send), and an FAQ on children's data (what is stored, who sees it, that parents receive email only and never log in, and how to delete a school's records) and why nothing is sent without your click.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm paper background, one deep green accent, a calm voice that assumes the reader is a teacher first.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Microschool Admin Platform: pick a short working name, then design a wordmark and an icon that suggest a small schoolhouse made of three simple shapes.
+Colors: warm paper, deep green and one soft yellow. Type: Geist.
+Deliverables: wordmark, icon, four attendance chips (present, absent, late, excused) that differ by shape and letter as well as color, a weekly update email header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the attendance chips are distinguishable without color.
 ```
 
 ## Sources

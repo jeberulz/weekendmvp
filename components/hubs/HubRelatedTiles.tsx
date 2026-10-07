@@ -1,15 +1,12 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { Container } from "@/components/home/ui";
 import { cn } from "@/lib/utils";
 
 /**
- * "Browse other X" tile grid extracted from /ideas-for/[audience],
- * /solve/[problem], /build-with/[tool], and /ideas/[slug]/collection
- * which previously inlined this markup four times.
- *
- * Each tile renders an icon + label inside a cream-on-dark tile linking
- * to the sibling hub. The "All ideas" trailing tile is opt-in via
+ * "Browse other X" tile grid: an icon and a serif label on a paper card,
+ * linking to the sibling hub. The "All ideas" trailing tile is opt-in via
  * `allHref` + `allLabel`.
  */
 
@@ -22,6 +19,7 @@ export type HubRelatedTile = {
     className?: string;
     "aria-hidden"?: boolean | "true" | "false";
   }>;
+  /** Kept for callers that still pass a colour; tiles draw in ink. */
   iconClassName?: string;
 };
 
@@ -35,19 +33,16 @@ type HubRelatedTilesProps = {
   /** Optional trailing "all" tile (e.g. /startup-ideas). */
   allHref?: string;
   allLabel?: string;
-  /**
-   * Tailwind cols class for the lg breakpoint. Defaults to lg:grid-cols-6
-   * (matches /ideas-for). /solve uses 5, /build-with uses 5, collection uses 4.
-   */
+  /** Tailwind cols class for the lg breakpoint. Defaults to lg:grid-cols-6. */
   columnsLgClassName?: string;
   className?: string;
 };
 
 const TILE =
-  "group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center";
+  "group flex h-full flex-col gap-3 rounded-2xl border border-home-rule bg-home-card p-4 text-home-ink transition-colors duration-200 hover:border-home-ink motion-reduce:transition-none " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-const TILE_LABEL =
-  "text-white text-sm font-medium group-hover:text-neutral-200 transition-colors";
+const TILE_LABEL = "font-editorial text-lg leading-[1.15]";
 
 export function HubRelatedTiles({
   title,
@@ -60,39 +55,33 @@ export function HubRelatedTiles({
 }: HubRelatedTilesProps) {
   const id = headingId ?? "hub-related-tiles-heading";
   return (
-    <section
-      className={cn("mt-24", className)}
-      aria-labelledby={id}
-    >
-      <h2 id={id} className="text-2xl font-medium text-white mb-8">
-        {title}
-      </h2>
-      <div
-        className={cn(
-          "grid grid-cols-2 md:grid-cols-3 gap-4",
-          columnsLgClassName,
-        )}
-      >
-        {items.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link key={item.slug} href={item.href} className={TILE}>
-              <Icon
-                size={24}
-                className={cn("mb-2 mx-auto", item.iconClassName)}
-                aria-hidden="true"
-              />
-              <p className={TILE_LABEL}>{item.label}</p>
-            </Link>
-          );
-        })}
-        {allHref ? (
-          <Link href={allHref} className={TILE}>
-            <AllIcon />
-            <p className={TILE_LABEL}>{allLabel}</p>
-          </Link>
-        ) : null}
-      </div>
+    <section className={cn("py-14 lg:py-20", className)} aria-labelledby={id}>
+      <Container className="flex flex-col gap-6">
+        <h2 id={id} className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3 md:text-xs">
+          {title}
+        </h2>
+        <ul className={cn("grid grid-cols-2 gap-3 md:grid-cols-3", columnsLgClassName)}>
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.slug}>
+                <Link href={item.href} className={TILE}>
+                  <Icon size={24} aria-hidden="true" />
+                  <span className={TILE_LABEL}>{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+          {allHref ? (
+            <li>
+              <Link href={allHref} className={TILE}>
+                <AllIcon />
+                <span className={TILE_LABEL}>{allLabel}</span>
+              </Link>
+            </li>
+          ) : null}
+        </ul>
+      </Container>
     </section>
   );
 }
@@ -106,10 +95,9 @@ function AllIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-neutral-400 mb-2 mx-auto"
       aria-hidden="true"
     >
       <rect x="3" y="3" width="7" height="7" />

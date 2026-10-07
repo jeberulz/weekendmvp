@@ -82,25 +82,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 + TypeScript project for “TrendScout” with Tailwind and shadcn/ui. Set up Supabase with tables: creators (id, niche_tags[], follower_band), sounds (id, name, usage_count_ts, velocity_score), trend_scores (sound_id, niche, predicted_peak_at, confidence), alerts (creator_id, trend_id, channel, sent_at), post_outcomes (creator_id, trend_id, views, engagement_rate). Add Clerk auth with org support for Agency tier, Stripe subscriptions at $29 Creator and $99 Agency, and env vars for OpenAI, Resend, and a Python worker webhook secret. Enable RLS on all user-owned rows.
+Build the weekend MVP of "TrendScout": a creator tracks the daily usage of sounds they are watching, the app flags the ones that are speeding up and writes hooks for their niche, and later shows how often the flags paid off. It does not claim to predict a peak.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for hook scripts. Usage counts are pasted in or uploaded as a CSV that the creator copies from a public trends page by hand; the app does not scrape anything. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, niche_tags text[], follower_band, velocity_threshold)
+- sounds(id, user_id, name, usage_series jsonb, added_at)
+- trend_scores(id, sound_id, velocity, acceleration, confidence, flagged boolean, computed_at)
+- hook_sets(id, sound_id, hooks jsonb, created_at)
+- post_outcomes(id, user_id, sound_id, posted_at, views, engagement_rate)
+
+Screens: /login, /sounds (add or upload a series), /feed (flagged sounds with hooks), /outcomes (what you posted and how it did).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an agency tier, scraping or any platform connection, push or email alerts, a Python worker, an organization model, a confidence claim about when a trend will peak.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the trend scoring pipeline. (1) Nightly cron ingests public TikTok sound/hashtag metrics into sounds table with time-series JSONB. (2) Compute velocity = delta usage over 24h / baseline; flag sounds crossing niche-specific thresholds. (3) For each flagged sound, call LLM with niche + example creators to output 3 hook scripts and a recommended posting window. (4) Dashboard feed: filterable cards showing trend name, confidence %, niche match, hooks, and “similar creators gaining” list. (5) Alert worker sends email/push when confidence > 0.7 for paid users. Include manual “I posted this” button to log outcomes.
+Build the one feature that proves TrendScout: an honest speed signal, hooks that do not invent facts, and a record of whether the signal helped.
+1. Adding a sound takes a name and a daily series of date and usage count, at least 7 days. Save it as usage_series.
+2. Compute in code: velocity as the usage today minus the usage 3 days ago, over the larger of the usage 3 days ago and 1; acceleration as the change in daily growth over the last 3 days. Unit test both with fixtures including a flat series, a steady climb and a spike that falls.
+3. Flag a sound when velocity is above the creator's velocity_threshold and acceleration is positive. Confidence rises with the length of the series and falls with day-to-day noise, and the formula is shown on the page.
+4. For a flagged sound, ask the Anthropic API for 3 hook scripts for the creator's niche as JSON { hooks: [{ text, why }] }. The prompt gives only the sound name, the niche and the computed numbers, and forbids claims about how popular the sound is beyond those numbers. Check in code that any number in a hook appears in the input.
+5. The feed lists flagged sounds with the numbers, the hooks and the line "Post soon, within about a day. This is a speed signal, not a prediction of the peak."
+6. An "I posted this" button logs the date. Later the creator enters views and engagement rate. /outcomes shows, over all flagged sounds the creator posted, how many beat their own median views, with the counts.
+Rules: never say a trend will peak at a time. Never scrape. Say plainly when there are too few outcomes to judge the signal.
+Empty state: with no sounds, show the series format and a sample file.
+Done when: the velocity tests pass, a climbing series is flagged and a flat one is not, a hook with an invented number is rejected, and the outcomes page shows the hit rate with its sample size.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing site for TrendScout. Hero: “Post TikTok trends 48 hours before everyone else.” Sections: the FYP-scroll problem, live demo of trend feed (mock data), case study block (“+38% avg engagement in beta”), comparison vs native analytics / Trend Hunter / Later, pricing Creator $29 / Agency $99, FAQ on data sources and TikTok compliance, email capture for free niche quiz lead magnet. Palette: ink #0F1115, paper #FCFAF7, mint accent #7FDBCA for trend sparklines. Voice: creator-native, punchy, no corporate wellness tone.
+Build a one-page landing site for TrendScout, a speed signal for sounds that are climbing, for TikTok creators.
+Hero: "Spot a sound while it is still climbing." Sub: "Track the sounds you watch. We flag the ones that are speeding up, write hooks for your niche and keep score of whether the flags helped." One button: Join the waitlist.
+Sections: a sample feed card with a velocity number and three hooks, how it works in four steps (track, flag, hook, post and score), and an FAQ on where the numbers come from (you bring them, nothing is scraped), why it does not promise a peak time and how it measures whether it works for you.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background (#FCFAF7), ink type, one mint accent for rising lines. A punchy, creator-native voice.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Branding for TrendScout: radar/sonar mark readable at 16px. Colors — ink #0F1115, paper #FCFAF7, mint #7FDBCA (rising trends), coral #FF6B6B (peak warning). Typography: Geist Sans UI, Geist Mono for velocity scores. Deliverables: favicon, empty-state illustration (“scanning 12,847 sounds…”), alert notification mockup, agency PDF brief cover, TikTok-style launch carousel template (1080×1920).
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TrendScout: a wordmark and a radar or sonar mark that stays readable at 16 pixels.
+Colors: ink (#0F1115), paper (#FCFAF7), mint (#7FDBCA) for rising and coral (#FF6B6B) for a fading signal. Type: Geist for the interface, Geist Mono for velocity scores.
+Deliverables: favicon, an empty-state illustration, a flagged-sound card, two signal chips (rising, fading) that differ by shape as well as color, and a 1080 by 1920 launch carousel template.
+Done when: each deliverable is saved in one folder and the two signal chips are distinguishable without color.
 ```
 
 ## Sources

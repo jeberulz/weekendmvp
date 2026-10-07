@@ -9,14 +9,24 @@ import { Calendar } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
+import { Container, Em, buttonClass } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { Breadcrumbs } from "@/components/public/PageHeader";
+import { InkBand, SectionHeading } from "@/components/public/Sections";
+import type { PublicIdea } from "@/components/public/types";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { onlyPublicIdeas } from "@/lib/public/library";
+import { hasOgArt, liveIdeas, ogArtPath, publishOrder } from "@/lib/home/library";
+import type { ManifestIdea as HomeManifestIdea } from "@/lib/home/types";
+import { toPublicIdea } from "@/lib/public/ideas";
+import { cn } from "@/lib/utils";
 import {
   CATEGORY_META,
   categoryName,
   humanizeSlug,
   normalizeCategorySlug,
+  toolName,
 } from "@/components/ideas/idea-meta";
 import {
   SITE,
@@ -28,11 +38,12 @@ import {
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
-import { StartupIdeasGate } from "./StartupIdeasGate";
+import { StartupIdeasTeaser } from "./StartupIdeasGate";
+import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import {
   IdeasExplorer,
   type CategoryFilter,
-  type IdeaCardData,
+  type ExplorerIdea,
 } from "./IdeasExplorer";
 
 const CONTENT_DIR = "content/ideas";
@@ -74,6 +85,23 @@ export const metadata: Metadata = {
 
 type IdeaDoc = Doc<"ideas">;
 
+/** One idea as the loaders resolve it (also the ItemList schema source). */
+type IdeaCardData = {
+  slug: string;
+  title: string;
+  description: string;
+  /** null on the MDX build-time fallback path (no Convex metadata). */
+  category: string | null;
+  /** Legacy humanized label, e.g. "Developer Tools", "Ai Tools". */
+  categoryLabel: string | null;
+  /** "deep" → Deep Research, anything else → Quick Idea. */
+  researchLevel: string | null;
+  buildTime: string | null;
+  /** Publish timestamp (ms) — drives the newest/oldest sort. 0 on the MDX
+   *  fallback, where the sort control is hidden anyway. */
+  publishedAt: number;
+};
+
 type StartupIdeasData = {
   /** Which path produced the grid: Convex (full metadata) or MDX fallback. */
   source: "convex" | "mdx";
@@ -81,6 +109,8 @@ type StartupIdeasData = {
   filters: CategoryFilter[];
   /** Per-idea applicationCategory for the ItemList schema (Convex only). */
   applicationCategories: Record<string, string>;
+  /** Convex rows behind the list (scores, tools, art); empty on the MDX path. */
+  docs: IdeaDoc[];
 };
 
 function stripMd(text: string): string {
@@ -168,15 +198,9 @@ async function buildFilters(ideas: IdeaCardData[]): Promise<CategoryFilter[]> {
     }));
 }
 
-type ManifestIdea = {
-  slug: string;
-  title: string;
-  description?: string;
-  category?: string;
+type ManifestIdea = HomeManifestIdea & {
   researchLevel?: string;
-  buildTime?: string;
   applicationCategory?: string;
-  publishedAt?: string;
 };
 
 /** Manifest metadata — fills Convex gaps so newly published MDX ideas
@@ -258,7 +282,8 @@ async function loadFromMdx(publications: PublicOverlay): Promise<StartupIdeasDat
       };
     }),
   );
-  const visible = applyPublicOverlay(ideas, publications);
+  // WP56: list only the public library (homepage rule), never stale Convex rows.
+  const visible = await onlyPublicIdeas(applyPublicOverlay(ideas, publications));
   const filters = await buildFilters(visible);
   const applicationCategories: Record<string, string> = {};
   for (const idea of readManifestIdeas()) {
@@ -271,6 +296,7 @@ async function loadFromMdx(publications: PublicOverlay): Promise<StartupIdeasDat
     ideas: visible,
     filters,
     applicationCategories,
+    docs: [],
   };
 }
 
@@ -321,9 +347,89 @@ async function loadStartupIdeas(publications: PublicOverlay): Promise<StartupIde
     }
   }
 
-  const visible = applyPublicOverlay(ideas, publications);
+  // WP56: list only the public library (homepage rule), never stale Convex rows.
+  const visible = await onlyPublicIdeas(applyPublicOverlay(ideas, publications));
   const filters = await buildFilters(visible);
-  return { source: "convex", ideas: visible, filters, applicationCategories };
+  return { source: "convex", ideas: visible, filters, applicationCategories, docs: rows };
+}
+
+/* ------------------------------------------------------------------ */
+/* Public list shape (WP56 kit)                                        */
+/* ------------------------------------------------------------------ */
+
+type ManifestPublic = { idea: HomeManifestIdea; no: number };
+
+/** N° + art for ideas Convex doesn't have yet, numbered the way
+ *  lib/public/ideas.ts numbers them (live manifest, publish order). */
+function manifestPublicLookup(): Map<string, ManifestPublic> {
+  return new Map(
+    publishOrder(liveIdeas(readManifestIdeas())).map((idea, i) => [
+      idea.slug,
+      { idea, no: i + 1 },
+    ]),
+  );
+}
+
+function manifestScores(scores: HomeManifestIdea["scores"]): PublicIdea["scores"] {
+  if (!scores) return null;
+  const { opportunity, pain, timing, builder_confidence } = scores;
+  if (
+    opportunity === undefined ||
+    pain === undefined ||
+    timing === undefined ||
+    builder_confidence === undefined
+  ) {
+    return null;
+  }
+  return { opportunity, pain, timing, builder_confidence };
+}
+
+/** Scores, tools, N° and art from the manifest entry (when there is one). */
+function publicFromManifest(slug: string, entry: ManifestPublic | undefined): PublicIdea {
+  const scores = manifestScores(entry?.idea.scores);
+  return {
+    slug,
+    title: "",
+    description: "",
+    category: "",
+    categoryName: "",
+    buildTime: 0,
+    revenueGoal: entry?.idea.revenueGoal ?? "",
+    tools: (entry?.idea.tools ?? []).slice(0, 3).map(toolName),
+    scores,
+    score: scores
+      ? Math.round(
+          ((scores.opportunity + scores.pain + scores.timing + scores.builder_confidence) / 4) * 10,
+        ) / 10
+      : null,
+    libraryNo: entry?.no ?? null,
+    art: entry && hasOgArt(entry.idea) ? ogArtPath(slug) : null,
+  };
+}
+
+/**
+ * The resolved ideas as the kit's cards/rows draw them. Convex rows go
+ * through toPublicIdea; the loaders' resolved title, description, category
+ * and build time (publication overlay included) always win, so the list
+ * shows exactly what the grid showed before.
+ */
+function toExplorerIdeas(data: StartupIdeasData): ExplorerIdea[] {
+  const docs = new Map(data.docs.map((doc) => [doc.slug, doc]));
+  const manifest = manifestPublicLookup();
+  return data.ideas.map((card) => {
+    const doc = docs.get(card.slug);
+    const base = doc ? toPublicIdea(doc) : publicFromManifest(card.slug, manifest.get(card.slug));
+    const category = card.category ?? "";
+    return {
+      ...base,
+      title: card.title,
+      description: card.description,
+      category,
+      categoryName: category ? categoryName(category) : "",
+      buildTime: Number(card.buildTime) || 0,
+      publishedAt: card.publishedAt,
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -397,72 +503,98 @@ function buildSchema(data: StartupIdeasData) {
 
 export default async function StartupIdeasPage() {
   await connection();
+  if (!(await currentIdeaMemberToken())) return <StartupIdeasTeaser />;
   // This read is authoritative even when the public ideas projection is down.
   const publications = await fetchQuery(api.editorial.public.listing, {});
   return <StartupIdeasContent publications={publications} />;
 }
 
+const CONSULT_URL = "https://cal.com/switchtoux/mvp-sprint";
+
 async function StartupIdeasContent({ publications }: { publications: PublicOverlay }) {
   const data = await loadStartupIdeas(publications);
   const schema = buildSchema(data);
+  const ideas = toExplorerIdeas(data);
+  const total = data.ideas.length;
 
   return (
     <>
       <JsonLd schema={schema} />
 
-      {/* Ideas content is server-rendered visible by default (SEO); the
-          gate swap happens client-side after hydration, like gate.js. */}
-      <StartupIdeasGate>
-        <section className="relative z-10">
-          <div className="pt-32 pb-16 px-6">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
-                <div>
-                  <h1 className="text-3xl md:text-5xl font-medium text-white tracking-tight mb-4">
-                    Startup Ideas
-                  </h1>
-                  <p className="text-lg text-neutral-400 font-light max-w-xl">
-                    Research-backed ideas you can build this weekend. Click any
-                    idea to see the full breakdown.
-                  </p>
-                </div>
-                <NavExternalLink
-                  href="https://cal.com/switchtoux/mvp-sprint"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <Calendar size={16} aria-hidden="true" />
-                  Want me to build one?
-                </NavExternalLink>
-              </div>
-
-              <IdeasExplorer
-                ideas={data.ideas}
-                filters={data.filters}
-                showFilters={data.filters.length > 0}
+      <>
+        <header className="relative overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="home-dots absolute inset-0 opacity-60 [mask-image:linear-gradient(#000_40%,transparent)]"
+          />
+          <Container className="relative flex flex-col gap-7 pt-28 md:pt-36 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex max-w-[860px] flex-col gap-5">
+              <Breadcrumbs
+                items={[{ label: "Home", href: "/" }, { label: "Startup Ideas" }]}
               />
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <section className="py-24 border-t border-white/5 mt-16">
-            <div className="max-w-4xl mx-auto px-6 text-center">
-              <h2 className="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
-                Want me to build one of these for you?
-              </h2>
-              <p className="text-lg text-neutral-400 font-light mb-8 max-w-xl mx-auto">
-                Book a consult and let&apos;s turn one of these ideas into your
-                MVP.
+              <div className="flex flex-wrap items-end gap-x-8 gap-y-2">
+                {/* The count, as the homepage library draws it. Decorative:
+                    the result line below says it in words. */}
+                {total > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    className="font-editorial text-[120px] font-normal leading-[0.8] tracking-[-0.04em] text-home-ink md:text-[200px]"
+                  >
+                    {total}
+                  </span>
+                ) : null}
+                <h1 className="max-w-[520px] pb-2 font-editorial text-[40px] font-normal leading-[1.02] tracking-[-0.02em] text-balance text-home-ink md:text-[52px]">
+                  Startup Ideas <Em>sized for a weekend.</Em>
+                </h1>
+              </div>
+              <p className="max-w-[620px] text-pretty text-base leading-[1.55] text-home-ink-2 md:text-[19px]">
+                Research-backed ideas you can build this weekend. Click any
+                idea to see the full breakdown.
               </p>
-              <NavExternalLink
-                href="https://cal.com/switchtoux/mvp-sprint"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all"
-              >
-                <span>Book a Consult</span>
-              </NavExternalLink>
             </div>
-          </section>
-        </section>
-      </StartupIdeasGate>
+            <NavExternalLink
+              href={CONSULT_URL}
+              className={buttonClass(
+                "secondary",
+                "shrink-0 self-start bg-home-card font-medium duration-150 ease-out motion-reduce:transition-none lg:self-auto",
+              )}
+            >
+              <Calendar size={18} strokeWidth={1.75} aria-hidden="true" />
+              Want me to build one?
+            </NavExternalLink>
+          </Container>
+        </header>
+
+        <Container>
+          <IdeasExplorer
+            ideas={ideas}
+            filters={data.filters}
+            showFilters={data.filters.length > 0}
+          />
+        </Container>
+
+        {/* CTA Section */}
+        <InkBand inset labelledBy="build-one-heading" className="pt-0 pb-16 lg:pt-0 lg:pb-24">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <SectionHeading
+              id="build-one-heading"
+              dark
+              intro="Book a consult and let's turn one of these ideas into your MVP."
+            >
+              Want me to build <Em dark>one of these for you?</Em>
+            </SectionHeading>
+            <NavExternalLink
+              href={CONSULT_URL}
+              className={cn(
+                buttonClass("dark", "w-full shrink-0 lg:w-auto"),
+                "duration-150 ease-out focus-visible:outline-home-orange-light motion-reduce:transition-none",
+              )}
+            >
+              Book a Consult
+            </NavExternalLink>
+          </div>
+        </InkBand>
+      </>
     </>
   );
 }

@@ -6,8 +6,8 @@ import { internalAction } from "./_generated/server";
  *
  * Scheduled (runAfter(0)) from the content upsert mutations in ideas.ts,
  * articles.ts, and newsletter.ts. POSTs to
- * `${SITE_URL}/api/revalidate?tag=<tag>&secret=<REVALIDATE_SECRET>` for each
- * tag.
+ * `${SITE_URL}/api/revalidate?tag=<tag>` for each tag, with the shared secret
+ * in a request header so URL and access logs do not retain it.
  *
  * Failure policy: revalidation must never fail the originating mutation, so
  * every fetch is wrapped in try/catch and errors are only logged. If
@@ -35,9 +35,12 @@ export const run = internalAction({
     // Canonical host is www (docs/wp/RULINGS.md WP10); apex 308s to www.
     const base = process.env.SITE_URL ?? "https://www.weekendmvp.app";
     for (const tag of tags) {
-      const url = `${base}/api/revalidate?tag=${encodeURIComponent(tag)}&secret=${encodeURIComponent(secret)}`;
+      const url = `${base}/api/revalidate?tag=${encodeURIComponent(tag)}`;
       try {
-        const res = await fetch(url, { method: "POST" });
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "x-weekendmvp-revalidate-secret": secret },
+        });
         if (!res.ok) {
           console.warn(`revalidate: ${tag} -> HTTP ${res.status}`);
         }

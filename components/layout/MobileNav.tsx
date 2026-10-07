@@ -16,6 +16,7 @@ import {
 import { IconButton } from "@/components/primitives/IconButton";
 import { Logo } from "@/components/primitives/Logo";
 import { NavAuthLinks } from "@/components/layout/NavAuthLinks";
+import { newsreaderEditorial } from "@/lib/fonts";
 
 type MobileLink = { label: string; href: string; emphasis?: boolean };
 type MobileGroup = { heading?: string; links: MobileLink[] };
@@ -101,8 +102,8 @@ const BOTTOM_LINKS: MobileLink[] = [
  * collapsible submenus where opening one closes the others, Escape/backdrop
  * close, and links close the menu on navigation.
  *
- * The menu surface is intentionally dark on every page (matching legacy),
- * so colors are hardcoded rather than theme tokens.
+ * The panel is the research-desk paper on every page (WP56): serif section
+ * names, mono group labels, ink pills for the auth links.
  */
 export function MobileNav({
   triggerClassName,
@@ -135,15 +136,18 @@ export function MobileNav({
         side="right"
         showCloseButton={false}
         aria-describedby={undefined}
-        className="w-80 max-w-none gap-0 p-0 bg-neutral-950 border-l border-white/10 text-white overflow-y-auto"
+        className={cn(
+          newsreaderEditorial.variable,
+          "w-80 max-w-none gap-0 overflow-y-auto border-l border-home-rule bg-home-paper p-0 font-sans text-home-ink"
+        )}
       >
         <SheetTitle className="sr-only">Navigation menu</SheetTitle>
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <Logo className="h-4 w-24 text-white" />
+        <div className="flex items-center justify-between border-b border-home-rule p-6">
+          <Logo className="h-4 w-24 text-home-ink" />
           <SheetClose asChild>
             <IconButton
               aria-label="Close menu"
-              className="text-neutral-400 hover:text-white transition-colors"
+              className="rounded-full text-home-ink-2 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
             >
               <X size={24} />
             </IconButton>
@@ -155,10 +159,10 @@ export function MobileNav({
             onClick={closeMenu}
             aria-current={isActive("/") ? "page" : undefined}
             className={cn(
-              "block px-4 py-3 rounded-lg transition-colors",
+              "block rounded-lg px-4 py-3 font-editorial text-[22px] leading-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
               isActive("/")
-                ? "text-white bg-white/5"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "text-home-ink bg-home-card"
+                : "text-home-ink-2 hover:text-home-ink hover:bg-home-card"
             )}
           >
             Home
@@ -170,7 +174,7 @@ export function MobileNav({
               <div key={section.id}>
                 <button
                   type="button"
-                  className="w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  className="flex w-full items-center justify-between rounded-lg px-4 py-3 font-editorial text-[22px] leading-tight text-home-ink transition-colors hover:bg-home-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
                   aria-expanded={expanded}
                   onClick={() =>
                     setOpenSection(expanded ? null : section.id)
@@ -181,7 +185,7 @@ export function MobileNav({
                     size={16}
                     aria-hidden="true"
                     className={cn(
-                      "transition-transform duration-200",
+                      "text-home-ink-3 transition-transform duration-200 motion-reduce:transition-none",
                       expanded && "rotate-180"
                     )}
                   />
@@ -197,7 +201,7 @@ export function MobileNav({
                       {group.heading && (
                         <p
                           className={cn(
-                            "px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600",
+                            "px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3",
                             groupIndex > 0 && "pt-3"
                           )}
                         >
@@ -213,14 +217,14 @@ export function MobileNav({
                             isActive(link.href) ? "page" : undefined
                           }
                           className={cn(
-                            "block px-4 py-2 text-sm transition-colors",
+                            "block px-4 py-2.5 text-[15px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
                             link.emphasis
-                              ? "text-neutral-400 hover:text-white"
+                              ? "font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink"
                               : cn(
-                                  "rounded-lg hover:bg-white/5",
+                                  "rounded-lg hover:bg-home-card",
                                   isActive(link.href)
-                                    ? "text-white bg-white/5"
-                                    : "text-neutral-500 hover:text-white"
+                                    ? "bg-home-card font-medium text-home-ink"
+                                    : "text-home-ink-2 hover:text-home-ink"
                                 )
                           )}
                         >
@@ -241,17 +245,17 @@ export function MobileNav({
               onClick={closeMenu}
               aria-current={isActive(link.href) ? "page" : undefined}
               className={cn(
-                "block px-4 py-3 rounded-lg transition-colors",
+                "block rounded-lg px-4 py-3 font-editorial text-[22px] leading-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
                 isActive(link.href)
-                  ? "text-white bg-white/5"
-                  : "text-neutral-400 hover:text-white hover:bg-white/5"
+                  ? "text-home-ink bg-home-card"
+                  : "text-home-ink-2 hover:text-home-ink hover:bg-home-card"
               )}
             >
               {link.label}
             </Link>
           ))}
 
-          <div className="pt-4 mt-2 border-t border-white/10 space-y-1">
+          <div className="mt-3 space-y-2 border-t border-home-rule pt-5">
             <NavAuthLinks variant="mobile" onNavigate={closeMenu} />
           </div>
         </nav>

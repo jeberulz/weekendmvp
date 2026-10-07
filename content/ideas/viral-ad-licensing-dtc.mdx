@@ -79,35 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 app for a DTC viral-ad licensing desk.
+Build the weekend MVP of "Ad Licensing Desk": a service tool where a curator lists posts that already worked and whose creators agreed to licensing, a brand requests one, and the operator tracks the license from request to delivered code inside a 72-hour clock.
 
-Set up:
-- Clerk for brand logins, Stripe invoices for $299 / $3500 / $7500
-- Supabase tables: brands, posts, licenses, spark_codes, payouts
-- Public Category Viral Board (anonymized thumbnails, email gate)
-- Admin desk to attach a Spark code and mark a license cleared
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Resend for request and delivery emails. The license is a generated one-page document. Payments to creators are recorded here and made elsewhere. Deploy on Vercel.
 
-No self-serve marketplace. This is a service ops tool.
+Tables (Row Level Security on; a brand reads only its own requests and licenses, the board shows only posts with creator agreement, the operator reads everything):
+- brands(id, user_id, name, category)
+- posts(id, category, platform, url, thumbnail_path, creator_handle, metrics jsonb, rights_status, rights_note, curated_by)  rights_status is creator_agreed or not_cleared; a post with not_cleared never shows on the board
+- license_requests(id, brand_id, post_id, usage_window_days, platforms text[], status, requested_at, sla_due_at)  status is requested, in_progress, cleared, delivered or declined
+- licenses(id, request_id, terms_text, signed_name, signed_at, creator_fee_cents, spark_code, delivered_at)
+
+Screens: /login, /board (public thumbnails behind an email gate), /request/[postId], /requests (a brand's own), /admin/desk (the operator's queue).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY.
+
+Do not build: billing, per-post or monthly pricing, a self-serve marketplace, e-signature, creator payouts or Stripe Connect, a weekly refresh job, Slack.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build First Licensed Post checkout.
-
-Requirements:
-- Brand picks one post from the board
-- Collect usage window, platforms (TikTok Spark, Meta partnership), and shipping address for any physical product seeding
-- Generate a one-page license, collect signature, pay creator $100–$300
-- Deliver the Spark code within 72 hours or auto-flag refund
-
-User flow: board → pick post → $299 → signed license → code in inbox.
+Build the one feature that proves the Desk: a brand picks a post, the license is clear and tracked, and the 72-hour promise is visible.
+1. The operator adds a post with its address, platform, creator handle, category and the metrics they observed. A post shows on the board only when rights_status is creator_agreed and a note records how the creator agreed.
+2. The public board shows anonymized thumbnails by category behind an email gate. Save the email with the category viewed.
+3. A signed-in brand picks one post and requests a license with a usage window in days and the platforms (TikTok Spark or Meta partnership). Set status requested and sla_due_at 72 hours ahead, and email the operator.
+4. The desk lists requests by time left, with a red flag on any inside the last 12 hours or overdue. The operator generates a one-page license from the terms (post, brand, window, platforms, fee to the creator), records the name of the person who signed and the date, attaches the access code from the platform and marks it cleared.
+5. Marking delivered emails the brand the code with the license terms and sets delivered_at. Record the creator fee in cents for the operator's books.
+6. A request that passes its deadline is flagged for the operator to decide on a refund by hand. Nothing is refunded or charged by the app.
+Rules: never list a post whose creator has not agreed. Never promise an outcome from a post. Say that the license covers only the window and platforms written on it.
+Empty state: an empty board says new posts are added weekly and offers to email the visitor.
+Done when: a post without creator agreement never appears, a request starts a 72-hour clock and shows a flag near the deadline, a cleared license delivers a code by email with its terms and an overdue request is flagged but not changed.
 ```
 
-**3. Decay Refresh**
+**3. Landing Page**
 
 ```text
-Add a Creative Ops weekly job: list active licenses older than 8 days, pull the brand's last 7-day CTR/CPM if they pasted Ads Manager exports, and queue 3 replacement posts from the same category board. Post the queue to a Slack channel. Do not auto-charge extra posts.
+Build a one-page landing site for the Ad Licensing Desk, posts that already worked, licensed and cleared for your ads.
+Hero: "License a post that already worked." Sub: "Pick from posts whose creators agreed. We clear the rights and send the code within 72 hours." One button: Join the waitlist.
+Sections: a sample board with anonymized thumbnails, how it works in three steps (browse, request, receive the code and the license), and an FAQ on what the license covers (the window and platforms written on it), how creators are paid (by us, outside the app) and what is promised (the clearance, never a result).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean off-white background, near-black type, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Ad Licensing Desk: pick a short working name, then design a wordmark and an icon that suggest a ticket stub with a play triangle.
+Colors: off-white, near-black and one lime. Type: Geist, with tabular numbers for hours.
+Deliverables: wordmark, icon, four request status chips (requested, in progress, cleared, delivered) that differ by shape as well as color, a license page header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

@@ -1,13 +1,11 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Mail } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
+import { Em } from "@/components/home/ui";
 import { Logo } from "@/components/primitives/Logo";
-import { newsreader } from "@/lib/fonts";
 import { authCallbackTarget, safePlatformReturn } from "@/lib/auth-return";
-import { cn } from "@/lib/utils";
 
 export type AuthCardMode = "login" | "signup";
 
@@ -53,11 +51,14 @@ const COPY: Record<
 export function AuthCard({
   mode,
   returnTo,
+  embedded = false,
 }: {
   mode: AuthCardMode;
   returnTo: string;
+  embedded?: boolean;
 }) {
-  const copy = COPY[mode];
+  const [currentMode, setCurrentMode] = useState(mode);
+  const copy = COPY[currentMode];
   const { signIn } = useAuthActions();
   const emailFieldId = useId();
   const statusId = useId();
@@ -98,20 +99,22 @@ export function AuthCard({
   }
 
   const busy = googlePending || emailState === "pending";
+  const titleWords = copy.title.split(" ");
+  const titleTail = titleWords.pop();
 
   return (
-    <div className={cn(newsreader.variable, "w-full max-w-md")}>
-      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-8 text-zinc-100 shadow-2xl shadow-black/30 sm:p-10">
-        <h1
-          className="text-center text-4xl font-normal tracking-tight text-zinc-50 sm:text-[2.75rem]"
-          style={{
-            fontFamily:
-              "var(--font-newsreader), Georgia, 'Times New Roman', serif",
-          }}
-        >
-          {copy.title}
-        </h1>
-        <p className="mt-3 text-center text-sm leading-6 text-zinc-400">
+    <div className="w-full max-w-md">
+      <div className="rounded-2xl border border-home-rule bg-home-card p-8 text-home-ink sm:p-10">
+        {embedded ? (
+          <h2 className="text-balance text-center font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[38px]">
+            {titleWords.join(" ")} <Em>{titleTail}</Em>
+          </h2>
+        ) : (
+          <h1 className="text-balance text-center font-editorial text-[40px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[44px]">
+            {titleWords.join(" ")} <Em>{titleTail}</Em>
+          </h1>
+        )}
+        <p className="mt-3 text-center text-[15px] leading-[1.55] text-home-ink-2">
           {copy.subtitle}
         </p>
 
@@ -119,54 +122,53 @@ export function AuthCard({
           type="button"
           onClick={signInWithGoogle}
           disabled={busy}
-          className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-transparent px-4 text-sm font-semibold text-zinc-100 transition hover:border-white/35 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
+          className="mt-8 flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-home-ink bg-home-card px-4 text-base font-medium text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
         >
           <GoogleGlyph />
           {googlePending ? "Opening Google…" : "Continue with Google"}
         </button>
 
         {googleFailed ? (
-          <p role="alert" className="mt-4 text-center text-sm text-red-300">
+          <p role="alert" className="mt-4 text-center text-sm text-destructive">
             We could not start sign-in. Please try again.
           </p>
         ) : null}
 
         <div className="my-6 flex items-center gap-3" aria-hidden="true">
-          <span className="h-px flex-1 bg-white/10" />
-          <span className="text-xs text-zinc-500">Or</span>
-          <span className="h-px flex-1 bg-white/10" />
+          <span className="h-px flex-1 bg-home-rule" />
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3">
+            Or
+          </span>
+          <span className="h-px flex-1 bg-home-rule" />
         </div>
 
-        <form onSubmit={requestEmailLink}>
-          <label htmlFor={emailFieldId} className="sr-only">
+        <form onSubmit={requestEmailLink} className="flex flex-col">
+          <label
+            htmlFor={emailFieldId}
+            className="mb-2 font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-2"
+          >
             Email address
           </label>
-          <div className="relative">
-            <Mail
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
-            />
-            <input
-              id={emailFieldId}
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                if (emailState !== "pending") setEmailState("idle");
-              }}
-              disabled={busy}
-              aria-describedby={statusId}
-              className="min-h-11 w-full rounded-lg border border-white/15 bg-black py-2 pr-3 pl-10 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-300 disabled:cursor-wait disabled:opacity-60"
-              placeholder="Enter your email"
-            />
-          </div>
+          <input
+            id={emailFieldId}
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (emailState !== "pending") setEmailState("idle");
+            }}
+            disabled={busy}
+            aria-describedby={statusId}
+            className="h-[52px] w-full rounded-full border border-home-ink-3 bg-home-card px-5 text-base text-home-ink transition-colors placeholder:text-home-ink-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
+            placeholder="Enter your email"
+          />
           <button
             type="submit"
             disabled={busy}
-            className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
+            className="mt-3 flex h-[52px] w-full items-center justify-center rounded-full bg-home-ink px-4 text-base font-semibold text-home-d1 transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
           >
             {emailState === "pending" ? "Sending…" : copy.emailCta}
           </button>
@@ -174,30 +176,34 @@ export function AuthCard({
 
         <div id={statusId} aria-live="polite" className="text-center">
           {emailState === "sent" ? (
-            <p className="mt-4 text-sm leading-6 text-emerald-300">
+            <p className="mt-4 text-sm leading-6 text-home-sage-ink">
               {copy.emailSent}
             </p>
           ) : null}
           {emailState === "failed" ? (
-            <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
+            <p role="alert" className="mt-4 text-sm leading-6 text-destructive">
               {copy.emailFailed}
             </p>
           ) : null}
         </div>
 
-        <p className="mt-8 text-center text-sm text-zinc-400">
+        <p className="mt-8 text-center text-sm text-home-ink-2">
           {copy.crossPrompt}{" "}
-          <Link
-            href={withReturnTo(copy.crossHref, returnTo)}
-            className="font-semibold text-zinc-100 underline-offset-4 hover:underline"
-          >
-            {copy.crossLabel}
-          </Link>
+          {embedded ? (
+            <button type="button" onClick={() => { setCurrentMode(currentMode === "signup" ? "login" : "signup"); setEmailState("idle"); }} className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink">
+              {copy.crossLabel}
+            </button>
+          ) : (
+            <Link href={withReturnTo(copy.crossHref, returnTo)} className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none">
+              {copy.crossLabel}
+            </Link>
+          )}
         </p>
+        {currentMode === "signup" ? <p className="mt-5 text-center text-xs leading-5 text-home-ink-3">New accounts are added to the Weekend MVP newsletter. Beehiiv will ask you to confirm your email separately; account access starts when your site account is verified. <Link href="/privacy-policy#email-collection" className="underline underline-offset-2">Privacy Policy</Link></p> : null}
       </div>
 
       <div className="mt-8 flex justify-center">
-        <Logo className="h-4 w-28 text-zinc-500" />
+        <Logo className="h-4 w-28 text-home-ink-3" />
       </div>
     </div>
   );

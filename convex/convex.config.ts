@@ -19,6 +19,15 @@ const app = defineApp({
     // only — never committed, never compared at request time. Optional: with
     // it unset, bootstrap refuses and the editorial workspace stays closed.
     SUPER_ADMIN_BOOTSTRAP_EMAIL: v.optional(v.string()),
+    // WP46-E7. Release settings stay optional while publication is disabled;
+    // the worker refuses to advance a release until the target is configured.
+    EDITORIAL_PUBLIC_SITE_URL: v.optional(v.string()),
+    EDITORIAL_READER_COMMIT: v.optional(v.string()),
+    // Only isolated, non-serving cloud restore drills may set these values.
+    // The worker requires an exact backend match before sending the bypass
+    // token to a protected, pinned Vercel deployment.
+    EDITORIAL_STAGING_BACKEND_URL: v.optional(v.string()),
+    EDITORIAL_STAGING_BYPASS_SECRET: v.optional(v.string()),
   },
 });
 

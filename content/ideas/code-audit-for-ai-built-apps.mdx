@@ -91,19 +91,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) project called Secondread. Provision Supabase with tables: users, github_installs (installation_id, account_login, user_id), repos (id, install_id, full_name, default_branch), scans (id, repo_id, score int, summary_md, status), findings (id, scan_id, file_path, start_line, severity, owner_summary, engineer_detail, fix_usd_cents, fix_tokens, evidence_sha), quotes (id, scan_id, pack text, amount_cents, status), badges (repo_id, public_slug, security_md). RLS: a user only reads rows joined through github_installs.user_id. Wire Stripe products: Free scan, Human Audit $299, Fix Pack quoted, Scorecard $29/mo per app. Env: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. Use Octokit for the GitHub App and the Vercel AI SDK for Claude.
+Build the weekend MVP of "Secondread": paste a public GitHub repo, get a plain-English audit of what the app does and what is risky, written for the founder who cannot read the code.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the GitHub REST API with a read-only token to list and read files of public repos, the Anthropic API to write the report. The scan runs in a route handler with a status the page polls. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- repos(id, user_id, full_name, default_branch)
+- scans(id, repo_id, status, score, summary_md, files_scanned, created_at)
+- findings(id, scan_id, file_path, start_line, severity, owner_summary, engineer_detail, fix_hours_min, fix_hours_max)
+
+Screens: /login, /scan/new (paste a repo URL), /scan/[id] (score, report, findings).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GITHUB_READ_TOKEN, ANTHROPIC_API_KEY.
+
+Do not build: billing, quotes in dollars, a GitHub App, push webhooks, private repos, a job queue or Inngest, a public badge page, storing file contents.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Scan Pipeline + Owner Report**
+**2. Core Feature**
 
 ```text
-Build POST /api/github/webhook. Validate the GitHub signature. On installation.created and push, enqueue a scan. Scan steps: (1) fetch tree via Octokit, skip lockfiles and node_modules, (2) run a Semgrep-style pass for hardcoded secrets, permissive RLS, missing auth on API routes, (3) send a packed architecture digest plus the top 40 findings to Claude with a strict JSON schema: findings[].owner_summary must be one sentence a non-technical founder can read, findings[].fix_usd_cents must be a range the owner can compare to a contractor quote, every finding must include file_path. Write a markdown report with sections: What this app does, What is costing you, What breaks at 10x users, What to tell a developer this week. Never claim a CVE that is not in the findings table. Reply to the webhook in under two seconds; do the model work on Inngest.
+Build the one feature that proves Secondread: a scan that finds real problems and points at the file.
+1. POST /api/scans takes a public repo URL, creates a scan with status running and starts the work. The page polls the status.
+2. List the repo tree through the GitHub API. Skip lockfiles, node_modules, build output and images. Read at most 200 files, smallest first.
+3. Run a rules pass in plain code: hardcoded keys and tokens (common key prefixes and long random strings next to names like secret, token or key), a committed .env file, SQL migrations that create a table without enabling Row Level Security, and API route files with no auth check.
+4. Send a short architecture digest (file names, package.json, the rule hits with their lines) to the Anthropic API with a strict JSON schema { what_it_does: string, findings: [{ file_path, start_line, severity: "high" | "medium" | "low", owner_summary, engineer_detail, fix_hours_min, fix_hours_max }] }. owner_summary is one sentence a non-technical founder can read. The hours are an estimate, labeled as one.
+5. Drop any finding whose file_path is not in the scanned tree. Never name a CVE. Keep findings and line numbers; do not store file contents.
+6. Render a markdown report with four sections: What this app does, What is risky now, What breaks with more users, What to tell a developer this week. Show a score from 0 to 100 computed from the findings' severities.
+Empty state: with no scans, show the repo URL field and one example repo.
+Done when: a scan of a small public repo with a planted fake key and a table without Row Level Security lists both findings with the right file paths, and a bad URL shows a clear error.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page site for Secondread. Hero: "A second opinion on the app AI built you." Sub: "Connect the GitHub repo. Get a score, a plain-English report, and a fair price to fix what is broken. Written for the founder, not the engineer." Sections: a sample report (fake phone-or-laptop UI, no tiny unreadable text), the problem (working app, leaking data, owner cannot read the code), how it works (4 steps matching the product), pricing (Free / $299 / $499–$1,500 / $29/mo) anchored against Valletta $199, Sherlock $1,500 CAD, Beesoul $2,500, and Lovable's $100 pentest, FAQ covering GitHub read-only access, why the platform green check is not enough, and what happens to the code after the scan. Geist font, near-black on off-white, mint accent. Primary CTA: "Connect GitHub — first score is free."
+Build a one-page landing site for Secondread, an audit for apps built with AI tools.
+Hero: "A second opinion on the app AI built you." Sub: "Paste the GitHub repo. Get a score, a plain-English report and a list of what to fix first. Written for the founder, not the engineer." One button: Get your first score, which joins the waitlist.
+Sections: a sample report on a laptop mockup with text large enough to read, the problem (the app works, the data may be leaking, and the owner cannot read the code), how it works in four steps (paste, scan, read, hand off), and an FAQ on read-only access, why a green check from the builder tool is not an audit and what happens to your code after the scan (nothing is stored).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, near-black type on off-white, one mint accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Secondread: a wordmark and an icon that suggest a page with a second check mark beside the first.
+Colors: near-black, off-white and one mint. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, three severity badges (low, medium, high) that differ by shape as well as color, a score dial graphic, and one report cover.
+Done when: each deliverable is saved in one folder and the severity badges are distinguishable without color.
 ```
 
 ## Sources

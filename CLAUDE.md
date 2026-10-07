@@ -36,6 +36,13 @@ New ideas/articles are MDX in `content/` + an entry in `ideas/manifest.json`
 (OG cards). Use `/publish-idea`, `/publish-article`, and
 `/publish-programmatic` rather than doing these steps manually.
 
+An idea's four build prompts (Project Setup, Core Feature, Landing Page,
+Branding Package) follow the weekend prompt standard v1 in `ideas/SECTIONS.md`:
+no billing, one login, at most three outside services, a `Do not build:` line
+and a `Done when:` line in each prompt. `npm run audit:prompts` lints them; an
+idea listed in `ideas/prompt-standard.json` must keep passing, and the engine
+compiler (`lib/engine/compile.ts`) emits compliant prompts.
+
 ## Accessibility
 
 Every page and component must pass WCAG 2.1 AA — run the **`a11y-check`
@@ -95,8 +102,20 @@ read the response as text before parsing JSON.
 - `lib/mdx.tsx` (MDX loader), `lib/seo.ts` (JSON-LD), `scripts/` (seed + OG)
 - `lib/home/*` + `components/home/*` — the ideas-first homepage (WP42). It reads
   `ideas/manifest.json` and idea MDX, caches for an hour, and rotates "Idea of
-  the week" every Monday 00:00 UTC. Excerpts prefer a manifest `highlights`
-  block (written by `/publish-idea`, checked by `npm run validate:idea-tags`)
+  the week" every Monday 00:00 UTC. The hero build window rotates weekly too
+  (WP58): `pickHero` draws from ideas that pass `isHeroReady` (a first prompt of
+  8+ lines, no art needed) and never repeats section 03 or 06. Each hero tool
+  tab leads the prompt with its own line from `lib/home/hero-prompt.ts` (WP59),
+  and Copy matches what is shown. Excerpts prefer
+  a manifest `highlights` block (written by `/publish-idea`, checked by
+  `npm run validate:idea-tags`)
+- `components/public/*` + `lib/public/ideas.ts` — the research-desk kit every
+  other public page uses (WP56): `PublicShell` (cream nav, paper, warm-ink
+  footer), `PageHeader`, `LinkTabs`, `IdeaBrowser` (Cards/Rows toggle,
+  `?view=rows`), `Sections`. Public pages use the `home-*` tokens only — the old
+  `#050505` dark palette is retired. Headings keep their existing words first;
+  only an italic `<Em>` tail may be appended (`scripts/seo-snapshot.mjs diff`
+  enforces it). The idea detail page keeps its own cream chrome.
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

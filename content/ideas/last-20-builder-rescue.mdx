@@ -80,29 +80,54 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build a Next.js + Supabase app where a stuck builder submits a rescue request: a code snippet or repo link, a description of the block, and stack tags (e.g. Next.js, Stripe, Supabase). Store requests with a status field. Give me the schema, the submission form, and the request list.
+Build the weekend MVP of "Last 20": a builder who is stuck near the end of a project posts the block, an expert with the right skills claims it, and they agree a 15-minute rescue call. Sessions are free during the pilot and no money moves through the app.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for the notification and confirmation emails. The call itself uses a meeting link the expert pastes in. Deploy on Vercel.
+
+Tables (Row Level Security on; a builder reads their own requests, experts read open requests that match their skills and their own claims):
+- profiles(user_id, role, display_name, stack_tags text[], available boolean)  role is builder or expert
+- requests(id, builder_id, title, description, repo_url, snippet, stack_tags text[], status, claimed_by, meeting_url, scheduled_at, created_at)  status is open, claimed, scheduled, done or cancelled
+- claims(id, request_id, expert_id, claimed_at)  unique on request_id
+- session_feedback(id, request_id, resolved boolean, rating, note)
+
+Screens: /login, /requests/new, /requests/[id] (status, the meeting link and feedback), /queue (experts), /me.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY.
+
+Do not build: billing, expert rates or a platform fee, Stripe Connect or payouts, an embedded video call, an agency plan, referral loops.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the matching and scheduling flow. When a rescue request is created, notify available experts whose stack tags overlap. Let one expert claim it, which opens a 15-minute scheduled screen-share slot. Handle the claim race so only one expert gets it. Give me the queue logic and the claim endpoint.
+Build the one feature that proves Last 20: a stuck builder gets a real person in a short call, fast, without leaking a secret.
+1. The request form takes a title, a description of the block, stack tags, an optional repo link and an optional snippet of up to 8,000 characters. Scan the snippet and the description for strings that look like keys or tokens and block the submit with a message that names what was found.
+2. When a request is created, email the available experts whose stack tags overlap at least one of the request's tags, through Resend. The email shows the title and tags, not the snippet.
+3. The queue shows matching open requests to experts. An expert presses Claim. Insert a claims row; the unique key means two experts claiming at once leave one winner and one clear refusal. Set the request to claimed and email both sides.
+4. The expert proposes a time within the next 24 hours and pastes a meeting link. The builder confirms, which sets scheduled and emails both with the details.
+5. After the time passes, the builder answers whether it was resolved and gives a 1 to 5 rating and a note. Show each expert's resolved rate and rating on their profile with the number of sessions behind them.
+Rules: never ask for credentials or access to a repository. Say on the request page that sessions are free in the pilot and any payment is between the two people. Show the snippet only to the claiming expert.
+Empty state: an empty queue says no one is stuck right now and shows the expert profile form.
+Done when: a snippet containing a fake key is blocked, matching experts get one email each, two simultaneous claims produce one claim, the meeting is confirmed by both and the expert's resolved rate updates after feedback.
 ```
 
 **3. Landing Page**
 
 ```text
-Write a landing page for Last 20, a phone-a-friend service that matches stuck builders with experts for a 15-minute screen-share rescue. Hero, how-it-works, who-its-for (hobbyists and agencies), a comparison vs Upwork and Stack Overflow, pricing, and dual CTAs (get unstuck / become an expert). Energetic, builder-to-builder tone. Semantic HTML with Tailwind.
+Build a one-page landing site for Last 20, a phone-a-friend for builders stuck on the last 20 percent.
+Hero: "Almost done. Stuck on the last 20 percent." Sub: "Describe the block. An expert who has hit that wall before takes a 15-minute call to get you moving." Two buttons: Join the waitlist as a builder, Join as an expert.
+Sections: how it works in three steps (post the block, an expert claims it, a 15-minute call), who it is for (hobbyists and small agencies) and an FAQ on what to share (never keys), what a session costs during the pilot (nothing) and how experts are chosen.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one orange accent, a builder-to-builder voice.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a brand kit for Last 20: a positioning line about finishing the last 20 percent, a 5-word tagline set, an energetic color palette with hex codes, an icon concept, and 5 launch posts aimed at Reddit build-in-public and AI-coding communities.
-```
-
-**5. Stripe Connect Payouts**
-
-```text
-Add Stripe Connect to Last 20 so experts get paid and the platform keeps a 10 percent take. On a completed session, capture payment from the builder, transfer 90 percent to the expert connected account, and record the platform fee. Handle refunds for no-shows. Give me the Connect onboarding flow and the payout logic.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Last 20: a wordmark and an icon that suggest a progress bar with its last fifth highlighted.
+Colors: off-white, near-black and one orange. Type: Geist, with Geist Mono for tags.
+Deliverables: wordmark, icon, four request status chips (open, claimed, scheduled, done) that differ by shape as well as color, a five-word tagline set, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```

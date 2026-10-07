@@ -373,9 +373,9 @@
     },
     {
       "slug": "contractor-lead-refund-automation",
-      "title": "Automatic lead refunds for home service contractors",
+      "title": "Contractor Lead Refund Automation: Recover Angi & HomeAdvisor Credits",
       "category": "b2b",
-      "description": "Auto-file Angi, HomeAdvisor, Bark, and LSA credits from call transcripts — Tack Tools owns Thumbtack; this owns the other four.",
+      "description": "Contractor lead refund automation that files Angi, HomeAdvisor, Bark, and LSA credits from call transcripts — recover bad-lead spend without the support queue.",
       "buildTime": "12",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -420,9 +420,9 @@
     },
     {
       "slug": "course-translation-resale-network",
-      "title": "Global sales & translation network for online course creators",
+      "title": "Course Translation Resale Network: Local Partners Who Sell Your Course Abroad",
       "category": "education",
-      "description": "In-country partners who localize, sell, and support English courses — you keep most of the new revenue; Rask only dubs the words.",
+      "description": "Course translation resale network pairing creators with in-country partners who localize, sell, and support English courses — you keep most of the new international revenue.",
       "buildTime": "12",
       "revenueGoal": "5k-month",
       "applicationCategory": "EducationalApplication",
@@ -909,10 +909,10 @@
     },
     {
       "slug": "freelance-scope-creep-detector",
-      "title": "ScopeGuard: Detect Freelance Scope Creep and Upsell It",
+      "title": "Freelance Scope Creep Detector: Spot Unpaid Work & Upsell Change Orders",
       "publishedAt": "2026-07-22",
       "category": "productivity",
-      "description": "ScopeGuard watches freelance projects for out-of-scope requests and turns them into paid change orders before unpaid work eats your margin.",
+      "description": "Freelance scope creep detector that watches client requests, flags out-of-scope work, and turns it into paid change orders before unpaid hours eat your margin.",
       "buildTime": "8",
       "revenueGoal": "5k-month",
       "applicationCategory": "ProductivityApplication",
@@ -4549,10 +4549,10 @@
     },
     {
       "slug": "etsy-seo-optimizer",
-      "title": "EtsyRankBooster: Etsy SEO Visibility Tool for POD Sellers",
+      "title": "Etsy SEO Optimizer: Rank POD Listings Faster With Keyword Gaps",
       "publishedAt": "2026-07-10",
       "category": "ecommerce",
-      "description": "A free listing analysis and AI keyword-gap engine built for Etsy's algorithm, so print-on-demand and handmade sellers stop guessing at tags and titles and start ranking.",
+      "description": "Etsy SEO optimizer for print-on-demand sellers — listing analysis, keyword-gap tags, and title rewrites built for Etsy's algorithm so POD shops stop guessing.",
       "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -4961,10 +4961,10 @@
     },
     {
       "slug": "kdp-niche-finder",
-      "title": "Niche Finder for KDP Publishers",
+      "title": "KDP Niche Finder: Profitable Low-Competition Book Niches in Minutes",
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
-      "description": "Automatically scan Amazon KDP categories for profitable, low-competition book niches — with opportunity scores, keywords, and revenue estimates.",
+      "description": "KDP niche finder that scans Amazon categories for profitable, low-competition book niches — opportunity scores, keywords, and revenue estimates in minutes, not 20 hours.",
       "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -10125,6 +10125,80 @@
         "auditPassed": true,
         "auditRunAt": "2026-10-03T22:27:38.000Z",
         "publishNotes": "engine compile; product=EvalLatch; costUsd=0.5589; tagging left for operator",
+        "researchMode": "live"
+      }
+    },
+    {
+      "slug": "dmarc-monitor-agencies-small-business",
+      "title": "Plain-English DMARC Monitoring for Agencies and Small Businesses",
+      "category": "automation",
+      "description": "Find out why client email lands in spam and get the exact DNS fix in plain English.",
+      "buildTime": "20",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "SecurityApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "v0"
+      ],
+      "audiences": [
+        "freelancers",
+        "small-business-owners",
+        "developers"
+      ],
+      "source": "engine:dmarc-monitor-agencies-small-business",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "A neat stack of sealed paper envelopes on a pale oak desk beside a small brass padlock and a ring of old keys, one envelope closed with a blank wax seal, soft morning window light, shallow focus, no people, no legible text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "highlights": {
+        "problemQuote": "I am self-hosting my (secondary) email and have only implemented SPF and DKIM. This works fine on a practical level for me. What would be the benefit of setting up DMARC on top?",
+        "stats": [
+          {
+            "value": "$5 billion",
+            "label": "The DMARC Software Market (market size) projected for 2035",
+            "source": "Wiseguyreports"
+          }
+        ],
+        "tiers": [
+          {
+            "name": "Solo Domain",
+            "price": "$19/month"
+          },
+          {
+            "name": "Client Desk",
+            "price": "$49/month"
+          },
+          {
+            "name": "Agency Portfolio",
+            "price": "$99/month"
+          }
+        ]
+      },
+      "publishedAt": "2026-10-04",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:brief_normalization/synthesis:gpt-5.6-sol",
+          "perplexity:market_stats/search:sonar-pro",
+          "perplexity:competitors/search:sonar-pro",
+          "perplexity:community_signals/search:sonar-pro",
+          "openai:evidence_extraction/synthesis:gpt-5.6-sol",
+          "dataforseo:keywords_demand/keywordData:google_ads/search_volume/live",
+          "openai:editorial_synthesis/synthesis:gpt-5.6-sol"
+        ],
+        "citations": 8,
+        "wordCount": 3345,
+        "auditPassed": true,
+        "auditRunAt": "2026-10-04T14:51:09.665Z",
+        "publishNotes": "engine compile; product=MailPlain; costUsd=0.5701; tagging left for operator",
         "researchMode": "live"
       }
     }

@@ -88,21 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called SlackToDoc. Provision Supabase with these tables: workspaces (id, slack_team_id UNIQUE, notion_workspace_id, plan TEXT default 'free', created_at), watched_channels (id, workspace_id, slack_channel_id, mode TEXT CHECK mode IN ('mention','continuous'), notion_page_id), extracted_items (id, workspace_id, channel_id, source_message_ts, source_permalink, item_type TEXT CHECK item_type IN ('decision','action_item','open_question','flagged'), content, author_slack_id, synced_to_notion BOOLEAN default false, created_at), audit_log (id, workspace_id, item_id, action, actor, occurred_at). Enable row-level security scoped to workspace_id. Set up Stripe with four products: Free, Starter ($9/seat/mo), Team ($29/seat/mo), and a placeholder Enterprise product for manual invoicing. Install the Slack Bolt SDK, the Notion SDK, and the Vercel AI SDK. Add env vars for SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, NOTION_API_KEY, and ANTHROPIC_API_KEY.
+Build the weekend MVP of "SlackToDoc": mention the bot in a Slack thread and it reads that thread, pulls out the decisions, action items and open questions and shows them as a page you can accept or edit. It only reads a thread when someone mentions it there.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Slack Events API with a bot token, the Anthropic API for extraction. Pages live in this app this weekend; sending them to another tool is the next step. Deploy on Vercel.
+
+Tables (Row Level Security on, a user reads only their own workspace's rows):
+- workspaces(id, slack_team_id, bot_token_encrypted, created_by)
+- channels_watched(id, workspace_id, slack_channel_id, mode)
+- extracted_items(id, workspace_id, slack_channel_id, source_message_ts, source_permalink, item_type, content, owner_hint, due_hint, confidence, status, created_at)  item_type is decision, action_item or open_question; status is draft, accepted or rejected; unique on workspace_id, source_message_ts and item_type
+- audit_log(id, workspace_id, item_id, action, actor, before jsonb, after jsonb, occurred_at)
+
+Screens: /login, /workspace (connect the Slack app), /threads (one page per thread), /threads/[id] (decisions, actions and questions with Accept and Edit).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), SLACK_SIGNING_SECRET, SLACK_BOT_TOKEN, ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, seats or an enterprise plan, a sync to Notion or Confluence, continuous channel watching, a queue or Redis, compliance policy flagging.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Slack Event Handler + Extraction Pipeline**
+**2. Core Feature**
 
 ```text
-Build a Slack Events API webhook at POST /api/slack/events using the Bolt SDK. Verify the request signature, then immediately return a 200 to satisfy Slack's 3-second ack window before doing any real work. For app_mention events, enqueue the full thread (parent + replies) into a BullMQ job. For continuous-mode channels, batch incoming messages in 2-minute windows before enqueueing, to avoid firing one LLM call per message.
-
-In the worker: send the batched messages to Claude with a system prompt that classifies each message into { type: 'decision'|'action_item'|'open_question'|'noise'|'flagged', summary, owner?, due_date?, confidence }. Discard 'noise' below a confidence threshold. For anything not noise, write a row to extracted_items with the source permalink (use Slack's chat.getPermalink API) and author. Then call the Notion API to append or update a block in the workspace's configured page — use a stable block ID keyed to source_message_ts so re-processing the same thread updates in place instead of duplicating content. Write an audit_log row for every sync action.
+Build the one feature that proves SlackToDoc: a thread becomes a short, linked page, and nothing is invented.
+1. POST /api/slack/events verifies the request signature and rejects a timestamp older than 5 minutes. For an app_mention it returns 200 at once, then does the work after the response.
+2. Fetch the thread with conversations.replies. Send only that thread's messages to the Anthropic API with a strict JSON schema { items: [{ message_ts, type: "decision" | "action_item" | "open_question" | "noise", summary, owner_user_id, due_date, confidence }] }.
+3. Check in code that every message_ts exists in the thread and that every owner_user_id is a person who posted in it. Drop noise, anything under 0.6 confidence and anything that fails the checks.
+4. Save each item with its permalink from chat.getPermalink. The unique key on the message and the type means running the same thread again updates the item in place and does not duplicate it.
+5. /threads/[id] groups the items into Decisions, Action items and Open questions, each with a link back to the Slack message. Accept and Edit change the status and the text. Reply in the thread with a link to the page.
+6. Write an audit_log row for every create, edit and status change with the before and after.
+Rules: read a thread only when the bot is mentioned in it, and read no other channel. Say in the Slack reply what was read. Never store a message that is not used in an item.
+Empty state: before the first mention, show how to add the bot to a channel and mention it.
+Done when: mentioning the bot in a sample thread creates items whose message links all work, a made-up message id is dropped, running the thread twice creates no duplicates, and each edit appears in the audit log.
 ```
 
-**3. Compliance Flagging + Enterprise Config**
+**3. Landing Page**
 
 ```text
-Add a compliance layer that runs only for workspaces on the Enterprise plan. Extend the classification prompt with a second pass: given an already-classified 'decision' or 'flagged' item, check it against a configurable policy list (e.g., "flag anything mentioning patient data," "flag anything referencing contract terms or pricing") and set a compliance_flag boolean plus a matched_policy field. Flagged items must NOT auto-sync to Notion — instead they go into a review queue at /admin/review where a designated approver sees the source message, the extracted content, and the matched policy, and can approve, edit, or reject before it syncs. Every review action writes to audit_log with actor, timestamp, and before/after content diff, since this audit trail is the entire value proposition for regulated customers.
+Build a one-page landing site for SlackToDoc, which turns a Slack thread into a page of decisions and actions.
+Hero: "Mention it once. Get the decisions out of the thread." Sub: "SlackToDoc reads only the thread you mention it in and writes the decisions, action items and open questions, each linked to the message it came from." One button: Join the waitlist.
+Sections: a sample thread next to its extracted page, how it works in three steps (mention, review, accept), and an FAQ on what it reads (only the thread you mention it in), what is stored and which document tools it will send pages to next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one violet accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SlackToDoc: a wordmark and an icon that suggest a chat bubble folding into a page.
+Colors: off-white, near-black and one violet. Type: Geist.
+Deliverables: wordmark, icon, three item chips (decision, action, question) that differ by shape and letter as well as color, a thread page layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the item chips are distinguishable without color.
 ```
 
 ## Sources

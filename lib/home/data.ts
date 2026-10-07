@@ -13,19 +13,18 @@ import {
   categoryCounts,
   hasOgArt,
   isFeatureReady,
+  isHeroReady,
   liveIdeas,
   newestRows,
   ogArtPath,
   publishOrder,
   toolCounts,
 } from "./library";
-import { pickWeekly, weekLabel, weekStartUtc } from "./rotation";
+import { pickHero, pickWeekly, weekLabel, weekStartUtc } from "./rotation";
 import { shortTitle, stackChips } from "./text";
 import type { HomeData, IdeaExtract, InsideIdea, ManifestIdea, SpotlightIdea } from "./types";
 
 const IDEAS_DIR = "content/ideas";
-/** The idea inside the hero's build window. Falls back to this week's pick if it is ever retired. */
-const HERO_SLUG = "freelance-scope-creep-detector";
 
 type Loaded = { idea: ManifestIdea; extract: IdeaExtract; art: boolean };
 type PublicListing = Awaited<ReturnType<typeof fetchQuery<typeof api.editorial.public.listing>>>;
@@ -112,9 +111,9 @@ export async function getHomeData(): Promise<HomeData> {
       const publication = publicBySlug.get(idea.slug);
       let content: string;
       if (publication?.state === "released") {
-        const selected = await fetchQuery(api.editorial.public.bySlug, { slug: idea.slug });
-        if (selected.state !== "released") throw new Error("Homepage publication changed during rendering.");
-        content = selected.markdown;
+        // The public editorial projection contains metadata only. Curated
+        // highlights supply the homepage's approved preview fields.
+        content = "";
       } else {
         content = (await readMdxFile(IDEAS_DIR, idea.slug))?.content ?? "";
       }
@@ -128,12 +127,15 @@ export async function getHomeData(): Promise<HomeData> {
     .filter((l) => isFeatureReady(l.idea, l.extract, l.art))
     .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
   const weekly = pickWeekly(pool, now);
-  if (!weekly) throw new Error("Homepage: no idea is complete enough to feature this week");
-
-  const picks = { spotlight: weekly.spotlight.loaded, inside: weekly.inside.loaded };
-  const heroSource = bySlug.get(HERO_SLUG) ?? picks.spotlight;
-  const libraryNo = publishOrder(ideas).findIndex((idea) => idea.slug === heroSource.idea.slug) + 1;
-  const heroCategory = normalizeCategorySlug(heroSource.idea.category);
+  // The hero window needs its own data (prompts), not the tiles' (art, pricing),
+  // so it draws from its own pool and never doubles as the idea of the week.
+  const heroPool = loaded
+    .filter((l) => isHeroReady(l.idea, l.extract))
+    .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
+  const featuredHero = pickHero(heroPool, pool, now)?.loaded;
+  const libraryNo = featuredHero
+    ? publishOrder(ideas).findIndex((idea) => idea.slug === featuredHero.idea.slug) + 1 : 0;
+  const heroCategory = featuredHero ? normalizeCategorySlug(featuredHero.idea.category) : "";
 
   const strip = publishOrder(ideas)
     .reverse()
@@ -150,18 +152,18 @@ export async function getHomeData(): Promise<HomeData> {
     },
     week: { label: weekLabel(now), start: weekStartUtc(now).toISOString() },
     newest: newestRows(ideas, (slug) => bySlug.get(slug)?.art ?? false),
-    hero: {
-      slug: heroSource.idea.slug,
-      title: heroSource.idea.title,
+    hero: featuredHero ? {
+      slug: featuredHero.idea.slug,
+      title: featuredHero.idea.title,
       libraryNo,
       category: heroCategory,
       categoryName: heroCategory ? categoryName(heroCategory) : "",
-      buildTime: Number(heroSource.idea.buildTime) || 0,
-      promptTitles: heroSource.extract.prompts.map((p) => p.title).slice(0, 3),
-      firstPrompt: heroSource.extract.prompts[0]?.lines ?? [],
-    },
-    spotlight: toSpotlight(picks.spotlight),
-    inside: toInside(picks.inside),
+      buildTime: Number(featuredHero.idea.buildTime) || 0,
+      promptTitles: featuredHero.extract.prompts.map((p) => p.title).slice(0, 3),
+      firstPrompt: featuredHero.extract.prompts[0]?.lines ?? [],
+    } : null,
+    spotlight: weekly ? toSpotlight(weekly.spotlight.loaded) : null,
+    inside: weekly ? toInside(weekly.inside.loaded) : null,
     strip,
   };
 }

@@ -87,25 +87,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Scaffold a Tauri 2 desktop app named Sayflow with a React + TypeScript frontend and a Rust backend. The app needs: (1) a system-tray icon with Record / Stop / Library actions, (2) accessibility permissions flow for macOS (AXUI) and Windows (UI Automation), (3) SQLite via rusqlite storing macros (id, name, voice_phrase, steps_json, created_at), and (4) a Next.js marketing site in /web with Clerk auth and Stripe Checkout webhooks that issue license keys. Provide folder structure, Cargo.toml dependencies, and the minimum Rust commands to capture mouse click coordinates and active window title during a recording session.
+Build the weekend MVP of "Sayflow": a macOS desktop app that records a desktop chore once, shows it as a timeline you can edit, and replays it step by step with approval gates. Everything stays on the machine. Replay is started from a button or a hotkey this weekend.
+
+Stack: Tauri 2 (a Rust backend and a React with TypeScript front end), rusqlite for local storage, a global input listener for mouse and keys, the macOS accessibility permission flow. No account, no cloud and no outside service.
+
+Tables (SQLite, local only):
+- macros(id, name, hotkey, steps_json, created_at)
+- step_screenshots(id, macro_id, step_index, path)
+- run_history(id, macro_id, started_at, status, failed_step, log_json)  status is success, failed or cancelled
+
+Screens: a system tray menu (Record, Stop, Library), the Library, the Checkpoint Editor (a vertical timeline) and a Run window with an approval dialog.
+Env vars (names only): none. The app asks for the macOS accessibility and screen recording permissions at first run.
+
+Do not build: billing, license keys or activation, voice triggers or Whisper, Windows or Linux, Playwright steps, cloud sync, an undo for file moves.
+Done when: the app launches from the tray, asks for the two permissions, and creates the SQLite file with the three tables.
 ```
 
-**2. Macro Recorder + Checkpoint Editor**
+**2. Core Feature**
 
 ```text
-Build the Sayflow recording pipeline. When the user clicks Record: listen to global mouse down/up, key down/up, and active window changes; append each as a typed step object { type: "click"|"key"|"wait"|"app_switch", payload: {...}, screenshot_path? }. On Stop, open the Checkpoint Editor—a vertical timeline where each step shows a thumbnail, editable label, and a toggle "require approval before run." Implement dry-run mode that highlights the target UI element without executing destructive flags. Serialize the timeline to JSON and save to SQLite. Include three seeded example macros: "Export weekly CSV," "Resize images in folder," and "Post Slack standup update."
+Build the one feature that proves Sayflow: record once, see exactly what will happen, run it with a person in charge.
+1. Record: on Record, listen to global mouse down and up, key presses and active window changes. Save each as a typed step { type: "click" | "key" | "wait" | "app_switch", payload, screenshot_path } with a screenshot kept on disk. Never record the keys typed into a password field: when macOS secure input is on, save one blank step labeled "password field" and no key data.
+2. On Stop, open the Checkpoint Editor: a vertical timeline with a thumbnail, an editable label and a "require approval before run" switch for each step. Turn the approval switch on by default for steps that look destructive: Command or Control with Delete, or an active window titled Trash, Delete or Send.
+3. Save the macro to SQLite with its steps.
+4. Dry run highlights the target of each step on screen and presses nothing. A real run executes the steps in order with a 200 millisecond pause between them.
+5. Before a step with approval required, pause and show a native dialog with the step's label and screenshot and Continue and Stop buttons.
+6. A global stop hotkey (Escape pressed three times) ends a run at once and records cancelled. A failed step stops the run, records the failed step and offers Resume from step N.
+7. Write each run to run_history with a step-by-step log.
+Rules: all data stays on the machine. Say so in the app. Never run a step silently that was marked for approval. Never record in a password field.
+Empty state: with no macros, show Record and a two-line explanation of what is captured.
+Done when: recording a three-step chore saves it with screenshots, a Delete key step is marked for approval automatically, a dry run changes nothing, a real run pauses at the approval and the triple-Escape stop ends it and logs cancelled.
 ```
 
-**3. Voice Trigger + Replay Engine**
+**3. Landing Page**
 
 ```text
-Add voice triggering to Sayflow using whisper.cpp loaded locally. On app start, spin a background thread listening for a push-to-talk hotkey; transcribe audio and fuzzy-match against the user's macro voice_phrases (Levenshtein under distance 2). On match, execute the macro step-by-step with 200ms delay between actions for visibility. Before any step marked require_approval, pause and show a native dialog with step description and screenshot. Log each run to run_history with status success/failed/cancelled and support undo for file moves and keystrokes where reversible. Handle failure gracefully: stop execution, notify user, offer "resume from step N."
+Build a one-page landing site for Sayflow, a desktop recorder that replays chores with you in charge.
+Hero: "Record your desktop once. Run it again whenever you like." Sub: "Show Sayflow a chore, review each step on a timeline and run it with approval before anything risky." One button: Join the waitlist.
+Sections: a timeline mockup with one approval gate, how it works in three steps (record, review, run), a safety block (approval gates, a stop hotkey, nothing leaves your machine) and an FAQ on which systems work today (macOS first), what is recorded and how it differs from a script recorder.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, a dark accent, a placeholder for a 90-second demo video.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page + GTM Assets**
+**4. Branding Package**
 
 ```text
-Create a Next.js landing page for Sayflow: hero "Record your desktop once. Run it forever by voice." Subhead targeting freelancers and ops admins tired of re-clicking the same export flow. Sections: problem (automation tools require coding or only work in the cloud), solution (3-step how it works mirroring the product), safety callout (approval gates, undo log), pricing table (Free guide / Lite $29 / Pro $49), FAQ (Mac vs Windows, privacy/local processing, difference vs Keyboard Maestro). Add a lead magnet CTA for the free Voice Macro Starter Guide PDF. Use Geist font, warm off-white background, dark accent, embedded 90-second demo video placeholder. Generate 5 YouTube title/description pairs for tutorials targeting "Keyboard Maestro alternative" and "automate repetitive desktop tasks."
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Sayflow: a wordmark and an icon that suggest a cursor leaving a dotted trail that ends at a check.
+Colors: warm off-white, near-black and one violet. Type: Geist, with Geist Mono for step labels.
+Deliverables: wordmark, icon, a timeline step card with an approval gate state that differs by shape as well as color, a tray menu icon in one color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the approval gate is distinguishable without color.
 ```
 
 ## Sources

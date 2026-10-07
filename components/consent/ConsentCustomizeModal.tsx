@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { IconButton } from "@/components/primitives/IconButton";
+import { newsreaderEditorial } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
 import { useConsent } from "./ConsentProvider";
 
 type ConsentCustomizeModalProps = {
@@ -49,36 +51,39 @@ export function ConsentCustomizeModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-md rounded-3xl border border-white/10 bg-neutral-950 p-8 text-white shadow-2xl sm:max-w-md"
+        className={cn(
+          newsreaderEditorial.variable,
+          "max-w-md rounded-2xl border border-home-ink bg-home-card p-7 font-sans text-home-ink sm:max-w-md sm:p-8",
+        )}
       >
         <DialogClose asChild>
           <IconButton
             aria-label="Close cookie preferences"
-            className="absolute top-6 right-6 rounded text-neutral-500 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
+            className="absolute top-5 right-5 rounded-full text-home-ink-3 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
           >
             <X size={20} />
           </IconButton>
         </DialogClose>
 
         <div className="mb-6">
-          <DialogTitle className="mb-2 text-2xl font-medium tracking-tight text-white">
+          <DialogTitle className="mb-2 font-editorial text-[30px] font-normal leading-tight tracking-[-0.02em] text-home-ink">
             Cookie Preferences
           </DialogTitle>
-          <DialogDescription className="text-sm text-neutral-400">
+          <DialogDescription className="text-sm leading-[1.55] text-home-ink-2">
             Choose which cookies you want to allow.
           </DialogDescription>
         </div>
 
         <div className="mb-6 space-y-4">
-          <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-start justify-between gap-4 border-y border-home-rule py-4">
             <div className="flex-1">
               <label
                 htmlFor={toggleId}
-                className="mb-1 block text-sm font-medium text-white"
+                className="mb-1 block text-sm font-semibold text-home-ink"
               >
                 Analytics
               </label>
-              <p id={descriptionId} className="text-xs text-neutral-500">
+              <p id={descriptionId} className="text-[13px] leading-[1.5] text-home-ink-2">
                 Help us understand how visitors interact with our site.
               </p>
             </div>
@@ -95,7 +100,7 @@ export function ConsentCustomizeModal({
               />
               <span
                 aria-hidden="true"
-                className="h-6 w-11 rounded-full bg-neutral-800 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-white peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus-visible:ring-2 peer-focus-visible:ring-white/40 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-neutral-950"
+                className="h-6 w-11 rounded-full bg-home-ink-3 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-home-card after:transition-transform after:content-[''] peer-checked:bg-home-orange-ink peer-checked:after:translate-x-full peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-home-orange-ink motion-reduce:transition-none motion-reduce:after:transition-none"
               />
             </span>
           </div>
@@ -105,7 +110,7 @@ export function ConsentCustomizeModal({
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-neutral-950"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-home-ink px-6 text-sm font-semibold text-home-paper transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
           >
             Save Preferences
           </button>

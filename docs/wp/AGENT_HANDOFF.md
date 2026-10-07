@@ -1,29 +1,37 @@
-# Current handoff — WP46 E7 launch gate (4 October 2026)
+# Current handoff — WP46 E7 launch gate (5 October 2026)
 
-PR #99 from `codex/wp46-e7-launch` is merged at `81722bc`; the current
-follow-up branch is `codex/wp46-e7-verification` in `.worktrees/wp46-e7-preview`.
-Read
-`docs/wp/wp46-e7-gate.md` first: it records the actual live Convex target,
-backups, baseline hash comparison, canonical reader and staging verification,
-and remaining NO-GO gates. The frontend's live backend is
-`first-squirrel-244`; this checkout's `--prod` selects a different, paused
-project. Never deploy with `--prod` assuming it targets the public site.
-The release switch is off. PR #99 fixed the soft 404/cache response and
-pricing tiers; this follow-up adds a private engine submission path. One live
-contract-v2 candidate was ingested only into the isolated staging backend,
-then removed by restoring its pre-test snapshot. No production idea has been
-published or imported in E7. Keep unreleased drafts out of this public
-repository.
-This branch also adds an ordered Vercel production build for E7h. A
-deployment-scoped `CONVEX_DEPLOY_KEY` for `first-squirrel-244` is now stored as a
-production-only Vercel Secret with `deployment:deploy` permission; the value was
-not logged. A staged Vercel production build with `--skip-domain` verified the
-backend-before-Next order without changing the canonical site. The first
-Git-backed build after merge still needs exact-SHA verification. If the target
-check or backend deploy fails, the production build stops. Never use the
-checkout's default `--prod` target or Convex `--verbose`.
-The root `convex-backup-before-wp46.zip` and untracked publish-idea plan are
-unrelated user data and must stay untouched.
+The current follow-up branch is `codex/wp46-e7-staging-reader` in
+`.worktrees/wp46-e7-preview`. Read `docs/wp/wp46-e7-gate.md` and
+`docs/wp/backup-restore.md` first. PR #108 merged the E7m execution record at
+`d71c55c5`; PR #109 merged the structural submission guard at `8457e75b`;
+PR #110 merged the lost-job recovery regression at `416642a9`; PR #111 merged
+the evidence quality gate at `922aa536`, with that exact canonical reader SHA.
+The public
+DMARC catalogue row and private editorial baseline were inserted on the
+serving Convex deployment, `first-squirrel-244`. The verified
+live counts are 231 public ideas, 230 private ideas/submissions and zero managed
+public pointers/versions. The E7m backup and exact merge SHAs are recorded;
+the missing pre-action Git restore tag is an explicit procedural gap. This
+checkout's `--prod` still selects a different, paused Convex project. Never
+use it as shorthand for the live-site target, or use `convex --verbose` against
+production.
+
+Publishing is **NO-GO**. The release switch, public-site origin and reader SHA
+remain unset. Private retries #11 and #12 stopped before writing; #13 made a
+machine-valid record but failed human source review for same-publisher,
+adjacent-workflow figures and an off-topic quote. The E7o code on this branch
+improves extraction and stops those source-diversity failures before writing;
+it does not approve #13. No new engine candidate has been submitted or approved
+in production. Convex backups exclude scheduled jobs, so the remaining cloud
+drill must prove recovery from persisted release rows in an isolated deployment.
+The current branch adds the protected staging-reader origin and exact backend
+check needed for the cloud recovery drill; it has not yet executed that drill.
+Managed Vercel release surfaces and independent final review remain open. Keep
+unreleased drafts under ignored `tmp/` or outside this public repo.
+The production Vercel build already deploys the exact live Convex backend
+before building Next and has a deployment-scoped key. Do not copy any secret
+value into logs or docs. The root `convex-backup-before-wp46.zip` and untracked
+publish-idea plan are unrelated user data and must stay untouched.
 
 The WP44 section below is historical handoff context for PR #81.
 

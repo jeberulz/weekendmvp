@@ -1,141 +1,61 @@
 import * as React from "react";
-import Link from "next/link";
 
-import { MegaNav } from "@/components/layout/MegaNav";
-import { SiteFooter } from "@/components/layout/SiteFooter";
+import { Breadcrumbs, type Crumb } from "@/components/public/PageHeader";
+import { PublicShell } from "@/components/public/PublicShell";
 import { cn } from "@/lib/utils";
 
 /**
- * Dark page chrome for the dark hub routes: the standalone hubs
- * (/ideas-for/*, /build-with/*, /solve/*) and the /ideas/{collection}
- * hubs. Legacy body classes + dark MegaNav + dark footer, with the legacy
- * <main> container.
+ * Page chrome for the hub routes (/ideas-for/*, /build-with/*, /solve/* and
+ * the /ideas/{collection} hubs). Since WP56 this is the research-desk shell;
+ * the dark #050505 chrome is retired.
  *
- * The /ideas/{collection} hubs share the /ideas/[slug] route with the
- * cream idea-detail pages; that layout renders collection slugs bare so
- * this dark chrome isn't wrapped in the cream IdeaNav/footer.
+ * The /ideas/{collection} hubs share the /ideas/[slug] route with the cream
+ * idea-detail pages; that layout renders collection slugs bare so this
+ * chrome isn't wrapped in the idea page's IdeaNav/footer.
  */
 export function HubShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#050505] text-white selection:bg-white/20 selection:text-white">
-      <MegaNav variant="dark" />
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
-        {children}
-      </main>
-      <SiteFooter />
-    </div>
+    <PublicShell>
+      <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-28 md:px-10 md:pt-36 xl:px-0">{children}</div>
+    </PublicShell>
   );
 }
 
-export type HubCrumb = { label: string; href?: string };
+export type HubCrumb = Crumb;
 
-/** Legacy breadcrumb strip (Home / Section / Page). */
+/** Mono breadcrumb strip (Home / Section / Page). */
 export function HubBreadcrumb({ items }: { items: HubCrumb[] }) {
-  return (
-    <nav className="mb-8" aria-label="Breadcrumb">
-      <ol className="flex items-center gap-2 text-sm">
-        {items.map((item, index) => (
-          <React.Fragment key={`${item.label}-${index}`}>
-            {index > 0 ? (
-              <li>
-                <span className="text-neutral-600">/</span>
-              </li>
-            ) : null}
-            <li>
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  className="text-neutral-500 hover:text-white transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="text-white">{item.label}</span>
-              )}
-            </li>
-          </React.Fragment>
-        ))}
-      </ol>
-    </nav>
-  );
+  return <Breadcrumbs items={items} className="mb-6" />;
 }
 
 /**
- * Hub page header. `variant="default"` is the square icon next to the H1
- * (audience / solve / collection pages); `variant="tool"` is the large
- * gradient logo box beside title+description (build-with pages).
+ * Legacy hub header kept for pages not yet on `PageHeader`. Light editorial
+ * type; the icon box is retired, so `icon` and `iconBoxClassName` are ignored.
  */
 export function HubHero({
-  variant = "default",
-  icon,
-  iconBoxClassName,
   title,
   description,
   chips,
 }: {
   variant?: "default" | "tool";
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   iconBoxClassName?: string;
   title: string;
   description: string;
   chips?: React.ReactNode;
 }) {
-  if (variant === "tool") {
-    return (
-      <header className="mb-16">
-        <div className="flex flex-col md:flex-row md:items-start gap-8 mb-8">
-          <div
-            className={cn(
-              "w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/10",
-              iconBoxClassName,
-            )}
-          >
-            {icon}
-          </div>
-          <div>
-            <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">
-              {title}
-            </h1>
-            <p className="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
-              {description}
-            </p>
-          </div>
-        </div>
-        {chips ? (
-          <div className="flex flex-wrap items-center gap-3">{chips}</div>
-        ) : null}
-      </header>
-    );
-  }
-
   return (
-    <header className="mb-16">
-      <div className="flex items-center gap-4 mb-6">
-        <div
-          className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center",
-            iconBoxClassName,
-          )}
-        >
-          {icon}
-        </div>
-        <div>
-          <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight">
-            {title}
-          </h1>
-        </div>
-      </div>
-      <p className="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
-        {description}
-      </p>
-      {chips ? (
-        <div className="flex flex-wrap items-center gap-3 mt-6">{chips}</div>
-      ) : null}
+    <header className="mb-14 flex flex-col gap-5">
+      <h1 className="font-editorial text-[42px] font-normal leading-[1.02] tracking-[-0.03em] text-balance text-home-ink md:text-[60px]">
+        {title}
+      </h1>
+      <p className="max-w-[660px] text-base leading-[1.55] text-home-ink-2 md:text-xl">{description}</p>
+      {chips ? <div className="flex flex-wrap items-center gap-x-[18px] gap-y-2">{chips}</div> : null}
     </header>
   );
 }
 
-/** Neutral hero stat chip (idea counts, skill level, build time). */
+/** Mono metadata item (idea counts, skill level, build time). */
 export function HubChip({
   children,
   className,
@@ -146,7 +66,7 @@ export function HubChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400",
+        "inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3 md:text-xs [&_svg]:hidden",
         className,
       )}
     >
@@ -155,14 +75,10 @@ export function HubChip({
   );
 }
 
-/** Green-dot count chip: `● {n} ideas` with the sr-only "Total:" prefix. */
+/** Count item: `{n} ideas` with the sr-only "Total:" prefix. */
 export function HubCountChip({ children }: { children: React.ReactNode }) {
   return (
     <HubChip>
-      <span
-        className="w-1.5 h-1.5 rounded-full bg-green-500"
-        aria-hidden="true"
-      />
       <span className="sr-only">Total:</span>
       {children}
     </HubChip>

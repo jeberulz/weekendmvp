@@ -212,6 +212,18 @@ export default defineSchema({
     .index("by_normalizedEmail", ["normalizedEmail"])
     .index("by_createdAt", ["createdAt"]),
 
+  account_beehiiv_sync: defineTable({
+    userId: v.id("users"),
+    email: v.string(),
+    state: v.union(
+      v.literal("pending"), v.literal("processing"), v.literal("synced"),
+      v.literal("skipped"), v.literal("failed"),
+    ),
+    attempts: v.number(),
+    updatedAt: v.number(),
+    result: v.optional(v.string()),
+  }).index("by_user", ["userId"]),
+
   stripe_events: defineTable({
     stripeEventId: v.string(),
     type: v.string(),

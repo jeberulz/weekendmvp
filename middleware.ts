@@ -40,12 +40,17 @@ export function canonicalRedirect(request: NextRequest) {
   // even when skipTrailingSlashRedirect is set (see next.js#66738).
   const raw = new URL(request.url);
   const pathname = raw.pathname;
-  const search = raw.search;
-  const host = request.headers.get("host")?.split(":")[0] ?? "";
-
   // Clean slash/.html and apply path aliases (e.g. /ideas → /startup-ideas)
   // in one hop so apex+dirty+rename never chains.
   const destination = canonicalPath(pathname);
+  let search = raw.search;
+  if ((destination === "/startup-ideas" || /^\/ideas\/[^/]+$/.test(destination)) && raw.searchParams.has("e")) {
+    const cleanSearch = new URLSearchParams(raw.search);
+    cleanSearch.delete("e");
+    search = cleanSearch.size ? `?${cleanSearch.toString()}` : "";
+  }
+  const host = request.headers.get("host")?.split(":")[0] ?? "";
+
   const pathChanged = pathNeedsRedirect(pathname);
   const apex = isProdApexHost(host);
   const www = isProdWwwHost(host);
@@ -422,6 +427,17 @@ export async function middleware(
     );
   }
 
+  // Old newsletter links include the recipient as ?e=. Remove it before any
+  // page, analytics or referrer can see it. The address is no longer a grant.
+  if ((request.nextUrl.pathname === "/startup-ideas" || /^\/ideas\/[^/]+$/.test(request.nextUrl.pathname)) && request.nextUrl.searchParams.has("e")) {
+    const clean = request.nextUrl.clone();
+    clean.searchParams.delete("e");
+    const response = NextResponse.redirect(clean, 307);
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  }
+
   // Hard alias: `/signin` → `/login` (Cache Components soft-redirects page
   // `redirect()` as 200). Preserve returnTo / claimPreview for preview claim.
   if (request.nextUrl.pathname === "/signin") {
@@ -453,7 +469,7 @@ export async function middleware(
         !isKnownIdeaSlug(ideaSlug) && !isIdeaCollectionSlug(ideaSlug)) {
       try {
         const legacyRow = await fetchQuery(api.ideas.bySlug, { slug: ideaSlug });
-        if (legacyRow?.bodyMode !== "convex" || !legacyRow.body) return hostRejectedResponse();
+        if (legacyRow?.bodyMode !== "convex") return hostRejectedResponse();
       } catch {
         return publicIdeaUnavailable();
       }
@@ -494,6 +510,7 @@ export const config = {
   // Every private dashboard path must reach auth, even when its final segment
   // resembles a static asset. Ordinary public/internal assets remain skipped.
   matcher: [
+    "/startup-ideas",
     "/dashboard/:path*",
     // WP46-E4f. The operator area too: a final segment like `x.js` must not
     // skip the editorial gate and its headers.

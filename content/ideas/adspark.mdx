@@ -84,25 +84,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "AdSpark," an AI ad-creative generator. Provision Supabase with these tables: users (id, email, plan TEXT default 'free', generations_this_month INT default 0), brand_profiles (id, user_id, name, tone TEXT, palette JSONB, audience TEXT, offer TEXT), generations (id, user_id, brand_profile_id, brief TEXT, source_url TEXT, sizes JSONB, copy_variants JSONB, created_at TIMESTAMPTZ), assets (id, generation_id, size TEXT, storage_path TEXT). Enable row-level security so each user only reads rows where user_id matches auth.uid(). Add a Supabase Storage bucket "ad-assets." Wire Stripe with four products: Free, Starter $29, Pro $79, Agency $199, plus an annual SKU per paid tier. Add env vars REPLICATE_API_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, META_MARKETING_TOKEN. Install the Vercel AI SDK, the Replicate client, and satori plus resvg-js for server-side image composition.
+Build the weekend MVP of "AdSpark": paste a product link or a two-line brief, answer six brand-tone questions, and get a correctly sized ad set with copy variants.
+
+Stack: Next.js, TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Claude for the copy, Replicate for the base image, satori and resvg for the text-over-image layouts. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- brand_profiles(id, user_id, name, tone, palette jsonb, audience, offer)
+- generations(id, user_id, brand_profile_id, brief, source_url, sizes jsonb, copy_variants jsonb, created_at)
+- assets(id, generation_id, size, storage_path)
+Storage: one bucket named ad-assets.
+
+Screens: /login, /brand (the six-question quiz), /generate.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, REPLICATE_API_TOKEN.
+
+Do not build: billing, plans or monthly caps, pushing ads to Meta, a second copy model, annual options, an admin area.
+Done when: npm run dev starts, you can sign in, and the three tables and the ad-assets bucket exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the generation pipeline as a POST /api/generate route. Input: { brand_profile_id, source_url?, brief? }. Steps: (1) If source_url is present, fetch the page and parse Open Graph tags (og:image, og:title, product:price:amount) to seed the brief. (2) Load the brand_profile and build a cached system prompt describing tone, palette, audience, and offer. (3) Call Claude with a strict JSON schema returning 4 copy variants: { headline, primary_text, cta, char_counts: { meta, google, tiktok } }, rejecting any variant that exceeds a platform limit. (4) Call the Replicate image model conditioned on the brand palette to render a base hero visual. (5) For each target size (1080x1080, 1080x1920, 1200x628, 1080x1350), use satori plus resvg to compose the visual with the winning headline overlaid, output PNG to Supabase Storage. (6) Pair copy variants into A/B sets that change exactly one variable. Return signed URLs for every asset. Enforce the plan's monthly generation cap before running and increment generations_this_month on success.
+Build the one feature that proves AdSpark: a link or brief in, a full ad set out.
+1. POST /api/generate takes { brand_profile_id, source_url?, brief? }. If source_url is present, fetch the page and read og:image, og:title and product:price:amount to seed the brief.
+2. Load the brand profile and build one system prompt from its tone, palette, audience and offer.
+3. Ask Claude for 4 copy variants as strict JSON: { headline, primary_text, cta, char_counts: { meta, google, tiktok } }. Reject any variant over a platform limit.
+4. Ask Replicate for one base hero image in the brand palette.
+5. For each size (1080x1080, 1080x1920, 1200x628, 1080x1350), compose the winning headline over the image with satori and resvg, and save the PNG to Storage.
+6. Pair the copy variants into A/B sets that change exactly one thing. Return signed URLs for every asset.
+Empty state: with no brand profile, send the user to the six-question quiz.
+Done when: pasting a product URL returns four correctly sized images and four copy variants within about a minute.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for AdSpark. Hero headline: "From product link to full ad set in under a minute." Sub: "Paste a link, answer six questions about your brand, and get correctly-sized visuals, scroll-stopping copy, and A/B variations ready to launch." Sections: an animated before/after showing a raw product photo becoming a 4-size ad set on scroll; the problem (small teams pay a production tax before they can test ideas); how it works (the 4 steps with icons matching the solution section); pricing (Free / Starter $29 / Pro $79 / Agency $199) anchored against an "AdCreative.ai from $149/mo" callout; an FAQ covering brand-voice accuracy, supported ad platforms, and export formats. Use the Geist font, a deep aubergine (#4c1d3f) primary accent against an off-white background, and generous whitespace. Primary CTA: "Generate your first ad set free."
+Build a one-page landing site for AdSpark, an AI ad-creative generator for small marketing teams.
+Hero: "From product link to full ad set in under a minute." Sub: "Paste a link, answer six questions about your brand, and get correctly sized visuals, scroll-stopping copy and A/B variations ready to launch." One button: Join the waitlist.
+Sections: a before and after that turns a raw product photo into a 4-size ad set as you scroll, the problem (small teams pay a production tax before they can test ideas), how it works in four steps (drop a link, generate the set, auto-size and vary, export), and an FAQ on brand-voice accuracy, supported ad platforms and export formats.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, deep aubergine #4c1d3f against off-white, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for AdSpark: a wordmark and a compact icon mark suggesting "a spark igniting a frame." Primary color a deep aubergine (#4c1d3f) with a single warm-gold accent and two neutral greys. Type system: Geist for UI and headings, Geist Mono for metrics and character counts. Provide hex codes, font weights, a 6-icon usage set (link, brief, brand-tone, generate, resize, A/B), and three voice rules: lead with speed, always show the finished set not the canvas, and never over-promise "perfect" copy, promise testable copy. Output a one-page brand sheet plus three sample ad-headline copy variants demonstrating the brand voice.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AdSpark: a wordmark and a compact icon suggesting a spark igniting a frame.
+Colors: deep aubergine #4c1d3f, one warm-gold accent and two neutral greys. Type: Geist for the interface and headings, Geist Mono for metrics and character counts.
+Voice rules: lead with speed, always show the finished set and not the canvas, and promise testable copy, never perfect copy.
+Deliverables: wordmark, icon, a 6-icon set (link, brief, brand tone, generate, resize, A/B), and a one-page brand sheet with three sample ad headlines in the brand voice.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

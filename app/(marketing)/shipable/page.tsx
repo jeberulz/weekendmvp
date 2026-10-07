@@ -4,7 +4,6 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { MotionEffects } from "@/components/marketing/MotionEffects";
 import { newsreader } from "@/lib/fonts";
 
-import { WorkshopCountdownCard } from "@/components/marketing/workshop/WorkshopCountdownCard";
 import { WorkshopStats } from "@/components/marketing/workshop/WorkshopStats";
 import { WorkshopProblem } from "@/components/marketing/workshop/WorkshopProblem";
 import { WorkshopTldr } from "@/components/marketing/workshop/WorkshopTldr";
@@ -30,24 +29,23 @@ import {
   TEACHER_PICTURE,
   TEACHER_BODY,
   ShipableHero,
+  ShipableNextDateCard,
   ShipableDeliverableTeaser,
   ShipableProblemBody,
   ShipableProof,
 } from "./shipable-data";
 import { SITE } from "@/lib/seo";
 
-/* Checkout: live Stripe Payment Link wired in ShipableCheckoutForm.tsx.
-   The form does a fire-and-forget Beehiiv subscribe, then redirects to
-   Stripe with prefilled_email. Stripe redirects back to /shipable?paid=1
-   on success which swaps the form for a confirmation block (ShipableSeat). */
+/* Seats paused until a new workshop date is set. No Stripe checkout on
+   this page — #seat is the free Starter Kit capture + "Next date coming soon". */
 
 export const metadata: Metadata = {
   title: {
     absolute:
-      "ship·able | Build & Ship Your MVP Live in 90 Minutes ($9 Workshop)",
+      "ship·able | Build & Ship Your MVP Live in 90 Minutes (Workshop)",
   },
   description:
-    "Build and ship a real MVP in 90 minutes. Live $9 workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Sat Aug 1, 2026 · Live on Zoom · Lifetime replay.",
+    "Build and ship a real MVP in 90 minutes. Live workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Next date coming soon · Live on Zoom · Lifetime replay.",
   keywords:
     "MVP workshop, build MVP in a weekend, non-technical founder MVP, ship MVP live, AI MVP builder, 90 minute MVP, weekend MVP workshop",
   authors: [{ name: "John Iseghohi" }],
@@ -57,9 +55,9 @@ export const metadata: Metadata = {
     siteName: "Weekend MVP",
     locale: "en_GB",
     url: "/shipable",
-    title: "ship·able · Build your MVP live in 90 minutes for $9",
+    title: "ship·able · Build your MVP live in 90 minutes",
     description:
-      "Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Sat Aug 1, 2026 at 5 PM BST. Replay included.",
+      "Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Next date coming soon. Replay included.",
     images: [
       {
         url: `${SITE}/image/og-image.png`,
@@ -73,9 +71,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@weekendmvp",
-    title: "ship·able · Build your MVP live in 90 minutes for $9",
+    title: "ship·able · Build your MVP live in 90 minutes",
     description:
-      "Live $9 workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Sat Aug 1, 2026 · 5 PM BST.",
+      "Live workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Next date coming soon.",
     images: [
       {
         url: `${SITE}/image/og-image.png`,
@@ -97,15 +95,7 @@ export default function ShipablePage() {
       <main>
         <ShipableHero />
 
-        <WorkshopCountdownCard
-          deadline={WORKSHOP_DEADLINE}
-          eyebrow="Workshop starts in"
-          timezone="BST"
-          dateLabel="Sat, Aug 1"
-          timeLabel="5:00 PM"
-          italicClass="text-[#e9a06a]"
-          meta="90 minutes live · Q&A after"
-        />
+        <ShipableNextDateCard />
 
         <ShipableDeliverableTeaser />
 
@@ -179,7 +169,7 @@ export default function ShipablePage() {
           bonusPillClass="border-[#A03D00]/40 text-[#A03D00]"
           strikeDecorationClass="decoration-[#CC5500]/70"
           ctaHref="#seat"
-          ctaLabel="Save my seat · $9"
+          ctaLabel="Next date coming soon"
         />
 
         <ShipableProof />
@@ -192,7 +182,7 @@ export default function ShipablePage() {
             <>
               90 minutes.{" "}
               <span className="accent-italic text-[#CC5500] font-normal">
-                $9.
+                $9 when seats reopen.
               </span>{" "}
               Walk out shipped.
             </>
@@ -227,12 +217,12 @@ export default function ShipablePage() {
           }
           footerValueLabel={
             <>
-              <span className="line-through">$738</span> value · 2 bonuses (live)
+              <span className="line-through">$738</span> value · seats paused
             </>
           }
           ctaHref="#seat"
-          ctaLabel="Save my seat · $9"
-          fineprint="WMVP·26·S0001 · Bring to Zoom"
+          ctaLabel="Next date coming soon"
+          fineprint="WMVP·26·S0001 · Next session TBA"
         />
 
         <WorkshopTimezones
@@ -243,19 +233,16 @@ export default function ShipablePage() {
           introColorClass="text-neutral-700"
           heading={
             <>
-              Here&apos;s when it lands{" "}
+              Timezones when the next date{" "}
               <span className="accent-italic text-[#CC5500] font-normal">
-                where you are.
+                lands.
               </span>
             </>
           }
           intro={
             <>
-              Workshop runs{" "}
-              <strong className="font-semibold text-[#1a1a1a]">
-                5:00 PM BST
-              </strong>{" "}
-              on Sat, Aug 1. Set a reminder for your local time below.
+              Next date coming soon. Local start times will be posted with the
+              announcement — typical slots below for planning.
             </>
           }
           rows={TIMEZONES}
@@ -279,8 +266,9 @@ export default function ShipablePage() {
 
       <WorkshopStickyBar
         deadline={WORKSHOP_DEADLINE}
+        statusLabel="Next date coming soon"
         ctaHref="#seat"
-        ctaLabel="Save my seat · $9"
+        ctaLabel="Get the free kit"
         ctaBgClass="bg-[#e9a06a] text-[#1a1a1a]"
         ctaHoverClass="hover:bg-[#f0b380]"
       />

@@ -76,19 +76,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for a buy-now-pay-later platform built for SaaS and online-course sellers. Provision Postgres via Supabase with these tables: merchants (id, name, stripe_connect_id, plan TEXT default 'starter', engagement_data_enabled BOOLEAN), buyers (id, email, phone, stripe_customer_id), plans (id, merchant_id, buyer_id, total_cents INT, installment_count INT, installment_cents INT, status TEXT default 'active', product_type TEXT CHECK product_type IN ('course','saas','membership')), installments (id, plan_id, due_at TIMESTAMPTZ, paid_at TIMESTAMPTZ, status TEXT default 'pending', amount_cents INT), engagement_events (id, buyer_id, product_id, event_type TEXT, occurred_at TIMESTAMPTZ). Set up Stripe Connect for merchant payouts and Stripe Billing for the platform's own Starter/Growth/Platform subscription tiers. Add env vars for STRIPE_SECRET_KEY, STRIPE_CONNECT_CLIENT_ID, and SUPABASE keys.
+Build the weekend MVP of "Split-Pay for Digital Products": a checkout widget that lets a buyer split a course or SaaS price into monthly installments, with access that follows payment status. Sandbox only: no real money moves.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for merchants). A Vercel cron route runs the daily installment job. Deploy on Vercel.
+
+Tables (Row Level Security on: a merchant reads only its own rows):
+- merchants(id, user_id, name, engagement_data_enabled)
+- buyers(id, email, phone)
+- plans(id, merchant_id, buyer_id, total_cents, installment_count, installment_cents, status, product_type)  where product_type is one of course, saas, membership
+- installments(id, plan_id, due_at, paid_at, status, amount_cents)
+- engagement_events(id, buyer_id, product_id, event_type, occurred_at)
+
+Screens: /login, /dashboard (merchant), /widget-demo (a fake course page with the widget).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), CRON_SECRET.
+
+Do not build: live-mode payments, advancing real money to sellers (record what would be advanced on the plan), KYC, merchant payouts, billing for the platform itself, real underwriting data.
+Done when: npm run dev starts, you can sign in as a merchant, and the five tables exist with Row Level Security on.
 ```
 
-**2. Checkout Widget and Installment Engine**
+**2. Core Feature**
 
 ```text
-Build a checkout widget component that a merchant can embed via a script tag or an npm package. On load, it calls POST /api/plans/eligibility with the buyer's email and cart total; the endpoint runs a lightweight risk score combining card-network signals with any available engagement_events for that buyer and returns approved installment options (3, 6, or 12 months) or a decline. On plan creation, use Stripe Connect to advance the merchant the full amount minus the transaction fee immediately, then schedule future installment charges against the buyer's saved payment method using Stripe's off-session charges. Build a cron job (Vercel Cron) that runs daily: charges due installments, updates installment status, and on a missed payment triggers a grace-period countdown and a webhook the merchant can use to pause product access (do not hard-revoke immediately). Log every state transition in an audit-friendly way.
+Build the one feature that proves the idea: split the price, tie access to payments, and handle a missed one gently.
+1. Add the payment keys to the env vars: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET, in test mode only. The checkout widget is a script tag or component. On load it calls POST /api/plans/eligibility with the buyer's email and the cart total.
+2. Eligibility runs a lightweight score from card signals and any engagement_events for that buyer, and returns the approved options (3, 6 or 12 months) or a decline with a reason.
+3. On plan creation, save the plan and its installments, charge the first installment, and save the payment method for off-session charges. Record on the plan what would be advanced to the seller. Move no money to the seller.
+4. A daily cron route (protected by CRON_SECRET) charges due installments, updates their status, and on a missed payment starts a grace-period countdown and calls a webhook the merchant can use to pause access. Do not revoke access at once.
+5. Log every state change with a timestamp and a reason.
+6. /dashboard shows financed volume this month, active plans with on-track, grace-period and defaulted statuses, and the default-rate trend.
+Rules: test mode only, and say so in the UI. Lending is regulated, so take legal advice before moving real money. Never show a decline reason that exposes another buyer's data.
+Empty state: with no plans, show the widget demo link and the webhook URL.
+Done when: a test buyer can split a price into 3, the first installment charges in test mode, a failed second charge starts the grace period and calls the merchant webhook, and access stays on until the grace period ends.
 ```
 
-**3. Merchant Dashboard**
+**3. Landing Page**
 
 ```text
-Design a merchant dashboard for the BNPL platform showing: total financed volume this month, active installment plans with status (on-track, grace period, defaulted), a conversion-lift estimate (comparing checkout completion rate for buyers offered installments vs. full-pay only), and a default-rate trend chart. Include a settings page to connect Stripe, set default installment options (3/6/12 months), toggle engagement-based underwriting (requires connecting an LMS or product-usage webhook), and view/download monthly payout statements. Keep the design dense and data-forward — this is a tool merchants check weekly to reassure themselves the receivables are healthy, not a marketing surface.
+Build a one-page landing site for Split-Pay for Digital Products, installments for SaaS and online courses.
+Hero: "Let buyers split the price. Keep your sales." Sub: "Installments built for products that unlock access, not ones that ship a box." One button: Join the waitlist.
+Sections: the problem (high-ticket courses and annual plans lose buyers at checkout), how it works in four steps (connect checkout, the buyer splits the price, the seller is paid up front, access follows payment), and an FAQ that says plainly this is a product in development, how missed payments are handled, and that lending rules apply.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: sober and clear. Make no promise of approvals.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Split-Pay for Digital Products: a wordmark and an icon that suggest a price split into equal steps.
+Colors: off-white, deep navy and one calm green. Type: one sober sans for the interface and tabular numbers for amounts.
+Deliverables: wordmark, icon, an installment-schedule component style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the amounts line up in a column.
 ```
 
 ## Sources

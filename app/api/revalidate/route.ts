@@ -1,21 +1,29 @@
 /**
- * POST /api/revalidate?tag=<tag>&secret=<REVALIDATE_SECRET>
+ * POST /api/revalidate?tag=<tag>
  *
  * Convex → Next.js cache invalidation. Called by the Convex internal action
  * `convex/revalidate.ts` after content upserts (e.g. tags `idea:<slug>`,
- * `ideas`). Requires REVALIDATE_SECRET to match; when the env var is unset
- * the endpoint always returns 401 (fail closed).
+ * `ideas`). Requires the shared secret in x-weekendmvp-revalidate-secret;
+ * when the env var is unset the endpoint always returns 401 (fail closed).
  */
 
+import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
+
+function matchesSecret(provided: string | null, expected: string | undefined): boolean {
+  if (!provided || !expected) return false;
+  const suppliedHash = createHash("sha256").update(provided).digest();
+  const expectedHash = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(suppliedHash, expectedHash);
+}
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const tag = searchParams.get("tag");
-  const secret = searchParams.get("secret");
-
-  const expected = process.env.REVALIDATE_SECRET;
-  if (!expected || !secret || secret !== expected) {
+  if (!matchesSecret(
+    request.headers.get("x-weekendmvp-revalidate-secret"),
+    process.env.REVALIDATE_SECRET,
+  )) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

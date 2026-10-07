@@ -83,25 +83,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “TextTrack.” Provision Supabase with these tables: users (id, phone UNIQUE, email, timezone TEXT default ‘UTC’, default_rate_cents INT, plan TEXT default ‘free’), projects (id, user_id, name, rate_cents INT, color TEXT), sessions (id, user_id, project_id, started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, note TEXT, source TEXT CHECK source IN (‘sms’,‘web’), confidence FLOAT), summaries (id, user_id, week_start, total_seconds, total_cents, csv_url, sent_at). Enable row-level security so each user can only read/write rows where user_id matches their auth.uid(). Wire Stripe with three products (Free, Solo $9, Pro $19) plus a $79/year annual SKU. Add env vars TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, OPENAI_API_KEY. Install the Twilio Node SDK and the Vercel AI SDK.
+Build the weekend MVP of "TextTrack": track billable hours by text message. Text "start" and "stop" to one number, and get a weekly summary text with hours and earnings.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio Programmable Messaging for the number and the replies, the OpenAI API (a small model) to read a message the plain grammar does not understand. Verify a phone with a code sent by text. A Vercel Cron route sends the Sunday summary. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows; the SMS route writes through the service role):
+- profiles(user_id, phone, phone_verified_at, timezone, default_rate_cents)
+- projects(id, user_id, name, rate_cents)
+- sessions(id, user_id, project_id, started_at, ended_at, note, source, confidence, auto_stopped boolean)  source is sms or web
+- messages(id, user_id, direction, body, twilio_sid, created_at)
+- summaries(id, user_id, week_start, total_seconds, total_cents, sent_at)
+
+Screens: /login, /setup (phone, rate and projects), /sessions (the week and CSV export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, OPENAI_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or an annual option, a model-based project categorizer, a break command, a job queue, invoice generation.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. SMS Command Parser + Timer State Machine**
+**2. Core Feature**
 
 ```text
-Build POST /api/sms as a Vercel Edge route. Validate the inbound Twilio signature. Look up the user by From phone number; if missing, reply with a signup link and exit. Parse the Body with a small command grammar first (regex: ^(start|stop|break|rate|note|status)( .*)?$); if it doesn’t match, fall through to gpt-4o-mini with a strict JSON schema: { intent: "start"|"stop"|"break"|"set_rate"|"note"|"status"|"unknown", project_hint?: string, rate_cents?: number, note?: string, confidence: number }. State rules: start opens a session if no open session exists, otherwise replies “already tracking  for X min”; stop closes the open session and replies with elapsed time + earnings against rate; break inserts a paused gap; rate updates user.default_rate_cents; note appends to the most recent session. Auto-stop any session older than 8 hours via a cron sweep. Reply via TwiML in <1s; do heavy work (categorization) in a background fetch. Persist every inbound and outbound message to a messages table for audit.
+Build the one feature that proves TextTrack: a timer that lives in a text thread and never loses an hour.
+1. POST /api/sms validates the Twilio signature, finds the user by the From number (verified phones only) and replies with a signup link if there is none.
+2. Parse the body with a plain grammar first: start, stop, status, rate and note, with an optional project name after start ("start uber"). If nothing matches, ask the OpenAI API for JSON { intent: "start" | "stop" | "set_rate" | "note" | "status" | "unknown", project_hint, rate_cents, note, confidence }. Under 0.7 confidence, reply "Did you mean start? Text YES or rephrase" and do nothing else.
+3. State rules: start opens a session when none is open, otherwise replies "Already tracking X minutes". stop closes it and replies with the elapsed time and the earnings at the project's rate or the default rate. rate updates the default. note adds to the latest session.
+4. Close any session older than 8 hours at the start of every inbound message and before the weekly summary, setting its end to 8 hours after its start and auto_stopped true. Tell the user their last session was auto-stopped.
+5. Reply with TwiML in under a second and keep replies under 160 characters. Save every inbound and outbound text to messages.
+6. A Sunday cron route (protected by CRON_SECRET) sends each user a text with hours by project and total earnings for the week and saves a summary. /sessions shows the week and exports a CSV.
+Rules: honor STOP and HELP (Twilio handles the opt-out; do not message a number that has opted out). Show the user's own timezone in every time. A message from an unverified number gets one reply with the signup link and nothing else.
+Empty state: before setup, show the phone verification step.
+Done when: texting start, then stop, returns the right elapsed time and earnings, a second start says already tracking, an unclear message asks to confirm instead of guessing, a forgotten session is auto-stopped at 8 hours, and the Sunday text matches the CSV.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for TextTrack. Hero headline: “Track every billable hour with two text messages.” Sub: “Text ‘start’ when work begins, ‘stop’ when it ends. We do the math. You send the invoice.” Sections: live demo (a fake phone screen showing a real SMS exchange that animates on scroll), problem (gig workers undercount hours because every existing tracker assumes a desk), how it works (4 steps with icons matching the page’s solution section), pricing (Free / Solo $9 / Pro $19) anchored against a Toggl $20/user/mo callout, FAQ covering carrier compliance (A2P 10DLC), accuracy of auto-categorization, and data privacy. Use the Geist font, off-white #fcfaf7 background, near-black accents, generous whitespace. Primary CTA: “Text START to  to begin” with a fallback email-capture form.
+Build a one-page landing site for TextTrack, an SMS time tracker for gig workers and weekend consultants.
+Hero: "Track every billable hour with two text messages." Sub: "Text start when work begins and stop when it ends. We do the math. You send the invoice." One button: Join the waitlist.
+Sections: a phone-sized sample text exchange, the problem (gig workers undercount hours because trackers assume a desk), how it works in four steps (set a rate, text start, text stop, read your Sunday summary), and an FAQ on carrier rules for business texting, how unclear messages are handled and data privacy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background (#fcfaf7), near-black accents, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for TextTrack: a wordmark and a small icon mark suggesting “a single text bubble with a clock.” Pick a primary near-black, a single emerald accent (#10b981 or similar), and two warm neutrals. Type system: Geist for UI and headings, IBM Plex Mono for code/timer values. Provide hex codes, font weights, a 6-icon usage set (start, stop, break, rate, project, export), and three voice rules: never moralize about productivity, always show earnings alongside hours, write SMS replies under 160 chars when possible. Output as a one-page brand sheet plus three sample SMS-confirmation copy variants.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TextTrack: a wordmark and a small icon that suggest a single text bubble with a clock.
+Colors: near-black, one emerald (#10b981) and two warm neutrals. Type: Geist for the interface, IBM Plex Mono for timer values.
+Deliverables: wordmark, icon, a six-icon set (start, stop, rate, project, note, export), three sample text confirmations, and a one-page brand sheet. Voice rules: never moralize about productivity, always show earnings beside hours, keep texts under 160 characters.
+Done when: each deliverable is saved in one folder and each sample text is under 160 characters.
 ```
 
 ## Sources

@@ -82,25 +82,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 15 project with TypeScript, Tailwind CSS, and shadcn/ui for “MeetingMood AI”. Set up Supabase (Postgres + RLS) with tables: users, calendar_connections (provider, refresh_token_encrypted), events (external_id, start_at, end_at, attendees JSONB, recurring_series_id, title_hash), reactions (event_id, user_id, sentiment enum [like, meh, drain], created_at), weekly_reports (user_id, week_start, summary_markdown, top_drain_series_id). Add Clerk for org-aware auth, Stripe for Personal/Team/Corporate plans, and environment variables for Google OAuth, Microsoft Graph, Anthropic, and Resend. Enable RLS so users can only read their own rows; no admin read path exists.
+Build the weekend MVP of "MeetingMood AI": a calendar-connected tracker where you rate last week's meetings and see which ones drain you.
+
+Stack: Next.js, TypeScript, Tailwind, shadcn/ui, Supabase (Postgres, Row Level Security, Auth with Google sign-in). Deploy on Vercel.
+Calendar: Google Calendar only, read-only scope, requested in the same Google sign-in.
+
+Tables (Row Level Security on, so each user reads only their own rows):
+- calendar_connections(id, user_id, provider, refresh_token_encrypted, connected_at)
+- events(id, user_id, external_id, start_at, end_at, attendees jsonb, recurring_series_id, title_hash)
+- reactions(id, event_id, user_id, sentiment, created_at)  where sentiment is one of like, meh, drain
+- weekly_reports(id, user_id, week_start, summary_markdown, top_drain_series_id)
+
+Screens: /login, /review, /dashboard.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET.
+
+Do not build: billing or plans, teams or manager views, Microsoft 365, an admin area, email digests.
+Done when: npm run dev starts, you can sign in with Google, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the weekly swipe-review flow. (1) Sunday-night cron pulls last 7 days of events from Google Calendar / Microsoft Graph for every connected user and inserts into events. (2) UI presents a stack of swipeable cards (Framer Motion) — one per meeting — with right = like, down = meh, left = drain. (3) Submissions write to reactions and update aggregate views: by weekday, by recurring_series_id, by primary attendee. (4) Pattern detector (plain SQL + a simple regression) flags the top drain series and the best-performing day. Return a JSON dashboard payload {by_day, by_series, top_drain_series, top_energy_series, recovery_minutes_needed} to the front-end. Stream tokens for the Monday digest only.
+Build the one feature that proves MeetingMood AI: the weekly swipe review and the patterns it reveals.
+1. On first sign-in, pull the last 4 weeks of events from Google Calendar (expand recurring events into single events) and insert them into events. Repeat each Sunday night with a scheduled job that uses the service role key.
+2. /review shows one card per meeting from the last week, newest first. Three buttons do what a swipe does: like, meh, drain. The keys L, M and D work too. Each answer writes one row to reactions.
+3. /dashboard runs three plain SQL group-bys over reactions joined to events: average sentiment by weekday, by recurring_series_id, and by number of meetings that day. Show the worst weekday and the worst recurring series as two cards.
+4. Write one template sentence about the top drain series into weekly_reports.summary_markdown. No AI call.
+Output shape: { by_weekday, by_series, top_drain_series } as JSON from one route handler.
+Empty state: with fewer than 10 reactions, show "Rate 10 meetings to see your first pattern" and the review button.
+Done when: you can sign in, rate 10 past meetings in /review, and /dashboard names your worst weekday and your worst recurring series.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing site for MeetingMood AI — calendar-based mood analytics for remote workers. Hero: “Find out which meetings are draining you. With data.” Sections: the burnout-without-cause problem, the swipe-card solution (animated demo), a sample weekly digest with redacted names, a comparison block vs Daylio / Wysa / Officevibe, pricing for Personal / Team / Corporate, a privacy section (read-only calendar scope, no manager sees individual reactions, no LLM training on customer data), and an email capture for the waitlist. Palette: ink near-black, warm paper background #fcfaf7, lavender accent #b6a4f6 for the “drain” spark line. Voice: calm, data-savvy, slightly dry.
+Build a one-page landing site for MeetingMood AI, a mood tracker for your meeting calendar.
+Hero: "Find out which meetings are draining you. With data." One button: Join the waitlist.
+Sections: the problem (a week that feels off with no single cause), the swipe review (a short animated demo of like, meh and drain), a sample weekly report with names hidden, a privacy section (read-only calendar access, and your reactions are yours alone), and a short FAQ.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Palette: ink near-black, warm paper #fcfaf7, lavender #b6a4f6 for the drain line.
+Voice: calm, data-savvy, slightly dry.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Branding for MeetingMood AI: wordmark with a small swipe-arc curving under the “M,” readable at 18px. Colors — ink #0F1115, paper #FCFAF7, lavender accent #B6A4F6 for “drain” charts, sage #9BC5A8 for “energy.” Typography: Geist Sans for UI, Geist Mono for chart labels and citation chips. Deliverables: favicon, login/empty states (“your first week starts Sunday”), swipe-card illustration set (cardstock paper feel, soft shadows, no faces), Monday digest email header, and a single LinkedIn launch post graphic.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Wordmark for MeetingMood AI with a small swipe-arc curving under the "M", readable at 18px.
+Colors: ink #0F1115, paper #FCFAF7, lavender #B6A4F6 for drain charts, sage #9BC5A8 for energy.
+Typography: Geist Sans for the interface, Geist Mono for chart labels.
+Deliverables: favicon, a "your first week starts Sunday" empty state, a set of swipe-card illustrations (cardstock paper feel, soft shadows, no faces), and one launch graphic.
+Done when: each deliverable is saved in one folder and the wordmark is readable at 18px.
 ```
 
 ## Sources

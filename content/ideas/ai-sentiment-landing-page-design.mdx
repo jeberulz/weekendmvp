@@ -80,45 +80,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project for SentimentLP — an AI landing page builder that starts with Reddit/forum sentiment research.
+Build the weekend MVP of "SentimentLP": describe an offer, read what your market actually says on Reddit, and publish a landing page in that language.
 
-Set up:
-- Clerk authentication with Supabase sync (users, projects tables)
-- Supabase schema: projects, sentiment_runs, pages, waitlist_signups
-- API route POST /api/sentiment/run that accepts { projectId, subreddits[], query }
-- Dashboard at /dashboard listing projects with sentiment status badges
-- Stripe Billing with Free, Starter ($49), Advanced ($199) tiers
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Reddit API for the threads, the OpenAI API for the clustering and the page copy. Deploy on Vercel.
 
-Use TypeScript strict mode, Tailwind v4, and proper error handling on all API routes.
+Tables (Row Level Security on, each user reads only their own rows, and published pages are public to read):
+- projects(id, user_id, name, offer, audience)
+- sentiment_runs(id, project_id, source, query, themes jsonb, outcomes jsonb, phrases jsonb, created_at)
+- pages(id, project_id, slug, content jsonb, headline_variant, published_at)
+- waitlist_signups(id, page_id, email, created_at)
+
+Screens: /login, /dashboard (projects and sentiment status), /p/[slug] (the published page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, OPENAI_API_KEY.
+
+Do not build: billing or plans, a fallback scraper, forums other than Reddit, a conversion pixel, continuous optimization.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Sentiment Pipeline**
+**2. Core Feature**
 
 ```text
-Build the sentiment research pipeline for SentimentLP:
-
-1. Accept subreddit list + search query from the user
-2. Fetch top posts and comments via Reddit API (limit 50 threads, cache 24h in Postgres)
-3. Send aggregated text to gpt-4o-mini with prompt: "Extract top 5 pain themes, top 5 desired outcomes, and 10 exact phrases prospects use. Return JSON."
-4. Store clusters in sentiment_runs table with timestamps
-5. Display results in a dashboard UI: theme cards with example quotes and frequency counts
-
-Handle rate limits with exponential backoff. Never expose API keys client-side.
+Build the one feature that proves SentimentLP: market language in, a published page out.
+1. POST /api/sentiment/run takes { projectId, subreddits[], query }. Fetch the top posts and comments through the Reddit API (limit 50 threads, cache for 24 hours in Postgres) with exponential backoff on rate limits.
+2. Send the combined text to a small OpenAI model: "Extract the top 5 pain themes, the top 5 desired outcomes and 10 exact phrases prospects use. Return JSON." Save it to sentiment_runs.
+3. Show the result as theme cards with example quotes and frequency counts.
+4. Generate the page with a stronger model and structured output { headline, subhead, problem_section, solution_section, features[], cta_text, social_proof_placeholder }. Tie each section to the theme that drove it, and make 3 headline variants.
+5. Publish to /p/[slug] with a waitlist form that writes to waitlist_signups. Return the shareable URL.
+Rules: never expose an API key to the client.
+Empty state: with no projects, show the form that describes the offer and audience.
+Done when: a test offer returns five themes with real quotes, the generated page cites which theme drove which block, and a published page collects an email.
 ```
 
-**3. Landing Page Generation**
+**3. Landing Page**
 
 ```text
-Build the page generator for SentimentLP:
+Build a one-page landing site for SentimentLP, a landing page builder that starts from market signal.
+Hero: "Landing pages written in the words your market already uses." Sub: "Describe your offer. We read the forums, find the pain, and publish a validation page in one weekend." One button: Join the waitlist.
+Sections: the problem (templates sound like everyone else), how it works in four steps (describe your offer, review the market signal, generate the page, publish and measure), a sample theme card with a real-sounding quote, and an FAQ on where the signal comes from.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: direct and curious.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Given a sentiment_runs record with pain themes and phrasing clusters:
-1. Call gpt-4o with structured output: { headline, subhead, problem_section, solution_section, features[], cta_text, social_proof_placeholder }
-2. Map each section to a specific sentiment cluster (cite which theme drove which copy block)
-3. Render as a clean Tailwind landing page template with 3 headline variants for A/B testing
-4. Publish to /p/[slug] with waitlist form (email → waitlist_signups table)
-5. Return shareable URL and conversion tracking pixel snippet
+**4. Branding Package**
 
-User flow: describe offer → review sentiment → pick headline variant → publish in under 10 minutes.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SentimentLP: a wordmark and an icon that suggest a speech bubble becoming a page.
+Colors: off-white, near-black and one warm accent. Type: one friendly sans for the interface and a serif for quotes.
+Deliverables: wordmark, icon, a theme-card style with a quote mark, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

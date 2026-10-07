@@ -9,6 +9,7 @@
  */
 
 import type * as admin_superAdmin from "../admin/superAdmin.js";
+import type * as accountBeehiiv from "../accountBeehiiv.js";
 import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
@@ -24,6 +25,7 @@ import type * as editorial_ids from "../editorial/ids.js";
 import type * as editorial_ingest from "../editorial/ingest.js";
 import type * as editorial_public from "../editorial/public.js";
 import type * as editorial_publication from "../editorial/publication.js";
+import type * as editorial_readerTarget from "../editorial/readerTarget.js";
 import type * as editorial_reads from "../editorial/reads.js";
 import type * as editorial_service from "../editorial/service.js";
 import type * as editorial_session from "../editorial/session.js";
@@ -91,6 +93,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  accountBeehiiv: typeof accountBeehiiv;
   "admin/superAdmin": typeof admin_superAdmin;
   articles: typeof articles;
   auth: typeof auth;
@@ -107,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   "editorial/ingest": typeof editorial_ingest;
   "editorial/public": typeof editorial_public;
   "editorial/publication": typeof editorial_publication;
+  "editorial/readerTarget": typeof editorial_readerTarget;
   "editorial/reads": typeof editorial_reads;
   "editorial/service": typeof editorial_service;
   "editorial/session": typeof editorial_session;

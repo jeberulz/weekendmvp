@@ -83,29 +83,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 App Router project for VibeCoders — a two-sided marketplace connecting founders with AI-native developers. Set up: Supabase for the database with tables for users (role: founder | developer), projects (status: draft | active | matched | complete), developer_profiles (stack[], ai_tools[], hourly_rate, sprint_rating), and matches (project_id, developer_id, status). Add Clerk for auth with role-based middleware. Add Stripe Connect for marketplace payments with escrow support. Include TypeScript, Tailwind CSS, and proper environment variable structure (.env.local). Generate the initial Supabase migrations and RLS policies.
+Build the weekend MVP of "VibeCoders": a founder describes a project and sees the three best-fit vetted developers, and developers apply through a short vetting flow an admin reviews. No payments yet.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link and roles), the OpenAI API (a small model) to read a project description, Resend for emails. Deploy on Vercel.
+
+Tables (Row Level Security on; founders read their own projects and matches, developers their own profile, admins everything):
+- profiles(user_id, role, display_name)  role is founder, developer or admin; you set admin by hand
+- developer_profiles(user_id, stack text[], ai_tools text[], hourly_rate, sprint_rating, status, github_url, sample_url, loom_url)  status is pending, active or rejected
+- projects(id, founder_id, name, description, stack text[], timeline, budget_range, parsed jsonb, status)
+- matches(id, project_id, developer_id, status, created_at)
+- screen_submissions(id, developer_id, repo_url, submitted_at, decision, notes)
+
+Screens: /login, /projects/new, /projects/[id] (the three matches), /apply (developers), /admin/review.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, RESEND_API_KEY.
+
+Do not build: billing, sprint packages, escrow or payouts, Clerk, a public developer directory, testimonials.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the project intake and AI matching flow for VibeCoders. The founder fills a 5-field form: project name, description (free text), preferred stack (multi-select: React, Next.js, Python, Node, Supabase, other), timeline (dropdown: this week / 2 weeks / ongoing), and budget range. On submit, call the OpenAI API (gpt-4o-mini) with a system prompt that extracts: required skills, complexity estimate (low/medium/high), and recommended AI tools (Cursor, Windsurf, n8n). Then query Supabase to surface the top 3 developer profiles where stack overlap is highest and sprint_rating >= 4.2. Show the 3 matches as profile cards with: avatar, name, top skills, AI tools used, sprint_rating, and a "Request Sprint" CTA that creates a match record and triggers a Resend email to the developer.
+Build the one feature that proves VibeCoders: a quick, explainable match for a founder, and a vetting step that is real.
+1. The founder form takes a project name, a description, a preferred stack (Next.js, React, Python, Node, Supabase or other), a timeline (this week, 2 weeks or ongoing) and a budget range.
+2. Send the description to the OpenAI API with a strict JSON schema { required_skills: string[], complexity: "low" | "medium" | "high", recommended_ai_tools: string[] }. Keep only values that appear in a fixed skills list and a fixed tools list in one file.
+3. Match in code: among developers with status active, score by the overlap between the project's required skills and the developer's stack. Rank rated developers (sprint_rating of 4.2 or more) first, then unrated ones shown as "new, not yet rated". Show the top 3 as cards with top skills, tools, rating and a Request Sprint button.
+4. Request Sprint creates a match and emails the developer through Resend. The developer accepts or declines on their dashboard.
+5. A developer applies with a GitHub address, a sample project and an optional Loom link, then receives the take-home task by email: a 90-minute task to build a Next.js page showing a sorted leaderboard from a mock table, submitted as a repository address.
+6. /admin/review (admin only) lists applications with the GitHub link, the video and the submission. Approve sets the developer active and sends a welcome email. Reject sends a polite email.
+Rules: never state a speed multiple or a trust claim you cannot support. Show the reason for each match (the skills that overlapped).
+Empty state: with no active developers, tell the founder the roster is opening soon and offer to be emailed.
+Done when: a sample project returns 3 developers ranked by overlap with the matching skills shown, a developer outside the lists is not matched, Request Sprint sends one email, and an approved applicant appears in matches.
 ```
 
 **3. Landing Page**
 
 ```text
-Create a conversion-focused landing page for VibeCoders using Next.js and Tailwind. Include: (1) Hero with headline "Ship your MVP this week" and subhead "Vetted AI-native developers who use Cursor, Windsurf & Claude to build 3× faster than a traditional hire." CTA: "Post a Project" (primary) + "Apply as a Vibe Coder" (secondary). (2) Trust bar with logos or "trusted by founders from [Accelerator, City, Cohort]". (3) "How it works" 3-step horizontal section. (4) Developer showcase grid with 3 placeholder developer cards showing name, top skill, AI tools, and sprint rating stars. (5) Pricing section with Intro Sprint ($250), Monthly Access ($500–$2K/mo), Priority Project ($5K+). (6) Social proof section with 2 testimonial cards. (7) Footer with "Post a project" CTA. Dark background, clean typography, no illustrations.
+Build a one-page landing site for VibeCoders, a vetted roster of developers who build with AI tools.
+Hero: "Ship your MVP this week." Sub: "Developers who build with Cursor, Claude and similar tools, vetted with a real take-home task." Two buttons: Join the waitlist as a founder, Apply as a developer.
+Sections: how it works in three steps (post a project, get matched, sprint together), a developer card grid with three placeholder cards (name, top skill, tools, rating), a placeholder for founder testimonials to replace with real ones, and an FAQ on how developers are vetted and what a sprint is.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a dark background, one lime accent, no illustrations.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for VibeCoders, a curated marketplace for AI-native developers who build MVPs at startup speed. Logo: a minimal monogram or wordmark that reads as technical but energetic — think "VC" initials or a lightning-bolt variant, works at 16px favicon and 200px header. Color palette: primary black (#0A0A0A), accent lime (#AEFF00 or similar electric green), neutral warm white (#FAFAF7) — high contrast, modern, slightly raw. Typography: heading in a geometric mono or grotesque (e.g., JetBrains Mono for brand marks, Geist Sans for body). Tone: confident, no-fluff, technical-adjacent but founder-accessible. Provide hex codes, font names, Tailwind config snippet, and a one-paragraph brand voice guide.
-```
-
-**5. Developer Vetting Flow**
-
-```text
-Build the developer application and vetting flow for VibeCoders. Step 1: application form (name, GitHub URL, preferred stack, AI tools used daily, sample project URL, Loom video link — max 3 min). Step 2: async technical screen — a 90-minute take-home task sent via email: "Using Cursor and Claude, build a working Next.js page that displays a sorted leaderboard from a mock Supabase table. Submit a GitHub repo link." Step 3: admin review page (internal only, requires ADMIN role in Clerk) showing all submissions with GitHub link, Loom embed, and task submission. Admin can Approve (sets developer_profiles.status = 'active') or Reject (sends a polite Resend email). Approved developers get a welcome email with onboarding steps and a link to complete their public profile.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for VibeCoders: a wordmark and a monogram that read as technical and energetic, clear at 16 pixels, such as a "VC" with a small bolt.
+Colors: black (#0A0A0A), electric lime (#AEFF00) and warm white (#FAFAF7). Type: a geometric mono for brand marks and Geist for body text.
+Deliverables: wordmark, monogram, a developer card layout, a Tailwind color and font config, and a one-paragraph voice guide.
+Done when: each deliverable is saved in one folder and the monogram is readable at 16 pixels.
 ```

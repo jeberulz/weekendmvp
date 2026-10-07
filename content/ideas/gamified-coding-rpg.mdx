@@ -90,48 +90,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "CodeQuest" — an adult-toned coding RPG. No cartoon mascots. Dark UI, one gold accent.
+Build the weekend MVP of "CodeQuest": an adult coding game where each quest is a real task with failing tests, and XP comes only when they pass. One chapter of three quests this weekend.
 
-Schema:
-- profiles(id, user_id, xp INT, chapter INT, github_login TEXT)
-- quests(id, slug, title, story_md TEXT, starter_code TEXT, tests TEXT, xp_reward INT)
-- attempts(id, user_id, quest_id, passed BOOLEAN, code TEXT, created_at)
-- inventory(id, user_id, name TEXT, snippet TEXT)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), CodeMirror 6 for the editor. Quests run in a sandboxed iframe in the browser, so no server runs learner code. Deploy on Vercel. No cartoon mascots: a dark interface with one gold accent.
 
-Routes: /, /play/[quest], /inventory, /guild (stub)
-Seed 3 quests in a "Web Dev Warrior" chapter:
-1. Fix the ship's status page (HTML/CSS)
-2. POST /nav/correct with a JSON body (API)
-3. Add session auth so only the captain can fire thrusters
+Tables (Row Level Security on, each user reads only their own profile, attempts and loot; quests are read-only to signed-in users):
+- profiles(user_id, display_name, xp, chapter)
+- quests(id, slug, ordinal, title, story_md, starter_code, tests, hint, xp_reward, loot_name, loot_snippet)
+- attempts(id, user_id, quest_id, passed boolean, code, created_at)
+- inventory(id, user_id, quest_id, name, snippet)  one row per user and quest
 
-Stripe: Adventurer $10/mo.
+Screens: /login, / (the chapter map), /play/[slug], /inventory.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or packs, a server-side judge or hidden tests, GitHub repos or pushes, an AI reviewer, guilds, Python or SQL quests.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. In-Browser Editor + Test Runner**
+**2. Core Feature**
 
 ```text
-Play page:
-- Left: story + visible tests
-- Right: CodeMirror 6
-- Submit posts code to /api/judge
-- Judge runs the quest's tests in a sandboxed Node worker with 3s timeout and no network
-- On pass: award xp, insert inventory loot (a snippet from the solution template), show "Push to GitHub" if connected
-- On fail: show the first failing assertion only (do not dump the hidden tests)
-
-Hidden tests live only on the server. Never send them to the client.
+Build the one feature that proves CodeQuest: a quest you can fail, fix and pass in about 15 minutes.
+1. Seed three quests in one chapter, each with a short story, starter code and tests: fix a broken status page (HTML and CSS, checked against the rendered DOM), write a function that decodes a scroll string, and write a function that parses a navigation log into totals.
+2. /play/[slug] shows the story and the visible tests on the left and a CodeMirror 6 editor on the right.
+3. Run puts the learner's code and the test assertions into an iframe with sandbox="allow-scripts" and no network, and reports results by postMessage. Remove the iframe after 3 seconds if it has not finished, and show "Your code took too long".
+4. Show only the first failing assertion by name, never the whole test file.
+5. On a pass, insert an attempts row, add the quest's xp_reward to profiles.xp once per quest (a second pass adds nothing) and add the quest's loot to inventory. /inventory lists the loot snippets with a Copy button.
+6. A Hint button shows the quest's hint, which points at the failing test by name. There is no button that shows a full solution.
+Rules: say plainly on the play page that in this version tests run in your browser, so XP is on the honor system. Never run learner code on the server.
+Empty state: a new learner sees the chapter map with quest one open and the rest locked until the one before it is passed.
+Done when: quest one fails with the first failing test named, passes after a fix, adds XP and loot once, an endless loop is stopped after 3 seconds, and the hint never shows a solution.
 ```
 
-**3. GitHub Artifact + AI Wizard (Paid)**
+**3. Landing Page**
 
 ```text
-GitHub App: on first pass, create repo codequest-<username> and commit /chapter-1/<quest-slug>/ with README generated from story_md (strip game voice into a professional summary).
+Build a one-page landing site for CodeQuest, a coding game for adults who want to ship real work.
+Hero: "Learn to code by finishing real tasks." Sub: "Quests with failing tests, XP when they pass and loot you can reuse. No cartoon katas." One button: Join the waitlist.
+Sections: a mock quest screen with a story, a failing test and the editor, how it works in three steps (take a quest, make the tests pass, collect the loot), and an FAQ on what is in the first chapter (three web quests), what is coming (a GitHub portfolio, guilds and more languages) and how grading works today.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist with Geist Mono for code, a near-black background, one gold accent, no mascots.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Paid wizard:
-- Send {quest rubric, student diff} to Claude
-- Return 3 bullets: what worked, the real-world analog (e.g. "this is session auth"), one improvement
-- Refuse to paste a full solution. If the user asks for the answer, return a hint that points at the failing test name.
+**4. Branding Package**
 
-Guild stub: table guilds(id, name) and memberships; UI can wait.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CodeQuest: a wordmark and an icon that suggest a pair of curly braces shaped like a shield.
+Colors: near-black, off-white and one gold. Type: Geist for the interface, Geist Mono for code.
+Deliverables: wordmark, icon, three rank badges (apprentice, journeyman, captain) that differ by shape as well as color, a quest card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the rank badges are distinguishable without color.
 ```
 
 ## Sources

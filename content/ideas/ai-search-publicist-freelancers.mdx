@@ -80,35 +80,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 + TypeScript app for an AI search publicist that helps high-ticket freelancers appear by name in ChatGPT answers.
+Build the weekend MVP of the "AI Search Publicist": a freelancer lists the questions their ideal client asks an AI search tool, the app checks whether their name appears in the answers and which sources are cited, and it drafts three honest pieces for the freelancer to publish themselves. It measures; it promises nothing.
 
-Set up:
-- Clerk auth and Stripe (one-time $299 sprint + $149/$499 retainers)
-- Convex schema: freelancers, promptClusters, placements, rechecks
-- Dashboard: audit results, sprint checklist, weekly re-check log
-- API routes to run a 3-prompt visibility audit and store cited sources
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Perplexity API for answers with their cited sources, the Anthropic API to propose questions and write drafts. Everything shown comes from a real check you can repeat. Deploy on Vercel.
 
-Include env vars, typed errors, and a money-back flag on the sprint when zero placements resolve to a named mention.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, display_name, offer, niche, case_study_text)
+- prompts(id, user_id, question, approved boolean, created_at)
+- checks(id, prompt_id, checked_at, name_present boolean, cited_sources jsonb, answer_excerpt)
+- placements(id, user_id, kind, target, draft, status, published_url, created_at)  kind is comparison_blurb, expert_quote or directory_page; status is draft, published or dropped
+
+Screens: /login, /profile (offer, niche, pasted case studies), /prompts (propose, approve and check), /results (name present or absent, with sources), /placements.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), PERPLEXITY_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, sprint pricing or retainers, a money-back guarantee, automated outreach or posting, a weekly cron, a visibility score, screenshots from other AI tools.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Prompt Map + Placement Sprint.
-
-Requirements:
-- Input: offer, niche, 3 case-study URLs
-- Expand into 10–15 buyer questions and capture current ChatGPT/Perplexity citations
-- Queue 3 placement drafts (comparison blurb, expert quote, directory/podcast page)
-- Track each placement against the original prompts until the name appears
-
-User flow: paste offer → see prompt map → approve 3 targets → 21-day checklist → named-mention screenshot or refund.
+Build the one feature that proves the Publicist: an honest map of where the freelancer's name is and is not, and drafts that only say what is true.
+1. The profile takes the offer, the niche and the pasted text of up to three real case studies.
+2. Ask the Anthropic API for 10 to 15 questions a buyer would ask an AI search tool when looking for someone like this, as JSON { questions: string[] }. The freelancer approves up to 10.
+3. Check each approved question with the Perplexity API. Save the answer excerpt and the cited sources (domain and address). name_present is true only when the freelancer's exact name appears in the answer text, case-insensitive. Do not calculate a score; show present or absent for each question and the sources that were cited.
+4. For the questions where the name is absent, list the sources that were cited, since those are where a real mention would have to appear.
+5. Draft three pieces from the case-study text only: a short comparison blurb, an expert quote and a page for a niche directory or a podcast guest. Check in code that every number and client name in a draft appears in the pasted case studies. Drop any claim that does not.
+6. The freelancer publishes the drafts themselves, then marks each placement published with its address. A Re-check button runs the checks again and shows what changed since last time: names that appeared, names that disappeared and new sources. A disappeared name opens a task to replace the placement.
+Rules: never create a fake review, persona or mention, and never post or send anything for the freelancer. Say that no one can promise an AI tool will name you.
+Empty state: before a profile exists, show the profile form.
+Done when: a sample profile produces questions the freelancer can approve, a check records present or absent with cited sources, a draft containing an invented number is dropped and a re-check lists a name that appeared since the first run.
 ```
 
-**3. Weekly Recheck**
+**3. Landing Page**
 
 ```text
-Add a cron that re-asks the stored prompts every 7 days, diffs cited sources, and opens a replacement-placement task when the freelancer's name disappears. Email the diff via Resend. Never send a vanity "visibility score" — only named-mention present/absent plus the next action.
+Build a one-page landing site for the AI Search Publicist, a way for freelancers to see and improve how they show up in AI answers.
+Hero: "Find out if AI search recommends you, and what it cites instead." Sub: "Check the questions your clients ask, see whether your name appears and get honest drafts for the places that would earn a real mention." One button: Join the waitlist.
+Sections: a sample results table with present and absent rows and their sources, how it works in four steps (map the questions, check, draft, re-check), and an FAQ on what is promised (a measurement, never a placement), why nothing is posted for you and which tools are checked.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the AI Search Publicist: pick a short working name, then design a wordmark and an icon that suggest a speech bubble with a name tag.
+Colors: off-white, near-black and one blue. Type: Geist.
+Deliverables: wordmark, icon, two result chips (name present, name absent) that differ by shape as well as color, a results row layout that shows its sources, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two result chips are distinguishable without color.
 ```
 
 ## Sources

@@ -71,22 +71,62 @@ AI inference and image storage can remain below $1 per check at moderate volume.
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Verification Data Model**
+**1. Project Setup**
 
 ```text
-Create a Next.js TypeScript app for collectible verification. Use Postgres tables for users, items, categories, item_submissions, photos, visual_features, model_assessments, reviewer_decisions, reports, disputes, and outcomes. A submission must track model_version, prompt_version, evidence_photo_ids, confidence, missing_evidence, and final_status. Keep raw model output separate from the human-approved report. Use private object storage with signed URLs and image metadata stripping.
+Build the weekend MVP of "Collectible Verification": a guided photo check that scores a resale sneaker for counterfeit risk, with a human reviewer who signs the final report.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, private Storage, Auth with email magic link), Claude (Anthropic API) with image input for the risk scan. Deploy on Vercel.
+Scope: one narrow, photographable category, sneakers.
+
+Tables (Row Level Security on: a user sees their own submissions and reports, reviewers see the queue):
+- submissions(id, user_id, brand, model, purchase_context, status, model_version, prompt_version, confidence, missing_evidence jsonb, final_status)
+- photos(id, submission_id, view, storage_path)
+- assessments(id, submission_id, raw_output jsonb, created_at)
+- reviewer_decisions(id, submission_id, reviewer_id, decision, notes, created_at)
+- reports(id, submission_id, public_slug, content jsonb, created_at)
+Storage: one private bucket with signed URLs. Strip image metadata on upload.
+
+Screens: /login, /submit (guided upload), /review (reviewer queue).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or single-check payments, reviewer payouts, embeddings or reference matching beyond the model's own notes, disputes, other categories.
+Done when: npm run dev starts, you can sign in, and the five tables and the private bucket exist with Row Level Security on.
 ```
 
-**2. Guided Photo and Risk Scan**
+**2. Core Feature**
 
 ```text
-Build a guided upload flow for sneaker authentication. Ask for required views such as box label, size tag, outsole, stitching, logo, insole, and receipt context. Send only the approved images to a vision model with a strict JSON schema: feature_observations, inconsistencies, missing_views, reference_matches, confidence, and escalation_reason. If required evidence is missing, return a request for another photo instead of a pass or fail. Show every red flag with the image region or evidence source that triggered it.
+Build the one feature that proves the idea: a guided photo check, a risk scan, a human sign-off and a shareable report.
+1. /submit asks for the required views: box label, size tag, outsole, stitching, logo, insole and receipt context. Save each photo to private storage.
+2. Send only the approved images to Claude with a strict JSON schema: feature_observations, inconsistencies, missing_views, reference_matches, confidence and escalation_reason. Store the raw output in assessments, separate from anything a person approved.
+3. If required evidence is missing, return a request for another photo, never a pass or fail. Show every red flag with the image region or evidence source that triggered it.
+4. /review lists submissions sorted by value, low confidence and dispute risk. A reviewer sees the photos and the model's observations, and chooses approve, reject or request more evidence.
+5. On approval, create a report with a public_slug showing the item, the evidence received, the findings, the uncertainty, the reviewer's name and the time.
+Rules: never write "guaranteed authentic". Keep raw model output and the human-approved report in separate records.
+Empty state: a new user sees the list of required photos and the upload button.
+Done when: a test pair with a missing outsole photo asks for that photo, a complete set produces an assessment, and a reviewer's approval produces a report page at /r/[slug].
 ```
 
-**3. Human Review and Shareable Report**
+**3. Landing Page**
 
 ```text
-Build an operations review queue. Sort submissions by value, low confidence, and dispute risk. Give reviewers a category checklist, original photos, model observations, reference examples, and approve/reject/request-more-evidence actions. Generate a shareable report with item metadata, evidence received, findings, uncertainty, reviewer identity, and report timestamp. Never use “guaranteed authentic.” Include a dispute workflow that preserves the original report and creates a new review version.
+Build a one-page landing site for Collectible Verification, a guided check for resale goods.
+Hero: "Know what you are buying before it ships." One button: Join the waitlist.
+Sections: the problem (counterfeits and thin evidence), how it works in four steps (submit the item, run the risk scan, get the report, escalate when needed), a sample report with red flags and an uncertainty line, and an FAQ that says plainly the report shows risk and evidence and is never a guarantee.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: careful and precise, never overclaiming.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Collectible Verification: a wordmark and an icon that suggest a magnifier over a stitch, careful and not alarming.
+Colors: near-black, warm off-white and one muted green for a cleared item. Type: a precise sans for the interface and a mono for report numbers.
+Deliverables: wordmark, icon, a report header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

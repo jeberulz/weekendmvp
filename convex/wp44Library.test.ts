@@ -355,3 +355,21 @@ describe("WP44-S5 Saved page query", () => {
     expect(list.total).toBe(4);
   });
 });
+
+describe("WP56 library membership", () => {
+  test("a stale Convex-only row stays out of the member catalogue and its totals", async () => {
+    const t = convexTest(schema, modules);
+    const member = await seedUser(t, "stale@example.com");
+    await seedIdea(t, { slug: "an-ordinary-idea", publishedAt: 2 });
+    await seedIdea(t, { slug: "ai-built-app-code-audit", publishedAt: 3 });
+
+    const result = await asUser(t, member).query(api.platform.ideas.library, all);
+    expect(result.items.map((item) => item.slug)).toEqual(["an-ordinary-idea"]);
+    expect(result.total).toBe(1);
+
+    const page = await asUser(t, member).query(api.platform.ideas.libraryPage, {
+      paginationOpts: { numItems: 10, cursor: null },
+    });
+    expect(page.page.map((item) => item.slug)).toEqual(["an-ordinary-idea"]);
+  });
+});

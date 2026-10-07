@@ -84,46 +84,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "Quiet Creator," an AI personal-branding platform for camera-shy freelancers and consultants. Set up Supabase with these tables:
-- users (id, email, name, plan default 'free')
-- brand_profiles (id, user_id, positioning_statement, tone_signals JSONB, proof_points JSONB, niche, target_client_profile)
-- content_prompts (id, user_id, week_start, prompt_text, prompt_type, status)
-- pitch_assets (id, user_id, asset_type, content JSONB, pdf_url)
+Build the weekend MVP of "Quiet Creator": a freelancer who will never be on camera pastes in their own words and gets a positioning statement, a bio, content pillars, weekly prompts and a pitch outline, all based only on what they actually said.
 
-Enable row-level security so users only access their own rows. Add Stripe Billing with three products: Free (quiz only), Solo ($29/mo), Pro ($49/mo). Include TypeScript, proper error handling, and environment variables for SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for extraction and writing. Everything is generated on demand from pasted text. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- brand_profiles(id, user_id, raw_input, niche, tone_words text[], proof_points jsonb, target_client_profile, market_gap, positioning_statement, bio, pillars text[], created_at)
+- content_prompts(id, user_id, week_start, prompt_text, prompt_type, status, draft_text)  status is pending or drafted
+- pitch_assets(id, user_id, client_name, project_type, content jsonb, created_at)
+
+Screens: /login, /assess (paste your material), /brand (the result next to your original bio), /prompts (this week), /pitch/new and /pitch/[id] (a printable outline).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a consultation tier, LinkedIn connections, a weekly cron or digest email, a PDF library, social posting.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Brand Assessment + Identity Generation**
+**2. Core Feature**
 
 ```text
-Build the core brand-assessment flow for Quiet Creator.
-
-Step 1 — Ingest: Let the user paste in a LinkedIn "About" section, 2-3 past client testimonials, and a short description of their work. Store raw text in brand_profiles.raw_input.
-
-Step 2 — Extract signals: Send the raw input to Claude with a system prompt: "Extract this person's brand positioning signals as strict JSON: { niche: string, tone_words: string[], proof_points: string[], target_client_profile: string, market_gap: string }. Base every field on what is actually present in the input — never invent achievements or claims the user did not state."
-
-Step 3 — Generate identity: Using the extracted signals, generate a positioning statement (1-2 sentences), a rewritten bio (150 words, written in first person, matching the user's actual tone_words), and 5 content pillar topics scoped to their niche. Cache the tone_signals JSON with Claude's prompt caching so every future generation (weekly prompts, pitch decks) reuses the same voice profile instead of re-deriving it.
-
-Store results in brand_profiles. Show the user a side-by-side: their original bio vs. the generated one, with an explanation of what changed and why.
+Build the one feature that proves Quiet Creator: a brand that sounds like the user on their best day and claims nothing they did not say.
+1. The assess screen takes a pasted About section, 2 or 3 client testimonials and a short description of the work. Save the text to brand_profiles.raw_input.
+2. Extract signals with the Anthropic API into a strict JSON schema { niche, tone_words: string[], proof_points: [{ claim, quote }], target_client_profile, market_gap }. Instruct it to use only what is in the input and never invent an achievement.
+3. Check in code that every proof point's quote appears in the raw input. Drop any proof point that does not.
+4. Generate a positioning statement of one or two sentences, a first-person bio of about 150 words in the user's tone_words and 5 content pillars for the niche, using only the verified proof points. Check that every number and client name in the bio appears in the input; if one does not, regenerate once, then show the failure.
+5. /brand shows the user's original bio beside the new one and a short list of what changed and why. Keep the tone signals so later generations reuse them.
+6. A Generate this week's prompts button writes 3 to 5 content prompts tied to the niche and the pillars (a post angle, a case-study idea, a reply to a trend). The user marks one drafted and pastes their writing back.
+7. The pitch form takes a client name, a project type and 2 or 3 deliverables, and writes a 5-slide outline (who I am, the problem you face, my approach, proof, next steps) from the verified proof points, shown as a printable page.
+Rules: never invent a result, client or number. Say "built only from what you gave us" on the brand page.
+Empty state: before the first assessment, show the paste form and what to paste.
+Done when: an assessment returns proof points whose quotes are all in the input, a bio containing an invented number is rejected, the side-by-side shows what changed, and the pitch outline uses only verified proof.
 ```
 
-**3. Weekly Content Prompts + Pitch Deck Generator**
+**3. Landing Page**
 
 ```text
-Build two features for Quiet Creator: the weekly content-prompt engine and the pitch-deck generator.
+Build a one-page landing site for Quiet Creator, a personal brand builder for people who stay off camera.
+Hero: "A personal brand for people who will never film themselves." Sub: "Paste your own words. Get a clear positioning, a bio in your voice and a week of things to write. Nothing is invented." One button: Join the waitlist.
+Sections: a sample bio next to the original, how it works in four steps (paste, extract, write, pitch), and an FAQ on what is never invented (results, clients and numbers you did not give), where the work comes from and who owns the output (you).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a quiet off-white background, ink type, one sage accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Weekly prompts (Vercel Cron, runs Monday 8am per user's timezone):
-- Pull the user's brand_profiles.tone_signals and content pillar topics
-- Generate 3-5 scoped content prompts (a LinkedIn post angle, a case-study idea, a reply-to-trend idea) tied to their actual niche, not generic advice
-- Insert into content_prompts with status 'pending'; send a digest email via Resend
-- User can mark a prompt 'drafted' and paste their own writing back in; store engagement feedback (views/replies if available) to refine future prompts
+**4. Branding Package**
 
-Pitch-deck generator (/dashboard/pitch/new):
-- Form: client name, project type, 2-3 key deliverables
-- Pull the user's brand_profiles proof_points and target_client_profile
-- Generate a 5-slide outline (Who I am, The problem you're facing, My approach, Proof/case studies, Next steps) in the user's established tone
-- Render server-side to PDF via @react-pdf/renderer with the user's name, positioning statement, and proof points auto-populated
-- Store the PDF URL on pitch_assets and let the user download or get a shareable link
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Quiet Creator: a wordmark and an icon that suggest a speech bubble drawn with a single quiet line.
+Colors: off-white, ink and one sage. Type: Geist.
+Deliverables: wordmark, icon, a brand card layout (positioning, bio, pillars), a one-page pitch outline style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the brand card is readable in black and white.
 ```
 
 ## Sources

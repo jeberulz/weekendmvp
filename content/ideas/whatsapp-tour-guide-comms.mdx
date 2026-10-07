@@ -86,31 +86,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 (App Router, TypeScript, Tailwind) project called "TourChat" for WhatsApp tour guide guest communications. Provision Supabase with tables: guides (id, user_id, whatsapp_phone_id TEXT, display_name, timezone, plan TEXT default 'starter'), tours (id, guide_id, name, default_meeting_lat DECIMAL, default_meeting_lng DECIMAL, default_meeting_note TEXT), bookings (id, tour_id, guest_name, guest_phone E164, starts_at TIMESTAMPTZ, meeting_override TEXT), message_templates (id, guide_id, kind TEXT CHECK kind IN ('confirm','day_before','morning_of','review','faq')), scheduled_jobs (id, booking_id, kind TEXT, run_at TIMESTAMPTZ, status TEXT, attempts INT default 0), message_log (id, booking_id, wa_message_id TEXT, kind TEXT, status TEXT, read_at TIMESTAMPTZ), faq_entries (id, guide_id, question TEXT, answer TEXT). Enable RLS so guides only access their rows. Add API routes: POST /api/webhooks/whatsapp (verify Meta signature, log delivery/read), POST /api/bookings/import-csv, GET /api/cron/send-due (protected by CRON_SECRET). Env vars: WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN, SUPABASE keys, STRIPE keys, ANTHROPIC_API_KEY, OPENWEATHER_API_KEY. Install @supabase/supabase-js and stripe SDK.
+Build the weekend MVP of "TourChat": an independent tour guide adds a booking and the guest automatically gets a WhatsApp confirmation, a day-before reminder with the meeting pin, a morning-of message and a review request. Guests can ask basic questions and get answers only from the guide's own FAQ.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the WhatsApp Cloud API with a test number and message templates you have had approved, the Anthropic API for the FAQ replies. A Vercel Cron route sends due messages. Deploy on Vercel.
+
+Tables (Row Level Security on, a guide reads only their own rows; the webhook writes through the service role):
+- guides(id, user_id, display_name, timezone, whatsapp_phone_id)
+- tours(id, guide_id, name, default_meeting_lat, default_meeting_lng, default_meeting_note, duration_min)
+- bookings(id, tour_id, guest_name, guest_phone, starts_at, meeting_override, guest_acknowledged boolean, opted_out boolean)
+- scheduled_jobs(id, booking_id, kind, run_at, status, attempts)  kind is confirm, day_before, morning_of or review
+- message_log(id, booking_id, wa_message_id, kind, status, read_at)
+- faq_entries(id, guide_id, question, answer)
+
+Screens: /login, /tours, /bookings (add by hand or CSV), /log (what was sent and read), /faq.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN, WHATSAPP_APP_SECRET, ANTHROPIC_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or a team tier, calendar sync, weather messages, a comparison with other tools, a guest payment link.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the scheduled WhatsApp automation engine for TourChat. When a booking is created with guest_phone and starts_at: (1) enqueue scheduled_jobs for confirm (immediate), day_before (starts_at minus 24h in guide timezone), morning_of (starts_at minus 3h), review (starts_at plus tour duration default 2h plus 2h). (2) Implement GET /api/cron/send-due: fetch jobs where run_at <= now and status = pending, mark processing, send via WhatsApp Cloud API using approved template names tour_confirm, tour_reminder, tour_weather, tour_review. For day_before and morning_of, include a location message with meeting lat/lng and a URL button to Google Maps. (3) On webhook delivery/read events, update message_log and bookings.guest_acknowledged boolean when read. (4) If day_before is sent and not read within 6 hours, create a high_priority notification for the guide dashboard. Use idempotency keys on wa_message_id to prevent duplicate sends on cron retry. Return structured errors for template not approved and log to message_log.
+Build the one feature that proves TourChat: the right message at the right time, never twice, and a guest question answered without inventing anything.
+1. When a booking is saved, create scheduled_jobs: confirm now, day_before at 24 hours before the start in the guide's timezone, morning_of at 3 hours before and review at the end of the tour plus 2 hours.
+2. GET /api/cron/send-due (protected by CRON_SECRET) takes pending jobs that are due, marks them processing and sends each through the WhatsApp Cloud API with the matching approved template. For day_before and morning_of also send a location message with the meeting coordinates. Make each job send once even if the cron retries. Log a clear error when a template is not approved.
+3. The webhook verifies Meta's signature, records delivered and read events in message_log and sets guest_acknowledged when the day-before message is read. If it is unread after 6 hours, show a notice on the guide's dashboard.
+4. For an inbound guest message, find the guest's booking by phone and load the guide's FAQ entries and the tour notes. Ask the Anthropic API to answer only from them. The prompt says never to invent a time, a price or a cancellation rule, and to reply exactly ESCALATE and a reason when unsure.
+5. Check in code that any number or time in the answer appears in the FAQ or booking data, or treat it as ESCALATE. On ESCALATE, tell the guest the guide will reply soon and notify the guide. Allow at most 10 FAQ replies per guest per hour.
+6. A guest who replies STOP gets opted_out set and no more messages.
+Rules: only message numbers the guide entered for a booking and respect the 24-hour reply window. Never send a free-text message outside it; use a template.
+Empty state: with no bookings, show the add form and the four messages that will be sent.
+Done when: a new booking creates four jobs at the right times in the guide's timezone, a cron retry sends a message once, a read receipt sets guest_acknowledged, an answer with an invented price is escalated and STOP ends all messages.
 ```
 
-**3. FAQ Bot**
+**3. Landing Page**
 
 ```text
-Implement the Claude-powered FAQ handler for TourChat. On inbound WhatsApp session messages (POST /api/webhooks/whatsapp): match guest_phone to an active booking, load faq_entries plus tour and guide policy text from Supabase, call claude-sonnet-4-6 with system prompt: "You are the assistant for {guide_name}. Answer only from the provided policy and FAQ. Never invent meeting times, prices, or cancellation rules. If unsure, reply EXACTLY: ESCALATE:{reason}." If response starts with ESCALATE, create a guide notification and send guest: "Great question—{guide_name} will reply shortly." Otherwise send the answer as a WhatsApp text message and log to message_log. Include rate limit: max 10 FAQ replies per guest per hour. Provide the full TypeScript handler and prompt template.
+Build a one-page landing site for TourChat, WhatsApp messages for independent tour guides.
+Hero: "Stop copy-pasting meeting pins at midnight." Sub: "WhatsApp confirmations, day-before pins, morning-of notes and review requests, sent for you, with answers to simple guest questions from your own FAQ." One button: Join the waitlist.
+Sections: the pain (no-shows, the wrong pin, confirmations lost in spam), how it works in five steps (connect WhatsApp, add bookings, messages are sent, guests ask questions, see who read the pin), and an FAQ on Meta's template approval, using it alongside your booking tool and how guest phone numbers are stored.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm stone background, one deep teal accent, one mock of a read-receipt list.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for TourChat targeting independent tour guides. Hero headline: "Stop copy-pasting meeting pins at midnight." Subhead: "WhatsApp automations for confirmations, day-before pins, weather notes, and review requests—$19/month, not $300 operator software." Sections: pain (no-shows, wrong pin, spam folder confirmations); how it works (5 steps from the solution); comparison table TourChat vs Peek vs Wati vs DIY Zapier on price, setup time, tour-specific templates, read receipts; pricing Starter $19 / Pro $39 / Team $79; FAQ covering Meta template approval, using alongside existing booking tools, and GDPR guest phone storage. Aesthetic: warm stone background, deep teal accent, Geist font, one screenshot mock of a read-receipt dashboard. Primary CTA: "Start free 14-day trial."
-```
-
-**5. Branding Package**
-
-```text
-Create a branding package for TourChat, WhatsApp guest comms for independent tour guides. Wordmark plus icon: a location pin merged with a chat bubble tail. Palette: deep teal primary (#0D6E6E), warm sand background (#F7F3ED), coral accent for alerts (#E07A5F), charcoal text (#1C1C1C). Typography: Geist for UI, Geist Mono for timestamps and phone numbers. Voice rules: talk like a fellow guide not enterprise SaaS; never say "leverage" or "synergy"; emphasize recovered seats and sleep before early tours. Deliver hex codes, three sample day-before WhatsApp template messages under 1024 characters with {{guest_name}} and {{meeting_note}} placeholders, and favicon SVG concept.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TourChat: a wordmark and an icon of a location pin merged with a chat bubble tail.
+Colors: deep teal (#0D6E6E), warm sand (#F7F3ED), coral (#E07A5F) for alerts and charcoal (#1C1C1C). Type: Geist for the interface, Geist Mono for times and phone numbers.
+Deliverables: wordmark, icon, a favicon SVG concept, three sample day-before message texts under 1024 characters with {{guest_name}} and {{meeting_note}} placeholders, and one launch graphic. Voice rules: sound like a fellow guide, never say "leverage" or "synergy".
+Done when: each deliverable is saved in one folder and each sample message is under 1024 characters.
 ```
 
 ## Sources

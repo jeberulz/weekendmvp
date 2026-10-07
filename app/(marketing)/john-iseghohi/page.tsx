@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { cacheLife, cacheTag } from "next/cache";
 
-import { AuraBackground } from "@/components/marketing/AuraBackground";
+import { Icon } from "@/components/home/icons";
+import { Container, Em, buttonClass } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { PageHeader } from "@/components/public/PageHeader";
+import { newsreaderEditorial } from "@/lib/fonts";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import {
   SITE,
@@ -17,6 +19,7 @@ import {
   PERSON_PATH,
   personSchema,
 } from "@/lib/seo";
+import { cn } from "@/lib/utils";
 
 const TITLE = "John Iseghohi";
 const DESCRIPTION =
@@ -93,13 +96,44 @@ async function getRecentArticles(): Promise<WorkItem[]> {
   }));
 }
 
+const FOCUS =
+  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-home-orange-ink";
+
+/** A ruled row: mono label in the left column, content on the right. */
+function Row({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby={id}
+      className="grid grid-cols-1 gap-4 border-t border-home-rule py-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12"
+    >
+      <h2
+        id={id}
+        className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3 md:text-xs"
+      >
+        {label}
+      </h2>
+      <div>{children}</div>
+    </section>
+  );
+}
+
 export default async function AuthorPage() {
   const works = await getRecentArticles();
 
   const schema = buildGraph(
     {
       "@type": "ProfilePage",
-      "@id": `${SITE}${PERSON_PATH}`,
+      // Distinct from PERSON_ID — Google rich results FAIL when ProfilePage
+      // @id equals mainEntity @id ("Invalid duplicate ID").
+      "@id": `${SITE}${PERSON_PATH}#profilepage`,
       name: TITLE,
       description: DESCRIPTION,
       url: `${SITE}${PERSON_PATH}`,
@@ -122,145 +156,155 @@ export default async function AuthorPage() {
     ]),
     breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "John Iseghohi", href: PERSON_PATH },
+      { label: "John Iseghohi" },
     ]),
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden pt-24 selection:bg-white/20 selection:text-white">
+    <div
+      className={cn(
+        newsreaderEditorial.variable,
+        "theme-desk relative min-h-screen overflow-x-clip bg-home-paper font-sans text-home-ink selection:bg-home-orange-light/40",
+      )}
+    >
       <JsonLd schema={schema} />
-      <AuraBackground />
-      <div className="fixed inset-0 pointer-events-none z-0 grid-lines" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
 
-      <main className="relative z-10 max-w-3xl mx-auto px-6 py-32 mb-24">
-        <header className="mb-16 flex flex-col sm:flex-row sm:items-end gap-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/image/john-portrait.webp"
-            alt="John Iseghohi, founder of Weekend MVP"
-            width={160}
-            height={160}
-            className="w-32 h-32 md:w-40 md:h-40 rounded-2xl object-cover border border-white/10 shrink-0"
-          />
-          <div>
-            <p className="text-neutral-500 text-xs font-medium uppercase tracking-wider mb-3">
-              Founder, Weekend MVP
-            </p>
-            <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-3">
-              John Iseghohi
-            </h1>
-            <p className="text-neutral-400 leading-relaxed max-w-xl">
-              Helping non-technical founders ship a real MVP in a weekend —
-              ideas, checklists, and live build sessions.
-            </p>
-          </div>
-        </header>
+      <main id="main">
+        <PageHeader
+          eyebrow="Founder, Weekend MVP"
+          title="John Iseghohi"
+          description="Helping non-technical founders ship a real MVP in a weekend — ideas, checklists, and live build sessions."
+          className="pb-12 lg:pb-14"
+          aside={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/image/john-portrait.webp"
+              alt="John Iseghohi, founder of Weekend MVP"
+              width={160}
+              height={160}
+              className="size-32 shrink-0 rounded-2xl border border-home-rule object-cover md:size-40"
+            />
+          }
+        />
 
-        <section className="mb-16" aria-labelledby="bio">
-          <h2
-            id="bio"
-            className="text-white font-medium text-xl mb-4 tracking-tight"
+        <Container className="pb-20 lg:pb-28">
+          <Row id="bio" label="Bio">
+            <div className="flex max-w-[680px] flex-col gap-4 text-lg leading-[1.65] text-home-ink-2">
+              <p>
+                John Iseghohi founded{" "}
+                <Link
+                  href="/about"
+                  className={cn(
+                    "text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink motion-reduce:transition-none",
+                    FOCUS,
+                  )}
+                >
+                  Weekend MVP
+                </Link>{" "}
+                to close the gap between “I have an idea” and “here’s a live
+                URL.” The site publishes research-backed startup idea
+                breakdowns, practical build guides, and a free 48-hour starter
+                kit aimed at people who ship on nights and weekends.
+              </p>
+              <p>
+                He runs a community of 400+ weekend builders and hosts live
+                workshops where attendees leave with a deployed MVP and a
+                locked build plan — not another slide deck.
+              </p>
+            </div>
+          </Row>
+
+          {works.length > 0 ? (
+            <Row id="writing" label="Recent writing">
+              <ul>
+                {works.map((item, i) => (
+                  <li
+                    key={item.slug}
+                    className={cn("border-home-rule", i > 0 && "border-t")}
+                  >
+                    <Link
+                      href={`/articles/${item.slug}`}
+                      className={cn(
+                        "group flex flex-col gap-1.5 py-5",
+                        i === 0 && "pt-0",
+                        FOCUS,
+                      )}
+                    >
+                      <span className="flex items-center justify-between gap-4 font-editorial text-[22px] leading-[1.2] text-home-ink md:text-[24px]">
+                        {item.title}
+                        <Icon
+                          name="arrow"
+                          size={20}
+                          strokeWidth={1.75}
+                          color="var(--color-home-orange-ink)"
+                          className="transition-transform duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0.5 motion-reduce:transition-none"
+                        />
+                      </span>
+                      <span className="line-clamp-2 max-w-[680px] text-[15px] leading-[1.55] text-home-ink-2">
+                        {item.description}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4">
+                <Link
+                  href="/articles"
+                  className={cn(
+                    "inline-flex min-h-11 items-center text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink motion-reduce:transition-none",
+                    FOCUS,
+                  )}
+                >
+                  All articles
+                </Link>
+              </p>
+            </Row>
+          ) : null}
+
+          <section
+            aria-labelledby="contact"
+            className="mt-6 flex flex-col gap-7 rounded-[22px] bg-home-ink p-7 text-home-d1 md:p-12 lg:flex-row lg:items-end lg:justify-between"
           >
-            Bio
-          </h2>
-          <div className="space-y-4 text-neutral-400 leading-relaxed">
-            <p>
-              John Iseghohi founded{" "}
+            <div className="flex max-w-[640px] flex-col gap-3">
+              <h2
+                id="contact"
+                className="font-editorial text-[32px] font-normal leading-[1.08] tracking-[-0.02em] text-balance md:text-[40px]"
+              >
+                Work with <Em dark>John</Em>
+              </h2>
+              <p className="text-base leading-[1.55] text-home-d2 md:text-[17px]">
+                Book a call for MVP sprints, idea pressure-testing, or workshop
+                seats. Or start free with the starter kit.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <NavExternalLink
+                href={CAL_URL}
+                className={buttonClass(
+                  "dark",
+                  "focus-visible:outline-home-orange-light",
+                )}
+              >
+                Book a call
+              </NavExternalLink>
               <Link
                 href="/about"
-                className="text-neutral-200 hover:text-white underline underline-offset-2"
+                className={buttonClass(
+                  "ghost-dark",
+                  "focus-visible:outline-home-orange-light",
+                )}
               >
-                Weekend MVP
-              </Link>{" "}
-              to close the gap between “I have an idea” and “here’s a live URL.”
-              The site publishes research-backed startup idea breakdowns,
-              practical build guides, and a free 48-hour starter kit aimed at
-              people who ship on nights and weekends.
-            </p>
-            <p>
-              He runs a community of 400+ weekend builders and hosts live
-              workshops where attendees leave with a deployed MVP and a locked
-              build plan — not another slide deck.
-            </p>
-          </div>
-        </section>
-
-        {works.length > 0 ? (
-          <section className="mb-16" aria-labelledby="writing">
-            <h2
-              id="writing"
-              className="text-white font-medium text-xl mb-6 tracking-tight"
-            >
-              Recent writing
-            </h2>
-            <ul className="space-y-5">
-              {works.map((item) => (
-                <li key={item.slug}>
-                  <Link
-                    href={`/articles/${item.slug}`}
-                    className="group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40 rounded-sm"
-                  >
-                    <span className="text-white font-medium group-hover:text-neutral-200 transition-colors inline-flex items-center gap-2">
-                      {item.title}
-                      <ArrowRight
-                        className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all"
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <span className="block text-sm text-neutral-500 mt-1 leading-relaxed line-clamp-2">
-                      {item.description}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6">
-              <Link
-                href="/articles"
-                className="text-sm text-neutral-400 hover:text-white transition-colors underline underline-offset-2"
-              >
-                All articles
+                About Weekend MVP
               </Link>
-            </p>
+              <NavExternalLink
+                href="https://twitter.com/weekendmvp"
+                className="inline-flex min-h-11 items-center px-2 text-[15px] font-medium text-home-d1 underline underline-offset-4 transition-colors hover:text-home-orange-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light motion-reduce:transition-none"
+              >
+                Follow on X
+              </NavExternalLink>
+            </div>
           </section>
-        ) : null}
-
-        <section
-          className="rounded-2xl border border-white/10 bg-white/[0.02] p-8"
-          aria-labelledby="contact"
-        >
-          <h2
-            id="contact"
-            className="text-white font-medium text-lg mb-2 tracking-tight"
-          >
-            Work with John
-          </h2>
-          <p className="text-neutral-400 text-sm leading-relaxed mb-6">
-            Book a call for MVP sprints, idea pressure-testing, or workshop
-            seats. Or start free with the starter kit.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <NavExternalLink
-              href={CAL_URL}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-neutral-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Book a call
-            </NavExternalLink>
-            <Link
-              href="/about"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-white/15 text-white text-sm font-medium hover:bg-white/5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              About Weekend MVP
-            </Link>
-            <NavExternalLink
-              href="https://twitter.com/weekendmvp"
-              className="inline-flex items-center justify-center px-5 py-2.5 text-sm text-neutral-400 hover:text-white transition-colors"
-            >
-              Follow on X
-            </NavExternalLink>
-          </div>
-        </section>
+        </Container>
       </main>
     </div>
   );

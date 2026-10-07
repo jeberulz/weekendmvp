@@ -73,22 +73,61 @@ Marketplace take rate and fulfillment margin create a second revenue stream. If 
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Marketplace Data Model**
+**1. Project Setup**
 
 ```text
-Create a Next.js marketplace for verified 3D-printed classic-car parts. Use Postgres tables for vehicles, model_variants, parts, part_versions, measurements, materials, suppliers, print_orders, fitment_reports, reviews, and payouts. A part must include supported years, model identifiers, safety_class, source_type, evidence_photos, and verification_status. Use Stripe Connect for supplier payouts and private object storage for downloadable CAD files.
+Build the weekend MVP of "Vintage Ride Revival": a small catalog of fitment-checked, non-safety classic-car parts that can be 3D printed, a request flow that suggests the right part, and a supplier dashboard where a reviewer approves each blueprint version before it appears. Start with three models.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API (vision) to suggest which catalog part a customer's photos match. Catalog pages are server-rendered for search. Deploy on Vercel.
+
+Tables (Row Level Security on; the public reads approved versions only, suppliers write their own, reviewers read everything):
+- vehicles(id, make, model, year_from, year_to)
+- parts(id, vehicle_id, name, safety_class, status)  safety_class is non_safety; a safety-critical part cannot be created
+- part_versions(id, part_id, version, supported_years, material, print_settings jsonb, tolerances jsonb, install_guide, file_path, verification_status, reviewed_by, reviewed_at)  verification_status is pending, approved or rejected
+- fitment_requests(id, user_id, vehicle_id, component, photo_paths text[], measurements jsonb, triage jsonb, status)
+- fitment_reports(id, part_version_id, user_id, result, photo_paths text[], notes, created_at)
+
+Screens: /login, /catalog/[make]/[model] (public), /parts/[id], /request, /supplier (upload a revision), /review (approve versions).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, memberships, payments or Connect payouts, print-on-demand ordering, a CAD preview service, safety-critical parts such as brakes, steering or fuel parts.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Fitment Request Flow**
+**2. Core Feature**
 
 ```text
-Build a request flow where a customer selects make, model, year, and component, then uploads up to five photos and measurements. Use vision AI only to suggest likely matches and missing measurements. Return a structured triage record with candidate_part_ids, confidence, questions_for_customer, and safety_warning. Never claim a safety-critical part is fit for road use. Route low-confidence requests to a human supplier queue.
+Build the one feature that proves Vintage Ride Revival: a part is only public after a person approves its version, and a customer is never told a part is safe for the road.
+1. A supplier uploads a blueprint revision with the supported years and variants, the intended material, print settings, expected tolerances, an installation guide and test photos. Reject any part whose safety_class is not non_safety and say why.
+2. A reviewer sees each pending version and approves or rejects it. Only approved versions appear in /catalog and on /parts/[id]. Keep every version; a new revision never overwrites an old one.
+3. The request flow takes make, model, year and component, up to five photos and optional measurements. Send them to the Anthropic API (vision) with a strict JSON schema { candidate_part_ids: string[], confidence: number from 0 to 1, questions_for_customer: string[], missing_measurements: string[] }. Check that every candidate id exists in the approved catalog and drop any that do not.
+4. Under 0.7 confidence, or with no valid candidate, send the request to a human queue instead of answering. Always show: "This part is not tested for road safety. Do not use it for anything that affects braking, steering or the fuel system."
+5. After using a part, a customer files a fitment report with a result (fits, needs trimming, does not fit) and photos. Update the part's confidence from all reports without changing any stored version.
+6. Catalog pages are server-rendered by make, model, year and part with unique titles.
+Rules: never claim a part is fit for road use. Never list a part whose version is not approved.
+Empty state: a model with no approved parts shows the request form so a supplier or reviewer can add one.
+Done when: a safety-critical upload is refused, an unapproved version is invisible to the public, a request returns only catalog ids that exist, a low-confidence request goes to the human queue and a fitment report changes the confidence without altering a version.
 ```
 
-**3. Supplier Verification Dashboard**
+**3. Landing Page**
 
 ```text
-Build a supplier dashboard for uploading a blueprint revision, supported vehicle variants, intended material, print settings, expected tolerances, installation guide, and test photos. Require a reviewer to approve each version before it appears in the public catalog. After every order, collect installation photos and a fitment result; update supplier and part confidence scores without overwriting historical versions.
+Build a one-page landing site for Vintage Ride Revival, 3D-printed parts for classic cars.
+Hero: "The rare small part your restoration is missing." Sub: "A small catalog of fitment-checked, non-safety parts for a few popular classics, each with its supported years and install notes." One button: Join the waitlist.
+Sections: how it works in four steps (find the part, check the fitment, print it, report back), a sample part page with supported years, material and tolerances, a plain box on safety (no brakes, steering or fuel parts, ever) and an FAQ on which models come first, who verifies a blueprint and who prints it.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm graphite background, one amber accent, photography of parts and no stock families.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Vintage Ride Revival: a wordmark and an icon that suggest a small gear with a car silhouette cut into it.
+Colors: warm graphite, off-white and one amber. Type: Geist, with Geist Mono for part numbers.
+Deliverables: wordmark, icon, three verification chips (pending, approved, rejected) that differ by shape as well as color, a part card layout with the safety line, and one launch graphic.
+Done when: each deliverable is saved in one folder and the verification chips are distinguishable without color.
 ```
 
 ## Sources
