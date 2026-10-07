@@ -52,6 +52,13 @@ What was found before designing:
   - The `a11y-check` skill named in `CLAUDE.md` is not installed in this session. Checked by hand: contrast, keyboard order and focus outline in a real browser, an accessible name that starts with its visible label, target size and overflow.
 - Next: record the full check results.
 
-## 2026-10-07 - WP60-S5 (open)
+## 2026-10-07 - WP60-S5
 
-- Full `npm run typecheck`, `npm run lint`, `npm test` and `npm run build`: running. Results to be appended below.
+- Checks on the code in `0fbdf1f`, each read from its own exit line:
+  - `npm run typecheck`: exit 0.
+  - `npm run lint`: exit 0.
+  - `npm test`: exit 0. No failures in any group, including `tests/home` (12 files, 76 tests).
+  - `npm run build`: exit 0. No reference to the deleted harness route.
+- The `.next/dev` types from the harness run were removed before these checks, so the stale-types failure from WP59 did not recur.
+- Result: all required checks pass. No PR is open.
+- Next: owner review.

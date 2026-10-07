@@ -42,7 +42,7 @@ Definition of done: the homepage hero build window has one link to `/ideas/{slug
   - Verification:
     - Results recorded in `docs/wp/wp60-progress.md`.
 
-- [ ] `WP60-S5` - Docs and full checks
+- [x] `WP60-S5` - Docs and full checks
   - Scope: `CLAUDE.md` (`lib/home/*` line), `docs/wp/wp60-progress.md`.
   - Acceptance criteria:
     - `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass, each read from its own exit code.
