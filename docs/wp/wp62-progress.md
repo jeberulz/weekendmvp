@@ -1,4 +1,8 @@
-# WP55 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
+# WP62 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
+
+> Renumbered from WP55 on 2026-10-07 (see `docs/wp/RULINGS.md`): a local Codex branch,
+> `codex/wp55-price-acceptance`, already uses WP55. Entries dated before this note keep
+> the old WP55 label and the old `wp55-*` file names. Read them as WP62.
 
 Append-only progress log. Do not rely on chat history for project state. Treat this file as claims, not evidence. Verify before relying on a number.
 
@@ -40,3 +44,19 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Confirm that WP55 is not already planned inside the unseen "membership program" (WP47 to WP53). If it is, renumber with a new ruling.
 - Say whether "embedded in the dashboard" meant the offer surfaces (assumed) or Stripe's embedded Checkout.
 - Decide the live build slot and logistics (O8) and schedule the first session before window 1.
+
+## 2026-10-07 - Renumber and sync
+
+- Actions taken:
+  - Merged `origin/main` (57 then 65 commits behind, merge commit `8bb15b1`). Two docs conflicts (the rulings log and the registry) were resolved by keeping both sides. No code conflicts.
+  - Renumbered the package from WP55 to WP62. WP62 is used nowhere on `main` or on any remote branch (highest in use: WP61). Renamed the stories, progress and evidence files. Moved the registry row after WP61. Appended the ruling "WP62 / renumbering". Left the six 2026-10-04 rulings untouched.
+  - Added "Changes on main since planning" to the stories (WP57 account gate and Beehiiv sync, busy seams, S1 unchanged).
+- Decisions made: none new. The renumber follows the owner's instruction of 2026-10-07.
+- Checks run:
+  - Baseline of `main` at `09ef90e` in a throwaway worktree (since removed): `npm run typecheck` passed. Test stages passed for links, redirects, auth, security, sitemap, Convex (490), engine (1,076), home, prompts and platform. Six tests failed in this sandbox: three OG-image tests that call OpenAI and Recraft (hosts blocked here, so environmental) and three editorial tests ("headers was called outside a request scope", not diagnosed, unrelated to billing). Lint and the build were not run. The baseline predates the last merge of `main`.
+  - `git diff --check` on the docs passes. It flags blank lines at the end of two files that came from `main` (`components/public/IdeaCards.tsx`, `components/public/Sections.tsx`), which are not part of this work.
+- Result: branch is in sync with `main` and carries only docs. No Stripe code exists yet.
+- Gotchas:
+  - A registry row on a side branch does not protect a number. Other sessions only see rows on `main`. The row reserves WP62 for real once it is merged to `main`.
+  - Local-only branches are invisible from a cloud checkout. If one already uses WP62, renumber again the same way.
+- Next: unchanged. Owner rulings on O1 to O9, starting with Stripe's written answer on the live build. S1 and S2 can start once the owner opens the build lane, names a branch, and confirms no other package holds the schema writer slot.
