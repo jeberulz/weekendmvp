@@ -90,25 +90,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Scaffold a Next.js 15 App Router + TypeScript project called accountcoach. Wire Supabase (Postgres + pgvector), Clerk (auth with phone verification), Stripe Billing (3 tiers: Starter $9, Growth $19, Pro $39), Twilio Programmable Messaging, Inngest for scheduled jobs, and Upstash Redis. Create tables: users, goals (title, target_date, cadence, drift_windows jsonb), check_ins (goal_id, commitment, completed, ts), reflections (date, text, embedding vector(1536)), streaks (goal_id, count, last_hit). Enable RLS per user_id on every table. Add an env schema with zod. Include a README with the four Inngest functions stubbed: morning_check_in, drift_nudge, evening_reflection, weekly_review.
+Build the weekend MVP of "AccountCoach": a daily text-message coach that remembers what you said you wanted, asks one sharp question each morning that quotes your own words and keeps a streak of what you committed to.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio Programmable Messaging for text and phone verification, the OpenAI API (a small model) to write each question. Recent reflections are found by date and goal, with no embeddings. A Vercel Cron route runs every 15 minutes and sends to people whose local time has arrived. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows; the SMS route writes through the service role):
+- profiles(user_id, phone, phone_verified_at, timezone, quiet_start, quiet_end, voice)
+- goals(id, user_id, title, target_date, cadence, drift_windows jsonb, active boolean)
+- check_ins(id, goal_id, commitment, completed boolean, ts)
+- reflections(id, user_id, on_date, text)
+- streaks(id, goal_id, count, last_hit)
+
+Screens: /login, /onboard (three goals, drift times, voice, phone), /today (today's question and your reply), /week (streaks and the weekly review).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, OPENAI_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or tiers, embeddings or pgvector, Redis, Inngest, web push, a voice call.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the morning check-in loop. Inngest cron fires at user.quiet_hours_end in their timezone. For each user: retrieve the top-3 active goals; embed the most recent 7 reflections with text-embedding-3-small; build a prompt that cites prior commitments verbatim and asks “What’s the one thing today that moves {goal.title} forward?” Call GPT-4o-mini with structured output { question, cited_goal_id, tone }. Send via Twilio SMS (or web push fallback). On inbound SMS: append commitment to check_ins, increment streak in Redis, queue drift_nudge for the user’s flagged drift window. Include a replayable dev mode that runs the loop against a test user without actually texting. Write Vitest tests for streak math and the citation format.
+Build the one feature that proves AccountCoach: a morning question that quotes you back, and a streak that is counted honestly.
+1. Onboarding takes up to three active goals, the times you tend to drift, a quiet-hours window, a voice (warm and direct, or brisk) and a phone number verified with a code sent by text.
+2. The cron route (protected by CRON_SECRET) finds users whose local time is at the end of quiet hours and who have not been asked today. For each, take the top 3 goals and the last 7 reflections. Ask the OpenAI API for JSON { question, cited_goal_id, tone }. The question asks what one thing today moves a goal forward, and may quote earlier words only exactly as typed.
+3. Check in code that cited_goal_id belongs to the user and that any quoted text appears in their reflections or commitments. If not, use a fixed question about the goal's title.
+4. Send the question by text, skipping quiet hours. An inbound reply is saved as the day's commitment, counts toward that goal's streak once per day and schedules a nudge in the user's next drift window.
+5. In the evening a 90-second reflection prompt saves one text. A weekly review shows streaks, completed days and one uncomfortable question taken from the goal that slipped most.
+6. A dev mode runs the loop against a test user and prints the texts without sending any.
+7. Write Vitest tests for the streak math (a day is counted once, a missed day resets) and for the quote check.
+Rules: never read anything the user did not type to you. Honor STOP and do not text after it. No health or medical claims. Never shame; keep the voice direct and kind.
+Empty state: before onboarding, show the onboarding form.
+Done when: dev mode prints a question that quotes a real reflection, a made-up quote is replaced by the fixed question, two replies on one day count once, STOP ends texts and the tests pass.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a conversion landing page at / with this structure: hero headline “An AI that actually cares if you follow through.” plus subhead “Daily check-ins. Honest weekly reviews. Zero Notion templates.” Include a live demo panel that fakes a morning SMS exchange (typewriter effect). Social proof row: r/RemoteJobs (286K), r/DigitalNomad (2.3M), r/WorkOnline (654K)—the communities this was built for. Three-tier pricing matching the Stripe products. FAQ: privacy (“exportable, deletable, never sold”), SMS cost, does it work on web only. Primary CTA: “Start your first check-in” → Clerk signup. Use Geist font, warm off-white background (#fcfaf7), minimal neutrals, no stock photos.
+Build a one-page landing site for AccountCoach, a daily text-message accountability coach for remote workers.
+Hero: "An AI that actually cares if you follow through." Sub: "A morning question that quotes your own words, an evening reflection and an honest weekly review. No templates to maintain." One button: Join the waitlist.
+Sections: a live-looking sample text exchange, how it works in four steps (set three goals, get a morning question, reply, see your week), and an FAQ on privacy (exportable and deletable, never sold), what a text costs you and whether it works on the web only (it can).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background (#fcfaf7), minimal neutrals, no stock photos.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for AccountCoach, a daily AI accountability coach for remote workers. Voice: warm, direct, James Clear rather than Tony Robbins—never corporate-cheery, never surveillance-coded. Logo: a simple geometric mark (circle + single tally mark) that reads at 16px; no gradients. Color palette: off-white canvas #fcfaf7, charcoal text #1a1a1a, green progress #16a34a, amber nudge #f59e0b; no bright red anywhere (this is a coach, not a warning). Typography: Geist 500 for headlines, Geist 400 for body, monospace only for SMS previews. Write three positioning lines and three microcopy patterns for nudges. Output as a single Markdown brand guide with hex codes, font weights, and usage rules.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AccountCoach: a geometric mark of a circle and a single tally mark that reads at 16 pixels, with no gradients.
+Colors: off-white (#fcfaf7), charcoal (#1a1a1a), green progress (#16a34a) and amber nudge (#f59e0b), and no bright red anywhere. Type: Geist 500 for headlines and 400 for body, monospace only for text-message previews.
+Deliverables: wordmark, mark, three positioning lines, three microcopy patterns for nudges and one brand guide page. Voice: warm and direct, never corporate-cheery, never surveillance-coded.
+Done when: each deliverable is saved in one folder and the mark is readable at 16 pixels.
 ```
 
 ## Sources

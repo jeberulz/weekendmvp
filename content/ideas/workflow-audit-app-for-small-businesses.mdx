@@ -82,41 +82,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project called "Firstflow,"
-an automation-readiness audit tool for small businesses. Provision Supabase with these tables:
-owners (id, email, business_name, vertical, plan default 'starter'),
-audits (id, owner_id, status, created_at),
-nodes (id, audit_id, label, tool_name, data_sensitivity),
-edges (id, audit_id, from_node, to_node, handoff_type, is_manual boolean),
-opportunities (id, audit_id, title, roi_score int, risk_score int, complexity_score int, rationale text).
-Enable row-level security so each owner only reads their own audits.
-Add Stripe with three products: Starter Map ($99 one-time), Growth ($299/mo), Agency ($499/mo).
-Set env vars OPENAI_API_KEY, plus Stripe and Supabase keys. Install the Vercel AI SDK and React Flow.
+Build the weekend MVP of "Firstflow": a small-business owner describes their tools, hand-offs and the hours each chore takes, and gets a visual map and a ranked list of what to automate first. The hours saved come from the owner's own numbers.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to read the description and score each idea, React Flow to draw the map. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- audits(id, user_id, business_name, vertical, raw_input, status, created_at)
+- nodes(id, audit_id, label, tool_name, data_sensitivity)  data_sensitivity is none, pii or payments
+- edges(id, audit_id, from_node, to_node, handoff_type, is_manual boolean, hours_per_week)
+- opportunities(id, audit_id, title, roi_score, risk_score, complexity_score, rationale, hours_saved_est)
+
+Screens: /login, /audit/new (the guided interview), /audit/[id] (the map and the ranked list), /audit/[id]/brief (a printable page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an agency tier, a PDF library, Zapier, Make or n8n blueprint export, account connections, a screen-share reader.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Parse and Score**
+**2. Core Feature**
 
 ```text
-Build POST /api/audit as a Vercel function. Input: a free-form description of a small
-business's tools, handoffs, and time-heavy tasks (typed, pasted list, or screen-share transcript).
-Step 1: call gpt-4o-mini with a strict JSON schema to extract nodes (tools/systems),
-edges (handoffs, marked manual or automated), and data_sensitivity labels (none, PII, payments).
-Step 2: call a reasoning model to score each candidate automation on roi_score, risk_score, and
-complexity_score (each 1-10) and return a one-sentence rationale explaining the ranking.
-Persist everything to Supabase and return the graph plus an ROI-ranked shortlist ordered by
-(roi_score minus risk_score minus complexity_score). Keep responses under a few seconds.
+Build the one feature that proves Firstflow: a map the owner recognizes and a shortlist whose numbers they can trace.
+1. The interview asks which tools the business uses, where information passes from one tool to another, who does it (a person or an automation) and how many hours a week each manual hand-off takes. Save the free text and the hours the owner typed.
+2. POST /api/audit sends the description to the Anthropic API with a strict JSON schema { nodes: [{ label, tool_name, data_sensitivity }], edges: [{ from, to, handoff_type, is_manual }] }. Check in code that every edge refers to a node that exists and that every sensitivity is from the fixed list. Drop anything that fails.
+3. Join each manual edge to the owner's hours for it. Ask the model for { opportunities: [{ title, roi_score, risk_score, complexity_score, rationale }] } with each score from 1 to 10, one per manual edge or group of edges.
+4. Rank in code by roi minus risk minus complexity. Compute hours_saved_est only from the owner's typed hours, as the hours of the hand-offs the idea covers, and never from a model guess. Say that it is the owner's own estimate.
+5. /audit/[id] draws the map with React Flow: tools as nodes, manual hand-offs in a warning style and sensitive flows badged. Under it, show the ranked cards with the score breakdown, the rationale and the hours.
+6. /audit/[id]/brief is a printable page with the map, the ranked list, the hours and a data-sensitivity summary.
+Rules: never state a saving the owner did not give. Say that scores are a model's judgment to discuss, not a measurement.
+Empty state: with no audits, show the interview and a sample description.
+Done when: a sample description produces a map whose edges all join real nodes, the ranking equals roi minus risk minus complexity, an hours figure traces to the owner's input and the brief prints on one page.
 ```
 
-**3. Map Rendering and Export Brief**
+**3. Landing Page**
 
 ```text
-Build a dashboard page that renders the audit graph with React Flow: tools as nodes, handoffs
-as edges, manual handoffs styled in a warning color, and data-sensitive flows badged.
-Below the map, show the ranked automation shortlist as cards with the score breakdown and rationale.
-Add an "Export brief" button that generates a PDF containing: the map image, the prioritized list,
-estimated hours saved per item, and a data-sensitivity summary — formatted as an agency-ready
-execution brief. Add a secondary export that emits a starter Zapier/Make/n8n blueprint for the
-top-ranked opportunity.
+Build a one-page landing site for Firstflow, a workflow audit for small businesses before they hire an automation consultant.
+Hero: "See how your business really runs, then decide what to automate." Sub: "Answer a short interview. Get a map of your tools and hand-offs and a ranked list of what is worth automating first." One button: Join the waitlist.
+Sections: a sample map with two manual hand-offs highlighted, how it works in four steps (describe, map, rank, export a brief), and an FAQ on where the hours come from (your own numbers), how scores are judged and what data is stored.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one orange accent used only for manual steps.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Firstflow: a wordmark and an icon that suggest three nodes joined by one line that bends.
+Colors: off-white, near-black and one orange used only for manual steps. Type: Geist, with tabular numbers for hours and scores.
+Deliverables: wordmark, icon, a map node style with a data-sensitivity badge, three sensitivity badges (none, personal data, payments) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the sensitivity badges are distinguishable without color.
 ```
 
 ## Sources

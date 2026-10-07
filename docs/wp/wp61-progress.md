@@ -196,15 +196,15 @@ Append-only progress log. Do not rely on chat history for project state.
   - **ReviewIQ** takes reviews by CSV. The old page said the Admin API, but Shopify has no first-party review feed, so the review app's export is the real source.
   - **Runway** takes invoice-line CSVs. The lint treats a payment processor named in Project Setup as billing, so the processor connection is the next step, which also fits a weekend.
   - **Recur** fixes a gap in its own spec. The old detector dropped any group with under 3 charges, which hides annual charges (24 months holds at most 2). The prompt shows an annual pair as "possible" with confidence capped at 0.7. Cancellations count as done only when a later statement shows no new charge.
-  - **Verdicts and numbers decided in code**: the Feature Usage Auditor decides Keep, Investigate or Sunset by written rules and only asks the model for the paragraph. It reads the export in the browser and sends only hashed totals. Buildline, Coinstack, TextTrack and the Quarterly-style engines compute scores in code and check that a narrative only repeats real numbers.
+  - **Verdicts and numbers decided in code**: the Feature Usage Auditor decides Keep, Investigate or Sunset by written rules and only asks the model for the paragraph. It reads the export in the browser and sends only hashed totals. Buildline and Coinstack compute their scores in code and check that any text the model writes only repeats real numbers.
   - **Honest claims**: TrendScout no longer promises a peak time or scrapes anything, and measures how often its flags helped. ClearChain says "documents on file, confirmed by the brand" and encodes no named law. Buildline reads GitHub counts and a 10-second check-in (no wearables or calendar) and rejects clinical words. RentGuard says tamper-evident, not tamper-proof.
-  - **Sending and filing kept behind a person**: Transom sends nothing to a lead without an approval click. SlackToDoc reads only the thread it is mentioned in. Staffer-style approval pattern appears again in none of this wave.
+  - **Sending and reading kept behind a person**: Transom sends nothing to a lead without an approval click. SlackToDoc reads only the thread it is mentioned in.
   - **Smaller cuts**: Monthlii is the operator console only (no client portal) and every percentage is typed by the operator, with no default salary or tax rate. ShopAutopilot imports Seller Center CSVs and uses the EasyPost test key. AdMotion renders in the browser with ffmpeg.wasm and uploads nothing.
-  - Ideas with no product name in the old page got "pick a short working name" in Branding where needed (the Auditor, the SEO tool, the photo and health tools of earlier waves).
+  - Ideas with no product name in the old page got "pick a short working name" in Branding where needed (the Feature Usage Auditor and the SEO Keyword Tool).
 - Notes:
   - A human should read these first: RentGuard (the state letter template needs a lawyer, and it is one state), Monthlii (the tax and CPA boundary), TextTrack (business texting rules), SlackToDoc (it reads work messages), ClearChain (what the public page may say), Buildline (wellbeing-adjacent), Recur and Coinstack (money habits) and Home Upkeep (it must not read as an inspection).
   - AdMotion's biggest risk is browser limits: a 15-second 1080p render with ffmpeg.wasm may be slow or run out of memory. That is the first thing to test.
-  - `shopify-trust-scanner` and `tiktok-shop-fulfillment-automation` and `supply-chain-transparency-platform` have trailing go-to-market notes after the last fence on some pages (the applier kept them in place).
+  - `shopify-trust-scanner` has go-to-market notes after the last fence (the applier kept them in place).
 - Gates (`gates.sh`), all pass:
   - `audit:prompts` for the wave: 22 of 22.
   - `audit:idea --all`: 200 of 227. The failing set is now 27: `shopify-trust-scanner` left it and none joined. The baseline file was replaced by the 27-item set.
@@ -213,3 +213,28 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 23 tests pass, and the ratchet now lints 137 ideas.
 - Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: wave 8.
+
+## 2026-10-07 - WP61-S5, wave 8 (22 ideas)
+
+- Ideas: the 22 slugs of wave 8 in the manifest (`timed-tool-access-contractors` to `book-formatting-for-self-publishers`). Same method as waves 2 to 7, written in four batches (6, 6, 6, 4). Every batch passed a dry run of the lint on the first try. No lint warnings on any page. No lint or auditor code changed in this wave.
+- Scope calls where an idea's own old prompts did not fit a weekend, or could not be built honestly (each is a cut a reviewer can overrule):
+  - **Access that is not open on every plan**: Tempkey covers Trello only, where the API can add and remove a board member. Slack, Google Workspace and Notion removals need admin plans or APIs that are not open to every customer, so they are the next package.
+  - **Money kept out of the apps**: OffHours (requests only, no payment or insurance), Gigvow (shifts, claims and reliability, no escrow), VibeCoders (matching and vetting, no payouts), Vintage Ride Revival (a catalog and a reviewed supplier flow, no payments).
+  - **Safety lines held**: Vintage Ride Revival lists non-safety parts only and refuses a safety-critical part at upload. Every request page says the part is not tested for road safety, and a low-confidence photo match goes to a person. Repair Estimate Translator only lets lines on a fixed safety-system list say a delay is a safety risk, and prices come from the shop, never from the model.
+  - **Nothing posts, sends or merges on its own**: WikiKeeper opens a pull request for a person and never commits to the main branch. The AI Search Publicist drafts pieces for the freelancer to publish and promises no placement (no money-back, no score, no outreach). Pagely never invents a testimonial or a lift figure. Handraised sends code only when the student confirms a hint request.
+  - **Honest reframing**: AlgoAlly stops claiming to detect "algorithm shifts". It reports what moved in a tracked cohort against its own 30-day norm, with the sample size on every number and an age window so views per day are comparable. Firstflow takes hours only from what the owner typed. FormatFlex does not claim to be "KDP-ready" and checks its EPUB with EPUBCheck in a test.
+  - **One platform or source in place of a connector set**: Doctor Debug (n8n), TourChat (a WhatsApp test number and approved templates), AccountCoach (no embeddings), the Smart Feedback widget (Postgres rate limit in place of Redis), Sayso (copy and CSV in place of a write to a field service tool) and the Nutrition Planner (a printable page in place of a client portal).
+  - **Sayflow** is macOS only, has no voice trigger and no undo, never records keys typed into a password field, and stops on three Escape presses.
+  - **Children and messaging**: TeamComm holds parents' contact details and a child's first name only, parents opt in themselves, a roster CSV imports names and emails only, and replies use a plain YES or NO grammar with no model.
+- Notes:
+  - A human should read these first: Vintage Ride Revival (safety), AccessCheck (it must never read as legal advice), the AI Search Publicist (what counts as an honest placement), TeamComm (children's data and business texting), Handraised (students' code), the Nutrition Planner (health, with a calorie floor kept in one config file), Sayflow (OS-level input capture), TourChat (WhatsApp template rules) and Doctor Debug (redaction before the model).
+  - Two things to test early, because they depend on platform limits: AccessCheck runs a serverless Chromium on Vercel (package size and time limits), and the wave 7 AdMotion renders video in the browser.
+  - `website-accessibility-ada-scanner` and `wedding-event-staffing-marketplace` have go-to-market notes after the last fence (the applier kept them in place).
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22.
+  - `audit:idea --all`: 200 of 227, the failing set identical to the baseline of 27.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 23 tests pass, and the ratchet now lints 159 ideas.
+- Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: wave 9 (17 ideas), then the program gate.
