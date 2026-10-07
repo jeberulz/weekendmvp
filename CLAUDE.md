@@ -108,7 +108,8 @@ read the response as text before parsing JSON.
   tab leads the prompt with its own line from `lib/home/hero-prompt.ts` (WP59),
   and Copy matches what is shown. Under it, one link goes to `/ideas/{slug}` for
   everyone, worded by `lib/home/hero-cta.ts` (WP60). The idea page, not the hero,
-  decides gate versus research. Excerpts prefer
+  decides gate versus research. "Idea of the week" uses the same wording and
+  destination (WP62). Excerpts prefer
   a manifest `highlights` block (written by `/publish-idea`, checked by
   `npm run validate:idea-tags`)
 - `components/public/*` + `lib/public/ideas.ts` — the research-desk kit every

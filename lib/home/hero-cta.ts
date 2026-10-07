@@ -37,3 +37,10 @@ export function heroIdeaHref(slug: string): string {
 
 /** Where the click is reported from, so the funnel can be read per surface. */
 export const HERO_CTA_LOCATION = "home-hero-idea";
+
+/**
+ * "Idea of the week" uses the hero's wording and the same single destination
+ * (WP62). Only the report location differs, so the two surfaces can be read
+ * apart in the funnel.
+ */
+export const IDEA_OF_WEEK_CTA_LOCATION = "home-idea-of-the-week";

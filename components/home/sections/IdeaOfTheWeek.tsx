@@ -2,8 +2,9 @@ import { GOAL_LABEL } from "@/lib/home/labels";
 import type { SpotlightIdea } from "@/lib/home/types";
 import { clamp } from "@/lib/home/text";
 import { cn } from "@/lib/utils";
+import { IdeaOfTheWeekLink } from "../client/IdeaOfTheWeekLink";
 import { IdeaArt } from "../IdeaArt";
-import { ButtonLink, CategoryTag, Container, Label, ScoreCell, StepList, TextLink, WeekendMeter } from "../ui";
+import { CategoryTag, Container, Label, ScoreCell, StepList, TextLink, WeekendMeter } from "../ui";
 
 /** 03 · Idea of the week, a new pick every Monday. */
 export function IdeaOfTheWeek({ idea, weekLabel, total }: { idea: SpotlightIdea; weekLabel: string; total: number }) {
@@ -40,9 +41,7 @@ export function IdeaOfTheWeek({ idea, weekLabel, total }: { idea: SpotlightIdea;
       <Container m="cols" className="grid grid-cols-1 gap-6 pt-6 lg:grid-cols-[1.1fr_1fr_1fr] lg:gap-14 lg:pt-12">
         <div className="flex flex-col gap-5 lg:gap-6">
           <p className="max-w-[400px] text-base leading-[1.55] text-home-d2 lg:text-lg">{clamp(idea.description, 200)}</p>
-          <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="w-full lg:w-fit">
-            Read the research
-          </ButtonLink>
+          <IdeaOfTheWeekLink slug={idea.slug} title={idea.title} className="w-full lg:w-fit" />
           <TextLink href="/startup-ideas" dark className="self-center lg:self-start">
             Browse all {total} ideas
           </TextLink>

@@ -31,6 +31,7 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP59 | Hero tabs that change the prompt | Work Package | `codex/wp59-hero-tabs` (stacked on `codex/wp58-weekly-hero`) | In progress — owner asked 2026-10-07 | Each hero tab leads the prompt with a line written for that tool, Copy matches what is shown, and tab use is tracked. See `docs/wp/wp59-stories.md`. |
 | WP60 | Hero idea link as a conversion funnel | Work Package | `codex/wp60-hero-idea-cta` (stacked on `codex/wp59-hero-tabs`) | In progress — owner asked 2026-10-07 | The hero build window links to `/ideas/{slug}` for everyone, worded for visitors and members, and the click is tracked. See `docs/wp/wp60-stories.md`. |
 | WP61 | Weekend prompt standard and backfill of 176 legacy ideas | Program/Migration | `codex/wp61-prompt-backfill` | Merged in PR #118. A human read of the sensitive pages is still owed (see `docs/wp/wp61-progress.md`) | Standard v1 for the four build prompts (structured, no billing, one login, a `Done when` line), a lint and ratchet list, and a wave-by-wave rewrite of the 176 `ideabrowser` ideas. See `docs/wp/wp61-program-manifest.md`. |
+| WP62 | Idea of the week link worded for the audience | Work Package | `codex/wp62-idea-of-week-link` | In progress — owner asked 2026-10-07 | The "Idea of the week" button uses the hero's visitor and member wording and reports its click. See `docs/wp/wp62-stories.md`. |
 
 ## Build Platform Program
 
