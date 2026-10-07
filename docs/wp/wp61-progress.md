@@ -238,3 +238,27 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 23 tests pass, and the ratchet now lints 159 ideas.
 - Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: wave 9 (17 ideas), then the program gate.
+
+## 2026-10-07 - WP61-S5, wave 9 (17 ideas)
+
+- Ideas: the 17 slugs of wave 9, the last wave in the manifest (`conversational-analytics-digest` to `wedding-flower-pinterest-budget`). Same method as waves 2 to 8, written in three batches (6, 6, 5). Every batch passed a dry run of the lint on the first try. No lint warnings on any page. No lint or auditor code changed in this wave.
+- Scope calls where an idea's own old prompts did not fit a weekend, or could not be built honestly (each is a cut a reviewer can overrule):
+  - **Rights and likeness**: the Ad Licensing Desk lists a post only when the creator's agreement is recorded with a note, and records payments and refunds for the operator without making them. The Retro Ad Generator lets the image model draw the backdrop only. The logo, the product and the words are placed by code, a test checks the logo is pixel-identical, and a deny list refuses celebrities and brands the user does not own.
+  - **A child's film**: Highlight Reel is manual. The parent marks the plays, the reel is an ordered playlist of clips on a private, expiring, noindex page, and the player and ball tracking are fenced. Delete removes the Mux assets.
+  - **Terms and data sources**: Listening Brief reads Reddit through the official read-only API, tells the builder to check Reddit's current commercial terms, has every draft disclose who is writing and never posts. Recall Radar and Vehicle Recall Alerts use one public government feed each, word every alert as a possible match and never pause or edit anything.
+  - **Numbers from data, not from a model**: the Analytics Digest drops any insight whose number is not in the computed facts and says "not enough data" for a small site. The Wedding Flower Budget prices from a wholesale sheet you fill in and a markup range, lists unknown flowers as not priced and builds swap-downs by rule. StorefrontMatch computes nothing: each fact shows who entered it and when. The Video Funnel Builder hides any percentage under 30 viewers.
+  - **No money in the apps**: Last 20 (free pilot), Smallshelf (order requests, no payout), the Virtual Knowledge Hub (booking and a library, no payment) and the Ad Licensing Desk.
+  - **A simpler engine in place of a heavy one**: the Knowledge Hub matches with full-text search, tags and one re-rank, with no embeddings. Markmint draws the PDF directly with react-pdf, with no headless browser, and records the export time. The Lightroom Preset Generator measures images in the browser and maps differences to sliders by documented formulas, with no vision model, and leaves white balance alone.
+  - **Privacy at the edge**: the Single-Event App Builder strips location data from guest photos, approves each photo by hand and keeps guest emails and RSVPs out of the keepsake. Lead Magnets store an email only with a consent line.
+- Notes:
+  - A human should read these first: Highlight Reel (a minor's video), the Ad Licensing Desk (rights), the Retro Ad Generator (likeness and brands), Listening Brief (Reddit's terms), Vehicle Recall Alerts and Recall Radar (safety wording), the Single-Event builder (guest photos) and the Knowledge Hub (advice disclaimers).
+  - Two things to test by hand before trusting them: the Lightroom preset file must import in Lightroom Classic with the sliders landing on the listed values, and the Markmint export time should be read from a real run.
+  - `markdown-client-proposals` has go-to-market notes after the last fence (the applier kept them in place).
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 17 of 17.
+  - `audit:idea --all`: 200 of 227, the failing set identical to the baseline of 27.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 17.
+  - `tests/prompts`: 23 tests pass, and the ratchet now lints 176 ideas, which is every `ideabrowser` idea.
+- Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: the program gate (S6).

@@ -79,35 +79,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 wedding-flower budget app.
+Build the weekend MVP of the "Wedding Flower Budget": a couple uploads screenshots of their flower inspiration, and gets a plain price range for their metro and a way to share it with a local florist. No Pinterest scraping.
 
-Set up:
-- Public couple flow (no auth): paste Pinterest URL or upload 8–12 images
-- Clerk + Stripe for florist accounts ($79 widget, $299 lead plan, $75–$150 per inquiry)
-- Supabase: boards, estimates, couples, florists, inquiries
-- Metro/zip table for routing
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link for florists), the Anthropic API (vision) to name the flowers, vessels and labor shape in the images. Prices come from a sheet you fill with real wholesale quotes for one metro, never from the model. Couples need no account. Deploy on Vercel.
 
-v1 accepts screenshot uploads only — no unofficial Pinterest scrape.
+Tables (Row Level Security on; price_sheets is read-only to the public; a florist reads only the estimates shared with them):
+- estimates(id, session_token, metro, budget_cents, image_paths text[], items jsonb, total_low_cents, total_high_cents, shared_with_florist boolean, created_at)
+- price_sheets(id, metro, item, unit, wholesale_cents, color_tag, source_note, updated_at)
+- florists(id, user_id, studio_name, metros text[], weekly_cap, markup_low, markup_high)
+- inquiries(id, estimate_id, florist_id, status, created_at)  status is new, accepted or declined
+
+Screens: / (the couple's flow), /estimate/[token] (the result and swap-down options), /florist/inbox, /florist/settings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, per-inquiry fees or a lead plan, a florist widget, a Pinterest connection or scraper, an emailed PDF, a proposal editor.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Pinterest Budget Reality Check.
-
-Requirements:
-- Vision model IDs stems, vessels, and labor shape
-- Price against a metro wholesale sheet + 3x–4x studio markup
-- If estimate exceeds couple budget, show 3 swap-down compositions that keep the palette
-- Email a one-page PDF. CTA is "share with a local florist," not "buy flowers"
-
-User flow: upload board → budget vs look → swap-downs → email → florist match.
+Build the one feature that proves the Budget: an honest range from the pictures, in the couple's metro, and a path to a florist who can say yes.
+1. The couple picks a metro, enters a budget and uploads 8 to 12 screenshots.
+2. Send the images to the Anthropic API (vision) with a strict JSON schema { items: [{ name, type: "stem" | "vessel" | "labor", count_low, count_high, confidence: number from 0 to 1 }] } describing the flowers, vessels and the arrangement style they see. The model gives names and counts only, never prices.
+3. Price in code against the metro's price sheet: for each stem, the wholesale cost per stem times the count, then a studio markup of 3 to 4 times (the florist's own range when known), plus vessels and labor lines from the sheet. Produce a low and a high total. A flower not on the sheet is listed as "not priced" and left out of the totals.
+4. If the high total is over the budget, show 3 swap-down options built by a rule: replace the two most expensive stems with cheaper stems from the sheet that share the same color tag, and recompute the range. Keep the palette.
+5. Show the result as a range with what it is based on: the sheet's date, the markup used and the list of not-priced items. Say "an estimate; florist quotes vary".
+6. A Share with a local florist button, which the couple must press, sends only the estimate and the metro (and an email if the couple adds one) to florists who cover that metro. Delete uploaded images 30 days after the estimate is made.
+7. The florist inbox lists shared estimates up to their weekly cap and lets them accept or decline.
+Rules: never show a single price as exact. Never share anything without the couple's tap. Never invent a price for an unknown flower.
+Empty state: before uploading, show the upload box and what makes a good screenshot.
+Done when: a sample board gives a range with its basis shown, a flower missing from the sheet is called out and excluded, a swap-down keeps the color tag and lowers the high total, nothing is shared before the button and images are deleted after 30 days.
 ```
 
-**3. Florist Desk**
+**3. Landing Page**
 
 ```text
-Add the florist inbox: claimed metros, weekly inquiry cap, $75–$150 accept/decline, and a $79/month embeddable widget that runs the same calculator on their domain with their markup. No proposal editor. They already have Curate.
+Build a one-page landing site for the Wedding Flower Budget, the honest number before you talk to a florist.
+Hero: "What do the flowers on your board really cost?" Sub: "Upload screenshots. See a price range for your city, cheaper ways to keep the look and share it with a local florist if you want." One button: Join the waitlist.
+Sections: a sample result with its range, what it is based on and one swap-down, how it works in four steps (upload, see the range, swap down, share), and an FAQ on how the range is worked out (a price sheet and a markup range), why it is an estimate and what is shared (only what you choose).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a soft blush and warm off-white background, one deep green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Wedding Flower Budget: pick a short working name, then design a wordmark and an icon that suggest a single stem with a small price tag.
+Colors: soft blush, warm off-white and one deep green. Type: Geist, with tabular numbers for prices.
+Deliverables: wordmark, icon, a range bar style (low and high), two item labels (priced, not priced) that differ by shape and word as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two item labels are distinguishable without color.
 ```
 
 ## Sources

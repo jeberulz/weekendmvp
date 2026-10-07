@@ -79,27 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build a Next.js 14 App Router marketplace called StorefrontMatch for small-town vacant storefronts.
+Build the weekend MVP of "StorefrontMatch": a directory of vacant storefronts in small towns where town staff enter the facts, each fact shows who entered it and when, and an entrepreneur can send an inquiry. Nothing is estimated by the app.
 
-Schema: towns, storefronts (rent_min, rent_max, sqft, permitted_uses[], photos[], status), inquiries, users (role: entrepreneur|town_admin).
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Resend for inquiry emails to the town contact. The public directory is server-rendered. Deploy on Vercel.
 
-Pages: / (search), /towns/[slug], /listings/[id], /admin/town (CRUD listings), /api/inquiries.
+Tables (Row Level Security on; town admins write only their own town's rows, live listings are public, an entrepreneur reads their own inquiries):
+- towns(id, slug, name, state, population, contact_email)
+- profiles(user_id, role, display_name, town_id)  role is entrepreneur or town_admin; you assign town admins by hand
+- storefronts(id, town_id, title, address, rent_min_cents, rent_max_cents, sqft, permitted_uses text[], permitted_uses_source, renovation_band, foot_traffic_score, foot_traffic_basis, grants jsonb, photos jsonb, status, updated_by, updated_at)  status is draft, live or leased
+- inquiries(id, storefront_id, entrepreneur_id, use_type, message, status, created_at)
 
-Auth with Clerk. Use Tailwind. Seed 3 demo towns with 8 listings each.
+Screens: /login, / (search), /towns/[slug], /listings/[id], /admin/town (add and edit listings, the inquiry pipeline).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY.
+
+Do not build: billing, municipal plans or success fees, a lease flow, maps or foot-traffic data feeds, a model, an inventory spreadsheet sync.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Viability Layer**
+**2. Core Feature**
 
 ```text
-Add a Storefront viability panel: permitted uses (plain English), estimated renovation band, foot-traffic score (1-10) from a mock Google Places density function, and grants[] with title + url.
-
-Town admins can edit these fields. Entrepreneurs can filter search by use type and max rent.
+Build the one feature that proves StorefrontMatch: a listing an entrepreneur can trust, because every fact says where it came from.
+1. Seed 3 sample towns with 8 listings each, clearly labeled as sample data.
+2. A town admin adds a listing with the address, rent range, size, photos and these facts: permitted uses in plain language with a link to the source rule, a renovation cost band, a foot-traffic score from 1 to 10 with a sentence saying how it was judged, and any grants as a title and a link. Save who entered it and when.
+3. The listing page shows each of those facts with a small "entered by the town on [date]" line and an "unverified" label where no source link was given. The app computes none of them.
+4. The search page filters by town, use type and maximum rent and lists only live listings. Sort by most recently updated.
+5. An entrepreneur signs in and sends an inquiry with the use they have in mind and a message. Save it and email the town contact through Resend with the details.
+6. The town dashboard lists inquiries by listing with a status (new, replied, closed) and lets the admin mark a listing leased. A town admin can see and edit only their own town's rows.
+Rules: never show a made-up number. Never show a draft listing publicly. Say the town is the source of the facts.
+Empty state: a town with no listings shows how to add the first one.
+Done when: an admin of one town cannot edit another town's listing, every viability fact shows its source line, a draft is invisible to the public, the filters work and an inquiry emails the town contact.
 ```
 
-**3. Billing**
+**3. Landing Page**
 
 ```text
-Integrate Stripe Checkout for Municipal Pro ($300/month). Gate unlimited listings behind active subscription. Add a success_fee invoice flow when a listing status flips to leased.
+Build a one-page landing site for StorefrontMatch, vacant storefronts in small towns for people who want to open a business.
+Hero: "The empty storefront on Main Street, with the answers national sites skip." Sub: "Rent range, what the zoning allows in plain words, what renovation might cost and who to call, all entered by the town and labeled as such." Two buttons: Join the waitlist as an entrepreneur, Join as a town.
+Sections: a sample listing with each fact's source line, how it works in four steps (the town lists, you search, you ask, you meet the town), and an FAQ on who enters the facts (the town), what is unverified and which towns come first.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one brick-red accent, real storefront photography.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for StorefrontMatch: a wordmark and an icon that suggest a shop awning over a keyhole.
+Colors: warm off-white, ink and one brick red. Type: Geist, with tabular numbers for rents.
+Deliverables: wordmark, icon, three listing status chips (draft, live, leased) that differ by shape as well as color, a source line style for each fact, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources
