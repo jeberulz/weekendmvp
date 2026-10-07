@@ -91,19 +91,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Scaffold a Shopify Remix app called "CartRescue" with TypeScript and Tailwind. Configure OAuth, Billing API (Starter $19, Pro $79), and webhooks for checkouts/create and orders/create. Add Supabase tables: shops (domain, plan, esp_connection), abandonments (checkout_token, customer_id, cart_json, abandoned_at, recovered_at), sessions_enriched (scroll_depth, time_on_pdp_seconds, size_chart_views), intent_labels (abandonment_id, objection_type, confidence), sequences (abandonment_id, email_index, subject, body_html, sent_at). Create /api/webhooks/shopify with HMAC verification and an embedded admin page showing last 30 recoveries with dollar amounts.
+Build the weekend MVP of "CartRescue": a Shopify app that reads why a shopper left and drafts a three-email recovery sequence that answers that worry, not a generic discount.
+
+Stack: a Shopify Remix app (TypeScript, Tailwind), Supabase (Postgres, Row Level Security), Claude (Anthropic API) for both the classification and the emails. The Shopify app install (OAuth) is the only login. Deploy on Vercel.
+
+Tables (Row Level Security on, rows scoped to the shop):
+- shops(id, domain, esp_connection)
+- abandonments(id, shop_id, checkout_token, customer_id, cart_json jsonb, abandoned_at, recovered_at)
+- sessions_enriched(id, abandonment_id, scroll_depth, time_on_pdp_seconds, size_chart_views)
+- intent_labels(id, abandonment_id, objection_type, confidence)
+- sequences(id, abandonment_id, email_index, subject, body_html, status, sent_at)
+
+Screens: the embedded admin page with the last 30 recoveries and their dollar amounts.
+Env vars (names only): SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+Webhooks: checkouts/create and orders/create at /api/webhooks/shopify, with HMAC verification.
+
+Do not build: billing or plans, a second AI model, session-replay integrations, sending emails (show the drafts for the merchant to copy), a merchant ESP bridge, scheduling.
+Done when: the app installs on a development store, a test abandoned checkout is stored, and the five tables exist with Row Level Security on.
 ```
 
-**2. Intent Classification + Copy Generation**
+**2. Core Feature**
 
 ```text
-Build the core AI pipeline for CartRescue. On each abandonment event, assemble a feature bundle: cart line items, product tags, time on site, size-chart or shipping-page flags, customer order count, and cart value. Step 1: classify objection_type as one of [shipping_cost, price_hesitation, sizing_fit, distraction, comparison, unknown] using gpt-4o-mini with JSON schema { objection_type, confidence, evidence[] }. Step 2: if confidence >= 0.7, call Claude Sonnet to write a 3-email sequence where each email references specific products viewed and addresses the objection without offering a discount in email 1. Output JSON { emails: [{ subject, preview, body_html, cta_text }] }. Store prompts and outputs for audit. Cancel scheduled sends if orders/create fires for the same checkout_token.
+Build the one feature that proves CartRescue: classify why the shopper left and write emails that address it.
+1. POST /api/signals accepts { checkout_token, scroll_depth, time_on_pdp_seconds, size_chart_views } and stores it in sessions_enriched. This is a test endpoint. The storefront script comes later.
+2. On each abandonment, assemble a bundle: line items, product tags, time on site, size-chart and shipping-page flags, the customer's order count and the cart value.
+3. Ask Claude to classify objection_type as one of shipping_cost, price_hesitation, sizing_fit, distraction, comparison or unknown. Return JSON { objection_type, confidence, evidence[] }.
+4. If confidence is 0.7 or higher, ask Claude for a 3-email sequence that names the products viewed and answers the objection. Email 1 offers no discount. Return JSON { emails: [{ subject, preview, body_html, cta_text }] }.
+5. Store each prompt and output for audit. Show the sequence in the admin page as drafts. When orders/create arrives for the same checkout_token, set the sequence to cancelled and set recovered_at.
+Empty state: with no abandonments, show the setup steps and a button that creates a test abandonment.
+Done when: a test abandonment with size-chart views gets a sizing_fit label and three drafts that lead with fit guidance, and a matching order cancels them.
 ```
 
-**3. Recovery Dashboard + App Store Listing**
+**3. Landing Page**
 
 ```text
-Create an admin dashboard page for CartRescue showing: recovered revenue (7/30/90 day), recovery rate vs merchant baseline, top objection types, and best-performing subject lines. Add a public marketing page for Shopify App Store submission: headline "Recovery emails that know why they left", three screenshots (intent tag, email preview, revenue chart), FAQ on GDPR/CAN-SPAM, Klaviyo export, and pricing table. Include a free Cart Recovery Calculator embed: inputs = monthly sessions, abandonment rate, AOV → outputs estimated recoverable revenue at 8%, 15%, and 25% recovery rates.
+Build a one-page landing site for CartRescue, a Shopify app for abandoned-cart recovery emails.
+Hero: "Recovery emails that know why they left." One button: Join the waitlist.
+Sections: three screenshots (the intent tag, an email preview, a revenue chart), how it works in four steps (connect Shopify, classify intent, generate the sequence, send and learn), an FAQ on GDPR, CAN-SPAM and exporting to Klaviyo, and a free Cart Recovery Calculator.
+Calculator: inputs are monthly sessions, abandonment rate and average order value. Outputs are the estimated recoverable revenue at 8%, 15% and 25% recovery.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical, written for a Shopify store owner.
+Done when: the page renders on a phone, the calculator updates as you type, and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CartRescue: a wordmark and an icon that suggest a cart being brought back, warm and not pushy.
+Colors: a warm off-white, a deep teal and one coral accent. Type: one friendly sans for the interface.
+Deliverables: wordmark, icon, six objection-type icons (shipping, price, sizing, distraction, comparison, unknown), and one launch graphic.
+Done when: each deliverable is saved in one folder and the six icons are distinct at 24 px.
 ```
 
 ## Sources

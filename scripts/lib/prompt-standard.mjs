@@ -72,7 +72,8 @@ const AUTH_PROVIDERS = [
   ["supabase-auth", /\bsupabase\b[^.\n]{0,80}\bauth\b/i],
 ];
 
-const BILLING = /\b(stripe|paddle|lemon ?squeezy|billing|subscriptions?|checkout|paid plans?|pricing tiers?|pricing plans?)\b/i;
+// A bare "checkout" is not billing: Shopify calls an abandoned cart an abandoned checkout.
+const BILLING = /\b(stripe|paddle|lemon ?squeezy|billing|subscriptions?|checkout (?:flow|page|session)s?|paid plans?|pricing tiers?|pricing plans?)\b/i;
 // Only `Next.js 15` / `nextjs 15`. A bare "next 7 days" is prose, not a pin.
 const NEXT_PIN = /\bnext\.?js\s*v?\d+/i;
 const DONE_WHEN = /^\s*done when\b/im;

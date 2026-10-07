@@ -48,7 +48,7 @@ Every prompt:
 - 3+ tables as `- name(column, column)` lines, each with a one-line purpose where it helps
 - `Screens:` line, three at most
 - `Env vars (names only):` line
-- **no billing**: no Stripe, plans, tiers, subscriptions or checkout
+- **no billing**: no Stripe, plans, tiers, subscriptions or checkout flow
 - one-line `Do not build:` fence naming what is left out. It may name billing,
   teams, an admin area or a second provider, and it does not count as using them
 - `Done when:` names something checkable, such as sign-in works and the tables exist

@@ -88,9 +88,13 @@ describe("weekend prompt standard v1", () => {
   });
 
   test("no billing in Project Setup", () => {
-    for (const word of ["Stripe", "billing", "subscriptions", "checkout", "paid plans", "pricing tiers"]) {
+    for (const word of ["Stripe", "billing", "subscriptions", "a checkout page", "a checkout flow", "paid plans", "pricing tiers"]) {
       expect(codes(edit("Project Setup", (t) => `${t}\nAlso add ${word}.`)), word).toContain("setup-billing");
     }
+  });
+
+  test("a bare 'checkout' is not billing (Shopify calls an abandoned cart an abandoned checkout)", () => {
+    expect(codes(edit("Project Setup", (t) => `${t}\nDone when: a test abandoned checkout is stored.`))).not.toContain("setup-billing");
   });
 
   test("at most three outside services, one login, and no Clerk with Supabase", () => {

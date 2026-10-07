@@ -63,3 +63,30 @@ Append-only progress log. Do not rely on chat history for project state.
 - Sampling: MeetingMood AI's section was read in full after applying. The other four were written from their packets and checked by the lint and the diff. They were not re-read line by line after applying.
 - The `*` payment tag in the manifest is a keyword match. `marketplace-meetup-safety` matched on "marketplace" and takes no payment, so its Core Feature has none.
 - Next: wave 2 (22 ideas).
+
+## 2026-10-07 - WP61-S5, wave 2 (22 ideas)
+
+- Ideas: the 22 slugs of wave 2 in the manifest (`adspark` to `ai-lesson-planner-teachers`).
+- Method: the same as wave 1, written in four batches of 5 to 6 ideas, each dry-run through the lint before it was applied.
+- What the lint caught while writing, all fixed in the prompts and not by weakening the rule:
+  - A "Providers" line that said "Anthropic and Gemini come later" still counted as naming a service. The later providers moved into the `Do not build:` fence.
+  - `usage_events` is on the engine's generic table list, so SpendLens counted two idea-specific tables instead of three. The call log was renamed to `proxied_calls`, which is what it is.
+- One rule change, made because a prompt exposed a real false positive: a bare `checkout` no longer counts as billing. CartRescue's "a test abandoned checkout is stored" uses Shopify's word for a cart. The rule now matches `checkout flow`, `checkout page` and `checkout session`. A test and the standard's wording were updated, and the 16 ideas already on the list still pass.
+- Scope calls made where an idea's own old prompts did not fit a weekend (each one is a cut, recorded here so a reviewer can overrule it):
+  - ClientStack: n8n only, by API key. Make and Zapier, ROI reports and template deploys are fenced.
+  - RelayOS: two mock tools, with Temporal kept because durable runs are the idea. Salesforce and HubSpot connectors are fenced.
+  - AgentBay: payments, payouts and the edge proxy are fenced. The metered proxy is a route handler.
+  - Billable: the proposal watchdog is the one feature. The scheduler is fenced, and approval before any send is a rule.
+  - Coding Agent Dashboard: GitHub webhooks only. Cursor, Claude Code and Codex connectors, Slack and email are fenced.
+  - Collectible Verification: sneakers only, with raw model output and the human-approved report kept apart, and no "guaranteed authentic".
+  - Surepair and TrustBadge take payment as their function. Surepair keeps escrow in test mode in Core Feature, and TrustBadge fences payments and invoices the first audits by hand.
+  - Stitchframe: one SKU and a six-plate sheet in place of the 60-page book. PromoBrain: a Sync now button in place of a nightly queue.
+- Trailing go-to-market notes after the last fence (on `ai-builder-hiring-marketplace`, `ai-chief-of-staff-consultants` and `ai-course-tutor-companion`) were kept in place by the applier.
+- Gates (`gates.sh`, the manifest's list), all pass:
+  - `audit:prompts` for the wave: 22 of 22. Warnings are `core-billing` only, on ideas where payment is the function.
+  - `audit:idea --all`: 198 of 227, the failing set identical to the baseline of 29.
+  - Only the prompts section changed on every page.
+  - The homepage prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 22 tests pass, and the ratchet now lints 27 ideas.
+- Sampling: the end of `ai-chief-of-staff-consultants` was read as it renders (the kept notes sit after the Branding block and agree with the new Core Feature rule). The rest were checked by the lint and the diff, not re-read line by line.
+- Next: wave 3.
