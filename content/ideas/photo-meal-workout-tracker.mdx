@@ -102,46 +102,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (SDK 51+, TypeScript) app plus a Next.js 15 marketing site for Photo-Based Health Tracker.
+Build the weekend MVP of the "Photo-Based Health Tracker": photograph a meal and get the foods, portions and macros back for you to confirm and save. Meals only this weekend. It gives estimates, not medical advice.
 
-Screens: permission explainer (explicit capture only), shutter, meal result, workout result, weekly recap, HealthKit connect.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for vision, the USDA FoodData Central API for nutrition values. The model names foods and portions; the macros are computed from USDA data in code. Photos are processed in memory and discarded unless the user opts in. Deploy on Vercel.
 
-Tables (Convex or Supabase, RLS per user): profiles, meals, workouts, photo_fingerprints, health_writes. Do not store raw images unless backup_photos is true.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, backup_photos boolean)
+- meals(id, user_id, logged_at, foods jsonb, calories, protein_g, carbs_g, fat_g, overall_confidence, needs_confirm boolean, confirmed_at)
+- photo_fingerprints(id, user_id, hash, canonical_meal_id, created_at)
 
-Stripe: Free (15 logs/mo), Lens $12/mo, Pro $19/mo, Lens annual $120.
-Env: OPENAI_API_KEY or ANTHROPIC_API_KEY, NUTRITIONIX keys, STRIPE_SECRET_KEY.
+Screens: /login, /log (camera or upload, then the confirm screen), /history, /settings (the photo backup switch, delete all).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, USDA_API_KEY.
+
+Do not build: billing, plans or a lens tier, workout photos, a native app, Apple Health or Google Fit writes, a social add-on, storing raw images by default.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Vision Extractor + Meal Memory**
+**2. Core Feature**
 
 ```text
-Build POST /api/interpret-photo.
-
-Input: image bytes, mode: 'meal' | 'workout'.
-Call Claude or GPT-4o vision with a strict JSON schema.
-
-Meal schema:
-{ foods: [{ name, grams_estimate, cooking_method, confidence }], calories, protein_g, carbs_g, fat_g, overall_confidence }
-
-Workout schema:
-{ exercise_type, equipment, duration_min_guess, pose_notes, overall_confidence }
-
-Rules: confidence below 0.7 sets needs_confirm and skips HealthKit. Map foods to USDA or Nutritionix. If embedding similarity to photo_fingerprints is above 0.92, skip vision and confirm the canonical meal. Corrections update the fingerprint; never send raw images to a trainer. Log cost per request.
-
-Tests: identical sandwich (fingerprint hit), low-light mixed plate (needs_confirm), gym rack vs salad (mode mismatch).
+Build the one feature that proves the Tracker: a photo becomes a meal log the user trusts, because they confirm it and the numbers come from real food data.
+1. POST /api/interpret-photo takes an image. First compute a perceptual hash. If it is within a small distance of a saved fingerprint, skip the model and offer that meal to confirm.
+2. Otherwise send the image to the Anthropic API with a strict JSON schema { foods: [{ name, grams_estimate, cooking_method, confidence }], overall_confidence: number from 0 to 1 }. If the photo has no food, return "No food found" and stop.
+3. For each food, look up per-100-gram values in the USDA FoodData Central API and compute calories, protein, carbs and fat in code from the grams. If a food has no match, mark it unknown, leave it out of the totals and say so. Do not use calorie numbers from the model.
+4. If overall_confidence is under 0.7, set needs_confirm and show the confirm screen with a warning. In every case the user can edit the foods and grams before saving. Nothing is saved until they confirm.
+5. A correction updates the fingerprint's canonical meal so the same plate is recognized next time.
+6. Discard the image after processing unless backup_photos is on. Log the model cost of each request.
+Rules: show calories as a rounded estimate with a confidence word, never to the digit. Never send an image anywhere except the model. Say "estimates, not medical advice".
+Empty state: with no meals, show the shutter and the line "Photograph a meal. You confirm it before it counts".
+Done when: the same sandwich photographed twice hits the fingerprint and skips the model, a dim mixed plate sets needs_confirm, a photo of a gym rack returns "No food found", macros match a hand calculation from the USDA values, and nothing is saved before confirmation.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page site for Photo-Based Health Tracker.
+Build a one-page landing site for the Photo-Based Health Tracker, meal logging from a photo.
+Hero: "You already took the picture. Stop typing the lunch." Sub: "Snap a meal, check the foods and portions, and save it. The numbers come from real food data." One button: Join the waitlist.
+Sections: a phone-frame demo (shutter, then a card of foods you can edit, then a macro summary), how it works in three steps (snap, confirm, log), a privacy block (photos are not kept unless you choose, and nothing is saved before you confirm) and an FAQ on accuracy, what is coming next (workouts and Apple Health) and "not medical advice".
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark kitchen-counter background, a plated meal with a mint rim light as the one image, no people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Hero: “You already took the picture. Stop typing the lunch.”
-Sub: “Meal and workout logging from a photo, written into Apple Health. No food diary. No wearable required.”
+**4. Branding Package**
 
-Sections: problem (70 percent of trackers quit manual entry), live demo (phone frame: shutter → macro card → Health app), how it works (3 steps), privacy (per-photo consent, no silent camera-roll scrape), pricing (Free / Lens $12 / Pro $19) anchored against Fitness+ $9.99 and Fitbit Premium $9.99, FAQ on accuracy, HealthKit, and “not medical advice.”
-
-Visual: dark kitchen counter, plated meal, mint rim light, no people, no stock gym grins. CTA: “Log tonight’s dinner free.”
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Photo-Based Health Tracker: pick a short working name, then design a wordmark and an icon that suggest a plate seen from above with a small shutter ring.
+Colors: near-black, warm off-white and one mint. Type: Geist, with tabular numbers for macros.
+Deliverables: wordmark, icon, a confirm-card style that shows a food, its grams and a confidence cue, three confidence states (sure, check, unknown) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three confidence states are distinguishable without color.
 ```
 
 ## Sources

@@ -79,25 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "HeroTales." Provision a Postgres database (Supabase) with these tables: children (id, user_id, name, age, reading_level, interests TEXT[], favorite_things TEXT[], fears_to_avoid TEXT[], photo_urls TEXT[], character_model_id TEXT), stories (id, child_id, template_id, title, pages JSONB, status TEXT default 'generating', created_at), templates (id, name, theme, interest_tags TEXT[], plot_outline JSONB), subscriptions (id, user_id, child_id, status, current_period_end), orders (id, story_id, format TEXT CHECK format IN ('digital','print'), print_status TEXT, tracking_url). Wire Stripe with a one-time Digital ($15) product, one-time Print ($25) product, and a recurring Subscription ($9/mo) product. Add env vars for the diffusion model provider API key and the chosen LLM provider API key.
+Build the weekend MVP of "HeroTales": a parent uploads a few photos of their child and gets a short illustrated storybook where the child is the hero.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, private Storage, Auth with email magic link), an image model with per-child likeness through Replicate or fal, Claude (Anthropic API) for the story. Deploy on Vercel.
+
+Tables (Row Level Security on, a parent reads only their own children and stories):
+- children(id, user_id, name, age, reading_level, interests, favorite_things, fears_to_avoid, photo_urls, character_model_id)
+- templates(id, name, theme, interest_tags, plot_outline jsonb)
+- stories(id, child_id, template_id, title, pages jsonb, status, created_at)  where status is generating, ready or failed
+Seed 5 branching templates by hand.
+
+Screens: /login, /new (photos and five questions), /stories/[id] (the book).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), IMAGE_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans, subscriptions or print orders, a print partner, a public gallery, sharing links.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on and five templates seeded.
 ```
 
-**2. Character-Consistent Story Generation Pipeline**
+**2. Core Feature**
 
 ```text
-Build a background job (triggered on child profile completion) that: (1) takes the 2-3 uploaded child photos and trains or fetches a per-child character embedding from a diffusion model API so the same face/likeness can be regenerated across multiple illustrated scenes; (2) sends the child's age, interests, favorite things, and fears-to-avoid to an LLM with a strict JSON schema { template_id: string, page_count: number, pages: [{ scene_description: string, narrative_text: string }] }, selecting from the 5-7 branching templates whose interest_tags best match the child's inputs; (3) for each page, calls the diffusion model with the character embedding plus that page's scene_description to generate a consistent illustration; (4) stores each page's text + image URL in the stories.pages JSONB column and flips status to 'ready'. Handle generation failures per-page with retry, and surface partial progress to the frontend so the parent sees pages appear as they finish rather than waiting on the full book.
+Build the one feature that proves HeroTales: a story where the child's likeness stays the same on every page.
+1. When a child's profile is complete, start a background job that takes the 2 or 3 photos and trains or fetches a per-child character from the image model, so the same likeness can be drawn on every page.
+2. Send the child's age, interests, favorite things and fears to avoid to Claude with a strict schema { template_id, page_count, pages: [{ scene_description, narrative_text }] }. Pick the template whose interest_tags match best.
+3. For each page, call the image model with the character and that page's scene_description.
+4. Save each page's text and image URL in stories.pages and set the status to ready. Retry a failed page, and show pages as they finish instead of waiting for the whole book.
+5. /stories/[id] shows the book page by page.
+Rules: photos stay private and are deleted, with the character model, when the parent asks. Never use photos for anything else. Never include anything from fears_to_avoid. Keep the narrative age-appropriate and free of brand voice.
+Empty state: with no children, show the new-story form.
+Done when: three photos of a test child produce a 6-page book where the child looks like the same child on every page, and a failed page retries without restarting the book.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for HeroTales. Hero headline: "Your kid isn't reading about a hero. They're reading about themselves." Sub: "Upload a few photos, tell us what they love, and we build a story where they're the main character — illustrated to actually look like them." Sections: a live before/after comparison (generic templated book vs. a HeroTales page featuring an illustrated child), problem (personalized books that aren't actually personalized), how it works (4 steps matching the solution section), pricing (Digital $15 / Print $25 / Subscription $9/mo) benchmarked against a $30+ Wonderbly-style callout, FAQ covering how the illustration likeness works, turnaround time for print, and data/photo privacy. Use the Geist font, warm off-white background, one playful accent color, generous whitespace. Primary CTA: "Create their story" leading to the upload flow.
+Build a one-page landing site for HeroTales, personalized storybooks for kids.
+Hero: "Your kid isn't reading about a hero. They're reading about themselves." Sub: "Upload a few photos, tell us what they love, and we build a story where they're the main character, illustrated to actually look like them." One button: Create their story, which joins the waitlist.
+Sections: a live before and after of a generic templated book and a HeroTales page, the problem (personalized books that are not really personalized), how it works in four steps (upload and answer, generate, deliver, retain), and an FAQ on how the likeness works, photo privacy and deletion.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, warm off-white, one playful accent color, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for HeroTales, a personalized AI children's storybook product. Concept: a wordmark and a small icon mark suggesting an open book with a single star or spark rising from the page (implying "you're the hero"). Pick one warm primary color, one playful accent, and two soft neutrals suited to a children's product without looking babyish to the parent who's buying it. Type system: Geist for UI and marketing copy, a warm rounded display face for story titles inside the book itself. Provide hex codes, font pairing rationale, a 6-icon usage set (upload, interests, generate, read, print, subscribe), and three voice rules: always describe the child as the hero not the subject, never oversell AI as "magic," keep in-book narrative language age-appropriate and free of brand voice bleed.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for HeroTales: a wordmark and an icon of an open book with a single star rising from the page, which says "you're the hero".
+Colors: one warm primary, one playful accent and two soft neutrals, kept from looking babyish to the parent who buys. Type: Geist for the interface and a warm rounded display face for story titles.
+Voice rules: always describe the child as the hero, never oversell AI as "magic", and keep the story language age-appropriate.
+Deliverables: wordmark, icon, a 6-icon set (upload, interests, generate, read, print, subscribe), and one launch graphic.
+Done when: each deliverable is saved in one folder and the six icons are distinct at 24 px.
 ```
 
 ## Sources

@@ -87,32 +87,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "WellnessIQ," a multi-tenant employee wellness SaaS. Provision Supabase with these tables:
-- organizations (id, name, plan, seat_count, created_at)
-- employees (id, org_id, hris_id, department, role_type, timezone, consent_at)
-- assessments (id, employee_id, goals JSONB, schedule JSONB, interests JSONB, created_at)
-- modules (id, domain TEXT CHECK domain IN ('mental','fitness','nutrition','sleep','financial'), title, content_url)
-- engagement_events (id, employee_id, module_id, action TEXT, created_at)
-- recommendations (id, employee_id, module_id, score FLOAT, rank INT, generated_at)
-Enable row-level security so each user reads only rows for their org, and employees read only their own rows. Add Stripe with three products: a $49 one-time starter, a per-seat subscription ($5-$20 per employee/month), and an annual enterprise SKU. Env vars: OPENAI_API_KEY, MERGE_API_KEY, TERRA_API_KEY, STRIPE_SECRET_KEY.
+Build the weekend MVP of "WellnessIQ": employees describe their goals in two minutes and get a short list of wellness modules matched to them, while their employer sees only anonymous group totals. It never shows an individual's answers to anyone but that person.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to turn a free-text goal into tags. Scoring is plain code. An employer creates a company and shares a join code. A Vercel Cron route refreshes recommendations weekly. Deploy on Vercel.
+
+Tables (Row Level Security on; a person reads only their own rows; the employer reads aggregates through a function that hides small groups):
+- organizations(id, name, join_code, created_by)
+- people(id, org_id, user_id, department, consent_at)
+- assessments(id, person_id, goals_text, tags jsonb, schedule jsonb, created_at)
+- modules(id, domain, title, tags text[], content_url)  domain is mental, fitness, nutrition, sleep or financial
+- engagement_events(id, person_id, module_id, action, created_at)
+- recommendations(id, person_id, module_id, score, rank, generated_at)
+
+Screens: /login, /join (a code and a consent screen), /assessment, /my-plan, /admin (aggregates only).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, CRON_SECRET.
+
+Do not build: billing, per-seat pricing or starter packs, HRIS imports, wearable data, outcome or return-on-investment comparisons between people, any individual view for managers.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Personalization Engine**
+**2. Core Feature**
 
 ```text
-Build the recommendation pipeline for WellnessIQ.
-Input: an employee's assessment plus their engagement_events history.
-Steps:
-1. Use gpt-4o-mini with a strict JSON schema to turn free-text goals into structured tags (domains, intensity, constraints).
-2. Score every module for that employee using tag match plus recent engagement (reward completed modules in preferred domains, decay ignored ones).
-3. Write the top 8 modules to the recommendations table with score and rank.
-Run this weekly via Vercel Cron for all active employees, and on demand right after a new assessment. Cache the gpt-4o-mini tag extraction so re-runs skip unchanged assessments to control cost.
+Build the one feature that proves WellnessIQ: a plan that fits the person, and a dashboard that cannot be used to single anyone out.
+1. Joining needs the company's code and a consent screen that says in plain words what the employer sees (group totals for groups of 5 or more, never an individual's answers or activity) and that the person can delete their data. Save consent_at.
+2. The assessment takes goals as free text, a few schedule choices and interests. Send only the goals text to the Anthropic API, with no name, department or company, and a strict JSON schema { domains: string[], intensity: "low" | "medium" | "high", constraints: string[] }. Cache the tags by a hash of the text so an unchanged assessment is not sent again. The tags describe what the person typed; never infer a health condition.
+3. Score every module in code: tag match plus recent engagement, rewarding completed modules in preferred domains and decaying ignored ones. Save the top 8 to recommendations with score and rank. Run it right after an assessment and weekly from the cron route (protected by CRON_SECRET).
+4. /my-plan shows the 8 modules with one line on why each was picked, and logs started and completed actions.
+5. The admin dashboard calls a database function that returns, per department, the active rate, the completion rate by domain and the week-over-week trend. The function returns nothing for any department with fewer than 5 people and says "Too few people to show".
+6. A Delete my data button removes the person's assessments, events and recommendations.
+Rules: no screen, query or export may return one person's goals, tags or activity to an employer. Say "wellness suggestions, not medical advice" on the plan page.
+Empty state: with no assessment, show the assessment and the line "Two minutes, only you see your answers".
+Done when: a new employee joins with consent, gets 8 modules with reasons, the admin sees department totals only, a department of 4 shows no number, and a direct query as the admin for one person's assessment returns no rows.
 ```
 
-**3. HRIS Onboarding + Manager Dashboard**
+**3. Landing Page**
 
 ```text
-Add one-click HR system onboarding using Merge.dev. Let an admin connect BambooHR, Gusto, Workday, or ADP through Merge Link, then sync employees (name, department, role_type) into the employees table, mapping Merge fields to our schema. Handle re-syncs idempotently by hris_id. Then build a manager dashboard showing, per department: active-employee rate, module completion rate by wellness domain, week-over-week engagement trend, and an ROI-style summary comparing engaged vs. disengaged cohorts. Keep all employee-level health data aggregated and anonymized in the manager view for privacy compliance.
+Build a one-page landing site for WellnessIQ, employee wellness that fits each person, for small businesses.
+Hero: "Wellness your team will actually use, and nobody has to be watched for." Sub: "Each person gets a short plan from their own goals. You see only anonymous group totals." One button: Join the waitlist.
+Sections: a sample plan with reasons, a sample group dashboard with one group marked "Too few people to show", how it works in four steps (join with a code, set goals, get a plan, see group totals), and an FAQ on what the employer can and cannot see, consent and deleting your data, and what the suggestions are not (medical advice).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one soft blue-green accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for WellnessIQ: a wordmark and an icon that suggest a leaf made from a single continuous line.
+Colors: warm off-white, ink and one soft blue-green. Type: Geist.
+Deliverables: wordmark, icon, five domain icons (mental, fitness, nutrition, sleep, financial) that read at 24 pixels, a "private to you" label, and one launch graphic.
+Done when: each deliverable is saved in one folder and the five domain icons are distinguishable in black and white.
 ```
 
 ## Sources

@@ -607,7 +607,6 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const audienceShort = audienceShortLabel(record);
   const steps = record.howItWorks.map(splitNamedStep);
   const tiers = ed.pricingTiers;
-  const tierKeys = tiers.map((t) => tierKey(t.name));
   const prose = (text: string, path: string) => proseMdx(text, ctx, path);
 
   // --- The Problem: narrative and verbatim quotes --------------------------
@@ -716,8 +715,6 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   ]);
 
   // --- AI Prompts (plain text inside fences; no figure or quote of our own) --
-  const planCheck = tierKeys.map((k) => `'${k}'`).join(",");
-  const priceEnv = tierKeys.map((k) => `STRIPE_PRICE_${k.toUpperCase()}`).join(", ");
   // A tier name may contain a finance word (for example "Trust Revenue").
   // Keep "Revenue" away from its per-seat price so the page-wide guard does
   // not misread a proposed tier price as an aggregate revenue total.
@@ -732,32 +729,41 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     .map((c) => `${c.name}: ${c.prices.map(priceItemPlain).join(", ")}`)
     .join("; ");
   const setupTables = [
-    `- workspaces(id uuid pk, name text, plan text check plan in (${planCheck}), created_at timestamptz)`,
+    "- workspaces(id uuid pk, name text, created_at timestamptz)",
     "- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))",
     ...ed.dataModel.map((t) => `- ${t.table}(${fenceText(t.columns, ctx)})`),
-    "- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)",
   ];
   const promptFences: Record<(typeof PROMPT_TITLES)[number], string[]> = {
     "Project Setup": [
-      `Create a Next.js App Router (TypeScript, Tailwind) app named ${name} for ${audienceShort}.`,
-      "Postgres tables with constraints:",
+      `Build the weekend MVP of ${name} for ${audienceShort}.`,
+      "Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for any AI step. Deploy on Vercel.",
+      "Tables (Row Level Security on, each user reads only rows in their own workspace):",
       ...setupTables,
-      `Stripe catalog must match the pricing tiers exactly: ${tierSummary}. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.`,
-      `Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ${priceEnv}, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
-      `Non-goals: ${dontBuild}`,
+      `Screens: one screen per workflow step: ${stepTitles}.`,
+      "Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.",
+      `Do not build: billing or plans. Not yet: ${dontBuild}`,
+      "Done when: npm run dev starts, you can sign in, and the tables exist with Row Level Security on.",
     ],
     "Core Feature": [
       `Build ${name}'s core workflow as one screen per step, in this order:`,
       ...coreFeatureLines,
-      `Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes ${steps.map((s) => s.title).join(" → ")} without leaving the app, and every generated item links back to its source.`,
+      "Persist state between screens so a user can leave and resume.",
+      "Empty state: a new workspace shows the first step and one sentence on what it does.",
+      `Done when: on sample data, a new workspace goes ${steps.map((s) => s.title).join(" → ")} without leaving the app, and every generated item links back to its source.`,
     ],
     "Landing Page": [
-      `One-pager for ${name}. Hero line: ${record.brief.oneLiner}`,
-      `Sections: the problem for ${audienceShort}; how ${name} works (${stepTitles}); competitor strip (${competitorStrip}); pricing (${tierSummary}); a single CTA into the first workflow step.`,
+      `One-pager for ${name}.`,
+      `Hero line: ${record.brief.oneLiner}`,
+      `Sections: the problem for ${audienceShort}; how ${name} works (${stepTitles}); competitor strip (${competitorStrip}); pricing (${tierSummary}).`,
+      `Voice: plain and specific to ${audienceShort}. No claim the page cannot back up.`,
+      "Waitlist: store the email in a waitlist table in Supabase. No other service.",
+      "Done when: the page renders on a phone and a submitted email appears in the waitlist table.",
     ],
     "Branding Package": [
+      "Use a design or image tool for this one. A coding agent cannot draw a logo.",
       `Brand ${name} for ${audienceShort}. ${fenceText(ed.brandBrief, ctx)}`,
       `Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product ${name}, never a generic AI platform.`,
+      "Done when: each deliverable is saved in one folder and the palette passes contrast on the page background.",
     ],
   };
   const promptsBody = [

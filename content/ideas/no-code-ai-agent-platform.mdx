@@ -85,25 +85,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app named Staffer. Postgres tables: orgs, users, agents (id, org_id, name, spec_text, status), connections (id, org_id, provider, encrypted_token), runs (id, agent_id, started_at, ended_at, status, error), tool_calls (id, run_id, name, args_json, result_json, approved_at), approvals (id, tool_call_id, state). Auth with Clerk or Supabase Auth. Stripe products: Demo $0, Starter $29/user/mo, Pro $199/user/mo. Env: OPENAI_API_KEY, ANTHROPIC_API_KEY, INNGEST_EVENT_KEY, STRIPE_SECRET_KEY. Do not put secrets in prompts.
+Build the weekend MVP of "Staffer": write a job for an AI employee in plain English, run it, and approve anything that sends before it goes out. Three tools only this weekend.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API with tool calling, a Slack incoming webhook for the one send tool. The run is a saved state machine, so it can stop at an approval and continue later. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- agents(id, user_id, name, spec_text, slack_webhook_url, status)  slack_webhook_url is read on the server only
+- runs(id, agent_id, status, started_at, ended_at, error)  status is running, waiting_approval, done or failed; one running or waiting run per agent
+- tool_calls(id, run_id, seq, name, args_json, result_json, approval_state, approved_at)  approval_state is not_needed, pending, approved or rejected
+
+Screens: /login, /agents, /agents/[id] (the spec editor, a Run button and the last runs), /runs/[id] (every tool call and its approval).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or metering, OAuth connections to Gmail, Notion, HubSpot or Asana, Temporal or Inngest, a visual canvas, a scraping connector, multiple users per org.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Spec Compiler + Durable Runner**
+**2. Core Feature**
 
 ```text
-Build POST /api/agents/:id/run. Load the agent spec_text. Call the model with tools: gmail.send, slack.post, notion.append, http.fetch, asana.create_task. Only emit tool names on the allow-list. Enqueue an Inngest function that executes each tool, retries on 429 with backoff, and pauses when the tool is send or spend until approvals.state is approved. Persist every tool_call. If a run is already in_progress for that agent, reject duplicates. Return run_id immediately; do heavy work in the worker.
+Build the one feature that proves Staffer: a plain-English job that runs, stops at anything that sends, and leaves a log.
+1. POST /api/agents/[id]/run rejects the request if the agent already has a running or waiting run. Otherwise it creates a run, returns the run id at once and does the work after the response.
+2. Call the Anthropic API with the spec and exactly three tools: http_fetch (GET an https URL), notes_append (save text to the run) and slack_post (send a message through the agent's webhook). Only these names are accepted; reject any other name the model returns.
+3. Guard http_fetch: https only, no localhost or private network addresses, a 5-second timeout and a 200 KB limit. Retry on a 429 with backoff.
+4. Save every tool call to tool_calls in order. A slack_post is saved as pending and the run moves to waiting_approval. Nothing is sent yet.
+5. /runs/[id] shows each call with its arguments and result. Approve sends the Slack message once and continues the run. Reject marks it rejected and ends the run.
+6. Cap a run at 8 tool calls. A failure sets failed and keeps the log.
+Rules: secrets never go into a prompt or a log. The model never sees the webhook URL. Every send needs an approval, with no exceptions.
+Empty state: with no agents, show a template ("Every morning, read this page and post a three-line summary to Slack").
+Done when: a spec to read a URL and post a summary runs, the Slack post waits for approval and sends exactly once when approved, a made-up tool name is rejected, a private address is refused and a second run is rejected while one waits.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for Staffer. Hero: “Hire an AI employee in English.” Sub: “Describe the job. Connect Gmail, Slack, Notion. It runs overnight. You approve anything that sends.” Sections: live spec editor demo, problem (zaps are graphs, VAs drop context), how it works (4 steps), pricing Demo / $29 / $199 vs Lindy $49.99 and Zapier Professional, FAQ on approvals, scraping legality, and data retention. Geist, off-white background, near-black type. CTA: “Write your first job spec.”
+Build a one-page landing site for Staffer, AI employees you hire in plain English.
+Hero: "Hire an AI employee in English." Sub: "Describe the job. It runs it and asks before it sends anything." One button: Join the waitlist.
+Sections: a sample spec next to the run log it produced, the problem (automations are graphs and assistants drop context), how it works in four steps (describe, connect, run, approve), and an FAQ on approvals, what the agent can touch today (three tools) and data retention.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one amber accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand Staffer as a staffing product, not a chatbot. Wordmark plus an icon of a small desk badge. Primary near-black, one amber accent, two warm neutrals. Geist for UI, IBM Plex Mono for run logs. Voice rules: never say “just prompt it,” always show last-run status next to the spec, write agent replies as if a competent junior sent them. Output a one-page brand sheet and three sample run-digest emails.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Staffer: a wordmark and an icon of a small desk badge, a staffing product and not a chatbot.
+Colors: near-black, one amber and two warm neutrals. Type: Geist for the interface, IBM Plex Mono for run logs.
+Deliverables: wordmark, icon, a one-page brand sheet, four run status chips (running, waiting, done, failed) that differ by shape as well as color, three sample run-digest emails written as a competent junior would, and one launch graphic. Voice rules: never say "just prompt it", always show last-run status beside the spec.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

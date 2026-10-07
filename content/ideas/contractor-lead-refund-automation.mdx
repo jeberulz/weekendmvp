@@ -94,25 +94,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) app named Refundra. Postgres tables: contractors (id, email, trade, monthly_lead_spend_cents, plan), connected_accounts (id, contractor_id, platform TEXT CHECK platform IN ('angi','homeadvisor','bark','thumbtack','lsa'), status), leads (id, contractor_id, platform, external_lead_id, charged_at, amount_cents, zip, service_type), transcripts (id, lead_id, source TEXT CHECK source IN ('callrail','twilio','upload'), duration_sec, text, whisper_cost_cents), classifications (id, lead_id, category, confidence, evidence_json, model), filings (id, lead_id, platform, submitted_at, status, credit_cents, screenshot_url), credits (id, contractor_id, platform, amount_cents, kind TEXT CHECK kind IN ('credit','cash','lsa_auto'), posted_at). Stripe products: Starter $149, Growth $249, Scale $399, plus a one-time Recovery SKU. Env: CALLRAIL_WEBHOOK_SECRET, TWILIO_AUTH_TOKEN, OPENAI_WHISPER_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. CallRail webhook at POST /api/webhooks/callrail. Do not automate Thumbtack in v1.
+Build the weekend MVP of "Refundra": a contractor uploads 90 days of paid leads with call transcripts and gets a dollar number for leads that look refundable, plus a ready-to-send claim for each one. It does not file anything on the platforms.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to classify each lead against a platform's refund reasons. Leads come in by CSV with a transcript column. Deploy on Vercel.
+
+Tables (Row Level Security on, scoped to the account that owns the rows):
+- accounts(id, user_id, business_name, trade)
+- platform_rules(id, account_id, platform, window_days, reason_labels jsonb)  platform is angi, homeadvisor or bark; the owner fills the values from each platform's own policy page
+- leads(id, account_id, platform, external_lead_id, charged_at, amount_cents, service_type, zip, transcript)
+- classifications(id, lead_id, category, confidence, quotes jsonb, model, prompt_version)
+- claims(id, lead_id, reason_text, window_closes_at, status, credit_cents)  status is draft, filed, approved or denied
+
+Screens: /login, /import (CSV), /leads (the dollar number and the list), /claims.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a recovery fee, browser automation or Playwright filing, CallRail or Twilio connections, audio transcription, Thumbtack, Google Local Services reconciliation.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Classifier + Filing Worker**
+**2. Core Feature**
 
 ```text
-Build a worker that: (1) transcribes audio with Whisper, (2) classifies with Claude against platform policy, (3) enqueues a Playwright job. Categories: wrong_service, out_of_area, disconnected, duplicate, already_hired, ineligible. Output JSON: category, confidence 0-1, quote spans from the transcript, recommended platform reason code. Filing: Playwright scripts per platform with screenshot-on-submit and a manual-confirm mode (contractor clicks Approve on a queue of 10). LSA path: ingest Google Ads invoice lines and Local Services credit lines, match by lead id and date, flag unmatched charges. Never claim a public dispute API for Angi or LSA. If a selector breaks, fail the job to the human queue instead of retrying blindly.
+Build the one feature that proves Refundra: find the leads that look refundable and draft the claim from the call itself.
+1. Import a CSV with columns platform, external_lead_id, charged_at, amount, service_type, zip, transcript. Show the rows that failed to parse and why.
+2. For each lead, send the transcript and the platform's reason_labels to the Anthropic API with a strict JSON schema { category: "wrong_service" | "out_of_area" | "disconnected" | "duplicate" | "already_hired" | "not_refundable", confidence: number from 0 to 1, quotes: string[] }.
+3. Check every quote in code: it must appear word for word in the transcript. Drop any category that has no valid quote and mark that lead not_refundable.
+4. Work out window_closes_at as charged_at plus the platform's window_days. If window_days is empty, show "Check this platform's policy" instead of a date. Never guess a window.
+5. /leads shows one number at the top: dollars on leads that look refundable with the window still open. Under it, the list with category, confidence and the days left.
+6. For each refundable lead, create a draft claim: the lead's details, the category, the quoted lines and a short reason text in plain words. The contractor copies it into the platform's own form. A status control lets them mark it filed, approved or denied and enter the credit amount.
+7. Show recovered dollars (approved credits) beside the total spent on leads.
+Rules: never promise a cash refund; say credit unless the platform pays cash. Never claim a platform has a dispute API.
+Empty state: with no leads, show the CSV columns and a sample file to download.
+Done when: a 20-lead sample file produces categories with quoted lines, the top number matches the sum of the eligible open-window leads, and marking a claim approved with a credit updates the recovered total.
 ```
 
-**3. Landing Page + 48h Audit**
+**3. Landing Page**
 
 ```text
-Design a marketing page for Refundra. Hero: “Your Angi and HomeAdvisor credits, filed before the window closes.” Sub: “48-hour Refund Audit. One dollar number. No card.” Sections: the $27k denied-refund story, platform scoreboard (Angi credit cap, HomeAdvisor BBB volume, LSA no-appeal auto-credits, Thumbtack 10-day cash rule), how it works (ingest, classify, file, report), pricing Starter $149 / Growth $249 / Scale $399 anchored under a $5k/mo lead bill, FAQ on portal automation risk and credits-not-cash. Primary CTA starts the audit (connect CallRail or upload 90 days of CSVs). Geist, off-white background, near-black type, one lime accent. Do not advertise Thumbtack as the wedge.
+Build a one-page landing site for Refundra, which finds refundable leads for home-service contractors.
+Hero: "Your Angi and HomeAdvisor credits, found before the window closes." Sub: "Upload 90 days of leads and calls. Get one dollar number and a claim written for each lead." One button: Join the waitlist for the free Refund Audit.
+Sections: a sample audit result card with one big number marked as an example, how it works in four steps (upload, classify, claim, track), a placeholder for a real recovery story to replace with yours, and an FAQ on why you file the claim yourself, credits versus cash and how your call data is handled.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand Refundra: wordmark plus a small mark that reads as a receipt stamp, not a phone. Near-black, one lime chip, two warm grays. Voice: talk like a shop owner, never like a growth hacker. Always show recovered dollars next to subscription price. Three sample audit emails that lead with a single number (“$1,840 unclaimed in 90 days”) and a 48-hour expiry. One-page brand sheet, hex, type, and three “do not say” rules (no “AI-powered,” no “set and forget,” no promising cash when the platform pays credit).
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Refundra: a wordmark and a small mark that reads as a receipt stamp, not a phone.
+Colors: near-black, one lime chip and two warm grays. Type: Geist, with tabular numbers for dollars.
+Deliverables: wordmark, stamp icon, an audit result card, three sample audit emails that open with one number marked as an example, and a one-page brand sheet with three do-not-say rules: no "AI-powered", no "set and forget", never promise cash when the platform pays credit.
+Done when: each deliverable is saved in one folder and the stamp is still readable in one color.
 ```
 
 ## Sources

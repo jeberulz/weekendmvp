@@ -79,19 +79,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for a white-label client portal builder called "PortalPro." Provision Supabase with these tables: accounts (id, owner_email, plan TEXT default 'free', brand_logo_url, brand_color_primary, brand_color_secondary, custom_domain), clients (id, account_id, name, email, invite_token, status), portals (id, account_id, client_id, subdomain UNIQUE), files (id, portal_id, uploaded_by, storage_path, filename), invoices (id, portal_id, stripe_invoice_id, amount_cents, status), messages (id, portal_id, sender_type TEXT CHECK sender_type IN ('freelancer','client'), body, created_at). Enable row-level security so a client's session can only read rows scoped to their own portal_id, and a freelancer can only read rows scoped to their own account_id. Wire Stripe Connect for freelancer-side invoicing and a separate Stripe Billing product for the platform subscription (Free, Freelancer $29, Studio $79). Add env vars for SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_SECRET_KEY, STRIPE_CONNECT_CLIENT_ID.
+Build the weekend MVP of "PortalPro": a white-label client portal where a freelancer's client sees files, messages and milestones under the freelancer's own brand.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link). Each portal is served at a subdomain. Deploy on Vercel.
+
+Tables (Row Level Security on: a client's session reads only rows for its own portal_id, and a freelancer reads only rows for its own account_id):
+- accounts(id, user_id, brand_logo_url, brand_color_primary, brand_color_secondary)
+- clients(id, account_id, name, email, invite_token, status)
+- portals(id, account_id, client_id, subdomain)
+- files(id, portal_id, uploaded_by, storage_path, filename)
+- messages(id, portal_id, sender_type, body, created_at)  where sender_type is freelancer or client
+- milestones(id, portal_id, title, status, approved_at)  where status is one of not_started, in_progress, awaiting_approval, approved
+
+Screens: /login, /settings (logo and two colors with a live preview), /clients, and the client portal at its subdomain.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or the platform's own subscription, invoicing or Stripe Connect, custom domains, Google Drive, Dropbox or Calendly connections, the onboarding wizard, invite emails (copy the invite link).
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — White-Label Portal Shell**
+**2. Core Feature**
 
 ```text
-Build the branded client portal shell. When a client visits their portal subdomain (e.g. clientname.portalpro.app or a connected custom domain), server-render a layout that pulls brand_logo_url, brand_color_primary, and brand_color_secondary from the account row and applies them as CSS variables — no visible reference to the underlying platform name anywhere in the client-facing UI. The portal has four tabs: Files (list from the files table with upload/download), Invoices (pull from Stripe Connect, show status and a Pay Now button), Messages (simple threaded chat scoped to portal_id, polling or Supabase realtime), and Timeline (freelancer-editable milestones with a status badge: not started, in progress, awaiting approval, approved). Add an "Approve" button on deliverables that writes an approval event and notifies the freelancer via email. Auth for clients is a magic-link tied to their invite_token, no password required.
+Build the one feature that proves PortalPro: a branded portal the client trusts, with no trace of the platform.
+1. When a client opens their portal subdomain, render the layout on the server from the account row: logo and two brand colors applied as CSS variables, with no visible reference to the platform name anywhere in the client-facing UI.
+2. The portal has three tabs. Files lists and uploads and downloads from the files table. Messages is a simple thread scoped to portal_id, updated by polling or Supabase Realtime. Timeline shows the freelancer's milestones with a status badge.
+3. A deliverable milestone has an Approve button for the client. Approving writes approved_at and the freelancer sees it at the top of /clients.
+4. The client signs in with a magic link tied to their invite_token, with no password. The freelancer copies the invite link from /clients.
+5. /settings lets the freelancer upload a logo and pick two colors, with the portal preview updating live.
+Rules: a client can never read another portal's rows. Never expose the invite_token after it is used.
+Empty state: with no clients, show the add-client form.
+Done when: a test client signs in by magic link at their subdomain, sees the freelancer's logo and colors, uploads a file, sends a message and approves a milestone, and cannot open another client's portal.
 ```
 
-**3. Onboarding Flow**
+**3. Landing Page**
 
 ```text
-Build the freelancer-facing onboarding wizard for PortalPro. Step 1: pick a vertical template (Design, Development, Coaching, Marketing Consulting) that pre-fills default timeline milestones and file categories. Step 2: upload a logo (store in Supabase Storage), pick two brand colors with a live preview of the portal shell updating in real time. Step 3: connect Stripe (OAuth via Stripe Connect), optionally connect Google Drive or Dropbox and Calendly via native OAuth. Step 4: create the first client — enter name and email, generate an invite_token, send a branded invite email (from the freelancer's chosen sending name, via Resend) with a magic-link to their new portal. Track completion of each step in an onboarding_progress column so incomplete signups can be re-engaged by email after 24 hours.
+Build a one-page landing site for PortalPro, a white-label client portal for freelancers.
+Hero: "Replace five scattered links with one portal that looks like you." Sub: "Pick a template, add your logo and colors, and give each client a single branded place for files, messages and approvals." One button: Join the waitlist.
+Sections: the problem (a client's work scattered across Drive, chat, invoices and email), how it works in four steps (pick a template and brand it, connect your tools, invite clients, manage everything from one dashboard), a mock portal in two different brands, and an FAQ on white-labeling and who can see what.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: calm and professional, written for a freelancer.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for PortalPro: a wordmark and an icon that suggest a doorway with room for someone else's logo.
+Colors: off-white, deep ink and one neutral accent that sits well beside any client brand. Type: one clean sans for the interface.
+Deliverables: wordmark, icon, a portal shell that shows two example brands, and one launch graphic.
+Done when: each deliverable is saved in one folder and both example brands stay readable.
 ```
 
 ## Sources

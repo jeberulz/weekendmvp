@@ -77,19 +77,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new React Native (Expo, TypeScript) project called "Coinstack." Provision Supabase with these tables: users (id, email, plan TEXT default 'free', timezone), linked_accounts (id, user_id, plaid_item_id, plaid_access_token_encrypted, institution_name), transactions (id, user_id, plaid_transaction_id, amount_cents, merchant_name, category, date), challenges (id, title, prompt_template, category, difficulty), completions (id, user_id, challenge_id, completed_at, skipped BOOLEAN, response JSONB), behavioral_profile (id, user_id, habit_category, shift_score FLOAT, last_updated). Enable row-level security so each user can only read/write rows where user_id matches their auth.uid(). Install the Plaid Node SDK, Expo push notifications, and Stripe. Add env vars PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, OPENAI_API_KEY or ANTHROPIC_API_KEY, STRIPE_SECRET_KEY.
+Build the weekend MVP of "Coinstack": upload a bank statement export and get one three-minute challenge a day, built from your own recent spending, with a streak and a weekly recap that uses only real numbers. It is a habit tool, not financial advice.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to word each challenge. Patterns, streaks and the recap are plain code. It installs to the home screen as a PWA. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, filename, row_count, created_at)
+- transactions(id, user_id, import_id, posted_at, amount_cents, merchant, category)
+- challenges(id, user_id, pattern, title, prompt, action_type, estimated_minutes, for_date, created_at)  action_type is categorize, set_trigger or scenario_answer
+- completions(id, user_id, challenge_id, completed_at, skipped boolean, response jsonb)
+- behavioral_profile(id, user_id, habit_category, shift_score, last_updated)
+
+Screens: /login, /import, /today (the challenge), /streak (streak, top habits, weekly recap).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, premium tiers or a corporate wellness program, Plaid or any bank link, a native app, push notifications, a model-written recap.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Daily Challenge Generator**
+**2. Core Feature**
 
 ```text
-Build a server function generate_daily_challenge(user_id) that: (1) pulls the user's last 14 days of transactions from Supabase, (2) detects patterns — repeated small purchases from the same merchant category, subscription charges, days with no spending logged, balance drops near a payday cycle — (3) selects the highest-signal pattern that hasn't been used in a challenge in the last 7 days, (4) sends the pattern plus a fixed challenge template to Claude/GPT-4o-mini with a strict JSON schema: { challenge_title: string, challenge_prompt: string, action_type: "categorize"|"set_trigger"|"scenario_answer", estimated_minutes: number }, and (5) inserts the result into the challenges table tagged to that user for the next morning's push notification. Never let the model invent transaction data that isn't in the input — pass only real transactions and constrain output strictly to the schema.
+Build the one feature that proves Coinstack: a challenge about the user's real spending, a streak that forgives one miss and a recap that cannot exaggerate.
+1. Import a CSV with columns date, description, amount, category (category optional). Treat spending as negative amounts. Skip a row already imported.
+2. Detect patterns in plain code over the last 14 days: the same merchant or category charged 3 or more times in small amounts, a recurring charge, days with no spending logged and a large one-off purchase. Give each pattern a signal strength and save its facts (counts, amounts, merchant).
+3. Choose the strongest pattern not used in a challenge in the last 7 days. Send only its facts and a fixed template to the Anthropic API with a strict JSON schema { challenge_title, challenge_prompt, action_type, estimated_minutes }. Check in code that every dollar amount and count in the prompt appears in the pattern facts. If one does not, use the template text instead. Save it for the next day.
+4. /today shows the challenge with its one action. Completing or skipping saves a completions row and updates that habit's shift_score with an exponential moving average, alpha 0.3, moving toward 1 on a completion and toward 0 on a skip. Unit test it.
+5. The streak counts consecutive days with at least one completion and survives a single missed day (a 1-day grace). Unit test the grace.
+6. The weekly recap is a template filled from the data: the change in spending for a category between the last 7 days and the 7 before, for example "Your delivery spending dropped 40 percent over the last 2 weeks". Show no recap line without both weeks of data.
+Rules: never state a number that is not in the user's transactions. Never tell anyone what to buy, invest or stop buying. Say "a habit tool, not financial advice".
+Empty state: with no import, show the CSV columns and a sample file.
+Done when: a sample statement yields a challenge whose amounts all appear in the data, the EMA and streak tests pass, a skipped day inside the grace keeps the streak and the recap matches a hand calculation.
 ```
 
-**3. Streak and Behavioral Profile Engine**
+**3. Landing Page**
 
 ```text
-Build the completion flow: when a user completes or skips a challenge, insert a row into completions, then update behavioral_profile for that habit_category — increment shift_score on completion, decay it slightly on skip, using a simple exponential moving average (alpha = 0.3). Compute a running streak_count (consecutive days with at least one completion, resets on a missed day with a 1-day grace period). Expose a GET /api/profile/:user_id endpoint returning current streak, top 3 habit_categories by shift_score, and a plain-language weekly recap string generated from the same score data (e.g., "Your delivery-order spending dropped 40% over the last 2 weeks"). Trigger an Expo push notification each morning at a per-user configurable time with the next unlocked challenge title.
+Build a one-page landing site for Coinstack, a three-minute daily money habit built from your own spending.
+Hero: "Three minutes a day, built from what you actually spent." Sub: "Upload a statement. Each morning you get one short challenge based on your own purchases, with a streak and a plain weekly recap." One button: Join the waitlist.
+Sections: a sample challenge ("You spent $34 on delivery three times this week"), how it works in four steps (upload, get a challenge, finish it, see your recap), and an FAQ on what is read (a file you upload, nothing is connected), what the app will not do (give financial advice) and how to delete your data.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one amber accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Coinstack: a wordmark and an icon that suggest three coins stacked into a small tower.
+Colors: warm off-white, near-black and one amber. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a challenge card layout with a three-minute timer, a streak flame replaced by a stack of three discs, and one launch graphic.
+Done when: each deliverable is saved in one folder and the challenge card is readable in black and white.
 ```
 
 ## Sources

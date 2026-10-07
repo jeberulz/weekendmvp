@@ -85,40 +85,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app called "NudgeLearn" for a course-completion nudge platform. Provision Supabase with tables:
-- creators (id, email, brand_voice TEXT, plan TEXT default 'free')
-- courses (id, creator_id, name, platform TEXT CHECK platform IN ('teachable','thinkific','kajabi','lms'))
-- learners (id, creator_id, email, phone, timezone, chronotype TEXT, channel_pref TEXT)
-- progress_events (id, learner_id, course_id, event_type TEXT, lesson_ref TEXT, created_at TIMESTAMPTZ)
-- nudges (id, learner_id, course_id, message TEXT, channel TEXT, scheduled_for TIMESTAMPTZ, sent_at TIMESTAMPTZ, variant TEXT)
-- outcomes (id, learner_id, course_id, completion_pct FLOAT, measured_at TIMESTAMPTZ)
-Enable row-level security so each creator only reads/writes their own rows. Add env vars OPENAI_API_KEY, RESEND_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, STRIPE_SECRET_KEY. Install the Vercel AI SDK, Resend, and Twilio SDKs.
+Build the weekend MVP of "NudgeLearn": a course creator uploads their students' progress and each student who is slipping gets one kind, specific email about the lesson they stopped on.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API (a small model) to write each nudge, Resend to send it. Progress comes in by CSV exported from the course platform. A Vercel Cron route runs daily. Deploy on Vercel.
+
+Tables (Row Level Security on, each creator reads only their own rows):
+- creator_settings(user_id, brand_voice, from_name, reply_to_email)
+- courses(id, user_id, name, total_lessons)
+- learners(id, course_id, email, name, timezone, unsubscribed_at)
+- progress_events(id, learner_id, lesson_ref, lesson_number, occurred_at)
+- nudges(id, learner_id, message, scheduled_for, sent_at, status)
+
+Screens: /login, /courses/[id] (completion and the at-risk list), /import, /settings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or per-learner fees, SMS or Twilio, Zapier or platform API connections, A/B testing, learning-style profiling.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the nudge engine as a Vercel Cron job that runs daily.
-
-For each active learner:
-1. Pull recent progress_events and compute: current completion_pct, days since last activity, the lesson they stalled on, and their peak-activity hour (chronotype).
-2. Classify risk: on_track, slowing, or at_risk.
-3. If slowing or at_risk, call gpt-4o-mini with a strict JSON schema:
-   { intent: "encourage"|"celebrate"|"re_engage", message: string, channel: "email"|"sms", send_at_hour: number, confidence: number }
-   The message must be guilt-free and specific to the stalled lesson, written in the creator's brand_voice.
-4. Insert a nudge row scheduled for the learner's peak hour; a delivery worker sends via Resend or Twilio and stamps sent_at.
-Never send more than 2 nudges/week per learner. Log every send for audit.
+Build the one feature that proves NudgeLearn: spot who is slipping and send a guilt-free, lesson-specific nudge.
+1. Import a CSV with columns email, name, timezone, lesson_ref, lesson_number, occurred_at. Upsert learners and insert progress events.
+2. A daily cron route (protected by CRON_SECRET, also callable from a Send now button) works out, for each learner, completion percent from the highest lesson_number over total_lessons, days since the last event and the lesson they stopped on.
+3. Classify in plain code, no model: on_track (active in the last 3 days or finished), slowing (4 to 7 days), at_risk (8 days or more and under 100 percent).
+4. For slowing and at_risk learners, ask the OpenAI API for JSON { subject, message } in the creator's brand_voice. The message names the stalled lesson, says how far they have come and offers one small next step. It must not guilt, shame or count days of absence.
+5. Schedule each nudge for 10:00 in the learner's timezone. A sender route emails it through Resend with an unsubscribe link, then sets sent_at.
+Rules: never send to a learner with unsubscribed_at set. At most 2 nudges per learner per week. The unsubscribe link sets unsubscribed_at and shows a confirmation. Log every send.
+Empty state: with no courses, show the CSV columns and a sample file.
+Done when: an imported sample classifies learners into the three groups, an at-risk learner receives one email that names their stalled lesson, a third nudge in the same week is skipped, and an unsubscribed learner gets nothing.
 ```
 
-**3. Creator Dashboard**
+**3. Landing Page**
 
 ```text
-Design a creator dashboard for NudgeLearn. Show:
-- A completion-rate line chart per course (before vs after nudges enabled).
-- An "At-Risk Students" table (name, course, completion_pct, last active, stalled lesson) with a one-click "send nudge now" action.
-- An A/B panel comparing nudge variants by resulting completion lift.
-- A settings page to set brand_voice, connect a platform via Zapier, and pick default channel.
-Use a calm, encouraging visual tone (soft lavender accents, generous whitespace, Geist font) that reinforces the "guilt-free" brand. Keep the primary metric — completion-rate lift — front and center on load.
+Build a one-page landing site for NudgeLearn, nudges that help students finish online courses.
+Hero: "Help more of your students reach the last lesson." Sub: "NudgeLearn writes a kind, specific check-in for each student who is slipping, about the lesson they stopped on." One button: Join the creator waitlist.
+Sections: a side-by-side of a guilt email ("You haven't logged in") and a NudgeLearn email ("Your project is 80% done. Want to finish the last section this weekend?"), how it works in four steps (upload, spot, write, send), a placeholder for your own completion-lift result, and an FAQ on student privacy, unsubscribes and tone.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, soft lavender accents, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for NudgeLearn: a wordmark and an icon that suggest a step that rises toward a finish line, calm and encouraging.
+Colors: soft lavender, ink and off-white. Type: Geist.
+Deliverables: wordmark, icon, a progress ring graphic, an email header, and three voice rules: celebrate progress, name the specific lesson, never guilt.
+Done when: each deliverable is saved in one folder and the progress ring reads clearly in black and white.
 ```
 
 ## Sources

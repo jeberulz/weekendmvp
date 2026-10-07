@@ -91,50 +91,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (React Native, TypeScript) app named LeanScan plus a Next.js 14 marketing/coach site.
+Build the weekend MVP of "LeanScan": a web app that guides a consistent front-view photo each week, reads body proportions from it on the phone and charts the trend with a confidence cue. It does not estimate body fat or muscle. It is a wellness trend tool, not a medical measurement.
 
-Mobile screens: onboarding, scan capture, history, trend chart, settings.
-Permissions: camera, photos, HealthKit (iOS) / Health Connect stub (Android).
-Native ARSession stub returns frames plus LiDAR depth when present.
-On-device: MediaPipe Pose; estimateCircumferences(landmarks, pixelToMeter, heightCm) returns chest/waist/hip/thigh_cm and a naive lean vs fat split from the latest scale weight.
-SQLite for last 20 scans; sync to Supabase when signed in.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), MediaPipe Pose Landmarker running in the browser so photos are read on the device. It installs to the home screen as a PWA. Deploy on Vercel.
 
-Supabase: profiles(id, user_id, height_cm, sex, units, glp1_mode), scans(id, user_id, captured_at, measurements jsonb, photo_paths, confidence, source), coach_clients(id, coach_id, client_user_id). RLS: own rows; coaches read linked clients.
-Stripe: Plus $9.99/mo, annual $79, Coach $29/mo.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, height_cm, sex, units)
+- scans(id, user_id, captured_at, measurements jsonb, confidence, status, photo_path)  status is ok or retake; photo_path is empty unless the user chooses to keep the photo
+- weigh_ins(id, user_id, measured_on, weight_kg)
+
+Screens: /login, /scan (guided capture), /history (the trend), /settings (units, delete everything).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or a coach tier, a native app, ARKit, ARCore or LiDAR, body fat, muscle or DEXA estimates, Apple Health or Health Connect sync, a PDF for coaches.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Capture Flow + Trend Engine**
+**2. Core Feature**
 
 ```text
-Build the LeanScan capture flow.
-
-1. Overlay a silhouette and lighting meter. Block capture if too dark or closer than 1.8m.
-2. Haptic “turn left” every 45 degrees, or front/left/back stills as fallback.
-3. Pose + silhouette on-device. Never upload video. Upload measurements and optional stills only after confirm.
-4. If landmark confidence is under 0.65, save the scan marked “unreliable — retake.”
-
-Trends: no fake-precise single-scan body-fat integer. Show a 4-week lean vs fat band. If glp1_mode, flag lean falling faster than weight. Lock crop and camera distance on the AR floor plane so week 1 and week 6 photos match.
-
-Unit-test estimateCircumferences with fixture landmarks. Copy: wellness estimates, not medical measurements.
+Build the one feature that proves LeanScan: a trend you can trust more than a mirror, and the honesty to say when a photo is not good enough.
+1. The capture screen shows a body outline overlay and a lighting meter. Block the shutter when the average brightness is too low or when the body fills less than 70 percent or more than 90 percent of the frame height.
+2. Run MediaPipe Pose Landmarker in the browser on the front-view still. Never upload video. Keep the photo on the device unless the user taps Keep this photo.
+3. Compute from the landmarks, normalized by the body's height in pixels: shoulder width to height and hip width to height. Write a pure function and unit test it with fixture landmarks. Store these ratios and the lowest landmark confidence.
+4. If the lowest landmark confidence is under 0.65, save the scan as retake and exclude it from every chart.
+5. /history shows each ratio as a 4-week band (the median and the spread), never a single number to a decimal place, with the weight from manual weigh-ins beside it. Add a confidence cue next to every number.
+6. A settings page deletes all scans, photos and weigh-ins.
+Rules: never show a body fat or muscle percentage. Never say clinical-grade. Never shame a weigh-in. Put "A wellness trend from photos, not a medical measurement" on the history page.
+Empty state: with no scans, show the setup steps (a plain wall, the phone propped at chest height, 2 meters away).
+Done when: the ratio unit test passes, a dark photo cannot be captured, a low-confidence photo is saved as retake and missing from the chart, and the chart shows bands with confidence cues.
 ```
 
-**3. Landing Page + Coach PDF**
+**3. Landing Page**
 
 ```text
-Single-page site for LeanScan.
-
-Hero: “See fat vs muscle without a $150 DEXA appointment.”
-Sub: “Two-minute phone scan. Week-to-week trends. Built for GLP-1 users and anyone sick of lying scales.”
-
-Sections: problem (scale vs composition, DEXA cost, muscle loss); four how-it-works steps; accuracy honesty plus DEXA-benchmark waitlist; pricing (trial / $9.99 / $29 Coach); FAQ (LiDAR, Android, no diagnostic claims, on-device photos).
-
-Coach PDF via @react-pdf/renderer: alias, 8-week lean vs fat chart, circumferences, last four photos, medical-advice footer.
+Build a one-page landing site for LeanScan, a body trend tracker that reads a weekly photo on your phone.
+Hero: "Track how your body changes, not just what the scale says." Sub: "A two-minute weekly photo, read on your device. See your proportions trend over weeks, with the confidence shown next to every number." One button: Join the waitlist.
+Sections: the problem (a scale cannot tell you where change happens), a sample trend band with a confidence cue, how it works in four steps (set up, shoot, read, compare), an honesty block (it does not measure body fat or muscle, and it is not a DEXA scan) and an FAQ on where your photos go (they stay on your device unless you keep one), Android and how to delete everything.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one emerald accent, warm off-white charts.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding sheet for LeanScan: wordmark plus a small icon of a phone casting a thin body-outline in emerald. Palette: near-black background, emerald #10b981 accent, warm off-white charts. Type: Geist for UI, a tabular sans for numbers. Voice rules: never say clinical-grade; always pair a number with a confidence cue; never shame a weigh-in. Provide three scan-complete copy variants under 80 characters for the in-app toast.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for LeanScan: a wordmark and a small icon of a phone casting a thin body outline in emerald.
+Colors: near-black, emerald and warm off-white. Type: Geist for the interface, a tabular sans for numbers.
+Deliverables: wordmark, icon, a trend band chart style with a confidence cue, three scan-complete messages under 80 characters each, and one launch graphic. Voice rules: never say clinical-grade, always pair a number with a confidence cue, never shame a weigh-in.
+Done when: each deliverable is saved in one folder and each scan-complete message is under 80 characters.
 ```
 
 ## Sources

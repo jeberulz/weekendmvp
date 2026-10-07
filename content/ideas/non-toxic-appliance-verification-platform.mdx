@@ -74,22 +74,60 @@ The unit economics depend on workflow, not model inference. AI can extract field
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Evidence Database**
+**1. Project Setup**
 
 ```text
-Create a Next.js TypeScript app for a non-toxic appliance evidence database. Use Supabase tables for products, product_versions, materials, claims, certifications, evidence_documents, review_decisions, reviewers, and consumer_saved_lists. Every public product page must show a versioned evidence date and the exact claims approved for publication. Manufacturer uploads must use private storage and signed URLs. Add RLS so a manufacturer sees only their submissions while public pages expose approved fields only.
+Build the weekend MVP of the "Non-Toxic Appliance Verification Platform": a reviewer uploads a manufacturer's test report, the app extracts the claims, a human approves or rejects each one against its source page, and the public page shows only what was approved.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link for reviewers), pdf-parse for page text, the Anthropic API for extraction. Reviewers upload on a manufacturer's behalf this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on; the public reads approved fields only, reviewers read everything):
+- products(id, manufacturer, model, category, slug, status)  status is evidence_missing, partially_verified or verified
+- evidence_documents(id, product_id, file_path, uploaded_by, uploaded_at)
+- extractions(id, document_id, raw_json jsonb, model, created_at)  the raw model output, kept apart from any decision
+- claim_reviews(id, product_id, document_id, claim_text, source_page, source_quote, status, reviewer_id, decided_at)  status is pending, approved, rejected or needs_more_evidence
+
+Screens: /login, /review/[documentId] (each claim beside its source page), /products/[slug] (public), /compare (up to three products), /methodology.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, membership or manufacturer fees, a manufacturer portal, digital seals, barcode scanning, consumer saved lists, medical or health claims.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Document Extraction and Human Review**
+**2. Core Feature**
 
 ```text
-Build a document-review pipeline for appliance test reports. Accept PDF uploads, extract text, and ask an LLM for strict JSON: product_model, manufacturer, materials, coatings, food_contact_surfaces, test_standard, test_date, lab_name, claims_supported, claims_not_supported, and uncertainty_notes. Store the raw extraction separately from the approved decision. Create a reviewer UI that highlights every extracted claim beside its source page and requires explicit approve, reject, or needs_more_evidence status.
+Build the one feature that proves the platform: an extracted claim only goes public after a person checks it against its source page.
+1. A reviewer uploads a PDF test report to a private bucket and picks or creates the product. Extract the text page by page.
+2. Send the pages to the Anthropic API with a strict JSON schema { product_model, manufacturer, materials: string[], coatings: string[], food_contact_surfaces: string[], test_standard, test_date, lab_name, claims_supported: [{ claim, page, source_quote }], claims_not_supported: string[], uncertainty_notes: string[] }. Save the raw result to extractions.
+3. Check each claim in code: its source_quote must appear on the stated page. Drop any claim that fails and note how many were dropped. Create a pending claim_reviews row for each claim that remains.
+4. The review page shows each claim next to the source page text with the quote highlighted, and Approve, Reject and Needs more evidence buttons. Save the reviewer and the time.
+5. The public product page shows only approved claims, the evidence date, the test standard and lab, and one status: verified when every key claim is approved, partially verified when some are, evidence missing otherwise. Each status links to /methodology.
+6. /compare shows up to three products side by side with their statuses and approved claims.
+Rules: never write "risk-free" or any medical claim. Rejected and pending claims never appear publicly. Show "Unknown" instead of guessing a missing value.
+Empty state: with no products, show the upload form for reviewers and an empty public list.
+Done when: a sample report produces claims whose quotes all appear on their pages, an invented quote is dropped, a pending claim is invisible on the public page, approving a claim publishes it with its date, and the public page never uses the word risk-free.
 ```
 
-**3. Public Comparison Experience**
+**3. Landing Page**
 
 ```text
-Build a mobile-first product comparison page for appliances. Let a user search or scan a product, compare up to three models, filter by food-contact materials and evidence freshness, and see a plain-language explanation of each rating. Never use the phrase risk-free or make medical claims. Show “verified,” “partially verified,” and “evidence missing” states with a link to the underlying methodology.
+Build a one-page landing site for the Non-Toxic Appliance Verification Platform, an evidence database for people choosing appliances.
+Hero: "See what the evidence says about the appliances in your kitchen." Sub: "Every claim shows its source, its test and its date, and says what is still unknown." One button: Join the waitlist.
+Sections: a sample product page with its three possible states (verified, partially verified, evidence missing), how it works in four steps (upload, extract, human review, publish), why a person checks every claim, and an FAQ on what verified means, why we never say risk-free and how brands can submit a report.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm white background, ink type, one calm green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Non-Toxic Appliance Verification Platform: pick a short working name, then design a wordmark and an icon that suggest a cup outline with a check inside it.
+Colors: warm white, ink and one calm green. Type: Geist.
+Deliverables: wordmark, icon, three status labels (verified, partially verified, evidence missing) that differ by shape and word as well as color, an evidence line style (source, test, date) and one launch graphic.
+Done when: each deliverable is saved in one folder and the three status labels are distinguishable without color.
 ```
 
 ## Sources

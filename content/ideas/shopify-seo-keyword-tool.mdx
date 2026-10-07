@@ -90,41 +90,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router, TypeScript) embedded Shopify app called "SEO Keyword Sidekick."
-Set up:
-- Shopify OAuth install flow using @shopify/shopify-app-remix (or App Bridge), requesting read_products and write_products scopes
-- Supabase Postgres with tables: shops (id, shop_domain, access_token, plan), products (id, shop_id, shopify_product_id, title, description), tracked_keywords (id, shop_id, keyword, search_volume, competition, intent_score), rankings (id, shop_id, keyword, position, checked_at)
-- Row-level security so each shop can only read/write its own rows
-- Stripe Billing with three plans (Free, Starter $29, Growth $49) plus a one-time "Launch Audit" SKU
-- Env vars: SHOPIFY_API_KEY, SHOPIFY_API_SECRET, DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD, OPENAI_API_KEY
-Include TypeScript, error handling, and a webhook for app/uninstalled cleanup.
+Build the weekend MVP of the "Shopify SEO Keyword Tool": read a store's products, look up keyword data for the best candidates and get a ranked list of changes to make, each with a plain-English reason. It reads the store and never writes to it.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Shopify Admin API with a custom app access token for one development store, a keyword data API (DataForSEO) for search volume and competition. Suggestions come from plain rules. Every keyword lookup is cached. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows; keyword_cache is shared and server-only):
+- shops(id, user_id, shop_domain, access_token_encrypted)
+- products(id, shop_id, shopify_product_id, title, description)
+- keyword_cache(id, keyword, volume, competition, cpc, fetched_at)  keyword is unique
+- opportunities(id, product_id, current_keyword, recommended_keyword, volume, difficulty, intent_score, priority, suggested_title, suggested_meta, reason, created_at)
+
+Screens: /login, /shop (connect), /analyze, /opportunities (ranked, with Copy).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or launch audits, writing titles or meta descriptions back to the store, a model, rank tracking, a weekly digest, an app uninstall flow.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Catalog Keyword Analysis**
+**2. Core Feature**
 
 ```text
-Build the analysis job for SEO Keyword Sidekick.
-When a merchant clicks "Analyze store":
-1. Fetch all products and collections via the Shopify Admin API
-2. For each product, extract candidate keywords from the title and description
-3. Call the DataForSEO keyword API in batches to get search volume, competition, and SERP data; cache each keyword result in Postgres so it is never re-billed
-4. Send the metrics for each product to gpt-4o-mini with a strict JSON schema:
-   { recommended_keyword: string, current_keyword: string, monthly_volume: number, difficulty: number, intent_score: number, plain_english_reason: string, suggested_title: string, suggested_meta_description: string }
-5. Rank opportunities by (volume x intent_score) / difficulty and store the top results
-Show a prioritized list in the dashboard with a one-click "Apply fix" that writes the suggested title and meta description back via the Admin API.
-Handle rate limits with a queue and exponential backoff.
+Build the one feature that proves the SEO Keyword Tool: ranked, explainable suggestions that cost a known amount to produce.
+1. Connect a development store with a custom app token and fetch its products and collections through the Admin API.
+2. For each product, extract candidate keywords from the title and description: two and three word phrases without stop words, the five most frequent per product.
+3. Look the candidates up in batches through the keyword data API. Check keyword_cache first and never look up a keyword fetched in the last 30 days. Stop at a hard cap of 100 new lookups per run, show how many were used and say which products were not analyzed.
+4. Score in code. Intent score from 0 to 1: add for buying words (buy, best, cheap, for sale, near me) and subtract for researching words (how to, what is, diy). Difficulty from the competition value. Priority = volume times intent divided by difficulty, with difficulty floored at 0.1.
+5. Suggest by rules: the recommended keyword near the start of the title, a title of 70 characters or fewer, a meta description of 155 characters or fewer that uses the keyword once, no keyword repeated. Write the plain-English reason from the numbers (volume, intent, difficulty).
+6. /opportunities lists the top results with the current and recommended wording side by side and a Copy button. Retry rate-limited calls with backoff.
+Rules: never write to the store. Say that search volume is an estimate from a data provider. Never repeat a keyword in a title to stuff it.
+Empty state: before connecting a store, show the connect form and the cost cap.
+Done when: an analysis of a sample store stays under the cap, a second run uses no new lookups for cached keywords, suggested titles are 70 characters or fewer and metas are 155 or fewer, and no request to the store is a write.
 ```
 
-**3. Weekly Ranking Digest**
+**3. Landing Page**
 
 ```text
-Add a Vercel Cron job that runs weekly for SEO Keyword Sidekick.
-For each active shop:
-- Re-check the position of every tracked keyword using the SERP API
-- Compare against the previous week and compute movement (up, down, unchanged)
-- Generate a short plain-English summary with gpt-4o-mini: biggest gains, biggest drops, and the single most valuable keyword to target next
-- Store the snapshot in the rankings table and email the merchant a digest with a link to the dashboard
-Keep the email under 200 words, lead with the wins, and always show estimated traffic impact alongside position changes.
+Build a one-page landing site for the Shopify SEO Keyword Tool, keyword research for new store owners.
+Hero: "Know which words your products should rank for." Sub: "We read your catalog, look up what shoppers search and show the few changes worth making, in plain English." One button: Join the waitlist.
+Sections: a before and after of a product title and its reason, how it works in four steps (connect, analyze, rank, copy the fix), and an FAQ on where the search numbers come from (a data provider, as estimates), why nothing is changed in your store for you and what a run costs you (nothing during the beta).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm white background, near-black type, one emerald accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Shopify SEO Keyword Tool: pick a short working name, then design a wordmark and an icon that suggest a magnifier over a price tag.
+Colors: warm white, near-black and one emerald. Type: Geist, with tabular numbers for volumes.
+Deliverables: wordmark, icon, a priority chip style (high, medium, low) that differs by shape as well as color, a before and after card, and one launch graphic.
+Done when: each deliverable is saved in one folder and the priority chips are distinguishable without color.
 ```
 
 ## Sources

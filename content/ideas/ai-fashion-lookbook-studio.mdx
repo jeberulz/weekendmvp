@@ -92,25 +92,60 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app called “Stitchframe.” Auth via Clerk or Supabase Auth. Postgres tables: brands (id, name, shopify_shop, plan), drops (id, brand_id, season, status), skus (id, drop_id, name, wholesale_cents, colors jsonb, sizes text[]), assets (id, sku_id, kind TEXT CHECK kind IN ('flat','swatch','plate','pdf'), r2_key, ref_hash), plates (id, sku_id, page_no, prompt, seed, lock_score, status), line_sheet_rows (id, sku_id, page_no). RLS so a brand only reads its rows. Stripe products: Preview $0, Starter $10, Pro $49, Studio $149/$299/$499 (catalog_size), Enterprise custom. Env: FAL_KEY or REPLICATE_TOKEN, STRIPE_SECRET_KEY, R2_*, SHOPIFY_API_KEY, SHOPIFY_API_SECRET. Install Stripe, Shopify App package, and a Fal or Replicate client.
+Build the weekend MVP of "Stitchframe": upload flat-lays and a style brief for one garment and get a reference-locked set of lookbook plates that still look like your clothes.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Fal or Replicate (pick one) for Flux with IP-Adapter, Claude (Anthropic API) with image input for the garment-match check. Deploy on Vercel.
+Scope: one SKU and a six-plate sheet this weekend, not the 60-page book.
+
+Tables (Row Level Security on, a brand reads only its own rows):
+- brands(id, user_id, name)
+- drops(id, brand_id, season, status)
+- skus(id, drop_id, name, wholesale_cents, colors jsonb, sizes)
+- assets(id, sku_id, kind, storage_key, ref_hash)  where kind is one of flat, swatch, plate
+- plates(id, sku_id, page_no, prompt, seed, lock_score, status)
+
+Screens: /login, /drop (add a SKU and its five flat-lays), /plates (review).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), IMAGE_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, the Shopify app, the 60-page PDF and line sheet, a second SKU per run, a job queue.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Reference-Locked Lookbook Pipeline**
+**2. Core Feature**
 
 ```text
-Build POST /api/generate-lookbook. Input: drop_id. For each SKU, require five flat-lay URLs + optional swatches + style_brief. Call Flux via Fal/Replicate with IP-Adapter so every plate conditions on the flats. Produce: hero, two styled looks, two details, one lifestyle (configurable). Persist seed, ref_hash, and model version on plates. Reject a plate if a cheap vision pass (GPT-4o or Claude with the flats attached) scores garment mismatch below a threshold; flag for human review instead of auto-shipping. Assemble a 60-page PDF (cover, index, looks, details, lifestyle, line sheet table: sku, wholesale, colors, sizes, country of origin if present). Also emit Shopify-sized crops. Do not block the HTTP request on the full book — enqueue and poll. Idempotent on drop_id + ref_hash.
+Build the one feature that proves Stitchframe: plates that stay the same garment.
+1. POST /api/generate-plates takes a sku_id. Require five flat-lay images, optional swatches and a style brief.
+2. Call Flux through Fal or Replicate with IP-Adapter so every plate is conditioned on the flats. Produce six plates: one hero, two styled looks, two details and one lifestyle.
+3. Save the seed, the ref_hash and the model version on each plate.
+4. Run a cheap vision pass with Claude and the flats attached. Score garment mismatch. Below the threshold, set the plate to review and do not show it as final.
+5. Return at once with the sku's status, run the plates in the background, and let the page poll. The call is idempotent on sku_id plus ref_hash.
+6. /plates shows the six plates beside the original flats, with each lock_score.
+Rules: never ship a plate that failed the garment check.
+Empty state: with no SKU, show the add-SKU form and the list of five required flat-lay angles.
+Done when: one bomber jacket produces six plates, a deliberately wrong plate is held for review, and re-running the same input does not create duplicates.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for Stitchframe. Hero: “Ship a 60-page lookbook that still looks like your clothes.” Sub: “Flat-lays, swatches, and a style brief in. Model, location, and line sheet out. Reference-locked so page 47 is the same jacket as page 4.” Show a before/after of one bomber (flat vs locked look) — no fake logos. Sections: the $5K–$20K shoot problem and the $40K–$80K year; how lock works in four steps; pricing that leads with Studio $149/$299/$499 by catalog, with Starter $10 and Pro $49 as footnotes; a comparison strip vs Photoroom (single shot), Firefly (generic), and a studio day rate; FAQ on fidelity, commercial usage, and “will a buyer know.” Off-white, near-black, one rust or oxblood accent. CTA: “Lock one SKU free.”
+Build a one-page landing site for Stitchframe, a reference-locked lookbook studio for indie fashion brands.
+Hero: "Ship a 60-page lookbook that still looks like your clothes." Sub: "Flat-lays, swatches and a style brief in. Model, location and line sheet out. Reference-locked so page 47 is the same jacket as page 4." One button: Lock one SKU free, which joins the waitlist.
+Sections: a before and after of one bomber (flat and locked look) with no fake logos, the $5K to $20K shoot problem, how the lock works in four steps (capture references, lock the garment, generate the season, export and ship), and an FAQ on fidelity, commercial use and whether a buyer will know.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: off-white, near-black and one rust or oxblood accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for Stitchframe: wordmark plus a small mark that reads as a stitching frame or garment clip, not a camera. Palette: near-black, warm paper, one oxblood/rust accent, one metal gray for hardware. Type: a sharp grotesque for UI, a display serif only on lookbook covers. Voice rules: never say “magic,” always say “lock”; always put a real SKU in the example; never dunk on photographers — dunk on the invoice. Deliver hex, type, a 6-icon set (flat, lock, look, detail, sheet, export), and three PDF cover treatments for a fictional label.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Stitchframe: a wordmark and a small mark that reads as a stitching frame or a garment clip, not a camera.
+Colors: near-black, warm paper, one oxblood or rust accent and one metal gray for hardware. Type: a sharp grotesque for the interface and a display serif only on lookbook covers.
+Voice rules: never say "magic", always say "lock", always put a real SKU in the example, never dunk on photographers, dunk on the invoice.
+Deliverables: wordmark, mark, a 6-icon set (flat, lock, look, detail, sheet, export), and three PDF cover treatments for a fictional label.
+Done when: each deliverable is saved in one folder and the six icons are distinct at 24 px.
 ```
 
 ## Sources

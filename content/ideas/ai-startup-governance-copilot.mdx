@@ -83,43 +83,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router (TypeScript, Tailwind) SaaS called AgentLedger. Convex or Supabase backend.
+Build the weekend MVP of "AgentLedger": scan a GitHub org for AI usage, map the risks, and draft the missing policies.
 
-Schema: organizations (plan lite|pro|enterprise), connections (provider github|openai|anthropic|aws, encrypted_credential_ref), inventory_items, findings (severity, control_id, status open|accepted|remediated), policies (slug, version, markdown).
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with GitHub sign-in), a GitHub App with read-only contents and metadata, Claude (Anthropic API) for the policy drafts. Deploy on Vercel.
 
-Auth: magic link or GitHub OAuth. Encrypt provider secrets; never log raw keys.
+Tables (Row Level Security on, each organization reads only its own rows):
+- organizations(id, user_id, name)
+- connections(id, org_id, provider, credential_ref)
+- inventory_items(id, org_id, provider, path, snippet_hash, last_seen_sha)
+- findings(id, org_id, inventory_item_id, control_id, severity, evidence, status, recommended_policy_slug)  where severity is low, medium or high and status is one of open, accepted, remediated
+- policies(id, org_id, slug, version, markdown)
+Encrypt provider secrets and never log raw keys.
 
-Routes: /app/connect (GitHub App + API keys), /app/ledger (inventory + heatmap), /app/gaps (ranked findings), /app/pack (data-room zip).
+Screens: /app/connect, /app/ledger (inventory), /app/gaps (ranked findings), /app/pack (the export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GITHUB_APP_ID, GITHUB_PRIVATE_KEY, ANTHROPIC_API_KEY.
 
-Stripe: Lite $99/mo, Pro $399/mo, metered $10–$50 per extra integration, Enterprise custom. Env: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, customer usage keys (encrypted), AWS_ROLE_ARN, STRIPE_SECRET_KEY.
+Do not build: billing, plans or per-integration pricing, the OpenAI, Anthropic and AWS usage APIs, AWS roles, a second AI model, an admin area.
+Done when: npm run dev starts, the GitHub App installs on a test org, and the five tables exist with Row Level Security on.
 ```
 
-**2. Scanner + Risk Mapper**
+**2. Core Feature**
 
 ```text
-Build AgentLedger’s scan pipeline.
-
-GitHub App: list default-branch files matching AI SDK patterns (openai, anthropic, bedrock, langchain, vercel/ai). Store path, snippet hash, provider. Never persist .env contents; flag suspected secrets and ask the user to rotate.
-
-Usage APIs: last-30-day models, units, estimated cost from OpenAI, Anthropic, and AWS Bedrock. Upsert inventory_items.
-
-Risk mapper: score prompt_pii_possible, training_opt_out, retention_known, subprocessors_listed, eu_ai_act_role, soc2_evidence_gap. Return JSON findings with control_id, severity, evidence, recommended_policy_slug.
-
-UI: ranked list with “draft policy” and “mark accepted.” Incremental re-scan on git SHA change only.
+Build the one feature that proves AgentLedger: a scan, a ranked gap list, and a data-room pack.
+1. Scan: through the GitHub App, list default-branch files that match AI SDK patterns (openai, anthropic, bedrock, langchain, vercel/ai). Store the path, a snippet hash and the provider in inventory_items. Never store the contents of a .env file. Flag a suspected secret and ask the user to rotate it. Re-scan only when the git SHA changed.
+2. Map risk: score each item for prompt_pii_possible, training_opt_out, retention_known, subprocessors_listed, eu_ai_act_role and soc2_evidence_gap. Return JSON findings with control_id, severity, evidence and recommended_policy_slug.
+3. /app/gaps lists findings ranked by severity, with Draft policy and Mark accepted buttons.
+4. Draft policies with Claude. System prompt: "You are a startup compliance copilot. Draft short, lawyer-editable Markdown from a machine inventory. Never invent statutes. Cite finding IDs. If something is unknown, write a TODO. Do not guess a date or a DPA." Generate ai-acceptable-use, ai-vendor-inventory, model-card-stub, ai-incident-response-addendum and data-retention-for-prompts, each with purpose, scope, roles, allowed and prohibited uses, a vendor table, retention and escalation.
+5. Export a zip: inventory.csv, findings.csv, the policies as Markdown, and a risk_memo.md under 600 words. Version each policy and turn scan differences into a changelog.md.
+Empty state: with no connection, show the GitHub App install button.
+Done when: a test org with one OpenAI import shows an inventory item and ranked findings, drafted policies cite finding IDs and use TODO for unknowns, and the zip contains the five files.
 ```
 
-**3. Policy Generator + Data-Room Export**
+**3. Landing Page**
 
 ```text
-Implement AgentLedger policy generation and export.
+Build a one-page landing site for AgentLedger, an AI risk and compliance copilot for startups.
+Hero: "Know where your AI is, before an auditor asks." Sub: "Scan your stack, map the gaps, and draft the missing policies. No enterprise contract needed." One button: Join the waitlist.
+Sections: the problem (AI tools spread faster than anyone writes the policy), how it works in three steps (connect sources, map risk, generate the pack), a mock gap list, and an FAQ that says plainly the policies are drafts for a lawyer to edit and that nothing here is legal advice.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: calm, specific and honest about limits.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-System prompt: You are a startup compliance copilot. Draft short, lawyer-editable Markdown from a machine inventory. Never invent statutes. Cite finding IDs. If unknown, write a TODO — do not hallucinate a date or DPA.
+**4. Branding Package**
 
-Missing slugs to generate: ai-acceptable-use, ai-vendor-inventory, model-card-stub, ai-incident-response-addendum, data-retention-for-prompts. Each includes purpose, scope, roles, allowed/prohibited uses, vendor table, retention, escalation.
-
-Export zip: inventory.csv, findings.csv, policies as Markdown, risk_memo.md under 600 words. Version policies; scan diffs become changelog.md.
-
-Lite: CSV only. Pro: full zip + regenerate after remediations.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AgentLedger: a wordmark and an icon that suggest a ledger line and a checkmark.
+Colors: near-black, warm paper and one steady blue, with amber and red used only for severity. Type: a clean sans for the interface and a mono for control IDs.
+Deliverables: wordmark, icon, three severity badges that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badges are distinguishable without color.
 ```
 
 ## Sources

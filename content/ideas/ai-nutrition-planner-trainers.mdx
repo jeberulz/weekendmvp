@@ -80,74 +80,61 @@ LLM is the hero, but the trust layer is the USDA macro validation loop. Generate
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Multi-Tenant Scaffold**
+**1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router multi-tenant SaaS for personal trainers to deliver AI nutrition plans. Supabase backend, Tailwind, TypeScript.
+Build the weekend MVP of the "AI Nutrition Planner for Trainers": a trainer enters a client's goal and macro targets and gets a week of meals whose macros are checked against USDA data and corrected before the trainer sees them. It supports a trainer and is not medical nutrition advice.
 
-Schema (Supabase Postgres):
-- trainers(id, user_id, slug, brand_logo_url, brand_primary_hex, stripe_customer_id, plan, certifications)
-- clients(id, trainer_id, name, email, goal ENUM[cut,bulk,recomp,maintain], target_calories, target_protein_g, target_carbs_g, target_fat_g, allergies JSONB, cuisine_preferences JSONB, budget_weekly, schedule JSONB)
-- plans(id, trainer_id, client_id, week_start_date, generated_at, pdf_url, portal_url, llm_model, target_macros JSONB, actual_macros JSONB, status)
-- meals(id, plan_id, day, meal_type ENUM[breakfast,lunch,dinner,snack], name, ingredients JSONB, macros JSONB, prep_minutes, recipe_text)
-- adherence_events(id, plan_id, meal_id, client_id, event ENUM[logged,skipped,swapped], logged_at)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for trainers), the Anthropic API to write the plan and fix a day, the USDA FoodData Central API to check macros. Clients have no login: the trainer prints or shares the plan page. Deploy on Vercel.
 
-RLS: every row scoped by trainer_id. Clients see only their own plans and adherence. Magic-link invites auto-create a client-scope auth session.
+Tables (Row Level Security on, every row is scoped to its trainer):
+- trainers(user_id, brand_name, brand_primary_hex)
+- clients(id, trainer_id, name, goal, target_calories, target_protein_g, target_carbs_g, target_fat_g, allergies jsonb, cuisines jsonb, budget_weekly)  goal is cut, bulk, recomp or maintain
+- plans(id, client_id, week_start, target_macros jsonb, actual_macros jsonb, status, llm_model, created_at)
+- meals(id, plan_id, day, meal_type, name, ingredients jsonb, macros jsonb, prep_minutes, recipe_text)
 
-Routes:
-- /admin/clients (trainer dashboard — list clients, adherence sparklines, next session)
-- /admin/clients/new (profile form)
-- /admin/clients/:id/plan/generate (generate a week)
-- /portal/:trainerSlug/:clientToken (client view — today's meals, check-off, grocery list)
+Screens: /login, /clients, /clients/new, /clients/[id]/plan (generate and review), /plan/[planId] (a printable client page in the trainer's colors).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, USDA_API_KEY.
 
-Use Server Actions for plan generation with streaming. Stripe Billing for Pro/Studio subscriptions.
+Do not build: billing, plans or trainer tiers, a client portal or adherence tracking, grocery shortcuts, Slack alerts, a PDF library.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. AI Plan Generation + USDA Validation**
+**2. Core Feature**
 
 ```text
-Implement the AI meal-plan generator with a USDA validation loop. This is the core trust feature.
-
-Step 1 — Generate:
-POST to Anthropic Messages API with model claude-sonnet-4-6. System prompt:
-"You write 7-day meal plans for personal trainers' clients. Return strict JSON matching this schema:
-{days: [{day: 1-7, meals: [{type: 'breakfast'|'lunch'|'dinner'|'snack', name, ingredients: [{name, grams}], recipe_text, prep_minutes}]}]}
-Constraints:
-- Target daily macros: {calories, protein_g, carbs_g, fat_g} — must be within ±5%
-- Allergies: avoid these ingredients entirely
-- Cuisine preferences: weight toward these styles
-- Budget: weekly grocery total should not exceed $X
-Never suggest foods the user cannot eat. Never hallucinate macros; use common-sense estimates only."
-
-Pass the client profile in the user message. Use response_format: {type: 'json_schema', json_schema: {...}}. Stream the response to the client UI.
-
-Step 2 — Validate:
-For each meal, loop over ingredients and query USDA FoodData Central API (https://api.nal.usda.gov/fdc/v1/foods/search?query={name}&dataType=Foundation,SR%20Legacy&api_key=KEY). Pick the best match; sum actual macros per 100g scaled to the specified grams. Compute daily totals.
-
-Step 3 — Correct:
-If any day's macros are >5% off target, identify the 2 largest deviations and re-ask Claude: "Day 3 is 180 protein vs target 150. Replace one lunch meal with something lower-protein, same calories." Stitch corrected meal back into the plan. Max 3 correction rounds, then accept best-effort.
-
-Store both target_macros and actual_macros on the plan row. Show both to the trainer — transparency beats false precision.
+Build the one feature that proves the Planner: macros the trainer can trust, shown against the target, with allergies never broken.
+1. The client form takes a goal, target calories and macros, allergies, cuisines and a weekly budget. Refuse a calorie target below a minimum kept in one config file, and tell the trainer to refer that client to a registered dietitian.
+2. Ask the Anthropic API for a 7-day plan as strict JSON { days: [{ day, meals: [{ type, name, ingredients: [{ name, grams }], recipe_text, prep_minutes }] }] } with the targets, the allergies, the cuisines and the budget in the prompt.
+3. Check allergies in code before anything else: no ingredient may match a client allergen or its common synonyms. Reject the plan and regenerate once if one does.
+4. Validate macros: for every ingredient, search USDA FoodData Central in the Foundation and SR Legacy data, take the best match, scale its per-100-gram values to the grams and sum each day. An ingredient with no match is flagged unknown and left out of the totals.
+5. If a day is more than 5 percent from any target, ask the model to change one named meal, for example "Day 3 has 180 g protein against 150 g; replace one lunch with something lower in protein at the same calories". Replace only that meal and re-check. Stop after 3 rounds and keep the best result.
+6. Save target_macros and actual_macros on the plan and show both, with the meals that were flagged unknown.
+7. The printable plan page shows the week in the trainer's name and primary color.
+Rules: say on the plan "Prepared by your trainer. Not medical nutrition advice. Tell your trainer about any medical condition." Never show a macro as exact when an ingredient is unknown.
+Empty state: with no clients, show the form and a sample profile.
+Done when: a sample client gets a plan with no allergen, a day that is 10 percent off is corrected within 3 rounds or flagged, the plan shows target and actual side by side and an unknown ingredient is called out.
 ```
 
-**3. Client Portal + Adherence Loop**
+**3. Landing Page**
 
 ```text
-Build the client portal and adherence tracking — the retention engine.
+Build a one-page landing site for the AI Nutrition Planner, meal plans for personal trainers' clients.
+Hero: "A week of meals that hits your client's macros." Sub: "Enter the goal and the targets. Get a plan checked against USDA food data, with allergies respected, ready to send in your name." One button: Join the waitlist.
+Sections: a sample plan page next to its target and actual macros, how it works in three steps (client profile, generate and check, send), and an FAQ on how macros are checked, what the plan is not (medical nutrition advice) and which tools you can send it with.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, ink type, one fresh green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Client portal (/portal/:trainerSlug/:clientToken):
-- Today's meals in a mobile-first list. Each meal has a big [Ate this ✓] [Skipped ✗] [Swapped 🔁] button.
-- Tap [Ate] writes an adherence_event {event: 'logged', meal_id, logged_at}. Confetti animation.
-- Tap [Swapped] opens a prompt: "Describe what you ate instead." Claude re-estimates macros, writes an adherence_event {event: 'swapped', swap_text, actual_macros}.
-- Grocery list tab: one-tap share to Instacart or Amazon Fresh (both have share URLs with pre-filled carts).
-- Week-at-a-glance tab: 7-day macro bar chart, trainer-defined motivational copy at top.
+**4. Branding Package**
 
-Trainer dashboard adherence widget:
-- Per-client sparkline showing daily adherence % over the last 14 days.
-- Auto-alert: if a client's 3-day rolling adherence drops below 50%, send the trainer a Slack/email notification with the client's name and a one-tap "Send re-engagement message" button.
-- The trainer's "Send message" action uses Claude to draft a short, personalized check-in based on the missed meals ("Hey Sarah, saw you skipped Mon/Tue lunches — want to swap those to something easier to prep?"). Trainer can edit and send; message goes out via Resend using the trainer's custom sender domain.
-
-Adherence is the retention moat. A trainer who can say "you ate 82% of the plan" in the next session is a trainer who keeps the client for 12 months instead of 3.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the AI Nutrition Planner: pick a short working name, then design a wordmark and an icon that suggest a plate divided into three macro segments.
+Colors: off-white, ink and one fresh green. Type: Geist, with tabular numbers for macros.
+Deliverables: wordmark, icon, a macro bar style for protein, carbs and fat that differs by pattern as well as color, a printable plan header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the macro bars are distinguishable without color.
 ```
 
 ## Sources

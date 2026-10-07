@@ -95,43 +95,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) catalog called “Night Out” for one city. Supabase tables:
+Build the weekend MVP of "Night Out": a one-city catalog of adventure date nights for couples, where you book a slot or buy a gift voucher.
 
-- operators (id, name, email, phone, notes, active)
-- listings (id, operator_id, title, vibe CHECK IN ('adventure','cozy','food','outdoors'), price_cents INT, duration_min INT, photo_url, description, active)
-- slots (id, listing_id, starts_at TIMESTAMPTZ, capacity default 1, status CHECK IN ('open','held','sold','canceled'))
-- orders (id, type CHECK IN ('booking','voucher'), listing_id NULL, slot_id NULL, theme TEXT, amount_cents, stripe_session_id UNIQUE, buyer_email, recipient_email, surprise BOOLEAN, notes TEXT, status)
-- vouchers (id, order_id, code UNIQUE, theme, amount_cents, redeemed_order_id NULL, expires_at)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the admin only). Deploy on Vercel. No operator login and no native app.
 
-Public routes: / (city grid with vibe and max-price filters), /listings/[id], /gift, /book/[slotId], /redeem. Admin (password basic auth or Clerk): CRUD listings and slots, order list, mark voucher redeemed. Stripe Checkout for booking and voucher. Env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, RESEND_API_KEY. No operator login. No native app.
+Tables (Row Level Security on: the public reads active listings and open slots, only the admin writes):
+- operators(id, name, email, phone, notes, active)
+- listings(id, operator_id, title, vibe, price_cents, duration_min, photo_url, description, active)  where vibe is one of adventure, cozy, food, outdoors
+- slots(id, listing_id, starts_at, capacity, status)  where status is one of open, held, sold, canceled
+- orders(id, type, listing_id, slot_id, theme, amount_cents, stripe_session_id, buyer_email, recipient_email, surprise, notes, status)  where type is booking or voucher
+- vouchers(id, order_id, code, theme, amount_cents, redeemed_order_id, expires_at)
+
+Screens: / (city grid with vibe and max-price filters), /listings/[id], /admin (add listings and slots, see orders).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: payments in this step, an operator login, payouts, a second city, a native app.
+Done when: npm run dev starts, the admin can add a listing and a slot, and the grid shows them with the vibe and price filters working.
 ```
 
-**2. Stripe Booking + Gift Voucher**
+**2. Core Feature**
 
 ```text
-Implement Stripe Checkout and webhooks for Night Out.
-
-Booking: POST /api/checkout/booking with slot_id and notes. Verify the slot is open, set status=held, create a Checkout Session (mode=payment) with metadata slot_id, type=booking. Success URL /thanks?session_id. On checkout.session.completed, mark slot sold, insert order, email operator (listing, time, notes, allergies) and buyer receipt via Resend. On expiry or checkout.session.expired, set slot back to open.
-
-Voucher: POST /api/checkout/voucher with theme, amount_cents in [9900, 19900, 29900], buyer_email, recipient_email, surprise, note. Checkout Session metadata type=voucher. On completed, insert order + voucher with a 10-char Crockford code, expires_at = now + 12 months. If surprise=false, email the recipient the code; if true, only email the buyer a printable card PDF.
-
-Redeem: /redeem form takes code + slot_id. Validate unused, unexpired, theme matches listing vibe (or allow any listing if theme='any'). Create a $0 booking order linked to voucher.redeemed_order_id, mark slot sold, email operator. Never auto-charge the operator. Founder payouts stay manual.
-
-Idempotency: unique stripe_session_id on orders. Do not double-sell a slot.
+Build the one feature that proves Night Out: pay for a slot or a gift voucher, and never sell the same slot twice.
+1. Add env vars STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET and RESEND_API_KEY. Booking: POST /api/checkout/booking with slot_id and notes. Check the slot is open, set it to held, and create a Stripe Checkout Session (mode payment) with metadata slot_id and type booking.
+2. On checkout.session.completed, mark the slot sold, insert the order, email the operator the listing, time, notes and allergies, and email the buyer a receipt through Resend. On checkout.session.expired, set the slot back to open.
+3. Voucher: POST /api/checkout/voucher with theme, amount_cents (9900, 19900 or 29900), buyer_email, recipient_email, surprise and note. On completed, insert the order and a voucher with a 10-character code that expires in 12 months. If surprise is false, email the recipient the code. If true, email only the buyer a printable card.
+4. Redeem: /redeem takes a code and a slot_id. Check it is unused and unexpired, then create a zero-amount booking linked to the voucher and mark the slot sold.
+Rules: orders.stripe_session_id is unique so a retried webhook never double-sells. Operator payouts stay manual.
+Done when: a test booking marks its slot sold and emails the operator, and a test voucher can be redeemed once and only once.
 ```
 
-**3. Landing + Gift Page**
+**3. Landing Page**
 
 ```text
-Build a marketing homepage and /gift for Night Out, one city (Austin or Los Angeles — pick one and hardcode).
+Build a one-page landing site and a /gift page for Night Out, one city (pick one and hardcode it).
+Hero: "Date night that is not another restaurant." Sub: "Kayaks, studios, private chefs. Book a Saturday slot or send a voucher they actually get to use." Buttons: Browse this weekend, and Send a gift.
+Grid: cards with photo, title, vibe chip, price for two and duration. Filter chips: Adventure, Cozy, Under $150, This weekend. If no slots are open, show "Gift a voucher: they pick the night."
+/gift: three vouchers at $99, $199 and $299 with what each includes, and a form for theme, recipient email, a surprise checkbox and a note. Trust line: "12-month expiry, real calendar slots, refund if we cannot place you." FAQ: weather cancellations and how the surprise works.
+Waitlist: until payments are live, the buttons store the email in a waitlist table in Supabase. No other service.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Hero: “Date night that is not another restaurant.” Sub: “Kayaks, studios, private chefs. Book a Saturday slot or send a voucher they actually get to use.” Primary CTA “Browse this weekend” to the grid. Secondary “Send a gift” to /gift.
+**4. Branding Package**
 
-Grid: cards with photo, title, vibe chip, price for two, duration. Filter chips: Adventure, Cozy, Under $150, This weekend (slots in next 7 days). Empty state if no slots: “Gift a voucher — they pick the night.”
-
-/gift: three SKUs at $99 / $199 / $299 with what is included (one listing vs 8-15 options). Form: theme, recipient email, surprise checkbox, note. Trust line: “12-month expiry, real calendar slots, refund if we cannot place you.” FAQ: weather cancel, how surprise works, why this is not Virgin.
-
-Visual: dark page, mint accent, no stock couple photography — objects only (compass, tickets, paddle). Geist, lots of whitespace. Footer: one city, operator applications via email.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Night Out: a wordmark and a simple icon for a one-city date-night catalog.
+Look: a dark page with a mint accent, objects only and no stock couple photography (a compass, tickets, a paddle). Type: Geist.
+Deliverables: wordmark, icon, a set of three object illustrations for the grid, and one gift-card graphic.
+Done when: each deliverable is saved in one folder and the wordmark reads at 18px.
 ```
 
 ## Sources

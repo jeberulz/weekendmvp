@@ -84,50 +84,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an AI Meeting Copilot with a Chrome extension front end and a Next.js
-(App Router) dashboard.
+Build the weekend MVP of "AI Meeting Copilot": a Chrome extension that shows a speaker short, live prompts during a sales call.
 
-Set up:
-- A Chrome extension that captures the active meeting tab's audio and renders a
-  compact sidebar for live prompts
-- Supabase auth + Postgres schema for: users, teams, playbooks, objections,
-  meetings, prompts_shown, summaries
-- Dashboard routes: Playbook, Meeting History, Analytics, Settings, Billing
-- A landing page aimed at sales teams: "Never let a call stall again"
+Stack: a Chrome extension (TypeScript) that captures the active meeting tab's audio and shows a compact sidebar, a Next.js (App Router) dashboard, Supabase (Postgres with pgvector, Row Level Security, Auth with email magic link), Deepgram for streaming transcription, Claude (Anthropic API) for the prompts. Deploy the dashboard on Vercel.
 
-Use TypeScript and environment variables for all API keys.
+Tables (Row Level Security on, each user reads only their own rows):
+- playbooks(id, user_id, name)
+- objections(id, playbook_id, moment_type, trigger_text, response, embedding vector(1536))  where moment_type is one of objection, awkward_silence, competitor_mention, question_asked
+- meetings(id, user_id, started_at, ended_at)
+- prompts_shown(id, meeting_id, moment_type, text, helpful)
+- summaries(id, meeting_id, summary, action_items jsonb, engagement jsonb)
+
+Screens: dashboard Playbook and Meeting History, plus the extension sidebar.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), DEEPGRAM_API_KEY, ANTHROPIC_API_KEY, EMBEDDINGS_API_KEY.
+
+Do not build: billing, plans or tier gating, teams, analytics pages, Zoom or Teams apps, the playbook learning loop, an Electron app.
+Done when: the extension loads unpacked in Chrome, you can sign in on the dashboard, and the five tables exist with pgvector on and Row Level Security on.
 ```
 
-**2. Core Feature — Real-Time Prompting**
+**2. Core Feature**
 
 ```text
-Build the live prompting pipeline:
-
-1. Stream the captured audio to Deepgram for low-latency transcription.
-2. On each utterance, run a fast classifier (cheap model) to detect the moment
-   type: objection, awkward_silence, competitor_mention, question_asked, or none.
-3. For an actionable moment, retrieve the best matching playbook entry from
-   pgvector and have Claude generate a short, glanceable prompt (under 20 words)
-   for the speaker's sidebar.
-4. Log which prompts were shown for later analytics; do the heavy summary work
-   async after the call ends.
-
-Optimize for latency: the prompt must appear within ~1-2 seconds of the moment.
+Build the one feature that proves the idea: a live prompt on screen within a second or two of the moment.
+1. Stream the captured tab audio to Deepgram for low-latency transcription.
+2. On each utterance, ask a small fast Claude model to classify the moment as objection, awkward_silence, competitor_mention, question_asked or none.
+3. For an actionable moment, retrieve the best-matching entry from the playbook by vector search, and ask Claude for one short prompt of under 20 words for the speaker's sidebar.
+4. Show the prompt in the sidebar. Log it to prompts_shown, with a thumbs-up that sets helpful.
+5. After the call ends, write a summary, action items and an engagement score (talk-time balance, silence count, question count) to summaries, without blocking the live path.
+Rules: the prompt must appear within about 1 to 2 seconds. Keep the heavy summary work for after the call.
+Empty state: with no playbook entries, show the form to add the first objection and its best response.
+Done when: a test call with a spoken objection shows a matching under-20-word prompt in the sidebar within about two seconds, and the call ends with a saved summary.
 ```
 
-**3. Post-Call Summary + Playbook Learning**
+**3. Landing Page**
 
 ```text
-Add post-call intelligence to AI Meeting Copilot:
+Build a one-page landing site for AI Meeting Copilot, live in-call prompts for sales teams.
+Hero: "Never let a call stall again." Sub: "Live, glanceable prompts for objections, silences and competitor mentions, right in your meeting window." One button: Join the waitlist.
+Sections: the problem (a stalled call and a lost deal), how it works in three steps (connect your meeting tool, get live prompts in a sidebar, review after the call), a mock sidebar with an objection prompt, and an FAQ on recording, privacy and which meeting tools work.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: confident, short and respectful of the seller.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- After each meeting, generate a summary, extracted action items, and an
-  engagement score (talk-time balance, silence count, question count).
-- Show which live prompts were surfaced and let the user mark which ones helped.
-- Feed "helpful" prompts back into the team playbook so retrieval improves over
-  time (a simple feedback loop on the objection/response library).
+**4. Branding Package**
 
-Gate real-time prompts behind the Sales tier and team analytics behind the
-Team and Enterprise tiers.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AI Meeting Copilot: a wordmark and an icon that suggest a quiet nudge, not an alarm.
+Colors: near-black, white and one calm accent, with an amber used only for a live prompt. Type: one clean sans for the interface.
+Deliverables: wordmark, icon, a sidebar prompt card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the prompt card reads at 14 px.
 ```
 
 ## Sources

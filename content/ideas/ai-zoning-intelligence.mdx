@@ -84,25 +84,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 15 project with TypeScript and Tailwind CSS for an “AI Zoning Intelligence” platform targeting real estate investors. Set up Supabase with PostGIS extension and tables: users, watchlists (user_id, zip_codes text[], property_types text[], alert_frequency), zoning_events (id, city, zip, parcel_id, filing_type, filing_date, summary text, raw_document_url, investment_relevance text, source_url), alert_subscriptions (user_id, event_id, sent_at), scraped_cities (city_id, last_scraped_at, portal_url, scraper_type). Add Clerk for auth, RLS policies per user_id, environment variables for Supabase service role, Anthropic, Mapbox, and Resend. Include a stub Trigger.dev job skeleton for the nightly scrape-and-alert pipeline.
+Build the weekend MVP of "Zonely": scan one city's permit portal every morning, read the filings with AI, and alert investors whose watchlist matches.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with PostGIS, Row Level Security, Storage, Auth with email magic link), a Playwright scraper in a small separate Node process, Claude (Anthropic API) for the filings, Resend for the alerts. A Vercel cron route runs the nightly pipeline. Deploy the app on Vercel.
+Scope: one US city with a structured permit portal, San Jose, CA.
+
+Tables (Row Level Security on: a user reads only their own watchlists and alerts, zoning events are readable by signed-in users):
+- watchlists(id, user_id, zip_codes, property_types, alert_frequency)
+- zoning_events(id, city, zip, parcel_id, filing_type, filing_date, summary, raw_document_url, investment_relevance, source_url)
+- alerts_sent(id, user_id, event_id, sent_at)
+- scraped_cities(id, city, last_scraped_at, portal_url, scraper_type)
+
+Screens: /login, /watchlist, /alerts.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or tiers, Clerk, Mapbox or a heatmap, more than one city, Trigger.dev, an admin area.
+Done when: npm run dev starts, you can sign in, and the four tables exist with PostGIS on and Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the zoning intelligence pipeline for one US city (start with San Jose, CA which has a structured permit portal): (1) Playwright scraper that navigates the city’s online permit portal, extracts new permit filings from the past 24 hours (permit number, address, permit type, description, filing date), and stores raw records in Supabase, (2) PDF fetcher that downloads linked permit documents and stores in Supabase Storage, (3) Claude API call with structured output schema {filing_type: enum[‘zoning_amendment’|‘variance’|‘conditional_use’|‘other’], affected_parcels: string[], summary: string, investment_relevance: string, confidence: number} — never invent data not in the document, (4) Watchlist matching that cross-references new events against user watchlists by zip code using PostGIS, and dispatches Resend alerts for matches. Run via a Trigger.dev cron job at 6am daily.
+Build the one feature that proves Zonely: a new filing becomes a plain-English alert for the right person.
+1. A Playwright scraper opens the city's permit portal and extracts the past 24 hours of filings: permit number, address, permit type, description and filing date. Store the raw records.
+2. A PDF fetcher downloads linked documents to Storage.
+3. Ask Claude for strict JSON { filing_type: "zoning_amendment" | "variance" | "conditional_use" | "other", affected_parcels: string[], summary, investment_relevance, confidence }. Never invent anything that is not in the document. Save the result to zoning_events.
+4. Match new events to watchlists by zip code and filing type, and send each match one Resend email and an in-app alert. Record it in alerts_sent so nobody is alerted twice.
+5. A cron route protected by CRON_SECRET runs the whole pipeline at 6am.
+Rules: say "low confidence" in the alert when confidence is under 0.6.
+Empty state: with no watchlist, show the form that adds a zip code and a property type.
+Done when: running the pipeline by hand stores real San Jose filings, a watchlist for a matching zip gets one alert, and running it again sends no duplicate.
 ```
 
 **3. Landing Page**
 
 ```text
-Build a landing page for “Zonely”—AI zoning intelligence for real estate investors. Hero: “Find out about zoning changes before the market does.” Include: problem section (broker networks only cover one city, Google Alerts are too noisy, PropStream doesn’t track permits), live interactive map demo showing 30-day permit activity in San Francisco (iframe or screenshot), feature highlights (real-time alerts, AI document summaries, heatmap of activity, multi-city watchlists), investor testimonial placeholder with “Found a variance application 3 weeks before it hit the news”, three pricing tiers ($49/$99/$199 with feature comparison), FAQ covering data accuracy and city coverage, and email capture with “Start monitoring free.” Palette: deep slate backgrounds, off-white text, amber/gold accents for alert states. Tone: direct, intelligent, investor-to-investor—no hype.
+Build a one-page landing site for Zonely, AI zoning intelligence for real estate investors.
+Hero: "Find out about zoning changes before the market does." One button: Start monitoring free, which joins the waitlist.
+Sections: the problem (broker networks cover one city, search alerts are noisy, listing tools do not track permits), feature highlights (real-time alerts, AI document summaries, multi-city watchlists), a map or screenshot of 30 days of permit activity, a placeholder for an investor quote to be replaced with a real one, and an FAQ on data accuracy and city coverage.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: deep slate backgrounds, off-white text, amber or gold for alert states.
+Voice: direct, intelligent, investor to investor, with no hype.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Branding for “Zonely”—AI zoning intelligence for real estate investors. Logo concept: a simplified property pin or parcel boundary mark with a subtle radar/pulse ring to suggest real-time monitoring—works at 20px favicon size. Colors: primary #0F1A2E (deep navy), accent #F59E0B (amber—alert state), background #FAFAF8 (warm white), positive signal #10B981 (green for “opportunity found”), neutral #6B7280. Typography: Geist for dashboard numbers and property addresses (precise, technical), Inter for marketing copy. Deliverables: favicon, sidebar wordmark, “no watchlists yet” empty state illustration, email alert header template with amber accent bar, and a Twitter/X profile banner targeting r/realestateinvesting and BiggerPockets audiences.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Zonely: a simplified property pin or parcel boundary mark with a subtle radar pulse ring that works as a 20px favicon.
+Colors: deep navy #0F1A2E, amber #F59E0B for alert states, warm white #FAFAF8, green #10B981 for an opportunity found, and neutral #6B7280. Type: Geist for dashboard numbers and addresses and Inter for marketing copy.
+Deliverables: favicon, a sidebar wordmark, a "no watchlists yet" empty-state illustration, an email alert header with an amber accent bar, and a social profile banner for real-estate investor audiences.
+Done when: each deliverable is saved in one folder and the favicon is readable at 20 px.
 ```
 
 ## Sources

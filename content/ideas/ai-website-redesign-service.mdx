@@ -84,50 +84,54 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 (App Router, TypeScript, Tailwind, shadcn/ui) project called "SiteRefresh," a productized AI website-redesign service.
+Build the weekend MVP of "SiteRefresh": paste a small business's URL and get a mobile-first redesign that keeps the brand, reviewed by a human before it goes out.
 
-Provision Supabase with these tables:
-- sites (id, owner_id, source_url, industry, style_pref, extracted_brand JSONB, created_at)
-- audits (id, site_id, design_score INT, mobile_score INT, speed_score INT, conversion_score INT, findings JSONB, preview_url, created_at)
-- redesigns (id, site_id, status TEXT CHECK status IN ('queued','generating','review','delivered'), template_map JSONB, generated_url, before_shot_url, after_shot_url, delivered_at)
-- revisions (id, redesign_id, note TEXT, resolved BOOLEAN default false)
-- subscriptions (id, owner_id, plan TEXT, stripe_sub_id, status)
+Stack: Next.js (App Router), TypeScript, Tailwind, shadcn/ui, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Firecrawl for the content, Claude (Anthropic API) with a strict JSON schema for the redesign plan. Deploy on Vercel.
 
-Enable row-level security so each owner only reads/writes rows tied to their auth.uid().
-Wire Stripe with a one-time $199 product ("Refresh"), a $49/month product ("Care Plan"), a $199/month product ("SEO"), and a custom-project SKU.
-Add env vars: FIRECRAWL_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, SCREENSHOTONE_KEY, RESEND_API_KEY.
-Build the landing intake as a single URL box plus an industry select and a style-preference select.
+Tables (Row Level Security on, each owner reads only their own rows):
+- sites(id, user_id, source_url, industry, style_pref, extracted_brand jsonb, created_at)
+- redesigns(id, site_id, status, template_map jsonb, generated_url, delivered_at)  where status is one of queued, generating, review, delivered
+- revisions(id, redesign_id, note, resolved)
+
+Screens: / (a URL box with an industry select and a style select), /app (redesigns and their status), /preview/[id].
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), FIRECRAWL_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a care plan, the free site audit scores, before and after screenshots, email delivery, a second AI model, custom projects.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the crawl-to-redesign pipeline as a Vercel background job triggered when a redesign row is inserted with status 'queued'.
-
-Steps:
-1. Call Firecrawl on sites.source_url to extract headings, body copy, nav structure, and detected brand assets (logo URL, dominant colors, fonts). Persist to sites.extracted_brand.
-2. Send the extracted content plus the chosen industry and style_pref to Claude with a strict JSON schema that maps each piece of content onto a fixed library of section templates (hero, services, about, testimonials, booking/contact, footer). The schema must return: section order, template id per section, rewritten copy per section, and a color palette derived from the existing brand. Rule: preserve the owner's brand name, logo, and core value proposition; only modernize layout, hierarchy, and clarity.
-3. Render the returned template_map into a live preview route using the shadcn/ui section components. Every section must be mobile-first and pass basic accessibility checks (alt text, contrast, semantic headings).
-4. Capture before/after full-page screenshots with ScreenshotOne, set redesign.status to 'review', and notify a human QA queue.
-5. On human approval, flip status to 'delivered' and send the Resend email with the embedded before/after and a preview link.
-
-Handle failures with retry and backoff so a crawl or model hiccup never silently drops a paid redesign.
+Build the one feature that proves SiteRefresh: a crawl in, a brand-preserving redesign out.
+1. When a redesigns row is inserted as queued, a background job calls Firecrawl on source_url and extracts headings, body copy, the nav structure and brand assets (logo URL, dominant colors, fonts). Save them to sites.extracted_brand.
+2. Send the extract plus the industry and style to Claude with a strict JSON schema that maps the content onto a fixed library of section templates (hero, services, about, testimonials, booking or contact, footer). Return the section order, the template per section, the rewritten copy and a palette derived from the existing brand.
+3. Render the template_map into a live /preview/[id] page with shadcn/ui section components. Every section is mobile-first and passes basic accessibility checks: alt text, contrast and semantic headings.
+4. Set the status to review. A person checks the page and fixes layout, then marks it delivered on /app, where the owner can leave revision notes.
+Rules: keep the owner's brand name, logo and core value proposition. Only modernize layout, hierarchy and clarity. Retry with backoff so a crawl or model hiccup never silently drops a redesign.
+Empty state: with no sites, show the URL box.
+Done when: a small test site produces a preview that keeps its name and logo, passes the alt-text and contrast checks, and moves from queued to review.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for SiteRefresh.
-Hero headline: "Your outdated website, redesigned by AI in 24 hours. Flat $199."
-Sub: "Paste your URL. Keep your brand. Get a modern, mobile-first site by tomorrow—no agency quote, no page builder to learn."
-Sections:
-- Live URL box in the hero: "Paste your website for a free instant audit"
-- Before/after slider showing a real redesign transformation that animates on scroll
-- Problem: half of small businesses have no site and most that do aren't mobile-friendly; agencies cost $5,000-plus and take weeks
-- The process: 4 steps with icons (paste URL, AI redesigns overnight, human finishes, approve and go live)
-- Pricing: Free Audit / The Refresh $199 / Care Plan $49 per month, anchored against a "$5,000+ agency redesign" callout
-- FAQ covering brand preservation, the 24-hour timeline, revisions, hosting, and what happens to the old site
-Use the Geist font, an off-white background, near-black text, and a single lavender accent. Primary CTA: "Paste your URL for a free audit."
+Build a one-page landing site for SiteRefresh, 24-hour AI website redesigns for small businesses.
+Hero: "Your outdated website, redesigned by AI in 24 hours." Sub: "Paste your URL. Keep your brand. Get a modern, mobile-first site by tomorrow, with no agency quote and no page builder to learn." One button: Paste your URL for a free audit, which joins the waitlist.
+Sections: a URL box in the hero, a before and after slider that animates on scroll, the problem (half of small businesses have no site and most that do are not mobile-friendly), how it works in four steps (paste your URL, AI redesigns overnight, a human finishes, approve and go live), and an FAQ on brand preservation, the 24-hour timeline, revisions, hosting and what happens to the old site.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white background, near-black text, one lavender accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SiteRefresh: a wordmark and an icon that suggest a page being refreshed.
+Colors: off-white, near-black and one lavender accent. Type: Geist for the interface.
+Deliverables: wordmark, icon, a before and after slider handle, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

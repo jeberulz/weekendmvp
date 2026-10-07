@@ -80,90 +80,59 @@ PWA + browser extension + minimal backend. No fancy infra — this is a local-fi
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. PWA Timer + Service Worker**
+**1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router PWA for a focus timer. TypeScript + Tailwind + next-pwa.
+Build the weekend MVP of "Focus Session Timer": a deep-work timer that logs every session and shows your streak and a heatmap. It also learns your real session length after two weeks.
 
-Features:
-- / (marketing + demo timer, no auth)
-- /app (authed: active timer, task input, history, settings)
-- /app/history (heatmap calendar, streak counter, weekly chart)
-- /app/blocklist (managed list of distraction domains)
-- /settings (intervals, sounds, calendar connection)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), a web app manifest so it installs to the home screen, the Web Audio and Notifications APIs for the end of a session. Deploy on Vercel.
 
-Timer logic:
-- React state holds endTimestamp; component renders remaining time every 1000ms via setInterval cleared on unmount.
-- Service worker registers a periodic-sync listener AND an alarms API fallback. When tab is backgrounded, SW posts a message with remaining ms; main thread restores on resume.
-- On session end: play a chime (Web Audio), show notification via Notifications API, increment DB session counter.
+Tables (Row Level Security on, each user reads only their own rows):
+- tasks(id, user_id, name, last_used_at)
+- sessions(id, user_id, task_id, started_at, ended_at, duration_sec, completed boolean, quality_rating)  quality_rating is 1 to 5 and optional
+- user_preferences(user_id, default_work_min, default_break_min, adaptive_enabled, suggestion_dismissed_until)
 
-Schema (Supabase):
-- users(id, email, plan ENUM[free,pro,lifetime], stripe_customer_id)
-- sessions(id, user_id, started_at, ended_at, duration_sec, task, quality_rating 1-5 optional, completed bool)
-- blocked_domains(id, user_id, domain)
-- user_preferences(id, user_id, default_work_min, default_break_min, adaptive_enabled, ambient_track, google_calendar_connected bool, google_refresh_token_encrypted)
+Screens: / (a demo timer, no sign-in), /app (task, timer, today), /app/history (heatmap, streak, weekly chart), /settings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
 
-IndexedDB mirrors last 30 days of sessions for offline; sync on reconnect.
+Do not build: billing, plans or a lifetime option, a browser extension or website blocking, Google Calendar write-back, a weekly email, ambient sound, offline sync.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Browser Extension (Website Blocker)**
+**2. Core Feature**
 
 ```text
-Build a Manifest V3 Chrome/Firefox extension that blocks user-configured domains during active focus sessions.
-
-manifest.json:
-{
-  "manifest_version": 3,
-  "name": "Focus Shield",
-  "version": "1.0",
-  "permissions": ["storage","declarativeNetRequest","alarms"],
-  "host_permissions": [""],
-  "background": { "service_worker": "background.js" },
-  "action": { "default_popup": "popup.html" }
-}
-
-background.js:
-- On install, load blocklist from product.com/api/blocklist?api_key=xxx into chrome.storage.sync.
-- Listen for runtime messages from the PWA (via chrome.runtime.onMessageExternal):
-  {type: 'session_start', duration_ms} → call chrome.declarativeNetRequest.updateDynamicRules to add block rules for every blocked_domain with action redirect to a "Come back after your session" page.
-  {type: 'session_end'} → clear all dynamic rules.
-- Set an alarm as failsafe to clear rules if session_end message is lost.
-
-PWA pairing:
-- User installs extension, clicks "Pair with product.com" in popup.
-- Popup redirects to product.com/app/pair with a random token.
-- User confirms; PWA sends extension a shared secret via chrome.runtime.sendMessage (externally_connectable declared in manifest with product.com).
-- Subsequent session events cryptographically signed with that shared secret.
-
-Edge cases: user disables extension mid-session (PWA detects lost heartbeat, flags session with "unprotected" badge). User opens block domain in private window (declarativeNetRequest still applies; document for users).
+Build the one feature that proves Focus Session Timer: a timer you can trust and a log you want to look at.
+1. The timer stores an end timestamp, not a counter. It renders the remaining time from the clock every second, so a backgrounded tab or a refresh shows the right time. Keep the end timestamp in localStorage so a refresh resumes the session.
+2. The default is 25 minutes of work and 5 of rest, editable in settings. Add a development flag that makes a session 10 seconds so you can test the end.
+3. When a session ends, play a short chime with Web Audio, show a Notifications API message if allowed and insert a sessions row with completed true. Stopping early inserts the row with completed false and the real duration.
+4. Picking a task stores it in tasks and fills it in next time. After a session, an optional 1 to 5 rating.
+5. /app/history shows a calendar heatmap of focused minutes per day, the current streak (days in a row with at least one completed session) and a chart of the last 8 weeks.
+6. After 14 completed sessions, compute the average duration of the last 30 completed sessions, round it to the nearest 5 minutes and clamp it from 15 to 90. If it differs from the default by 10 minutes or more, show a banner: "Your sessions average 47 minutes. Switch to 45 and 10?" with Accept and Dismiss for 30 days. Accept updates default_work_min.
+Rules: the demo timer on / works without an account and stores nothing. A session that is shorter than 1 minute is not logged.
+Empty state: with no sessions, show the timer and one line saying the heatmap fills in after the first session.
+Done when: starting a timer and refreshing the page shows the correct remaining time, a finished session appears in the history and the heatmap, the streak counts consecutive days, and the banner appears after 14 seeded completed sessions.
 ```
 
-**3. Adaptive Intervals + Calendar Sync**
+**3. Landing Page**
 
 ```text
-Implement two Pro-tier features: adaptive interval suggestions and Google Calendar write-back.
+Build a one-page landing site for Focus Session Timer, a deep-work timer for people who want proof they focused.
+Hero: "Focus sessions you actually finish." Sub: "Pick a task, start the timer and watch your streak grow. After two weeks it suggests the session length you really manage." One button: Join the waitlist.
+Sections: a working demo timer with no sign-in, a sample heatmap and streak, how it works in three steps (pick a task, work, review), and an FAQ on what is coming next (website blocking and calendar sync), whether it works offline and where your sessions are stored.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a calm off-white background, ink type, one green accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Adaptive intervals:
-1. After user accumulates 14+ completed sessions, compute:
-   - avg_completion_duration = average ended_at - started_at across last 30 completed sessions
-   - optimal_work_min = round to nearest 5, clamp [15, 90]
-   - suggest if > current default_work_min + 10 OR < - 10
-2. Show banner on /app: "Your focused sessions average 47 minutes. Switch to 50/10?" with [Accept] [Dismiss for 30 days].
-3. On accept, update user_preferences.default_work_min.
-4. Track acceptance rate as a product metric; re-prompt quarterly.
+**4. Branding Package**
 
-Google Calendar write-back:
-1. /api/calendar/connect initiates OAuth with scopes ['https://www.googleapis.com/auth/calendar.events'].
-2. Store refresh_token encrypted in user_preferences.google_refresh_token_encrypted (Supabase Vault).
-3. On session completion (where completed=true AND user_preferences.google_calendar_connected):
-   - Refresh access token if needed.
-   - POST to https://www.googleapis.com/calendar/v3/calendars/primary/events:
-     { summary: `Deep Work: ${task || 'Focus Session'}`, description: 'Logged by Focus Timer', start: {dateTime: started_at}, end: {dateTime: ended_at}, transparency: 'transparent' }
-4. User can toggle per-session write-back with a small checkbox. Default on once connected.
-
-Weekly digest email (Sundays 9pm user timezone):
-- Total focused hours, longest streak, best day, best task, week-over-week delta.
-- Render heatmap as SVG via satori, convert to PNG, attach to Resend email.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Focus Session Timer: pick a short working name, then design a wordmark and an icon that suggest a ring that fills as time passes.
+Colors: off-white, ink and one green. Type: Geist, with tabular numbers for the timer.
+Deliverables: wordmark, icon, a timer face at three states (running, resting, finished), a heatmap color scale with five steps that also differ in pattern, and one launch graphic.
+Done when: each deliverable is saved in one folder and the heatmap steps are distinguishable in black and white.
 ```
 
 ## Sources

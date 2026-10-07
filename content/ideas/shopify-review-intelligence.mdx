@@ -82,25 +82,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Shopify Remix app called “ReviewIQ” with TypeScript, Polaris, and Prisma on Supabase Postgres. Tables: shops (shop_domain, plan_tier, billing_id), products (shopify_product_id, title), reviews (product_id, body, rating, created_at, external_id), summary_versions (product_id, pros_json, cons_json, themes_json, approved_at), competitor_targets (shop_id, url, last_scraped_at), drift_events (product_id, theme, delta_pct, week_of). Wire Shopify OAuth, Billing API plans at $29 Starter and $99 Advanced, webhook handlers for products/update, and env vars for OpenAI + Resend. Enable RLS scoped by shop_id.
+Build the weekend MVP of "ReviewIQ": upload a product's reviews, see which themes are rising or falling week by week, and get a short pros and cons summary you approve before it goes anywhere. It does not publish to a store.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to tag themes and write the summary. Reviews come in by CSV exported from a review app. Counting and drift are plain code. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- products(id, user_id, title, external_ref)
+- reviews(id, product_id, external_id, body, rating, created_at)
+- summary_versions(id, product_id, pros jsonb, cons jsonb, phrases jsonb, period_start, approved_at)
+- drift_events(id, product_id, theme, delta_pct, week_of)
+
+Screens: /login, /products, /products/[id] (reviews in, themes and the summary), /drift.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an enterprise tier, store or Admin API sync, a theme extension, competitor scraping, a weekly cron, email alerts, product analytics.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the review intelligence pipeline. (1) Weekly cron pulls new reviews via Shopify Admin API (or Yotpo/Judge.me webhook if present). (2) Cluster review sentences by theme with LLM; output pros (3 bullets), cons (3 bullets), and top quoted phrases. (3) Compare theme weights vs. prior week; create drift_events when any theme moves >15%. (4) Admin UI: product list with pending summaries, approve/edit before publish, competitor side-by-side panel. (5) Theme App Extension block reads latest approved summary JSON from app proxy endpoint. (6) Optional competitor scraper: fetch public review text from merchant-supplied URLs, summarize narrative differences.
+Build the one feature that proves ReviewIQ: a summary built from real quotes, and drift you can verify by counting.
+1. Import a CSV for a product with columns external_id, rating, body, created_at. Skip reviews already imported.
+2. Tag themes with the Anthropic API in batches of 50 reviews with a strict JSON schema { items: [{ review_id, themes: ("fit" | "durability" | "shipping" | "value" | "other")[], sentiment: "positive" | "neutral" | "negative" }] }.
+3. Count in code, per week, the share of that week's reviews that mention each theme, split by sentiment. Create a drift_event when a theme's share moves by 15 percentage points or more from the previous week, and both weeks have at least 20 reviews. Show the counts with the event.
+4. Write the summary: ask the Anthropic API for 3 pros, 3 cons and the most quoted phrases as JSON where every phrase is a verbatim quote with the review id. Check in code that each quote appears in that review. Drop any that do not.
+5. The product page shows the draft summary with editable text, an Approve button that sets approved_at and a Copy button for the approved block.
+6. /drift lists the events with the week, the theme and the change.
+Rules: never show a phrase that is not a real quote. Never publish anything anywhere. Say how many reviews each summary is based on.
+Empty state: with no products, show the CSV columns and a sample file.
+Done when: a sample of 300 reviews tags every review, a theme that jumps 20 points between two full weeks creates a drift event, a made-up quote is dropped, and Approve is required before Copy appears.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing site for ReviewIQ. Hero: “Turn 200 reviews into 3 sentences shoppers actually read.” Sections: the review-wall problem, live demo (paste product URL → mock summary), case study block (“+12% PDP scroll depth in beta”), comparison vs Yotpo / Loox / Judge.me on intelligence features, pricing Starter $29 / Advanced $99, FAQ on Shopify Billing and review provider compatibility, email capture for free one-product summary. Palette: ink #0F1115, paper #FCFAF7, emerald accent #10B981 for trust/summary chips. Voice: merchant-practical, revenue-focused, no agency fluff.
+Build a one-page landing site for ReviewIQ, review summaries and drift alerts for online stores.
+Hero: "Turn 200 reviews into three sentences shoppers will read." Sub: "Upload your reviews. See what customers keep saying, what changed this week and a summary you approve." One button: Join the waitlist.
+Sections: the review-wall problem, a sample summary with its real quotes, how it works in four steps (upload, tag, check drift, approve), and an FAQ on which review apps export a file that works, how quotes are checked and what is coming next (a storefront block).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm paper background, ink type, one emerald accent for summary chips and one amber accent for drift warnings.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Branding for ReviewIQ: speech-bubble + star mark readable at 16px. Colors — ink #0F1115, paper #FCFAF7, emerald #10B981 (positive themes), amber #F59E0B (drift warnings). Typography: Geist Sans UI, Geist Mono for theme percentages. Deliverables: favicon, empty-state illustration (“Reading 847 reviews…”), summary block mockup for PDP, drift alert email template, Shopify App Store icon set (1200×1200).
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ReviewIQ: a wordmark and a speech-bubble and star mark that stays readable at 16 pixels.
+Colors: ink (#0F1115), paper (#FCFAF7), emerald (#10B981) for positive themes and amber (#F59E0B) for drift. Type: Geist for the interface, Geist Mono for theme percentages.
+Deliverables: favicon, an empty-state illustration ("Reading 847 reviews"), a summary block mockup, a drift alert layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the favicon is readable at 16 pixels.
 ```
 
 ## Sources

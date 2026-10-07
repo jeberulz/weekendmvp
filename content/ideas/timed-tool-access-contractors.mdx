@@ -94,51 +94,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app named Tempkey.
+Build the weekend MVP of "Tempkey": give a contractor access to a Trello board with an end date, warn two days before, and remove them automatically when the date arrives. One tool this weekend, because it is the one with an open API for adding and removing members.
 
-Auth: Clerk (or WorkOS). Tenancy: shop_id on every row.
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Trello REST API with a key and a token you paste in, Resend for the warning emails. A cron route runs the warn and revoke steps (hourly on a plan that allows it, otherwise daily to start). Deploy on Vercel.
 
-Postgres tables: shops, connections (shop_id, provider slack|google|notion|trello, encrypted_tokens, status), grants (shop_id, contractor_email, contractor_name, starts_at, ends_at, tools jsonb, role, status pending|active|warned|revoked|failed, created_by), audit_events (shop_id, grant_id, action, provider, payload, created_at). Indexes: grants by shop_id+ends_at, audit by shop_id+created_at.
+Tables (Row Level Security on, each admin reads only their own rows):
+- connections(id, user_id, provider, token_encrypted, status)
+- grants(id, user_id, contractor_name, contractor_email, board_ref, role, starts_at, ends_at, status, created_by)  status is pending, active, warned, revoked or failed
+- notices(id, grant_id, kind, sent_at)  kind is warning or revoked; unique on grant_id and kind
+- audit_events(id, grant_id, user_id, action, provider, payload jsonb, created_at)
 
-Stripe: Lite $29/mo, Pro $79/mo, Analytics $20/mo add-on. Gate Pro integrations behind entitlement.
+Screens: /login, /connect (the Trello key and token), /grants (who is in, days left, filter by status), /grants/new, /audit (events and a CSV export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY, CRON_SECRET, TOKEN_ENCRYPTION_KEY.
 
-Env: SLACK_CLIENT_ID/SECRET, GOOGLE_CLIENT_ID/SECRET, NOTION_CLIENT_ID/SECRET, TRELLO_KEY/SECRET, INNGEST_EVENT_KEY, TOKEN_KMS_KEY.
+Do not build: billing or plans, Slack, Google Workspace or Notion connections, SCIM, Inngest or a queue, session recording, an enterprise login.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Grant Form + Scheduled Revoke**
+**2. Core Feature**
 
 ```text
-Build Tempkey’s contractor grant flow and Inngest revoke pipeline.
-
-Admin form: name, email, checkboxes for Slack / Google Workspace / Notion / Trello, role/group per tool, end date or 30/60/90 presets. On submit: invite or add the user in each connected provider, persist grant status=active, enqueue Inngest events: warning at ends_at minus 48h, revoke at ends_at.
-
-Warning job: email + Slack DM to owner and contractor. Mark status=warned.
-
-Revoke job: for each provider, deprovision (remove guest, suspend Workspace user or strip groups, remove Notion guest, remove Trello member). Write audit_events. On partial failure, status=failed, retry 3 times with backoff, then notify owner. Never fail silent.
-
-Dashboard: table of grants with days left, filter by status, CSV export of audit_events. Connection health: if a refresh token fails, banner plus Slack alert.
-
-Unit-test the scheduler with frozen clocks. Do not implement CyberArk-style session recording.
+Build the one feature that proves Tempkey: access that ends on the day it was meant to, with a warning first and a record of every step.
+1. The grant form takes a contractor's name and email, a Trello board and a role, and an end date or a 30, 60 or 90 day preset. On submit, add the person to the board through the Trello API, save the grant as active and write an audit event.
+2. A cron route (protected by CRON_SECRET) finds active grants whose end is within 48 hours and sends the warning to the contractor and the owner through Resend. Record it in notices so it is sent once, and set the grant to warned.
+3. The same route finds grants past their end date and removes the member from the board through the Trello API. On success set revoked and send a notice. On failure keep the status failed, retry up to 3 times with backoff on later runs, then email the owner. Never fail silently.
+4. If the stored token stops working, show a banner on the dashboard and email the owner.
+5. The grants page lists every grant with days left and a status filter. /audit exports the events as CSV.
+6. Write the scheduler as a pure function over the grants and a clock. Unit test it with frozen times: nothing before 48 hours, one warning in the window, one revoke after the end, no repeat on a second run.
+Rules: encrypt the token and never log it. Say plainly that this tool only controls what its token can reach. Do not claim it replaces an identity product.
+Empty state: before connecting, show the connect form and how to create a Trello key and token.
+Done when: the scheduler tests pass, a grant with an end date 3 days away is warned and then revoked by two cron runs with the clock moved, a forced Trello error is retried and then emailed to the owner, and the CSV lists every step.
 ```
 
 **3. Landing Page**
 
 ```text
-Single-page marketing site for Tempkey.
-
-Hero: “Timed tool access that clocks out when the contract does.”
-Sub: “Name, email, permissions, end date. Slack, Google, Notion, Trello. Auto-revoke. A warning first, so nobody loses a file.”
-
-Sections: problem (lingering guests, five admin consoles, CyberArk is not an ops tool); how it works (connect, grant, warn, revoke); pricing (Lite $29 / Pro $79 / analytics $20 / enterprise custom) anchored against per-user Okta and “just use Google admin”; FAQ (not PAM, SCIM vs OAuth, what happens if a revoke API fails, data retention).
-
-Primary CTA: “Start a 14-day Pro trial.” Secondary: “See a sample audit CSV.”
-Geist, off-white, near-black, one steel-blue accent. Screenshot of the grant form, not a fortress illustration.
+Build a one-page landing site for Tempkey, contractor access that clocks out when the contract does.
+Hero: "Access that ends when the contract does." Sub: "Add a contractor with an end date. We warn them two days before and remove them on the day, with a record of it." One button: Join the waitlist.
+Sections: the problem (lingering guests and a console for every tool), how it works in four steps (connect, grant with an end date, warn, revoke), a sample audit list, and an FAQ on which tools work first (Trello now, others as their admin APIs allow), what happens if a removal fails (you are told) and why this is not a privileged access product.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white and near-black, one steel-blue accent, a screenshot of the grant form and no fortress illustration.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Branding sheet for Tempkey: wordmark plus an icon of a key with a clock window. Palette: near-black, paper off-white, steel blue #2563eb. Type: Geist UI, IBM Plex Mono for grant IDs and timestamps. Voice rules: talk to ops managers not CISOs; always mention the warning before revoke; never claim to replace Okta or CyberArk. Provide three Slack-bot copy variants under 200 characters (grant created, warning, revoked).
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Tempkey: a wordmark and an icon of a key with a small clock window.
+Colors: near-black, paper off-white and steel blue (#2563eb). Type: Geist for the interface, IBM Plex Mono for grant ids and timestamps.
+Deliverables: wordmark, icon, four grant status chips (active, warned, revoked, failed) that differ by shape as well as color, three Slack-style message variants under 200 characters (grant created, warning, revoked), and one launch graphic. Voice rules: talk to ops managers, always mention the warning before the removal, never claim to replace an identity product.
+Done when: each deliverable is saved in one folder and each message variant is under 200 characters.
 ```
 
 ## Sources

@@ -80,19 +80,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project called "PromoBrain" that will run as an embedded Shopify app. Set up Shopify App Bridge and OAuth for app installation, scoped to read_products, read_inventory, and read_orders, plus write_price_rules for discount creation. Provision a Postgres database (Supabase) with these tables: stores (id, shop_domain UNIQUE, access_token, plan TEXT default 'free', margin_floor_pct FLOAT default 20), products (id, store_id, shopify_product_id, title, inventory_qty, days_of_inventory FLOAT, unit_cost_cents INT, price_cents INT, promo_score FLOAT), campaigns (id, store_id, name, discount_pct FLOAT, product_ids TEXT[], starts_at TIMESTAMPTZ, ends_at TIMESTAMPTZ, status TEXT), campaign_results (id, campaign_id, units_sold INT, revenue_cents INT, margin_impact_cents INT). Wire Stripe with three subscription products (Basic $99/mo, Pro $199/mo, plus an Advanced Analytics $50/mo add-on). Add env vars SHOPIFY_API_KEY, SHOPIFY_API_SECRET, ANTHROPIC_API_KEY, DATABASE_URL.
+Build the weekend MVP of "PromoBrain": a Shopify app that reads your inventory and margins, recommends a flash sale, and builds the discount in one click.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Shopify App Bridge and OAuth, Supabase (Postgres, Row Level Security), Claude (Anthropic API) for the recommendations and copy. The Shopify app install is the only login. Deploy on Vercel.
+Shopify scopes: read_products, read_inventory, read_orders and write_price_rules.
+
+Tables (Row Level Security on, rows scoped to the store):
+- stores(id, shop_domain, access_token_encrypted, margin_floor_pct)
+- products(id, store_id, shopify_product_id, title, inventory_qty, days_of_inventory, unit_cost_cents, price_cents, promo_score)
+- campaigns(id, store_id, name, discount_pct, product_ids, starts_at, ends_at, status)
+- campaign_results(id, campaign_id, units_sold, revenue_cents, margin_impact_cents)
+
+Screens: the embedded admin page with recommendations as cards, and a campaign confirmation page.
+Env vars (names only): SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, ENCRYPTION_KEY.
+
+Do not build: billing or plans, a nightly job queue (use a Sync now button), email recaps, popups beyond the copy, multiple stores per login.
+Done when: the app installs on a development store, Sync now loads the catalog, and the four tables exist with Row Level Security on.
 ```
 
-**2. Promo Recommendation Engine**
+**2. Core Feature**
 
 ```text
-Build a nightly background job (Inngest function) that syncs each connected store's product catalog, inventory levels, and 90-day order history from the Shopify Admin GraphQL API. For each product, calculate: sell-through rate (units sold / avg inventory over 90 days), days of inventory on hand (current qty / avg daily sales), and gross margin percent ((price_cents - unit_cost_cents) / price_cents). Compute a promo_score (0-100) weighting low sell-through and high days-of-inventory upward, and low margin downward. Store the top 10 scored products per store. Then call Claude with a structured prompt that takes the top-scored products plus the store's margin_floor_pct and returns a JSON array of campaign recommendations: { product_ids: string[], discount_pct: number, campaign_name: string, urgency_copy: string }, ensuring discount_pct never drops effective margin below margin_floor_pct. Surface these recommendations in the dashboard for one-click acceptance.
+Build the one feature that proves PromoBrain: from inventory data to a live discount code.
+1. Sync now pulls the catalog, inventory levels and 90-day order history from the Shopify Admin GraphQL API.
+2. For each product, compute sell-through (units sold over average inventory), days of inventory (current quantity over average daily sales) and gross margin percent. Compute promo_score from 0 to 100: low sell-through and high days of inventory raise it, low margin lowers it. Keep the top 10 per store.
+3. Ask Claude for a JSON array of recommendations { product_ids, discount_pct, campaign_name, urgency_copy } from the top products and the store's margin_floor_pct. A discount must never push the effective margin below the floor.
+4. The dashboard shows each recommendation as a card: products, discount, projected revenue recovery and margin impact, with a Launch Campaign button.
+5. Launch creates a Shopify price rule and discount code scoped to those products, writes a campaigns row as scheduled, and shows the live code and a shareable link with the countdown and urgency copy.
+6. After ends_at, a Pull results button reads the orders that used the code and writes units_sold, revenue_cents and margin_impact_cents to campaign_results.
+Empty state: with no catalog yet, show the Sync now button and the scopes the app asks for.
+Done when: Sync now ranks products on a test store, launching a recommendation creates a working code, and no discount drops a product below the margin floor.
 ```
 
-**3. One-Click Campaign Builder**
+**3. Landing Page**
 
 ```text
-Build a Next.js dashboard page that lists AI-generated promo recommendations as cards (products included, suggested discount, projected revenue recovery, margin impact). When a merchant clicks "Launch Campaign" on a card: (1) create a Shopify price rule + discount code via the Admin API scoped to the selected products, (2) generate a countdown-timer landing section and popup copy using the AI-written urgency_copy, (3) create a campaigns row with status 'scheduled', and (4) show a confirmation screen with the live discount code and a shareable link. After the campaign's end date, run a job that pulls order data for the discount code, computes units_sold, revenue_cents, and margin_impact_cents, writes to campaign_results, and emails the merchant a one-page recap. Use Tailwind for a clean, Shopify-admin-consistent UI with a single accent color for CTAs.
+Build a one-page landing site for PromoBrain, an AI flash-sale builder for Shopify stores.
+Hero: "From 'we should run a sale' to a live campaign in minutes." Sub: "It reads your inventory and margins, picks what deserves a promotion, and builds the code, timer and copy." One button: Join the waitlist.
+Sections: the problem (a sale takes a weekend and a guess), how it works in four steps (connect and analyze, AI recommends, one-click build, launch and learn), a mock recommendation card with margin impact, and an FAQ on margin protection and data access.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical, written for a store owner.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for PromoBrain: a wordmark and an icon that suggest a spark or a tag.
+Colors: near-black, white and one confident accent that sits well next to Shopify's admin. Type: one clean sans for the interface.
+Deliverables: wordmark, icon, a recommendation-card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

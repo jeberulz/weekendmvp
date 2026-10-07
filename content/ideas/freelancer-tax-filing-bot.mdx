@@ -96,42 +96,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router + TypeScript + Tailwind app called MyTaxGuy (freelancer tax filing bot).
+Build the weekend MVP of "MyTaxGuy": a freelancer imports bank and payout exports, the app keeps a categorized ledger, and a Schedule C worksheet is assembled from it for the person to review. It is bookkeeping and a draft, not tax advice and not a filed return.
 
-Supabase tables: users (plan, filing_status, home_state); connections (provider plaid|stripe|paypal|drive); transactions (amount_cents, merchant, category, source_id, review_state); category_rules; filings (tax_year, status draft|user_reviewed|submitted|accepted|rejected, schedule_c_json, transmitter_submission_id); transmitter_events.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to suggest a category for a vendor. All form math is plain code. Deploy on Vercel.
 
-Auth: email+Google, MFA on paid. RLS so user_id = auth.uid(). Encrypt Plaid tokens at rest.
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, filename, row_count, created_at)
+- transactions(id, user_id, import_id, posted_at, description, amount_cents, category, category_source, review_state)  category_source is rule, model or user; review_state is posted or needs_user
+- category_rules(id, user_id, pattern, category)
+- schedule_c_drafts(id, user_id, tax_year, lines jsonb, reviewed_at, created_at)
 
-Stripe Billing: Free, File season $49/mo, Always-on $29/mo and $399/year.
+Screens: /login, /import, /books (the transaction queue), /review/[taxYear] (each line with its source transactions).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
 
-Routes: /onboarding (Plaid Link + Stripe OAuth), /books (transaction queue), /review/:taxYear (source-to-line Schedule C), /file (submit + ack).
-
-Copy on /review and /file: this is tax-prep software, not a CPA and not tax advice. Require an explicit “I reviewed these numbers” checkbox before transmit.
+Do not build: billing, e-filing or any transmit to a tax authority, Plaid, Stripe or PayPal connections, a Social Security number or other identity fields, estimated tax payments, K-1s, employees or rentals.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Ledger + Form Mapper (core)**
+**2. Core Feature**
 
 ```text
-Build the books-to-forms path. Do not let the LLM write form math.
-
-1. Ingest Plaid, Stripe payouts, PayPal. Upsert by source_id. Amounts in cents.
-2. Categorize: merchant rule first. Else batch 50 txs to Claude with the user’s category set (income, ads, software, contractor, meals, travel, home_office, owner_draw, ignore). Auto-apply confidence >= 0.85; else needs_user. Corrections write category_rules.
-3. Monthly P and L from posted txs. Owner draws never hit expense. Meals flagged for confirm (do not auto-deduct 50%).
-4. Pure-function form mapper, unit-tested: gross receipts, Schedule C expenses by line, net profit, SE tax at 15.3% (constant you update annually), 1040-ES remaining. Return JSON with supporting transaction IDs per line.
-5. Claude may only write the explanation under each flagged line. If the model’s implied total disagrees with the mapper, show the mapper and ignore the model.
+Build the one feature that proves MyTaxGuy: a ledger that turns into a Schedule C worksheet where every line points at real transactions.
+1. Import a CSV with columns date, description, amount (negative is spending). Amounts are stored in cents. Ignore any account number column. Skip a row already imported (same date, description and amount).
+2. Categorize: a matching category_rules pattern wins first. Otherwise send up to 50 transactions to the Anthropic API with the fixed category set (income, advertising, software, contractor, meals, travel, home_office, supplies, owner_draw, ignore) and a strict JSON schema { items: [{ id, category, confidence }] }. Apply a confidence of 0.85 or more; set the rest to needs_user. When the user corrects a category, save a rule from the vendor text so it applies next time.
+3. Show a monthly profit and loss from posted transactions. Owner draws are never expenses. Meals are marked for the user to confirm; never deduct a percentage on their behalf.
+4. Write a pure function that maps category totals to Schedule C lines and net profit, with a table of category to line that you check against the current year's form instructions. Keep the self-employment tax rate and wage base in one constants file labeled with the tax year. Return JSON with the supporting transaction ids for each line, and unit test it.
+5. /review shows each line with its amount, an expander listing its transactions and a flag on anything uncertain. The model may write one plain sentence under a flagged line. If its numbers disagree with the function, show the function's.
+6. A "I reviewed these numbers" box must be checked to mark the draft reviewed.
+Rules: say on every review screen that this is a worksheet, not tax advice and not a filed return. Never send a transaction to any outside service other than the classifier.
+Empty state: with no imports, show the CSV columns and a sample file.
+Done when: a 100-row sample is categorized, a correction creates a rule that applies to the next import, the draft's line totals equal the sum of their transactions (the unit test passes), and the reviewed box is required.
 ```
 
-**3. Transmitter + Landing**
+**3. Landing Page**
 
 ```text
-Integrate a licensed e-file transmitter (TaxBandits-style) and a landing page.
+Build a one-page landing site for MyTaxGuy, a bookkeeping tool for freelancers that prepares a Schedule C worksheet.
+Hero: "Your books, ready for tax time." Sub: "Import your bank and payout exports. We keep the ledger and assemble a Schedule C worksheet from it. You review every line. Not a CPA. Not a chatbot guessing your income." One button: Join the waitlist.
+Sections: a sample worksheet line with its source transactions, one panicked April versus a ledger that stayed current, how it works in four steps (import, categorize, review, hand to your preparer), and an FAQ on what it does not do (no filing yet, no K-1s, employees or rentals), data privacy and why a person still reviews the return.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Transmit: POST schedule_c_json plus identity fields to sandbox; persist submission id and events; on reject show the error; never submit without user_reviewed = true and the disclaimer checkbox.
+**4. Branding Package**
 
-Landing for MyTaxGuy:
-Hero: “Books that file.” Sub: “Connect Stripe and your bank. We keep the ledger all year and assemble Schedule C from those transactions. You review. A licensed transmitter e-files. Not a CPA. Not a chatbot guessing your income.”
-Sections: five payout apps / one panicked April; 4 how-it-works steps; contrast vs TurboTax (import vs live books) and vs bookkeeping-only apps (P and L vs transmit); pricing Free / $49 season / $29 always-on; FAQ (we will not file K-1s, employees, rentals).
-CTA: “Connect a test Stripe account.”
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for MyTaxGuy: a wordmark and an icon that suggest a ledger line with a check at its end.
+Colors: off-white, near-black and one green. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a worksheet line style that shows an amount and a "see transactions" link, and one launch graphic. Three voice rules: never claim to be a CPA, always show the source transactions, always say you review it.
+Done when: each deliverable is saved in one folder and the worksheet line is readable in black and white.
 ```
 
 ## Sources

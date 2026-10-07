@@ -90,54 +90,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "Note By Note" — an AI practice-plan generator for private music teachers.
+Build the weekend MVP of "Note By Note": record a music lesson and get a student recap, a daily practice plan and a parent email.
 
-Supabase schema:
-- teachers(id, user_id, email, plan TEXT, instrument_focus TEXT[], stripe_customer_id)
-- students(id, teacher_id, name, instrument TEXT, level TEXT, parent_email TEXT, notes TEXT)
-- lessons(id, teacher_id, student_id, recorded_at, duration_sec INT, transcript TEXT, events JSONB, recap TEXT, practice_plan JSONB, parent_email_body TEXT, status TEXT)
-- consent_events(id, lesson_id, granted_by TEXT, granted_at TIMESTAMPTZ)
-- practice_items(id, lesson_id, student_id, day TEXT, minutes INT, instruction TEXT, source_span TEXT)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Whisper through OpenAI for transcription, Claude (Anthropic API) for the extraction and the three outputs. Deploy on Vercel.
 
-RLS: teachers read/write only their rows. Do not add an audio_url column on lessons for v1 (process-and-discard).
+Tables (Row Level Security on, teachers read and write only their own rows):
+- teachers(id, user_id, instrument_focus)
+- students(id, teacher_id, name, instrument, level, parent_email, notes)
+- lessons(id, teacher_id, student_id, recorded_at, duration_sec, transcript, events jsonb, recap, practice_plan jsonb, parent_email_body, status)
+- consent_events(id, lesson_id, granted_by, granted_at)
+- practice_items(id, lesson_id, student_id, day, minutes, instruction, source_span)
+Do not add an audio_url column to lessons: audio is processed and discarded.
 
-Routes: /record, /lessons/[id] (review + edit the three outputs), /students, /settings.
-Stripe products: Starter $20/mo (40 lessons), Pro $49/mo (200 lessons), Studio $99/mo (5 seats).
-Env: OPENAI_API_KEY, ANTHROPIC_API_KEY, RESEND_API_KEY, SUPABASE_SERVICE_ROLE_KEY.
+Screens: /record, /lessons/[id] (review and edit the three outputs), /students.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or lesson limits, SMS, online-lesson meeting bots, the weekly teacher digest, an admin area.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Pedagogy Extraction + Three Outputs**
+**2. Core Feature**
 
 ```text
-Build the core pipeline as a Server Action that runs after upload.
-
-1. Transcribe with Whisper. Store transcript on lessons.transcript.
-2. Call Claude with a strict JSON schema:
-   {events: [{type: "technique"|"repertoire"|"assignment"|"tempo"|"praise"|"correction", span: string, detail: string}]}
-   System prompt: "You extract music-lesson pedagogy. Only emit events that are directly supported by a transcript span. Never invent an assignment the teacher did not give. If the teacher said 'practice measures 5-8 slowly', that is an assignment. If they only praised tone, that is praise, not homework."
-3. Render three outputs from the events:
-   - Student recap: 3-5 sentences, second person, name the piece and one win.
-   - Practice plan: Mon-Sun rows with minutes and a single instruction per day, totaling the teacher's stated practice target or 20 minutes default.
-   - Parent email: 120-180 words, warm, no jargon without a translation, one ask (practice days).
-4. Show all three in an editor with a "send" button. Sending writes status=sent and emails parent_email via Resend.
-
-If any assignment event has an empty span, drop it and flag "unverified — add manually" rather than shipping a hallucinated task.
+Build the one feature that proves the idea: a recorded lesson becomes three outputs a teacher can send in a minute.
+1. Record flow: before recording starts, show a consent sheet with who is being recorded, that the audio is processed and discarded, and a "use dictation instead" fallback. Write a consent_events row before upload.
+2. Upload the audio to a short-lived signed URL, transcribe it with Whisper, save the transcript, and delete the audio.
+3. Ask Claude for strict JSON { events: [{ type, span, detail }] } where type is technique, repertoire, assignment, tempo, praise or correction. System prompt: "You extract music-lesson pedagogy. Only emit events directly supported by a transcript span. Never invent an assignment the teacher did not give. 'Practice measures 5 to 8 slowly' is an assignment. Praise for tone is praise, not homework."
+4. From the events, make three outputs: a student recap (3 to 5 sentences, second person, naming the piece and one win), a practice plan (Monday to Sunday rows, minutes and one instruction a day, totaling the teacher's stated target or 20 minutes), and a parent email (120 to 180 words, warm, no unexplained jargon, one ask).
+5. Fetch the student's last 3 sent plans and pass them in: do not repeat last week's exact assignments unless the teacher restated them, and continue unfinished work.
+6. Show all three in an editor. Send writes status sent and emails the parent through Resend, with RESEND_API_KEY added to the env vars.
+Rules: if an assignment event has an empty span, drop it and flag "unverified, add manually" instead of shipping an invented task.
+Empty state: with no students, show the add-student form.
+Done when: a 2-minute test lesson gives a recap, a 7-day plan and a parent email, an invented assignment never appears, and Send emails a test parent.
 ```
 
-**3. Record + Consent + Longitudinal Memory**
+**3. Landing Page**
 
 ```text
-Mobile-first record flow:
-- Before MediaRecorder starts, show a consent sheet: who is being recorded, that audio is processed and discarded on this plan, and a "use dictation instead" fallback that opens a textarea.
-- Write a consent_events row before upload.
-- Upload audio to a short-lived signed URL, run the pipeline, delete the blob.
+Build a one-page landing site for Note By Note, a practice-plan generator for private music teachers.
+Hero: "Teach the lesson. We write the recap." Sub: "Hit record, teach as usual, and get a student recap, a daily practice plan and a parent email." One button: Join the waitlist.
+Sections: the problem (twenty minutes of typing after every lesson), how it works in four steps (record, extract the pedagogy, three outputs, send and remember), a sample plan and parent email, and an FAQ on recording consent and what happens to the audio.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: warm and plain, respectful of the teacher's craft.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Longitudinal memory:
-- On generate, fetch the last 3 sent practice_plans for this student.
-- Pass them into the Claude user message as "do not repeat last week's exact assignments unless the teacher restated them; continue unfinished work."
-- Surface a "continue from last week" chip on the review screen.
+**4. Branding Package**
 
-Add a weekly cron that emails the teacher a one-line digest: N recaps sent, N still in draft, students with no plan in 14 days.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Note By Note: a wordmark and an icon that suggest a note on a staff and a checkmark.
+Colors: warm off-white, deep ink and one friendly accent. Type: one readable sans for the interface.
+Deliverables: wordmark, icon, a weekly practice-plan card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

@@ -83,43 +83,59 @@ You are shipping a content + install product first, not a new automation engine.
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Catalog + Quiz MVP**
+**1. Project Setup**
 
 ```text
-Build Next.js 14 app FlowLibrary.ai.
+Build the weekend MVP of "FlowLibrary": a catalog of ready-made automations with a quiz that picks your top three and an install page that exports them.
 
-Features:
-- Template catalog with tags: onboarding, content, leads, ops
-- Each template: title, outcome, apps_required[], time_saved_hours, difficulty, export_targets[]
-- Quiz: 5 questions (business type, weekly hours on admin, tools used, goal) → top 3 template recommendations via Claude
-- Auth + Stripe ($29 Pro, $99 Premium)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the quiz recommendations. Deploy on Vercel.
 
-Seed 10 hard-coded templates including "Coach Client Onboarding" and "Podcast to Newsletter".
-Headline: "Automation without the Zapier rabbit hole."
+Tables (Row Level Security on: templates are readable by everyone, quiz answers and installs by their owner):
+- templates(id, title, outcome, tags, apps_required, time_saved_hours, difficulty, export_targets, pack jsonb)  where tags include onboarding, content, leads and ops
+- quiz_answers(id, user_id, answers jsonb, recommended jsonb, created_at)
+- installs(id, user_id, template_id, status, installed_at)
+Seed 10 hard-coded templates, including "Coach Client Onboarding" and "Podcast to Newsletter".
+
+Screens: / (the catalog), /quiz, /install/[id].
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or marketplace payouts, an admin page to create packs, one-click installs through partner APIs, the AI variant builder, setup videos.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on and ten templates seeded.
 ```
 
-**2. Template JSON + n8n Export**
+**2. Core Feature**
 
 ```text
-Define a TemplatePack TypeScript type:
-{ id, version, outcome, steps: {name, app, action, config}[], exports: { n8n_json_url, make_blueprint_url, zapier_guide_md } }
-
-Build an admin page to create packs.
-Build a user "Install" page that:
-1. Checks connected apps checklist
-2. Offers Download n8n JSON
-3. Shows step-by-step Zapier rebuild guide generated from steps[]
-
-Include one full sample pack for client onboarding: Typeform → Stripe payment check → Google Drive folder → Notion client row → Calendly invite.
+Build the one feature that proves FlowLibrary: from "I waste Sundays on onboarding" to an automation you can use.
+1. The catalog lists templates with their tags and, for each, the outcome, apps required, hours saved and difficulty.
+2. The quiz asks 5 questions (business type, weekly hours on admin, tools used, goal). Send the answers and the catalog to Claude and return the top 3 template ids with a one-line reason each. Save them to quiz_answers.
+3. Each template's pack is JSON: { id, version, outcome, steps: [{ name, app, action, config }], exports: { n8n_json_url, make_blueprint_url, zapier_guide_md } }.
+4. /install/[id] shows the connected-apps checklist, a Download n8n JSON button, and a step-by-step Zapier rebuild guide generated from steps[].
+5. Ship one full sample pack for client onboarding: Typeform, then a payment check, then a Google Drive folder, then a Notion client row, then a Calendly invite.
+Rules: recommend only templates that exist in the catalog.
+Empty state: before the quiz, show the catalog and a "Take the 2-minute quiz" button.
+Done when: the quiz returns three real templates with reasons, the sample pack downloads as valid n8n JSON, and the Zapier guide lists every step.
 ```
 
-**3. AI Variant Builder**
+**3. Landing Page**
 
 ```text
-Add /api/adapt-template:
-Input: template_id, user_tools[], business_description
-Claude returns adapted steps[] swapping apps (e.g. Notion→Airtable, Calendly→SavvyCal) and a short setup checklist.
-Gate behind Premium plan. Store adaptations for curation review.
+Build a one-page landing site for FlowLibrary, ready-made automations for solopreneurs.
+Headline: "Automation without the Zapier rabbit hole." Sub: "Pick the outcome. Install the workflow into Zapier, Make or n8n." One button: Join the waitlist.
+Sections: the problem (hours lost to admin and a tool you never finish setting up), how it works in five steps (outcome quiz, preview the flow, one-click install or export, a dashboard of active workflows, bundles for your kind of business), and a sample template card with its step map.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: plain and practical, written for a one-person business.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for FlowLibrary: a wordmark and an icon that suggest a shelf of connected steps.
+Colors: warm off-white, deep ink and one friendly accent. Type: one readable sans for the interface and a mono for step names.
+Deliverables: wordmark, icon, a template-card style with a step map, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

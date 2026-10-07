@@ -80,25 +80,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “AgentBay,” a Shopify-style storefront for AI agents. Provision Supabase with tables: workspaces, creators (clerk_user_id, stripe_account_id), agents (creator_id, name, description, endpoint_url, auth_header_name, auth_header_value_encrypted, pricing_model: "flat"|"metered"|"tiered", base_price_cents, per_call_price_cents, status), listings (agent_id, slug, hero_copy, demo_input, category), subscriptions (buyer_id, agent_id, stripe_subscription_id, status), usage_events (agent_id, buyer_id, tokens_in, tokens_out, latency_ms, cost_cents, created_at). Add Clerk for org-aware auth, Stripe Connect Express for marketplace payouts, and a Cloudflare Worker stub at /proxy/[agent_slug] that will meter calls. Env: STRIPE_SECRET_KEY, CLERK_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, ENCRYPTION_KEY.
+Build the weekend MVP of "AgentBay": a storefront where a creator publishes an AI agent and a buyer tries it through a metered proxy.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link). Deploy on Vercel.
+
+Tables (Row Level Security on: creators write their own agents, the public reads published listings):
+- creators(id, user_id, display_name)
+- agents(id, creator_id, name, description, endpoint_url, auth_header_name, auth_header_value_encrypted, pricing_model, price_cents, status)  where pricing_model is one of flat, metered, tiered
+- listings(id, agent_id, slug, hero_copy, demo_input, category)
+- usage_events(id, agent_id, buyer_id, tokens_in, tokens_out, latency_ms, cost_cents, created_at)
+
+Screens: /login, /publish, / (discovery feed).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ENCRYPTION_KEY.
+
+Do not build: payments or payouts, a second login, workspaces or agencies, a separate edge proxy, PII redaction.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Metered Proxy + Publishing Flow**
+**2. Core Feature**
 
 ```text
-Build the creator publishing flow and the metered proxy. Publishing: a 4-step form (Connect endpoint & auth, Define input/output JSON schemas, Pick pricing model + price, Confirm) that writes to agents and listings, encrypts the auth header at rest, and triggers a synthetic test call to verify the endpoint responds 200. Proxy: a Cloudflare Worker route that accepts buyer requests at /proxy/{agent_slug}, validates the buyer’s subscription is active, decrypts and forwards to the upstream endpoint with the creator’s auth header, streams the response back, and emits a usage_event row plus a Stripe usage_record (subscription_item, quantity, timestamp) when pricing_model is "metered" or "tiered." Add rate limiting per buyer per minute and a configurable PII-redaction step on logged payloads.
+Build the one feature that proves AgentBay: publish an agent, then call it through a metered proxy.
+1. /publish is a 4-step form: connect the endpoint and auth header, define the input and output JSON, pick a pricing model and price, confirm. It writes agents and listings, encrypts the auth header at rest, and makes one test call that must return 200.
+2. POST /api/proxy/[slug] checks the buyer is signed in, decrypts the creator's auth header, forwards the request, streams the response back, and writes a usage_events row with tokens, latency and cost.
+3. Limit each buyer to 20 calls per minute and return 429 above that.
+4. / lists published agents grouped by use case (writing, research, sales, ops, support, code). /a/[slug] shows the description, a live demo that calls the proxy with the sample input, the price and the creator's name.
+Rules: never return the stored auth header to any client.
+Empty state: with no published agents, show a button that starts /publish.
+Done when: a creator publishes an agent, a second account calls it from its product page, and the call appears in usage_events.
 ```
 
-**3. Storefront, Discovery & Checkout**
+**3. Landing Page**
 
 ```text
-Build the buyer-facing storefront. Routes: / (curated discovery feed grouped by use case—writing, research, sales, ops, support, code), /a/{slug} (agent product page with hero, description, live demo widget that calls the proxy with a sample input, pricing card, and creator profile snippet), /checkout (Stripe Checkout with Connect destination charges and platform fee = listing.platform_fee_pct), /dashboard/buyer (agents I subscribe to, usage charts, manage subscription). Use Geist + Tailwind, white background, black accents, generous whitespace, no purple gradients. Add a TanStack Query hook usePlayDemo() that POSTs to /proxy/{slug} with throttling. Hero copy: “Buy and run live AI agents. No glue code.”
+Build a one-page landing site for AgentBay, a storefront for custom AI agents.
+Hero: "Buy and run live AI agents. No glue code." One button: Join the waitlist.
+Sections: the problem (builders are stuck between GitHub stars and a real business), how it works in four steps (connect, price, publish, sell), a live demo mock of an agent product page, and a short FAQ on metering and trust.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist and Tailwind, white background, black accents, generous whitespace, no purple gradients.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for AgentBay. Wordmark + small icon mark suggesting a doorway/storefront for agents. Pick a primary near-black, a single accent color (warm teal or muted electric blue), two neutrals. Type system: Geist for UI and headings, IBM Plex Mono for endpoint URLs and code. Provide hex codes, font weights, and 8 product icons (connect, price, publish, demo, sell, meter, payout, analytics). Voice rules: blunt, dev-honest, no “revolutionary,” always show prices in USD with cents. Output as a one-page brand sheet.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AgentBay: a wordmark and a small icon suggesting a doorway or storefront for agents.
+Colors: a near-black, one accent (warm teal or muted electric blue) and two neutrals. Type: Geist for the interface and headings, IBM Plex Mono for endpoint URLs and code.
+Voice rules: blunt and honest toward developers, never "revolutionary", always show prices in USD with cents.
+Deliverables: wordmark, icon, 8 product icons (connect, price, publish, demo, sell, meter, payout, analytics), and a one-page brand sheet.
+Done when: each deliverable is saved in one folder and the icons read at 24 px.
 ```
 
 ## Sources

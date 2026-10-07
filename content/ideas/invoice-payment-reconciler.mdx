@@ -89,40 +89,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) + TypeScript app called "Invoice Payment Reconciler".
+Build the weekend MVP of "Where's My Payment": a freelancer uploads open invoices and a list of deposits, the app matches each payment to an invoice, and polite reminders go out on the ones still unpaid.
 
-Set up:
-- Supabase Postgres: users, invoices, payments, matches, reminders, message_logs
-- Integrations: Stripe + PayPal payout sync, Plaid bank deposits, and a CSV importer for invoices
-- Auth with Clerk
-- A status board listing every invoice as paid / partial / due / overdue with the matched payment
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to rank matches when the rules cannot decide, Resend for the reminders. Invoices and payments come in by CSV this weekend. A Vercel Cron route runs daily. Deploy on Vercel.
 
-Include webhook validation for Stripe and Plaid and env var handling.
+Tables (Row Level Security on, each user reads only their own rows):
+- invoices(id, user_id, number, client_name, client_email, amount_cents, issued_at, due_at, paid_cents, status)  status is due, partial, paid or overdue
+- payments(id, user_id, posted_at, amount_cents, payer, memo, source)
+- matches(id, invoice_id, payment_id, amount_cents, confidence, method, confirmed_at, reversed_at)
+- reminders(id, invoice_id, step, send_at, sent_at, subject, body, paused boolean)  unique on invoice_id and step
+
+Screens: /login, /import, /board (every invoice with its status and matched payments), /review (ambiguous matches), /reminders.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans, Stripe, PayPal or bank connections, Plaid, a job queue or Redis, client reply detection, SMS.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the reconciliation engine.
-
-For each incoming payment:
-1. Gather candidate open invoices for the user
-2. Send the payment (amount, payer name, date, memo) plus candidates to Claude to rank the most likely match, handling cases with no invoice reference
-3. Auto-apply high-confidence matches, including partial payments; queue ambiguous ones for one-tap confirmation
-4. Update each invoice's status and recompute outstanding balance and days-overdue
-
-Keep every match reversible and traceable to the source transaction.
+Build the one feature that proves Where's My Payment: every payment lands on the right invoice, and the unpaid ones get a polite nudge.
+1. Import invoices (number, client_name, client_email, amount, issued_at, due_at) and payments (posted_at, amount, payer, memo) from two CSV files.
+2. For each unmatched payment, match in code first: the memo contains an invoice number and the amount does not exceed the balance, or the amount equals one open balance exactly and the payer name is close to the client name. Both are high confidence.
+3. Otherwise send the payment and up to 5 candidate invoices to the Anthropic API with a strict JSON schema { invoice_id: string or null, confidence: number from 0 to 1, reason: string }. It may only choose from the candidates it was given. Apply a match at 0.9 or more. Put the rest in /review for one tap to confirm or reject.
+4. Support partial payments: apply the smaller of the payment and the balance, and keep the remainder as unapplied money on the payment. Recompute paid_cents and the status after every change.
+5. Every match can be reversed with a button that sets reversed_at and recomputes the invoice.
+6. The board shows each invoice as due, partial, paid or overdue with the days overdue and its matched payments.
+7. Reminders: the user sets a cadence (default day 1 friendly, day 7 firm, day 14 final) with editable templates that fill in the invoice number, the amount and the days overdue. A daily cron route (protected by CRON_SECRET) sends each due step through Resend and sets sent_at. Marking an invoice paid, or a Pause button, stops its unsent steps.
+Rules: never send a step twice. Show the user each template before any email goes out. Keep every match traceable to its payment row.
+Empty state: with no data, show both CSV formats and sample files.
+Done when: a sample of 10 invoices and 12 payments matches the clear ones automatically, queues the ambiguous ones, handles one partial payment, reverses a match cleanly, and sends a due reminder once and stops it when the invoice is paid.
 ```
 
-**3. Auto-Chase Feature**
+**3. Landing Page**
 
 ```text
-Add the automated reminder system.
+Build a one-page landing site for Where's My Payment, an invoice matcher and gentle chaser for solo operators.
+Hero: "Know who paid. Chase who didn't." Sub: "Upload your invoices and deposits. We match them, show what is still outstanding and send polite reminders so you never write the 'where's my payment' email again." One button: Join the waitlist.
+Sections: a sample status board with paid, partial, due and overdue invoices, how it works in four steps (upload, match, review, chase), and an FAQ on how matches are decided (rules first, a model only for the unclear ones), how to undo a match and which payment tools connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one teal accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Let users define an escalating cadence (e.g. day 1 friendly, day 7 firm, day 14 final) with editable templates
-- Use a durable scheduler so reminders fire reliably even across outages
-- Personalize each message with invoice number, amount, and days overdue
-- Auto-pause the sequence when the invoice is paid or the client replies, and log every message sent
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Where's My Payment: a wordmark and an icon that suggest two halves of a receipt that fit together.
+Colors: off-white, near-black and one teal. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, four status chips (due, partial, paid, overdue) that differ by shape as well as color, three reminder email headers in a polite voice, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

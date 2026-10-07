@@ -75,35 +75,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 app that translates auto-repair estimates into customer English.
+Build the weekend MVP of the "Repair Estimate Translator": a service advisor pastes the repair order they already wrote, and the customer gets a plain-English page with what failed, why, what it costs, annotated photos and a choice to approve or defer each line. The shop's prices are never changed.
 
-Set up:
-- Clerk shop logins, Stripe $50 / $99 / $250
-- Supabase: shops, estimates, line_items, photos, decisions
-- Public customer page at /e/[token] with approve/defer per line
-- Twilio SMS to send the link
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link for shop staff), the Anthropic API for the rewrite, Twilio for the text that carries the link. The customer page needs no login and opens by an unguessable link. Deploy on Vercel.
 
-No diagnostic hardware. Paste-only v1.
+Tables (Row Level Security on, a shop reads only its own rows; the customer page reads through a server route that checks the token):
+- profiles(user_id, shop_name, phone)
+- estimates(id, user_id, token, vin, mileage, concern, customer_phone, status, created_at, sent_at, expires_at)
+- line_items(id, estimate_id, raw_line, price_cents, cause, fix, risk_if_wait, priority, safety_flag boolean, decision, decided_at)  priority is do_now or can_wait; decision is approved, deferred or pending
+- photos(id, estimate_id, storage_key, label, x_pct, y_pct)
+- followups(id, estimate_id, line_item_id, due_on, status)
+
+Screens: /login, /estimates/new (paste the lines and their prices), /estimates/[id] (review, photos and send), /e/[token] (the customer page), /bay (decisions on a tablet).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER.
+
+Do not build: billing, shop plans, integrations with Shopmonkey or Tekmetric, diagnostic hardware, automatic reminder texts to customers, a vision model.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the translator.
-
-Requirements:
-- Input: VIN, mileage, concern, raw RO lines
-- Output: cause / fix / risk-if-wait per line, plus a do-now vs defer split
-- Advisor uploads 2–4 photos; draw a label on the failed part
-- Customer can approve a subset; shop sees the decision on a bay tablet view
-
-User flow: paste RO → rewrite → photos → SMS → approve.
+Build the one feature that proves the Translator: the customer understands each line, the prices are exactly the shop's and the shop sees every decision.
+1. The advisor pastes the repair order one line per row with its price, plus the VIN, the mileage and the customer's concern. Store the price in cents from what the advisor typed. A price is never produced or changed by the model.
+2. Send the lines, the VIN, the mileage and the concern to the Anthropic API with a strict JSON schema { items: [{ line_index, cause, fix, risk_if_wait, priority: "do_now" | "can_wait" }] }. Each cause and fix is plain English in one or two sentences. Check that there is exactly one item per line and that no item adds work or parts that are not on the line.
+3. Set safety_flag in code for lines that match a fixed list of safety systems (brakes, tires, steering, suspension, airbags, lights). Only flagged lines may say a delay is a safety risk; strip that wording from any other line.
+4. The advisor uploads 2 to 4 photos and places a label on the failed part by tapping the picture. Store the label and its position as percentages. Show the label drawn on the photo.
+5. Send the customer a text with the link through Twilio, to the number the customer gave the shop, from a number that says who it is. Honor STOP. The page at /e/[token] opens without a login, shows each line with its price, the explanation and the photos, and has Approve and Defer buttons per line and a total of what was approved.
+6. The bay view lists decisions as they arrive. A deferred line creates a followup due in 60 days for the shop to act on; do not text the customer automatically. Show approval rate per advisor to the owner.
+Rules: links expire after 30 days. The page says the advisor is the person to ask. Never show a price the shop did not enter.
+Empty state: with no estimates, show the paste form and a sample repair order.
+Done when: a sample order produces one explanation per line with the shop's exact prices, a non-safety line never says safety, the customer link works without a login and expires, an approval shows on the bay view and a deferred line creates a 60-day followup.
 ```
 
-**3. Defer Follow-up**
+**3. Landing Page**
 
 ```text
-Add a 60-day reminder for deferred lines. If the customer returns, pre-fill the old photos and the original estimate with today's parts price note. Do not auto-charge. Log approval rate per advisor so the owner can see who skips the explainer.
+Build a one-page landing site for the Repair Estimate Translator, for independent auto repair shops.
+Hero: "Let customers understand the estimate before they say no." Sub: "Paste your repair order. Get a clear page with what failed, why, what it costs and photos, with a choice to approve or defer each line." One button: Join the waitlist.
+Sections: a sample customer page with one annotated photo and a do-now and can-wait split, how it works in three steps (paste, explain and photograph, send and approve), and an FAQ on whether your prices change (never), what customers see and which shop software connects next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean off-white background, near-black type, one steel-blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Repair Estimate Translator: pick a short working name, then design a wordmark and an icon that suggest a wrench crossed with a speech bubble.
+Colors: off-white, near-black and one steel blue. Type: Geist, with tabular numbers for prices.
+Deliverables: wordmark, icon, two line chips (do now, can wait) that differ by shape and word as well as color, an annotated photo label style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two line chips are distinguishable without color.
 ```
 
 ## Sources

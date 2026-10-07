@@ -92,50 +92,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called AdMotion for converting static ad images into platform-ready video ads.
+Build the weekend MVP of "AdMotion": turn a static ad image into a short captionless video in three formats, rendered in your browser. The image never leaves your computer.
 
-Supabase schema:
-- users(id, email, plan ENUM[free,starter,pro,agency], stripe_customer_id, renders_used_this_period INT)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link) for accounts and render records only, ffmpeg.wasm (the single-thread build, so no special headers are needed) to render in the browser. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows; files are never stored):
 - projects(id, user_id, name)
-- assets(id, project_id, user_id, original_url, width, height, detected_layers JSONB, created_at)
-- render_jobs(id, asset_id, user_id, template TEXT, formats TEXT[], duration_seconds INT, status ENUM[queued,processing,done,failed], output_urls JSONB, error TEXT, created_at)
+- assets(id, project_id, user_id, filename, width, height, created_at)
+- render_records(id, asset_id, user_id, template, formats text[], duration_seconds, status, error, created_at)  status is done or failed
 
-RLS: users see only their rows. Stripe products: Free ($0), Starter ($39), Pro ($99), Agency ($299).
+Screens: /login, /projects, /studio (drop an image, pick a template, formats and duration, preview and download).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
 
-Routes:
-- /dashboard (project list + usage meter)
-- /dashboard/upload (dropzone + format picker)
-- /dashboard/jobs/[id] (progress + download)
-- POST /api/render (enqueue job)
-- POST /api/webhooks/stripe
-
-Env: SUPABASE_*, STRIPE_*, REDIS_URL, R2_* or S3_*, optional REPLICATE_API_TOKEN.
+Do not build: billing, plans or metered overage, a server render queue or Redis, file storage, AI image-to-video, voiceover or music, batch ZIP upload, captions.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Motion Render Pipeline**
+**2. Core Feature**
 
 ```text
-Build the static-to-video render worker for AdMotion using FFmpeg (Node worker, BullMQ consumer).
-
-Input: PNG/JPG path, template enum (ken_burns | parallax | text_stagger | zoom_reveal), target formats [{ratio:'9:16',width:1080,height:1920}, {ratio:'1:1',width:1080,height:1080}, {ratio:'16:9',width:1920,height:1080}], duration 6-15s.
-
-For ken_burns: slow zoompan from 1.0 to 1.15 scale with subtle pan direction based on image aspect. For text_stagger: OCR or user-provided text regions (x,y,w,h); fade each region in at 0.5s intervals using overlay filters. Burn in optional headline from asset metadata.
-
-Output: one MP4 per format, H.264, 30fps, yuv420p, under 30MB for 15s. Upload to R2, patch render_jobs.output_urls, set status done. On failure, capture stderr tail in render_jobs.error and retry once.
-
-Include a 480p preview render for in-browser progress (first format only) returned within 20s.
+Build the one feature that proves AdMotion: a still ad becomes three correctly sized videos you can post.
+1. The studio takes a PNG or JPG by drop or pick, reads its width and height and shows it. Warn when the image is smaller than the output size.
+2. Offer two templates: ken_burns (a slow zoom from 1.0 to 1.15 with a gentle pan) and zoom_reveal (start at 1.2 and settle at 1.0). Offer a duration from 6 to 15 seconds and a fit choice: fill (crop to the frame) or fit (the whole image over a blurred copy of itself).
+3. Offer three formats: 9:16 at 1080 by 1920, 1:1 at 1080 by 1080 and 16:9 at 1920 by 1080.
+4. Render in the browser with ffmpeg.wasm to MP4, H.264, 30 frames per second, yuv420p. Render a 480p preview of the first format first and show it within about 20 seconds, then render the full files one at a time with a progress bar.
+5. Check each output: the file is under 30 MB for 15 seconds (lower the quality or shorten if it is not), and read back its width, height and codec to confirm them. Show a download button for each.
+6. Draw a safe-zone guide over the preview from margins kept in one config file that you copy from each platform's current ad specs and date.
+7. Save a render_records row with the template, formats and result. Do not upload the image or the video.
+Rules: nothing leaves the browser except the record. Say so on the studio page. Free of watermarks; this is your own creative.
+Empty state: before an image is dropped, show the drop zone and the size to aim for.
+Done when: a sample 1080 by 1350 banner renders in all three formats at the right sizes in H.264, the preview appears first, an oversize file is reduced under 30 MB, and no network request carries the image.
 ```
 
-**3. Landing Page + Batch Upload**
+**3. Landing Page**
 
 ```text
-Design a marketing landing page for AdMotion targeting performance marketers and Shopify DTC brands.
+Build a one-page landing site for AdMotion, static ads turned into video in your browser.
+Hero: "Your static ads already work. Now make them video." Sub: "Drop a banner. Get 9:16, 1:1 and 16:9 MP4s in a few minutes, rendered on your own computer." One button: Join the waitlist.
+Sections: a before and after of a static ad and its vertical video, how it works in three steps (drop, pick a motion, download), and an FAQ on where your image goes (nowhere, it renders in your browser), the formats and sizes, and what is coming next (captions, voiceover and batch).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark hero, one lime accent (#84cc16), generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Hero: "Your static ads already win. Now make them video." Sub: "Upload a banner. Download 9:16, 1:1, and 16:9 MP4s in under three minutes—safe zones included."
+**4. Branding Package**
 
-Sections: problem (platforms demand video, rebuilding creative is slow), live before/after (static PNG animating into vertical video on scroll), how it works (3 steps matching the product), pricing table (Free/Starter/Pro/Agency), FAQ (quality vs Runway, Meta specs, batch limits, watermark on free).
-
-Add a /dashboard/batch page: ZIP upload of up to 10 PNGs, shared template selection, email when ZIP of outputs is ready. Geist font, dark hero, lime accent (#84cc16), generous whitespace. CTA: "Convert your first ad free."
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AdMotion: a wordmark and an icon that suggest a square that unfolds into a taller frame.
+Colors: near-black, off-white and one lime (#84cc16). Type: Geist, with Geist Mono for sizes.
+Deliverables: wordmark, icon, three format chips (9:16, 1:1, 16:9) that differ by shape as well as color, a studio preview frame style with a safe-zone guide, and one launch graphic.
+Done when: each deliverable is saved in one folder and the format chips are distinguishable without color.
 ```
 
 ## Sources
