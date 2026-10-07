@@ -77,19 +77,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "CareerPivot." Provision Supabase with these tables: users (id, email, phone, timezone), intake_responses (id, user_id, current_salary_cents, monthly_expenses_cents, savings_cents, dependents INT, target_field TEXT, hours_per_week INT, skills JSONB), roadmaps (id, user_id, version INT, generated_at, status TEXT default 'active'), milestones (id, roadmap_id, phase TEXT CHECK phase IN ('6mo','1yr','2yr'), target_month INT, title, description, completed BOOLEAN default false), checkins (id, user_id, milestone_id, sent_at, response TEXT, responded_at). Enable row-level security so users only read/write their own rows. Wire Stripe with three products (Free, Pivot Plan $15/mo, Pivot Pro $49/mo) and a Corporate Wellness invoiced product. Add env vars for TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, and the Claude API key.
+Build the weekend MVP of "CareerPivot": turn your salary, savings and family constraints into a dated 6-month, 1-year and 2-year career exit roadmap.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) with a Zod-validated JSON schema. Server actions run the generation. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads and writes only their own rows):
+- intake_responses(id, user_id, current_salary_cents, monthly_expenses_cents, savings_cents, dependents, target_field, hours_per_week, skills jsonb)
+- roadmaps(id, user_id, version, generated_at, status)
+- milestones(id, roadmap_id, phase, target_month, title, description, category, completed)  where phase is one of 6mo, 1yr, 2yr and category is one of skill, network, financial, application
+
+Screens: /login, /intake, /roadmap (milestones by phase).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a corporate product, SMS check-ins, a coach booking flow, a retention dashboard.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Roadmap Generation Engine**
+**2. Core Feature**
 
 ```text
-Build a server action `generateRoadmap(intakeId)` that: (1) loads the intake_responses row, (2) calls Claude with a system prompt instructing it to act as a career transition strategist who accounts for financial runway (savings divided by monthly burn equals months of safety), transferable skills mapping, and realistic timelines, (3) requests a strict JSON response matching a Zod schema: phases array, each with a phase label ("6mo"|"1yr"|"2yr") and a milestones array of { month: number, title: string, description: string, category: "skill"|"network"|"financial"|"application" }, (4) validates the response against the schema and retries once on failure, (5) writes a new roadmaps row plus its milestones, incrementing version if a prior roadmap exists. Include a rule in the prompt: never suggest a step that would drop the user's income below their stated monthly_expenses for more than 2 consecutive months unless they've explicitly indicated savings covers it, and always show the salary bridge math explicitly in the roadmap.
+Build the one feature that proves CareerPivot: a roadmap built from the user's real numbers.
+1. A server action generateRoadmap(intakeId) loads the intake row.
+2. Call Claude with a system prompt that acts as a career transition strategist who accounts for financial runway (savings divided by monthly expenses equals months of safety), transferable skills and realistic timelines.
+3. Ask for strict JSON that matches a Zod schema: a phases array, each with a phase label ("6mo", "1yr" or "2yr") and milestones of { month: number, title, description, category }.
+4. Validate the response against the schema and retry once on failure. Write a new roadmaps row and its milestones, adding 1 to version when an earlier roadmap exists.
+5. /roadmap shows the milestones by phase, lets the user mark each complete, and has a Re-plan button that regenerates after the user edits their intake.
+Rules: never suggest a step that drops the user's income below their stated monthly expenses for more than 2 months in a row, unless their savings cover it. Always show the salary bridge math explicitly in the roadmap. This is a planning tool and not financial advice, and the page says so.
+Empty state: with no intake, show the intake form.
+Done when: a test intake returns a roadmap in three phases with dated milestones and the bridge math shown, a plan that would break the income rule is not produced, and Re-plan creates version 2.
 ```
 
-**3. Weekly Check-in Loop**
+**3. Landing Page**
 
 ```text
-Build a Vercel Cron job that runs every Monday: query all active roadmaps, find each user's next incomplete milestone due this month, and send a Twilio SMS: "This week's move: {milestone.title}. Reply DONE, SNOOZE, or STUCK." Build the inbound webhook at /api/sms to parse the reply — DONE marks the milestone completed and schedules the next one; SNOOZE pushes the milestone one week and logs a snooze_count; STUCK triggers an in-app prompt suggesting the user regenerate their roadmap or book a Pivot Pro coach check-in. Persist every inbound/outbound message to a checkins table for the retention dashboard.
+Build a one-page landing site for CareerPivot, a career transition planner.
+Hero: "Your exit, with dates and numbers." Sub: "Tell us your salary, savings and constraints. Get a 6-month, 1-year and 2-year roadmap built from your real numbers." One button: Join the waitlist.
+Sections: the problem (generic advice that ignores your rent), how it works in four steps (intake, plan generation, check-ins, re-plan), a sample roadmap with the salary bridge math shown, and an FAQ that says plainly this is planning help and not financial advice.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: honest, specific and steady.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CareerPivot: a wordmark and an icon that suggest a path turning at a marked point.
+Colors: warm off-white, deep ink and one steady green. Type: one clear sans for the interface and tabular numbers for money.
+Deliverables: wordmark, icon, a three-phase timeline style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the money figures line up in a column.
 ```
 
 ## Sources

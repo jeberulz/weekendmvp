@@ -90,41 +90,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "CourseBot," an AI
-student-support assistant for online educators. Provision Supabase with tables:
-educators (id, email, plan), courses (id, educator_id, name, lms_provider),
-documents (id, course_id, source_url, content, embedding vector(1536)),
-conversations (id, course_id, student_ref, question, answer, resolved bool,
-tokens_used int, escalated bool, created_at). Enable pgvector and row-level security
-scoped by educator_id. Add env vars OPENAI_API_KEY, ANTHROPIC_API_KEY, and Stripe keys.
-Scaffold an embeddable chat widget, an educator dashboard, and a Stripe billing flow
-with Starter ($49), Pro ($149), and Institution ($499) tiers.
+Build the weekend MVP of "CourseBot": an AI support bot that answers a course's routine student questions from the educator's own materials, any time of day.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvector, Row Level Security, Auth with email magic link), OpenAI (a small model and embeddings) for the answers, Claude (Anthropic API) as the fallback. Deploy on Vercel.
+
+Tables (Row Level Security on, scoped to the educator who owns the course):
+- courses(id, user_id, name, lms_provider)
+- documents(id, course_id, source_url, content, embedding vector(1536))
+- faq_entries(id, course_id, question, answer)
+- conversations(id, course_id, student_ref, question, answer, resolved, tokens_used, escalated, created_at)
+
+Screens: /login, /course (materials and FAQs), /conversations (the log and escalations), plus an embeddable chat widget.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or tiers, LMS connections, scheduled re-sync, the weekly digest email, email or inbox answers.
+Done when: npm run dev starts, you can sign in, and the four tables exist with pgvector on and Row Level Security on.
 ```
 
-**2. Core RAG Answer Engine**
+**2. Core Feature**
 
 ```text
-Build POST /api/answer. Input: { courseId, question }. Steps:
-1. Embed the question and run a pgvector similarity search over documents for that courseId.
-2. Construct a grounded prompt: "Answer ONLY from the provided course materials. If the
-   answer is not present, say you will route this to the instructor." Include the top chunks.
-3. Call gpt-4o-mini with prompt caching on the course knowledge base; fall back to Claude on
-   error or low confidence.
-4. If the model signals low confidence or the topic is sensitive (grades, refunds, complaints),
-   set escalated = true and notify the educator.
-5. Log tokens_used and resolved status for billing and analytics. Return the answer plus a
-   confidence score in under 2 seconds.
+Build the one feature that proves CourseBot: a grounded answer, or an honest hand-off.
+1. Educator input: paste or upload the syllabus, lesson text and past FAQs. Chunk and embed them into documents, and save FAQs in faq_entries.
+2. POST /api/answer takes { courseId, question }. Embed the question and run a vector search over that course's documents.
+3. Build a grounded prompt: "Answer ONLY from the provided course materials. If the answer is not there, say you will route this to the instructor." Include the top chunks. Call the small OpenAI model, and fall back to Claude on an error or low confidence.
+4. If the model signals low confidence, or the topic is sensitive (grades, refunds, complaints), set escalated to true and show it at the top of /conversations.
+5. Log tokens_used and resolved on every conversation. Return the answer and a confidence score in under 2 seconds.
+6. The embeddable widget is a script tag that posts to /api/answer for one course.
+Empty state: with no materials, show the upload box and the widget snippet.
+Done when: a question the materials cover gets a grounded answer in under 2 seconds, a question they do not cover gets the route-to-instructor reply, and a refund question is escalated.
 ```
 
-**3. LMS Ingestion + Weekly Digest**
+**3. Landing Page**
 
 ```text
-Add a course-ingestion job that pulls syllabus, lessons, and existing FAQ threads from a
-connected LMS (start with Teachable and Canvas APIs), chunks the text, embeds it, and stores
-it in documents. Re-sync on a schedule so deadlines stay current. Then build a weekly cron
-that emails each educator a digest: total questions answered, deflection rate, top question
-themes, and any content gaps where the bot had to escalate. Keep the tone practical and
-action-oriented so the educator knows exactly which lesson to clarify next.
+Build a one-page landing site for CourseBot, a student support bot for online educators.
+Hero: "Answer every student question at 2am. Without waking up." Sub: "CourseBot learns your course and handles the routine questions, so you can teach." One button: Join the waitlist.
+Sections: the problem (the same questions, every cohort), how it works in five steps (connect your course, ground the AI, deploy anywhere, answer instantly, learn and improve), a sample chat that hands a refund question to the instructor, and an FAQ on accuracy, what it will not answer and student privacy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical and warm, written for an educator.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CourseBot: a wordmark and an icon that suggest a speech bubble with a graduation cap line.
+Colors: warm off-white, deep ink and one friendly accent. Type: one readable sans for the interface.
+Deliverables: wordmark, icon, a chat-widget style that fits any course site, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

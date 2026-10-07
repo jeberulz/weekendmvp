@@ -82,44 +82,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "ProposalPro," an AI proposal generator for freelance consultants. Set up Supabase with these tables:
+Build the weekend MVP of "ProposalPro": draft a client-ready proposal in a consultant's own voice from their past winning proposals, and see when the client opens it.
 
-- consultants(id, user_id, name, brand_logo_url, brand_primary_hex, default_hourly_rate, plan, stripe_customer_id)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvector, Row Level Security, Auth with email magic link), Claude (Anthropic API) with structured output, and an embeddings API that returns 1536 dimensions. Deploy on Vercel.
+
+Tables (Row Level Security on, consultants see only their own rows, and the share page reads one proposal by its token):
+- consultants(id, user_id, name, brand_primary_hex, default_hourly_rate)
 - clients(id, consultant_id, name, industry, contact_email)
-- proposals(id, consultant_id, client_id, title, status ENUM[draft,sent,viewed,won,lost], scope_summary, pricing_model ENUM[fixed,hourly,retainer], total_price_cents, generated_at, pdf_url, share_token)
-- proposal_sections(id, proposal_id, type ENUM[summary,scope,timeline,pricing,terms], content JSONB, position INT)
-- past_proposals(id, consultant_id, raw_text, outcome ENUM[won,lost,unknown], embedding VECTOR(1536))
+- proposals(id, consultant_id, client_id, title, status, scope_summary, pricing_model, total_price_cents, generated_at, share_token)  where status is one of draft, sent, viewed, won, lost
+- proposal_sections(id, proposal_id, type, content jsonb, position)  where type is one of summary, scope, timeline, pricing, terms
+- past_proposals(id, consultant_id, raw_text, outcome, embedding vector(1536))  where outcome is one of won, lost, unknown
+- view_events(id, proposal_id, viewed_at, referrer)
 
-Enable row-level security so consultants only see their own clients and proposals. Wire Stripe with Free / Solo ($59/mo) / Team ($179/user/mo) products. Add env vars for ANTHROPIC_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY. Install the Vercel AI SDK and pgvector extension.
+Screens: /login, /new (client and scope form), /proposals/[id] (editor), /p/[token] (public share page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, EMBEDDINGS_API_KEY.
+
+Do not build: billing or plans, PDF export, email notifications, team accounts, a second AI model.
+Done when: npm run dev starts, you can sign in, and the six tables exist with pgvector on and Row Level Security on.
 ```
 
-**2. AI Proposal Generation with Retrieval**
+**2. Core Feature**
 
 ```text
-Build the core proposal generation flow.
-
-Step 1 — Retrieve context:
-Given a new proposal request (client industry, project goals, rough deliverables, target price), embed the request and query past_proposals via pgvector cosine similarity, scoped to the current consultant, to find their 2-3 most similar past proposals (prefer outcome = 'won').
-
-Step 2 — Generate:
-Call Claude with a system prompt: "You write consulting proposals in this consultant's voice and structure, using their past winning proposals as style reference. Return strict JSON matching this schema: { summary: string, scope: string[], deliverables: string[], timeline: [{milestone: string, week: number}], pricing: [{item: string, amount_cents: number}], terms: string }. Do not invent client details not provided. Match the tone and structure of the reference proposals exactly."
-
-Pass the retrieved past proposals plus the new client/scope inputs in the user message. Stream the JSON response into the proposal editor as it generates.
-
-Step 3 — Benchmark pricing:
-Compare total_price_cents against the consultant's historical average for similar project types (stored via a rolling aggregate). If the new proposal's pricing sits more than 20% below that average, surface a non-blocking warning: "This is priced below your typical rate for similar projects — review before sending."
+Build the one feature that proves ProposalPro: a proposal drafted in the consultant's own voice, with a signal when it is opened.
+1. Retrieve: embed the new request (industry, goals, rough deliverables, target price) and query past_proposals by cosine similarity for this consultant's 2 or 3 closest, preferring outcome won.
+2. Generate: call Claude with "You write consulting proposals in this consultant's voice and structure, using their past winning proposals as style reference. Return strict JSON { summary, scope: string[], deliverables: string[], timeline: [{ milestone, week }], pricing: [{ item, amount_cents }], terms }. Do not invent client details that were not provided." Pass the retrieved proposals and the new inputs. Stream the JSON into the editor and save the sections.
+3. Benchmark: compare total_price_cents with the consultant's average for similar projects. If it is more than 20% below, show a non-blocking warning: "This is priced below your typical rate for similar projects. Review before sending."
+4. Share: create a unique share_token and serve /p/[token] as a public, read-only page with no login. On every load, write a view_events row, and set the status to viewed on the first view. Show "viewed" with the time on the proposal list.
+Empty state: with no past proposals, show an upload box for them and one sentence on why they matter.
+Done when: a request returns a proposal that follows a past one's structure, an underpriced draft shows the warning, and opening the share link flips the proposal to viewed.
 ```
 
-**3. Branded Export + Share Tracking**
+**3. Landing Page**
 
 ```text
-Build PDF export and view tracking for sent proposals.
+Build a one-page landing site for ProposalPro, an AI proposal generator for independent consultants.
+Hero: "Proposals from your own winning proposals, in minutes." Sub: "It drafts scope, pricing and timeline in your voice, then tells you the moment the client opens it." One button: Join the waitlist.
+Sections: the problem (a proposal takes hours and sounds like everyone else's), how it works in four steps (set up a client and scope, generate the draft, refine and benchmark, send and track), a sample proposal with a pricing warning, and an FAQ on whose data it learns from and client confidentiality.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: confident and practical, written for a solo consultant.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-PDF export: use @react-pdf/renderer to render a proposal_sections array into a branded document — cover page with the consultant's logo and brand color, a clean pricing table, and a scoped timeline. Store the generated file in Supabase Storage and save its URL to proposals.pdf_url.
+**4. Branding Package**
 
-Share link: generate a unique share_token per proposal and serve it at /p/:share_token as a public, read-only page (no auth required) rendering the same content as the PDF but as a responsive web page. Log a view_events row (proposal_id, viewed_at, referrer) on every page load, and update proposals.status to 'viewed' on first view.
-
-Notify the consultant (email via Resend, or in-app) the moment their client opens the proposal for the first time — this "they just opened it" signal is the single most requested feature in Reddit threads about proposal tools.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ProposalPro: a wordmark and an icon that suggest a folded proposal with a check mark.
+Colors: warm off-white, deep ink and one gold accent. Type: a refined serif for headings and a clean sans for the interface.
+Deliverables: wordmark, icon, a proposal cover style that takes the consultant's own logo and color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

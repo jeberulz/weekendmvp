@@ -90,19 +90,54 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind project called Launch Rescue. Supabase tables: owners, jobs (url, builder, domain, sku: scanner|audit|rescue|watch, status), checks, certificates (public_slug UNIQUE, checksum, pdf_url), watch_subscriptions. RLS: owners only read their rows. Stripe products: Audit $47, Launch Rescue $497 (audit credit via coupon), Site Watch $97/month. Public routes: / (intake), /scan, /pass/[slug]. Dashboard at /app for job status.
+Build the weekend MVP of "Launch Rescue": paste the preview link of an AI-built site, run a fixed launch checklist, and issue a signed Launch Pass only when no blocker is left.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Playwright and Lighthouse in a small separate Node worker, Claude (Anthropic API) with a strict JSON schema to turn probe output into a ranked fix list. Deploy the app on Vercel.
+
+Tables (Row Level Security on, owners read only their own rows, and a pass is readable by its slug):
+- launch_jobs(id, user_id, url, builder, domain, sku, status)  where builder is one of lovable, bolt, v0, cursor and sku is one of scanner, audit, rescue
+- checks(id, job_id, key, severity, title, fix, passed, raw jsonb)  where severity is one of blocker, warn, info
+- certificates(id, job_id, public_slug, checksum, pdf_url)
+
+Screens: / (the intake), /app (job status), /pass/[slug] (the public certificate).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, checkout or plans, Site Watch monitoring, emailing the scanner report, automated DNS or certificate changes (the operator does those), an admin area.
+Done when: npm run dev starts, the worker runs Playwright, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Checklist Runner + Certificate**
+**2. Core Feature**
 
 ```text
-Build a worker that, given a job URL, runs: DNS lookup, TLS probe, Playwright visit of / /contact catching failed POSTs and mobile overflow, Lighthouse, sitemap/robots, optional Supabase REST probe for tables reachable without a JWT. Persist each check. Claude returns JSON only: array of key, severity (blocker|warn|info), title, fix. Blockers: no valid cert, apex not pointing at host, forms 4xx/5xx, document not indexable, RLS-off heuristic. After the operator marks shipped, generate a Launch Pass PDF plus /pass/[slug] listing every check and a SHA-256 of the evidence bundle. If any blocker remains, refuse to sign.
+Build the one feature that proves Launch Rescue: a checklist that decides whether a site is ready to sign.
+1. A worker takes a job URL and runs: a DNS lookup, a TLS probe, a Playwright visit of / and /contact that catches failed form POSTs and mobile overflow, Lighthouse, sitemap and robots checks, and an optional Supabase REST probe for tables reachable without a JWT. Save each result to checks.
+2. Ask Claude to return JSON only: an array of { key, severity, title, fix }. These are blockers: no valid certificate, the apex domain not pointing at the host, forms returning 4xx or 5xx, a document that is not indexable, and the row-rules-off heuristic.
+3. The operator marks the job shipped on /app.
+4. Then generate the Launch Pass: a PDF and a public /pass/[slug] page that list every check, pass or fail, with a SHA-256 of the evidence bundle.
+Rules: if any blocker remains, refuse to sign. The pass lists failures too.
+Empty state: with no jobs, show the URL box and the list of builders covered.
+Done when: a test site with an invalid certificate returns a blocker and no pass, and a clean test site produces a pass page that lists every check and the checksum.
 ```
 
 **3. Landing Page**
 
 ```text
-Single-page site for Launch Rescue. Hero: "Your AI site is 80 percent done. We ship the last mile in 48 hours." Sub: "Paste the preview URL. We fix DNS, SSL, forms, indexing, and security, then hand you a signed Launch Pass." Fake certificate card (dark, lime seal, no customer names). Sections: the stall, how it works (4 steps), pricing (Free scanner / $47 audit / $497 rescue / $97 Site Watch) vs Fiverr $30 and LovableXperts $5,000, FAQ on the 48-hour refund and covered builders (Lovable, Bolt, v0, Cursor). CTA: Stripe checkout, not "book a call." Geist, near-black, lime accent.
+Build a one-page landing site for Launch Rescue, a 48-hour launch service for AI-built websites.
+Hero: "Your AI site is 80 percent done. We ship the last mile in 48 hours." Sub: "Paste the preview URL. We fix DNS, SSL, forms, indexing and security, then hand you a signed Launch Pass." One button: Paste your preview URL, which joins the waitlist.
+Sections: a fake certificate card (dark, lime seal, no customer names), the stall (the site that never goes live), how it works in four steps (paste the URL, run the checklist, fix and ship, sign the Launch Pass), and an FAQ on the 48-hour refund and the builders covered (Lovable, Bolt, v0, Cursor).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, near-black, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Launch Rescue: a wordmark and a seal mark that reads as a signed pass.
+Colors: near-black, off-white and one lime accent. Type: Geist for the interface and a mono for checks and checksums.
+Deliverables: wordmark, seal mark, a certificate layout with a pass and a fail row that differ by shape, and one launch graphic.
+Done when: each deliverable is saved in one folder and the pass and fail rows are distinguishable without color.
 ```
 
 ## Sources

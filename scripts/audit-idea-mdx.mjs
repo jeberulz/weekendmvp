@@ -34,6 +34,8 @@ import {
   SLUG_PATTERN,
   SOURCES_TITLE,
 } from "./lib/idea-sections.mjs";
+import { lintIdeaMdx } from "./lib/prompt-standard.mjs";
+import { readEnforcedSlugs } from "./lib/prompt-standard-enforced.mjs";
 import {
   auditHowItWorksNaming,
   countPhrase,
@@ -315,6 +317,9 @@ function withoutQuoteLines(prose) {
     .filter((line) => !/^\s*>/.test(line))
     .join("\n");
 }
+
+let enforcedCache = null;
+const enforcedPromptSlugs = () => (enforcedCache ??= readEnforcedSlugs());
 
 /**
  * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
@@ -600,6 +605,19 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
           `full audience label "${fullAudience}" appears ${mentions}× (max ${MAX_FULL_AUDIENCE_MENTIONS}; use editorial.audienceShort)`,
         );
       }
+    }
+  }
+
+  // Weekend prompt standard v1 (WP61), as a ratchet. An idea on `ideas/prompt-standard.json`
+  // must pass it. Any other idea gets one warning, with the command that lists the details.
+  const promptLint = lintIdeaMdx(raw);
+  if (promptLint.errors.length > 0) {
+    if (enforcedPromptSlugs().has(slug)) {
+      for (const e of promptLint.errors) errors.push(`prompt standard v1 (${e.code}): ${e.message}`);
+    } else {
+      warnings.push(
+        `prompt standard v1: ${promptLint.errors.length} issue(s). Run: npm run audit:prompts -- --slug ${slug}`,
+      );
     }
   }
 

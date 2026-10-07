@@ -91,56 +91,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (React Native, TypeScript) app named Downcrane plus a Next.js 14 marketing site.
+Build the weekend MVP of "Downcrane": a phone-tilt game that turns how long your phone sits in a "crane" angle during a session into a neck-age score you can compare with friends. It is a game and a wellness estimate, not a diagnosis.
 
-Mobile screens: onboarding (age, hand, 20-second eye-height calibration), today (neck-age score, time-in-crane), history (14-day sparkline), friends (weekly leaderboard), stretch player, settings (private mode, motion permission, units).
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the browser DeviceOrientation API for tilt, read only while a session is open. It installs to the home screen as a PWA. Deploy on Vercel.
 
-Use expo-sensors / a small native Core Motion + Android SensorManager module. Classify samples as crane | upright | pocket | unused. Aggregate on-device into a daily rollup: minutes_crane, minutes_upright, neck_age (heuristic from minutes_crane vs age), confidence.
+Tables (Row Level Security on; a user reads their own scores, and the leaderboard reads only opted-in friends through a function):
+- profiles(user_id, display_name, age, hand, timezone, baseline_pitch, invite_code, private_mode boolean)
+- daily_scores(id, user_id, on_date, minutes_crane, minutes_upright, neck_age, confidence)
+- friendships(id, user_id, friend_id, created_at)
+- stretch_completions(id, user_id, routine, completed_at)
 
-Supabase (or Firebase): profiles, daily_scores, friendships, challenges, stretch_completions. RLS so users read own scores; leaderboard reads only opted-in friends.
+Screens: /login, /calibrate (20 seconds at eye height), /session (the live score), /friends (the weekly leaderboard), /stretch (a 4-minute routine).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
 
-RevenueCat: Free, Social $4.99/mo, Premium $9.99/mo, IAP stretch packs $0.99 and $2.99. Entitlement keys: social, premium, pack_desk, pack_travel.
+Do not build: billing, plans or stretch packs, a native app, all-day background tracking, video, a pocket or bag detector, campus leaderboards.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scoring Engine + Leaderboard**
+**2. Core Feature**
 
 ```text
-Build Downcrane’s daily scoring and friends loop.
-
-Scoring rules:
-- Ignore samples when the screen is off or the device is likely in a pocket/bag (low |userAcceleration| plus face-down heuristics).
-- Neck-age is a display metric, not a medical age. Document the formula in code comments. Clamp output, never show one-decimal fake precision.
-- If daily confidence is under 0.6, show “noisy day — not ranked.”
-
-Leaderboard:
-- Invite via link + 6-char code.
-- Weekly window Monday 00:00 in the user’s timezone.
-- Rank by lowest neck-age among days with confidence at or above 0.6.
-- Private mode: score locally, hide from friends, still allow stretch prompts.
-
-Stretches: 4-minute PT routine player (video or timed steps). Unlock the library behind the social entitlement. Log completions.
-
-Unit-test the classifier with fixture IMU traces (crane, upright, pocket). Copy: wellness estimate, not a diagnosis.
+Build the one feature that proves Downcrane: a score people want to compare, built on a sensor reading you can test.
+1. Calibrate: ask for permission to read motion (iOS needs a tap), then record 20 seconds with the phone held at eye height. Save the median pitch as baseline_pitch.
+2. A session reads the tilt once a second while the page is open. Classify each sample as crane (the phone is tilted down more than 30 degrees from the baseline), upright, or unused (almost no movement and lying flat). Write the classifier as a pure function and unit test it with fixture traces for crane, upright and unused.
+3. Roll the day up: minutes_crane, minutes_upright and a confidence from 0 to 1 based on how many usable samples there were and how steady the baseline was. Compute neck_age from the share of crane minutes and the user's age with one documented formula in a code comment. Clamp it and show a whole number, always labeled "estimate".
+4. If the confidence is under 0.6, show "Noisy day, not ranked".
+5. Friends: an invite link and a 6-character code create a friendship. The leaderboard for the week (Monday 00:00 in the user's timezone) ranks the lowest neck-age among days with confidence of 0.6 or more, through a database function that returns only opted-in friends. Private mode scores locally and hides the user.
+6. The stretch page runs four stretches of 60 seconds with a timer and logs the completion. Write the steps as general stretches, label them "not medical advice" and have a physical therapist review them before launch.
+Rules: neck age is a display number and never a medical age. Say that on the score screen. Never shame screen time.
+Empty state: before calibration, show the calibrate step and what the page will read.
+Done when: the classifier tests pass, a calibrated session produces a daily score labeled estimate, a low-confidence day is not ranked, a friend sees the weekly leaderboard, and private mode hides the user.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for Downcrane.
-
-Hero: “Your phone already knows your steps. It should know your neck age.”
-Sub: “Tilt sensors in, daily score out. Compete with friends. Stretch when the week goes crane-shaped. No extra hardware.”
-
-Sections: problem (tech neck, muted reminder apps, $50 pucks); live mock of a neck-age card (22-year-old, neck age 34); how it works (calibrate, score, compete, stretch); pricing (Free score / $4.99 social / $9.99 Premium / stretch packs); FAQ (not medical advice, Android + iOS, battery, AirPods not required).
-
-Primary CTA: “Get your neck age” (TestFlight / Play). Secondary: “Start a campus leaderboard.”
-Geist, off-white background, near-black type, one acid accent. No stock photos of models touching their necks in slow motion.
+Build a one-page landing site for Downcrane, a posture game for people who live on their phones.
+Hero: "Your phone already knows how you hold it. It should tell you your neck age." Sub: "A tilt score for the day. Compare with friends. Stretch when the week goes crane-shaped." One button: Join the waitlist.
+Sections: a mock neck-age card (a 22-year-old with a neck age of 34, labeled an estimate), how it works in four steps (calibrate, score, compare, stretch), and an FAQ on what the score is (a game, not a diagnosis), what the page reads (tilt, only while a session is open) and which phones work.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lime accent, no photos of people touching their necks.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding sheet for Downcrane: wordmark plus an icon of a phone as a crane silhouette, neck as the boom. Palette: near-black, bone off-white, one sharp lime accent. Type: Geist for UI, tabular numbers for scores. Voice rules: never diagnose; always pair neck age with “estimate”; never shame screen time; write share-card copy under 80 characters. Provide three share-card lines and three stretch-complete toasts.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Downcrane: a wordmark and an icon of a phone drawn as a crane silhouette, with the neck as the boom.
+Colors: near-black, bone off-white and one sharp lime. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, a neck-age share card, three share-card lines under 80 characters each, three stretch-complete messages, and one launch graphic. Voice rules: never diagnose, always pair neck age with "estimate", never shame screen time.
+Done when: each deliverable is saved in one folder and each share-card line is under 80 characters.
 ```
 
 ## Sources

@@ -85,42 +85,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (React Native) + Next.js admin app called Sayso. Backend: Supabase.
+Build the weekend MVP of "Sayso": a technician talks through a job and the app turns it into a work order summary, a customer note and parts lines that they confirm and copy into their field service tool. It writes to no outside system this weekend.
 
-Schema: shops (fsm jobber|servicetitan|housecallpro), technicians, jobs (status recording|queued|confirm|pushed|failed), recordings, payloads (transcript, structured_json, confirmed_at), writebacks (adapter, request_hash, status).
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Deepgram for speech to text with trade keywords, the Anthropic API for the structured summary. The browser records the audio and works as an installable PWA. Deploy on Vercel.
 
-Mobile: record, pause, confirm three cards (what we did / parts / customer note), retry failed push.
-Admin: FSM OAuth, SMS tech invites, writeback log.
-Stripe: $29/tech/month seats. Env: DEEPGRAM_API_KEY, OPENAI_API_KEY, JOBBER_CLIENT_ID, JOBBER_CLIENT_SECRET, STRIPE_SECRET_KEY, S3_BUCKET.
+Tables (Row Level Security on, each technician reads only their own rows):
+- profiles(user_id, shop_name, fsm_name, keep_audio boolean)
+- jobs(id, user_id, external_job_ref, status, created_at)  status is recording, queued, confirm or exported
+- recordings(id, job_id, file_path, duration_sec, created_at)
+- payloads(id, job_id, transcript, structured_json jsonb, confirmed_json jsonb, confirmed_at, diffs jsonb)
+
+Screens: /login, /jobs (start a job), /jobs/[id] (record, then three cards: what we did, parts, customer note), /export.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), DEEPGRAM_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, seats or per-technician pricing, writes to Jobber, ServiceTitan or Housecall Pro, a native app, inventory decrements, SMS invites.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Voice Pipeline + Structured Extract**
+**2. Core Feature**
 
 ```text
-Build Sayso’s audio pipeline.
-
-Expo: record AAC; upload on LTE; if offline, persist and drain a queue with backoff. Persistent notification while recording so techs do not pocket-stop.
-
-STT: Deepgram with HVAC/plumbing boosting (capacitor, contactor, TXV, evaporator, PEX, shutoff, reclaim). Fallback Whisper if confidence is low.
-
-GPT-4o structured extract: summary, customer_note_plain_language, line_items (description, qty, guessed_sku), equipment, follow_up boolean, confidence number. Never invent a part the tech did not mention. Missing qty defaults to 1 with flag_uncertain true.
-
-Confirm UI: three editable cards. Disable Push until Confirm. Log diffs vs model output for prompt tuning.
+Build the one feature that proves Sayso: a closeout the technician only has to check, and never contains a part they did not say.
+1. Record in the browser with the MediaRecorder API. Show a clear recording state with a timer and a pause button. If the phone is offline, keep the audio in IndexedDB and upload it when the connection returns, with backoff.
+2. Transcribe with Deepgram, with keyword boosting for common trade words (capacitor, contactor, TXV, evaporator, PEX, shutoff, reclaim). Delete the audio after transcription unless keep_audio is on.
+3. Send the transcript to the Anthropic API with a strict JSON schema { summary, customer_note_plain_language, line_items: [{ description, qty, guessed_sku }], equipment, follow_up: boolean, confidence: number from 0 to 1 }. Never add a part the technician did not mention. If a quantity is missing, set it to 1 and add flag_uncertain.
+4. Check in code that every line item's description shares its key words with the transcript. Drop an item that does not.
+5. Show three editable cards: what we did, parts and customer note. Export and Copy stay disabled until the technician presses Confirm. Save the difference between the model's output and the confirmed text to diffs.
+6. The export page gives the confirmed closeout as plain text and as a CSV of line items to paste into the shop's tool.
+Rules: nothing is exported without a confirm. Never invent a part, a quantity or a price. Say if the audio was kept or deleted.
+Empty state: with no jobs, show the start button and a one-line example of what to say.
+Done when: a recorded sample job produces three cards, an invented part is dropped, a missing quantity shows as 1 with a flag, Copy is disabled before Confirm and an offline recording uploads after reconnecting.
 ```
 
-**3. FSM Adapters + Stripe Seats**
+**3. Landing Page**
 
 ```text
-Implement FSM writeback behind pushCloseout(fsm_job_id, summary, customer_note, line_items).
+Build a one-page landing site for Sayso, a voice closeout for HVAC and plumbing technicians.
+Hero: "Say what you did. Get the work order." Sub: "Talk through the job the way you already do. Sayso writes the summary, the customer note and the parts list for you to check." One button: Join the waitlist.
+Sections: a sample spoken closeout next to the three cards it produced, how it works in three steps (narrate, confirm, copy), and an FAQ on which field service tools work first (copy and paste now, direct connections next), what happens to the audio and how a part you did not say is kept out.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one safety-orange accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Jobber first: OAuth, map line items (or notes if SKU unknown), append customer_note. Default: do not auto-complete the visit unless the shop setting says so.
-Housecall Pro: same mapping.
-ServiceTitan: typed client plus partner-pending flag; if no API access, email the office a formatted closeout and mark writeback manual.
+**4. Branding Package**
 
-Idempotency key: sha256 of job_id plus payload version. Retry 429/5xx three times.
-Stripe seats = active technicians; deactivate at period end. invoice.paid unlocks recording.
-
-Admin replay for failed jobs. Never auto-retry inventory decrements without a new confirm — double-decrement loses the shop.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Sayso: a wordmark and an icon that suggest a speech bubble shaped like a wrench head.
+Colors: off-white, near-black and one safety orange. Type: Geist, set large for use with gloves.
+Deliverables: wordmark, icon, three card styles (what we did, parts, customer note) that differ by icon as well as color, a recording state, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three card styles are distinguishable without color.
 ```
 
 ## Sources

@@ -83,19 +83,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "n8n Freelancer Academy," backed by Convex. Model these Convex tables: users (id, email, name, tier: "free" | "membership" | "agency" | "elite", stripeCustomerId, certified: boolean), workflows (id, title, category, description, jsonExport, tierRequired), cohortSessions (id, title, scheduledAt, muxAssetId, briefMarkdown), submissions (id, userId, workflowJson, score, feedback, gradedAt), jobPosts (id, companyName, budgetCents, description, status, postedBy), and placements (id, jobPostId, freelancerId, feeCents, status). Wire Stripe Billing with four products: Free, Membership ($49/mo), Agency Ready ($149/mo), and Elite ($499 one-time), plus a one-time Certification SKU. Gate every course and Vault route by the user's tier. Add env vars STRIPE_SECRET_KEY, MUX_TOKEN_ID, MUX_TOKEN_SECRET, and ANTHROPIC_API_KEY.
+Build the weekend MVP of the "n8n Freelancer Academy": a Workflow Vault of ready-made n8n workflows and an AI grader that scores a member's own workflow against a real client brief. Membership level is set by hand this weekend.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the grading. Grading runs after the response returns, and the page updates when it finishes. Deploy on Vercel.
+
+Tables (Row Level Security on; members read the vault by level and only their own submissions):
+- profiles(user_id, display_name, tier, certified boolean)  tier is free or member, and you change it by hand
+- workflows(id, title, category, description, json_export jsonb, tier_required)
+- briefs(id, title, brief_markdown, scheduled_at)
+- submissions(id, user_id, brief_id, workflow_json jsonb, score, feedback jsonb, facts jsonb, status, graded_at)  status is pending, graded or failed
+
+Screens: /login, /vault, /vault/[id], /briefs/[id] (paste a workflow and see the grade).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or one-time purchases, video hosting, a community, a job board or placements, certification exams, live sessions.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Workflow Vault and the AI auto-grader. The Vault lists workflows filtered by the current user's tier; each entry shows title, category, a description, and a "Copy JSON" button that returns the n8n export only if the user's tier meets tierRequired. Then build a submission flow: a member pastes their own n8n workflow JSON against a cohort brief, and a Convex action sends it to the Claude API with a rubric prompt that scores structure, error handling, and node efficiency from 0 to 100 and returns three specific, actionable feedback notes tied to node names. Persist the score and feedback on the submissions table and show them inline. Handle large JSON exports by truncating node parameters before sending, and never block the UI on grading—run it as a background action and update reactively.
+Build the one feature that proves the Academy: a grade a member can act on, tied to nodes that really exist in their workflow.
+1. The Vault lists workflows with their title, category and description. Copy JSON works only when the member's tier meets tier_required; otherwise the button explains the level needed.
+2. On /briefs/[id], a member pastes an n8n workflow export. Reject text that is not valid JSON or has no nodes.
+3. Clean the export before use: remove every credentials block and any value that looks like a key or token, and cut each node's parameters to 500 characters. Save the cleaned JSON.
+4. Compute facts in code and save them to facts: node count, node types, whether an error trigger node exists, how many nodes set continue-on-fail or retry, and whether any node is disabled.
+5. After responding, grade in the background: send the brief, the cleaned workflow and the facts to the Anthropic API with a strict JSON schema { score: number from 0 to 100, notes: [{ node_name, note }] } scored on structure, error handling and node efficiency, with exactly 3 notes.
+6. Drop any note whose node_name is not a node in the workflow. If fewer than 3 notes remain, say so rather than inventing nodes. Save the score and notes, set status graded and let the page update on its own.
+Rules: never keep the original, uncleaned JSON. Never block the page while grading.
+Empty state: with no vault entries, show a message that the first workflows are coming.
+Done when: a free member cannot copy a member-only workflow, a pasted export with a fake API key is saved without the key, a grade returns a score and notes that all name real nodes, and an invented node name is dropped.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for n8n Freelancer Academy. Hero headline: "Stop building $400 automations you should charge $2,500 for." Sub: "The training, templates, and job board that turn n8n builders into well-paid automation specialists." Sections: the gap (free tutorials teach the tool, nobody teaches the business), how it works (the 4 steps: join a tier, learn on real briefs, ship from the Vault, get placed), a Workflow Vault preview, tier pricing (Free, Membership $49/mo, Agency Ready $149/mo, Elite $499) anchored against "one client project pays for a year," social proof pulled from a 104,000-member subreddit and a 74,000-member community, and an FAQ on certification, the job board, and refunds. Use the Geist font, a clean off-white background, a single mint accent, and generous whitespace. Primary CTA: "Get the free Starter Kit" with an email capture.
+Build a one-page landing site for the n8n Freelancer Academy, training for people who sell n8n automations.
+Hero: "Stop building $400 automations you should charge $2,500 for." Sub: "Real client briefs, a vault of workflows you can adapt and a grader that tells you what to fix." One button: Join the waitlist for the free Starter Kit.
+Sections: the gap (free tutorials teach the tool and nobody teaches the business), how it works in four steps (take a brief, build, get graded, ship from the vault), a Vault preview with three sample entries, and an FAQ on what the grader checks, what is coming next (live sessions, a job board and certification) and how your workflow files are handled.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean off-white background, one mint accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the n8n Freelancer Academy: a wordmark and an icon that suggest three connected nodes that read as a graduation cap.
+Colors: off-white, ink and one mint. Type: Geist, with Geist Mono for node names.
+Deliverables: wordmark, icon, a score ring from 0 to 100, three feedback note styles (structure, errors, efficiency) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three note styles are distinguishable without color.
 ```
 
 ## Sources

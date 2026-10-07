@@ -83,19 +83,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "ClearChain" for a supply chain transparency SaaS. Provision Supabase with these tables: brands (id, name, plan, markets TEXT[]), suppliers (id, brand_id, name, tier INT, country, risk_score FLOAT, status), materials (id, supplier_id, name, origin_country, certification_type), certifications (id, supplier_id, type, issuer, issued_at, expires_at, doc_url, confidence FLOAT), chain_edges (id, brand_id, from_supplier_id, to_supplier_id), compliance_flags (id, brand_id, supplier_id, framework, severity, message, resolved BOOL). Enable row-level security so each brand only reads rows where brand_id matches its auth context. Add env vars ANTHROPIC_API_KEY, TEXTRACT_KEY, STRIPE_SECRET_KEY. Install the Anthropic SDK, the Stripe SDK, and Inngest. Scaffold a dashboard route, a public /transparency/[brand-slug] route, and a Stripe billing page with Free, Starter $299, Growth $899, and Scale $2500 plans.
+Build the weekend MVP of "ClearChain": a brand uploads supplier certificates, the app extracts the facts, the brand confirms them, and a public page shows only what the brand chose to publish. It records documents on file and does not verify them.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), pdf-parse for text PDFs, the Anthropic API for extraction. The compliance checks are plain rules the brand edits. Scanned images and OCR are not part of this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, a brand reads only its own rows; the public page reads only rows marked public through a server route):
+- brands(id, user_id, name, slug, watchlist_countries text[], required_cert_types text[])
+- suppliers(id, brand_id, name, tier, country, materials jsonb, status, is_public boolean)
+- certifications(id, supplier_id, type, issuer, issued_at, expires_at, file_path, confidence, source_quote, confirmed_at)
+- compliance_flags(id, brand_id, supplier_id, rule, severity, message, resolved boolean)
+- chain_edges(id, brand_id, from_supplier_id, to_supplier_id)
+
+Screens: /login, /suppliers (the list and flags), /upload, /review (confirm extractions), /graph (a simple tier view), /transparency/[slug] (public).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or metered supplier pricing, ERP or e-commerce connections, OCR for scanned files, Inngest or a queue, encoded rule sets for named laws, a consumer scan label.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the document ingestion pipeline. Create an upload endpoint that accepts supplier PDFs and images. For each file: run OCR via Textract to get raw text, then send that text to Claude with a strict JSON schema requesting { supplier_name, tier, country, materials: [{ name, origin_country }], certifications: [{ type, issuer, issued_at, expires_at }], confidence }. Persist the extracted records to Supabase. If confidence is below 0.8 on any field, flag it for one-click human confirmation in the dashboard rather than saving silently. After extraction, run a compliance check: for each supplier, compare its certifications and origin data against the rule set for the brand's markets (EU CSRD, German Supply Chain Act, US UFLPA) and write compliance_flags rows for any expired cert, missing document, or high-risk region. Run the whole pipeline as an Inngest background job so large batch uploads do not block the request.
+Build the one feature that proves ClearChain: facts that come from a document, are confirmed by a person and only then appear publicly.
+1. Upload supplier PDFs to a private bucket and extract their text with pdf-parse. If a PDF has no text layer, say so and skip it.
+2. Send the text to the Anthropic API with a strict JSON schema { supplier_name, country, tier, materials: [{ name, origin_country }], certifications: [{ type, issuer, issued_at, expires_at, source_quote }], confidence: number from 0 to 1 }.
+3. Check in code that every source_quote appears in the text. Drop any certification that does not. Send anything with confidence under 0.8, or any dropped field, to /review for one-click confirm or edit. Nothing is saved as confirmed until a person does it.
+4. Run the brand's own rules after each confirmation: a certificate that has expired, a certificate that expires within 60 days, a required certificate type with no document, and a supplier in a country on the brand's watchlist. Write a compliance flag for each, with the rule that produced it.
+5. /suppliers lists suppliers with their open flags. /graph shows suppliers by tier with their links.
+6. The brand marks each supplier public or not. /transparency/[slug] shows only confirmed, public suppliers, their countries, materials and certificate types with expiry dates, and the line "Documents on file, confirmed by the brand. Not independently verified."
+Rules: never write "verified" or claim compliance with any law. Never show an unconfirmed field publicly. Say which rules the flags used.
+Empty state: with no suppliers, show the upload box and how to set required certificate types.
+Done when: a sample certificate PDF produces a supplier with a quote that is in the text, a low-confidence field waits in review, an expired certificate raises a flag, and the public page shows nothing that is not confirmed and public.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for ClearChain. Hero headline: "Prove where your products come from, before your buyers ask." Sub: "Turn a folder of messy supplier PDFs into a verified supply chain map, a passing audit report, and a transparency label your customers can scan." Sections: a live demo showing a PDF certificate transforming into a structured supplier record, the problem (midsize brands cannot answer buyer and regulator questions they now legally must), how it works (the 4 steps: connect, extract, score, publish), pricing (Free Scorecard / Starter $299 / Growth $899 / Scale $2500) anchored against a six-figure SAP callout, and an FAQ covering data privacy, supported regulations, and extraction accuracy. Use the Geist font, a soft lavender accent, generous whitespace, and a near-black on off-white palette. Primary CTA: "Get your free transparency scorecard."
+Build a one-page landing site for ClearChain, supplier documents turned into a clear supply chain record.
+Hero: "Know where your products come from before your buyers ask." Sub: "Turn a folder of supplier PDFs into a confirmed record, a list of what is expired or missing and a public page you control." One button: Join the waitlist.
+Sections: a PDF certificate becoming a supplier record in a sample, how it works in four steps (upload, extract, confirm, publish), and an FAQ on what is checked (rules you set), what is not claimed (verification or legal compliance) and how extraction accuracy is handled (a person confirms anything unsure).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, near-black on off-white, one lavender accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ClearChain: a wordmark and an icon that suggest three linked nodes forming a clear lens.
+Colors: near-black, off-white and one lavender. Type: Geist, with tabular numbers for dates.
+Deliverables: wordmark, icon, three certificate chips (current, expiring, expired) that differ by shape as well as color, a public transparency page header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the certificate chips are distinguishable without color.
 ```
 
 ## Sources

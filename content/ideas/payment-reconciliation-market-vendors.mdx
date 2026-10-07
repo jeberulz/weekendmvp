@@ -71,22 +71,62 @@ Variable costs are low when imports are batch jobs. A Pro account can run on a f
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Reconciliation Schema and Importer**
+**1. Project Setup**
 
 ```text
-Create a TypeScript Next.js app for market-vendor payment reconciliation. Use Postgres tables for vendors, payment_sources, sales, payment_transactions, match_candidates, exceptions, close_reports, and audit_events. Build CSV importers for Square, Venmo, PayPal, bank exports, and a generic schema. Normalize timestamps, amounts, fees, and references without losing the original row. Never delete source rows; every match or correction must be append-only in the audit log.
+Build the weekend MVP of "Market Close": a vendor who just finished a market day enters the cash total, uploads the payment exports and sees in plain words what matched, what did not and how much is unexplained.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to suggest a match only when the rules cannot decide. Payments come in by CSV (Square and a generic format). It is mobile first and usable with one hand. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, source, filename, row_count, created_at)
+- sales(id, user_id, market_name, sold_at, amount_cents, method, note)
+- payment_transactions(id, user_id, import_id, source, external_ref, occurred_at, gross_cents, fee_cents, net_cents, raw_row jsonb)
+- matches(id, sale_id, payment_id, state, score, reason, confirmed_at)  state is matched, ambiguous or unmatched
+- exceptions(id, user_id, kind, ref_id, status, note)
+- audit_events(id, user_id, action, detail jsonb, created_at)  append-only; add a trigger that blocks update and delete
+
+Screens: /login, /close (five steps), /sales (add a sale by hand), /reports.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an insights add-on, Venmo, PayPal or bank importers, Plaid or provider APIs, a PDF library, multi-vendor accounts.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Explainable Matching Engine**
+**2. Core Feature**
 
 ```text
-Implement a matching engine for sales and payment transactions. Score candidates using exact amount, time window, provider reference, customer note, and payment source. Return matched, ambiguous, and unmatched states with reasons. Use an LLM only to suggest a match when deterministic rules are inconclusive; return JSON with candidate_ids, explanation, confidence, and required_user_confirmation. Do not mark money reconciled without confirmation below 0.95 confidence.
+Build the one feature that proves Market Close: a five-minute close that explains every dollar or says exactly how much it cannot.
+1. Importers: a Square CSV and a generic CSV with columns date, amount, fee, reference, note. Normalize time, amounts and fees to cents and keep the original row in raw_row. Never delete a source row.
+2. Sales are added by hand (amount, method, time, note) or from a simple product list.
+3. Match sales to payments in code. Score each candidate on exact amount, a time window of 2 hours, a matching reference or note, and the payment source. Return matched, ambiguous or unmatched with the reasons. Flag duplicate payments and refunds as exceptions.
+4. Only for ambiguous cases, send the sale and up to 5 candidate payments to the Anthropic API with a strict JSON schema { payment_id: string or null, confidence: number from 0 to 1, explanation: string }. It may only choose from the candidates. Below 0.95 confidence, ask the vendor to confirm before anything counts as reconciled.
+5. The close flow: step 1 cash total and market name, step 2 upload the payment files, step 3 totals for sales, payments, fees, matched amount and the unexplained difference in plain words ("You sold $842. Square paid $716 after $21 in fees. Cash was $120. $5 is unexplained."), step 4 resolve exceptions one at a time, step 5 export a CSV and a printable report for an accountant.
+6. Write an audit_events row for every match, correction and confirmation.
+Rules: every number traces to rows. Corrections add rows and never edit history. Optimize for one hand and slow connections.
+Empty state: with no data, show both CSV formats and a sample day.
+Done when: a sample day of 20 sales and 18 payments including a duplicate and a refund produces matched, ambiguous and unmatched states, the unexplained difference equals sales minus payments net of fees minus cash, each decision is in the audit log, and no source row can be deleted.
 ```
 
-**3. Market-Day Close UX**
+**3. Landing Page**
 
 ```text
-Build a mobile close flow for a vendor who just finished a market. Step 1 asks for cash total and market name. Step 2 accepts payment CSV uploads. Step 3 shows total sales, total payments, fees, matched amount, and unexplained difference in plain language. Step 4 lets the user resolve exceptions one at a time. Step 5 exports a daily PDF and CSV report for an accountant. Optimize for one hand, poor connectivity, and a five-minute completion time.
+Build a one-page landing site for Market Close, an end-of-day reconciliation for market vendors.
+Hero: "Close your market day in five minutes." Sub: "Add your cash, upload your payment exports and see what matched and what is off. One page for your accountant." One button: Join the waitlist.
+Sections: a phone-sized sample close with a plain-words summary and a $5 unexplained line, how it works in four steps (record, import, match, export), and an FAQ on which exports work today (Square and a generic file), what happens with unclear matches (you confirm them) and how your data is stored and deleted.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one market-green accent, large touch targets.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Market Close: a wordmark and an icon that suggest a market stall awning over a check mark.
+Colors: warm off-white, deep ink and one market green. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, three match states (matched, check this, unmatched) that differ by shape as well as color, a printable accountant report header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three match states are distinguishable without color.
 ```
 
 ## Sources

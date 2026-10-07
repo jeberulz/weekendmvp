@@ -99,29 +99,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Next.js 14 App Router (TS, Tailwind), Clerk auth, Convex or Supabase.
+Build the weekend MVP of the "First International Hire Assistant": a founder answers a short intake about a first hire in another country and gets a recommended path (contractor, local entity or employer of record), a country pack and 90-day reminders. Start with one country, Portugal. It is not legal advice.
 
-Tables: founders; hire_files (country, role, start_date, cash_comp_cents, has_local_entity, path unknown|contractor|local_entity|eor, visa_needed); country_templates (country_code, version, lawyer_signed_at, checklist, contract_markdown, tax_notes, visa_notes); packs; quotes (vendor deel|remote|remofirst, monthly_cents, deposit_cents); reminders.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for the reminder emails. The path rules and the country pack are plain data and code, with no model. A Vercel Cron route sends due reminders. Deploy on Vercel.
 
-Founder-scoped reads. Routes: / marketing, /app/hires/new, /app/hires/:id, /playbooks/:country. Stripe: $199 pack, $99/mo desk, $2500 invoice.
+Tables (Row Level Security on, a founder reads only their own rows; country_templates is read-only to signed-in users):
+- hire_files(id, user_id, country_code, role, start_date, cash_comp_cents, has_local_entity boolean, wants_path, visa_needed boolean, path, reasons jsonb)  path is contractor, local_entity or eor
+- country_templates(id, country_code, version, lawyer_signed_at, checklist jsonb, contract_markdown, tax_notes, visa_notes, reminder_offsets jsonb)
+- packs(id, hire_file_id, template_version, content jsonb, created_at)
+- reminders(id, hire_file_id, due_on, title, sent_at)
+
+Screens: /login, /hires/new (the intake), /hires/[id] (path, reasons and pack), /playbooks/portugal (public).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing or paid packs, a model that writes legal text, partner quote APIs for Deel, Remote or RemoFirst, other countries, visa filing, a counsel-review queue, Slack alerts.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Path Engine + Country Pack**
+**2. Core Feature**
 
 ```text
-Path rules as data: no entity + employee-like control → lean eor, flag misclassification if they insist contractor; visa or UK sponsor licence → flag visa_track; has entity → local_entity unless they want eor. Persist reasons. Not legal advice.
-
-Pack: load lawyer-signed country_templates. Claude fills the template (cached) from the hire file. JSON: checklist, contract_fill_ins, tax_summary, visa_summary, reminder_dates. Reject ungrounded items. Store template_version + prompt_hash. PDF via @react-pdf/renderer.
-
-If path is eor, fan out Deel/Remote/RemoFirst quotes (HTTP or deep-link). UI: DIY pack vs each vendor monthly + deposit.
+Build the one feature that proves the First International Hire Assistant: an intake that picks a path with stated reasons, and a pack that makes the first 90 days concrete.
+1. The intake asks for country (Portugal only), role, start date, yearly cash compensation, whether the company already has a local entity, whether the founder wants to be the employer, and whether the hire needs a visa.
+2. Pick the path with rules written as a data table, not a model. No local entity and employee-like control (set hours, company tools, one client) means lean employer of record, and flag misclassification risk if the founder insists on a contractor. A visa need adds a visa flag. A local entity means local_entity unless the founder chooses employer of record. Save the path and a list of plain-language reasons.
+3. Build the pack from the country template: the checklist, the contract text with the hire's role, start date and pay filled in, tax notes and visa notes. Show lawyer_signed_at, or a red banner "This template has not been reviewed by a lawyer" when it is empty. Save template_version with the pack.
+4. Create reminders from the template's reminder_offsets (days from the start date), such as registrations and the end of probation.
+5. A daily cron route (protected by CRON_SECRET) emails each due reminder through Resend and sets sent_at, so a reminder is never sent twice.
+6. Offer a printable pack page the founder can save as a PDF.
+Rules: "Not legal advice. Have a lawyer check this before you sign" appears on every screen and in every email. The contract text is only the template with fields filled in; never rewrite clauses.
+Empty state: with no hires, show the intake and the Portugal playbook link.
+Done when: an intake with no entity and fixed hours returns an employer-of-record lean with reasons, the pack fills the template and shows the review banner, reminders land on the right dates, and the cron sends each one once.
 ```
 
-**3. Landing + Playbook Gate + Reminders**
+**3. Landing Page**
 
 ```text
-Hero: “Your first hire is in another country. You do not need an EOR yet — you need a path.” Pricing: free playbook / $199 pack / $99 desk / $2,500 done-with-you. CTA: Portugal playbook. Visual: dark desk, passport, contract folder, globe paperweight, lavender. No people.
+Build a one-page landing site for the First International Hire Assistant, for founders making a first hire abroad.
+Hero: "Your first hire is in another country. You do not need an employer of record yet. You need a path." Sub: "Answer a few questions. Get a recommended route, a country pack and reminders for the first 90 days." One button: Join the waitlist for the Portugal playbook.
+Sections: how it works in four steps (intake, path, pack, reminders), a sample path card with its reasons, a plain box saying what it is not (not legal advice, not an employer of record, no filings made for you), and an FAQ on which countries come next, what the pack contains and why a lawyer still reviews it.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark desk-like background, one lavender accent, no photos of people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-/playbooks/portugal: MDX + email gate, then Stripe for the pack. Hourly cron: Resend due reminders, idempotent. Concierge form converts a pack buyer to a $2,500 engagement. Software schedules; a human files visas.
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the First International Hire Assistant: pick a short working name, then design a wordmark and an icon that suggest a dotted path ending at a stamp.
+Colors: deep ink, off-white and one lavender. Type: Geist.
+Deliverables: wordmark, icon, three path chips (contractor, local entity, employer of record) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three chips are distinguishable without color.
 ```
 
 ## Sources

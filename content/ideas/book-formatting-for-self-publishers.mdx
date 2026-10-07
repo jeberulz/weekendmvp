@@ -86,46 +86,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) web app called "FormatFlex" for one-click book formatting.
+Build the weekend MVP of "FormatFlex": upload a .docx manuscript and get a formatted EPUB with a working table of contents and a paginated print preview you can save as a PDF. One template and three trim sizes this weekend.
 
-Set up:
-- Supabase auth (email + Google) and Postgres tables: users (id, email, plan), projects (id, user_id, title, template_id, trim_size, status), exports (id, project_id, format ENUM['pdf','epub'], file_url, created_at)
-- File upload to Supabase Storage / S3 accepting .docx and .doc
-- Stripe products: Free, PerBook ($29 one-time), Pro ($199/yr), Studio ($49/mo seats)
-- Env vars: OPENAI_API_KEY, STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Mammoth to read the .docx, Paged.js in the browser for the print preview, JSZip to build the EPUB, the Anthropic API only when a manuscript has no real headings. Deploy on Vercel.
 
-Include TypeScript, error handling, and a clean dashboard listing a user's book projects.
+Tables (Row Level Security on, each user reads only their own rows; templates are read-only):
+- projects(id, user_id, title, template_id, trim_size, status, structure jsonb)  trim_size is 5x8, 5.25x8 or 6x9
+- exports(id, project_id, format, file_path, created_at)  format is epub
+- templates(id, name, css, metadata jsonb, trim_sizes text[])
+
+Screens: /login, /projects, /projects/[id] (upload, template and trim size, live preview), /projects/[id]/export.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, per-book or yearly plans, watermarks, a server PDF renderer or Puppeteer, more than one template, children's or romance templates, Google Docs import.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Formatting Pipeline**
+**2. Core Feature**
 
 ```text
-Build the manuscript-to-book pipeline for FormatFlex.
-
-Steps:
-1. Accept an uploaded .docx and parse it with Mammoth.js into a normalized HTML/AST document model, preserving headings, images, italics, and block quotes.
-2. Send ambiguous structure to gpt-4o-mini with a strict JSON schema:
-   { chapters: [{ title: string, start_index: number }], scene_breaks: number[], front_matter_end: number }
-   to detect chapter starts, scene breaks, and where front matter ends.
-3. Apply a selected CSS template (trim size, margins, running heads, chapter styling) and render a print PDF using Paged.js in headless Puppeteer.
-4. Generate a reflowable EPUB with a hyperlinked table of contents and validate it against EPUBCheck.
-5. Store both files, return signed download URLs, and show a paginated live preview.
-
-Handle large manuscripts by streaming/chunking and report render progress to the client.
+Build the one feature that proves FormatFlex: a manuscript becomes a clean EPUB and a believable print preview without hand layout.
+1. Accept a .docx up to 10 MB. Read it with Mammoth into HTML that keeps headings, italics, block quotes and images.
+2. Detect structure in code first: a Heading 1 starts a chapter, a line of only asterisks or a centered ornament is a scene break, and the front matter ends at the first chapter. Only when there are no headings, ask the Anthropic API for JSON { chapters: [{ title, start_index }], scene_breaks: number[], front_matter_end: number } and check that every index is in range and in order, or reject it. Save the structure so the result is reproducible.
+3. Build the EPUB 3 with JSZip: one file per chapter, a navigation document with a hyperlinked table of contents, the template's stylesheet and the book's metadata. Save it and offer a download.
+4. The template is a CSS Paged Media stylesheet for literary fiction. The trim size selector sets the page size, margins and gutter. Running heads show the title and the chapter, and page numbers restart at 1 after the front matter.
+5. The live preview paginates the first chapter with Paged.js in the browser within a couple of seconds of any change. A Print button opens the browser's print dialog so the author can save the pages as a PDF.
+6. Save template_id and trim_size on the project.
+7. In a test script, validate a sample EPUB with the EPUBCheck command line tool (it needs Java) and fail on any error.
+Rules: do not claim the files meet any printer's or store's rules; say "built to common print specs, check your printer's current requirements". Never rewrite the author's words.
+Empty state: with no projects, show the upload box and the file size limit.
+Done when: a sample manuscript produces an EPUB that passes EPUBCheck, every table of contents link opens its chapter, the preview shows page numbers restarting after the front matter, changing the trim size changes the page layout and an invalid structure from the model is rejected.
 ```
 
-**3. Template + Live Preview**
+**3. Landing Page**
 
 ```text
-Add a template picker and live preview to FormatFlex.
+Build a one-page landing site for FormatFlex, book formatting for self-publishers.
+Hero: "Upload your manuscript. Get a book." Sub: "A clean EPUB and a print-ready preview from a Word file, with chapters, a table of contents and page numbers handled for you." One button: Join the waitlist.
+Sections: a before and after of a manuscript page and its formatted page, how it works in four steps (upload, pick a template and trim size, check the structure, export), and an FAQ on which files work (.docx), what the files are built to (common specs, check your printer's rules) and what is coming (more templates and a PDF download).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm paper background, ink type, one burgundy accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Requirements:
-- A gallery of interior templates (literary fiction, nonfiction, romance, children's) each defined as a CSS Paged Media stylesheet plus metadata (recommended trim sizes, fonts).
-- A trim-size selector (5x8, 5.25x8, 6x9) that updates margins and gutter.
-- A live preview pane that re-renders the first chapter within one to two seconds of any change using the same Paged.js engine as the final export.
-- Watermark the preview for Free-plan users and remove it after a per-book purchase or Pro subscription.
+**4. Branding Package**
 
-Store the chosen template_id and trim_size on the project so exports are reproducible.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for FormatFlex: a wordmark and an icon that suggest a page whose lines straighten into a column.
+Colors: warm paper, ink and one burgundy. Type: Geist for the interface and a book serif for sample pages.
+Deliverables: wordmark, icon, a template card style, a trim-size chip set (5x8, 5.25x8, 6x9) that differs by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the trim-size chips are distinguishable without color.
 ```
 
 ## Sources

@@ -72,43 +72,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build Vehicle Recall Alert Service: a Next.js + Supabase app that stores VINs, polls NHTSA, and dispatches SMS/email alerts.
+Build the weekend MVP of "Vehicle Recall Alerts": enter a VIN once, and get a text when a new safety recall is published for your make, model and year. The alert says it may affect your car and points to the official VIN lookup to confirm.
 
-Requirements:
-- Landing page with a VIN entry form that validates via NHTSA vPIC decoder API
-- Account flow: email signup, verify SMS number, store VIN + decoded make/model/year
-- Supabase schema: users, vehicles (vin, make, model, year, user_id), recall_matches (vehicle_id, recall_id, nhtsa_campaign_no, sent_at)
-- Nightly Vercel Cron: pull fresh recalls, cross-reference each tracked vehicle, insert matches
-- Alert dispatcher: Twilio SMS + Resend email the moment a match is inserted
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the NHTSA vPIC API to decode a VIN and the NHTSA recalls API for recall notices, Twilio for the text. A Vercel Cron route runs nightly. Deploy on Vercel.
 
-Ship the landing + VIN form + first-alert path. Add lifetime tier after monthly tier proves.
+Tables (Row Level Security on, each user reads only their own rows; recalls is shared and read-only):
+- profiles(user_id, phone, sms_opt_in_at)
+- vehicles(id, user_id, vin, make, model, year, decoded_at, created_at)
+- recalls(id, campaign_number, make, model, year, summary, consequence, remedy, report_received_on, fetched_at)  campaign_number is unique per make, model and year
+- recall_matches(id, vehicle_id, recall_id, first_seen_at)  unique on vehicle_id and recall_id
+- alerts_sent(id, match_id, channel, sent_at, delivered_at, provider_sid, status, latency_ms)
+
+Screens: /login, /vehicles (add a VIN and see its open recalls), /settings (phone and opt-in).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CRON_SECRET.
+
+Do not build: billing, lifetime or monthly plans, an email alert, a dealer locator, a lifetime tier, matching by anything but make, model and year.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. NHTSA Sync + Matching**
+**2. Core Feature**
 
 ```text
-Build the recall sync + matching engine.
-
-1. Nightly Vercel Cron (2am UTC) hits NHTSA Recalls API with the full list of distinct make/model/year tuples in your user base
-2. For each tuple, receive any recalls published in the last 24 hours; upsert to a recalls table keyed by NHTSACampaignNumber
-3. For each new recall, find all vehicles matching make + model + year-range and insert a recall_matches row
-4. Dedupe by (vehicle_id, nhtsa_campaign_no) so a user never gets the same alert twice
-5. Queue the alert dispatcher for each new match
-
-Respect the NHTSA rate limit (be a good citizen). Cache responses for 6 hours.
+Build the one feature that proves Vehicle Recall Alerts: one text for a new recall, never twice, with honest wording.
+1. Validate a VIN in code before any call: 17 characters, no I, O or Q, and a correct check digit in position 9. Then decode it with the NHTSA vPIC API to make, model and year, and show a clear message when the decode returns an error.
+2. Save the vehicle. Fetch the recalls for its make, model and year and show every open recall on the vehicle page as "already open". These do not trigger a text.
+3. A nightly cron route (protected by CRON_SECRET) takes the distinct make, model and year combinations of all tracked vehicles, fetches their recalls (cache a response for 6 hours and be gentle with the rate limit) and upserts them by campaign number.
+4. For each recall that is new to a vehicle after the vehicle was added, insert a recall_matches row. The unique key means a vehicle never gets the same recall twice.
+5. Text the opted-in owner: "Recall notice that may affect your [year] [make]: [summary, 100 characters]. Check your VIN: [link]". The link opens the vehicle page, which links to NHTSA's own VIN lookup to confirm.
+6. Record every text in alerts_sent. When Twilio reports delivery, set delivered_at and the latency. If a text fails, retry twice and then show a banner asking the user to check their number.
+Rules: never say a vehicle is definitely affected, because matching is by make, model and year. Honor STOP. Never alert on recalls that were already open when the vehicle was added.
+Empty state: before adding a vehicle, show the VIN field and where to find a VIN.
+Done when: a bad check digit is rejected, a valid VIN decodes, existing recalls show without a text, a new fixture recall texts once, a second cron run texts nothing and a failed text shows the banner.
 ```
 
-**3. Alert Dispatcher**
+**3. Landing Page**
 
 ```text
-Ship the multi-channel alert.
+Build a one-page landing site for Vehicle Recall Alerts, a text when a recall hits your car.
+Hero: "Enter your VIN once. Hear about a recall the day it is published." Sub: "No mailing list and no manual checks. We watch the official recall notices and text you when one may affect your make, model and year." One button: Join the waitlist.
+Sections: a sample text and vehicle page, how it works in three steps (enter your VIN, we watch nightly, you get a text), and an FAQ on what a possible match means (confirm with the official VIN lookup), which countries are covered (the US first) and how your number is used.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one deep blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-When a recall_matches row is inserted:
-1. Fetch full recall detail from NHTSA (summary, consequence, remedy)
-2. SMS via Twilio: "Recall alert: [recall summary in 120 chars]. Details: [short link to dashboard]"
-3. Email via Resend with React Email template: full recall text, risk, remedy steps, dealer locator link (NHTSA provides one)
-4. Record alerts_sent with channel + provider message ID for delivery audit
-5. If SMS fails (carrier reject, bounced number), fall back to email with a prompt to update the number
+**4. Branding Package**
 
-The SMS is the product. A missed or delayed alert erodes trust permanently. Instrument delivery latency tightly.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Vehicle Recall Alerts: pick a short working name, then design a wordmark and an icon that suggest a car silhouette with a small bell.
+Colors: off-white, near-black and one deep blue. Type: Geist, with Geist Mono for VINs.
+Deliverables: wordmark, icon, two recall chips (already open, new) that differ by shape as well as color, an alert text layout under 160 characters, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two recall chips are distinguishable without color.
 ```

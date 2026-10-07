@@ -88,46 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) app called ProofCheck for small landlords. Convex backend.
+Build the weekend MVP of "ProofCheck": a small landlord uploads an applicant's documents and gets a short list of things worth checking before signing a lease. It supports a decision. It never approves, denies or scores a person.
 
-Schema:
-- landlords (id, user_id, plan: free|pro|portfolio, unit_count, stripe_customer_id)
-- properties (id, landlord_id, address, rent_cents)
-- applicants (id, property_id, full_name, email, claimed_income_cents, claimed_employer, status)
-- packets (id, applicant_id, storage_key, sha256, uploaded_at SERVER-SET, source: upload|pasted_report)
-- findings (id, packet_id, kind: metadata|income|employment|address|public_record|inconsistency, severity: info|warn|high, evidence_quote, explanation, confidence)
-- comparisons (id, property_id, applicant_ids[], summary)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API to read pay stubs, pdf-parse and pdf-lib to read text and metadata. The checks that can be done in code are done in code. Deploy on Vercel.
 
-Auth: landlord can only read rows they own. Stripe products: Pro $29/mo (max 4 units), Portfolio $79/mo (max 20). Free: 1 packet/month.
+Tables (Row Level Security on, a landlord reads only their own rows):
+- properties(id, user_id, address, rent_cents)
+- applicants(id, property_id, label, claimed_income_cents, claimed_employer)  label is a short tag such as "Applicant A"; no other personal details are stored
+- packets(id, applicant_id, file_path, sha256, uploaded_at, doc_kind)  uploaded_at is set by the server
+- findings(id, packet_id, kind, severity, evidence_quote, explanation, human_check, confidence)  kind is metadata, income, employment or inconsistency; severity is info, warn or high
 
-Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, R2 or S3 credentials.
+Screens: /login, /properties, /applicants/[id] (upload and the findings card), /applicants/[id]/checklist (printable).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
 
-Product rule: never output approve/deny. Every generated card must include: "Decision support only. Not a consumer report. Not legal advice. The landlord must make the housing decision."
+Do not build: billing, plans or a portfolio tier, a composite score, ranking or comparing applicants, public records or eviction searches, credit data, automatic rejection.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Forensic Packet Analyzer**
+**2. Core Feature**
 
 ```text
-Build POST /api/packets/:id/analyze as a background Convex action.
-
-Steps:
-1. Load original bytes. Persist sha256. Extract PDF text and metadata (creator, creation/mod dates, font names, page count).
-2. Call Claude with a JSON schema:
-   { flags: [{ kind, severity, evidence_quote, explanation, human_check }], income_vs_rent: { rent_cents, stated_income_cents, ratio, note }, consistency: { employment_vs_stubs, dates_vs_metadata, phone_risk } }
-   Instructions: quote evidence. Do not invent credit scores, criminal records, or eviction hits. If a bureau PDF was uploaded, summarize what IT says and separately list what the stubs show. If they disagree, flag it.
-3. Optional public-records adapter: search name + recent cities; if the adapter fails, write finding kind=public_record severity=info explanation="Could not verify; search your county portal."
-4. Write findings rows. Render a risk card: 3–7 bullets, each tied to a finding id, plus a verify-before-lease checklist.
-5. If the property has 2+ applicants this week, generate a comparison that ranks by documented consistency, not protected class or a hidden composite. Never auto-reject. Log every model output for fair-housing review.
+Build the one feature that proves ProofCheck: flags that quote their evidence and say what a human should verify.
+1. Upload a PDF (pay stub, bank statement or employment letter) to a private bucket. Compute and store its sha256 and set uploaded_at on the server.
+2. In code, read the PDF metadata and text: producer and creator tools, creation and modification dates, page count and font names. Raise a flag when the modification date is later than the creation date by more than a day, when the file was created within 2 days before the upload, or when a one-page stub uses more than 3 font families.
+3. For pay stubs, send the text to the Anthropic API with a strict JSON schema { employer_name, gross_per_period, pay_frequency, ytd_gross, quotes: string[] }. Instruct it to ignore names, addresses, age and any family or protected detail, and to use only figures in the document.
+4. Check each quote in code: it must appear in the extracted text, or the field is dropped. Compute in code the income implied by the stub, its difference from claimed_income_cents, and the rent to income ratio.
+5. Save findings. Each has evidence_quote or the metadata value, a plain explanation and a human_check line such as "Call the employer on a number you find yourself, not the one on the stub".
+6. Render a card of 3 to 7 bullets, each tied to a finding, then a printable verify-before-lease checklist. Every card carries: "Decision support only. Not a consumer report. Not legal advice. The landlord makes the housing decision."
+Rules: never output approve, deny or a score. Log every model response for later review. A Delete applicant button removes the files and findings.
+Empty state: a new applicant shows the upload box and the list of documents that help.
+Done when: a test PDF edited after creation raises the metadata flag, a stub whose income differs from the claim by over 10 percent raises an income flag with a real quote, a fabricated quote is dropped, and no screen shows approve, deny or a score.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page site for ProofCheck. Hero: "Screen the story, not just the score." Sub: "Upload the application, the stubs, and the bureau PDF you already bought. We flag fake documents before you hand over the keys."
+Build a one-page landing site for ProofCheck, document checking for small landlords.
+Hero: "Check the story, not just the score." Sub: "Upload the application and pay stubs. Get a short list of things worth verifying before you hand over the keys. You make the decision." One button: Join the waitlist.
+Sections: a scene (a patched PDF and a phone number that goes nowhere), a sample findings card with an evidence quote and a "verify this" line, how it works in four steps (upload, check, review, verify), and a trust block (decision support only, not a consumer report, no approve or deny, no scoring of people). An FAQ on what is stored, how to delete an applicant and why a lawyer should confirm how housing rules apply to you.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark desk-like background, one aubergine accent, no people and no unreadable interface text.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Sections: burner-phone / patched-PDF / $10k–$15k eviction scene; contrast vs tenant deposit apps (this is landlord-side, pre-lease); 4 how-it-works steps; pricing Free / Pro $29 / Portfolio $79 vs SmartMove ~$40/report and AppFolio $1–$3/unit; trust (decision support, not a consumer report); FAQ on FCRA and no auto-deny.
+**4. Branding Package**
 
-Visual: dark desk, lease folder, house keys, aubergine accent, no people, no UI text. CTA: "Score your next applicant."
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ProofCheck: a wordmark and an icon that suggest a document with a magnifier over one line.
+Colors: deep ink, off-white and one aubergine. Type: Geist, with IBM Plex Mono for quoted evidence.
+Deliverables: wordmark, icon, three finding chips (info, check, high) that differ by shape as well as color, a findings card layout that always shows the decision-support line, and one launch graphic.
+Done when: each deliverable is saved in one folder and the finding chips are distinguishable without color.
 ```
 
 ## Sources

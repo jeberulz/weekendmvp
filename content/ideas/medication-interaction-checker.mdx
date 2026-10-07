@@ -91,83 +91,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "CabinetSafe" — a persistent medication interaction monitor for seniors and family caregivers.
+Build the weekend MVP of "CabinetSafe": a person lists every prescription, supplement and over-the-counter medicine once, and the app re-checks the whole list against documented interaction records every time something changes. It reports what the records say. It gives no medical advice.
 
-Supabase schema:
-- users(id, auth_id, email, plan TEXT default 'free', stripe_customer_id)
-- profiles(id, owner_user_id, display_name, birth_year INT, notes TEXT)
-- medications(id, profile_id, rxcui TEXT, display_name TEXT, raw_label TEXT, dose TEXT, form TEXT, kind TEXT CHECK kind IN ('prescription','otc','supplement'), prescriber TEXT, added_at, stopped_at)
-- screens(id, profile_id, run_at, medication_ids UUID[], flag_count INT)
-- flags(id, screen_id, rxcui_a TEXT, rxcui_b TEXT, severity TEXT CHECK severity IN ('major','moderate','minor'), source TEXT, source_url TEXT, raw_record JSONB, plain_explanation TEXT)
-- care_circle_members(id, profile_id, user_id, role TEXT CHECK role IN ('owner','viewer'), invited_at, accepted_at)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the RxNorm API from the US National Library of Medicine to identify drug names. The interaction records are a table you load from published sources, each with a source name and a link. No model writes any medical text. Deploy on Vercel.
 
-RLS: a user reads a profile only if they are the owner or an accepted care_circle_member. Flags inherit profile scoping through screens.
+Tables (Row Level Security on, a user reads only their own profiles; interaction_records is read-only to signed-in users):
+- profiles(id, owner_user_id, display_name, birth_year)
+- medications(id, profile_id, rxcui, display_name, raw_input, dose, kind, prescriber, added_at, stopped_at)  kind is prescription, otc or supplement
+- interaction_records(id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text)  severity is major, moderate or minor
+- screens(id, profile_id, run_at, medication_ids uuid[], flag_count)
+- flags(id, screen_id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text)
 
-Routes: /cabinet/:profileId (the list), /check (free one-off checker, no auth), /summary/:screenId (printable), /circle (invite management).
+Screens: /login, /cabinet/[profileId] (the list and the flags), /summary/[screenId] (one printable page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
 
-Stripe: Family $9/mo and $79/yr, Care Circle $19/mo. Env: SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY, GOOGLE_VISION_KEY, STRIPE_SECRET_KEY.
-
-Accessibility is a hard requirement, not polish: minimum 18px base font, WCAG AA contrast, 44px minimum tap targets, and full keyboard navigation. The primary user may be 75 years old.
+Do not build: billing, plans or a care circle, a camera or label scanner, a model that explains interactions, sharing between accounts, reminders, any dosing or stopping advice.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Normalization + Full-Cabinet Screening Engine**
+**2. Core Feature**
 
 ```text
-Build the screening pipeline. Correctness here matters more than speed — a missed interaction is the failure mode that ends the product.
-
-Step 1 — Normalize:
-For each medication string, call the RxNorm API: GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name={name}&search=2 for approximate matching. If confidence is below threshold or multiple candidates return, do NOT guess — surface a disambiguation UI listing candidates with dose form and strength and make the user pick. Store the chosen rxcui plus the raw string.
-
-Step 2 — Screen all pairs:
-Generate every unordered pair from the profile's active medications (stopped_at IS NULL). For each pair, look up documented interaction records from your ingested interaction dataset keyed on RxCUI. Record severity, the source name, and a source URL for every hit. Persist one screens row and N flags rows.
-
-Step 3 — Rank and suppress:
-Sort flags major > moderate > minor. Display at most the top 3 above the fold; collapse the rest behind "N lower-severity notes". Never render an unranked wall of alerts — alert fatigue is the primary reason clinical decision support gets ignored, and it will do the same here.
-
-Step 4 — Explain:
-For displayed flags only, call Claude Haiku with the retrieved record as context: "Rewrite this documented drug interaction record at a sixth-grade reading level in 2 sentences. State only what the record says. Do not add clinical advice, do not recommend stopping or changing any medication, and do not speculate about this person's situation. End with one specific question they should ask their pharmacist." Render the model output next to a visible link to the source record.
-
-Trigger a full re-screen whenever a medication is added, stopped, or dose-changed. Never let the displayed state be stale relative to the list.
+Build the one feature that proves CabinetSafe: a full-list check that is honest about what it does not know.
+1. Load about 20 interaction records into interaction_records from a CSV you assemble from published sources such as FDA drug labels. Each row needs both RxNorm ids, a severity, the record text, a source name and a source URL. Do not write records from memory.
+2. Adding a medicine: search RxNorm by name with approximate matching. If the match is weak or there are several candidates, do not guess. Show the candidates with strength and form and make the person pick one. Save the chosen rxcui and the text they typed.
+3. After any add, stop or dose change, run a full screen: build every unordered pair of active medications, look up each pair in interaction_records in both orders, and save one screens row and a flags row per hit. The page must never show a result older than the list.
+4. Rank flags major, then moderate, then minor. Show the top 3 above the fold and put the rest behind "N lower-severity notes". Each flag shows the record text as written and a link to its source.
+5. When a pair has no record, the page says "No record found in our data" and never says safe or no interaction. Show how many pairs were checked.
+6. /summary/[screenId] is one printable page in 12-point type: the full medicine list, the flagged pairs with their sources, three questions for a pharmacist taken from a fixed list and this line: "This lists published interaction records for discussion with a pharmacist or physician. It is not medical advice."
+Rules: never advise stopping or changing a medicine. Use an 18-pixel base font, 44-pixel tap targets, AA contrast and full keyboard use. A Delete profile button removes everything.
+Empty state: with no medicines, show one field and the line "Add everything you take, including supplements".
+Done when: a profile with two seeded interacting drugs shows a flag with its source, adding a third re-screens all pairs, an ambiguous name forces a pick, a pair with no record says "No record found in our data", and the summary prints on one page.
 ```
 
-**3. Bottle Scan + Printable Appointment Summary**
+**3. Landing Page**
 
 ```text
-Build the two features that make this stick: camera entry and the paper handoff.
-
-Bottle scan:
-- Mobile camera capture, upload to Google Cloud Vision DOCUMENT_TEXT_DETECTION.
-- Extract candidate drug name and strength using a line-scoring heuristic (largest text block, then any line matching a strength pattern like "20 mg" or "500MG").
-- ALWAYS show a confirmation screen: "We read this as Atorvastatin 20 mg — is that right?" with Edit and Confirm. Never write to the medication list without explicit confirmation. Silent OCR errors in a medication list are the worst possible bug.
-- Fall back to a plain text field with RxNorm autocomplete if the photo fails.
-
-Printable summary (/summary/:screenId):
-- Page 1 only, print stylesheet, no navigation chrome, 12pt minimum body type.
-- Header: profile name, date generated, total medication count.
-- Table: every active medication with name, dose, prescriber, and kind (prescription / OTC / supplement).
-- Flagged combinations section: each with severity, the two drugs, the plain-language line, and the source name.
-- Footer: three generated questions to ask, plus fixed text — "This summary lists published interaction records for discussion with a pharmacist or physician. It is not medical advice and does not replace professional judgment."
-- Add a "Text this to someone" action that sends the summary link to another care circle member.
+Build a one-page landing site for CabinetSafe, a medicine list that checks itself, for adult children helping a parent.
+Hero: "Every doctor sees their own prescriptions. Nobody sees all of them." Sub: "List every prescription, supplement and over-the-counter medicine once. We re-check the whole list each time something changes and give you one page for your pharmacist." One button: Join the waitlist.
+Sections: a quiet opening about counting bottles on a kitchen counter, a diagram of a one-pair lookup against a full-list check, how it works in four steps (add, check, watch, print), a sample one-page summary, a trust block (records come from published sources and each links to its source, and it never diagnoses, advises or replaces a pharmacist) and an FAQ on supplements, several pharmacies, printing and deleting your data.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist at a generous size, a warm off-white background, deep ink type, one muted teal accent, a calm voice with no fear.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for CabinetSafe, targeting adult children managing an aging parent's medications.
-
-Hero headline: "Every doctor sees their own prescriptions. Nobody sees all eleven."
-Sub: "Add every prescription, supplement, and over-the-counter bottle once. We re-check the whole cabinet every time something changes — and give you one page to hand your pharmacist."
-
-Sections:
-1. The cabinet scene — a specific, quiet opening about counting bottles on a kitchen counter. No stock photos of smiling seniors.
-2. Why free checkers aren't enough — a simple diagram: pairwise lookup (what exists) vs full-cabinet continuous screen (what this is).
-3. How it works — the four steps, with bottle-scan as the visual anchor.
-4. The one-page summary — show an actual rendered example, since this is the thing people will describe to a friend.
-5. Pricing — Free / Family $9 / Care Circle $19, with the annual $79 toggle.
-6. Trust section — where the data comes from (RxNorm, openFDA), what the product does not do (diagnose, advise, replace a pharmacist), and how data is stored.
-7. FAQ — supplements, multiple pharmacies, sharing with siblings, printing, data deletion.
-
-Voice: calm, precise, never alarmist. This audience is already anxious; fear-based copy will read as untrustworthy. Type: Geist, generously sized. Palette: warm off-white, deep ink, single muted teal accent. Primary CTA: "Check a combination free" — the free checker, no signup, as the front door.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CabinetSafe: a wordmark and an icon that suggest a small cabinet door that is slightly open.
+Colors: warm off-white, deep ink and one muted teal. Type: Geist at a generous size.
+Deliverables: wordmark, icon, three severity chips (major, moderate, minor) that differ by shape and word as well as color, a printable summary header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the severity chips are distinguishable without color.
 ```
 
 ## Sources

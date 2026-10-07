@@ -84,25 +84,60 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 15 project with TypeScript and Tailwind CSS for a “SaaS Financial Toolkit” targeting bootstrapped founders. Set up Supabase with tables: users, connected_stripe_accounts (stripe_account_id, access_token, live_mode), mrr_events (account_id, month, new_mrr, expansion_mrr, contraction_mrr, churn_mrr, reactivation_mrr), monthly_snapshots (account_id, month, total_mrr, arr, active_customers, churn_rate, ltv), bank_transactions (account_id, date, amount, category, plaid_transaction_id). Add Clerk for auth, row-level security policies per user, and environment variables for Stripe, Plaid, Anthropic, and Supabase service role. Include Stripe webhook handler skeleton and a Plaid Link component stub.
+Build the weekend MVP of "Runway": a bootstrapped SaaS founder uploads their recurring invoice lines and monthly costs, and sees MRR broken into new, expansion, contraction, churn and reactivation, plus runway and a price-change scenario. Every number shows its formula.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Recharts for the charts. Revenue arrives as a CSV export of recurring invoice lines from your payment processor, and costs are typed in by month. The processor connection and the bank link are the next steps. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, filename, row_count, created_at)
+- invoice_lines(id, user_id, import_id, customer_ref, period_start, period_end, amount_cents, currency)
+- mrr_events(id, user_id, month, new_mrr, expansion_mrr, contraction_mrr, churn_mrr, reactivation_mrr)
+- monthly_snapshots(id, user_id, month, total_mrr, arr, active_customers, churn_rate)
+- expenses(id, user_id, month, amount_cents, category)
+- scenarios(id, user_id, inputs jsonb, results jsonb, created_at)
+
+Screens: /login, /import, /dashboard (the MRR waterfall, ARR, customers, churn), /runway, /scenarios.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing for the tool itself, plans or a trial, a payment processor connection or webhooks, a bank link, a model for narratives, investor reports.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Stripe MRR calculation engine: (1) Stripe OAuth Connect flow to link the founder’s account, (2) Historical sync that replays all subscription and invoice events to populate mrr_events with correct new/expansion/contraction/churn/reactivation breakdown per month using standard SaaS MRR movement logic, (3) Webhook handler for customer.subscription.updated, invoice.payment_succeeded, and invoice.payment_failed events to keep data real-time, (4) A React dashboard with a MRR waterfall chart (Recharts), ARR counter, active customer count, churn percentage, and a Stripe-source attribution table. Handle annual plan proration correctly—recognize revenue monthly, not at invoice date.
+Build the one feature that proves Runway: an MRR breakdown that handles annual invoices correctly, and a runway you can recompute by hand.
+1. Import a CSV of recurring invoice lines with columns customer_ref, period_start, period_end, amount, currency. Show rows that failed to parse and why. Keep one currency per import.
+2. Spread each line across the months its period covers, so an annual invoice counts one twelfth in each month and not all at the invoice date. Sum per customer per month to get that customer's MRR.
+3. Compare each customer's MRR with the previous month. Write a pure function with these cases: new (none before and never seen), expansion (higher), contraction (lower but above zero), churn (zero now, positive before), reactivation (positive after a gap of at least one month). Unit test it with fixtures that include an annual plan, an upgrade, a downgrade, a churn and a return.
+4. Save mrr_events and a monthly snapshot per month: total MRR, ARR as 12 times MRR, active customers and the churn rate as churned MRR over the previous month's MRR.
+5. The dashboard shows the MRR waterfall for the latest month and a 12-month trend with Recharts, each with a table view.
+6. /runway takes the cash balance and monthly costs by category. Net burn is the average of the last 3 months' costs minus MRR. Runway in months is cash over net burn, and shows "not burning" when net burn is zero or less. Show the formula and the inputs.
+7. /scenarios models a price change: new MRR = current MRR times (1 plus the price change) times (1 minus an extra churn you assume), and the effect on runway. Label every assumption.
+Rules: say "estimates from the invoice lines you uploaded". Never show a figure without its formula one click away.
+Empty state: with no imports, show the CSV columns and a sample file.
+Done when: the movement unit tests pass, an annual line shows as one twelfth per month, the waterfall adds up to the change in MRR, and runway matches a hand calculation.
 ```
 
 **3. Landing Page**
 
 ```text
-Build a landing page for “Runway” (working name)—a financial toolkit for bootstrapped SaaS founders. Hero: “Your MRR, burn rate, and runway. In one place. Finally.” Include: problem section showing the spreadsheet + two-tool gap, interactive dashboard screenshot with annotated MRR waterfall, features list (live MRR breakdown, bank sync burn rate, runway calculator, pricing scenario modeler, monthly investor digest), comparison table vs. Baremetrics + Xero combo vs. spreadsheets, three pricing tiers (Free template / $49 Starter / $100 Complete), and email capture with “Get 14 days free” CTA. Palette: warm off-white background, deep charcoal headers, emerald green for positive metrics, muted red for churn. Tone: direct, founder-to-founder, no corporate fluff.
+Build a one-page landing site for Runway, a finance dashboard for bootstrapped SaaS founders.
+Hero: "Your MRR, burn and runway in one place." Sub: "Upload your invoice lines and your costs. See where MRR came from and how many months you have left, with every formula shown." One button: Join the waitlist.
+Sections: the problem (a spreadsheet and two tools that do not agree), a sample MRR waterfall with a short caption, how it works in four steps (import, break down, check runway, try a scenario), and an FAQ on how annual plans are handled, what is estimated and which payment processors connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, deep charcoal headers, emerald for positive numbers and a muted red for churn. A direct voice, founder to founder.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for “Runway”, a financial toolkit for bootstrapped SaaS founders. Logo concept: a clean upward-trending line chart that doubles as a runway strip—simple enough to work at 20px favicon size. Colors: primary #0F1729 (deep navy), background #FAFAF8 (warm white), positive metric accent #10B981 (emerald), negative metric accent #EF4444 (muted red), neutral #6B7280. Typography: Geist Sans for UI numbers and labels (crisp at small sizes), Inter for body text. Deliverables: favicon, sidebar wordmark, empty-state illustration for the “connect your Stripe” screen, and a Twitter/X profile banner targeting the Indie Hackers / MicroConf audience.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Runway: a wordmark and an icon of a rising line that doubles as a runway strip, clear at 20 pixels.
+Colors: deep navy (#0F1729), warm white (#FAFAF8), emerald (#10B981) for positive and a muted red (#EF4444) for negative. Type: Geist for numbers and labels.
+Deliverables: favicon, sidebar wordmark, an empty-state illustration for "upload your invoice lines", and a social banner for an indie founder audience.
+Done when: each deliverable is saved in one folder and the favicon is readable at 20 pixels.
 ```
 
 ## Sources

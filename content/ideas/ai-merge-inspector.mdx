@@ -87,25 +87,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a TypeScript monorepo for MergeGate, a GitHub App that flags AI-origin risk on pull requests. Apps: (1) webhook + worker, (2) Next.js dashboard. Postgres schema: installations (id, account_login, plan), repos, pull_requests, hunks (pr_id, path, start_line, end_line, origin: 'ai'|'human'|'unknown', assistant: 'cursor'|'copilot'|'other'|null), flags (hunk_id, kind: 'hallucinated_dep'|'permission_escalation'|'thin_comment_dense_logic', confidence, reason, status: 'open'|'accepted'|'dismissed'), check_runs, usage_ledger (pr_id, input_tokens, output_tokens, cost_cents). Octokit GitHub App auth. BullMQ queues: ingest, classify, detect, notify. Stripe products: Free, Team $20/dev/mo. Env: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY, OPENAI_API_KEY, DATABASE_URL, REDIS_URL, STRIPE_SECRET_KEY. Required check via Checks API. No dashboard feature that is not a read-model of GitHub state.
+Build the weekend MVP of "MergeGate": a GitHub App that flags risky AI-authored code on a pull request as a required check.
+
+Stack: Next.js (App Router) with TypeScript, Supabase (Postgres, Row Level Security, Auth with GitHub sign-in), Octokit with GitHub App authentication, Claude (Anthropic API) for the classification. The webhook route replies within a second and does its work after the response. Deploy on Vercel.
+
+Tables (Row Level Security on: the dashboard reads only the installations the signed-in user belongs to):
+- installations(id, account_login)
+- repos(id, installation_id, full_name)
+- pull_requests(id, repo_id, number, head_sha)
+- hunks(id, pr_id, path, start_line, end_line, origin, assistant)  where origin is one of ai, human, unknown and assistant is cursor, copilot or other
+- flags(id, hunk_id, kind, confidence, reason, status, dismissed_reason)  where kind is one of hallucinated_dep, permission_escalation, thin_comment_dense_logic and status is one of open, accepted, dismissed
+- check_runs(id, pr_id, github_check_id, conclusion)
+
+Screens: /login, /repos (installed repos and recent pull requests).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or seat mapping, Slack alerts, a job queue or Redis, a second AI model, a cost dashboard, anything on the dashboard that is not a read-model of GitHub state.
+Done when: npm run dev starts, the app installs on a test repo, and the six tables exist with Row Level Security on.
 ```
 
-**2. Origin Classifier + Three Detectors**
+**2. Core Feature**
 
 ```text
-Build the PR pipeline. On pull_request opened/synchronize: ack webhook, enqueue ingest. Ingest fetches the diff and commit list. Classify origin per hunk using (a) commit trailers and author metadata from Cursor/Copilot when present, (b) heuristic fallback (commit message patterns, known assistant co-author emails) — never claim certainty without metadata. Then run three detectors in parallel: (1) hallucinated deps — parse added imports/require/package.json diffs, lookup npm/PyPI/crates, flag names that 404 or are not in the lockfile; (2) permission escalations — AST/diff rules for IAM, RBAC, GitHub Actions permissions, authz middleware going from read to write/admin; (3) thin-comment dense logic — cyclomatic/line density vs comment ratio on AI-origin hunks only. Each flag: kind, confidence 0-1, reason under 200 chars, suggested reviewer. If max confidence is at or above 0.7, fail the required check; else pass with a summary comment. Persist flags. Post inline annotations. Skip LLM when the registry lookup or AST rule already decided.
+Build the one feature that proves MergeGate: a required check that fails on the lines a model invented.
+1. On pull_request opened and synchronize, verify the webhook signature, reply at once, then fetch the diff and the commit list.
+2. Classify each hunk's origin from commit trailers and author metadata from Cursor or Copilot when present. Fall back to commit-message patterns and known assistant co-author emails. Never claim certainty without metadata.
+3. Run three detectors: (a) hallucinated dependencies: parse added imports and package.json changes, look the names up in npm and PyPI, and flag names that do not exist or are not in the lockfile. (b) permission escalations: diff rules for IAM, RBAC, GitHub Actions permissions and auth middleware going from read to write or admin. (c) thin comments over dense logic: line density against comment ratio, on AI-origin hunks only.
+4. Each flag gets a kind, a confidence from 0 to 1, a reason under 200 characters and a suggested reviewer. If the top confidence is 0.7 or more, fail the check. Otherwise pass with a summary comment. Post inline annotations.
+5. A Dismiss link needs a signed-in member and a written reason, which is stored.
+Rules: skip the model when the registry lookup or a diff rule already decided. Write tests for: a hallucinated package, a real package, a permission widen, a permission left unchanged, an AI hunk with no comments, a human hunk with dense logic that must NOT be flagged, and a replayed webhook that must not double-post.
+Done when: a test pull request that imports a package that does not exist fails the "MergeGate AI-origin" check with an inline note, and replaying its webhook changes nothing.
 ```
 
-**3. Required Check + Slack + Pricing**
+**3. Landing Page**
 
 ```text
-Wire GitHub Checks API so MergeGate is a required status on protected branches. Check name: "MergeGate AI-origin". Output: pass/fail, title with flag counts, summary markdown listing each flag with file:line, kind, confidence, reason, and a "Dismiss" deep link that requires a logged-in org member plus a written rationale (stored, never silent). Slack: high-confidence fails post to a configured channel with PR URL and top three flags. Dashboard: false-positive rate (dismissed vs accepted), PRs per repo, cost per PR. Stripe: map GitHub org members to seats; unpaid Team orgs get comments but cannot set the required check. Write a 12-test suite: hallucinated package, real package, permission widen, permission unchanged, AI hunk with no comments, human hunk with dense logic (must NOT flag), webhook replay idempotency, seat billing.
+Build a one-page landing site for MergeGate, a required check for AI-authored code.
+Hero: "The required check for AI-authored code." Sub: "A review tool reads the diff. MergeGate flags the lines a model invented." One button: Install the GitHub App, which joins the waitlist.
+Sections: a 6:12 p.m. merge story, how it works in four steps (install, classify AI-origin hunks, score the risky patterns, block or escalate), three detector cards (hallucinated dependencies, permission escalations, thin comments over dense logic), and a short FAQ on false positives and what it can see.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, near-black text on off-white, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Single-page site for MergeGate. Headline: "The required check for AI-authored code." Sub: "CodeRabbit reviews the diff. MergeGate flags the lines a model invented." Sections: 6:12 p.m. merge story, 4-step how-it-works, detector cards, $0 OSS / $20 Team, one-row comparison vs CodeRabbit / Copilot Review / Snyk (AI-origin required check). CTA: "Install the GitHub App." Geist, near-black on off-white, one lime accent.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for MergeGate: a wordmark and an icon that suggest a gate or a checkpoint.
+Colors: near-black, off-white and one lime accent. Type: Geist for the interface and a mono for file paths.
+Deliverables: wordmark, icon, a pass and a fail check badge that differ by shape and not only color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two badges are distinguishable without color.
 ```
 
 ## Sources

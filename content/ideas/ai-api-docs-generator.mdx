@@ -85,19 +85,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "DocForge," an AI API documentation generator. Provision Supabase with these tables: users (id, email, plan TEXT default 'free'), projects (id, user_id, name, source_type TEXT CHECK source_type IN ('openapi','github','excel','word'), style_json JSONB), sources (id, project_id, raw_ref TEXT, parsed_schema JSONB, imported_at TIMESTAMPTZ), generated_docs (id, project_id, format TEXT, url TEXT, token_cost INT, created_at TIMESTAMPTZ), drift_events (id, project_id, field TEXT, kind TEXT, detected_at TIMESTAMPTZ). Enable row-level security so users only read/write rows where user_id matches auth.uid(). Wire Stripe with four products (Free, Solo $19/mo, Team $49/mo, annual) plus a metered pay-per-use conversion SKU. Add env vars ANTHROPIC_API_KEY, OPENAI_API_KEY, GITHUB_APP_ID, GITHUB_PRIVATE_KEY. Install @apidevtools/swagger-parser, sheetjs (xlsx), mammoth, docx, and the Vercel AI SDK.
+Build the weekend MVP of "DocForge": turn an OpenAPI file or a legacy Excel or Word spec into a clean API reference, and show what drifted since the last import.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the descriptions and examples, swagger-parser, SheetJS and mammoth for the deterministic parsing, docx for export. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- projects(id, user_id, name, source_type, style_json)  where source_type is one of openapi, excel, word
+- sources(id, project_id, raw_ref, parsed_schema jsonb, imported_at)
+- generated_docs(id, project_id, format, url, token_cost, created_at)
+- drift_events(id, project_id, field, kind, detected_at)
+
+Screens: /login, /projects, /projects/[id] (sources, docs, drift).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or metered pricing, the GitHub App and merge checks, GitHub repo import, a second AI model, PDF export, an admin area.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Ingest, Normalize, Generate**
+**2. Core Feature**
 
 ```text
-Build POST /api/generate. Input: a project_id and a source (an uploaded OpenAPI file, a GitHub repo ref, an .xlsx, or a .docx). Step 1: detect the format and run the matching deterministic parser — swagger-parser for OpenAPI, SheetJS for Excel, mammoth for Word — and map the result into one normalized schema: { endpoints: [{ method, path, summary, params: [{ name, in, type, required, description }], request_example, responses: [{ status, schema, example }] }] }. Step 2: for any field missing a description or example, call Claude with a strict JSON schema to fill descriptions and generate realistic request/response examples; cache the project style guide as a system prompt to keep token cost low. Step 3: compare the freshly parsed schema against the last stored parsed_schema and record every added, removed, or changed field as a drift_event. Step 4: render a docs site (MDX) and export Word (docx) and PDF from the same normalized object, store URLs in generated_docs with token_cost, and return a diff preview. Persist every generation for audit and billing.
+Build the one feature that proves DocForge: ingest a spec, normalize it, fill the gaps, and report drift.
+1. POST /api/generate takes a project_id and an uploaded source (an OpenAPI file, an .xlsx or a .docx). Detect the format and run the matching parser: swagger-parser, SheetJS or mammoth.
+2. Map the result into one schema: { endpoints: [{ method, path, summary, params: [{ name, in, type, required, description }], request_example, responses: [{ status, schema, example }] }] }.
+3. For any field missing a description or example, ask Claude for strict JSON that fills it with a plain description and a realistic request and response example. Reuse the project's style guide as a cached system prompt to keep the cost low.
+4. Compare the new schema with the last stored parsed_schema and write every added, removed or changed field to drift_events.
+5. Render a docs page (MDX) and a Word export from the same object, store the URLs in generated_docs with token_cost, and return a diff preview.
+Rules: save every generation for audit.
+Empty state: with no projects, show the create-project form and an upload box.
+Done when: uploading an OpenAPI file produces a docs page and a Word file, and uploading a changed version lists the drifted fields.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for DocForge. Hero headline: "Your API docs, always current — generated from your code." Sub: "Point it at a repo, an OpenAPI file, or a legacy Excel or Word spec. Get a clean, branded reference that updates itself on every merge." Sections: live demo (an animated before/after showing a messy Excel spec turning into a polished API reference on scroll), problem (docs drift the moment code changes, and integrators lose trust), how it works (the 4 steps with icons), pricing (Free / Solo $19 / Team $49) anchored against a "$150/mo elsewhere" callout, and an FAQ covering supported formats, drift detection, export options, and data privacy. Use the Geist font, an off-white background, near-black text, and a single emerald accent. Primary CTA: "Connect your repo" with a fallback file-upload demo.
+Build a one-page landing site for DocForge, an API documentation generator.
+Hero: "Your API docs, always current, generated from your code." Sub: "Point it at an OpenAPI file or a legacy Excel or Word spec. Get a clean, branded reference that shows what changed." One button: Join the waitlist.
+Sections: a before and after of a messy Excel spec turning into a polished reference as you scroll, the problem (docs drift the moment code changes and integrators lose trust), how it works in four steps (connect a source, parse and normalize, generate, keep current), and an FAQ on supported formats, drift detection, export options and data privacy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white background, near-black text, one emerald accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for DocForge: a wordmark and an icon that suggest a page being forged into shape.
+Colors: off-white, near-black and one emerald accent. Type: Geist for the interface and a mono for endpoints and code.
+Deliverables: wordmark, icon, a drift badge (added, removed, changed) in three colors that also differ by shape, and one launch graphic.
+Done when: each deliverable is saved in one folder and the drift badges are distinguishable without color.
 ```
 
 ## Sources

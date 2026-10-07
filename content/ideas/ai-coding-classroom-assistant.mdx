@@ -80,29 +80,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build a VS Code extension in TypeScript that streams lightweight progress signals to a Supabase Realtime channel keyed by a room code: typing-active vs idle, count of unresolved diagnostics, and the pass rate of the current test file. No keystroke capture. Give me the extension scaffold and the channel schema.
+Build the weekend MVP of "Handraised": a VS Code extension sends light progress signals to an instructor's live grid, and a student can ask for a hint that explains a problem without giving the answer. The extension never captures keystrokes and sends code only when the student presses Ask for a hint.
+
+Stack: a VS Code extension in TypeScript, Next.js (App Router, TypeScript) and Tailwind for the instructor dashboard, Supabase (Postgres, Realtime, Row Level Security, Auth with email magic link for instructors), the Anthropic API for hints. Students join with a room code and a display name, with no account. Deploy on Vercel.
+
+Tables (Row Level Security on; an instructor reads only their own rooms; students write signals through a server route that checks the room code):
+- rooms(id, instructor_id, code, name, thresholds jsonb, created_at)
+- participants(id, room_id, display_name, joined_at)
+- signals(id, room_id, participant_id, at, active boolean, diagnostics_count, test_pass_rate, blocking_diagnostic)  blocking_diagnostic is the error message text only
+- flag_outcomes(id, room_id, participant_id, flagged_at, verdict)  verdict is accurate or not_accurate
+- hints(id, room_id, participant_id, requested_at, concept, hint)
+
+Screens: /login, /rooms (create one and see its code), /rooms/[id] (the live grid and a student's current blocker).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, school or pilot pricing, a book-a-pilot flow, GitHub Classroom comparisons, keystroke or screen capture, automatic hints.
+Done when: npm run dev starts, you can sign in, the extension builds, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build an instructor dashboard in Next.js that subscribes to a Supabase Realtime room and renders a live grid of students, each color-coded green (progressing), amber (stuck: repeated error or idle while behind), or grey (idle). Clicking a student shows their current blocking diagnostic. Give me the components and the subscription logic.
+Build the one feature that proves Handraised: an instructor can see who is stuck right now, and a student can get a hint that teaches.
+1. The extension asks for a room code and a display name and shows a notice of exactly what it sends: whether you typed in the last minute, how many errors are open, an optional test pass rate and the text of the first error message. No code and no keystrokes.
+2. Every 15 seconds it posts a signal through a server route that checks the room code. Read errors from the editor's diagnostics. Read the pass rate from a test results file if the room sets one.
+3. The dashboard subscribes to the room with Supabase Realtime and shows a grid of students. Decide each status in code: progressing (green), stuck (amber) when the same error appears in 3 signals in a row or the student has been idle for 5 minutes with open errors, and idle (grey) when idle for 5 minutes with no errors. Show the status as a word as well as a color. Clicking a student shows their current error message.
+4. Ask for a hint is a student button. It shows the error message and up to 15 lines around the error, and sends them only after the student confirms. The Anthropic API returns JSON { concept, hint }. Reject a hint that contains a code block or more than 4 sentences, and ask once more.
+5. Each time a student is flagged stuck, the instructor can mark it accurate or not accurate. If more than 30 percent of at least 10 flags are marked not accurate, show a prompt to loosen the thresholds one step and apply it when accepted.
+6. Unit test the status function and the flag tuning, and test the extension's signal builder with a mocked editor API.
+Rules: send nothing that is not in the notice. Never give the answer, only the concept and a nudge. Say how to leave the room.
+Empty state: a new room shows its code in large type and the install steps.
+Done when: three simulated students show green, amber and grey correctly, a repeated error turns amber on the third signal, a hint with a code block is rejected and 4 of 10 not-accurate flags raise the recalibration prompt.
 ```
 
 **3. Landing Page**
 
 ```text
-Write a landing page for Handraised, an AI teaching assistant that shows coding instructors who is stuck in real time. Hero, how-it-works, an ROI section framed on completion rates, a comparison vs GitHub Classroom, pricing ($1,500/yr per school), and a book-a-pilot CTA. Trustworthy, education-buyer tone. Semantic HTML with Tailwind.
+Build a one-page landing site for Handraised, a live view of who is stuck in a coding class.
+Hero: "See the whole room, not just the hands that go up." Sub: "A small extension tells you who is progressing, who is stuck and who stopped. Students can ask for a hint that explains without giving the answer." One button: Join the waitlist.
+Sections: a sample live grid, how it works in three steps (students join with a code, you watch the room, they ask for hints), and an FAQ on exactly what is sent (activity, an error count and the error message, never keystrokes), when code is shared (only when a student asks for a hint) and which editors are supported.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a calm academic look with off-white, ink and one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a brand kit for Handraised: a positioning line about giving instructors a live view of the whole room, a 5-word tagline set, a calm academic color palette with hex codes, an icon concept, and 5 outreach messages aimed at bootcamp directors.
-```
-
-**5. Flag Accuracy Tuning**
-
-```text
-Add a flag-accuracy feedback loop to Handraised. Each time the system flags a student as stuck, let the instructor mark it accurate or not. Store the outcome and use it to tune the stuck thresholds per cohort. If instructors override more than 30 percent of flags, surface a recalibration prompt. Give me the data model and the threshold logic.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Handraised: a wordmark and an icon that suggest a raised hand drawn from a few code brackets.
+Colors: off-white, ink and one blue, plus status colors for progressing, stuck and idle. Type: Geist, with Geist Mono for error text.
+Deliverables: wordmark, icon, three status chips (progressing, stuck, idle) that differ by shape and word as well as color, a student tile layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```

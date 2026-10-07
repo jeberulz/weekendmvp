@@ -98,40 +98,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js + TypeScript app for an S-Corp monthly finance desk (Monthlii).
+Build the weekend MVP of "Monthlii": the operator console for a human-reviewed monthly close for one-person S-Corps. Import a month of transactions, sort them with rules the operator controls, review the exceptions and ship a one-page brief and a packet for the client's CPA. It is bookkeeping and records, not tax, legal or investment advice.
 
-Set up:
-- Clerk auth (owner vs operator vs CPA-read-only)
-- Postgres (or Convex) schema: clients, connections (qbo realm, plaid item, gusto company), months (status: open/review/sent), line_items (source, category, flag), briefs (markdown + pdf url), tasks
-- Stripe Billing for $300/$500 monthly + $497 setup one-time
-- Environment variables for QBO, Plaid, Gusto, OPENAI/ANTHROPIC, Stripe
-- No tax-filing API. No "reasonable salary legal opinion" field.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the operator), the Anthropic API to suggest categories where no rule matches. Transactions come in by CSV (bank, card and a payroll register). Deploy on Vercel.
 
-Include error handling, audit log of who changed a category, and a hard banner: "Bookkeeping and records. Not tax, legal, or investment advice."
+Tables (Row Level Security on, the operator reads only their own clients):
+- clients(id, operator_id, name, owner_pay_pct, tax_reserve_pct)  the two percentages are numbers the operator types, never defaults
+- months(id, client_id, period, status, created_at)  status is open, review or sent
+- line_items(id, month_id, posted_at, description, amount_cents, source, category, category_source, flag, changed_by, changed_at)  category_source is rule, model or operator
+- category_rules(id, client_id, pattern, category)
+- briefs(id, month_id, markdown, created_at)
+- audit_events(id, month_id, actor, action, before jsonb, after jsonb, at)  append-only
+
+Screens: /login, /clients, /months/[id] (the exception queue), /months/[id]/brief (the one-page brief), /months/[id]/packet.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, setup fees or retainers, QuickBooks, Plaid or Gusto connections, a client portal, tax filing, any salary opinion field.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the month-end pipeline:
-
-1. Pull QBO transactions and Gusto payroll for the period.
-2. Auto-categorize with an LLM; never auto-post without a rules table the operator can edit.
-3. Queue exceptions: transfers, owner draws, uncategorized over $N, payroll vs wage mismatch.
-4. Generate a one-page brief: cash in, cash out, suggested owner pay vs distributions (show the formula and inputs), estimated-tax reserve (safe-harbor style heuristic, labeled as heuristic), and a numbered fix list.
-5. Export a CPA packet: P&L, BS, payroll register, transaction CSV.
-
-User flow: operator reviews queue → marks month sent → client sees brief in portal → CPA gets a share link. Nothing in the brief should read as a tax position.
+Build the one feature that proves Monthlii: a month closed by rules the operator owns, and a brief that never reads as a tax position.
+1. Import a month of CSV transactions (date, description, amount, source). Save each as a line item.
+2. Categorize in this order: a matching category_rules pattern first. If none matches, ask the Anthropic API for a category from the fixed list and mark the item as a suggestion with category_source model. Nothing posts as final without the operator accepting it.
+3. Queue exceptions in code: transfers between accounts, owner draws, any uncategorized item over an amount the operator sets, and a payroll line that does not match the payroll register total.
+4. The queue lets the operator accept, recode or add a rule from an item. Every change writes an audit_events row with who, before and after.
+5. Generate the one-page brief in code: cash in, cash out, net, a suggested owner pay and distribution split using owner_pay_pct with the formula and the inputs shown, a tax reserve using tax_reserve_pct labeled "a heuristic, not a tax position", and a numbered fix list from the open exceptions.
+6. Export a CPA packet: a profit and loss, the transaction CSV and the payroll register as files and a share link. Mark the month sent only when no exception is open.
+Rules: put "Bookkeeping and records. Not tax, legal or investment advice." on every page and export. If a percentage is empty, the brief says to set it rather than guessing. Never imply a reasonable-salary opinion.
+Empty state: with no clients, show the add form and the CSV columns.
+Done when: a sample month imports and categorizes by rules, a model suggestion stays pending until accepted, the queue catches a transfer and an owner draw, the brief shows its formulas and the heuristic label, and the audit log records each change.
 ```
 
-**3. Health Check Landing**
+**3. Landing Page**
 
 ```text
-Add a public S-Corp Health Check funnel:
-- Cal.com or a form: entity type, revenue band, current payroll, current bookkeeper, CPA name (optional)
-- One-page gap report template comparing "pay whatever is left" vs a documented salary + reserve split
-- Stripe checkout for the $497 setup sprint after the call
-- Copy must say this is not a CPA firm and will not file 1120-S without a licensed partner
+Build a one-page landing site for Monthlii, a monthly close for one-person S-Corps.
+Hero: "Your books closed every month, checked by a person." Sub: "You get a one-page brief and a packet your CPA can use. Software sorts the transactions; a human reviews what looks off." One button: Join the waitlist.
+Sections: a sample one-page brief (cash in, cash out, a suggested owner pay split with its formula), how it works in four steps (setup, monthly import, review, brief and packet), a plain box saying what it is not (not a CPA firm, no tax advice, no filing) and an FAQ on who reviews your books, what your CPA receives and which accounting tools connect next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one forest green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Monthlii: a wordmark and an icon that suggest a calendar page with a ledger rule across it.
+Colors: off-white, near-black and one forest green. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a one-page brief layout with the "not tax advice" line, three month status chips (open, in review, sent) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

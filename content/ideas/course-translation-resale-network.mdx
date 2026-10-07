@@ -93,25 +93,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) app named Revoice. Postgres: creators (id, email, home_platform TEXT CHECK home_platform IN ('kajabi','teachable','udemy','other')), partners (id, country, languages[], guild_status), markets (id, country_code, status), editions (id, creator_id, market_id, partner_id, course_ref, status), contracts (id, edition_id, setup_cents, platform_take_bps, partner_take_bps, term_end), orders (id, edition_id, gross_cents, currency, stripe_payment_id), payouts (id, order_id, party TEXT CHECK party IN ('creator','partner','platform'), amount_cents). Stripe Connect with a $2,500 Pilot product plus a 30% application fee for 12 months, then 20% on expansion SKUs. Partner Guild as a $99/mo subscription on the partner Connect account. Webhooks: Kajabi, Teachable, Stripe. Env: STRIPE_SECRET_KEY, STRIPE_CONNECT_CLIENT_ID, KAJABI_WEBHOOK_SECRET, TEACHABLE_WEBHOOK_SECRET. Do not build a public dubbing UI.
+Build the weekend MVP of "Revoice": a creator uploads their order history and gets a one-page International Revenue Audit showing which countries to sell their course in next. The partners are matched by hand; no marketplace yet.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link). The memo is computed in code from the CSV. Deploy on Vercel.
+
+Tables (Row Level Security on; a creator reads only their own audits, and partners are read-only to signed-in creators):
+- audits(id, user_id, source_name, uplift_assumption, memo jsonb, created_at)
+- order_rows(id, audit_id, ordered_at, country_code, gross_cents, currency)
+- partners(id, country_code, name, languages text[], notes)  you add these by hand
+- pilot_requests(id, audit_id, country_code, status, created_at)
+
+Screens: /login, /audits/new (CSV upload), /audits/[id] (the memo), /partners (read-only list).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, revenue splits or Connect payouts, Kajabi or Teachable webhooks, YouTube analytics, a dubbing or translation tool, partner sign-up, contracts.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Audit Script + Stripe Splits**
+**2. Core Feature**
 
 ```text
-Build POST /api/audits that accepts a YouTube channel id and a Kajabi/Teachable export (CSV of orders with country). Output a one-page memo: top 3 countries by sessions or revenue, a conservative conversion assumption, projected 12-month international gross, and a placeholder partner_name per country. Store the memo. Wire Stripe Connect: on Pilot checkout, collect $2,500 setup to the platform, then application_fee_percent 30 on in-country charges for 12 months (creator keeps 70), switching to 20 after term_end. Partner payouts via Transfer from the platform share, not from the creator share, unless the contract says otherwise. Log every split. Refunds reverse all three legs.
+Build the one feature that proves Revoice: an audit memo a creator can read in two minutes and act on.
+1. Accept a CSV with columns ordered_at, country_code, gross, currency. Reject rows with a bad country code or a missing amount and list them with the reason.
+2. Convert nothing: group revenue by currency, then by country. Rank countries by gross revenue and by order count. Show the top 3 countries and each one's share of international revenue.
+3. Projection: existing international revenue per country multiplied by an uplift assumption, over 12 months. The uplift field is editable, starts at 1.5 and is labeled "your assumption, not a forecast". Recompute the memo when it changes.
+4. Next to each top country, show matching partners from the partners table by country_code, or "No partner yet" if there is none.
+5. A Request a pilot button on a country inserts a pilot_requests row with status requested. Show the creator that request on the page.
+6. Save the memo to audits.memo and make the page printable as one page.
+Rules: show assumptions on the page next to every projected number. Never present a projection as a promise. Country names come from a fixed lookup, not from the model.
+Empty state: with no audits, show the CSV columns and a sample file to download.
+Done when: a 50-row sample with six countries gives a memo with the top 3 countries, the projection changes when the uplift changes, and Request a pilot adds a row.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a one-pager for Revoice. Hero: “We sell your course in-country. Dubbing is the easy part.” Sub: “Free International Revenue Audit from your YouTube and Kajabi geo. One country. Finished checkout, ads, and support.” Sections: why Kajabi native dubbing and YouTube multi-language audio still leave the sale unfinished; LATAM $30.51B → $52.1B; competitor strip (HeyGen/Rask seats, Udemy 37–63% take, Kajabi Pro $499, agencies at four-to-five figures); how it works (audit, pilot, sell, split); pricing ($2,500 + 30% / 12 months, then 20%; Partner Guild $99/mo). CTA is the audit, not a signup for minutes. Geist, off-white, near-black, one aubergine accent. Never say “AI dubbing platform.”
+Build a one-page landing site for Revoice, which sells a creator's course in other countries.
+Hero: "We sell your course in-country. Dubbing is the easy part." Sub: "Free International Revenue Audit from your order history. One country first, with a local partner for ads, support and checkout." One button: Join the waitlist for the audit.
+Sections: why a translated course still does not sell itself abroad, a sample audit memo with example numbers marked as examples, how it works in four steps (audit, pilot, sell, report), a competitor strip with one line each for dubbing tools, course marketplaces and agencies (fill in figures you can cite), and an FAQ on which countries come first and what the creator keeps.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one aubergine accent. Never say "AI dubbing platform".
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand Revoice: wordmark plus a small mark that suggests a passport stamp, not a waveform. Near-black, aubergine accent, two paper neutrals. Voice: operator-to-operator, specific countries, specific money. Three rules: never compete with Kajabi on features, always show creator keep-rate (70% then implied 80% after partner cut is negotiated), never promise a language count as the value. One-page brand sheet, hex, type, and three audit-email variants that open with the creator’s actual top geo.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Revoice: a wordmark and a small mark that suggests a passport stamp, not a waveform.
+Colors: near-black, one aubergine and two paper neutrals. Type: Geist.
+Deliverables: wordmark, stamp icon, an audit memo header, three audit-email variants that open with the creator's top country (use placeholders), and three voice rules: operator to operator, name the country and the money, never promise a language count as the value.
+Done when: each deliverable is saved in one folder and the stamp is still readable in one color.
 ```
 
 ## Sources

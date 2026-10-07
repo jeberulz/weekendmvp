@@ -88,41 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) + TypeScript app called "Freelancer Income-Proof Generator".
+Build the weekend MVP of the "Freelancer Income-Proof Generator": a freelancer uploads bank statement exports and gets an income summary they can share with a landlord or lender through a read-only link. It is built from files the freelancer uploads, so it is not bank-verified.
 
-Set up:
-- Supabase Postgres: users, connections, transactions, income_profiles, packets, share_links
-- Plaid Link onboarding that pulls 24 months of transactions and an Assets report
-- Auth with Clerk (email + Google)
-- A dashboard showing average monthly income, 12-month income trend, and a "generate packet" button
-- A public /verify/[token] route that renders a read-only, source-verified income summary
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API to classify deposits. Totals are computed in code. Deploy on Vercel.
 
-Include Plaid webhook validation and env var handling.
+Tables (Row Level Security on, each user reads only their own rows; the share page reads through a server route that checks the token):
+- imports(id, user_id, filename, row_count, created_at)
+- transactions(id, user_id, import_id, posted_at, description, amount_cents, category, confidence, user_override boolean)  category is business_income, internal_transfer, refund or personal
+- packets(id, user_id, period_start, period_end, summary jsonb, created_at)
+- share_links(id, packet_id, token, visible_fields jsonb, expires_at, revoked_at)
+
+Screens: /login, /import (CSV), /transactions (review), /packets/[id] (printable summary), /summary/[token] (public, read-only).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, bank connections through Plaid, Stripe or PayPal imports, a profit and loss statement, expense tracking, a PDF library, a lender portal.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the income classification + packet engine.
-
-1. Pull transactions and the Plaid Assets report
-2. Send deposits to Claude to classify each as: business income, internal transfer, refund, or personal
-3. Compute average monthly income (trailing 12 and 24 months), income trend, and client concentration from recurring payers
-4. Generate a formatted proof-of-income packet: a plain-language income letter, a year-to-date P&L, and a bank-verified deposits summary
-5. Render it to PDF and create a shareable, expiring verified link
-
-Keep all amounts traceable back to source transactions so the output is defensible.
+Build the one feature that proves the Income-Proof Generator: a defensible income number where every figure traces to real rows.
+1. Import a CSV with columns date, description, amount. Positive amounts are deposits. Ignore any account number column and never store it. Show rows that failed to parse and why.
+2. Send deposits in batches of 50 to the Anthropic API with a strict JSON schema { items: [{ id, category: "business_income" | "internal_transfer" | "refund" | "personal", confidence: number from 0 to 1 }] }. Mark confidence under 0.85 as "check this". The user can change any category, which sets user_override.
+3. Compute in code, from business_income rows only: average monthly income over the months the files cover (show how many months), the month-by-month trend and each payer's share of the total, using the description as the payer name.
+4. Show every number with a "see the rows" link that lists the source transactions. A packet stores a period and the computed summary.
+5. A printable packet page shows a short plain income letter written from the numbers (a template, not a model), the monthly table and the top payers. It says: "Built from statements uploaded by the freelancer. Not verified by a bank."
+6. Create a share link at /summary/[token] with a switch to hide payer names, a 30-day expiry and a Revoke button. An expired or revoked link shows a clear message.
+Rules: never use the words verified or bank-verified. The model classifies; it never computes a total. A Delete all my data button removes every row and file.
+Empty state: with no imports, show the CSV columns and a sample file.
+Done when: a 100-row sample file produces a monthly average that matches a hand sum of the business_income rows, each figure opens its source rows, hiding payer names removes them from the shared page, and a revoked link stops working.
 ```
 
-**3. Verified Share Link**
+**3. Landing Page**
 
 ```text
-Add the verified share experience.
+Build a one-page landing site for the Freelancer Income-Proof Generator, for people whose income is not a paycheck.
+Hero: "Proof of income for people without a payslip." Sub: "Upload your bank statements. Get a clear income summary and a link you can send to a landlord or lender." One button: Join the waitlist.
+Sections: a sample summary (monthly average, trend, top payers) with every number linked to its rows, the problem (a steady income that looks irregular on paper), how it works in four steps (upload, classify, review, share), and an FAQ on what is stored, who sees the link, why it is built from your uploaded files and when bank connections come.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, ink type, one blue accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Generate a tokenized /verify/[token] page a landlord or lender can open without an account
-- Show: verified average monthly income, trend chart, last-updated date, and a "data sourced via Plaid" trust badge
-- Let the freelancer toggle which details are visible (hide client names, show only totals)
-- Auto-expire links after 30 days and let the user revoke early
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Freelancer Income-Proof Generator: pick a short working name, then design a wordmark and an icon that suggest a ledger line that steadies out.
+Colors: off-white, ink and one blue. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a summary card layout, a "built from uploaded statements" label, and one launch graphic.
+Done when: each deliverable is saved in one folder and the label reads clearly in black and white.
 ```
 
 ## Sources

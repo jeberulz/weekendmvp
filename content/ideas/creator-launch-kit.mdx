@@ -84,44 +84,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 (App Router, TypeScript, Tailwind) project called "creator-launch-kit."
-Provision Supabase with tables:
-- creators (id, email, brand_voice TEXT, plan TEXT default 'free')
-- products (id, creator_id, name, description, audience, links JSONB)
-- briefs (id, product_id, raw JSONB, created_at)
-- assets (id, product_id, type TEXT CHECK type IN ('video_script','carousel','email_sequence','faq','agent_config'), content JSONB, status TEXT default 'pending')
-- agent_messages (id, product_id, role TEXT, content TEXT, ts TIMESTAMPTZ)
-Enable row-level security so each creator only reads/writes their own rows.
-Wire Stripe with a one-time product ($249 Launch Kit), a $29/mo support subscription, and a $15/mo Template Club.
-Add env vars for the Supabase keys, ANTHROPIC_API_KEY, and the image/video generation API key.
+Build the weekend MVP of "Creator Launch Kit": a solo creator describes a finished product and gets a launch package written in their voice. Four assets this weekend: video scripts, a carousel outline, a three-email sequence and an FAQ.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for every asset. Generation runs in a route handler. Deploy on Vercel.
+
+Tables (Row Level Security on, each creator reads only their own rows):
+- products(id, user_id, name, description, audience, links jsonb)
+- briefs(id, product_id, brand_voice, voice_samples text[], created_at)
+- assets(id, product_id, type, content jsonb, status, error, updated_at)  type is video_script, carousel, email_sequence or faq; status is pending, ready or failed; one row per product and type
+
+Screens: /login, /products/new (the brief), /products/[id] (the four assets, each with Regenerate and Copy).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a template club, image or video generation, a support agent or chat widget, publishing to social or email platforms, white-label.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Launch Package Generator**
+**2. Core Feature**
 
 ```text
-Build the generation pipeline. Given a product brief (name, description, audience, brand_voice),
-fan out five async jobs, one per asset type:
-1. video_script: 3 short-form scripts (hook, body, CTA) with storyboard notes
-2. carousel: a 6-slide carousel outline (headline + body per slide) in the brand voice
-3. email_sequence: a 3-email launch sequence (tease, launch, last-call) with subject lines
-4. faq: 8-10 Q&A pairs derived from the product description
-5. agent_config: a system prompt + retrieval doc for the support agent, built from the same brief
-Use Claude with the brief cached as context. Store each result in the assets table with status
-'ready' or 'failed'; render a dashboard where the creator previews and regenerates any single asset.
-Make each job idempotent and retriable so one slow call never blocks the package.
+Build the one feature that proves Creator Launch Kit: four launch assets from one brief, in the creator's voice.
+1. The brief form takes product name, a description, the audience, a short brand voice note and 2 or 3 pasted writing samples.
+2. A route handler starts four generations at once with Promise.allSettled, one per asset type, each calling the Anthropic API with the brief as shared context.
+3. video_script returns 3 short scripts as { hook, body, cta, storyboard_notes }. carousel returns 6 slides as { headline, body }. email_sequence returns 3 emails (tease, launch, last call) as { subject, body }. faq returns 8 to 10 { question, answer } pairs drawn only from the description.
+4. Save each result to assets with status ready, or status failed with the error. A failed asset never blocks the others.
+5. Each asset card has Regenerate, which reruns only that type and replaces its row, and Copy.
+Rules: never invent a price, discount, guarantee, testimonial or result. Use [bracketed placeholders] where the brief has no fact. Match the voice samples; do not copy their sentences.
+Empty state: a product with no assets shows a Generate button.
+Done when: one brief produces all four assets, a forced failure on one type leaves the other three ready, Regenerate replaces only its own asset, and no output contains an invented price.
 ```
 
-**3. Support Agent + Checkout Handoff**
+**3. Landing Page**
 
 ```text
-Build a hosted support agent per product. Embed the product brief + FAQ into a vector store.
-Expose a web chat widget and an email intake. For each inbound question:
-- retrieve the top-k relevant chunks and answer in the brand voice, citing the source
-- if the message shows buying intent (pricing, "how do I get it", "is there a discount"),
-  reply with the answer AND a checkout link
-- log every message to agent_messages for review
-Add a simple dashboard showing conversations, unanswered questions (low retrieval confidence),
-and a one-click "add this as an FAQ" action to improve the agent over time.
+Build a one-page landing site for Creator Launch Kit, a launch writer for solo creators.
+Hero: "Your launch, written in an afternoon." Sub: "Tell it what you built, who it's for and how you write. Get video scripts, a carousel, a three-email sequence and an FAQ in your voice." One button: Join the waitlist.
+Sections: a sample brief next to the four assets it produced, the problem (a finished product and no time to market it), how it works in three steps (brief, generate, edit and copy), and an FAQ on voice matching, what is not included yet (images, video and a support agent) and who owns the output (you do).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, ink type, one orange accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Creator Launch Kit: a wordmark and an icon that suggest a rising arc that ends in a dot.
+Colors: warm off-white, ink and one orange. Type: Geist.
+Deliverables: wordmark, icon, four asset icons (script, carousel, email, FAQ) and one social announcement graphic.
+Done when: each deliverable is saved in one folder and the four asset icons are distinguishable at 24 pixels.
 ```
 
 ## Sources

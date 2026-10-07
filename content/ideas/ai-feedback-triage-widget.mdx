@@ -72,44 +72,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build an AI Feedback Triage Widget: a JS snippet customers embed, a Cloudflare Worker submit endpoint, and a Supabase-backed dashboard.
+Build the weekend MVP of the "AI Feedback Triage Widget": a one-line script puts a feedback box on any site, each message is tagged and grouped with similar ones, and a weekly email shows the top three things to deal with.
 
-Requirements:
-- Preact widget (<15KB gzipped) with Shadow DOM isolation for host-site CSS
-- One-tag install: <script src="https://cdn.siftbox.app/widget.js" data-project="PROJECT_KEY"></script>
-- Submit endpoint on Cloudflare Workers: validate input, rate-limit per project (30/min), queue to Supabase
-- Supabase schema: projects, feedback (text, project_id, status, created_at), categories, clusters
-- Dashboard: Next.js 14 App Router, auth via Supabase, ranked top-3 view that updates live via Realtime
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the site owner), a small Preact widget inside a Shadow DOM served from this app, the Anthropic API for tagging, Resend for the weekly digest. Rate limits are counted in Postgres. A Vercel Cron route sends the digest. Deploy on Vercel.
 
-Ship the snippet + worker + submit path first. The dashboard can wait a day.
+Tables (Row Level Security on, an owner reads only their own projects; the submit route writes through the service role):
+- projects(id, user_id, name, public_key, allowed_origins text[])
+- feedback(id, project_id, text, category, confidence, theme_slug, summary, status, created_at)  category is bug, feature_request, confusion or praise
+- clusters(id, project_id, theme_slug, summary, item_count, last_seen)
+- digests(id, project_id, week_start, sent_at)
+
+Screens: /login, /projects (create one and copy the script tag), /projects/[id] (the top 3 and the full list), /widget.js (the script).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or an agency tier, Cloudflare Workers, Redis, product analytics, custom categories, realtime updates.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Categorization Engine**
+**2. Core Feature**
 
 ```text
-Implement the AI categorization pipeline with Claude Haiku.
-
-For each new feedback item:
-1. Call Claude Haiku with a cached system prompt that defines 4 top-level categories (bug, feature_request, confusion, praise) plus any user-defined custom tags
-2. Return: {category, confidence, theme_slug, summary}
-3. Group items with matching theme_slug into clusters; update cluster.item_count
-4. Compute the ranked top-3 for the project: clusters with highest (item_count * recency_weight) in last 14 days
-5. Cache the project's taxonomy + custom categories with Claude's prompt caching for 80%+ token cost reduction
-
-Target: classification latency <500ms, cost <$0.005 per item.
+Build the one feature that proves the widget: a visitor sends feedback in two taps, and the owner sees the three things that matter without reading everything.
+1. Serve /widget.js: a Preact widget in a Shadow DOM, under about 15 KB gzipped, installed with one script tag that carries data-project. It shows a button, a text box and a send action, and a line that says not to include passwords.
+2. POST /api/feedback takes the project key and the text. Check the request's Origin against allowed_origins, trim and strip HTML, limit the text to 2,000 characters, include a hidden honeypot field and rate limit each project to 30 submissions a minute by counting its recent rows.
+3. For each message, ask the Anthropic API (a small model) for JSON { category, confidence: number from 0 to 1, theme_slug, summary }. Accept a theme_slug only if it matches lowercase letters, digits and hyphens, 3 to 40 characters.
+4. Group messages by theme_slug into clusters and update item_count and last_seen.
+5. Rank the top 3 clusters by item_count times a recency weight of 1 over (1 plus age in days over 7), over the last 14 days. Unit test the ranking.
+6. The dashboard shows the top 3 first, each with its summary, count and two verbatim samples, then the full list.
+7. A Monday cron route (protected by CRON_SECRET) emails each owner the top 3 with samples through Resend and records a digests row so it is sent once a week.
+Rules: store only what the visitor typed, plus the page address. Never email feedback to anyone but the owner.
+Empty state: a new project shows the script tag and a test button.
+Done when: a script tag on a test page sends feedback, a message from a wrong origin is rejected, 31 messages in a minute are limited, the ranking test passes and one digest email is sent per week.
 ```
 
-**3. Weekly Digest**
+**3. Landing Page**
 
 ```text
-Build the weekly digest email that converts Free → Pro.
+Build a one-page landing site for the AI Feedback Triage Widget, for solo developers who get feedback from users.
+Hero: "Feedback in. The top three things out." Sub: "One script tag adds a feedback box. Every message is tagged and grouped, and you get a short weekly list of what matters." One button: Join the waitlist.
+Sections: the widget on a sample site, how it works in three steps (add the tag, messages are tagged, get your weekly top three), a sample digest and an FAQ on what is stored, which sites it works on and how fast it loads.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one violet accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Every Monday at 9am local time:
-1. Query each project’s top-3 clusters for the past 7 days
-2. Pull sample verbatim feedback (2 items per cluster, most recent + most upvoted)
-3. Render a React Email template: project name, “Top 3 this week,” each cluster card shows category icon, theme summary, item count, sample quotes
-4. Send via Resend; track open + click to PostHog as events weekly_digest_opened and weekly_digest_cta_clicked
-5. The digest ends with a single CTA: “See full dashboard” → dashboard URL with utm_source=digest
+**4. Branding Package**
 
-The digest is the product’s aha moment. Make it land.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the AI Feedback Triage Widget: pick a short working name, then design a wordmark and an icon that suggest a speech bubble sorted into three stacked lines.
+Colors: off-white, near-black and one violet. Type: Geist.
+Deliverables: wordmark, icon, four category chips (bug, feature, confusion, praise) that differ by shape and letter as well as color, a weekly digest header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the category chips are distinguishable without color.
 ```

@@ -80,25 +80,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 (App Router, TypeScript, Tailwind) project called "TeamComm" for youth sports team messaging. Provision Supabase with these tables: teams (id, name, sport, coach_user_id, plan TEXT default 'free'), families (id, team_id, parent_name, phone, email, athlete_name), events (id, team_id, type TEXT CHECK type IN ('game','practice','other'), starts_at TIMESTAMPTZ, location TEXT), messages (id, team_id, body TEXT, tag TEXT CHECK tag IN ('schedule','urgent','payment','general'), created_at), deliveries (id, message_id, family_id, channel TEXT CHECK channel IN ('push','sms','email'), status TEXT, delivered_at), rsvps (id, event_id, family_id, status TEXT), payments (id, team_id, family_id, amount_cents INT, status TEXT). Enable row-level security so users only read rows for teams they belong to. Wire Stripe with three subscription products (Free, Team 12/mo, Club 29/mo). Add env vars TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, RESEND_API_KEY, OPENAI_API_KEY. Install the Twilio and Resend Node SDKs and the Vercel AI SDK.
+Build the weekend MVP of "TeamComm": a coach posts one update and every parent who opted in gets it by text and email, with a one-word RSVP reply. It holds parents' contact details and a child's first name only, and parents opt in themselves.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for coaches), Twilio Programmable Messaging for text, Resend for email. A parent joins through an invite link and ticks a consent box; there is no parent login. A Vercel Cron route sends reminders. Deploy on Vercel.
+
+Tables (Row Level Security on, a coach reads only their own team's rows; the join and the SMS webhook write through the service role):
+- teams(id, name, sport, coach_user_id, invite_code)
+- families(id, team_id, parent_name, phone, email, athlete_first_name, sms_opt_in_at, email_opt_in_at, opted_out_at)
+- events(id, team_id, type, starts_at, location)  type is game, practice or other
+- messages(id, team_id, body, tag, created_at)  tag is schedule, urgent, payment or general
+- deliveries(id, message_id, family_id, channel, status, delivered_at, provider_id)
+- rsvps(id, event_id, family_id, status)
+
+Screens: /login, /team (the roster and events), /post (write and send), /join/[inviteCode] (the parent's page), /messages/[id] (delivery status).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing or team plans, fees and payments, carpool, push notifications or a mobile app, a model for replies, importing phone numbers a parent did not enter.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the multi-channel message fan-out. When a coach posts a message to POST /api/messages with a body and a tag, do the following: insert a messages row, then for every family on the team create delivery rows and dispatch across each channel the family opted into—push via Expo, SMS via Twilio, email via Resend. Record per-channel status in the deliveries table and update it on Twilio and Resend webhooks so the coach dashboard shows delivered and read counts per family. For inbound SMS replies, expose POST /api/sms: validate the Twilio signature, match the sender to a family, and send the reply body to gpt-4o-mini with a strict JSON schema { intent: "rsvp_yes"|"rsvp_no"|"question"|"other", event_hint?: string, note?: string }. On an rsvp intent, upsert the rsvps row for the family's next event. Persist every inbound and outbound message for audit.
+Build the one feature that proves TeamComm: one post reaches every family on the channel they agreed to, and an urgent change never gets lost.
+1. A coach creates a team and shares its invite link. A parent opens it, enters their name, phone, email and the child's first name only, and ticks separate boxes for text and email with clear wording. Save the time of each consent. Never take a child's last name, age or photo.
+2. A coach can import a roster CSV of names and emails only. Those families get no text until they opt in through the link.
+3. The post page takes a message and a tag. Sending creates a delivery for each family on each channel they opted into: a text through Twilio and an email through Resend. Skip anyone who has opted out. Send urgent messages first.
+4. Twilio and Resend status webhooks update each delivery. /messages/[id] shows delivered and failed counts per family so the coach sees who was missed.
+5. POST /api/sms validates the Twilio signature and matches the sender to a family. A reply of YES or NO (any case, with or without a trailing word) sets the RSVP for the team's next event and replies "Got it". Anything else gets "Reply YES or NO, or STOP to end texts". STOP sets opted_out_at.
+6. A daily cron route (protected by CRON_SECRET) sends a reminder the day before each event to opted-in families.
+Rules: only text a number the parent entered themselves. Every text says who it is from and how to stop. Store every inbound and outbound message for the coach's record. Honor business-text registration rules by sending from a registered number only.
+Empty state: a new team shows the invite link and what parents will be asked.
+Done when: a parent can opt in for text only, a roster import sends nothing, a post reaches opted-in families on their channels, a YES reply sets the RSVP, STOP ends texts and a failed delivery shows against the right family.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for TeamComm. Hero headline: "Every parent gets the update. Every time." Sub: "Post once. We deliver it by text, email, and push—so nobody shows up to a moved game." Sections: an animated demo showing a coach posting a game-time change and three parent phones lighting up; the problem (updates scattered across GroupMe, WhatsApp, email, and league portals); how it works (the 4 steps from the solution, with icons); pricing (Free / Team 12 / Club 29 per team) anchored against "TeamSnap 10 to 20 dollars a month with messaging as an afterthought"; an FAQ covering A2P 10DLC compliance, COPPA and minor-data privacy, and no-app-required parent onboarding. Use the Geist font, an off-white background, near-black text with a single lime accent, and generous whitespace. Primary CTA: "Create your team free."
+Build a one-page landing site for TeamComm, team messaging for youth sports coaches and parents.
+Hero: "Every parent gets the update. Every time." Sub: "Post once. We send it by text and email to the parents who chose it, so nobody shows up to a moved game." One button: Join the waitlist.
+Sections: a coach posting a game-time change and three parent phones receiving it, the problem (updates scattered across group chats, email and league portals), how it works in four steps (invite parents, post once, parents reply YES or NO, see who got it) and an FAQ on business text registration, children's data (parents' contact details and a child's first name only) and no app for parents.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lime accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for TeamComm. Design a wordmark and a small icon mark suggesting "one message reaching many"—a single chat bubble radiating outward. Pick a near-black primary, one lime accent, and two warm neutrals. Type system: Geist for UI and headings, Geist Mono for data and delivery timestamps. Provide hex codes, font weights, a 6-icon set (post, schedule, RSVP, carpool, payment, alert), and three voice rules: lead with the parent's peace of mind, never blame the coach, keep SMS copy under 160 characters. Output as a one-page brand sheet plus three sample game-day SMS copy variants.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TeamComm: a wordmark and a small icon that suggest one chat bubble radiating outward.
+Colors: near-black, one lime and two warm neutrals. Type: Geist for the interface, Geist Mono for delivery timestamps.
+Deliverables: wordmark, icon, a six-icon set (post, schedule, RSVP, alert, text, email), three sample game-day texts under 160 characters, and a one-page brand sheet. Voice rules: lead with the parent's peace of mind, never blame the coach.
+Done when: each deliverable is saved in one folder and each sample text is under 160 characters.
 ```
 
 ## Sources

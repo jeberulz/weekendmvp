@@ -72,44 +72,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build Conversational Analytics Digest: a Next.js app that lets non-technical founders connect analytics via OAuth and receive a weekly plain-English email.
+Build the weekend MVP of the "Conversational Analytics Digest": connect one analytics source and get a weekly digest of five plain-English insights, each with one action. Every number in an insight comes from your own data.
 
-Requirements:
-- OAuth flows: GA4 (Google Identity + Analytics API scopes), Mixpanel (Service Account key), Plausible (API key)
-- Supabase schema: users, sources (source_type, encrypted_tokens, property_id), weekly_snapshots (metrics_json, week_of), digests (rendered_html, generated_at)
-- Settings UI: connect sources, delivery day/time, digest tone (casual/formal), exclude paths
-- Sunday night Vercel Cron: for each active user, pull metrics for the past 7 days, store snapshot
-- Monday morning send: generate digest via Claude, render React Email, send via Resend
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Plausible Stats API with an API key (no login flow), the Anthropic API to word the insights. The digest is shown in the app and can be copied as text; email delivery is the next step. Deploy on Vercel.
 
-Ship GA4 connector first. Add Mixpanel and Plausible once the weekly loop is reliable.
+Tables (Row Level Security on, each user reads only their own rows):
+- sources(id, user_id, type, site_id, api_key_encrypted, status)
+- weekly_snapshots(id, source_id, week_of, metrics jsonb)
+- digests(id, source_id, week_of, insights jsonb, subject, created_at)
+- digest_settings(user_id, tone, exclude_paths text[])  tone is casual or formal
+
+Screens: /login, /sources (connect), /digest/[weekOf] (the five insights), /settings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or an agency tier, Google Analytics or Mixpanel connections, email sending or open tracking, a cron or re-engagement emails, template rotation.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Insight Engine**
+**2. Core Feature**
 
 ```text
-Build the Claude-powered insight generator.
-
-The generator takes a weekly metrics snapshot and returns 5 insights. Each insight has:
-- headline (one sentence, plain English, no jargon)
-- explanation (2-3 sentences, what the data actually says)
-- why_it_matters (1-2 sentences, tied to founder goals: signups, revenue, retention)
-- action (one specific thing the founder can do this week, with a link back to the source tool)
-
-The 5 insights must answer: where visitors come from, what makes them stay, where they leave, what converts, what changed this week.
-
-Cache the system prompt. Rotate templates monthly to keep the digest fresh. Log each insight so trend memory can reference "this continued from last week" patterns.
+Build the one feature that proves the Digest: five insights that a founder can verify against their own numbers, and honesty when there is too little data.
+1. Connect a Plausible site with its API key, encrypted. A Sync button pulls the last 8 weeks of visitors, pageviews, top sources, top pages, exit pages and goal conversions from the Stats API and saves one snapshot per week.
+2. Compute the facts in code for the latest week against the one before: change in visitors, each top source's share and change, the pages with the highest exit rate, conversion by source when goals exist, and what changed most. Mark any figure based on fewer than 50 visits as too small to judge.
+3. Send only those facts to the Anthropic API and ask for 5 insights as JSON { insights: [{ headline, explanation, why_it_matters, action }] }. They must answer where visitors come from, what makes them stay, where they leave, what converts and what changed. The action is one sentence a founder can do this week.
+4. Check in code that every number in each insight appears in the facts, allowing rounding. Drop an insight that fails and fill its place with a plain template from the facts. Never state a cause the data cannot show.
+5. Choose the subject line from the insight with the largest well-supported change, computed in code, not the model's pick.
+6. /digest/[weekOf] shows the five cards and the subject. A site with too little traffic gets a clear "not enough data to say anything useful yet" instead of five weak insights.
+Rules: exclude the paths the user listed. Say what each number is based on. Do not invent a trend memory; compare only with the saved previous snapshot.
+Empty state: before connecting, show the connect form and where to find the API key.
+Done when: a fixture snapshot produces five insights whose numbers all trace to the facts, an insight with a made-up percentage is dropped, a low-traffic fixture shows the not-enough-data message and the subject line names the largest supported change.
 ```
 
-**3. Digest Rendering + Send Loop**
+**3. Landing Page**
 
 ```text
-Render the email and ship it at the right local time.
+Build a one-page landing site for the Conversational Analytics Digest, a weekly summary of your site's numbers in plain English.
+Hero: "Your analytics, as one short email you will actually read." Sub: "Five insights a week, each with one thing to do. No dashboard." One button: Join the waitlist.
+Sections: a sample digest with its five cards, how it works in three steps (connect once, we read your week, you get five insights), and an FAQ on which tools connect first (Plausible now), whether the numbers are checked (every figure comes from your data) and what happens when your traffic is small.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-1. React Email template renders 5 insights as stacked cards. Each card: category icon, headline, explanation, why_it_matters, one CTA button
-2. Subject line is the boldest insight of the week, not "Your Weekly Report" (e.g., "Your pricing page is losing 67% of visitors")
-3. Preview text is the second boldest insight so mobile inbox scanners see signal not filler
-4. Send loop: Monday 8am local time (timezone stored per user during onboarding), via Resend
-5. Track opens and click-throughs; if a user hasn't opened 3 digests in a row, send a re-engagement email asking what's not working
+**4. Branding Package**
 
-The subject line is the conversion lever. Test variants weekly.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Conversational Analytics Digest: pick a short working name, then design a wordmark and an icon that suggest an envelope with a small rising line.
+Colors: warm off-white, near-black and one blue. Type: Geist, with tabular numbers for metrics.
+Deliverables: wordmark, icon, an insight card layout (headline, explanation, why it matters, one action), a digest header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the insight card is readable in black and white.
 ```

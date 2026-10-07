@@ -81,19 +81,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) marketplace app called "TrustBadge." Provision Supabase with these tables: builders (id, email, company_name), hackers (id, email, name, verified BOOLEAN default false, specialties TEXT[], payout_rate_pct FLOAT default 0.65), apps (id, builder_id, name, url, repo_url, complexity_tier TEXT CHECK complexity_tier IN ('starter','standard','deep')), audits (id, app_id, hacker_id, status TEXT CHECK status IN ('open','claimed','in_review','remediation','verified','certified'), started_at, completed_at, price_cents INT), findings (id, audit_id, severity TEXT CHECK severity IN ('critical','high','medium','low','info'), title, description, reproduction_steps, status TEXT CHECK status IN ('open','fixed','verified','wont_fix')), badges (id, app_id, audit_id, issued_at, expires_at, public_slug UNIQUE). Enable row-level security: hackers see only audits they've claimed, builders see only their own apps/audits/findings. Wire Stripe Connect for hacker payouts and Stripe Billing for the Continuous Monitoring subscription tiers ($99/$249/$499 per month). Add env vars STRIPE_SECRET_KEY, STRIPE_CONNECT_CLIENT_ID, OPENAI_API_KEY.
+Build the weekend MVP of "TrustBadge": a marketplace where an indie builder submits an app for a fixed-price security audit and earns a public trust badge once the serious findings are fixed.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link). Deploy on Vercel.
+Roles: a signed-in user is a builder or a hacker, decided by which profile row they have.
+
+Tables (Row Level Security on: a builder sees only their own apps, audits and findings, and a hacker sees only the audits they claimed):
+- builders(id, user_id, company_name)
+- hackers(id, user_id, name, verified, specialties)
+- apps(id, builder_id, name, url, repo_url, complexity_tier)  where complexity_tier is one of starter, standard, deep
+- audits(id, app_id, hacker_id, status, started_at, completed_at, price_cents)  where status is one of open, claimed, in_review, remediation, verified, certified
+- findings(id, audit_id, severity, title, description, reproduction_steps, status)  where severity is one of critical, high, medium, low, info and status is one of open, fixed, verified, wont_fix
+- badges(id, app_id, audit_id, issued_at, expires_at, public_slug)
+
+Screens: /login, /submit (builder), /queue (hacker).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: payments or payouts (invoice the first audits by hand), monitoring plans, automated scanning, AI summaries, an admin area, hacker vetting screens.
+Done when: npm run dev starts, you can sign in as a builder or a hacker, and the six tables exist with Row Level Security on.
 ```
 
-**2. Audit Workflow + Badge Issuance**
+**2. Core Feature**
 
 ```text
-Build the core audit workflow. When a builder submits an app, create an audits row with status 'open' and the price based on complexity_tier (starter $199, standard $499, deep $999). Build a hacker-facing queue page listing open audits filtered by the hacker's specialties; claiming an audit sets status to 'claimed' and hacker_id, and starts a 5-business-day SLA timer. Build a findings submission form for hackers (severity, title, description, reproduction_steps) that notifies the builder by email on each new finding. Build a builder-facing remediation view where they can mark a finding as 'fixed' and request re-verification, which notifies the hacker to confirm and flip it to 'verified'. When all critical and high findings are 'verified' or 'wont_fix' with hacker sign-off, set audit status to 'certified', create a badges row with a unique public_slug and expires_at 6 months out, and generate an embeddable badge SVG plus a public verification page at /verify/[slug] showing the app name, certification date, scope tested, and a severity summary (counts only, not full finding details).
+Build the one feature that proves TrustBadge: an audit from submission to a verified public badge.
+1. When a builder submits an app, create an audits row with status open and a price from the tier (starter $199, standard $499, deep $999).
+2. /queue lists open audits for hackers, filtered by their specialties. Claiming one sets status claimed and hacker_id and starts a 5-business-day timer.
+3. Hackers add findings with severity, title, description and reproduction steps. Each new finding sends the builder an email (log it to the console until a provider is added).
+4. The builder marks a finding fixed and asks for re-verification. The hacker confirms and flips it to verified.
+5. When every critical and high finding is verified, or wont_fix with the hacker's sign-off, set the audit to certified, create a badges row with a unique public_slug that expires in 6 months, and generate an embeddable badge SVG.
+6. /verify/[slug] is public. It shows the app name, the certification date, the scope tested and the severity counts only, never the finding details.
+Empty state: a builder with no apps sees the submit form.
+Done when: a test audit goes from open to certified, the badge SVG renders, and /verify/[slug] shows counts without any finding text.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for TrustBadge. Hero headline: "A security badge indie builders can actually afford." Sub: "Get your AI-built app audited by a vetted ethical hacker and earn a trust badge your users can verify — starting at $199, results in days, not months." Sections: a live example badge with a hover state revealing the verification page it links to; problem section framing the gap between "SOC 2 costs $10,000 and takes months" and "vibe-coded apps have real users now"; how it works (4 steps mirroring the solution section); pricing table (Free Scan / Starter $199 / Standard $499 / Deep $999) with the Continuous Monitoring add-on called out separately; a "for ethical hackers" section pitching the network with a waitlist form; FAQ covering badge credibility, what happens if critical issues are found, and re-certification cadence. Use the Geist font, dark background with a single emerald accent color, monospace for code/badge snippets, generous whitespace. Primary CTA: "Get your free scan."
+Build a one-page landing site for TrustBadge, a security trust badge for indie and AI-built apps.
+Hero: "A security badge indie builders can actually afford." Sub: "Get your AI-built app audited by a vetted ethical hacker and earn a trust badge your users can verify, starting at $199, results in days, not months." One button: Get your free scan, which joins the waitlist.
+Sections: a live example badge with a hover that reveals the verification page it links to, the problem (a SOC 2 costs $10,000 and takes months while vibe-coded apps have real users now), how it works in four steps (submit, audit, remediate, certify), the three audit tiers with their prices ($199, $499, $999), a section for ethical hackers with its own waitlist field, and an FAQ on badge credibility, what happens when a critical issue is found and re-certification.
+Waitlist: store emails in a waitlist table in Supabase with a role column. No other service.
+Style: Geist, dark background, one emerald accent, a mono face for badge snippets.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TrustBadge: a wordmark and a badge mark that read as verified, not as a warning.
+Colors: near-black, white and one emerald accent. Type: Geist for the interface and a mono for the embed snippet.
+Deliverables: wordmark, the badge in three sizes (as SVG), the embed snippet, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badge is readable at 64 px.
 ```
 
 ## Sources
