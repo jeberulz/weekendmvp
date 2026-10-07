@@ -11,6 +11,7 @@ export function CopyButton({
   text,
   label,
   location,
+  tool,
   className,
   iconColor = "currentColor",
 }: {
@@ -18,6 +19,8 @@ export function CopyButton({
   /** Accessible name, e.g. "Copy prompt 1: Project setup". */
   label: string;
   location: string;
+  /** The AI tool the copied prompt was written for, when the surface has tabs. */
+  tool?: string;
   className?: string;
   iconColor?: string;
 }) {
@@ -32,7 +35,7 @@ export function CopyButton({
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      trackEvent("prompt_copied", { button_location: location });
+      trackEvent("prompt_copied", tool ? { button_location: location, tool } : { button_location: location });
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setCopied(false), 2000);
     } catch {

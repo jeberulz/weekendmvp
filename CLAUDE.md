@@ -104,7 +104,9 @@ read the response as text before parsing JSON.
   `ideas/manifest.json` and idea MDX, caches for an hour, and rotates "Idea of
   the week" every Monday 00:00 UTC. The hero build window rotates weekly too
   (WP58): `pickHero` draws from ideas that pass `isHeroReady` (a first prompt of
-  8+ lines, no art needed) and never repeats section 03 or 06. Excerpts prefer
+  8+ lines, no art needed) and never repeats section 03 or 06. Each hero tool
+  tab leads the prompt with its own line from `lib/home/hero-prompt.ts` (WP59),
+  and Copy matches what is shown. Excerpts prefer
   a manifest `highlights` block (written by `/publish-idea`, checked by
   `npm run validate:idea-tags`)
 - `components/public/*` + `lib/public/ideas.ts` — the research-desk kit every
