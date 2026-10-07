@@ -34,14 +34,14 @@ Definition of done: all 176 `ideabrowser` ideas have four build prompts that pas
   - Verification:
     - `npx vitest run lib/engine/audit.redos.test.ts tests/prompts`
 
-- [ ] `WP61-S4` - Wave 1, the pilot (5 ideas)
+- [x] `WP61-S4` - Wave 1, the pilot (5 ideas)
   - Scope: the five pilot pages, `ideas/prompt-standard.json`.
   - Acceptance criteria:
     - The five pass the lint and the gates in the manifest. MeetingMood AI is among them.
   - Verification:
     - `npm run audit:prompts -- --slugs <wave>`, `npm run audit:idea -- --all` against the baseline.
 
-- [ ] `WP61-S5` - Waves 2 to 9 (171 ideas)
+- [x] `WP61-S5` - Waves 2 to 9 (171 ideas)
   - Scope: the manifest's waves.
   - Acceptance criteria:
     - Each wave meets the gates in the manifest and is committed and pushed on its own.
@@ -57,10 +57,12 @@ Definition of done: all 176 `ideabrowser` ideas have four build prompts that pas
   - Verification:
     - The commands above.
 
-- [ ] `WP61-S7` - Align the engine's Project Setup template (conditional)
+- [x] `WP61-S7` - Align the engine's build prompts to the standard
   - Scope: `lib/engine/compile.ts` and its tests.
   - Acceptance criteria:
-    - New engine ideas start compliant, with no Stripe catalog or workspace tables in Project Setup. Done only if the earlier waves hold and the engine's tests can be kept green. Otherwise recorded as a follow-up package.
+    - New engine ideas start compliant: Project Setup has no Stripe catalog, plan column or metering table, and all four prompts pass the standard. Done only if the earlier waves hold and the engine's tests can be kept green. Otherwise recorded as a follow-up package.
+    - A test compiles the engine fixture and lints it, so the template cannot drift from the standard.
+  - Why it was needed now: the S3 warning made `test:engine` fail on the engine's own page. The engine's replay test expects a compiled page with no warnings.
   - Verification:
     - `npm run test:engine`
 
@@ -69,7 +71,7 @@ Definition of done: all 176 `ideabrowser` ideas have four build prompts that pas
 - The 49 ideas from other sources (rewrite). They are linted and reported.
 - Any section of a page other than the prompts. Stack and Business Model still name Clerk, Stripe and tiers.
 - Seeding Convex, deploying, OG art, the manifest, hero or homepage code.
-- Flipping `audit:idea` from a warning to an error for ideas not on the ratchet list. That follows S7.
+- Flipping `audit:idea` from a warning to an error for ideas not on the ratchet list. S7 is done, so this is the next small package, once the 49 other-source ideas are rewritten or retired.
 
 ## Notes
 

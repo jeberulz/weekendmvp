@@ -75,4 +75,5 @@ if (flag("--json")) {
 }
 
 const failed = rows.some((r) => r.errors.length > 0);
-process.exit(failed && !flag("--report") ? 1 : 0);
+// Set the code and let Node exit on its own: `process.exit` right after a large write to a pipe cuts the output off.
+process.exitCode = failed && !flag("--report") ? 1 : 0;
