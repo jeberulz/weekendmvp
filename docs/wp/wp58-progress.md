@@ -38,7 +38,13 @@ Why this package exists: the homepage showed MeetingMood AI in sections 01, 03 a
   - The longest title in the hero pool is 71 characters. That is the old pinned hero's title, so rotation adds no new worst case on mobile. No local render was possible, because the homepage needs a Convex backend and this checkout has no `.env`.
 - Next: record the full `npm test` and `npm run build` results.
 
-## 2026-10-07 - WP58-S5 (open)
+## 2026-10-07 - WP58-S5
 
-- Full `npm run lint`: pass (exit 0).
-- Full `npm test` and `npm run build`: running. Results to be appended below.
+- Checks run on the pushed commit `9f71b44` (before this log entry):
+  - `npm run lint`: exit 0.
+  - `npm test`: exit 0. The vitest groups reported no failures, including `tests/home` (9 files, 58 tests).
+  - `npm run build`: exit 0.
+  - `npm run typecheck`: exit 0 (run earlier on the same code).
+- Not done: the 390px render check. The homepage needs a Convex backend and this checkout has no `.env`. Title length was checked from data instead (longest hero-pool title is 71 characters, the old pinned hero's title).
+- Result: all required checks pass.
+- Next: owner review. No PR is open.

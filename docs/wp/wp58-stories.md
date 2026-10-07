@@ -47,11 +47,11 @@ Definition of done: the homepage hero build window shows a different idea each w
   - Verification:
     - `npm run test:home`
 
-- [ ] `WP58-S5` - Docs, checks and a render check
+- [x] `WP58-S5` - Docs, checks and a render check
   - Scope: `CLAUDE.md` (`lib/home/*` line), `docs/wp/wp58-progress.md`.
   - Acceptance criteria:
     - `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass.
-    - The longest titles in the hero pool are checked in the window at 390px, if a local render is available.
+    - The longest titles in the hero pool are checked in the window at 390px, if a local render is available. (Not available in the agent checkout. Checked from data instead, see the progress log.)
   - Verification:
     - The commands above, with results recorded in `docs/wp/wp58-progress.md`.
 
