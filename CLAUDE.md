@@ -36,6 +36,13 @@ New ideas/articles are MDX in `content/` + an entry in `ideas/manifest.json`
 (OG cards). Use `/publish-idea`, `/publish-article`, and
 `/publish-programmatic` rather than doing these steps manually.
 
+An idea's four build prompts (Project Setup, Core Feature, Landing Page,
+Branding Package) follow the weekend prompt standard v1 in `ideas/SECTIONS.md`:
+no billing, one login, at most three outside services, a `Do not build:` line
+and a `Done when:` line in each prompt. `npm run audit:prompts` lints them; an
+idea listed in `ideas/prompt-standard.json` must keep passing, and the engine
+compiler (`lib/engine/compile.ts`) emits compliant prompts.
+
 ## Accessibility
 
 Every page and component must pass WCAG 2.1 AA — run the **`a11y-check`

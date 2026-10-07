@@ -91,57 +91,61 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app called "CertGap" — an adaptive AWS certification study buddy.
+Build the weekend MVP of "CertGap": import your practice-test results, see which AWS exam domains cost you points, and drill only those.
 
-Provision Supabase with tables:
-- profiles (id, clerk_id, email, plan)
-- exam_tracks (id, code e.g. 'SAA-C03', name, domain_weights JSONB)
-- questions (id, exam_track_id, stem, choices JSONB, correct_key, domain, tags TEXT[])
-- attempts (id, user_id, exam_track_id, source TEXT, raw_import JSONB, score, taken_at)
-- attempt_items (id, attempt_id, question_id, chosen_key, correct BOOL, time_ms)
-- misconception_tags (id, slug, label, exam_track_id)
-- explanations_cache (id, question_id, chosen_key, body TEXT, model, created_at)
-- readiness_snapshots (id, user_id, exam_track_id, score FLOAT, domain_scores JSONB, computed_at)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the explanations. Deploy on Vercel.
+Scope: one exam track, SAA-C03.
 
-Wire Clerk auth, Stripe Pro at $49/mo, and Anthropic API for explanations.
-Landing page: hero "Stop re-watching videos. Fix your gaps." CTA "Run free diagnostic."
+Tables (Row Level Security on, each user reads only their own rows, and the question bank is readable by signed-in users):
+- exam_tracks(id, code, name, domain_weights jsonb)
+- questions(id, exam_track_id, stem, choices jsonb, correct_key, domain, tags)
+- attempts(id, user_id, exam_track_id, source, raw_import jsonb, score, taken_at)
+- attempt_items(id, attempt_id, question_id, chosen_key, correct, time_ms)
+- explanations_cache(id, question_id, chosen_key, body, model, created_at)
+- readiness_snapshots(id, user_id, exam_track_id, score, domain_scores jsonb, computed_at)
+
+Screens: /login, /import, /dashboard (readiness and the domain heatmap), /drill.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+Seed about 30 original questions that you write and review yourself. Never copy from a commercial question bank.
+
+Do not build: billing, plans or teams, Clerk, background jobs, the misconception tag system, other exam tracks, a scheduling suggestion.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on, the SAA-C03 track seeded, and the sample questions loaded.
 ```
 
-**2. Core Feature — Import, Diagnose, Drill**
+**2. Core Feature**
 
 ```text
-Build the adaptive study loop:
-
-1. POST /api/import — accept CSV with columns: question_id or stem hash, chosen_answer, correct_answer, domain (optional). Map rows to questions table; create attempt + attempt_items.
-
-2. computeReadiness(userId, examTrackId) — aggregate attempt_items by domain using official SAA-C03 weights; output 0–100 readiness + per-domain red/yellow/green; store readiness_snapshots.
-
-3. GET /api/next-drill — select 10 questions overweighted toward domains where accuracy is below 70% in last 14 days; exclude questions answered correctly 3 times in a row (spaced repetition).
-
-4. On wrong answer — call Claude with prompt:
-   "User is studying {exam}. Question: {stem}. Choices: {choices}. They picked {chosen}. Correct is {correct}. In 120–180 words: explain the concept, why their choice is wrong in this scenario, and one memory hook. Reference AWS naming accurately. No fluff."
-
-Cache explanation in explanations_cache keyed by (question_id, chosen_key).
-
-Dashboard shows readiness trend, domain heatmap, 'study today' queue length, and suggested exam date when readiness exceeds 85% on two simulated full tests.
+Build the one feature that proves CertGap: import, diagnose, drill, and explain every miss.
+1. POST /api/import accepts a CSV with columns question_id (or a stem hash), chosen_answer, correct_answer and an optional domain. Map the rows to questions and create an attempt and its attempt_items.
+2. computeReadiness(userId, examTrackId) groups attempt_items by domain using the track's domain_weights and outputs a readiness score from 0 to 100 plus a red, yellow or green status per domain. Save it to readiness_snapshots.
+3. GET /api/next-drill picks 10 questions weighted toward domains below 70% accuracy over the last 14 days, and skips questions answered correctly three times in a row.
+4. On a wrong answer, ask Claude: "User is studying {exam}. Question: {stem}. Choices: {choices}. They picked {chosen}. Correct is {correct}. In 120 to 180 words: explain the concept, why their choice is wrong in this scenario, and one memory hook. Use AWS names accurately. No fluff." Cache the answer in explanations_cache by question and chosen key.
+5. The dashboard shows readiness over time, the domain heatmap with the percentage printed on each cell, and today's queue length.
+Rules: never show an explanation that was not generated for that exact wrong choice.
+Empty state: with no attempts, show the CSV template and a button that starts a 10-question diagnostic.
+Done when: importing a sample CSV gives a readiness score and a heatmap, the next drill leans toward the weakest domain, and a wrong answer returns a cached explanation the second time.
 ```
 
-**3. Landing Page + Reddit Launch Hook**
+**3. Landing Page**
 
 ```text
-Design a landing page for CertGap targeting AWS Solutions Architect Associate candidates.
+Build a one-page landing site for CertGap, an adaptive AWS certification study buddy.
+Hero: "Your practice tests already know what's wrong. We tell you what to study next." Sub: "Import your practice scores. Get a gap map and an AI explanation on every miss, not another 40-hour video course." One button: Run free diagnostic, which joins the waitlist.
+Sections: the problem (failing despite doing all the materials), how it works in six steps (pick your exam, import or drill, get your gap map, study what you miss, re-test adaptively, schedule with confidence), a placeholder for score-report screenshots with a readiness change, and a free SAA Readiness Calculator.
+Calculator: upload a CSV and see the domain breakdown in the browser, with nothing saved and no account needed.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: direct and practical, written for someone who is tired of videos.
+Done when: the page renders on a phone, the calculator reads a sample CSV, and a submitted email appears in the waitlist table.
+```
 
-Hero: "Your practice tests already know what's wrong. We tell you what to study next."
-Subhead: "Import Whizlabs or Tutorials Dojo scores. Get a gap map and AI explanations on every miss — not another 40-hour video course."
+**4. Branding Package**
 
-Sections:
-- Problem: failing despite 'doing all the materials'
-- How it works (6 steps from the product)
-- Social proof placeholder: score report screenshots with readiness delta
-- Pricing: Free diagnostic vs Pro $49/mo vs Team
-- FAQ: which exams, import formats, how readiness is calculated, data privacy
-
-Add a free tool: "SAA Readiness Calculator" — upload CSV, get domain breakdown without account (email gate optional). Optimize for sharing in r/AWSCertifications.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for CertGap: a wordmark and an icon that suggest a gap being closed.
+Colors: near-black, warm white and one steady blue, with red, yellow and green reserved for domain status. Type: one clean sans for the interface and a mono for exam codes.
+Deliverables: wordmark, icon, a domain heatmap cell style that prints the percentage, and one launch graphic.
+Done when: each deliverable is saved in one folder and the heatmap reads without color.
 ```
 
 ## Sources

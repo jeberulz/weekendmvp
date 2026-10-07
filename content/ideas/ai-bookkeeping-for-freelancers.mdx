@@ -86,40 +86,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) + TypeScript project for "AI Bookkeeping for Freelancers".
+Build the weekend MVP of "AI Bookkeeping for Freelancers": connect a bank, auto-categorize the transactions, and read your month in plain English.
 
-Set up:
-- Supabase Postgres with tables: users, connections, transactions, categories, rules, tax_estimates
-- Plaid Link onboarding flow that stores access tokens server-side and pulls 24 months of transactions
-- Auth with Clerk (email + Google), MFA enabled for paid users
-- A dashboard route showing: this month's income, expenses, profit, and an "uncategorized" queue
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with Google sign-in), Plaid for the bank link, Claude (Anthropic API) for the categories and the summary. Deploy on Vercel.
 
-Use server components for the transaction tables. Include env var handling and Plaid webhook validation.
+Tables (Row Level Security on, each user reads only their own rows):
+- connections(id, user_id, plaid_item_id, access_token_encrypted)
+- categories(id, user_id, name)
+- transactions(id, user_id, connection_id, plaid_transaction_id, posted_on, merchant, amount_cents, category_id, confidence)
+- rules(id, user_id, merchant, category_id)
+
+Screens: /login, /connect, /dashboard (income, expenses, profit, uncategorized queue).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, ANTHROPIC_API_KEY.
+Plaid access tokens stay on the server and are never sent to the browser.
+
+Do not build: billing or plans, Stripe or PayPal connections, quarterly tax estimates, Schedule C export, an accountant share link, multi-factor sign-in.
+Done when: npm run dev starts, you can sign in with Google, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the AI categorization engine.
-
-For each new batch of Plaid transactions:
-1. Look up any existing user rule for the merchant; apply it if found
-2. Otherwise send the batch to Claude with the user's category list and prior examples, asking for a category + confidence per transaction
-3. Auto-apply high-confidence results; route low-confidence ones to a review queue
-4. When the user corrects a category, save it as a per-merchant rule so the model improves over time
-
-Then generate a monthly plain-English summary: total income, top expense categories, profit, and 3 likely missed deductions. Keep all accounting jargon out of the output.
+Build the one feature that proves the idea: categorize every transaction and explain the month.
+1. After the Plaid link, pull the last 24 months of transactions and store them. Validate the Plaid webhook signature.
+2. For each new batch, apply the user's rule for the merchant if one exists. Otherwise send the batch to Claude with the user's category list and earlier corrections, and ask for a category and a confidence for each transaction.
+3. Auto-apply high-confidence results and send low-confidence ones to the uncategorized queue.
+4. When the user corrects a category, save it as a per-merchant rule so the next batch skips the model.
+5. Write a monthly summary in plain English: total income, top expense categories, profit and three likely missed deductions. No accounting jargon.
+Rules: use server components for the transaction tables.
+Empty state: with no connection, show the connect-your-bank button and one sentence on what happens next.
+Done when: a sandbox bank account fills the dashboard, correcting one transaction creates a rule, and the month's summary names three possible deductions.
 ```
 
-**3. Tax Estimate Feature**
+**3. Landing Page**
 
 ```text
-Add a quarterly tax estimate module.
+Build a one-page landing site for AI Bookkeeping for Freelancers.
+Hero: "Your books, done. In plain English." Sub: "Connect a bank. Get your profit this month, what you will likely owe, and three deductions you forgot." One button: Join the waitlist.
+Sections: the problem (no chart of accounts, no journal entries, just the answer), how it works in four steps (connect, categorize, review in plain English, export), a sample monthly summary, and an FAQ on bank security and accuracy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: friendly, plain and unafraid of money.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Compute year-to-date net profit from categorized transactions
-- Estimate self-employment + federal income tax using current US brackets and the 15.3% SE rate
-- Show the next quarterly payment amount and IRS due date with a reminder
-- Produce a Schedule C-ready P&L export (PDF + CSV) and a read-only share link for the user's accountant
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AI Bookkeeping for Freelancers: a wordmark and an icon that feel calm and trustworthy with money.
+Colors: a deep green, a warm off-white and one amber accent. Type: one friendly sans for the interface and tabular figures for amounts.
+Deliverables: wordmark, icon, a sample monthly-summary card, and one launch graphic.
+Done when: each deliverable is saved in one folder and the amounts line up in a column.
 ```
 
 ## Sources

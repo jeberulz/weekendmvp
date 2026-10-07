@@ -87,53 +87,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "Smallshelf," a
-small-order wholesale marketplace connecting boutiques with emerging brands.
+Build the weekend MVP of "Smallshelf": a directory where boutiques find emerging brands with low minimums, filter by what matters to them and send an order request or a sample request. Brands accept or decline. No payment moves through the app this weekend.
 
-Provision Supabase with these tables:
-- brands (id, name, category, region, verified boolean, subscription_tier)
-- catalogs (id, brand_id, title, min_order_cents, lead_time_days, sample_policy)
-- products (id, catalog_id, name, wholesale_price_cents, msrp_cents, margin_pct,
-  certifications text[], aesthetic_tags text[], image_url)
-- retailers (id, shop_name, region, concept_tags text[])
-- orders (id, retailer_id, brand_id, total_cents, fee_cents, status)
-- samples (id, retailer_id, product_id, status)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres full-text search, Row Level Security, Storage, Auth with email magic link). Brands import their catalog by CSV. Discovery and the "fits your shelf" score are plain code. Deploy on Vercel.
 
-Enable row-level security so brands see only their own rows and retailers see only
-their own orders. Set up Stripe Connect for split payouts and env vars for
-OPENAI_API_KEY, STRIPE_SECRET_KEY, and the Supabase keys.
+Tables (Row Level Security on; brands write their own rows, retailers their own orders, and the directory is readable by signed-in retailers):
+- brands(id, user_id, name, category, region, verified boolean)  you set verified by hand
+- catalogs(id, brand_id, title, min_order_cents, lead_time_days, sample_policy)
+- products(id, catalog_id, name, wholesale_price_cents, msrp_cents, margin_pct, certifications text[], aesthetic_tags text[], image_path)
+- retailers(id, user_id, shop_name, region, concept_tags text[])
+- order_requests(id, retailer_id, brand_id, items jsonb, total_cents, status, created_at)  status is requested, accepted, declined or shipped
+- sample_requests(id, retailer_id, product_id, status)
+
+Screens: /login, /brands (the directory), /brands/[id], /fits (your shelf), /requests, /brand/catalog (import).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, membership or transaction fees, Stripe Connect or payouts, Typesense or Algolia, a model for scoring, reorder reminders.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Core Feature: Fit-Based Discovery**
+**2. Core Feature**
 
 ```text
-Build the retailer discovery page for Smallshelf.
-
-Requirements:
-- Faceted search over products with filters: category, minimum order (slider),
-  margin band, region/locality, certifications, and aesthetic tags
-- Results show product image, wholesale price, MSRP, computed margin, and minimum
-- A "fits your shelf" rail that ranks brands using the retailer's concept_tags
-
-Index products in Typesense. For ranking, call gpt-4o-mini to score how well a
-brand's aesthetic_tags match the retailer's concept_tags, and cache the score.
-The user flow is: land on directory, apply filters, open a brand, request a sample
-or add to a draft order.
+Build the one feature that proves Smallshelf: a boutique finds brands that fit its shelf and can ask for a small first order.
+1. A brand imports products from a CSV with columns name, wholesale_price, msrp, certifications, aesthetic_tags, image and sets its minimum order, lead time and sample policy. Reject a row whose wholesale price is not below its MSRP and list it. Compute margin_pct in code as (msrp minus wholesale) over msrp.
+2. The directory filters by category, minimum order (a slider), margin band, region, certifications and aesthetic tags, with full-text search on names. Each result shows the image, the wholesale price, the MSRP, the margin and the minimum.
+3. The "fits your shelf" rail ranks brands for a retailer by the overlap between the brand's aesthetic tags and the retailer's concept tags (the shared tags over all tags) and shows the shared tags as the reason. Cache the score per retailer and brand.
+4. A retailer builds an order request from one brand's products. Block sending when the total is under the brand's minimum and show how much is missing.
+5. The brand sees requests and accepts, declines or marks shipped. Each change shows to the retailer.
+6. A retailer can request a sample of a product. The brand sees it with its sample policy.
+Rules: say on every request that Smallshelf does not hold money and that payment is agreed between the brand and the shop. Show a verified badge only for brands you verified by hand.
+Empty state: an empty directory shows the brand import steps.
+Done when: a CSV with a bad price is partly rejected with reasons, the filters narrow results correctly, the fits rail shows the shared tags, an order under the minimum cannot be sent and a brand's accept shows to the retailer.
 ```
 
-**3. Checkout with Split Payouts and Samples**
+**3. Landing Page**
 
 ```text
-Implement Smallshelf checkout and sampling on top of Stripe Connect.
+Build a one-page landing site for Smallshelf, a wholesale directory for small first orders.
+Hero: "Stock your shop with brands that welcome a small first order." Sub: "Filter by minimum, margin and fit. Ask for a sample. Send an order request without a sales call." Two buttons: Join the waitlist as a shop, Join as a brand.
+Sections: a sample brand page with minimum, lead time and margin, how it works in four steps (browse by fit, sample, order request, reorder), and an FAQ on payment today (agreed between you and the brand), how brands are verified and which regions come first.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one terracotta accent, product photography as the main visual.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
 
-- A retailer builds an order from one brand that meets the brand's minimum
-- At checkout, charge the retailer, hold funds until the brand marks the order
-  shipped, then release the payout minus a 5% platform fee
-- Sample requests create a low-value Stripe charge with the brand's sample policy
-- Emit events (order.created, order.shipped, sample.requested) to Inngest, which
-  sends transactional email via Resend and schedules a reorder reminder in 30 days
+**4. Branding Package**
 
-Include idempotent webhook handling and clear error states for failed payouts.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Smallshelf: a wordmark and an icon that suggest a single small shelf with one box on it.
+Colors: warm off-white, ink and one terracotta. Type: Geist, with tabular numbers for prices and margins.
+Deliverables: wordmark, icon, three request status chips (requested, accepted, shipped) that differ by shape as well as color, a brand card layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

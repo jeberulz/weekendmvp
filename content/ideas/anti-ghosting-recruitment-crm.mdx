@@ -80,19 +80,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Persist" — an anti-ghosting layer for recruitment CRMs. Provision a Postgres database (Supabase) with these tables: accounts (id, name, plan TEXT default 'starter', seats INT), users (id, account_id, email UNIQUE, role TEXT), connected_pipelines (id, account_id, provider TEXT CHECK provider IN ('bullhorn','recruitcrm','crelate','csv'), credentials_encrypted TEXT, last_synced_at TIMESTAMPTZ), contacts (id, account_id, pipeline_id, name, email, phone, deal_stage TEXT, last_contact_at TIMESTAMPTZ), engagement_events (id, contact_id, type TEXT CHECK type IN ('email_open','email_reply','call_answered','call_missed','portal_login'), occurred_at TIMESTAMPTZ, metadata JSONB), risk_scores (id, contact_id, score FLOAT, computed_at TIMESTAMPTZ), sequences (id, account_id, name, trigger_score_threshold FLOAT, steps JSONB), sequence_runs (id, contact_id, sequence_id, current_step INT, status TEXT). Enable row-level security scoped to account_id on every table. Wire Stripe with three products: Starter $79/mo, Pro $149/mo, Agency $299/mo per 3 seats. Add env vars for OPENAI_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, RESEND_API_KEY.
+Build the weekend MVP of "Persist": an add-on for a recruiter's pipeline that scores how fast a client is cooling and sends the right follow-up before they go dark.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API for reply sentiment, Resend for the follow-up emails. A Vercel cron route runs the scoring. Pipeline data comes in by CSV this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, scoped to the account that owns the rows):
+- accounts(id, user_id, name)
+- connected_pipelines(id, account_id, provider, last_synced_at)  where provider is csv
+- contacts(id, account_id, pipeline_id, name, email, phone, deal_stage, last_contact_at)
+- engagement_events(id, contact_id, type, occurred_at, metadata jsonb)  where type is one of email_open, email_reply, call_answered, call_missed, portal_login
+- risk_scores(id, contact_id, score, computed_at)
+- sequences(id, account_id, name, trigger_score_threshold, steps jsonb)
+- sequence_runs(id, contact_id, sequence_id, current_step, status)
+
+Screens: /login, /contacts (risk badges), /sequences.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or seats, Bullhorn, Recruit CRM or Crelate connections, SMS, a job queue or Redis, multiple users per account.
+Done when: npm run dev starts, you can sign in, and the seven tables exist with Row Level Security on.
 ```
 
-**2. Engagement Scoring + Nudge Engine**
+**2. Core Feature**
 
 ```text
-Build a scoring worker that runs on a schedule (Vercel Cron, every 15 minutes) and on-demand when a new engagement_events row is inserted. For each contact, compute a cooling-risk score from 0-100 using a weighted model: reply latency versus that contact's historical average, ratio of ignored to answered calls over the last 14 days, days since last portal login, and a sentiment score from the most recent reply (call OpenAI with a strict JSON schema: sentiment "positive"|"neutral"|"cooling"|"unknown", confidence FLOAT). Store the result in risk_scores. When a contact's score crosses a sequence's trigger_score_threshold and no sequence_run is already active for that contact, create a sequence_run at step 0 and enqueue the first step via BullMQ. Each sequence step should specify a channel (email or sms), a template with merge fields (contact name, recent deal context, days since last contact), and a wait period before evaluating whether to advance to the next step (skip if the contact replied in the interim). Log every send and every reply back into engagement_events so the loop is self-reinforcing.
+Build the one feature that proves Persist: a cooling-risk score that fires a follow-up at the right moment.
+1. Import contacts and engagement events from a CSV.
+2. A cron route (every 15 minutes, protected by CRON_SECRET) computes a cooling-risk score from 0 to 100 for each contact from four signals: reply latency against that contact's own average, the ratio of missed to answered calls over 14 days, days since the last portal login, and the sentiment of the latest reply. Get the sentiment from OpenAI as JSON { sentiment: "positive" | "neutral" | "cooling" | "unknown", confidence }. Save the result to risk_scores.
+3. When a score crosses a sequence's trigger_score_threshold and no run is active for that contact, create a sequence_run at step 0. Each step has an email template with merge fields (contact name, recent deal context, days since last contact) and a wait before the next step. Skip the rest if the contact replied in the meantime.
+4. Send each email through Resend and log every send and reply back into engagement_events.
+5. /contacts shows risk badges that also carry the number, so color is not the only signal.
+Rules: never send to a contact who has unsubscribed or replied since the last step.
+Empty state: with no contacts, show the CSV upload and the expected columns.
+Done when: an imported test pipeline scores every contact, a contact over the threshold starts a sequence and receives step 0, and a reply stops the rest.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for Persist. Hero headline: "Stop losing placements to client ghosting." Sub-headline: "Persist watches your pipeline for the warning signs of a cooling client and fires the right follow-up before they go dark — plugs into Bullhorn, Recruit CRM, or Crelate in under 10 minutes." Sections: a live risk-score demo widget showing a mock contact list with color-coded risk badges, problem section framing the average lost placement at $10,000-$30,000 in forfeited commission, how it works (the 4-step flow: connect, score, trigger, learn), pricing table (Starter $79 / Pro $149 / Agency $299 per 3 seats) anchored against a callout comparing it to adding one more seat on Bullhorn or Recruit CRM, social proof section for beta results, and an FAQ covering CRM integration security, data privacy, and how nudges avoid feeling spammy. Use the Geist font, a dark near-black background with a single warm amber accent for risk indicators, generous whitespace. Primary CTA: "Run your free Follow-Up Effectiveness Assessment."
+Build a one-page landing site for Persist, an anti-ghosting add-on for recruiters.
+Hero: "Stop losing placements to client ghosting." Sub: "Persist watches your pipeline for the warning signs of a cooling client and fires the right follow-up before they go dark." One button: Run your free Follow-Up Effectiveness Assessment, which joins the waitlist.
+Sections: a live risk-score demo widget with a mock contact list and risk badges, the problem (a lost placement can forfeit $10,000 to $30,000 in commission), how it works in four steps (connect, score, trigger, learn), a placeholder for beta results to be replaced with real ones, and an FAQ on pipeline security, data privacy and how nudges avoid feeling spammy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one warm amber accent for risk indicators, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Persist: a wordmark and an icon that suggest a pulse line that does not flatten.
+Colors: near-black, off-white and one warm amber for risk. Type: Geist for the interface and tabular numbers for scores.
+Deliverables: wordmark, icon, three risk badges (low, rising, high) that differ by shape and number as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badges are distinguishable without color.
 ```
 
 ## Sources

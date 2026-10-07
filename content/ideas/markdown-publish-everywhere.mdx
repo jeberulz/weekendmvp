@@ -87,47 +87,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router SaaS called Fmttr — markdown publish everywhere for creators.
+Build the weekend MVP of "Fmttr": paste one markdown file and get four ready-to-use outputs, a blog post, a newsletter, a LinkedIn post and an X thread, each formatted to its channel.
 
-Set up:
-- Supabase auth (magic link) + Postgres schema: users, documents (markdown source), outputs (channel, rendered_body, status), templates, platform_connections (encrypted tokens)
-- Dashboard routes: /documents, /documents/[id]/preview, /settings/integrations, /settings/brand-voice
-- Stripe Billing with Free / Starter ($15) / Pro ($49) tiers
-- Landing page with hero "Write once in markdown. Publish everywhere." and a live demo textarea
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), remark and unified to parse markdown, the Anthropic API for an optional rewrite pass that may only restructure. Outputs are copied or downloaded; nothing is published for you. Deploy on Vercel.
 
-Use TypeScript strict mode, Tailwind v4, and server-only secrets for API keys.
+Tables (Row Level Security on, each user reads only their own rows):
+- posts(id, user_id, title, markdown, updated_at)
+- outputs(id, post_id, channel, body, status, ai_used boolean, generated_at)  channel is blog, newsletter, linkedin or twitter; status is fresh or stale
+- style_guides(user_id, voice_notes, banned_phrases text[])
+
+Screens: /login, /posts, /posts/[id] (the four outputs side by side with Copy and Download), /settings (the style guide).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or metered overage, Ghost, Buffer or Substack publishing, OAuth connections, scheduling, a job queue, image hosting.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Multi-Channel Generation**
+**2. Core Feature**
 
 ```text
-Build the Fmttr generation pipeline for a single markdown document:
-
-1. Parse input with remark/unified into mdast
-2. Run deterministic transforms per channel:
-   - blog: Ghost-compatible HTML with heading anchors
-   - newsletter: inline-CSS email HTML, preheader extraction
-   - linkedin: plain text with line breaks, hook in first 210 chars
-   - twitter: split into numbered thread tweets under 280 chars each
-3. Optional AI pass (Claude Haiku): only restructure—never add facts—using a user style guide
-4. Store each output in Supabase outputs table with preview URLs
-5. Return side-by-side preview UI with per-channel edit + "regenerate from source" button
-
-Handle edge cases: code blocks (skip thread split), images (upload to CDN placeholder), broken links (lint before publish).
+Build the one feature that proves Fmttr: one markdown file becomes four outputs that are correct before any model touches them.
+1. Parse the markdown into an mdast tree with remark.
+2. Build four outputs in plain code. blog: HTML with heading anchors. newsletter: HTML with inline CSS and a preheader taken from the first sentence. linkedin: plain text with line breaks and the hook in the first 210 characters. twitter: a numbered thread where each tweet is 280 characters or fewer, split on paragraph breaks and then sentences, never inside a code block or a link.
+3. An optional AI pass sends one output and the style guide to the Anthropic API and may only restructure: shorten an intro, reorder, split. Check in code that every number, URL and capitalized name in the result also appears in the source. If anything new appears, discard the AI version, keep the plain output and show "AI changes rejected: it added new facts".
+4. Lint before showing: flag empty or malformed link URLs and images with no alt text.
+5. Show the four outputs side by side with an editable box for each, Copy, and Download as .html or .md. Editing the source marks every output stale and offers Regenerate all.
+Rules: code blocks are never split into tweets. Never invent a fact, a link or a quote.
+Empty state: with no posts, show a paste box with a sample post.
+Done when: a sample post produces four outputs, every tweet is 280 characters or fewer, the LinkedIn hook fits in 210, an AI result with an injected number is rejected, and editing the source marks the outputs stale.
 ```
 
-**3. Publish Integrations**
+**3. Landing Page**
 
 ```text
-Add publish actions for Fmttr document outputs:
+Build a one-page landing site for Fmttr, a write-once publishing helper for markdown writers.
+Hero: "Write once in markdown. Publish everywhere." Sub: "One file becomes a blog post, a newsletter, a LinkedIn post and an X thread, each in the right shape. Nothing is invented." One button: Join the waitlist.
+Sections: a sample file next to its four outputs, how it works in four steps (paste, generate, tune, copy), and an FAQ on what the AI is allowed to do (reshape, never add facts), which publishing connections come next and where your posts are stored.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, ink type, one violet accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Ghost Admin API: create/update post with html field, optional newsletter email flag
-- Buffer Publish API: queue LinkedIn post and X thread as scheduled updates
-- Export fallbacks: downloadable .html, .md thread bundle, copy-to-clipboard
+**4. Branding Package**
 
-Implement OAuth connect flows with token refresh. On source markdown edit, mark downstream outputs stale and offer one-click "republish all connected channels."
-
-Include error handling with user-visible retry and idempotent publish IDs to prevent duplicate posts.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Fmttr: a wordmark and an icon that suggest one line that fans out into four.
+Colors: off-white, ink and one violet. Type: Geist, with Geist Mono for markdown.
+Deliverables: wordmark, icon, four channel icons (blog, newsletter, LinkedIn, thread) that read at 24 pixels, and one launch graphic.
+Done when: each deliverable is saved in one folder and the four channel icons are distinguishable in black and white.
 ```
 
 ## Sources

@@ -95,25 +95,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a React Native (Expo) TypeScript app named SafeMeet for company Lokkit. Supabase tables: users, trusted_contacts, spots (id, name, lat, lng, kind CHECK IN ('police_lot','municipal_safetrade','retail_verified'), verified_at, source_url), meetups (id, user_id, spot_id, starts_at, ends_at, status), pings (meetup_id, lat, lng, recorded_at). Enable realtime on pings. RLS: meetup owner and invited contacts only. Stripe products Starter $4.99/mo and Unlimited $9.99/mo. Env: GOOGLE_MAPS_KEY, TWILIO_*, SUPABASE_*, STRIPE_*. Location permission copy must say the share lasts only for the meetup window.
+Build the weekend MVP of "SafeMeet": a meetup safety tracker for marketplace sellers. It lists verified safe-exchange spots and shares your live location with one trusted person until you tap I'm done.
+
+Stack: Expo (React Native) with TypeScript, Supabase (Auth with email magic link, Postgres, Realtime), Google Maps for the map, Twilio for SMS.
+
+Tables (Row Level Security on: the meetup owner and the invited contact only):
+- trusted_contacts(id, user_id, name, phone_e164)
+- spots(id, name, lat, lng, kind, verified_at, source_url)  where kind is one of police_lot, municipal_safetrade, retail_verified
+- meetups(id, user_id, spot_id, contact_id, starts_at, ends_at, status)  where status is one of live, closed
+- pings(meetup_id, lat, lng, recorded_at)  with Realtime turned on
+
+Screens: spot list and map, start meetup, live meetup.
+Env vars (names only): SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_MAPS_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER.
+Permission copy: the location share lasts only for the meetup window.
+
+Do not build: billing or plans, an admin tool for adding spots (seed the spots table by hand), family or group tracking, tracking after the meetup ends.
+Done when: the app runs in Expo Go, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Meetup Session + Timeout SMS**
+**2. Core Feature**
 
 ```text
-Build the meetup flow. User picks a verified spot, sets duration (default 20 minutes, max 90), picks one trusted contact. Starting the session writes meetups.status=live and opens a foreground location watcher that inserts pings every 8 seconds. The contact’s screen subscribes to that meetup channel. When ends_at hits and status is still live, call Twilio to SMS the contact: spot name, last ping age, deep link. Tapping I'm done sets status=closed and stops the watcher. Do not retain pings after 24 hours unless the user exported the meetup. Emergency button: tel:911 (or local emergency) plus SMS to the contact.
+Build the one feature that proves SafeMeet: a time-boxed meetup with a live share and a timeout alert.
+1. Pick a verified spot from the list, set a duration (default 20 minutes, maximum 90) and pick one trusted contact.
+2. Starting writes meetups.status = live and starts a foreground location watcher that inserts a row into pings every 8 seconds.
+3. The contact's screen subscribes to that meetup's channel and shows the pings on a map.
+4. When ends_at passes and the status is still live, send the contact one SMS from a server function: the spot name, how old the last ping is, and a link to the live view.
+5. Tapping I'm done sets status = closed and stops the watcher. An emergency button dials the local emergency number and texts the contact.
+Rules: never show a spot as verified unless it has a source_url and a verified_at. Delete a meetup's pings 24 hours after it closes.
+Empty state: with no spots, show "No verified spots near you yet".
+Done when: a meetup you start shows live on a second device, and letting it run past its end time sends the SMS.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing site for SafeMeet. Hero: "The meetup is five minutes. The worry lasts all afternoon." Sub: "Verified SafeTrade spots. Live share with one person you trust. Auto-alert if it runs long. Not a family tracker." Sections: the parking-lot problem, how it works (five steps matching the product), map screenshot of police-lot pins, pricing Starter $4.99 vs Unlimited $9.99 vs Life360 always-on, FAQ on privacy (share dies with the session) and why Google Maps is not enough. Primary CTA: "Plan tonight’s pickup." Secondary: "For marketplaces" pointing at the $500-$5,000/mo license.
+Build a one-page landing site for SafeMeet.
+Hero: "The meetup is five minutes. The worry lasts all afternoon." Sub: "Verified safe-exchange spots. Live share with one person you trust. An alert if it runs long. Not a family tracker." One button: Plan tonight's pickup, which joins the waitlist.
+Sections: the parking-lot problem, how it works in five short steps (pick a spot, start the window, timeout watch, emergency, end and forget), a map with police-lot pins, and a privacy FAQ (the share ends with the meetup).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: plain and calm, never alarmist.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Verified Spot Pipeline**
+**4. Branding Package**
 
 ```text
-Build an admin tool to ingest public SafeTrade sources: municipal police PDFs, city safe-exchange web pages, and user flags. Each candidate spot needs source_url, fetched_at, and a human verified_at before it is public. Never auto-publish a Google POI as verified. Weekly job that marks spots stale if verified_at is older than 180 days. Export a GeoJSON of public spots for the mobile map. Write the trust copy: last checked date visible on every pin.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SafeMeet, the safety tracker from Lokkit: a wordmark and an app icon that feel calm and trustworthy, not alarming.
+Colors: one deep green or blue, one warm light neutral, and one clear alert color used only for the emergency button.
+Typography: one readable sans for the interface.
+Deliverables: wordmark, app icon, a map pin set for the three spot kinds (police lot, municipal safe-trade zone, verified retail lot), and one launch graphic.
+Done when: each deliverable is saved in one folder and the three pin kinds are easy to tell apart at small size.
 ```
 
 ## Sources

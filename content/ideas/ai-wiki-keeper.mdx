@@ -84,52 +84,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "WikiKeeper."
-Provision Postgres (Supabase) with pgvector enabled. Tables: teams (id, name, plan),
-integrations (id, team_id, provider TEXT CHECK provider IN ('github','slack','notion'),
-access_token, installed_at), wiki_pages (id, team_id, source_url, title, content,
-embedding VECTOR(1536), last_synced_at), proposed_edits (id, team_id, wiki_page_id,
-diff_summary, full_draft, source_event TEXT, status TEXT DEFAULT 'pending', created_at).
-Wire a GitHub App manifest with pull_request webhook scope and a Slack app with Bolt SDK
-for the approval flow. Add env vars for GITHUB_APP_ID, GITHUB_PRIVATE_KEY, SLACK_BOT_TOKEN,
-ANTHROPIC_API_KEY, OPENAI_API_KEY. Set up BullMQ with a Redis connection for the event queue.
+Build the weekend MVP of "WikiKeeper": when a pull request merges, the app drafts a small edit to the docs page it affects and opens a pull request with that edit for a person to review. It never changes a docs page by itself.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the GitHub API with a fine-grained token for one repository and a webhook secret, the Anthropic API to draft the edit. Docs are markdown files in a folder of the same repository. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own repositories; the webhook writes through the service role):
+- repos(id, user_id, full_name, token_encrypted, docs_path, webhook_secret, excluded_paths text[])
+- doc_pages(id, repo_id, path, title, content, sha, covers text[], last_synced_at)  covers lists the code paths the page documents
+- proposed_edits(id, repo_id, doc_page_id, kind, pr_number, diff_summary, unified_diff, status, opened_pr_url, created_at)  kind is edit or new_page; status is pending, approved or rejected
+- webhook_events(id, repo_id, delivery_id, processed_at)  delivery_id is unique
+
+Screens: /login, /repos (connect one and copy the webhook URL), /pages (the docs and what each covers), /edits (pending proposals with the diff).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, plans or a compliance add-on, Slack or Notion watching, approval buttons in chat, embeddings or pgvector, Redis, automatic publishing, a digest email.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature: Change Detection + Draft Generation**
+**2. Core Feature**
 
 ```text
-Build a worker that processes incoming GitHub pull_request.merged webhooks:
-
-1. Fetch the PR diff and description via Octokit.
-2. Embed the PR description + changed file paths, and run a pgvector similarity
-   search against wiki_pages.embedding to find the top 3 candidate affected pages.
-3. Send the PR diff, description, and candidate page content to Claude with this
-   instruction: "Given this code change and the existing wiki page below, draft a
-   minimal diff-style edit to the page that reflects the change. Preserve the page's
-   existing tone and structure. Output the edit as a unified diff plus a one-sentence
-   summary of what changed and why."
-4. Insert a row into proposed_edits with status 'pending' and post the diff summary
-   to the team's configured Slack channel as an interactive message with Approve/Reject
-   buttons.
-5. On Slack button click, update proposed_edits.status and, if approved, push the
-   accepted edit to the wiki's underlying API (Confluence/Notion/GitHub docs folder).
-
-Handle the case where no candidate page exists above a similarity threshold — file
-these as "new page suggestions" instead of edits.
+Build the one feature that proves WikiKeeper: a merged change produces one small, correct, reviewable docs edit, and nothing else.
+1. Sync the docs folder into doc_pages. Each page may list the code paths it documents in its front matter under covers.
+2. The webhook route verifies the X-Hub-Signature-256 header with the webhook secret and ignores anything but a pull request that was closed and merged. Skip a delivery id already seen, so a retry does nothing.
+3. Fetch the PR description and its diff (cut to 20,000 characters) and the list of changed files, dropping any path in excluded_paths.
+4. Pick candidate pages in code: pages whose covers patterns match at least one changed file, ranked by how many files match, top 3. If none match, save a new_page suggestion with the PR title and files and draft nothing.
+5. For each candidate, send the PR description, the diff and the page to the Anthropic API and ask for a minimal unified diff of the page plus one sentence on what changed and why, keeping its tone and structure. Check that the diff applies cleanly to the page's current content. Reject a diff that does not.
+6. /edits shows each pending proposal with the diff and the PR it came from. Approve opens a pull request on the repository with the edit on a new branch, never a commit to the main branch. Reject records the decision.
+Rules: no edit is ever applied without a person approving it. Never include secrets from a diff in a prompt; skip any file that looks like an environment file. Say which PR every proposal came from.
+Empty state: before connecting a repository, show the connect form and the front matter to add.
+Done when: a fixture merged-PR webhook creates one proposal for the page that covers the changed file, a replayed delivery creates nothing, a diff that does not apply is rejected, an unmatched change becomes a new-page suggestion and approving opens a pull request.
 ```
 
-**3. Configuration & Trust Threshold**
+**3. Landing Page**
 
 ```text
-Add a per-team settings page for:
-- auto_publish_threshold: float (0.0-1.0) - similarity/confidence score above which
-  edits publish automatically instead of requiring Slack approval
-- watched_channels: string[] - Slack channel IDs to monitor for tagged threads
-- excluded_paths: string[] - GitHub file paths to ignore when generating PR-based edits
-- digest_frequency: enum ('daily', 'weekly') - cadence for the summary email/Slack digest
+Build a one-page landing site for WikiKeeper, docs that keep up with your code.
+Hero: "Your docs, updated when your code changes." Sub: "When a pull request merges, WikiKeeper drafts the small edit to the page it affects and opens a pull request for you to review." One button: Join the waitlist.
+Sections: a sample merged PR next to the proposed docs diff, how it works in four steps (connect a repo, a PR merges, an edit is drafted, you review it), and an FAQ on what is never done (nothing is published without your approval), what is sent to the model and which docs tools come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Store settings in a team_settings table and read them in the worker before deciding
-whether a proposed edit needs human approval or can auto-publish.
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for WikiKeeper: a wordmark and an icon that suggest an open book with a small tick of a diff in its margin.
+Colors: off-white, near-black and one green. Type: Geist, with Geist Mono for diffs.
+Deliverables: wordmark, icon, three edit status chips (pending, approved, rejected) that differ by shape as well as color, a diff card layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

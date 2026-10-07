@@ -70,26 +70,61 @@ Own wedding pro staffing at **8–10% booking fees** plus **$29–$79/month** ve
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Gig Board**
+**1. Project Setup**
 
 ```text
-Build Gigvow: Next.js app where wedding vendors post shifts (date, role, rate, city) and backups claim them.
+Build the weekend MVP of "Gigvow": wedding vendors post shifts for second shooters and day-of help, workers apply, the poster picks the best-rated applicant, and reliability scores build from what actually happened. One city, photographers first. No money moves through the app.
 
-Schema: vendors, workers, gigs (status open|claimed|confirmed|completed|noshow), reviews.
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for confirmations and reminders. A booked shift downloads as a calendar file. Deploy on Vercel.
 
-Include city filter and role enum: second_shooter, setup_assistant, day_of_coordinator.
+Tables (Row Level Security on; open gigs are public to signed-in users, a poster or worker reads their own gigs and claims):
+- profiles(user_id, role, display_name, city, reliability, rating, verified boolean, suspended boolean)  role is poster or worker; you set verified by hand
+- gigs(id, poster_id, city, role, event_date, start_time, end_time, rate_cents, status, claimed_by, created_at)  role is second_shooter, setup_assistant or day_of_coordinator; status is open, claimed, confirmed, completed, noshow or late_cancel
+- claims(id, gig_id, worker_id, claimed_at)  unique on gig_id
+- applications(id, gig_id, worker_id, note, created_at)
+- reviews(id, gig_id, reviewer_id, subject_id, rating, note)
+
+Screens: /login, /gigs (the open board with a city filter), /gigs/new, /gigs/[id] (applicants and status), /me (your score and history).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY.
+
+Do not build: billing, booking fees or subscriptions, escrow or payouts, Google Calendar sync, SMS, ID verification, a backup guarantee.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Payments**
+**2. Core Feature**
 
 ```text
-Add Stripe Connect: when a gig is confirmed, charge the posting vendor and hold funds. Release to worker 24h after event_end unless a dispute is opened.
+Build the one feature that proves Gigvow: a shift fills with someone reliable, and reliability comes from what people actually did.
+1. A poster creates a gig with a date, a role, a time range, a rate and the city. Open gigs show on a board filtered by city.
+2. A verified worker who is not suspended applies with a short note. The poster sees applicants sorted by reliability, then rating, and picks one. Picking inserts a claims row; the unique key on gig_id means two simultaneous picks leave one claim and one clear refusal. Set the gig to claimed.
+3. Both sides press Confirm to set confirmed, and each gets an email through Resend with a downloadable calendar file for the shift.
+4. After the event the poster marks the gig completed, noshow or late_cancel (a worker cancelling inside 48 hours). A worker's reliability is completed over completed plus noshow plus late_cancel. Show "No record yet" for a worker with no finished gigs and the number of gigs behind every score.
+5. Suspend a worker whose reliability is under 0.85 after at least 5 finished gigs, and block them from applying with a plain message.
+6. After completion both sides leave a 1 to 5 rating and a short note. A worker's rating is the average of the ratings they received.
+Rules: say on every gig page that payment is arranged between the poster and the worker outside the app and the app holds no money. Unit test the reliability formula and the suspension rule.
+Empty state: with no open gigs, show the post form and the city filter.
+Done when: the formula and suspension tests pass, applicants are listed by reliability then rating, two simultaneous picks produce one claim, both parties get an email with a valid calendar file and a worker under 0.85 after 5 gigs cannot apply.
 ```
 
-**3. Reliability Score**
+**3. Landing Page**
 
 ```text
-Compute worker.reliability = completed / (completed + noshow + late_cancel). Sort claim priority by reliability desc, then rating. Suspend workers below 0.85 after 5 gigs.
+Build a one-page landing site for Gigvow, day-of staffing for wedding vendors.
+Hero: "A backup shooter you can trust, found before the weekend." Sub: "Post a shift, see applicants ranked by how reliably they have shown up, and book one." Two buttons: Join the waitlist as a vendor, Join as a worker.
+Sections: the problem (peak weekends and last-minute cancellations), how it works in four steps (post, apply, pick, rate), a sample reliability profile with the number of gigs behind the score and an FAQ on payment today (arranged between you and the worker), which city comes first and how workers are verified.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, ink type, one dusty-rose accent.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Gigvow: a wordmark and an icon that suggest two interlocking rings with a small check.
+Colors: warm off-white, ink and one dusty rose. Type: Geist, with tabular numbers for rates and scores.
+Deliverables: wordmark, icon, four gig status chips (open, claimed, confirmed, completed) that differ by shape as well as color, a reliability badge that always shows its gig count, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 Density beats features. Do not launch nationally. Pick one wedding-heavy metro, recruit photographers first (clear role definitions and high willingness to pay for backups), and refuse to expand until same-week fill rates exceed 70%. Publish a weekly "open shifts" digest in local vendor Facebook groups. After one season of ratings data, open planners and florists on the same reliability rails. Corporate events and private parties become the off-season filler that keeps workers active year-round without diluting the wedding brand.

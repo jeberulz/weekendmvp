@@ -67,22 +67,60 @@ Own markdown-native branded export at **$19–$49/month** with a template market
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Renderer**
+**1. Project Setup**
 
 ```text
-Build Markmint: accept markdown string + brand JSON (primaryColor, logoUrl, fontHeading, fontBody). Convert markdown to HTML, wrap in a CSS template, render PDF with Playwright, return download URL.
+Build the weekend MVP of "Markmint": paste a markdown proposal, fill in its variables and export a branded PDF in about a second. Three templates and one brand kit per account.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), remark to parse markdown and @react-pdf/renderer to draw the PDF directly, with no headless browser. Fonts are bundled so exports look the same everywhere. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows; templates are read-only):
+- brand_kits(id, user_id, primary_color, logo_path, font_heading, font_body)
+- templates(id, name, kind, config jsonb)  name is Studio, Editorial or Technical; kind is proposal, sow or brief
+- proposals(id, user_id, title, markdown, client_name, variables jsonb, created_at)
+- exports(id, proposal_id, template_id, file_path, duration_ms, created_at)
+
+Screens: /login, /brand (logo, colors, fonts and a sample), /proposals/new (paste, pick a template, fill variables, preview), /proposals/[id] (history and re-export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or template purchases, share links with view tracking, a VS Code extension, a vault sync, e-signature, Playwright or Chromium rendering.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Brand Kit UI**
+**2. Core Feature**
 
 ```text
-Create an onboarding form to upload logo and set colors/fonts. Persist to user.brand_kit. Preview a sample proposal before first export.
+Build the one feature that proves Markmint: paste, fill in, export, and it looks designed.
+1. The brand kit takes a logo (PNG or SVG), a primary color as a validated hex value and a heading and body font from a short list of fonts that are bundled with the app. Show a sample proposal before the first export.
+2. Parse the markdown with remark into a tree and draw it with @react-pdf/renderer: headings, paragraphs, lists, tables, block quotes, code and images. Style it from the template's config and the brand kit.
+3. Ship three templates, Studio, Editorial and Technical, each with its own cover block, heading style and spacing. Show a live preview of the first page.
+4. Support {{client_name}}, {{price}} and {{date}} in the markdown. Show a form for the values before export, fill it with the last values used for that client and block the export with a list if any {{variable}} is left unfilled.
+5. Export a PDF, save it to Storage and record the time it took in duration_ms. Show the time to the user and log a warning above 3 seconds for a typical 6-page proposal.
+6. Keep an export history per proposal with a re-export button that uses the saved variables.
+Rules: never send a PDF with an unfilled variable. Never change the user's words. Say the file stays in the user's own storage.
+Empty state: with no proposals, show a paste box with a sample proposal.
+Done when: a 6-page sample exports in under 3 seconds and the time is recorded, an unfilled variable blocks the export, tables and images render, the three templates look different and re-export reproduces the same PDF from saved values.
 ```
 
-**3. Variables**
+**3. Landing Page**
 
 ```text
-Support {{client_name}}, {{price}}, {{date}} in markdown. Show a form to fill variables before export. Save last-used values per client record.
+Build a one-page landing site for Markmint, branded proposal PDFs from markdown.
+Hero: "Write in markdown. Send a proposal that looks designed." Sub: "Paste your proposal, fill in the client details and export a branded PDF in a second." One button: Join the waitlist.
+Sections: a sample proposal in three templates, how it works in four steps (paste, brand it once, fill in the details, export), and an FAQ on which markdown features work, how fast exports are and what is coming next (share links and an editor command).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one mint accent, taste over decoration.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Markmint: a wordmark and an icon that suggest a hash sign that has been neatly folded into a page.
+Colors: off-white, near-black and one mint. Type: Geist, with Geist Mono for markdown.
+Deliverables: wordmark, icon, three template cover thumbnails (Studio, Editorial, Technical) that differ by layout as well as color, a brand-kit sample page, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three template thumbnails are distinguishable in black and white.
 ```
 
 Speed is the brand. If export takes longer than pouring coffee, power users bounce back to Pandoc scripts. Cache brand CSS, prerender previews, and keep the PDF pipeline under three seconds for typical 6-page proposals. Offer a VS Code command-palette extension that uploads the current markdown buffer — meeting freelancers inside the editor is stronger than asking them to visit a web app every time.

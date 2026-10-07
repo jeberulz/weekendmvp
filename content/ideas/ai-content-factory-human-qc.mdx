@@ -86,25 +86,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app called ContentFactory. Postgres schema: orgs, users, brand_kits (voice_samples, banned_claims, icp_notes, policy_version), briefs, documents, sections (document_id, ordinal, markdown, critic_json, status: drafted|needs_review|approved|rejected), reviews, publishes. Row-level security by org_id. Wire Inngest for three functions: draftDocument, criticPass, publishToCms. Stripe products: Starter $500/mo, Pro $2500/mo, Enterprise custom, plus a one-off ReviewBatch $100–$500. Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, DATABASE_URL, INNGEST_EVENT_KEY. Auth via Clerk or Supabase Auth.
+Build the weekend MVP of "ContentFactory": draft a batch of articles with Claude, score every section with a critic pass, and send only the flagged sections to a human editor.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the drafts and a separate prompt for the critic. Drafting and the critic run inline in route handlers. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- brand_kits(id, user_id, voice_samples, banned_claims, icp_notes, policy_version)
+- briefs(id, user_id, brand_kit_id, brief, status)
+- documents(id, brief_id, title)
+- sections(id, document_id, ordinal, markdown, critic_json jsonb, status)  where status is one of drafted, needs_review, approved, rejected
+- reviews(id, section_id, reviewer_id, action, reason, created_at)
+
+Screens: /login, /kit (brand kit), /queue (flagged sections).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or pay-per-review, a job queue, CMS publishing, multiple organizations, an admin area.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Critic Router + Editor Queue**
+**2. Core Feature**
 
 ```text
-Build the critic pass and editor queue. Input: a document split into sections. Call Claude with a strict JSON schema: array of { section_id, voice_score 0-1, claims_score 0-1, duplication_score 0-1, policy_hits: string[], needs_review: boolean, rationale }. Mark needs_review true if any score is under 0.7 or policy_hits is non-empty. Persist critic_json on the section. Create review tasks only for needs_review true. Editor API: list queue, get section with prev/next context, POST accept (optional rewrite), POST reject with reason. Unflagged sections stay approved unless a reviewer expands them. Never send the full article to a human by default. Log model, prompt_version, and reviewer_id on every state change.
+Build the one feature that proves ContentFactory: a critic pass that shows an editor only the sections that failed.
+1. For each brief, ask Claude to draft a document using the brand kit and split it into sections.
+2. Send the sections to a second Claude prompt with a strict JSON schema: an array of { section_id, voice_score 0-1, claims_score 0-1, duplication_score 0-1, policy_hits: string[], needs_review: boolean, rationale }.
+3. Mark needs_review true if any score is under 0.7 or policy_hits is not empty. Save critic_json on the section and set its status to needs_review. Every other section is approved.
+4. /queue lists only needs_review sections, with the section before and after for context. Accept (with an optional rewrite) or reject with a reason.
+5. Log the model, the prompt version and the reviewer on every status change.
+Rules: never send the whole article to a human by default. A reviewer may expand an approved section to read it.
+Empty state: with no brand kit, show the kit form first.
+Done when: a 10-brief batch drafts and scores, the queue holds only the flagged sections, and accepting or rejecting one updates its status and writes a reviews row.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing page for ContentFactory. Hero: “AI drafts at scale. Humans only see what failed the critic.” Sub: “Route flagged sections to editors; collapse the rest.” Sections: Thursday-batch problem, 4-step how-it-works, fake editor portal with three flagged spans, pricing Starter $500 / Pro $2k–$5k / Enterprise $15k+ plus pay-per-review $100–$500, Jasper-is-a-writer callout. FAQ: replace Jasper (no), liability (human still signs). Geist, off-white, one ink accent. CTA: “Send a 10-URL batch, get a critic report.”
+Build a one-page landing site for ContentFactory, an AI content line with human quality control.
+Hero: "AI drafts at scale. Humans only see what failed the critic." Sub: "Route flagged sections to editors. Collapse the rest." One button: Send a 10-URL batch, get a critic report, which joins the waitlist.
+Sections: the Thursday-batch problem, how it works in four steps (load constraints, draft in bulk, critic pass, human QC), a mock editor portal with three flagged spans, and an FAQ (will it replace a writing tool, who is liable: a human still signs).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white, one ink accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand ContentFactory as industrial QC, not a playful AI writer. Wordmark plus a stamp mark. Near-black, paper white, one lime or steel-blue accent. Geist headings; a serif for sample article text. Voice: editor-hours saved and sections flagged, never “AI-powered content”; never claim 78% unless that client’s eval set shows it. One-page brand sheet, three critic-rationale examples (voice drift, unsupported claim, banned phrase), two empty states: “0 flags — still reviewable” and “12 flags across 4 articles.”
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand ContentFactory as industrial quality control, not a playful AI writer: a wordmark and a stamp mark.
+Colors: near-black, paper white and one lime or steel-blue accent. Type: Geist for headings and a serif for sample article text.
+Voice rules: talk about editor hours saved and sections flagged, never "AI-powered content", and never claim a review-time cut unless that client's own evaluation shows it.
+Deliverables: wordmark, stamp mark, a one-page brand sheet, three critic rationale examples (voice drift, unsupported claim, banned phrase), and two empty states: "0 flags, still reviewable" and "12 flags across 4 articles".
+Done when: each deliverable is saved in one folder and the stamp reads at 48 px.
 ```
 
 ## Sources

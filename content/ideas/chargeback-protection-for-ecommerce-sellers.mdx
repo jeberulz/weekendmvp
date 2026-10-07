@@ -74,23 +74,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "SellerShield." Provision Postgres (Supabase) with these tables: stores (id, platform TEXT CHECK platform IN ('shopify','amazon','ebay'), access_token, revenue_tier TEXT default 'starter'), orders (id, store_id, external_order_id, buyer_email, shipping_address, billing_address, payment_method_hash, total_cents, fraud_score FLOAT, status TEXT), disputes (id, order_id, reason_code, filed_at TIMESTAMPTZ, response_due_at TIMESTAMPTZ, status TEXT default 'open', outcome TEXT), evidence_items (id, dispute_id, type TEXT, url, extracted_text). Enable row-level security scoped to store ownership. Wire Stripe with three products: Starter $79/mo, Growth $199/mo, Scale $499/mo + metered 3% performance fee. Add env vars for SHOPIFY_API_KEY, AMAZON_SP_API credentials, EBAY_CLIENT_ID, and ANTHROPIC_API_KEY.
+Build the weekend MVP of "SellerShield": it flags risky orders before they ship and drafts the evidence for a chargeback, for one Shopify store.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Shopify Admin API for order webhooks, the Anthropic API for the dispute draft. Deploy on Vercel. A seller can also upload orders as a CSV, so you can test without a live store.
+
+Tables (Row Level Security on, scoped to the store's owner):
+- stores(id, user_id, shop_domain, access_token)  access_token is read on the server only
+- orders(id, store_id, external_order_id, buyer_email, shipping_address, bill_to_address, total_cents, placed_at)
+- fraud_scores(id, order_id, score, signals jsonb, scored_at)
+- disputes(id, order_id, reason_code, filed_at, response_due_at, status, outcome)  reason_code is one of not_received, not_as_described, fraudulent
+- evidence_items(id, dispute_id, type, label, url, extracted_text)
+
+Screens: /login, /orders (risk badges), /disputes/[id] (evidence and the draft).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), SHOPIFY_API_KEY, SHOPIFY_API_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a performance fee, Amazon, eBay or WooCommerce, a job queue or Redis, automatic fulfillment holds, auto-submitting a dispute.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Fraud Scoring + Dispute Response Engine**
+**2. Core Feature**
 
 ```text
-Build two background jobs using BullMQ.
-
-Job 1 — Order scoring: triggered on every new order webhook from Shopify/Amazon/eBay. Score the order 0-100 on: shipping/billing address mismatch, order velocity to the same payment method across a 7-day window, multiple high-value orders to different addresses in one session, and whether the buyer account was created in the last 24 hours. If score exceeds 70, hold fulfillment and notify the seller with the specific signals that triggered the flag.
-
-Job 2 — Dispute response: triggered on a dispute/chargeback webhook or manual entry. Pull the order's tracking history, delivery confirmation, prior buyer messages, and product photos. Send this structured data to Claude with a prompt that (a) classifies which evidence format the specific platform/processor requires for this reason code, and (b) drafts a rebuttal narrative referencing the specific evidence items by name. Save the draft to evidence_items and surface it in the seller dashboard for one-click review and submission — never auto-submit without seller confirmation.
+Build the one feature that proves SellerShield: score every order, then draft the dispute response from real evidence.
+1. A Shopify orders/create webhook (verify the HMAC signature) and a CSV upload both write rows to orders.
+2. Score each order from 0 to 100 in plain code, no model. Add points for: shipping and bill-to address mismatch, three or more orders on the same payment method or email in 7 days, several high-value orders to different addresses in one day, and a buyer account created in the last 24 hours. Save the score and the list of signals that fired to fraud_scores.
+3. /orders shows a badge for each order. A score over 70 reads "Review before shipping" and lists the signals. The badge carries the number, so color is not the only signal.
+4. A seller opens a dispute by hand: pick the order, the reason code and the response due date. Attach evidence items (tracking history, delivery confirmation, buyer messages, photos) as pasted text or a link.
+5. Send the order and the evidence items to the Anthropic API with a strict JSON schema { checklist: string[], rebuttal: string }. The checklist says which evidence this reason code usually needs and which of those the seller is missing. The rebuttal names each evidence item by its label.
+Rules: never invent a tracking number, date or quote that is not in the evidence. Never auto-submit; the seller copies the draft into their processor. Show the due date and warn when it is under 48 hours away.
+Empty state: with no orders, show the CSV upload and the expected columns.
+Done when: an uploaded test order with a mismatched address scores over 70 with its signals listed, and a dispute with three evidence items produces a rebuttal that names all three.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for SellerShield. Hero headline: "Stop losing chargebacks you should win." Subhead: "Predictive fraud screening before you ship, automated evidence-backed dispute responses after a claim is filed." Sections: a before/after stat block (dispute win rate improvement, hours saved per dispute), how it works (the 4-step flow: connect, screen, respond, learn), platform logos (Shopify, Amazon, eBay) to signal multi-channel support, pricing table (Starter $79 / Growth $199 / Scale from $499 + 3%) anchored against "what one lost $800 order costs you," and an FAQ covering data security, which platforms are supported, and average time-to-response. Use a dark near-black background, one accent color (emerald or amber), Geist for type, and a primary CTA "Connect your store — takes 3 minutes."
+Build a one-page landing site for SellerShield, a chargeback shield for online sellers.
+Hero: "Stop losing chargebacks you should win." Sub: "Flag the risky order before you ship it, and get an evidence-backed response drafted the moment a dispute lands." One button: Get early access, which joins the waitlist.
+Sections: a before and after block with placeholders for your own win-rate and hours-saved numbers, how it works in four steps (connect, screen, respond, learn), a sample order card with a risk badge and the signals behind it, and an FAQ on data security, which stores work today (Shopify first) and why nothing is ever submitted without the seller's click.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one emerald accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SellerShield: a wordmark and an icon that suggest a shield with a check cut into it, kept simple enough to read at 16 pixels.
+Colors: near-black, off-white and one emerald. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, three risk badges (clear, watch, review) that differ by shape and number as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badges are distinguishable without color.
 ```
 
 ## Sources

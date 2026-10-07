@@ -79,35 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 Lightroom preset generator.
+Build the weekend MVP of the "Lightroom Preset Generator": pick a reference look and a few photos from a shoot, and get a Lightroom preset file whose sliders are worked out from how the images differ, with a plain-English list of what each slider does. Photos are read in your browser and never uploaded.
 
-Set up:
-- Clerk + Stripe ($15 / $30)
-- Supabase + R2 with 24h TTL on uploads (client photos)
-- EXIF reader; reject files with no camera make as "phone JPEG warning"
-- XMP writer from a versioned slider schema (WB, tone curve, HSL, color grading, grain)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link) for saved looks and generations only, exifr to read camera data and the canvas API to measure each image, in the browser. The preset file comes from a versioned template. Deploy on Vercel.
 
-No social feed. Generate and download.
+Tables (Row Level Security on, each user reads only their own rows; photos are never stored):
+- looks(id, user_id, name, reference_stats jsonb, created_at)
+- generations(id, user_id, look_id, shoot_stats jsonb, sliders jsonb, created_at)
+- xmps(id, generation_id, file_path, lightroom_version, created_at)
+
+Screens: /login, /generate (the reference, the selects, the sliders and a before and after), /looks, /history.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or a marketplace, a vision model, white balance or tint changes, batch processing, storing any photo.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build Shoot Lock → Look Lock → Emit XMP.
-
-Requirements:
-- 3–8 selects + 1 reference (or a constrained look picker)
-- Predict sliders; show a before/after using those sliders on a preview JPEG
-- Download XMP that Lightroom Classic 13+ accepts
-- Pro: batch the same recipe across a folder
-
-User flow: upload selects → lock look → preview sliders → pay → XMP.
+Build the one feature that proves the Generator: sliders you can explain and undo, from measurements instead of a guess.
+1. Take 3 to 8 selects and one reference image in the browser. Read EXIF with exifr and show a warning, not a rejection, for a file with no camera make ("phone or edited JPEG: results will be rougher").
+2. Measure each image on a canvas: the luminance at the 5th, 50th and 95th percentiles, the spread of luminance as contrast and the mean saturation. Keep only these numbers, never the pixels. Average the selects into one shoot profile.
+3. Map the difference between the reference and the shoot to sliders with formulas kept in one documented file with clamps: Exposure, Contrast, Highlights, Shadows, Whites, Blacks, Vibrance and Saturation. Leave white balance and tint alone and say why: they belong to each photo. Unit test the measuring and the mapping with fixture images.
+4. Show a before and after on a preview by applying the same simple adjustments to the canvas, labeled "an approximation, Lightroom's own engine will differ".
+5. Write the preset as an XMP file from a versioned template for Lightroom Classic 13 or later, using the standard camera raw setting names for the sliders above. Save the sliders and the file.
+6. Show a "what this preset does" panel that lists each slider and its value in plain English ("Shadows +18: lifts the dark areas a little") so the shooter can nudge it in Lightroom.
+7. Test by importing the file into Lightroom Classic and checking that the sliders move to the listed values.
+Rules: no image leaves the browser. Say so on the page. Never promise the preset reproduces the reference exactly.
+Empty state: before any upload, show the two drop zones and what makes a good reference.
+Done when: the measuring and mapping tests pass, a sample reference and three selects produce a preset whose slider values match the panel, Lightroom accepts the file and no network request carries an image.
 ```
 
-**3. Slider Map**
+**3. Landing Page**
 
 ```text
-Add a "what this preset does" panel that lists each slider delta in English so the shooter can nudge in Lightroom instead of filing a refund. Store the map next to the XMP.
+Build a one-page landing site for the Lightroom Preset Generator, presets built from your own shoot and a look you like.
+Hero: "A preset from your shoot and a look you love." Sub: "Pick a reference and a few of your photos. Get a Lightroom preset with sliders you can read and undo, not a baked filter." One button: Join the waitlist.
+Sections: a before and after with the slider list, how it works in four steps (pick a reference, add your selects, review the sliders, import into Lightroom), and an FAQ on where your photos go (nowhere, they are read in your browser), what is approximate and which Lightroom versions work.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one warm amber accent, photography as the main visual.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Lightroom Preset Generator: pick a short working name, then design a wordmark and an icon that suggest a row of slider handles at different heights.
+Colors: near-black, off-white and one warm amber. Type: Geist, with tabular numbers for slider values.
+Deliverables: wordmark, icon, a slider row style (name, value, plain-English line), a before and after frame, and one launch graphic.
+Done when: each deliverable is saved in one folder and the slider row is readable in black and white.
 ```
 
 ## Sources

@@ -89,83 +89,61 @@ This is a transactional marketplace, so the hard parts are money movement, avail
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Marketplace Scaffold**
+**1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router marketplace (TypeScript, Tailwind v4, Supabase) called "OffHours" — connecting underused institutional venues (churches, gyms, clubs, community halls) with event planners.
+Build the weekend MVP of "OffHours": a concierge-run marketplace that lists underused venues such as churches, gyms and clubs and lets planners request a booking. The operator onboards each venue; the owner approves requests. No payment or insurance flows through the app this weekend.
 
-Supabase schema:
-- venues(id, owner_user_id, name, type TEXT CHECK type IN ('worship','fitness','club','community','other'), address, lat, lng, geog GEOGRAPHY(POINT), city, description, status TEXT CHECK status IN ('draft','live','paused'), stripe_account_id)
-- spaces(id, venue_id, name, capacity_seated INT, capacity_standing INT, square_feet INT, hourly_rate_cents INT, minimum_hours INT default 2, amenities JSONB, photos JSONB)
-- house_rules(id, venue_id, no_alcohol BOOL, no_amplified_music_after TIME, restricted_areas TEXT[], custom_terms TEXT)
-- availability_rules(id, space_id, kind TEXT CHECK kind IN ('recurring_block','one_off_block','open_window'), weekday INT, start_time TIME, end_time TIME, start_date DATE, end_date DATE)
-- bookings(id, space_id, guest_user_id, starts_at TIMESTAMPTZ, ends_at TIMESTAMPTZ, headcount INT, subtotal_cents INT, host_fee_cents INT, guest_fee_cents INT, insurance_cents INT, status TEXT CHECK status IN ('pending','confirmed','completed','cancelled','disputed'), stripe_payment_intent_id)
-- reviews(id, booking_id, author_role TEXT CHECK author_role IN ('host','guest'), rating INT, body TEXT)
-- damage_claims(id, booking_id, filed_by, description TEXT, photo_urls TEXT[], amount_cents INT, status TEXT)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres with PostGIS, Row Level Security, Storage, Auth with email magic link), the Anthropic API to draft each listing. Listing pages are server-rendered for search. Deploy on Vercel.
 
-Enable PostGIS. RLS: hosts read/write only their own venues and the bookings against them; guests read their own bookings; live venue and space rows are publicly readable.
+Tables (Row Level Security on; hosts read and write their own venues and requests, live venues and spaces are public):
+- venues(id, owner_user_id, name, type, address, lat, lng, city, description, status)  type is worship, fitness, club, community or other; status is draft, live or paused
+- spaces(id, venue_id, name, capacity_seated, capacity_standing, square_feet, hourly_rate_cents, minimum_hours, amenities jsonb, photos jsonb)
+- house_rules(id, venue_id, no_alcohol boolean, no_amplified_music_after, restricted_areas text[], custom_terms)
+- availability_rules(id, space_id, kind, weekday, start_time, end_time, start_date, end_date)  kind is recurring_block, one_off_block or open_window
+- booking_requests(id, space_id, guest_user_id, starts_at, ends_at, headcount, declares_alcohol boolean, declares_music boolean, status)
 
-Routes: /[city] (browse), /space/[id] (listing, server-rendered for SEO), /book/[spaceId], /host (dashboard), /host/calendar, /admin/intake (concierge onboarding tool).
+Screens: /login, /[city] (browse), /space/[id] (listing), /request/[spaceId], /host (requests and calendar), /admin/intake (the operator's mobile form).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
 
-Stripe Connect Express for host payouts with destination charges. Env: STRIPE_SECRET_KEY, STRIPE_CONNECT_CLIENT_ID, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, TWILIO_AUTH_TOKEN.
+Do not build: billing or commissions, payments or payouts, event insurance, reviews and damage claims, a cancellation policy, SMS.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Availability Engine + Constrained Search**
+**2. Core Feature**
 
 ```text
-Build the availability engine and search. This is the part that quietly kills marketplaces when it is wrong — a double booking against a church on a Sunday morning is an unrecoverable trust failure.
-
-Availability resolution (given space_id and a requested range):
-1. Start from the space's open windows (default: all hours if no open_window rules exist).
-2. Subtract every recurring_block matching the weekday and overlapping the time range.
-3. Subtract every one_off_block whose date range overlaps.
-4. Subtract confirmed bookings plus a configurable buffer on each side (default 60 minutes for setup and teardown).
-5. Reject if the resulting duration is below the space's minimum_hours.
-Return the resolved free intervals, never a naive boolean. Expose it as a pure function with unit tests covering DST transitions, overnight bookings, and back-to-back requests — those three cases are where the bugs live.
-
-Search (/[city]):
-- Filters: date and time range, headcount, max hourly rate, venue type, amenities, and radius from a point.
-- Rank by: availability match first, then a completeness score (photo count, description length, review count), then distance. Do NOT rank purely by price — cheapest-first trains guests to see the marketplace as a discount channel.
-- Apply house_rules as hard filters when the guest declares alcohol or amplified music in the search — never surface a listing that will reject the booking after the planner has fallen in love with the photos.
-- Server-render results with unique title and meta per city and venue type for long-tail SEO.
+Build the one feature that proves OffHours: a calendar that is never wrong, a search that never shows a listing that will refuse, and an intake tool that makes each listing good.
+1. Write availability as a pure function: given a space and a requested range, start from its open windows (all hours if none), subtract recurring blocks for that weekday, subtract one-off blocks that overlap, subtract confirmed requests with a 60-minute buffer on each side, and reject a result shorter than the minimum hours. Return the free intervals, not a yes or no. Unit test daylight saving changes, overnight bookings and back-to-back requests.
+2. Search on /[city] filters by time range, headcount, maximum hourly rate, venue type, amenities and distance from a point. Rank by availability match, then a completeness score (photos, description length), then distance. Do not rank by price. If the guest declares alcohol or amplified music, hide any venue whose house rules forbid it.
+3. A guest sends a booking request for a time range. Re-check availability when the host approves, not only when the guest sends. The host approves or declines and the status changes.
+4. The operator's /admin/intake is a mobile form: venue basics, a guided 12-photo shot list with a reference thumbnail for each that blocks saving until all 12 are taken, the recurring in-use blocks, blackout dates, restricted areas, the alcohol policy, the noise cutoff and capacity.
+5. Draft the listing with the Anthropic API from the answers and the photo captions: 120 words, leading with the most distinctive physical feature, stating capacity and what is included, naming two event types it fits and one it does not. Reject any draft containing "stunning", "nestled", "perfect for any occasion" or "state-of-the-art" and regenerate once.
+6. Suggest an hourly rate as the median of completed requests in the same city, type and capacity band, with the sample size. With fewer than 5 comparables, say so and use the rate the operator types.
+Rules: say on every request page that payment and insurance are arranged between guest and host outside the app. Never double-book.
+Empty state: a city with no venues shows the operator's contact form.
+Done when: the availability tests pass, a guest declaring alcohol never sees a venue that forbids it, an approval is refused if another request took the time first, the intake blocks with 11 photos and a banned word triggers a regeneration.
 ```
 
-**3. Booking, Split Payment, and Insurance Binding**
+**3. Landing Page**
 
 ```text
-Implement the transaction flow with Stripe Connect and embedded per-event insurance.
-
-Checkout:
-1. Guest selects space, date range, and headcount, and declares alcohol yes/no and amplified music yes/no.
-2. Re-validate availability server-side at submit time — never trust the client's earlier read.
-3. Compute: subtotal = hourly_rate * hours; host_fee = 12% of subtotal; guest_fee = 8% of subtotal.
-4. Call the event-insurance API for a quote using headcount, alcohol flag, and venue type. Show the coverage amount and premium as a distinct, clearly labelled line item — never bury it in a generic "service fee".
-5. Create a Stripe PaymentIntent with capture_method: 'manual' and a transfer_data destination pointing at the venue's connected account, with application_fee_amount covering both platform fees.
-
-Post-booking:
-- Bind the insurance policy on confirmation; store the policy number and certificate URL on the booking; email the certificate to both parties (venues will ask for it, and having it instantly is a real differentiator).
-- Capture the PaymentIntent 24 hours after ends_at, then release the transfer. That window is the damage-claim period.
-- If a damage_claim is filed inside the window, hold capture, move the booking to 'disputed', and notify an admin. Never auto-resolve a dispute — a human reviews photo evidence from both sides.
-- On completion, trigger two-sided review requests by email and SMS at 24 and 72 hours.
-
-Cancellation policy: full refund more than 7 days out, 50% between 7 days and 48 hours, none inside 48 hours. Encode it as data on the venue row, not as hardcoded logic — different venue types will need different terms.
+Build a one-page landing site for OffHours, bookable event space in places that sit empty most of the week.
+Hero: "Event space in the buildings your city already has." Sub: "Churches, gyms and clubs with open hours, listed by people who visited each one. Request a time and the owner confirms." Two buttons: Join the waitlist as a planner, Join as a venue owner.
+Sections: the problem (planners cannot find space and venues sit empty), how it works in four steps (we visit, rules are written down, you request, the owner confirms), a sample listing with house rules and an FAQ on payment and insurance today (arranged between you and the host) and which city comes first.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one deep green accent, photography as the main visual.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
 ```
 
-**4. Concierge Intake Tool**
+**4. Branding Package**
 
 ```text
-Build the internal tool that makes supply acquisition repeatable — this is the actual product in city one.
-
-/admin/intake is a mobile-first form an operator completes while standing inside the venue:
-- Venue basics: name, type, contact person, phone, address (with map pin drop).
-- The 12-shot list, as a guided camera flow with a reference thumbnail for each: wide from entrance, wide from opposite corner, seating detail, floor detail, ceiling and lighting, kitchen or prep area, restroom entrance, parking or approach, exterior, AV or sound equipment, storage, and one hero shot. Block submission until all 12 are captured — listing quality variance is the number one driver of guest distrust.
-- Constraint capture: recurring in-use blocks (a scheduling grid for the typical week), blackout dates, restricted areas, alcohol policy, noise cutoff time.
-- Capacity: seated, standing, square footage, whether tables and chairs are included and how many.
-
-Then generate the listing:
-Call Claude with the questionnaire answers plus the photo captions. Prompt: "Write a venue listing for an event marketplace. 120 words. Lead with the single most distinctive physical feature. State capacity and what is included in plain terms. Do not use the words 'stunning', 'nestled', 'perfect for any occasion', or 'state-of-the-art'. Name two specific event types this space genuinely fits based on its layout and constraints, and one it does not."
-
-Suggest a price: query completed bookings in the same city, venue type, and capacity band; return the median hourly rate with the sample size shown. If fewer than 5 comparables exist, say so explicitly and fall back to an operator-set rate rather than showing false precision.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for OffHours: a wordmark and an icon that suggest a door slightly ajar with a clock face as its window.
+Colors: warm off-white, deep ink and one deep green. Type: Geist, with tabular numbers for hours and rates.
+Deliverables: wordmark, icon, three request status chips (pending, approved, declined) that differ by shape as well as color, a listing card layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

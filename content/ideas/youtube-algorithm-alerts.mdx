@@ -89,35 +89,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for "AlgoAlly." Provision Supabase with these tables: accounts (id, email, plan TEXT default 'free', stripe_customer_id), channels (id, account_id, youtube_channel_id UNIQUE, oauth_refresh_token, niche_tag, connected_at), cohort_channels (id, niche_tag, youtube_channel_id, added_at), signal_samples (id, channel_id NULLABLE, cohort BOOLEAN, sampled_at, video_length_band TEXT, thumbnail_cluster TEXT, title_pattern TEXT, topic_category TEXT, views_per_hour FLOAT), shift_alerts (id, account_id, signal_type, baseline_value FLOAT, current_value FLOAT, confidence FLOAT, detected_at, message TEXT), forecasts (id, channel_id, planned_upload_notes TEXT, predicted_reach_delta FLOAT, generated_at). Enable row-level security so an account only reads its own channels, alerts, and forecasts. Wire Stripe with three subscription products (Starter $15, Professional $75) plus a manual-invoice flow for Agency. Add env vars YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_API_KEY, STRIPE_SECRET_KEY. Install googleapis for YouTube OAuth and Data/Analytics API access.
+Build the weekend MVP of "AlgoAlly": a creator lists a group of channels in their niche, and the app watches how different video lengths and title styles are performing against their own 30-day norm and says when the numbers move. It reports what moved in the sample, and does not claim to know why.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the YouTube Data API with an API key (no channel login this weekend). A Vercel Cron route samples once a day. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- cohorts(id, user_id, niche_tag, channel_ids text[], created_at)  up to 25 channels
+- signal_samples(id, cohort_id, video_id, published_at, sampled_at, length_band, title_pattern, views, age_days, views_per_day)
+- daily_buckets(id, cohort_id, on_date, signal_type, bucket, mean_views_per_day, video_count)
+- shift_alerts(id, cohort_id, signal_type, bucket, baseline_mean, baseline_sd, current_mean, delta_pct, z, video_count, detected_at, message)
+
+Screens: /login, /cohorts (add channels), /cohorts/[id] (the buckets and alerts), /alerts.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), YOUTUBE_API_KEY, CRON_SECRET.
+
+Do not build: billing, plans or an agency tier, channel login or analytics for the creator's own channel, email or SMS alerts, a forecast tool, thumbnail analysis.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Algorithm Shift Detection Engine**
+**2. Core Feature**
 
 ```text
-Build the core detection pipeline as a Vercel Cron job that runs daily.
-
-Step 1 — Sample: For each niche_tag with active accounts, pull the last 7 days of uploads from the assigned cohort_channels using the YouTube Data API (videos.list with statistics + contentDetails). Bucket each video by video_length_band (under 5 min, 5-15 min, 15-30 min, 30+ min), thumbnail_cluster (rough color/text-presence heuristic), title_pattern (question, number, how-to, other), and topic_category (from YouTube's own category field). Compute views_per_hour for each video and insert into signal_samples with cohort=true.
-
-Step 2 — Baseline: For each niche_tag and signal dimension, compute a 30-day rolling mean and standard deviation of views_per_hour per bucket.
-
-Step 3 — Detect: Compare the last 3 days of samples against the rolling baseline. If a bucket's mean views_per_hour moves more than 1.5 standard deviations from baseline, create a shift_alerts row with confidence scaled by how far outside the baseline it sits (never claim above 90% confidence). Write a plain-language message, e.g. "Videos in the 5-15 minute range are performing about {delta}% {up/down} versus your niche's 30-day baseline."
-
-Step 4 — Notify: For every account subscribed to that niche_tag, send the alert via Resend (Starter/Professional) and Twilio SMS (Professional only, if enabled). Never send more than one alert per signal dimension per 48 hours to avoid alert fatigue.
+Build the one feature that proves AlgoAlly: an alert only when the movement is large enough to mean something, worded as what was seen.
+1. A cohort takes a niche label and up to 25 channel addresses or ids. Resolve each to its uploads playlist with the YouTube Data API.
+2. A daily cron route (protected by CRON_SECRET) fetches uploads from the last 10 days and their view counts. Keep a hard cap on API calls per run, show how many were used and skip the rest rather than failing.
+3. Bucket each video by length (under 5 minutes, 5 to 15, 15 to 30, over 30) and by title pattern (a question, a number, a how-to or other). Only use videos between 3 and 7 days old, so age does not skew the comparison, and compute views per day as views over age in days.
+4. For each signal and bucket, save the day's mean views per day and the number of videos in daily_buckets. The baseline is the mean and standard deviation of the previous 30 daily values.
+5. Create a shift alert when the current value is at least 1.5 standard deviations from the baseline and the bucket holds at least 8 videos. Send at most one alert per signal and bucket in 48 hours.
+6. Word each alert from the numbers: "Among the N channels you track, 5 to 15 minute videos from the last week are getting about X percent more views per day than their 30-day norm." Add "This may be topics or timing, not an algorithm change." Never state a confidence above what the sample supports and never use the word "algorithm" as a cause.
+7. The cohort page shows each bucket's current value against its baseline with the sample size.
+Rules: show how many videos and channels sit behind every number. Say plainly that a small cohort moves for many reasons.
+Empty state: with no cohort, show the form and a sample list of channel ids.
+Done when: a cohort of sample channels fills the buckets, a planted jump of 2 standard deviations in a bucket of 10 videos raises one alert, the same jump in a bucket of 4 raises none, the wording never calls it an algorithm change and the API call cap is respected.
 ```
 
-**3. Creator Dashboard + Forecast View**
+**3. Landing Page**
 
 ```text
-Build the account dashboard at /dashboard.
+Build a one-page landing site for AlgoAlly, a watch on your niche's numbers for YouTube creators.
+Hero: "See when your niche's numbers move." Sub: "Track a group of channels like yours. We tell you when a video length or title style is performing well above or below its usual, and how many videos that is based on." One button: Join the waitlist.
+Sections: a sample alert with its sample size, how it works in four steps (list channels, we sample daily, we compare with a 30-day norm, you get an alert), and an FAQ on what an alert means (what moved in the sample, not why), why sample size is shown and which channel connections come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark dashboard look, one accent color for alert severity.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Sections:
-- Connected channels list with a "last synced" timestamp and a manual "sync now" button (rate-limited to once per hour).
-- Active alerts feed: cards showing signal_type, the plain-language message, confidence badge (color-coded), and a "what this means for you" one-liner generated from the account's own recent upload pattern versus the shifted signal.
-- Forecast tool: a text box where the creator describes their next planned upload (length, rough thumbnail style, title). Compare those attributes against the current niche baseline and shift_alerts, and return a predicted reach delta with a one-sentence explanation ("Your planned 20-minute format is currently underperforming the 8-15 minute range by roughly 30% in your niche — consider trimming or splitting into two uploads.").
-- Upgrade prompts gated by plan: single-channel monitoring on Starter, multi-channel + forecast tool on Professional, roster view on Agency.
+**4. Branding Package**
 
-Style: dark dashboard, one accent color for alert severity, mobile-responsive card layout — creators check this on their phone between uploads, not at a desk.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AlgoAlly: a wordmark and an icon that suggest a line chart with one point that has stepped outside a band.
+Colors: near-black, off-white and one accent for alert severity. Type: Geist, with tabular numbers for percentages and counts.
+Deliverables: wordmark, icon, three alert severity chips (small move, notable, large) that differ by shape as well as color, an alert card layout that always shows its sample size, and one launch graphic.
+Done when: each deliverable is saved in one folder and the severity chips are distinguishable without color.
 ```
 
 ## Sources

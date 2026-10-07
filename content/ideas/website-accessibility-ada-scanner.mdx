@@ -69,22 +69,59 @@ Own SME plain-English scanning at **$29–$99/month** without selling a controve
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Scanner MVP**
+**1. Project Setup**
 
 ```text
-Build AccessCheck: Next.js app. User pastes URL. API route queues a Playwright crawl of the homepage, runs axe-core, stores violations in Postgres, and returns a report page with id, impact, description, and suggested_fix fields.
+Build the weekend MVP of "AccessCheck": paste a small-business web page address, scan it for accessibility problems with axe-core, and get a ranked checklist in plain English with a re-scan that shows what was fixed. It is a technical scanner, not legal advice.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), a serverless build of headless Chromium with Playwright core to load the page, axe-core to find problems, the Anthropic API to write the explanations. One page per scan this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- sites(id, user_id, url, cms_hint, created_at)  cms_hint is wordpress, shopify, squarespace or unknown
+- scans(id, site_id, status, violation_count, created_at)
+- issues(id, scan_id, rule_id, impact, description, html_snippet, selector, help_url, explanation, fix_steps jsonb, priority)
+
+Screens: /login, /scan/new, /scan/[id] (the ranked checklist), /sites/[id] (scans over time and what changed).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or one-time audits, a multi-page crawl, scheduled scans or alert emails, a freelancer directory, white-label PDFs, WordPress or Shopify plugins.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Plain English Layer**
+**2. Core Feature**
 
 ```text
-For each axe violation, call Claude with the rule id, HTML snippet, and CMS hint (wordpress|shopify|squarespace|unknown). Return a 2-sentence explanation and numbered fix steps a non-developer can follow.
+Build the one feature that proves AccessCheck: a scan that finds real problems, explains them to a non-developer and proves a fix.
+1. POST /api/scans takes a page address. Allow https only and refuse private network addresses. Read robots.txt and refuse a disallowed page. Load the page in headless Chromium with a 30 second limit, inject axe-core and run it. Save each violation with its rule id, impact, a snippet of the HTML of up to 500 characters, its selector and the help link.
+2. For each issue, send the rule id, the snippet and the CMS hint to the Anthropic API with a strict JSON schema { who_it_hurts: string, explanation: string of two sentences, fix_steps: string[] of 2 to 6 steps a non-developer can follow }. Reject an answer that claims the fix will make the site compliant or mentions a law, and use a plain fallback text.
+3. Rank by impact (critical, serious, moderate, minor), then by how many elements are affected, then by a small effort table per rule. Show the top issues first with a done checkbox.
+4. A Re-scan button runs the same page again and matches issues by rule id and selector. Show each as fixed, still open or new.
+5. Every report ends with: "AccessCheck is a technical scanner, not a law firm. Automated tools find only some problems, and full compliance may need a human audit."
+6. Keep a fixture page with a missing image description, an unlabeled field, low contrast and a missing page language, and test that each is found.
+Rules: never say a site is ADA compliant or give a badge. Never present a count of problems as a legal risk.
+Empty state: with no scans, show the address field and what is checked.
+Done when: the fixture page returns all four planted problems, each issue has an explanation with numbered steps, fixing one and re-scanning shows it as fixed, and a private address is refused.
 ```
 
-**3. Billing + Rescan**
+**3. Landing Page**
 
 ```text
-Add Stripe Billing at $29/month. Gate rescans behind active subscription. Cron weekly scan for paid sites; email digest of new issues via Resend.
+Build a one-page landing site for AccessCheck, a plain-English accessibility scanner for small business sites.
+Hero: "Find out what stops people from using your website." Sub: "Paste your address. Get a short checklist in plain English, with steps you can follow, and scan again to see what you fixed." One button: Join the waitlist.
+Sections: a sample report with three issues and their steps, how it works in four steps (paste, scan, fix, re-scan), and an FAQ on what an automated scan can and cannot find, why this is not legal advice and which site builders have guides first.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one blue accent, high contrast throughout.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AccessCheck: a wordmark and an icon that suggest a magnifier with a check inside a person-shaped circle.
+Colors: warm off-white, near-black and one blue, all with AA contrast. Type: Geist, set large.
+Deliverables: wordmark, icon, four impact chips (critical, serious, moderate, minor) that differ by shape and word as well as color, a report footer with the disclaimer, and one launch graphic.
+Done when: each deliverable is saved in one folder and the impact chips are distinguishable without color.
 ```
 
 Do not sell legal advice. Sell clarity. Every report footer should state that AccessCheck is a technical scanner, not a law firm, and that full compliance may require human audit. That honesty builds trust with agencies who resell you and avoids the overlay industry's credibility problem. Pair the scanner with a vetted freelancer directory for complex ARIA issues — take a lead fee when owners click "hire a fixer." Content marketing writes itself: weekly "lawsuit roundup" posts and CMS-specific fix guides for WordPress image alt text, Shopify theme focus order, and Squarespace contrast.

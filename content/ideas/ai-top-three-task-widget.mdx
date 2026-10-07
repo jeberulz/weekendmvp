@@ -94,25 +94,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create two packages in one repo: (1) a SwiftUI iOS+macOS app “TaskFocus” with a WidgetKit extension (lock screen rectangular + home medium + Mac desktop), and (2) a Next.js App Router dashboard. Postgres tables: users, todoist_tokens, calendar_tokens, daily_picks (user_id, date, picks jsonb, model, created_at), overrides (pick_id, action, replacement_task_id). Stripe products: Demo $0, Starter $8, Pro $25, Insights $10 add-on, Enterprise $50/seat. RevenueCat entitlements mirroring Starter/Pro. Env: TODOIST_CLIENT_ID, TODOIST_CLIENT_SECRET, OPENAI_API_KEY or ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, REVENUECAT_SECRET. No local task store as source of truth — Todoist is.
+Build the weekend MVP of "TaskFocus": an iPhone lock-screen widget that shows the three tasks from your Todoist list that matter today, each with a one-line reason.
+
+Stack: a SwiftUI iOS app with a WidgetKit extension (a lock screen rectangular widget and a home medium widget), a small Next.js (App Router) backend for the connection and the ranking, Supabase (Postgres, Row Level Security, Auth with email magic link), the Todoist REST API, Claude (Anthropic API) for the rank and the reasons. Todoist stays the source of truth.
+Calendar: read free and busy blocks on the device with EventKit and send only the blocks, never event details.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- todoist_tokens(id, user_id, access_token_encrypted)
+- daily_picks(id, user_id, pick_date, picks jsonb, model, created_at)
+- overrides(id, pick_id, action, replacement_task_id)
+
+Screens: connect Todoist, a settings screen, and the widgets.
+Env vars (names only): SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TODOIST_CLIENT_ID, TODOIST_CLIENT_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or in-app purchases, the Mac desktop widget, Google Calendar, an insights page, a local task store.
+Done when: the app runs in the simulator, Todoist connects, the widget appears on the lock screen, and the three tables exist with Row Level Security on.
 ```
 
-**2. Ranker + Widget Timeline**
+**2. Core Feature**
 
 ```text
-Build a nightly job: fetch Todoist open tasks + next 24h calendar busy blocks. Score each task with a transparent rubric: due_in_hours, estimated_minutes vs longest_free_block, has_blocker, user_completion_rate for that project, explicit priority. Pass the top 15 candidates to Claude/GPT with a strict schema: three task ids, rank 1-3, reason_short under 90 chars, reasons_factors[]. Persist daily_picks. WidgetKit TimelineProvider reads the latest pick set; tapping a row opens Todoist or marks complete via App Intent. If the user overrides, store the event and downweight that factor tomorrow. Never show more than three. If fewer than three open tasks, show what exists and a “inbox zero” state. Target: rank job finishes before 6:00 local.
+Build the one feature that proves TaskFocus: three explainable picks before you wake up.
+1. A nightly job (and a Rank now button) fetches the user's open Todoist tasks and the next 24 hours of busy blocks sent from the device.
+2. Score each task with a plain rubric: due_in_hours, estimated_minutes against the longest free block, has_blocker, the user's completion rate for that project, and explicit priority.
+3. Send the top 15 to Claude with a strict schema: three task ids, rank 1 to 3, reason_short under 90 characters, and reasons_factors[]. Save the result to daily_picks.
+4. The WidgetKit timeline provider reads the latest picks. Tapping a row opens Todoist or completes the task through an App Intent.
+5. If the user overrides a pick, store it in overrides and downweight that factor tomorrow.
+Rules: never show more than three. With fewer than three open tasks, show what exists and an inbox-zero state. The rank job should finish before 6:00 local time.
+Empty state: before Todoist is connected, the widget shows "Connect your list".
+Done when: a test list produces three picks in order with a reason under 90 characters on the lock screen, completing one removes it, and an override changes tomorrow's weighting.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for TaskFocus. Hero: “Your list already exists. This morning, only three things on it matter.” Sub: “An iOS and Mac widget that reads Todoist, your calendar, and your history — and names the top 3, in order, with a reason.” Show a lock-screen widget mock with three real-looking tasks and why-lines. Sections: the 50-item list problem; ‘this is not another todo app’; how it works in four steps; pricing that leads with $8 Starter / $25 Pro and mentions $30–$50/seat teams; comparison vs Motion ($19–$34, migrate everything), Sunsama ($16–$20, you still pick), Todoist Premium (~$4, still a list). FAQ: explainability, what happens when the AI is wrong, privacy of task text. Geist, lots of air, one sharp accent. CTA: “See your top 3 from a demo list.”
+Build a one-page landing site for TaskFocus, a widget that picks your top 3 tasks each morning.
+Hero: "Your list already exists. This morning, only three things on it matter." Sub: "An iPhone widget that reads Todoist and your calendar and names the top 3, in order, with a reason." One button: See your top 3 from a demo list, which joins the waitlist.
+Sections: a lock-screen widget mock with three real-looking tasks and their why-lines, the 50-item list problem, "this is not another to-do app", how it works in four steps (connect one list, rank overnight, wake to the widget, explain and learn), and an FAQ on explainability, what happens when the AI is wrong and the privacy of task text.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, lots of air, one sharp accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for TaskFocus: wordmark plus a mark that is three stacked ticks or three bars, not a checkered “todo” clipboard. Palette: near-black, paper, one focused amber or lime for the #1 task. Type: Geist or similar; tabular nums for “3.” Voice rules: never moralize about hustle; never say “crush your day”; always show a why-line next to a pick; write widget copy under 90 characters. Deliver hex, type, a 6-icon set (connect, rank, widget, why, snooze, complete), and three lock-screen copy variants.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for TaskFocus: a wordmark and a mark of three stacked ticks or three bars, not a checkered to-do clipboard.
+Colors: near-black, paper and one focused amber or lime for the first task. Type: Geist or similar, with tabular numbers for the "3."
+Voice rules: never moralize about hustle, never say "crush your day", always show a why-line next to a pick, and keep widget copy under 90 characters.
+Deliverables: wordmark, mark, a 6-icon set (connect, rank, widget, why, snooze, complete), and three lock-screen copy variants.
+Done when: each deliverable is saved in one folder and each copy variant is under 90 characters.
 ```
 
 ## Sources

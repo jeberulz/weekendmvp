@@ -89,49 +89,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (React Native, TypeScript) app called "AI Protein Tracker."
+Build the weekend MVP of "AI Protein Tracker": snap a photo of a meal and get the protein, then correct it once and never again.
 
-Requirements:
-- Clerk authentication (email + Apple/Google sign-in)
-- Supabase client with tables: profiles (user_id, daily_protein_goal, dietary_tags text[], training_days int[]), meals (id, user_id, photo_url, items jsonb, total_protein_g, logged_at), fingerprints (id, user_id, label, embedding_or_hash, corrected_protein_g, last_used_at), scans (id, user_id, raw_vision_response jsonb, confidence float)
-- Stripe subscription checkout for Pro ($9.99/mo) and Annual ($79/yr) plans
-- Home screen: protein progress ring, "Scan meal" camera button, today's meal list
-- Enable row-level security so users only access their own rows
+Stack: Expo (React Native) with TypeScript, expo-camera and expo-image-manipulator, Supabase (Auth with email magic link, Postgres, Storage, Row Level Security), Claude (Anthropic API) with image input for the meal reading.
 
-Use expo-camera for capture and expo-image-manipulator to resize photos before upload.
+Tables (Row Level Security on, each user reads only their own rows):
+- profiles(user_id, daily_protein_goal, dietary_tags, training_days)
+- meals(id, user_id, photo_url, items jsonb, total_protein_g, logged_at)
+- fingerprints(id, user_id, label, hash, corrected_protein_g, last_used_at)
+- scans(id, user_id, raw_vision_response jsonb, confidence)
+
+Screens: home (progress ring, Scan meal button, today's meals), scan and confirm, settings.
+Env vars (names only): SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY (server side only).
+
+Do not build: billing or plans, Clerk or social sign-in, push notifications, gap-fill suggestions, weekly recaps, a web app.
+Done when: the app runs in Expo Go, you can sign in, the camera opens, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Photo to Protein**
+**2. Core Feature**
 
 ```text
-Build the meal scan flow:
-
-1. User captures or picks a photo
-2. Upload compressed image to Supabase Storage
-3. Send image URL to GPT-4o vision (or Claude vision) with this system prompt:
-   "You are a nutrition assistant focused ONLY on protein. Identify visible foods, estimate portion sizes, return JSON: items array with name, estimated_protein_g, confidence 0-1. Sum total_protein_g. Flag items below 0.6 confidence. Respect these dietary tags: [USER_TAGS]."
-4. Display results for user confirmation; allow per-item edits
-5. On save, insert into meals table; if user corrected values, upsert a fingerprint keyed by a simple visual hash or user-provided label for one-tap future logging
-6. Update daily progress ring
-
-Handle API errors gracefully with manual entry fallback.
+Build the one feature that proves the idea: photo to protein, with a correction that sticks.
+1. Capture or pick a photo, shrink it with expo-image-manipulator, and upload it to Storage.
+2. Send the image to Claude with: "You are a nutrition assistant focused ONLY on protein. Identify visible foods, estimate portion sizes, and return JSON: an items array with name, estimated_protein_g and confidence from 0 to 1, and the summed total_protein_g. Flag items below 0.6 confidence. Respect these dietary tags: [USER_TAGS]." Save the raw response to scans.
+3. Show the items for confirmation with per-item edits.
+4. On save, insert a meals row. If the user corrected a value, upsert a fingerprints row keyed by a simple visual hash or a label the user types, so the next similar plate logs in one tap.
+5. Update the daily progress ring: grams eaten against the goal.
+Rules: on an API error, fall back to manual entry. Never claim more certainty than the confidence says.
+Empty state: with no meals today, show the ring at zero and the Scan meal button.
+Done when: a photo of a meal returns items with protein estimates, correcting one value saves a fingerprint, and the next similar photo suggests the corrected value.
 ```
 
-**3. Gap-Fill Suggestions**
+**3. Landing Page**
 
 ```text
-When daily_protein_g remaining is greater than 15g and local time is after 5pm:
+Build a one-page landing site for AI Protein Tracker, a photo-first protein app.
+Hero: "Hit your protein goal without the homework." Sub: "Snap a photo. Get the grams. Fix it once and it remembers." One button: Join the waitlist.
+Sections: the problem (search bars and guessing portion weights), how it works in four steps (set your target, snap a meal photo, correct once and it learns, track the daily gap), a phone mockup of the progress ring, and a short FAQ on accuracy and photo privacy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: fast and plain. Lifters want grams and speed, not essays.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-1. Query user's top fingerprints and recent meals for high-protein repeats
-2. Filter by dietary_tags (exclude dairy if dairy-free, etc.)
-3. Call LLM with structured context — NOT the photo — to generate 3 short suggestions:
-   - one from meal prep / home staples
-   - one grocery grab under 10 minutes
-   - one restaurant-style option if user has logged chain meals before
-4. Cache suggestions per user per day in suggestion_cache table
-5. Show as cards on home screen with estimated protein grams each
+**4. Branding Package**
 
-Keep copy concise; lifters want grams and speed, not essays.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AI Protein Tracker: a wordmark and an app icon that suggest a ring being filled.
+Colors: near-black, warm white and one energetic accent. Type: a bold rounded sans for numbers and a plain sans for text.
+Deliverables: wordmark, app icon, a progress-ring style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the ring reads at 48 px.
 ```
 
 ## Sources

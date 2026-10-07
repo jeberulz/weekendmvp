@@ -92,51 +92,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "VocalCoach Pro" — real-time pitch feedback for online vocal lessons.
+Build the weekend MVP of "VocalCoach Pro": real-time pitch feedback in the browser for online vocal lessons.
 
-Requirements:
-- /practice — student view: mic permission, pitch meter, start/stop
-- /coach — spectator overlay + exercise picker + roster
-- Pitch MUST be computed in the browser (AudioWorklet + WASM). Do not send PCM to the server.
-- Supabase tables: coaches, students, exercises(id, name, targets JSONB, cents_tolerance INT), sessions(id, student_id, exercise_id, started_at, on_pitch_pct FLOAT, fmin FLOAT, fmax FLOAT, flags JSONB)
-- Stripe: Student $9/mo, Coach $30/mo, School $199/mo
-- Env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY
+Stack: Next.js (App Router), TypeScript, Tailwind, the Web Audio API with an AudioWorklet and a WASM or plain-JS pitch tracker, Supabase (Postgres, Row Level Security, Storage, Realtime, Auth with email magic link). Deploy on Vercel.
+Pitch is computed in the browser. Never send audio to the server.
 
-Accessibility: meter is not color-only — include a numeric cents readout and an aria-live "on pitch / sharp / flat" announcement throttled to 1Hz.
+Tables (Row Level Security on, a student reads their own sessions and a coach reads their students'):
+- coaches(id, user_id, name)
+- students(id, user_id, coach_id, name)
+- exercises(id, name, targets jsonb, cents_tolerance)
+- sessions(id, student_id, exercise_id, started_at, on_pitch_pct, fmin, fmax, flags jsonb)
+
+Screens: /practice (the student's pitch meter), /coach (the overlay, exercise picker and roster).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing or plans, an LLM, a video room (the lesson stays on Zoom), a server-side audio path, a school or studio account.
+Done when: npm run dev starts, the browser asks for the microphone, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Real-Time Pitch Meter**
+**2. Core Feature**
 
 ```text
-Implement an AudioWorkletProcessor that:
-1. Reads input frames at 48kHz
-2. Estimates F0 with autocorrelation, ignoring frames below a noise gate
-3. Converts F0 to MIDI and cents-off versus the current target note from the exercise timeline
-4. Posts {midi, cents, rms, t} to the main thread at ~30Hz
-
-UI:
-- Horizontal target line for the current note
-- Moving pitch curve for the last 3 seconds
-- Green when abs(cents) <= exercise.cents_tolerance (default 30), red otherwise
-- Big numeric cents readout
-
-Coach overlay reads the same data over a lightweight WebSocket of metadata only (no audio). If WebSocket fails, the student meter still works fully offline for that take.
+Build the one feature that proves VocalCoach Pro: a pitch meter a student can trust while they sing.
+1. An AudioWorkletProcessor reads input at 48 kHz, estimates the fundamental frequency with autocorrelation, ignores frames below a noise gate, converts it to a MIDI note and the cents off the current target note from the exercise, and posts { midi, cents, rms, t } to the main thread about 30 times a second.
+2. The student view shows a horizontal target line for the current note, the pitch curve for the last 3 seconds, a green meter when the cents off is within the exercise's cents_tolerance (default 30) and red otherwise, and a large numeric cents readout.
+3. The coach overlay reads the same data over a Supabase Realtime channel of metadata only. If the channel fails, the student meter still works fully offline for that take.
+4. Exercises are JSON { name, bpm, notes: [{ midi, startMs, endMs }] }. Ship three: a five-note major scale on A3, a glissando siren, and a sustained "gee" on one note.
+5. On stop, compute on_pitch_pct (the share of voiced frames inside tolerance) and fmin and fmax of the voiced frames, flag every 500 ms window with more than 50 cents off, and save the session. A coach can click a flag and record a 10-second voice note (MediaRecorder) saved to Storage and linked from that flag.
+Rules: the meter is never color-only. Show the numeric cents readout and an aria-live announcement of "on pitch", "sharp" or "flat", throttled to once a second.
+Empty state: before the microphone is allowed, show one sentence on why it stays on the device.
+Done when: singing the A3 scale shows the meter turning green on pitch, a sharp note reads positive cents and announces "sharp", and a stopped take saves its on-pitch percentage and flags.
 ```
 
-**3. Exercises + Session Review**
+**3. Landing Page**
 
 ```text
-Exercise templates as JSON: {name, bpm, notes: [{midi, startMs, endMs}]}.
-Ship three built-ins: five-note major scale on A3, glissando siren, sustained "gee" on a single note.
+Build a one-page landing site for VocalCoach Pro, real-time pitch feedback for online vocal lessons.
+Hero: "See your pitch while you sing." Sub: "On-device feedback beside your Zoom window, so coaches stop rewinding recordings." One button: Join the waitlist.
+Sections: the problem (correction after the fact is too late to feel), how it works in four steps (open the lesson room, load the exercise, sing against the meter, review the take), a mock pitch meter with a green and a red moment, and an FAQ on privacy (the audio never leaves the device) and which browsers work.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: clear and encouraging, written for a vocal coach.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-On stop:
-- Compute on_pitch_pct = share of voiced frames inside tolerance
-- Compute fmin/fmax of voiced frames
-- Flag any 500ms+ window with abs(cents) > 50
-- Store session row
-- Coach can click a flag and record a 10s voice note (MediaRecorder) uploaded to Supabase Storage, referenced from flags[i].note_url
+**4. Branding Package**
 
-Do not add an LLM in this prompt. Accuracy of the meter is the trust feature.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for VocalCoach Pro: a wordmark and an icon that suggest a sound wave settling onto a note.
+Colors: near-black, warm white and one calm accent, with green and red reserved for on-pitch and off-pitch. Type: one friendly sans for the interface and tabular numbers for cents.
+Deliverables: wordmark, icon, a pitch-meter style with a numeric readout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the meter reads without color.
 ```
 
 ## Sources

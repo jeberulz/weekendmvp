@@ -88,93 +88,62 @@ Weekend MVP: Gmail only, queue + draft + manual approve. Week two: Outlook and s
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Chrome Extension + Gmail OAuth Shell**
+**1. Project Setup**
 
 ```text
-Build a Chrome extension (Manifest V3) plus Next.js 14 App Router backend for an AI inbox agent called Inbox Zero Agent.
+Build the weekend MVP of the "Inbox Zero Agent": it reads your recent Gmail, ranks the threads that need you today, and saves a reply in your voice as a Gmail draft. It never sends, archives or deletes anything.
 
-Extension:
-- Side panel UI showing "Attention Queue" (ranked thread list with priority badge, subject, sender, one-line summary)
-- Background service worker that polls backend every 5 minutes for queue updates
-- Content script minimal — no DOM scraping; all data via backend API
-- OAuth flow: extension opens popup to /api/auth/gmail on the Next.js app; store session token in chrome.storage.local
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with Google sign-in), the Gmail API through Google OAuth with the read-only and compose scopes, the Anthropic API for ranking and drafts. Your own account in Google's testing mode is enough. Deploy on Vercel.
 
-Backend routes:
-- GET /api/auth/gmail — start Google OAuth with scopes: gmail.readonly, gmail.compose, gmail.send
-- GET /api/auth/gmail/callback — exchange code, encrypt refresh token, store in mail_accounts table
-- GET /api/queue — return today's attention queue for authenticated user
-- POST /api/draft — given thread_id, generate and return draft reply
+Tables (Row Level Security on, each user reads only their own rows):
+- mail_accounts(id, user_id, provider, refresh_token_encrypted, last_sync_at)
+- threads(id, mail_account_id, provider_thread_id, subject, sender, last_message_at, priority, score, reason, summary, detected_deadline, status)  priority is reply_now, reply_today, delegate or archive; status is pending, drafted or done
+- drafts(id, thread_id, body, gmail_draft_id, created_at)
+- style_profiles(user_id, tone_notes, avg_length, sign_off, example_snippets jsonb)
+- feedback_events(id, thread_id, kind, created_at)
 
-Postgres schema:
-- users(id, email, plan, stripe_customer_id, created_at)
-- mail_accounts(id, user_id, provider ENUM[gmail,outlook], refresh_token_encrypted, last_sync_at)
-- threads(id, mail_account_id, provider_thread_id, subject, sender, last_message_at, priority_score, summary, status ENUM[pending,drafted,scheduled,done,archived])
-- drafts(id, thread_id, body, status ENUM[generated,approved,sent,scheduled], scheduled_for, created_at)
-- style_profiles(id, user_id, tone_notes, avg_length, sign_off, example_snippets JSONB)
+Screens: /login, /queue (today's ranked threads), /threads/[id] (the thread summary and the draft), /style.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
 
-Landing page headline: "Your inbox, minus the triage." Subhead: AI priority queue and voice-matched drafts for Gmail.
-Use TypeScript throughout. Environment variables for Google client ID/secret and Anthropic API key.
+Do not build: billing, plans or seats, Outlook, a Chrome extension, sending or scheduling mail, the weekly report, Google's app verification.
+Done when: npm run dev starts, you can sign in with Google, and the five tables exist with Row Level Security on.
 ```
 
-**2. Priority Scoring + Attention Queue**
+**2. Core Feature**
 
 ```text
-Implement the daily attention queue pipeline for Inbox Zero Agent.
-
-Sync job (runs every 15 min per connected account):
-1. Gmail API: list threads with label INBOX, max 100, ordered by internalDate desc.
-2. Skip threads already scored in the last 6 hours unless new messages arrived.
-3. For each new/changed thread, fetch snippet + last 3 messages (plain text, strip quoted replies).
-
-Priority classifier (Claude Haiku, JSON mode):
-Input: thread subject, sender, snippet, user role (optional), historical sender_stats (avg response time, past priority labels).
-Output schema:
-{
-  priority: "reply_now" | "reply_today" | "delegate" | "archive",
-  score: 0-100,
-  reason: "one sentence",
-  detected_deadline: "ISO date or null",
-  summary: "one sentence thread summary"
-}
-
-Scoring rules in system prompt:
-- reply_now: explicit urgency, angry customer, deadline within 24h, VIP sender marked high in style profile
-- reply_today: direct question, meeting request, client thread without urgency markers
-- delegate: FYI with action item for someone else, internal routing
-- archive: newsletter, automated notification, cold outreach, no-reply needed
-
-Store results in threads table. Attention queue API returns top 15 threads where priority in (reply_now, reply_today) sorted by score desc.
-
-Feedback loop: when user marks "not urgent" or archives from queue, log feedback_events and downgrade sender priors.
+Build the one feature that proves the Inbox Zero Agent: a short list of the threads that need you, and a draft you only have to read.
+1. After sign-in, save the Google refresh token encrypted with TOKEN_ENCRYPTION_KEY. Never log a token.
+2. A Sync button lists the 50 most recent inbox threads through the Gmail API. For each new or changed thread, fetch the subject, sender, snippet and the last 3 messages as plain text with quoted replies stripped.
+3. Send those to the Anthropic API with a strict JSON schema { priority: "reply_now" | "reply_today" | "delegate" | "archive", score: number from 0 to 100, reason: string, detected_deadline: string or null, summary: string }. reply_now means explicit urgency or a deadline within 24 hours. reply_today means a direct question or a meeting request. archive means automated mail and newsletters.
+4. Save subject, sender, summary and the result. Do not store message bodies. /queue shows up to 12 threads with reply_now or reply_today, ranked by score, each with its reason in one sentence.
+5. Build a style profile once from your last 100 sent messages: tone notes, average length, usual sign-off and 3 example replies. Show it on /style so you can edit it.
+6. A Draft reply button sends the thread text and the style profile to the Anthropic API and returns a plain-text reply with no subject and no markdown. Show it in an editor. Save to Gmail creates a draft attached to the thread with users.drafts.create. You send it from Gmail.
+7. A Not urgent button logs a feedback event and lowers that sender's score next time.
+Rules: the agent only reads and creates drafts. It never sends, archives, deletes or labels. Say that on the queue page.
+Empty state: before the first sync, show the Sync button and what the agent will and will not do.
+Done when: a sync ranks real threads with reasons, the queue shows at most 12, a draft saves into Gmail attached to the right thread and no message is ever sent, and Not urgent lowers the sender's next score.
 ```
 
-**3. Voice-Matched Draft Replies + Scheduled Send**
+**3. Landing Page**
 
 ```text
-Build draft generation and scheduled sending for Inbox Zero Agent.
+Build a one-page landing site for the Inbox Zero Agent, an inbox triage assistant for Gmail.
+Hero: "Your inbox, minus the triage." Sub: "See the few threads that need you today, with a draft reply in your voice waiting in Gmail. It never sends anything for you." One button: Join the waitlist.
+Sections: a sample queue with three threads, each with a reason, how it works in four steps (connect, rank, draft, you send), a plain box saying what it never does (send, archive or delete), and an FAQ on what is stored (summaries, not message bodies), why access is limited while Google reviews the app and when Outlook comes.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Style profile bootstrap (on first connect):
-- Fetch last 200 sent messages via Gmail API.
-- Claude analysis: extract tone (formal/casual), typical length, common sign-offs, greeting patterns, 5 example reply pairs (incoming → sent).
-- Store in style_profiles.
+**4. Branding Package**
 
-Draft generation (POST /api/draft):
-Input: thread_id, optional user_notes ("softer tone", "push meeting to next week").
-Fetch full thread. Build prompt:
-
-System: "You write email replies matching this user's voice exactly."
-Include style_profiles fields and 3 example snippets.
-User: thread transcript + user_notes.
-Output: plain-text reply body only, no subject line, no markdown.
-
-Return draft for side-panel editor. User can edit inline.
-
-On approve:
-- Gmail API users.drafts.create with threadId binding.
-- If send_immediately: users.messages.send with draft id.
-- If scheduled_for timestamp: store in send_queue table; cron job (Vercel Cron every 5 min) checks due items, sends via API, marks thread done.
-
-Track: drafts generated, approval rate, edits before send (measure voice accuracy). Gate unlimited drafts behind Individual plan; trial capped at 50.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Inbox Zero Agent: pick a short name (the working name is InboxZen), then design a wordmark and an icon that suggest an envelope with a short, ranked list inside it.
+Colors: off-white, near-black and one blue. Type: Geist.
+Deliverables: wordmark, icon, three priority chips (reply now, reply today, can wait) that differ by shape as well as color, and one launch graphic built from the queue.
+Done when: each deliverable is saved in one folder and the priority chips are distinguishable without color.
 ```
 
 ## Sources

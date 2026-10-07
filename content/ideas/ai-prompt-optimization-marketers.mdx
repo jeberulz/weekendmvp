@@ -89,25 +89,54 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router, TypeScript, Tailwind) app for PromptPro. Postgres (Prisma) tables: users, brands (name, voice_rules, forbidden_claims, icp_summary), prompt_kits (brand_id, channel, campaign_type), prompts (kit_id, title, body, version, job: 'ads'|'email'|'landing'|'social'|'qa'), evals (prompt_id, model, input_fixture, expected_notes, score), subscriptions (stripe_customer_id, plan: 'workshop'|'sme'|'team'|'enterprise'). Auth: magic link. Stripe products: $99 workshop (one-time), $199 and $499 and $999 monthly, $20k annual invoice SKU. Routes: /audit (public form), /app/library, /app/evals. Export a kit to Notion Markdown. Env: DATABASE_URL, STRIPE_SECRET_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, RESEND_API_KEY, NEXT_PUBLIC_APP_URL.
+Build the weekend MVP of "PromptPro": score a marketing team's real prompts in a free audit, then keep the fixed ones in a brand-voice prompt library.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the scoring. The audit form is public. Deploy on Vercel.
+
+Tables (Row Level Security on: the library is private to its owner, the audit table takes public inserts and no public reads):
+- brands(id, user_id, name, voice_rules, forbidden_claims, icp_summary)
+- prompt_kits(id, brand_id, channel, campaign_type)
+- prompts(id, kit_id, title, body, version, job)  where job is one of ads, email, landing, social, qa
+- audits(id, user_id, submission jsonb, scores jsonb, report_markdown, created_at)
+
+Screens: /audit (public form), /library, /login.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or workshop SKUs, the eval runner across models, Notion export, emailing the report, stale-prompt digests, an admin area.
+Done when: npm run dev starts, the public audit form loads, you can sign in to the library, and the four tables exist with Row Level Security on.
 ```
 
-**2. Prompt Audit Engine**
+**2. Core Feature**
 
 ```text
-Build POST /api/audit. Input: brand_url optional, 10 prompts (title, body, sample_output), stated channels, one-sentence offer. For each prompt, score 0-5 on: voice specificity, ICP presence, conversion job (what action, what proof), claim safety (unverified superlatives), channel fit, and reuse (variables vs hardcoded product names). Return JSON plus a 3-page Markdown report: executive summary, per-prompt table, top five failures, recommended kit map (voice system, three campaign kits, QA checklist). Do not rewrite their entire library in the audit — sell the rewrite. Email the report via Resend. Store the raw submission for the sales follow-up only.
+Build the one feature that proves PromptPro: a prompt audit that scores what a team actually uses.
+1. POST /api/audit takes an optional brand URL, 10 prompts (title, body, sample_output), the stated channels and a one-sentence offer.
+2. For each prompt, ask Claude to score it from 0 to 5 on voice specificity, ICP presence, conversion job (what action, what proof), claim safety (unverified superlatives), channel fit, and reuse (variables against hardcoded product names). Return strict JSON.
+3. Build a 3-page Markdown report: an executive summary, a per-prompt table, the top five failures, and a recommended kit map (a voice system, three campaign kits and a QA checklist). Show it on screen and save it to audits.
+4. Library: kits grouped by channel, a copy button, version history, and a "duplicate for new campaign" action that forces offer, ICP and date fields before it copies.
+Rules: do not rewrite their whole library in the audit. The audit finds the problems and the rewrite is the paid work. Save the raw submission for follow-up only.
+Empty state: an empty library shows the audit link and one sample kit.
+Done when: ten pasted prompts return scores and a report, scoring the same fixture twice gives the same shape of result, and duplicating a prompt asks for offer, ICP and date first.
 ```
 
-**3. Library Workspace + Evals**
+**3. Landing Page**
 
 ```text
-Build the authenticated library: kits grouped by channel, copy button, version history, "duplicate for new campaign" that forces offer/ICP/date fields before copy. Add an eval runner: for a prompt, run OpenAI and Anthropic against 5 fixtures (on-brand, off-brand temptation, legal-edge claim, short-form, long-form) and store scores plus a human pass/fail. Monthly job: if a prompt has not been copied in 45 days, flag it stale in the digest. Stripe webhooks: unpaid retainers freeze editing but keep read-only export for 14 days. Tests: audit scoring determinism on a fixture set, Notion export snapshot, seat-less billing for workshop SKU.
+Build a one-page landing site for PromptPro, custom prompt libraries for marketing teams.
+Headline: "Your team does not have a prompting problem. It has a context problem." Sub: "Custom prompt libraries: brand voice, campaigns, conversion. The audit is free." One button: Get the prompt audit, which links to /audit.
+Sections: a short story of a team whose prompts drifted off-brand, how it works in four steps (prompt audit, build the brand library, workshop and install, retain and measure), a sample audit score card, and a contrast with generic prompt tools and agencies.
+Voice: plain, strategic and a little dry.
+Done when: the page renders on a phone and the button opens the audit form.
 ```
 
-**4. Landing + Audit CTA**
+**4. Branding Package**
 
 ```text
-Marketing page for PromptPro. Headline: "Your team does not have a prompting problem. It has a context problem." Sub: "Custom prompt libraries — brand voice, campaigns, conversion. Audit is free." Sections: Notion-v7 story, 4-step how-it-works, pricing ($99 workshop / $199–$499 SME / $499–$1,999 teams / enterprise), contrast vs PromptLayer, ChatGPT Plus, PromptBase, agencies. CTA: "Get the prompt audit." Geist, off-white, one aubergine accent.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for PromptPro: a wordmark and an icon that suggest a bookmark inside a speech bubble.
+Colors: off-white, near-black and one aubergine accent. Type: Geist for the interface and a mono for prompt text.
+Deliverables: wordmark, icon, an audit score-card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

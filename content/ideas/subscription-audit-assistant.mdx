@@ -93,92 +93,61 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "Recur" — a subscription auditor that finds forgotten recurring charges and closes the loop on cancelling them.
+Build the weekend MVP of "Recur": upload bank statement exports, see every recurring charge in one ranked list, and track each cancellation until the charge really stops. It reads files you upload and connects to nothing.
 
-Supabase schema:
-- users(id, auth_id, email, plan TEXT default 'free', household_id UUID NULL, stripe_customer_id)
-- connections(id, user_id, provider TEXT, institution_name TEXT, access_token_encrypted TEXT, last_synced_at, status TEXT)
-- transactions(id, connection_id, external_id TEXT UNIQUE, posted_at DATE, amount_cents INT, raw_descriptor TEXT, normalized_descriptor TEXT, merchant_id UUID NULL)
-- merchants(id, normalized_descriptor TEXT UNIQUE, display_name TEXT, category TEXT, cancel_url TEXT, requires_phone BOOL, cancel_phone TEXT, notes TEXT, typical_days_to_stop INT)
-- subscriptions(id, user_id, merchant_id, cadence TEXT CHECK cadence IN ('weekly','monthly','quarterly','annual','irregular'), amount_cents INT, confidence NUMERIC, first_seen DATE, last_charged DATE, next_expected DATE, price_changes JSONB, status TEXT CHECK status IN ('active','cancelling','cancelled','unverified'))
-- cancellations(id, subscription_id, user_id, method TEXT CHECK method IN ('deeplink','phone','email','chat'), initiated_at, script TEXT, user_reported_at, verified_at, outcome TEXT)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for two narrow jobs (naming an unknown merchant and writing a call script). Detection is plain code and never uses the model. Deploy on Vercel.
 
-RLS: users read only their own rows; household members read shared subscription rows scoped by household_id. merchants is a globally-readable reference table.
+Tables (Row Level Security on, each user reads only their own rows; merchants is a shared reference table):
+- imports(id, user_id, filename, row_count, created_at)
+- transactions(id, user_id, import_id, external_id, posted_at, amount_cents, raw_descriptor, normalized_descriptor, merchant_id)  external_id is unique per user
+- merchants(id, normalized_descriptor, display_name, category, cancel_url, requires_phone, cancel_phone, notes, typical_days_to_stop)  normalized_descriptor is unique
+- recurring_charges(id, user_id, merchant_id, cadence, amount_cents, confidence, first_seen, last_charged, next_expected, price_changes jsonb, status)  cadence is weekly, monthly, quarterly, annual or irregular; status is active, cancelling, cancelled or unverified
+- cancellations(id, recurring_charge_id, user_id, method, initiated_at, script, verified_at, outcome)
 
-Routes: /connect, /subscriptions (ranked list), /subscriptions/[id], /cancel/[id], /savings (confirmed total), /household.
+Screens: /login, /import, /charges (ranked list), /charges/[id], /cancel/[id], /savings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
 
-Store aggregator access tokens encrypted with pgsodium, never in plaintext. Put raw transactions in a separate schema with a 24-month retention job.
-
-Stripe: Plus $6/mo and $49/yr, Household $12/mo. Env: PLAID_CLIENT_ID, PLAID_SECRET, ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY.
+Do not build: billing, plans or a household tier, Plaid or any bank connection, a household view, email delivery, a chargeback guide, a 24-month retention job.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Recurrence Detection Engine**
+**2. Core Feature**
 
 ```text
-Build the detection engine. This must be deterministic and explainable — a false positive that tells someone to cancel their mortgage autopay destroys trust permanently.
-
-Step 1 — Normalize descriptors:
-Strip trailing transaction IDs, store numbers, dates, and city/state suffixes. Uppercase, collapse whitespace, remove common payment-processor prefixes (SQ*, DRI*, PAYPAL *, APLPAY, TST*). Store as normalized_descriptor. Look it up in merchants; if absent, queue it for resolution (prompt 3).
-
-Step 2 — Cluster:
-Group a user's transactions by normalized_descriptor. Discard clusters with fewer than 3 transactions — two charges is not yet a pattern.
-
-Step 3 — Score each cluster:
-- interval_score: compute day gaps between consecutive charges. Classify cadence by median gap (28-31 monthly, 6-8 weekly, 88-95 quarterly, 360-370 annual). Score by how tightly gaps hold: stddev under 3 days is strong, over 7 is weak.
-- amount_score: coefficient of variation of amounts. Under 0.02 is a fixed subscription; 0.02-0.25 is usage-based but still recurring; above 0.25 is probably not a subscription.
-- length_score: more observed cycles means higher confidence, saturating at 6.
-confidence = weighted blend, normalized 0-1.
-
-Step 4 — Classify:
-confidence >= 0.8 -> active subscription, shown by default.
-0.5-0.8 -> shown under "possible subscriptions", requiring user confirmation.
-below 0.5 -> not surfaced at all.
-
-Step 5 — Enrich:
-Detect price changes by walking amounts chronologically and flagging any step above 3%. Compute annual_cost from cadence and current amount. Set next_expected from last_charged plus median gap.
-
-Ranking on the dashboard: annual_cost DESC, but boost anything with a price increase in the last 6 months and anything whose cadence is annual (those are the genuinely forgotten ones). Never rank by confidence — the user does not care how sure you are, they care how much it costs.
-
-Explicit exclusions: never classify as a cancellable subscription anything matching known patterns for rent, mortgage, insurance premiums, loan payments, or utilities. Flag those as "recurring, not cancellable here" in a separate section.
+Build the one feature that proves Recur: a detector that is right and explainable, and a cancellation that is only called done after the statement agrees.
+1. Import a CSV with columns date, description, amount. Treat charges as negative amounts. Skip a row already imported (same date, description and amount).
+2. Normalize each descriptor: strip trailing ids, store numbers, dates and city or state suffixes, uppercase, collapse spaces and remove processor prefixes such as SQ*, TST*, PAYPAL * and APLPAY. Save normalized_descriptor and link it to a merchant when one exists.
+3. Group by normalized descriptor. Drop groups with fewer than 3 charges, except an annual cadence, which may be shown with 2 charges a year apart (360 to 370 days) as a possible recurring charge with confidence capped at 0.7.
+4. Score each group in code. Cadence from the median day gap (28 to 31 monthly, 6 to 8 weekly, 88 to 95 quarterly, 360 to 370 annual) with a gap spread under 3 days strong and over 7 weak. Amount steadiness from the coefficient of variation: under 0.02 fixed, up to 0.25 usage-like, above that not a recurring charge. More cycles raise confidence, saturating at 6. Blend into confidence from 0 to 1.
+5. Classify: 0.8 or more is shown by default, 0.5 to 0.8 is shown under "possible" and needs the user to confirm, under 0.5 is not shown. Never show rent, mortgage, insurance, loan or utility charges as cancellable; list them in a separate "recurring, not cancellable here" section.
+6. Flag any step of more than 3 percent between charges as a price change, compute annual cost from cadence and amount, and set next_expected to the last charge plus the median gap. Rank by annual cost, boosting charges with a price rise in the last 6 months and annual ones. Never rank by confidence.
+7. For an unknown merchant, ask the Anthropic API for JSON { display_name, category, confidence, is_likely_subscription } and say "not sure" under 0.6 confidence rather than guessing. Cache the result in merchants. Let the user correct it.
+8. Cancel: for a merchant with a cancel_url, link to it and show what the flow will ask. For a phone merchant, have the model write a script of at most 6 sentences that states intent, declines one retention offer and asks for a written confirmation with a reference number, with no threats and no legal citations.
+9. On starting a cancellation, set status cancelling. Mark it cancelled and add its annual cost to confirmed savings only when a later import covers the next expected date plus 3 days and shows no new charge. If a charge appears, alert the user on the page.
+Rules: never mark anything cancelled on the user's word alone. No shaming about spending.
+Empty state: with no imports, show the CSV columns and a sample file.
+Done when: the detector tests pass on fixtures (a monthly fixed charge detected, a utility excluded, two charges not shown, an annual one shown as possible), a merchant resolves once and is cached, and a cancellation stays unverified until a later import confirms no new charge.
 ```
 
-**3. Descriptor Resolution + Cancellation Playbooks**
+**3. Landing Page**
 
 ```text
-Build the two AI-assisted pieces. Both are narrow, cached, and never in the detection path.
-
-Descriptor resolution:
-When an unknown normalized_descriptor appears, call Claude Haiku with a strict JSON schema: {display_name: string, category: string, confidence: number, is_likely_subscription: boolean}. Prompt: "Given this payment descriptor from a bank statement, identify the consumer-facing product or company name. Return confidence below 0.6 if uncertain rather than guessing. Do not invent a company that you are not confident exists."
-Cache the result on the merchants table keyed by normalized_descriptor — this is global, so every user after the first resolves instantly and at zero cost. Surface a "is this right?" correction affordance and let user corrections overwrite low-confidence entries.
-
-Cancellation playbook:
-For each merchant, the registry stores cancel_url, requires_phone, cancel_phone, and typical_days_to_stop. Route accordingly:
-- Self-service: deep-link to cancel_url in a new tab, show a 4-step checklist of what the flow will ask, warn about the specific retention offer if one is documented, and prompt "did it go through?" on return.
-- Phone or chat required: generate a script with Claude. Prompt: "Write a cancellation script for a customer calling {merchant} to cancel a {cadence} subscription of {amount}. Six sentences maximum. Include: a clear opening statement of intent, the account identifier placeholder, one firm decline of a retention offer, and a request for a written cancellation confirmation with a reference number. Plain and polite. Do not threaten, do not fabricate any legal citation."
-Render the script with copyable fields and a note-taking box for the reference number.
-
-Verification loop (this is the retention feature):
-On cancellation initiation, set subscriptions.status = 'cancelling' and schedule a check at last_charged + median_gap + 3 days. On that date, look for a new charge from that merchant. None found -> verified_at set, status 'cancelled', add annual_cost to confirmed savings, email the user. Charge found -> alert the user immediately with the charge details and offer an escalation path (chargeback guidance, a written follow-up template). Never mark anything cancelled on the user's word alone — verify against the transaction stream.
+Build a one-page landing site for Recur, a finder and canceller for forgotten recurring charges.
+Hero: "You're paying for nine things you can't name." Sub: "Upload your statements, see every recurring charge in one list and cancel the dead ones. We check the next statement to make sure the charge really stopped." One button: Join the waitlist.
+Sections: a statement scroll where forgotten charges highlight and an annual total climbs, a split of what most apps do and what this does (find, then cancel, then verify), three cryptic descriptors resolving to product names on hover, a privacy block placed early (you upload files, nothing is connected, delete everything in one click), and an FAQ on which files work, what happens to your data and why some cancellations need a phone call.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, deep ink type, one green accent used only for confirmed savings. A matter-of-fact voice with no shaming.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a single-page marketing site for Recur, targeting people who just lost Mint and anyone who suspects they're paying for things they forgot.
-
-Hero headline: "You're paying for nine things you can't name."
-Sub: "Connect your accounts, see every recurring charge in one list, and actually cancel the dead ones — we check next month to make sure the charge really stopped."
-
-Sections:
-1. The statement scroll — an animated bank statement where forgotten charges progressively highlight as you scroll. Show a running annual total climbing. This is the emotional hook and it should be the first thing that moves.
-2. Detection vs action — a two-column split: what every app does (a list) vs what this does (deep-link cancel, call script, verified stop). The verification column is the differentiator; make it visually heavier.
-3. The cryptic descriptor demo — three real-looking descriptors (DRI*SUPPORT, APLPAY 8886254, SQ *NORTHSIDE) resolving into recognizable product names on hover.
-4. Privacy, stated plainly and early — read-only access, transactions only, we never sell spending data, disconnect and delete in one click. Put this above pricing, not below it. This audience has been burned.
-5. Confirmed savings — screenshot of the running total with verified cancellation dates. Social proof through mechanism, not testimonials.
-6. Pricing — Free / Plus $6 / Household $12, with the annual $49 toggle. Anchor against "one forgotten subscription costs more than a year of this."
-7. FAQ — which banks are supported, what happens to data on disconnect, subscriptions billed through app stores, why some cancellations need a phone call.
-
-Voice: matter-of-fact, no shaming about spending habits. The user is not irresponsible; the system is designed to be forgettable. Type: Geist. Palette: off-white, deep ink, one green accent used only for confirmed savings. Primary CTA: "See what you're paying for."
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Recur: a wordmark and an icon that suggest a circular arrow that is cut open and closed with a check.
+Colors: off-white, deep ink and one green used only for confirmed savings. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, four status chips (active, cancelling, cancelled, unverified) that differ by shape as well as color, a savings total card, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

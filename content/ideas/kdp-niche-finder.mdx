@@ -83,19 +83,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "NicheFinder," a book-niche research tool for Kindle self-publishers. Provision a Postgres database (Supabase) with these tables: users (id, email, plan TEXT default 'free'), saved_niches (id, user_id, category_name, opportunity_score FLOAT, competition_count INT, created_at), category_snapshots (id, category_name, publishing_velocity FLOAT, avg_price_cents INT, avg_review_count INT, snapshot_date DATE), keyword_clusters (id, category_name, keyword TEXT, search_volume_estimate INT). Wire Stripe with four products: Starter $19.99/mo, Pro $49/mo, Advanced Analytics $99/mo, and a manually invoiced Enterprise tier. Add env vars for the data-acquisition provider, OPENAI_API_KEY or ANTHROPIC_API_KEY, and Stripe keys.
+Build the weekend MVP of "NicheFinder": an author pastes in the top listings for a few candidate book niches and gets them ranked by an opportunity score from 0 to 100, each with a two-sentence reason that quotes the numbers.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to word the explanation. The score is computed in code from the rows you give it. No scraping and no Amazon data provider this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- niches(id, user_id, name, created_at)
+- listings(id, niche_id, title, price_cents, review_count, rank, published_on)
+- niche_scores(id, niche_id, demand, competition, price_stability, opportunity_score, explanation, computed_at)
+
+Screens: /login, /niches (the ranked list), /niches/new (name a niche and paste or upload 20 listings), /niches/[id] (the score breakdown).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an enterprise tier, scraping or a data provider, revenue estimates, keyword search volumes, a quiz, background rescans.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Opportunity Scoring Engine**
+**2. Core Feature**
 
 ```text
-Build a scoring pipeline that takes a category_snapshots row and outputs an opportunity_score between 0 and 100. Weight the score using: demand signal (review velocity and search volume trend, higher is better), competition signal (number of quality competing titles and publishing velocity into the category, lower is better), and price stability (tight price clustering suggests a validated, buyer-ready niche). Normalize each signal to a 0-1 range before weighting. After computing the score, call an LLM with the raw signals and ask it to write a two-sentence plain-English explanation of why the niche scored the way it did, referencing the specific numbers. Store both the score and the explanation on the saved_niches row. Write this as a background job that can be triggered by a cron schedule, not a request-time function.
+Build the one feature that proves NicheFinder: a score you can recompute by hand, and a reason that quotes it.
+1. Import a CSV for one niche with columns title, price, review_count, rank, published_on. Show rows that failed to parse and why. Ask for at least 15 listings.
+2. Compute three signals in code, each scaled to 0 to 1 with the formula shown on the page. Demand: the median review count of the listings, on a log scale capped at 1,000 reviews. Competition: the share of listings with 100 or more reviews, plus the share published in the last 12 months, averaged, where a lower share is better. Price stability: one minus the spread of prices (standard deviation over the mean), floored at 0.
+3. Opportunity score = 100 times (0.4 times demand plus 0.4 times the inverse of competition plus 0.2 times price stability). Unit test it with three fixed inputs.
+4. Send the three signals and the underlying counts to the Anthropic API and ask for JSON { explanation: string }, two sentences in plain English that cite the numbers. Check in code that every number in the text appears in the signals; if not, fall back to a template sentence built from the numbers.
+5. /niches ranks the niches by score. Each row shows the score, the three signals and the explanation.
+Rules: label every result "an estimate from the listings you pasted, not Amazon sales data". Never state a revenue figure or a search volume.
+Empty state: with no niches, show the CSV columns and a sample file for three niches.
+Done when: three sample niches rank in a stable order, the unit test passes, changing one listing's review count changes the score, and an explanation with an invented number is replaced by the fallback.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for NicheFinder. Hero headline: "Stop guessing which book to write next." Sub: "We scan thousands of Amazon categories and tell you exactly which niches are growing, underserved, and ready to publish into." Sections: interactive free quiz CTA (3 questions: interest area, target book length, experience level), problem section referencing the "20 hours of research before writing a single page" pain point, how-it-works (4 steps matching the solution section), a sample opportunity-score card showing a real-looking niche example with score and explanation, pricing table (Starter/Pro/Advanced Analytics) anchored against Publisher Rocket's $97 one-time and Helium 10's $39+/mo, and an FAQ covering data freshness, how the score is calculated, and Amazon data compliance. Use a warm off-white background, near-black text, one accent color, and generous whitespace. Primary CTA: "Find my first niche — free."
+Build a one-page landing site for NicheFinder, a niche scorer for Kindle self-publishers.
+Hero: "Stop guessing which book to write next." Sub: "Paste the top listings for a niche. Get a score you can check, with the reason in plain English." One button: Join the waitlist.
+Sections: a sample score card with the three signals and a two-sentence reason, the problem (hours of research before a single page), how it works in four steps (list niches, paste listings, score, compare), and an FAQ on where the data comes from (the listings you paste today), how the score is calculated and why there are no revenue estimates.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one amber accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for NicheFinder: a wordmark and an icon that suggest an open book with a small marker pointing at one line.
+Colors: warm off-white, near-black and one amber. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, a score dial from 0 to 100, three signal chips (demand, competition, price) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the signal chips are distinguishable without color.
 ```
 
 ## Sources

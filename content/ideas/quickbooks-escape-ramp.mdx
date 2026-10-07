@@ -82,19 +82,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "QuickBooks Escape Ramp," a flat-fee accounting migration service. Provision Supabase with these tables: engagements (id, customer_name, source_platform TEXT, dest_platform TEXT CHECK dest_platform IN ('xero','zoho','freshbooks'), status TEXT default 'assessment', quote_cents INT, created_at), extractions (id, engagement_id, transaction_count INT, custom_field_count INT, raw_payload JSONB, extracted_at), mappings (id, engagement_id, source_account TEXT, dest_account TEXT, confidence FLOAT, human_reviewed BOOL default false), reconciliations (id, engagement_id, source_trial_balance_cents INT, dest_trial_balance_cents INT, matched BOOL, run_at). Enable row-level security so each engagement's data is isolated. Wire Stripe with a $1,500 Flat-Fee Migration product, a $3,000 White-Glove product, a $149 DIY Toolkit, and a $150/mo Migration Care subscription. Add env vars QBO_CLIENT_ID, QBO_CLIENT_SECRET, XERO_CLIENT_ID, ZOHO_CLIENT_ID, ANTHROPIC_API_KEY. Build a customer intake form that collects the source file and returns a quote.
+Build the weekend MVP of the "QuickBooks Escape Ramp": the proof step of an accounting migration. Upload a QuickBooks journal export, map the accounts to a destination chart, and see whether the balances foot to the exact cent before anything is exported.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to propose the account mapping. The balance checks are plain code. A destination chart is a file you write by hand from the destination platform's own documentation. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- engagements(id, user_id, customer_name, dest_platform, status, created_at)
+- extractions(id, engagement_id, account_count, transaction_count, raw_payload jsonb, extracted_at)
+- mappings(id, engagement_id, source_account, source_type, dest_account, dest_type, confidence, human_reviewed boolean)
+- reconciliations(id, engagement_id, source_total_cents, dest_total_cents, by_account jsonb, matched boolean, run_at)
+- audit_events(id, engagement_id, step, detail jsonb, created_at)
+
+Screens: /login, /engagements/new (upload), /engagements/[id] (steps), /engagements/[id]/mapping (review), /engagements/[id]/proof.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, quotes or flat-fee tiers, QuickBooks API or OAuth, QBXML or IIF parsing, attachments and custom fields, destination API writes, a queue or Redis.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the migration pipeline as durable Node workers behind a BullMQ + Redis queue. Stage 1 EXTRACT: connect to QuickBooks Online via the official API (OAuth) or parse an uploaded QBXML/IIF desktop export; pull the full chart of accounts, all transactions, lists, attachments, and reconciliation history into the extractions table. Stage 2 MAP: for each source account, call Claude with a strict JSON schema — { dest_account: string, account_type: string, confidence: number } — matching it to the destination platform's chart-of-accounts structure; write rows to mappings, and flag every row with confidence under 0.85 for human review in the dashboard. Stage 3 VALIDATE: compute a trial balance on both the staged source data and the proposed destination data; write to reconciliations and set matched=true only if they foot to the exact cent. Stage 4 COMMIT: refuse to write to the destination API (Xero/Zoho/FreshBooks) unless the latest reconciliation for the engagement has matched=true. Log every step to a per-engagement audit trail.
+Build the one feature that proves the Escape Ramp: a migration you can prove, step by step, before a single record is written anywhere.
+1. Extract: upload a journal CSV exported from QuickBooks (date, transaction number, account, debit, credit, memo). Parse it in code, convert amounts to cents and save the account list and the transactions to extractions. Compute the source trial balance per account. Reject a file whose debits and credits do not equal each other and say by how much.
+2. Map: for each source account, send its name, type and the destination chart file to the Anthropic API with a strict JSON schema { dest_account: string, account_type: string, confidence: number from 0 to 1 }. dest_account must be an entry in the destination chart file, or empty. Save the rows to mappings. Any row under 0.85 confidence, or with an empty destination, needs a human to set human_reviewed.
+3. Validate: apply the mapping to the transactions and compute the destination trial balance per account. Save a reconciliation with matched true only if every source account's balance equals the sum of what flows into its destination account to the cent, and total debits equal total credits.
+4. Gate the export: allow the destination-ready CSV download only when the latest reconciliation is matched and every low-confidence mapping is reviewed. Otherwise show exactly which accounts or amounts do not foot.
+5. Log every step to audit_events with a time and the counts.
+Rules: never change a source amount. Never claim a full migration: say what was proven (balances) and what was not (attachments, custom fields, history outside the file).
+Empty state: with no engagements, show the upload box, how to export the journal from QuickBooks and a sample file.
+Done when: a sample journal extracts with equal debits and credits, a mapping with one low-confidence row blocks the export until reviewed, a deliberate $0.01 mapping error makes the proof fail and names the account, and the final CSV only downloads after a matched proof.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for QuickBooks Escape Ramp. Hero headline: "Leave QuickBooks without losing a single transaction." Sub: "Flat fee. Penny-accurate. Done in a week. We move your books to Xero, Zoho, or FreshBooks and prove every balance still foots." Sections: the trap (QuickBooks Desktop is sunsetting and QuickBooks Online keeps raising prices), how it works (the 4-step assessment / extract / map / cutover process with icons), the guarantee (a penny-accurate reconciliation promise stated as a contract, not a hope), pricing (DIY Toolkit $149 / Flat-Fee $1,500 / White-Glove $3,000+) anchored against "hourly migration quotes that balloon into the thousands," and an FAQ covering data security, downtime, custom fields, and which platforms you migrate to. Use the Geist font, an off-white background, near-black text, and a single mint accent. Primary CTA: "Get a fixed quote in 24 hours" with a file-upload assessment form.
+Build a one-page landing site for the QuickBooks Escape Ramp, migration for small businesses leaving QuickBooks.
+Hero: "Leave QuickBooks and prove every balance still foots." Sub: "We map your accounts, check the balances to the cent and show you the proof before anything moves." One button: Join the waitlist.
+Sections: the trap (the desktop product is being retired and the online one keeps getting more expensive), how it works in four steps (extract, map, prove, export), a sample proof page with one account that does not foot, and an FAQ on what is proven today (balances) and what is handled by hand (attachments, custom fields, history), data security and which destination platforms come first.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one mint accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the QuickBooks Escape Ramp: pick a short working name that does not use a trademark, then design a wordmark and an icon that suggest a ramp that ends in a level line.
+Colors: off-white, near-black and one mint. Type: Geist, with tabular numbers for balances.
+Deliverables: wordmark, icon, three proof states (foots, does not foot, needs review) that differ by shape as well as color, a proof page header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the three proof states are distinguishable without color.
 ```
 
 ## Sources

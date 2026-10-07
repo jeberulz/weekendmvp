@@ -88,25 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app named ResalePilot. Postgres tables: users, connections (provider, credentials_encrypted), listings (source, external_id, title, price_cents, condition, url, seen_at), comps (listing_id, dest, median_cents, sample_size), deals (listing_id, roi_bps, fees_cents, ship_cents, risk, scored_at), actions (deal_id, type, created_at). Auth with Clerk. Stripe: Free, Scout $49, Pro $149, Desk $199. Env: EBAY_APP_ID, AMAZON_PAAPI_KEY, SHOPIFY_API_KEY, STRIPE_SECRET_KEY, OPENAI_API_KEY. Workers deploy to Fly. No scraper in v1.
+Build the weekend MVP of "ResalePilot": an overnight scanner that wakes a reseller up to a ranked book of underpriced flips with the math already done.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the official eBay Browse API for listings. A scheduled route on Vercel runs the overnight scan. No scraper.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- connections(id, user_id, provider, credentials_encrypted)
+- listings(id, user_id, source, external_id, title, price_cents, condition, url, seen_at)
+- comps(id, listing_id, dest, median_cents, sample_size)
+- deals(id, listing_id, roi_bps, fees_cents, ship_cents, risk, scored_at)
+- actions(id, deal_id, type, created_at)
+
+Screens: /login, /settings (floor margin and categories), /today (the morning book).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), EBAY_APP_ID, EBAY_CERT_ID, CRON_SECRET.
+
+Do not build: billing, plans or per-plan card caps, Amazon or Shopify connections, auto-buy or auto-message, an AI matching step, a separate worker host, an admin area.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Overnight Ranker**
+**2. Core Feature**
 
 ```text
-Build a Fly worker that, for each Pro/Scout user, pulls new items from connected official APIs, upserts listings on (source, external_id), estimates dest comps, subtracts marketplace fees and a shipping heuristic, and inserts deals where roi_bps is above the user’s floor. Cap cards per plan (50 Scout, 500 Pro). Deduplicate. Attach a short “why” string from the comp sample. Never place an order. Expose GET /api/deals/today for the dashboard.
+Build the one feature that proves ResalePilot: the overnight ranker and the morning book.
+1. A scheduled route, protected by CRON_SECRET, pulls new items for each user from the eBay Browse API for their allowed categories and upserts listings on (source, external_id).
+2. For each listing, estimate comps from recent sold items, subtract marketplace fees and a simple shipping estimate, and insert a deals row when roi_bps is above the user's floor. Add a risk flag for condition wording, brand-authenticity terms and local-pickup-only.
+3. Attach a short "why this is a deal" string built from the comp sample. Deduplicate deals. Keep at most 50 cards per user per night.
+4. GET /api/deals/today returns the day's deals sorted by ROI. /today shows each as a card with the source price, comp median, fees, shipping, ROI, spread and the why-string, plus Watch and Open buttons that write an actions row.
+Rules: never place an order. Show the spread next to the ROI on every card.
+Empty state: with no deals yet, show a sample card and the settings link.
+Done when: running the scan route by hand fills deals for a test user and /today lists them ranked by ROI.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for ResalePilot. Hero: “Tonight’s best flips, ranked by ROI.” Sub: “We scan eBay, Amazon, Shopify, and Marketplace-style sources while you sleep. You wake up to a book of deals with the math already done.” Sections: fake dashboard of five deals, problem (scrolling is the job), how it works (4 steps), pricing $49 / $149 / $199 vs Jungle Scout $49 Amazon-only and Tactical Arbitrage $97–$197, FAQ on ToS, auto-buy (we don’t), and data sources. Geist, dark slate background, lime accent. CTA: “See today’s sample book.”
+Build a one-page landing site for ResalePilot, an overnight flip scanner for resellers.
+Hero: "Tonight's best flips, ranked by ROI." Sub: "We scan official marketplace data while you sleep. You wake up to a book of deals with the math already done." One button: See today's sample book, which joins the waitlist.
+Sections: a fake dashboard of five deals, the problem (scrolling is the job), how it works in four steps (connect sources, scan overnight, rank today's book, act with rules), and an FAQ on marketplace terms, why it never auto-buys, and where the data comes from.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, dark slate background, one lime accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand ResalePilot like a trading terminal for garage-scale capital, not a coupon app. Wordmark plus a small radar-pip icon. Near-black, one lime accent, two cool grays. Geist for UI, IBM Plex Mono for ROI and prices. Voice rules: always show spread next to ROI, never shame manual flippers, never promise guaranteed profit. Output a one-page brand sheet and three sample deal-card copy blocks.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ResalePilot like a trading terminal for garage-scale capital, not a coupon app: a wordmark and a small radar-pip icon.
+Colors: near-black, one lime accent and two cool grays. Type: Geist for the interface and IBM Plex Mono for ROI and prices.
+Voice rules: always show the spread next to the ROI, never shame manual flippers, never promise guaranteed profit.
+Deliverables: wordmark, icon, a one-page brand sheet, and three sample deal-card copy blocks.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

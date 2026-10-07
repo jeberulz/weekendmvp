@@ -84,42 +84,59 @@ Curriculum + community + light AI coach. Keep video hosting cheap.
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Member Area + Curriculum Shell**
+**1. Project Setup**
 
 ```text
-Build Next.js 14 membership app "WordSmith AI — AI Writing Coach for Freelancers".
+Build the weekend MVP of "WordSmith AI": a membership for freelance writers whose core tool is a prompt gym that grades a prompt and rewrites it without losing the writer's voice.
 
-Features:
-- Stripe subscriptions: $49 Member, $199 Premium
-- Curriculum modules with lessons (title, video_url, prompt_examples md, checklist)
-- Progress tracking per user
-- Workshop calendar with RSVP
-- Landing headline: "AI won't replace writers who learn the workflows."
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the scoring. Deploy on Vercel.
 
-Seed 3 modules: Research with Claude, Outline without losing voice, Client disclosure scripts.
-TypeScript + Postgres schema for users, lessons, progress, rsvps.
+Tables (Row Level Security on: lessons are readable by signed-in members, progress and attempts by their owner):
+- lessons(id, module, title, video_url, prompt_examples_md, checklist jsonb, position)
+- lesson_progress(id, user_id, lesson_id, completed_at)
+- prompt_attempts(id, user_id, niche, assignment_type, user_prompt, voice_sample, result jsonb, created_at)
+Seed 3 modules: Research with Claude, Outline without losing voice, and Client disclosure scripts.
+
+Screens: /login, /lessons (the curriculum and progress), /gym (the prompt gym).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, memberships or plans, daily limits, workshops, RSVPs or reminder emails, the community, 1:1 scheduling.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on and three modules seeded.
 ```
 
-**2. Prompt Gym API**
+**2. Core Feature**
 
 ```text
-Create POST /api/prompt-gym:
-Input: niche, assignment_type, user_prompt, sample_paragraph_of_user_voice
-Claude returns JSON:
-{ score_0_to_100, issues[], improved_prompt, why_it_preserves_voice }
-Store attempts. Free users: 5/day. Members unlimited.
-UI shows score ring + before/after prompt.
+Build the one feature that proves WordSmith AI: a prompt gym that makes a writer's prompts better and keeps their voice.
+1. POST /api/prompt-gym takes { niche, assignment_type, user_prompt, sample_paragraph_of_user_voice }.
+2. Ask Claude for strict JSON { score_0_to_100, issues: string[], improved_prompt, why_it_preserves_voice }. The rewrite must keep the writer's voice from the sample paragraph, not flatten it.
+3. Save every attempt to prompt_attempts.
+4. The page shows a score ring and a before and after of the prompt, with the issues listed.
+5. /lessons lists the seeded modules with their prompt examples and a checklist, and marks lessons complete.
+Rules: never rewrite the writer's sample paragraph. Explain every issue in one plain sentence.
+Empty state: with no attempts, show an example prompt that the writer can load and grade.
+Done when: a weak prompt scores low with specific issues and returns an improved prompt, a second grade of the improved prompt scores higher, and each attempt is saved.
 ```
 
-**3. Workshop Landing + Replay**
+**3. Landing Page**
 
 ```text
-Build a workshop page template:
-- Title, date, host, agenda, Stripe checkout for $149 one-off OR "Included in Member"
-- After purchase: Zoom link + replay unlock in member area
-- Email sequence via Resend: reminder T-24h, T-1h, follow-up with prompt pack PDF
+Build a one-page landing site for WordSmith AI, a membership for freelance writers learning AI workflows.
+Headline: "AI won't replace writers who learn the workflows." One button: Join the waitlist.
+Sections: the problem (anxious freelancers and generic output), how it works in five steps (placement quiz, workflow modules, live workshops, the prompt gym, community and job wins), a sample prompt-gym result with a score ring, and an FAQ on voice, client disclosure and what the membership is not.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: encouraging, concrete and respectful of the craft.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Include one sample workshop: "Turn a messy client brief into an outline in 45 minutes."
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for WordSmith AI: a wordmark and an icon that suggest a pen nib and a spark.
+Colors: warm off-white, deep ink and one confident accent. Type: a refined serif for headings and a clean sans for the interface.
+Deliverables: wordmark, icon, a score-ring style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

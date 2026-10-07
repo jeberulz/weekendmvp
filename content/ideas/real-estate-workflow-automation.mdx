@@ -83,49 +83,59 @@ Ship reliability before breadth. Five templates that never silently fail beat fi
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Template Store + Workflow Runner**
+**1. Project Setup**
 
 ```text
-Build Next.js 14 SaaS "Transom — Real Estate Workflow Automation".
+Build the weekend MVP of "Transom": one real-estate workflow, Lead Intake, that runs when a lead arrives by webhook, creates a contact and a call task, drafts a first-touch email and tells the agent. The agent decides whether anything is sent.
 
-Weekend MVP:
-- Auth + Stripe for template purchases ($49/$99/$199) and Solo sub ($199/mo)
-- Template catalog: Lead Intake, Showing Confirm, Offer Writeup, Disclosure Prep, Close Day
-- Each template is JSON: trigger type, steps[], required connections[]
-- Workflow runner: execute steps sequentially, write run log, email on failure
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the draft, Resend for email. Contacts and tasks live in this app this weekend. Deploy on Vercel.
 
-Schema:
-- users, connections(provider, credentials_encrypted), templates, workflows, runs(status, step_logs jsonb, error)
+Tables (Row Level Security on, each user reads only their own rows; the webhook writes through a server route):
+- workflows(id, user_id, template, webhook_secret, config jsonb, active boolean, auto_send boolean)  auto_send defaults to false
+- runs(id, workflow_id, idempotency_key, status, step_logs jsonb, error, created_at)  unique on workflow_id and idempotency_key
+- contacts(id, user_id, name, email, phone, source, listing_url, created_at)
+- tasks(id, user_id, contact_id, title, due_at, done_at)
 
-Landing: "Five workflows. Eighty percent of the copy-paste."
-TypeScript throughout.
+Screens: /login, /workflows (create one and copy its webhook URL and secret), /runs/[id] (the step log), /inbox (drafts waiting for approval and tasks).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY.
+
+Do not build: billing, template purchases or plans, Zapier, Make, Zillow or Follow Up Boss connections, Google Calendar, disclosure or offer templates, a visual workflow editor.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Lead Intake Template via Webhook**
+**2. Core Feature**
 
 ```text
-Implement Lead Intake for Transom.
-
-Trigger: inbound webhook from Zapier when Zillow/Facebook lead arrives (name, email, phone, listing_url, source).
-Steps:
-1. Upsert contact in Follow Up Boss via API (or POST to user webhook if no native key)
-2. Create Google Calendar task "Call lead within 5 minutes"
-3. Send email drip #1 using Claude-generated first-touch copy with listing_url
-4. Notify agent SMS/email with lead summary
-
-If any step fails, mark run failed and alert. Include idempotency key on lead email+source.
+Build the one feature that proves Transom: a lead gets a human-speed response, once, with a log of every step.
+1. POST /api/hooks/[workflowId] accepts { name, email, phone, listing_url, source } with the workflow's secret in a header. Reject a bad secret. Make the idempotency key a hash of the email and the source, so the same lead sent twice creates one run.
+2. A runner executes the steps in order and writes each result to step_logs: (1) upsert the contact, (2) create a task "Call this lead" due 5 minutes from now, (3) ask the Anthropic API for a short first-touch email using only the name and the listing address from the lead, with no invented facts about the listing, (4) email the agent a summary of the lead and the draft through Resend.
+3. The first-touch email is saved as a draft in /inbox. It is sent to the lead only after the agent presses Approve, unless auto_send is on for that workflow.
+4. If any step fails, mark the run failed, keep the log and email the agent within the same request. A Retry button reruns from the failed step.
+5. /runs/[id] shows each step, its time and its result.
+Rules: never send to a lead who has replied STOP or unsubscribed. Every email carries the agent's name and an unsubscribe line. Never invent a price, a feature or a promise.
+Empty state: with no workflows, show the create form and a sample curl command.
+Done when: posting the same lead twice creates one run and one contact, the call task is due in 5 minutes, the draft waits for approval, a forced failure at step 3 marks the run failed and emails the agent, and Retry completes it.
 ```
 
-**3. Disclosure Prep Checklist Generator**
+**3. Landing Page**
 
 ```text
-Build Disclosure Prep template.
+Build a one-page landing site for Transom, lead follow-up that runs itself for real-estate agents.
+Hero: "Never let a new lead wait for your copy and paste." Sub: "Transom takes a lead from your site or ad, adds the contact, sets the call task, drafts the first email and tells you. You approve what goes out." One button: Join the waitlist.
+Sections: a sample run log with four steps, how it works in four steps (connect a webhook, a lead arrives, steps run, you approve), and an FAQ on what is sent without your approval (nothing by default), which lead sources and CRMs connect next and where lead data is stored.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Trigger: deal stage moves to "under contract" (manual button in UI for MVP).
-Inputs: state, property type, buyer/seller side.
-Claude returns ordered checklist of disclosure documents + owner for each item.
-Create Dotloop or Google Drive folder structure labels (names only if API limited).
-Email checklist to agent and TC. Store checklist on the deal record.
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Transom: a wordmark and an icon that suggest the window above a door.
+Colors: off-white, near-black and one blue. Type: Geist, with Geist Mono for step logs.
+Deliverables: wordmark, icon, four run status chips (running, waiting for approval, done, failed) that differ by shape as well as color, a lead summary email header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 ## Sources

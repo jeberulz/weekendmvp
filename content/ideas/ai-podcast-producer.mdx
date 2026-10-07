@@ -88,19 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app called PodcastPilot. Schema (Postgres): shows (id, user_id, name, bible_text, loudness_target), episodes (id, show_id, status, duration_sec, raw_r2_key, master_r2_key, transcript_json), cuts (id, episode_id, start_ms, end_ms, type: filler|silence|manual, accepted), assets (id, episode_id, kind: notes|audiogram|chapters, r2_key, meta_json), usage (id, user_id, month, seconds_processed). Auth with Clerk or Supabase. Stripe products: Indie $29, Studio $79, Network $199, metered overage on seconds. Env: DEEPGRAM_API_KEY, ANTHROPIC_API_KEY, R2_*, STRIPE_*. Queue episode jobs (Inngest or similar). Do not build a video timeline.
+Build the weekend MVP of "PodcastPilot": drop in a raw recording and get a cleaned master, chaptered show notes and titles.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Deepgram for word-level transcription, ffmpeg in a small separate Node worker, Claude (Anthropic API) for the show notes. Deploy the app on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- shows(id, user_id, name, bible_text, loudness_target)
+- episodes(id, show_id, status, duration_sec, raw_path, master_path, transcript_json)
+- cuts(id, episode_id, start_ms, end_ms, type, accepted)  where type is one of filler, silence, manual
+- assets(id, episode_id, kind, path, meta_json)  where kind is one of notes, chapters
+
+Screens: /login, /shows, /episodes/[id] (waveform with cut markers and the kit).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), DEEPGRAM_API_KEY, ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or metered hours, audiograms, a video timeline, a job queue service, Cloudflare R2.
+Done when: npm run dev starts, the worker can run ffmpeg, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Cleanup + Publish Kit Pipeline**
+**2. Core Feature**
 
 ```text
-Build the episode pipeline. On upload: store raw in R2, enqueue job. Job steps: (1) transcribe with Deepgram word timestamps, (2) detect filler and silences over 1.2s, write cuts rows, (3) ffmpeg apply accepted cuts + loudness normalize, write master, (4) Claude: show notes, 8-12 chapters, 3 titles, 5 pull quotes using the show bible, (5) render 3 audiograms via Remotion or Canvas (waveform + quote, 1080x1080 and 1080x1920), (6) set status to review. UI: waveform with cut markers, bulk accept filler, regenerate notes without re-enhancing. Never send the user a meeting-style action-item list.
+Build the one feature that proves PodcastPilot: raw tape in, a cleaned master and a publish kit out.
+1. On upload, store the raw file in Storage and create an episode with status processing.
+2. Transcribe with Deepgram and keep the word timestamps.
+3. Detect filler words and silences longer than 1.2 seconds and write cuts rows.
+4. In the worker, apply the accepted cuts with ffmpeg and normalize loudness to the show's target, then write the master.
+5. Ask Claude, using the show bible, for show notes, 8 to 12 chapters, 3 titles and 5 pull quotes. Save them as assets.
+6. Set the status to review. The episode page shows the waveform with cut markers, a bulk Accept fillers button, and a Regenerate notes button that does not re-run the audio.
+Rules: this is audio production, not a video editor, and never return a meeting-style action-item list.
+Empty state: with no shows, show the form that creates a show and its bible.
+Done when: a 10-minute test recording gives a master with the accepted cuts applied, chapters, three titles and show notes.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing page for PodcastPilot. Hero: "Raw tape in. Episode kit out." Sub: "Filler gone, levels fixed, show notes written, audiograms rendered. You keep the jokes." Sections: the Sunday-night editing spiral, four-step how-it-works matching the product, pricing Indie $29 / Studio $79 / Network $199 vs $150–$500 human editors and Descript's $96/user Business seat, FAQ that this is audio production not a YouTube editor and not a Zoom notes tool. Geist, dark studio background, one lime or lavender accent. CTA: "Drop a sample file."
+Build a one-page landing site for PodcastPilot, an audio production tool for indie podcasters.
+Hero: "Raw tape in. Episode kit out." Sub: "Filler gone, levels fixed, show notes written. You keep the jokes." One button: Drop a sample file, which joins the waitlist.
+Sections: the Sunday-night editing spiral, how it works in four steps (ingest, clean the master, generate the publish kit, style the next episode), a sample kit, and an FAQ saying plainly that this is audio production, not a YouTube editor and not a Zoom notes tool.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark studio background, one lime or lavender accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for PodcastPilot: a wordmark and an icon that suggest a waveform with a clean cut.
+Colors: a dark studio background, off-white and one lime or lavender accent. Type: Geist for the interface and a mono for timestamps.
+Deliverables: wordmark, icon, a cut-marker style for the waveform, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

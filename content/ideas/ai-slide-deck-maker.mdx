@@ -87,40 +87,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "SlidePilot."
-Provision Supabase with these tables:
-- users (id, email, plan TEXT default 'free', brand_kit JSONB)
-- decks (id, user_id, title, source_document_id, status TEXT, created_at)
-- slides (id, deck_id, position INT, layout TEXT, headline TEXT, body JSONB, chart JSONB)
-- source_documents (id, user_id, kind TEXT CHECK kind IN ('doc','data','voice','brief'), storage_path, parsed_json JSONB)
-Enable row-level security so each user only reads/writes rows where user_id matches auth.uid().
-Add Stripe with Free, Pro ($49/mo), and Team ($99-$199/mo) products.
-Set env vars OPENAI_API_KEY, STRIPE_SECRET_KEY, and Supabase keys. Install the OpenAI and pptxgenjs SDKs.
+Build the weekend MVP of "SlidePilot": drop in a brief or a document and get a story-driven slide deck you can export to PowerPoint.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the OpenAI API for the outline and the slide copy, pptxgenjs for the export. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- source_documents(id, user_id, kind, storage_path, parsed_json jsonb)  where kind is one of doc, data, brief
+- decks(id, user_id, title, source_document_id, status, created_at)
+- slides(id, deck_id, position, layout, headline, body jsonb, chart jsonb)
+- brand_kits(id, user_id, primary_color, accent_color, font_pair, logo_url)
+
+Screens: /login, /new (upload or paste), /decks/[id] (outline, slides, export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY.
+
+Do not build: billing, plans or watermarks, voice-note input, Google Slides export, a job queue, team accounts.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Core Feature: Document to Deck**
+**2. Core Feature**
 
 ```text
-Build POST /api/generate-deck. Input: a source_document_id.
-Steps:
-1. Load the parsed source content from Supabase.
-2. Call gpt-4o with a strict JSON schema to produce a deck outline:
-   { title: string, slides: [{ layout: "title"|"bullets"|"chart"|"quote", headline: string, points: string[], chart_hint?: string }] }.
-   The prompt must instruct the model to build a narrative arc (context, insight, evidence, ask), not just reformat bullets.
-3. Persist the outline as slide rows.
-4. For each chart slide, map chart_hint to a chart config the renderer understands.
-Handle long documents by chunking and summarizing before outlining. Run generation as a background job and stream progress to the client.
+Build the one feature that proves SlidePilot: a document in, a deck that argues a point out.
+1. POST /api/generate-deck takes a source_document_id and loads its parsed content. For a long document, chunk it and summarize each chunk before outlining.
+2. Ask the model for a strict JSON outline { title, slides: [{ layout: "title" | "bullets" | "chart" | "quote", headline, points: string[], chart_hint? }] }. The prompt must ask for a narrative arc (context, insight, evidence, ask), not a bullet reformat.
+3. Save the outline as slides rows. For each chart slide, turn chart_hint into a chart config the renderer understands.
+4. Apply the brand kit (colors, font pair, logo) to every layout so the deck looks consistent.
+5. POST /api/export renders the deck to a .pptx file with pptxgenjs. A Regenerate slide button re-runs one slide and keeps the brand kit and the surrounding story.
+Rules: show progress as slides appear instead of waiting for the whole deck.
+Empty state: with no decks, show the upload box and the paste-a-brief box.
+Done when: a two-page brief produces a 6 to 10 slide deck with a clear arc, a regenerated slide still fits the story, and the exported .pptx opens with the brand colors.
 ```
 
-**3. Export and Brand Kit**
+**3. Landing Page**
 
 ```text
-Add per-account brand kits and export.
-- Brand kit: primary color, accent color, font pair, logo URL, stored on users.brand_kit.
-- Apply the brand kit to every slide layout so output is visually consistent.
-- Build POST /api/export that renders a deck to PowerPoint via pptxgenjs and to Google Slides via the Slides API.
-- Free plan exports carry a watermark; Pro and Team remove it.
-- Add a "regenerate slide" action that re-runs generation for a single slide while preserving the brand kit and surrounding narrative.
+Build a one-page landing site for SlidePilot, an AI slide deck maker for founders and ops teams.
+Hero: "Turn a brief into a deck that makes your point." Sub: "Drop in a doc, data or a brief. Get a story-driven deck, not reformatted bullets." One button: Join the waitlist.
+Sections: the problem (decks take a night and say nothing), how it works in four steps (drop in your source, get a narrative outline, generate the deck, refine and export), a before and after of a doc becoming a deck, and an FAQ on formats, brand kits and PowerPoint export.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: sharp, brief and confident.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SlidePilot: a wordmark and an icon that suggest a slide with a flight path.
+Colors: near-black, white and one confident accent. Type: a clean sans for the interface and a display face for slide headlines.
+Deliverables: wordmark, icon, four slide layout thumbnails (title, bullets, chart, quote), and one launch graphic.
+Done when: each deliverable is saved in one folder and the four layouts are distinct at thumbnail size.
 ```
 
 ## Sources

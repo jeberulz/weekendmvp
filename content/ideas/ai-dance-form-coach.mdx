@@ -89,68 +89,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create an Expo (React Native) app called "AI Dance Form Coach."
+Build the weekend MVP of "AI Dance Form Coach": your phone camera tracks your body, scores your form against a routine, and tells you what to fix.
 
-Requirements:
-- Expo SDK 52+, TypeScript, Expo Router for navigation
-- Screens: onboarding (camera permission + calibration), routine picker, live coaching camera view, session results
-- Supabase auth (email magic link + Apple Sign In on iOS)
-- Stripe subscription paywall after 3 free sessions
+Stack: Expo (React Native) with TypeScript and Expo Router, on-device pose estimation (MoveNet Lightning or MediaPipe Pose, whichever works better with Expo), Supabase (Auth with email magic link, Postgres, Row Level Security), Claude (Anthropic API) for the post-session notes. Camera preview with expo-camera or react-native-vision-camera.
+Structure: /app for routes, /lib for pose math, /components for the overlays.
 
-Use expo-camera or react-native-vision-camera for the preview stream.
-Structure: /app for routes, /lib for pose math, /components for UI overlays.
-Include a README with local dev steps and env vars (SUPABASE_URL, STRIPE_PUBLISHABLE_KEY, ANTHROPIC_API_KEY).
+Tables (Row Level Security on, each user reads only their own rows):
+- routines(id, style, title, move_template jsonb)
+- sessions(id, user_id, routine_id, segment_scores jsonb, top_faults jsonb, created_at)
+- coaching_notes(id, session_id, summary, corrections jsonb, drill_plan)
+
+Screens: onboarding (camera permission and calibration), routine picker, live coaching with results.
+Env vars (names only): SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY (server side only).
+A README with the local steps.
+
+Do not build: billing, a paywall or free-session limits, Apple Sign In, the studio dashboard or white-label settings, more than one routine style.
+Done when: the app runs in Expo Go, you can sign in, the camera preview shows, and the three tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Pose Tracking and Scoring**
+**2. Core Feature**
 
 ```text
-Implement on-device pose estimation and dance scoring for the live coaching screen.
-
-1. Integrate @tensorflow-models/pose-detection (MoveNet Lightning) OR react-native-mediapipe-pose — pick whichever has better Expo compatibility and document the choice
-2. From 33 landmarks, compute these angles each frame: hip-knee-ankle (both legs), shoulder-hip-knee, elbow-shoulder-hip
-3. Load a JSON "move template" per routine segment with target angle ranges and beat timestamps (ms from song start)
-4. Score each segment 0–100: 40% joint angle compliance, 40% beat proximity (within 150ms = full credit), 20% hold stability (variance over 500ms)
-5. Render skeleton overlay on camera preview; flash green/yellow/red when key joints drift outside thresholds
-6. Persist session summary to Supabase: user_id, routine_id, segment_scores[], top_faults[]
-
-Optimize for 15+ fps on iPhone 12 / Pixel 6 class devices. Fall back to lower resolution if FPS drops under 12.
+Build the one feature that proves the idea: live pose scoring against a routine, with plain-language corrections.
+1. Run on-device pose estimation and read the 33 landmarks each frame. Compute these angles: hip-knee-ankle for both legs, shoulder-hip-knee, and elbow-shoulder-hip.
+2. Load a JSON move template per routine segment with target angle ranges and beat timestamps in milliseconds from the start of the song.
+3. Score each segment from 0 to 100: 40% joint-angle compliance, 40% beat proximity (within 150 ms is full credit) and 20% hold stability (variance over 500 ms).
+4. Draw the skeleton over the camera preview and flash green, yellow or red when a key joint drifts outside its range.
+5. Save the session summary: user, routine, segment scores and top faults.
+6. After the session, send { style, top_faults, segment_scores, user_level } to Claude and return { summary, corrections[], drill_plan }: a 2-sentence summary, three plain corrections with no medical claims, and one 5-minute drill. Tone: encouraging, specific, never shaming. Cache by the fault-code hash for 24 hours.
+Rules: aim for 15 or more frames per second on an iPhone 12 or Pixel 6 class phone, and drop to a lower resolution if it falls under 12.
+Empty state: with no sessions, show the routine picker and a line on how to place the phone.
+Done when: a 30-second routine gives each segment a score with a live overlay, and the results screen shows the summary, three corrections and a drill.
 ```
 
-**3. AI Coaching Copy Generator**
+**3. Landing Page**
 
 ```text
-Build a Supabase Edge Function (or Next.js API route) that generates post-session coaching text.
-
-Input JSON:
-{
-  "style": "heels" | "hiphop" | "zumba",
-  "top_faults": [{"code": "knee_valgus", "count": 6, "avg_severity": 0.72}, ...],
-  "segment_scores": [88, 74, 91],
-  "user_level": "beginner"
-}
-
-Call Claude with this system prompt:
-"You are a supportive dance instructor. Given biomechanical fault codes and scores, write: (1) 2-sentence session summary, (2) three bullet corrections in plain language—no medical claims, (3) one 5-minute drill plan. Tone: encouraging, specific, never shaming."
-
-Return structured JSON: { summary, corrections[], drill_plan }
-Cache responses by fault-code hash for 24h to reduce API spend.
-Add unit tests for the prompt with two fixture inputs (heels beginner, hiphop intermediate).
+Build a one-page landing site for AI Dance Form Coach.
+Hero: "Your phone is now your dance instructor." Sub: "Real-time corrections for home dancers, at a fraction of the cost of a studio lesson." One button: Join the waitlist.
+Sections: the problem (passive video lessons never tell you what you are doing wrong), how it works in three steps (calibrate your space, pick a routine, get live corrections and a score), a short screen recording placeholder showing the skeleton overlay, and an FAQ on camera privacy (pose tracking runs on the device).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: encouraging, specific, never shaming.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Studio Dashboard (B2B stretch)**
+**4. Branding Package**
 
 ```text
-Add a Next.js admin dashboard (Vercel) for studio license customers.
-
-Features:
-- Studio owner invites instructors via email (Supabase org roles)
-- Table: students (anonymized IDs), sessions this week, average score trend, most common faults across cohort
-- Export CSV for a given date range
-- White-label settings: logo URL, primary hex color — stored in studio_settings table
-
-Auth: Supabase RLS so instructors only see their studio's rows.
-Use shadcn/ui tables and charts (recharts). No PII beyond display names users opt into.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AI Dance Form Coach: a wordmark and an icon that suggest a figure in motion.
+Colors: near-black, warm white and one energetic accent, with green, yellow and red reserved for the form overlay. Type: one rounded sans for the interface.
+Deliverables: wordmark, app icon, skeleton overlay style (joint dots and limb lines), and one launch graphic.
+Done when: each deliverable is saved in one folder and the overlay colors are distinguishable without color alone.
 ```
 
 ## Sources

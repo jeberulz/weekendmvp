@@ -73,26 +73,61 @@ Own AI-specific vetting + plain-English scopes + escrow for the $2K–$25K local
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Marketplace Shell**
+**1. Project Setup**
 
 ```text
-Build Surepair: Next.js 14 marketplace. Roles: business_owner, implementer, admin.
+Build the weekend MVP of "Surepair": a marketplace where a small local business posts a plain-English project and a vetted AI builder delivers it in paid milestones.
 
-Tables: users, implementer_profiles (verified bool, tools[]), projects (template_slug, status), milestones (amount_cents, status), ratings.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link). Deploy on Vercel.
+Roles: business_owner, implementer and admin, stored on the profile row.
 
-Pages: /post-project (template picker), /projects/[id], /implementers/[id], /admin/vetting.
+Tables (Row Level Security on: an owner sees their projects, an implementer sees projects they accepted, an admin sees all):
+- profiles(id, user_id, role, display_name)
+- implementer_profiles(id, user_id, verified, tools)
+- projects(id, owner_id, implementer_id, template_slug, status)
+- milestones(id, project_id, title, amount_cents, status)
+- ratings(id, project_id, score, note)
+
+Screens: /post-project (template picker), /projects/[id], /admin/vetting.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing or plans, implementer public profile pages, matching or ranking, an Airtable vetting queue, email notifications, an admin area beyond the vetting list.
+Done when: npm run dev starts, you can sign in as each role, and the five tables exist with Row Level Security on.
 ```
 
-**2. Escrow Milestones**
+**2. Core Feature**
 
 ```text
-Integrate Stripe Connect. On project accept, create PaymentIntent for milestone 1. On owner approve, transfer to implementer and unlock next milestone checkout. Handle disputes with a frozen status.
+Build the one feature that proves Surepair: a scoped project whose milestones are paid only when the owner approves them.
+1. Seed three templates: scheduling_automation, lead_followup and support_bot. Each has questionnaire fields, default milestones and acceptance criteria written for non-technical owners.
+2. /post-project picks a template, asks its questions, and creates a project with its default milestones.
+3. When an implementer accepts the project, create a Stripe PaymentIntent for milestone 1 in test mode. The implementer starts only after it is funded.
+4. When the owner approves a milestone, transfer its amount to the implementer and open the next milestone's payment. If a milestone fails its acceptance criteria twice, set the project to rematch.
+5. Disputes freeze the project and stop all transfers.
+Rules: money moves only on an approval or a dispute decision, never on a timer.
+Empty state: an owner with no projects sees the template picker.
+Done when: a test project runs through two milestones, a transfer happens only after approval, and a disputed project cannot release money.
 ```
 
-**3. Scoping Templates**
+**3. Landing Page**
 
 ```text
-Create three templates: scheduling_automation, lead_followup, support_bot. Each has questionnaire fields, default milestones, and acceptance criteria written for non-technical owners.
+Build a one-page landing site for Surepair, a marketplace for vetted AI builders for small local businesses.
+Hero: "Fewer no-shows. Faster replies. Built by someone vetted." One button: Join the waitlist.
+Sections: the problem (owners know what they want fixed, not how to hire for it), how it works in five steps (describe the outcome, meet 2 to 3 vetted builders, fund the first milestone, approve each milestone, build your reputation), three productized jobs (scheduling automation, lead follow-up, support bots), and the guarantee: a free rematch if a milestone fails its acceptance criteria twice.
+Waitlist: store the email in a waitlist table in Supabase, with a column for business owner or builder. No other service.
+Voice: plain, local and a little skeptical of hype.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Surepair: a wordmark and an icon that suggest a repaired thing, solid and dependable.
+Colors: a warm off-white, a deep navy and one orange accent. Type: one sturdy sans for the interface.
+Deliverables: wordmark, icon, a verified-builder badge, and one launch graphic that says "free rematch".
+Done when: each deliverable is saved in one folder and the badge reads at 32 px.
 ```
 
 Cold start is the hard part. Seed supply by recruiting implementers from AI consulting Facebook groups and offering waived fees for the first three completed jobs. Seed demand through local Facebook business groups and bookkeeper referral partners who already advise owners on tool spend. Publish three public case studies ("salon cut no-shows 28% with SMS automation") before scaling ads. Guarantees matter: offer a free rematch if a milestone fails acceptance criteria twice — that guarantee is the marketing line Upwork cannot honestly match at category scale.

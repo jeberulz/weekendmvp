@@ -92,19 +92,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) app called Crossform. Supabase tables: workspaces (plan, generation_count), brand_kits (voice_rules, forbidden_claims[], hex colors, product_shot_paths), campaigns (kit_id, brief, channels, status), variants (channel, headline, primary_text, cta, image_path, critic jsonb, approved_at), audit_events (action, model, kit_version). RLS via a memberships table. Stripe: Free, Studio $49, Campaign OS $199 and $499, metered image overage. Env: OPENAI_API_KEY, REPLICATE_API_TOKEN, STRIPE_SECRET_KEY. Vercel AI SDK + Replicate JS client. No keys in client components.
+Build the weekend MVP of "Crossform": a campaign workspace that makes matched ad pairs, copy and image from the same brief and brand kit, and checks them for brand safety.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the OpenAI API (a small model) for the copy and the critic pass, Flux through Replicate for the images. Generation runs in a route handler with a status the page polls. No keys in client components. Deploy on Vercel.
+Channels this weekend: meta_feed and linkedin. Meta story and Google display come next.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- brand_kits(id, user_id, voice_rules, forbidden_claims, hex_colors, product_shot_paths, version)
+- campaigns(id, kit_id, brief, channels, status)
+- variants(id, campaign_id, channel, headline, primary_text, cta, image_path, critic jsonb, approved_at)
+- audit_events(id, campaign_id, action, model, kit_version)
+
+Screens: /login, /kit (the brand kit), /campaigns/[id] (the brief and the variants side by side).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, REPLICATE_API_TOKEN.
+
+Do not build: billing, plans or image overage, Meta or Google Ads pushes, a job queue service, white-label, more than two channels.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Matched-Pair Generation Pipeline**
+**2. Core Feature**
 
 ```text
-Build POST /api/campaigns/[id]/generate as an Inngest job. For each channel (meta_feed, meta_story, linkedin, google_display): (1) gpt-4o-mini with JSON schema for headline, primary_text, cta, alt, char_counts — system prompt inlines voice_rules, forbidden_claims, and platform limits (Meta primary 125, headline 40). Retry once if a forbidden substring appears. (2) Flux img2img from the first product_shot; hex colors as a style lock; never bake copy into the raster. (3) critic pass on a second mini call: voice_drift 0-1, claim_risk 0-1, flags[]. Persist variants + an audit_event per model call. Fan out 3 variants per channel changing one variable each. UI polls. Cap 4 concurrent image jobs per workspace.
+Build the one feature that proves Crossform: copy and image that match, on brand, ready to review.
+1. POST /api/campaigns/[id]/generate runs for each channel. Step 1: ask the small model for JSON { headline, primary_text, cta, alt, char_counts }. The system prompt includes the voice rules, the forbidden claims and the platform limits (Meta primary text 125 characters, headline 40). Retry once if a forbidden phrase appears.
+2. Step 2: make the image with Flux img2img from the first product shot, with the hex colors as a style lock. Never put copy into the image itself.
+3. Step 3: a critic pass on a second call returns { voice_drift: 0-1, claim_risk: 0-1, flags: string[] }.
+4. Save the variants and one audit_events row per model call. Make 3 variants per channel, each changing one variable. Run at most 4 image jobs at once per user.
+5. /campaigns/[id] shows each text and its image side by side with the critic flags, and an Approve button that sets approved_at.
+Rules: never approve a variant with a claim_risk over 0.7 without an explicit override that is logged.
+Empty state: with no brand kit, show the kit form first.
+Done when: a brief produces three matched pairs for each of the two channels, a forbidden claim is caught and retried, and approving a variant is logged.
 ```
 
 **3. Landing Page**
 
 ```text
-Single-page site for Crossform. Hero: “Text and image, same brief, same brand.” Sub: “Stop pasting ChatGPT into Canva. Matched ad pairs for Meta, LinkedIn, and Google, compliance pass before export.” Sections: live mock (brief left, three pairs right), problem (four tabs, three voices, zero tests), how it works (4 steps), pricing (Free / $49 / $199–$499) vs HubSpot’s $50 floor and a $500 freelance invoice, FAQ on copyright, brand-kit lock, Ads Manager push. Geist, near-black on off-white, one mint accent. CTA: “Generate a sample pair” (no card).
+Build a one-page landing site for Crossform, matched ad pairs for marketers.
+Hero: "Text and image, same brief, same brand." Sub: "Stop pasting chat output into a design tool. Matched ad pairs for Meta and LinkedIn, with a compliance pass before export." One button: Generate a sample pair, which joins the waitlist.
+Sections: a live mock (the brief on the left, three pairs on the right), the problem (four tabs, three voices, zero tests), how it works in four steps (lock the brand kit, brief the campaign, review and comply, export or push), and an FAQ on copyright, the brand-kit lock and Ads Manager push.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, near-black on off-white, one mint accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Crossform: a wordmark and an icon that suggest two halves that match.
+Colors: near-black, off-white and one mint accent. Type: Geist for the interface and a mono for character counts.
+Deliverables: wordmark, icon, a matched-pair card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

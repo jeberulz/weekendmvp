@@ -67,22 +67,61 @@ Own single-location **attack detection** at **$10–$20/month** — insurance pr
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Ingest + Baseline**
+**1. Project Setup**
 
 ```text
-Build Ratingwire worker: every 15 minutes fetch latest reviews for a location. Store review_id, rating, text, created_at. Maintain rolling 14-day baseline of reviews_per_day and avg_rating.
+Build the weekend MVP of "Ratingwire": it watches a local business's reviews for a coordinated one-star attack and texts the owner within minutes, with evidence and a reply to copy. A normal bad night must not set it off.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio SMS for the alert and the STOP reply. Reviews come in by CSV this weekend, with a Replay button that feeds them in time order so you can test the detector. A Vercel Cron route will run the same code on new rows later. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- locations(id, user_id, name, phone, timezone, sensitivity, quiet_start, quiet_end, always_alert boolean, sms_opted_in_at)
+- reviews(id, location_id, external_id, rating, text, created_at)
+- incidents(id, location_id, detected_at, rule, evidence jsonb, status, resolved_as)  status is open or closed; resolved_as is attack or fine
+- alert_log(id, incident_id, sent_at, twilio_sid)
+
+Screens: /login, /locations (add a location, the phone and the opt-in), /reviews/import, /incidents/[id] (evidence, a dispute template, a suggested reply).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, CRON_SECRET.
+
+Do not build: billing, plans or an agency white-label, connections to review sites or their APIs, a worker or polling service, embeddings, multiple users per location.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Attack Rules**
+**2. Core Feature**
 
 ```text
-Trigger alert if: (reviews in 6h >= 3x baseline) AND (share of 1-star >= 70%) OR (avg_rating drop >= 0.4 in 24h). Deduplicate alerts for 12h. Include top review excerpts in payload.
+Build the one feature that proves Ratingwire: a detector that catches a real attack and stays quiet on an ordinary bad evening.
+1. Import a CSV with columns external_id, rating, text, created_at for one location. Skip rows already imported.
+2. Compute the baseline from the previous 14 days: reviews per day and average rating. Never let the baseline fall below 0.5 reviews a day, so a quiet shop cannot divide by almost zero.
+3. Write the detector as a pure function over the reviews and a time. It fires when there are at least 5 reviews in the last 6 hours (a minimum volume), and both the count is 3 times the baseline rate or more and 70 percent or more of them are one star, or the average rating over 24 hours has dropped 0.4 or more. The sensitivity setting scales those thresholds.
+4. Add evidence: the counts, the one-star share, the rating before and after, and any group of 3 or more new reviews with near-identical text (word overlap of 0.8 or more). Do not store reviewer names.
+5. Deduplicate: no second incident for the same location within 12 hours.
+6. On an incident, text the owner the rating change, the number of new one-star reviews and a link to /incidents/[id], which shows a dispute template and a suggested public reply filled in from the evidence. Hold the text until quiet hours end unless always_alert is on. Send only to an opted-in number and honor STOP by clearing sms_opted_in_at.
+7. A "This was fine" button on an incident sets resolved_as to fine and makes that location's detector 25 percent less sensitive, down to a floor.
+Rules: three honest one-star reviews in an evening rush must never fire an incident (test it). Say plainly that alerts are signals, not proof.
+Empty state: with no reviews, show the CSV columns and a sample file with a 12-review attack and a quiet evening.
+Done when: replaying the sample creates exactly one incident at the attack and none during the quiet evening, one text is sent to an opted-in number, a second burst inside 12 hours adds no incident, and This was fine lowers the sensitivity.
 ```
 
-**3. SMS Playbook**
+**3. Landing Page**
 
 ```text
-On alert, send Twilio SMS with rating delta, count of new 1-stars, and link to /incidents/[id] showing dispute template and suggested public reply. Require STOP opt-out.
+Build a one-page landing site for Ratingwire, an alert for local businesses when a one-star attack starts.
+Hero: "Catch a one-star attack in minutes, not days." Sub: "Ratingwire watches your reviews and texts you when the pattern looks coordinated, with the evidence and a reply you can copy." One button: Join the waitlist.
+Sections: a sample text alert and incident page, how it works in four steps (add your location, learn your normal, spot a spike, get a text), why an honest bad night does not trigger it, and an FAQ on false alarms, how sensitivity is tuned and which review sites connect next. Lead with restaurants and salons.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one red-orange accent used only for alerts.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Ratingwire: a wordmark and an icon that suggest a star with a small wire running through it.
+Colors: off-white, near-black and one red-orange used only for alerts. Type: Geist, with tabular numbers for ratings.
+Deliverables: wordmark, icon, a text alert layout that fits in two messages, two incident labels (attack, fine) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the incident labels are distinguishable without color.
 ```
 
 False positives kill this product. A normal bad-dinner rush of three honest one-stars must not look like an attack. Tunable sensitivity, quiet hours, and a "this was fine" button that trains the model are mandatory before paid launch. Lead with restaurants and salons — high review volume and clear revenue sensitivity — then expand to dentists and home services.
