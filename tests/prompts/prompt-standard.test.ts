@@ -1,11 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-// @ts-expect-error plain .mjs module without types
 import { findTierMismatches } from "../../scripts/lib/idea-quality.mjs";
-// @ts-expect-error plain .mjs module without types
 import { SETUP_MIN_LINES, STANDARD_TITLES, lintIdeaMdx, lintPrompts, parsePromptBlocks, promptSection } from "../../scripts/lib/prompt-standard.mjs";
-// @ts-expect-error plain .mjs module without types
 import { readEnforcedSlugs } from "../../scripts/lib/prompt-standard-enforced.mjs";
 
 type Block = { title: string; text: string };
