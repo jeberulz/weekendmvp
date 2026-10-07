@@ -75,35 +75,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 retro-ad generator.
+Build the weekend MVP of the "Retro Ad Generator": pick a decade and a medium, add your product photo, logo, colors and one line of copy, and get retro-style ads where the artwork is generated and your logo, product and words are placed by code, so they are never redrawn or misspelled.
 
-Set up:
-- Clerk + Stripe ($49 one-time, $199/month)
-- Supabase: brands, yearbooks, renders, exports
-- A yearbook picker (decade × medium) with 8 locked reference images per cell
-- Product upload with hex lock and "do not invent a logo" system prompt
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), an image generation API (Replicate with a Flux model) for backdrop artwork only, sharp to compose and pdf-lib to build the print PDF. Deploy on Vercel.
 
-TypeScript, credit meter, watermark on free.
+Tables (Row Level Security on, each user reads only their own rows; yearbooks are read-only):
+- brands(id, user_id, name, hex_colors text[], logo_path)
+- yearbooks(id, decade, medium, style_prompt, reference_notes)
+- renders(id, user_id, brand_id, yearbook_id, product_path, claim, status, output_paths jsonb, created_at)
+- exports(id, render_id, ratio, path, created_at)
+
+Screens: /login, /brand (logo, colors), /new (pick a yearbook, add the product and the line), /renders/[id] (four options, pick one, export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), REPLICATE_API_TOKEN.
+
+Do not build: billing, credits or plans, a caption writer, watermarks, a scanned reference corpus, living artists or brands as style references.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the render pipeline.
-
-Requirements:
-- Inputs: SKU photo, hexes, one-line claim, decade, medium
-- Few-shot the model with the 8 locked refs
-- Refuse celebrity likeness and living brand wordmarks
-- Export 4:5, 1:1, 16:9, and a print PDF with 0.125in bleed
-
-User flow: pick yearbook → lock product → generate 4 → pick 1 → export.
+Build the one feature that proves the Retro Ad Generator: the period look comes from a model, and everything that must be exact is placed by code.
+1. Seed two yearbooks, a 1960s magazine page and a 1980s television still, each with a style prompt you wrote in your own words about layout, palette and printing look. Never name a living artist, a celebrity or a real brand in a style prompt.
+2. The new-ad form takes a product photo, the brand's logo and hex colors, a one-line claim, a decade and a medium.
+3. Ask the image API for 4 backdrop images from the style prompt, with an instruction that the image has no text, no logos and no people's faces. Reject any request whose claim text names a celebrity or a brand the user does not own, using a short deny list you keep in one file, and say why.
+4. Compose each option in code with sharp: the backdrop, the product photo on a period-style panel, the logo placed exactly as uploaded and the claim set in a period-appropriate bundled font with the brand's hex colors. The model never draws the logo, the product or the words.
+5. Export 4:5, 1:1 and 16:9 images, and a print PDF at 300 dpi with 0.125 inch bleed built with pdf-lib.
+6. Test that the logo region of every composed output is pixel-identical to the uploaded logo after scaling, and that the PDF page size equals the trim size plus the bleed.
+7. Limit a run to 4 generations to keep the cost known, and show the count used.
+Rules: refuse a real person's likeness and a brand mark the user does not own. Label the art "generated in the style of the period". Never claim the ad is from the period.
+Empty state: with no brand, show the brand form and the two yearbook previews.
+Done when: four options render, the logo test passes, a claim naming a celebrity is refused, all three image sizes and the PDF export with the right bleed.
 ```
 
-**3. Caption Add-on**
+**3. Landing Page**
 
 ```text
-Add a $29/month caption writer that matches the ad's period voice for Meta, TikTok, and email subject. Store the voice as a decade pack, not a generic "witty DTC" prompt.
+Build a one-page landing site for the Retro Ad Generator, period-style ads for modern brands.
+Hero: "Your product, in a decade that never heard of your competitors." Sub: "Pick a decade and a medium. We generate the artwork and place your logo, product and words exactly as you gave them." One button: Join the waitlist.
+Sections: a sample 1960s print ad and a 1980s TV still, how it works in four steps (pick a yearbook, lock your product, generate four, export), and an FAQ on why your logo is never redrawn, what is refused (celebrities and brands you do not own) and which formats you get.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist for the interface with period-inspired sample ads, a warm off-white background, one tomato-red accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Retro Ad Generator: pick a short working name, then design a wordmark and an icon that suggest a starburst badge cut by a modern rule.
+Colors: warm off-white, near-black and one tomato red. Type: Geist for the interface and one period display face for the samples.
+Deliverables: wordmark, icon, a yearbook card style (decade and medium), two format chips (print and screen) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two format chips are distinguishable without color.
 ```
 
 ## Sources

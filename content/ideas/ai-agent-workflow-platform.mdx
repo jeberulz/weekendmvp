@@ -89,19 +89,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript app called RelayOS, an ops OS for agent workflows. Postgres schema: orgs, users, connections (provider, oauth_meta, status), graphs (name, dsl_json, version), runs (graph_id, temporal_workflow_id, status, started_at, cost_cents), run_events (run_id, seq, type, payload_json), tool_contracts (provider, name, json_schema). Stripe: one-time Starter $249, Pro prices $499 and $2000, metered runs. Env: TEMPORAL_ADDRESS, ANTHROPIC_API_KEY, SALESFORCE_*, HUBSPOT_*, STRIPE_*. Workers in a separate Node process that hosts Temporal activities. This is a runtime, not a template marketplace.
+Build the weekend MVP of "RelayOS": a runtime where a plain-English job becomes an agent graph that retries, recovers and escalates instead of dying.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Temporal for durable runs, Claude for the compiler. Workers run in a separate Node process that hosts the Temporal activities. Deploy the app on Vercel.
+Tools: two mock tools only, a fake CRM write and a fake chat message. Real Salesforce and HubSpot come later.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- graphs(id, user_id, name, dsl_json, version)
+- runs(id, graph_id, temporal_workflow_id, status, started_at, cost_cents)
+- run_events(id, run_id, seq, type, payload_json)
+- tool_contracts(id, provider, name, json_schema)
+
+Screens: /login, /graphs, /runs/[id] (the run inspector).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TEMPORAL_ADDRESS, ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, Salesforce or HubSpot connectors, orgs or SSO, a template gallery, a graph editor.
+Done when: npm run dev starts, the worker connects to Temporal, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Compiler + Recoverable Runner**
+**2. Core Feature**
 
 ```text
-Build POST /api/graphs/compile: take a natural-language job, emit a typed graph (trigger, steps, retry policy, compensation, escalate_to). Validate every tool against tool_contracts. POST /api/runs starts a Temporal workflow. Activities: call Salesforce/HubSpot/Slack with idempotency keys. On 429 or 5xx: exponential backoff, then fallback tool if configured, then escalate with a run transcript. UI: run inspector showing events, Replay from step N, Kill switch. Never drop a failed step without an event row. Do not implement a Zapier-style template gallery.
+Build the one feature that proves RelayOS: compile a job, run it, and recover when a tool fails.
+1. POST /api/graphs/compile takes a plain-English job and returns a typed graph: trigger, steps, retry policy, compensation and escalate_to. Validate every tool against tool_contracts.
+2. POST /api/runs starts a Temporal workflow for a graph. Each activity calls a mock tool with an idempotency key.
+3. On a 429 or 5xx from a tool, retry with exponential backoff, then use the fallback tool if one is set, then escalate with the run transcript.
+4. /runs/[id] shows every event in order, a Replay from step N button, and a Kill switch.
+Rules: never drop a failed step without writing a run_events row. Do not build a template gallery.
+Empty state: with no graphs, show a text box that takes the first job.
+Done when: a compiled job runs end to end, a mock tool that returns 429 twice still completes, and killing the worker mid-run resumes it when the worker restarts.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing site for RelayOS. Hero: "The ops OS that recovers." Sub: "Agents that retry, compensate, and escalate — not zaps that die in a Slack channel." Contrast: template libraries sell recipes; this product runs production graphs. How it works: four steps matching the product. Pricing: $249 starter kit, Pro $499–$2000/mo, enterprise $20k–$100k. Competitor anchors: Zapier Company $103.50 (no recovery), Lindy from ~$49.99 (assistant, not ops OS), UiPath $420+/bot (too heavy). FAQ: not n8n with a skin; Temporal is the spine. CTA: "Pick one broken Salesforce flow."
+Build a one-page landing site for RelayOS, a runtime for agent workflows with error recovery.
+Hero: "The ops OS that recovers." Sub: "Agents that retry, compensate and escalate, not zaps that die in a Slack channel." One button: Join the waitlist.
+Sections: the contrast (template libraries sell recipes, this runs production graphs), how it works in four steps (describe the job, connect systems, run with recovery, operate), a mock run inspector with a Replay button, and a short FAQ (it is not n8n with a skin, Temporal is the spine).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: precise and calm, written for an operations lead.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for RelayOS: a wordmark and an icon that suggest a relay baton passed between steps.
+Colors: a near-black, off-white and one signal color for a recovered run. Type: one sharp sans for the interface and a mono for run events.
+Deliverables: wordmark, icon, three run-state icons (running, retrying, recovered), and one launch graphic.
+Done when: each deliverable is saved in one folder and the wordmark reads at 18px.
 ```
 
 ## Sources

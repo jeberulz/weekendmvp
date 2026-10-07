@@ -86,41 +86,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "HealthSync",
-a privacy-first personal health dashboard. Provision Supabase with these tables:
-- users (id, email, timezone, plan default 'free', created_at)
-- connected_sources (id, user_id, provider TEXT, access_token, refresh_token, status)
-- metrics (id, user_id, source, metric_type TEXT, value NUMERIC, unit TEXT, recorded_at TIMESTAMPTZ)
-- insights (id, user_id, body TEXT, metric_refs JSONB, created_at)
-- alerts (id, user_id, metric_type, condition TEXT, is_active BOOL)
-Enable row-level security so each user can only read/write rows where user_id = auth.uid().
-Add env vars for TERRA_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY, and Supabase keys.
-Scaffold a dashboard route with cards for sleep, activity, HRV, glucose, and weight.
+Build the weekend MVP of "HealthSync": import your daily health numbers from a CSV, see them on one dashboard, and get two or three plain-English insights that quote real numbers. It is not medical advice.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to word the insights. Correlations are computed in code. Data comes in by CSV exported from a wearable or app. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- imports(id, user_id, filename, row_count, created_at)
+- metrics(id, user_id, metric_type, value, unit, recorded_on, source)  metric_type is sleep_minutes, hrv_ms, resting_hr, steps, glucose_mgdl or weight_kg; unique on user, metric_type, recorded_on and source
+- insights(id, user_id, week_start, body, metric_refs jsonb, created_at)
+- alerts(id, user_id, metric_type, comparison, threshold, days_in_a_row, is_active, last_triggered_on)
+
+Screens: /login, /import, /dashboard (a card per metric with a 30-day line), /insights, /alerts.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a coach account, wearable APIs or OAuth (Terra, Vital, Oura, Whoop, Fitbit), Apple Health export parsing, lab results, push or email notifications, a diagnosis of any kind.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Unified Ingestion + Normalization**
+**2. Core Feature**
 
 ```text
-Build the wearable-sync pipeline for HealthSync using the Terra (or Vital) unified API.
-1. On "Connect a source", start the provider OAuth flow and store tokens in connected_sources.
-2. Add a webhook route that receives new data payloads, then normalizes every payload into the
-   metrics table with a shared schema: metric_type in ["sleep_minutes","hrv_ms","resting_hr",
-   "steps","glucose_mgdl","weight_kg"], a numeric value, a unit, and recorded_at in UTC.
-3. Backfill up to 12 months of history on first connect.
-4. Deduplicate by (user_id, source, metric_type, recorded_at).
-Handle token refresh and mark a source "needs_reauth" when refresh fails.
+Build the one feature that proves HealthSync: insights that cite real numbers and never overreach.
+1. Import a CSV with columns date, metric_type, value, unit, source. Upsert on the unique key so a re-import changes nothing. Show rows that failed to parse and why.
+2. The dashboard shows one card per metric with the latest value, the 30-day average and a 30-day line.
+3. In plain code, compute for the last 30 days the correlation between sleep_minutes and the next day's resting_hr, and between steps and the next day's glucose_mgdl, only when there are at least 14 paired days. Also compute each metric's 7-day average against its 30-day average.
+4. Send only that computed summary to the Anthropic API, with no dates of birth, names or other identifiers. Ask for 1 to 3 insights as JSON { insights: [{ text, metric_types }] }, each under 200 characters, each citing a number from the summary, with no diagnosis, no cause claimed from a correlation and no advice about medication.
+5. Check in code that every number in an insight text appears in the summary. Drop an insight that fails. Save the rest to insights with the metric references.
+6. Alerts: a user defines a metric, a comparison (above or below), a threshold and a number of days in a row. After each import, evaluate the active alerts and show triggered ones at the top of the dashboard.
+Rules: say "This is not medical advice" next to every insight. Correlation is worded as "moved together", never "caused". A Delete all my data button removes every row.
+Empty state: with no data, show the CSV columns and a sample file.
+Done when: a 60-day sample CSV fills the dashboard, an insight cites numbers that appear in the computed summary, an insight with an invented number is dropped, and an alert of resting_hr above 70 for 3 days triggers on the sample.
 ```
 
-**3. Daily AI Insight Engine**
+**3. Landing Page**
 
 ```text
-Add a Vercel Cron job that runs nightly per active user for HealthSync.
-Pull the last 30 days of normalized metrics, compute simple correlations between pairs
-(for example sleep_minutes vs next-day resting_hr, steps vs glucose_mgdl), then send a
-compact summary to gpt-4o-mini with a strict instruction: return 1 to 3 short,
-plain-English insights, each under 200 characters, referencing real numbers and trends,
-with no medical diagnosis. Store results in the insights table and evaluate active alerts
-to queue push/email notifications when a metric crosses a user-defined threshold.
+Build a one-page landing site for HealthSync, a private dashboard for the health numbers you already collect.
+Hero: "One dashboard for every health signal you already track." Sub: "Bring your sleep, activity and heart numbers into one place and get a few plain-English notes about what moved together." One button: Join the waitlist.
+Sections: a sample dashboard with three metric cards and one insight that quotes its numbers, how it works in four steps (import, see, understand, set an alert), a plain box saying what it is not (not medical advice, no diagnosis), and an FAQ on privacy (what is stored, what the model sees, how to delete everything), which sources work today (CSV first) and which connections come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, one calm green accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for HealthSync: a wordmark and an icon that suggest several lines merging into one.
+Colors: off-white, ink and one calm green. Type: Geist, with tabular numbers for metrics.
+Deliverables: wordmark, icon, a metric card style, a "not medical advice" label, and one launch graphic.
+Done when: each deliverable is saved in one folder and the label reads clearly in black and white.
 ```
 
 ## Sources

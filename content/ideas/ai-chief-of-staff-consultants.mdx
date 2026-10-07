@@ -68,22 +68,61 @@ Own consultant-specific workflow automation at **$29 / $99/month** — cheaper t
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Connectors**
+**1. Project Setup**
 
 ```text
-Build Billable MVP: Next.js with Google OAuth for Gmail and Calendar. Store encrypted refresh tokens. List unread threads and upcoming events on a dashboard.
+Build the weekend MVP of "Billable": an AI chief of staff for solo consultants that chases proposals that went quiet.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with Google sign-in), Google OAuth for Gmail and Calendar, Claude (Anthropic API) for the drafts. Deploy on Vercel.
+Google: run it in Google's testing mode with your own account this weekend.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- connections(id, user_id, provider, refresh_token_encrypted)
+- proposals(id, user_id, gmail_thread_id, subject, sent_at, last_reply_at, status)
+- followup_drafts(id, proposal_id, body, status, approved_at, edit_distance)
+- settings(id, user_id, working_hours jsonb, follow_up_days)
+
+Screens: /login, /dashboard (unread threads, upcoming events, proposals), /drafts.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, the scheduling agent, client file organization, weekly reports, Microsoft Graph, sending any email without approval.
+Done when: npm run dev starts, you can sign in with Google, and the four tables exist with Row Level Security on.
 ```
 
-**2. Follow-up State Machine**
+**2. Core Feature**
 
 ```text
-Detect emails with subject containing Proposal or attached PDFs sent by the user. If no reply in 3 days, create a draft follow-up in the user's voice. Require one-click approve before send.
+Build the one feature that proves Billable: the proposal watchdog that drafts a follow-up and waits for your approval.
+1. List unread threads and upcoming events on /dashboard from the Gmail and Calendar APIs, with refresh tokens stored encrypted.
+2. Detect sent emails whose subject contains "Proposal" or that carry a PDF, and save each as a proposals row.
+3. When a proposal has had no reply for follow_up_days (default 3), ask Claude to draft a short, polite follow-up in the user's own voice, using a few of their recent sent emails as examples. Save it to followup_drafts as pending.
+4. /drafts shows each draft with Approve and send, Edit, and Discard. Nothing is sent without one click. On approval, send the email and write approved_at and the edit distance between the draft and what was sent.
+Rules: never send an email without an approval click. Log every approval and edit distance so the voice improves without unsupervised sends.
+Empty state: with no proposals yet, show a sample draft and the line "Send a proposal and Billable will watch it."
+Done when: a test proposal with no reply creates a pending draft, editing it records an edit distance, and approving it sends the email.
 ```
 
-**3. Working Hours Scheduler**
+**3. Landing Page**
 
 ```text
-Parse scheduling threads. Propose 3 slots inside user.working_hours next 5 business days, excluding busy Calendar events. Draft a reply with the options.
+Build a one-page landing site for Billable, an AI chief of staff for solo consultants.
+Hero: "Stop chasing proposals. Start billing." One button: Join the waitlist.
+Sections: the problem (proposals go quiet and admin eats billable hours), how it works in five steps (connect Gmail and Calendar, scheduling agent, proposal watchdog, client file hygiene, weekly billable report), the promise that nothing is ever sent without your approval, and a calculator.
+Calculator: inputs are your hourly rate and hours saved per month. Output is how many times the product pays for itself.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: plain, confident and respectful of a consultant's biggest clients.
+Done when: the page renders on a phone, the calculator updates as you type, and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Billable: a wordmark and an icon that suggest a clock and a check mark.
+Colors: a warm off-white, a deep ink blue and one gold accent. Type: one confident sans for the interface.
+Voice rules: calm, plain and never salesy toward a consultant's clients.
+Deliverables: wordmark, icon, an approve-and-send button style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the wordmark reads at 18px.
 ```
 
 The product dies if drafts send without approval. Keep a human-in-the-loop approve button for every external email in v1. Consultants will forgive a missing feature; they will not forgive a weird follow-up to their biggest client. Log every approval and edit distance so the model learns voice without unsupervised sends. Position against human VAs with a calculator: "If you bill $200/hour and save 3 hours/month, Billable paid for itself 20×."

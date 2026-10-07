@@ -83,55 +83,60 @@ Weekend MVP can fake Meta complexity with a shared inbox + webhook listener, the
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Inbox Agent Shell + Policy Store**
+**1. Project Setup**
 
 ```text
-Build a Next.js 14 App Router SaaS called Tattoo DM Booking Agent (InkReply).
+Build the weekend MVP of "InkReply": an AI booking assistant for tattoo artists. It drafts replies to client DMs in the artist's voice, and the artist approves them with one tap.
 
-Features for weekend MVP:
-- Artist signup with Stripe Billing ($49 Artist, $99 Pro)
-- Onboarding form: deposit amount, pricing ranges (flash vs custom), availability notes, tone samples (paste 5 past DM replies), shop address, aftercare blurb
-- Mock inbox UI: list of conversations with status (faq_auto, needs_approval, booked, paid)
-- Approval screen: show AI draft, Edit, Approve & Send, Escalate
+Stack: Next.js, TypeScript, Tailwind, shadcn/ui, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude for intent and drafts. Deploy on Vercel.
+Inbox: a mock inbox where you paste a client message. The Instagram connection comes later.
 
-Postgres schema:
-- artists(id, email, plan, tone_samples jsonb, pricing_policy jsonb, deposit_cents, stripe_customer_id)
-- conversations(id, artist_id, platform, external_thread_id, status, client_handle)
-- messages(id, conversation_id, role ENUM[client,assistant,artist], body, created_at)
+Tables (Row Level Security on, each artist reads only their own rows):
+- artists(id, user_id, tone_samples jsonb, pricing_policy jsonb, deposit_cents)
+- conversations(id, artist_id, platform, external_thread_id, status, client_handle)  where status is one of faq_auto, needs_approval, booked, paid
+- messages(id, conversation_id, role, body, created_at)  where role is one of client, assistant, artist
 - bookings(id, conversation_id, starts_at, deposit_payment_id, status)
 
-Use TypeScript. Landing headline: "Tattoo more. DM less."
+Screens: /onboarding (deposit amount, pricing ranges for flash and custom work, availability notes, five past DM replies as tone samples), /inbox, /approve.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing or plans for the artist, the Instagram or Messenger connection, Google Calendar sync, email, shop or multi-artist accounts.
+Done when: npm run dev starts, an artist can sign in and finish onboarding, and the four tables exist with Row Level Security on.
 ```
 
-**2. Intent Classifier + Voice Drafts**
+**2. Core Feature**
 
 ```text
-Implement DM intent classification and reply drafting for InkReply.
-
-On each new client message:
-1. Claude Haiku JSON classify intent: pricing | availability | deposit | portfolio | aftercare | custom_quote | spam
-2. If intent in (pricing, availability, deposit, portfolio, aftercare): draft reply using artist.pricing_policy and tone_samples. Auto-send if confidence high and plan allows.
-3. If custom_quote: draft suggested reply + create needs_approval item.
-4. Never invent exact sleeve prices; use ranges from policy and ask for size/placement.
-
-System prompt rules:
-- Match artist sign-off and emoji habits from tone_samples
-- Always mention deposit before holding a date
-- Include booking link only after intent is availability or deposit
+Build the one feature that proves InkReply: turn a client message into a drafted reply, and a confirmed date into a paid deposit.
+1. When a client message is added to a conversation, ask Claude to classify the intent as one of pricing, availability, deposit, portfolio, aftercare, custom_quote or spam. Return JSON.
+2. For pricing, availability, deposit, portfolio and aftercare, draft a reply from the artist's pricing_policy and tone_samples and put it in the approve queue.
+3. For custom_quote, draft a suggested reply and set the conversation to needs_approval.
+4. /approve shows the draft with Edit, Approve and send, and Escalate. Sending writes a messages row with role artist.
+5. When the client confirms a date window, create a Stripe Payment Link for the artist's deposit_cents and put it in the reply. On the checkout.session.completed webhook, set the conversation to paid and write a bookings row.
+Rules: match the artist's sign-off and emoji habits from tone_samples. Always mention the deposit before holding a date. Never invent an exact sleeve price: give the range from the policy and ask for size and placement. Include the booking link only after the intent is availability or deposit.
+Empty state: with no messages, show a button that adds a sample client message.
+Done when: a pasted pricing question gets a drafted reply in the artist's voice, and a test deposit through the Payment Link marks the conversation paid.
 ```
 
-**3. Stripe Deposit + Calendar Book**
+**3. Landing Page**
 
 ```text
-Wire Stripe and Google Calendar for InkReply.
+Build a one-page landing site for InkReply, an AI booking assistant for tattoo artists.
+Headline: "Tattoo more. DM less." One button: Join the waitlist.
+Sections: the problem (booking DMs fill the hours between clients), how it works in five steps (connect, auto-handle the common questions, qualify, collect a deposit, hand edge cases to you), a sample thread with a drafted reply, and a short FAQ.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: friendly and direct, from one working artist to another.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Flow:
-- When client confirms a date window, create Stripe Payment Link for artist.deposit_cents
-- DM the link; on checkout.session.completed webhook, mark conversation paid
-- Create Google Calendar event with client handle, placement notes, and reminder 24h before
-- Send confirmation message with address + prep instructions from policy
+**4. Branding Package**
 
-Admin metrics page: DMs handled, auto-reply rate, deposits collected this week, median first-response time.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for InkReply: a wordmark and an icon that suit a tattoo studio without leaning on tattoo cliches.
+Colors: near-black, bone white and one ink-red accent. Typography: one confident sans for the interface.
+Deliverables: wordmark, icon, an Instagram profile image, and one launch graphic that says "Tattoo more. DM less."
+Done when: each deliverable is saved in one folder and the wordmark reads at 18px.
 ```
 
 ## Sources

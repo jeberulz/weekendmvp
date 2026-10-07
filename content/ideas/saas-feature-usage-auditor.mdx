@@ -95,45 +95,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router (TypeScript, Tailwind) SaaS called “SaaS Feature Usage Auditor.”
+Build the weekend MVP of the "SaaS Feature Usage Auditor": drop in a Mixpanel or PostHog export, group events into features, and get a Keep, Investigate or Sunset verdict for each, with the numbers behind it. The file is read in your browser; only totals are sent to the app.
 
-Postgres via Supabase: workspaces, memberships, exports (source mixpanel|posthog, column_map JSONB), features (event_names TEXT[]), scores (unique_users, decay_30, decay_90, top1_share, top3_share, band abandoned|concentrated|healthy), reports (verdicts JSONB, pdf_url). RLS by workspace_id. Magic-link auth.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Papa Parse in the browser to stream the file, the Anthropic API to write each rationale. Verdicts are decided in plain code. Deploy on Vercel.
 
-Routes: /upload, /map, /report/:id, /billing. Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, BLOB token. Reject uploads over 80MB. Hash distinct_id at ingest; never persist raw emails.
+Tables (Row Level Security on, each user reads only their own rows):
+- exports(id, user_id, source, filename, column_map jsonb, event_count, created_at)
+- features(id, export_id, name, event_names text[])
+- feature_scores(id, feature_id, unique_users, events_per_user, decay_30, decay_90, top1_share, top3_share, last_seen, band)  band is abandoned, concentrated or healthy
+- reports(id, export_id, verdicts jsonb, created_at)
+
+Screens: /login, /upload, /map (split and merge feature groups), /report/[id] (a printable page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a trial, analytics API connections, a PDF library, team workspaces, server-side file upload.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scoring Engine + Funeral Copy**
+**2. Core Feature**
 
 ```text
-Build the scoring + recommendation pipeline.
-
-Parse Mixpanel CSV (event, distinct_id, time) and PostHog JSON/CSV. Fingerprint headers. Fail if distinct_id is missing. Aggregate to eventName, uniqueUsers, eventCount, lastSeen, dailyActiveSeries.
-
-Cluster event names with a conservative normalizer plus a Claude pass that proposes feature clusters as JSON. UI must allow split/merge before scoring.
-
-Score each feature: unique_users, events_per_user, decay_30 / decay_90 (handle divide-by-zero), top1_share / top3_share by account property or distinct_id. Bands: abandoned (near-zero users, last_seen older than 90 days), concentrated (top1_share above 0.6), healthy (else).
-
-Send ONLY the feature score table to Claude. Schema fields: featureId, verdict keep|investigate|sunset, rationale, ownerHint pm|cs|eng, rollbackNote, confidence.
-Hard rules: never sunset when top1_share is above 0.5 unless unique_users is under 5; never sunset last_seen within 14 days; Investigate when unique_users is under 10 but event_count is spiky. Rationale is one paragraph a CEO can paste into Slack. Persist verdicts and render a PDF.
+Build the one feature that proves the Auditor: verdicts you can defend, from usage numbers that never include a person's identity.
+1. In the browser, stream the CSV or JSON export with Papa Parse (limit about 80 MB). Require event, distinct_id and time columns and fail with a clear message if distinct_id is missing. Hash every distinct_id with SHA-256 and a random salt held only in the browser. Aggregate per event name: unique users, event count, last seen and a daily count series. Send only these aggregates to the server; no raw row and no id leaves the browser.
+2. Group event names into features with a conservative normalizer (case, spaces, underscores) and ask the Anthropic API to propose clusters as JSON from the event names alone. The map screen lets the user split and merge groups before scoring.
+3. Score each feature in code: unique users, events per user, 30-day and 90-day decay (guard against dividing by zero), the share of events from the top 1 and top 3 users, and the last-seen date. Bands: abandoned when users are near zero and last seen over 90 days ago, concentrated when the top user's share is above 0.6, healthy otherwise.
+4. Decide the verdict in code with these rules: never sunset a feature last seen within 14 days; never sunset when the top user's share is above 0.5 unless there are fewer than 5 users; investigate when there are fewer than 10 users and the peak day is more than 5 times the median active day; sunset an abandoned feature that passes those checks; keep the rest. Unit test every rule.
+5. Send only the score table and the verdict to the Anthropic API and ask for one paragraph per feature that a CEO could paste into a chat message. Check that every number in it appears in the score table.
+6. /report/[id] is a printable page: one row per feature with the verdict, the user count, the concentration and the rationale.
+Rules: low usage is not the same as low value, so say what Investigate means. Never persist raw distinct ids or emails.
+Empty state: with no exports, show the upload box, the columns needed and a sample file.
+Done when: a 50,000-event sample across 12 events produces features and verdicts, the rule tests pass, a feature used by one account is not marked sunset, and the network log shows no raw id leaving the browser.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for SaaS Feature Usage Auditor.
-
-Hero: “Find the features nobody uses. Sunset them with a straight face.”
-Sub: “Drop a Mixpanel or PostHog export. Get a funeral report: Keep, Investigate, or Sunset — with concentration math so you do not kill the one button a champion account still clicks.”
-
-Sections: problem (40 features, 12 used, 45-minute onboarding); how it works (ingest → map → score → report); sample report with one Sunset row (“3 users, 2 at the same company”); pricing Free / $49 trial / $99 Studio, anchored against Amplitude ~$995/mo and PostHog free; FAQ covering “is low usage the same as low value?” (no — that is why Investigate exists), hashed ids, 30-day file deletion on Free, no live API required.
-
-Visual: dark product-dashboard aesthetic, lavender accent, Geist, no stock people. Primary CTA: “Upload an export.” Secondary: “See a sample funeral.”
+Build a one-page landing site for the SaaS Feature Usage Auditor, for founders who want to retire unused features.
+Hero: "Find the features nobody uses. Retire them with a straight face." Sub: "Drop a Mixpanel or PostHog export. Get Keep, Investigate or Sunset for each feature, with the concentration math so you do not remove the one button a champion account still clicks." One button: Join the waitlist.
+Sections: the problem (forty features, twelve used), a sample report with one Sunset row ("3 users, 2 at the same company"), how it works in four steps (drop, group, score, report), and an FAQ on whether low usage means low value (no, which is why Investigate exists), how your file is read (in your browser, with ids hashed) and what is not needed (no SDK, no API key).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark product-dashboard look, one lavender accent, no stock people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for SaaS Feature Usage Auditor: wordmark plus a small mark that reads as a tombstone toggle (feature-flag switch with the unused side filled). Palette: near-black ground, lavender accent, one warning red for Sunset only, muted green for Keep. Type: Geist sans for UI, IBM Plex Mono for event names and scores. Voice: never celebrate deletion as cruelty; always pair a Sunset verdict with remaining-user count and concentration; never say “AI killed this feature.” Deliver a one-page brand sheet, three report-headline variants, and PDF cover layout notes.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the SaaS Feature Usage Auditor: pick a short working name, then design a wordmark and a small mark that reads as a feature switch with the unused side filled.
+Colors: near-black, one lavender, one warning red for Sunset only and a muted green for Keep. Type: Geist for the interface, IBM Plex Mono for event names and scores.
+Deliverables: wordmark, icon, a one-page brand sheet, three verdict chips (keep, investigate, sunset) that differ by shape and word as well as color, three report-headline variants, and a cover layout for the printed report. Voice rules: never celebrate deletion, always pair a Sunset with its remaining-user count and concentration, never say "AI killed this feature".
+Done when: each deliverable is saved in one folder and the verdict chips are distinguishable without color.
 ```
 
 ## Sources

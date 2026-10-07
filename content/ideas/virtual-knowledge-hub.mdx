@@ -80,78 +80,62 @@ Marketplace fundamentals: fast matching, clean payouts, safe calls, library sear
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Marketplace Scaffold**
+**1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router marketplace for executive mentorship. Supabase backend with pgvector extension, Tailwind, TypeScript.
+Build the weekend MVP of the "Virtual Knowledge Hub": curated business leaders list office-hours slots, a mentee describes a decision and is matched to three mentors with a reason, and answers can go into a public library. No payment moves through the app this weekend.
 
-Schema (Supabase Postgres):
-- mentors(id, user_id, display_name, title, company, years_experience, career_arc_text, bio, hourly_rate, stripe_account_id, profile_embedding vector(3072), status ENUM[applied,approved,active,paused], approved_at)
-- mentees(id, user_id, display_name, current_role, target_role, plan ENUM[free,aspiring,serious], stripe_customer_id)
-- questions(id, mentee_id, title, body, desired_outcome, embedding vector(3072), privacy ENUM[public,anonymous,private], created_at)
-- answers(id, question_id, mentor_id, body, session_id, is_from_session_summary, created_at)
-- sessions(id, mentor_id, mentee_id, scheduled_at, duration_min, stripe_payment_intent_id, status, summary_for_library)
-- cohorts(id, mentor_id, title, topic, start_date, seats_max, price_cents)
-- cohort_enrollments(id, cohort_id, mentee_id)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres full-text search, Row Level Security, Auth with email magic link), the Anthropic API to re-rank candidate mentors, Resend for booking emails. Mentors paste their own meeting link into each slot. Deploy on Vercel.
 
-Enable pgvector: CREATE EXTENSION IF NOT EXISTS vector;
-Mentor application gate: new mentors go to status=applied until admin review. Only approved mentors appear in matching. This curation IS the product.
+Tables (Row Level Security on; mentors read their own rows and public questions, mentees their own rows, the library and approved mentor profiles are public to signed-in users):
+- mentors(id, user_id, display_name, title, company, years_experience, career_arc_text, bio, tags text[], status)  status is applied, approved or paused; you approve by hand
+- mentees(id, user_id, display_name, current_role, target_role)
+- questions(id, mentee_id, title, body, desired_outcome, tags text[], privacy, created_at)  privacy is public, anonymous or private
+- answers(id, question_id, mentor_id, body, created_at)
+- slots(id, mentor_id, starts_at, duration_min, meeting_url, booked_by, question_id, status)  status is open, booked or done
 
-RLS: mentors see their own rows + public questions. Mentees see their own rows + public library + approved mentor profiles. Private questions only visible to mentee + matched mentor.
+Screens: /login, /ask (describe the moment and see three matches), /mentors/[id], /library (search), /slots (a mentor's slots), /admin/applications.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY.
 
-Routes:
-- / (marketing, library sample)
-- /library (public Q&A browse + search)
-- /ask (mentee submits a question, triggers matching)
-- /mentors/[slug] (mentor profile page)
-- /cohorts (upcoming cohort sessions)
-- /admin/applications (mentor application review, gated to admin)
+Do not build: billing, plans or mentor payouts, Stripe Connect, embeddings or pgvector, cohorts, video recording, automatic session summaries.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Two-Stage AI Matching**
+**2. Core Feature**
 
 ```text
-Implement semantic mentor matching in two stages. This is the core differentiation from rule-based incumbents.
-
-Stage 1 — Embedding candidate retrieval:
-- On mentor approval, compute OpenAI embedding of their career_arc_text + title + company + years using text-embedding-3-large. Store in mentors.profile_embedding.
-- When mentee submits a question, compute embedding of title + body + current_role + target_role.
-- SQL: SELECT id, display_name, career_arc_text, 1 - (profile_embedding <=> $1::vector) AS similarity FROM mentors WHERE status='active' ORDER BY profile_embedding <=> $1::vector LIMIT 20;
-- This narrows 1,000 mentors to 20 in under 100ms.
-
-Stage 2 — Claude re-ranking:
-- Pass the question + the 20 candidate mentor profiles to Claude Sonnet 4.6 with this prompt:
-  "You are matching an executive mentor to a mentee's question. The mentee asked: {question_body}. Their current role is {current_role}, target role is {target_role}. Below are 20 mentor profiles. Rank the top 5 by how well their actual career arc matches what this specific question needs. For each, write one sentence on why this mentor specifically (not their job title) is the right match. Return JSON: {rankings: [{mentor_id, rank: 1-5, reason}]}."
-- Use response_format json_schema.
-- Show the top 3 re-ranked matches to the mentee with the "reason" line as the pitch.
-
-Cost control: two-stage keeps Claude cost bounded to ~20 profiles worth of tokens per match, not 1,000. Cache embeddings; only recompute on profile edit.
-
-Edge case: <20 candidates (early days, <20 mentors total). Skip stage 1, pass all to Claude.
+Build the one feature that proves the Hub: a mentee gets three mentors who fit their actual question, and an answer that others can learn from.
+1. A mentor applies with a title, company, years of experience, a short career story and tags. Applications stay in /admin/applications until you approve. Only approved mentors appear anywhere.
+2. A mentee describes their role, the target role, the question, the decision and the outcome they want, and picks a privacy level for the question.
+3. Retrieve candidates in code: Postgres full-text search of the question against mentor profiles plus the overlap of tags. Take the top 20. With fewer than 20 mentors, pass all of them.
+4. Send the question and the candidates to the Anthropic API with a strict JSON schema { rankings: [{ mentor_id, rank, reason }] } asking for the top 3 by how well their actual career story fits this question, with one sentence on why this mentor, not their title. Check that every mentor_id is in the candidate list and drop any that is not.
+5. Show the three mentors with their reason. The mentee books an open slot, which sets booked and emails both people the meeting link the mentor pasted.
+6. A mentor can answer any public or anonymous question in writing. /library searches public questions and answers by full text with filters by tag. An anonymous question shows no name.
+7. A private question is visible only to the mentee and a mentor they booked.
+Rules: never show a private question in the library. Never show a mentor who is not approved. Say that mentors give opinions, not professional advice.
+Empty state: with no approved mentors, tell the mentee the first mentors are being added and offer to email them.
+Done when: an unapproved mentor never shows, a question gets three matches whose ids are all real with a reason each, booking a slot emails both sides, a private question is invisible to others and the library search finds a public answer.
 ```
 
-**3. Session → Library Seeding Loop**
+**3. Landing Page**
 
 ```text
-Build the library seeding loop. Every 1:1 session ends by producing a public Q&A entry. This is how you compound SEO and community moat.
+Build a one-page landing site for the Virtual Knowledge Hub, mentorship from seasoned business leaders.
+Hero: "Ask the person who has made your decision before." Sub: "Describe the moment you are in. We match you with three curated mentors whose careers fit it, and you book a short conversation or read the answers in the library." Two buttons: Join the waitlist as a mentee, Apply as a mentor.
+Sections: how it works in three steps (describe the moment, meet your three matches, book or ask), how mentors are curated (reviewed by a person), and an FAQ on cost during the pilot (nothing), what mentors do and do not give (opinions, not professional advice) and how private questions stay private.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, deep ink type, one navy accent.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
+```
 
-Post-session flow:
-1. Session ends (Daily.co webhook fires room_ended event).
-2. Deepgram transcribes the recording (optional; if unavailable, skip to step 4 with manual summary).
-3. Claude generates a two-sentence summary from the transcript: "Question asked" + "Answer given, stripped of names/specifics."
-4. Mentor sees a one-click "Publish to library?" review panel with the generated summary editable.
-5. Mentor chooses: Publish (visible, attributed), Publish anonymously (visible, no attribution), or Keep private.
-6. If Published: create answers(question_id=session.question_id, mentor_id, body, is_from_session_summary=true). Regenerate library index for search.
+**4. Branding Package**
 
-Mentee consent: mentees must opt-in at booking time ("Allow a non-identifying summary to be added to the public library after this session"). Default off for Serious tier, default on for Aspiring tier (incentive alignment).
-
-Library search:
-- Full-text on questions.title + answers.body via Postgres ts_vector.
-- Filter by mentor industry, career stage, topic tags.
-- "Similar questions" section uses embedding cosine distance on questions.embedding.
-- Public library pages are indexed for SEO. Each answer page gets its own URL /library/q/[question-slug].
-
-Over 12 months, 200 sessions/month × 60% publish rate = 1,440 seeded answers. At that scale, organic traffic from career-decision queries becomes the #1 CAC source.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Virtual Knowledge Hub: pick a short working name, then design a wordmark and an icon that suggest two speech bubbles of different sizes sharing one tail.
+Colors: warm off-white, deep ink and one navy. Type: Geist, with a serif for mentor stories.
+Deliverables: wordmark, icon, three privacy labels (public, anonymous, private) that differ by shape and word as well as color, a mentor match card with its reason line, and one launch graphic.
+Done when: each deliverable is saved in one folder and the privacy labels are distinguishable without color.
 ```
 
 ## Sources

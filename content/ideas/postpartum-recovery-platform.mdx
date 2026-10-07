@@ -83,19 +83,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "BirthBuddy," a postpartum recovery SUPPORT platform (a wellness/tracking/connection product — NOT a medical device and it must never give diagnostic or treatment advice). Provision Supabase (assume a signed BAA) with tables: users (id, email UNIQUE, due_date DATE, birth_date DATE, plan TEXT default 'free', timezone TEXT), intake (id, user_id, trimester_or_stage TEXT, focus_areas TEXT[], risk_flag BOOLEAN default false), checkins (id, user_id, created_at TIMESTAMPTZ, mood INT, sleep_hours FLOAT, recovery_note TEXT, feeding_note TEXT), cohorts (id, birth_month TEXT, name TEXT), cohort_members (cohort_id, user_id), providers (id, name, credential TEXT, specialties TEXT[]), sessions (id, user_id, provider_id, scheduled_at TIMESTAMPTZ, type TEXT). Enable row-level security so each user can only read/write rows where user_id matches auth.uid(). Wire Stripe with products Free, Core $39, Premium $149, and a $20/mo add-on. Add env vars OPENAI_API_KEY, ANTHROPIC_API_KEY, DAILY_API_KEY, STRIPE_SECRET_KEY. Do not store any health-related field without encryption.
+Build the weekend MVP of "BirthBuddy": a support tool for new and expecting mothers with a short intake, a safety check that runs before anything else, a daily check-in and a birth-month cohort. It is a wellness and support product. It is not medical care and never diagnoses or advises treatment. Build it for a few trusted testers only; do not open it to the public before a lawyer and a privacy review.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link). Matching and the safety check are plain code, with no model. Free-text notes are encrypted in the app before they are saved. Deploy on Vercel.
+
+Tables (Row Level Security on, a user reads only their own rows; cohorts are read-only):
+- profiles(user_id, due_date, birth_date, timezone)
+- intakes(id, user_id, stage, focus_areas text[], concern_text_encrypted, risk_flag boolean, safety_result jsonb, created_at)
+- checkins(id, user_id, created_at, mood, sleep_hours, recovery_note_encrypted, feeding_note_encrypted)  mood is 1 to 5
+- cohorts(id, birth_month, name)
+- cohort_assignments(id, cohort_id, user_id)
+
+Screens: /login, /intake, /support (the crisis resources page), /today (the check-in and your tracks), /cohort.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), NOTES_ENCRYPTION_KEY.
+
+Do not build: billing, plans or add-ons, video sessions, a provider directory or scheduling, a chat or group feature, a model of any kind, any diagnosis, scoring instrument or treatment advice.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Intake Matching and Safe Triage**
+**2. Core Feature**
 
 ```text
-Build POST /api/intake. Input: the user's intake answers (stage, focus_areas, free-text concerns). Steps: (1) Run a deterministic safety screen FIRST — if the text or answers indicate acute risk (self-harm, thoughts of harming the baby, crisis language), set intake.risk_flag = true, return a plain-language triage response listing crisis hotline and emergency resources, and DO NOT attempt any support-matching or advice. (2) Otherwise, call Claude with a strict JSON schema to map the intake to { support_tracks: string[], suggested_specialties: string[], cohort_birth_month: string, confidence: number }. Constrain the model to routing and support only — it must never diagnose, name a condition, or suggest treatment. (3) Assign the user to the birth-month cohort and persist matches. Every response must include a visible disclaimer that this is a support tool, not medical care. Log the safety-screen result for audit.
+Build the one feature that proves BirthBuddy: a safety check that always comes first, and support that stays inside its limits.
+1. The intake asks for stage (third trimester or weeks since birth), focus areas from a fixed list, an optional free-text concern and one direct yes or no question: "Are you having thoughts of harming yourself or your baby?"
+2. Run the safety check in code before anything else. A yes answer, or free text that matches a maintained list of self-harm, harm-to-baby and crisis phrases, sets risk_flag and saves safety_result (the rule that matched, never the text). Write unit tests for the list. It is better to show the resources too often than too rarely.
+3. If risk_flag is set, go straight to /support: a calm page with local emergency services and the crisis lines for the user's country, read from one config file you check against official sources (for the US, 988 and the National Maternal Mental Health Hotline). Do not match, track, assign a cohort or give advice.
+4. Otherwise map the focus areas to support tracks with a fixed table in code, and assign the user to the cohort for their birth month, or due month if not yet born. Create the cohort if it does not exist.
+5. /today holds a daily check-in: mood from 1 to 5, hours of sleep, and optional recovery and feeding notes. Encrypt both notes with AES-GCM before saving. Show the user's own last 14 days as a simple line.
+6. If mood is 2 or lower on 3 days in a row, show a gentle note that talking to a care provider can help, with the same resources. This is a fixed rule, not a score.
+Rules: never name a condition, never suggest a treatment, never use the model for anything here. Put "A support tool, not medical care" on every page. The crisis page is always one tap away in the header.
+Empty state: before the first check-in, show the check-in form and one line on what is private.
+Done when: the phrase tests pass, a yes answer lands on the support page with no cohort created, a normal intake creates the right cohort and tracks, notes are unreadable in the database, and three low-mood days show the care provider note.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for BirthBuddy. Hero headline: "Postpartum support for the year no one prepares you for." Sub: "Track your recovery, connect with mothers due the same month, and reach certified support when you need it." Sections: the gap (care ends at six weeks; the hard part is just starting), how it works (the 4 steps: intake and match, track, connect, escalate safely), what's included (recovery tracking, birth-month cohorts, certified professional access), pricing (Free / Core $39 / Premium $149) with a clear "not a substitute for medical care" note, and an FAQ covering privacy (BAA, encryption), what professionals are certified to do, and how crisis situations are handled. Warm, calm palette; generous whitespace; Geist font; a soft aubergine accent. Primary CTA: "Start free" with an email-capture fallback. Every page must carry a plain-language line that BirthBuddy is a wellness and support product, not medical care.
+Build a one-page landing site for BirthBuddy, a support tool for the first year after birth.
+Hero: "Support for the year no one prepares you for." Sub: "Check in each day, find mothers due the same month and know where to turn when it gets hard." One button: Join the waitlist.
+Sections: the gap (care often tapers off after six weeks and the hard part has just started), how it works in four steps (intake, check in, cohort, safe escalation), a plain box saying what it is not (not medical care, no diagnosis, no treatment advice) with the crisis resources one click away, and an FAQ on privacy (what is stored, that notes are encrypted and how to delete your account) and how a crisis is handled.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm and calm palette with generous whitespace and one soft aubergine accent. Every section carries a plain line that BirthBuddy is a wellness and support product, not medical care.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for BirthBuddy: a wordmark and an icon that suggest two soft shapes held together, warm and never clinical.
+Colors: warm cream, deep ink and one soft aubergine. Type: Geist, set generously.
+Deliverables: wordmark, icon, the layout of the crisis support page (calm, clear, one action per screen), a daily check-in card, and one launch graphic. Voice rules: never diagnose, never use fear, never be cheerful about a hard day.
+Done when: each deliverable is saved in one folder and the crisis page layout has one clear call to action.
 ```
 
 ## Sources

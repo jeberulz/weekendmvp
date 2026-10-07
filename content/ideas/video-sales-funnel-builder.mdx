@@ -81,36 +81,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 VSL funnel shop.
+Build the weekend MVP of the "Video Sales Funnel Builder": an owner answers an offer quiz and gets an 8 to 12 minute script outline and a recording checklist, then publishes one long page with their video above the fold and a button to their own checkout. The page records how far people watch.
 
-Set up:
-- Public quiz + Clerk for buyers
-- Stripe Checkout at $499 and a $1500/month retainer
-- Supabase: offers, scripts, funnels, events
-- Mux player with quartile beacons
-- One long-page template (VSL + bullets + FAQ + checkout)
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Mux for video playback and its player events, the Anthropic API for the outline. The funnel is one fixed template, not a page builder. Deploy on Vercel.
 
-No drag-and-drop builder.
+Tables (Row Level Security on, an owner reads only their own rows; the public page and its events go through server routes):
+- offers(id, user_id, name, price_text, avatar, transformation, objections jsonb, proof_assets jsonb, locked_at)
+- scripts(id, offer_id, outline jsonb, checklist jsonb, created_at)
+- funnels(id, offer_id, slug, mux_playback_id, cta_url, bullets jsonb, faq jsonb, status)
+- events(id, funnel_id, kind, visitor_hash, created_at)  kind is view, play, q25, q50, q75, complete or cta_click
+
+Screens: /login, /offers/new (the quiz), /offers/[id] (the outline and the checklist), /funnels/[id] (publish and stats), /f/[slug] (the public page).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, sprint or retainer products, a payment integration, a drag-and-drop page builder, a video editor, an analytics add-on.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Offer Quiz → Script.
-
-Requirements:
-- Block generate until price and transformation exist
-- Emit an 8–12 minute VSL outline: hook, problem, mechanism, proof, offer, FAQ, close
-- Checklist for the Loom recording (framing, proof on screen, no 20-minute ramble)
-- Admin: paste the Mux playback ID and publish the page
-
-User flow: quiz → pay $499 → record → you publish.
+Build the one feature that proves the Funnel Builder: a script plan made from the owner's own facts, and a drop-off view that shows where people leave.
+1. The quiz asks for the offer, the price, the ideal customer, the transformation, the objections and the proof the owner really has. Refuse to generate until the price and the transformation exist, and set locked_at.
+2. Ask the Anthropic API for an outline as JSON { sections: [{ name, minutes, talking_points: string[] }] } with the sections hook, problem, mechanism, proof, offer, frequently asked questions and close. The prompt says to use only the owner's answers and never to invent a statistic, a testimonial or a result.
+3. Check in code that the minutes add up to between 8 and 12 and that every number or name in the proof section appears in the owner's proof assets. Drop anything that does not.
+4. Show the outline with a recording checklist (framing, proof on screen, no long ramble) and a script length that ends inside the time budget.
+5. The owner records elsewhere, uploads to Mux and pastes the playback id and the address of their own checkout page (https only). Publish the funnel at /f/[slug], server-rendered, with the video above the fold, the bullets, the frequently asked questions and the button.
+6. Record view, play, 25, 50 and 75 percent, complete and button clicks from the Mux player and the page, with a visitor hash that rotates daily and uses no cookie.
+7. The stats page shows the drop-off from each step to the next and marks any step where more than half of the people before it leave, with the script section that sits there.
+Rules: never promise a conversion lift or a rate. Show the number of viewers behind every percentage and hide a percentage under 30 viewers.
+Empty state: before the quiz, show the quiz and what a good proof asset looks like.
+Done when: generation refuses without a price and a transformation, a proof line with an invented number is dropped, the outline fits 8 to 12 minutes, a published page plays and logs the quartiles and the stats flag a section with more than half dropping.
 ```
 
-**3. Quartile Analytics**
+**3. Landing Page**
 
 ```text
-Add play, 25%, 50%, 75%, and offer-click events. Show a one-screen drop-off. If 50% drop is ugly, flag the script section to rewrite. Do not sell this as a $2,000 add-on until 10 funnels have data.
+Build a one-page landing site for the Video Sales Funnel Builder, a script and a page for your offer video.
+Hero: "A video sales page that says what you actually sell." Sub: "Answer a short quiz about your offer. Get a script outline and a recording checklist, then publish one clean page and see where people stop watching." One button: Join the waitlist.
+Sections: a sample outline with its time budget, how it works in four steps (quiz, outline, record, publish), a sample drop-off view with one flagged section, and an FAQ on what is generated (only from your answers), where checkout happens (your own page) and what is not promised (any conversion result).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one amber accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Video Sales Funnel Builder: pick a short working name, then design a wordmark and an icon that suggest a play button with a funnel narrowing beneath it.
+Colors: warm off-white, near-black and one amber. Type: Geist, with tabular numbers for percentages.
+Deliverables: wordmark, icon, a drop-off bar style that marks a flagged step by shape as well as color, a script outline layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the flagged step is distinguishable without color.
 ```
 
 ## Sources

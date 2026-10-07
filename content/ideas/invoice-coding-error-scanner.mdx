@@ -86,25 +86,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app called Winnow, an invoice coding QA layer for bookkeeping firms. Postgres: firms, users, clients, connections (provider: qbo|xero|bill, tokens encrypted), vendors, bills, line_items, baselines (vendor_id, typical_account, amount_p50, amount_p90, last_seen), flags, reviews, writebacks. RLS by firm_id. Stripe products: Starter $500/mo, Firm $1200/mo, Practice $2000/mo. Env: QUICKBOOKS_CLIENT_ID, QUICKBOOKS_CLIENT_SECRET, XERO_CLIENT_ID, XERO_CLIENT_SECRET, BILL_API_KEY, OPENAI_API_KEY or ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, DATABASE_URL. Stub QBO OAuth first; keep Xero and BILL behind the same Connection interface.
+Build the weekend MVP of "Winnow": a pre-posting QA step for a bookkeeping firm. Upload a batch of coded bills and get a short review queue of the ones that look wrong, instead of checking every bill.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to explain each flag. Bills come in by CSV this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- clients(id, user_id, name, owner_name, chart_of_accounts text[])
+- batches(id, client_id, filename, created_at)
+- bills(id, client_id, batch_id, vendor, bill_date, amount_cents, source_total_cents, account, payee, memo)
+- flags(id, bill_id, flag_type, confidence, explanation, suggested_account, status)  flag_type is amount_mismatch, category_drift, near_duplicate or owner_draw; status is open, accepted, recoded or escalated
+- reviews(id, flag_id, decision, recoded_account, note, decided_at)
+
+Screens: /login, /clients, /batches/[id] (the review queue, 20 rows a page), /export.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or per-firm pricing, QuickBooks, Xero or BILL connections, write-back to a ledger, PDF storage or OCR, teams or roles, auto-posting.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Scoring Engine + Review Queue**
+**2. Core Feature**
 
 ```text
-Build the pre-posting scanner. For each in-flight bill: (1) amount vs source total mismatch, (2) vendor category vs baseline (flag if account differs from last 8 of 10 bills), (3) near-duplicate window 7 days amount within 2%, (4) owner-draw heuristic: payee matches owner name or known personal merchants vs an OpEx account. Deterministic first; call the LLM only for flags, returning JSON { flag_type, confidence, explanation, suggested_account }. Review queue UI: 20 rows, source thumbnail, proposed code, explanation, last-N vendor bills, actions accept / recode / escalate. Accept is a no-op post; recode writes to QBO/Xero and patches baseline. Log every decision. Never auto-post a flagged row.
+Build the one feature that proves Winnow: four deterministic checks, a short queue and an explanation a bookkeeper trusts.
+1. Import a CSV with columns vendor, bill_date, amount, source_total, account, payee, memo for a client. Earlier batches for that client are the history.
+2. Run four checks in plain code. amount_mismatch: amount differs from source_total by more than 1 cent. category_drift: the vendor has at least 3 earlier bills and this account differs from the most common account in its last 10. near_duplicate: another bill from the same vendor within 7 days with an amount within 2 percent. owner_draw: the payee matches the client's owner_name, or a short list of personal merchants kept in one file, and the account is an operating expense.
+3. For each flag only, ask the Anthropic API for JSON { explanation: string, suggested_account: string, confidence: number from 0 to 1 }. The explanation is one sentence a senior bookkeeper would write. suggested_account must come from the client's chart_of_accounts; otherwise leave it empty.
+4. The queue shows 20 flagged bills a page with the proposed account, the explanation, the vendor's recent bills and three buttons: accept, recode (pick an account) and escalate with a note. Save every decision to reviews.
+5. When a batch has no flags, show "0 flags in this batch" and a button to sample 5 bills anyway.
+6. Export the recodes as a CSV the bookkeeper can load into their ledger.
+Rules: never auto-post, never change a bill without a reviewer decision, and never write to any ledger. Say "pre-posting QA" in the interface, never "autonomous".
+Empty state: with no clients, show the form and the CSV columns.
+Done when: a 200-bill sample raises each of the four flag types at least once, the queue shows 20 rows a page, a suggested account outside the chart is dropped, and the export lists only recoded bills.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing page for Winnow. Hero: “Your AP tool codes 200 bills. Your reviewer should see 20.” Sub: “Between BILL/QBO/Xero and the ledger: vendor drift, amount mismatches, personal draws.” Sections: Monday pile, 4-step how-it-works, queue screenshot, $500 / $1,200 / $2,000, “we do not replace BILL.” FAQ: native QBO AI (not on nuance), write-back (recode only). Off-white, forest accent. CTA: “Connect a sandbox company, score last month.”
+Build a one-page landing site for Winnow, pre-posting QA for bookkeeping firms.
+Hero: "Your AP tool codes 200 bills. Your reviewer should see 20." Sub: "Winnow sits between your AP tool and the ledger and flags vendor drift, amount mismatches and personal draws before anything posts." One button: Join the waitlist.
+Sections: the Monday pile, a sample review queue with one example of each flag type, how it works in four steps (upload, check, review, export), and an FAQ on what Winnow does not do (it does not replace your AP tool and it does not write to your ledger).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, ink type, one forest green accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand Winnow as a sieve, not a robot accountant. Wordmark plus a winnowing/filter mark. Palette: ink, paper, forest green. Type: Geist UI, tabular numbers for amounts. Voice: talk like a senior bookkeeper, not a fintech. Never say “autonomous AP.” Always say “pre-posting QA.” Never dunk on BILL; position as supervision. Deliver brand sheet, three flag-explanation examples (category drift, amount mismatch, personal draw), and an empty state for “0 flags this batch — sample 5 anyway.”
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Winnow: a wordmark and an icon that suggest a sieve, not a robot accountant.
+Colors: ink, paper and one forest green. Type: Geist, with tabular numbers for amounts.
+Deliverables: wordmark, icon, a one-page brand sheet, four flag chips (mismatch, drift, duplicate, owner draw) that differ by shape as well as color, three flag explanation examples, and an empty state for "0 flags in this batch, sample 5 anyway". Voice: talk like a senior bookkeeper; say "pre-posting QA", never "autonomous AP"; never criticize AP tools, supervise them.
+Done when: each deliverable is saved in one folder and the flag chips are distinguishable without color.
 ```
 
 ## Sources

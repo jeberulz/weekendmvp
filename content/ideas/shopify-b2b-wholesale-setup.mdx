@@ -87,33 +87,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Shopify embedded app named Catalog Clerk (Remix + Polaris, TypeScript). Managed OAuth. Tables: shops, scans (break_points JSONB, score), configs (catalog_count 1-3, terms, approval_mode, visibility), apply_runs (dry_run, snapshot JSONB), runbooks. RLS by shop_id. Env: SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_SCOPES (companies, catalogs, price lists, markets, themes, customers), DATABASE_URL, STRIPE_SECRET_KEY, ANTHROPIC_API_KEY. Shopify Billing: Wizard $49/month. Stripe Checkout: Audit $149, Sprint $1500, Retainer $199/month. No Admin mutation until dry_run succeeds.
+Build the weekend MVP of "Catalog Clerk": scan a Shopify store for the six things that break native B2B wholesale, take five decisions in a wizard and produce a dry-run plan and a store-specific runbook. It changes nothing in the store.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Shopify Admin GraphQL API with a custom app access token for one development store. The scan and the plan are plain code. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- shops(id, user_id, shop_domain, access_token_encrypted)
+- scans(id, shop_id, break_points jsonb, score, created_at)
+- configs(id, shop_id, catalog_count, payment_terms, approval_mode, visibility, created_at)  catalog_count is 1 to 3
+- plans(id, shop_id, config_id, steps jsonb, snapshot jsonb, runbook_md, created_at)
+
+Screens: /login, /shop (connect the store), /scan (the six checks), /wizard (five questions), /plan (the dry-run steps and the runbook).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TOKEN_ENCRYPTION_KEY.
+
+Do not build: billing, audit or sprint products, any mutation of the store, a rewind, a theme extension or customer-account extension, a model, nightly scans.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scan, Wizard, and Native Apply**
+**2. Core Feature**
 
 ```text
-Build the core Catalog Clerk flow.
-
-GET /api/scan: fetch products, variants, customer tags, published theme, Markets, companies, catalogs, price lists. Score six break points: (1) New Customer Accounts auto-emailing access codes, (2) missing register-as-a-company form, (3) volume-pricing table block absent or Plus-gated, (4) catalogs not assigned via Markets, (5) payment terms unset, (6) retail theme leaking wholesale prices. Return a report, write a scans row, do not mutate.
-
-POST /api/config: accept the five wizard answers, validate catalog_count is 1-3 on non-Plus, persist configs.
-
-POST /api/apply?dry_run=true: compute the mutation plan (create companies, catalogs, price lists, Markets assignments, terms) and store it on apply_runs.snapshot. POST /api/apply?dry_run=false: execute in order, log each mutation, stop on first GraphQL userError. POST /api/rewind: replay the snapshot to restore pre-apply state.
-
-Theme app extension: render a volume-pricing table on product templates when the logged-in company has quantity breaks. Approval: a customer-account UI extension plus a Flow trigger that does not send an access code until the company is approved.
+Build the one feature that proves Catalog Clerk: a scan and a plan precise enough that applying it by hand is safe.
+1. Connect a development store with a custom app token that has read access to products, customers, themes, markets and the B2B objects. Encrypt the token.
+2. GET /api/scan reads products, variants, customer tags, the published theme, markets, companies, catalogs and price lists through the Admin GraphQL API, and scores six break points from the API's current schema: new customer accounts emailing access codes, a missing company registration form, a volume-pricing block that is missing or limited to a higher plan, catalogs not assigned through markets, payment terms not set, and retail theme templates that could show wholesale prices. Save a scan with each break point's evidence. Do not change anything.
+3. The wizard asks five questions: hybrid or wholesale only, how many catalogs (1 to 3 unless the plan allows more), net terms or card on file, whether retail stays public and how companies are approved. Save a config.
+4. Build a dry-run plan from the scan and the config: an ordered list of the objects to create (companies, catalogs, price lists, market assignments, payment terms), each with the exact names and values and what it replaces. Save it with a snapshot of the current state.
+5. Generate a runbook in markdown from the plan with the store's real object names: how to add a SKU to a catalog, how to create a seasonal price list within the catalog limit, how to approve a company and how to check that retail prices did not change.
+Rules: never send a mutation to the store. Say plainly that applying the plan is done by hand in the Shopify admin this weekend. Show the Shopify limits you relied on and link to them.
+Empty state: before connecting a store, show the connect form and the six checks that will be run.
+Done when: a scan of a development store lists the six checks with evidence, the wizard rejects a fourth catalog on a plan that does not allow it, the plan lists every object with names and values, and the runbook uses names from the scan.
 ```
 
-**3. Landing Page and Thread Funnel**
+**3. Landing Page**
 
 ```text
-Single-page site for Catalog Clerk. Hero: “Shopify opened B2B on Basic. We finish the setup.” Sub: “Companies, catalogs, payment terms, and the volume-price table Shopify still hides behind Plus — configured in order, with a rewind if a toggle breaks retail.” Sections: three break points, five-step how-it-works, pricing (Free scan / $49/mo Wizard / $149 audit / $1,500 sprint) vs SparkLayer $49–$299/mo and agencies at $15K. FAQ: 3-catalog cap, theme compatibility, “is this another wholesale app?” (no: native objects). CTAs: “Scan my store” and “Get the $149 audit.” Geist, off-white, near-black, one lavender accent. No people.
+Build a one-page landing site for Catalog Clerk, setup help for Shopify's built-in wholesale features.
+Hero: "Shopify opened B2B to every plan. We help you finish the setup." Sub: "Companies, catalogs, payment terms and the checks that keep retail prices private, scanned and planned before you touch a setting." One button: Join the waitlist.
+Sections: three break points that stop wholesale from working, how it works in five steps (connect, scan, answer five questions, review the plan, follow the runbook), and an FAQ on the catalog limit, theme compatibility and why this is not another wholesale app (it plans native objects).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one lavender accent, no people.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Runbook Generator**
+**4. Branding Package**
 
 ```text
-After a successful apply_run, generate a merchant runbook in markdown: how to add a SKU to an existing catalog, how to create a seasonal price list without blowing the 3-catalog cap, how to approve a company, how to check that retail prices did not leak, how to rewind. Pull object IDs from the apply_run snapshot so every instruction is store-specific. Optional Claude pass to rewrite the report in the merchant’s tone. Email via Resend. Re-run the visibility scan nightly via Vercel Cron; Slack the merchant if a theme publish dropped the volume-price block.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Catalog Clerk: a wordmark and an icon that suggest a clipboard with a tick beside a catalog page.
+Colors: off-white, near-black and one lavender. Type: Geist, with Geist Mono for object names.
+Deliverables: wordmark, icon, three check states (passing, needs attention, blocked) that differ by shape as well as color, a runbook page style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the check states are distinguishable without color.
 ```
 
 ## Sources

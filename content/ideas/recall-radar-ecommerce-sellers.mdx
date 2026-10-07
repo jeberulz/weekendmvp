@@ -72,43 +72,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build Recall Radar: a Next.js dashboard that pulls Amazon SP-API and Shopify catalogs, matches them against FDA/CPSC/Health Canada recall feeds, and sends alerts.
+Build the weekend MVP of "Recall Radar": a seller uploads their catalog, the app checks it daily against new product recalls from the US consumer product safety agency and texts the seller when something might match. A person decides what to do. The app never changes a listing.
 
-Requirements:
-- OAuth connect flows for Amazon SP-API (Professional Seller only) and Shopify Admin API
-- Nightly Vercel Cron syncs each seller's catalog into Supabase Postgres with resume-able paging
-- Supabase schema: sellers, catalogs, products (sku, asin, upc, title, brand), recall_feeds, recall_items, matches (product_id, recall_id, confidence, status)
-- pgvector index on product embeddings (title + brand + description) for fuzzy matching
-- Dashboard: list of active matches sorted by severity, one-click "pause listing" action via SP-API
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the CPSC recalls API for notices, the Anthropic API to pull identifiers out of a notice's free text, Twilio for the text alert. A Vercel Cron route polls once a day. Deploy on Vercel.
 
-Ship Amazon-only first. Add Shopify once SP-API rate-limit handling is battle-tested.
+Tables (Row Level Security on, each seller reads only their own products and matches; recall_items is shared and read-only):
+- profiles(user_id, phone, sms_opt_in_at)
+- products(id, user_id, sku, asin, upc, title, brand)
+- recall_items(id, source, external_id, published_on, title, description, hazard, manufacturers text[], url, identifiers jsonb)
+- matches(id, product_id, recall_id, confidence, method, status, evidence)  status is open, not_affected or acknowledged
+- alert_log(id, match_id, channel, sent_at, provider_sid, status)
+
+Screens: /login, /catalog (CSV import), /matches (open matches by severity), /matches/[id] (evidence and the official notice), /settings (phone and opt-in).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CRON_SECRET.
+
+Do not build: billing, plans or a scale tier, Amazon or Shopify connections, pausing or editing listings, FDA and Health Canada feeds, embeddings, Slack, an email alert.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Recall Feed Ingestion + Fuzzy Matcher**
+**2. Core Feature**
 
 ```text
-Build the recall feed ingester and LLM-backed fuzzy matcher.
-
-1. Hourly cron polls FDA (openFDA API), CPSC (SaferProducts.gov data), Health Canada (RSS) for new recall notices
-2. For each notice, parse out the structured fields you can (date, severity, category) and pass the free-text description to Claude for identifier resolution
-3. Claude returns: {upc_candidates[], asin_candidates[], brand_model_candidates[], confidence}
-4. Query the seller catalog for any product matching any candidate with cosine similarity >0.85 on the title embedding
-5. For each match, write a matches row with confidence score; fire the alert pipeline if confidence >0.90 or severity is critical
-
-Target: 95%+ recall on verified matches, <5% false-positive rate per recall feed.
+Build the one feature that proves Recall Radar: a possible match is found and texted reliably, with the evidence, and never presented as a verdict.
+1. Import a catalog CSV with columns sku, asin, upc, title, brand. Reject a upc that fails its check digit and list the row.
+2. A daily cron route (protected by CRON_SECRET) fetches recalls published since the last run from the CPSC API and saves them with their hazard text, manufacturers and link.
+3. Pull identifiers from each notice. In code, find every 12 to 14 digit number that passes the UPC or GTIN check digit. Then ask the Anthropic API for JSON { brands: string[], model_numbers: string[], product_names: string[] } with a quote from the notice for each item. Keep only items whose quote appears in the notice.
+4. Match in code, in tiers. An exact UPC is confidence 1.0. A matching brand plus a model number found in the product's title, or at least 2 shared title words, is 0.8. A brand alone is below 0.5 and is ignored. Save a match with its method and the evidence (the matching words and the notice text around them).
+5. Severity 1 when the hazard text contains a word from a list kept in one file (for example death, fire, choking, laceration). A match at 0.8 or more creates an alert. Text a severity 1 match to an opted-in number at once, with the recall title, the hazard in a few words and a link to /matches/[id]. Other matches show on the dashboard.
+6. A text that fails is retried 3 times with backoff and then shown as a banner on the dashboard. Never fail silently.
+7. A Not affected button saves the reason and stops that product and recall pair from alerting again.
+Rules: word every alert as "possible match, check the official notice". Never say a product is unsafe or illegal. Show the notice link on every match. Honor STOP.
+Empty state: before a catalog is imported, show the CSV columns and a sample file.
+Done when: a catalog with one planted UPC and one planted brand and model from a real recent notice produces a 1.0 and a 0.8 match with evidence, a severity 1 match texts once, a failed text is retried and bannered and Not affected silences the pair.
 ```
 
-**3. Multi-Channel Alert Pipeline**
+**3. Landing Page**
 
 ```text
-Build the alert dispatch with severity-based escalation.
+Build a one-page landing site for Recall Radar, recall alerts for online sellers.
+Hero: "Know about a recall before your listing gets pulled." Sub: "Upload your catalog. Every day we check it against new product recalls and text you when something might match, with the evidence." One button: Join the waitlist.
+Sections: a sample alert text and a match page with its evidence, how it works in four steps (import, daily check, alert, you decide), and an FAQ on which recall feeds are checked (the US consumer product safety agency first), what a possible match means (check the official notice) and why the app does not pause listings.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one red-orange accent used only for alerts.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-When a new match lands:
-1. Severity-1 (account-suspension-risk): Twilio SMS + Resend email + Slack webhook within 60 seconds
-2. Severity-2 (list-and-monitor): Resend email within the hour
-3. Severity-3 (FYI): Daily digest email
-4. Every alert links back to the dashboard row with pre-filled action templates: "Pause listing on Amazon," "Pause listing on Shopify," "Acknowledge and document"
-5. Scale tier gets one-click auto-pause that calls SP-API putListingStatus with full audit log
+**4. Branding Package**
 
-The Severity-1 SMS is the product’s differentiator. Make sure it never silently fails.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Recall Radar: a wordmark and an icon that suggest a radar sweep passing over a product box.
+Colors: off-white, near-black and one red-orange for alerts. Type: Geist, with tabular numbers for confidence.
+Deliverables: wordmark, icon, three severity chips (severity 1, possible, ignored) that differ by shape and number as well as color, an alert text layout that fits one message, and one launch graphic.
+Done when: each deliverable is saved in one folder and the severity chips are distinguishable without color.
 ```

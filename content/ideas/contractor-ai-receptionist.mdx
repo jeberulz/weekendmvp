@@ -90,25 +90,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app named “Never Ghost.” Postgres tables: contractors (id, phone_e164 UNIQUE, trade, service_zips TEXT[], hourly_cents, plan, stripe_customer_id), trade_scripts (id, trade CHECK IN ('hvac','plumbing','electrical','roofing','landscaping','remodeling'), system_prompt, qualifying_questions JSONB), calls (id, contractor_id, twilio_sid, started_at, ended_at, transcript, outcome TEXT CHECK IN ('veto_pending','approved','held','out_of_scope','hangup')), veto_messages (id, call_id, sms_sid, job_summary, price_band, status TEXT CHECK IN ('pending','approved','held')), jobs (id, call_id, jobber_id, hcp_id, completed_at, kicker_cents). Stripe product Solo $79/mo plus metered kicker $15/completed job with a $300/mo cap. Env: TWILIO_*, OPENAI_API_KEY, JOBBER_*, HCP_*, STRIPE_*. No calendar OAuth scopes that expose free/busy to callers.
+Build the weekend MVP of "Never Ghost": an AI front desk for a one-truck contractor. It answers the business number, qualifies the job, and texts the owner for a yes or no before anything is booked.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio for the phone number and SMS, OpenAI Realtime for the voice. Deploy on Vercel.
+
+Tables (Row Level Security on, each owner reads only their own rows):
+- contractors(id, user_id, phone_e164, trade, service_zips, hourly_cents)
+- trade_scripts(id, trade, system_prompt, qualifying_questions jsonb)  where trade is one of hvac, plumbing, electrical, roofing, landscaping, remodeling
+- calls(id, contractor_id, twilio_sid, started_at, ended_at, transcript, outcome)  where outcome is one of veto_pending, approved, held, out_of_scope, hangup
+- veto_messages(id, call_id, sms_sid, job_summary, price_band, status)  where status is one of pending, approved, held
+- jobs(id, call_id, completed_at)
+
+Screens: /login, /script (edit the trade script), /calls (call log).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, OPENAI_API_KEY.
+Calendar: never ask for calendar access that shows free or busy time to callers.
+
+Do not build: billing or plans, Jobber or Housecall Pro posting, calendar sync, team accounts, an admin area.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Voice Intake + Owner Veto**
+**2. Core Feature**
 
 ```text
-Build POST /api/voice/inbound (Twilio) that starts an OpenAI Realtime session with the contractor’s trade script. Qualifying JSON after the call: { zip, issue, urgency, in_service_area, price_band, caller_name, callback }. If in_service_area is false, politely end without booking. If true, SMS the owner a one-tap approve/hold link; do not write Jobber/Housecall Pro until approve. Target 600-750ms voice turns. Use gpt-realtime-mini by default. Never read calendar busy-slots to the caller. Persist every turn. Reply to Twilio fast; do heavy CRM writes after the veto webhook.
+Build the one feature that proves Never Ghost: answer a call, qualify it, and get the owner's veto by text.
+1. POST /api/voice/inbound receives the Twilio call and starts an OpenAI Realtime session that uses the contractor's trade script.
+2. After the call, return qualifying JSON: { zip, issue, urgency, in_service_area, price_band, caller_name, callback }.
+3. If in_service_area is false, end the call politely and set calls.outcome = out_of_scope.
+4. If it is true, set calls.outcome = veto_pending and text the owner a one-tap approve or hold link with the job summary and price band. Nothing is booked until the owner taps approve.
+5. Approve writes a row to jobs. Hold sets veto_messages.status = held.
+Rules: aim for voice turns under 750 ms and use the smaller realtime model by default. Never read the owner's calendar to the caller. Save every turn of the transcript. Answer Twilio fast and do the database writes after.
+Empty state: a new owner with no calls sees how to forward their business number.
+Done when: a test call is answered in your trade's voice, an out-of-area zip ends politely, and an in-area job texts you a link that approves or holds it.
 ```
 
 **3. Landing Page**
 
 ```text
-Single-page site for Never Ghost. Headline: “Your phone can stop ghosting jobs.” Sub: “AI answers in your trade’s voice. Texts you before it books. Calendar stays yours. $79/mo, month to month.” Sections: missed-call math ($950 electrician / $1,200 plumber / $1,500 HVAC / up to $2,800 roof), how it works (4 steps matching the product page), competitor table (Rosie booking at $149, Smith.ai Pro $150, ServiceTitan not for shops with 3 or fewer techs), FAQ on sounding human, number portability, and why you will not expose the calendar. CTA: “14-day trial” plus a secondary “audit my voicemail.” Geist, off-white, near-black, one amber accent. No purple gradient.
+Build a one-page landing site for Never Ghost.
+Headline: "Your phone can stop ghosting jobs." Sub: "AI answers in your trade's voice. Texts you before it books. Your calendar stays yours." One button: Join the waitlist.
+Sections: the missed-call math (a missed job is worth about $950 for an electrician, $1,200 for a plumber and $1,500 for HVAC), how it works in four steps (answer, qualify, veto, close), and a short FAQ (does it sound human, can I keep my number, why it never sees your calendar).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white, near-black, one amber accent. No purple gradient.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand sheet for Never Ghost. Wordmark plus an icon of a work-glove holding a phone that is actually answered. Primary near-black, amber signal color, truck-cab gray. Type: Geist sans, IBM Plex Mono for call timestamps. Voice rules: talk like a dispatcher, never like a Silicon Valley receptionist; always show the veto SMS in screenshots; never promise “we book 100% of calls.” Six trade badge icons. Three SMS copy variants under 160 characters for approve / hold / out-of-area.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand sheet for Never Ghost: a wordmark and an icon of a work glove holding a phone that is actually answered.
+Colors: near-black, an amber signal color and truck-cab gray. Type: Geist sans, with IBM Plex Mono for call timestamps.
+Voice rules: talk like a dispatcher, never like a Silicon Valley receptionist. Always show the veto text in screenshots. Never promise "we book 100% of calls".
+Deliverables: wordmark, icon, six trade badge icons, and three SMS copy variants under 160 characters for approve, hold and out-of-area.
+Done when: each deliverable is saved in one folder and each SMS variant is under 160 characters.
 ```
 
 ## Sources

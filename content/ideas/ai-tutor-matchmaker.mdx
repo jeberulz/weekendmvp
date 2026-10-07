@@ -88,55 +88,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for a
-two-sided tutor-matching marketplace called "MatchTutor." Provision Supabase
-with these tables:
-- families (id, email, plan TEXT default 'free', created_at)
-- students (id, family_id, first_name, grade, subjects TEXT[], learning_profile JSONB)
-- tutors (id, name, subjects TEXT[], hourly_rate_cents INT, bio, embedding VECTOR(1536), verified BOOL)
-- match_scores (id, student_id, tutor_id, score FLOAT, reasons JSONB)
-- sessions (id, student_id, tutor_id, starts_at, ends_at, status, amount_cents INT)
-- ratings (id, session_id, fit_score INT, notes TEXT)
-Enable row-level security so a family can only read/write its own rows, and
-enable pgvector on the tutors.embedding column. Add env vars for
-OPENAI_API_KEY, STRIPE_SECRET_KEY, and STRIPE_CONNECT_CLIENT_ID.
-Install the Stripe and OpenAI Node SDKs.
+Build the weekend MVP of "MatchTutor": a parent describes how their child learns, and gets a short ranked list of tutors with a plain-language reason for each.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvector, Row Level Security, Auth with email magic link), OpenAI (a small model and embeddings) for the intake and the explanations. Deploy on Vercel.
+
+Tables (Row Level Security on: a parent reads only their own students and sessions, tutors are readable when verified):
+- students(id, user_id, first_name, grade, subjects, learning_profile jsonb)
+- tutors(id, name, subjects, hourly_rate_cents, bio, availability jsonb, embedding vector(1536), verified)
+- match_scores(id, student_id, tutor_id, score, reasons jsonb)
+- sessions(id, student_id, tutor_id, starts_at, ends_at, status)
+- ratings(id, session_id, fit_score, notes)
+Store a child's first name only.
+
+Screens: /login, /intake (the guided questions), /matches (the top 3), /sessions.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY.
+
+Do not build: payments, subscriptions, tutor payouts or commissions (record bookings and take the first payments by hand), SMS or email reminders, tutor onboarding screens (seed tutors by hand), refunds.
+Done when: npm run dev starts, you can sign in, and the five tables exist with pgvector on and Row Level Security on, with ten seeded tutors.
 ```
 
-**2. Matching Engine**
+**2. Core Feature**
 
 ```text
-Build the core matching flow.
-
-Step 1: A guided intake form collects the student's learning style, pace,
-subject gaps, and past tutoring experience. Send the answers to gpt-4o-mini
-with a strict JSON schema that returns a structured learning_profile
-(pace, modality, feedback_style, confidence_level) and a short embedding text.
-
-Step 2: Embed that text, then rank tutors by cosine similarity on their
-embedding, filtered by required subject and availability. Combine the
-similarity with hard constraints into a final match score from 0 to 100.
-
-Step 3: For the top 3 tutors, call gpt-4o-mini again to generate a
-one-paragraph "why this tutor fits" explanation in plain language a parent
-can read. Return the ranked list with scores and explanations.
+Build the one feature that proves MatchTutor: a ranked list of tutors with the reason each one fits.
+1. The intake form collects learning style, pace, subject gaps and past tutoring experience. Send the answers to the small model with a strict JSON schema that returns a learning_profile { pace, modality, feedback_style, confidence_level } and a short embedding text.
+2. Embed that text, then rank tutors by cosine similarity, filtered by the required subject and availability. Combine the similarity with the hard constraints into a score from 0 to 100 and save it to match_scores.
+3. For the top 3, ask the model for one plain-language paragraph on why this tutor fits, written for a parent. Show the ranked list with scores and the paragraphs.
+4. The parent picks a tutor and a first time, which writes a sessions row. After the session, they rate the fit from 1 to 5. A rating of 2 or less offers a re-match that runs the ranking again without that tutor.
+Rules: no jargon in the explanations, and never show a child's full name.
+Empty state: with no students, show the intake form.
+Done when: a test intake returns 3 ranked tutors who teach the subject with a readable reason each, booking writes a session, and a low rating offers a re-match that excludes that tutor.
 ```
 
-**3. Marketplace Payments**
+**3. Landing Page**
 
 ```text
-Implement Stripe Connect for the marketplace.
+Build a one-page landing site for MatchTutor, a K-12 tutor marketplace that matches on fit.
+Hero: "The right tutor, not the first tutor." Sub: "Tell us how your child learns. We rank vetted tutors by fit and tell you why." One button: Join the waitlist.
+Sections: the problem (a wall of profiles sorted by price and stars), how it works in four steps (onboard the student, score the matches, book in one place, track and re-match), a sample match with its plain-language reason, and an FAQ on tutor vetting, child privacy and what happens if the first session does not fit.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: warm, clear and reassuring, written for a parent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Onboard tutors as connected accounts via Stripe Connect Express onboarding.
-- Bill parents a monthly subscription (Free, Family 19/mo, Family Plus 39/mo)
-  using Stripe Billing.
-- When a family books a session, create a PaymentIntent for the session
-  amount, route the tutor's share to their connected account, and retain a
-  platform commission of 18 percent as the application fee.
-- Handle refunds through the platform when a first session fails the
-  satisfaction guarantee, and record every transaction in the sessions table.
-Add webhook handlers for invoice.paid, account.updated, and
-payment_intent.succeeded.
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for MatchTutor: a wordmark and an icon that suggest two shapes fitting together.
+Colors: a warm off-white, a deep teal and one friendly coral accent. Type: one readable sans for the interface.
+Deliverables: wordmark, icon, a match-card style with a fit score, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

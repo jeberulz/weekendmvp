@@ -84,52 +84,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js (App Router) app called "HistoryPal" where students chat with
-historical figures, with a teacher classroom layer.
+Build the weekend MVP of "HistoryPal": students chat with a historical figure whose answers come only from real sources, inside a class their teacher controls. Start with one figure, Abraham Lincoln.
 
-Set up:
-- Supabase auth with roles (teacher, student) + Postgres schema for: users,
-  classes, figures, source_documents, conversations, messages, assignments
-- A student chat UI (pick a figure, send messages, see cited answers)
-- A teacher dashboard: create a class, assign a figure + activity, view
-  transcripts, flag off-topic conversations
-- A landing page aimed at teachers: "Let your students interview history"
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres full-text search, Row Level Security, Auth), the Anthropic API for the in-character answers. Teachers sign in with an email magic link. Students join with a class code and a first name through Supabase anonymous sign-in, so no student email is ever collected. Deploy on Vercel.
 
-Use TypeScript, server actions, and environment variables for all API keys.
+Tables (Row Level Security on; a teacher reads only their own classes, a student only their own conversation):
+- classes(id, teacher_id, name, join_code, figure_id, blocked_topics text[])
+- figures(id, name, persona_notes)
+- source_passages(id, figure_id, title, citation, text, search tsvector)  public-domain letters and speeches only
+- conversations(id, class_id, student_id, display_name, created_at)
+- messages(id, conversation_id, role, content, cited_passage_ids uuid[], flagged boolean)
+
+Screens: /login, /class/[id] (teacher: transcripts and flags), /join (class code and first name), /chat/[conversationId].
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing or school licenses, embeddings or a vector store, other figures, grading or LMS export, voice, a student email or phone field.
+Done when: npm run dev starts, a teacher can sign in, a student can join with a code, and the five tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Grounded Historical Persona**
+**2. Core Feature**
 
 ```text
-Build the persona engine for HistoryPal:
-
-1. For each figure, store a corpus of public-domain sources (letters, speeches,
-   biographies) chunked and embedded in pgvector.
-2. On each student message, retrieve the most relevant source passages for that
-   figure and build a prompt that instructs Claude to answer IN CHARACTER, using
-   ONLY the retrieved material, and to cite which source each claim comes from.
-3. If the question can't be answered from sources, have the figure say so in
-   character ("I cannot speak to that") instead of inventing facts.
-4. Prompt-cache the figure persona + core sources to keep per-message cost low.
-
-The goal is historical accuracy with citations, not open-ended role-play.
+Build the one feature that proves HistoryPal: an in-character answer grounded in cited sources.
+1. Seed 15 to 20 Lincoln passages (speeches and letters in the public domain) into source_passages, each with its citation.
+2. On each student message, run a Postgres full-text search on source_passages for that figure and take the top 4 passages.
+3. Call the Anthropic API. The system prompt says: answer in the first person as the figure, use only the retrieved passages, and end with the ids of the passages used. Return JSON { answer: string, cited_passage_ids: string[] }.
+4. If no passage matches, return an in-character line such as "I cannot speak to that." Never invent a fact, date or quote.
+5. Show each answer with its citations as short source labels the student can open to read the passage. Show a banner on the chat: "An AI answering from real sources, not the real person."
+6. Check the student message against the class's blocked_topics and a short profanity list before the model call. A blocked message gets a kind refusal and is saved with flagged = true.
+Rules: students never see another student's chat. Teachers see every transcript and a list of flagged messages.
+Empty state: a class with no chats shows the join code in large type.
+Done when: a question the sources cover returns a cited answer, a question about a smartphone returns "I cannot speak to that", and a blocked topic shows up as a flag on the teacher's page.
 ```
 
-**3. Teacher Controls + Assessment**
+**3. Landing Page**
 
 ```text
-Add the classroom layer to HistoryPal:
+Build a one-page landing site for HistoryPal, aimed at teachers.
+Hero: "Let your students interview history." Sub: "Students ask Abraham Lincoln real questions and get answers drawn only from his own words, with sources shown. You see every chat." One button: Join the teacher waitlist.
+Sections: a sample chat with a cited answer and one "I cannot speak to that" reply, how it works in three steps (pick a figure, share a class code, read the transcripts), a privacy block (students join with a first name only, no student email is collected, and you can delete a class and its chats), and an FAQ on accuracy, safety for minors and which figures come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: warm paper background, one serif for quotes and Geist for the interface, one brick-red accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-- Curriculum tags on each activity (grade level, topic, standard) and a filter
-  so teachers find aligned conversations fast.
-- A safety layer for minors: blocked-topic list, profanity filter, and an
-  off-curriculum flag that surfaces drifting conversations in the dashboard.
-- Assessment: turn a student's conversation into a gradeable reflection
-  (auto-generated questions + a rubric the teacher can edit), with an export to
-  CSV/LMS.
+**4. Branding Package**
 
-Gate the dashboard, curriculum tags, and assessment behind the Classroom and
-Institutional tiers.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for HistoryPal: a wordmark and an icon that suggest a speech bubble shaped like a folded page corner.
+Colors: ink navy, parchment and one brick-red. Type: a serif such as Source Serif for quoted words, Geist for the interface.
+Deliverables: wordmark, icon, a portrait frame style for figures (use public-domain images only, or a plain silhouette), a "source cited" label, and one classroom handout graphic.
+Done when: each deliverable is saved in one folder and the label reads clearly in black and white.
 ```
 
 ## Sources

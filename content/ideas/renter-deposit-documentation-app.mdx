@@ -84,55 +84,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a React Native (Expo, TypeScript) app called "RentGuard" for a renter
-move-in/move-out documentation tool, plus a Next.js marketing/admin web app in
-the same monorepo. Provision a Convex (or Supabase Postgres) backend with these
-tables: users (id, email, plan default 'free', state), properties (id, user_id,
-address, lease_start, lease_end), rooms (id, property_id, name, stage: 'movein'
-or 'moveout'), photos (id, room_id, storage_key, content_hash, captured_at set
-SERVER-SIDE, lat, lng), reports (id, property_id, stage, pdf_url, created_at),
-letters (id, property_id, state, template_id, pdf_url, status), disputes (id,
-property_id, amount_withheld_cents, status, deadline_date). Store photos in an
-immutable object store (Cloudflare R2 or S3 with object lock) and record a
-SHA-256 hash at upload for integrity. Wire Stripe with three subscription
-products (Protect 4.99/mo, Advocate 14.99/mo) and one one-time SKU (Dispute
-Pack 9.99). Add env vars for OPENAI_API_KEY and the storage credentials. Every
-generated document must render the line: "This is documentation, not legal
-advice, and does not create an attorney-client relationship."
+Build the weekend MVP of "RentGuard": a renter photographs each room at move-in, confirms a plain description of its condition, and later turns the record into a report and a deposit dispute letter. Photos are time-stamped by the server. It is documentation, not legal advice.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), the Anthropic API (vision) to draft a description for the renter to confirm. It installs to the home screen as a PWA and uses the phone camera. One state's letter template this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, a renter reads only their own rows):
+- properties(id, user_id, address, state, lease_start, lease_end)
+- rooms(id, property_id, name, stage)  stage is movein or moveout
+- photos(id, room_id, storage_key, sha256, captured_at, lat, lng, confirmed_description, flagged_items jsonb)  captured_at is set by the server; a trigger blocks any update or delete of storage_key, sha256 and captured_at
+- reports(id, property_id, stage, created_at)
+- letters(id, property_id, amount_withheld_cents, deadline_date, body, created_at)
+
+Screens: /login, /properties, /capture/[roomId] (the guided checklist), /report/[propertyId] (printable), /letter/[propertyId].
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or a dispute pack, a native app, object-lock storage, more than one state, attorney referrals, a model that writes the letter.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the capture-and-assess flow. Screen 1: a guided room-by-room checklist
-for the selected stage (move-in or move-out). For each room, open the camera,
-capture photos, upload to the immutable store, and write a photos row with a
-SERVER-generated captured_at timestamp and a content hash (never trust the
-device clock). After capture, send each image to GPT-4o vision with this
-instruction: "Describe the visible condition of this room objectively. List any
-existing damage, wear, stains, or defects with location. Do not speculate about
-cause or fault. Return JSON: room, condition_summary, flagged_items array of
-item, location, severity." Show the draft to the user and require them to
-confirm or edit each line before saving, so the final record is user-confirmed.
-At the move-out stage, match each move-out photo to its move-in counterpart by
-room and render a before-and-after comparison view.
+Build the one feature that proves RentGuard: a photo record that is hard to dispute, because the server stamped it and the renter confirmed it.
+1. A guided checklist walks the renter room by room for move-in or move-out. For each room they take photos with the phone camera.
+2. On upload, the server computes the SHA-256 of the file, sets captured_at from its own clock and saves them. Never trust the device clock. Keep optional location and the file's own date as extra fields.
+3. Send each photo to the Anthropic API with this instruction: describe the visible condition objectively, list existing damage, wear or stains with their location, and do not guess at cause or fault. Use a strict JSON schema { condition_summary, flagged_items: [{ item, location, severity }] }.
+4. Show the draft and require the renter to confirm or edit every line before it is saved. The saved description is the renter's.
+5. At move-out, match each room to its move-in counterpart and show a before and after view with both server timestamps.
+6. /report/[propertyId] is a printable page: each room, its photos, the confirmed descriptions, the SHA-256 and the server time, and the line "This is documentation, not legal advice, and does not create an attorney-client relationship."
+7. The letter page takes the amount withheld, the deductions listed and the deadline for the state, and fills one letter template that lists the disputed items with their photo references and asks for an itemized statement and return of the deposit. Write the template from the state's official tenant guide, link that source on the page and have a lawyer review it before launch.
+Rules: say "tamper-evident, not tamper-proof". Never claim a court will accept the record. Deleting a property removes its photos.
+Empty state: with no properties, show the add form with the state picker.
+Done when: an uploaded photo shows a server time and a hash, an attempted update of the hash fails, no description is saved without confirmation, move-out matches move-in by room, and the letter lists the disputed items with their photos.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a single-page marketing site for RentGuard. Hero headline: "Get your full
-deposit back, with proof." Sub: "Snap time-stamped photos at move-in. We turn
-them into a court-ready condition report and, if your landlord withholds money,
-a state-specific demand letter." Sections: an animated phone showing the capture
-checklist; the problem (renters lose deposits because they cannot prove
-move-in condition); how it works (4 steps matching the app flow); pricing (Free,
-Protect 4.99/mo, Dispute Pack 9.99 one-time, Advocate 14.99/mo); a trust section
-noting partnerships with tenant-rights groups; and an FAQ covering how
-timestamps and immutable storage work, which states are supported, and a clear
-statement that RentGuard provides documentation and templates, not legal advice
-or representation. Use a clean, calm design with a mint accent and generous
-whitespace. Primary CTA: "Document your place free."
+Build a one-page landing site for RentGuard, move-in and move-out documentation for renters.
+Hero: "Get your full deposit back, with proof." Sub: "Photograph each room at move-in. We time-stamp every photo and turn them into a condition report, and a letter if money is withheld." One button: Join the waitlist.
+Sections: a phone showing the room checklist, the problem (renters lose deposits because they cannot show the move-in condition), how it works in four steps (capture, confirm, compare, dispute), and an FAQ on how timestamps and hashes work, which state is covered first, and a clear statement that RentGuard provides documentation and templates, not legal advice or representation.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a calm off-white background, one mint accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for RentGuard: a wordmark and an icon that suggest a door key with a small camera shutter in its bow.
+Colors: off-white, deep ink and one mint. Type: Geist, with tabular numbers for dates.
+Deliverables: wordmark, icon, a photo stamp (date, time, hash) that stays readable at small size, two stage labels (move-in, move-out) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the stage labels are distinguishable without color.
 ```
 
 ## Sources

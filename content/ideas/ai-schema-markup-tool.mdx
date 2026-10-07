@@ -90,25 +90,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) app called SchemaLift. Provision Supabase with tables: users (id, email, plan TEXT default 'free'), sites (id, user_id, url, platform TEXT CHECK platform IN ('shopify','webflow','wordpress','woocommerce','gtm','other'), domain_count INT), pages (id, site_id, url, title, extracted jsonb, last_crawled_at), schema_docs (id, page_id, types TEXT[], jsonld jsonb, status TEXT CHECK status IN ('draft','validated','injected','drifted','failed'), inject_method TEXT), validation_runs (id, schema_doc_id, passed BOOLEAN, errors jsonb, tested_at), crawl_jobs (id, site_id, status, started_at, finished_at). Enable RLS so users only read/write their rows. Wire Stripe products: Free, Starter $29/mo, Pro $99/mo. Env vars: OPENAI_API_KEY or ANTHROPIC_API_KEY, SHOPIFY_API_KEY, STRIPE_SECRET_KEY, GOOGLE_API_KEY for Rich Results Test. Use Playwright for crawls, schema-dts for types, Zod for JSON-LD validation.
+Build the weekend MVP of "SchemaLift": paste a URL, get valid JSON-LD for it, preview the rich result, and copy the snippet.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) with structured output, schema-dts and Zod for validation. The crawl runs in a small Node process with Playwright, not in a Vercel function. Deploy the app on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- sites(id, user_id, url, platform)
+- pages(id, site_id, url, title, extracted jsonb, last_crawled_at)
+- schema_docs(id, page_id, types, jsonld jsonb, status, inject_method)  where status is one of draft, validated, injected, failed
+- validation_runs(id, schema_doc_id, passed, errors jsonb, tested_at)
+
+Screens: /login, /scan (URL box and preview), /sites.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, the GTM, Shopify and Webflow injection adapters, the weekly recrawl and drift alerts, the Google Rich Results API, WordPress or WooCommerce support.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Scan → Generate → Validate Pipeline**
+**2. Core Feature**
 
 ```text
-Build POST /api/scan. Input: { url }. Fetch the page with Playwright (JS rendered). Extract: title, description, products (name, price, currency, availability, image, sku), faqs, NAP/hours, reviews (rating, count), events. Send the extract to Claude with a strict JSON schema: { types: ("Product"|"FAQPage"|"LocalBusiness"|"Organization"|"Event"|"Review")[], jsonld: object, confidence: number, missing_fields: string[] }. Validate jsonld against schema.org via schema-dts + a Zod layer. Reject if required properties for the chosen type are missing. Return a preview payload the UI can render as a fake Google rich result (stars, price, hours). Persist extract + jsonld as status='draft'. Do not inject until the user confirms.
+Build the one feature that proves SchemaLift: scan, generate, validate, and a snippet to paste.
+1. POST /api/scan takes { url }. Fetch the page with Playwright so JavaScript renders. Extract the title, description, products (name, price, currency, availability, image, sku), FAQs, name, address and hours, reviews (rating and count) and events.
+2. Send the extract to Claude with a strict JSON schema { types: ("Product" | "FAQPage" | "LocalBusiness" | "Organization" | "Event" | "Review")[], jsonld: object, confidence: number, missing_fields: string[] }.
+3. Validate jsonld with schema-dts and a Zod layer. Reject it if the required properties for the chosen type are missing, and save a validation_runs row.
+4. Return a preview the page renders as a fake Google rich result (stars, price, hours, an FAQ accordion), and save the document as draft.
+5. The only inject method is a copyable script tag of type application/ld+json. Copying it sets the status to injected and inject_method to snippet.
+Rules: never mark a document that failed validation as injected. Do not inject anything the user has not confirmed.
+Empty state: with no sites, show the URL box and an example URL.
+Done when: scanning a product page returns valid Product JSON-LD with a preview, a page missing a price is rejected with the missing field named, and the copied snippet is valid.
 ```
 
-**3. Inject Adapters + Weekly Drift Job**
+**3. Landing Page**
 
 ```text
-Implement four inject methods for a validated schema_doc: (1) return a <script type="application/ld+json"> snippet the user pastes; (2) upsert a GTM tag via the Tag Manager API if the user connected a container; (3) Shopify Theme App Extension that prints JSON-LD in theme.liquid equivalent; (4) Webflow custom-code embed. Mark status='injected' and store inject_method. Add a Vercel Cron /api/cron/recrawl: for each injected page, re-extract, diff against stored extract (price, availability, title), regenerate JSON-LD if changed, re-validate, and either auto-patch (Pro) or email a drift alert (Starter). Never auto-inject a doc that failed validation.
+Build a one-page landing site for SchemaLift, schema markup for small businesses.
+Hero: "Show stars in Google without touching your theme." Sub: "Paste your URL. We write the JSON-LD and keep it valid when your catalog changes." One button: Scan a URL, which joins the waitlist.
+Sections: a live demo (a URL input that runs a mock scan and animates a rich-result card with stars, a price and an FAQ accordion), the problem (shop owners are stuck while others get schema for free), how it works in four steps (scan, generate, inject, monitor), and an FAQ that says plainly schema does not guarantee rankings, it enables rich results, plus Google policy and surviving theme updates.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, off-white background, one emerald accent.
+Done when: the page renders on a phone, the demo animates, and a submitted email appears in the waitlist table.
 ```
 
-**4. Landing Page**
+**4. Branding Package**
 
 ```text
-Design a one-page marketing site for SchemaLift. Hero: “Show stars in Google without touching your theme.” Sub: “Paste your URL. We write the JSON-LD, inject it, and keep it valid when your catalog changes.” Live demo: a URL input that runs a mock scan and animates a rich-result card (stars, price, FAQ accordion). Sections: problem (Shopify/Webflow owners stuck while Yoast users get schema for free), how it works (Scan / Generate / Inject / Monitor), pricing (Free scan / Starter $29 / Pro $99) anchored against Semrush $140/mo and Schema App enterprise quotes, FAQ covering “does schema guarantee rankings” (no — it enables rich results), Google policy, and theme-update survival. Geist font, off-white background, emerald accent. Primary CTA: “Scan a URL — no card.”
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SchemaLift: a wordmark and an icon that suggest a code bracket lifting a star.
+Colors: off-white, near-black and one emerald accent. Type: Geist for the interface and a mono for JSON-LD.
+Deliverables: wordmark, icon, a rich-result card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

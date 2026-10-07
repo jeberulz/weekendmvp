@@ -81,48 +81,59 @@ The engine is event ingestion + normalization across fast-moving agent APIs; the
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Project Scaffold + GitHub App**
+**1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router SaaS that aggregates AI coding agent activity. TypeScript, Tailwind, Convex (or Supabase Postgres) backend, Stripe Billing.
+Build the weekend MVP of "Coding Agent Dashboard": one morning screen of everything your AI coding agents shipped overnight, with risk flags.
 
-Schema:
-- users(id, email, plan, stripe_customer_id)
-- agents(id, user_id, kind ENUM[claude_code, cursor, copilot, codex, other], display_name, connected_at)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), a GitHub App for the events, Claude (Anthropic API) for one-line summaries. Deploy on Vercel.
+Source: GitHub webhooks only. Agents are told apart by author, or by branch prefix such as claude/ and cursor/.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- agents(id, user_id, kind, display_name, connected_at)  where kind is one of claude_code, cursor, copilot, codex, other
 - repos(id, user_id, github_repo_id, full_name, installation_id)
-- events(id, user_id, agent_id, repo_id, type ENUM[pr_opened, pr_merged, commit, issue_closed, task_done], title, url, occurred_at, payload JSONB, summary TEXT, risk_flag TEXT)
+- events(id, user_id, agent_id, repo_id, type, title, url, occurred_at, payload jsonb, summary, risk_flag)  where type is one of pr_opened, pr_merged, commit, issue_closed, task_done
 - digests(id, user_id, window_start, window_end, sent_at, channel)
 
-Build the GitHub App install flow (OAuth, fine-grained repo perms) and a webhook receiver at /api/webhooks/github that verifies signatures and writes normalized rows into events. Routes:
-- /dashboard (timeline of cards, filter by repo/agent/time)
-- /connect (manage agents + repos)
-- /settings (Slack channel, digest schedule)
+Screens: /dashboard (timeline cards, filter by repo, agent and time), /connect, /settings.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing or plans, connectors for Cursor, Claude Code or Codex activity logs, Slack or email delivery, a scheduler for the digest.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Connector Layer + Event Normalization**
+**2. Core Feature**
 
 ```text
-Implement the connector layer that maps each agent's activity into one canonical event shape: { agent_id, repo_id, type, title, url, occurred_at, payload }.
-
-- GitHub connector: parse webhook payloads (pull_request, push, issues, check_run) into events. Detect the acting agent from the PR/commit author, branch naming, or a configurable mapping (e.g. branches prefixed `claude/`, `cursor/`).
-- Cursor / Claude Code / Codex connectors: poll or receive their task/session endpoints, map completed tasks into events of type task_done with a link back to the resulting PR/commit.
-- Dedupe: a single logical change (agent task -> commit -> PR) should collapse into one timeline entry with sub-events, not three rows.
-
-Write it so adding a new agent = adding one adapter file that implements a normalize(payload) -> Event[] interface. Connector breadth is the moat — make it trivial to extend.
+Build the one feature that proves the idea: a morning digest with a risk queue.
+1. Add the GitHub App install flow with fine-grained repo permissions, and a webhook receiver at /api/webhooks/github that verifies the signature and writes normalized rows into events: { agent_id, repo_id, type, title, url, occurred_at, payload }.
+2. Detect the acting agent from the PR or commit author, the branch prefix or a mapping the user sets in /connect. Collapse one change (task, commit, PR) into one timeline entry.
+3. For each PR, ask Claude for a one-line summary and a risk_flag when it (a) merged straight into a protected branch, (b) touched a sensitive path (auth, billing, migrations, secrets) or (c) had no human reviewer. Cache the summary on the event row.
+4. /dashboard has a Last night view: "3 agents, 7 events, 2 need review", grouped by repo and agent, with risk items pinned to the top and every line linking to its PR.
+Rules: write it so a new agent is one adapter file that implements normalize(payload) and returns events.
+Empty state: with no repos, show the install button and a sample digest.
+Done when: a test PR opened by a branch named claude/test appears under the right agent, a merge into main without review is flagged, and the digest shows it at the top.
 ```
 
-**3. Overnight Digest + Risk Flags + Slack**
+**3. Landing Page**
 
 ```text
-Build the morning digest pipeline — the core habit.
+Build a one-page landing site for Coding Agent Dashboard, a neutral control tower for AI coding agents.
+Hero: "Wake up to one screen of everything your coding agents shipped." One button: Join the waitlist.
+Sections: the problem (five agents, five places to look), how it works in three steps (connect once, agents work overnight, wake up to one screen), a mock digest with two risk flags pinned to the top, and a short FAQ on permissions and what the dashboard can see.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: dry, technical and brief.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-On a schedule (default 7am user-local), for each user:
-- Query events in the overnight window grouped by repo and agent.
-- For each PR/diff, call Claude (Haiku) to produce: a one-line summary and a risk_flag if it (a) auto-merged to a protected branch, (b) touched a sensitive path (auth, billing, migrations, secrets), or (c) has no human reviewer. Cache summaries on the event row.
-- Render a digest: "Last night: 3 agents, 7 events, 2 need review" with grouped one-liners and risk items pinned to the top.
-- Post to the user's Slack channel via the Slack API; email fallback via Resend. Make every line link back to the GitHub PR.
+**4. Branding Package**
 
-The dashboard /dashboard view renders the same data as filterable cards. The risk queue (unreviewed / sensitive-path changes) is the part that turns a nice-to-have into a daily must-open.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Coding Agent Dashboard: a wordmark and an icon that suggest a control tower or a lookout.
+Colors: near-black, off-white, one calm blue accent, and an amber used only for risk flags. Type: a clean sans for the interface and a mono for repo and branch names.
+Deliverables: wordmark, icon, a risk-flag badge, and one launch graphic of the morning digest.
+Done when: each deliverable is saved in one folder and the badge reads at 24 px.
 ```
 
 ## Sources

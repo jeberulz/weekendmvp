@@ -90,25 +90,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app called Dispatchr, a feed-free social workspace. Provision Supabase with: workspaces, users (workspace_id, email), brands (workspace_id, platform: instagram|x|linkedin|facebook_page, external_id, access_token encrypted, attention_budget_minutes INT, access_start TIME, access_end TIME, timezone), queue_items (brand_id, type: comment|dm|mention|scheduled_post, external_id UNIQUE, status: todo|in_progress|done|snoozed, snippet TEXT, author_handle TEXT, received_at TIMESTAMPTZ, opened_at, closed_at, seconds_on_task INT, ai_draft TEXT), sessions (user_id, started_at, ended_at), weekly_summaries (workspace_id, week_start, minutes_by_brand JSONB, cards_cleared INT, sent_at). RLS so users only see their workspace. Stripe products: Solo $29, Studio $99, Agency $299, 14-day trial. Env: META_APP_ID, META_APP_SECRET, X_CLIENT_ID, X_CLIENT_SECRET, LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. No timeline or explore UI anywhere in the app.
+Build the weekend MVP of "Dispatchr": a social media workspace with no feed. Comments, DMs and mentions become a finite queue of cards, each brand has a daily attention budget and working hours, and an empty queue ends the session.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for a draft reply and a spam check. Cards come in by CSV import or by adding one by hand this weekend. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own brands and cards):
+- brands(id, user_id, name, platform, voice_notes, attention_budget_minutes, access_start, access_end, timezone)
+- queue_items(id, brand_id, type, external_ref, status, snippet, author_handle, received_at, ai_draft, cluster)  type is comment, dm or mention; status is todo, in_progress, done or snoozed
+- task_sessions(id, item_id, opened_at, closed_at, seconds_on_task)
+
+Screens: /login, /queue (three columns, no infinite scroll), /brands, /week.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or trials, Meta, X or LinkedIn connections, scheduled posts, a timeline or explore view of any kind, the Sunday email, a job queue.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Queue + Attention Budget State Machine**
+**2. Core Feature**
 
 ```text
-Build the core workspace. GET /api/sync/{brandId} pulls unreplied comments, unread DMs, mentions, and due scheduled posts from the correct API and upserts queue_items by external_id. The home page is a Kanban of todo / in_progress / done with zero infinite scroll. Opening a card sets status in_progress, opened_at=now(), starts a visible timer billed to that brand. Closing or sending sets closed_at, seconds_on_task, status done. If sum(seconds_on_task) for that brand today exceeds attention_budget_minutes, or now() is outside access_start/access_end in the brand timezone, reject new opens with a locked state and the next window timestamp. Claude: given snippet + brand_voice, return JSON { draft, cluster: "actionable"|"spam"|"duplicate", confidence }. Never call any endpoint that returns a home-feed or recommended-posts payload. Add a Sunday cron that emails minutes by brand, cards cleared, and a CSV link.
+Build the one feature that proves Dispatchr: a queue that locks when the budget or the working hours run out.
+1. Import a CSV with columns brand, type, author_handle, snippet, received_at, or add a card by hand. Upsert by external_ref so a re-import adds nothing twice.
+2. /queue shows three columns: To do, In progress, Done. There is no scrolling feed, no suggested content and no "while you're here".
+3. Opening a card sets it to in_progress, inserts a task_sessions row and starts a visible timer for that brand. Closing it sets closed_at and seconds_on_task and moves it to Done.
+4. Before opening, check two things in the brand's timezone: the minutes already spent today are under attention_budget_minutes, and the time is inside access_start to access_end. If either fails, refuse to open the card and show a locked screen with the next time it opens.
+5. Send the card text and the brand's voice_notes to the Anthropic API with a strict JSON schema { draft: string, cluster: "actionable" | "spam" | "duplicate", confidence: number from 0 to 1 }. Show the draft in the card. Group spam and duplicates under a collapsed Review later row.
+6. When the To do column is empty, show an end-of-session screen with the minutes spent today and a line from the brand sheet.
+7. /week shows minutes per brand and cards cleared for the last 7 days, computed from task_sessions.
+Rules: the timer counts only while a card is open. Snoozing a card takes it out of the count until tomorrow.
+Empty state: with no cards, show the import box and the expected columns.
+Done when: an import creates cards, opening one starts a timer, closing it logs the seconds, a brand over budget or outside its hours shows the locked screen, and an empty queue shows the end-of-session screen.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for Dispatchr. Headline: “Social media work with an off switch.” Sub: “Comments, DMs, and due posts as a queue. No feed. When the list is empty, you leave.” Sections: a dark mock of three unread comment cards (not a timeline), problem (20 minutes lost per ‘quick reply’), how it works (connect, queue, budget, digest), pricing Solo $29 / Studio $99 / Agency $299 anchored against Hootsuite from $99/user/month and Sprout from $199/user/month, FAQ on Meta App Review, whether limiting feed time hurts engagement (lead with output-per-minute, not detox moralizing), and data retention. Geist, near-black, one aubergine accent. Primary CTA: “Start a 14-day queue trial.”
+Build a one-page landing site for Dispatchr, a social media workspace with an off switch.
+Hero: "Social media work with an off switch." Sub: "Comments, DMs and mentions as a queue. No feed. When the list is empty, you leave." One button: Join the waitlist.
+Sections: a dark mock of three unread comment cards (not a timeline), the problem (20 minutes lost to a quick reply), how it works in four steps (import, queue, budget, week), and an FAQ on which networks connect (import first, connections after platform review), whether limiting feed time hurts results (lead with output per minute) and data retention.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one aubergine accent, two warm neutrals.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a branding package for Dispatchr: wordmark plus an icon that is three stacked cards, not a bird or a megaphone. Primary near-black, aubergine accent, two warm neutrals. Type: Geist for UI, IBM Plex Mono for timers and minute counts. Voice rules: never shame people for being online, always show minutes next to cards, never say “grow your following” on the dashboard. Six icons: comment, dm, mention, scheduled, timer, lock. Output a one-page brand sheet and three empty-queue celebration lines under 80 characters.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Dispatchr: a wordmark and an icon made of three stacked cards, not a bird or a megaphone.
+Colors: near-black, one aubergine and two warm neutrals. Type: Geist for the interface, IBM Plex Mono for timers and minute counts.
+Deliverables: wordmark, icon, six icons (comment, dm, mention, snooze, timer, lock), a one-page brand sheet with three voice rules (never shame people for being online, always show minutes next to cards, never say grow your following), and three empty-queue lines under 80 characters each.
+Done when: each deliverable is saved in one folder and each empty-queue line is under 80 characters.
 ```
 
 ## Sources

@@ -80,36 +80,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 + Convex app for fractional CMOs who listen on Reddit and Discord.
+Build the weekend MVP of "Listening Brief": a fractional marketer adds a client brand, the app searches chosen subreddits for mentions through the official Reddit API and produces a Monday brief of clusters, sentiment change and the threads worth a reply, with drafts that disclose who is writing. It reads only; it never posts. Check Reddit's current API terms for commercial use before you use this with clients.
 
-Set up:
-- Clerk and Stripe billed per brand ($50 / $150)
-- Tables: teams, brands, sources, clusters, briefs
-- Reddit API connector and a Discord bot invite flow
-- A Monday cron that writes one brief per brand
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Reddit API with a read-only app, the Anthropic API for clusters, sentiment and drafts. The brief is shown in the app and can be copied. Deploy on Vercel.
 
-TypeScript, env validation, no Brandwatch-style vanity dashboards in v1.
+Tables (Row Level Security on, each user reads only their own rows):
+- brands(id, user_id, name, domains text[], product_names text[], competitors text[], keywords text[], subreddits text[], voice_notes)
+- mentions(id, brand_id, external_id, subreddit, title, body_excerpt, url, created_at_source, score, comments, cluster_id, sentiment)
+- clusters(id, brand_id, label, mention_count, week_start)
+- briefs(id, brand_id, week_start, content jsonb, created_at)
+
+Screens: /login, /brands (add a brand and its sources), /brands/[id] (mentions and clusters), /brands/[id]/brief/[weekStart] (the Monday brief).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, ANTHROPIC_API_KEY.
+
+Do not build: billing, per-brand pricing, Discord bots, Slack or email delivery, a cron, embeddings, posting or voting of any kind.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the Monday brief.
-
-Requirements:
-- Cluster last 7 days of posts/messages per brand
-- Score sentiment delta vs prior week
-- Rank 10 threads the CMO should reply to and 10 they should ignore
-- Draft replies in a stored brand voice
-- Deliver via Slack and email PDF
-
-User flow: add brand → add sources → wait for Monday → forward brief to client.
+Build the one feature that proves Listening Brief: a brief a marketer can forward, built from real threads, with numbers that come from counting.
+1. A brand takes domains, product names, competitor names, 8 to 15 keywords and up to 10 subreddits. A Pull button searches each subreddit for the keywords over the last 7 days with the official API, respecting its rate limits and the terms, and saves each post once by its id.
+2. Send the titles and short excerpts to the Anthropic API in batches with strict JSON: { sentiments: [{ id, sentiment: "positive" | "neutral" | "negative", on_topic: boolean }], clusters: [{ label, mention_ids: string[] }] }. Check that every id exists and that each mention is in at most one cluster. Drop what fails.
+3. Count in code. Sentiment shift is the share of positive minus the share of negative this week against last week. A cluster's size is the number of mentions in it. Show how many mentions each number rests on, and say "too few mentions to compare" under 20.
+4. Rank threads to reply to in code: recent posts with a question or negative sentiment and active comments rank higher, with the score formula shown. List 10 to reply to and 10 to leave alone (off-topic, memes or no brand link), each with a one-line reason.
+5. Draft a reply for each of the 10 in the brand's voice notes. Every draft must start by saying who is writing and whom they work for. Reject a draft without that line.
+6. /brands/[id]/brief/[weekStart] shows volume, the sentiment shift, the two lists and the drafts, copyable as one message.
+Rules: request only the read scope. Never post, vote or message anyone. Say plainly that a person reads and edits every draft before using it.
+Empty state: with no brand, show the form and a sample keyword list.
+Done when: a fixture of 60 posts produces clusters and a sentiment shift that matches a hand count, the brief lists 10 and 10 with reasons, a draft without the disclosure line is rejected and the app holds no write scope.
 ```
 
-**3. Multi-brand Portfolio**
+**3. Landing Page**
 
 ```text
-Add a CMO home that lists 3–5 brands, unpaid Starter vs Standard badges, and a single "generate now" button for a mid-week crisis. Cap Discord ingest to invited servers only. Log token spend per brand so $150 stays profitable.
+Build a one-page landing site for Listening Brief, a weekly Reddit brief for fractional marketing leads.
+Hero: "Know what people say about your client, every Monday." Sub: "A short brief of what is being said, how the tone changed and the threads worth a reply, with honest drafts you edit yourself." One button: Join the waitlist.
+Sections: a sample Monday brief, how it works in four steps (add a brand, we listen, you get the brief, you reply as yourself), and an FAQ on what is read (public posts in the subreddits you pick), why nothing is posted for you and which other communities come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean off-white background, near-black type, one orange accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Listening Brief: pick a short working name, then design a wordmark and an icon that suggest an ear made of a few speech lines.
+Colors: off-white, near-black and one orange. Type: Geist, with tabular numbers for counts.
+Deliverables: wordmark, icon, three sentiment chips (positive, neutral, negative) that differ by shape and sign as well as color, a brief header, and one launch graphic.
+Done when: each deliverable is saved in one folder and the sentiment chips are distinguishable without color.
 ```
 
 ## Sources

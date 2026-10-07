@@ -89,25 +89,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router + TypeScript + Tailwind app named “Siteprimer.” Routes: / (marketing), /audit (upload a URL + screenshot), /intake (brand, competitors, category), /app (list of sheets). Stripe SKUs: audit $299, direction_sheet $1500, team_license $2000/mo. Store records in Convex (or Prisma + Postgres): clients, projects, call_sheets (keep TEXT[], kill TEXT[], push TEXT[], category, pdf_url), audits (url, tells JSONB, memo). Env: STRIPE_*, OPENAI_API_KEY or ANTHROPIC_API_KEY. No website generator. Output is a direction PDF plus a copy-paste prompt block.
+Build the weekend MVP of "Siteprimer": a Keep / Kill / Push one-page direction sheet that an agency gets before it opens its build tool.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the draft, @react-pdf/renderer for the one-page PDF. Deploy on Vercel.
+There is no website generator. The output is a direction PDF and a copy-paste prompt block.
+
+Tables (Row Level Security on: the agency sees its own clients and sheets, an admin confirms drafts):
+- clients(id, user_id, name)
+- projects(id, client_id, category, brand_notes, competitor_urls)  where category is one of saas, dtc, local_services, other
+- call_sheets(id, project_id, keep, kill, push, type_rules, palette_rules, section_order, paste_prompt, status, pdf_url)  where status is draft or confirmed
+- audits(id, user_id, url, tells jsonb, memo)
+
+Screens: /intake (brand, three competitor URLs, category), /app (the list of sheets), /sheets/[id] (the draft and the confirm button).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, checkout links or plans, the audit upload and screenshot analysis, competitor scraping, a site or UI generator, a library of past sheets.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Keep / Kill / Push PDF**
+**2. Core Feature**
 
 ```text
-Build a server action generateCallSheet(projectId). Input: brand notes, three competitor URLs, category enum (saas, dtc, local_services, other). Draft with Claude using a strict schema: keep (2-3 items), kill (4-8 anti-slop tells plus category cliches), push (exactly one risky move), type_rules, palette_rules, section_order, paste_prompt (plain text the user drops into Cursor/Lovable/Framer). Human-in-the-loop: status stays "draft" until an admin confirms. Render a one-page PDF. Never invent a logo. Kill list must include purple gradient, Inter-as-default, four-card grids, and empty hero space unless the human deletes them.
+Build the one feature that proves Siteprimer: a Keep / Kill / Push sheet with judgment, confirmed by a human.
+1. A server action generateCallSheet(projectId) takes the brand notes, the three competitor URLs and the category.
+2. Draft with Claude against a strict schema: keep (2 or 3 items), kill (4 to 8 anti-slop tells plus the category's cliches), push (exactly one risky move), type_rules, palette_rules, section_order and paste_prompt (plain text to drop into Cursor, Lovable or Framer).
+3. The kill list must include a purple gradient, Inter as the default, four-card grids and empty hero space, unless a human deletes them.
+4. The status stays draft until an admin confirms it on /sheets/[id], where the admin can edit every list.
+5. On confirm, render a one-page PDF with pdf-lib or react-pdf and save its URL.
+Rules: never invent a logo. Never describe a generated UI as the product. Always name the category.
+Empty state: with no sheets, show the intake form.
+Done when: an intake produces a draft with exactly one push and a kill list that includes the four required tells, and confirming it produces a one-page PDF with a paste-ready prompt block.
 ```
 
 **3. Landing Page**
 
 ```text
-Marketing page for Siteprimer. Headline: “Direction before generation.” Sub: “Keep / Kill / Push one-pager for agencies shipping with AI. Before Webflow, Framer, Relume, Lovable, or Cursor.” Sections: the tells (show three anonymized AI-page screenshots with marks), pricing ($299 audit / $1,500 sheet / $2,000/mo team) anchored against $1,200–$1,500/day fractional CD and $10K–$15K brand sprints, how it works (4 steps), FAQ: not a DESIGN.md pack, not a prompt library, not ContentSnare. CTA: free category call sheet. Typography that is not Inter. No purple gradient. Dark text, paper background, one sharp accent.
+Build a one-page landing site for Siteprimer, direction before generation.
+Headline: "Direction before generation." Sub: "A Keep / Kill / Push one-pager for agencies shipping with AI, before the build tool opens." One button: Get a free category call sheet, which joins the waitlist.
+Sections: the tells (three anonymized AI-page screenshots with marks), how it works in four steps (intake, call sheet, build, library), and an FAQ that says plainly this is not a design-tokens pack, not a prompt library and not a client-intake tool.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: typography that is not Inter, no purple gradient, dark text on a paper background, one sharp accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Brand sheet for Siteprimer. Name reads as a primer, not a builder. Icon: a red pencil killing a card-grid thumbnail. Palette: paper, ink, one vermilion kill-mark. Type: a real display face plus a workhorse that is not Inter. Voice: senior CD in a crit, not a SaaS onboarding email. Three rules: always show a killed tell, never show generated UI as the product, always name the category. Deliver hex, type spec, and three teardown caption examples.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Siteprimer: a name that reads as a primer, not a builder, with an icon of a red pencil killing a card-grid thumbnail.
+Colors: paper, ink and one vermilion kill-mark. Type: a real display face plus a workhorse that is not Inter.
+Voice: a senior creative director in a crit, not a SaaS onboarding email. Three rules: always show a killed tell, never show generated UI as the product, always name the category.
+Deliverables: wordmark, icon, a type spec, and three teardown caption examples.
+Done when: each deliverable is saved in one folder and the kill-mark is readable at 24 px.
 ```
 
 ## Sources

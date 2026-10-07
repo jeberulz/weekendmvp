@@ -81,19 +81,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "ProductDataDoctor." Provision Postgres (Supabase) with these tables: catalogs (id, user_id, name, sku_count_limit), raw_uploads (id, catalog_id, source_type TEXT CHECK IN ('csv','excel','pdf','email_text'), file_url, status), normalized_products (id, catalog_id, upload_id, sku, title, unit_value, unit_type, price_cents, spec_json JSONB, confidence FLOAT, status TEXT CHECK IN ('clean','needs_review','duplicate')), review_queue (id, product_id, issue_type, suggested_fix JSONB, resolved BOOLEAN), correction_history (id, catalog_id, field_name, original_value, corrected_value, created_at). Enable row-level security so users only see their own catalogs. Set up Stripe with three products (Starter $99/mo for 1,000 SKUs, Professional $299/mo for 5,000 SKUs, Enterprise custom). Install pdf-parse, xlsx, and the Vercel AI SDK.
+Build the weekend MVP of "ProductDataDoctor": upload a messy supplier file and get a clean catalog you can export for Shopify.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Claude (Anthropic API) with structured output for the extraction, pdf-parse and xlsx for reading files. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own catalogs):
+- catalogs(id, user_id, name)
+- raw_uploads(id, catalog_id, source_type, file_url, status)  where source_type is one of csv, excel, pdf, email_text
+- normalized_products(id, catalog_id, upload_id, sku, title, unit_value, unit_type, price_cents, spec_json jsonb, confidence, status)  where status is one of clean, needs_review, duplicate
+- review_queue(id, product_id, issue_type, suggested_fix jsonb, resolved)
+- correction_history(id, catalog_id, field_name, original_value, corrected_value, created_at)
+
+Screens: /login, /catalogs/[id] (uploads and clean products), /catalogs/[id]/review.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or SKU limits, a job queue (process small files inline and show the status), scheduled re-sync, the Amazon export, a PIM connection.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Core Feature — Ingestion and Normalization Pipeline**
+**2. Core Feature**
 
 ```text
-Build an upload pipeline: POST /api/upload accepts a CSV, Excel, or PDF file, stores it, and enqueues a normalization job via BullMQ. The worker: (1) extracts raw rows — for CSV/Excel, parse directly with a header-mapping heuristic; for PDF, run pdf-parse then send the raw text to Claude/GPT-4o with a structured-output schema { sku, title, unit_value, unit_type, price, specs }; (2) run each extracted row through a normalization pass that converts units to a standard system (metric), flags SKUs matching an existing product in the catalog above 90% fuzzy-match confidence as a duplicate, and flags any row missing a required field (title, sku, price); (3) rows with confidence below 0.85 on any field go to review_queue instead of normalized_products directly. Expose GET /api/catalogs/:id/review for the pending queue and POST /api/review/:id/resolve to accept or override a suggested fix, writing the outcome to correction_history so future extractions on that catalog can reference past corrections as few-shot examples.
+Build the one feature that proves the idea: a messy file in, a clean exportable catalog out.
+1. POST /api/upload takes a CSV, an Excel file or a PDF, stores it and processes it inline, updating raw_uploads.status as it goes.
+2. Extract rows: for CSV and Excel, parse directly with a header-mapping guess. For a PDF, run pdf-parse and send the text to Claude with a structured schema { sku, title, unit_value, unit_type, price, specs }.
+3. Normalize each row: convert units to metric, flag a row as duplicate when its SKU fuzzy-matches an existing product above 90%, and flag any row missing a title, SKU or price.
+4. Rows with confidence under 0.85 on any field go to review_queue and not straight to normalized_products.
+5. GET /api/catalogs/[id]/review lists the queue. POST /api/review/[id]/resolve accepts or overrides a suggested fix and writes it to correction_history, which later extractions use as few-shot examples.
+6. GET /api/catalogs/[id]/export?format=shopify|csv returns only status clean rows, mapped to Shopify's product import columns (Handle, Title, Body (HTML), Vendor, Type, Tags, Variant SKU, Variant Price, Variant Grams), with a count of the rows left out for review.
+Empty state: with no uploads, show the upload box and the three supported formats.
+Done when: a messy supplier CSV and a PDF price list both produce clean rows, ambiguous units land in the review queue, and the Shopify export lists only clean products.
 ```
 
-**3. Export and Marketplace Formatting**
+**3. Landing Page**
 
 ```text
-Build an export flow: GET /api/catalogs/:id/export?format=shopify|amazon|csv. For 'shopify', map normalized_products to Shopify's product CSV import schema (Handle, Title, Body (HTML), Vendor, Type, Tags, Variant SKU, Variant Price, Variant Grams). For 'amazon', map to Amazon's flat-file listing template fields (item_sku, item_name, standard_price, quantity, item_type). Only include products with status='clean' in the export; products still in review_queue should be excluded with a warning count returned in the response. Add a scheduled re-sync option (cron, weekly or daily per catalog setting) that re-runs the pipeline against a connected data source (e.g., a supplier's shared folder or forwarded email) and only surfaces net-new or changed rows for review, not the entire catalog again.
+Build a one-page landing site for ProductDataDoctor, a supplier data cleaner for e-commerce sellers.
+Hero: "Turn any supplier file into a clean catalog." Sub: "CSV, Excel, PDF or a pasted email in. A standardized, marketplace-ready catalog out." One button: Join the waitlist.
+Sections: the problem (every supplier sends a different mess), how it works in four steps (upload the feed, the AI normalizes it, you confirm the edge cases, export or sync), a before and after of a messy row and a clean one, and an FAQ on accuracy, what needs your review and supported formats.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical, written for a wholesaler or seller.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ProductDataDoctor: a wordmark and an icon that suggest a tidy table with a check mark.
+Colors: off-white, near-black, one calm green and an amber for needs-review. Type: one clean sans for the interface and a mono for SKUs.
+Deliverables: wordmark, icon, a clean and a needs-review status badge, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two badges are distinguishable without color.
 ```
 
 ## Sources

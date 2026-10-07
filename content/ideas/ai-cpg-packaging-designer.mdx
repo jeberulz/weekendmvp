@@ -81,59 +81,59 @@ The image model is the engine, but the moat is the **dieline-and-compliance comp
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**1. Project Scaffold**
+**1. Project Setup**
 
 ```text
-Create a Next.js 14 App Router SaaS for AI-generated CPG packaging. Supabase backend, Clerk auth, Tailwind, TypeScript.
+Build the weekend MVP of "AI CPG Packaging Designer": turn a product brief into packaging concepts laid on a real dieline, then export a print-ready PDF.
 
-Schema (Supabase Postgres):
-- brands(id, user_id, name, logo_url, primary_hex, voice_notes, stripe_customer_id, plan)
-- products(id, brand_id, name, category ENUM[beverage,snack,supplement], flavor, audience, vibe_notes, net_weight, ingredients TEXT, allergens JSONB)
-- concepts(id, product_id, variant_index, art_url, composited_url, model, prompt_used, created_at, chosen BOOL)
-- dielines(id, category, name, svg_url, bleed_mm, safe_zone_mm, panel_zones JSONB)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), an image model (Recraft V3 or gpt-image-1) for the front-of-pack art, Sharp for compositing, pdf-lib for export. Deploy on Vercel.
+Scope: one category and one dieline, a snack pouch, seeded by hand.
+
+Tables (Row Level Security on: every row is scoped brand to user):
+- brands(id, user_id, name, logo_url, primary_hex, voice_notes)
+- products(id, brand_id, name, category, flavor, audience, vibe_notes, net_weight, ingredients, allergens jsonb)
+- concepts(id, product_id, variant_index, art_url, composited_url, model, prompt_used, chosen)
+- dielines(id, category, name, svg_url, bleed_mm, safe_zone_mm, panel_zones jsonb)
 - exports(id, concept_id, pdf_url, export_format, created_at)
 
-RLS: every row scoped by brand → user. Routes:
-- /app/brands, /app/products/new (brief form)
-- /app/products/:id/generate (concept set)
-- /app/products/:id/export (print-ready PDF)
+Screens: /brands, /products/new (the brief), /products/[id] (concepts and export).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), IMAGE_API_KEY.
 
-Use Server Actions for the generate → composite → export pipeline with streaming. Stripe Billing for Starter/Pro/Enterprise.
+Do not build: billing, plans or a paid export gate, more than one category, a 3D carton mockup, Clerk, an admin area.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on and one snack-pouch dieline seeded.
 ```
 
-**2. Generate + Dieline Compositing (the core trust feature)**
+**2. Core Feature**
 
 ```text
-Implement the packaging generator with a compositing pass. This is what makes output print-ready, not just a mockup.
-
-Step 1 — Generate art:
-Call the image model (Recraft V3 or gpt-image-1) with a prompt built from the product brief:
-"Front-of-pack packaging art for a {category} product called {name}, flavor {flavor}, aimed at {audience}, {vibe} aesthetic. Clean shelf hierarchy, room for a logo lockup top-center and a flavor callout. No text, no nutrition panel, no barcode — those are added later. High-resolution, print-quality, brand-forward."
-Generate 3–5 variants at print resolution.
-
-Step 2 — Composite onto a dieline:
-Load the category dieline SVG (with bleed_mm, safe_zone_mm, panel_zones). Using Sharp or @napi-rs/canvas:
-- Place the generated art within the front panel, respecting bleed and safe zones.
-- Drop placeholder boxes into panel_zones for: nutrition facts, ingredients, net-weight statement, allergen callout, barcode.
-- Overlay the brand logo if provided.
-Output a composited preview PNG per variant.
-
-Step 3 — Store:
-Write each variant to concepts(art_url, composited_url, prompt_used, model). Show the founder the composited previews, not the raw art — the dieline is the product.
+Build the one feature that proves the idea: concepts composited on a real dieline, exported as a print PDF.
+1. Generate art: call the image model with a prompt built from the brief: "Front-of-pack packaging art for a {category} product called {name}, flavor {flavor}, aimed at {audience}, {vibe} aesthetic. Clean shelf hierarchy, room for a logo lockup top-center and a flavor callout. No text, no nutrition panel, no barcode. High-resolution, print-quality." Make 3 variants.
+2. Composite: load the dieline SVG. With Sharp, place each art variant inside the front panel, respecting bleed and the safe zone. Drop placeholder boxes into the panel zones for nutrition facts, ingredients, net weight, allergens and barcode, and overlay the logo if there is one. Save a composited preview PNG per variant.
+3. Store each variant in concepts and show the founder the composited previews, never the raw art. The dieline is the product.
+4. Export: for the chosen concept, take the compliance panels from a form (nutrition facts, ingredients, net weight, allergen statement) and validate the required fields for the category. Render the final layout at full bleed and export a PDF with pdf-lib: correct trim and bleed, the dieline on its own cut layer, CMYK colors, embedded fonts.
+Empty state: with no brands, show the brand form first.
+Done when: a brief produces three composited concepts, and exporting one gives a PDF with the cut layer and the filled compliance panels.
 ```
 
-**3. Print-Ready Export + Compliance Panels**
+**3. Landing Page**
 
 ```text
-Build the export step that produces a co-packer-ready PDF.
+Build a one-page landing site for AI CPG Packaging Designer.
+Hero: "Shelf-ready packaging from a product brief, in a day." Sub: "Concepts on a real dieline, with the regulatory panels already placed." One button: Join the waitlist.
+Sections: the problem (a generic logo maker does not know a carton from a pouch), how it works in three steps (brief the product, generate concepts, refine and export), a before and after of a flat design and a composited dieline, and an FAQ on print file formats and compliance panels.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Voice: practical, written for a food or supplement founder.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-For the chosen concept:
-- Let the founder fill the compliance panels: nutrition facts (structured form), ingredients list, net weight, allergen statement. Validate required fields per category (e.g. supplements need a Supplement Facts panel, not Nutrition Facts).
-- Render the final layout: art + filled panels + barcode placeholder onto the dieline at full bleed.
-- Export with pdf-lib as a print PDF: correct trim + bleed, dieline on a separate "cut" layer, CMYK-aware color, embedded fonts.
-- Generate a second "web mockup" PNG (3D carton render via a simple Three.js or pre-baked mockup) for the founder's Amazon/site listing.
+**4. Branding Package**
 
-Store both in exports(). Gate PDF export behind a paid plan; the watermarked composited preview stays free to drive conversion.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for AI CPG Packaging Designer: a wordmark and an icon that suggest a folded carton.
+Colors: warm off-white, near-black and one confident accent. Type: a sharp sans for the interface.
+Deliverables: wordmark, icon, a dieline icon set (carton, pouch, label), and one launch graphic of a concept on its dieline.
+Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 ```
 
 ## Sources

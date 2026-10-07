@@ -72,44 +72,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build Single-Event App Builder: a Next.js multi-tenant app that generates branded event apps under unique subdomains.
+Build the weekend MVP of the "Single-Event App Builder": an organizer fills a short form and gets a mobile event page for a wedding with a schedule, RSVP and guest photos, and after the event it freezes into a keepsake page. One template, one link per event.
 
-Requirements:
-- Three hand-built templates: Wedding, Corporate Retreat, Family Reunion (React components with slot props)
-- Intake form: event name, date, timezone, branding (logo upload, 2 colors), schedule items, guest list CSV
-- On submit: create slug, insert event row in Supabase, email organizer a shareable link
-- Wildcard subdomain routing (`*.dayframe.app`) via Next.js middleware; each event renders its template with its config
-- Guest view: schedule, RSVP, photo upload; organizer dashboard: edit event, see RSVPs, download guest list
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link for organizers), Resend for RSVP confirmations and the keepsake email. Event pages live at a path, with no wildcard domains. A Vercel Cron route runs the nightly expiry. Deploy on Vercel.
 
-Ship the Wedding template first — it has the biggest retail slice. Add Corporate and Reunion once first five paid events go live.
+Tables (Row Level Security on, an organizer reads only their own events; the public event page and guest forms go through server routes):
+- events(id, user_id, template, slug, name, event_date, timezone, brand jsonb, schedule jsonb, cover_path, status, expires_at)  status is live or keepsake
+- rsvps(id, event_id, guest_name, email, attending, plus_one boolean, dietary, song, created_at)
+- photos(id, event_id, storage_key, uploader_name, status, created_at)  status is pending, approved or removed
+- keepsakes(id, event_id, snapshot jsonb, published_at)
+
+Screens: /login, /events/new (the intake), /events/[id] (RSVPs, photo approvals and editing), /e/[slug] (the guest page), /k/[slug] (the keepsake).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, per-event or monthly pricing, wildcard subdomains, corporate and reunion templates, automatic photo moderation, a registry integration.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Template Generator**
+**2. Core Feature**
 
 ```text
-Build the Wedding template — the biggest retail slice.
-
-Sections:
-1. Hero: couple names, event date countdown, cover photo
-2. Schedule: timeline of ceremony, reception, after-party with venue maps (Google Maps embeds)
-3. RSVP form: yes/no, plus-one toggle, dietary restrictions, song requests
-4. Guestbook: photos guests upload during the event, auto-moderated
-5. Travel + Stay: hotel blocks, rideshare coupons, parking info
-6. Registry: external links to Zola/Amazon/Target registries
-
-Render with brand colors from the organizer intake. Mobile-first layout (90%+ of guest traffic is mobile).
+Build the one feature that proves the builder: a guest-ready wedding page in minutes, and a keepsake that lasts.
+1. The intake takes the event name, date and timezone, a cover photo, two brand colors, schedule items and optional travel and stay notes and registry links (https only). Create a slug that cannot be guessed and email the organizer the guest link.
+2. The wedding page is mobile first: a hero with a countdown, the schedule, an RSVP form (attending, plus-one, dietary needs, a song request), a guest photo wall, travel and stay notes and registry links. Set it to noindex.
+3. Guests upload photos without an account, up to 10 MB each, jpg or png. Remove all location data from every image on upload. New photos are pending until the organizer approves them in a queue. Only approved photos show.
+4. An RSVP sends the guest a confirmation through Resend. The organizer sees RSVPs and downloads them as a CSV.
+5. A nightly cron route (protected by CRON_SECRET) finds events 30 days past their date. For each, save a static snapshot of the schedule and the approved photos, set the event to keepsake, switch /e/[slug] to read-only and email the organizer the permanent keepsake link.
+6. The keepsake page shows no forms and no guest emails or RSVPs.
+Rules: guest contact details are never public and never in the keepsake. The organizer can delete the event and everything on it. Say that on the intake form.
+Empty state: a new event shows the guest link and a checklist (add the schedule, upload a cover, share the link).
+Done when: a sample event takes RSVPs and sends confirmations, an uploaded photo has no location data and stays hidden until approved, the nightly route turns an old event into a keepsake with no guest emails and the organizer's delete removes the photos.
 ```
 
-**3. Expiry + Keepsake Archive**
+**3. Landing Page**
 
 ```text
-Ship the expire-to-keepsake flow — the feature that makes this product emotional, not transactional.
+Build a one-page landing site for the Single-Event App Builder, a branded page for one event.
+Hero: "One link for your whole wedding." Sub: "A mobile page with the schedule, RSVP and a photo wall, ready in minutes. After the day, it becomes a keepsake you keep." One button: Join the waitlist.
+Sections: a sample wedding page on a phone, how it works in three steps (fill in the details, share the link, keep the keepsake), and an FAQ on guest privacy (no accounts, photos are approved by you and stripped of location data), what happens after the event and which event types come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, one soft sage accent, generous whitespace.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Nightly Vercel Cron checks for events past expires_at (event_date + 30 days):
-1. Export all content: schedule, guest list, RSVPs, uploaded photos into a frozen static snapshot
-2. Flip the subdomain from app mode to keepsake mode: no form submissions, no edits, just memory
-3. Email the organizer: "Your [event name] keepsake is ready. This is the permanent link. Share it with guests one more time."
-4. Cloudflare R2 stores the static bundle cheaply forever; domain stays live via a static router
+**4. Branding Package**
 
-The keepsake mode is the differentiator. Enterprise event platforms kill the app after the event; you preserve the memory.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Single-Event App Builder: pick a short working name, then design a wordmark and an icon that suggest a calendar page folded into a small keepsake card.
+Colors: warm off-white, ink and one soft sage. Type: Geist, with a serif for names on the sample pages.
+Deliverables: wordmark, icon, two event states (live, keepsake) that differ by shape as well as color, a wedding page hero layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the two event states are distinguishable without color.
 ```

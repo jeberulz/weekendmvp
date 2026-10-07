@@ -106,56 +106,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js App Router (TypeScript, Tailwind) marketplace called ProofSet: a bounty board for data jobs (cleaning, labeling, collection, analysis), not general freelance.
+Build the weekend MVP of "ProofSet": a bounty board for data cleaning where a buyer posts a schema and a freelancer's file must pass an automatic quality gate before the buyer sees it. No money moves through the app.
 
-Supabase (or Convex) schema:
-- users (id, role: buyer|freelancer|admin, email)
-- freelancer_profiles (user_id, skills TEXT[], sample_urls TEXT[], accuracy_score FLOAT, jobs_completed INT, status: pending_vet|active|suspended)
-- schema_templates (id, job_type: clean|label|collect|analyze, json_schema JSONB, sample_csv_url)
-- bounties (id, buyer_id, job_type, title, brief, json_schema, budget_cents, deadline, status: draft|funded|open|claimed|in_review|passed|failed|disputed, stripe_payment_intent)
-- bids (id, bounty_id, freelancer_id, note, sample_url, amount_cents, status)
-- deliveries (id, bounty_id, freelancer_id, file_url, checksum, submitted_at)
-- quality_reports (id, delivery_id, schema_pass BOOLEAN, dupe_rate FLOAT, null_rate FLOAT, rubric_score FLOAT, notes TEXT)
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link). The quality gate is plain code, with no model. Deploy on Vercel.
 
-Auth: Clerk (or Convex Auth), two dashboards. Stripe Connect destination charges. Env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, OPENAI_API_KEY or ANTHROPIC_API_KEY. RLS: buyers own their bounties; freelancers read open jobs + assigned rows only.
+Tables (Row Level Security on; buyers own their bounties, freelancers read open bounties and their own deliveries):
+- profiles(id, user_id, role, skills text[], accuracy_score, status)  role is buyer or freelancer; status is pending or active and you set it by hand
+- bounties(id, buyer_id, title, brief, schema_json jsonb, max_null_rate, max_dupe_rate, deadline, status)  status is open, claimed, in_review, passed, failed or accepted
+- claims(id, bounty_id, freelancer_id, status, claimed_at)
+- deliveries(id, bounty_id, freelancer_id, file_path, checksum, submitted_at)
+- quality_reports(id, delivery_id, schema_pass boolean, null_rate, dupe_rate, row_errors jsonb, notes)
+
+Screens: /login, /bounties (open ones, filtered by skill), /bounties/new, /bounties/[id] (claim, upload, report, accept).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, escrow, payouts or a platform fee, bids, a vetting trial, a model-graded spot check, labeling or data collection jobs, disputes.
+Done when: npm run dev starts, you can sign in, and the five tables exist with Row Level Security on.
 ```
 
-**2. Bounty Post + Escrow + Quality Gate**
+**2. Core Feature**
 
 ```text
-Build the core bounty lifecycle.
-
-POST /bounties: buyer selects job_type, fills schema_template (editable JSON Schema + 3 sample rows), budget, deadline. Create Stripe PaymentIntent for budget_cents; on webhook payment_succeeded set status=open.
-
-Freelancer flow: list open bounties filtered by skills. For job_type label|clean, one active claim locks the row. For collect|analyze, submit a bid with sample_url; buyer accepts one bid.
-
-Delivery: freelancer uploads file to storage. Run validators:
-1) JSON Schema / CSV header+type check
-2) duplicate rate and null rate vs template thresholds
-3) for label jobs, every class in the posted taxonomy; sample 50 rows to Claude with a frozen rubric, store rubric_score
-If schema_pass is false, status=failed and return a row-level error CSV. If pass, status=in_review for buyer accept.
-
-On accept: Stripe transfer to freelancer of budget minus 12% platform fee; bump accuracy_score with exponential moving average of rubric_score and rework_count. Implement a dispute state that only admins can resolve.
+Build the one feature that proves ProofSet: a delivery either passes a written quality gate or comes back with exact row errors.
+1. A buyer posts a cleaning bounty: a title, a brief, a schema as a list of columns { name, type: string | integer | number | date | enum, required, allowed_values }, the largest acceptable null rate and duplicate rate, and a deadline.
+2. An active freelancer claims an open bounty. One active claim locks it.
+3. The freelancer uploads a CSV to a private bucket. A route handler runs the gate in code: the header matches the schema's column names and order, every value coerces to its type, enum values are in allowed_values, required columns have no empty cells, the null rate per column is under the limit and the share of duplicate rows is under the limit.
+4. Save a quality_reports row. If the gate fails, set the bounty back to claimed and give the freelancer a CSV of row-level errors (row number, column, problem). If it passes, set the bounty to in_review.
+5. The buyer sees the report and a download link only when the status is in_review. They accept or reject with a note. Accepting sets accepted and updates the freelancer's accuracy_score as accepted deliveries divided by all deliveries.
+Rules: a freelancer never sees another freelancer's delivery. The buyer never sees a file that failed the gate.
+Empty state: with no open bounties, show a short example of a schema.
+Done when: a test CSV with one bad date and 5 percent empty cells fails with a row-error file, a clean CSV moves the bounty to in_review, accepting it updates the score, and a second freelancer cannot open the first one's file.
 ```
 
 **3. Landing Page**
 
 ```text
-Design a marketing page for ProofSet. Hero: “A bounty board for data work, not gigs.” Sub: “Post a schema. Vetted data freelancers clean, label, collect, or analyze. Payout waits on the quality gate.”
-
-Sections: problem (messy Fiverr CSVs vs catalogs that do not have your taxonomy), how it works (4 steps matching the product), job types (clean / label / collect / analyze) with one example bounty each, social proof placeholders (r/datasets-style quotes, not fake logos), pricing (12% take, $99/mo Priority, $50–$200 bump), FAQ (PII, prohibited scraping, how vetting works, why this is not Upwork). Dark page, aubergine accent, no stock photos of smiling analysts. Primary CTA: “Post a bounty” (buyer) and secondary “Apply to freelancer roster.”
+Build a one-page landing site for ProofSet, a bounty board for data work.
+Hero: "A bounty board for data work, not gigs." Sub: "Post a schema. Vetted freelancers clean your data. Nothing reaches you until it passes the quality gate." Two buttons: Join the waitlist as a buyer, Join as a freelancer.
+Sections: the problem (messy CSVs from general freelance sites), a sample quality report with a pass, a fail and row errors, how it works in four steps (post a schema, claim, deliver into the gate, accept), and an FAQ on personal data, what the gate checks and why this is not a general gig site.
+Waitlist: store the email and the role in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one aubergine accent, no stock photos of smiling analysts.
+Done when: the page renders on a phone and a submitted email with its role appears in the waitlist table.
 ```
 
-**4. Freelancer Vetting Queue**
+**4. Branding Package**
 
 ```text
-Build an admin + applicant flow for the freelancer roster.
-
-Applicant submits: LinkedIn/GitHub, two sample datasets or Kaggle kernels, primary skills (clean, label, collect, SQL analysis), and a 30-minute paid trial: we give a dirty 500-row CSV and a schema; they return a passing file.
-
-Admin queue: pass/fail with notes. On pass, status=active and accuracy_score starts at 0.8. Show the trial rubric (schema pass, dupe_rate under 1%, types coerced, documented steps). Reject generalist “I do anything” profiles. Add a flag for collection jobs requiring a written method (source list + legal basis) before the applicant can see collect bounties.
-
-Do not open buyer posting until 20 active freelancers cover all four job types.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for ProofSet: a wordmark and an icon that suggest a table cell with a check inside it.
+Colors: near-black, off-white and one aubergine. Type: Geist, with IBM Plex Mono for column names and numbers.
+Deliverables: wordmark, icon, three gate result badges (passed, failed, in review) that differ by shape as well as color, and one launch graphic.
+Done when: each deliverable is saved in one folder and the badges are distinguishable without color.
 ```
 
 ## Sources

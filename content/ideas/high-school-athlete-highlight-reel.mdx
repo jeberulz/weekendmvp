@@ -80,35 +80,58 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 + Stripe app for high-school highlight reels.
+Build the weekend MVP of "Highlight Reel": a parent uploads a game film, marks the plays that matter and shares a short reel page that plays them in order, with a clean end card. Marking is manual this weekend. This handles a minor's video, so the parent owns everything and links are private.
 
-Set up:
-- Clerk family accounts (parent owns the athlete profile)
-- Supabase: athletes (jersey, color, grad year, position), games, clips, reels
-- Mux ingest from file upload
-- $0 first game, then $9/game or $15/month
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the parent), Mux for upload and playback. The reel is an ordered playlist of clips that plays back to back. Deploy on Vercel.
 
-No social network. One athlete, many games.
+Tables (Row Level Security on, a parent reads only their own rows; the share page reads through a server route that checks the token):
+- athletes(id, user_id, display_name, jersey, team_color, grad_year, position, contact_email)
+- games(id, athlete_id, opponent, played_on, mux_asset_id, mux_playback_id, duration_sec)
+- clips(id, game_id, start_sec, end_sec, label, note, selected boolean, position)
+- reels(id, athlete_id, title, share_token, expires_at, clip_order jsonb, created_at)
+
+Screens: /login, /athletes, /games/[id] (the player and the marking tools), /reels/[id] (order and preview), /r/[token] (the public reel).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), MUX_TOKEN_ID, MUX_TOKEN_SECRET.
+
+Do not build: billing, per-game or season pricing, player or ball tracking, automatic clip ranking, a stitched MP4 download, a social feed, other users' accounts.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Build the detect + rank pipeline.
-
-Requirements:
-- Parent enters jersey number and team color before upload
-- Worker tracks that player and ball events (shot, take-on, save)
-- Rank clips by successful action + stability + duration
-- Assemble a 90-second reel with captions and a grad-year end card
-
-User flow: create athlete → upload game → pick 8 of 20 suggested clips → export.
+Build the one feature that proves Highlight Reel: a parent turns 90 minutes of film into a 90-second reel without an editor.
+1. A parent creates an athlete with a jersey number, team color, graduation year, position and an optional contact email. Collect nothing else about the child.
+2. Upload a game file through Mux direct upload, with a progress bar and a note that large files take a while. Save the asset and playback ids.
+3. The game page plays the film with keyboard marking: press one key to mark the start of a play and another to mark its end. Each mark saves a clip with a label and a note and shows it in a list that jumps to that moment when clicked.
+4. The parent picks the clips to keep and drags them into order. The reel page shows the total length and warns when it is over 120 seconds.
+5. The public reel at /r/[token] plays the selected clips back to back with a short pause between them, using each clip's start and end, then shows an end card with the athlete's name, position, graduation year and contact email if the parent added one.
+6. Make the token unguessable, set the page to noindex, expire the link after 90 days by default and let the parent turn it off at any time.
+7. Add a Delete athlete button that removes the games, clips, reels and the Mux assets.
+Rules: only the parent can see the game film. The public page shows only the selected clips. Never show a child's full name unless the parent typed it for the end card.
+Empty state: with no games, show the upload box and the keys for marking plays.
+Done when: a sample game uploads and plays, marking three plays creates three clips, the public link plays them in order with the end card and works without a login, an expired or disabled link shows a clear message and Delete removes the Mux assets.
 ```
 
-**3. Season Compilation**
+**3. Landing Page**
 
 ```text
-Add a season pass that concatenates the top 20 clips across games into a 2-minute recruiting tape, with a chapter per game. Export MP4 and a Hudl-ready link. Charge $149 if they are not already on $15/month.
+Build a one-page landing site for Highlight Reel, a way for parents to make a recruiting reel from game film.
+Hero: "Turn the whole game into the 90 seconds a coach will watch." Sub: "Mark the plays, put them in order and share a private reel page with a clean end card." One button: Join the waitlist.
+Sections: a sample reel page with its end card, how it works in four steps (add your athlete, upload the game, mark the plays, share the reel), a privacy block (parents own everything, links are private and expire, one tap deletes it all) and an FAQ on file sizes, what is coming next (automatic play finding) and who can see a reel.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one electric blue accent, real game stills and no stock athletes.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Highlight Reel: pick a short working name, then design a wordmark and an icon that suggest a play button cut like a jersey number.
+Colors: near-black, off-white and one electric blue. Type: Geist, with tabular numbers for jersey numbers and years.
+Deliverables: wordmark, icon, an end card layout (name, position, graduation year, contact), a clip chip style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the end card is readable in black and white.
 ```
 
 ## Sources

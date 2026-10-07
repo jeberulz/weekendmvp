@@ -79,19 +79,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Home Upkeep." Provision Supabase with these tables: properties (id, owner_id, address, unit_count), systems (id, property_id, type TEXT CHECK type IN ('water_heater','hvac','roof','plumbing','electrical'), install_date, expected_lifespan_years, risk_score FLOAT), documents (id, property_id, file_url, doc_type TEXT CHECK doc_type IN ('inspection','receipt','photo','note'), uploaded_at), flags (id, system_id, severity TEXT, description, status TEXT default 'open', created_at), bookings (id, flag_id, contractor_name, quoted_price_cents, status). Enable row-level security so owners only see rows tied to their properties. Wire Stripe with three products: Starter $35/mo, Growth $65/mo, Portfolio $100/mo. Add env vars for Supabase, Stripe, and an AI provider API key.
+Build the weekend MVP of "Home Upkeep": a rental owner uploads inspection reports and photos, and the app finds equipment install dates, scores each system against its expected life and flags what is near the end.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), pdf-parse for PDF text, the Anthropic API for text and photo reading. The risk score is plain code. Deploy on Vercel.
+
+Tables (Row Level Security on, an owner reads only their own properties and what hangs off them):
+- properties(id, user_id, address, unit_count)
+- systems(id, property_id, type, install_date, expected_lifespan_years, risk_score, source_quote, confidence, status)  type is water_heater, hvac, roof, plumbing or electrical; status is confirmed or needs_review
+- source_files(id, property_id, file_path, doc_kind, uploaded_at)  doc_kind is inspection, receipt, photo or note
+- flags(id, system_id, severity, description, evidence jsonb, status, created_at)  status is open, done or dismissed
+
+Screens: /login, /properties, /properties/[id] (cards for each system and its open flags), /review (low-confidence reads to confirm).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or per-unit tiers, a contractor marketplace or booking, pgvector or embeddings, SMS or email alerts, move-in and move-out photo comparison.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Document Ingestion and Lifespan Scoring Engine**
+**2. Core Feature**
 
 ```text
-Build an upload pipeline where a user drops in inspection PDFs, receipts, or phone photos for a property. For PDFs and text documents, send the extracted text to an AI model with a strict JSON schema: { system_type: string, install_date: string|null, condition_notes: string, confidence: number }. For photos, send the image to a vision-capable model asking it to identify visible wear (rust, cracking, water staining, warping) and return { finding: string, severity: "low"|"medium"|"high", confidence: number }. Insert results into the systems and flags tables. Write a scoring function that computes risk_score for each system based on (current_date - install_date) / expected_lifespan_years, and creates a flag automatically when risk_score crosses 0.8. Route any AI extraction with confidence under 0.6 to a manual review queue instead of auto-creating a flag.
+Build the one feature that proves Home Upkeep: dates read from real paperwork, a score anyone can check, and a human check where the reading is unsure.
+1. Upload a PDF (inspection report, receipt) or a photo for a property to a private bucket. Extract PDF text with pdf-parse.
+2. For text, send it to the Anthropic API with a strict JSON schema { systems: [{ system_type, install_date: string or null, condition_notes, confidence: number from 0 to 1, source_quote }] }. Check in code that each source_quote appears in the text, or drop the item.
+3. Save each system with an expected lifespan from a table in one file (for example 10 years for a water heater, 17 for HVAC, 22 for a roof) that the owner can edit per system. Say on the page that these are typical ranges, not a prediction.
+4. Compute risk_score in code as the years since install_date divided by the expected lifespan. Create a flag automatically when it reaches 0.8. Any read with confidence under 0.6, or with no install date, goes to /review as needs_review and creates no flag until the owner confirms.
+5. For a photo, ask the model for { findings: [{ finding, severity: "low" | "medium" | "high", confidence }] } describing visible wear only. A photo finding never creates a flag by itself; it appears in /review for the owner to accept or dismiss.
+6. The property page lists systems with their risk score and open flags sorted by severity. Each flag shows the source quote or photo and the reasoning.
+Rules: say "an estimate, not an inspection by a licensed professional". Never state a repair cost.
+Empty state: with no properties, show the add form and the kinds of file that help.
+Done when: an inspection PDF with a water heater install date creates a system with the right score and a quote that is in the text, a low-confidence read waits in review with no flag, a photo finding needs the owner's confirmation and a system at 80 percent of its life creates a flag.
 ```
 
-**3. Owner Dashboard and Landing Page**
+**3. Landing Page**
 
 ```text
-Design a dashboard that lists each property as a card showing an overall risk score and a short list of open flags sorted by severity. Clicking a flag shows the source photo or document excerpt, the reasoning, and a "Find a contractor" button that opens the marketplace booking flow. Separately, build a single-page marketing site. Hero headline: "Know which system fails next, before it does." Sub: "Upload your inspection reports and photos. We score every system against its lifespan and flag what's about to fail." Sections: how it works (the 4-step flow), a before/after cost comparison ($500 caught early vs. $8,000 caught late), pricing (Starter $35, Growth $65, Portfolio $100) benchmarked against AppFolio and Buildium's per-unit pricing, and an FAQ covering AI accuracy and data privacy. Use a dark, minimal palette with one accent color for risk flags.
+Build a one-page landing site for Home Upkeep, a maintenance tracker for rental owners.
+Hero: "Know which system fails next, before it does." Sub: "Upload your inspection reports and photos. We read the install dates, score each system against its expected life and flag what is close to the end." One button: Join the waitlist.
+Sections: how it works in four steps (upload, read, score, review), a sample property card with a water heater at 85 percent of its expected life and its source quote, a placeholder for what an early repair saves (fill in a figure you can cite), and an FAQ on how accurate the reading is (you confirm anything unsure), data privacy and what the app does not do (it is not an inspection).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a dark minimal background, one amber accent used only for risk flags.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Home Upkeep: a wordmark and an icon that suggest a house outline with a small gauge needle.
+Colors: near-black, off-white and one amber used only for risk. Type: Geist, with tabular numbers for scores.
+Deliverables: wordmark, icon, three risk chips (fine, watch, replace soon) that differ by shape as well as color, a system card layout, and one launch graphic.
+Done when: each deliverable is saved in one folder and the risk chips are distinguishable without color.
 ```
 
 ## Sources

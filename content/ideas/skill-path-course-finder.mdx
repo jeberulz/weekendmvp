@@ -93,47 +93,59 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "SkillPath" — a cross-platform learning-path sequencer. You do not host video.
+Build the weekend MVP of "SkillPath": pick a skill, a level and the hours you have each week, and get an ordered path of existing videos, courses and tutorials. It hosts nothing. Paths that people finish rise in the ranking. Start with one skill, Excel.
 
-Schema (Supabase):
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link). The placement is a rule and the ranking is arithmetic, with no model. Deploy on Vercel.
+
+Tables (Row Level Security on; skills, resources and paths are read-only to everyone, a learner reads only their own rows):
 - skills(id, slug, name)
-- resources(id, skill_id, title, url, platform TEXT, hours FLOAT, level TEXT, affiliate_url TEXT)
-- paths(id, skill_id, level TEXT, title, resource_ids UUID[])
-- profiles(id, user_id, hours_per_week INT, plan TEXT)
-- enrollments(id, user_id, path_id, current_index INT)
-- events(id, user_id, resource_id, type TEXT, created_at) -- type in started|completed|abandoned
+- resources(id, skill_id, title, url, platform, hours, level, completion_rate)  level is beginner, intermediate or advanced
+- paths(id, skill_id, level, title, resource_ids uuid[])
+- learner_profiles(user_id, hours_per_week)
+- enrollments(id, user_id, path_id, current_index)
+- events(id, user_id, resource_id, type, created_at)  type is started, completed or abandoned
 
-Seed 3 Excel paths (beginner/intermediate/advanced) with real YouTube and Udemy URLs.
-Routes: /, /quiz, /learn/[skill]/[level], /app/today
-Stripe: Plus $9/mo, Plus annual $29/yr.
+Screens: /quiz, /learn/[skill]/[level], /today, /admin/resources.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
+
+Do not build: billing, plans or a yearly option, affiliate links or redirects, a model for placement, an editorial CMS, funnels or analytics tools, video hosting.
+Done when: npm run dev starts, you can sign in, and the six tables exist with Row Level Security on.
 ```
 
-**2. Placement Quiz + Path Player**
+**2. Core Feature**
 
 ```text
-Quiz fields: skill (select), level (beginner/intermediate/advanced), hours_per_week (1|3|5|10), deadline (optional date).
-
-Placement: pick the path where path.level = quiz.level. If hours_per_week is 1, split the path into more weeks by grouping resources so no week exceeds 1.2 hours.
-
-Today view:
-- Show the current resource, estimated minutes, and buttons: Started / Done / This wasn't for me
-- Done increments current_index
-- This wasn't for me writes events.abandoned and swaps in an alternate resource at the same level with lower hours if one exists
-
-Never call an LLM to invent a URL. If no alternate exists, show "we'll add one — skip to next."
+Build the one feature that proves SkillPath: a path that fits the hours you have, and a ranking that learns from who finishes.
+1. Seed three Excel paths (beginner, intermediate, advanced) with real YouTube, course and documentation links. Open every URL yourself before you save it. Never let a model produce a URL.
+2. The quiz takes skill, level, hours per week (1, 3, 5 or 10) and an optional deadline. Placement picks the path whose level matches.
+3. Group the path into weeks so that no week is longer than 1.2 times the hours per week, keeping the order. Unit test the grouping for 1, 3, 5 and 10 hours.
+4. /today shows the current resource, its estimated minutes and three buttons: Started, Done and "This wasn't for me". Done moves to the next resource. "This wasn't for me" records an abandoned event and swaps in another resource of the same level with fewer hours if one exists. If none exists it says "We'll add one. Skip to the next."
+5. A Recompute button (also callable by a protected route) sets each resource's completion_rate to (completed plus 1) over (completed plus abandoned plus 2). When assembling a path for a new learner, sort the candidates of the right level by completion_rate, highest first, with a stable order.
+6. /admin/resources shows each resource's completion rate and event counts so a curator can remove the ones people abandon.
+Rules: no model touches a URL or a ranking. Show "2 of 3 people finish this" style counts rather than a bare percentage when there are under 10 events.
+Empty state: with no enrollment, show the quiz.
+Done when: the grouping tests pass, placement returns the right level, abandoning swaps in a shorter resource or shows the skip message, and Recompute changes the order for a new learner.
 ```
 
-**3. Ranking from Completions**
+**3. Landing Page**
 
 ```text
-Nightly job:
-- For each resource, compute completion_rate = completed / (completed + abandoned) with Laplace smoothing (add 1/1)
-- Store on resources.completion_rate
-- When assembling a path for a new user, stable-sort candidate resources by completion_rate desc after filtering level
+Build a one-page landing site for SkillPath, a learning path for any skill that fits the hours you have.
+Hero: "One skill, one level, one weekly time budget." Sub: "Not a catalog of ten thousand courses. A short ordered path of the best free and paid resources, matched to your level and your week." One button: Join the waitlist.
+Sections: a sample Excel path with its weekly breakdown, how it works in four steps (place yourself, get a path, track what you finish, swap what is not for you), and an FAQ on how resources are chosen (people finish them), which skills come next and whether anything is hosted here (no).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
 
-Admin page /admin/resources shows completion_rate and event counts so curators can kill duds.
+**4. Branding Package**
 
-Add a /go/[resourceId] redirect that appends affiliate params and logs a click event.
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for SkillPath: a wordmark and an icon that suggest a path of three stepping stones.
+Colors: warm off-white, near-black and one blue. Type: Geist, with tabular numbers for hours.
+Deliverables: wordmark, icon, three level chips (beginner, intermediate, advanced) that differ by shape and word as well as color, a resource card style, and one launch graphic.
+Done when: each deliverable is saved in one folder and the level chips are distinguishable without color.
 ```
 
 ## Sources

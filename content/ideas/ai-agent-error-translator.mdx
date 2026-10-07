@@ -80,29 +80,55 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build a service that receives webhook events from an n8n or Lindy agent run, normalizes the payload into a standard error shape (platform, step, error type, message, timestamp), and stores it in Supabase. Use Cloudflare Workers. Give me the schema, the webhook handler, and a test event.
+Build the weekend MVP of "Doctor Debug": when an n8n workflow fails, its error is sent to a webhook here and comes back as a plain-English explanation and numbered fix steps that a non-developer can follow. One platform first.
+
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the explanation. In n8n, an error workflow posts the failure to this app's webhook. Known errors are answered from a pattern library without a model. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own projects and events; the webhook writes through the service role):
+- projects(id, user_id, name, webhook_secret)
+- error_events(id, project_id, platform, step, error_type, message, occurred_at, signature, explanation jsonb, source)  source is pattern or model
+- patterns(id, signature, explanation, cause, fix_steps jsonb, confidence, confirmations, rejections, vetted boolean)
+- feedback(id, event_id, verdict, correction)
+
+Screens: /login, /projects (create one and copy its webhook and the n8n setup steps), /events (failures with their explanation), /patterns (the library).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, plans or an agency tier, other platforms or Lindy, Cloudflare Workers, Slack alerts, a comparison with log tools.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
 **2. Core Feature**
 
 ```text
-Write the translation engine. Given a normalized agent error, call Claude to produce: (1) a one-sentence plain-English explanation a non-developer understands, (2) the most likely cause, and (3) a numbered fix path. Match against a stored pattern library first; if a known pattern matches, prefer its vetted fix. Return JSON.
+Build the one feature that proves Doctor Debug: the same error is explained clearly, and once the fix is confirmed the model is no longer needed.
+1. POST /api/hooks/[projectId] takes the n8n error payload with the project's secret in a header and rejects a bad secret. Normalize it to { platform, step (the node name), error_type, message, occurred_at }.
+2. Compute a signature from the platform, the error type and the message with numbers, ids, addresses and emails removed, hashed. Save the event.
+3. Look the signature up in patterns. Use a pattern that is vetted, or has at least 2 confirmations and a confidence of 0.7 or more. Then no model call happens and the event's source is pattern.
+4. Otherwise redact secrets from the message first (anything that looks like a key, a token or an email), then ask the Anthropic API for JSON { explanation: one sentence a non-developer understands, likely_cause: string, fix_steps: string[] of 2 to 6 steps }. Reject an answer outside those limits and show the raw message with a plain note.
+5. /events shows each failure with the explanation, the likely cause, the numbered steps and a "Was this right?" control. Yes promotes or strengthens the pattern: confidence is confirmations plus 1 over confirmations plus rejections plus 2. No saves the correction text and counts a rejection.
+6. /patterns lists the library with confirmations and rejections so a person can mark one vetted.
+Rules: never send a credential to the model. Never invent a platform setting; if the cause is unclear say so. A rejected pattern is never used until it recovers.
+Empty state: with no events, show the webhook URL and a sample payload to test with.
+Done when: a sample n8n failure is explained with numbered steps, the same error twice produces a pattern after two confirmations and then no model call, a key in the message never reaches the model and a bad secret is rejected.
 ```
 
 **3. Landing Page**
 
 ```text
-Create a landing page for Doctor Debug, a tool that explains AI agent errors in plain English for non-developers. Hero, a 3-step how-it-works, a comparison against raw platform logs and Sentry, pricing (Solo $15, Agency $49-99), and an email capture. Clean, reassuring, operator-friendly tone. Semantic HTML with Tailwind.
+Build a one-page landing site for Doctor Debug, plain-English errors for people who run automations.
+Hero: "Your automation broke. Here is what that means." Sub: "Doctor Debug explains the failure in a sentence and gives you numbered steps to fix it, no documentation reading required." One button: Join the waitlist.
+Sections: an error message rewritten for the person who has to fix it, how it works in three steps (connect once, a run fails, you get the fix), and an FAQ on which platforms work first (n8n now), what is sent to the model (the error with secrets removed) and how it learns from your answers.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a clean and reassuring look, one calm teal accent, semantic HTML.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
 **4. Branding Package**
 
 ```text
-Create a brand kit for Doctor Debug: positioning line (the error message rewritten for the person who has to fix it), a 5-word tagline set, a calm and trustworthy color palette with hex codes, an icon concept, and 5 launch posts aimed at r/nocode and Facebook automation groups.
-```
-
-**5. Pattern Library Feedback**
-
-```text
-Add a feedback loop to Doctor Debug. After each suggested fix, show a was-this-right control. On confirm, promote the error-signature-to-fix mapping into the pattern library with a confidence score; on reject, capture the correction. Use this library to short-circuit future identical errors without an AI call. Give me the schema and the promotion logic.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Doctor Debug: a wordmark and an icon that suggest a stethoscope curled into a question mark.
+Colors: a calm and trustworthy palette of off-white, deep ink and one teal. Type: Geist, with Geist Mono for error text.
+Deliverables: wordmark, icon, a five-word tagline set, an error card layout (the raw message and the plain explanation side by side), and one launch graphic.
+Done when: each deliverable is saved in one folder and the error card is readable in black and white.
 ```
