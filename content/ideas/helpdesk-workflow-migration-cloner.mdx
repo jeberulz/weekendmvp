@@ -84,19 +84,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Helpdesk Workflow Migration Cloner." Provision Postgres (Supabase) with: organizations (id, name, plan TEXT default 'free'), connections (id, org_id, platform TEXT CHECK platform IN ('zendesk','freshdesk','intercom','help_scout','gorgias'), role TEXT CHECK role IN ('source','destination'), oauth_tokens JSONB, created_at), migrations (id, org_id, source_connection_id, dest_connection_id, route_pair TEXT, status TEXT default 'inventory', quoted_cents INT), source_rules (id, migration_id, external_id, rule_type TEXT, raw_json JSONB, title TEXT), translated_rules (id, migration_id, source_rule_id, dest_payload JSONB, parity_status TEXT CHECK parity_status IN ('clean','partial','no_equivalent'), confidence FLOAT, gap_notes TEXT, human_approved BOOL default false), deploy_runs (id, migration_id, started_at, finished_at, rules_deployed INT, errors JSONB). Enable RLS per org_id. Wire Stripe products: Standard Migration ($500–$1500 range via Price IDs), Complex Migration ($2000–$5000), Migration SaaS ($49/mo and $149/mo), Ops Platform ($299/mo). Add OAuth env vars for Zendesk, Freshdesk, Intercom, Help Scout, Gorgias, plus ANTHROPIC_API_KEY.
+Build the weekend MVP of the "Helpdesk Workflow Migration Cloner": read a Zendesk account's triggers, automations and macros, translate each toward Freshdesk's rule format, and give the admin a reviewed list of what carries over, what carries over partly and what has no equivalent. Nothing is written to Freshdesk.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Zendesk API with a read-only token pasted at scan time, the Anthropic API for the translation. The Zendesk token is used for the scan and never stored. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- migrations(id, user_id, route_pair, status, created_at)
+- source_rules(id, migration_id, external_id, rule_type, title, raw_json jsonb)  rule_type is trigger, automation or macro
+- translated_rules(id, migration_id, source_rule_id, dest_object_type, dest_payload jsonb, parity_status, confidence, gap_notes, manual_steps text[], human_approved boolean)  parity_status is clean, partial or no_equivalent
+
+Screens: /login, /migrations/new (subdomain, email and token), /migrations/[id] (summary counts), /migrations/[id]/review (table, filter and side-by-side).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
+
+Do not build: billing, quotes or migration tiers, writing to Freshdesk or any destination, other route pairs, SLA policies and views, ticket history migration, a queue or Redis, smoke tests.
+Done when: npm run dev starts, you can sign in, and the three tables exist with Row Level Security on.
 ```
 
-**2. Rule Inventory and Translation Pipeline**
+**2. Core Feature**
 
 ```text
-Build a BullMQ worker pipeline for help desk rule migration. Stage 1 INVENTORY: given a migration_id, call the source platform API (start with Zendesk) and paginate through triggers, automations, macros, SLA policies, and views; normalize each into source_rules with a stable external_id. Stage 2 TRANSLATE: for each source_rule, call Claude with a system prompt that includes a platform capability matrix for the route pair (e.g. zendesk_to_freshdesk) and require strict JSON output: { dest_object_type, dest_payload, parity_status: 'clean'|'partial'|'no_equivalent', confidence: number, gap_notes: string, suggested_manual_steps: string[] }. Write to translated_rules. Stage 3 REVIEW GATE: expose translated_rules in a dashboard table filterable by parity_status; partial and no_equivalent rows show a side-by-side diff component. Stage 4 DEPLOY: only push rows where human_approved=true OR parity_status='clean' with confidence >= 0.9; call destination platform APIs idempotently using a hash of dest_payload as dedupe key; log to deploy_runs.
+Build the one feature that proves the Migration Cloner: an honest map of which rules survive the move.
+1. POST /api/migrations/[id]/scan takes the Zendesk subdomain, email and API token for this request only. Page through triggers, automations and macros with the read-only API and save each as a source_rules row with its external_id and raw JSON. Do not store or log the token.
+2. Keep a hand-written capability matrix in one file: for the Zendesk to Freshdesk pair, the condition fields and the actions Freshdesk can express, written from Freshdesk's own documentation. The model may only use what is in this file.
+3. For each rule, send the raw JSON and the matrix to the Anthropic API with a strict JSON schema { dest_object_type, dest_payload, parity_status: "clean" | "partial" | "no_equivalent", confidence: number from 0 to 1, gap_notes: string, manual_steps: string[] }.
+4. Check the answer in code. If dest_payload names any condition or action that is not in the matrix, downgrade the parity_status to partial, or to no_equivalent if nothing remains, and add a gap note saying which item is missing.
+5. The review page shows summary cards (counts and percentages of clean, partial and no_equivalent), a table filterable by parity status, and a side-by-side view for partial rules: the source rule as readable bullets on the left, the proposed Freshdesk rule as editable JSON on the right.
+6. An Approve checkbox per rule, and an Export button that downloads only approved rules as JSON plus a Markdown checklist of the no_equivalent rules and their manual steps.
+Rules: never claim a rule is clean unless every part is in the matrix. Never write to any help desk.
+Empty state: with no migrations, show the form and what a read-only token is.
+Done when: scanning a sample account saves its rules, a rule that uses a field outside the matrix is downgraded, the counts add up to the number of rules, and the export contains only approved rules.
 ```
 
-**3. Reconciliation Dashboard and Smoke Tests**
+**3. Landing Page**
 
 ```text
-Build the migration reconciliation dashboard at /migrations/[id]/reconcile. Top summary cards: count of clean, partial, and no-equivalent rules with percentage of total. Main table columns: rule title, rule type, parity_status badge, confidence, gap_notes tooltip, approve checkbox, deploy status. Bulk actions: "Approve all clean," "Export no-equivalent checklist as PDF." For partial rows, render a split pane: left shows source rule as readable bullet conditions/actions (parsed from raw_json), right shows proposed destination rule with editable JSON before approval. After deploy, run SMOKE TESTS: create synthetic tickets that hit VIP routing, SLA breach paths, and macro-applied replies; record pass/fail in smoke_test_results and surface failures prominently on the migration overview page. Add a marketing landing page section comparing this product to ticket-only migration ("Relokia moves your history; we move your runbook") with pricing anchors $500–$5000 per migration vs ~$37 ticket-only jobs.
+Build a one-page landing site for the Helpdesk Workflow Migration Cloner, for teams moving from one help desk to another.
+Hero: "Move the tickets and the runbook." Sub: "Most tools move your ticket history. We map your macros, triggers and automations so day one of support still works." One button: Join the waitlist.
+Sections: the problem (the migration finishes and routing quietly breaks), a sample review table with clean, partial and no-equivalent rules, how it works in four steps (connect read-only, scan, review, export), and an FAQ on read-only access (the token is never stored), what is not migrated yet (ticket history and SLAs) and which help desks come next.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, an off-white background, near-black type, one blue accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for the Helpdesk Workflow Migration Cloner: pick a short working name, then design a wordmark and an icon that suggest two stacked boxes with an arrow between them.
+Colors: off-white, near-black and one blue. Type: Geist, with IBM Plex Mono for rule names.
+Deliverables: wordmark, icon, three parity badges (clean, partial, no equivalent) that differ by shape as well as color, and one launch graphic built from a review table.
+Done when: each deliverable is saved in one folder and the parity badges are distinguishable without color.
 ```
 
 ## Sources

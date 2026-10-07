@@ -81,19 +81,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "WellRing." Provision Postgres (Supabase) with these tables: households (id, family_email, family_phone, plan TEXT default 'trial'), seniors (id, household_id, name, phone UNIQUE, call_time TIME, tone_preference TEXT, timezone TEXT), calls (id, senior_id, started_at TIMESTAMPTZ, transcript TEXT, sentiment_score FLOAT, flagged_topics TEXT[]), baselines (id, senior_id, avg_sentiment FLOAT, common_topics TEXT[], updated_at TIMESTAMPTZ), alerts (id, senior_id, call_id, reason TEXT, sent_at TIMESTAMPTZ, acknowledged BOOLEAN default false). Enable row-level security so a family account can only read rows tied to their household_id. Add env vars for TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, ANTHROPIC_API_KEY, and an ELEVENLABS_API_KEY for voice synthesis. Install the Twilio Node SDK and the Vercel AI SDK.
+Build the weekend MVP of "WellRing": an automated daily phone call that asks an older adult how they are, and tells their family when something changes. It is not a medical device and not an emergency service.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Twilio Voice for the outbound call and its built-in speech recognition, Twilio SMS for family alerts, the Anthropic API to choose follow-up questions and score each call. A Vercel Cron route runs every 15 minutes. Twilio needs a public URL, so deploy early or use a tunnel. Deploy on Vercel.
+
+Tables (Row Level Security on, a family reads only the rows for their own household):
+- households(id, user_id, family_name, family_phone)
+- seniors(id, household_id, name, phone, call_time, timezone, consent_confirmed_at, paused boolean)
+- calls(id, senior_id, started_at, status, transcript, flagged_topics text[])
+- alerts(id, senior_id, call_id, kind, reason, severity, sent_at, acknowledged_at)  kind is concern or no_answer
+
+Screens: /login, /household (add a senior and confirm consent), /seniors/[id] (call history and transcripts), /alerts.
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, ANTHROPIC_API_KEY, CRON_SECRET.
+
+Do not build: billing, trials or plans, voice synthesis beyond Twilio's own voice, audio recording, a medical or emergency alert feature, facility or enterprise accounts, mobile apps.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Daily Call Engine + Pattern Scoring**
+**2. Core Feature**
 
 ```text
-Build a Vercel Cron job that runs every 15 minutes, finds seniors whose call_time matches the current window in their timezone, and places an outbound Twilio Voice call using a conversational script driven by an LLM with the senior's last three call transcripts injected as memory context. The script should ask about sleep, pain or discomfort, meals, and plans for the day, adapting follow-up questions based on prior answers (e.g. if yesterday mentioned knee pain, ask about it today). After the call ends, transcribe the recording, then run a separate scoring prompt that compares this transcript's sentiment and topics against the senior's rolling baseline in the baselines table and returns a JSON object: { deviation_detected: boolean, reason: string, severity: "low"|"medium"|"high", flagged_topics: string[] }. If deviation_detected is true and severity is medium or high, insert a row into alerts and send an SMS to the household's family_phone via Twilio with a short summary and a link to the relevant transcript.
+Build the one feature that proves WellRing: a short daily call that remembers yesterday, and a family alert when today is different.
+1. A cron route (protected by CRON_SECRET) finds seniors with consent_confirmed_at set, paused false and a call_time inside the current 15-minute window in their timezone, with no call yet today. For each, create a calls row and place an outbound Twilio call to a webhook at /api/voice/[callId].
+2. The webhook answers with TwiML. Say first: "Hello, this is WellRing, an automated assistant calling for the [family_name] family. Say stop at any time to end calls." Then Gather speech and ask about sleep, pain or discomfort, meals and plans for the day. After each answer, send the answer and the last three call summaries to the Anthropic API and ask for the one next question, under 20 words. Stop after 5 questions.
+3. If the senior says stop, end the call, set paused true and tell the family by SMS that calls are paused.
+4. When the call ends, save the transcript. Send it with the last seven calls to the Anthropic API with a strict JSON schema { deviation_detected: boolean, reason: string, severity: "low" | "medium" | "high", flagged_topics: string[] }.
+5. If deviation_detected is true and severity is medium or high, insert an alert and SMS the family a one-sentence summary with a link to the transcript page.
+6. If a call goes unanswered, try once more 30 minutes later. After the second miss, insert a no_answer alert and SMS the family.
+Rules: the assistant never gives medical advice and never diagnoses. If the senior says they have fallen or are in danger, it says to hang up and call local emergency services and it alerts the family at once. Do not record audio; keep text only.
+Empty state: a household with no seniors shows the add form and a plain statement that the senior must agree to the calls first.
+Done when: a test call asks the four questions and adapts one follow-up to yesterday's answer, saying stop pauses the calls and texts the family, a flagged call sends one SMS, and two missed calls send the no-answer alert.
 ```
 
-**3. Family Onboarding Flow**
+**3. Landing Page**
 
 ```text
-Design a guided onboarding flow for WellRing's family dashboard. Step 1: family account creation (email + phone). Step 2: add a senior — name, phone number, preferred call time, and a tone preference selector (brisk and cheerful / slow and gentle / matter-of-fact). Step 3: emergency contact and alert threshold configuration — how sensitive should pattern alerts be, and who receives them. Step 4: a preview screen explaining exactly what the AI will and won't do, in plain language: "WellRing calls your parent once a day for a short, warm conversation. It is not a medical device and does not replace professional care — it's designed to help you notice changes early and stay connected." End with a Stripe Checkout step offering the 14-day free trial with no card required, converting to the Essential Family Plan afterward. Use a warm, reassuring visual style with generous whitespace — this audience is stressed, not tech-forward.
+Build a one-page landing site for WellRing, a daily check-in call for older adults who live alone.
+Hero: "Know how they are doing, every day." Sub: "WellRing calls your parent once a day for a short, warm chat and tells you when something changes. Peace of mind, not another pendant." One button: Join the family waitlist.
+Sections: a sample alert text ("Dad mentioned his knee hurts for the third day in a row"), how it works in four steps (set it up, a daily call, notice a change, you get a text), a plain box saying what it is not (not a medical device, not an emergency service, not a replacement for care), and an FAQ on consent (your parent agrees first and can say stop), what is stored (text of the call, no audio) and who can see it.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist at a large size, a warm cream background, one deep teal accent, generous whitespace, a calm and reassuring tone.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for WellRing: a wordmark and an icon that suggest a ring that stays warm and a little open, not a phone handset.
+Colors: warm cream, deep teal and one soft coral for alerts. Type: Geist at a generous size.
+Deliverables: wordmark, icon, wording and layout for three alert texts (a concern, a missed call, calls paused) in a calm voice, and one launch graphic.
+Done when: each deliverable is saved in one folder and no alert text uses alarm words or all capitals.
 ```
 
 ## Sources

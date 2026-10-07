@@ -125,7 +125,7 @@ Append-only progress log. Do not rely on chat history for project state.
 - Notes:
   - Landing prompts that the old page used for a dashboard (NudgeLearn, Creator Launch Kit) were rewritten to the standard's landing shape.
   - HistoryPal is the first page in the program that serves minors in a classroom. Its prompts join students by class code and first name through anonymous sign-in, collect no student email, keep students from reading each other's chats, and label every answer as an AI answering from sources. A human should check this one first.
-  - ContractDecoder (legal text) and BNPL for Digital Products (credit) carry "not legal advice" and test-mode rules. A human should check both.
+  - ContractDecoder (legal text) carries "not legal advice" and "never tell the user to sign" rules. BNPL for Digital Products (credit) is test-mode only. A human should check both.
   - `creator-manufacturer-partnership-marketplace` has go-to-market notes after the last fence. The applier kept them in place.
 - Gates (`gates.sh`), all pass:
   - `audit:prompts` for the wave: 22 of 22, with no warnings after one fix (SellerShield's Core Feature said "billing address", so it now says "bill-to address").
@@ -135,3 +135,26 @@ Append-only progress log. Do not rely on chat history for project state.
   - `tests/prompts`: 22 tests pass, and the ratchet now lints 71 ideas.
 - Sampling: the dry-run lint and the diff checked every page. The 10 pages written in the last two batches were re-read once as authored. No page from this wave was re-read line by line after applying.
 - Next: wave 5.
+
+## 2026-10-07 - WP61-S5, wave 5 (22 ideas)
+
+- Ideas: the 22 slugs of wave 5 in the manifest (`daily-ai-checkin-calls-for-seniors` to `invoice-payment-reconciler`). Same method as waves 2 to 4, written in four batches (6, 6, 6, 4). Every batch passed a dry run of the lint before it was applied. No lint warnings on any page.
+- Scope calls where an idea's own old prompts did not fit a weekend (each is a cut a reviewer can overrule):
+  - CSV in place of a connected source, so the idea's core check can be tested in a weekend: Income-Proof Generator (bank statements), MyTaxGuy (bank and payout exports), HealthSync (daily metrics), HR Insight Engine (employee file), Winnow (coded bills), Where's My Payment (invoices and deposits), GutCheck (ad results, no ad platform connection), Dispatchr (comment cards, no Meta, X or LinkedIn connection), LatePay (invoices).
+  - Access that needs outside approval or a native app was fenced: Inbox Zero Agent is Gmail only, read and draft scopes, own account in Google's testing mode, no Chrome extension and no send. HydroTrail is a web app with the screen on (browser geolocation), not Expo with background location. Tendly reads one source (SAM.gov), with no scraper. The Helpdesk Cloner reads Zendesk with a token that is never stored, and writes nothing to the destination.
+  - Money and filing kept out: Fanstart records pledges and charges nothing, so the "hold until the threshold" escrow is fenced and the first test measures pledge confirmation, not payment. ProofSet moves no money (no escrow, bids or vetting), so the quality gate is the product. MyTaxGuy never e-files and stores no identity fields. Its line table is checked against the current year's form instructions in place of line numbers in the prompt.
+  - A model only where words are needed, with the checks in code: ProofSet's gate, SheetDoctor's detection and fixes, and the First International Hire Assistant's path and pack use no model. LatePay's score comes from a fixed rubric and the model only reads the proposal. HealthSync drops any insight with a number that is not in the computed summary. GutCheck rejects a batch where a variant changes two fields and never calls a winner under the conversion minimum.
+  - Privacy rules kept or added where the data is personal: WellRing keeps text only (no audio), asks for consent and pauses on "stop". The Hold-Time Call Bot stores labels only. HealthSync sends no identifiers to the model. HR Insight Engine sends category names only and hides any group under 5 people. The Income-Proof Generator never says "verified" because the input is uploaded files.
+  - Numbers and claims the old pages stated without a source were not copied into landing prompts: market and competitor prices, "79 percent of HR leaders", SOC 2, GDPR and CCPA badges, capture manager salaries and lift figures are placeholders or removed.
+  - Several ideas have no product name in their old pages. Their Branding prompts say "pick a short working name" (First International Hire Assistant, Focus Session Timer, Income-Proof Generator, Helpdesk Cloner, Hold-Time Call Bot, HR Insight Engine, Inbox Zero Agent).
+- Notes:
+  - WellRing (older adults, phone calls), HealthSync (health data), MyTaxGuy (tax), the First International Hire Assistant (employment law) and the Income-Proof Generator (financial proof for lenders) are the pages in this wave that most need a human read. Each carries a "not advice" or "not verified" rule in Core Feature and in the landing page.
+  - `fan-funded-creator-products` has go-to-market notes after the last fence. The applier kept them in place.
+- Gates (`gates.sh`), all pass:
+  - `audit:prompts` for the wave: 22 of 22.
+  - `audit:idea --all`: 198 of 227, failing set identical to the baseline of 29.
+  - Only the prompts section changed on every page.
+  - The prompt reader sees four real prompts and a first prompt of 8 or more lines on all 22.
+  - `tests/prompts`: 22 tests pass, and the ratchet now lints 93 ideas.
+- Sampling: the dry-run lint and the diff checked every page. The pages were re-read once as authored. No page from this wave was re-read line by line after applying.
+- Next: wave 6.

@@ -86,25 +86,57 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create a Next.js 14 (App Router, TypeScript, Tailwind) SaaS called GutCheck for AI-powered incremental ad creative testing. Set up Supabase with tables: workspaces, users, ad_connections (platform, encrypted_tokens, account_id), campaigns, creatives (asset_urls, copy_json), test_matrices (variable_type, status), variants (mutation_description, external_ad_id), lift_results (baseline_conversions, variant_conversions, confidence_score, incremental_roas). Add Stripe products Starter $99/mo and Professional $299/mo. Env vars: META_APP_ID, META_APP_SECRET, GOOGLE_ADS_DEVELOPER_TOKEN, OPENAI_API_KEY. Include OAuth routes for Meta and Google under /api/oauth/* with PKCE where required.
+Build the weekend MVP of "GutCheck": generate single-change ad variants from a base ad, paste in how each one performed, and see which ones truly beat the baseline and which are still noise. It does not connect to ad platforms.
+
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API (a small model) to write variants, Zod to validate its output. The statistics are plain code. Deploy on Vercel.
+
+Tables (Row Level Security on, each user reads only their own rows):
+- experiments(id, user_id, name, variable_type, status, min_conversions, created_at)  variable_type is headline, primary_text or cta
+- variants(id, experiment_id, is_baseline boolean, headline, primary_text, cta, mutated_field, mutation_rationale, hypothesis)
+- results(id, variant_id, recorded_on, impressions, clicks, conversions, spend_cents)
+- lift_results(id, experiment_id, variant_id, lift, confidence, verdict, computed_at)  verdict is winner, loser or keep_running
+
+Screens: /login, /experiments/new, /experiments/[id] (variants, results upload and verdicts).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY.
+
+Do not build: billing, plans or usage meters, Meta or Google Ads connections, pushing ads live, image variants, a job queue or Redis, automatic pausing of ads.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Incremental Test Engine**
+**2. Core Feature**
 
 ```text
-Build the GutCheck test orchestrator. Given a test_matrix with variable_type "headline" and a baseline creative, call GPT-4o with the anchor ad copy and image URL to produce 10 incremental mutations (single-element changes only). For each variant, create a draft ad in the connected platform with 10% of the matrix's allocated daily budget. Nightly job pulls conversions for baseline and each variant, computes incremental lift vs. holdout using a simple Bayesian or frequentist threshold (flag winner when confidence exceeds 95%). Store results in lift_results and email a ranked summary. Handle edge cases: insufficient traffic (extend test), platform API errors (retry with backoff), and auto-pause variants that underperform baseline by more than 20% after minimum impressions.
+Build the one feature that proves GutCheck: variants that change one thing, and a verdict you can trust.
+1. An experiment starts from a base ad (headline, primary text, CTA) and a variable_type. Save the base as the baseline variant.
+2. A server action generates 6 variants. It calls the OpenAI API with the base ad and the variable type, and asks for a JSON array of { headline, primary_text, cta, mutation_rationale, hypothesis } that changes only the chosen field and keeps the brand voice and every factual claim.
+3. Validate with Zod, then compare each variant to the baseline in code. Reject the whole batch if any variant differs in more than one field or adds a claim (a price, a number or a guarantee) that the base ad does not have. Set mutated_field from the comparison, not from the model.
+4. The user runs the variants elsewhere and uploads a CSV with columns variant_id, date, impressions, clicks, conversions, spend.
+5. For each variant against the baseline, compute the conversion rates, the relative lift and a two-proportion z-test. Report confidence as 1 minus the p-value. Mark winner at 95 percent confidence or more with a positive lift, loser at 95 percent or more with a negative lift, and keep_running otherwise.
+6. Never mark a winner or loser until both the variant and the baseline have at least min_conversions conversions (default 100). Show "not enough data yet" with how many conversions are missing.
+Rules: label the result "lift against the baseline in the same period", never incremental sales lift. Unit test the statistics with known counts.
+Empty state: with no experiments, show the form and a sample base ad.
+Done when: a batch with a two-field change is rejected, an uploaded sample gives the expected z-score in the unit test, a variant under the conversion minimum shows keep_running with a count, and a clear winner shows its lift and confidence.
 ```
 
-**3. Free Audit Landing + Lead Magnet**
+**3. Landing Page**
 
 ```text
-Design a marketing landing page for GutCheck. Hero: "Stop killing ads on gut instinct." Subhead: "Incremental AI tests tell you which creative element actually drives conversions—across Meta and Google." Sections: problem (platform dashboards lie by correlation), how it works (4 steps matching the product), social proof placeholders for lift percentages, pricing (Free audit / Starter $99 / Pro $299), FAQ on statistical validity and data privacy. Dark background, emerald accent, Geist typography. Primary CTA: "Run free ad audit" with email capture; secondary CTA: "Connect ad account." Include JSON-LD-friendly copy blocks but no raw script tags—this is an MDX-adjacent React page.
+Build a one-page landing site for GutCheck, an ad creative testing tool for lean marketing teams.
+Hero: "Stop killing ads on gut instinct." Sub: "Test one change at a time. See which creative actually beat the baseline and which is still noise." One button: Join the waitlist for the free ad audit.
+Sections: the problem (platform dashboards show correlation, not a clean test), how it works in four steps (base ad, variants, results, verdict), a sample verdict table with a winner, a loser and one "not enough data yet", a placeholder for real lift numbers to replace with yours, and an FAQ on the statistics (a 95 percent threshold and a conversion minimum) and data privacy.
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a near-black background, one emerald accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
 ```
 
-**4. Variant Generation Prompt Template**
+**4. Branding Package**
 
 ```text
-Implement a server action generateVariants(anchorCreative, variableType). System prompt: "You are an incremental ad testing assistant. Propose exactly N variants that change ONLY the requested variable. Preserve brand voice, compliance, and factual claims. Output JSON array: [{ id, headline, primary_text, cta, mutation_rationale, hypothesis }]. Never change more than one element per variant." User payload includes anchor creative JSON, target audience, and variableType enum. Validate response with Zod; reject batches where any variant mutates multiple fields.
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for GutCheck: a wordmark and an icon that suggest a check mark built from two bars of different height.
+Colors: near-black, off-white and one emerald. Type: Geist, with tabular numbers for lift and confidence.
+Deliverables: wordmark, icon, three verdict badges (winner, loser, keep running) that differ by shape as well as color, and one launch graphic built from a verdict table.
+Done when: each deliverable is saved in one folder and the verdict badges are distinguishable without color.
 ```
 
 ## Sources

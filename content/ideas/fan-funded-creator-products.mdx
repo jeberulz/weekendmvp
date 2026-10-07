@@ -77,23 +77,56 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Create Next.js 14 app Fanstart: creators have boards; fans submit ideas and place Stripe PaymentIntent deposits ($10-$50).
+Build the weekend MVP of "Fanstart": a creator opens an idea board, fans pledge an amount toward an idea, and a campaign counts as funded only when confirmed pledges reach the threshold. Nothing is charged this weekend; a pledge is a promise recorded with an email.
 
-Tables: creators, ideas, deposits (status: held|captured|refunded), campaigns (threshold_cents, deadline).
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for creators), Resend for the confirmation and status emails. Fans need no account: they give an email and confirm it from a link. A Vercel Cron route checks deadlines each day. Deploy on Vercel.
 
-Implement Connect onboarding for creators and a fan checkout that holds funds until threshold.
+Tables (Row Level Security on; the public reads boards, ideas and campaign totals, and only the creator reads a pledge's email):
+- boards(id, user_id, handle, title)
+- ideas(id, board_id, title, description, proposed_by, status)
+- campaigns(id, idea_id, threshold_cents, deadline, status)  status is open, funded or expired
+- pledges(id, campaign_id, fan_email, amount_cents, confirm_token, confirmed_at, created_at)
+
+Screens: /login, /dashboard (creator), /b/[handle] (the public board), /c/[id] (a campaign with its live total and status).
+Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), RESEND_API_KEY, CRON_SECRET.
+
+Do not build: billing, card payments, holds or refunds, Connect payouts, take rates, a Discord bot, analytics or CSV exports, fulfillment handoff.
+Done when: npm run dev starts, you can sign in, and the four tables exist with Row Level Security on.
 ```
 
-**2. Threshold Engine**
+**2. Core Feature**
 
 ```text
-Write a campaign service: when sum(held deposits) >= threshold before deadline, mark campaign funded and notify creator. If deadline passes underfunded, refund all PaymentIntents and email fans.
+Build the one feature that proves Fanstart: pledges that only count once the fan confirms, a threshold, and honest status either way.
+1. A creator opens a board and adds an idea with a campaign: a threshold in dollars and a deadline.
+2. On /c/[id], a fan picks an amount from 5 to 50 dollars and enters an email. Insert a pledge and email a confirmation link through Resend. The pledge counts only after the link sets confirmed_at.
+3. Show a public progress bar from the sum of confirmed pledges, the number of backers and the days left. The page shows totals only, never emails.
+4. A daily cron route (protected by CRON_SECRET) checks each open campaign. If confirmed pledges reach the threshold before the deadline, set funded and email the creator. If the deadline passes under the threshold, set expired and email every confirmed fan: "This idea did not reach its goal. Nothing was charged."
+5. The creator sees pledges with fan emails on the dashboard, and a Greenlight button on a funded campaign that emails fans "Production is a go. We will send you a payment link."
+Rules: one pledge per email per campaign. Rate limit pledge requests by IP. Say on every pledge screen that nothing is charged yet.
+Empty state: a board with no ideas shows how to add the first one.
+Done when: an unconfirmed pledge does not move the bar, a confirmed one does, reaching the threshold marks the campaign funded and emails the creator, and passing the deadline underfunded emails the fans that nothing was charged.
 ```
 
-**3. Creator Analytics**
+**3. Landing Page**
 
 ```text
-Build a dashboard: ideas by deposit total, conversion from view to deposit, average deposit size, and a CSV export of winners for manufacturers.
+Build a one-page landing site for Fanstart, where fans back a creator's product idea before it is made.
+Hero: "Make the product only if fans show up." Sub: "Open an idea board. Fans pledge to the ideas they want. You build the ones that reach their goal." One button: Join the creator waitlist.
+Sections: how it works in four steps (open a board, fans pledge, watch the total, greenlight or close), a sample campaign page with a progress bar and a status line, the trust angle (nothing is charged until you greenlight, and fans are told the outcome either way), and an FAQ on what a pledge is, what happens if a goal is missed and when money moves (outside the app, for now).
+Waitlist: store the email in a waitlist table in Supabase. No other service.
+Style: Geist, a warm white background, ink type, one coral accent.
+Done when: the page renders on a phone and a submitted email appears in the waitlist table.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool for this one. A coding agent cannot draw a logo.
+Brand for Fanstart: a wordmark and an icon that suggest a bar filling toward a line.
+Colors: warm white, ink and one coral. Type: Geist, with tabular numbers for totals.
+Deliverables: wordmark, icon, three campaign status chips (open, funded, expired) that differ by shape as well as color, and one launch graphic built from a progress bar.
+Done when: each deliverable is saved in one folder and the status chips are distinguishable without color.
 ```
 
 Creator boards fail when deposit refunds are slow or when creators ghost after collecting cash. The Escrow-like Stripe hold pattern is the trust engine: fans see funds held, not spent, until the threshold clears. Community threads on Kickstarter refunds and Patreon "where did the merch go?" stories show that refund UX is as important as the idea board itself. Build refund templates and a public status page for every campaign; that transparency is the difference between a one-time experiment and habit-forming fan funding.
