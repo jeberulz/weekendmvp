@@ -1,6 +1,7 @@
 /**
- * Weekly picks for "Idea of the week" (section 03) and "Inside every idea"
- * (section 06). Weeks start Monday 00:00 UTC.
+ * Weekly picks for the hero build window (section 01), "Idea of the week"
+ * (section 03) and "Inside every idea" (section 06). Weeks start Monday
+ * 00:00 UTC.
  *
  * The picks must hold for the whole week even though the page regenerates
  * hourly and the pool can change midweek (a publish, a retirement, OG art
@@ -17,6 +18,12 @@
  * A winner changes midweek only if that idea itself stops qualifying (for
  * example it is retired), or an idea published before Monday newly qualifies
  * and outranks it (roughly a 1-in-pool-size chance per such change).
+ *
+ * The hero is drawn apart from those two (WP58). It has its own pool, because
+ * the build window needs different data than the tiles, and its own hash salt,
+ * so adding it never moves the section 03 and 06 picks. It skips this week's
+ * section 03 and 06 winners and last week's hero, so the page never shows one
+ * idea twice at the top and the hero never repeats back to back.
  */
 
 const DAY_MS = 86_400_000;
@@ -56,13 +63,16 @@ function hash(text: string): number {
 
 export type WeeklyCandidate = { slug: string; publishedAt?: string };
 
-/** Candidates for week `w`, best first. Falls back to every candidate while the snapshot is too small. */
-function ranked<T extends WeeklyCandidate>(pool: readonly T[], w: number): T[] {
+/**
+ * Candidates for week `w`, best first. Falls back to every candidate while the
+ * snapshot is too small. `salt` keeps one draw's ranking independent of another's.
+ */
+function ranked<T extends WeeklyCandidate>(pool: readonly T[], w: number, salt = ""): T[] {
   const monday = new Date(EPOCH_MS + w * 7 * DAY_MS).toISOString().slice(0, 10);
   const snapshot = pool.filter((c) => (c.publishedAt ?? "") < monday);
   const list = snapshot.length >= 2 ? snapshot : [...pool];
   return list
-    .map((c) => ({ c, score: hash(`${w}:${c.slug}`) }))
+    .map((c) => ({ c, score: hash(`${salt}${w}:${c.slug}`) }))
     .sort((a, b) => b.score - a.score || a.c.slug.localeCompare(b.c.slug))
     .map((r) => r.c);
 }
@@ -76,13 +86,41 @@ function topTwo<T extends WeeklyCandidate>(pool: readonly T[], w: number, skip: 
 /** Weeks replayed before `now` so last week's picks are the ones it really showed. */
 const REPLAY_WEEKS = 4;
 
-export function pickWeekly<T extends WeeklyCandidate>(pool: readonly T[], now: Date): { spotlight: T; inside: T } | null {
-  if (pool.length === 0) return null;
-  const w = weekIndex(now);
+/** The two picks for each replayed week, oldest first, ending with the week of `now`. */
+function replayedPicks<T extends WeeklyCandidate>(pool: readonly T[], w: number): T[][] {
+  const weeks: T[][] = [];
   let picks: T[] = [];
   for (let week = w - REPLAY_WEEKS; week <= w; week++) {
     picks = topTwo(pool, week, new Set(picks.map((c) => c.slug)));
+    weeks.push(picks);
   }
+  return weeks;
+}
+
+export function pickWeekly<T extends WeeklyCandidate>(pool: readonly T[], now: Date): { spotlight: T; inside: T } | null {
+  if (pool.length === 0) return null;
+  const picks = replayedPicks(pool, weekIndex(now)).at(-1) ?? [];
   const [spotlight, inside = spotlight] = picks;
   return { spotlight, inside };
+}
+
+/**
+ * The hero for the week of `now`, drawn from `heroPool`. `pool` is the section
+ * 03 and 06 pool: its winners are skipped, replayed week by week so last
+ * week's hero is the one that really showed. Null only when `heroPool` is
+ * empty. Every candidate being taken is the one case a winner can repeat.
+ */
+export function pickHero<H extends WeeklyCandidate>(heroPool: readonly H[], pool: readonly WeeklyCandidate[], now: Date): H | null {
+  if (heroPool.length === 0) return null;
+  const w = weekIndex(now);
+  const weeks = pool.length === 0 ? [] : replayedPicks(pool, w);
+  let last: string | undefined;
+  let hero = heroPool[0];
+  for (let week = w - REPLAY_WEEKS; week <= w; week++) {
+    const taken = new Set((weeks[week - (w - REPLAY_WEEKS)] ?? []).map((c) => c.slug));
+    const order = ranked(heroPool, week, "hero:");
+    hero = order.find((c) => !taken.has(c.slug) && c.slug !== last) ?? order.find((c) => !taken.has(c.slug)) ?? order[0];
+    last = hero.slug;
+  }
+  return hero;
 }

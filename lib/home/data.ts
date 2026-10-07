@@ -13,19 +13,18 @@ import {
   categoryCounts,
   hasOgArt,
   isFeatureReady,
+  isHeroReady,
   liveIdeas,
   newestRows,
   ogArtPath,
   publishOrder,
   toolCounts,
 } from "./library";
-import { pickWeekly, weekLabel, weekStartUtc } from "./rotation";
+import { pickHero, pickWeekly, weekLabel, weekStartUtc } from "./rotation";
 import { shortTitle, stackChips } from "./text";
 import type { HomeData, IdeaExtract, InsideIdea, ManifestIdea, SpotlightIdea } from "./types";
 
 const IDEAS_DIR = "content/ideas";
-/** The idea inside the hero's build window. Falls back to this week's pick if it is ever retired. */
-const HERO_SLUG = "freelance-scope-creep-detector";
 
 type Loaded = { idea: ManifestIdea; extract: IdeaExtract; art: boolean };
 type PublicListing = Awaited<ReturnType<typeof fetchQuery<typeof api.editorial.public.listing>>>;
@@ -128,9 +127,12 @@ export async function getHomeData(): Promise<HomeData> {
     .filter((l) => isFeatureReady(l.idea, l.extract, l.art))
     .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
   const weekly = pickWeekly(pool, now);
-  const heroSource = bySlug.get(HERO_SLUG);
-  const featuredHero = heroSource && isFeatureReady(heroSource.idea, heroSource.extract, heroSource.art)
-    ? heroSource : weekly?.spotlight.loaded;
+  // The hero window needs its own data (prompts), not the tiles' (art, pricing),
+  // so it draws from its own pool and never doubles as the idea of the week.
+  const heroPool = loaded
+    .filter((l) => isHeroReady(l.idea, l.extract))
+    .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
+  const featuredHero = pickHero(heroPool, pool, now)?.loaded;
   const libraryNo = featuredHero
     ? publishOrder(ideas).findIndex((idea) => idea.slug === featuredHero.idea.slug) + 1 : 0;
   const heroCategory = featuredHero ? normalizeCategorySlug(featuredHero.idea.category) : "";

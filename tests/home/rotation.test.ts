@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { pickWeekly, weekIndex, weekLabel, weekStartUtc } from "../../lib/home/rotation";
+import { pickHero, pickWeekly, weekIndex, weekLabel, weekStartUtc } from "../../lib/home/rotation";
 
 const pool = Array.from({ length: 40 }, (_, i) => ({
   slug: `idea-${String(i).padStart(2, "0")}`,
@@ -58,5 +58,72 @@ describe("weekly rotation", () => {
     expect(pickWeekly([], new Date())).toBeNull();
     const one = pickWeekly([{ slug: "only", publishedAt: "2026-01-01" }], new Date());
     expect(slugs(one)).toEqual(["only", "only"]);
+  });
+});
+
+describe("weekly hero", () => {
+  // The hero pool overlaps the section 03 and 06 pool on purpose, so the skip rule is exercised.
+  const heroPool = pool;
+  const heroOf = (now: Date, h = heroPool, p = pool) => pickHero(h, p, now)!.slug;
+
+  test("the hero holds for the whole week and changes on Monday", () => {
+    const monday = heroOf(new Date("2026-09-21T00:00:00Z"));
+    expect(heroOf(new Date("2026-09-24T13:00:00Z"))).toBe(monday);
+    expect(heroOf(new Date("2026-09-27T23:59:59Z"))).toBe(monday);
+    expect(heroOf(new Date("2026-09-28T00:00:00Z"))).not.toBe(monday);
+  });
+
+  test("the hero never doubles as section 03 or 06 and never repeats back to back", () => {
+    let previous = "";
+    for (let d = 0; d < 80; d++) {
+      const now = new Date(Date.UTC(2026, 3, 6 + d * 7));
+      const hero = heroOf(now);
+      expect(slugs(pickWeekly(pool, now))).not.toContain(hero);
+      expect(hero).not.toBe(previous);
+      previous = hero;
+    }
+  });
+
+  test("a midweek publish or retirement keeps the hero unless it touches the winner", () => {
+    const now = new Date("2026-09-24T12:00:00Z");
+    const before = heroOf(now);
+    expect(heroOf(now, [...heroPool, { slug: "fresh", publishedAt: "2026-09-23" }])).toBe(before);
+    for (const gone of heroPool.filter((c) => c.slug !== before)) {
+      expect(heroOf(now, heroPool.filter((c) => c !== gone))).toBe(before);
+    }
+    for (let i = 0; i < 20; i++) {
+      const extra = { slug: `late-hero-${i}`, publishedAt: "2026-02-01" };
+      const after = heroOf(now, [...heroPool, extra]);
+      if (after !== extra.slug) expect(after).toBe(before);
+    }
+  });
+
+  test("adding the hero draw left the section 03 and 06 picks where they were", () => {
+    // Recorded from the pre-WP58 rotation code. A change here reshuffles every future week.
+    const golden = [
+      ["2026-09-07", "idea-22", "idea-23"],
+      ["2026-09-14", "idea-36", "idea-37"],
+      ["2026-09-21", "idea-06", "idea-07"],
+      ["2026-09-28", "idea-00", "idea-03"],
+      ["2026-10-05", "idea-08", "idea-09"],
+      ["2026-10-12", "idea-30", "idea-33"],
+    ];
+    expect(golden.map(([d]) => [d, ...slugs(pickWeekly(pool, new Date(`${d}T12:00:00Z`)))])).toEqual(golden);
+  });
+
+  test("the hero pool is independent of the section 03 and 06 pool", () => {
+    const now = new Date("2026-09-24T12:00:00Z");
+    const only = [{ slug: "no-art-idea", publishedAt: "2026-01-01" }, { slug: "also-no-art", publishedAt: "2026-01-02" }];
+    expect(only.map((c) => c.slug)).toContain(heroOf(now, only, []));
+    expect(only.map((c) => c.slug)).toContain(heroOf(now, only, pool));
+  });
+
+  test("empty and tiny hero pools", () => {
+    const now = new Date("2026-09-24T12:00:00Z");
+    expect(pickHero([], pool, now)).toBeNull();
+    expect(pickHero([], [], now)).toBeNull();
+    // Every candidate taken: the hero repeats a winner rather than hiding.
+    const one = [{ slug: "only", publishedAt: "2026-01-01" }];
+    expect(heroOf(now, one, one)).toBe("only");
   });
 });

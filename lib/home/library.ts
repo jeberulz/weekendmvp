@@ -74,6 +74,34 @@ export function isEngineIdea(idea: ManifestIdea): boolean {
 }
 
 /**
+ * The hero window pastes the first prompt in line by line, so a one-line
+ * prompt reads as a single wrapped blob. Eight lines fill the mobile window.
+ */
+export const HERO_MIN_LINES = 8;
+
+/** The title the extractor falls back to when a prompt block has none. */
+const GENERIC_PROMPT_TITLE = /^prompt\s*\d+$/i;
+
+/**
+ * An idea can be the weekly hero only when the build window has real content:
+ * three prompts with real titles, a first prompt long enough to paste in, a
+ * build time for the meter, and the citations behind the "Researched" stamp.
+ * The window shows no art, market, pricing or stack, so none of them is
+ * required here (WP58, owner ruling 2026-10-07).
+ */
+export function isHeroReady(idea: ManifestIdea, extract: IdeaExtract): boolean {
+  const first = extract.prompts[0];
+  return (
+    extract.prompts.length >= 3 &&
+    first !== undefined &&
+    first.lines.length >= HERO_MIN_LINES &&
+    extract.prompts.slice(0, 3).every((p) => !GENERIC_PROMPT_TITLE.test(p.title.trim())) &&
+    (idea.provenance?.citations ?? 0) >= 3 &&
+    Number(idea.buildTime) > 0
+  );
+}
+
+/**
  * An idea can be featured weekly only when every tile it feeds has data:
  * art, How it works, 3+ prompts, pricing, a market number, and 3+ sources
  * (owner ruling 2026-09-24, WP42 live homepage data). The rule is the same
