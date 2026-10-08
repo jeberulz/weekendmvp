@@ -1,6 +1,6 @@
-# WP62 Evidence - Pricing And Billing Research (2026-10-04)
+# WP63 Evidence - Pricing And Billing Research (2026-10-04)
 
-Supports `docs/wp/wp62-stories.md` and the rulings dated 2026-10-04 in `docs/wp/RULINGS.md` (renumbered from WP55 on 2026-10-07, so those rulings carry the label `WP55 / ...`). Collected in one planning session. Nothing here changed code, Stripe or production.
+Supports `docs/wp/wp63-stories.md` and the rulings dated 2026-10-04 in `docs/wp/RULINGS.md` (renumbered from WP55 to WP62 on 2026-10-07 and to WP63 on 2026-10-08, so those rulings carry the label `WP55 / ...`). Collected in one planning session. Nothing here changed code, Stripe or production.
 
 ## How to read this
 

@@ -1,8 +1,9 @@
-# WP62 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
+# WP63 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
 
-> Renumbered from WP55 on 2026-10-07 (see `docs/wp/RULINGS.md`): a local Codex branch,
-> `codex/wp55-price-acceptance`, already uses WP55. Entries dated before this note keep
-> the old WP55 label and the old `wp55-*` file names. Read them as WP62.
+> Renumbered twice (see `docs/wp/RULINGS.md`): WP55 became WP62 on 2026-10-07 because a local
+> Codex branch, `codex/wp55-price-acceptance`, already uses WP55. WP62 became WP63 on 2026-10-08
+> because `main` took WP62 for the public idea SEO summary. Entries dated before 2026-10-08 keep
+> the old WP55 or WP62 labels and the old `wp55-*` and `wp62-*` file names. Read them as WP63.
 
 Append-only progress log. Do not rely on chat history for project state. Treat this file as claims, not evidence. Verify before relying on a number.
 
