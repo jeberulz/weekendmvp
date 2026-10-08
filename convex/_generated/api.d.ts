@@ -36,6 +36,7 @@ import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
+import type * as paymentsBridge from "../paymentsBridge.js";
 import type * as platform_authz from "../platform/authz.js";
 import type * as platform_billing_catalog from "../platform/billing/catalog.js";
 import type * as platform_billing_checkout from "../platform/billing/checkout.js";
@@ -121,6 +122,7 @@ declare const fullApi: ApiFromModules<{
   ideas: typeof ideas;
   newsletter: typeof newsletter;
   payments: typeof payments;
+  paymentsBridge: typeof paymentsBridge;
   "platform/authz": typeof platform_authz;
   "platform/billing/catalog": typeof platform_billing_catalog;
   "platform/billing/checkout": typeof platform_billing_checkout;
