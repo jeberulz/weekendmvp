@@ -46,10 +46,12 @@ import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
 import { toPublicIdeas } from "@/lib/public/ideas";
+import { HubFaq, type HubFaqItem } from "@/components/hubs/HubFaq";
 import {
   SITE,
   breadcrumbSchema,
   buildGraph,
+  faqPageSchema,
   howToSchema,
   organizationSchema,
   personSchema,
@@ -118,6 +120,8 @@ type ToolPage = {
    * under the hero so searchers with a more specific intent can branch.
    */
   relatedHub?: { href: string; label: string; body: string; cta: string };
+  /** Extra article links rendered under the related-hub line. */
+  articleLinks?: Array<{ href: string; label: string }>;
   /**
    * Prominent crawl-priority internal links (hub + newest idea pages).
    * Rendered under the hero so Google’s frequently crawled tool pages
@@ -129,6 +133,11 @@ type ToolPage = {
    * Claude Code reuses the `claude` tag until a dedicated retag ships.
    */
   ideasTool?: string;
+  /**
+   * Question H2s + answers rendered after "What {name} is Best For".
+   * Visible in SSR HTML; also emitted as FAQPage JSON-LD when present.
+   */
+  faqs?: HubFaqItem[];
 };
 
 const TOOL_PAGES: Record<string, ToolPage> = {
@@ -197,6 +206,13 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         "These ideas lean on Cursor's strength — multi-file refactors, API work, and full-stack scaffolding — so you spend the weekend building product, not fighting the editor.",
     },
     crawlLinks: [...SEO_PRIORITY_LINKS, CURSOR_HYDRATION_LINK],
+    faqs: [
+      {
+        question: "What are some Cursor project examples?",
+        answer:
+          "Cursor shines on full-stack work across many files, so the best examples have a real backend: a Next.js and Supabase SaaS starter with magic-link auth, a streaming AI API route with rate limiting, or a DM booking agent for tattoo artists that takes Stripe deposits. Every idea below comes with a prompt you paste into Cursor.",
+      },
+    ],
   },
   claude: {
     slug: "claude",
@@ -280,17 +296,38 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       body: "If you want agentic coding in the terminal — CLIs, APIs, and full apps with real diffs — start on the Claude Code hub instead.",
       cta: "Browse Claude Code projects",
     },
+    articleLinks: [
+      {
+        href: "/articles/7-things-to-build-with-claude-code-this-weekend",
+        label: "7 Things to Build with Claude Code this Weekend →",
+      },
+    ],
     crawlLinks: SEO_PRIORITY_LINKS,
+    faqs: [
+      {
+        question: "What can I build with Claude?",
+        answer:
+          "Claude is strongest where the input is messy: rough notes, long threads, confusing code. Good weekend builds lean on that: an inbox agent that drafts replies in your voice, a plain-English error explainer for AI agents, or a weekly email that turns analytics into one action. Plan in Claude, paste the code into your editor, ship by Sunday.",
+      },
+      {
+        question: "What are Claude Projects, and do they help you build?",
+        answer:
+          "Claude Projects are workspaces inside claude.ai. You set custom instructions once and upload a few reference files, and every chat in that project inherits both. For a weekend build, make one Project per product so Claude remembers your user, scope, and stack. Projects are for thinking and planning. Claude Code is what edits files.",
+        readMore: {
+          href: "/articles/claude-projects-for-founders",
+          label: "Set one up: Claude Projects for Founders →",
+        },
+      },
+    ],
   },
   "claude-code": {
     slug: "claude-code",
     name: "Claude Code",
     h1: "Claude Code Projects & Things to Build",
-    titlePattern:
-      "Claude Code Projects: {count} Things to Build in the Terminal",
+    titlePattern: "Claude Code Projects: {count} Things to Build",
     legacyCount: 30,
     metaDescription:
-      "Claude Code projects and things to build in your terminal. Agentic coding for CLIs, APIs, and full apps — copy a starter prompt and ship this weekend.",
+      "What can you build with Claude Code? CLIs, APIs, and full apps, each with a starter prompt and scoped so you can ship one this weekend.",
     description:
       "Claude Code is Anthropic's agentic coding tool in the terminal. Point it at a repo (or an empty folder), describe the product, and it plans, edits files, runs commands, and iterates until the MVP works. Best when you want real code — not a chat draft — and you're comfortable reviewing diffs.",
     url: "https://claude.ai/code",
@@ -352,16 +389,26 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       cta: "Browse Build with Claude",
     },
     ideasTool: "claude",
+    faqs: [
+      {
+        question: "What can I build with Claude Code?",
+        answer:
+          "Anything you can describe and then review as a diff: TypeScript CLIs, working APIs with seed data, and full Next.js MVPs with auth and one core workflow. Weekend-sized picks include a dashboard of what your AI coding agents shipped overnight, a cost tracker for your OpenAI and Anthropic bills, and a plain-English accessibility scanner.",
+        readMore: {
+          href: "/articles/7-things-to-build-with-claude-code-this-weekend",
+          label: "7 Things You Can Build This Weekend with Claude Code →",
+        },
+      },
+    ],
   },
   bolt: {
     slug: "bolt",
     name: "Bolt.new",
     h1: "Bolt.new Project Ideas & Examples",
-    titlePattern:
-      "Bolt.new Project Ideas: {count} Examples to Build & Deploy in the Browser",
+    titlePattern: "Bolt.new Projects & Examples: {count} Apps to Ship",
     legacyCount: 28,
     metaDescription:
-      "Bolt.new project ideas and examples you can build this weekend. Prompt a full-stack app in the browser, iterate in chat, and deploy with one click.",
+      "Bolt.new projects and examples you can build in the browser this weekend: landing pages, form tools, and simple SaaS, each with a starter prompt.",
     description:
       "Bolt.new turns a plain-English prompt into a full-stack web app in your browser — UI, logic, and deploy included. Ideal for weekend MVPs: landing pages, form tools, and simple SaaS you can share the same day.",
     url: "https://bolt.new",
@@ -416,6 +463,13 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These fit Bolt's sweet spot — browser-native full-stack apps, landing pages, and form tools you can prompt, refine, and deploy without opening a local IDE.",
     },
+    faqs: [
+      {
+        question: "What apps can you build with Bolt.new?",
+        answer:
+          "Bolt.new is best for web apps you build in the browser and share the same day: landing pages, form tools that turn inputs into results, waitlists, and simple SaaS dashboards. Good weekend picks include a waitlist manager with referrals, an AI meeting-notes cleaner, and a rental maintenance dashboard. Prompt it, iterate in chat, then click Deploy.",
+      },
+    ],
   },
   lovable: {
     slug: "lovable",
@@ -481,15 +535,31 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas play to Lovable's strength — full-stack apps with auth, dashboards, and deployable UIs from a plain-English brief.",
     },
+    faqs: [
+      {
+        question: "What are the best Lovable projects to build?",
+        answer:
+          "The best Lovable projects are full-stack apps with login, a dashboard, and one clear job, because that is what Lovable builds well from plain English. Strong picks: a white-label client portal with Stripe payments, a waitlist with referral tracking, a feature-voting board, or an MRR and churn dashboard. Ship one, then iterate in chat.",
+      },
+      {
+        question: "What can you build with Lovable?",
+        answer:
+          "Lovable builds web apps from a description: landing pages with an email waitlist, SaaS dashboards with login, and personal finance trackers with charts, often on a Supabase backend. It handles the stack and deployment, so your weekend goes into scope and copy. For real examples and scoping rules, read Lovable Examples: 9 Apps Worth Building.",
+        readMore: {
+          href: "/articles/lovable-examples-what-to-build",
+          label: "Lovable Examples: 9 Apps Worth Building →",
+        },
+      },
+    ],
   },
   "no-code": {
     slug: "no-code",
     name: "No-Code Tools",
     h1: "No-Code MVP Ideas for Non-Technical Founders",
-    titlePattern: "No-Code MVP Ideas — Best Tools to Validate Without Coding",
+    titlePattern: "Best No-Code Tools for an MVP + Ideas to Ship",
     legacyCount: 8,
     metaDescription:
-      "No-code MVP ideas for non-technical founders. Use Bubble, Softr, or Glide to validate before you hire a developer. Pick an idea and ship this weekend.",
+      "The best no-code tools for an MVP: Bubble for web apps, Softr for Airtable portals, Glide for mobile. Pick a tool, pick an idea, ship this weekend.",
     description:
       "Looking for the best no-code tools for an MVP? Start here. Bubble for complex web apps, Softr for Airtable-powered sites, Glide for mobile apps from spreadsheets. If you can use a spreadsheet, you can ship a validating MVP without writing code — or hiring an engineer yet.",
     url: "https://bubble.io",
@@ -544,18 +614,28 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "Built for non-technical founders — marketplaces, portals, and schedulers you can stand up in Bubble, Softr, or Glide before writing a line of code.",
     },
+    faqs: [
+      {
+        question: "What are the best no-code tools for an MVP?",
+        answer:
+          "It depends on what the MVP has to prove. Bubble handles complex web apps with logic and logins. Softr turns an Airtable base into a directory or portal. Glide turns a Google Sheet into a mobile app. If you would rather describe the app in plain English, AI builders like Lovable and Bolt.new are the faster path.",
+        inlineLinks: [
+          { text: "Lovable", href: "/build-with/lovable" },
+          { text: "Bolt.new", href: "/build-with/bolt" },
+        ],
+      },
+    ],
   },
   replit: {
     slug: "replit",
     name: "Replit",
     h1: "Replit Project Examples & App Ideas",
-    titlePattern:
-      "Replit Project Examples & App Ideas ({count}) You Can Deploy Instantly",
+    titlePattern: "Replit Projects & Examples: {count} Apps to Deploy",
     legacyCount: 30,
     metaDescription:
-      "Replit project examples and app ideas you can build this weekend. Code in the browser, get help from Agent, deploy with one click.",
+      "Replit projects and examples you can finish this weekend: bots, APIs, and small web apps with starter prompts. Build with Agent, deploy in one click.",
     description:
-      "Code, create, and learn together with a powerful, simple, and collaborative IDE, compiler, and interpreter.",
+      "Replit is a browser IDE with an AI Agent and one-click Deploy. Describe the app, let Agent scaffold it, and share a live URL the same day. It's ideal for bots, APIs, and small web apps you want people using by Sunday.",
     url: "https://replit.com",
     icon: Terminal,
     operatingSystem: "Web",
@@ -609,6 +689,17 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "Browser IDE + Agent + one-click Deploy — these ideas are small enough to finish and public enough to share the moment they run.",
     },
+    faqs: [
+      {
+        question: "What are some Replit project examples?",
+        answer:
+          "Replit suits small apps you want public fast: a Flask landing page that stores emails in Replit's built-in database, an Express API that reshapes third-party data, or a Discord bot. From the idea library, try a daily standup bot, an invoice reminder bot, or an AI code reviewer. Agent helps write it, and Deploy puts it online.",
+        readMore: {
+          href: "/articles/replit-project-ideas-weekend",
+          label: "Replit Project Ideas for a Weekend →",
+        },
+      },
+    ],
   },
   v0: {
     slug: "v0",
@@ -915,6 +1006,9 @@ function buildSchema(page: ToolPage, data: ToolData) {
       { label: "Build With", href: "/build-with/" },
       { label: page.name, href: url },
     ]),
+    page.faqs?.length
+      ? faqPageSchema(page.faqs, { id: `${url}#faq` })
+      : null,
   );
 }
 
@@ -1006,17 +1100,29 @@ async function CachedToolHub({ slug }: { slug: string }) {
         </div>
       </PageHeader>
 
-      {page.relatedHub ? (
-        <Container className="pt-10">
-          <p className="max-w-3xl text-[15px] leading-[1.6] text-home-ink-2">
-            <span className="font-medium text-home-ink">{page.relatedHub.label}</span> {page.relatedHub.body}{" "}
-            <Link
-              href={page.relatedHub.href}
-              className="text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
-            >
-              {page.relatedHub.cta}
-            </Link>
-          </p>
+      {page.relatedHub || (page.articleLinks && page.articleLinks.length > 0) ? (
+        <Container className="flex flex-col gap-3 pt-10">
+          {page.relatedHub ? (
+            <p className="max-w-3xl text-[15px] leading-[1.6] text-home-ink-2">
+              <span className="font-medium text-home-ink">{page.relatedHub.label}</span> {page.relatedHub.body}{" "}
+              <Link
+                href={page.relatedHub.href}
+                className="text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+              >
+                {page.relatedHub.cta}
+              </Link>
+            </p>
+          ) : null}
+          {page.articleLinks?.map((link) => (
+            <p key={link.href} className="max-w-3xl text-[15px] leading-[1.6] text-home-ink-2">
+              <Link
+                href={link.href}
+                className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+              >
+                {link.label}
+              </Link>
+            </p>
+          ))}
         </Container>
       ) : null}
 
@@ -1046,6 +1152,10 @@ async function CachedToolHub({ slug }: { slug: string }) {
             </div>
           </Container>
         </section>
+      ) : null}
+
+      {page.faqs?.length ? (
+        <HubFaq items={page.faqs} variant="questions" labelledBy="strengths-heading" />
       ) : null}
 
       {/* Curated "start here" set — editorial, above the full list */}

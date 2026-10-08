@@ -1,13 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, type KeyboardEvent } from "react";
 
+import { HERO_CTA_LOCATION, heroCta, heroIdeaHref } from "@/lib/home/hero-cta";
 import { HERO_TOOLS, heroPromptLines, type HeroTool } from "@/lib/home/hero-prompt";
 import type { HeroIdea } from "@/lib/home/types";
 import { trackEvent } from "@/lib/track";
+import { useSessionHint } from "@/lib/use-session-hint";
 import { cn } from "@/lib/utils";
+import { Icon } from "../icons";
 import { TOOL_NAME, ToolLogo } from "../tool-logos";
-import { CategoryTag, WeekendMeter, introDelay } from "../ui";
+import { CategoryTag, WeekendMeter, buttonClass, introDelay } from "../ui";
 import { CopyButton } from "./CopyButton";
 
 const TOOLS: readonly HeroTool[] = HERO_TOOLS;
@@ -19,11 +23,13 @@ const TOOLS: readonly HeroTool[] = HERO_TOOLS;
  * (`lib/home/hero-prompt.ts`), and the copied text matches what is shown. On
  * first paint the rows paste in one by one from `pasteFrom` seconds (CSS,
  * `.home-paste`). Every tab has the same number of rows, so switching tabs
- * swaps text in place and never replays.
+ * swaps text in place and never replays. Under the prompt, one link takes the
+ * visitor to the idea (`lib/home/hero-cta.ts`): the funnel step after copying.
  */
 export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea; total: number; pasteFrom?: number }) {
   const [active, setActive] = useState<HeroTool>("cursor");
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const cta = heroCta(useSessionHint());
 
   function select(tool: HeroTool) {
     if (tool === active) return;
@@ -146,6 +152,26 @@ export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea
               </div>
             ))}
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-transparent to-home-ink" />
+          </div>
+          <div className="flex flex-col gap-3 border-t border-home-dr px-3.5 py-3.5 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-5 lg:py-4">
+            <p className="text-[13px] leading-[1.5] text-home-d2 lg:max-w-[320px]">{cta.note}</p>
+            <Link
+              href={heroIdeaHref(idea.slug)}
+              onClick={() =>
+                trackEvent("cta_button_clicked", {
+                  button_location: HERO_CTA_LOCATION,
+                  button_text: cta.label,
+                  audience: cta.audience,
+                  idea_slug: idea.slug,
+                  tool: active,
+                })
+              }
+              className={buttonClass("dark", "h-11 w-full shrink-0 px-5 text-sm lg:h-12 lg:w-auto")}
+            >
+              {cta.label}
+              <span className="sr-only"> for {idea.title}</span>
+              <Icon name="arrow" size={16} strokeWidth={1.75} />
+            </Link>
           </div>
         </div>
       </div>

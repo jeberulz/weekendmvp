@@ -8,7 +8,13 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { FooterCta } from "@/components/public/FooterCta";
 import { Breadcrumbs, MetaLine } from "@/components/public/PageHeader";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { SITE, articleSchema } from "@/lib/seo";
+import {
+  SITE,
+  articleSchema,
+  buildGraph,
+  faqPageSchema,
+  type FaqEntry,
+} from "@/lib/seo";
 import { articleMdxComponents } from "../article-prose";
 
 const CONTENT_DIR = "content/articles";
@@ -22,6 +28,8 @@ type ArticleFrontmatter = {
   wordCount?: number;
   readMinutes?: number;
   heroAlt?: string;
+  /** Copied verbatim from the visible FAQ; emitted as FAQPage JSON-LD. */
+  faq?: FaqEntry[];
 };
 
 type Article = { frontmatter: ArticleFrontmatter; content: string };
@@ -139,17 +147,31 @@ async function CachedArticle({ slug }: { slug: string }) {
   const displayDate = formatDate(fm.publishedAt);
   const ogImage = `${SITE}/image/og/article/${slug}.png`;
 
-  // Mirrors the legacy per-article JSON-LD Article block (same author shape).
-  const schema = {
-    "@context": "https://schema.org",
-    ...articleSchema({
-      title: fm.title,
-      description: fm.description,
-      slug,
-      datePublished: fm.publishedAt,
-      image: ogImage,
-    }),
-  };
+  const articleNode = articleSchema({
+    title: fm.title,
+    description: fm.description,
+    slug,
+    datePublished: fm.publishedAt,
+    image: ogImage,
+  });
+  const faqItems = Array.isArray(fm.faq)
+    ? fm.faq.filter(
+        (item): item is FaqEntry =>
+          typeof item?.question === "string" &&
+          typeof item?.answer === "string" &&
+          item.question.length > 0 &&
+          item.answer.length > 0,
+      )
+    : [];
+  const schema =
+    faqItems.length > 0
+      ? buildGraph(
+          articleNode,
+          faqPageSchema(faqItems, {
+            id: `${SITE}/articles/${slug}#faq`,
+          }),
+        )
+      : { "@context": "https://schema.org", ...articleNode };
 
   return (
     <>
