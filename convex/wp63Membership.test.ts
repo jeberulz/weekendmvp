@@ -141,14 +141,14 @@ describe("WP63-S2 price ladder", () => {
     expect(PRICE_KEY_VALUES.map(amountForPriceKey)).toEqual([2_900, 19_900, 24_900, 34_900]);
   });
 
-  test("UI strings derive from the ladder, and today's monthly copy is unchanged until S6", () => {
+  test("UI strings derive from the ladder (S6 moved the plan copy to it)", () => {
     expect(formatUsd(2_900)).toBe("$29");
     expect(formatUsd(19_900)).toBe("$199");
     expect(formatUsd(2_950)).toBe("$29.50");
     expect(formatUsd(2_905)).toBe("$29.05");
     expect(ANNUAL_SAVING_PERCENT).toBe(43);
     expect(PLANS.builders_hub.priceMonthlyUsd).toBe(29);
-    expect(PLANS.builders_hub.priceLabel).toBe("$29 a month, billed monthly");
+    expect(PLANS.builders_hub.priceLabel).toBe("$29 a month or $199 a year");
     expect(UPGRADE_LABEL).toBe("Upgrade to Builder’s Hub · $29/mo");
   });
 });
@@ -498,6 +498,65 @@ describe("WP63-S2 founding seats (operator seed)", () => {
     expect(await errorCode(() => t.mutation(internal.platform.membership.seats.seed, { apply: true }))).toBe(
       "SEAT_TABLE_OVERFLOW",
     );
+  });
+});
+
+describe("WP63-S6 seat query for the ladder", () => {
+  async function seed(t: T) {
+    await t.mutation(internal.platform.membership.seats.seed, { apply: true });
+  }
+
+  async function setSeat(t: T, seatNumber: number, status: "reserved" | "taken", ownerId: Id<"users">) {
+    const orderId = await addOrder(t, ownerId);
+    await t.run(async (ctx) => {
+      const row = await ctx.db
+        .query("founding_seats")
+        .withIndex("by_seatNumber", (q) => q.eq("seatNumber", seatNumber))
+        .unique();
+      if (!row) throw new Error("seat missing");
+      await ctx.db.patch("founding_seats", row._id, {
+        status,
+        ownerId,
+        orderId,
+        ...(status === "reserved" ? { reservedUntil: 9 } : {}),
+        updatedAt: 2,
+      });
+    });
+  }
+
+  test("signed-in members only", async () => {
+    const t = convexTest(schema, modules);
+    await expect(t.query(api.platform.membership.queries.ladder, {})).rejects.toThrow("UNAUTHENTICATED");
+  });
+
+  test("before the seed, Founding Lifetime is not open", async () => {
+    const t = convexTest(schema, modules);
+    const member = await seedUser(t, "early@example.test");
+    expect(await asUser(t, member).query(api.platform.membership.queries.ladder, {})).toEqual({
+      open: false,
+      seatsTotal: 50,
+      seatsLeft: 0,
+      seatsHeld: 0,
+      nextSeatAmountMinor: null,
+    });
+  });
+
+  test("the next free seat sets the price, held seats are counted apart, and sold out has no price", async () => {
+    const t = convexTest(schema, modules);
+    const member = await seedUser(t, "ladder@example.test");
+    const buyer = await seedUser(t, "buyer@example.test");
+    await seed(t);
+    const ladder = () => asUser(t, member).query(api.platform.membership.queries.ladder, {});
+    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 50, seatsHeld: 0, nextSeatAmountMinor: 24_900 });
+
+    for (let seat = 1; seat <= 14; seat += 1) await setSeat(t, seat, "taken", buyer.userId);
+    await setSeat(t, 15, "reserved", buyer.userId);
+    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 35, seatsHeld: 1, nextSeatAmountMinor: 34_900 });
+
+    for (let seat = 16; seat <= 50; seat += 1) await setSeat(t, seat, "taken", buyer.userId);
+    const soldOut = await ladder();
+    expect(soldOut).toEqual({ open: true, seatsTotal: 50, seatsLeft: 0, seatsHeld: 1, nextSeatAmountMinor: null });
+    expect(JSON.stringify(soldOut)).not.toMatch(/owner|order|users|membership_orders/);
   });
 });
 

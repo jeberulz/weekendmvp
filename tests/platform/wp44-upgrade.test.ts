@@ -7,6 +7,7 @@ import tagSource from "../../components/platform/plan/BuildersHubTag.tsx?raw";
 import planCardSource from "../../components/platform/plan/PlanCard.tsx?raw";
 import sheetSource from "../../components/platform/plan/UpgradeSheet.tsx?raw";
 import comparisonSource from "../../components/platform/plan/PlanComparison.tsx?raw";
+import ladderSource from "../../components/platform/plan/MembershipLadder.tsx?raw";
 import startPlanSource from "../../components/platform/builds/StartPlan.tsx?raw";
 import planAndBillingSource from "../../components/platform/billing/PlanAndBilling.tsx?raw";
 import shellSource from "../../components/platform/shell/WorkspaceShell.tsx?raw";
@@ -61,9 +62,10 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
     expect(sheetSource).toContain("<Dialog.Description");
     expect(sheetSource).toMatch(/<Dialog\.Close asChild>\s*<button[^>]*>\s*Not now/);
     expect(sheetSource).toContain("freeWayForward.onSelect");
-    expect(sheetSource).toContain("{UPGRADE_LABEL}");
+    // WP63-S6: the button names the chosen term's price and starts checkout for it.
+    expect(sheetSource).toContain("upgradeLabel(term, lifetime.amount)");
     expect(sheetSource).toContain('name: "upgrade_prompt_viewed", props: { surface: "sheet", feature }');
-    expect(sheetSource).toContain('name: "upgrade_clicked", props: { surface: "sheet", feature }');
+    expect(sheetSource).toContain('name: "upgrade_clicked", props: { surface: "sheet", feature, term }');
     expect(sheetSource).toContain('<caption className="sr-only">');
   });
 
@@ -86,25 +88,33 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
   test("Plan and billing: the table, a Current plan label, and no upsell for Builder's Hub", () => {
     expect(comparisonSource).toContain("<CurrentLabel />");
     expect(comparisonSource).toContain('<th scope="row"');
-    expect(comparisonSource).toContain('id="builders-hub"');
-    expect(comparisonSource).toContain('{current === "free" ? (');
+    // WP63-S6: the ladder replaced "Not open yet", for free members past day one only.
+    expect(ladderSource).toContain('id="builders-hub"');
+    expect(comparisonSource).toContain("{ladderVisible ? <MembershipLadder /> : null}");
+    expect(comparisonSource).toMatch(/entitlements\.plan === "free" &&\s*showUpsell &&/);
     expect(comparisonSource).toContain('surface: "billing"');
-    expect(BILLING_COMPARISON.at(-1)).toEqual({ label: "Price", free: "Free", hub: "$29 a month, billed monthly" });
+    expect(BILLING_COMPARISON.at(-1)).toEqual({
+      label: "Price",
+      free: "Free",
+      hub: "$29 a month or $199 a year, or one Founding Lifetime payment",
+    });
   });
 });
 
 describe("WP44-S10 copy rules", () => {
-  test("monthly only, no hosting or credits (R5, R9), and never the id `builder`", () => {
+  // Monthly only until the ladder ruling ("WP55 / price ladder", 2026-10-04).
+  // WP63-S6 sells annual and Founding Lifetime, so only R5 and R9 stay banned.
+  test("no hosting or credits (R5, R9), and never the id `builder`", () => {
     for (const [path, source] of Object.entries(planComponents)) {
       const code = withoutComments(source);
-      expect(code, path).not.toMatch(/hosting|credit|publish|yearly|annual/i);
+      expect(code, path).not.toMatch(/hosting|credit|publish/i);
       expect(code, path).not.toMatch(/["']builder["']/);
       // The price and name come from the plan constant, never typed out.
       expect(code, path).not.toContain("$29");
       expect(code, path).not.toContain("Builder’s Hub");
     }
     expect(UPGRADE_LABEL).toContain(`$${PLANS.builders_hub.priceMonthlyUsd}/mo`);
-    expect(JSON.stringify(BILLING_COMPARISON)).not.toMatch(/hosting|credit|publish|annual/i);
+    expect(JSON.stringify(BILLING_COMPARISON)).not.toMatch(/hosting|credit|publish/i);
   });
 
   test("no countdowns, fake discounts or pre-checked boxes", () => {

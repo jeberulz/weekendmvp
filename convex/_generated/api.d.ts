@@ -61,6 +61,7 @@ import type * as platform_legacyIdeas from "../platform/legacyIdeas.js";
 import type * as platform_libraryFilters from "../platform/libraryFilters.js";
 import type * as platform_libraryResults from "../platform/libraryResults.js";
 import type * as platform_membership_comp from "../platform/membership/comp.js";
+import type * as platform_membership_queries from "../platform/membership/queries.js";
 import type * as platform_membership_seats from "../platform/membership/seats.js";
 import type * as platform_membership_state from "../platform/membership/state.js";
 import type * as platform_membership_validators from "../platform/membership/validators.js";
@@ -152,6 +153,7 @@ declare const fullApi: ApiFromModules<{
   "platform/libraryFilters": typeof platform_libraryFilters;
   "platform/libraryResults": typeof platform_libraryResults;
   "platform/membership/comp": typeof platform_membership_comp;
+  "platform/membership/queries": typeof platform_membership_queries;
   "platform/membership/seats": typeof platform_membership_seats;
   "platform/membership/state": typeof platform_membership_state;
   "platform/membership/validators": typeof platform_membership_validators;

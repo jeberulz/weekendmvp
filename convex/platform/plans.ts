@@ -83,9 +83,9 @@ export const PLANS = {
   builders_hub: {
     id: "builders_hub",
     name: "Builder’s Hub",
-    // Monthly only until WP63-S6 moves the copy to the full ladder.
     priceMonthlyUsd: PRICING.monthly.amountMinor / 100,
-    priceLabel: `${formatUsd(PRICING.monthly.amountMinor)} a month, billed monthly`,
+    // WP63-S6: the ladder. Founding Lifetime is limited, so it is named where seats show.
+    priceLabel: `${formatUsd(PRICING.monthly.amountMinor)} a month or ${formatUsd(PRICING.annual.amountMinor)} a year`,
     adds: [
       "Collections and a private note on each idea",
       "Unlimited weekend plans, with history",
@@ -126,17 +126,84 @@ export const PLAN_COMPARISON: readonly { feature: GatedFeature; free: string; hu
 
 /** Plan and billing's table: what each plan includes, row by row (PRD 6.5, member columns). */
 export const BILLING_COMPARISON: readonly { label: string; free: string; hub: string }[] = [
-  { label: "Ideas, scores, sources and prompts", free: "Every idea", hub: "Every idea" },
+  // WP57 gates research behind a free account. No plan ever paywalls it.
+  { label: "Ideas, scores, sources and prompts", free: "Every idea, never paywalled", hub: "Every idea, never paywalled" },
   { label: "Search and filter", free: "Whole library, plus For you", hub: "Whole library, plus For you" },
   { label: "Saved ideas", free: "Unlimited, in one list", hub: "Unlimited, plus collections and notes" },
   { label: "Weekend plans", free: "1 active plan", hub: "Unlimited, with history" },
   { label: "Prompts", free: "Copy any prompt", hub: "Copy, plus prompt pack export" },
   { label: "Compare ideas", free: "Not included", hub: "Up to 4 side by side" },
-  { label: "Price", free: PLANS.free.priceLabel, hub: PLANS.builders_hub.priceLabel },
+  {
+    label: "Price",
+    free: PLANS.free.priceLabel,
+    hub: `${PLANS.builders_hub.priceLabel}, or one Founding Lifetime payment`,
+  },
 ];
 
-/** The upgrade button's label, from the plan constant. */
-export const UPGRADE_LABEL = `Upgrade to ${PLANS.builders_hub.name} · $${PLANS.builders_hub.priceMonthlyUsd}/mo`;
+/** How a member pays. Same values as the Checkout route contract and the schema. */
+export type MembershipTerm = "monthly" | "annual" | "lifetime";
+
+/** The first lifetime tranche's price, used when no seat count is known. */
+const FIRST_LIFETIME_AMOUNT = PRICING.lifetime.tranches[0].amountMinor;
+
+/**
+ * WP63-S6. What each term costs and how it renews, in plain words. Every
+ * amount comes from `PRICING`. A lifetime seat's price depends on the next
+ * free seat, so the caller passes it.
+ */
+type TermCopy = {
+  name: string;
+  /** For a button: "$29/mo". */
+  short: (lifetimeAmountMinor?: number) => string;
+  /** Price, billing period and renewal: "$199 billed once a year. Renews until you cancel." */
+  terms: (lifetimeAmountMinor?: number) => string;
+};
+
+export const TERM_COPY: Record<MembershipTerm, TermCopy> = {
+  monthly: {
+    name: "Monthly",
+    short: () => `${formatUsd(PRICING.monthly.amountMinor)}/mo`,
+    terms: () => `${formatUsd(PRICING.monthly.amountMinor)} billed every month. Renews until you cancel.`,
+  },
+  annual: {
+    name: "Annual",
+    short: () => `${formatUsd(PRICING.annual.amountMinor)}/yr`,
+    terms: () => `${formatUsd(PRICING.annual.amountMinor)} billed once a year. Renews until you cancel.`,
+  },
+  lifetime: {
+    name: "Founding Lifetime",
+    short: (amount = FIRST_LIFETIME_AMOUNT) => `${formatUsd(amount)} once`,
+    terms: (amount = FIRST_LIFETIME_AMOUNT) => `${formatUsd(amount)} once. No renewal.`,
+  },
+};
+
+/** The real saving, stated against what it is measured from. No strike-through price. */
+export const ANNUAL_SAVING_LINE = `Save ${ANNUAL_SAVING_PERCENT}% compared with 12 months of monthly`;
+
+/** How the two lifetime prices work, from the tranches. */
+export const LIFETIME_TRANCHE_LINE = PRICING.lifetime.tranches
+  .map((tranche) => `${formatUsd(tranche.amountMinor)} for seats ${tranche.firstSeat} to ${tranche.lastSeat}`)
+  .join(", then ");
+
+/** Ruling "WP55 / refunds": 30 days from the first purchase, full refund. */
+export const REFUND_LINE = "Full refund within 30 days of your first payment.";
+
+/** Neutral until O1 picks the tax mechanism. True under either choice. */
+export const TAX_LINE = "Prices in US dollars. Any tax is shown at checkout before you pay.";
+
+/** WP63-S9 publishes these pages. Checkout stays closed (S12) until they exist and are reviewed. */
+export const MEMBERSHIP_LEGAL_LINKS = [
+  { label: "Terms", href: "/terms" },
+  { label: "Refund policy", href: "/refund-policy" },
+] as const;
+
+/** The upgrade button's label for a term, from the plan constant. */
+export function upgradeLabel(term: MembershipTerm, lifetimeAmountMinor?: number): string {
+  return `Upgrade to ${PLANS.builders_hub.name} · ${TERM_COPY[term].short(lifetimeAmountMinor)}`;
+}
+
+/** The monthly label, as PRD 6.6 shows it. */
+export const UPGRADE_LABEL = upgradeLabel("monthly");
 
 /**
  * Every Builder's Hub surface stays hidden until the owner turns this on

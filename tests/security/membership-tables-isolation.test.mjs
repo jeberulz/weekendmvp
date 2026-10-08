@@ -115,7 +115,8 @@ test("outside the module, only the read-only membership modules are imported", a
     for (const file of await sourceFiles(dir)) {
       if (inMembership(file)) continue;
       const source = code(await read(file));
-      for (const match of source.matchAll(/from\s+"([^"]*\/membership\/([^"/]+))"/g)) {
+      // Only the Convex module counts. `app/api/platform/membership/` is the route contract.
+      for (const match of source.matchAll(/from\s+"((?:[^"]*convex\/platform|\.{1,2})\/membership\/([^"/]+))"/g)) {
         if (!["state", "validators"].includes(match[2])) offenders.push(`${file}: ${match[1]}`);
       }
     }

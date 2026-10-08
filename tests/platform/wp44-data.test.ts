@@ -114,6 +114,10 @@ describe("WP44-S3 dashboard events", () => {
         "upgrade_prompt_viewed",
         "weekend_plan_started",
         "weekend_step_completed",
+        // WP63-S6.
+        "checkout_started",
+        "checkout_completed",
+        "founding_seat_taken",
       ].sort(),
     );
     const keys = Object.values(DASHBOARD_EVENT_PROPS).flat();

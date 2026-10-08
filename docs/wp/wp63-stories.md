@@ -171,6 +171,7 @@ Recommended defaults are mine. They are not rulings. Each needs a ruling in `doc
     - Events: `upgrade_clicked` carries the term, `checkout_started` fires from the client, and paid outcomes (`checkout_completed`, `founding_seat_taken`) fire once per order only after `entitlements.mine` confirms. No email or free text in any event. Revenue reporting comes from Stripe, not GA.
     - WCAG 2.1 AA at 390 px and 1440 px: the term selector is a radio group, focus order is logical, seat-count changes are announced politely and rarely, contrast follows the WP42 tokens.
   - Verification: component tests, axe at both widths, keyboard-only journey, `npm run lint`.
+  - Status 2026-10-08: built on the branch behind the flag, not merged. The route contract S3 and S5 must follow is `app/api/platform/membership/_contract.ts`. Until S3 ships, the buy button answers "Checkout isn’t open yet". Not built because their decisions are open: the O6 invite parameter, O1 tax wording (a neutral line stands in), O3 lifetime wording, and any O5 surface for subscribers. The Terms and refund links point at `/terms` and `/refund-policy`, which S9 must publish. Details in `docs/wp/wp63-progress.md`.
 
 - [ ] `WP63-S7` - Founding offer: cohorts, windows and the seat counter
   - Scope: `convex/schema.ts` (`offer_cohorts`, in the S2 schema window), `convex/platform/membership/offer.ts`, `convex/platform/membership/cohorts.ts`, `lib/dashboard/offers.ts` (new `founding_lifetime` kind), the `offer` query in `convex/platform/dashboard.ts`, an operator import script, tests.

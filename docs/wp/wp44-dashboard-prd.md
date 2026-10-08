@@ -344,6 +344,11 @@ Why these lines:
 - No credit packs for now (R9). One monthly price is easier to explain while
   the product leads with ideas.
 
+WP63 replaced "monthly only" with the ladder (ruling "WP55 / price ladder",
+2026-10-04): $29 a month, $199 a year, or a Founding Lifetime seat. WP63-S6
+moved the Price row and the upgrade label to it. The copy lives in
+`convex/platform/plans.ts` (`PRICING`, `TERM_COPY`, `upgradeLabel`).
+
 ### 6.6 Upgrade surfaces
 
 Allowed surfaces, and nothing else:
