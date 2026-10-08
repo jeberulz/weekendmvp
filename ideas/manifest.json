@@ -912,7 +912,7 @@
       "title": "Freelance Scope Creep Detector: Spot Unpaid Work & Upsell Change Orders",
       "publishedAt": "2026-07-22",
       "category": "productivity",
-      "description": "Freelance scope creep detector that watches client requests, flags out-of-scope work, and turns it into paid change orders before unpaid hours eat your margin.",
+      "description": "Detect freelance scope creep in Slack and email, flag out-of-scope requests, and draft paid change orders before unpaid hours eat your margin.",
       "buildTime": "8",
       "revenueGoal": "5k-month",
       "applicationCategory": "ProductivityApplication",
