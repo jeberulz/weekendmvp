@@ -24,7 +24,9 @@ import {
   softwareApplicationSchema,
 } from "@/lib/seo";
 import { EmailGate } from "@/components/ideas/EmailGate";
+import { IdeaPublicSummary } from "@/components/ideas/IdeaPublicSummary";
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
+import { buildPublicIdeaPreview } from "@/lib/ideas/public-preview";
 import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
 import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
@@ -223,19 +225,21 @@ export async function generateMetadata({
   const { title, description, ogImage } = resolved;
   const url = `${SITE}/ideas/${slug}`;
   const ogImageAbs = `${SITE}${ogImage}`;
-  // Query-first titles live in MDX/manifest; keep the brand suffix short so
-  // the concrete promise stays inside SERP display length.
-  const fullTitle = `${title} | Weekend MVP`;
+  // Public preview builder clamps to SERP budgets and prefers the description
+  // lead when the H1 title is a short product stub.
+  const preview = buildPublicIdeaPreview({ title, description, markdown: "" });
+  const fullTitle = preview.documentTitle;
+  const metaDescription = preview.metaDescription;
   return {
     title: { absolute: fullTitle },
-    description,
+    description: metaDescription,
     authors: [{ name: "John Iseghohi" }],
     alternates: { canonical: `/ideas/${slug}` },
     openGraph: {
       type: "article",
       url,
       title: fullTitle,
-      description,
+      description: metaDescription,
       images: [
         {
           url: ogImageAbs,
@@ -249,7 +253,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
-      description,
+      description: metaDescription,
       images: [ogImageAbs],
     },
   };
@@ -314,6 +318,48 @@ function buildSchema(slug: string, resolved: ResolvedIdea) {
   );
 }
 
+/**
+ * Anonymous JSON-LD: Article + BreadcrumbList from public fields only.
+ * No HowTo / SoftwareApplication (those need gated body), and no
+ * isAccessibleForFree / paywall markup (gated body is not in the HTML).
+ */
+function buildPublicSchema(slug: string, resolved: ResolvedIdea) {
+  const { title, description, idea, ogImage } = resolved;
+  const url = `${SITE}/ideas/${slug}`;
+  const ogImageAbs = `${SITE}${ogImage}`;
+  const datePublished = idea
+    ? new Date(idea.publishedAt).toISOString().slice(0, 10)
+    : undefined;
+  const preview = buildPublicIdeaPreview({
+    title,
+    description,
+    markdown: "",
+  });
+
+  return buildGraph(
+    articleSchema({
+      title,
+      description: preview.metaDescription,
+      slug,
+      pathPrefix: "/ideas",
+      datePublished,
+      image: ogImageAbs,
+      authorRef: true,
+    }),
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
+      { label: title, href: url },
+    ]),
+  );
+}
+
+/** Checked-in MDX used only to extract public teasers/prompts — never the gated body path. */
+async function loadPublicMarkdown(slug: string): Promise<string> {
+  const file = await readMdxFile(CONTENT_DIR, slug);
+  return file?.content ?? "";
+}
+
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
@@ -333,7 +379,29 @@ export default async function IdeaPage({
     if (collection) return collection;
     notFound();
   }
-  if (!token) return <EmailGate slug={slug} title={resolved.title} description={resolved.description} />;
+  if (!token) {
+    const markdown = await loadPublicMarkdown(slug);
+    const preview = buildPublicIdeaPreview({
+      title: resolved.title,
+      description: resolved.description,
+      markdown,
+      audiences: resolved.idea?.audiences,
+      buildTime: resolved.idea?.buildTime,
+      tools: resolved.idea?.tools,
+    });
+    return (
+      <>
+        <JsonLd schema={buildPublicSchema(slug, resolved)} />
+        <EmailGate slug={slug}>
+          <IdeaPublicSummary
+            title={resolved.title}
+            description={resolved.description}
+            preview={preview}
+          />
+        </EmailGate>
+      </>
+    );
+  }
   return <IdeaContent slug={slug} resolved={resolved} />;
 }
 
