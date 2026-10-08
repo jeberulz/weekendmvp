@@ -50,6 +50,11 @@ export const FAQS = [
     answer:
       "Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free.",
   },
+  {
+    question: "How do I build an MVP in a weekend?",
+    answer:
+      "Pick an idea small enough for 8–12 hours, cut it to three screens (landing, input, output), and paste the prompts into an AI builder like Cursor, Claude, Bolt, or Lovable. Build on Saturday, deploy, and put the live link in front of real users on Sunday. The free Starter Kit includes a 48-hour plan.",
+  },
 ];
 
 /** Citeable definition for AEO / speakable schema. Keep in sync with homepage UI. */

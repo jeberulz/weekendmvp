@@ -26,10 +26,13 @@ import {
   Zap,
 } from "lucide-react";
 
+import Link from "next/link";
+
 import { Container, Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { HubCta } from "@/components/hubs/HubCta";
+import { HubFaq, type HubFaqItem } from "@/components/hubs/HubFaq";
 import { ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubTracker } from "@/components/hubs/HubTracker";
 import {
@@ -47,6 +50,7 @@ import {
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
+  faqPageSchema,
   organizationSchema,
   personSchema,
   websiteSchema,
@@ -67,7 +71,10 @@ type Resource = { title: string; url: string; description: string };
 type AudiencePage = {
   slug: string;
   name: string;
+  /** Document / og:title (without the " | Weekend MVP" suffix). */
   title: string;
+  /** Visible H1; defaults to `title` when omitted. */
+  h1?: string;
   metaDescription: string;
   description: string;
   icon: LucideIcon;
@@ -76,6 +83,10 @@ type AudiencePage = {
   positioning: string;
   advantages: Advantage[];
   resources: Resource[];
+  /** Question H2s + answers after "Why {name} Are Uniquely Positioned". */
+  faqs?: HubFaqItem[];
+  /** Prominent article link(s) under the positioning band (no duplicate H2). */
+  articleLinks?: Array<{ href: string; label: string }>;
 };
 
 const GENERATED_ADVANTAGE_ICONS: LucideIcon[] = [Sparkles, Target, TrendingUp];
@@ -171,9 +182,10 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
   "non-technical": {
     slug: "non-technical",
     name: "Non-Technical Founders",
-    title: "Startup Ideas for Non-Technical Founders",
+    title: "MVP Ideas for Non-Technical Founders (No Code)",
+    h1: "Startup Ideas for Non-Technical Founders",
     metaDescription:
-      "Curated startup ideas perfect for non-technical founders. Build without coding using no-code tools, AI builders, or hire developers for specific components.",
+      "MVP ideas for non-technical founders, plus how to build one without code or a technical co-founder: AI builders, no-code tools, weekend-sized scope.",
     description:
       "Ideas you can build without coding. Use no-code tools, AI builders, or hire developers for specific components.",
     icon: Lightbulb,
@@ -211,6 +223,44 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         title: "No Code MBA",
         url: "https://nocode.mba",
         description: "No-code courses and tutorials for founders",
+      },
+    ],
+    faqs: [
+      {
+        question: "How do I build an MVP without a technical co-founder?",
+        answer:
+          "Cut the idea until one screen solves it, talk to ten people who already have the problem, then build it with an AI builder like Lovable, Bolt.new, or Cursor. You don't need to learn to code or give away 30–50% equity first. Look for a technical partner later, if the product proves it needs one.",
+        readMore: [
+          {
+            href: "/articles/mvp-for-non-technical-founders",
+            label:
+              "The full guide: How to Build an MVP as a Non-Technical Founder →",
+          },
+          {
+            href: "/articles/do-you-need-a-technical-co-founder-2026",
+            label: "Do You Need a Technical Co-Founder in 2026? →",
+          },
+        ],
+      },
+      {
+        question:
+          "Which platforms do non-technical founders use to ship an MVP quickly?",
+        answer:
+          "Most start in a browser builder: Lovable or Bolt.new turns a plain-English brief into a working app with no setup. When they need more control, they move the project into Cursor or Claude Code. Add Stripe for payments and Vercel for hosting, and a first stack can start for under $40 a month.",
+        readMore: {
+          href: "/articles/non-technical-founder-stack-2026",
+          label: "Non-Technical Founder Stack 2026 →",
+        },
+      },
+      {
+        question:
+          "Should non-technical founders on a limited budget hire an MVP agency?",
+        answer:
+          "Usually not for version one. Agencies often quote $30k–$80k for something nobody has validated yet. A scoped first version built with AI tools costs roughly $40 a month in tooling plus a weekend of your time. Hire developers later for specific components, like payments or integrations, once real users prove the idea.",
+        readMore: {
+          href: "/articles/how-much-does-it-cost-to-build-an-mvp-2026",
+          label: "How Much Does It Cost to Build an MVP in 2026? →",
+        },
       },
     ],
   },
@@ -257,6 +307,12 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         title: "MicroConf",
         url: "https://microconf.com",
         description: "Community and events for bootstrapped founders",
+      },
+    ],
+    articleLinks: [
+      {
+        href: "/articles/programs-solo-founders-idea-to-mvp",
+        label: "What programs help solo founders go from idea to MVP? →",
       },
     ],
   },
@@ -609,6 +665,9 @@ function buildSchema(
       { label: "Ideas For", href: "/ideas-for/" },
       { label: page.name, href: url },
     ]),
+    page.faqs?.length
+      ? faqPageSchema(page.faqs, { id: `${url}#faq` })
+      : null,
   );
 }
 
@@ -676,7 +735,7 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
         ]}
         title={
           <>
-            {page.title}
+            {page.h1 ?? page.title}
             {tail && (
               <>
                 {" "}
@@ -734,6 +793,25 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
           </ol>
         </div>
       </InkBand>
+
+      {page.faqs?.length ? (
+        <HubFaq items={page.faqs} variant="questions" labelledBy="why-heading" />
+      ) : null}
+
+      {page.articleLinks?.length ? (
+        <Container className="pt-10">
+          {page.articleLinks.map((link) => (
+            <p key={link.href} className="max-w-3xl text-[17px] leading-[1.6] text-home-ink-2">
+              <Link
+                href={link.href}
+                className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+              >
+                {link.label}
+              </Link>
+            </p>
+          ))}
+        </Container>
+      ) : null}
 
       {/* Ideas */}
       {list.length > 0 ? (
