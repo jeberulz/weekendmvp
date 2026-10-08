@@ -33,6 +33,7 @@ import type * as editorial_store from "../editorial/store.js";
 import type * as editorial_validators from "../editorial/validators.js";
 import type * as editorial_worker from "../editorial/worker.js";
 import type * as http from "../http.js";
+import type * as ideaFacets from "../ideaFacets.js";
 import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
@@ -118,6 +119,7 @@ declare const fullApi: ApiFromModules<{
   "editorial/validators": typeof editorial_validators;
   "editorial/worker": typeof editorial_worker;
   http: typeof http;
+  ideaFacets: typeof ideaFacets;
   ideas: typeof ideas;
   newsletter: typeof newsletter;
   payments: typeof payments;

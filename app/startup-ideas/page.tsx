@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 
 export const instant = false;
@@ -504,12 +505,21 @@ function buildSchema(data: StartupIdeasData) {
 export default async function StartupIdeasPage() {
   await connection();
   if (!(await currentIdeaMemberToken())) return <StartupIdeasTeaser />;
-  // This read is authoritative even when the public ideas projection is down.
-  const publications = await fetchQuery(api.editorial.public.listing, {});
-  return <StartupIdeasContent publications={publications} />;
+  return <CachedStartupIdeasPage />;
 }
 
 const CONSULT_URL = "https://cal.com/switchtoux/mvp-sprint";
+
+/** Data + render cached together; Convex mutations revalidate tag `ideas`. */
+async function CachedStartupIdeasPage() {
+  "use cache";
+  cacheTag("ideas");
+  cacheLife("hours");
+  // Authoritative even when the public ideas projection is down — overlay
+  // falls through to manifest-only membership via onlyPublicIdeas.
+  const publications = await fetchQuery(api.editorial.public.listing, {});
+  return <StartupIdeasContent publications={publications} />;
+}
 
 async function StartupIdeasContent({ publications }: { publications: PublicOverlay }) {
   const data = await loadStartupIdeas(publications);

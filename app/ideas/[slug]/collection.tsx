@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
@@ -282,6 +283,9 @@ const RELATED_HUBS = [
 ];
 
 async function CachedCollectionHub({ slug }: { slug: string }) {
+  "use cache";
+  cacheTag("ideas", `collection:${slug}`);
+  cacheLife("hours");
   if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
   const [ideas, all] = await Promise.all([fetchIdeasForCollection(def), fetchAllIdeas()]);

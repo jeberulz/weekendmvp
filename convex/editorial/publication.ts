@@ -4,6 +4,7 @@ import { computeRevisionHashes } from "../../lib/editorial/domain/artifact";
 import { editorialMetadataSchema } from "../../lib/editorial/contracts/metadata";
 import { internal } from "../_generated/api";
 import type { MutationCtx } from "../_generated/server";
+import { clearIdeaFacets, syncIdeaFacets } from "../ideaFacets";
 
 /**
  * Public pages cache idea lists and library membership under the `ideas` tag
@@ -117,8 +118,11 @@ export async function activatePublicRelease(ctx: MutationCtx, releaseId: string)
     body: version.markdown,
     editorialVisibility: "live" as const,
   };
-  if (row) await ctx.db.replace("ideas", row._id, projected);
-  else await ctx.db.insert("ideas", projected);
+  const ideaId = row
+    ? (await ctx.db.replace("ideas", row._id, projected), row._id)
+    : await ctx.db.insert("ideas", projected);
+  const stored = await ctx.db.get("ideas", ideaId);
+  if (stored) await syncIdeaFacets(ctx, stored);
   await revalidatePublicIdea(ctx, idea.slug);
 }
 
@@ -144,6 +148,9 @@ export async function removePublicIdea(ctx: MutationCtx, ideaId: string): Promis
   if (pointer) await ctx.db.replace("editorial_public_pointers", pointer._id, value);
   else await ctx.db.insert("editorial_public_pointers", value);
   const row = await ctx.db.query("ideas").withIndex("by_slug", (q) => q.eq("slug", idea.slug)).unique();
-  if (row) await ctx.db.patch("ideas", row._id, { editorialVisibility: "removed", body: "" });
+  if (row) {
+    await ctx.db.patch("ideas", row._id, { editorialVisibility: "removed", body: "" });
+    await clearIdeaFacets(ctx, row._id);
+  }
   await revalidatePublicIdea(ctx, idea.slug);
 }

@@ -9,7 +9,7 @@ import { requireCurrentPlatformUser } from "./authz";
 import { rankForYou } from "./forYou";
 import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, savedAmong, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
-import { activePlansOf, activePlanForIdea } from "./weekendPlans";
+import { activePlansOf } from "./weekendPlans";
 import { SETUP_TOOLS, type PickReason } from "./setupOptions";
 import {
   HOURS_BUCKETS,
@@ -242,7 +242,7 @@ export const libraryPage = query({
       .order("desc")
       .filter(excludeUnlistedIdeas)
       .paginate(args.paginationOpts);
-    const [savedIds, prefs, recent] = await Promise.all([
+    const [savedIds, prefs, recent, active] = await Promise.all([
       savedAmong(
         ctx,
         user._id,
@@ -250,7 +250,9 @@ export const libraryPage = query({
       ),
       readPreferences(ctx, user._id),
       readSavedIntents(ctx, user._id, AFFINITY_SAVED_LIMIT),
+      activePlansOf(ctx, user._id),
     ]);
+    const building = new Set(active.map((plan) => plan.ideaId));
     const savedIdeas = (
       await Promise.all(recent.rows.map((row) => ctx.db.get("ideas", row.ideaId)))
     ).filter((idea) => idea !== null);
@@ -260,20 +262,18 @@ export const libraryPage = query({
       goal: prefs?.goal,
       savedNewestFirst: savedIdeas,
     });
-    const page = await Promise.all(
-      result.page
-        .filter((idea) => inMemberCatalogue(idea.slug, idea.editorialVisibility))
-        .map(async (idea) => ({
-          ...toIdeaCard(
-            idea,
-            savedIds.has(idea._id),
-            ranked.reasons.get(idea._id),
-            Boolean(await activePlanForIdea(ctx, user._id, idea._id)),
-          ),
-          tools: idea.tools,
-          recommendationRank: ranked.ranks.get(idea._id) ?? 0,
-        })),
-    );
+    const page = result.page
+      .filter((idea) => inMemberCatalogue(idea.slug, idea.editorialVisibility))
+      .map((idea) => ({
+        ...toIdeaCard(
+          idea,
+          savedIds.has(idea._id),
+          ranked.reasons.get(idea._id),
+          building.has(idea._id),
+        ),
+        tools: idea.tools,
+        recommendationRank: ranked.ranks.get(idea._id) ?? 0,
+      }));
     return { ...result, page };
   },
 });
