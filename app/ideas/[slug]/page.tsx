@@ -27,6 +27,7 @@ import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaPublicSummary } from "@/components/ideas/IdeaPublicSummary";
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import { buildPublicIdeaPreview } from "@/lib/ideas/public-preview";
+import { manifestIdeas } from "@/lib/public/library";
 import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
 import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
@@ -121,6 +122,18 @@ async function ideaOgImage(slug: string): Promise<string> {
   }
 }
 
+/** Manifest description when Convex is down and MDX frontmatter has none. */
+function manifestMeta(slug: string) {
+  const row = manifestIdeas().find((idea) => idea.slug === slug);
+  if (!row) return null;
+  return {
+    description: row.description?.trim() || null,
+    audiences: row.audiences,
+    buildTime: row.buildTime,
+    tools: row.tools,
+  };
+}
+
 async function resolveIdea(slug: string, token?: string | null): Promise<ResolvedIdea | null> {
   // Engine spot-check drafts never render, even if a Convex row exists.
   if (isEngineDraftSlug(slug)) return null;
@@ -157,8 +170,11 @@ async function resolveIdea(slug: string, token?: string | null): Promise<Resolve
   if (!body && !idea) return null;
   const fmTitle = file?.frontmatter.title;
   const fmDescription = file?.frontmatter.description;
+  const fromManifest = manifestMeta(slug);
   // Prefer MDX frontmatter when present so git-deployed SEO title/meta
-  // wins over a stale Convex row until the next seed.
+  // wins over a stale Convex row until the next seed. Fall back to the
+  // manifest before excerpting body prose so anonymous SEO never uses a
+  // Problem-paragraph stub when a real description exists.
   return {
     source: body?.source ?? "convex",
     content: token ? body?.content ?? "" : "",
@@ -171,6 +187,7 @@ async function resolveIdea(slug: string, token?: string | null): Promise<Resolve
         ? fmDescription
         : null) ??
       idea?.description ??
+      fromManifest?.description ??
       excerpt(body?.content ?? ""),
     idea,
     ogImage,
@@ -381,13 +398,14 @@ export default async function IdeaPage({
   }
   if (!token) {
     const markdown = await loadPublicMarkdown(slug);
+    const fromManifest = manifestMeta(slug);
     const preview = buildPublicIdeaPreview({
       title: resolved.title,
       description: resolved.description,
       markdown,
-      audiences: resolved.idea?.audiences,
-      buildTime: resolved.idea?.buildTime,
-      tools: resolved.idea?.tools,
+      audiences: resolved.idea?.audiences ?? fromManifest?.audiences,
+      buildTime: resolved.idea?.buildTime ?? fromManifest?.buildTime,
+      tools: resolved.idea?.tools ?? fromManifest?.tools,
     });
     return (
       <>
