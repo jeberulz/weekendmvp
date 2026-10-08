@@ -64,6 +64,32 @@ function wordCount(text: string): number {
   return (text.match(/[A-Za-z0-9']+/g) ?? []).length;
 }
 
+/**
+ * Problem prose for the public summary. Homepage extractIdea() keeps only the
+ * first paragraph (fine for tiles); staccato openers here need the next block
+ * so leadSentences has real sentences to spend against the 120-word floor.
+ */
+function problemForSummary(markdown: string): string {
+  const body = section(markdown, "The Problem").trim();
+  if (!body) return "";
+  const paras = body
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter((p) => p && !/^[-|>#*]/.test(p));
+  if (paras.length === 0) return "";
+  const first = plainText(paras[0].replace(/\n/g, " "));
+  if (wordCount(first) >= 80 || paras.length === 1) return first;
+  return plainText(`${paras[0]} ${paras[1]}`.replace(/\n/g, " "));
+}
+
+/**
+ * Prefer a word/char budget over a 4-sentence cap. Short MDX sentences like
+ * "The data collects." burned the old cap before the pain was stated.
+ */
+function problemLead(text: string): string {
+  return leadSentences(text, 12, 1100);
+}
+
 function firstBulletOrParagraph(block: string): string {
   for (const line of block.split("\n")) {
     const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
@@ -136,7 +162,7 @@ export function buildPublicSummary(input: {
   };
 
   if (input.problem) {
-    push(leadSentences(input.problem, 4, 900));
+    push(problemLead(input.problem));
   } else if (input.description) {
     push(input.description);
   }
@@ -193,9 +219,13 @@ export function buildPublicIdeaPreview(input: PublicPreviewInput): PublicIdeaPre
   const solutionLead = input.markdown
     ? firstParagraph(section(input.markdown, "The Solution"))
     : "";
+  const problem =
+    (input.markdown.trim() ? problemForSummary(input.markdown) : "") ||
+    extract?.problem ||
+    "";
   const summary = buildPublicSummary({
     description: input.description,
-    problem: extract?.problem ?? "",
+    problem,
     marketTexts: (extract?.market ?? []).map((m) => m.text),
     stack: extract?.stack ?? input.tools ?? [],
     audiences: input.audiences ?? [],
