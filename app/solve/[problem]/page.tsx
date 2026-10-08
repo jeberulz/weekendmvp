@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 
 export const instant = false;
@@ -346,6 +347,9 @@ function splitLeadingPercent(stat: string): { figure: string; plus: string; rest
 }
 
 async function CachedSolveHub({ slug }: { slug: string }) {
+  "use cache";
+  cacheTag("ideas", "ref-tables", `problem:${slug}`);
+  cacheLife("hours");
   const page = PROBLEM_PAGES[slug];
   const allIdeas = await fetchAllIdeas();
   // Curate up to 6 ideas whose category matches this problem space.

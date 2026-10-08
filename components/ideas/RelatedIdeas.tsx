@@ -3,8 +3,12 @@
  * block, now driven by the Convex `api.ideas.relatedFor` query (same
  * category first, then shared audiences). Convex-unavailable → renders
  * nothing, the page still works.
+ *
+ * Cached hourly under `ideas` / `idea:<slug>` so member idea-page views do
+ * not re-hit Convex on every request (E6 had forced the parent dynamic).
  */
 
+import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
@@ -24,6 +28,10 @@ export async function RelatedIdeas({
   slug: string;
   limit?: number;
 }) {
+  "use cache";
+  cacheTag(`idea:${slug}`, "ideas");
+  cacheLife("hours");
+
   let related: RelatedIdea[] = [];
   try {
     related = await fetchQuery(api.ideas.relatedFor, { slug, limit });

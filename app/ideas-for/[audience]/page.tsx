@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 
 export const instant = false;
@@ -642,6 +643,9 @@ const AUDIENCE_TAIL: Record<string, string> = {
 };
 
 async function CachedAudienceHub({ slug }: { slug: string }) {
+  "use cache";
+  cacheTag("ideas", "ref-tables", `audience:${slug}`);
+  cacheLife("hours");
   const page = AUDIENCE_PAGES[slug];
   const [ideas, audienceRow] = await Promise.all([
     fetchIdeasByAudience(slug),

@@ -91,6 +91,29 @@ export default defineSchema({
       filterFields: ["category"],
     }),
 
+  /**
+   * Indexable tool membership for public hubs. `ideas.tools` is an array, so
+   * `byTool` used to `.collect()` every idea. One row per (tool, idea); keep
+   * in sync via `ideaFacets.syncIdeaFacets` on every ideas write.
+   */
+  idea_tools: defineTable({
+    tool: v.string(),
+    ideaId: v.id("ideas"),
+    /** `scores.builder_confidence`, or -1 when unscored — matches byTool sort. */
+    builderConfidence: v.number(),
+  })
+    .index("by_tool_and_confidence", ["tool", "builderConfidence"])
+    .index("by_ideaId", ["ideaId"]),
+
+  /** Same pattern as `idea_tools` for audience hubs. */
+  idea_audiences: defineTable({
+    audience: v.string(),
+    ideaId: v.id("ideas"),
+    builderConfidence: v.number(),
+  })
+    .index("by_audience_and_confidence", ["audience", "builderConfidence"])
+    .index("by_ideaId", ["ideaId"]),
+
   articles: defineTable({
     slug: v.string(),
     title: v.string(),
