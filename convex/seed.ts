@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, type MutationCtx } from "./_generated/server";
+import { syncIdeaFacets } from "./ideaFacets";
 import schema from "./schema";
 
 /**
@@ -67,6 +68,13 @@ async function upsertBySlug(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await ctx.db.insert(table, item as any);
       inserted += 1;
+    }
+    if (table === "ideas") {
+      const row = await ctx.db
+        .query("ideas")
+        .withIndex("by_slug", (q) => q.eq("slug", item.slug))
+        .unique();
+      if (row) await syncIdeaFacets(ctx, row);
     }
   }
   return { inserted, updated };

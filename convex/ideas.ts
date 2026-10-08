@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation, mutation, query } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
+import { syncIdeaFacets } from "./ideaFacets";
 import { excludeUnlistedIdeas, isEngineDraftSlug } from "./platform/catalogPolicy";
 import schema from "./schema";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./platform/authz";
@@ -163,55 +165,148 @@ export const byRevenueGoal = query({
   },
 });
 
+function facetCap(limit: number | undefined): number {
+  if (limit === undefined) return 30;
+  if (!Number.isFinite(limit)) return 0;
+  return Math.max(0, Math.min(Math.trunc(limit), 1000));
+}
+
+function isListedIdea(idea: Doc<"ideas">): boolean {
+  return idea.editorialVisibility !== "removed" && !isEngineDraftSlug(idea.slug);
+}
+
+/**
+ * Prefer index-backed facet rows. Until `ideaFacets:backfill` has written at
+ * least one row (or when tests insert ideas without dual-write), fall back to
+ * the legacy full-table scan so behaviour stays identical.
+ */
+async function facetsReady(
+  ctx: QueryCtx,
+  table: "idea_tools" | "idea_audiences",
+): Promise<boolean> {
+  const probe = await ctx.db.query(table).take(1);
+  return probe.length > 0;
+}
+
+async function ideasFromToolLinks(
+  ctx: QueryCtx,
+  tool: string,
+  limit: number,
+): Promise<Doc<"ideas">[]> {
+  const links = await ctx.db
+    .query("idea_tools")
+    .withIndex("by_tool_and_confidence", (q) => q.eq("tool", tool))
+    .order("desc")
+    .take(limit);
+  const ideas: Doc<"ideas">[] = [];
+  const seen = new Set<Id<"ideas">>();
+  for (const link of links) {
+    if (seen.has(link.ideaId)) continue;
+    seen.add(link.ideaId);
+    const idea = await ctx.db.get("ideas", link.ideaId);
+    if (idea && isListedIdea(idea) && idea.tools.includes(tool)) {
+      ideas.push(idea);
+    }
+  }
+  return ideas;
+}
+
+async function ideasFromAudienceLinks(
+  ctx: QueryCtx,
+  audience: string,
+  limit: number,
+): Promise<Doc<"ideas">[]> {
+  const links = await ctx.db
+    .query("idea_audiences")
+    .withIndex("by_audience_and_confidence", (q) => q.eq("audience", audience))
+    .order("desc")
+    .take(limit);
+  const ideas: Doc<"ideas">[] = [];
+  const seen = new Set<Id<"ideas">>();
+  for (const link of links) {
+    if (seen.has(link.ideaId)) continue;
+    seen.add(link.ideaId);
+    const idea = await ctx.db.get("ideas", link.ideaId);
+    if (idea && isListedIdea(idea) && idea.audiences.includes(audience)) {
+      ideas.push(idea);
+    }
+  }
+  return ideas;
+}
+
+async function legacyByTool(
+  ctx: QueryCtx,
+  tool: string,
+  limit: number,
+): Promise<Doc<"ideas">[]> {
+  const all = await ctx.db
+    .query("ideas")
+    .withIndex("by_publishedAt")
+    .order("desc")
+    .filter(excludeUnlistedIdeas)
+    .collect();
+  return all
+    .filter((idea) => idea.tools.includes(tool))
+    .sort(
+      (a, b) =>
+        (b.scores?.builder_confidence ?? -1) - (a.scores?.builder_confidence ?? -1),
+    )
+    .slice(0, limit);
+}
+
+async function legacyByAudience(
+  ctx: QueryCtx,
+  audience: string,
+  limit: number,
+): Promise<Doc<"ideas">[]> {
+  const all = await ctx.db
+    .query("ideas")
+    .withIndex("by_publishedAt")
+    .order("desc")
+    .filter(excludeUnlistedIdeas)
+    .collect();
+  return all
+    .filter((idea) => idea.audiences.includes(audience))
+    .sort(
+      (a, b) =>
+        (b.scores?.builder_confidence ?? -1) - (a.scores?.builder_confidence ?? -1),
+    )
+    .slice(0, limit);
+}
+
 /**
  * Ideas buildable with a given tool, sorted by scores.builder_confidence
  * desc, capped at `limit` (default 30) — matches legacy sync-build-with.js.
- * `tools` is an array field, so we scan (≤1k rows) and filter in JS.
+ * Uses `idea_tools` when backfilled; otherwise the legacy full scan.
  */
 export const byTool = query({
   args: { tool: v.string(), limit: v.optional(v.number()) },
   returns: v.array(publicIdeaDoc),
   handler: async (ctx, { tool, limit }) => {
-    const all = await ctx.db
-      .query("ideas")
-      .withIndex("by_publishedAt")
-      .order("desc")
-      .filter(excludeUnlistedIdeas)
-      .collect();
-    return all
-      .filter((idea) => idea.tools.includes(tool))
-      .sort(
-        (a, b) =>
-          (b.scores?.builder_confidence ?? -1) -
-          (a.scores?.builder_confidence ?? -1),
-      )
-      .slice(0, limit ?? 30).map(publicIdea);
+    const cap = facetCap(limit);
+    if (cap === 0) return [];
+    const ideas = (await facetsReady(ctx, "idea_tools"))
+      ? await ideasFromToolLinks(ctx, tool, cap)
+      : await legacyByTool(ctx, tool, cap);
+    return ideas.map(publicIdea);
   },
 });
 
 /**
  * Ideas targeting a given audience, sorted by scores.builder_confidence
- * desc, capped at `limit` (default 30). Array-field filter — same approach
- * as byTool.
+ * desc, capped at `limit` (default 30). Uses `idea_audiences` when
+ * backfilled; otherwise the legacy full scan.
  */
 export const byAudience = query({
   args: { audience: v.string(), limit: v.optional(v.number()) },
   returns: v.array(publicIdeaDoc),
   handler: async (ctx, { audience, limit }) => {
-    const all = await ctx.db
-      .query("ideas")
-      .withIndex("by_publishedAt")
-      .order("desc")
-      .filter(excludeUnlistedIdeas)
-      .collect();
-    return all
-      .filter((idea) => idea.audiences.includes(audience))
-      .sort(
-        (a, b) =>
-          (b.scores?.builder_confidence ?? -1) -
-          (a.scores?.builder_confidence ?? -1),
-      )
-      .slice(0, limit ?? 30).map(publicIdea);
+    const cap = facetCap(limit);
+    if (cap === 0) return [];
+    const ideas = (await facetsReady(ctx, "idea_audiences"))
+      ? await ideasFromAudienceLinks(ctx, audience, cap)
+      : await legacyByAudience(ctx, audience, cap);
+    return ideas.map(publicIdea);
   },
 });
 
@@ -341,6 +436,8 @@ export const upsertBySlug = internalMutation({
     } else {
       id = await ctx.db.insert("ideas", args);
     }
+    const row = await ctx.db.get("ideas", id);
+    if (row) await syncIdeaFacets(ctx, row);
     await ctx.scheduler.runAfter(0, internal.revalidate.run, {
       tags: [`idea:${args.slug}`, "ideas"],
     });
