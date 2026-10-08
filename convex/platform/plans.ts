@@ -10,6 +10,62 @@
 
 export type PlanId = "free" | "builders_hub";
 
+/**
+ * WP63 price ladder (ruling "WP55 / price ladder", 2026-10-04). Minor units,
+ * USD. The one place a Builder's Hub price lives: Checkout checks each Stripe
+ * Price against it, and UI strings derive from it. The browser never sends an
+ * amount. A lifetime seat's number picks its tranche, so a refunded seat goes
+ * back to the pool at its own price.
+ */
+export const PRICING = {
+  currency: "usd",
+  monthly: { priceKey: "monthly", amountMinor: 2_900, interval: "month" },
+  annual: { priceKey: "annual", amountMinor: 19_900, interval: "year" },
+  lifetime: {
+    seats: 50,
+    tranches: [
+      { priceKey: "lifetime_t1", firstSeat: 1, lastSeat: 15, amountMinor: 24_900 },
+      { priceKey: "lifetime_t2", firstSeat: 16, lastSeat: 50, amountMinor: 34_900 },
+    ],
+  },
+} as const;
+
+export type PriceKey =
+  | typeof PRICING.monthly.priceKey
+  | typeof PRICING.annual.priceKey
+  | (typeof PRICING.lifetime.tranches)[number]["priceKey"];
+
+/** The lifetime tranche for a seat, or null outside 1 to 50. */
+export function lifetimeTrancheForSeat(seatNumber: number) {
+  if (!Number.isInteger(seatNumber)) return null;
+  return (
+    PRICING.lifetime.tranches.find(
+      (tranche) => seatNumber >= tranche.firstSeat && seatNumber <= tranche.lastSeat,
+    ) ?? null
+  );
+}
+
+/** The amount for a Stripe Price key, in minor units. */
+export function amountForPriceKey(priceKey: PriceKey): number {
+  if (priceKey === "monthly") return PRICING.monthly.amountMinor;
+  if (priceKey === "annual") return PRICING.annual.amountMinor;
+  const tranche = PRICING.lifetime.tranches.find((candidate) => candidate.priceKey === priceKey);
+  if (!tranche) throw new Error(`Unknown price key: ${priceKey}`);
+  return tranche.amountMinor;
+}
+
+/** "$29", or "$29.50" when there are cents. USD only, like the ladder. */
+export function formatUsd(amountMinor: number): string {
+  const dollars = Math.floor(amountMinor / 100);
+  const cents = amountMinor % 100;
+  return cents === 0 ? `$${dollars}` : `$${dollars}.${String(cents).padStart(2, "0")}`;
+}
+
+/** Annual against twelve months of monthly, rounded to a whole percent (43). */
+export const ANNUAL_SAVING_PERCENT = Math.round(
+  (1 - PRICING.annual.amountMinor / (12 * PRICING.monthly.amountMinor)) * 100,
+);
+
 export const PLANS = {
   free: {
     id: "free",
@@ -27,8 +83,9 @@ export const PLANS = {
   builders_hub: {
     id: "builders_hub",
     name: "Builder’s Hub",
-    priceMonthlyUsd: 29,
-    priceLabel: "$29 a month, billed monthly",
+    // Monthly only until WP63-S6 moves the copy to the full ladder.
+    priceMonthlyUsd: PRICING.monthly.amountMinor / 100,
+    priceLabel: `${formatUsd(PRICING.monthly.amountMinor)} a month, billed monthly`,
     adds: [
       "Collections and a private note on each idea",
       "Unlimited weekend plans, with history",

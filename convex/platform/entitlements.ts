@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { query, type QueryCtx } from "../_generated/server";
 import { requireCurrentPlatformUser } from "./authz";
+import { billingSummaryValidator, readMembershipState } from "./membership/state";
 import { resolvePlan } from "./planResolver";
 import { PLAN_LIMITS, UPGRADE_REQUIRED, type GatedFeature } from "./plans";
 
@@ -67,11 +68,14 @@ export const mine = query({
     usage: v.object({ activeWeekendPlans: v.number(), activeWeekendPlansCapped: v.boolean() }),
     /** Account creation time. The client applies the first-day quiet period with its own clock. */
     joinedAt: v.number(),
+    /** WP63-S2. Term, status, dates and founding seat. Never a Stripe id. */
+    billing: billingSummaryValidator,
   }),
   handler: async (ctx) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const [{ plan, limits }, active] = await Promise.all([
+    const [{ plan, limits }, membership, active] = await Promise.all([
       getEntitlements(ctx, user._id),
+      readMembershipState(ctx, user._id),
       ctx.db
         .query("weekend_plans")
         .withIndex("by_ownerId_and_status_and_updatedAt", (q) =>
@@ -84,6 +88,7 @@ export const mine = query({
       limits,
       usage: { activeWeekendPlans: Math.min(active.length, ACTIVE_COUNT_CAP), activeWeekendPlansCapped: active.length > ACTIVE_COUNT_CAP },
       joinedAt: user._creationTime,
+      billing: membership.billing,
     };
   },
 });
