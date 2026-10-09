@@ -49,23 +49,24 @@ export async function fetchToolReference(
 /** Hub grids show at most this many ideas (matches legacy). */
 const HUB_CAP = 30;
 /**
- * Read the whole sorted set (the table is a few hundred rows) so excluded
- * rows are replaced by the next public idea instead of shrinking the grid:
- * filter first, then cap.
+ * Small over-fetch so `onlyPublicIdeas` can replace a few filtered rows
+ * without shrinking the grid. Must stay ≤ Convex `MAX_FACET_LIMIT` (48):
+ * requesting 1000 made popular tools (cursor ≈ every idea) re-read the
+ * whole catalogue on every cache miss.
  */
-const UNCAPPED = 1000;
+const HUB_FETCH = 48;
 
 /** byAudience — builder_confidence sort, 30 cap (matches legacy). */
 export async function fetchIdeasByAudience(
   audience: string,
 ): Promise<IdeaDoc[]> {
-  const rows = await safe(() => fetchQuery(api.ideas.byAudience, { audience, limit: UNCAPPED }), []);
+  const rows = await safe(() => fetchQuery(api.ideas.byAudience, { audience, limit: HUB_FETCH }), []);
   return (await onlyPublicIdeas(rows)).slice(0, HUB_CAP);
 }
 
 /** byTool — builder_confidence sort, 30 cap (matches legacy sync). */
 export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
-  const rows = await safe(() => fetchQuery(api.ideas.byTool, { tool, limit: UNCAPPED }), []);
+  const rows = await safe(() => fetchQuery(api.ideas.byTool, { tool, limit: HUB_FETCH }), []);
   return (await onlyPublicIdeas(rows)).slice(0, HUB_CAP);
 }
 

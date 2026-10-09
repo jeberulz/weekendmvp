@@ -165,10 +165,20 @@ export const byRevenueGoal = query({
   },
 });
 
+/**
+ * Hub grids show 30 cards. Callers may ask for a small buffer so
+ * `onlyPublicIdeas` can replace a few filtered rows without a second round
+ * trip. Never allow the old `limit: 1000` path: popular tools (e.g. cursor)
+ * match nearly every idea, so an uncapped indexed read still scanned the
+ * whole table and dominated DB I/O.
+ */
+const DEFAULT_FACET_LIMIT = 30;
+const MAX_FACET_LIMIT = 48;
+
 function facetCap(limit: number | undefined): number {
-  if (limit === undefined) return 30;
+  if (limit === undefined) return DEFAULT_FACET_LIMIT;
   if (!Number.isFinite(limit)) return 0;
-  return Math.max(0, Math.min(Math.trunc(limit), 1000));
+  return Math.max(0, Math.min(Math.trunc(limit), MAX_FACET_LIMIT));
 }
 
 function isListedIdea(idea: Doc<"ideas">): boolean {

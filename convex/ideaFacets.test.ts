@@ -121,6 +121,40 @@ describe("ideaFacets + byTool/byAudience", () => {
     expect((await t.query(api.ideas.byTool, { tool: "lovable" })).map((row) => row.slug)).toEqual([
       "other",
     ]);
+    // Defense-in-depth: callers that still pass 1000 must not read unbound.
+    expect(
+      (await t.query(api.ideas.byTool, { tool: "cursor", limit: 1000 })).map((row) => row.slug),
+    ).toEqual(["high", "mid", "low"]);
+  });
+
+  test("facet limit hard-caps above the hub buffer", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 60; i += 1) {
+        const id = await ctx.db.insert(
+          "ideas",
+          idea(`idea-${i}`, 1000 - i, {
+            tools: ["cursor"],
+            scores: {
+              opportunity: 1,
+              pain: 1,
+              timing: 1,
+              builder_confidence: 60 - i,
+            },
+          }),
+        );
+        await ctx.db.insert("idea_tools", {
+          tool: "cursor",
+          ideaId: id,
+          builderConfidence: 60 - i,
+        });
+      }
+    });
+
+    const rows = await t.query(api.ideas.byTool, { tool: "cursor", limit: 1000 });
+    expect(rows).toHaveLength(48);
+    expect(rows[0]?.slug).toBe("idea-0");
+    expect(rows[47]?.slug).toBe("idea-47");
   });
 
   test("upsertBySlug dual-writes facet rows", async () => {

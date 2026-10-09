@@ -349,7 +349,8 @@ function splitLeadingPercent(stat: string): { figure: string; plus: string; rest
 async function CachedSolveHub({ slug }: { slug: string }) {
   "use cache";
   cacheTag("ideas", "ref-tables", `problem:${slug}`);
-  cacheLife("hours");
+  // Tag revalidation on upsert keeps hubs fresh; hourly TTL was pure I/O.
+  cacheLife("days");
   const page = PROBLEM_PAGES[slug];
   const allIdeas = await fetchAllIdeas();
   // Curate up to 6 ideas whose category matches this problem space.
