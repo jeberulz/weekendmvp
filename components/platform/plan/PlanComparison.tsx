@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef } from "react";
 import { BILLING_COMPARISON, PLANS, type PlanId } from "@/convex/platform/plans";
 import { CheckoutReturn } from "@/components/platform/billing/CheckoutReturn";
 import { CurrentPlan } from "@/components/platform/billing/CurrentPlan";
+import { PlanChanges } from "@/components/platform/billing/PlanChanges";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
@@ -60,6 +61,7 @@ function LiveComparison() {
         <CheckoutReturn entitlements={entitlements} />
       </Suspense>
       <CurrentPlan entitlements={entitlements} />
+      <PlanChanges entitlements={entitlements} />
 
       {/* Wraps instead of scrolling sideways, so phones need no scroll region. */}
       <div className="rounded-[14px] border border-home-rule bg-home-card">
@@ -103,7 +105,8 @@ function LiveComparison() {
  * PRD 6.6 surface 4: Plan and billing with a Free against Builder's Hub
  * table and a "Current plan" label. The plan comes from entitlements. A
  * Builder's Hub member sees what they have and nothing to upgrade to. WP64-S6
- * adds the return banner, the member's plan and dates, and the ladder.
+ * adds the return banner, the member's plan and dates, and the ladder. An
+ * active monthly or annual member also sees how to switch term or buy lifetime.
  */
 export function PlanComparison() {
   return (

@@ -16,6 +16,7 @@ import {
 import { NO_BILLING } from "../../convex/platform/membership/state";
 import { MEMBERSHIP_TERM_VALUES } from "../../convex/platform/membership/validators";
 import {
+  ANNUAL_SAVING_LINE,
   MEMBERSHIP_LEGAL_LINKS,
   PLAN_LIMITS,
   QUIET_PERIOD_MS,
@@ -26,6 +27,7 @@ import {
 } from "../../convex/platform/plans";
 import { CheckoutReturn } from "../../components/platform/billing/CheckoutReturn";
 import { describePlan } from "../../components/platform/billing/CurrentPlan";
+import { describePlanChanges } from "../../components/platform/billing/PlanChanges";
 import {
   CONFIRM_SLOW_AFTER_MS,
   checkoutMessage,
@@ -187,6 +189,18 @@ describe("WP64-S6 route contract", () => {
     };
     expect((await requestPortal(fetchImpl)).ok).toBe(true);
     expect(calls).toEqual([{ path: MEMBERSHIP_PORTAL_PATH, body: {} }]);
+  });
+
+  test("a plan switch posts only the term to switch to", async () => {
+    const calls: unknown[] = [];
+    const fetchImpl = async (_path: string, init: RequestInit) => {
+      calls.push(JSON.parse(String(init.body)));
+      return Response.json({ ok: true, url: "https://billing.stripe.com/p/session/test_2" });
+    };
+    await requestPortal(fetchImpl, "annual");
+    await requestPortal(fetchImpl, "monthly");
+    await requestPortal(fetchImpl, undefined);
+    expect(calls).toEqual([{ switchTo: "annual" }, { switchTo: "monthly" }, {}]);
   });
 
   test("network failures and broken bodies are refusals, never redirects", async () => {
@@ -456,10 +470,143 @@ describe("WP64-S6 Plan and billing", () => {
   });
 });
 
+describe("Plan changes for monthly and annual members", () => {
+  const RECENT = Date.now() - 1_000;
+  const monthly = (billing: Partial<Entitlements["billing"]> = {}) =>
+    entitlements("builders_hub", { term: "monthly", status: "active", renewsAt: NOON, ...billing });
+  const annual = (billing: Partial<Entitlements["billing"]> = {}) =>
+    entitlements("builders_hub", { term: "annual", status: "active", renewsAt: NOON, ...billing });
+
+  test("monthly: switch to annual now, or buy lifetime with the O5 notice", () => {
+    const options = describePlanChanges(monthly(), SEATS, NOON);
+    expect(options?.switchTo).toEqual({
+      to: "annual",
+      name: "Annual",
+      price: "$199 a year",
+      saving: `${ANNUAL_SAVING_LINE}.`,
+      lines: ["Switches now. You get credit for the unused part of this month.", "Stripe shows what you pay today before you confirm."],
+      label: "Switch to annual",
+    });
+    expect(options?.lifetime).toEqual({
+      name: "Founding Lifetime",
+      price: "$349 once",
+      lines: [
+        "$349 once. No renewal.",
+        expect.stringMatching(/^34 of 50 founding seats left\./),
+        "Your monthly plan then stops renewing, so you are not charged on November 4, 2026.",
+        "The month you already paid for is not refunded automatically.",
+      ],
+      unavailable: null,
+      label: "Buy Founding Lifetime · $349 once",
+      amount: 34_900,
+    });
+  });
+
+  test("annual: switch to monthly at renewal, or buy lifetime", () => {
+    const options = describePlanChanges(annual(), SEATS, NOON);
+    expect(options?.switchTo?.to).toBe("monthly");
+    expect(options?.switchTo?.price).toBe("$29 a month");
+    expect(options?.switchTo?.saving).toBeNull();
+    expect(options?.switchTo?.lines).toEqual([
+      "Starts when your annual plan renews on November 4, 2026. You keep annual until then.",
+      "Stripe shows the change before you confirm.",
+    ]);
+    expect(options?.switchTo?.label).toBe("Switch to monthly");
+    expect(options?.lifetime?.lines.slice(2)).toEqual([
+      "Your annual plan then stops renewing, so you are not charged on November 4, 2026.",
+      "The year you already paid for is not refunded automatically.",
+    ]);
+  });
+
+  test("no renewal date: the same choices without one", () => {
+    expect(describePlanChanges(annual({ renewsAt: null }), SEATS, NOON)?.switchTo?.lines[0]).toBe(
+      "Starts when your annual plan renews. You keep annual until then.",
+    );
+    expect(describePlanChanges(monthly({ renewsAt: null }), SEATS, NOON)?.lifetime?.lines[2]).toBe(
+      "Your monthly plan then stops renewing, so you are not charged for it again.",
+    );
+  });
+
+  test("a plan set to end offers no switch; lifetime says the plan already ends", () => {
+    const options = describePlanChanges(monthly({ renewsAt: null, endsAt: NOON }), SEATS, NOON);
+    expect(options?.switchTo).toBeNull();
+    expect(options?.lifetime?.lines[2]).toBe("Your monthly plan already ends on November 4, 2026.");
+    expect(describePlanChanges(monthly({ renewsAt: null, endsAt: NOON }), undefined, NOON)).toBeNull();
+  });
+
+  test("lifetime sold out, or not open yet, stays visible with no button", () => {
+    const soldOut = describePlanChanges(monthly(), { ...SEATS, seatsLeft: 0 }, NOON);
+    expect(soldOut?.lifetime?.unavailable).toBe("Sold out");
+    const later = describePlanChanges(monthly(), { ...SEATS, eligibleFrom: NOON + DAY }, NOON);
+    expect(later?.lifetime?.unavailable).toMatch(/^Opens for you on November 5, 2026/);
+  });
+
+  test("no lifetime while seats are closed, unseeded or loading", () => {
+    for (const seats of [undefined, { ...SEATS, open: false }, { ...SEATS, eligibleFrom: null }]) {
+      const options = describePlanChanges(monthly(), seats, NOON);
+      expect(options?.lifetime).toBeNull();
+      expect(options?.switchTo?.to).toBe("annual");
+    }
+  });
+
+  test("nothing for Free, lifetime, comp, a payment problem or a dispute", () => {
+    for (const mine of [
+      entitlements("free"),
+      entitlements("free", { term: "monthly", status: "canceled", endsAt: NOON }),
+      entitlements("free", { term: "monthly", status: "unpaid" }),
+      entitlements("free", { term: "monthly", status: "suspended" }),
+      monthly({ status: "past_due" }),
+      entitlements("builders_hub", { term: "lifetime", status: "active", foundingSeat: 3 }),
+      entitlements("builders_hub", { term: "comp", status: "active" }),
+      entitlements("builders_hub", { term: null, status: "active" }),
+    ]) {
+      expect(describePlanChanges(mine, SEATS, NOON)).toBeNull();
+    }
+  });
+
+  test("a new monthly member sees the choices under their plan, even on day one", () => {
+    withData(entitlements("builders_hub", { term: "monthly", status: "active", renewsAt: NOON }, RECENT));
+    const html = renderToStaticMarkup(<PlanComparison />);
+    const plan = html.indexOf("Your plan");
+    const changes = html.indexOf("Change your plan");
+    expect(plan).toBeGreaterThan(-1);
+    expect(changes).toBeGreaterThan(plan);
+    expect(changes).toBeLessThan(html.indexOf("<table"));
+    expect(html).toContain("Switch to annual");
+    expect(html).toContain("Buy Founding Lifetime · $349 once");
+    expect(html).toContain("not refunded automatically");
+    expect(html).toContain(REFUND_LINE);
+    for (const link of MEMBERSHIP_LEGAL_LINKS) expect(html).toContain(`href="${link.href}"`);
+    expect(html).toContain('aria-describedby="change-lifetime-terms change-lifetime-fine-print"');
+    expect(html).toContain('aria-describedby="switch-annual-terms"');
+    expect(html).not.toContain('id="builders-hub"');
+  });
+
+  test("an annual member sees Switch to monthly; sold out shows no lifetime button", () => {
+    withData(annual(), { ...SEATS, seatsLeft: 0 });
+    const html = renderToStaticMarkup(<PlanComparison />);
+    expect(html).toContain("Switch to monthly");
+    expect(html).toContain("Sold out");
+    expect(html).not.toContain("Buy Founding Lifetime");
+    expect(html).not.toContain("change-lifetime-fine-print");
+  });
+
+  test("past due, Free and lifetime members see no plan changes", () => {
+    for (const mine of [
+      monthly({ status: "past_due" }),
+      entitlements("free", {}, Date.now() - 2 * QUIET_PERIOD_MS),
+      entitlements("builders_hub", { term: "lifetime", status: "active", foundingSeat: 3 }),
+    ]) {
+      withData(mine);
+      expect(renderToStaticMarkup(<PlanComparison />)).not.toContain("Change your plan");
+    }
+  });
+});
+
 describe("WP64-S6 copy and safety pins", () => {
   const surfaces = {
     ...import.meta.glob("../../components/platform/plan/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }),
-    ...import.meta.glob("../../components/platform/billing/{CurrentPlan,CheckoutReturn,PlanAndBilling}.tsx", {
+    ...import.meta.glob("../../components/platform/billing/{CurrentPlan,CheckoutReturn,PlanAndBilling,PlanChanges}.tsx", {
       query: "?raw",
       import: "default",
       eager: true,

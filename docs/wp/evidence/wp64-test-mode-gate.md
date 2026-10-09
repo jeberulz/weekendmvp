@@ -20,7 +20,7 @@ Results of `docs/runbooks/wp64-test-mode-gate.md`. Test mode only, sandbox `acct
 | C2 | Free to annual | | | | |
 | C3 | Free to Founding Lifetime | | | | |
 | C4 | Cancel at period end, then undo | | | | |
-| C4b | Monthly to annual and back | | | | Switch invoice through Managed Payments? |
+| C4b | Monthly to annual and back | | | | Switch invoice through Managed Payments? Annual to monthly scheduled, not immediate? |
 | C5 | Renewal through a test clock | | | | Clock or fallback? |
 | C6 | Failed renewal, then recovery | | | | |
 | C7 | Failed renewal, then loss of access | | | | Canceled or unpaid? |
@@ -34,7 +34,7 @@ Results of `docs/runbooks/wp64-test-mode-gate.md`. Test mode only, sandbox `acct
 | C14 | Payment after the hold lapsed, seat gone | | | | Refunded automatically? |
 | C15 | Sold out | | | | |
 | C16 | Window gating, cohort dry run | | | | |
-| C17 | Subscriber buys Founding Lifetime (O5) | | | | Subscription set to end at period end? |
+| C17 | Subscriber buys Founding Lifetime (O5) | | | | O5 notice shown before checkout? Subscription set to end at period end? |
 | C18 | Live-build gating | | | | |
 | C19 | Replays, duplicates, forged signature, reconcile twice | | | | |
 | C20 | Checkout switched off, webhook still settles | | | | |

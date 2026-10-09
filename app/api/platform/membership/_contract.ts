@@ -23,6 +23,16 @@ export type MembershipTerm = (typeof MEMBERSHIP_TERMS)[number];
 /** The whole request body. The route rejects any other key. */
 export type MembershipCheckoutRequest = { term: MembershipTerm; idempotencyKey: string };
 
+/** The subscription terms a member can switch between. */
+export const MEMBERSHIP_SWITCH_TERMS = ["monthly", "annual"] as const;
+export type MembershipSwitchTerm = (typeof MEMBERSHIP_SWITCH_TERMS)[number];
+
+/**
+ * The Billing Portal body: `{}` opens the portal, `{ switchTo }` opens Stripe's
+ * confirmation for that one plan switch. Never a customer, price or address.
+ */
+export type MembershipPortalRequest = Record<string, never> | { switchTo: MembershipSwitchTerm };
+
 /** Letters, digits, `_`, `-` and `:`, 16 to 80 characters. */
 export const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_:-]{16,80}$/;
 

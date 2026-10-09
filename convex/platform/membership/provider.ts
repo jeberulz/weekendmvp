@@ -46,7 +46,7 @@ export type MembershipBridgeResult =
   | { outcome: Outcome; actions: FollowUp[] }
   | { released: number }
   | { ids: string[]; capped: boolean }
-  | { customerId: string };
+  | { customerId: string; subscriptionId: string };
 
 export const accept = action({
   args: { payload: v.string(), signature: v.string() },

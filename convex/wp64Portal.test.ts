@@ -104,8 +104,8 @@ describe("WP64-S5 which customer the portal opens", () => {
   test("a subscriber gets their own customer; Free, comp and lifetime members get nothing to manage", async () => {
     const t = setup();
     const subscriber = await seedUser(t);
-    await subscribe(t, subscriber);
-    expect(await openPortal(t, subscriber)).toEqual({ customerId: `cus_${subscriber.userId}` });
+    const own = await subscribe(t, subscriber);
+    expect(await openPortal(t, subscriber)).toEqual({ customerId: `cus_${subscriber.userId}`, subscriptionId: own.subscriptionId });
 
     const free = await seedUser(t);
     expect(await openPortal(t, free)).toEqual({ ok: false, code: "INVALID_REQUEST" });
@@ -117,14 +117,14 @@ describe("WP64-S5 which customer the portal opens", () => {
   test("an ended subscription still opens the portal, for invoices and a card update", async () => {
     const t = setup();
     const member = await seedUser(t);
-    await subscribe(t, member, { status: "unpaid" });
-    expect(await openPortal(t, member)).toEqual({ customerId: `cus_${member.userId}` });
+    const own = await subscribe(t, member, { status: "unpaid" });
+    expect(await openPortal(t, member)).toEqual({ customerId: `cus_${member.userId}`, subscriptionId: own.subscriptionId });
   });
 
   test("only the mode the deployment runs in", async () => {
     const t = setup();
     const member = await seedUser(t);
-    await subscribe(t, member, { customerId: "cus_test_side" });
+    const own = await subscribe(t, member, { customerId: "cus_test_side" });
     expect(await openPortal(t, member, true)).toEqual({ ok: false, code: "INVALID_REQUEST" });
     // A newer subscription in the other mode never hides this mode's customer.
     // Inserted directly: one deployment runs one mode, so checkout never opens both.
@@ -142,16 +142,16 @@ describe("WP64-S5 which customer the portal opens", () => {
       });
       await ctx.db.insert("billing_customers", { ownerId: member.userId, stripeCustomerId: "cus_live_side", livemode: true, createdAt: 1 });
     });
-    expect(await openPortal(t, member, false)).toEqual({ customerId: "cus_test_side" });
-    expect(await openPortal(t, member, true)).toEqual({ customerId: "cus_live_side" });
+    expect(await openPortal(t, member, false)).toEqual({ customerId: "cus_test_side", subscriptionId: own.subscriptionId });
+    expect(await openPortal(t, member, true)).toEqual({ customerId: "cus_live_side", subscriptionId: "sub_live_side" });
   });
 
   test("the newest subscription's customer", async () => {
     const t = setup();
     const member = await seedUser(t);
     await subscribe(t, member, { status: "canceled", endedAt: 1_500, snapshotAt: 1_500, customerId: "cus_old" });
-    await subscribe(t, member, { customerId: "cus_new", snapshotAt: 2_000 });
-    expect(await openPortal(t, member)).toEqual({ customerId: "cus_new" });
+    const newest = await subscribe(t, member, { customerId: "cus_new", snapshotAt: 2_000 });
+    expect(await openPortal(t, member)).toEqual({ customerId: "cus_new", subscriptionId: newest.subscriptionId });
   });
 
   test("a customer linked to anyone else is never opened", async () => {
@@ -251,10 +251,11 @@ describe("WP64-S5 the signed bridge", () => {
     vi.stubEnv("MEMBERSHIP_BILLING_BRIDGE_SECRET", SECRET);
     const t = setup();
     const member = await seedUser(t);
-    await subscribe(t, member);
+    const own = await subscribe(t, member);
     const signed = signMembershipBridge({ kind: "open_portal", livemode: false }, SECRET);
     expect(await asUser(t, member).action(api.platform.membership.provider.accept, signed)).toEqual({
       customerId: `cus_${member.userId}`,
+      subscriptionId: own.subscriptionId,
     });
     expect(await t.action(api.platform.membership.provider.accept, signed)).toEqual({ ok: false, code: "AUTHENTICATION_REQUIRED" });
     const forged = signMembershipBridge({ kind: "open_portal", livemode: false }, "forged-bridge-test-secret-0123456789abcdef");

@@ -15,6 +15,8 @@ import { MEMBERSHIP_SCAN_CAP } from "./state";
  * The customer is the one on the member's newest subscription in this mode,
  * and it must be linked to this member alone. A member with no subscription
  * (Free, comp or Founding Lifetime) has nothing for the portal to manage.
+ * The subscription id goes back too, so a plan switch can only ever name the
+ * member's own newest subscription.
  */
 
 const CUSTOMER_READ = 5;
@@ -27,9 +29,9 @@ const rateLimiter = new RateLimiter(components.rateLimiter, {
 /** The route contract's codes a portal request can end with. */
 export const PORTAL_REFUSAL_CODES = ["RATE_LIMITED", "INVALID_REQUEST"] as const;
 
-/** `{ customerId }` has no `ok`, so it never reads as an opened checkout order. */
+/** `{ customerId, subscriptionId }` has no `ok`, so it never reads as an opened checkout order. */
 export const portalCustomerValidator = v.union(
-  v.object({ customerId: v.string() }),
+  v.object({ customerId: v.string(), subscriptionId: v.string() }),
   v.object({ ok: v.literal(false), code: v.union(v.literal("RATE_LIMITED"), v.literal("INVALID_REQUEST")) }),
 );
 
@@ -58,6 +60,6 @@ export const open = internalMutation({
       .take(CUSTOMER_READ);
     const ours = links.length > 0 && links.every((link) => link.ownerId === member._id && link.livemode === args.livemode);
     if (!ours) return { ok: false as const, code: "INVALID_REQUEST" as const };
-    return { customerId: newest.stripeCustomerId };
+    return { customerId: newest.stripeCustomerId, subscriptionId: newest.stripeSubscriptionId };
   },
 });

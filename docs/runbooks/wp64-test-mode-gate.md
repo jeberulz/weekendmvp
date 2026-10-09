@@ -221,11 +221,12 @@ Expect `customer.subscription.updated` twice, both 200. Also check the portal sh
 
 ### C4b. Monthly to annual and back (M1)
 
-1. Manage billing, switch to Annual. The portal shows the amount due now (annual less the unused month). Confirm.
-2. The page: "Builder’s Hub, annual", renewing a year out.
-3. Manage billing, switch back to Monthly. The portal says it starts at the end of the annual period. The page stays on Annual.
+1. Under "Change your plan", the Annual card says "Switches now" and a Switch to annual button. Click it. Stripe opens a confirmation page for this one switch (no portal menu), with the amount due now (annual less the unused month). Confirm.
+2. Stripe sends you back to Plan and billing. The page: "Builder’s Hub, annual", renewing a year out. The card now offers Monthly instead.
+3. Click Switch to monthly. Stripe's confirmation says the change starts at the end of the annual period. Confirm. The page stays on Annual.
+4. Click Switch to monthly again. With a switch already scheduled, the portal home opens instead and shows the scheduled change. Close it.
 
-Record whether the switch invoice goes through Managed Payments (tax shown, Link receipt).
+Record whether the switch invoice goes through Managed Payments (tax shown, Link receipt), and whether step 3 confirms a scheduled change rather than an immediate one.
 
 ### C5. Renewal through a test clock (M4, clock customer)
 
@@ -341,9 +342,9 @@ Expect counts and a batch id, and no address in the output.
 
 ### C17. Subscriber buys Founding Lifetime (O5) (M11)
 
-No page offers lifetime to a subscriber yet. Signed in as M11 with an active monthly plan, start a lifetime checkout from the console (Part B) and pay with `4242`.
+Signed in as M11 with an active monthly plan, open Plan and billing. Under "Change your plan", the Founding Lifetime card shows the price, the seats left and the O5 notice: the monthly plan stops renewing, and the month already paid for is not refunded automatically. Click Buy Founding Lifetime and pay with `4242`.
 
-Expect the lifetime grant, and our webhook sets the monthly subscription to cancel at period end (`customer.subscription.updated`). No refund of the current month. The page shows Founding Lifetime.
+Expect the lifetime grant, and our webhook sets the monthly subscription to cancel at period end (`customer.subscription.updated`). No refund of the current month. The page shows Founding Lifetime and no "Change your plan" section.
 
 ### C18. Live-build gating
 

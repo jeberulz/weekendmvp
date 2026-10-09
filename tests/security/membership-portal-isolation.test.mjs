@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 
 // WP64-S5 static pins. The Billing Portal opens only for the signed-in
 // member's own customer, returns to our own origin, and never follows a
-// browser-supplied customer or address.
+// browser-supplied customer or address. A plan switch names only a term:
+// the subscription comes from Convex and the Price from config.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
@@ -15,15 +16,40 @@ const code = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:
 const ROUTE = "app/api/platform/membership/portal/route.ts";
 const PORTAL = "convex/platform/membership/portal.ts";
 
-test("the route takes an empty body and builds the customer and return address itself", async () => {
+test("the route takes `{}` or `{ switchTo }` and builds the customer and return address itself", async () => {
   const route = code(await read(ROUTE));
-  assert.match(route, /if \(!isEmptyBody\(body\)\) return membershipError\("INVALID_REQUEST"\)/);
+  assert.match(route, /const input = parsePortalRequest\(body\);\s*if \(!input\) return membershipError\("INVALID_REQUEST"\);/);
+  // `{}`, or exactly one key, `switchTo`, holding one of the two subscription terms.
+  assert.match(route, /if \(keys\.length === 0\) return \{\};/);
+  assert.match(route, /if \(keys\.length !== 1 \|\| keys\[0\] !== "switchTo"\) return null;/);
+  assert.match(route, /MEMBERSHIP_SWITCH_TERMS\.find\(\(term\) => term === switchTo\)/);
   assert.match(route, /customer: found\.customerId,/);
-  assert.match(route, /return_url: `\$\{config\.appOrigin\}\$\{MEMBERSHIP_RETURN_PATH\}`,/);
-  assert.doesNotMatch(route, /body\.\w+|searchParams|headers\.get\("(origin|referer)"\)/);
+  assert.match(route, /const returnUrl = `\$\{config\.appOrigin\}\$\{MEMBERSHIP_RETURN_PATH\}`;/);
+  assert.match(route, /return_url: returnUrl,/);
+  assert.doesNotMatch(route, /body\.\w+|input\.(customer|price|subscription|return)|searchParams|headers\.get\("(origin|referer)"\)/);
   // One portal call, no configuration override from anywhere.
   assert.equal(route.match(/billingPortal\.sessions\.create\(/g)?.length, 1);
-  assert.doesNotMatch(route, /configuration:|flow_data|on_behalf_of/);
+  assert.doesNotMatch(route, /configuration:|on_behalf_of|discounts|proration_behavior|promotion_code/);
+});
+
+test("a switch is only Stripe's confirmation, for the member's own subscription, to our own Price", async () => {
+  const route = code(await read(ROUTE));
+  assert.equal(route.match(/flow_data/g)?.length, 1);
+  assert.match(route, /\.\.\.\(flow \? \{ flow_data: flow \} : \{\}\),/);
+  assert.match(route, /type: "subscription_update_confirm",/);
+  assert.doesNotMatch(route, /type: "(subscription_update|subscription_cancel|payment_method_update|customer_update)"/);
+  assert.match(route, /items: \[\{ id: items\[0\]\.id, price: config\.priceIds\[to\], quantity: 1 \}\]/);
+  assert.match(route, /after_completion: \{ type: "redirect", redirect: \{ return_url: returnUrl \} \}/);
+  // The subscription comes from Convex. The route checks it is this customer's and ours before anything else.
+  const price = route.indexOf("await assertPriceMatches(stripe, config, to);");
+  const fetched = route.indexOf("await stripe.subscriptions.retrieve(found.subscriptionId);");
+  const owner = route.indexOf("customer !== found.customerId");
+  const purpose = route.indexOf("subscription.metadata?.purpose !== MEMBERSHIP_BILLING_PURPOSE");
+  const flow = route.indexOf('type: "subscription_update_confirm"');
+  assert.ok(price > 0 && fetched > price && owner > fetched && purpose > fetched && flow > owner && flow > purpose);
+  assert.match(route, /if \(flow === "refused"\) return membershipError\("INVALID_REQUEST"\);/);
+  // The route reads Stripe and opens the portal. It never changes a subscription or takes money itself.
+  assert.doesNotMatch(route, /subscriptions\.(update|cancel|create)|subscriptionSchedules|checkout\.sessions|paymentIntents|invoices\./);
 });
 
 test("the route returns only a Stripe portal URL in its own mode", async () => {
@@ -44,6 +70,7 @@ test("Convex reads the customer from the member's session, never from input", as
   assert.doesNotMatch(portal, /ctx\.db\.(insert|patch|replace|delete)\(/);
   assert.doesNotMatch(portal, /\b(query|mutation|action)\(\{/);
   assert.match(portal, /links\.every\(\(link\) => link\.ownerId === member\._id && link\.livemode === args\.livemode\)/);
+  assert.match(portal, /return \{ customerId: newest\.stripeCustomerId, subscriptionId: newest\.stripeSubscriptionId \};/);
 });
 
 test("the bridge kind names no customer and no owner", async () => {

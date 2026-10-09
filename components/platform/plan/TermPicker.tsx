@@ -41,7 +41,7 @@ export function lifetimeState(seats: Seats | undefined, now: number): LifetimeSt
   return { shown: true, soldOut, opensAt, selectable: !soldOut && opensAt === null, amount: seats.nextSeatAmountMinor ?? undefined };
 }
 
-function seatLine(seats: Seats): string {
+export function seatLine(seats: Seats): string {
   if (seats.seatsLeft > 0) return `${seats.seatsLeft} of ${seats.seatsTotal} founding seats left. ${LIFETIME_TRANCHE_LINE}.`;
   if (seats.seatsHeld > 0) {
     return "No seat is free right now. A seat held by an unfinished checkout comes back if that checkout expires.";

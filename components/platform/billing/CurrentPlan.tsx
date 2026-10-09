@@ -7,7 +7,7 @@ import { useBillingPortal } from "@/components/platform/plan/useMembershipChecko
 const EYEBROW = "font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3";
 const HUB = PLANS.builders_hub.name;
 
-function formatDay(ms: number): string {
+export function formatDay(ms: number): string {
   return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(ms);
 }
 
