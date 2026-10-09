@@ -1,0 +1,127 @@
+---
+slug: "usage-credit-ledger-indie-ai-apps"
+title: "Usage-Credit Ledger for Indie AI Apps"
+---
+
+## The Problem
+
+**Concept proposal. Buyer demand and pricing remain to be validated.**
+
+An indie AI app offering prepaid usage needs to explain more than a balance. A customer may want to see what a request reserved, what it ultimately consumed and what was returned when the request failed. The proposed product is a small operational ledger that makes those transitions visible.
+
+The target buyer is a founder maintaining usage accounting in application code. The working hypothesis is that scattered balance updates make support questions and failure handling difficult to reconstruct. A repeated callback or interrupted job should not create an unexplained extra debit.
+
+The customer-facing job is straightforward: connect a usage request to a readable account history. The founder-facing job is to trace that same history without manually editing a balance or guessing which part of a failed request completed.
+
+## The Solution
+
+Build a ledger workspace with a small integration contract for reserving, settling and releasing product credits. Begin with a simulator and an account timeline. Separate the app's usage units from real money so a prototype cannot be mistaken for a payment processor.
+
+**How it works:**
+
+1. **Define a usage unit.** Choose the product's credit meaning and display it consistently.
+2. **Reserve a request allowance.** Record a stable request key before work begins.
+3. **Settle the completed work.** Post the final usage and release any unused reservation.
+4. **Release failed work.** Record the failure outcome without silently deleting earlier entries.
+5. **Explain the history.** Show a readable timeline tied to the underlying request.
+
+Each transition should be repeatable without creating an additional posting. Corrections should appear as new entries with a reason and reference, so the operator can explain what changed. The account view should distinguish available credits from credits temporarily reserved for running work.
+
+The weekend MVP is a demonstration of this lifecycle using fictional accounts and request outcomes. Production payment events, tax treatment, migration of customer balances and provider-specific charging rules require separate work after the accounting contract is reviewed.
+
+## Market Research
+
+[Stripe documents billing credits](https://docs.stripe.com/billing/subscriptions/usage-based/billing-credits), while [Metronome](https://metronome.com/) and [OpenMeter](https://openmeter.io/) describe usage-oriented billing and metering products. These are relevant existing approaches to investigate. Their existence does not establish a separate market for a small application-credit ledger.
+
+The key discovery question is where the founder's current system fails to explain a request lifecycle. Review a sanitized support case, an interrupted job and a repeated callback. Determine whether the problem belongs in the existing billing system, the application runtime or a dedicated operational view.
+
+An early pilot should test whether the founder can answer a customer's balance question from the timeline and whether the integration fits the product's actual failure states. Pricing, repeat demand and the cost of supporting different usage models remain to be validated.
+
+## Competitive Landscape
+
+- [Stripe billing credits](https://docs.stripe.com/billing/subscriptions/usage-based/billing-credits) are an existing billing approach to evaluate.
+- [Metronome](https://metronome.com/) offers a usage-based billing platform.
+- [OpenMeter](https://openmeter.io/) offers usage metering and billing tooling.
+
+The proposed focus is the application request lifecycle and a support-readable credit history. Compare that job with the existing products before describing a gap. A buyer that already has a satisfactory billing and account explanation may need no additional ledger.
+
+The initial differentiation to test is a narrow integration contract, clear failure transitions and a timeline understandable to both the developer and the customer. Avoid a promise of universal billing compatibility until actual integrations have been built and tested.
+
+## Business Model
+
+**Proposed model:** a developer software subscription with allowances for active accounts and recorded transitions. A starter offering could provide the integration contract and account view; a team offering could add investigation notes, exports and access controls. No tested price is established yet.
+
+A guided integration pilot may be more useful initially than a self-serve checkout. Map the customer's usage unit, reservation policy and failure behavior before recommending changes to an existing balance system.
+
+Costs to investigate include transaction volume, account history retention, concurrency, support and migration assistance. The business should be careful about scope: managing application entitlements and usage records does not automatically make it suitable for holding or transferring customer money.
+
+A possible acquisition approach is a developer guide showing how a fictional failed AI request releases its reservation and remains understandable in the timeline. Pair it with a small simulator rather than an unsupported savings claim.
+
+## Recommended Tech Stack
+
+Use a relational database with transactional postings and a server-side API. Represent credits using an explicit unit and a precise numeric format. Keep reservations separate from posted entries and derive balances from the defined accounting rules.
+
+The prototype needs stable request keys, owned accounts and a timeline that explains each transition. A simulator can generate success, failure, retry and cancellation cases without connecting a payment provider or external model.
+
+Before a production integration, review authorization, concurrent requests, correction behavior and recovery after interruptions. A visible history is valuable only if its postings remain consistent with the product's own usage contract.
+
+## AI Prompts to Build This
+
+**1. Project Setup**
+
+```text
+Build Credit Trail, a simulator and operational view for application usage credits.
+Use Next.js and TypeScript for a small web workspace.
+Use Supabase Auth as the only login and Supabase for owned account records.
+Start with fictional usage units and simulated requests; do not accept real money.
+Create an account list, a request simulator and an account timeline.
+Tables:
+- credit_accounts(id, owner_id, display_name, unit_name)
+- credit_entries(id, account_id, request_key, entry_kind, units, reason, created_at)
+- request_reservations(id, account_id, request_key, units, state)
+Enforce ownership on the server and show reserved and available units separately.
+Do not build: billing, payment collection, external model calls, production migrations or enterprise permissions.
+Done when: an owner can create a fictional account and inspect a simulated request's credit history.
+```
+
+**2. Core Feature**
+
+```text
+Implement reserve, settle and release transitions in Credit Trail.
+Give each simulated request a stable key and an explicit usage unit.
+Make repeated transitions return the original outcome without adding postings.
+Use database transactions for related reservation and ledger changes.
+Show corrections as new entries with a reason and reference.
+Add fictional success, failure, retry and cancellation examples to the simulator.
+Done when: each scenario has an explainable final balance and replaying a transition changes nothing.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for Credit Trail aimed at indie AI app developers.
+Explain the proposed request lifecycle and support-readable account timeline.
+Show a fictional request moving from reservation to success or release.
+Describe the prototype's scope and the production integration work still needed.
+Store pilot enquiries in a waitlist table using the existing database.
+Use one call to action: request an integration pilot.
+Done when: a developer understands the proposed workflow and can submit a pilot enquiry.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool to create a branding package for Credit Trail.
+Design a simple wordmark and a symbol based on a readable sequence of ledger entries.
+Use neutral surfaces with mint, amber and muted red state accents.
+Give every state a text label so meaning does not depend on color.
+Include light and dark wordmarks and an application icon.
+Avoid bank, investment or guaranteed-return imagery.
+Done when: the exported assets work on the account timeline and at small icon sizes.
+```
+
+## Sources
+
+- [Stripe billing credits documentation](https://docs.stripe.com/billing/subscriptions/usage-based/billing-credits)
+- [Metronome product overview](https://metronome.com/)
+- [OpenMeter product overview](https://openmeter.io/)
