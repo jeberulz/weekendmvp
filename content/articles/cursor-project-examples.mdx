@@ -1,0 +1,138 @@
+---
+slug: "cursor-project-examples"
+title: "Cursor Project Examples: 8 Apps You Can Build This Weekend"
+description: "Eight Cursor project examples you can finish in a weekend, two of them real shipped builds, plus the rule that keeps each diff small enough to review."
+category: "Ideas"
+publishedAt: "2026-10-09"
+wordCount: 1744
+readMinutes: 9
+heroAlt: "A short stack of blank index cards on a dark desk, the top card caught by a narrow emerald beam"
+---
+
+## Quick Answer
+
+Cursor project examples that finish are small apps with one input and one output, built in a repo you can read. The search for "cursor projects examples" is people wanting that list, not a tour of the editor.
+
+Two of the eight below are builds people actually shipped and wrote up. The other six are the same shape, scoped so you can finish on Sunday. If you want a candidate that already has the demand research done, start from the [startup ideas library](/startup-ideas) and open it in Cursor.
+
+## What People Actually Ship
+
+Cursor is an editor with an agent in it. Hobby is free, with limited Agent requests. Pro is $20 a month and adds extended Agent limits, frontier models, MCPs, and cloud agents. Pro+ is $60. Ultra is $200. That is the list price on Cursor's own pricing pages, not a discount someone got in April.
+
+The builds worth copying are boring.
+
+Ibrahim Harbutlu, who is not a developer by background, built FreelanceFlow in about three hours: clients, projects, invoices, a dashboard of what is unpaid. React, Express, Postgres. No bank sync, no Stripe, no login-with-Google. He put it on Gumroad at $49. The first sale did not come from Indie Hackers feedback. It came from a directory listing he had half forgotten.
+
+A Cursor forum post describes Ceiling, a tracker for AI subscription limits, produced from one founder-style prompt. The first run was an Express app, a JSON store, and 18 passing tests. A follow-up added CSV import that skips bad rows and says which ones failed. Another added a free tier that tells you the limit before you hit it, and a demo checkout that charges nothing. Cold install: 68 packages, 0 vulnerabilities, 23 tests still green. The author drove it through the Cursor agent CLI and a cloud agent, then ran the tests outside Cursor so the agent could not grade its own homework.
+
+Those two are the pattern. A website builder one person shipped in nine days, for under $160 of inference, is a different sport. So is a non-developer who used Cursor to stand up a six-language company site, a science library, and live Stripe payments while the actual sensor was still unbuilt. Impressive. Not Saturday.
+
+If you would rather pick from researched ideas than invent one, the [startup ideas library](/startup-ideas) is already filtered to one buyer and one job.
+
+## The Eight
+
+### 1. A client and invoice tracker
+
+Given a client and an amount, return what is unpaid.
+
+This is FreelanceFlow. Status on the project, a total outstanding, no bank connection. The author still had to think through invoice status himself. The agent did the monorepo, the schema, and the chart. You own that same split: you decide what "paid" means, the agent types the rest.
+
+Build time for him was about three hours. Yours will be longer the first time. Still a weekend.
+
+### 2. A usage ceiling for the subscriptions you already pay for
+
+Given a plan limit, warn you before you cross it.
+
+Ceiling exists because the author wanted to know what Pro does with a 9pm prompt. The part worth stealing is not the product name. It is the tests. Eighteen on the first run, twenty after the importer, twenty-three after the free tier. If your app's only interesting logic is a number, put a test on the number before you add a second screen.
+
+### 3. A quote calculator for one trade
+
+Given the job inputs you already use, return a price.
+
+Roofers, photographers, tutors. One trade, whose pricing you can explain in a paragraph. Cursor is the right tool here because the price lives in a function. Ask for the function and one test file. Then ask for the form. A quote that is wrong by a zero is worse than no app.
+
+### 4. A booking page that keeps the slot unless they pay
+
+Given an open slot, take a deposit or leave the slot free.
+
+Calendly does not care about your no-show rate. A deposit does. The Cursor-shaped version is a page, a Stripe Checkout link, and a webhook you can read. [Adding Stripe](/articles/add-stripe-to-weekend-mvp) is a Checkout session and a signed webhook, not a custom card form. If the webhook signature check is missing, you do not have payments. You have a rumor.
+
+### 5. An intake form that writes the brief
+
+Given the answers, return a one-page brief the client can approve.
+
+Freelancers lose days to "I thought you meant the other thing." The form is the product. No accounts. Email yourself the brief. You can add a login when a client asks for one, which they mostly will not.
+
+### 6. An ops page with one number on it
+
+Given one source, show the number you actually check.
+
+The tsunami-warning founder ended up with a password-protected ops page so he could see status and money in one place. You do not need his company. You need one figure: unpaid invoices, signups this week, or failed jobs. One password, one query, no charts until the number is right.
+
+### 7. A directory you type in by hand
+
+Given a filter, return a list you curated.
+
+No marketplace, no matching, no payments. One hundred rows you entered yourself. Directories make money from listings later. This weekend the win is that someone can find the ten names you would have texted them anyway.
+
+### 8. A waitlist that stores an email and nothing else
+
+Given an email, save it and say thanks.
+
+This is the whole app. Landing page, one field, one table. People bolt on accounts, referrals, and a points system before anyone has typed an address. Ship the field. If you want researched problems to point that page at, pull one from the [startup ideas library](/startup-ideas).
+
+## How to Prompt It So You Can Review the Diff
+
+The weekend SaaS writeup that shipped auth, billing, and one feature in about 18 hours of keyboard time had one rule that mattered: one prompt, one feature. Scaffold on Friday. Auth next. The core screen after that. Stripe last. Asking for all of it in one prompt produces a diff you will not read, and unread diffs are where the app starts lying.
+
+Say what not to build. "No user accounts. No settings page. No email yet." Left unsaid, those get built, and Sunday becomes a debugging session for features you did not want.
+
+Put the conventions in a rules file so you are not retyping them. Server actions for mutations. Tailwind only. Secrets stay on the server. The longer version of how to talk to Cursor without it wrecking the repo is [How to Prompt Cursor So It Doesn't Wreck Your Code](/articles/cursor-prompts-that-dont-wreck-your-code).
+
+Then run the tests yourself, the way the Ceiling author did. An agent that reports "all tests passed" inside the same session that wrote the tests is grading its own homework.
+
+The [Cursor projects hub](/build-with/cursor) has copy-paste prompts and a grid of ideas already tagged for this editor. Use those when you do not want to write the first prompt from a blank file.
+
+## Before You Show It to Anyone
+
+Three checks, then stop.
+
+- Secrets live on the server. If a key is in the browser bundle, it is public.
+- User A cannot load user B's row by editing an id in the URL. Test that directly.
+- Anything that charges a card verifies the amount on the server, and the webhook checks the signature.
+
+[Vibe coding security for founders](/articles/vibe-coding-security-for-founders) is the longer pass. Twenty minutes. Do it before the Gumroad link, not after the first angry email.
+
+## When Cursor Is the Wrong Tool
+
+Use it when you want a repo, a diff, and tests. Do not use it when you want an app without opening a project.
+
+- You want a generated interface and you will not read code. [Lovable examples](/articles/lovable-examples-what-to-build) match that job.
+- You are choosing between Cursor, Claude Code, and Lovable. The [2026 comparison](/articles/cursor-vs-claude-code-vs-lovable-2026) is the decision, not this list.
+- The hard part is a physical thing, a regulated claim, or a two-sided market. Cursor will happily build the website for a sensor you have not ordered. That is not the product.
+
+If none of those apply, pick the example whose buyer you could email tonight. Or take one from the [startup ideas library](/startup-ideas), where that buyer is already named.
+
+## FAQ
+
+### What are good Cursor project examples for a weekend?
+
+A client and invoice tracker, a subscription usage warning, a quote calculator for one trade, a booking page that takes a deposit, an intake form that writes a brief, a one-number ops page, a hand-typed directory, and a waitlist that stores an email. Two of those have public writeups. The rest are the same scope.
+
+### How much does Cursor cost to build one of these?
+
+Hobby is free and includes limited Agent requests. Pro is $20 a month. Pro+ is $60. Ultra is $200. A weekend of Agent use fits Pro for most people. Hosting on a free tier can be $0. The invoice-tracker author spent the time, not a big inference bill. The nine-day website builder reported under $160 of inference, which is the cost of not scoping.
+
+### Do you need to know how to code?
+
+You need to be willing to read a diff and run a test. The invoice tracker and the company site were both directed by people who do not write code for a living. Neither of them skipped review. "The agent said it works" is not a test.
+
+### What should you refuse to build this weekend?
+
+A marketplace that matches both sides, a full website builder, a six-language marketing site, or anything whose pricing rules you cannot state in one paragraph. Those are real Cursor projects. They are not weekend projects.
+
+## TL;DR
+
+Cursor project examples that ship are one input and one output, in a repo you review. Copy FreelanceFlow's invoice tracker or Ceiling's tested usage limit, or build a quote, a deposit booking, an intake brief, a one-number ops page, a hand-typed directory, or a waitlist. One prompt per feature. Run the tests yourself. Pro is $20 a month if Hobby's Agent limit gets in the way. Then point the page at a buyer from the [startup ideas library](/startup-ideas).
+
+Sources: [Cursor pricing](https://cursor.com/pricing), [Cursor plan details](https://cursor.com/help/account-and-billing/pricing), [FreelanceFlow writeup](https://dev.to/ibrh96prog/i-built-a-freelance-client-invoice-tracker-in-3-hours-using-cursor-heres-everything-i-shipped-36b6), [Ceiling on the Cursor forum](https://forum.cursor.com/t/built-ceiling-a-subscription-usage-tracker-from-one-founder-style-prompt-23-passing-tests-clean-cold-install/167856), [WEB4, nine days](https://forum.cursor.com/t/i-built-a-frontier-evel-ai-web-editor-in-9-days-with-cursor-under-160-in-inference/174009), [HERD showcase](https://forum.cursor.com/t/im-not-a-developer-cursor-and-i-built-a-tsunami-early-warning-company-6-language-site-272-source-science-library-incorporation-payments-content-automation/165155), [weekend SaaS with Cursor](https://www.thebuilderos.com/blog/build-saas-weekend-with-cursor)

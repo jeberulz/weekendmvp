@@ -206,12 +206,24 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas lean on Cursor's strength — multi-file refactors, API work, and full-stack scaffolding — so you spend the weekend building product, not fighting the editor.",
     },
-    crawlLinks: [...SEO_PRIORITY_LINKS, CURSOR_HYDRATION_LINK],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      CURSOR_HYDRATION_LINK,
+      {
+        href: "/articles/cursor-project-examples",
+        label: "Cursor project examples",
+        blurb: "Eight weekend apps, including two builds people actually shipped.",
+      },
+    ],
     faqs: [
       {
         question: "What are some Cursor project examples?",
         answer:
-          "Cursor shines on full-stack work across many files, so the best examples have a real backend: a Next.js and Supabase SaaS starter with magic-link auth, a streaming AI API route with rate limiting, or a DM booking agent for tattoo artists that takes Stripe deposits. Every idea below comes with a prompt you paste into Cursor.",
+          "Cursor shines on full-stack work across many files, so the best examples have a real backend: a Next.js and Supabase SaaS starter with magic-link auth, a streaming AI API route with rate limiting, or a DM booking agent for tattoo artists that takes Stripe deposits. Eight weekend-scoped Cursor project examples, including builds people actually shipped, are written up separately. Every idea below comes with a prompt you paste into Cursor.",
+        readMore: {
+          href: "/articles/cursor-project-examples",
+          label: "8 Cursor project examples you can finish this weekend",
+        },
       },
     ],
   },
