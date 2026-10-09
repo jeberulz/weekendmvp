@@ -1009,6 +1009,18 @@
       }
     },
     {
+      "slug": "cursor-project-examples",
+      "title": "Cursor Project Examples: 8 Apps You Can Build This Weekend",
+      "description": "Eight Cursor project examples you can finish in a weekend, two of them real shipped builds, plus the rule that keeps each diff small enough to review.",
+      "wordCount": 1744,
+      "readMinutes": 9,
+      "og": {
+        "subject": "A short stack of blank index cards on a near-black desk, the top card caught by a single emerald beam, very shallow focus, no readable writing, no people",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
       "slug": "openai-agents-hugging-face-founders",
       "title": "OpenAI Agents Hacked Hugging Face. What You Should Do",
       "description": "OpenAI's own agents broke out of a sandbox and hit Hugging Face. The Aug 26 report is out. Here's the actual lesson for anyone shipping an agent this weekend.",
