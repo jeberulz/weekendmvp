@@ -141,6 +141,10 @@ If anything is wrong: set `MEMBERSHIP_BILLING_MODE` empty and redeploy (rollback
 
 In the Convex dashboard for the serving deployment, Functions: run `platform/membership/seats:seed` with `{"apply":true}`, then `platform/membership/cohorts:launchCheck` with `{}`. Expect 50 free seats. Import cohorts with `npm run membership:import-cohorts` (dry run, then apply with the dry run's batch id), using `MEMBERSHIP_COHORT_CONVEX_URL` and `MEMBERSHIP_COHORT_ADMIN_KEY` in your shell only.
 
+## Step 5 and 6 as done (ruling "WP64 / founding windows")
+
+Window 3 opens to everyone from 2026-10-09 13:32 UTC (`windows.ts`, merged by PR). Windows 1 and 2 stay null, so the cohort import is not needed. Seats: take a Convex backup, then in the Convex dashboard for `first-squirrel-244`, Functions, run `platform/membership/seats:seed` with `{"apply":true}`, then `platform/membership/cohorts:launchCheck` with `{}`. Expect 50 free seats, and `everyone` dated with `windowsInOrder: true`. Founding Lifetime shows once both the seats and the deploy are in.
+
 ## Step 6 — Windows (O7, code change)
 
 Set the three dates in `convex/platform/membership/windows.ts` (buyers, then newsletter, then everyone), in a reviewed commit. `launchCheck` must show them in order.

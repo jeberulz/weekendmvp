@@ -2,7 +2,7 @@
 
 import { convexTest, type TestConvex } from "convex-test";
 import { ConvexError } from "convex/values";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { requireFeature } from "./platform/entitlements";
@@ -20,6 +20,11 @@ import {
   lifetimeTrancheForSeat,
 } from "./platform/plans";
 import schema from "./schema";
+import type { FoundingWindows } from "./platform/membership/windows";
+
+// The seat query's window date is S7's concern (wp64FoundingOffer.test.ts); keep these tests undated.
+const windows = vi.hoisted(() => ({ buyers: null, newsletter: null, everyone: null }) as FoundingWindows);
+vi.mock("./platform/membership/windows", () => ({ FOUNDING_WINDOWS: windows }));
 
 // WP64-S2. The real resolver, never stubbed here: every test reads the
 // membership tables through `resolvePlan` and `entitlements.mine`.

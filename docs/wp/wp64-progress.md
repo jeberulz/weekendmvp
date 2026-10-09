@@ -554,3 +554,10 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Fixed: created the live portal configuration `bpc_1UOdc94fUcq943uM3RolKV18` through the Stripe connection, a copy of the sandbox default with the live prices. It is the live default, and re-reading it confirms every setting.
 - Not checkable from here: the Vercel variable list (403), the restricted key's permissions, Managed Payments, `MEMBERSHIP_BILLING_MODE` and the Convex bridge secret. The Step 4 real-card test covers them.
 - Next: Step 4, the owner's real-card smoke test.
+
+## 2026-10-09 - WP64-S12 steps 5 and 6: Founding Lifetime opens to everyone
+
+- Owner input, after the flag went on and the page showed monthly and annual: "show the lifetime offer now, starting today now".
+- Actions taken: `convex/platform/membership/windows.ts` sets `everyone` to 2026-10-09 13:32 UTC. `buyers` and `newsletter` stay null. The S7 test that pins the real config now pins the ruled date. Ruling "WP64 / founding windows" records the change to the S7 order and why the cohort import is skipped. Merged `main` (PRs #132 and #133). The only conflict was two RULINGS rows appended on both sides; both are kept.
+- Owner step: seed the 50 seats on the production deployment from the Convex dashboard, after a backup. Without the seats the offer stays hidden even with the window open.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (446 pages). Convex 651, platform 483, security 146 node and 121 Vitest. Two S6 seat-query tests read the real window config and expected it undated. They now mock the windows, like the other WP64 test files, and the S7 test pins the ruled date.
