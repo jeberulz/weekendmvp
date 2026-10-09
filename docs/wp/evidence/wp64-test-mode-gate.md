@@ -43,15 +43,15 @@ Results of `docs/runbooks/wp64-test-mode-gate.md`. Test mode only, sandbox `acct
 
 | Check | Date | Result |
 |---|---|---|
-| `npm run typecheck` | | |
-| `npm run lint` | | |
-| `npm test` | | |
-| `npm run build` | | |
-| `npm audit --omit=dev --audit-level=high` | | |
-| `git diff --check` | | |
-| Secret-pattern scan | | |
-| axe at 390 px and 1440 px | | |
-| Dormancy proof | | |
+| `npm run typecheck` | 2026-10-09 | Pass (on `f54bd6b`, main merged in) |
+| `npm run lint` | 2026-10-09 | Pass: 0 errors, 34 warnings (unchanged baseline) |
+| `npm test` | 2026-10-09 | Pass except the same six known failures (three OG-image, three editorial). Convex 646, platform 405, security 143 node and 121 Vitest, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23 |
+| `npm run build` | 2026-10-09 | Pass: 442 pages (main builds 435; the seven extra are the four membership routes, `/dashboard/live`, `/terms`, `/refund-policy`) |
+| `npm audit --omit=dev --audit-level=high` | 2026-10-09 | Pass: no high or critical. Four moderate in `gray-matter`/`js-yaml`, not touched by WP64 |
+| `git diff --check` | 2026-10-09 | Pass |
+| Secret-pattern scan | 2026-10-09 | Pass: 112 files in the WP64 diff, no real key, secret or token. Only short fake test literals. `.env.example` adds names only |
+| axe at 390 px and 1440 px | 2026-10-09 | Pass: 11 billing states and the Terms, refund and privacy pages at both widths, 28 runs, 0 violations, no horizontal scroll |
+| Dormancy proof | 2026-10-09 | Pass: main and branch built with no membership env, 165 routes compared (all 157 sitemap URLs plus extras), 0 status and 0 selling-copy differences. Branch: checkout and portal 401 signed out, webhook 503, reconcile 200 `skipped` (also with a guessed bearer). Signed-in 503 is covered by the route tests, not run against a live session |
 
 ## Independent review (Part E)
 
