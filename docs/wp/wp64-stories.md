@@ -236,6 +236,7 @@ Ruled on 2026-10-09: O1 (Managed Payments, prices exclusive of tax), O2 (Rulz&Co
     - An independent high-risk reviewer reports no unresolved critical or high finding in authorization, server-owned pricing, exact-once settlement, seat inventory, replay and order handling, refund and dispute policy, secret handling, legacy separation and dormancy.
     - Evidence confirms test mode only: no live key, object, charge, webhook, env change, deploy or production data write.
   - Verification: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm audit --omit=dev --audit-level=high`, `git diff --check`, secret-pattern scan, axe at 390 px and 1440 px.
+  - Status 2026-10-09: runbook ready, not run. `docs/runbooks/wp64-test-mode-gate.md` covers setup, test members, cards and clocks, and journeys C1 to C20 (every criterion above, plus the portal switch, replays, a forged signature and checkout switched off). Results go in `docs/wp/evidence/wp64-test-mode-gate.md`. The owner runs the journeys locally against the sandbox. Claude runs the automated checks, the dormancy proof and the independent review.
 
 - [ ] `WP64-S12` - Live activation, launch order and review (owner-approved)
   - Scope: `docs/wp/wp64-go-live.md` (written in this story), Vercel and Convex environments, Stripe live objects, the flag.

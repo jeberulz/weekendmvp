@@ -408,3 +408,18 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Owner: Smart Retries and the email settings (evidence steps 3 and 4). At S12, the live account's default portal configuration must match section 1.
   - Open, not S5's: a surface that offers Founding Lifetime to a subscriber (O5 notice), and a Terms sentence on switching plans if you want one.
 - Next: S11 (the test-mode gate), then S12.
+
+## 2026-10-09 - WP64-S11 runbook
+
+- Owner input: "yes prepare the S11 runbook".
+- Actions taken:
+  - `docs/runbooks/wp64-test-mode-gate.md`: rules (sandbox only, no secrets in chat or git, shortened ids), setup (Stripe sandbox settings, Stripe CLI, branch, local env and Convex bridge secret, seat seed, a local-only window date, three terminals, smoke checks), test members, cards (`4242`, `0341` for failed renewals, `0259` for disputes), starting a checkout from the console, test clocks linked through `billing_customers`, and journeys C1 to C20 with what Stripe, the webhook terminal and Plan and billing should show. Parts D to F: Claude's automated checks and dormancy proof, the independent review, and clean-up.
+  - `docs/wp/evidence/wp64-test-mode-gate.md`: the results template.
+  - Facts checked against Stripe's docs: test clocks need a customer created on the clock, the failing and dispute test cards, how to win or lose a test dispute, and that a sandbox emails team members only.
+- Decisions made (mine, reversible):
+  - Test clocks run through Checkout by linking a clock customer to the member in the local Convex dashboard, because checkout reuses a member's linked customer. If Managed Payments refuses that, C5 has a fallback (reset the billing cycle in the Dashboard).
+  - Payment-after-expiry journeys force the hold to lapse (`reservedUntil` to 1, then reconcile), and C14 marks the seat taken directly, so the result never depends on timing.
+  - The cohort import is checked only as a dry run locally, because applying needs a cloud deployment. The Convex tests cover cohort gating.
+- Checks run: docs only. `git diff --check` clean.
+- Result: S11 ready to run. Nothing run against Stripe yet.
+- Next: the owner runs Part A and the journeys. Claude runs Parts D and E and fills in the evidence.
