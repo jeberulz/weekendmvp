@@ -496,3 +496,15 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - S11 C4: count the clicks from Settings to cancelled, and confirm Stripe's cancel page opens for a Managed Payments subscription.
   - S11: try Cancel plan on a subscription with an annual-to-monthly switch scheduled. The route opens the portal home. Check the portal lets the member cancel from there.
 - Next: the owner runs S11 on the checklist page.
+
+## 2026-10-09 - WP64-S9: legal pages switched on
+
+- Owner input: "no thats not my company - i will provide that later on, switch on the legal pages", then, after being told of the trading-disclosure gap, "yes switch them on with the email line".
+- Actions taken:
+  - `lib/legal/status.ts`: `MEMBERSHIP_LEGAL_APPROVED` is `true`. `/terms`, `/refund-policy` and the Builder's Hub privacy section now show in production, without the draft banner or noindex, and the footer and sitemap list them.
+  - `lib/legal/content.ts`: "Who we are" no longer holds the two `{{O2}}` gaps or the O2 review note. It says Rulz&Co is a trading name of a private limited company registered in England and Wales, and offers the registered name, number and office by email. A code comment marks where they go.
+  - `tests/platform/wp64-legal.test.tsx`: the approval tests now check the live state (visible and indexable in production, no banner, review notes, gaps or raw markers, the email line present). The approval check still finds a review note or gap if one comes back.
+  - `docs/wp/RULINGS.md`: ruling "WP64 / legal pages live", with the accepted risk.
+- Checks run: `npm run typecheck` passes. The legal tests pass (20). A production build builds `/terms` and `/refund-policy` as static pages with no noindex and no draft text, the footer links both, and `/privacy-policy` includes the Builder's Hub section. axe on all three pages at 390 and 1440 px: 0 violations. Break-on-purpose: 4 deliberate breakages (pages hidden, email line dropped, a gap or a review note shipped), all caught. Full gate: typecheck passes, lint 0 errors and 34 warnings, build 442 pages, Convex 649, platform 483, security 146 node and 121 Vitest, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23, and the same six known failures (three OG-image, three editorial). The first gate run caught `tests/platform/privacy-payments.test.tsx` (from `main`, PR #129) still expecting the privacy page without the Builder's Hub section in production. Updated to the approved order: Payments, Builder's Hub, Contact.
+- Result: the legal pages are live on the branch. They reach the site when the branch merges.
+- Next: the owner sends the registered company name, number and office. They replace the email line, and the site then meets the trading-disclosure rules.

@@ -52,15 +52,16 @@ function notFoundDigest(render: () => unknown): string | undefined {
 }
 
 describe("WP64-S9 the approval gate", () => {
-  test("drafts show in development and 404 in production", () => {
-    expect(MEMBERSHIP_LEGAL_APPROVED).toBe(false);
-    expect(legalPagesVisible("production")).toBe(false);
+  test("approved by the owner, so the pages show in production as well as development", () => {
+    // Rulings "WP64 / Terms sign-off" and "WP64 / legal pages live" (2026-10-09).
+    expect(MEMBERSHIP_LEGAL_APPROVED).toBe(true);
+    expect(legalPagesVisible("production")).toBe(true);
     expect(legalPagesVisible("development")).toBe(true);
     expect(legalPagesVisible("test")).toBe(true);
 
     vi.stubEnv("NODE_ENV", "production");
-    expect(notFoundDigest(() => TermsPage())).toMatch(/404/);
-    expect(notFoundDigest(() => RefundPolicyPage())).toMatch(/404/);
+    expect(notFoundDigest(() => renderToStaticMarkup(<TermsPage />))).toBeUndefined();
+    expect(notFoundDigest(() => renderToStaticMarkup(<RefundPolicyPage />))).toBeUndefined();
 
     vi.stubEnv("NODE_ENV", "development");
     expect(notFoundDigest(() => renderToStaticMarkup(<TermsPage />))).toBeUndefined();
@@ -68,34 +69,25 @@ describe("WP64-S9 the approval gate", () => {
   });
 
   test("approval is refused while any open decision or placeholder remains", () => {
-    const items = openItems(...ALL_SECTIONS);
-    if (MEMBERSHIP_LEGAL_APPROVED) {
-      expect(items).toEqual([]);
-      return;
-    }
-    // The owner signed the text off on 2026-10-09 (ruling "WP64 / Terms sign-off").
-    // Two seller facts are still missing, so approval waits on them.
-    expect(items).toEqual([
-      "who-we-are: O2",
-      "who-we-are: O2 placeholder (registered company name and company number)",
-      "who-we-are: O2 placeholder (registered office address)",
-    ]);
+    // Approved, so nothing may remain open.
+    expect(MEMBERSHIP_LEGAL_APPROVED).toBe(true);
+    expect(openItems(...ALL_SECTIONS)).toEqual([]);
+    // The check still finds a review note or a gap if one is added back.
     expect(openItems({ id: "x", heading: "X", blocks: [{ kind: "list", items: ["{{O2: a fact}}"] }] })).toEqual([
       "x: O2 placeholder (a fact)",
     ]);
+    expect(openItems({ id: "y", heading: "Y", blocks: [], pending: [{ by: "owner", note: "Check this." }] })).toEqual(["y: owner"]);
   });
 
-  test("drafts are noindex, with their own canonical, and the 404 carries no draft metadata", () => {
-    vi.stubEnv("NODE_ENV", "development");
-    expect(termsMetadata().robots).toEqual({ index: false, follow: false });
-    expect(refundMetadata().robots).toEqual({ index: false, follow: false });
-    expect(termsMetadata().alternates?.canonical).toBe("/terms");
-    expect(refundMetadata().alternates?.canonical).toBe("/refund-policy");
-    expect(termsMetadata().title).toBe("Builder’s Hub Terms");
-
-    vi.stubEnv("NODE_ENV", "production");
-    expect(termsMetadata()).toEqual({});
-    expect(refundMetadata()).toEqual({});
+  test("approved pages are indexable, with their own canonical, in production too", () => {
+    for (const nodeEnv of ["production", "development"]) {
+      vi.stubEnv("NODE_ENV", nodeEnv);
+      expect(termsMetadata().robots).toBeUndefined();
+      expect(refundMetadata().robots).toBeUndefined();
+      expect(termsMetadata().alternates?.canonical).toBe("/terms");
+      expect(refundMetadata().alternates?.canonical).toBe("/refund-policy");
+      expect(termsMetadata().title).toBe("Builder’s Hub Terms");
+    }
   });
 
   test("the sitemap and footer list the pages only once approved", () => {
@@ -183,15 +175,18 @@ describe("WP64-S9 the Terms", () => {
     expect(body).toContain("Questions, refunds and cancellations: iseghohi.john@gmail.com.");
   });
 
-  test("the draft banner, review notes and gaps show, and no raw marker leaks", () => {
-    expect(body).toContain("Draft for review. Not in force.");
-    expect(body).toContain("This is not legal advice.");
-    expect(body).toContain("Draft: October 2026");
-    expect(body).toContain("Open decision O2:");
-    expect(body).not.toContain("For the lawyer:");
-    expect(html).toContain("To be confirmed (O2): registered office address</mark>");
-    expect(body).toContain("a private limited company registered in England and Wales");
+  test("live: no draft banner, review notes, gaps or raw markers", () => {
+    expect(body).not.toContain("Draft for review. Not in force.");
+    expect(body).not.toContain("Draft: October 2026");
+    expect(body).toContain("Last updated: October 2026");
+    expect(body).not.toMatch(/Open decision|For the lawyer:|To be confirmed/);
+    expect(html).not.toContain("<mark");
     expect(html).not.toContain("{{");
+  });
+
+  test("until the owner sends them, the company's registered details are offered by email (O2)", () => {
+    expect(body).toContain("a trading name of a private limited company registered in England and Wales.");
+    expect(body).toContain("For the company's registered name, number and office, email iseghohi.john@gmail.com.");
   });
 
   test("gaps render as marks with the text around them intact", () => {
@@ -229,25 +224,22 @@ describe("WP64-S9 the privacy policy", () => {
   const sectionIds = (html: string) => [...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1]);
   const LIVE_IDS = ["cookies-and-analytics", "your-choices", "data-collection", "email-collection", "payments", "contact"];
 
-  test("adds a Builder's Hub section after Payments, in development only until approved", () => {
-    vi.stubEnv("NODE_ENV", "development");
-    const html = renderToStaticMarkup(<PrivacyPolicyPage />);
-    const draft = text(html);
-    expect(sectionIds(html)).toEqual([...LIVE_IDS.slice(0, -1), "builders-hub", "contact"]);
-    expect(draft).toContain("Builder’s Hub payments go through Stripe Checkout with Managed Payments.");
-    expect(draft).toContain("Link, a Stripe service, is the merchant of record");
-    expect(draft).toContain("We never see or store your card number.");
-    expect(draft).toContain("your Stripe customer id");
-    expect(draft).toContain("Founding Lifetime seat number");
-    expect(draft).toContain("one-way hashes of the addresses");
-    expect(draft).toContain("We do not keep a list of who joins.");
-    expect(draft).not.toContain("Review notes");
-
-    vi.stubEnv("NODE_ENV", "production");
-    const live = renderToStaticMarkup(<PrivacyPolicyPage />);
-    // The live policy (with its Payments section, PR #129) is untouched.
-    expect(sectionIds(live)).toEqual(LIVE_IDS);
-    expect(live).not.toContain("Builder’s Hub");
+  test("adds a Builder's Hub section after Payments, now in production too", () => {
+    for (const nodeEnv of ["production", "development"]) {
+      vi.stubEnv("NODE_ENV", nodeEnv);
+      const html = renderToStaticMarkup(<PrivacyPolicyPage />);
+      const page = text(html);
+      // The rest of the policy (with its Payments section, PR #129) is unchanged around it.
+      expect(sectionIds(html)).toEqual([...LIVE_IDS.slice(0, -1), "builders-hub", "contact"]);
+      expect(page).toContain("Builder’s Hub payments go through Stripe Checkout with Managed Payments.");
+      expect(page).toContain("Link, a Stripe service, is the merchant of record");
+      expect(page).toContain("We never see or store your card number.");
+      expect(page).toContain("your Stripe customer id");
+      expect(page).toContain("Founding Lifetime seat number");
+      expect(page).toContain("one-way hashes of the addresses");
+      expect(page).toContain("We do not keep a list of who joins.");
+      expect(page).not.toContain("Review notes");
+    }
   });
 
   test("the section sits between Payments and Contact, behind the gate", () => {

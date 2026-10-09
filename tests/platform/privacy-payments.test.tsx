@@ -9,7 +9,7 @@ vi.mock("next/font/google", () => ({
   Newsreader: () => ({ className: "font-serif", variable: "--font-serif", style: { fontFamily: "serif" } }),
 }));
 
-// The live page: WP64-S9's draft Builder's Hub section shows outside production only.
+// The live page. WP64-S9's Builder's Hub section is approved, so it shows here too.
 vi.stubEnv("NODE_ENV", "production");
 const html = renderToStaticMarkup(<PrivacyPolicyPage />);
 vi.unstubAllEnvs();
@@ -32,7 +32,7 @@ describe("privacy policy: payments", () => {
     );
   });
 
-  test("sits before Contact and leaves the other sections in place", () => {
+  test("sits before Builder's Hub and Contact and leaves the other sections in place", () => {
     const ids = [...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1]);
     expect(ids).toEqual([
       "cookies-and-analytics",
@@ -40,6 +40,7 @@ describe("privacy policy: payments", () => {
       "data-collection",
       "email-collection",
       "payments",
+      "builders-hub",
       "contact",
     ]);
     expect(html.match(/<h1\b/g)).toHaveLength(1);

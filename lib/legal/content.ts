@@ -39,8 +39,7 @@ export type LegalDoc = {
   sections: readonly LegalSection[];
 };
 
-/** A fact only the owner can supply (O2). Rendered highlighted, never shipped. */
-const tbc = (what: string) => `{{O2: ${what}}}`;
+/** A fact only the owner can supply, written `{{O2: what}}`. Rendered highlighted, never shipped. */
 export const PLACEHOLDER_PATTERN = /\{\{(O\d): ([^}]+)\}\}/g;
 
 const HUB = PLANS.builders_hub.name;
@@ -64,7 +63,9 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           kind: "p",
-          text: `Weekend MVP (weekendmvp.app) is run by ${SELLER}, a trading name of ${tbc("registered company name and company number")}, a private limited company registered in England and Wales, registered office ${tbc("registered office address")}. ${SELLER} is not registered for VAT.`,
+          // Ruling "WP64 / legal pages live" (2026-10-09): live before the owner supplies the
+          // registered name, number and office. Put them here, in place of the email line, when they arrive.
+          text: `Weekend MVP (weekendmvp.app) is run by ${SELLER}, a trading name of a private limited company registered in England and Wales. For the company's registered name, number and office, email ${SUPPORT}. ${SELLER} is not registered for VAT.`,
         },
         {
           kind: "p",
@@ -72,7 +73,6 @@ export const TERMS: LegalDoc = {
         },
         { kind: "p", text: `In these terms, "we" means ${SELLER} and "you" means the person who buys or uses ${HUB}.` },
       ],
-      pending: [{ by: "O2", note: "Registered company name, company number and registered office (UK trading disclosures)." }],
     },
     {
       id: "what-you-get",

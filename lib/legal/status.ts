@@ -1,13 +1,13 @@
 /**
- * WP64-S9. The Builder's Hub Terms, refund policy and privacy section are
- * drafts. They stay out of production until the owner and a lawyer or
- * accountant of the owner's choosing approve the text. Then set this to true
- * in a reviewed commit (WP64-S12 precondition "Terms live and reviewed").
+ * WP64-S9. The Builder's Hub Terms, refund policy and privacy section.
+ * Approved by the owner on 2026-10-09 (rulings "WP64 / Terms sign-off" and
+ * "WP64 / legal pages live"), so they show in production, in the footer and
+ * in the sitemap. Set back to false to hide them again.
  *
  * A test refuses `true` while any section still names an open decision or a
  * placeholder, so approving cannot ship a draft by accident.
  */
-export const MEMBERSHIP_LEGAL_APPROVED = false;
+export const MEMBERSHIP_LEGAL_APPROVED = true;
 
 /**
  * Drafts show in local development so the owner can review them. In a
