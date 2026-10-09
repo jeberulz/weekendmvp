@@ -1,17 +1,22 @@
 "use node";
 
 import { ConvexError, v } from "convex/values";
-import { MembershipBridgeError, verifyMembershipBridge } from "../../../lib/membership-bridge";
+import { MembershipBridgeError, membershipBridgeFresh, verifyMembershipBridge } from "../../../lib/membership-bridge";
 import { internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import { action, env } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR } from "../authz";
+import type { FollowUp, MembershipEvent, SubscriptionSnapshot } from "./events";
 
 /**
  * WP64-S3. The membership routes' only way into Convex. The signature proves
  * the call came from our server (`MEMBERSHIP_BILLING_BRIDGE_SECRET`); the
  * member's forwarded auth decides whose order it is. Fails closed when the
- * secret is unset or short. S4 adds the webhook events here.
+ * secret is unset or short.
+ *
+ * WP64-S4. The webhook and reconcile routes send verified Stripe events and
+ * snapshots with no member session. Each must be fresh (`issuedAt`), and the
+ * internal functions' validators check every field.
  */
 
 type BeginResult =
@@ -29,7 +34,15 @@ type BeginResult =
     }
   | { ok: false; code: string; opensAt?: number };
 
-export type MembershipBridgeResult = BeginResult | { attached: boolean };
+type Outcome = "applied" | "ignored" | "stale" | "rejected";
+
+export type MembershipBridgeResult =
+  | BeginResult
+  | { attached: boolean }
+  | { outcome: Outcome; duplicate: boolean; actions: FollowUp[] }
+  | { outcome: Outcome; actions: FollowUp[] }
+  | { released: number }
+  | { ids: string[]; capped: boolean };
 
 export const accept = action({
   args: { payload: v.string(), signature: v.string() },
@@ -40,6 +53,23 @@ export const accept = action({
     } catch (error) {
       if (error instanceof MembershipBridgeError) throw new ConvexError({ code: error.code });
       throw error;
+    }
+    if (payload.kind !== "begin_checkout" && payload.kind !== "attach_session") {
+      if (!membershipBridgeFresh(payload.issuedAt, Date.now())) throw new ConvexError({ code: "STALE_BRIDGE_PAYLOAD" });
+      const events = internal.platform.membership.events;
+      switch (payload.kind) {
+        case "event":
+          return await ctx.runMutation(events.settle, { event: payload.event as MembershipEvent });
+        case "subscription_snapshot":
+          return await ctx.runMutation(events.applySnapshot, {
+            livemode: payload.livemode,
+            subscription: payload.subscription as SubscriptionSnapshot,
+          });
+        case "release_expired_holds":
+          return await ctx.runMutation(events.releaseExpiredHolds, {});
+        case "running_subscriptions":
+          return await ctx.runQuery(events.runningSubscriptionIds, { livemode: payload.livemode });
+      }
     }
     try {
       if (payload.kind === "begin_checkout") {

@@ -8,11 +8,18 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * The signature proves the call came from our server. It never names the
  * owner: Convex reads the owner from the member's own auth token, which the
  * route forwards, so a replayed payload can only act for the member who sent
- * it, and every write it reaches is idempotent. S4 adds the webhook events.
+ * it, and every write it reaches is idempotent.
+ *
+ * S4 adds the server-only kinds the webhook and reconcile routes send. They
+ * carry no member auth, so each is stamped with `issuedAt` and Convex refuses
+ * one older than `MEMBERSHIP_BRIDGE_MAX_AGE_MS`. Convex validators check the
+ * event and snapshot shapes (`membership/events.ts`).
  */
 
 export const MEMBERSHIP_BRIDGE_MIN_SECRET_LENGTH = 32;
-export const MEMBERSHIP_BRIDGE_MAX_PAYLOAD_LENGTH = 2_048;
+export const MEMBERSHIP_BRIDGE_MAX_PAYLOAD_LENGTH = 4_096;
+/** How long a signed server-only payload stays good. Covers clock drift between Vercel and Convex. */
+export const MEMBERSHIP_BRIDGE_MAX_AGE_MS = 5 * 60 * 1000;
 
 const TERMS = ["monthly", "annual", "lifetime"] as const;
 type Term = (typeof TERMS)[number];
@@ -22,9 +29,19 @@ const IDEMPOTENCY_KEY = /^[A-Za-z0-9_:-]{16,80}$/;
 const ORDER_ID = /^[A-Za-z0-9_;]{1,64}$/;
 const CHECKOUT_SESSION = /^cs_(test|live)_[A-Za-z0-9_]{1,250}$/;
 
+/** A plain JSON object. Convex validates its shape. */
+type Snapshot = Record<string, unknown>;
+
 export type MembershipBridgePayload =
   | { kind: "begin_checkout"; term: Term; idempotencyKey: string; livemode: boolean }
-  | { kind: "attach_session"; orderId: string; checkoutSessionId: string };
+  | { kind: "attach_session"; orderId: string; checkoutSessionId: string }
+  | { kind: "event"; issuedAt: number; event: Snapshot }
+  | { kind: "subscription_snapshot"; issuedAt: number; livemode: boolean; subscription: Snapshot }
+  | { kind: "release_expired_holds"; issuedAt: number }
+  | { kind: "running_subscriptions"; issuedAt: number; livemode: boolean };
+
+/** The kinds only our server sends. They act without a member session. */
+export const MEMBERSHIP_SERVER_KINDS = ["event", "subscription_snapshot", "release_expired_holds", "running_subscriptions"] as const;
 
 export type MembershipBridgeErrorCode = "BRIDGE_NOT_CONFIGURED" | "INVALID_BRIDGE_SIGNATURE" | "INVALID_BRIDGE_PAYLOAD";
 
@@ -47,15 +64,35 @@ function assertSecret(secret: string | undefined): string {
 
 /** Fixed key order, so the same payload always signs the same way. */
 function serialize(payload: MembershipBridgePayload): string {
-  return payload.kind === "begin_checkout"
-    ? JSON.stringify({
+  switch (payload.kind) {
+    case "begin_checkout":
+      return JSON.stringify({
         kind: payload.kind,
         term: payload.term,
         idempotencyKey: payload.idempotencyKey,
         livemode: payload.livemode,
-      })
-    : JSON.stringify({ kind: payload.kind, orderId: payload.orderId, checkoutSessionId: payload.checkoutSessionId });
+      });
+    case "attach_session":
+      return JSON.stringify({ kind: payload.kind, orderId: payload.orderId, checkoutSessionId: payload.checkoutSessionId });
+    case "event":
+      return JSON.stringify({ kind: payload.kind, issuedAt: payload.issuedAt, event: payload.event });
+    case "subscription_snapshot":
+      return JSON.stringify({
+        kind: payload.kind,
+        issuedAt: payload.issuedAt,
+        livemode: payload.livemode,
+        subscription: payload.subscription,
+      });
+    case "release_expired_holds":
+      return JSON.stringify({ kind: payload.kind, issuedAt: payload.issuedAt });
+    case "running_subscriptions":
+      return JSON.stringify({ kind: payload.kind, issuedAt: payload.issuedAt, livemode: payload.livemode });
+  }
 }
+
+const isObject = (value: unknown): value is Snapshot =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+const isTime = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 
 export function signMembershipBridge(
   payload: MembershipBridgePayload,
@@ -106,7 +143,31 @@ function parse(payload: string): MembershipBridgePayload {
     }
     return { kind: "attach_session", orderId: candidate.orderId, checkoutSessionId: candidate.checkoutSessionId };
   }
+  const { issuedAt } = candidate;
+  if (!isTime(issuedAt)) throw new MembershipBridgeError("INVALID_BRIDGE_PAYLOAD");
+  if (candidate.kind === "event" && keys === "event,issuedAt,kind" && isObject(candidate.event)) {
+    return { kind: "event", issuedAt, event: candidate.event };
+  }
+  if (
+    candidate.kind === "subscription_snapshot" &&
+    keys === "issuedAt,kind,livemode,subscription" &&
+    typeof candidate.livemode === "boolean" &&
+    isObject(candidate.subscription)
+  ) {
+    return { kind: "subscription_snapshot", issuedAt, livemode: candidate.livemode, subscription: candidate.subscription };
+  }
+  if (candidate.kind === "release_expired_holds" && keys === "issuedAt,kind") {
+    return { kind: "release_expired_holds", issuedAt };
+  }
+  if (candidate.kind === "running_subscriptions" && keys === "issuedAt,kind,livemode" && typeof candidate.livemode === "boolean") {
+    return { kind: "running_subscriptions", issuedAt, livemode: candidate.livemode };
+  }
   throw new MembershipBridgeError("INVALID_BRIDGE_PAYLOAD");
+}
+
+/** True while a server-only payload is fresh. A payload from the future beyond the drift allowance is refused too. */
+export function membershipBridgeFresh(issuedAt: number, now: number): boolean {
+  return Math.abs(now - issuedAt) <= MEMBERSHIP_BRIDGE_MAX_AGE_MS;
 }
 
 /** Verifies the signature first, then parses. Throws `MembershipBridgeError`. */

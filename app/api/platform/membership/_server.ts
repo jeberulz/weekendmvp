@@ -89,7 +89,45 @@ export function readMembershipBillingConfig(env: Environment): MembershipBilling
   return { mode, livemode: mode === "live", stripeKey, bridgeSecret, appOrigin: url.origin, taxMode, priceIds };
 }
 
-export function createMembershipStripe(config: MembershipBillingConfig): Stripe {
+export type MembershipWebhookConfig = {
+  livemode: boolean;
+  stripeKey: string;
+  webhookSecret: string;
+  bridgeSecret: string;
+  /** Stripe Price id to our price key. */
+  priceKeys: Record<string, PriceKey>;
+};
+
+/**
+ * WP64-S4. The webhook and reconcile configuration. It does not read
+ * `MEMBERSHIP_BILLING_MODE` to decide whether to run: `off` stops new
+ * checkouts but webhooks keep settling, so a rollback never strands a paying
+ * member (frozen contract 11). The key prefix sets the mode, and a set mode
+ * must agree with it. A production deployment refuses a test key.
+ */
+export function readMembershipWebhookConfig(env: Environment): MembershipWebhookConfig {
+  const mode = env.MEMBERSHIP_BILLING_MODE ?? "";
+  if (mode !== "" && mode !== "off" && mode !== "test" && mode !== "live") throw new MembershipConfigError("BILLING_MODE_INVALID");
+  const stripeKey = env.STRIPE_MEMBERSHIP_RESTRICTED_KEY ?? "";
+  const keyMode = /^(?:rk|sk)_(test|live)_[A-Za-z0-9]+$/.exec(stripeKey)?.[1];
+  if (!keyMode || ((mode === "test" || mode === "live") && mode !== keyMode)) throw new MembershipConfigError("KEY_MODE_MISMATCH");
+  if (keyMode === "test" && env.VERCEL_ENV === "production") throw new MembershipConfigError("TEST_MODE_IN_PRODUCTION");
+
+  const webhookSecret = env.STRIPE_MEMBERSHIP_WEBHOOK_SECRET ?? "";
+  if (!/^whsec_[A-Za-z0-9]+$/.test(webhookSecret)) throw new MembershipConfigError("WEBHOOK_NOT_CONFIGURED");
+  const bridgeSecret = env.MEMBERSHIP_BILLING_BRIDGE_SECRET ?? "";
+  if (bridgeSecret.length < 32) throw new MembershipConfigError("BRIDGE_NOT_CONFIGURED");
+
+  const priceKeys: Record<string, PriceKey> = {};
+  for (const spec of MEMBERSHIP_PRICES) {
+    const priceId = env[spec.envName] ?? "";
+    if (!/^price_[A-Za-z0-9]+$/.test(priceId) || priceId in priceKeys) throw new MembershipConfigError("PRICE_ID_MISSING");
+    priceKeys[priceId] = spec.priceKey;
+  }
+  return { livemode: keyMode === "live", stripeKey, webhookSecret, bridgeSecret, priceKeys };
+}
+
+export function createMembershipStripe(config: Pick<MembershipBillingConfig, "stripeKey">): Stripe {
   return new Stripe(config.stripeKey, {
     apiVersion: MEMBERSHIP_STRIPE_API_VERSION,
     maxNetworkRetries: 1,

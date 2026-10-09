@@ -86,7 +86,7 @@ Checkout answers 503 until all of these are set, and Stripe refuses the session 
 1. Convex dev deployment: `npx convex env set MEMBERSHIP_BILLING_BRIDGE_SECRET <32+ random characters>`.
 2. `.env.local` (values never in git): `MEMBERSHIP_BILLING_MODE=test`, `MEMBERSHIP_TAX_MODE=managed_payments`, `MEMBERSHIP_BILLING_APP_ORIGIN=http://localhost:3000`, the same `MEMBERSHIP_BILLING_BRIDGE_SECRET`, `STRIPE_MEMBERSHIP_RESTRICTED_KEY=rk_test_...` (step 1), and the four price ids from section 1.
 3. `NEXT_PUBLIC_BUILDERS_HUB=on` locally to see the buttons. For Founding Lifetime, seed the seats (`npx convex run platform/membership/seats:seed '{"apply":true}'`) and date a window in `convex/platform/membership/windows.ts` on a local branch only.
-4. Nothing is granted until S4's webhook runs. The return page waits, then says the payment is still being confirmed.
+4. Nothing is granted until the S4 webhook settles the payment, so run step 2's `stripe listen` alongside `npm run dev`. Without it, the return page waits, then says the payment is still being confirmed.
 
 ## 2. Owner steps in the Dashboard (sandbox now, live again at S12)
 
@@ -104,15 +104,16 @@ A sandbox is its own account: everything here must be repeated on the live accou
    | Invoices | Read | S4 invoice events |
    | Payment Intents | Read | S4 lifetime payments |
    | Charges | Read | S4 refund and dispute events |
-   | Refunds | Write | S4 refunds a payment whose seat is gone |
+   | Refunds | Write | S4 refunds a payment whose seat is gone, a payment rejected at settlement, and a duplicate subscription |
    | Disputes | Read | S4 dispute events |
+   | Invoice payments | Read, if listed separately | S4 finds the invoice behind a refunded or disputed subscription payment. If the key form has no such line, Invoices: Read covers it. Confirm in S11 |
    | Customer portal | Write | S5 portal sessions |
    | Events | Read | S4 reconcile and replay |
    | Everything else | None | |
 
    S3 to S5 confirm this list in test mode and remove anything unused. The setup script uses a separate operator key (`STRIPE_MEMBERSHIP_SETUP_KEY`), kept in the operator's shell only.
 
-2. **Webhook in test mode.** Once S4's route exists, run locally:
+2. **Webhook in test mode.** The S4 route exists (`app/api/platform/membership/webhook/route.ts`). Run locally:
 
    ```bash
    stripe login   # pick the WeekendMVP sandbox
@@ -121,6 +122,14 @@ A sandbox is its own account: everything here must be repeated on the live accou
    ```
 
    Put the printed `whsec_...` in `.env.local` as `STRIPE_MEMBERSHIP_WEBHOOK_SECRET`. The list is `MEMBERSHIP_WEBHOOK_EVENTS`. Vercel previews are off for agent branches, so no hosted test endpoint is needed.
+
+   The route needs the restricted key, the `whsec_` secret, the bridge secret and the four price ids. It does not need `MEMBERSHIP_BILLING_MODE`: `off` still settles (frozen contract 11). Check in S11, in this order: a monthly checkout (subscription row, order `paid`), a lifetime checkout (seat `taken`, one grant), an expired lifetime session (seat back), a full refund of each from the Dashboard (grant revoked, subscription canceled), a partial refund (nothing changes), and `stripe trigger charge.dispute.created` for a dispute. Each Dashboard action should show one `billing_events` row per event id (`npx convex run platform/membership/events:counts`).
+
+   For S12, the live endpoint is registered in the Dashboard (Developers, Webhooks, Add endpoint): URL `https://www.weekendmvp.app/api/platform/membership/webhook`, the same twelve events, API version `2026-05-27.dahlia`. The route reads the invoice's `parent.subscription_details` from the event itself, so an older endpoint version would hide the subscription link. Its signing secret goes in Vercel production as `STRIPE_MEMBERSHIP_WEBHOOK_SECRET`.
+
+   Daily reconcile: set `CRON_SECRET` (16+ random characters) in Vercel production. Vercel then calls `/api/platform/membership/reconcile` at 04:17 UTC with it as a bearer header. Unset, the route does nothing and answers 200, which is the dormant state.
+
+   Disputes under Managed Payments: Stripe answers disputes itself and may accept one it expects to lose. The `charge.dispute.*` events still arrive, and settlement follows the outcome (O9). The Dashboard setting "Manage disputed payments" can stay at its default, because a lost dispute already cancels the subscription through the API.
 
 3. **Revenue recovery** (Billing, Revenue recovery): Smart Retries on, about 8 tries within 2 weeks (O9 default). After the last failed retry: cancel the subscription (O9: access ends on unpaid or canceled). Failed-payment emails on. Expiring-card emails on.
 
@@ -148,7 +157,10 @@ A sandbox is its own account: everything here must be repeated on the live accou
 | Support email, public details, Terms and Privacy URLs | Owner (O2 ruled) | | Step 6 |
 | Tax path: Managed Payments (O1 ruled) | Sandbox done; live activation is the owner's | 2026-10-09 | Section 1b, step 7 |
 | Tax code and tax behavior on the sandbox catalog | Done | 2026-10-09 | `txcd_10103000`, `exclusive`, planner clean |
-| Test webhook through the Stripe CLI | Waits for S4's route | | Step 2 |
+| Test webhook through the Stripe CLI | Route built (S4); owner runs it in S11 | 2026-10-09 | Step 2 |
+| Refunds and subscription changes through the API under Managed Payments | Allowed by Stripe's docs ("you can still issue refunds, update subscriptions"); confirm in S11 | 2026-10-09 | docs.stripe.com/payments/managed-payments/how-it-works |
+| `CRON_SECRET` in Vercel production | Owner, at S12 | | Step 2 |
+| Live webhook endpoint at API version `2026-05-27.dahlia` | Owner, at S12 | | Step 2 |
 | Live objects | Not in S10 | | S12 step 3 |
 
 ## 4. Env names (names only)

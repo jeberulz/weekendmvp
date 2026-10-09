@@ -9,5 +9,11 @@
       "codex/*": false,
       "dependabot/**": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/platform/membership/reconcile",
+      "schedule": "17 4 * * *"
+    }
+  ]
 }

@@ -191,8 +191,17 @@ export const begin = internalMutation({
       .withIndex("by_ownerId", (q) => q.eq("ownerId", member._id))
       .order("desc")
       .take(MEMBERSHIP_SCAN_CAP);
-    // O9: a lost dispute flags the account until the owner clears it.
-    if (grants.some((grant) => grant.revokeReason === "dispute_lost")) return refuse("ACCOUNT_REVIEW");
+    // O9: a dispute, open or lost, flags the account until the owner clears it
+    // (`membership/events:clearReview`).
+    if (grants.some((grant) => grant.revokeReason === "dispute_lost" || (grant.revokedAt === undefined && grant.suspendedAt !== undefined))) {
+      return refuse("ACCOUNT_REVIEW");
+    }
+    const subscriptions = await ctx.db
+      .query("plan_subscriptions")
+      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", member._id))
+      .order("desc")
+      .take(MEMBERSHIP_SCAN_CAP);
+    if (subscriptions.some((row) => row.disputedAt !== undefined)) return refuse("ACCOUNT_REVIEW");
 
     const existing = await ctx.db
       .query("membership_orders")

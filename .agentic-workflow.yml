@@ -155,6 +155,8 @@ critical_flows:
   - public_content_publishing_runs_without_ideabrowser
   - anonymous_and_customer_accounts_cannot_access_super_admin_or_editorial_workflows
   - canonical_content_publish_requires_admin_approval_preview_deploy_health_check_then_activation
+  - membership_checkout_webhook_entitlement_exactly_once
+  - founding_seat_cap_never_exceeded
 
 permanent_guardrails:
   - public_idea_pages_are_the_only_canonical_idea_research_pages

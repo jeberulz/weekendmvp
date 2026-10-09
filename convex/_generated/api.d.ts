@@ -67,6 +67,7 @@ import type * as platform_membership_checkout from "../platform/membership/check
 import type * as platform_membership_cohortHash from "../platform/membership/cohortHash.js";
 import type * as platform_membership_cohorts from "../platform/membership/cohorts.js";
 import type * as platform_membership_comp from "../platform/membership/comp.js";
+import type * as platform_membership_events from "../platform/membership/events.js";
 import type * as platform_membership_offer from "../platform/membership/offer.js";
 import type * as platform_membership_provider from "../platform/membership/provider.js";
 import type * as platform_membership_queries from "../platform/membership/queries.js";
@@ -168,6 +169,7 @@ declare const fullApi: ApiFromModules<{
   "platform/membership/cohortHash": typeof platform_membership_cohortHash;
   "platform/membership/cohorts": typeof platform_membership_cohorts;
   "platform/membership/comp": typeof platform_membership_comp;
+  "platform/membership/events": typeof platform_membership_events;
   "platform/membership/offer": typeof platform_membership_offer;
   "platform/membership/provider": typeof platform_membership_provider;
   "platform/membership/queries": typeof platform_membership_queries;

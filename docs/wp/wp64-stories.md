@@ -74,7 +74,7 @@ Proposed env names (values never in git, final names set in S2 and S3): Convex t
 
 Recommended defaults are mine. They are not rulings. Each needs a ruling in `docs/wp/RULINGS.md` before the story it blocks.
 
-Ruled on 2026-10-09: O1 (Managed Payments, prices exclusive of tax), O2 (Rulz&Co; business form and postal address still to come), and through the Terms sign-off O3, O4, O9 and the O8 missed-month remedy. Still open: O5, O6, O7 and O8's operational details.
+Ruled on 2026-10-09: O1 (Managed Payments, prices exclusive of tax), O2 (Rulz&Co; business form and postal address still to come), and through the Terms sign-off O3, O4, O9 and the O8 missed-month remedy. O5 was ruled the same day as recommended (S3, S4). Still open: O6, O7 and O8's operational details.
 
 | ID | Question | Recommended default | Who decides | Blocks |
 |---|---|---|---|---|
@@ -153,6 +153,7 @@ Ruled on 2026-10-09: O1 (Managed Payments, prices exclusive of tax), O2 (Rulz&Co
     - An operator-only internal query reports counts: events by outcome, subscriptions by status, seats by status. No emails.
     - `.agentic-workflow.yml` gains the critical flows `membership_checkout_webhook_entitlement_exactly_once` and `founding_seat_cap_never_exceeded`.
   - Verification: signature, replay, out-of-order, duplicate, foreign purpose, mode mismatch, stale snapshot, full and partial refund, dispute created, won and lost, reservation expiry, payment after expiry, transient failure. Stripe CLI forwarding in test mode.
+  - Status 2026-10-09: built on the branch, not merged. Routes `app/api/platform/membership/webhook/route.ts` and `reconcile/route.ts`, Stripe reads and follow-ups in `_events.ts`, settlement in `convex/platform/membership/events.ts` (internal only), four server-only bridge kinds stamped with `issuedAt` (refused after five minutes), and a daily cron at 04:17 UTC in `vercel.json`. The webhook runs whatever `MEMBERSHIP_BILLING_MODE` says, including `off` (contract 11). The key prefix sets its mode, and a production deploy refuses a test key. No schema change: the reconcile query reads the newest 1,000 subscription rows instead of adding an index to the frozen table. Added beyond the criteria: a payment from a Stripe customer linked to another member fails its order (refund or cancel), a member never holds two seats, a dispute that is still open also blocks new checkouts, and `events:clearReview` lets the operator clear the O9 flag. Not done: the Stripe CLI run in test mode (owner, `docs/wp/evidence/wp64-stripe-setup.md` step 2) and confirming refunds through the API under Managed Payments. Details in `docs/wp/wp64-progress.md`.
 
 - [ ] `WP64-S5` - Customer self-service and payment-failure behavior
   - Scope: `app/api/platform/membership/portal/route.ts`, Stripe dashboard configuration (documented in S10), `convex/platform/membership/queries.ts`, tests.

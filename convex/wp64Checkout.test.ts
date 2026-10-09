@@ -192,6 +192,20 @@ describe("WP64-S3 subscription orders", () => {
     await grant(t, member, "lifetime", { seatNumber: 4, revokedAt: 2, revokeReason: "dispute_lost" });
     expect(await begin(t, member, "monthly")).toEqual({ ok: false, code: "ACCOUNT_REVIEW" });
     expect(await begin(t, member, "lifetime")).toEqual({ ok: false, code: "ACCOUNT_REVIEW" });
+    // WP64-S4: a dispute on a subscription, open or lost, flags it too. A refunded grant does not.
+    const subscriber = await seedUser(t);
+    await subscribe(t, subscriber, "canceled");
+    await t.run(async (ctx) => {
+      const row = await ctx.db
+        .query("plan_subscriptions")
+        .withIndex("by_stripeSubscriptionId", (q) => q.eq("stripeSubscriptionId", `sub_${subscriber.userId}`))
+        .unique();
+      await ctx.db.patch("plan_subscriptions", row!._id, { disputedAt: 3 });
+    });
+    expect(await begin(t, subscriber, "monthly")).toEqual({ ok: false, code: "ACCOUNT_REVIEW" });
+    const refunded = await seedUser(t);
+    await grant(t, refunded, "lifetime", { seatNumber: 5, revokedAt: 2, revokeReason: "refund" });
+    expect((await begin(t, refunded, "monthly")).ok).toBe(true);
   });
 
   test("a new attempt lists the member's other open sessions for the route to expire", async () => {
@@ -369,10 +383,10 @@ describe("WP64-S3 founding seats", () => {
     const owner = await seedUser(t);
     await grant(t, owner, "lifetime", { seatNumber: 9 });
     expect(await begin(t, owner, "lifetime")).toEqual({ ok: false, code: "ALREADY_SUBSCRIBED" });
-    // A suspended (disputed) lifetime grant still blocks a second seat.
+    // A suspended (disputed) lifetime grant still blocks a second seat. S4: the open dispute answers first.
     const disputed = await seedUser(t);
     await grant(t, disputed, "lifetime", { seatNumber: 10, suspendedAt: 2 });
-    expect(await begin(t, disputed, "lifetime")).toEqual({ ok: false, code: "ALREADY_SUBSCRIBED" });
+    expect(await begin(t, disputed, "lifetime")).toEqual({ ok: false, code: "ACCOUNT_REVIEW" });
   });
 });
 

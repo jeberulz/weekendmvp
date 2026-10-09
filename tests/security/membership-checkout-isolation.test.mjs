@@ -72,11 +72,19 @@ test("a seat is read and reserved inside the one begin mutation", async () => {
   assert.match(begin, /\.query\("founding_seats"\)/);
   assert.match(begin, /ctx\.db\.patch\("founding_seats", seat\._id/);
   assert.match(begin, /assertFoundingEligible\(ctx, member, now\)/);
-  // No other file writes a seat except the operator seed.
+  // No other file writes a seat except the operator seed and the S4 settlement.
+  const EVENTS = path.join("convex", "platform", "membership", "events.ts");
   for (const file of await sourceFiles("convex")) {
-    if (file === CHECKOUT || file === path.join("convex", "platform", "membership", "seats.ts")) continue;
+    if (file === CHECKOUT || file === EVENTS || file === path.join("convex", "platform", "membership", "seats.ts")) continue;
     assert.doesNotMatch(code(await read(file)), /ctx\.db\.(insert|patch|replace|delete)\(\s*"founding_seats"/, file);
   }
+  // Settlement takes or frees a seat. It never reserves, inserts or deletes one.
+  const events = code(await read(EVENTS));
+  assert.doesNotMatch(events, /ctx\.db\.(insert|replace|delete)\(\s*"founding_seats"/);
+  const patches = [...events.matchAll(/ctx\.db\.patch\("founding_seats", [^,]+, \{\s*status: "(\w+)"/g)].map((m) => m[1]);
+  assert.ok(patches.length >= 2, "settlement patches seats");
+  assert.deepEqual([...new Set(patches)].sort(), ["free", "taken"]);
+  assert.equal(events.match(/ctx\.db\.patch\("founding_seats"/g)?.length, patches.length, "every seat patch sets a status first");
 });
 
 test("membership, WP24 credits and the legacy ship·able handler never import each other", async () => {
