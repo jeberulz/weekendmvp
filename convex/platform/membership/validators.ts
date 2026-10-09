@@ -101,3 +101,7 @@ export const foundingSeatValidator = v.object({
 /** What settlement did with a Stripe event. Ids, types and outcomes only. */
 export const BILLING_EVENT_OUTCOME_VALUES = ["applied", "ignored", "stale", "rejected"] as const;
 export const billingEventOutcomeValidator = stringLiteralUnion(BILLING_EVENT_OUTCOME_VALUES);
+
+/** WP63-S7. Who a founding offer window opens for before it opens to everyone. */
+export const FOUNDING_COHORT_VALUES = ["buyers", "newsletter"] as const;
+export const foundingCohortValidator = stringLiteralUnion(FOUNDING_COHORT_VALUES);

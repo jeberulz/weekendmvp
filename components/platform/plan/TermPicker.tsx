@@ -14,13 +14,31 @@ import {
   TERM_COPY,
 } from "@/convex/platform/plans";
 import { cn } from "@/lib/utils";
+import { formatOpening } from "./checkout";
 
 export type Seats = FunctionReturnType<typeof api.platform.membership.queries.ladder>;
 
-/** Founding Lifetime shows only once seats are seeded. Sold out keeps it visible and unselectable. */
-export function lifetimeState(seats: Seats | undefined) {
-  if (!seats?.open) return { shown: false, soldOut: false, amount: undefined } as const;
-  return { shown: true, soldOut: seats.seatsLeft === 0, amount: seats.nextSeatAmountMinor ?? undefined } as const;
+export type LifetimeState = {
+  shown: boolean;
+  soldOut: boolean;
+  /** This member's window opens later. The server checks again at checkout. */
+  opensAt: number | null;
+  selectable: boolean;
+  amount: number | undefined;
+};
+
+/**
+ * Founding Lifetime shows once seats are seeded and a window is dated for
+ * this member (WP63-S7). Sold out, or not open yet, keeps it visible and
+ * unselectable. `now` is the browser's clock, for display only.
+ */
+export function lifetimeState(seats: Seats | undefined, now: number): LifetimeState {
+  if (!seats?.open || seats.eligibleFrom === null) {
+    return { shown: false, soldOut: false, opensAt: null, selectable: false, amount: undefined };
+  }
+  const soldOut = seats.seatsLeft === 0;
+  const opensAt = now < seats.eligibleFrom ? seats.eligibleFrom : null;
+  return { shown: true, soldOut, opensAt, selectable: !soldOut && opensAt === null, amount: seats.nextSeatAmountMinor ?? undefined };
 }
 
 function seatLine(seats: Seats): string {
@@ -60,20 +78,23 @@ export function TermPicker({
   value,
   onChange,
   seats,
+  now,
   compact = false,
 }: {
   name: string;
   value: MembershipTerm;
   onChange: (term: MembershipTerm) => void;
   seats: Seats | undefined;
+  /** The browser's clock when the page loaded. */
+  now: number;
   compact?: boolean;
 }) {
-  const lifetime = lifetimeState(seats);
+  const lifetime = lifetimeState(seats, now);
 
   // The last seat went while lifetime was chosen: fall back to monthly.
   useEffect(() => {
-    if (value === "lifetime" && (!lifetime.shown || lifetime.soldOut)) onChange("monthly");
-  }, [value, lifetime.shown, lifetime.soldOut, onChange]);
+    if (value === "lifetime" && !lifetime.selectable) onChange("monthly");
+  }, [value, lifetime.selectable, onChange]);
 
   const terms: MembershipTerm[] = lifetime.shown ? ["monthly", "annual", "lifetime"] : ["monthly", "annual"];
 
@@ -84,7 +105,7 @@ export function TermPicker({
       </legend>
       <div className={cn("grid gap-3", !compact && "md:grid-cols-2")}>
         {terms.map((term) => {
-          const disabled = term === "lifetime" && lifetime.soldOut;
+          const disabled = term === "lifetime" && !lifetime.selectable;
           const describedBy = `${name}-${term}-terms`;
           return (
             <label
@@ -110,11 +131,16 @@ export function TermPicker({
               <span className="flex flex-col gap-1">
                 <span className="text-[15px] font-medium text-home-ink">
                   {TERM_COPY[term].name}
-                  {disabled ? <span className="font-normal text-home-ink-2"> · Sold out</span> : null}
+                  {disabled ? (
+                    <span className="font-normal text-home-ink-2"> · {lifetime.soldOut ? "Sold out" : "Not open yet"}</span>
+                  ) : null}
                 </span>
                 <span id={describedBy} className="flex flex-col gap-0.5 text-[13px] leading-[1.45] text-home-ink-2">
                   <span>{TERM_COPY[term].terms(lifetime.amount)}</span>
                   {term === "annual" ? <span className="text-home-sage-ink">{ANNUAL_SAVING_LINE}.</span> : null}
+                  {term === "lifetime" && lifetime.opensAt !== null && !lifetime.soldOut ? (
+                    <span>Opens for you on {formatOpening(lifetime.opensAt)}.</span>
+                  ) : null}
                   {term === "lifetime" && seats ? <span>{seatLine(seats)}</span> : null}
                 </span>
               </span>

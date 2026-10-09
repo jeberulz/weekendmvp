@@ -59,8 +59,9 @@ export function newIdempotencyKey(): string {
 
 const HUB = PLANS.builders_hub.name;
 
-function formatDay(ms: number): string {
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(ms);
+/** "November 4, 2026 at 5:00 PM", in the member's own time zone. */
+export function formatOpening(ms: number): string {
+  return new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeStyle: "short" }).format(ms);
 }
 
 /** Plain words for each refusal. Every message says what happened to the money. */
@@ -75,7 +76,7 @@ export function checkoutMessage(code: MembershipErrorCode | "UNKNOWN", opensAt?:
     case "NOT_YET_ELIGIBLE":
       return opensAt === undefined
         ? "Founding Lifetime isn’t open for your account yet. Nothing was charged."
-        : `Founding Lifetime opens for you on ${formatDay(opensAt)}. Nothing was charged.`;
+        : `Founding Lifetime opens for you on ${formatOpening(opensAt)}. Nothing was charged.`;
     case "EMAIL_NOT_VERIFIED":
       return "Confirm your email address first, then try again. Nothing was charged.";
     case "ACCOUNT_REVIEW":

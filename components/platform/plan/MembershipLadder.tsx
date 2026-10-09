@@ -22,9 +22,11 @@ const BUTTON =
 export function MembershipLadder() {
   const seats = useQuery(api.platform.membership.queries.ladder, {});
   const [term, setTerm] = useState<MembershipTerm>("monthly");
+  // Browser-only (behind a Convex gate). Display only: checkout checks the window with the server clock.
+  const [now] = useState(() => Date.now());
   const { state, start } = useMembershipCheckout("billing");
   const pending = state.kind === "pending";
-  const lifetime = lifetimeState(seats);
+  const lifetime = lifetimeState(seats, now);
   const hub = PLANS.builders_hub;
 
   return (
@@ -41,7 +43,7 @@ export function MembershipLadder() {
         <p className="text-[15px] text-home-ink-2">{hub.adds.join(". ")}.</p>
       </div>
 
-      <TermPicker name="ladder-term" value={term} onChange={setTerm} seats={seats} />
+      <TermPicker name="ladder-term" value={term} onChange={setTerm} seats={seats} now={now} />
 
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-6">
         <button

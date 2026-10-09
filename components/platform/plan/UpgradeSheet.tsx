@@ -79,9 +79,11 @@ export function UpgradeSheet({
   // WP63-S6: the sheet starts checkout for the term chosen here.
   const seats = useQuery(api.platform.membership.queries.ladder, open ? {} : "skip");
   const [term, setTerm] = useState<MembershipTerm>("monthly");
+  // Browser-only (behind a Convex gate). Display only: checkout checks the window with the server clock.
+  const [now] = useState(() => Date.now());
   const checkout = useMembershipCheckout("sheet");
   const pending = checkout.state.kind === "pending";
-  const lifetime = lifetimeState(seats);
+  const lifetime = lifetimeState(seats, now);
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -144,7 +146,7 @@ export function UpgradeSheet({
             </tbody>
           </table>
 
-          <TermPicker name="sheet-term" value={term} onChange={setTerm} seats={seats} compact />
+          <TermPicker name="sheet-term" value={term} onChange={setTerm} seats={seats} now={now} compact />
 
           <div className="flex flex-col gap-2">
             <button

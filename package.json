@@ -45,6 +45,7 @@
     "engine:research": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/engine-research.mjs",
     "engine:compile": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/engine-compile.mjs",
     "editorial:submit-engine": "node scripts/editorial-submit-engine.mjs",
+    "membership:import-cohorts": "node scripts/membership-import-cohorts.mjs",
     "engine:replay": "node scripts/engine-replay.mjs",
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",

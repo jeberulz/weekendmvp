@@ -538,6 +538,7 @@ describe("WP63-S6 seat query for the ladder", () => {
       seatsLeft: 0,
       seatsHeld: 0,
       nextSeatAmountMinor: null,
+      eligibleFrom: null,
     });
   });
 
@@ -547,15 +548,15 @@ describe("WP63-S6 seat query for the ladder", () => {
     const buyer = await seedUser(t, "buyer@example.test");
     await seed(t);
     const ladder = () => asUser(t, member).query(api.platform.membership.queries.ladder, {});
-    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 50, seatsHeld: 0, nextSeatAmountMinor: 24_900 });
+    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 50, seatsHeld: 0, nextSeatAmountMinor: 24_900, eligibleFrom: null });
 
     for (let seat = 1; seat <= 14; seat += 1) await setSeat(t, seat, "taken", buyer.userId);
     await setSeat(t, 15, "reserved", buyer.userId);
-    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 35, seatsHeld: 1, nextSeatAmountMinor: 34_900 });
+    expect(await ladder()).toEqual({ open: true, seatsTotal: 50, seatsLeft: 35, seatsHeld: 1, nextSeatAmountMinor: 34_900, eligibleFrom: null });
 
     for (let seat = 16; seat <= 50; seat += 1) await setSeat(t, seat, "taken", buyer.userId);
     const soldOut = await ladder();
-    expect(soldOut).toEqual({ open: true, seatsTotal: 50, seatsLeft: 0, seatsHeld: 1, nextSeatAmountMinor: null });
+    expect(soldOut).toEqual({ open: true, seatsTotal: 50, seatsLeft: 0, seatsHeld: 1, nextSeatAmountMinor: null, eligibleFrom: null });
     expect(JSON.stringify(soldOut)).not.toMatch(/owner|order|users|membership_orders/);
   });
 });

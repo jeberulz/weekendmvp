@@ -1,7 +1,7 @@
 import { v, type Infer } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { QueryCtx } from "../../_generated/server";
-import { PRICING, type PlanId } from "../plans";
+import { PRICING, lifetimeTrancheForSeat, type PlanId } from "../plans";
 import { ACCESS_SUBSCRIPTION_STATUSES } from "./validators";
 
 /**
@@ -176,4 +176,33 @@ export async function countSeats(ctx: QueryCtx): Promise<SeatCounts> {
   const counts: SeatCounts = { free: 0, reserved: 0, taken: 0, overflow: rows.length > PRICING.lifetime.seats };
   for (const row of rows.slice(0, PRICING.lifetime.seats)) counts[row.status] += 1;
   return counts;
+}
+
+export type SeatOffer = {
+  /** False until the operator seeds the seats (S12). */
+  open: boolean;
+  seatsTotal: number;
+  seatsLeft: number;
+  /** Held by an unfinished checkout. They come back if it expires. */
+  seatsHeld: number;
+  nextSeatAmountMinor: number | null;
+};
+
+/** WP63-S6 and S7. The true free-seat count and the next seat's price, for the ladder and the Home card. */
+export async function readSeatOffer(ctx: QueryCtx): Promise<SeatOffer> {
+  const [counts, nextFree] = await Promise.all([
+    countSeats(ctx),
+    ctx.db
+      .query("founding_seats")
+      .withIndex("by_status_and_seatNumber", (q) => q.eq("status", "free"))
+      .first(),
+  ]);
+  const tranche = nextFree ? lifetimeTrancheForSeat(nextFree.seatNumber) : null;
+  return {
+    open: counts.free + counts.reserved + counts.taken > 0,
+    seatsTotal: PRICING.lifetime.seats,
+    seatsLeft: counts.free,
+    seatsHeld: counts.reserved,
+    nextSeatAmountMinor: tranche?.amountMinor ?? null,
+  };
 }

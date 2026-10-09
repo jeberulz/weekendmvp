@@ -1,16 +1,18 @@
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import { requireCurrentPlatformUser } from "../authz";
-import { PRICING, lifetimeTrancheForSeat } from "../plans";
-import { countSeats } from "./state";
+import { readFoundingEligibleFrom } from "./offer";
+import { readSeatOffer } from "./state";
 
 /**
- * WP63-S6. What the Founding Lifetime option shows: the true number of free
- * seats and the price of the next one. Read-only and clock-free. Signed-in
- * members only, like every dashboard read. No owner, order or Stripe id.
+ * WP63-S6 and S7. What the Founding Lifetime option shows: the true number
+ * of free seats, the next seat's price, and when this member's window opens.
+ * Read-only and clock-free: the browser compares `eligibleFrom` with its own
+ * clock for display, and checkout (S3) checks again with the server clock.
+ * Signed-in members only. No owner, order, cohort or Stripe id.
  *
- * `open` is false until the operator seeds the seats (S12), and the option
- * stays hidden until then.
+ * The option stays hidden while `open` is false (seats not seeded) or
+ * `eligibleFrom` is null (no window dated for this member yet).
  */
 export const ladder = query({
   args: {},
@@ -21,23 +23,11 @@ export const ladder = query({
     /** Held by an unfinished checkout. They come back if it expires. */
     seatsHeld: v.number(),
     nextSeatAmountMinor: v.union(v.number(), v.null()),
+    eligibleFrom: v.union(v.number(), v.null()),
   }),
   handler: async (ctx) => {
-    await requireCurrentPlatformUser(ctx);
-    const [counts, nextFree] = await Promise.all([
-      countSeats(ctx),
-      ctx.db
-        .query("founding_seats")
-        .withIndex("by_status_and_seatNumber", (q) => q.eq("status", "free"))
-        .first(),
-    ]);
-    const tranche = nextFree ? lifetimeTrancheForSeat(nextFree.seatNumber) : null;
-    return {
-      open: counts.free + counts.reserved + counts.taken > 0,
-      seatsTotal: PRICING.lifetime.seats,
-      seatsLeft: counts.free,
-      seatsHeld: counts.reserved,
-      nextSeatAmountMinor: tranche?.amountMinor ?? null,
-    };
+    const user = await requireCurrentPlatformUser(ctx);
+    const [seats, eligibleFrom] = await Promise.all([readSeatOffer(ctx), readFoundingEligibleFrom(ctx, user)]);
+    return { ...seats, eligibleFrom };
   },
 });

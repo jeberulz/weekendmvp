@@ -77,7 +77,7 @@ export type DashboardPlan = "free" | "builders_hub";
 export type DashboardSurface = "sidebar" | "sheet" | "tag" | "billing";
 export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare";
 export type DashboardSource = "home" | "ideas" | "saved" | "idea_page";
-export type OfferKind = "starter_kit" | "promo";
+export type OfferKind = "starter_kit" | "promo" | "founding_lifetime";
 /** WP63-S6. How the member chose to pay. */
 export type MembershipTermProp = "monthly" | "annual" | "lifetime";
 export type FoundingTranche = "lifetime_t1" | "lifetime_t2";

@@ -17,7 +17,8 @@ const TABLES = [
   "founding_seats",
   "billing_events",
 ];
-const READ_ONLY_MODULES = ["state.ts", "validators.ts"];
+// WP63-S7 adds the eligibility rules, the cohort hash and the window dates.
+const READ_ONLY_MODULES = ["state.ts", "validators.ts", "offer.ts", "cohortHash.ts", "windows.ts"];
 
 async function read(relativePath) {
   return await readFile(path.join(root, relativePath), "utf8");
@@ -117,7 +118,9 @@ test("outside the module, only the read-only membership modules are imported", a
       const source = code(await read(file));
       // Only the Convex module counts. `app/api/platform/membership/` is the route contract.
       for (const match of source.matchAll(/from\s+"((?:[^"]*convex\/platform|\.{1,2})\/membership\/([^"/]+))"/g)) {
-        if (!["state", "validators"].includes(match[2])) offenders.push(`${file}: ${match[1]}`);
+        if (!READ_ONLY_MODULES.map((name) => name.replace(/\.ts$/, "")).includes(match[2])) {
+          offenders.push(`${file}: ${match[1]}`);
+        }
       }
     }
   }

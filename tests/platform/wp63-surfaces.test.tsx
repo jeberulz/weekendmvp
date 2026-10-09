@@ -77,7 +77,7 @@ vi.mock("next/font/google", () => ({
   Newsreader: () => ({ className: "font-serif", variable: "--font-serif", style: { fontFamily: "serif" } }),
 }));
 
-const SEATS: Seats = { open: true, seatsTotal: 50, seatsLeft: 34, seatsHeld: 0, nextSeatAmountMinor: 34_900 };
+const SEATS: Seats = { open: true, seatsTotal: 50, seatsLeft: 34, seatsHeld: 0, nextSeatAmountMinor: 34_900, eligibleFrom: 0 };
 const DAY = 24 * 60 * 60 * 1000;
 const NOON = Date.UTC(2026, 10, 4, 12);
 
@@ -347,7 +347,7 @@ describe("WP63-S6 current plan", () => {
 
 describe("WP63-S6 the ladder", () => {
   test("one radio group: price, billing period and renewal in plain words, the real annual saving", () => {
-    const html = renderToStaticMarkup(<TermPicker name="t" value="monthly" onChange={() => {}} seats={SEATS} />);
+    const html = renderToStaticMarkup(<TermPicker name="t" value="monthly" onChange={() => {}} now={NOON} seats={SEATS} />);
     expect(html).toMatch(/<fieldset[^>]*><legend[^>]*>Choose how to pay<\/legend>/);
     expect(html.match(/type="radio"/g)).toHaveLength(3);
     expect(html.match(/checked=""/g)).toHaveLength(1);
@@ -367,13 +367,13 @@ describe("WP63-S6 the ladder", () => {
 
   test("Founding Lifetime stays hidden until seats are seeded, and is unselectable when sold out", () => {
     const unseeded = renderToStaticMarkup(
-      <TermPicker name="t" value="monthly" onChange={() => {}} seats={{ ...SEATS, open: false, seatsLeft: 0, nextSeatAmountMinor: null }} />,
+      <TermPicker name="t" value="monthly" onChange={() => {}} now={NOON} seats={{ ...SEATS, open: false, seatsLeft: 0, nextSeatAmountMinor: null }} />,
     );
     expect(unseeded.match(/type="radio"/g)).toHaveLength(2);
     expect(unseeded).not.toContain("Founding Lifetime");
 
     const soldOut = renderToStaticMarkup(
-      <TermPicker name="t" value="monthly" onChange={() => {}} seats={{ ...SEATS, seatsLeft: 0, nextSeatAmountMinor: null }} />,
+      <TermPicker name="t" value="monthly" onChange={() => {}} now={NOON} seats={{ ...SEATS, seatsLeft: 0, nextSeatAmountMinor: null }} />,
     );
     expect(soldOut).toMatch(/<input(?=[^>]*disabled="")(?=[^>]*value="lifetime")[^>]*>/);
     expect(soldOut).toContain("Founding Lifetime<span");
@@ -383,7 +383,7 @@ describe("WP63-S6 the ladder", () => {
     expect(soldOut).toMatch(/<p role="status" class="sr-only"><\/p>/);
 
     const held = renderToStaticMarkup(
-      <TermPicker name="t" value="monthly" onChange={() => {}} seats={{ ...SEATS, seatsLeft: 0, seatsHeld: 2, nextSeatAmountMinor: null }} />,
+      <TermPicker name="t" value="monthly" onChange={() => {}} now={NOON} seats={{ ...SEATS, seatsLeft: 0, seatsHeld: 2, nextSeatAmountMinor: null }} />,
     );
     expect(held).toContain("A seat held by an unfinished checkout comes back if that checkout expires.");
   });

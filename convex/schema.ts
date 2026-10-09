@@ -20,6 +20,7 @@ import {
 } from "./editorial/validators";
 import {
   billingEventOutcomeValidator,
+  foundingCohortValidator,
   foundingSeatValidator,
   membershipTermValidator,
   orderStatusValidator,
@@ -878,4 +879,20 @@ export default defineSchema({
     outcome: billingEventOutcomeValidator,
     errorCode: v.optional(v.string()),
   }).index("by_stripeEventId", ["stripeEventId"]),
+
+  /**
+   * WP63-S7 (additive, same schema window). Who a founding offer window opens
+   * for early. Written only by the operator import (`membership/cohorts`).
+   * Stores a hash of the normalized email (`membership/cohortHash.ts`), never
+   * the address. `batchId` lets the operator undo one import.
+   */
+  offer_cohorts: defineTable({
+    cohort: foundingCohortValidator,
+    emailHash: v.string(),
+    importedAt: v.number(),
+    batchId: v.string(),
+  })
+    .index("by_emailHash", ["emailHash"])
+    .index("by_cohort_and_emailHash", ["cohort", "emailHash"])
+    .index("by_batchId", ["batchId"]),
 });
