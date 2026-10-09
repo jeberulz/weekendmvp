@@ -1,0 +1,128 @@
+---
+slug: "pdf-redaction-preflight-small-firms"
+title: "PDF Redaction Preflight for Small Firms"
+---
+
+## The Problem
+
+**Concept proposal. Buyer demand and pricing remain to be validated.**
+
+A small professional-services firm has an awkward final step when sharing a client document: someone needs to check the exported PDF, not just the marks visible in the editor. The proposed buyer is the operations manager or reviewer responsible for that handoff. The job is to catch suspicious recoverable text, hidden metadata and an unreviewed export before the file leaves the team.
+
+The hypothesis is that a separate preflight report would make this handoff easier to repeat. The reviewer needs to know which file was inspected, what was checked and which findings still need attention. An approval attached to an earlier version should not quietly apply to a replacement file.
+
+This concept needs testing with real review workflows. A useful discovery session would follow a firm's last document-sharing job, including the editor it used and the person who approved the export. Establish whether the existing editor already covers the review adequately before building another tool.
+
+## The Solution
+
+Build a review workspace for an already-redacted PDF. Keep the document on the reviewer's device in the initial prototype and store only explicitly approved review metadata. Present findings alongside the page where they occur, with a clear distinction between a detected issue and a check the tool could not complete.
+
+**How it works:**
+
+1. **Open an exported PDF.** Create a review tied to a hash of that exact file.
+2. **Inspect the available layers.** Show recoverable text and document metadata for manual examination.
+3. **Resolve findings.** The reviewer records whether each item needs a new export, is understood or remains uncertain.
+4. **Record the decision.** Save the reviewer, result and file identity in a short exportable report.
+5. **Recheck revisions.** A replacement PDF starts a new review and retains a link to its predecessor.
+
+For the weekend build, focus on text-based PDFs, visible inspection and honest check status. Encrypted files, unsupported formats and parser errors should produce an incomplete result. A clean result from these limited checks is not a guarantee that a document contains no sensitive information.
+
+An optional later AI feature could explain findings in plain language. The approval decision should still depend on inspectable results and a person reviewing the file. Do not send client documents to an external model by default.
+
+## Market Research
+
+The initial reading includes a [Princeton CITP study of redaction failures published in 2011](https://blog.citp.princeton.edu/2011/05/25/studying-frequency-redaction-failures-pacer/). It discusses failures in a nonrandom historical document corpus. That is useful background for the technical problem; it does not establish a current market size or a failure rate for small firms.
+
+The commercial questions remain open: who owns the final review, how frequently it occurs, which checks are missing today and whether a separate report changes the approval process. Use sanitized example files in interviews. Compare the proposed checklist with what the buyer already does in its document software.
+
+The strongest early result would be a reviewer asking to use the prototype on the next similar job. Record why they returned, what they still had to check manually and whether the report helped another colleague understand the decision.
+
+## Competitive Landscape
+
+- [CaseGuard](https://caseguard.com/redaction-pricing/) offers document redaction within its redaction suites.
+- [Objective Redact](https://www.objective.com/products/objective-redact-pdf) describes redaction, review and reporting features.
+- [Redactable](https://www.redactable.com/) provides document redaction software.
+
+These products show that the proposed workflow has substantial existing tooling. The opportunity to test is a lightweight review of an export produced elsewhere. Do not assume incumbents lack that capability: compare their current review features directly with the buyer's process.
+
+A potential reason to choose the new product would be its file-specific handoff report and simple review history. If an existing tool already solves that job conveniently, narrow the audience or reconsider the concept.
+
+## Business Model
+
+**Proposed model:** a software subscription for a review workspace. A solo plan could cover personal review history; a team plan could add shared approval records and configurable checklists. Prices and usage allowances need customer testing.
+
+The first prototype should validate the workflow before implementing payments. A pilot could include setup help and a review of the customer's checklist using sanitized documents. Keep any human review service clearly scoped and separate from the software's automated checks.
+
+Costs to investigate include parser maintenance, device compatibility, support for unusual PDFs and secure handling of review metadata. Retention should be deliberate: a customer may want an approval record without storing document contents.
+
+An initial acquisition proposal is to demonstrate the workflow to small professional-services operations teams and the IT providers supporting them. Use a deliberately flawed sample document, show the finding, then show how a corrected export receives its own review.
+
+## Recommended Tech Stack
+
+A suggested prototype is a browser interface with a local PDF parser, a page preview and a metadata inspector. Use a small server-backed database for review records only when users explicitly choose to save them. One login path is enough for the shared workspace.
+
+Keep the inspection logic separate from the approval interface. Each check should return its name, result, supporting detail and completion status. That makes limitations visible and gives a future developer a clear place to add another check.
+
+Start development with synthetic documents that demonstrate hidden text, metadata, a normal file and an unreadable file. The prototype is ready to demonstrate when those states are understandable without implying that an incomplete scan passed.
+
+## AI Prompts to Build This
+
+**1. Project Setup**
+
+```text
+Build PDF Preflight, a review workspace for already-redacted PDFs.
+Use Next.js and TypeScript for the interface.
+Use Supabase Auth as the only login and Supabase for saved review metadata.
+Keep PDF contents on the user's device; use synthetic files for the demo.
+Create a review list, a review detail screen and a findings panel.
+Tables:
+- file_reviews(id, owner_id, file_hash, filename, state, created_at)
+- redaction_findings(id, review_id, page_number, check_name, result, note)
+- approval_events(id, review_id, reviewer_id, decision, created_at)
+Restrict saved records to their owner and show incomplete checks explicitly.
+Do not build: billing, external AI uploads, OCR, enterprise permissions or a redaction editor.
+Done when: a signed-in user can open a synthetic PDF, save a file-specific review and reopen its findings.
+```
+
+**2. Core Feature**
+
+```text
+Implement the file-specific review flow in PDF Preflight.
+Render a synthetic PDF and expose extracted text and available metadata.
+Let a reviewer inspect each finding and record a decision with a note.
+Bind every decision to the original file hash.
+A changed file must start a new review with a link to the earlier version.
+Show unsupported or failed checks as incomplete, with an explanation.
+Done when: replacing a reviewed file cannot inherit its earlier approval.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for PDF Preflight aimed at small professional-services teams.
+Explain the proposed final-export review and file-specific approval report.
+Show a fictional document, findings panel and revision history.
+Describe the prototype's limits without promising complete detection or compliance.
+Add a waitlist form stored in a waitlist table using the existing database.
+Offer one call to action: join the pilot waitlist.
+Done when: the page explains the workflow and stores a valid waitlist submission.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool to create a branding package for PDF Preflight.
+Design a restrained wordmark and a document-review symbol.
+Use warm neutral surfaces with a clear emerald approval accent.
+Provide accessible colors for pending, reviewed and incomplete states.
+Include light and dark marks and a square application icon.
+Avoid shields or badges that imply certified security or compliance.
+Done when: the exported assets and usage notes work at desktop and small icon sizes.
+```
+
+## Sources
+
+- [Princeton CITP: historical study of redaction failures](https://blog.citp.princeton.edu/2011/05/25/studying-frequency-redaction-failures-pacer/)
+- [CaseGuard redaction suites](https://caseguard.com/redaction-pricing/)
+- [Objective Redact product overview](https://www.objective.com/products/objective-redact-pdf)
+- [Redactable product overview](https://www.redactable.com/)

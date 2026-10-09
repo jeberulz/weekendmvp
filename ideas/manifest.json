@@ -10201,6 +10201,134 @@
         "publishNotes": "engine compile; product=MailPlain; costUsd=0.5701; tagging left for operator",
         "researchMode": "live"
       }
+    },
+    {
+      "slug": "pdf-redaction-preflight-small-firms",
+      "title": "PDF Redaction Preflight for Small Firms",
+      "description": "Check an exported PDF for recoverable text and metadata, then record a file-specific review before sharing. Preliminary concept.",
+      "summary": "Preliminary startup concept: a proposed workflow and build plan. Buyer demand, pricing and economics need manual validation.",
+      "category": "ai-tools",
+      "buildTime": "12",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "freelancers"
+      ],
+      "source": "manual:pdf-redaction-preflight-small-firms",
+      "publishedAt": "2026-10-09",
+      "researchLevel": "concept",
+      "og": {
+        "subject": "abstract document and review workflow on a neutral desk, no text",
+        "accent": "emerald",
+        "status": "pending"
+      },
+      "provenance": {
+        "auditPassed": false,
+        "researchMode": "manual-concept",
+        "wordCount": 1299,
+        "publishNotes": "Owner explicitly authorized preliminary publication for manual editing after failed automated research. No engine record, verified demand, score or audited research claim."
+      }
+    },
+    {
+      "slug": "webhook-gap-reconciliation-indie-saas",
+      "title": "Webhook Gap Reconciliation for Indie SaaS",
+      "description": "Compare provider event history with application receipts to investigate webhook gaps without rerouting traffic. Preliminary concept.",
+      "summary": "Preliminary startup concept: a proposed workflow and build plan. Buyer demand, pricing and economics need manual validation.",
+      "category": "developer-tools",
+      "buildTime": "12",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "manual:webhook-gap-reconciliation-indie-saas",
+      "publishedAt": "2026-10-09",
+      "researchLevel": "concept",
+      "og": {
+        "subject": "abstract document and review workflow on a neutral desk, no text",
+        "accent": "lavender",
+        "status": "pending"
+      },
+      "provenance": {
+        "auditPassed": false,
+        "researchMode": "manual-concept",
+        "wordCount": 1213,
+        "publishNotes": "Owner explicitly authorized preliminary publication for manual editing after failed automated research. No engine record, verified demand, score or audited research claim."
+      }
+    },
+    {
+      "slug": "usage-credit-ledger-indie-ai-apps",
+      "title": "Usage-Credit Ledger for Indie AI Apps",
+      "description": "Track credit reservations, completed usage and failed-request releases in an explainable account timeline. Preliminary concept.",
+      "summary": "Preliminary startup concept: a proposed workflow and build plan. Buyer demand, pricing and economics need manual validation.",
+      "category": "fintech",
+      "buildTime": "12",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "manual:usage-credit-ledger-indie-ai-apps",
+      "publishedAt": "2026-10-09",
+      "researchLevel": "concept",
+      "og": {
+        "subject": "abstract document and review workflow on a neutral desk, no text",
+        "accent": "mint",
+        "status": "pending"
+      },
+      "provenance": {
+        "auditPassed": false,
+        "researchMode": "manual-concept",
+        "wordCount": 1232,
+        "publishNotes": "Owner explicitly authorized preliminary publication for manual editing after failed automated research. No engine record, verified demand, score or audited research claim."
+      }
+    },
+    {
+      "slug": "email-parser-exception-inbox-operations",
+      "title": "Email Parser Exception Inbox for Operations Teams",
+      "description": "Review suspect email extraction fields against the source and approve corrected rows before export. Preliminary concept.",
+      "summary": "Preliminary startup concept: a proposed workflow and build plan. Buyer demand, pricing and economics need manual validation.",
+      "category": "automation",
+      "buildTime": "12",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "non-technical"
+      ],
+      "source": "manual:email-parser-exception-inbox-operations",
+      "publishedAt": "2026-10-09",
+      "researchLevel": "concept",
+      "og": {
+        "subject": "abstract document and review workflow on a neutral desk, no text",
+        "accent": "emerald",
+        "status": "pending"
+      },
+      "provenance": {
+        "auditPassed": false,
+        "researchMode": "manual-concept",
+        "wordCount": 1253,
+        "publishNotes": "Owner explicitly authorized preliminary publication for manual editing after failed automated research. No engine record, verified demand, score or audited research claim."
+      }
     }
   ],
   "categories": [

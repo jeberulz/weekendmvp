@@ -1,0 +1,126 @@
+---
+slug: "webhook-gap-reconciliation-indie-saas"
+title: "Webhook Gap Reconciliation for Indie SaaS"
+---
+
+## The Problem
+
+**Concept proposal. Buyer demand and pricing remain to be validated.**
+
+An indie SaaS operator may need to answer a question that delivery logs alone cannot settle: did the application process every relevant event the provider produced? The proposed product compares provider event history with the application's own receipt and processing records.
+
+The target buyer is a founder or developer operating a small service. The working hypothesis is that occasional checks currently involve exports, log searches and a spreadsheet. An unanswered mismatch can lead to confusion about whether an event never arrived, arrived twice or arrived but failed during processing.
+
+A credible reconciliation view must also show what it cannot know. Missing provider history, an expired retrieval window or incomplete application logs should reduce coverage visibly. The product should help someone investigate a discrepancy rather than turn an absence of evidence into a claim of successful delivery.
+
+## The Solution
+
+Build a comparison workspace that works beside the existing webhook endpoint. The first version can reconcile imported provider events against imported application receipts, using stable event identifiers and a defined time window. It should not require the customer to reroute production traffic.
+
+**How it works:**
+
+1. **Choose a bounded window.** Record the provider, event types and period under review.
+2. **Import expected events.** Load a provider export or a supported event-history response.
+3. **Import application receipts.** Include event identity and the application's processing result.
+4. **Compare the records.** Group matched, unmatched, duplicated and failed-processing events.
+5. **Investigate exceptions.** Open the relevant source record and save a note about the next action.
+
+Keep imported, received and processed states separate. An HTTP acknowledgement does not by itself establish that every business operation finished. Likewise, an unmatched receipt may reflect an incomplete provider export rather than a fraudulent event.
+
+The weekend scope is a read-only reconciliation with fictional data and explicit coverage boundaries. Automatic replay belongs later, after provider-specific behavior, permissions and customer processing rules are understood. The initial value is an understandable discrepancy list.
+
+## Market Research
+
+[Stripe's webhook documentation](https://docs.stripe.com/webhooks) discusses delivery behavior, duplicate events and event ordering. These are concrete engineering considerations for a reconciliation prototype. They do not establish how many indie operators will pay for a separate dashboard.
+
+The buyer research should examine an actual incident or manual check. Ask which records were available, how the developer decided the issue was resolved and whether a provider dashboard or existing webhook service already made the comparison easy.
+
+Measure the prototype's usefulness through completed investigations: can the operator explain a discrepancy, identify missing coverage and hand a report to a colleague? Treat willingness to keep using that report as an early signal, with pricing and repeat use still to validate.
+
+## Competitive Landscape
+
+- [Hookdeck](https://hookdeck.com/) provides webhook infrastructure and tooling.
+- [Svix](https://www.svix.com/) provides webhook delivery infrastructure.
+- [Stripe's own tools and documentation](https://docs.stripe.com/webhooks) are a starting point for customers using Stripe events.
+
+The proposed wedge is a comparison between upstream history and downstream processing evidence across an already-running integration. That is a positioning hypothesis, not a verified feature gap. Evaluate the current products against the same sample incident before treating them as insufficient.
+
+An export-based prototype could be attractive when a customer wants a bounded audit without changing its delivery path. It also creates a constraint: the quality of the result depends on the records the customer can supply.
+
+## Business Model
+
+**Proposed model:** a subscription priced around connected integrations and the scope of reconciliation history. A starter offering could cover a single integration; a team offering could add scheduled checks, saved investigations and shared reports. Prices remain open for testing.
+
+Start with a guided pilot using exports. That makes it easier to discover differences in identifiers, filtering rules and processing states before maintaining live connectors. A customer should understand the coverage of each connector before scheduling a recurring check.
+
+Costs to investigate include provider API limits, history retention, storage, connector maintenance and support during incident investigations. The product needs controls for secret handling and payload retention if live connections are added.
+
+For acquisition, publish a demonstration using a fictional incident: one matched event, a duplicate receipt, a failed handler and a gap in the available history. The report should show how each conclusion follows from the supplied records.
+
+## Recommended Tech Stack
+
+Use a small web application with a relational database and a deterministic comparison function. Keep provider records, application receipts and reconciliation results in separate tables so importing the same data does not silently overwrite an investigation.
+
+The first connector can be a JSON import with a documented schema. Define a stable event key, normalize timestamps consistently and preserve the original source reference. Store the query window and filters alongside the result.
+
+A later scheduled worker could fetch supported event history and compare it with application receipts. Keep credentials on the server and limit each connector to the permissions it needs. No language model is required to determine whether identifiers match.
+
+## AI Prompts to Build This
+
+**1. Project Setup**
+
+```text
+Build Event Gap, a read-only webhook reconciliation workspace.
+Use Next.js and TypeScript for the interface and comparison logic.
+Use Supabase Auth as the only login and Supabase for owned records.
+Start with fictional JSON exports, with no live provider credentials.
+Create an import screen, comparison report and exception detail screen.
+Tables:
+- provider_events(id, owner_id, provider_key, event_key, event_type, occurred_at)
+- application_receipts(id, owner_id, event_key, received_at, processing_state)
+- reconciliation_runs(id, owner_id, window_start, window_end, coverage_note, state)
+Make imports repeatable and preserve source references.
+Do not build: billing, automatic replay, live connectors, an ingress proxy or enterprise permissions.
+Done when: an owner can import two synthetic exports and open a saved comparison report.
+```
+
+**2. Core Feature**
+
+```text
+Implement the bounded comparison in Event Gap.
+Match provider events and application receipts by their documented event key.
+Separate matched events, missing receipts, duplicate receipts and processing failures.
+Show the import window, filters and missing coverage above the results.
+Preserve unmatched receipts as a separate investigation group.
+Let the owner save a note and export the report without changing any event.
+Done when: the supplied synthetic examples appear in the correct groups and repeated imports do not change the result.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for Event Gap aimed at indie SaaS operators.
+Explain the proposed comparison between provider history and application receipts.
+Show a fictional mismatch report with coverage boundaries clearly visible.
+Describe the export-based pilot and the integration work still needed.
+Add a waitlist form stored in the existing database.
+Use one call to action: request a reconciliation pilot.
+Done when: a visitor understands what the comparison needs and can join the waitlist.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool to create a branding package for Event Gap.
+Make a compact wordmark and a symbol based on aligned event timelines.
+Use a warm neutral palette with lavender and amber investigation states.
+Avoid decorative code, alarm symbols and claims of guaranteed delivery.
+Include an application icon and examples of status labels on light and dark surfaces.
+Done when: the assets are readable at small sizes and every status also has a text label.
+```
+
+## Sources
+
+- [Stripe webhook documentation](https://docs.stripe.com/webhooks)
+- [Hookdeck product overview](https://hookdeck.com/)
+- [Svix product overview](https://www.svix.com/)
