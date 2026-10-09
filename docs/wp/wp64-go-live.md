@@ -161,7 +161,7 @@ Day 14, 30 and 60 from the day window 3 opens, with the triggers in the S12 stor
 
 | Step | Done by | Date | Evidence (redacted) |
 |---|---|---|---|
-| 1 Merge, dormant | | | |
+| 1 Merge, dormant | Owner merged PR #131; Claude checked | 2026-10-09 | Vercel production `dpl_3EzBE2…` READY on `27eeac9` (the Convex deploy runs first in that build). `/terms`, `/refund-policy` 200, indexable, no draft text, email line present, both in the sitemap and footer. Signed out: checkout 401, portal 401. Webhook 503 (no config). Reconcile 200 `skipped: not_configured`. Signed-in checkout and portal 503: covered by the route tests, not checked live |
 | 2 Live env values | | | |
 | 3 Live Stripe objects | 3b Claude; 3a, 3c, 3d, 3e owner | 3b 2026-10-09 | 3b: 2 products and 4 prices, ids above, catalog check clean |
 | 4 Real-card smoke test | | | |

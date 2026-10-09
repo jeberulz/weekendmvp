@@ -536,3 +536,9 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Actions taken: through the Stripe connection, in the live WeekendMVP account (`acct_1ThX6u4fUcq943uM`), after checking that no membership product or price existed: 2 products (Builder’s Hub, Builder’s Hub Founding Lifetime) with tax code `txcd_10103000` and the purpose metadata, and 4 prices ($29 monthly, $199 yearly, $249 and $349 one-time), USD, tax exclusive, with the catalog's lookup keys, nicknames and metadata. Each was copied from the sandbox catalog. Ids are in `docs/wp/wp64-go-live.md`.
 - Checks run: the four live prices Stripe returned pass `reviewPrice` in live mode with no blocking issue and no warning (temporary test, not committed).
 - Not done here: the restricted key, the Customer Portal, the webhook endpoint, Managed Payments and the env values. They involve secrets or Dashboard-only settings, so the owner does them (Steps 2 and 3a, 3c, 3d, 3e).
+
+## 2026-10-09 - WP64-S12 step 1: merged, dormant
+
+- The owner merged PR #131 (`27eeac9`). Vercel production deployment `dpl_3EzBE2…` is READY.
+- Checked from outside: `/terms` and `/refund-policy` answer 200 with no noindex and no draft text, and the registered-details email line is present. Both are in the sitemap and the footer. Signed out, checkout and portal answer 401. The webhook answers 503 (no config). Reconcile answers 200 `skipped: not_configured`. Signed-in 503 and the new Convex tables were not checked from here: the route tests cover the first, and the build deploys Convex before Next, so a READY build means the schema deployed.
+- Next: Steps 2 and 3a, 3c, 3d, 3e (owner), then Claude re-reads the live account.
