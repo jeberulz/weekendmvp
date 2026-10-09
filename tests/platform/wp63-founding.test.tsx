@@ -72,6 +72,8 @@ describe("WP63-S7 the Home card rule (fixed clock)", () => {
     expect(chooseOffer({ ...base, founding: { ...OPEN, eligibleFrom: null } })?.id).toBe(fallback);
     expect(chooseOffer({ ...base, founding: { ...OPEN, seatsLeft: 0, nextSeatAmountMinor: null } })?.id).toBe(fallback);
     expect(chooseOffer({ ...base, founding: { ...OPEN, nextSeatAmountMinor: null } })?.id).toBe(fallback);
+    // Inconsistent input still shows nothing: no seats left means no card, whatever the price says.
+    expect(chooseOffer({ ...base, founding: { ...OPEN, seatsLeft: 0 } })?.id).toBe(fallback);
     expect(chooseOffer({ ...base, dismissed: [FOUNDING_OFFER_ID], founding: OPEN })?.id).toBe(fallback);
   });
 

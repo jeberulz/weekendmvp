@@ -78,10 +78,10 @@ export async function assertFoundingEligible(ctx: Pick<QueryCtx, "db">, user: Me
 
 /**
  * What the Home offer card needs (`lib/dashboard/offers.ts`): this member's
- * window and the live seat count. Null until the seats are seeded.
+ * window and the live seat count. Before the seed there are no free seats
+ * and no price, so the card cannot show.
  */
 export async function readFoundingInput(ctx: QueryCtx, user: Member) {
   const [seats, eligibleFrom] = await Promise.all([readSeatOffer(ctx), readFoundingEligibleFrom(ctx, user)]);
-  if (!seats.open) return null;
   return { eligibleFrom, seatsLeft: seats.seatsLeft, nextSeatAmountMinor: seats.nextSeatAmountMinor };
 }
