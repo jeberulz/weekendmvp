@@ -1,0 +1,127 @@
+---
+slug: "email-parser-exception-inbox-operations"
+title: "Email Parser Exception Inbox for Operations Teams"
+---
+
+## The Problem
+
+**Concept proposal. Buyer demand and pricing remain to be validated.**
+
+A small operations team using email-to-spreadsheet automation needs a place to handle the rows that require judgment. The proposed product sits between extraction and export: a reviewer sees the source message beside its proposed fields, corrects a suspect value and approves what reaches the destination.
+
+The target buyer is an operations lead who owns the quality of an intake spreadsheet. The working hypothesis is that exceptions are currently handled through inbox searches, spreadsheet corrections or changes to parsing templates. A correction can become hard to explain when the original message and the edited row are separated.
+
+The job is not simply to extract more fields. It is to make a questionable result visible before another person or system relies on it. The prototype should help the team distinguish a reviewed row from one that merely passed a parser's rules.
+
+## The Solution
+
+Build an exception inbox that accepts a source message and its parsed result, applies explicit checks and routes suspect fields for review. Keep the original value, the corrected value and the review decision linked together.
+
+**How it works:**
+
+1. **Import a message and parsed fields.** Start with pasted examples or a simple file import.
+2. **Apply a checklist.** Flag missing required fields, invalid formats and conflicts with agreed rules.
+3. **Review the exception.** Show source text and extracted values side by side.
+4. **Approve a correction.** Preserve the original result and record what changed.
+5. **Export approved rows.** Generate a CSV with a clear link back to the review history.
+
+Begin with a single intake type and a fixed field schema. For example, the demo could review fictional service requests with a reference, date, contact and requested action. The specific schema should come from the buyer's workflow before adding a live connector.
+
+The initial version should not autonomously write to a production spreadsheet. A downloadable approved export is enough to test the review experience. Live email ingestion and destination writes can follow once ownership, permissions and duplicate handling are understood.
+
+## Market Research
+
+[Mailparser](https://mailparser.io/) describes email parsing and automation, [Docparser](https://docparser.com/) describes document data extraction, and [Email Parser by Zapier](https://zapier.com/apps/email-parser/integrations) offers integrations for parsed email data. They establish relevant existing workflows to investigate, rather than a measured market for this proposed review inbox.
+
+Research should begin with a recent row correction. Ask the operator what made the result suspicious, where the original message was found and what downstream work needed fixing. Determine whether existing parsing tools already provide an adequate exception process.
+
+During a pilot, observe whether reviewers can explain a field decision from the source and whether the approved export is useful to the person receiving it. Accuracy, recurring demand, integration effort and willingness to pay remain open questions.
+
+## Competitive Landscape
+
+- [Mailparser](https://mailparser.io/) is an email parsing product to compare with the proposed intake flow.
+- [Docparser](https://docparser.com/) is a document extraction product to evaluate where attachments are part of the workflow.
+- [Email Parser by Zapier](https://zapier.com/apps/email-parser/integrations) connects parsed email data with other applications.
+
+The proposed focus is a shared review queue for suspect rows, with original and corrected values preserved. Treat this as a hypothesis about positioning. Review the current products' exception, validation and human-review capabilities before claiming that a new inbox fills a gap.
+
+A possible reason to choose the new product is that it could work with the parser already in use. The first integration should prove that premise with a specific input schema and an approved export, rather than promise compatibility with every automation tool.
+
+## Business Model
+
+**Proposed model:** a workspace subscription based on intake flows and review activity. A starter offering could support a defined schema and CSV export. A team offering could add assigned reviews, saved checklists and destination integrations. Prices require testing with the buyer.
+
+Offer a guided pilot that maps one existing intake process. Set up explicit rules, agree which exceptions need a person and compare the review history with the team's current correction process.
+
+Costs to investigate include message retention, attachment handling, connector maintenance, support and the work needed to understand customer-specific schemas. A pilot should define what data is stored, who can see it and when it is deleted.
+
+An acquisition proposal is a demonstration using fictional emails that contain a missing reference, an ambiguous date and a normal result. Show how the reviewer resolves each case and how the final export preserves a traceable decision.
+
+## Recommended Tech Stack
+
+Use a small web interface and a relational database for intake items, extracted fields and review events. A deterministic rule layer can handle required fields and agreed formats in the first prototype. Keep the rule result separate from the reviewer's decision.
+
+Start with pasted source text and JSON fields. That avoids maintaining an email connector before the review experience is useful. Build a CSV export from approved rows only, with a stable intake identifier for later reconciliation.
+
+If AI extraction is added later, keep the source available and surface uncertainty for review. The model's suggestion should not silently replace an approved value. Live destination writes should also be repeatable without duplicating rows.
+
+## AI Prompts to Build This
+
+**1. Project Setup**
+
+```text
+Build Parse Review, an exception inbox for email-to-spreadsheet intake.
+Use Next.js and TypeScript for the review interface.
+Use Supabase Auth as the only login and Supabase for owned intake records.
+Start with fictional pasted messages and imported JSON fields.
+Create an intake form, an exception queue and a side-by-side review screen.
+Tables:
+- intake_items(id, owner_id, source_text, schema_name, state, created_at)
+- extracted_fields(id, intake_id, field_name, original_value, reviewed_value, rule_result)
+- review_events(id, intake_id, reviewer_id, decision, note, created_at)
+Preserve original values and restrict every record to its owner.
+Do not build: billing, live email connectors, AI extraction, automatic spreadsheet writes or enterprise permissions.
+Done when: an owner can import a fictional intake item and open its flagged fields for review.
+```
+
+**2. Core Feature**
+
+```text
+Implement the exception review flow in Parse Review.
+Apply explicit required-field and format rules to the demo intake schema.
+Display source text beside original and reviewed field values.
+Require a decision before an intake item becomes exportable.
+Record corrections and rejections in the review history.
+Export only approved items as CSV with stable intake identifiers.
+Done when: a flagged example needs review and its approved export can be traced to the saved decision.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for Parse Review aimed at small operations teams.
+Explain the proposed review step between extraction and spreadsheet export.
+Show a fictional message, flagged fields and an approved row.
+Describe the initial pasted-message pilot without promising universal integrations.
+Store pilot enquiries in a waitlist table using the existing database.
+Use one call to action: join the intake-review pilot.
+Done when: a visitor understands the review flow and can submit a pilot enquiry.
+```
+
+**4. Branding Package**
+
+```text
+Use a design or image tool to create a branding package for Parse Review.
+Make a clear wordmark and an icon connecting a message to an approved row.
+Use warm neutral surfaces with emerald approval and amber pending accents.
+Include light and dark assets and compact status-label examples.
+Keep the marks readable beside dense field tables.
+Avoid decorative robots and claims of perfect extraction.
+Done when: the assets work on the exception queue, review screen and application icon.
+```
+
+## Sources
+
+- [Mailparser product overview](https://mailparser.io/)
+- [Docparser product overview](https://docparser.com/)
+- [Email Parser by Zapier integrations](https://zapier.com/apps/email-parser/integrations)
