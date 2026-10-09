@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/home/ui";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { LegalSectionRow } from "@/components/public/LegalPage";
 import { PageHeader } from "@/components/public/PageHeader";
+import { PRIVACY_MEMBERSHIP } from "@/lib/legal/content";
+import { legalPagesVisible } from "@/lib/legal/status";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
@@ -118,6 +121,9 @@ export default function PrivacyPolicyPage() {
             your site account or ideas access. A previously unsubscribed
             Beehiiv contact is not reactivated by creating a site account.
           </SectionRow>
+
+          {/* WP64-S9: a draft under the Terms' approval gate, hidden in production until approved. */}
+          {legalPagesVisible() ? <LegalSectionRow section={PRIVACY_MEMBERSHIP} /> : null}
 
           <SectionRow id="contact" heading="Contact">
             If you have questions about this privacy policy, please contact us

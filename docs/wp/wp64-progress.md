@@ -237,3 +237,36 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - This is the third collision in three days. A registry row protects a number only once it is on `main`. A small docs-only change with the WP64 row, merged to `main`, would stop a fourth.
   - Commits before 2026-10-09 say WP63. Read them as WP64.
 - Next: unchanged. S3 waits on O1, O5 and S9.
+
+## 2026-10-09 - WP64-S9 (Terms, refund policy and privacy section)
+
+- Actions taken:
+  - Content as data in `lib/legal/content.ts`: the Builder's Hub Terms (13 sections), the refund policy (7 sections) and a privacy section, "Payments and Builder's Hub". Prices, the lifetime tranches, the seat count, the plan's features, the refund line and the tax line come from `PRICING` and `PLANS`, so the pages cannot drift from checkout. Where a decision is open, the text is the recommended default from the stories, and the section carries a review note naming the decision (O1, O2, O3, O4, O8, O9), "lawyer" or "owner". Facts only the owner can supply (seller name, address, VAT status, support email) are `{{O2: …}}` gaps, never invented.
+  - One approval switch, `MEMBERSHIP_LEGAL_APPROVED` in `lib/legal/status.ts`, off. While off, `/terms`, `/refund-policy` and the new privacy section show in local development only. A production build returns 404 for both pages and leaves the privacy policy exactly as it is. Not tied to the Builder's Hub flag: Stripe needs the Terms live at S12 step 4, before the flag turns on at step 7.
+  - Renderer `components/public/LegalPage.tsx` in the privacy policy's layout, with an "On this page" list. While a draft, it shows a banner ("Draft for review. Not in force." and "This is not legal advice."), each section's review notes, and each gap as a highlighted "To be confirmed (O2): …". Drafts are `noindex, nofollow` with their own canonical.
+  - Routes `app/(marketing)/terms/page.tsx` and `app/(marketing)/refund-policy/page.tsx`. The privacy policy adds the section before Contact, behind the same switch.
+  - The sitemap and the site footer list both pages only once approved, so approval is one reviewed change.
+  - Checkout consent sentence for S3 in `app/api/platform/membership/_consent.ts`: `checkoutConsentMessage({ term, origin, lifetimeAmountMinor })` returns one sentence with the price, the renewal and the 30-day refund, linking both pages, for `custom_text.terms_of_service_acceptance.message`. Monthly: "I agree to the [Builder’s Hub Terms](https://weekendmvp.app/terms): $29 a month, renewing every month until I cancel, with a full refund within 30 days of my first payment under the [refund policy](https://weekendmvp.app/refund-policy)." It refuses a lifetime amount that is not a tranche price, and any origin that is not a bare https origin (http only for localhost in test mode).
+  - Tests: `tests/platform/wp64-legal.test.tsx` (17).
+- Decisions made (mine, reversible, none is a ruling):
+  - Approval-gated, not flag-gated, for the S12 order above. A test refuses `MEMBERSHIP_LEGAL_APPROVED = true` while any review note or gap remains.
+  - Drafts are visible in local development only, not on previews, because previews are production builds and are off for agent branches anyway.
+  - The 30-day window covers the first payment only (O4 default), with a 7-day goodwill refund on a renewal not used since. The lifetime clause is the O3 default: 90 days' notice and a refund that falls evenly to nothing over three years.
+  - Consent sentence length is held under Stripe's 1,200 characters by a test, not a runtime throw, so a copy change fails in CI rather than at checkout.
+- Checks run on the branch (final, single run):
+  - `npm run typecheck` passes. `npm run lint` has 0 errors and 34 warnings, the same count as before. `npm run build` succeeds (437 static pages, two more for `/terms` and `/refund-policy`, which prerender as 404 with no draft title, description or canonical). The built privacy policy does not mention Stripe, so it is unchanged in production.
+  - Test stages pass: links 6, redirects 76, auth 146, security (111 node tests and 121 Vitest tests), sitemap 11, Convex 575, engine 1,076, home 77, prompts 23, platform 317 (up from 300).
+  - The same six failures as before, none from this work: three OG-image tests (blocked hosts) and three editorial tests that also fail on `main`.
+  - Break-on-purpose: 25 deliberate breakages, all caught on the first run. Examples: drafts visible in production, approval with open items, drafts indexable, metadata ungated on either page, gaps shown as plain text or leaking their code, placeholders, list placeholders or review notes not counted, either page or the privacy section ungated, no draft banner, no review notes, no table of contents, http or path-bearing consent origins, any lifetime amount accepted, annual priced as monthly, the refund link dropped, the sitemap or footer listing drafts, and the live build remedy or the lifetime clause dropped from the text.
+- Accessibility: the Terms, the refund policy and the privacy policy with its draft section, rendered to static HTML and checked with axe-core 4 (wcag2a, wcag2aa, wcag21a, wcag21aa, best-practice) and the built CSS at 390 px and 1440 px: 0 violations in all 6 runs, and no horizontal scroll. The Tab walk reaches the "On this page" links in reading order with a visible 2 px outline.
+- Docs updated: `docs/wp/wp64-stories.md` (S9 status), `docs/PROJECT_STRATEGY.md` (WP64 row). Not needed: `.env.example` (no env), runbooks (approval is a code change, described here and in the stories).
+- Result: S9 built on the branch and pushed. Not merged. Nothing changes in production until the owner approves the text.
+- Handed on:
+  - Owner: supply O2 (seller identity, address, VAT status, support email). Decide O1, O3, O4, O8 and O9, or accept the defaults in the text. Confirm fair use, the notice periods and the two-working-day reply time.
+  - Owner and a lawyer or accountant: review the Terms, the refund policy and the privacy section. Then remove each review note and gap, set `MEMBERSHIP_LEGAL_APPROVED = true` in a reviewed commit and update "Last updated". S12 does not pass without this.
+  - S3: send `checkoutConsentMessage(...)` as `custom_text.terms_of_service_acceptance.message` with `consent_collection.terms_of_service: "required"`, and pass the reserved seat's tranche amount for lifetime.
+  - S10: set the Terms and Privacy URLs in Stripe's public details, turn on the annual renewal reminder (at least 7 days, as the Terms say) and Smart Retries (the Terms say about two weeks).
+- Gotchas:
+  - `legalPagesVisible()` reads `NODE_ENV` when called, so tests can stub it per case. Next sets it to `production` for every build, previews included.
+  - The privacy policy as it is today (outside this story) does not mention Stripe, though ship·able used a Stripe Payment Link. Reported to the owner, not changed here.
+- Next: S3 waits on O1 and O5 now, not on S9. The text needs the review above before S12.

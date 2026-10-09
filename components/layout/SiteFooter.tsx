@@ -4,6 +4,8 @@ import { cacheLife } from "next/cache";
 
 import { Logo } from "@/components/primitives/Logo";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { LEGAL_DOCS } from "@/lib/legal/content";
+import { MEMBERSHIP_LEGAL_APPROVED } from "@/lib/legal/status";
 
 // Strict prerender forbids new Date() in uncached server components; a daily
 // cache window keeps the copyright year correct without going dynamic.
@@ -189,6 +191,16 @@ export function SiteFooter() {
                   Privacy Policy
                 </Link>
               </li>
+              {/* WP64-S9: the Terms and refund policy, once approved. */}
+              {MEMBERSHIP_LEGAL_APPROVED
+                ? LEGAL_DOCS.map((doc) => (
+                    <li key={doc.path}>
+                      <Link href={doc.path} className={FOOTER_LINK}>
+                        {doc.footerLabel}
+                      </Link>
+                    </li>
+                  ))
+                : null}
             </ul>
           </div>
         </div>

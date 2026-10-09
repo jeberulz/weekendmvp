@@ -206,6 +206,7 @@ Recommended defaults are mine. They are not rulings. Each needs a ruling in `doc
     - The pages say they are drafts until the owner and a lawyer or accountant of the owner's choosing have reviewed them. S12 does not pass without that review. This is not legal advice.
     - The Checkout consent sentence links these pages and states price, renewal and refund.
   - Verification: copy review by the owner, link check, axe, canonical SEO checks unchanged.
+  - Status 2026-10-09: built on the branch, not merged. Text is data in `lib/legal/content.ts`, with prices and features from `PRICING` and `PLANS`. Open decisions carry their recommended default and a review note. Facts only the owner can supply are highlighted gaps. One switch, `MEMBERSHIP_LEGAL_APPROVED` in `lib/legal/status.ts`, is off: `/terms`, `/refund-policy` and the privacy section show in local development only, and a production build returns 404 with no draft metadata. A test refuses approval while any review note or gap remains. The sitemap and footer list the pages once approved. The S3 consent sentence is `checkoutConsentMessage` in `app/api/platform/membership/_consent.ts`. Still needed before S12: O2 facts, O1, O3, O4, O8 and O9 (or the defaults), and review by the owner and a lawyer or accountant. Details in `docs/wp/wp64-progress.md`.
 
 - [ ] `WP64-S10` - Configure Stripe and the tax path (test mode first)
   - Scope: Stripe dashboard state, documented without secrets in `docs/wp/evidence/wp64-stripe-setup.md`. Env-name docs.
