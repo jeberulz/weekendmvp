@@ -14,6 +14,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * carry no member auth, so each is stamped with `issuedAt` and Convex refuses
  * one older than `MEMBERSHIP_BRIDGE_MAX_AGE_MS`. Convex validators check the
  * event and snapshot shapes (`membership/events.ts`).
+ *
+ * S5 adds `open_portal`, a member kind like the first two: it carries the
+ * member's auth and names no customer.
  */
 
 export const MEMBERSHIP_BRIDGE_MIN_SECRET_LENGTH = 32;
@@ -35,6 +38,7 @@ type Snapshot = Record<string, unknown>;
 export type MembershipBridgePayload =
   | { kind: "begin_checkout"; term: Term; idempotencyKey: string; livemode: boolean }
   | { kind: "attach_session"; orderId: string; checkoutSessionId: string }
+  | { kind: "open_portal"; livemode: boolean }
   | { kind: "event"; issuedAt: number; event: Snapshot }
   | { kind: "subscription_snapshot"; issuedAt: number; livemode: boolean; subscription: Snapshot }
   | { kind: "release_expired_holds"; issuedAt: number }
@@ -74,6 +78,8 @@ function serialize(payload: MembershipBridgePayload): string {
       });
     case "attach_session":
       return JSON.stringify({ kind: payload.kind, orderId: payload.orderId, checkoutSessionId: payload.checkoutSessionId });
+    case "open_portal":
+      return JSON.stringify({ kind: payload.kind, livemode: payload.livemode });
     case "event":
       return JSON.stringify({ kind: payload.kind, issuedAt: payload.issuedAt, event: payload.event });
     case "subscription_snapshot":
@@ -142,6 +148,10 @@ function parse(payload: string): MembershipBridgePayload {
       throw new MembershipBridgeError("INVALID_BRIDGE_PAYLOAD");
     }
     return { kind: "attach_session", orderId: candidate.orderId, checkoutSessionId: candidate.checkoutSessionId };
+  }
+  if (candidate.kind === "open_portal") {
+    if (keys !== "kind,livemode" || typeof candidate.livemode !== "boolean") throw new MembershipBridgeError("INVALID_BRIDGE_PAYLOAD");
+    return { kind: "open_portal", livemode: candidate.livemode };
   }
   const { issuedAt } = candidate;
   if (!isTime(issuedAt)) throw new MembershipBridgeError("INVALID_BRIDGE_PAYLOAD");

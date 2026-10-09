@@ -17,6 +17,9 @@ import type { FollowUp, MembershipEvent, SubscriptionSnapshot } from "./events";
  * WP64-S4. The webhook and reconcile routes send verified Stripe events and
  * snapshots with no member session. Each must be fresh (`issuedAt`), and the
  * internal functions' validators check every field.
+ *
+ * WP64-S5. `open_portal` finds the member's own Stripe customer for the
+ * Billing Portal, with the member's forwarded auth like checkout.
  */
 
 type BeginResult =
@@ -42,7 +45,8 @@ export type MembershipBridgeResult =
   | { outcome: Outcome; duplicate: boolean; actions: FollowUp[] }
   | { outcome: Outcome; actions: FollowUp[] }
   | { released: number }
-  | { ids: string[]; capped: boolean };
+  | { ids: string[]; capped: boolean }
+  | { customerId: string };
 
 export const accept = action({
   args: { payload: v.string(), signature: v.string() },
@@ -54,7 +58,8 @@ export const accept = action({
       if (error instanceof MembershipBridgeError) throw new ConvexError({ code: error.code });
       throw error;
     }
-    if (payload.kind !== "begin_checkout" && payload.kind !== "attach_session") {
+    // Server-only kinds carry `issuedAt` and no member auth. Member kinds carry neither stamp nor owner.
+    if ("issuedAt" in payload) {
       if (!membershipBridgeFresh(payload.issuedAt, Date.now())) throw new ConvexError({ code: "STALE_BRIDGE_PAYLOAD" });
       const events = internal.platform.membership.events;
       switch (payload.kind) {
@@ -80,6 +85,9 @@ export const accept = action({
           idempotencyKey: payload.idempotencyKey,
           livemode: payload.livemode,
         });
+      }
+      if (payload.kind === "open_portal") {
+        return await ctx.runMutation(internal.platform.membership.portal.open, { livemode: payload.livemode });
       }
       return await ctx.runMutation(internal.platform.membership.checkout.attachSession, {
         orderId: payload.orderId as Id<"membership_orders">,

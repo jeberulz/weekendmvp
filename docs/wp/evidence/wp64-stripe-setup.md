@@ -60,7 +60,13 @@ Configuration `bpc_1UOWL79tlBLUMkdP5EgGFqF4`, named "Builder’s Hub", the sandb
 | Customer details | address and name only | Email stays the account's. Tax id waits for O1 |
 | Links | Terms `https://www.weekendmvp.app/terms`, Privacy `https://www.weekendmvp.app/privacy-policy`, return `/dashboard/billing` | `/terms` returns 404 in production until the S9 text is approved |
 
-Founding Lifetime is a one-time payment, so it is not in the portal. Under Managed Payments, members can also manage orders in Link. S5 checks in test mode how the portal and Link coexist.
+Founding Lifetime is a one-time payment, so it is not in the portal. Under Managed Payments, members can also manage orders in Link.
+
+S5 (2026-10-09):
+
+- Re-read through the connector: the configuration above is still the sandbox default and unchanged. The portal route (`app/api/platform/membership/portal/route.ts`) passes no configuration, so it uses the account default. The setup script checks that default. On the live account, make the same configuration the default at S12.
+- Plan switch rules. Monthly to annual applies at once: the interval changes, so Stripe resets the billing date and invoices the annual price less the unused part of the month. Annual to monthly waits for the renewal: the interval shortens, so the portal schedules it for the end of the paid year. The portal shows the amount before the member confirms. Settlement reads the new Price from `customer.subscription.updated`, so the dashboard shows the new term once Stripe reports it. The Terms say nothing about switching yet.
+- Portal and Link under Managed Payments. Stripe's docs: members "automatically have access to the Link website" to view orders, cancel or update subscriptions and update payment methods, and "you can also offer additional subscription management from your own website using the Customer Portal". Both change the same Stripe subscription, so both reach the dashboard through the same webhook. Our billing page keeps Manage billing (the portal) and adds no Link link. Still to confirm in S11 with a test clock: the portal opens for a Managed Payments subscription, a switch invoices through Managed Payments, and a cancel in Link shows on the dashboard.
 
 ## 1b. Managed Payments checks (sandbox, 2026-10-09)
 
@@ -133,7 +139,7 @@ A sandbox is its own account: everything here must be repeated on the live accou
 
 3. **Revenue recovery** (Billing, Revenue recovery): Smart Retries on, about 8 tries within 2 weeks (O9 default). After the last failed retry: cancel the subscription (O9: access ends on unpaid or canceled). Failed-payment emails on. Expiring-card emails on.
 
-4. **Customer emails** (Settings, Customer emails): under Managed Payments, Link sends receipts and subscription emails. Turn on upcoming-renewal reminders, at least 7 days before an annual renewal (the Terms promise this, O4), in case the setting applies. S5 confirms what Link actually sends.
+4. **Customer emails** (Settings, Billing, Subscriptions and emails): under Managed Payments, Link sends receipts, invoices and refund notices, and the Dashboard receipt settings do not apply. These settings still do: turn on **Upcoming renewals** and set the reminder to at least 7 days before renewal (the Terms promise this for annual plans, O4). Turn on failed-payment and expiring-card emails. Whatever the setting, Stripe also sends anniversary reminders before the 6- and 12-month anniversary to members in the UK and Australia, and before the 12-month anniversary elsewhere (Stripe's Managed Payments docs, read 2026-10-09).
 
 5. **Branding** (Settings, Branding): icon and logo, brand color `#cc5500`, accent `#1a1814`, matching the site.
 
@@ -152,7 +158,9 @@ A sandbox is its own account: everything here must be repeated on the live accou
 | Env-name inventory | Done | 2026-10-09 | `.env.example`, `MEMBERSHIP_ENV`, test checks each name |
 | Restricted key | Owner | | Step 1 |
 | Smart Retries and dunning, failed-payment emails | Owner | | Step 3 |
-| Renewal reminders and receipts | Owner | | Step 4 |
+| Renewal reminders and receipts | Owner (where the settings live confirmed from Stripe's docs) | 2026-10-09 | Step 4 |
+| Portal configuration is the default; plan switch rules | Done (sandbox), re-read for S5 | 2026-10-09 | Section 1, Customer Portal, S5 |
+| Portal with a Managed Payments subscription, Link cancel | Docs say they coexist; confirm in S11 with a test clock | | Section 1, Customer Portal, S5 |
 | Branding | Owner | | Step 5 |
 | Support email, public details, Terms and Privacy URLs | Owner (O2 ruled) | | Step 6 |
 | Tax path: Managed Payments (O1 ruled) | Sandbox done; live activation is the owner's | 2026-10-09 | Section 1b, step 7 |
