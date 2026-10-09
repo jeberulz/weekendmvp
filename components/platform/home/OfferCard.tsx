@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { QuietErrorBoundary } from "@/components/platform/client-gates";
+import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { clearLegacyDismissal, useLegacyDismissed } from "./dismiss-state";
@@ -17,7 +18,8 @@ function LiveOffer({ onDismissed }: { onDismissed: () => void }) {
   // Browser-only (behind the rail's Convex gate). Captured once, so the query
   // args stay stable for the page view; queries must not read the clock.
   const [now] = useState(() => Date.now());
-  const offer = useQuery(api.platform.dashboard.offer, { now });
+  // WP64-S7: the founding card shows only with the flag on, like the ladder it links to.
+  const offer = useQuery(api.platform.dashboard.offer, { now, foundingOffer: BUILDERS_HUB_UI });
   const dismissOffer = useMutation(api.platform.preferences.dismissOffer);
   const [hidden, setHidden] = useState<string | null>(null);
   const legacy = useLegacyDismissed(offer?.id ?? null);

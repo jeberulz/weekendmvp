@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { BILLING_COMPARISON, PLANS, type PlanId } from "@/convex/platform/plans";
+import { CancelReturn } from "@/components/platform/billing/CancelReturn";
+import { CheckoutReturn } from "@/components/platform/billing/CheckoutReturn";
+import { CurrentPlan } from "@/components/platform/billing/CurrentPlan";
+import { PlanChanges } from "@/components/platform/billing/PlanChanges";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
+import { MembershipLadder } from "./MembershipLadder";
 import { useUpsell } from "./useUpsell";
 
 const EYEBROW = "font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3";
@@ -30,14 +35,21 @@ function PlanHeader({ id, current }: { id: PlanId; current: PlanId }) {
 }
 
 function LiveComparison() {
-  const { entitlements, sheetAllowed } = useUpsell();
+  const { entitlements, showUpsell } = useUpsell();
   const viewed = useRef(false);
+  // The ladder sells, so it follows the first-day quiet period (PRD 6.6), and
+  // a member with an open dispute is not offered a new purchase.
+  const ladderVisible =
+    entitlements !== undefined &&
+    entitlements.plan === "free" &&
+    showUpsell &&
+    entitlements.billing.status !== "suspended";
 
   useEffect(() => {
-    if (!sheetAllowed || viewed.current) return;
+    if (!ladderVisible || viewed.current) return;
     viewed.current = true;
     trackDashboardEvent({ name: "upgrade_prompt_viewed", props: { surface: "billing", feature: "weekend_plan" } });
-  }, [sheetAllowed]);
+  }, [ladderVisible]);
 
   if (!entitlements) return <ModuleSkeleton label="Loading your plan" className="h-[420px]" />;
   const current = entitlements.plan;
@@ -45,6 +57,14 @@ function LiveComparison() {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* useSearchParams needs a boundary so the page itself can stay static. */}
+      <Suspense fallback={null}>
+        <CheckoutReturn entitlements={entitlements} />
+        <CancelReturn entitlements={entitlements} />
+      </Suspense>
+      <CurrentPlan entitlements={entitlements} />
+      <PlanChanges entitlements={entitlements} />
+
       {/* Wraps instead of scrolling sideways, so phones need no scroll region. */}
       <div className="rounded-[14px] border border-home-rule bg-home-card">
         <table className="w-full table-fixed border-collapse text-left text-[13px] sm:text-sm">
@@ -78,28 +98,7 @@ function LiveComparison() {
         </table>
       </div>
 
-      {current === "free" ? (
-        <section
-          id="builders-hub"
-          aria-labelledby="builders-hub-title"
-          className="flex scroll-mt-24 flex-col gap-2 rounded-[14px] border border-home-rule bg-home-sunk p-5 sm:p-6"
-        >
-          <p className={EYEBROW}>{hub.priceLabel}</p>
-          <h2 id="builders-hub-title" className="font-editorial text-[26px] font-normal leading-[1.15] text-home-ink">
-            {hub.name}
-          </h2>
-          <p className="text-[15px] text-home-ink-2">Not open yet. You will be able to upgrade here.</p>
-        </section>
-      ) : null}
-
-      <section aria-labelledby="billing-heading">
-        <h2 id="billing-heading" className={EYEBROW}>
-          Billing
-        </h2>
-        <p className="mt-2 border-t border-home-ink pt-3 text-[15px] text-home-ink-2">
-          {current === "free" ? "Nothing to pay on the Free plan." : `${hub.name}, ${hub.priceLabel}.`}
-        </p>
-      </section>
+      {ladderVisible ? <MembershipLadder /> : null}
     </div>
   );
 }
@@ -107,7 +106,9 @@ function LiveComparison() {
 /**
  * PRD 6.6 surface 4: Plan and billing with a Free against Builder's Hub
  * table and a "Current plan" label. The plan comes from entitlements. A
- * Builder's Hub member sees what they have and nothing to upgrade to.
+ * Builder's Hub member sees what they have and nothing to upgrade to. WP64-S6
+ * adds the return banner, the member's plan and dates, and the ladder. An
+ * active monthly or annual member also sees how to switch term or buy lifetime.
  */
 export function PlanComparison() {
   return (

@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import { useQuery } from "convex/react";
 import { Dialog } from "radix-ui";
-import { useEffect, useRef, type RefObject } from "react";
-import { PLANS, PLAN_COMPARISON, UPGRADE_LABEL, type GatedFeature } from "@/convex/platform/plans";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import type { MembershipTerm } from "@/app/api/platform/membership/_contract";
+import { api } from "@/convex/_generated/api";
+import { PLANS, PLAN_COMPARISON, upgradeLabel, type GatedFeature } from "@/convex/platform/plans";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
-import { UPGRADE_HREF } from "./flag";
+import { PurchaseFinePrint, TermPicker, lifetimeState } from "./TermPicker";
+import { useMembershipCheckout } from "./useMembershipCheckout";
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 const BUTTON = cn(
@@ -37,6 +40,10 @@ const SHEET_COPY: Record<GatedFeature, { title: string; body: (activeTitle?: str
   compare: {
     title: "Compare ideas side by side?",
     body: () => `Compare is part of ${HUB}. Every idea page stays free to read.`,
+  },
+  live_builds: {
+    title: "Join the live build?",
+    body: () => `Live builds and their replays are part of ${HUB}. The schedule stays free to see.`,
   },
 };
 
@@ -73,6 +80,14 @@ export function UpgradeSheet({
 
   const copy = SHEET_COPY[feature];
   const notNow = useRef<HTMLButtonElement>(null);
+  // WP64-S6: the sheet starts checkout for the term chosen here.
+  const seats = useQuery(api.platform.membership.queries.ladder, open ? {} : "skip");
+  const [term, setTerm] = useState<MembershipTerm>("monthly");
+  // Browser-only (behind a Convex gate). Display only: checkout checks the window with the server clock.
+  const [now] = useState(() => Date.now());
+  const checkout = useMembershipCheckout("sheet");
+  const pending = checkout.state.kind === "pending";
+  const lifetime = lifetimeState(seats, now);
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -135,17 +150,27 @@ export function UpgradeSheet({
             </tbody>
           </table>
 
+          <TermPicker name="sheet-term" value={term} onChange={setTerm} seats={seats} now={now} compact />
+
           <div className="flex flex-col gap-2">
-            <Link
-              href={UPGRADE_HREF}
+            <button
+              type="button"
+              aria-disabled={pending || undefined}
+              aria-describedby="sheet-fine-print"
               onClick={() => {
-                trackDashboardEvent({ name: "upgrade_clicked", props: { surface: "sheet", feature } });
-                onOpenChange(false);
+                if (pending) return;
+                trackDashboardEvent({ name: "upgrade_clicked", props: { surface: "sheet", feature, term } });
+                void checkout.start(term);
               }}
-              className={cn(BUTTON, "bg-home-ink text-home-card hover:bg-home-panel")}
+              className={cn(BUTTON, "bg-home-ink text-home-card hover:bg-home-panel aria-disabled:cursor-wait aria-disabled:bg-home-panel")}
             >
-              {UPGRADE_LABEL}
-            </Link>
+              {pending ? "Opening secure checkout…" : upgradeLabel(term, lifetime.amount)}
+            </button>
+            {checkout.state.kind === "error" ? (
+              <p role="alert" className="text-sm text-home-clay-ink">
+                {checkout.state.message}
+              </p>
+            ) : null}
             {freeWayForward && (
               <button
                 type="button"
@@ -162,6 +187,7 @@ export function UpgradeSheet({
               </button>
             </Dialog.Close>
           </div>
+          <PurchaseFinePrint id="sheet-fine-print" />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

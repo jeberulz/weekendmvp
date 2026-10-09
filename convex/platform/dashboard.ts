@@ -9,6 +9,7 @@ import { readPreferences } from "./preferences";
 import { getEntitlements } from "./entitlements";
 import { notesFor } from "./notes";
 import { OFFER_IDS, chooseOffer, isKitClaim } from "../../lib/dashboard/offers";
+import { readFoundingInput } from "./membership/offer";
 import { activePlanForIdea, activePlanOf, activePlansOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
 
 /**
@@ -269,7 +270,7 @@ export const savedList = query({
 
 const offerValidator = v.object({
   id: v.string(),
-  kind: v.union(v.literal("starter_kit"), v.literal("promo")),
+  kind: v.union(v.literal("starter_kit"), v.literal("promo"), v.literal("founding_lifetime")),
   eyebrow: v.string(),
   title: v.string(),
   body: v.string(),
@@ -286,9 +287,13 @@ const LEGACY_CLAIM_READ = 500;
  * the server, where the member's email is checked against the subscription
  * log. Only the offer leaves the server, never the email. The client passes
  * `now` (queries must not read the clock); it only picks among public offers.
+ *
+ * WP64-S7: `foundingOffer` is the browser's Builder's Hub flag. The founding
+ * card links to the ladder, which the flag hides, so the card needs it too.
+ * It only lets the card show. Checkout checks the window again on the server.
  */
 export const offer = query({
-  args: { now: v.number() },
+  args: { now: v.number(), foundingOffer: v.optional(v.boolean()) },
   returns: v.union(offerValidator, v.null()),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
@@ -327,12 +332,15 @@ export const offer = query({
         }
       }
     }
+    // Eligibility comes from the operator's cohort import, never from the subscription log above.
+    const founding = args.foundingOffer === true && plan === "free" ? await readFoundingInput(ctx, user) : null;
     return chooseOffer({
       now: args.now,
       joinedAt: user._creationTime,
       plan,
       kitClaimed,
       dismissed: (prefs?.dismissed ?? []).filter((id) => OFFER_IDS.has(id)),
+      founding,
     });
   },
 });

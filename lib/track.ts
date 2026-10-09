@@ -75,9 +75,12 @@ export function trackPageSection(section: string): void {
 export type DashboardState = "new" | "set_up" | "choosing" | "building" | "finished";
 export type DashboardPlan = "free" | "builders_hub";
 export type DashboardSurface = "sidebar" | "sheet" | "tag" | "billing";
-export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare";
+export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare" | "live_builds";
 export type DashboardSource = "home" | "ideas" | "saved" | "idea_page";
-export type OfferKind = "starter_kit" | "promo";
+export type OfferKind = "starter_kit" | "promo" | "founding_lifetime";
+/** WP64-S6. How the member chose to pay. */
+export type MembershipTermProp = "monthly" | "annual" | "lifetime";
+export type FoundingTranche = "lifetime_t1" | "lifetime_t2";
 
 export type DashboardEvent =
   | { name: "dashboard_viewed"; props: { state: DashboardState; plan: DashboardPlan } }
@@ -95,10 +98,22 @@ export type DashboardEvent =
   | { name: "weekend_step_completed"; props: { step: "fri" | "sat" | "sun" | "mon" } }
   | { name: "prompt_copied"; props: { surface: "plan" | "home" | "idea_page" } }
   | { name: "upgrade_prompt_viewed"; props: { surface: DashboardSurface; feature: DashboardFeature } }
-  | { name: "upgrade_clicked"; props: { surface: DashboardSurface; feature: DashboardFeature } }
+  | {
+      name: "upgrade_clicked";
+      /** `term` when the click picked one (WP64-S6). The sidebar link picks none. */
+      props: { surface: DashboardSurface; feature: DashboardFeature; term?: MembershipTermProp };
+    }
   | { name: "offer_viewed"; props: { offer_id: string; kind: OfferKind } }
   | { name: "offer_clicked"; props: { offer_id: string; kind: OfferKind } }
-  | { name: "offer_dismissed"; props: { offer_id: string; kind: OfferKind } };
+  | { name: "offer_dismissed"; props: { offer_id: string; kind: OfferKind } }
+  // WP64-S6. Started fires from the browser before the redirect to Stripe.
+  // Completed and seat taken fire once per checkout, only after
+  // `entitlements.mine` confirms. Revenue reporting comes from Stripe, not GA.
+  | { name: "checkout_started"; props: { surface: DashboardSurface; term: MembershipTermProp } }
+  | { name: "checkout_completed"; props: { term: MembershipTermProp } }
+  | { name: "founding_seat_taken"; props: { tranche: FoundingTranche } }
+  // WP64-S8. A Builder's Hub member followed a join or replay link. Never the link itself.
+  | { name: "live_build_opened"; props: { action: "join" | "replay" } };
 
 export const DASHBOARD_EVENT_PROPS = {
   dashboard_viewed: ["state", "plan"],
@@ -109,17 +124,21 @@ export const DASHBOARD_EVENT_PROPS = {
   weekend_step_completed: ["step"],
   prompt_copied: ["surface"],
   upgrade_prompt_viewed: ["surface", "feature"],
-  upgrade_clicked: ["surface", "feature"],
+  upgrade_clicked: ["surface", "feature", "term"],
   offer_viewed: ["offer_id", "kind"],
   offer_clicked: ["offer_id", "kind"],
   offer_dismissed: ["offer_id", "kind"],
+  checkout_started: ["surface", "term"],
+  checkout_completed: ["term"],
+  founding_seat_taken: ["tranche"],
+  live_build_opened: ["action"],
 } as const satisfies { [N in DashboardEvent["name"]]: readonly string[] };
 
 export function trackDashboardEvent(event: DashboardEvent): void {
   const allowed: readonly string[] = DASHBOARD_EVENT_PROPS[event.name];
   const props: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(event.props)) {
-    if (allowed.includes(key)) props[key] = value;
+    if (allowed.includes(key) && value !== undefined) props[key] = value;
   }
   trackEvent(event.name, props);
 }

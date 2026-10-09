@@ -26,10 +26,11 @@ describe("WP44-S12 offer card", () => {
   });
 
   test("the choice runs on the server, with the clock passed in", () => {
-    expect(offerCardSource).toContain("useQuery(api.platform.dashboard.offer, { now })");
+    // WP64-S7 adds the browser's Builder's Hub flag for the founding card.
+    expect(offerCardSource).toContain("useQuery(api.platform.dashboard.offer, { now, foundingOffer: BUILDERS_HUB_UI })");
     expect(offerCardSource).toContain("const [now] = useState(() => Date.now());");
     const handler = dashboardSource.slice(dashboardSource.indexOf("export const offer = query"));
-    expect(handler).toContain("args: { now: v.number() }");
+    expect(handler).toContain("args: { now: v.number(), foundingOffer: v.optional(v.boolean()) }");
     expect(handler).not.toContain("Date.now()");
     // Response privacy is exercised against the real query in wp44Offers.test.ts.
     expect(handler).toContain("returns: v.union(offerValidator, v.null())");

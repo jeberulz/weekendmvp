@@ -215,15 +215,17 @@ describe("the Saved page", () => {
   type Entitlements = FunctionReturnType<typeof api.platform.entitlements.mine>;
   const free: Entitlements = {
     plan: "free",
-    limits: { activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0 },
+    limits: { activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0, liveBuilds: false },
     usage: { activeWeekendPlans: 0, activeWeekendPlansCapped: false },
     joinedAt: 0,
+    billing: { term: null, status: null, renewsAt: null, endsAt: null, foundingSeat: null },
   };
   const hub: Entitlements = {
     plan: "builders_hub",
-    limits: { activeWeekendPlans: null, collections: true, promptPack: true, compareMax: 4 },
+    limits: { activeWeekendPlans: null, collections: true, promptPack: true, compareMax: 4, liveBuilds: true },
     usage: { activeWeekendPlans: 0, activeWeekendPlansCapped: false },
     joinedAt: 0,
+    billing: { term: "comp", status: "active", renewsAt: null, endsAt: null, foundingSeat: null },
   };
 
   // Free rows are plain idea rows; Builder's Hub rows add collections and notes.

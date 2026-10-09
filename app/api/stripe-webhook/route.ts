@@ -12,6 +12,12 @@
  * buyers simply re-enroll, which is a no-op for already-enrolled subscribers
  * in Beehiiv).
  *
+ * WP64-S1: only Payment Link sessions without a `purpose` marker are handled
+ * (see `_guard.ts`). The endpoint also receives Builder's Hub and credit-pack
+ * checkouts, which belong to purpose-separated handlers and are ignored here.
+ * With `LEGACY_PAYMENTS_BRIDGE_SECRET` set, the log write goes through a signed
+ * hand-off (`convex/paymentsBridge.ts`) instead of a public mutation.
+ *
  * Changes vs the legacy Edge handler (intentional, per migration plan):
  * - Node runtime + `stripe.webhooks.constructEvent` replaces the hand-rolled
  *   Web Crypto HMAC (same 300s default tolerance, less custom crypto).
@@ -33,6 +39,8 @@ import Stripe from "stripe";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { beehiivSubscribe } from "@/lib/beehiiv";
+import { signLegacyPaymentEvent } from "@/lib/legacy-payments-bridge";
+import { classifyCheckoutSession } from "./_guard";
 
 async function enrollPaidSubscriber(
   email: string,
@@ -100,6 +108,21 @@ export async function POST(request: Request) {
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
+
+  // WP64-S1. This endpoint also receives the account's other checkouts
+  // (Builder's Hub, credit packs). Only a ship·able Payment Link purchase may
+  // enroll a buyer or write the legacy log. Logged by session id and reason
+  // only, so a real sale ever dropped here is visible without any PII.
+  const verdict = classifyCheckoutSession(session);
+  if (!verdict.handle) {
+    console.warn("Ignored a checkout session that is not a ship·able Payment Link purchase", {
+      eventId: event.id,
+      sessionId: session.id,
+      reason: verdict.reason,
+    });
+    return new Response("Ignored", { status: 200 });
+  }
+
   const email =
     session.customer_details?.email ??
     session.customer_email ??
@@ -120,7 +143,7 @@ export async function POST(request: Request) {
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
     if (convexUrl) {
       const convex = new ConvexHttpClient(convexUrl);
-      const recorded = await convex.mutation(api.payments.recordEvent, {
+      const logged = {
         stripeEventId: event.id,
         type: event.type,
         email,
@@ -130,7 +153,17 @@ export async function POST(request: Request) {
         currency: session.currency ?? undefined,
         paymentLinkId:
           typeof session.payment_link === "string" ? session.payment_link : undefined,
-      });
+      };
+      // Switch step of the WP64-S1 rollout: with the bridge secret set, the
+      // event goes through the signed hand-off. Without it, the old public
+      // mutation is used until the contract step removes it.
+      const bridgeSecret = process.env.LEGACY_PAYMENTS_BRIDGE_SECRET;
+      const recorded = bridgeSecret
+        ? await convex.action(
+            api.paymentsBridge.accept,
+            signLegacyPaymentEvent(logged, bridgeSecret),
+          )
+        : await convex.mutation(api.payments.recordEvent, logged);
       if (recorded.duplicate) {
         return new Response("OK", { status: 200 });
       }

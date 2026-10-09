@@ -18,6 +18,18 @@ import {
   slugValidator,
   submissionKeyValidator,
 } from "./editorial/validators";
+import {
+  billingEventOutcomeValidator,
+  foundingCohortValidator,
+  foundingSeatValidator,
+  membershipTermValidator,
+  orderStatusValidator,
+  planGrantValidator,
+  priceKeyValidator,
+  stripeSubscriptionStatusValidator,
+  subscriptionTermValidator,
+} from "./platform/membership/validators";
+import { liveBuildStatusValidator } from "./platform/liveBuildRules";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
@@ -787,4 +799,122 @@ export default defineSchema({
   ).index("by_ideaId", ["ideaId"]),
   editorial_slugs: defineTable(slugValidator).index("by_slug", ["slug"]),
   editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
+
+  /**
+   * WP64-S2 (additive, schema writer for this window). Builder's Hub
+   * membership. No public function writes these tables: writes come from the
+   * signed Stripe bridge (S4) or an operator run. `resolvePlan` reads
+   * `plan_grants` and `plan_subscriptions`. Rows that mirror a Stripe object
+   * store `livemode`. Grants and seats point at an order, which stores it.
+   */
+  billing_customers: defineTable({
+    ownerId: v.id("users"),
+    stripeCustomerId: v.string(),
+    livemode: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_ownerId", ["ownerId"])
+    .index("by_stripeCustomerId", ["stripeCustomerId"]),
+
+  plan_subscriptions: defineTable({
+    ownerId: v.id("users"),
+    stripeSubscriptionId: v.string(),
+    stripeCustomerId: v.string(),
+    term: subscriptionTermValidator,
+    status: stripeSubscriptionStatusValidator,
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.boolean(),
+    /**
+     * When the subscription ended (Stripe `ended_at`), set once the status is
+     * `canceled`. Not Stripe `canceled_at`, which is when the member asked.
+     */
+    canceledAt: v.optional(v.number()),
+    /** Set while a dispute on one of its charges is open (O9). */
+    disputedAt: v.optional(v.number()),
+    /** When Stripe produced the snapshot. An older snapshot never overwrites a newer one. */
+    snapshotAt: v.number(),
+    updatedAt: v.number(),
+    livemode: v.boolean(),
+  })
+    .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
+    .index("by_stripeSubscriptionId", ["stripeSubscriptionId"])
+    .index("by_stripeCustomerId", ["stripeCustomerId"]),
+
+  membership_orders: defineTable({
+    ownerId: v.id("users"),
+    term: membershipTermValidator,
+    priceKey: priceKeyValidator,
+    status: orderStatusValidator,
+    idempotencyKey: v.string(),
+    stripeCheckoutSessionId: v.optional(v.string()),
+    stripePaymentIntentId: v.optional(v.string()),
+    seatNumber: v.optional(v.number()),
+    /** What Stripe charged after tax and currency conversion. Reporting only, never checked. */
+    presentedAmountMinor: v.optional(v.number()),
+    presentedCurrency: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    livemode: v.boolean(),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_ownerId_and_status_and_createdAt", ["ownerId", "status", "createdAt"])
+    .index("by_stripeCheckoutSessionId", ["stripeCheckoutSessionId"])
+    .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
+
+  plan_grants: defineTable(planGrantValidator)
+    .index("by_ownerId", ["ownerId"])
+    .index("by_kind_and_seatNumber", ["kind", "seatNumber"]),
+
+  /** 50 rows once seeded, one per seat. Counts read at most 51 rows. */
+  founding_seats: defineTable(foundingSeatValidator)
+    .index("by_seatNumber", ["seatNumber"])
+    .index("by_status_and_seatNumber", ["status", "seatNumber"]),
+
+  /** Exactly-once ledger for membership webhooks. No payloads, emails or amounts. */
+  billing_events: defineTable({
+    stripeEventId: v.string(),
+    type: v.string(),
+    livemode: v.boolean(),
+    receivedAt: v.number(),
+    processedAt: v.optional(v.number()),
+    outcome: billingEventOutcomeValidator,
+    errorCode: v.optional(v.string()),
+  }).index("by_stripeEventId", ["stripeEventId"]),
+
+  /**
+   * WP64-S7 (additive, same schema window). Who a founding offer window opens
+   * for early. Written only by the operator import (`membership/cohorts`).
+   * Stores a hash of the normalized email (`membership/cohortHash.ts`), never
+   * the address. `batchId` lets the operator undo one import.
+   */
+  offer_cohorts: defineTable({
+    cohort: foundingCohortValidator,
+    emailHash: v.string(),
+    importedAt: v.number(),
+    batchId: v.string(),
+  })
+    .index("by_emailHash", ["emailHash"])
+    .index("by_cohort_and_emailHash", ["cohort", "emailHash"])
+    .index("by_batchId", ["batchId"]),
+
+  /**
+   * WP64-S8 (additive, same schema window). One row per live build. Written
+   * only by the operator (`platform/liveBuildsOperator`). `status` is
+   * flipped by scheduled mutations, so the member query stays clock-free.
+   * Links are returned only to Builder's Hub members, and only while open
+   * (join) or after the end (replay).
+   */
+  live_builds: defineTable({
+    title: v.string(),
+    summary: v.string(),
+    startsAt: v.number(),
+    durationMin: v.number(),
+    status: liveBuildStatusValidator,
+    joinUrl: v.optional(v.string()),
+    replayUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_startsAt", ["startsAt"])
+    .index("by_status_and_startsAt", ["status", "startsAt"]),
 });

@@ -10,6 +10,7 @@ import {
   House,
   PanelLeftClose,
   PanelLeftOpen,
+  Radio,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -31,6 +32,7 @@ import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
 import { BuildsCount } from "./BuildsCount";
 import { WhenConvexReady } from "@/components/platform/client-gates";
+import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
 import { PlanCard } from "@/components/platform/plan/PlanCard";
 import { SidebarCollections } from "@/components/platform/hub/SidebarCollections";
 import { PendingSaveRunner } from "./PendingSaveRunner";
@@ -38,6 +40,7 @@ import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
 import {
   BILLING_NAV,
+  LIVE_NAV,
   SETTINGS_NAV,
   PRIMARY_NAV,
   STARTER_KIT_HREF,
@@ -51,6 +54,7 @@ const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
   ideas: Compass,
   saved: Bookmark,
   builds: Hammer,
+  live: Radio,
   billing: CreditCard,
   settings: Settings2,
 };
@@ -177,6 +181,14 @@ function AccountSheet() {
               {BILLING_NAV.label}
             </Link>
           </SheetClose>
+          {BUILDERS_HUB_UI ? (
+            <SheetClose asChild>
+              <Link href={LIVE_NAV.href} className={cn(sheetLink, focusRing)}>
+                <Radio className="size-[18px] text-home-ink-2" aria-hidden />
+                {LIVE_NAV.label}
+              </Link>
+            </SheetClose>
+          ) : null}
           <SheetClose asChild>
             <Link href={SETTINGS_NAV.href} className={cn(sheetLink, focusRing)}>
               <Settings2 className="size-[18px] text-home-ink-2" aria-hidden />
@@ -277,6 +289,15 @@ export function WorkspaceShell({
                 }
               />
             ))}
+            {BUILDERS_HUB_UI ? (
+              <SidebarLink
+                href={LIVE_NAV.href}
+                label={LIVE_NAV.label}
+                icon={NAV_ICONS.live}
+                current={isWorkspaceNavCurrent("live", pathname, view)}
+                collapsed={collapsed}
+              />
+            ) : null}
           </div>
 
           <SidebarCollections collapsed={collapsed} pathname={pathname} />

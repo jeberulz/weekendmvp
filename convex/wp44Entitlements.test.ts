@@ -82,9 +82,10 @@ describe("WP44-S10 plan rules", () => {
     expect(Object.keys(PLANS)).toEqual(["free", "builders_hub"]);
     expect(PLANS.builders_hub.name).toBe("Builder’s Hub");
     expect(UPGRADE_LABEL).toBe("Upgrade to Builder’s Hub · $29/mo");
-    expect(PLAN_LIMITS.free).toEqual({ activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0 });
+    // WP64-S8 adds live builds (join and replays) as a Builder's Hub feature.
+    expect(PLAN_LIMITS.free).toEqual({ activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0, liveBuilds: false });
     expect(PLAN_LIMITS.builders_hub.activeWeekendPlans).toBeNull();
-    expect(PLAN_COMPARISON.map((row) => row.feature)).toEqual(["weekend_plan", "collections", "prompt_pack", "compare"]);
+    expect(PLAN_COMPARISON.map((row) => row.feature)).toEqual(["weekend_plan", "collections", "prompt_pack", "compare", "live_builds"]);
     // R5 and R9: nothing about hosting or credits.
     const copy = JSON.stringify([PLANS, PLAN_COMPARISON, UPGRADE_LABEL]);
     expect(copy).not.toMatch(/hosting|credit|publish/i);

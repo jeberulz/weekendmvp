@@ -344,6 +344,11 @@ Why these lines:
 - No credit packs for now (R9). One monthly price is easier to explain while
   the product leads with ideas.
 
+WP64 replaced "monthly only" with the ladder (ruling "WP55 / price ladder",
+2026-10-04): $29 a month, $199 a year, or a Founding Lifetime seat. WP64-S6
+moved the Price row and the upgrade label to it. The copy lives in
+`convex/platform/plans.ts` (`PRICING`, `TERM_COPY`, `upgradeLabel`).
+
 ### 6.6 Upgrade surfaces
 
 Allowed surfaces, and nothing else:
@@ -670,6 +675,12 @@ UI turns into the upgrade sheet. `requireFeature` covers the on/off features
 for S11. `platform.entitlements.mine` gives the UI the plan, limits, usage and
 join time, and only mirrors what the server enforces.
 
+WP64-S2 (2026-10-08) filled in `resolvePlan`. It reads `plan_grants` and
+`plan_subscriptions` through `convex/platform/membership/state.ts`, with no
+clock read. `mine` now also returns a billing summary (term, status, dates,
+founding seat) and never a Stripe id. The ladder lives in `PRICING` in
+`plans.ts`.
+
 ### 9.4 Payments
 
 Builder's Hub billing needs a Stripe monthly subscription, webhooks, and a
@@ -677,6 +688,10 @@ subscription record. No credit packs (R9). That is a payments change, so it
 runs as its own high-risk Work Package, with the same exactly-once and
 server-confirmed rules as WP24. WP44 ships the UI and the resolver, not the
 billing code.
+
+That package is WP64 (`docs/wp/wp64-stories.md`). Its ladder, approved
+2026-10-04, adds an annual term and 50 Founding Lifetime seats to the monthly
+price.
 
 ### 9.5 Offers
 

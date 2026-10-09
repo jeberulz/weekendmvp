@@ -5,6 +5,14 @@ import { v } from "convex/values";
 const app = defineApp({
   env: {
     PLATFORM_BILLING_BRIDGE_SECRET: v.string(),
+    // WP64-S1. Signs the legacy ship·able payment log hand-off. Optional so a
+    // deploy without it boots; `paymentsBridge.accept` fails closed when it is
+    // unset or under 32 characters. Set it in Convex before Vercel.
+    LEGACY_PAYMENTS_BRIDGE_SECRET: v.optional(v.string()),
+    // WP64-S3. Signs the membership checkout hand-off from the Next routes.
+    // Optional so a deploy without it boots; `membership/provider.accept`
+    // fails closed when it is unset or under 32 characters.
+    MEMBERSHIP_BILLING_BRIDGE_SECRET: v.optional(v.string()),
     // WP27-S2. Gates anonymous preview generation so the Next.js route,
     // which is the only place a client IP is observable and therefore the
     // only place a per-IP limit can be applied, is the sole path to artifact

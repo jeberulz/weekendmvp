@@ -6,6 +6,8 @@ import { api } from "@/convex/_generated/api";
 import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
+import { LEGAL_DOCS } from "@/lib/legal/content";
+import { MEMBERSHIP_LEGAL_APPROVED } from "@/lib/legal/status";
 import {
   listMdxFrontmatter,
   loadIdeaPublishedAtMap,
@@ -76,6 +78,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
       changeFrequency: "yearly",
     }),
+    // WP64-S9: the Terms and refund policy join once approved; drafts 404 in production.
+    ...(MEMBERSHIP_LEGAL_APPROVED
+      ? LEGAL_DOCS.map((doc) => entry(doc.path, { priority: 0.3, changeFrequency: "yearly" }))
+      : []),
   ];
 
   const editorialBySlug = new Map(publications?.map((row) => [row.slug, row]) ?? []);
