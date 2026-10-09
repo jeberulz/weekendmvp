@@ -12,14 +12,17 @@ import { MEMBERSHIP_SCAN_CAP } from "./state";
  * input. A mutation only because the rate limiter writes; it changes no
  * membership row.
  *
- * The customer is the one on the member's newest subscription in this mode,
- * and it must be linked to this member alone. A member with no subscription
+ * The customer is the one on the member's running subscription in this mode
+ * (the newest one when none is running), and it must be linked to this
+ * member alone. A member with no subscription
  * (Free, comp or Founding Lifetime) has nothing for the portal to manage.
  * The subscription id goes back too, so a plan switch can only ever name the
  * member's own newest subscription.
  */
 
 const CUSTOMER_READ = 5;
+/** Stripe statuses of a subscription that still renews. */
+const RUNNING: ReadonlySet<string> = new Set(["active", "past_due", "trialing"]);
 
 const rateLimiter = new RateLimiter(components.rateLimiter, {
   membershipPortalBurst: { kind: "token bucket", rate: 5, period: MINUTE },
@@ -50,7 +53,10 @@ export const open = internalMutation({
       .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", member._id))
       .order("desc")
       .take(MEMBERSHIP_SCAN_CAP);
-    const newest = subscriptions.find((row) => row.livemode === args.livemode);
+    // The running subscription first, so a canceled duplicate (refunded after a
+    // checkout race, possibly under another customer) never hides the one that renews.
+    const inMode = subscriptions.filter((row) => row.livemode === args.livemode);
+    const newest = inMode.find((row) => RUNNING.has(row.status)) ?? inMode[0];
     if (!newest) return { ok: false as const, code: "INVALID_REQUEST" as const };
 
     // A customer linked to anyone else is never opened, even if a row names it.

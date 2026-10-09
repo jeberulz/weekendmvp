@@ -154,6 +154,42 @@ describe("WP64-S5 which customer the portal opens", () => {
     expect(await openPortal(t, member)).toEqual({ customerId: "cus_new", subscriptionId: newest.subscriptionId });
   });
 
+  test("a running subscription wins over a newer canceled duplicate under another customer", async () => {
+    // A checkout race can leave two subscriptions under two customers. Settlement keeps
+    // one and refunds the other, which then reads as the most recently updated row.
+    const t = setup();
+    const member = await seedUser(t);
+    const row = (id: string, customer: string, status: "active" | "canceled", updatedAt: number) => ({
+      ownerId: member.userId,
+      stripeSubscriptionId: id,
+      stripeCustomerId: customer,
+      term: "monthly" as const,
+      status,
+      cancelAtPeriodEnd: false,
+      snapshotAt: updatedAt,
+      updatedAt,
+      livemode: false,
+    });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("plan_subscriptions", row("sub_kept", "cus_kept", "active", 1_000));
+      await ctx.db.insert("plan_subscriptions", row("sub_refunded", "cus_dup", "canceled", 2_000));
+      for (const customer of ["cus_kept", "cus_dup"]) {
+        await ctx.db.insert("billing_customers", { ownerId: member.userId, stripeCustomerId: customer, livemode: false, createdAt: 1 });
+      }
+    });
+    expect(await openPortal(t, member)).toEqual({ customerId: "cus_kept", subscriptionId: "sub_kept" });
+
+    // Past due still renews, so it wins too.
+    await t.run(async (ctx) => {
+      const kept = await ctx.db
+        .query("plan_subscriptions")
+        .withIndex("by_stripeSubscriptionId", (q) => q.eq("stripeSubscriptionId", "sub_kept"))
+        .unique();
+      if (kept) await ctx.db.patch("plan_subscriptions", kept._id, { status: "past_due" });
+    });
+    expect(await openPortal(t, member)).toEqual({ customerId: "cus_kept", subscriptionId: "sub_kept" });
+  });
+
   test("a customer linked to anyone else is never opened", async () => {
     const t = setup();
     const member = await seedUser(t);
