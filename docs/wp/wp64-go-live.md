@@ -111,6 +111,10 @@ Managed Payments on, with the Terms URL in the public details. Revenue recovery,
 
 Claude then re-reads the live account (prices, portal configuration, webhook events) and records the result here.
 
+## Launch order chosen (ruling "WP64 / launch order", option B)
+
+The owner turned the flag on before the real-card test. In practice: set `MEMBERSHIP_BILLING_MODE=live` and `NEXT_PUBLIC_BUILDERS_HUB=on` together, then redeploy production. Monthly and annual are on sale from that build. Step 4 runs through the real Plan and billing page. Lifetime waits for Steps 5 and 6. Step 7 is done early.
+
 ## Step 4 — Real-card smoke test (owner)
 
 Set `MEMBERSHIP_BILLING_MODE=live` and redeploy. The flag is still off, so no page offers a plan. Start each checkout from the browser console instead, signed in on `https://www.weekendmvp.app/dashboard/billing` (the routes do not read the flag):
