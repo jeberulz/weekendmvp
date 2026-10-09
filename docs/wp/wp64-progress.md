@@ -542,3 +542,15 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - The owner merged PR #131 (`27eeac9`). Vercel production deployment `dpl_3EzBE2…` is READY.
 - Checked from outside: `/terms` and `/refund-policy` answer 200 with no noindex and no draft text, and the registered-details email line is present. Both are in the sitemap and the footer. Signed out, checkout and portal answer 401. The webhook answers 503 (no config). Reconcile answers 200 `skipped: not_configured`. Signed-in 503 and the new Convex tables were not checked from here: the route tests cover the first, and the build deploys Convex before Next, so a READY build means the schema deployed.
 - Next: Steps 2 and 3a, 3c, 3d, 3e (owner), then Claude re-reads the live account.
+
+## 2026-10-09 - WP64-S12 steps 2 and 3: live setup checked, portal created
+
+- Owner input: "done, i've set the env values and stripe settings check the live setup", then "yes create the live portal configuration".
+- Checked:
+  - Live webhook endpoint `we_1UOdJI…`: the right URL, all twelve events, API version `2026-05-27.dahlia`, enabled.
+  - The four live prices are active and unchanged.
+  - Production: a forged webhook gets 400 "Invalid signature" (config present). Reconcile without the bearer gets 401 (`CRON_SECRET` set). Checkout and the portal, signed out, get 401.
+- Found: no Customer Portal configuration in live mode, so Manage billing, Switch and Cancel plan would have failed.
+- Fixed: created the live portal configuration `bpc_1UOdc94fUcq943uM3RolKV18` through the Stripe connection, a copy of the sandbox default with the live prices. It is the live default, and re-reading it confirms every setting.
+- Not checkable from here: the Vercel variable list (403), the restricted key's permissions, Managed Payments, `MEMBERSHIP_BILLING_MODE` and the Convex bridge secret. The Step 4 real-card test covers them.
+- Next: Step 4, the owner's real-card smoke test.

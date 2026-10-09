@@ -91,9 +91,11 @@ STRIPE_MEMBERSHIP_PRICE_LIFETIME_T2=price_1UOcFX4fUcq943uMDRqSAf59
 
 When setting up the Customer Portal (3c), add only the two Builder’s Hub prices (monthly and annual) to the plan switch.
 
-### 3c. Customer Portal (owner)
+### 3c. Customer Portal (done by Claude, 2026-10-09)
 
 Settings, Billing, Customer portal, live mode. Match the sandbox table in `docs/wp/evidence/wp64-stripe-setup.md` ("Customer Portal"): cancel at period end with a reason, payment method update, invoice history, plan switch between the two Builder’s Hub prices only with prorations, downgrades scheduled when the interval shortens or the amount drops, quantity **off**, pause off, Terms and Privacy links. Save, so it becomes the default configuration.
+
+The live check after Step 2 found no portal configuration in live mode. On the owner's word ("yes create the live portal configuration"), Claude created `bpc_1UOdc94fUcq943uM3RolKV18` through the Stripe connection, a copy of the sandbox default `bpc_1UOWL79tlBLUMkdP5EgGFqF4` with the live product and prices. It is the live default (`is_default: true`), and re-reading it confirms: cancel at period end with reasons, no proration on cancel, card update, invoice history, address and name updates only, plan switch on `prod_VPR7BdtHNIAjiO` with the live monthly and annual prices only, prorations created, downgrades scheduled when the interval shortens or the amount drops, quantity off, pause off, Terms and Privacy links, return to `/dashboard/billing`. Edits in the Dashboard change this same configuration.
 
 ### 3d. Webhook (owner)
 
@@ -162,8 +164,8 @@ Day 14, 30 and 60 from the day window 3 opens, with the triggers in the S12 stor
 | Step | Done by | Date | Evidence (redacted) |
 |---|---|---|---|
 | 1 Merge, dormant | Owner merged PR #131; Claude checked | 2026-10-09 | Vercel production `dpl_3EzBE2…` READY on `27eeac9` (the Convex deploy runs first in that build). `/terms`, `/refund-policy` 200, indexable, no draft text, email line present, both in the sitemap and footer. Signed out: checkout 401, portal 401. Webhook 503 (no config). Reconcile 200 `skipped: not_configured`. Signed-in checkout and portal 503: covered by the route tests, not checked live |
-| 2 Live env values | | | |
-| 3 Live Stripe objects | 3b Claude; 3a, 3c, 3d, 3e owner | 3b 2026-10-09 | 3b: 2 products and 4 prices, ids above, catalog check clean |
+| 2 Live env values | Owner | 2026-10-09 | Owner reports done and redeployed. Checked from outside: a forged webhook now gets 400 "Invalid signature" (the key, signing secret, bridge secret and four price ids are set and parse), and reconcile without the bearer gets 401 (`CRON_SECRET` set). The Vercel variable list was not readable from here (403). `MEMBERSHIP_BILLING_MODE` and the Convex secret are confirmed by Step 4 |
+| 3 Live Stripe objects | 3b, 3c Claude; 3a, 3d, 3e owner | 2026-10-09 | 3b: 2 products and 4 prices, catalog check clean. 3c: portal `bpc_1UOdc9…`, the live default. 3d: endpoint `we_1UOdJI…` with the 12 events on `2026-05-27.dahlia`, enabled. 3a and 3e: owner reports done (key permissions and Managed Payments are not readable from here) |
 | 4 Real-card smoke test | | | |
 | 5 Seats and cohorts | | | |
 | 6 Windows | | | |
