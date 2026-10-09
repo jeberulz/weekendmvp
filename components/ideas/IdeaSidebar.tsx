@@ -54,7 +54,7 @@ export function IdeaSidebar({
     if (!target) return;
     const header = document.getElementById("idea-site-header");
     const offset = header
-      ? header.offsetHeight + 8
+      ? header.getBoundingClientRect().bottom + 8
       : window.innerWidth < 1024
         ? 120
         : 32;

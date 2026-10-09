@@ -5,14 +5,13 @@ import { COLLECTION_SLUGS } from "./collection";
 /**
  * Shell for the /ideas/[slug] route, which serves two different page kinds:
  *
- *  - Individual idea pages — cream theme + sticky light IdeaNav + light
- *    footer, mirroring the legacy ideas/_template.html body chrome.
+ *  - Individual idea pages — cream theme + shared floating MegaNav + light
+ *    reader footer.
  *    Signed-in members (session hint) swap to PRIMARY_NAV member chrome
  *    via IdeaPageNav; collection hubs are unchanged.
- *  - Collection hubs (/ideas/saas, /ideas/education, …) — dark-themed. They
- *    render their own dark MegaNav + SiteFooter via <HubShell>, so the layout
- *    renders them bare; wrapping them in the cream chrome is what produced the
- *    mismatched light nav over a dark page.
+ *  - Collection hubs (/ideas/saas, /ideas/education, …) render their own
+ *    shared menu and SiteFooter via PublicShell, so the layout renders them
+ *    bare to avoid duplicate navigation and footers.
  */
 export default async function IdeaSlugLayout({
   children,
@@ -29,7 +28,7 @@ export default async function IdeaSlugLayout({
 
   return (
     <div className="theme-cream min-h-screen bg-[#fcfaf7] text-[#1a1a1a] selection:bg-black/10 selection:text-black">
-      <IdeaPageNav withSidebar />
+      <IdeaPageNav />
       {children}
       <IdeaFooter />
     </div>

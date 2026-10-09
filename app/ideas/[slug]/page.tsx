@@ -24,7 +24,10 @@ import {
   softwareApplicationSchema,
 } from "@/lib/seo";
 import { EmailGate } from "@/components/ideas/EmailGate";
-import { IdeaPublicSummary } from "@/components/ideas/IdeaPublicSummary";
+import {
+  IdeaPublicHeader,
+  IdeaPublicSummary,
+} from "@/components/ideas/IdeaPublicSummary";
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import { buildPublicIdeaPreview } from "@/lib/ideas/public-preview";
 import { manifestIdeas } from "@/lib/public/library";
@@ -410,12 +413,16 @@ export default async function IdeaPage({
     return (
       <>
         <JsonLd schema={buildPublicSchema(slug, resolved)} />
-        <EmailGate slug={slug}>
-          <IdeaPublicSummary
-            title={resolved.title}
-            description={resolved.description}
-            preview={preview}
-          />
+        <EmailGate
+          slug={slug}
+          intro={
+            <IdeaPublicHeader
+              title={resolved.title}
+              description={resolved.description}
+            />
+          }
+        >
+          <IdeaPublicSummary preview={preview} />
         </EmailGate>
       </>
     );
