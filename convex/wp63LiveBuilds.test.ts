@@ -156,6 +156,10 @@ describe("WP63-S8 operator writes", () => {
       durationMin: 60,
     });
     await t.mutation(internal.platform.liveBuildsOperator.update, { id, startsAt: 200 * HOUR });
+    // Moving the session schedules flips for the new time. The old ones stay and do nothing.
+    expect(await scheduledTimes(t)).toEqual(
+      [100 * HOUR - JOIN_OPENS_BEFORE_MS, 100 * HOUR + 60 * 60_000, 200 * HOUR - JOIN_OPENS_BEFORE_MS, 200 * HOUR + 60 * 60_000],
+    );
     const status = async () => (await t.run((ctx) => ctx.db.get("live_builds", id)))?.status;
 
     vi.setSystemTime(100 * HOUR - JOIN_OPENS_BEFORE_MS);
