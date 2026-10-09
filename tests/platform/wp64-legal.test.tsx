@@ -77,8 +77,8 @@ describe("WP64-S9 the approval gate", () => {
     // Two seller facts are still missing, so approval waits on them.
     expect(items).toEqual([
       "who-we-are: O2",
-      "who-we-are: O2 placeholder (business form, such as sole trader or limited company)",
-      "who-we-are: O2 placeholder (postal address for legal notices)",
+      "who-we-are: O2 placeholder (registered company name and company number)",
+      "who-we-are: O2 placeholder (registered office address)",
     ]);
     expect(openItems({ id: "x", heading: "X", blocks: [{ kind: "list", items: ["{{O2: a fact}}"] }] })).toEqual([
       "x: O2 placeholder (a fact)",
@@ -179,7 +179,8 @@ describe("WP64-S9 the Terms", () => {
     expect(body).toContain("Draft: October 2026");
     expect(body).toContain("Open decision O2:");
     expect(body).not.toContain("For the lawyer:");
-    expect(html).toContain("To be confirmed (O2): postal address for legal notices</mark>");
+    expect(html).toContain("To be confirmed (O2): registered office address</mark>");
+    expect(body).toContain("a private limited company registered in England and Wales");
     expect(html).not.toContain("{{");
   });
 

@@ -74,6 +74,19 @@ Read from Stripe's documentation through the connector, then tried against the s
 | Parameters S3 must not send under Managed Payments (Stripe's list) | `automatic_tax`, `tax_id_collection`, `subscription_data.default_tax_rates`, `payment_method_types`, `payment_method_configuration`, `customer_update[name]`, `customer_update[address]`, shipping, Connect fields, `subscription_data.invoice_settings`, `invoice_creation`, `adaptive_pricing`, statement descriptors | S3 sends `managed_payments[enabled]=true` and none of these |
 | Eligibility | GB sellers are supported. Products must be "fully automated digital products"; live 1-to-1 coaching is named as ineligible | The monthly live group build is a grey area the owner accepted (ruling "WP64 / tax"). Asking Stripe in writing is still recommended |
 | Emails and support | Link sends receipts, invoices, refund and subscription emails, and handles transaction support and disputes. Stripe may refund within 60 days in some cases, to prevent chargebacks | S5 checks whether Link sends the annual renewal reminder the Terms promise (7 days ahead). If not, S5 sends it |
+| The exact S3 parameters, lifetime: `mode=payment`, the lifetime price, `client_reference_id`, `metadata` and `payment_intent_data.metadata` (`purpose`, `order_id`, `term`), `customer_email`, `customer_creation=always`, `expires_at` 31 minutes out, `managed_payments[enabled]=true` | Accepted (2026-10-09). Stripe adds an invoice issued by Stripe | Matches `checkoutSessionParams` in `app/api/platform/membership/_server.ts` |
+| The exact S3 parameters, annual: `mode=subscription`, `subscription_data.metadata`, the rest as above without `customer_creation` or `expires_at` | Accepted (2026-10-09) | Same |
+
+The probe sessions (ids starting `cs_test_a1Qh`, `cs_test_a1FP` and `cs_test_a1xA`, client references `probe_s3_*`) expire unpaid on their own.
+
+## 1c. Run checkout locally in test mode (S3, for S11)
+
+Checkout answers 503 until all of these are set, and Stripe refuses the session until the Terms URL is in public details (step 6).
+
+1. Convex dev deployment: `npx convex env set MEMBERSHIP_BILLING_BRIDGE_SECRET <32+ random characters>`.
+2. `.env.local` (values never in git): `MEMBERSHIP_BILLING_MODE=test`, `MEMBERSHIP_TAX_MODE=managed_payments`, `MEMBERSHIP_BILLING_APP_ORIGIN=http://localhost:3000`, the same `MEMBERSHIP_BILLING_BRIDGE_SECRET`, `STRIPE_MEMBERSHIP_RESTRICTED_KEY=rk_test_...` (step 1), and the four price ids from section 1.
+3. `NEXT_PUBLIC_BUILDERS_HUB=on` locally to see the buttons. For Founding Lifetime, seed the seats (`npx convex run platform/membership/seats:seed '{"apply":true}'`) and date a window in `convex/platform/membership/windows.ts` on a local branch only.
+4. Nothing is granted until S4's webhook runs. The return page waits, then says the payment is still being confirmed.
 
 ## 2. Owner steps in the Dashboard (sandbox now, live again at S12)
 

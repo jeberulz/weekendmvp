@@ -56,6 +56,9 @@ export function useMembershipCheckout(surface: "sheet" | "billing") {
       const result = await requestCheckout(term, key);
       if (!result.ok || !isStripeRedirect(result.url)) {
         busy.current = false;
+        // WP64-S3: the server refuses a key it can no longer continue (a lapsed
+        // seat hold, a day-old order), so the next click starts a fresh attempt.
+        if (!result.ok && result.code === "INVALID_REQUEST") keys.current.delete(term);
         setState({ kind: "error", message: checkoutMessage(result.ok ? "UNKNOWN" : result.code, result.ok ? undefined : result.opensAt) });
         return;
       }

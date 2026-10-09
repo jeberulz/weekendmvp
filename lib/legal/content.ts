@@ -64,7 +64,7 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           kind: "p",
-          text: `Weekend MVP (weekendmvp.app) is run by ${SELLER}, ${tbc("business form, such as sole trader or limited company")}, ${tbc("postal address for legal notices")}. ${SELLER} is not registered for VAT.`,
+          text: `Weekend MVP (weekendmvp.app) is run by ${SELLER}, a trading name of ${tbc("registered company name and company number")}, a private limited company registered in England and Wales, registered office ${tbc("registered office address")}. ${SELLER} is not registered for VAT.`,
         },
         {
           kind: "p",
@@ -72,7 +72,7 @@ export const TERMS: LegalDoc = {
         },
         { kind: "p", text: `In these terms, "we" means ${SELLER} and "you" means the person who buys or uses ${HUB}.` },
       ],
-      pending: [{ by: "O2", note: "Business form and a postal address for legal notices." }],
+      pending: [{ by: "O2", note: "Registered company name, company number and registered office (UK trading disclosures)." }],
     },
     {
       id: "what-you-get",

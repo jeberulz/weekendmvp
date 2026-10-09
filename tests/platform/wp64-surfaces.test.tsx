@@ -293,6 +293,8 @@ describe("WP64-S6 return state: the server confirms, the URL never does", () => 
     const started = hookSource.indexOf('name: "checkout_started"');
     expect(started).toBeGreaterThan(hookSource.indexOf("if (!result.ok || !isStripeRedirect(result.url))"));
     expect(checkoutSource).toContain("postForRedirect(MEMBERSHIP_CHECKOUT_PATH, { term, idempotencyKey }, fetchImpl)");
+    // WP64-S3: a refused key is dropped, so a stale attempt never blocks a new one.
+    expect(hookSource).toContain('if (!result.ok && result.code === "INVALID_REQUEST") keys.current.delete(term);');
   });
 });
 
