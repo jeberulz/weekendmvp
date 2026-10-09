@@ -15,3 +15,9 @@ Definition of done: four editable concept pages are accurately labelled, tags/pr
 Out of scope: engine approval/record fabrication, release flag changes, billing activation, unrelated content/dependency changes, bulk reseeding.
 
 Completed 2026-10-09 through PR #132. Production pages and the four category links return 200; four exact-slug catalogue inserts are verified. Publication evidence is in `wp65-progress.md`. This documentation closeout uses `codex/wp65-publication-closeout`.
+
+- [ ] S3 — Complete the four missing individual OG cards
+  - Follow-up branch: `codex/wp65-og-cards`; lane: Work Package, existing WP65 scope.
+  - Scope: four generated PNG assets, exact manifest OG status changes and package records; preserve the preliminary text and all other catalogue metadata.
+  - Acceptance: the existing branded OG generator creates a distinct image per idea; each image is visually checked; the deployed page's Open Graph and Twitter metadata reference its own healthy image URL; discovery cards receive ready status.
+  - Verification: dimensions/image inspection, tags, configured checks/PR CI, exact production deployment and bounded metadata update with backup/dry run.
