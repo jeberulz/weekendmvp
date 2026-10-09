@@ -196,6 +196,7 @@ Recommended defaults are mine. They are not rulings. Each needs a ruling in `doc
     - The first session is scheduled before window 1 opens. Replays carry captions or a transcript (O8). The Terms commitment from S9 is met by a make-up session or a one-month extension if a month is missed.
     - `PLANS` lists the live build only when this story ships (the "only what ships today" rule).
   - Verification: entitlement matrix (free, monthly, annual, lifetime, comp, revoked), a static test that fails if a join or replay URL reaches a client file, axe.
+  - Status 2026-10-09: built on the branch behind the flag, not merged. Status is stored and flipped by scheduled mutations (scheduled, open 24 hours before the start, ended at the end), so the member query stays clock-free. Operator commands, link rules, the captions rule and the missed-month rule are in `docs/runbooks/wp63-live-builds.md`. Owner still to decide: O8 (slot, tool, replay hosting, captions), then schedule the first session before window 1 opens. Details in `docs/wp/wp63-progress.md`.
 
 - [ ] `WP63-S9` - Terms, refund policy and privacy updates
   - Scope: public routes for the Terms and the refund policy, `app/(marketing)/privacy-policy`, the Checkout `custom_text` strings, sitemap and robots only if needed.

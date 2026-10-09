@@ -32,13 +32,14 @@ export function formatSessionTime(ms: number): string {
   }).format(ms);
 }
 
-function SessionLink({ href, label, action }: { href: string; label: string; action: "join" | "replay" }) {
+function SessionLink({ href, label, action, describedBy }: { href: string; label: string; action: "join" | "replay"; describedBy: string }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => trackDashboardEvent({ name: "live_build_opened", props: { action } })}
+      aria-describedby={describedBy}
       className={cn(ACTION, "bg-home-ink text-home-card hover:bg-home-panel")}
     >
       {label}
@@ -48,14 +49,17 @@ function SessionLink({ href, label, action }: { href: string; label: string; act
   );
 }
 
+/** Every action names its session too, so two "Join" buttons are told apart. */
 function SessionAction({
   session,
   entitled,
   onLocked,
+  titleId,
 }: {
   session: Session;
   entitled: boolean;
   onLocked: (from: HTMLElement) => void;
+  titleId: string;
 }) {
   const past = session.status === "ended";
   if (!entitled) {
@@ -65,6 +69,7 @@ function SessionAction({
       <button
         type="button"
         onClick={(event) => onLocked(event.currentTarget)}
+        aria-describedby={titleId}
         className={cn(ACTION, "border border-home-ink bg-home-card text-home-ink hover:bg-home-sunk")}
       >
         {past ? "Watch the replay" : "Join the live build"}
@@ -73,12 +78,12 @@ function SessionAction({
   }
   if (past) {
     return session.replayUrl ? (
-      <SessionLink href={session.replayUrl} label="Watch the replay" action="replay" />
+      <SessionLink href={session.replayUrl} label="Watch the replay" action="replay" describedBy={titleId} />
     ) : (
       <p className="text-sm text-home-ink-2">Replay coming soon.</p>
     );
   }
-  if (session.joinUrl) return <SessionLink href={session.joinUrl} label="Join the live build" action="join" />;
+  if (session.joinUrl) return <SessionLink href={session.joinUrl} label="Join the live build" action="join" describedBy={titleId} />;
   return (
     <p className="text-sm text-home-ink-2">
       {session.status === "open"
@@ -110,7 +115,7 @@ function SessionCard({
           {session.title}
         </h3>
         {session.summary ? <p className="text-[15px] leading-[1.5] text-home-ink-2">{session.summary}</p> : null}
-        <SessionAction session={session} entitled={entitled} onLocked={onLocked} />
+        <SessionAction session={session} entitled={entitled} onLocked={onLocked} titleId={titleId} />
       </article>
     </li>
   );

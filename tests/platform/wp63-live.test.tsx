@@ -106,6 +106,8 @@ describe("WP63-S8 the page", () => {
     });
     expect(html).toContain("Build a waitlist app live");
     expect(html).toMatch(/<button type="button"[^>]*>Join the live build<\/button>/);
+    // Each action is described by its session title, so repeated labels are told apart.
+    expect(html).toMatch(/<button type="button" aria-describedby="live-live1"[^>]*>Join the live build/);
     expect(html).toMatch(/<button type="button"[^>]*>Watch the replay<\/button>/);
     expect(html).toContain("Replay coming soon.");
     expect(html).not.toMatch(/href="https?:/);
@@ -157,8 +159,8 @@ describe("WP63-S8 links never reach a client file, analytics or logs", () => {
       "session.joinUrl",
       "session.joinUrl",
     ]);
-    expect(liveSource).toContain('<SessionLink href={session.replayUrl} label="Watch the replay" action="replay" />');
-    expect(liveSource).toContain('<SessionLink href={session.joinUrl} label="Join the live build" action="join" />');
+    expect(liveSource).toContain('<SessionLink href={session.replayUrl} label="Watch the replay" action="replay" describedBy={titleId} />');
+    expect(liveSource).toContain('<SessionLink href={session.joinUrl} label="Join the live build" action="join" describedBy={titleId} />');
   });
 
   test("no meeting or video link is typed into any client file", () => {

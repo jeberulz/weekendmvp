@@ -89,6 +89,8 @@ describe("WP63-S8 status rules", () => {
     expect(liveStatusAt(session, endOf(session))).toBe("ended");
     expect(liveStatusAt({ ...session, status: "canceled" }, endOf(session))).toBe("canceled");
     expect(endOf(session)).toBe(100 * HOUR + 90 * 60_000);
+    // The story fixes the window: the join link shows from 24 hours before the start.
+    expect(JOIN_OPENS_BEFORE_MS).toBe(24 * HOUR);
   });
 
   test("links are https only, with no credentials", () => {
@@ -225,6 +227,11 @@ describe("WP63-S8 operator writes", () => {
     expect(await errorCode(() => t.mutation(internal.platform.liveBuildsOperator.update, { id, startsAt: 5 * HOUR }))).toBe(
       "INVALID_START",
     );
+    expect(
+      await errorCode(() => t.mutation(internal.platform.liveBuildsOperator.setReplay, { id, replayUrl: "http://video.example.test/x" })),
+    ).toBe("INVALID_LINK");
+    await t.mutation(internal.platform.liveBuildsOperator.setReplay, { id, replayUrl: REPLAY });
+    expect((await t.run((ctx) => ctx.db.get("live_builds", id)))?.replayUrl).toBe(REPLAY);
     expect(await t.mutation(internal.platform.liveBuildsOperator.cancel, { id })).toEqual({ id, status: "canceled" });
     expect(await errorCode(() => t.mutation(internal.platform.liveBuildsOperator.update, { id, title: "x" }))).toBe(
       "LIVE_BUILD_CANCELED",
@@ -241,7 +248,8 @@ describe("WP63-S8 operator writes", () => {
 
 describe("WP63-S8 the member query", () => {
   async function scene(t: T) {
-    const open = await addRow(t, { title: "Open now", startsAt: 2_000, status: "open", joinUrl: JOIN });
+    // A replay added early stays hidden until the session ends.
+    const open = await addRow(t, { title: "Open now", startsAt: 2_000, status: "open", joinUrl: JOIN, replayUrl: REPLAY });
     const soon = await addRow(t, { title: "Next month", startsAt: 3_000, status: "scheduled", joinUrl: JOIN });
     const done = await addRow(t, { title: "Last month", startsAt: 1_000, status: "ended", replayUrl: REPLAY, joinUrl: JOIN });
     const noReplay = await addRow(t, { title: "Two months ago", startsAt: 500, status: "ended" });
@@ -265,6 +273,7 @@ describe("WP63-S8 the member query", () => {
       [ids.noReplay, null, false],
     ]);
     expect(result.past.every((session) => session.joinUrl === null)).toBe(true);
+    expect(result.upcoming.every((session) => session.replayUrl === null && !session.hasReplay)).toBe(true);
     expect(JSON.stringify(result)).not.toContain("Called off");
   });
 
