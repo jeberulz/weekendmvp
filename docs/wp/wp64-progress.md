@@ -187,3 +187,53 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - `toEqual` ignores keys set to `undefined`. Tests that care whether a key exists use `toStrictEqual` (found in S6, reused here).
   - Only the date list in `windows.ts` changes at launch. A test fails if the committed dates are not all null, so a launch commit must update that test on purpose.
 - Next: S8 (live builds) is the last story that adds a table in this schema window. S3 still waits on O1, O5 and S9.
+
+## 2026-10-09 - WP64-S8 (live builds hub)
+
+- Actions taken:
+  - `live_builds` appended to `convex/schema.ts` in this branch's schema window, with the contract's fields and `by_startsAt` and `by_status_and_startsAt`. Additive only. This is the last table WP64 adds.
+  - Rules in `convex/platform/liveBuildRules.ts` (pure): scheduled, open from 24 hours before the start until the end, ended after, canceled hidden. Links must be https with no credentials.
+  - Operator-only internal mutations in `convex/platform/liveBuildsOperator.ts`: `create`, `update` (a new time must be in the future, `joinUrl: null` clears the link), `setReplay`, `cancel`, and `advance`. Each write schedules `advance` for the moment the join link opens and the moment the session ends. `advance` recomputes the status from the row and the server clock, so a flip left over from an earlier time does nothing, and a canceled session stays canceled. They return ids and statuses, never a link.
+  - Member query `platform/liveBuilds:list` (read-only, clock-free): everyone signed in gets the schedule and titles. The join link goes only to Builder's Hub members while a session is open, the replay only after it ends. Free members get `hasJoinLink` and `hasReplay` flags instead. Canceled sessions are not listed.
+  - Page `/dashboard/live`: 404 without the flag, noindex, no nested `main`, an empty state, and times in the member's zone with the zone named ("Wednesday, November 4, 2026 at 5:00 PM GMT"). Links open in a new tab and say so. A free member's join or replay button opens the upgrade sheet, which now has live-build wording.
+  - Nav: "Live builds" under Builds in the desktop sidebar and in the phone Account sheet, flag on only. `PRIMARY_NAV` is unchanged, because the phone tab bar has five slots and the idea page mirrors it.
+  - Plan copy: `live_builds` is now a gated feature (`PLAN_LIMITS.liveBuilds`, `requireFeature`, `entitlements.check`), and `PLANS`, the sheet comparison and the Plan and billing table list "One live build a month, with replays".
+  - Analytics: `live_build_opened` with `action` (`join` or `replay`) only. Never the link or the title.
+  - Runbook: `docs/runbooks/wp64-live-builds.md` (commands, link rules, captions before a replay, the missed-month rule, and first session before window 1).
+  - Tests: `convex/wp64LiveBuilds.test.ts` (15), `tests/platform/wp64-live.test.tsx` (10), `tests/security/live-builds-isolation.test.mjs` (4), and updated WP44, WP54 and S7 pins for the new feature and plan line.
+- Decisions made (mine, reversible, none is a ruling):
+  - Stored status flipped by scheduled mutations, not a clock passed from the browser. A browser clock could open a join link early. The Convex guidelines recommend this pattern for time-based state.
+  - Free members see a "Join the live build" button on every upcoming session, not only open ones, because the click is the point of intent. They see no extra upsell text, so the first-day rule holds.
+  - Canceled sessions disappear from the page. The operator tells members about the make-up session or the extension, as the runbook says.
+  - No host allowlist for links, because the tool is O8's call.
+- Checks run on the branch (final, single run, after merging `main` at `a80836b`):
+  - `npm run typecheck` passes. `npm run lint` has 0 errors and 34 warnings, the same count as before. `npm run build` succeeds (435 static pages, one more than before for `/dashboard/live`, which renders as a 404 while the flag is off).
+  - Test stages pass: links 6, redirects 76, auth 146 (two new from `main`), security (111 node tests, up from 107, and 121 Vitest tests), sitemap 11, Convex 575 (up from 560), engine 1,076, home 77, prompts 23, platform 300 (up from 290).
+  - The same six failures as before, none from this work: three OG-image tests (blocked hosts) and three editorial tests that also fail on `main`.
+  - Break-on-purpose: 30 deliberate breakages. 27 were caught on the first run. The 3 survivors were test gaps. The tests used the 24-hour constant itself, so doubling it went unnoticed (it is now pinned as a literal). No test put a replay on a session that had not ended. No test sent `setReplay` a bad link. After adding those cases, all 3 were caught. Examples of the 30: the join link opening at the start or a moment late, a canceled session revived, http or credentialed links, a free member getting the join link or the replay, a join link before the window, everyone counted as entitled, past starts and tiny sessions, unchecked links, no flips scheduled or none after a move, `advance` ignoring the clock, cancel not locking, the page treating everyone as entitled, links in the same tab, analytics carrying the link, the zone not named, and the page or the sidebar link showing without the flag.
+  - Schema diff against `origin/main`: only added lines.
+- Accessibility: the page for a Builder's Hub member (open, scheduled, ended with and without a replay), for a free member, and empty, rendered to static HTML and checked with axe-core 4 (wcag2a, wcag2aa, wcag21a, wcag21aa, best-practice) and the built CSS at 390 px and 1440 px: 0 violations in all 6 runs, and no horizontal scroll. The Tab walk showed two identical "Join the live build" buttons for a free member, so each action is now also described by its session title.
+- Docs updated: `docs/wp/wp64-stories.md` (S8 status), `docs/runbooks/wp64-live-builds.md` (new). Not needed: `.env.example` (no env), `.agentic-workflow.yml` (S4), `docs/wp/AGENT_HANDOFF.md` (owner-managed). PRD 6.5 already points at the ladder, and the live build row is in `BILLING_COMPARISON`.
+- Result: S8 built on the branch and pushed (`43aa042`, follow-ups `1a20486`). Not merged. Nothing shows until the flag is on and the operator schedules a session.
+- Handed on:
+  - Owner: decide O8 (slot, length, tool, capacity, replay hosting, captions, missed months). Then schedule the first session before window 1 opens (S12).
+  - S9: the Terms must state one live build a month with a replay, and the missed-month remedy (a make-up session or a one-month extension).
+- Gotchas:
+  - The feature id and the table share the name `live_builds`, so the static test matches table access (`.query("live_builds")`, `v.id(...)` and so on), not the bare string.
+  - `toMatchObject` treats a missing key differently from `undefined`. The cleared-link test checks the key is absent.
+  - `vi.useFakeTimers({ toFake: ["Date"] })` moves the server clock for `advance` without stopping convex-test's own timers. The full-scheduler test fakes all timers and runs `finishAllScheduledFunctions`.
+- Next: every story that needs only S2 is now built (S6, S7, S8). S3 (checkout) waits on O1, O5 and S9. S9 (Terms) can start any time, but its text needs O1 to O4 and O8, and a lawyer's review before S12.
+
+## 2026-10-09 - Renumber to WP64 and sync
+
+- Actions taken:
+  - `main` merged PR #127 from `codex/wp63-navigation-consistency`, which claims WP63 for public navigation consistency and adds its own `docs/wp/wp63-stories.md` and `wp63-progress.md`. WP64 is used nowhere on `main` or on any remote branch, so this package is now WP64.
+  - Renamed before merging, so their files are untouched: this file, the stories, the evidence file, the live-builds runbook, six test files, the registry row, and every WP63 label in code, tests and living docs. The renumbering history sentences in this file and in the stories keep the old numbers. Appended the ruling "WP64 / renumbering". Earlier rulings keep their labels.
+  - Merged `origin/main` (2 commits). One conflict, in the registry table, resolved by keeping both rows (theirs as WP63, this package as WP64). The WP64 row's status now says what is built.
+- Decisions made: WP64, under the owner's delegation of 2026-10-07 to renumber on a collision.
+- Checks run: the S8 gate above ran on the merged tree.
+- Result: the branch is in sync with `main` at `a80836b`.
+- Gotchas:
+  - This is the third collision in three days. A registry row protects a number only once it is on `main`. A small docs-only change with the WP64 row, merged to `main`, would stop a fourth.
+  - Commits before 2026-10-09 say WP63. Read them as WP64.
+- Next: unchanged. S3 waits on O1, O5 and S9.
