@@ -6,6 +6,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { MEMBERSHIP_BRIDGE_MAX_AGE_MS, signMembershipBridge, type MembershipBridgePayload } from "../lib/membership-bridge";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { LAPSED_HOLD_GRACE_MS } from "./platform/membership/checkout";
 import type { MembershipEvent, SubscriptionSnapshot } from "./platform/membership/events";
 import type { FoundingWindows } from "./platform/membership/windows";
 import schema from "./schema";
@@ -266,7 +267,7 @@ describe("WP64-S4 subscriptions", () => {
     expect(crossed.outcome).toBe("rejected");
   });
 
-  test("a subscription at the wrong Price fails its order and is canceled, in either order", async () => {
+  test("a subscription at the wrong Price fails its order and is refunded and canceled, in either order", async () => {
     for (const first of ["checkout", "subscription"] as const) {
       const t = setup();
       const member = await seedUser(t);
@@ -279,7 +280,7 @@ describe("WP64-S4 subscriptions", () => {
       expect(result).toEqual({
         outcome: "rejected",
         duplicate: false,
-        actions: [{ type: "cancel_subscription_now", subscriptionId: "sub_one" }],
+        actions: [{ type: "refund_and_cancel", subscriptionId: "sub_one" }],
       });
       expect((await orderRow(t, opened.orderId))?.status).toBe("failed");
       expect(await table(t, "plan_subscriptions")).toHaveLength(0);
@@ -287,7 +288,7 @@ describe("WP64-S4 subscriptions", () => {
     }
   });
 
-  test("a quantity other than one is rejected, first or later", async () => {
+  test("a first snapshot with a quantity other than one is rejected; a stored row still follows Stripe", async () => {
     const t = setup();
     const opened = await order(t, await seedUser(t), "monthly");
     expect((await settle(t, subscriptionEvent(snapshot(opened.orderId, { quantity: 2 })))).outcome).toBe("rejected");
@@ -295,8 +296,20 @@ describe("WP64-S4 subscriptions", () => {
     const other = await order(t, await seedUser(t), "monthly");
     await settle(t, subscriptionEvent(snapshot(other.orderId, { subscriptionId: "sub_two", customerId: "cus_two" })));
     const later = snapshot(other.orderId, { subscriptionId: "sub_two", customerId: "cus_two", quantity: 3, status: "past_due", snapshotAt: 9_000 });
-    expect((await settle(t, subscriptionEvent(later))).outcome).toBe("rejected");
-    expect((await table(t, "plan_subscriptions"))[0]).toMatchObject({ status: "active", snapshotAt: 1_000 });
+    expect((await settle(t, subscriptionEvent(later))).outcome).toBe("applied");
+    expect((await table(t, "plan_subscriptions"))[0]).toMatchObject({ status: "past_due", term: "monthly", snapshotAt: 9_000 });
+  });
+
+  test("a Price the config no longer lists never freezes a stored subscription", async () => {
+    const t = setup();
+    const member = await seedUser(t);
+    const opened = await order(t, member, "monthly");
+    await settle(t, subscriptionEvent(snapshot(opened.orderId)));
+    // The operator replaced the monthly Price: old subscriptions now report a Price we cannot map.
+    const ended = snapshot(opened.orderId, { priceKey: null, status: "canceled", endedAt: 3_000, snapshotAt: 3_000 });
+    expect((await settle(t, subscriptionEvent(ended))).outcome).toBe("applied");
+    expect((await table(t, "plan_subscriptions"))[0]).toMatchObject({ status: "canceled", term: "monthly" });
+    expect((await plan(t, member)).plan).toBe("free");
   });
 
   test("a Stripe customer already linked to another member is refused, and the payment does not stand", async () => {
@@ -309,7 +322,7 @@ describe("WP64-S4 subscriptions", () => {
     expect(result).toEqual({
       outcome: "rejected",
       duplicate: false,
-      actions: [{ type: "cancel_subscription_now", subscriptionId: "sub_two" }],
+      actions: [{ type: "refund_and_cancel", subscriptionId: "sub_two" }],
     });
     expect((await orderRow(t, b.orderId))?.status).toBe("failed");
     expect(await table(t, "plan_subscriptions")).toHaveLength(1);
@@ -420,7 +433,7 @@ describe("WP64-S4 subscriptions", () => {
       }),
     );
     const result = await settle(t, subscriptionEvent(snapshot(second, { subscriptionId: "sub_two", priceKey: "annual" })));
-    expect(result.actions).toEqual([{ type: "cancel_duplicate", subscriptionId: "sub_two" }]);
+    expect(result.actions).toEqual([{ type: "refund_and_cancel", subscriptionId: "sub_two" }]);
   });
 });
 
@@ -458,7 +471,7 @@ describe("WP64-S4 founding lifetime", () => {
     const { orderId, seatNumber } = await lifetimeBuyer(t);
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", seatNumber)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     expect(await t.mutation(internal.platform.membership.events.releaseExpiredHolds, {})).toEqual({ released: 1 });
     expect((await orderRow(t, orderId))?.status).toBe("expired");
@@ -473,7 +486,7 @@ describe("WP64-S4 founding lifetime", () => {
     const late = await lifetimeBuyer(t);
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", late.seatNumber)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     const other = await lifetimeBuyer(t);
     expect(other.seatNumber).toBe(late.seatNumber);
@@ -498,7 +511,7 @@ describe("WP64-S4 founding lifetime", () => {
     const first = await order(t, member, "lifetime");
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", 1)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     await t.mutation(internal.platform.membership.events.releaseExpiredHolds, {});
     const second = await order(t, member, "lifetime");
@@ -510,6 +523,33 @@ describe("WP64-S4 founding lifetime", () => {
     expect(result.actions).toEqual([{ type: "refund_payment", paymentIntentId: `pi_${first.orderId}` }]);
     expect(await seat(t, 2)).toMatchObject({ status: "free" });
     expect((await table(t, "plan_grants")).filter((row) => row.ownerId === member.userId)).toHaveLength(1);
+  });
+
+  test("a second lifetime payment from a seat holder frees the seat it was holding", async () => {
+    const t = setup();
+    await seedSeats(t);
+    const member = await seedUser(t);
+    await t.run((ctx) => ctx.db.insert("plan_grants", { ownerId: member.userId, kind: "lifetime", seatNumber: 40, grantedAt: 1 }));
+    // A held order from before the grant existed (the grant came from another order).
+    const held = await t.run(async (ctx) => {
+      const orderId = await ctx.db.insert("membership_orders", {
+        ownerId: member.userId,
+        term: "lifetime",
+        priceKey: "lifetime_t1",
+        status: "pending",
+        idempotencyKey: "membership:held-before-grant",
+        seatNumber: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        livemode: false,
+      });
+      const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", 1)).unique();
+      await ctx.db.patch("founding_seats", row!._id, { status: "reserved", ownerId: member.userId, orderId, reservedUntil: Date.now() + 60_000 });
+      return orderId;
+    });
+    const result = await settle(t, paid(held, 1));
+    expect(result.actions).toEqual([{ type: "refund_payment", paymentIntentId: `pi_${held}` }]);
+    expect(await seat(t, 1)).toMatchObject({ status: "free" });
   });
 
   test("an expired or failed checkout frees the seat; a late expiry never touches a paid order", async () => {
@@ -592,7 +632,7 @@ describe("WP64-S4 founding lifetime", () => {
     const late = await lifetimeBuyer(t);
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", 1)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     for (let i = 0; i < 50; i += 1) {
       const buyer = await lifetimeBuyer(t);
@@ -617,11 +657,17 @@ describe("WP64-S4 reconcile helpers", () => {
     const live = await lifetimeBuyer(t);
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", lapsed.seatNumber)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     expect(await t.mutation(internal.platform.membership.events.releaseExpiredHolds, {})).toEqual({ released: 1 });
     expect(await t.mutation(internal.platform.membership.events.releaseExpiredHolds, {})).toEqual({ released: 0 });
     expect(await seat(t, lapsed.seatNumber)).toMatchObject({ status: "free" });
+    // A hold that lapsed within the grace stays, in case its payment is still on the way.
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", live.seatNumber)).unique();
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 60_000 });
+    });
+    expect(await t.mutation(internal.platform.membership.events.releaseExpiredHolds, {})).toEqual({ released: 0 });
     expect(await seat(t, live.seatNumber)).toMatchObject({ status: "reserved", orderId: live.orderId });
     expect((await orderRow(t, lapsed.orderId))?.status).toBe("expired");
   });

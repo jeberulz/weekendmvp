@@ -2,6 +2,7 @@ import { v, type Infer } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "../../_generated/server";
 import { PRICING } from "../plans";
+import { LAPSED_HOLD_GRACE_MS } from "./checkout";
 import { MEMBERSHIP_SCAN_CAP, countSeats } from "./state";
 import {
   billingEventOutcomeValidator,
@@ -91,7 +92,8 @@ export const followUpValidator = v.union(
   v.object({ type: v.literal("refund_payment"), paymentIntentId: v.string() }),
   v.object({ type: v.literal("cancel_subscription_now"), subscriptionId: v.string() }),
   v.object({ type: v.literal("cancel_at_period_end"), subscriptionId: v.string() }),
-  v.object({ type: v.literal("cancel_duplicate"), subscriptionId: v.string() }),
+  /** Refund the latest paid invoice, then cancel: a second subscription, or one we rejected. */
+  v.object({ type: v.literal("refund_and_cancel"), subscriptionId: v.string() }),
 );
 
 export type MembershipEvent = Infer<typeof membershipEventValidator>;
@@ -104,7 +106,7 @@ type Settled = { outcome: Outcome; ownerId: Id<"users"> | null };
 /** Statuses that mean Stripe holds a running subscription. */
 const RUNNING = ["active", "past_due", "trialing"] as const;
 const running = (status: string) => (RUNNING as readonly string[]).includes(status);
-const FAILED_ORDER_READ = 5;
+const FAILED_ORDER_READ = MEMBERSHIP_SCAN_CAP;
 
 async function orderFor(ctx: QueryCtx, orderId: string | null, livemode: boolean): Promise<Order | null> {
   if (!orderId) return null;
@@ -213,8 +215,12 @@ export async function applySubscription(
       return { outcome: "rejected", ownerId };
     }
   }
-  const term = snapshot.priceKey === "monthly" || snapshot.priceKey === "annual" ? snapshot.priceKey : null;
-  if (!term || snapshot.quantity !== 1) return { outcome: "rejected", ownerId };
+  // A new row was checked against its order above. A stored row keeps following Stripe's
+  // status after its Price is replaced or retired, with its last known term, so a cancel
+  // or an unpaid renewal is never lost to a Price the config no longer lists.
+  const known = snapshot.priceKey === "monthly" || snapshot.priceKey === "annual" ? snapshot.priceKey : null;
+  const term = known ?? existing?.term ?? null;
+  if (!term) return { outcome: "rejected", ownerId };
   if (!(await linkCustomer(ctx, ownerId, snapshot.customerId, livemode, now))) {
     const order = existing ? null : await orderFor(ctx, snapshot.orderId, livemode);
     if (order?.status === "pending") await ctx.db.patch("membership_orders", order._id, { status: "failed", updatedAt: now });
@@ -299,6 +305,7 @@ async function applyCheckout(ctx: MutationCtx, event: Extract<MembershipEvent, {
   const ours = seat !== null && (seat.status === "free" || (seat.status === "reserved" && seat.orderId === order._id));
   if (!seat || !ours || (await holdsOtherLifetime(ctx, ownerId, order._id))) {
     await ctx.db.patch("membership_orders", order._id, { ...reported, status: "failed" });
+    await freeSeat(ctx, order, now);
     return { outcome: "applied", ownerId };
   }
   await ctx.db.patch("founding_seats", seat._id, {
@@ -395,11 +402,12 @@ async function followUps(ctx: QueryCtx, event: MembershipEvent | null, ownerId: 
   }
   const snapshot = event?.kind === "checkout" ? event.subscription : event?.kind === "subscription" ? event.subscription : null;
   if (event && snapshot && running(snapshot.status)) {
-    // A subscription on our failed order (wrong Price or quantity) is never kept.
+    // A subscription on our failed order (wrong Price, quantity or customer) is never kept,
+    // and its payment goes back.
     const order = await orderFor(ctx, snapshot.orderId, event.livemode);
     const row = await subscriptionRow(ctx, snapshot.subscriptionId, event.livemode);
     if (order && order.term !== "lifetime" && order.status === "failed" && !row) {
-      actions.push({ type: "cancel_subscription_now", subscriptionId: snapshot.subscriptionId });
+      actions.push({ type: "refund_and_cancel", subscriptionId: snapshot.subscriptionId });
     }
   }
   if (!ownerId) return actions;
@@ -432,7 +440,7 @@ async function followUps(ctx: QueryCtx, event: MembershipEvent | null, ownerId: 
     }
   } else {
     // One subscription per member: a second one is canceled and refunded.
-    for (const row of live.slice(1)) actions.push({ type: "cancel_duplicate", subscriptionId: row.stripeSubscriptionId });
+    for (const row of live.slice(1)) actions.push({ type: "refund_and_cancel", subscriptionId: row.stripeSubscriptionId });
   }
   return actions;
 }
@@ -482,7 +490,10 @@ export const applySnapshot = internalMutation({
   },
 });
 
-/** WP64-S4 reconcile: frees seats whose hold lapsed and expires their orders. At most 50 rows. */
+/**
+ * WP64-S4 reconcile: frees seats whose hold lapsed more than `LAPSED_HOLD_GRACE_MS`
+ * ago and expires their orders. At most 50 rows.
+ */
 export const releaseExpiredHolds = internalMutation({
   args: {},
   returns: v.object({ released: v.number() }),
@@ -494,7 +505,7 @@ export const releaseExpiredHolds = internalMutation({
       .take(PRICING.lifetime.seats);
     let released = 0;
     for (const seat of reserved) {
-      if ((seat.reservedUntil ?? 0) > now) continue;
+      if ((seat.reservedUntil ?? 0) > now - LAPSED_HOLD_GRACE_MS) continue;
       if (seat.orderId) {
         const order = await ctx.db.get("membership_orders", seat.orderId);
         if (order?.status === "pending") {

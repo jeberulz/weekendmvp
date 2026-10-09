@@ -28,6 +28,13 @@ export const RESERVATION_MS = 35 * 60 * 1000;
  * minutes, above Stripe's 30-minute minimum with a minute for the trip there.
  */
 export const SESSION_GRACE_MS = 4 * 60 * 1000;
+/**
+ * A lapsed hold is reclaimed by the clock only this long after it lapses.
+ * Stripe's `checkout.session.expired` frees an abandoned seat at once, so the
+ * clock is the fallback, and the wait gives a payment whose webhook is
+ * delayed (an outage, Stripe retries) time to settle before the seat moves.
+ */
+export const LAPSED_HOLD_GRACE_MS = 30 * 60 * 1000;
 /** Stripe forgets an idempotency key after 24 hours, so an older order is never replayed. */
 const REPLAY_WINDOW_MS = 23 * 60 * 60 * 1000;
 /** Stripe sessions last at most 24 hours, so older pending orders have no live session. */
@@ -250,7 +257,7 @@ export const begin = internalMutation({
         .query("founding_seats")
         .withIndex("by_status_and_seatNumber", (q) => q.eq("status", "free"))
         .first();
-      const lapsed = reserved.find((row) => (row.reservedUntil ?? 0) <= now) ?? null;
+      const lapsed = reserved.find((row) => (row.reservedUntil ?? 0) <= now - LAPSED_HOLD_GRACE_MS) ?? null;
       seat = free && (!lapsed || free.seatNumber < lapsed.seatNumber) ? free : lapsed;
       // An unseeded or full table is sold out. Checkout fails closed.
       const tranche = seat ? lifetimeTrancheForSeat(seat.seatNumber) : null;

@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
   subscriptionList: vi.fn(),
   subscriptionCancel: vi.fn(),
   subscriptionUpdate: vi.fn(),
+  scheduleRelease: vi.fn(),
   chargeRetrieve: vi.fn(),
   disputeRetrieve: vi.fn(),
   intentRetrieve: vi.fn(),
@@ -31,6 +32,11 @@ const mocks = vi.hoisted(() => ({
   refundCreate: vi.fn(),
 }));
 
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  // Outside a request the real one throws. The route only needs it to opt out of prerendering.
+  connection: vi.fn(async () => {}),
+}));
 vi.mock("convex/browser", () => ({
   ConvexHttpClient: class {
     action = mocks.action;
@@ -49,6 +55,7 @@ vi.mock("stripe", async () => {
         cancel: mocks.subscriptionCancel,
         update: mocks.subscriptionUpdate,
       };
+      subscriptionSchedules = { release: mocks.scheduleRelease };
       charges = { retrieve: mocks.chargeRetrieve };
       disputes = { retrieve: mocks.disputeRetrieve };
       paymentIntents = { retrieve: mocks.intentRetrieve };
@@ -174,6 +181,7 @@ beforeEach(() => {
   mocks.subscriptionList.mockReturnValue(pages([]));
   mocks.subscriptionCancel.mockResolvedValue({});
   mocks.subscriptionUpdate.mockResolvedValue({});
+  mocks.scheduleRelease.mockResolvedValue({});
   mocks.refundCreate.mockResolvedValue({});
   mocks.intentRetrieve.mockResolvedValue({ id: "pi_one", metadata: {}, status: "succeeded", latest_charge: { refunded: false, disputed: false } });
   mocks.invoicePaymentList.mockResolvedValue({ data: [] });
@@ -466,16 +474,58 @@ describe("WP64-S4 webhook route: follow-ups and failure", () => {
     return await deliver(stripeEvent("customer.subscription.updated", { id: "sub_one" }));
   };
 
-  test("a refund is made once, in full, with an idempotency key; an already refunded or disputed payment is left", async () => {
+  test("a refund is made once, in full, with an idempotency key; an already refunded payment is left", async () => {
     expect((await deliverWith([{ type: "refund_payment", paymentIntentId: "pi_one" }])).status).toBe(200);
     expect(mocks.intentRetrieve).toHaveBeenCalledWith("pi_one", { expand: ["latest_charge"] });
     expect(mocks.refundCreate).toHaveBeenCalledWith({ payment_intent: "pi_one" }, { idempotencyKey: "membership-refund:pi_one" });
     mocks.refundCreate.mockClear();
-    for (const latest_charge of [{ refunded: true, disputed: false }, { refunded: false, disputed: true }, null]) {
+    for (const latest_charge of [{ refunded: true, disputed: false }, null]) {
       mocks.intentRetrieve.mockResolvedValueOnce({ id: "pi_one", metadata: {}, status: "succeeded", latest_charge });
       expect((await deliverWith([{ type: "refund_payment", paymentIntentId: "pi_one" }])).status).toBe(200);
     }
     expect(mocks.refundCreate).not.toHaveBeenCalled();
+  });
+
+  test("a once-disputed charge is still refunded; an open dispute is refused by Stripe, logged and settled", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.intentRetrieve.mockResolvedValue({ id: "pi_one", metadata: {}, status: "succeeded", latest_charge: { refunded: false, disputed: true } });
+    expect((await deliverWith([{ type: "refund_payment", paymentIntentId: "pi_one" }])).status).toBe(200);
+    expect(mocks.refundCreate).toHaveBeenCalledTimes(1);
+    mocks.refundCreate.mockRejectedValueOnce({ type: "StripeInvalidRequestError", code: "charge_disputed", message: "Charge ch_x is disputed" });
+    expect((await deliverWith([{ type: "refund_payment", paymentIntentId: "pi_one" }])).status).toBe(200);
+    expect(warn).toHaveBeenCalledWith("membership follow-up refused", {
+      type: "customer.subscription.updated",
+      skipped: [{ type: "refund_payment", code: "charge_disputed" }],
+    });
+    warn.mockRestore();
+  });
+
+  test("one refused follow-up never blocks the others", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.subscriptionUpdate.mockRejectedValueOnce({ type: "StripeInvalidRequestError", code: "resource_missing" });
+    const response = await deliverWith([
+      { type: "cancel_at_period_end", subscriptionId: "sub_one" },
+      { type: "refund_payment", paymentIntentId: "pi_one" },
+    ]);
+    expect(response.status).toBe(200);
+    expect(mocks.refundCreate).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  test("a plan switch scheduled in the portal is released before O5 or a cancel", async () => {
+    mocks.subscriptionRetrieve.mockImplementation(async (id: string) => subscription({ id, schedule: "sub_sched_1" }));
+    await deliverWith([{ type: "cancel_at_period_end", subscriptionId: "sub_one" }]);
+    expect(mocks.scheduleRelease).toHaveBeenCalledWith("sub_sched_1", {}, { idempotencyKey: "membership-release-schedule:sub_sched_1" });
+    expect(mocks.scheduleRelease.mock.invocationCallOrder[0]).toBeLessThan(mocks.subscriptionUpdate.mock.invocationCallOrder[0]);
+    mocks.scheduleRelease.mockClear();
+    await deliverWith([{ type: "cancel_subscription_now", subscriptionId: "sub_one" }]);
+    expect(mocks.scheduleRelease).toHaveBeenCalledTimes(1);
+    expect(mocks.scheduleRelease.mock.invocationCallOrder[0]).toBeLessThan(mocks.subscriptionCancel.mock.invocationCallOrder[0]);
+    // No schedule, nothing to release.
+    mocks.scheduleRelease.mockClear();
+    mocks.subscriptionRetrieve.mockImplementation(async (id: string) => subscription({ id, schedule: null }));
+    await deliverWith([{ type: "cancel_subscription_now", subscriptionId: "sub_one" }]);
+    expect(mocks.scheduleRelease).not.toHaveBeenCalled();
   });
 
   test("cancel now skips a subscription that already ended", async () => {
@@ -503,7 +553,7 @@ describe("WP64-S4 webhook route: follow-ups and failure", () => {
 
   test("a duplicate subscription is refunded first, then canceled", async () => {
     mocks.invoicePaymentList.mockResolvedValue({ data: [{ invoice: "in_latest", payment: { type: "payment_intent", payment_intent: "pi_dup" } }] });
-    await deliverWith([{ type: "cancel_duplicate", subscriptionId: "sub_two" }]);
+    await deliverWith([{ type: "refund_and_cancel", subscriptionId: "sub_two" }]);
     expect(mocks.invoicePaymentList).toHaveBeenCalledWith({ invoice: "in_latest", status: "paid", limit: 1 });
     expect(mocks.refundCreate).toHaveBeenCalledWith({ payment_intent: "pi_dup" }, { idempotencyKey: "membership-refund:pi_dup" });
     expect(mocks.subscriptionCancel).toHaveBeenCalledWith("sub_two", {}, { idempotencyKey: "membership-cancel:sub_two" });
@@ -523,12 +573,16 @@ describe("WP64-S4 webhook route: follow-ups and failure", () => {
     log.mockRestore();
   });
 
-  test("a failed follow-up is never acknowledged", async () => {
+  test("a transient follow-up failure is never acknowledged", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.refundCreate.mockRejectedValueOnce(Object.assign(new Error("card_declined detail"), { code: "charge_disputed" }));
+    mocks.refundCreate.mockRejectedValueOnce(Object.assign(new Error("connection reset detail"), { type: "StripeConnectionError", code: undefined }));
     const response = await deliverWith([{ type: "refund_payment", paymentIntentId: "pi_one" }]);
     expect(response.status).toBe(500);
-    expect(log).toHaveBeenCalledWith("membership webhook failed", { type: "customer.subscription.updated", name: "Error", code: "charge_disputed" });
+    expect(log).toHaveBeenCalledWith("membership follow-up failed", {
+      type: "customer.subscription.updated",
+      failed: [{ type: "refund_payment", name: "StripeConnectionError", code: undefined }],
+    });
+    for (const call of log.mock.calls) expect(JSON.stringify(call)).not.toMatch(/reset detail|pi_one/);
     log.mockRestore();
   });
 });
@@ -577,7 +631,7 @@ describe("WP64-S4 reconcile route", () => {
     );
     settleWith([{ type: "cancel_at_period_end", subscriptionId: "sub_late" }]);
     const response = await run();
-    expect(await response.json()).toEqual({ ok: true, released: 2, pushed: 2, refreshed: 1, capped: false });
+    expect(await response.json()).toEqual({ ok: true, released: 2, pushed: 2, refreshed: 1, capped: false, refused: 0, failed: 0 });
     expect(mocks.subscriptionList.mock.calls.map(([params]) => params)).toEqual([
       { price: "price_monthly1", status: "active", limit: 100 },
       { price: "price_monthly1", status: "past_due", limit: 100 },
@@ -610,6 +664,29 @@ describe("WP64-S4 reconcile route", () => {
     const body = await (await run()).json();
     expect(body).toMatchObject({ ok: true, pushed: RECONCILE_LIMIT, refreshed: 0, capped: true });
     expect(mocks.subscriptionRetrieve).not.toHaveBeenCalled();
+  });
+
+  test("one subscription's failure never stops the run; the run answers 500 with counts", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.subscriptionList.mockImplementation(({ price, status }: { price: string; status: string }) =>
+      pages(price === "price_monthly1" && status === "active" ? [subscription({ id: "sub_a" }), subscription({ id: "sub_b" })] : []),
+    );
+    let calls = 0;
+    mocks.action.mockImplementation(async (_ref: unknown, signed: { payload: string; signature: string }) => {
+      const payload = verifyMembershipBridge(signed.payload, signed.signature, BRIDGE);
+      if (payload.kind === "release_expired_holds") return { released: 0 };
+      if (payload.kind === "running_subscriptions") return { ids: [], capped: false };
+      calls += 1;
+      if (calls === 1) throw new Error("convex blip");
+      return { outcome: "applied", actions: [] };
+    });
+    const response = await run();
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ ok: false, pushed: 2, failed: 1 });
+    expect(calls).toBe(2);
+    expect(log).toHaveBeenCalledWith("membership reconcile incomplete", expect.objectContaining({ failed: 1 }));
+    for (const call of log.mock.calls) expect(JSON.stringify(call)).not.toMatch(/convex blip|sub_a|sub_b/);
+    log.mockRestore();
   });
 
   test("a failure is 500 with no detail", async () => {

@@ -19,7 +19,15 @@ import type { MembershipWebhookConfig } from "./_server";
 
 type StripeClient = Pick<
   Stripe,
-  "checkout" | "subscriptions" | "charges" | "disputes" | "paymentIntents" | "invoicePayments" | "invoices" | "refunds"
+  | "checkout"
+  | "subscriptions"
+  | "subscriptionSchedules"
+  | "charges"
+  | "disputes"
+  | "paymentIntents"
+  | "invoicePayments"
+  | "invoices"
+  | "refunds"
 >;
 
 type Header = { eventId: string; eventType: string; livemode: boolean };
@@ -65,9 +73,10 @@ export function subscriptionSnapshot(
   };
 }
 
-async function ourSubscription(stripe: StripeClient, subscriptionId: string, config: MembershipWebhookConfig, now: number) {
+/** Stamped after the read returns, so a later read always carries a later stamp. */
+async function ourSubscription(stripe: StripeClient, subscriptionId: string, config: MembershipWebhookConfig) {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  return ours(subscription.metadata) ? subscriptionSnapshot(subscription, config.priceKeys, now) : null;
+  return ours(subscription.metadata) ? subscriptionSnapshot(subscription, config.priceKeys, Date.now()) : null;
 }
 
 /** Which membership purchase a payment belongs to, or null for anyone else's. */
@@ -89,7 +98,7 @@ async function paymentTarget(
   return { target: "subscription", orderId: null, subscriptionId };
 }
 
-async function checkoutEvent(stripe: StripeClient, header: Header, sessionId: string, config: MembershipWebhookConfig, now: number) {
+async function checkoutEvent(stripe: StripeClient, header: Header, sessionId: string, config: MembershipWebhookConfig) {
   const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ["line_items"] });
   if (!ours(session.metadata)) return null;
   const orderId = orderIdOf(session.metadata?.order_id ?? session.client_reference_id);
@@ -111,7 +120,7 @@ async function checkoutEvent(stripe: StripeClient, header: Header, sessionId: st
     quantity: line?.quantity ?? 0,
     amountTotal: session.amount_total,
     currency: session.currency,
-    subscription: subscriptionId ? await ourSubscription(stripe, subscriptionId, config, now) : null,
+    subscription: subscriptionId ? await ourSubscription(stripe, subscriptionId, config) : null,
   };
   return event;
 }
@@ -125,17 +134,16 @@ export async function normalizeMembershipEvent(
   stripe: StripeClient,
   event: Stripe.Event,
   config: MembershipWebhookConfig,
-  now: number,
 ): Promise<MembershipEvent | null> {
   // Any other type is not ours to settle. Nothing is fetched for it.
   if (!HANDLED.has(event.type)) return null;
   const header: Header = { eventId: event.id, eventType: event.type, livemode: event.livemode };
   const object = event.data.object as { id: string };
 
-  if (event.type.startsWith("checkout.session.")) return await checkoutEvent(stripe, header, object.id, config, now);
+  if (event.type.startsWith("checkout.session.")) return await checkoutEvent(stripe, header, object.id, config);
 
   if (event.type.startsWith("customer.subscription.")) {
-    const subscription = await ourSubscription(stripe, object.id, config, now);
+    const subscription = await ourSubscription(stripe, object.id, config);
     return subscription ? { kind: "subscription", ...header, subscription } : null;
   }
 
@@ -144,7 +152,7 @@ export async function normalizeMembershipEvent(
     const invoice = await stripe.invoices.retrieve(object.id);
     const subscriptionId = idOf(invoice.parent?.subscription_details?.subscription);
     if (!subscriptionId) return null;
-    const subscription = await ourSubscription(stripe, subscriptionId, config, now);
+    const subscription = await ourSubscription(stripe, subscriptionId, config);
     return subscription ? { kind: "subscription", ...header, subscription } : null;
   }
 
@@ -169,17 +177,33 @@ export async function normalizeMembershipEvent(
   return { kind: "dispute", ...header, ...target, paymentIntentId, outcome };
 }
 
-/** Refunds what is left of a payment, once. Skips one already refunded or under dispute. */
+/**
+ * Refunds what is left of a payment, once. A charge under an open dispute is
+ * refused by Stripe and reported as skipped; once the dispute closes, the next
+ * delivery or reconcile tries again.
+ */
 async function refundInFull(stripe: StripeClient, paymentIntentId: string) {
   const intent = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ["latest_charge"] });
   const charge = typeof intent.latest_charge === "object" ? intent.latest_charge : null;
-  if (intent.status !== "succeeded" || !charge || charge.refunded || charge.disputed) return;
+  if (intent.status !== "succeeded" || !charge || charge.refunded) return;
   await stripe.refunds.create({ payment_intent: paymentIntentId }, { idempotencyKey: `membership-refund:${paymentIntentId}` });
+}
+
+/**
+ * A plan switch the member scheduled in the portal puts the subscription under a
+ * schedule, and Stripe then refuses direct changes. Lifetime or a refund makes the
+ * scheduled switch moot, so the schedule is released first.
+ */
+async function releaseSchedule(stripe: StripeClient, subscription: Stripe.Subscription) {
+  const scheduleId = idOf(subscription.schedule);
+  if (!scheduleId) return;
+  await stripe.subscriptionSchedules.release(scheduleId, {}, { idempotencyKey: `membership-release-schedule:${scheduleId}` });
 }
 
 async function cancelNow(stripe: StripeClient, subscriptionId: string) {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   if (ENDED.has(subscription.status)) return;
+  await releaseSchedule(stripe, subscription);
   await stripe.subscriptions.cancel(subscriptionId, {}, { idempotencyKey: `membership-cancel:${subscriptionId}` });
 }
 
@@ -192,39 +216,64 @@ async function latestPayment(stripe: StripeClient, subscriptionId: string) {
   return idOf(payments.data[0]?.payment.payment_intent);
 }
 
+async function performOne(stripe: StripeClient, action: FollowUp) {
+  if (action.type === "refund_payment") {
+    await refundInFull(stripe, action.paymentIntentId);
+  } else if (action.type === "cancel_subscription_now") {
+    await cancelNow(stripe, action.subscriptionId);
+  } else if (action.type === "cancel_at_period_end") {
+    // O5: lifetime replaces the subscription when its paid period ends. No refund.
+    const subscription = await stripe.subscriptions.retrieve(action.subscriptionId);
+    if (ENDED.has(subscription.status) || subscription.cancel_at_period_end || subscription.cancel_at !== null) return;
+    await releaseSchedule(stripe, subscription);
+    await stripe.subscriptions.update(
+      action.subscriptionId,
+      { cancel_at_period_end: true },
+      { idempotencyKey: `membership-cancel-at-period-end:${action.subscriptionId}` },
+    );
+  } else {
+    // A second subscription, or one we rejected: refund first, then cancel. If the cancel
+    // fails, the refund's own event cancels it, and a retry finds the refund already made.
+    const paymentIntentId = await latestPayment(stripe, action.subscriptionId);
+    if (paymentIntentId) await refundInFull(stripe, paymentIntentId);
+    await cancelNow(stripe, action.subscriptionId);
+  }
+}
+
+export type FollowUpReport = {
+  done: number;
+  /** Stripe refused the request as invalid. Retrying the same call cannot help, so it is logged. */
+  skipped: { type: FollowUp["type"]; code: string | undefined }[];
+  /** Anything else: a network error, a rate limit, Stripe unavailable, a missing permission. */
+  failed: { type: FollowUp["type"]; name: string; code: string | undefined }[];
+};
+
 /**
- * Performs the Stripe calls settlement asked for, in order, each with an
- * idempotency key and a state check, so a repeat does nothing. Throws on the
- * first failure: the route answers 500, Stripe redelivers, and settlement
- * asks again for whatever is still owed.
+ * Performs the Stripe calls settlement asked for, each on its own, so one that
+ * keeps failing never blocks the others. Every call has an idempotency key and
+ * a state check, so a repeat does nothing. Settlement asks again for whatever
+ * is still owed on the member's next event and on the daily reconcile.
  */
-export async function performFollowUps(stripe: StripeClient, actions: readonly FollowUp[]): Promise<void> {
+export async function performFollowUps(stripe: StripeClient, actions: readonly FollowUp[]): Promise<FollowUpReport> {
+  const report: FollowUpReport = { done: 0, skipped: [], failed: [] };
   for (const action of actions) {
-    if (action.type === "refund_payment") {
-      await refundInFull(stripe, action.paymentIntentId);
-    } else if (action.type === "cancel_subscription_now") {
-      await cancelNow(stripe, action.subscriptionId);
-    } else if (action.type === "cancel_at_period_end") {
-      // O5: lifetime replaces the subscription when its paid period ends. No refund.
-      const subscription = await stripe.subscriptions.retrieve(action.subscriptionId);
-      if (ENDED.has(subscription.status) || subscription.cancel_at_period_end || subscription.cancel_at !== null) continue;
-      await stripe.subscriptions.update(
-        action.subscriptionId,
-        { cancel_at_period_end: true },
-        { idempotencyKey: `membership-cancel-at-period-end:${action.subscriptionId}` },
-      );
-    } else {
-      // A second subscription: refund first, then cancel. If the cancel fails, the
-      // refund's own event cancels it, and a retry finds the refund already made.
-      const paymentIntentId = await latestPayment(stripe, action.subscriptionId);
-      if (paymentIntentId) await refundInFull(stripe, paymentIntentId);
-      await cancelNow(stripe, action.subscriptionId);
+    try {
+      await performOne(stripe, action);
+      report.done += 1;
+    } catch (error) {
+      const summary = errorSummary(error);
+      if (summary.name === "StripeInvalidRequestError") report.skipped.push({ type: action.type, code: summary.code });
+      else report.failed.push({ type: action.type, ...summary });
     }
   }
+  return report;
 }
 
 /** Error class and Stripe code only, for a log line. Never a message. */
 export function errorSummary(error: unknown): { name: string; code: string | undefined } {
-  const code = error && typeof error === "object" && "code" in error ? String((error as { code: unknown }).code) : undefined;
-  return { name: error instanceof Error ? error.name : "unknown", code };
+  const record = error && typeof error === "object" ? (error as { code?: unknown; type?: unknown }) : {};
+  const code = record.code === undefined ? undefined : String(record.code);
+  // Stripe's error classes name themselves in `type` (StripeInvalidRequestError and so on).
+  const name = typeof record.type === "string" && record.type.startsWith("Stripe") ? record.type : error instanceof Error ? error.name : "unknown";
+  return { name, code };
 }

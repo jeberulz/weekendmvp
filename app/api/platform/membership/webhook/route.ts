@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   if (event.livemode !== config.livemode) return reply("Mode mismatch", 400);
 
   try {
-    const normalized = await normalizeMembershipEvent(stripe, event, config, Date.now());
+    const normalized = await normalizeMembershipEvent(stripe, event, config);
     if (!normalized) return reply("Ignored", 200);
     const convex = new ConvexHttpClient(convexUrl);
     const settled = await convex.action(
@@ -52,7 +52,14 @@ export async function POST(request: Request) {
       signMembershipBridge({ kind: "event", issuedAt: Date.now(), event: normalized }, config.bridgeSecret),
     );
     if (!("actions" in settled)) return reply("Retry", 500);
-    await performFollowUps(stripe, settled.actions);
+    const followed = await performFollowUps(stripe, settled.actions);
+    // Settled either way. A refused call is logged and asked for again on the next event
+    // and the daily reconcile. Anything transient gets a retry from Stripe.
+    if (followed.skipped.length > 0) console.warn("membership follow-up refused", { type: event.type, skipped: followed.skipped });
+    if (followed.failed.length > 0) {
+      console.error("membership follow-up failed", { type: event.type, failed: followed.failed });
+      return reply("Retry", 500);
+    }
     return reply("OK", 200);
   } catch (error) {
     // The event type, the class name and Stripe's error code only.

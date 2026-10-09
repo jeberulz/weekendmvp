@@ -29,11 +29,13 @@ test("the webhook verifies the signature on the raw body before anything else re
   assert.match(route, /if \(!signature\) return reply\("Invalid signature", 400\)/);
 });
 
-test("a settled event is acknowledged only after its follow-ups; anything thrown is a 500", async () => {
+test("a settled event is acknowledged only after its follow-ups; a transient failure or anything thrown is a 500", async () => {
   const route = code(await read(WEBHOOK));
   const follow = route.indexOf("await performFollowUps(stripe, settled.actions)");
+  const failed = route.indexOf("if (followed.failed.length > 0) {");
   const ok = route.indexOf('reply("OK", 200)');
-  assert.ok(follow > 0 && ok > follow);
+  assert.ok(follow > 0 && failed > follow && ok > failed);
+  assert.match(route, /if \(followed\.failed\.length > 0\) \{[\s\S]*?return reply\("Retry", 500\);/);
   assert.match(route, /catch \(error\) \{[\s\S]*?return reply\("Retry", 500\);/);
 });
 
@@ -46,24 +48,36 @@ test("every Stripe write carries an idempotency key, and no route takes new mone
     );
   }
   const events = sources[2];
-  const writes = [...events.matchAll(/stripe\.(refunds\.create|subscriptions\.cancel|subscriptions\.update)\(/g)];
-  assert.equal(writes.length, 3);
+  const writes = [...events.matchAll(/stripe\.(refunds\.create|subscriptions\.cancel|subscriptions\.update|subscriptionSchedules\.release)\(/g)];
+  assert.equal(writes.length, 4);
   for (const write of writes) {
     const call = events.slice(write.index, events.indexOf(";", write.index));
     assert.match(call, /idempotencyKey: `membership-[a-z-]+:\$\{[a-zA-Z.]+\}`/, write[1]);
   }
 });
 
-test("each route logs once, with the error class and Stripe code only", async () => {
+test("route logs carry the error class, Stripe code and follow-up summaries only", async () => {
   for (const file of [WEBHOOK, RECONCILE]) {
     const logs = code(await read(file)).match(/console\.\w+\([^;]*\);/g) ?? [];
-    assert.equal(logs.length, 1, file);
-    assert.doesNotMatch(logs[0], /email|message|body|payload|signature|secret|metadata|customer/, file);
-    assert.match(logs[0], /errorSummary\(error\)/, file);
+    assert.ok(logs.length >= 1, file);
+    for (const line of logs) {
+      assert.doesNotMatch(line, /email|message|body|payload|signature|secret|metadata|customer|String\(error|,\s*error\s*\)/, `${file}: ${line}`);
+      assert.match(line, /errorSummary\(error\)|followed\.(skipped|failed)|summary\)/, `${file}: ${line}`);
+    }
   }
-  const summary = code(await read(EVENTS));
-  const start = summary.indexOf("export function errorSummary");
-  assert.doesNotMatch(summary.slice(start), /\.message/);
+  const events = code(await read(EVENTS));
+  const start = events.indexOf("export function errorSummary");
+  assert.doesNotMatch(events.slice(start), /\.message/);
+  // Follow-up reports hold the action type, the error class and Stripe's code. Never an id.
+  assert.match(events, /report\.skipped\.push\(\{ type: action\.type, code: summary\.code \}\)/);
+  assert.match(events, /report\.failed\.push\(\{ type: action\.type, \.\.\.summary \}\)/);
+});
+
+test("reconcile is never prerendered", async () => {
+  const route = code(await read(RECONCILE));
+  const dynamic = route.indexOf("await connection();");
+  const secret = route.indexOf("process.env.CRON_SECRET");
+  assert.ok(dynamic > 0 && secret > dynamic, "connection() must run before the route reads its env");
 });
 
 test("reconcile runs only with the cron secret, compared in constant time", async () => {

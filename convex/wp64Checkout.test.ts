@@ -7,7 +7,7 @@ import { MEMBERSHIP_ERROR_CODES } from "../app/api/platform/membership/_contract
 import { signMembershipBridge, type MembershipBridgePayload } from "../lib/membership-bridge";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { CHECKOUT_REFUSAL_CODES, RESERVATION_MS, SESSION_GRACE_MS } from "./platform/membership/checkout";
+import { CHECKOUT_REFUSAL_CODES, LAPSED_HOLD_GRACE_MS, RESERVATION_MS, SESSION_GRACE_MS } from "./platform/membership/checkout";
 import type { FoundingWindows } from "./platform/membership/windows";
 import schema from "./schema";
 
@@ -339,7 +339,7 @@ describe("WP64-S3 founding seats", () => {
     if (!first.ok) throw new Error("expected an order");
     await t.run(async (ctx) => {
       const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", 1)).unique();
-      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - 1 });
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS - 1 });
     });
     expect(await begin(t, b, "lifetime")).toMatchObject({ ok: true, seatNumber: 1 });
     expect(await seat(t, 1)).toMatchObject({ ownerId: b.userId });
@@ -365,6 +365,23 @@ describe("WP64-S3 founding seats", () => {
     });
     expect(await begin(t, await seedUser(t), "lifetime")).toMatchObject({ ok: true, seatNumber: 1 });
     expect(await begin(t, await seedUser(t), "lifetime")).toMatchObject({ ok: true, seatNumber: 3 });
+  });
+
+  test("a hold that lapsed within the grace is not taken back yet", async () => {
+    const t = setup();
+    await seedSeats(t);
+    openEveryone();
+    const [a, b] = [await seedUser(t), await seedUser(t)];
+    const first = await begin(t, a, "lifetime");
+    if (!first.ok) throw new Error("expected an order");
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("founding_seats").withIndex("by_seatNumber", (q) => q.eq("seatNumber", 1)).unique();
+      await ctx.db.patch("founding_seats", row!._id, { reservedUntil: Date.now() - LAPSED_HOLD_GRACE_MS + 60_000 });
+    });
+    // A's payment may still be on its way, so B gets the next seat.
+    expect(await begin(t, b, "lifetime")).toMatchObject({ ok: true, seatNumber: 2 });
+    expect(await seat(t, 1)).toMatchObject({ status: "reserved", ownerId: a.userId });
+    expect(LAPSED_HOLD_GRACE_MS).toBe(30 * 60 * 1000);
   });
 
   test("the hold lasts 35 minutes and the session closes 4 minutes before it, above Stripe's 30", () => {

@@ -314,12 +314,13 @@ describe("WP64-S5 what the portal changes reaches the billing page", () => {
     expect((await mine(t, member)).billing.term).toBe("monthly");
   });
 
-  test("a switch to a Price that is not a subscription Price is refused", async () => {
+  test("a Price that is not a subscription Price keeps the term but still carries Stripe's status", async () => {
     const t = setup();
     const member = await seedUser(t);
     const first = await subscribe(t, member);
-    expect((await settle(t, { ...first, priceKey: "lifetime_t1", snapshotAt: 2_000 })).outcome).toBe("rejected");
-    expect((await settle(t, { ...first, priceKey: null, snapshotAt: 2_100 })).outcome).toBe("rejected");
+    expect((await settle(t, { ...first, priceKey: "lifetime_t1", snapshotAt: 2_000 })).outcome).toBe("applied");
     expect((await mine(t, member)).billing.term).toBe("monthly");
+    expect((await settle(t, { ...first, priceKey: null, status: "past_due", snapshotAt: 2_100 })).outcome).toBe("applied");
+    expect((await mine(t, member)).billing).toMatchObject({ term: "monthly", status: "past_due" });
   });
 });
