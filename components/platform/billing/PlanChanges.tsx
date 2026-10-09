@@ -179,7 +179,7 @@ function SwitchCard({ option }: { option: SwitchOption }) {
           if (option.to === "annual") {
             trackDashboardEvent({ name: "upgrade_clicked", props: { surface: "billing", feature: "weekend_plan", term: "annual" } });
           }
-          void open(option.to);
+          void open({ switchTo: option.to });
         }}
         className={SECONDARY}
       >

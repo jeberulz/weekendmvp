@@ -6,7 +6,7 @@ import {
   type CheckoutReturnState,
   type MembershipErrorCode,
   type MembershipRedirectResult,
-  type MembershipSwitchTerm,
+  type MembershipPortalIntent,
   type MembershipTerm,
 } from "@/app/api/platform/membership/_contract";
 import type { api } from "@/convex/_generated/api";
@@ -49,9 +49,10 @@ export function requestCheckout(term: MembershipTerm, idempotencyKey: string, fe
   return postForRedirect(MEMBERSHIP_CHECKOUT_PATH, { term, idempotencyKey }, fetchImpl);
 }
 
-/** Opens the portal, or with `switchTo`, Stripe's confirmation for that plan switch. */
-export function requestPortal(fetchImpl: Fetch = fetch, switchTo?: MembershipSwitchTerm) {
-  return postForRedirect(MEMBERSHIP_PORTAL_PATH, switchTo ? { switchTo } : {}, fetchImpl);
+/** Opens the portal, or with an intent, Stripe's page for that one switch or for cancelling. */
+export function requestPortal(fetchImpl: Fetch = fetch, intent?: MembershipPortalIntent) {
+  const body = !intent ? {} : "cancel" in intent ? { cancel: true } : { switchTo: intent.switchTo };
+  return postForRedirect(MEMBERSHIP_PORTAL_PATH, body, fetchImpl);
 }
 
 /** One key per checkout attempt. A retry of the same attempt reuses it, so Stripe returns the same session. */

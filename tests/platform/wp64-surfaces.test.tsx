@@ -28,6 +28,7 @@ import {
 import { CheckoutReturn } from "../../components/platform/billing/CheckoutReturn";
 import { describePlan } from "../../components/platform/billing/CurrentPlan";
 import { describePlanChanges } from "../../components/platform/billing/PlanChanges";
+import { cancelReturnMessage, cancelReturnStatus } from "../../components/platform/billing/CancelReturn";
 import {
   CONFIRM_SLOW_AFTER_MS,
   checkoutMessage,
@@ -43,10 +44,13 @@ import {
 } from "../../components/platform/plan/checkout";
 import { MembershipLadder } from "../../components/platform/plan/MembershipLadder";
 import { PlanComparison } from "../../components/platform/plan/PlanComparison";
+import SettingsPage from "../../app/dashboard/settings/page";
 import { TermPicker, type Seats } from "../../components/platform/plan/TermPicker";
 import checkoutSource from "../../components/platform/plan/checkout.ts?raw";
 import hookSource from "../../components/platform/plan/useMembershipCheckout.ts?raw";
 import returnSource from "../../components/platform/billing/CheckoutReturn.tsx?raw";
+import currentPlanSource from "../../components/platform/billing/CurrentPlan.tsx?raw";
+import planChangesSource from "../../components/platform/billing/PlanChanges.tsx?raw";
 import { trackDashboardEvent } from "../../lib/track";
 
 // WP64-S6. Plan and billing, the ladder and the return state, rendered from
@@ -191,16 +195,17 @@ describe("WP64-S6 route contract", () => {
     expect(calls).toEqual([{ path: MEMBERSHIP_PORTAL_PATH, body: {} }]);
   });
 
-  test("a plan switch posts only the term to switch to", async () => {
+  test("a plan switch posts only the term, and cancelling posts only `cancel: true`", async () => {
     const calls: unknown[] = [];
     const fetchImpl = async (_path: string, init: RequestInit) => {
       calls.push(JSON.parse(String(init.body)));
       return Response.json({ ok: true, url: "https://billing.stripe.com/p/session/test_2" });
     };
-    await requestPortal(fetchImpl, "annual");
-    await requestPortal(fetchImpl, "monthly");
+    await requestPortal(fetchImpl, { switchTo: "annual" });
+    await requestPortal(fetchImpl, { switchTo: "monthly" });
+    await requestPortal(fetchImpl, { cancel: true });
     await requestPortal(fetchImpl, undefined);
-    expect(calls).toEqual([{ switchTo: "annual" }, { switchTo: "monthly" }, {}]);
+    expect(calls).toEqual([{ switchTo: "annual" }, { switchTo: "monthly" }, { cancel: true }, {}]);
   });
 
   test("network failures and broken bodies are refusals, never redirects", async () => {
@@ -319,12 +324,16 @@ describe("WP64-S6 current plan", () => {
       detail: "Nothing to pay on the Free plan.",
       notice: null,
       manage: false,
+      cancel: null,
+      renew: null,
     });
     expect(describePlan(entitlements("builders_hub", { term: "monthly", status: "active", renewsAt: NOON }))).toEqual({
       title: "Builder’s Hub, monthly",
       detail: "$29 a month. Renews on November 4, 2026.",
       notice: null,
       manage: true,
+      cancel: "Cancel any time. You keep Builder’s Hub until November 4, 2026. It won’t renew, so you won’t be charged again.",
+      renew: null,
     });
     expect(describePlan(entitlements("builders_hub", { term: "annual", status: "active", endsAt: NOON }))).toMatchObject({
       title: "Builder’s Hub, annual",
@@ -340,6 +349,8 @@ describe("WP64-S6 current plan", () => {
       detail: "Founding member, seat 7 of 50. Nothing more to pay.",
       notice: null,
       manage: false,
+      cancel: null,
+      renew: null,
     });
     expect(describePlan(entitlements("builders_hub", { term: "comp", status: "active" }))).toMatchObject({
       title: "Builder’s Hub, complimentary",
@@ -603,10 +614,127 @@ describe("Plan changes for monthly and annual members", () => {
   });
 });
 
+describe("Cancelling a monthly or annual plan", () => {
+  const OLD = Date.now() - 2 * QUIET_PERIOD_MS;
+  const sub = (billing: Partial<Entitlements["billing"]>) =>
+    entitlements("builders_hub", { term: "monthly", status: "active", renewsAt: NOON, ...billing }, OLD);
+
+  test("an active plan says what cancelling does; a past-due plan promises only that renewals stop", () => {
+    expect(describePlan(sub({})).cancel).toBe(
+      "Cancel any time. You keep Builder’s Hub until November 4, 2026. It won’t renew, so you won’t be charged again.",
+    );
+    expect(describePlan(sub({ renewsAt: null })).cancel).toBe(
+      "Cancel any time. You keep Builder’s Hub until the end of the period you paid for. It won’t renew, so you won’t be charged again.",
+    );
+    expect(describePlan(sub({ status: "past_due" })).cancel).toBe(
+      "Cancelling stops your plan renewing. Stripe shows the end date before you confirm.",
+    );
+    expect(describePlan(sub({})).renew).toBeNull();
+  });
+
+  test("only a running plan can be cancelled, even if the summary ever says otherwise", () => {
+    for (const status of ["canceled", "unpaid", "paused", "suspended"] as const) {
+      expect(describePlan(entitlements("builders_hub", { term: "monthly", status, renewsAt: NOON })).cancel).toBeNull();
+      expect(describePlan(entitlements("builders_hub", { term: "monthly", status, endsAt: NOON })).renew).toBeNull();
+    }
+  });
+
+  test("each button asks the portal route for its own page", () => {
+    // No DOM here, so the click wiring is pinned in the source.
+    expect(currentPlanSource).toMatch(/label="Cancel plan"\s*pendingLabel="Opening Stripe…"\s*intent=\{\{ cancel: true \}\}/);
+    expect(currentPlanSource).toMatch(/<PortalButton label="Manage billing" pendingLabel="Opening billing…" \/>/);
+    expect(currentPlanSource).toMatch(/<PortalButton label="Renew plan" pendingLabel="Opening Stripe…" describedBy="renew-plan-terms" \/>/);
+    expect(currentPlanSource).toContain("if (!pending) void open(intent);");
+    expect(planChangesSource).toContain("void open({ switchTo: option.to });");
+    expect(planChangesSource).toContain('void start("lifetime");');
+  });
+
+  test("a plan set to end offers Renew instead of Cancel", () => {
+    const ending = describePlan(sub({ renewsAt: null, endsAt: NOON }));
+    expect(ending.cancel).toBeNull();
+    expect(ending.renew).toBe("Changed your mind? Renew before November 4, 2026 and your plan carries on as before.");
+    expect(describePlan(sub({ status: "past_due", renewsAt: null, endsAt: NOON })).renew).not.toBeNull();
+  });
+
+  test("nothing to cancel or renew for Free, lifetime, comp, unpaid, ended or disputed plans", () => {
+    for (const mine of [
+      entitlements("free"),
+      entitlements("builders_hub", { term: "lifetime", status: "active", foundingSeat: 7 }),
+      entitlements("builders_hub", { term: "comp", status: "active" }),
+      entitlements("free", { term: "annual", status: "unpaid" }),
+      entitlements("free", { term: "monthly", status: "canceled", endsAt: NOON }),
+      entitlements("free", { term: "monthly", status: "suspended" }),
+    ]) {
+      expect(describePlan(mine).cancel).toBeNull();
+      expect(describePlan(mine).renew).toBeNull();
+    }
+  });
+
+  test("Cancel plan sits beside Manage billing, described by what it does", () => {
+    withData(sub({}));
+    const html = renderToStaticMarkup(<PlanComparison />);
+    expect(html).toContain(">Manage billing</button>");
+    expect(html).toContain('aria-describedby="cancel-plan-terms"');
+    expect(html).toMatch(/aria-describedby="cancel-plan-terms"[^>]*>Cancel plan<\/button>/);
+    expect(html).toContain('id="cancel-plan-terms"');
+    expect(html.indexOf(">Cancel plan<")).toBeLessThan(html.indexOf("Change your plan"));
+    expect(html).not.toContain("Renew plan");
+  });
+
+  test("a plan set to end shows Renew plan and no Cancel plan", () => {
+    withData(sub({ renewsAt: null, endsAt: NOON }));
+    const html = renderToStaticMarkup(<PlanComparison />);
+    expect(html).toMatch(/aria-describedby="renew-plan-terms"[^>]*>Renew plan<\/button>/);
+    expect(html).not.toContain("Cancel plan");
+  });
+
+  test("Free and lifetime members see no Cancel plan", () => {
+    for (const mine of [entitlements("free", {}, OLD), entitlements("builders_hub", { term: "lifetime", status: "active", foundingSeat: 3 }, OLD)]) {
+      withData(mine);
+      expect(renderToStaticMarkup(<PlanComparison />)).not.toContain("Cancel plan");
+    }
+  });
+
+  test("back from Stripe: confirming until the end date arrives, then confirmed", () => {
+    expect(cancelReturnStatus(sub({}), false)).toBe("confirming");
+    expect(cancelReturnStatus(sub({}), true)).toBe("slow");
+    expect(cancelReturnStatus(sub({ renewsAt: null, endsAt: NOON }), false)).toBe("confirmed");
+    expect(cancelReturnStatus(entitlements("free"), false)).toBeNull();
+    expect(cancelReturnStatus(entitlements("builders_hub", { term: "lifetime", status: "active" }), false)).toBeNull();
+    expect(cancelReturnMessage("confirmed", NOON)).toBe("Your plan is cancelled. You keep Builder’s Hub until November 4, 2026. It won’t renew.");
+    expect(cancelReturnMessage("confirming", null)).toBe("Confirming your cancellation with Stripe. This usually takes a few seconds.");
+    expect(cancelReturnMessage("slow", null)).toBe("Stripe has your cancellation. This page updates as soon as it’s confirmed.");
+  });
+
+  test("Settings names Plan and billing as the place to cancel, with a link there", () => {
+    const html = renderToStaticMarkup(<SettingsPage />);
+    expect(html).toContain('aria-labelledby="settings-plan"');
+    expect(html).toContain("See your plan and invoices, switch between monthly and annual, or cancel.");
+    expect(html).toMatch(/<a [^>]*href="\/dashboard\/billing"[^>]*>Go to Plan and billing<\/a>/);
+    // First on the page, so nobody has to scroll past the long answers form to find it.
+    expect(html.indexOf('aria-labelledby="settings-plan"')).toBeLessThan(html.indexOf('aria-labelledby="settings-setup"'));
+  });
+
+  test("the confirmation shows above the plan only with ?plan=cancelled", () => {
+    convex.search = "plan=cancelled";
+    withData(sub({ renewsAt: null, endsAt: NOON }));
+    const html = renderToStaticMarkup(<PlanComparison />);
+    const banner = html.indexOf("Your plan is cancelled.");
+    expect(banner).toBeGreaterThan(-1);
+    expect(banner).toBeLessThan(html.indexOf("Your plan<"));
+    expect(html).toContain('role="status"');
+
+    convex.search = "plan=other";
+    expect(renderToStaticMarkup(<PlanComparison />)).not.toContain("Your plan is cancelled.");
+    convex.search = "";
+    expect(renderToStaticMarkup(<PlanComparison />)).not.toContain("Your plan is cancelled.");
+  });
+});
+
 describe("WP64-S6 copy and safety pins", () => {
   const surfaces = {
     ...import.meta.glob("../../components/platform/plan/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }),
-    ...import.meta.glob("../../components/platform/billing/{CurrentPlan,CheckoutReturn,PlanAndBilling,PlanChanges}.tsx", {
+    ...import.meta.glob("../../components/platform/billing/{CurrentPlan,CheckoutReturn,CancelReturn,PlanAndBilling,PlanChanges}.tsx", {
       query: "?raw",
       import: "default",
       eager: true,

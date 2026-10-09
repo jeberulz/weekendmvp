@@ -211,13 +211,15 @@ Expect:
 - `events:counts`: seats `taken: 1`. In the Convex dashboard, one `plan_grants` row for M3 with `seatNumber: 1`.
 - The ladder for another free member now shows 49 left.
 
-### C4. Cancel at period end, then undo (M1)
+### C4. Cancel from Settings, then renew (M1)
 
-1. Manage billing. Stripe's portal opens for M1's own subscription. Cancel.
-2. Back on the page: "Set to end on <date>. You keep access until then." Builder's Hub features still work.
-3. Manage billing again and renew (undo the cancel). The page goes back to "Renews on <date>".
+1. Settings shows a "Plan and billing" card first, with "Go to Plan and billing". Click it.
+2. Under "Your plan", next to Manage billing, click Cancel plan. The line under it says you keep Builder's Hub until the renewal date and won't be charged again. Stripe opens its cancel confirmation for M1's subscription only (no portal menu). Confirm.
+3. Stripe sends you back with "Your plan is cancelled. You keep Builder’s Hub until <date>. It won’t renew." (briefly "Confirming your cancellation" first). The plan reads "Set to end on <date>. You keep access until then." Builder's Hub features still work. Cancel plan is gone and Renew plan shows instead.
+4. Click Renew plan. The portal home opens with Stripe's renew option. Renew. The page goes back to "Renews on <date>" with Cancel plan.
+5. Manage billing. Check the portal shows invoices, a card update, and a switch to Annual, and no pause or quantity option.
 
-Expect `customer.subscription.updated` twice, both 200. Also check the portal shows invoices, a card update, and a switch to Annual, and no pause or quantity option.
+Expect `customer.subscription.updated` twice, both 200. Record how many clicks the cancel took from Settings (expect four: the card link, Cancel plan, Stripe's confirm, and any reason screen Stripe shows).
 
 ### C4b. Monthly to annual and back (M1)
 

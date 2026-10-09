@@ -19,7 +19,7 @@ Results of `docs/runbooks/wp64-test-mode-gate.md`. Test mode only, sandbox `acct
 | C1 | Free to monthly | | | | |
 | C2 | Free to annual | | | | |
 | C3 | Free to Founding Lifetime | | | | |
-| C4 | Cancel at period end, then undo | | | | |
+| C4 | Cancel from Settings, then renew | | | | Clicks from Settings to cancelled? Confirmation shown? |
 | C4b | Monthly to annual and back | | | | Switch invoice through Managed Payments? Annual to monthly scheduled, not immediate? |
 | C5 | Renewal through a test clock | | | | Clock or fallback? |
 | C6 | Failed renewal, then recovery | | | | |

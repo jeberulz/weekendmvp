@@ -474,3 +474,25 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Checks run: `npm run typecheck` passes. The legal tests pass (19). axe on the Terms, refund and privacy pages at 390 and 1440 px: 0 violations, and the new section is in the contents list and the Tab order.
 - Result: the Terms cover plan changes. The page is still a draft until O2 and the approval switch.
 - Next: the owner runs S11 on the checklist page.
+
+## 2026-10-09 - WP64: easy cancellation
+
+- Owner input: "can a user easily cancel their subscription from the settings page? if no - please improve the UX of cancellation, and build that in".
+- The answer was no. Settings had no plan or billing section. Plan and billing never said "cancel": the only way was Manage billing, then finding the cancel option inside Stripe's portal.
+- Actions taken:
+  - Plan and billing, "Your plan": a Cancel plan button beside Manage billing for active and past-due subscribers, as prominent as Manage billing. The line under it says what happens: "Cancel any time. You keep Builder’s Hub until <date>. It won’t renew, so you won’t be charged again." A past-due plan still has an open invoice, so its line only promises that renewals stop. The button opens Stripe's own cancel confirmation for that one subscription: one confirmation, no portal menu.
+  - Back from Stripe (`?plan=cancelled`): "Your plan is cancelled. You keep Builder’s Hub until <date>. It won’t renew." It shows "Confirming your cancellation" until the webhook brings the end date, and a calmer line after 90 seconds.
+  - A plan set to end shows Renew plan instead of Cancel plan, with "Changed your mind? Renew before <date> and your plan carries on as before." Stripe has no deep link for renewing, so it opens the portal home, which has Stripe's renew option.
+  - Settings opens with a Plan and billing card: "See your plan and invoices, switch between monthly and annual, or cancel", linking to Plan and billing. It sits above the long answers form, so nobody scrolls to find it.
+  - Portal route: takes `{ cancel: true }`. The ownership checks (this customer's, ours, this mode) are now shared by switching and cancelling. An active or past-due subscription gets Stripe's `subscription_cancel` page, returning with `?plan=cancelled`. One already ending, unpaid, ended or with a switch scheduled opens the portal home. If Stripe refuses either deep link (`StripeInvalidRequestError`), the route opens the portal home for the same customer and logs the error class and code only, so a member is never stuck without a way to cancel. Any other failure is still a 503. The route still never changes a subscription itself.
+  - Runbook C4, its evidence row and the checklist page now start from Settings and use Cancel plan and Renew plan.
+- Decisions made (mine, reversible):
+  - Cancel plan has the same weight as Manage billing and no extra "are you sure" step of ours. Stripe's page is the one confirmation. UK and US subscription rules are moving towards "as easy to cancel as to join", and an extra step adds friction for no gain.
+  - No retention offer. The portal configuration asks for a reason after cancelling, which feeds the S12 churn review.
+  - No cancel analytics event yet. Stripe records cancellations and their reasons.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (442 pages). Test stages pass: Convex 649, platform 482 (up from 450), security 146 node tests (up from 145) and 121 Vitest tests, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23. The same six failures as before (three OG-image, three editorial). axe: 4 new states (cancel confirming, cancel confirmed, past due, Settings) plus the earlier ones at 390 and 1440 px, 0 violations, no sideways scroll. Tab order: Manage billing, Cancel plan (or Renew plan), then the plan changes. Break-on-purpose: 32 deliberate breakages (loose cancel body, cancel ignored, ownership skipped, wrong statuses cancellable, ending, cancel-dated or scheduled plans re-cancelled, no `?plan=cancelled`, no fallback, fallback on any error or for the plain portal, the browser dropping `cancel`, the button opening the plain portal, wrong cancel and renew lines, the confirmation's gates, and the Settings link). The first run caught 30. The two survivors were a state the summary never reaches (a running check on unpaid) and the button's click wiring, which no DOM test covers. A direct test and a source pin now catch both.
+- Result: built on the branch, dormant like the rest of WP64.
+- Handed on:
+  - S11 C4: count the clicks from Settings to cancelled, and confirm Stripe's cancel page opens for a Managed Payments subscription.
+  - S11: try Cancel plan on a subscription with an annual-to-monthly switch scheduled. The route opens the portal home. Check the portal lets the member cancel from there.
+- Next: the owner runs S11 on the checklist page.

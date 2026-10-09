@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { BILLING_COMPARISON, PLANS, type PlanId } from "@/convex/platform/plans";
+import { CancelReturn } from "@/components/platform/billing/CancelReturn";
 import { CheckoutReturn } from "@/components/platform/billing/CheckoutReturn";
 import { CurrentPlan } from "@/components/platform/billing/CurrentPlan";
 import { PlanChanges } from "@/components/platform/billing/PlanChanges";
@@ -59,6 +60,7 @@ function LiveComparison() {
       {/* useSearchParams needs a boundary so the page itself can stay static. */}
       <Suspense fallback={null}>
         <CheckoutReturn entitlements={entitlements} />
+        <CancelReturn entitlements={entitlements} />
       </Suspense>
       <CurrentPlan entitlements={entitlements} />
       <PlanChanges entitlements={entitlements} />

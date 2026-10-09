@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isStripeRedirect, type MembershipSwitchTerm, type MembershipTerm } from "@/app/api/platform/membership/_contract";
+import { isStripeRedirect, type MembershipPortalIntent, type MembershipTerm } from "@/app/api/platform/membership/_contract";
 import { trackDashboardEvent } from "@/lib/track";
 import {
   checkoutMessage,
@@ -74,7 +74,7 @@ export function useMembershipCheckout(surface: "sheet" | "billing") {
 
 /**
  * WP64-S6, for S5's route. Opens the Stripe Billing Portal for the member's
- * own customer, or with `switchTo`, Stripe's confirmation for that plan switch.
+ * own customer, or with an intent, Stripe's page for that switch or for cancelling.
  */
 export function useBillingPortal() {
   const [state, setState] = useState<RedirectState>({ kind: "idle" });
@@ -85,11 +85,11 @@ export function useBillingPortal() {
   }, []);
   useResetOnRestore(reset);
 
-  const open = useCallback(async (switchTo?: MembershipSwitchTerm) => {
+  const open = useCallback(async (intent?: MembershipPortalIntent) => {
     if (busy.current) return;
     busy.current = true;
     setState({ kind: "pending" });
-    const result = await requestPortal(fetch, switchTo);
+    const result = await requestPortal(fetch, intent);
     if (!result.ok || !isStripeRedirect(result.url)) {
       busy.current = false;
       setState({ kind: "error", message: portalMessage(result.ok ? "UNKNOWN" : result.code) });

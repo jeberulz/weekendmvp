@@ -27,11 +27,19 @@ export type MembershipCheckoutRequest = { term: MembershipTerm; idempotencyKey: 
 export const MEMBERSHIP_SWITCH_TERMS = ["monthly", "annual"] as const;
 export type MembershipSwitchTerm = (typeof MEMBERSHIP_SWITCH_TERMS)[number];
 
+/** One change made on a Stripe page for it: a term switch, or cancelling. */
+export type MembershipPortalIntent = { switchTo: MembershipSwitchTerm } | { cancel: true };
+
 /**
  * The Billing Portal body: `{}` opens the portal, `{ switchTo }` opens Stripe's
- * confirmation for that one plan switch. Never a customer, price or address.
+ * confirmation for that one plan switch, and `{ cancel: true }` opens Stripe's
+ * cancel confirmation. Never a customer, subscription, price or address.
  */
-export type MembershipPortalRequest = Record<string, never> | { switchTo: MembershipSwitchTerm };
+export type MembershipPortalRequest = Record<string, never> | MembershipPortalIntent;
+
+/** Back from a completed cancel, Stripe returns to Plan and billing with `?plan=cancelled`. */
+export const PLAN_RETURN_PARAM = "plan";
+export const PLAN_CANCELLED = "cancelled";
 
 /** Letters, digits, `_`, `-` and `:`, 16 to 80 characters. */
 export const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_:-]{16,80}$/;

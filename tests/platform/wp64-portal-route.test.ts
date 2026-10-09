@@ -349,3 +349,131 @@ describe("plan switch: Stripe's confirmation for the member's own subscription",
     log.mockRestore();
   });
 });
+
+describe("cancel: Stripe's cancel confirmation for the member's own subscription", () => {
+  const cancelSession = (subscriptionId = "sub_own") => ({
+    customer: "cus_own",
+    return_url: RETURN_URL,
+    flow_data: {
+      type: "subscription_cancel",
+      subscription_cancel: { subscription: subscriptionId },
+      after_completion: { type: "redirect", redirect: { return_url: `${RETURN_URL}?plan=cancelled` } },
+    },
+  });
+
+  test("an active plan opens Stripe's cancel page, returning with ?plan=cancelled", async () => {
+    const response = await post('{"cancel":true}');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, url: PORTAL_URL });
+    expect(bridgeCalls()).toEqual([{ kind: "open_portal", livemode: false }]);
+    expect(mocks.subscription).toHaveBeenCalledWith("sub_own");
+    expect(mocks.price).not.toHaveBeenCalled();
+    expect(mocks.create).toHaveBeenCalledTimes(1);
+    expect(mocks.create).toHaveBeenCalledWith(cancelSession());
+  });
+
+  test("a past-due plan can be cancelled too, and so can an annual one or one with two seats", async () => {
+    for (const found of [
+      subscription({ status: "past_due" }),
+      subscription({}, { price: { id: PRICE_IDS.annual } }),
+      subscription({}, { quantity: 2 }),
+    ]) {
+      mocks.subscription.mockResolvedValueOnce(found);
+      expect((await post('{"cancel":true}')).status).toBe(200);
+    }
+    expect(mocks.create.mock.calls.map(([params]) => params)).toEqual([cancelSession(), cancelSession(), cancelSession()]);
+  });
+
+  test.each([['{"cancel":false}'], ['{"cancel":"true"}'], ['{"cancel":1}'], ['{"cancel":true,"switchTo":"annual"}'], ['{"cancel":true,"subscription":"sub_other"}']])(
+    "the body %s is refused before Convex or Stripe",
+    async (body) => {
+      const response = await post(body);
+      expect(response.status).toBe(400);
+      expect(mocks.action).not.toHaveBeenCalled();
+      expect(mocks.subscription).not.toHaveBeenCalled();
+      expect(mocks.create).not.toHaveBeenCalled();
+    },
+  );
+
+  test.each([
+    ["another customer's subscription", subscription({ customer: "cus_other" })],
+    ["a subscription that is not ours", subscription({ metadata: { purpose: "something_else" } })],
+    ["a live subscription from a test deployment", subscription({ livemode: true })],
+  ])("%s is refused and opens nothing", async (_name, found) => {
+    mocks.subscription.mockResolvedValueOnce(found);
+    const response = await post('{"cancel":true}');
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, code: "INVALID_REQUEST" });
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["already set to cancel", subscription({ cancel_at_period_end: true })],
+    ["given a cancel date", subscription({ cancel_at: 1_900_000_000 })],
+    ["with a switch scheduled", subscription({ schedule: "sub_sched_1" })],
+    ["unpaid", subscription({ status: "unpaid" })],
+    ["already canceled", subscription({ status: "canceled" })],
+  ])("a subscription %s opens the portal home, which can renew it or shows what is set", async (_name, found) => {
+    mocks.subscription.mockResolvedValueOnce(found);
+    expect((await post('{"cancel":true}')).status).toBe(200);
+    expect(mocks.create).toHaveBeenCalledWith({ customer: "cus_own", return_url: RETURN_URL });
+  });
+
+  test("a Convex answer without a subscription id never reaches Stripe's subscriptions", async () => {
+    mocks.action.mockResolvedValueOnce({ customerId: "cus_own" });
+    expect((await post('{"cancel":true}')).status).toBe(400);
+    expect(mocks.subscription).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("a refused deep link falls back to the portal home", () => {
+  const refusal = () =>
+    Object.assign(new Error("This subscription cannot be canceled: sub_own (member@example.test)"), {
+      type: "StripeInvalidRequestError",
+      code: "parameter_invalid",
+    });
+
+  test.each([['{"cancel":true}'], ['{"switchTo":"annual"}']])(
+    "%s: Stripe refuses the page, so the member lands on the portal home and can act there",
+    async (body) => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      mocks.create.mockRejectedValueOnce(refusal());
+      const response = await post(body);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ ok: true, url: PORTAL_URL });
+      expect(mocks.create).toHaveBeenCalledTimes(2);
+      expect(mocks.create.mock.calls[0][0]).toHaveProperty("flow_data");
+      expect(mocks.create.mock.calls[1][0]).toEqual({ customer: "cus_own", return_url: RETURN_URL });
+      expect(warn).toHaveBeenCalledWith("membership portal flow refused", { name: "StripeInvalidRequestError", code: "parameter_invalid" });
+      for (const call of warn.mock.calls) expect(JSON.stringify(call)).not.toMatch(/@|sub_own|cannot be/);
+      warn.mockRestore();
+    },
+  );
+
+  test("any other failure is unavailable, not a fallback", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.create.mockRejectedValueOnce(Object.assign(new Error("rate limited"), { type: "StripeRateLimitError" }));
+    expect((await post('{"cancel":true}')).status).toBe(503);
+    expect(mocks.create).toHaveBeenCalledTimes(1);
+    log.mockRestore();
+  });
+
+  test("the plain portal is never retried: a refusal there is unavailable", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.create.mockRejectedValueOnce(refusal());
+    expect((await post("{}")).status).toBe(503);
+    expect(mocks.create).toHaveBeenCalledTimes(1);
+    log.mockRestore();
+  });
+
+  test("a fallback that also fails is unavailable", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.create.mockRejectedValueOnce(refusal()).mockRejectedValueOnce(refusal());
+    expect((await post('{"cancel":true}')).status).toBe(503);
+    expect(mocks.create).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
+    log.mockRestore();
+  });
+});
