@@ -91,9 +91,11 @@ STRIPE_MEMBERSHIP_PRICE_LIFETIME_T2=price_1UOcFX4fUcq943uMDRqSAf59
 
 When setting up the Customer Portal (3c), add only the two Builder’s Hub prices (monthly and annual) to the plan switch.
 
-### 3c. Customer Portal (owner)
+### 3c. Customer Portal (done by Claude, 2026-10-09)
 
 Settings, Billing, Customer portal, live mode. Match the sandbox table in `docs/wp/evidence/wp64-stripe-setup.md` ("Customer Portal"): cancel at period end with a reason, payment method update, invoice history, plan switch between the two Builder’s Hub prices only with prorations, downgrades scheduled when the interval shortens or the amount drops, quantity **off**, pause off, Terms and Privacy links. Save, so it becomes the default configuration.
+
+The live check after Step 2 found no portal configuration in live mode. On the owner's word ("yes create the live portal configuration"), Claude created `bpc_1UOdc94fUcq943uM3RolKV18` through the Stripe connection, a copy of the sandbox default `bpc_1UOWL79tlBLUMkdP5EgGFqF4` with the live product and prices. It is the live default (`is_default: true`), and re-reading it confirms: cancel at period end with reasons, no proration on cancel, card update, invoice history, address and name updates only, plan switch on `prod_VPR7BdtHNIAjiO` with the live monthly and annual prices only, prorations created, downgrades scheduled when the interval shortens or the amount drops, quantity off, pause off, Terms and Privacy links, return to `/dashboard/billing`. Edits in the Dashboard change this same configuration.
 
 ### 3d. Webhook (owner)
 
@@ -109,41 +111,35 @@ Managed Payments on, with the Terms URL in the public details. Revenue recovery,
 
 Claude then re-reads the live account (prices, portal configuration, webhook events) and records the result here.
 
-## Step 4 — Real-card smoke test (owner)
+## Launch order chosen (ruling "WP64 / launch order", option B)
 
-Set `MEMBERSHIP_BILLING_MODE=live` and redeploy. The flag is still off, so no page offers a plan. Start each checkout from the browser console instead, signed in on `https://www.weekendmvp.app/dashboard/billing` (the routes do not read the flag):
+The owner turned the flag on before the real-card test: `MEMBERSHIP_BILLING_MODE=live` and `NEXT_PUBLIC_BUILDERS_HUB=on` went on together, with a fresh production build. Monthly and annual are on sale from that build, Step 7 is done early, and Step 4 runs through the real Plan and billing page. The founding window is dated in code (Step 6, ruling "WP64 / founding windows"), so no step below deploys a temporary window.
 
-```js
-const r = await fetch("/api/platform/membership/checkout", {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify({ term: "monthly", idempotencyKey: "membership:" + crypto.randomUUID() }),
-}).then((res) => res.json());
-console.log(r);
-if (r.url) location.href = r.url;
-```
+## Step 4 — Real-card smoke test (owner), on the live page
 
-With the flag off, Plan and billing shows the Free plan whatever you own, so check the result in the Convex dashboard (serving deployment, Data): `plan_subscriptions` for subscriptions, `plan_grants` and `founding_seats` for lifetime, `billing_events` for each webhook. To open Stripe's cancel page the same way, run the snippet with `"/api/platform/membership/portal"` and the body `JSON.stringify({ cancel: true })` (or `{ switchTo: "monthly" }`).
+Test signed in on `https://www.weekendmvp.app/dashboard/billing`. Claude watches the live Stripe account (payments, subscriptions, refunds, webhook deliveries) while you test. The Convex dashboard (serving deployment, Data) shows the same results: `plan_subscriptions`, `plan_grants`, `founding_seats` and `billing_events`.
 
-1. Buy monthly with a real card. Expect a `plan_subscriptions` row, `status` active, `term` monthly. Open the cancel page, confirm, and expect `cancelAtPeriodEnd` true. Refund in full in the Stripe Dashboard. Expect `status` canceled.
-2. Repeat for annual (`term: "annual"`). Open the switch page with `{ switchTo: "monthly" }` and check Stripe offers it from the renewal date, then refund.
-3. Founding Lifetime needs seeded seats and an open window, so it waits for Step 5. After the seed, while the flag is still off, deploy a temporary `everyone` date in the past (`windows.ts`), buy one seat (`term: "lifetime"`), check the grant and the seat, refund, check the seat is free again (50 of 50). Step 6 then replaces the temporary date with the real ones.
+1. Monthly: Upgrade to Builder's Hub · $29/mo, pay with a real card. Expect "Payment confirmed" and "Builder's Hub, monthly" with Cancel plan. Click Cancel plan, confirm on Stripe's page, and expect "Your plan is cancelled…" with Renew plan. Click Renew plan once and renew in the portal. Refund in full in the Stripe Dashboard. The page returns to Free.
+2. Annual: the same, and before refunding, Switch to monthly. Stripe's page should say the change starts at renewal.
+3. Founding Lifetime, once Step 5 has seeded the seats and PR #134 is live: Buy Founding Lifetime · $249 once. Expect seat 1 taken and a lifetime grant. Refund in full and expect the seat free again (50 of 50). The offer is open to members during this test.
 
 If anything is wrong: set `MEMBERSHIP_BILLING_MODE` empty and redeploy (rollback below).
 
-## Step 5 — Seats and cohorts (owner, with a fresh backup)
+## Step 5 — Seats (owner, with a fresh backup) — pending
 
-In the Convex dashboard for the serving deployment, Functions: run `platform/membership/seats:seed` with `{"apply":true}`, then `platform/membership/cohorts:launchCheck` with `{}`. Expect 50 free seats. Import cohorts with `npm run membership:import-cohorts` (dry run, then apply with the dry run's batch id), using `MEMBERSHIP_COHORT_CONVEX_URL` and `MEMBERSHIP_COHORT_ADMIN_KEY` in your shell only.
+Window 3 is open to everyone, so the cohort import is not needed. In the Convex dashboard for `first-squirrel-244`: Backups, Backup now. Then Functions, run `platform/membership/seats:seed` with `{"apply":true}`, then `platform/membership/cohorts:launchCheck` with `{}`. Expect 50 free seats, `everyone` dated and `windowsInOrder: true`. Until this runs, Founding Lifetime stays hidden even with the window open.
 
-## Step 6 — Windows (O7, code change)
+## Step 6 — Windows (done in code, PR #134)
 
-Set the three dates in `convex/platform/membership/windows.ts` (buyers, then newsletter, then everyone), in a reviewed commit. `launchCheck` must show them in order.
+`convex/platform/membership/windows.ts`: `everyone` opens 2026-10-09 13:32 UTC. `buyers` and `newsletter` stay null (ruling "WP64 / founding windows"). Live when PR #134 merges and the production build deploys Convex.
 
-## Step 7 — Flag on
+## Step 7 — Flag on (done early, launch order B)
 
-Set `NEXT_PUBLIC_BUILDERS_HUB=on` in Vercel production and trigger a fresh build. It is inlined at build time, so a changed value alone does nothing.
+`NEXT_PUBLIC_BUILDERS_HUB=on` in Vercel production with a fresh build. It is inlined at build time, so a changed value alone does nothing.
 
-## Step 8 — Window 1 opens
+## Step 8 — Offer open
+
+Once Steps 5 and 6 are both live, every signed-in member sees Founding Lifetime on Plan and billing and the Home founding card. There is no separate window 1 or 2.
 
 ## Step 9 — Watch
 
@@ -161,12 +157,12 @@ Day 14, 30 and 60 from the day window 3 opens, with the triggers in the S12 stor
 
 | Step | Done by | Date | Evidence (redacted) |
 |---|---|---|---|
-| 1 Merge, dormant | | | |
-| 2 Live env values | | | |
-| 3 Live Stripe objects | 3b Claude; 3a, 3c, 3d, 3e owner | 3b 2026-10-09 | 3b: 2 products and 4 prices, ids above, catalog check clean |
+| 1 Merge, dormant | Owner merged PR #131; Claude checked | 2026-10-09 | Vercel production `dpl_3EzBE2…` READY on `27eeac9` (the Convex deploy runs first in that build). `/terms`, `/refund-policy` 200, indexable, no draft text, email line present, both in the sitemap and footer. Signed out: checkout 401, portal 401. Webhook 503 (no config). Reconcile 200 `skipped: not_configured`. Signed-in checkout and portal 503: covered by the route tests, not checked live |
+| 2 Live env values | Owner | 2026-10-09 | Owner reports done and redeployed. Checked from outside: a forged webhook now gets 400 "Invalid signature" (the key, signing secret, bridge secret and four price ids are set and parse), and reconcile without the bearer gets 401 (`CRON_SECRET` set). The Vercel variable list was not readable from here (403). `MEMBERSHIP_BILLING_MODE` and the Convex secret are confirmed by Step 4 |
+| 3 Live Stripe objects | 3b, 3c Claude; 3a, 3d, 3e owner | 2026-10-09 | 3b: 2 products and 4 prices, catalog check clean. 3c: portal `bpc_1UOdc9…`, the live default. 3d: endpoint `we_1UOdJI…` with the 12 events on `2026-05-27.dahlia`, enabled. 3a and 3e: owner reports done (key permissions and Managed Payments are not readable from here) |
 | 4 Real-card smoke test | | | |
-| 5 Seats and cohorts | | | |
-| 6 Windows | | | |
-| 7 Flag on | | | |
-| 8 Window 1 opens | | | |
+| 5 Seats | | | Pending: backup, seed, `launchCheck` |
+| 6 Windows | Claude (PR #134) | 2026-10-09 | `everyone` 13:32 UTC, windows 1 and 2 null. Live on merge |
+| 7 Flag on | Owner | 2026-10-09 | Done early (option B). Plan and billing shows monthly and annual with the flag on (owner screenshot) |
+| 8 Offer open | | | |
 | 9 First week watched | | | |

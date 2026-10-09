@@ -536,3 +536,28 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Actions taken: through the Stripe connection, in the live WeekendMVP account (`acct_1ThX6u4fUcq943uM`), after checking that no membership product or price existed: 2 products (Builder’s Hub, Builder’s Hub Founding Lifetime) with tax code `txcd_10103000` and the purpose metadata, and 4 prices ($29 monthly, $199 yearly, $249 and $349 one-time), USD, tax exclusive, with the catalog's lookup keys, nicknames and metadata. Each was copied from the sandbox catalog. Ids are in `docs/wp/wp64-go-live.md`.
 - Checks run: the four live prices Stripe returned pass `reviewPrice` in live mode with no blocking issue and no warning (temporary test, not committed).
 - Not done here: the restricted key, the Customer Portal, the webhook endpoint, Managed Payments and the env values. They involve secrets or Dashboard-only settings, so the owner does them (Steps 2 and 3a, 3c, 3d, 3e).
+
+## 2026-10-09 - WP64-S12 step 1: merged, dormant
+
+- The owner merged PR #131 (`27eeac9`). Vercel production deployment `dpl_3EzBE2…` is READY.
+- Checked from outside: `/terms` and `/refund-policy` answer 200 with no noindex and no draft text, and the registered-details email line is present. Both are in the sitemap and the footer. Signed out, checkout and portal answer 401. The webhook answers 503 (no config). Reconcile answers 200 `skipped: not_configured`. Signed-in 503 and the new Convex tables were not checked from here: the route tests cover the first, and the build deploys Convex before Next, so a READY build means the schema deployed.
+- Next: Steps 2 and 3a, 3c, 3d, 3e (owner), then Claude re-reads the live account.
+
+## 2026-10-09 - WP64-S12 steps 2 and 3: live setup checked, portal created
+
+- Owner input: "done, i've set the env values and stripe settings check the live setup", then "yes create the live portal configuration".
+- Checked:
+  - Live webhook endpoint `we_1UOdJI…`: the right URL, all twelve events, API version `2026-05-27.dahlia`, enabled.
+  - The four live prices are active and unchanged.
+  - Production: a forged webhook gets 400 "Invalid signature" (config present). Reconcile without the bearer gets 401 (`CRON_SECRET` set). Checkout and the portal, signed out, get 401.
+- Found: no Customer Portal configuration in live mode, so Manage billing, Switch and Cancel plan would have failed.
+- Fixed: created the live portal configuration `bpc_1UOdc94fUcq943uM3RolKV18` through the Stripe connection, a copy of the sandbox default with the live prices. It is the live default, and re-reading it confirms every setting.
+- Not checkable from here: the Vercel variable list (403), the restricted key's permissions, Managed Payments, `MEMBERSHIP_BILLING_MODE` and the Convex bridge secret. The Step 4 real-card test covers them.
+- Next: Step 4, the owner's real-card smoke test.
+
+## 2026-10-09 - WP64-S12 steps 5 and 6: Founding Lifetime opens to everyone
+
+- Owner input, after the flag went on and the page showed monthly and annual: "show the lifetime offer now, starting today now".
+- Actions taken: `convex/platform/membership/windows.ts` sets `everyone` to 2026-10-09 13:32 UTC. `buyers` and `newsletter` stay null. The S7 test that pins the real config now pins the ruled date. Ruling "WP64 / founding windows" records the change to the S7 order and why the cohort import is skipped. Merged `main` (PRs #132 and #133). The only conflict was two RULINGS rows appended on both sides; both are kept.
+- Owner step: seed the 50 seats on the production deployment from the Convex dashboard, after a backup. Without the seats the offer stays hidden even with the window open.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (446 pages). Convex 651, platform 483, security 146 node and 121 Vitest. Two S6 seat-query tests read the real window config and expected it undated. They now mock the windows, like the other WP64 test files, and the S7 test pins the ruled date.

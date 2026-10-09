@@ -122,13 +122,14 @@ describe("WP64-S7 window matrix (fixed windows passed in)", () => {
     expect(isFoundingOpen(null, Number.MAX_SAFE_INTEGER)).toBe(false);
   });
 
-  test("dated windows must run in order; the real config is undated", async () => {
+  test("dated windows must run in order; the real config opens window 3 as ruled", async () => {
     expect(windowsInOrder({ buyers: W1, newsletter: W2, everyone: W3 })).toBe(true);
     expect(windowsInOrder({ buyers: W1, newsletter: null, everyone: W3 })).toBe(true);
     expect(windowsInOrder({ buyers: W2, newsletter: W1, everyone: W3 })).toBe(false);
     expect(windowsInOrder({ buyers: null, newsletter: W3, everyone: W2 })).toBe(false);
     const real = await vi.importActual<typeof import("./platform/membership/windows")>("./platform/membership/windows");
-    expect(real.FOUNDING_WINDOWS).toEqual({ buyers: null, newsletter: null, everyone: null });
+    // Ruling "WP64 / founding windows" (O7, 2026-10-09): everyone from 13:32 UTC, windows 1 and 2 unused.
+    expect(real.FOUNDING_WINDOWS).toEqual({ buyers: null, newsletter: null, everyone: Date.UTC(2026, 9, 9, 13, 32) });
     expect(windowsInOrder(real.FOUNDING_WINDOWS)).toBe(true);
   });
 });
