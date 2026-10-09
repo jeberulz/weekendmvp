@@ -282,3 +282,34 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Checks run on the merged tree: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (437 pages, and the built privacy policy has the Payments section and no draft). Test stages pass (platform 320, up from 317), with the same six failures as before (three OG-image, three editorial).
 - Result: the branch is in sync with `main` at `6dd2668`.
 - Next: unchanged. S3 waits on O1 and O5. The Terms text needs the owner's and a lawyer's review before S12.
+
+## 2026-10-09 - WP64-S10 (Stripe setup, test mode) - in progress
+
+- Actions taken:
+  - The owner connected Stripe to this session. The connector shows two accounts: WeekendMVP (live) and WeekendMVP sandbox (test). Every call in this story used the sandbox with `livemode: false`. The live account was not read or written.
+  - Read first: the sandbox had no products, prices, webhook endpoints or portal configurations.
+  - Created in the sandbox: the Builder's Hub and Founding Lifetime products, the four prices ($29 a month, $199 a year, $249 and $349 once) with lookup keys and `purpose` metadata, and a Customer Portal configuration (cancel at period end with a reason, payment method update, invoice history, monthly and annual switch with annual to monthly at renewal, no pause). Stripe turned quantity changes on by default for the portal product, which would let a member hold two seats, so it is now off. Ids are in `docs/wp/evidence/wp64-stripe-setup.md`.
+  - `lib/membership/stripe-catalog.ts`: the catalog as data from `PRICING` (products, prices, lookup keys, env names, the twelve S4 webhook events, the pinned API version `2026-05-27.dahlia`) and `reviewPrice`, which S3 calls before each Checkout Session. It returns blocking items (amount, currency, interval, type, mode, archived) and label warnings (lookup key, metadata).
+  - `npm run membership:stripe-setup` (`scripts/membership-stripe-setup.mjs`, logic in `scripts/lib/stripe-setup.mjs`): read-only by default, `--apply` creates only what is missing, never edits an amount, never archives or deletes, refuses any key that is not a test key, stops on any live object, prints settings as set or MISSING without values, and strips key-shaped text from errors. Tax code and tax behavior are flags for O1.
+  - `.env.example`: the membership env names, empty, so the mode is off.
+  - Tests: `tests/security/membership-stripe-setup.test.mjs` (16).
+- Decisions made (mine, reversible, none is a ruling):
+  - Test mode means the Stripe sandbox, a separate account. Every Dashboard setting must be repeated on the live account in S12 step 3.
+  - No tax code and tax behavior `unspecified` until O1, because Stripe lets tax behavior change only once.
+  - The portal lets members edit their address and name, not their email, so receipts follow the account email. Tax id waits for O1.
+  - The portal asks why a member cancels, for the S12 churn review.
+  - The setup script uses its own operator key, `STRIPE_MEMBERSHIP_SETUP_KEY`, because creating products needs more access than the runtime restricted key should have.
+- Checks run on the branch: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (437 pages). Test stages pass: security 127 node tests (up from 111) and 121 Vitest tests, platform 320, Convex 575, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23. The same six failures as before (three OG-image, three editorial). The S7 import-isolation test now accepts an explicit `.ts` extension on a read-only module, and still fails on a write module imported that way (checked by hand). Break-on-purpose: 25 deliberate breakages, all caught. The first run had 2 survivors: one was a broken mutation (`[] && x` still runs `x`), the other a real gap, since nothing tested key redaction in errors (now `redactKeys` with its own test). Examples: live keys accepted, unknown arguments ignored, any tax code, live objects ignored, duplicates unreported, a price without metadata, tax behavior always sent or overwritten, a wrong price unreported, apply ignoring a live result, products not filtered by purpose, settings printing values, the portal quantity check, unchecked amount, interval, mode, usage type or metadata, annual billed monthly, shifted env names, a dropped webhook event, API version drift, no pinned version in the CLI, and unredacted errors. Secret-pattern scan of the staged diff: clean (a fake test key is built at runtime so scanners never see a key-shaped literal).
+- Docs updated: `docs/wp/evidence/wp64-stripe-setup.md` (new), `docs/wp/wp64-stories.md` (S10 status), `docs/PROJECT_STRATEGY.md` (WP64 row), `.env.example`. Not needed: runbooks (the evidence file holds the owner steps).
+- Result: the test-mode catalog and portal exist in the sandbox and match the code. S10 stays open.
+- Handed on:
+  - Owner, in the sandbox Dashboard: the restricted key with the listed permissions, Smart Retries and failed-payment emails, renewal reminders at least 7 days ahead, receipts, branding.
+  - Owner (O2): business name, support email, statement descriptor, Terms and Privacy URLs in public details. Checkout needs the Terms URL to require acceptance.
+  - Owner and accountant (O1): the tax path, then `npm run membership:stripe-setup -- --apply --tax-code=... --tax-behavior=...`.
+  - S3: read prices by id from the env names, call `reviewPrice` and refuse on any blocking item, pin `MEMBERSHIP_STRIPE_API_VERSION`.
+  - S4: subscribe to exactly `MEMBERSHIP_WEBHOOK_EVENTS`. Then run the Stripe CLI forward in the evidence file to close the last S10 item.
+  - S5: use the sandbox default portal configuration, or pass its id.
+- Gotchas:
+  - The connector cannot read account settings (no account retrieve), so branding, public details and email settings are checked in the Dashboard or with the setup script and a key.
+  - Stripe's API is blocked from this cloud sandbox, so the setup script was tested against a fake client. The connector did the real calls.
+- Next: S3 waits on O1 and O5. The rest of S10 waits on the owner, O1 and O2, and on S4 for the webhook check.

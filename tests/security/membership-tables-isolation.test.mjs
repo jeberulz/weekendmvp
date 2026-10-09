@@ -118,7 +118,8 @@ test("outside the module, only the read-only membership modules are imported", a
       const source = code(await read(file));
       // Only the Convex module counts. `app/api/platform/membership/` is the route contract.
       for (const match of source.matchAll(/from\s+"((?:[^"]*convex\/platform|\.{1,2})\/membership\/([^"/]+))"/g)) {
-        if (!READ_ONLY_MODULES.map((name) => name.replace(/\.ts$/, "")).includes(match[2])) {
+        // Node-loadable modules import with the `.ts` extension (WP64-S10).
+        if (!READ_ONLY_MODULES.map((name) => name.replace(/\.ts$/, "")).includes(match[2].replace(/\.ts$/, ""))) {
           offenders.push(`${file}: ${match[1]}`);
         }
       }

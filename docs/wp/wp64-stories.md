@@ -216,6 +216,7 @@ Recommended defaults are mine. They are not rulings. Each needs a ruling in `doc
     - A test-mode webhook reaches a local server through the Stripe CLI. Vercel previews are off for `claude/*`, `codex/*` and `cursor/*` branches (`vercel.json`), so do not rely on them.
     - No live object is created in this story.
   - Verification: dated checklist, env-name inventory (names only), a secret-pattern scan of the diff.
+  - Status 2026-10-09: in progress. Through the Stripe connector, the WeekendMVP sandbox (test mode) now holds the two products, the four prices (checked against `PRICING`) and the Customer Portal configuration. Nothing exists in the live account. The catalog, the env names, the webhook event list and the pinned API version live in `lib/membership/stripe-catalog.ts`. `npm run membership:stripe-setup` checks or fills a test account from it and refuses live keys. Still the owner's: the restricted key, revenue recovery and customer emails, branding, O2 public details, and the O1 tax path. The Stripe CLI webhook check waits for S4's route. Checklist and ids in `docs/wp/evidence/wp64-stripe-setup.md`.
 
 - [ ] `WP64-S11` - Test-mode gate
   - Scope: tests, evidence, independent review.
