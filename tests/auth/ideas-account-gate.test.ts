@@ -32,7 +32,9 @@ describe("verified-account ideas gate", () => {
   test("renders the anonymous branch before passing research to the page", () => {
     expect(archivePageSource).toContain("if (!(await currentIdeaMemberToken())) return <StartupIdeasTeaser />");
     expect(ideaPageSource).toContain("if (!token) {");
-    expect(ideaPageSource).toContain("<EmailGate slug={slug}>");
+    expect(ideaPageSource).toContain("<EmailGate");
+    expect(ideaPageSource).toContain("slug={slug}");
+    expect(ideaPageSource).toContain("<IdeaPublicHeader");
     expect(ideaPageSource).toContain("IdeaPublicSummary");
     expect(ideaPageSource).toContain("buildPublicSchema");
     expect(emailGateSource).toContain("<AuthCard mode=\"signup\"");

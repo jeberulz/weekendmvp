@@ -4,17 +4,15 @@ import { CopyablePre } from "@/components/ideas/PromptCopyButton";
 import type { PublicIdeaPreview } from "@/lib/ideas/public-preview";
 
 /**
- * Server-rendered public teaser above the account gate. Deep research is not
- * passed in — only the summary, section teasers and ungated build prompts.
+ * Short introduction before the account card on mobile. Desktop retains the
+ * original type sizes and spacing in the left reader column.
  */
-export function IdeaPublicSummary({
+export function IdeaPublicHeader({
   title,
   description,
-  preview,
 }: {
   title: string;
   description: string;
-  preview: PublicIdeaPreview;
 }) {
   return (
     <div className="max-w-2xl">
@@ -24,13 +22,22 @@ export function IdeaPublicSummary({
       >
         All Startup Ideas
       </Link>
-      <h1 className="mt-8 text-4xl font-medium leading-tight tracking-tight text-black md:text-5xl">
+      <h1 className="mt-6 text-[28px] font-medium leading-tight tracking-tight text-black sm:text-4xl lg:mt-8 lg:text-5xl">
         {title}
       </h1>
-      <p className="mt-5 text-xl leading-relaxed text-neutral-600">{description}</p>
+      <p className="mt-4 text-base leading-relaxed text-neutral-600 lg:mt-5 lg:text-xl">
+        {description}
+      </p>
+    </div>
+  );
+}
 
+/** Server-rendered public summary, section teasers and ungated build prompts. */
+export function IdeaPublicSummary({ preview }: { preview: PublicIdeaPreview }) {
+  return (
+    <div className="max-w-2xl">
       {preview.summaryParagraphs.length > 0 ? (
-        <div className="mt-10 space-y-4 text-base leading-relaxed text-neutral-700">
+        <div className="space-y-4 text-base leading-relaxed text-neutral-700 lg:mt-10">
           {preview.summaryParagraphs.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}

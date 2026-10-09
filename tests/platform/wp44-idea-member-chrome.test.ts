@@ -11,7 +11,6 @@ import layoutSource from "../../app/ideas/[slug]/layout.tsx?raw";
 import pageSource from "../../app/ideas/[slug]/page.tsx?raw";
 import collectionSource from "../../app/ideas/[slug]/collection.tsx?raw";
 import publicShellSource from "../../components/public/PublicShell.tsx?raw";
-import ideaNavSource from "../../components/layout/IdeaNav.tsx?raw";
 import pageNavSource from "../../components/ideas/IdeaPageNav.tsx?raw";
 import memberNavSource from "../../components/ideas/IdeaMemberNav.tsx?raw";
 import accountSource from "../../components/ideas/IdeaAccountMenu.tsx?raw";
@@ -88,13 +87,13 @@ describe("idea member return targets", () => {
 });
 
 describe("idea page member chrome wiring", () => {
-  test("individual idea layout swaps IdeaNav through IdeaPageNav", () => {
-    expect(layoutSource).toContain("<IdeaPageNav withSidebar />");
+  test("individual idea layout swaps shared MegaNav through IdeaPageNav", () => {
+    expect(layoutSource).toContain("<IdeaPageNav />");
     expect(layoutSource).not.toMatch(/<IdeaNav\b/);
     expect(layoutSource).toContain("COLLECTION_SLUGS.includes(slug)");
     expect(pageNavSource).toContain("hasSessionHintCookie(document.cookie)");
     expect(pageNavSource).toContain("<IdeaMemberNav />");
-    expect(pageNavSource).toContain("<IdeaNav withSidebar={withSidebar} />");
+    expect(pageNavSource).toContain('<MegaNav variant="cream" id="idea-site-header" />');
     expect(pageNavSource).toMatch(/function readServerSessionHint\(\) \{\s*return false;\s*\}/);
   });
 
@@ -148,7 +147,5 @@ describe("idea page member chrome wiring", () => {
     expect(publicShellSource).toContain("<MegaNav");
     expect(collectionSource).not.toContain("IdeaPageNav");
     expect(collectionSource).not.toContain("IdeaMemberNav");
-    expect(ideaNavSource).toContain("All Ideas");
-    expect(ideaNavSource).toContain("Starter Kit");
   });
 });

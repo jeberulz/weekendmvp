@@ -2,11 +2,11 @@
 
 import { useSyncExternalStore } from "react";
 import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
-import { IdeaNav } from "@/components/layout/IdeaNav";
+import { MegaNav } from "@/components/layout/MegaNav";
 import { IdeaMemberNav } from "./IdeaMemberNav";
 
 // `document.cookie` has no change event. The server snapshot keeps hydration
-// on the public IdeaNav so crawlers and anonymous readers stay unchanged.
+// on the shared public menu before the member hint is read.
 function subscribeToNothing() {
   return () => {};
 }
@@ -20,10 +20,10 @@ function readServerSessionHint() {
 }
 
 /**
- * Individual idea pages only: public IdeaNav for anonymous visitors, member
+ * Individual idea pages only: shared cream MegaNav for anonymous visitors, member
  * PRIMARY_NAV chrome when the WP44 session hint is set.
  */
-export function IdeaPageNav({ withSidebar = false }: { withSidebar?: boolean }) {
+export function IdeaPageNav() {
   const signedIn = useSyncExternalStore(
     subscribeToNothing,
     readSessionHint,
@@ -34,5 +34,5 @@ export function IdeaPageNav({ withSidebar = false }: { withSidebar?: boolean }) 
     return <IdeaMemberNav />;
   }
 
-  return <IdeaNav withSidebar={withSidebar} />;
+  return <MegaNav variant="cream" id="idea-site-header" />;
 }
