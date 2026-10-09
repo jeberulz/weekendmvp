@@ -112,6 +112,7 @@ A sandbox is its own account: everything here must be repeated on the live accou
    | Charges | Read | S4 refund and dispute events |
    | Refunds | Write | S4 refunds a payment whose seat is gone, a payment rejected at settlement, and a duplicate subscription |
    | Disputes | Read | S4 dispute events |
+   | Subscription schedules | Write | O5 and refunds release a plan switch the member scheduled in the portal before changing the subscription |
    | Invoice payments | Read, if listed separately | S4 finds the invoice behind a refunded or disputed subscription payment. If the key form has no such line, Invoices: Read covers it. Confirm in S11 |
    | Customer portal | Write | S5 portal sessions |
    | Events | Read | S4 reconcile and replay |
