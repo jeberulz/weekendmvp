@@ -313,3 +313,21 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - The connector cannot read account settings (no account retrieve), so branding, public details and email settings are checked in the Dashboard or with the setup script and a key.
   - Stripe's API is blocked from this cloud sandbox, so the setup script was tested against a fake client. The connector did the real calls.
 - Next: S3 waits on O1 and O5. The rest of S10 waits on the owner, O1 and O2, and on S4 for the webhook check.
+
+## 2026-10-09 - Owner rulings O1, O2 and the Terms sign-off; Managed Payments checks
+
+- Owner inputs (logged in `docs/wp/RULINGS.md`): tax through Stripe Managed Payments; seller Rulz&Co, support email given, not VAT registered; the S9 Terms signed off by the owner without a separate lawyer review.
+- Actions taken:
+  - Read Stripe's current Managed Payments documentation through the connector. GB sellers are supported. Products need an eligible tax code and must be "fully automated digital products"; live 1-to-1 coaching is named as ineligible, so the monthly live group build is a grey area (recorded in the ruling as an accepted risk).
+  - In the sandbox: set tax code `txcd_10103000` on both products and tax behavior `exclusive` on all four prices. Created a Managed Payments Checkout Session (accepted, tax automatic with Stripe liable). The same session with `custom_text` was rejected, and terms consent was rejected only for the missing Terms URL in public details. The open test session expires unpaid within 24 hours; the connector cannot expire it.
+  - Terms, refund policy and privacy section: seller and support email filled in, Link named as merchant of record, review notes removed per the sign-off. Two placeholders remain (business form, postal address), so the pages still 404 in production.
+  - `TAX_LINE` now says sales tax or VAT is added at checkout. `lib/membership/stripe-catalog.ts` holds the ruled tax mode, code and behavior; `reviewPrice` blocks a tax-inclusive price; the setup script uses the ruled values by default. `_consent.ts` now says the sentence shows beside our buy button.
+  - Stories: S3 records what Managed Payments changes (no `custom_text`, no `billing_address_collection`, Stripe's unsupported parameters), S9 and S10 statuses, and the ruled decisions.
+- Decisions made (mine, reversible): tax code SaaS personal use and tax-exclusive prices, both Managed Payments defaults that match the existing price copy. The owner may change the code at any time; the price behavior needs new prices to change.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings (one new unused-variable warning in a test was fixed), `npm run build` succeeds (437 pages). Test stages pass: security 127 node and 121 Vitest tests, platform 321, Convex 575, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23. The same six failures as before (three OG-image, three editorial). Break-on-purpose: S10 now has 29 deliberate breakages and S9 has 25, all caught. New ones: an inclusive price allowed, the ruled tax code or behavior not the default, and the tax code or behavior never sent. One earlier S10 mutation, "tax behavior always sent", became equivalent once the ruled default always sends it, and was replaced. The sandbox catalog passes `reviewPrice` and the planner finds nothing to do with the ruled settings.
+- Result: O1 and O2 are reflected in Stripe (sandbox), the code and the legal text. Nothing live was created or changed.
+- Handed on:
+  - Owner: business form and a postal address for legal notices (then the legal pages go live). Activate Managed Payments on the live account. Public details in both accounts with the Terms URL. Restricted key, revenue recovery and branding as in the evidence file.
+  - S3: build to the Managed Payments rules above.
+  - S5: check whether Link sends the 7-day annual renewal reminder the Terms promise; if not, send it ourselves. Check how the portal and Link's order management coexist.
+- Next: S3, S4 and S5 can start. O5 (subscriber buying lifetime) is the only open decision S3 needs.

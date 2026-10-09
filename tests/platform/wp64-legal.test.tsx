@@ -73,12 +73,13 @@ describe("WP64-S9 the approval gate", () => {
       expect(items).toEqual([]);
       return;
     }
-    // Today's drafts name every decision S9 depends on.
-    for (const by of ["O1", "O2", "O3", "O4", "O8", "O9", "lawyer", "owner"]) {
-      expect(items.some((item) => item.endsWith(`: ${by}`)), by).toBe(true);
-    }
-    expect(items).toContain("who-we-are: O2 placeholder (registered address)");
-    expect(items).toContain("contact: O2 placeholder (support email address)");
+    // The owner signed the text off on 2026-10-09 (ruling "WP64 / Terms sign-off").
+    // Two seller facts are still missing, so approval waits on them.
+    expect(items).toEqual([
+      "who-we-are: O2",
+      "who-we-are: O2 placeholder (business form, such as sole trader or limited company)",
+      "who-we-are: O2 placeholder (postal address for legal notices)",
+    ]);
     expect(openItems({ id: "x", heading: "X", blocks: [{ kind: "list", items: ["{{O2: a fact}}"] }] })).toEqual([
       "x: O2 placeholder (a fact)",
     ]);
@@ -162,16 +163,23 @@ describe("WP64-S9 the Terms", () => {
     expect(body).toContain("at least 90 days' notice");
     expect(body).toContain("goes down evenly over three years");
     expect(body).toContain("you can usually cancel an online purchase within 14 days");
-    expect(body).toContain("Stripe processes payments. We never see or store your card details.");
+    expect(body).toContain("Link and Stripe process payments. We never see or store your card details.");
+  });
+
+  test("name the seller and Link as merchant of record (O1, O2)", () => {
+    expect(body).toContain("is run by Rulz&Co,");
+    expect(body).toContain("Rulz&Co is not registered for VAT.");
+    expect(body).toContain("go through Link, a Stripe service that acts as the merchant of record.");
+    expect(body).toContain("Questions, refunds and cancellations: iseghohi.john@gmail.com.");
   });
 
   test("the draft banner, review notes and gaps show, and no raw marker leaks", () => {
     expect(body).toContain("Draft for review. Not in force.");
     expect(body).toContain("This is not legal advice.");
     expect(body).toContain("Draft: October 2026");
-    expect(body).toContain("Open decision O3:");
-    expect(body).toContain("For the lawyer:");
-    expect(html).toContain("To be confirmed (O2): support email address</mark>");
+    expect(body).toContain("Open decision O2:");
+    expect(body).not.toContain("For the lawyer:");
+    expect(html).toContain("To be confirmed (O2): postal address for legal notices</mark>");
     expect(html).not.toContain("{{");
   });
 
@@ -201,7 +209,8 @@ describe("WP64-S9 the refund policy", () => {
     expect(body).toContain("The 30-day window covers your first payment only.");
     expect(body).toContain("While a dispute is open");
     expect(html).toContain('href="/terms"');
-    expect(html).toContain("To be confirmed (O2): support email address</mark>");
+    expect(body).toContain("Email iseghohi.john@gmail.com from the address on your account");
+    expect(html).not.toContain("<mark");
   });
 });
 
@@ -214,13 +223,14 @@ describe("WP64-S9 the privacy policy", () => {
     const html = renderToStaticMarkup(<PrivacyPolicyPage />);
     const draft = text(html);
     expect(sectionIds(html)).toEqual([...LIVE_IDS.slice(0, -1), "builders-hub", "contact"]);
-    expect(draft).toContain("Builder’s Hub payments also go through Stripe, on Stripe Checkout.");
-    expect(draft).toContain("billing address directly, and we never see or store your card number.");
+    expect(draft).toContain("Builder’s Hub payments go through Stripe Checkout with Managed Payments.");
+    expect(draft).toContain("Link, a Stripe service, is the merchant of record");
+    expect(draft).toContain("We never see or store your card number.");
     expect(draft).toContain("your Stripe customer id");
     expect(draft).toContain("Founding Lifetime seat number");
     expect(draft).toContain("one-way hashes of the addresses");
     expect(draft).toContain("We do not keep a list of who joins.");
-    expect(draft).toContain("Open decision O1:");
+    expect(draft).not.toContain("Review notes");
 
     vi.stubEnv("NODE_ENV", "production");
     const live = renderToStaticMarkup(<PrivacyPolicyPage />);

@@ -1,6 +1,6 @@
 # WP64-S10 Stripe setup (test mode)
 
-Status 2026-10-09: the catalog and the Customer Portal exist in the **WeekendMVP sandbox** (test mode), created through the Stripe connector and checked against `PRICING`. Nothing was created in the live **WeekendMVP** account. Dashboard-only settings, the restricted key, the tax path (O1) and the seller details (O2) are still the owner's. No secret appears in this file: ids of products, prices and portal configurations are not secrets.
+Status 2026-10-09: the catalog and the Customer Portal exist in the **WeekendMVP sandbox** (test mode), created through the Stripe connector and checked against `PRICING`. Nothing was created in the live **WeekendMVP** account. O1 and O2 were ruled the same day: Stripe Managed Payments with prices exclusive of tax, and Rulz&Co as the seller (see `docs/wp/RULINGS.md`). The sandbox now carries the tax code and tax behavior, and a Managed Payments Checkout Session was created there (section 1b). Dashboard-only settings and the restricted key are still the owner's. No secret appears in this file: ids of products, prices and portal configurations are not secrets.
 
 Source of truth for every value below: `lib/membership/stripe-catalog.ts` (built from `PRICING` in `convex/platform/plans.ts`). Check the account against it any time with:
 
@@ -20,7 +20,7 @@ The script refuses any key that is not a test key and stops on any live object.
 | `builders_hub` | Builder’s Hub | `prod_VPKzNTk78zFb4h` | `purpose=weekendmvp_membership_v1`, `product_key=builders_hub` |
 | `founding_lifetime` | Builder’s Hub Founding Lifetime | `prod_VPKzLcirgpy9Cr` | `purpose=weekendmvp_membership_v1`, `product_key=founding_lifetime` |
 
-No tax code yet (O1). It can be set later on both products without new prices.
+Tax code `txcd_10103000` (Software as a service, personal use) on both, set on 2026-10-09 after O1. Stripe accepted it on a Managed Payments session, so it is eligible. It can change later without new prices.
 
 ### Prices
 
@@ -31,7 +31,7 @@ No tax code yet (O1). It can be set later on both products without new prices.
 | `lifetime_t1` | `weekendmvp_membership_lifetime_t1` | $249 | once (seats 1 to 15) | `price_1UOWJv9tlBLUMkdPYIJEVYTo` | `STRIPE_MEMBERSHIP_PRICE_LIFETIME_T1` |
 | `lifetime_t2` | `weekendmvp_membership_lifetime_t2` | $349 | once (seats 16 to 50) | `price_1UOWJz9tlBLUMkdPqW9uoTzX` | `STRIPE_MEMBERSHIP_PRICE_LIFETIME_T2` |
 
-All USD, per unit, licensed, active, `livemode: false`, metadata `purpose` and `price_key`. Tax behavior is `unspecified`, so O1 can still set it to `inclusive` or `exclusive` once (Stripe allows one change from unspecified).
+All USD, per unit, licensed, active, `livemode: false`, metadata `purpose` and `price_key`. Tax behavior `exclusive`, set on 2026-10-09 after O1: tax is added at checkout. Stripe allows that change only once, from unspecified.
 
 Verified: each price passes `reviewPrice` with no blocking item and no warning, and the setup planner finds nothing left to create.
 
@@ -60,7 +60,20 @@ Configuration `bpc_1UOWL79tlBLUMkdP5EgGFqF4`, named "Builder’s Hub", the sandb
 | Customer details | address and name only | Email stays the account's. Tax id waits for O1 |
 | Links | Terms `https://www.weekendmvp.app/terms`, Privacy `https://www.weekendmvp.app/privacy-policy`, return `/dashboard/billing` | `/terms` returns 404 in production until the S9 text is approved |
 
-Founding Lifetime is a one-time payment, so it is not in the portal.
+Founding Lifetime is a one-time payment, so it is not in the portal. Under Managed Payments, members can also manage orders in Link. S5 checks in test mode how the portal and Link coexist.
+
+## 1b. Managed Payments checks (sandbox, 2026-10-09)
+
+Read from Stripe's documentation through the connector, then tried against the sandbox with test sessions only:
+
+| Check | Result | Consequence |
+|---|---|---|
+| Checkout Session with `managed_payments[enabled]=true`, monthly price, eligible tax code | Created. Tax is automatic with Stripe liable; Stripe collects name and billing address and offers tax id entry itself | Managed Payments is usable in the sandbox. The session expires unpaid within 24 hours (the connector cannot expire it early) |
+| Same, with `custom_text.terms_of_service_acceptance` | **Rejected**: "You cannot use custom_text with Managed Payments" | The S9 consent sentence goes beside our buy button instead (`_consent.ts` updated). The plan picker already shows price, renewal, the refund line, the tax line and the Terms links |
+| Same, with `consent_collection.terms_of_service: "required"` | Rejected only because no Terms URL is set in public details | Stripe's terms checkbox works once the owner adds the Terms URL (step 6) |
+| Parameters S3 must not send under Managed Payments (Stripe's list) | `automatic_tax`, `tax_id_collection`, `subscription_data.default_tax_rates`, `payment_method_types`, `payment_method_configuration`, `customer_update[name]`, `customer_update[address]`, shipping, Connect fields, `subscription_data.invoice_settings`, `invoice_creation`, `adaptive_pricing`, statement descriptors | S3 sends `managed_payments[enabled]=true` and none of these |
+| Eligibility | GB sellers are supported. Products must be "fully automated digital products"; live 1-to-1 coaching is named as ineligible | The monthly live group build is a grey area the owner accepted (ruling "WP64 / tax"). Asking Stripe in writing is still recommended |
+| Emails and support | Link sends receipts, invoices, refund and subscription emails, and handles transaction support and disputes. Stripe may refund within 60 days in some cases, to prevent chargebacks | S5 checks whether Link sends the annual renewal reminder the Terms promise (7 days ahead). If not, S5 sends it |
 
 ## 2. Owner steps in the Dashboard (sandbox now, live again at S12)
 
@@ -98,16 +111,13 @@ A sandbox is its own account: everything here must be repeated on the live accou
 
 3. **Revenue recovery** (Billing, Revenue recovery): Smart Retries on, about 8 tries within 2 weeks (O9 default). After the last failed retry: cancel the subscription (O9: access ends on unpaid or canceled). Failed-payment emails on. Expiring-card emails on.
 
-4. **Customer emails** (Settings, Customer emails): receipts for successful payments and refunds on. Upcoming-renewal reminders on, at least 7 days before an annual renewal (the draft Terms promise this, O4).
+4. **Customer emails** (Settings, Customer emails): under Managed Payments, Link sends receipts and subscription emails. Turn on upcoming-renewal reminders, at least 7 days before an annual renewal (the Terms promise this, O4), in case the setting applies. S5 confirms what Link actually sends.
 
 5. **Branding** (Settings, Branding): icon and logo, brand color `#cc5500`, accent `#1a1814`, matching the site.
 
-6. **Public business details** (Settings, Public details), needs O2: business name, support email, support URL, statement descriptor (up to 22 characters), Terms URL `https://www.weekendmvp.app/terms` (Checkout needs it to require terms acceptance, S3), Privacy URL `https://www.weekendmvp.app/privacy-policy`.
+6. **Public business details** (Settings, Public details), O2 ruled: business name Rulz&Co, support email `iseghohi.john@gmail.com`, support URL `https://www.weekendmvp.app`, Terms URL `https://www.weekendmvp.app/terms` (Checkout needs it to require terms acceptance, section 1b), Privacy URL `https://www.weekendmvp.app/privacy-policy`. No statement descriptor: Managed Payments manages it.
 
-7. **Tax path**, needs O1:
-   - Managed Payments: ask Stripe in writing whether a plan with one live group session a month is eligible, record the answer here without personal data, activate, accept the terms.
-   - Or Stripe Tax: UK origin address, registrations as the accountant advises, default tax behavior.
-   - Then set the tax code and behavior from the repo: `npm run membership:stripe-setup -- --apply --tax-code=<code> --tax-behavior=<exclusive|inclusive>`. Candidates: `txcd_10000000` (general electronically supplied services), `txcd_10103000` (SaaS, personal use), `txcd_10103001` (SaaS, business use).
+7. **Managed Payments** (Settings, Managed Payments), O1 ruled: the sandbox already accepts Managed Payments sessions. On the live account, activate it and accept its terms before S12 step 3. Optionally ask Stripe in writing whether a plan with one live group session a month is eligible, and record the answer here without personal data. The tax code and behavior are already the setup script's defaults (`MEMBERSHIP_TAX_CODE`, `MEMBERSHIP_TAX_BEHAVIOR`).
 
 ## 3. Dated checklist
 
@@ -122,8 +132,9 @@ A sandbox is its own account: everything here must be repeated on the live accou
 | Smart Retries and dunning, failed-payment emails | Owner | | Step 3 |
 | Renewal reminders and receipts | Owner | | Step 4 |
 | Branding | Owner | | Step 5 |
-| Support email, statement descriptor, public details, Terms and Privacy URLs | Owner, needs O2 | | Step 6 |
-| Tax path, tax codes, tax behavior | Owner and accountant, needs O1 | | Step 7 |
+| Support email, public details, Terms and Privacy URLs | Owner (O2 ruled) | | Step 6 |
+| Tax path: Managed Payments (O1 ruled) | Sandbox done; live activation is the owner's | 2026-10-09 | Section 1b, step 7 |
+| Tax code and tax behavior on the sandbox catalog | Done | 2026-10-09 | `txcd_10103000`, `exclusive`, planner clean |
 | Test webhook through the Stripe CLI | Waits for S4's route | | Step 2 |
 | Live objects | Not in S10 | | S12 step 3 |
 

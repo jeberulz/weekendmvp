@@ -47,7 +47,9 @@ const HUB = PLANS.builders_hub.name;
 const SEATS = PRICING.lifetime.seats;
 const MONTHLY = formatUsd(PRICING.monthly.amountMinor);
 const ANNUAL = formatUsd(PRICING.annual.amountMinor);
-const SUPPORT = tbc("support email address");
+/** Ruling "WP64 / seller identity" (O2, 2026-10-09). */
+const SELLER = "Rulz&Co";
+const SUPPORT = "iseghohi.john@gmail.com";
 
 export const TERMS: LegalDoc = {
   path: "/terms",
@@ -62,11 +64,15 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           kind: "p",
-          text: `Weekend MVP (weekendmvp.app) is run by ${tbc("seller legal name and business form")}, ${tbc("registered address")}. ${tbc("VAT status, and the VAT number if registered")}.`,
+          text: `Weekend MVP (weekendmvp.app) is run by ${SELLER}, ${tbc("business form, such as sole trader or limited company")}, ${tbc("postal address for legal notices")}. ${SELLER} is not registered for VAT.`,
         },
-        { kind: "p", text: `In these terms, "we" means that seller and "you" means the person who buys or uses ${HUB}.` },
+        {
+          kind: "p",
+          text: `Payments for ${HUB} go through Link, a Stripe service that acts as the merchant of record. Link sells the plan to you on our behalf, collects any sales tax or VAT, sends your receipts and handles payment questions. We provide ${HUB} and everything in it.`,
+        },
+        { kind: "p", text: `In these terms, "we" means ${SELLER} and "you" means the person who buys or uses ${HUB}.` },
       ],
-      pending: [{ by: "O2", note: "Seller name, business form, address, VAT status and support email." }],
+      pending: [{ by: "O2", note: "Business form and a postal address for legal notices." }],
     },
     {
       id: "what-you-get",
@@ -78,12 +84,6 @@ export const TERMS: LegalDoc = {
         {
           kind: "p",
           text: "Live builds: we run one live build session a month and publish a replay for members afterwards, with captions or a transcript. If we miss a month, we run a make-up session or extend every member's plan by one month.",
-        },
-      ],
-      pending: [
-        {
-          by: "O8",
-          note: "Live build slot, length, tool, capacity, replay hosting, and the missed-month remedy. The remedy shown is the recommended default.",
         },
       ],
     },
@@ -100,14 +100,7 @@ export const TERMS: LegalDoc = {
           ],
         },
         { kind: "p", text: `${TAX_LINE} You pay at the start of each billing period.` },
-        { kind: "p", text: "Stripe processes payments. We never see or store your card details." },
-      ],
-      pending: [
-        {
-          by: "O1",
-          note: "Tax mechanism and whether prices include tax. If Stripe Managed Payments is used, Stripe's Link is the seller of record and this section needs its wording.",
-        },
-        { by: "O4", note: "The 7-day annual renewal reminder is the recommended default." },
+        { kind: "p", text: "Link and Stripe process payments. We never see or store your card details." },
       ],
     },
     {
@@ -123,12 +116,6 @@ export const TERMS: LegalDoc = {
           text: `"Lifetime" means for as long as we offer ${HUB}. If we stop offering it, we give you at least 90 days' notice and refund part of your payment. The refund starts at the full amount and goes down evenly over three years from the day you paid. After three years there is no refund.`,
         },
         { kind: "p", text: "A seat is for one person. You cannot transfer or resell it." },
-      ],
-      pending: [
-        {
-          by: "O3",
-          note: "What lifetime means and the refund if Builder's Hub ends. This is the recommended default and needs a lawyer's review.",
-        },
       ],
     },
     {
@@ -156,7 +143,6 @@ export const TERMS: LegalDoc = {
           link: { href: "/refund-policy", label: "Read the refund policy" },
         },
       ],
-      pending: [{ by: "O4", note: "Whether the 30-day window covers renewals. The renewal wording is the recommended default." }],
     },
     {
       id: "your-rights",
@@ -166,12 +152,6 @@ export const TERMS: LegalDoc = {
         {
           kind: "p",
           text: `In the UK and the EU you can usually cancel an online purchase within 14 days. ${HUB} starts as soon as you pay, so when you buy you ask us to start straight away. Our 30-day full refund on your first payment gives you longer than those 14 days.`,
-        },
-      ],
-      pending: [
-        {
-          by: "lawyer",
-          note: "Confirm the digital content wording (UK Consumer Contracts Regulations 2013 and EU rules) and any subscription rules in force, such as the UK Digital Markets, Competition and Consumers Act 2024.",
         },
       ],
     },
@@ -188,7 +168,6 @@ export const TERMS: LegalDoc = {
           text: `If you dispute a payment with your bank, your ${HUB} access is paused while the dispute is open. If it closes in our favour, access comes back. If it closes in yours, the plan ends and we may refuse new purchases on the account until we have spoken with you. Please contact us first: we refund anything the refund policy covers.`,
         },
       ],
-      pending: [{ by: "O9", note: "Failed payments, disputes and partial refunds. This is the recommended default." }],
     },
     {
       id: "fair-use",
@@ -208,7 +187,6 @@ export const TERMS: LegalDoc = {
           text: "We may suspend an account that breaks these rules. If we end a paid plan for a serious breach, we tell you why. If we end it for any other reason, we refund the unused part.",
         },
       ],
-      pending: [{ by: "owner", note: "The fair use rules are new. Confirm them." }],
     },
     {
       id: "changes",
@@ -221,7 +199,6 @@ export const TERMS: LegalDoc = {
         },
         { kind: "p", text: "If we change these terms in a way that matters to you, we email you before the change applies." },
       ],
-      pending: [{ by: "owner", note: "The notice periods for price and terms changes are proposed, not ruled." }],
     },
     {
       id: "responsibility",
@@ -233,7 +210,6 @@ export const TERMS: LegalDoc = {
           text: "We are responsible for losses you suffer that are a foreseeable result of us breaking these terms or not using reasonable care and skill. We are not responsible for business losses, such as lost profit or lost opportunity. Nothing here limits our liability where the law does not allow it, for example for death or personal injury caused by negligence, or for fraud.",
         },
       ],
-      pending: [{ by: "lawyer", note: "Liability wording for UK and EU consumers." }],
     },
     {
       id: "law",
@@ -244,13 +220,11 @@ export const TERMS: LegalDoc = {
           text: "These terms are governed by the law of England and Wales. If you live elsewhere in the UK or in the EU, you keep the protection of the mandatory laws of your country and can bring a claim in your local courts.",
         },
       ],
-      pending: [{ by: "lawyer", note: "Governing law depends on the seller's business form and location (O2)." }],
     },
     {
       id: "contact",
       heading: "Contact",
       blocks: [{ kind: "p", text: `Questions, refunds and cancellations: ${SUPPORT}. We aim to reply within two working days.` }],
-      pending: [{ by: "O2", note: "Support email. The reply time is proposed, not ruled." }],
     },
   ],
 };
@@ -280,7 +254,6 @@ export const REFUND_POLICY: LegalDoc = {
         { kind: "p", text: `Email ${SUPPORT} from the address on your account, within 30 days of your first payment.` },
         { kind: "p", text: "We refund the full amount to the card you paid with. Banks usually take 5 to 10 working days to show it." },
       ],
-      pending: [{ by: "O2", note: "Support email." }],
     },
     {
       id: "after-a-refund",
@@ -304,7 +277,6 @@ export const REFUND_POLICY: LegalDoc = {
           text: `The 30-day window covers your first payment only. If a renewal charges you and you have not used ${HUB} since, ask within 7 days and we may refund it. To stop future renewals, cancel from Plan and billing.`,
         },
       ],
-      pending: [{ by: "O4", note: "Whether the window covers renewals. This is the recommended default." }],
     },
     {
       id: "partial-refunds",
@@ -325,13 +297,11 @@ export const REFUND_POLICY: LegalDoc = {
           text: `Please contact us before you dispute a payment with your bank. A refund from us is faster. While a dispute is open, your ${HUB} access is paused.`,
         },
       ],
-      pending: [{ by: "O9", note: "Dispute handling. This is the recommended default." }],
     },
     {
       id: "your-rights",
       heading: "Your rights",
       blocks: [{ kind: "p", text: "This policy adds to your rights under consumer law. It does not replace them." }],
-      pending: [{ by: "lawyer", note: "Check against UK and EU consumer rules." }],
     },
   ],
 };
@@ -348,7 +318,7 @@ export const PRIVACY_MEMBERSHIP: LegalSection = {
   blocks: [
     {
       kind: "p",
-      text: `${HUB} payments also go through Stripe, on Stripe Checkout. Stripe collects your card details and billing address directly, and we never see or store your card number.`,
+      text: `${HUB} payments go through Stripe Checkout with Managed Payments. Link, a Stripe service, is the merchant of record: Link and Stripe collect your card details, name and billing address directly, calculate any sales tax or VAT, and send your receipts. We never see or store your card number. Link's and Stripe's privacy policies cover the data they hold.`,
     },
     {
       kind: "p",
@@ -362,11 +332,6 @@ export const PRIVACY_MEMBERSHIP: LegalSection = {
       kind: "p",
       text: "For live builds, we keep the schedule and the links to sessions and replays. We do not keep a list of who joins. If you accept analytics cookies, we count clicks on the join and replay buttons, without the link or the session title. The live session tool has its own privacy policy, which applies when you join.",
     },
-  ],
-  pending: [
-    { by: "O1", note: "If Stripe Managed Payments is used, name Link as the seller of record and a processor." },
-    { by: "O8", note: "Name the live session tool and link its privacy policy." },
-    { by: "lawyer", note: "Check the lawful basis, retention periods and processor list for UK GDPR." },
   ],
 };
 

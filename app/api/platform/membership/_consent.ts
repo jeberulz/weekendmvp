@@ -1,13 +1,17 @@
 import { MEMBERSHIP_LEGAL_LINKS, PLANS, PRICING, formatUsd, type MembershipTerm } from "@/convex/platform/plans";
 
 /**
- * WP64-S9. The sentence a buyer agrees to on Stripe Checkout, sent by S3 as
- * `custom_text.terms_of_service_acceptance.message` with
- * `consent_collection.terms_of_service: "required"`. One sentence states the
- * price, the renewal and the 30-day refund, and links the Terms and the
- * refund policy (S3 acceptance criteria). Amounts come from `PRICING`.
+ * WP64-S9. One sentence that states the price, the renewal and the 30-day
+ * refund, and links the Terms and the refund policy. Amounts come from
+ * `PRICING`.
  *
- * Stripe renders Markdown links in this text and caps it at 1,200 characters.
+ * Changed by O1 (Managed Payments, 2026-10-09): Stripe rejects `custom_text`
+ * on a Managed Payments Checkout Session (checked in the sandbox), so this
+ * sentence cannot go on Stripe's page. S3 shows it beside the buy button
+ * instead, and Checkout's own terms checkbox
+ * (`consent_collection.terms_of_service: "required"`, with the Terms URL in
+ * Stripe's public details) collects consent. The links are Markdown; render
+ * them as links. 1,200 characters stays the cap.
  */
 
 export const CONSENT_MAX_LENGTH = 1200;

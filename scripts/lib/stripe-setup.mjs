@@ -11,6 +11,8 @@ import {
   MEMBERSHIP_ENV,
   MEMBERSHIP_PRICES,
   MEMBERSHIP_PRODUCTS,
+  MEMBERSHIP_TAX_BEHAVIOR,
+  MEMBERSHIP_TAX_CODE,
   MEMBERSHIP_TAX_CODE_CANDIDATES,
   MEMBERSHIP_WEBHOOK_EVENTS,
   MEMBERSHIP_WEBHOOK_PATH,
@@ -43,12 +45,13 @@ export function readOptions(argv) {
   const known = /^--(apply|tax-code=.+|tax-behavior=.+)$/;
   const unknown = argv.filter((arg) => !known.test(arg));
   if (unknown.length > 0) throw new Error(`Unknown argument: ${unknown[0]}`);
-  const taxCode = value("--tax-code=");
-  if (taxCode !== undefined && !(taxCode in MEMBERSHIP_TAX_CODE_CANDIDATES)) {
+  // O1 is ruled, so the ruled values are the default; a flag overrides them.
+  const taxCode = value("--tax-code=") ?? MEMBERSHIP_TAX_CODE;
+  if (!(taxCode in MEMBERSHIP_TAX_CODE_CANDIDATES)) {
     throw new Error(`--tax-code must be one of ${Object.keys(MEMBERSHIP_TAX_CODE_CANDIDATES).join(", ")} (decision O1).`);
   }
-  const taxBehavior = value("--tax-behavior=");
-  if (taxBehavior !== undefined && !TAX_BEHAVIORS.includes(taxBehavior)) {
+  const taxBehavior = value("--tax-behavior=") ?? MEMBERSHIP_TAX_BEHAVIOR;
+  if (!TAX_BEHAVIORS.includes(taxBehavior)) {
     throw new Error("--tax-behavior must be exclusive or inclusive (decision O1).");
   }
   return { apply: argv.includes("--apply"), taxCode, taxBehavior };
@@ -128,10 +131,12 @@ export function planCatalog({ products, prices }, options) {
     if (productId && idOf(price.product) !== productId) {
       findings.push(`${spec.priceKey}: the price sits on another product than ${spec.productKey}.`);
     }
+    // Stripe allows one change, from unspecified. Any other mismatch is fixed for good.
     if (options.taxBehavior && price.tax_behavior !== options.taxBehavior) {
       if (!price.tax_behavior || price.tax_behavior === "unspecified") {
         steps.push({ kind: "setPriceTaxBehavior", priceKey: spec.priceKey, id: price.id, taxBehavior: options.taxBehavior });
-      } else {
+      } else if (price.tax_behavior !== "inclusive") {
+        // reviewPrice already blocks an inclusive price.
         findings.push(
           `${spec.priceKey}: tax behavior is fixed at ${price.tax_behavior}. Stripe cannot change it; create a replacement price.`,
         );

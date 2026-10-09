@@ -54,9 +54,15 @@ export const MEMBERSHIP_PRODUCTS: readonly MembershipProductSpec[] = [
 ];
 
 /**
- * Tax codes Stripe listed on 2026-10-04 as candidates. O1 picks one; it is
- * set on both products and can change later without new prices.
+ * Ruling "WP64 / tax" (O1, 2026-10-09): Stripe Managed Payments, prices
+ * exclusive of tax, SaaS personal use on both products. The code can change
+ * later without new prices; the behavior is fixed once set on a price.
  */
+export const MEMBERSHIP_TAX_MODE = "managed_payments";
+export const MEMBERSHIP_TAX_CODE = "txcd_10103000";
+export const MEMBERSHIP_TAX_BEHAVIOR = "exclusive";
+
+/** Tax codes Stripe listed on 2026-10-04 as candidates. All three may be passed to the setup script. */
 export const MEMBERSHIP_TAX_CODE_CANDIDATES = {
   txcd_10000000: "General - Electronically Supplied Services",
   txcd_10103000: "Software as a service (SaaS) - personal use",
@@ -155,6 +161,7 @@ export type StripePriceLike = {
   recurring: { interval: string; interval_count: number; usage_type?: string } | null;
   lookup_key: string | null;
   metadata?: Record<string, string> | null;
+  tax_behavior?: string | null;
 };
 
 export type PriceReview = {
@@ -179,6 +186,8 @@ export function reviewPrice(price: StripePriceLike, priceKey: PriceKey, livemode
     blocking.push(`amount ${price.unit_amount ?? "none"}, expected ${spec.unitAmount} (${formatUsd(spec.unitAmount)})`);
   }
   if (price.billing_scheme !== "per_unit") blocking.push(`billing scheme ${price.billing_scheme}, expected per_unit`);
+  // Unspecified means exclusive under Managed Payments. Inclusive would make TAX_LINE untrue.
+  if (price.tax_behavior === "inclusive") blocking.push(`tax behavior inclusive, expected ${MEMBERSHIP_TAX_BEHAVIOR}`);
   if (spec.recurring === null) {
     if (price.type !== "one_time") blocking.push(`type ${price.type}, expected one_time`);
   } else if (price.type !== "recurring" || price.recurring === null) {

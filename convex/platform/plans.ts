@@ -194,8 +194,11 @@ export const LIFETIME_TRANCHE_LINE = PRICING.lifetime.tranches
 /** Ruling "WP55 / refunds": 30 days from the first purchase, full refund. */
 export const REFUND_LINE = "Full refund within 30 days of your first payment.";
 
-/** Neutral until O1 picks the tax mechanism. True under either choice. */
-export const TAX_LINE = "Prices in US dollars. Any tax is shown at checkout before you pay.";
+/**
+ * Ruling "WP64 / tax" (O1, 2026-10-09): Stripe Managed Payments, prices
+ * exclusive of tax, so sales tax or VAT is added at checkout.
+ */
+export const TAX_LINE = "Prices in US dollars. Any sales tax or VAT is added at checkout before you pay.";
 
 /** WP64-S9 publishes these pages. Checkout stays closed (S12) until they exist and are reviewed. */
 export const MEMBERSHIP_LEGAL_LINKS = [

@@ -27,7 +27,8 @@ import {
 const root = new URL("../../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 const PURPOSE = "weekendmvp_membership_v1";
-const NO_OPTIONS = { apply: false };
+// A dry run with the ruled tax settings (O1, 2026-10-09).
+const NO_OPTIONS = { apply: false, taxCode: "txcd_10103000", taxBehavior: "exclusive" };
 
 function stripePrice(priceKey, overrides = {}) {
   const spec = priceSpec(priceKey);
@@ -45,14 +46,20 @@ function stripePrice(priceKey, overrides = {}) {
       : null,
     lookup_key: spec.lookupKey,
     metadata: { purpose: PURPOSE, price_key: priceKey },
-    tax_behavior: "unspecified",
+    tax_behavior: "exclusive",
     ...overrides,
   };
 }
 
 const PRODUCTS = [
-  { id: "prod_hub", active: true, livemode: false, metadata: { purpose: PURPOSE, product_key: "builders_hub" } },
-  { id: "prod_lifetime", active: true, livemode: false, metadata: { purpose: PURPOSE, product_key: "founding_lifetime" } },
+  { id: "prod_hub", active: true, livemode: false, tax_code: "txcd_10103000", metadata: { purpose: PURPOSE, product_key: "builders_hub" } },
+  {
+    id: "prod_lifetime",
+    active: true,
+    livemode: false,
+    tax_code: "txcd_10103000",
+    metadata: { purpose: PURPOSE, product_key: "founding_lifetime" },
+  },
 ];
 const PRICES = MEMBERSHIP_PRICES.map((spec) => stripePrice(spec.priceKey));
 
@@ -172,6 +179,9 @@ test("reviewPrice: a matching price is clean; money differences block; labels on
   assert.deepEqual(blocking({ active: false }), ["price is archived"]);
   assert.deepEqual(blocking({}, "monthly", true), ["price is test mode"]);
   assert.deepEqual(blocking({ billing_scheme: "tiered" }), ["billing scheme tiered, expected per_unit"]);
+  // O1: prices exclude tax. Unspecified means exclusive under Managed Payments.
+  assert.deepEqual(blocking({ tax_behavior: "inclusive" }), ["tax behavior inclusive, expected exclusive"]);
+  assert.deepEqual(blocking({ tax_behavior: "unspecified" }), []);
   assert.deepEqual(blocking({ recurring: { interval: "year", interval_count: 1 } }), ["interval year, expected month"]);
   assert.deepEqual(blocking({ recurring: { interval: "month", interval_count: 3 } }), ["interval count 3, expected 1"]);
   assert.deepEqual(blocking({ recurring: { interval: "month", interval_count: 1, usage_type: "metered" } }), [
@@ -214,12 +224,12 @@ test("errors from Stripe are printed with any key stripped", async () => {
   assert.equal(cli.match(/console\.error\(/g).length, 1);
 });
 
-test("options: dry run by default, tax choices limited to O1's candidates", () => {
-  assert.deepEqual(readOptions([]), { apply: false, taxCode: undefined, taxBehavior: undefined });
-  assert.deepEqual(readOptions(["--apply", "--tax-code=txcd_10103000", "--tax-behavior=exclusive"]), {
+test("options: dry run by default, the ruled tax settings unless a flag overrides them", () => {
+  assert.deepEqual(readOptions([]), NO_OPTIONS);
+  assert.deepEqual(readOptions(["--apply", "--tax-code=txcd_10103001", "--tax-behavior=inclusive"]), {
     apply: true,
-    taxCode: "txcd_10103000",
-    taxBehavior: "exclusive",
+    taxCode: "txcd_10103001",
+    taxBehavior: "inclusive",
   });
   assert.throws(() => readOptions(["--live"]), /Unknown argument: --live/);
   assert.throws(() => readOptions(["--tax-code=txcd_99999999"]), /decision O1/);
@@ -247,6 +257,7 @@ test("an empty account plans two products and four prices, exactly from the cata
     lookup_key: "weekendmvp_membership_monthly",
     nickname: "Monthly",
     metadata: { purpose: PURPOSE, price_key: "monthly" },
+    tax_behavior: "exclusive",
   });
   assert.deepEqual(plan.steps[4].params, {
     currency: "usd",
@@ -254,21 +265,19 @@ test("an empty account plans two products and four prices, exactly from the cata
     lookup_key: "weekendmvp_membership_lifetime_t1",
     nickname: "Founding Lifetime, seats 1 to 15",
     metadata: { purpose: PURPOSE, price_key: "lifetime_t1" },
+    tax_behavior: "exclusive",
   });
   assert.deepEqual(plan.steps[0].params.metadata, { purpose: PURPOSE, product_key: "builders_hub" });
-  // No tax choice until O1 is ruled.
-  assert.ok(plan.steps.every((step) => !("tax_code" in step.params) && !("tax_behavior" in step.params)));
+  // O1: both products carry the ruled tax code.
+  assert.deepEqual(plan.steps.slice(0, 2).map((step) => step.params.tax_code), ["txcd_10103000", "txcd_10103000"]);
 });
 
-test("with O1's choices, new objects carry them and existing ones get them where Stripe allows", () => {
-  const options = { apply: true, taxCode: "txcd_10103000", taxBehavior: "exclusive" };
-  const fresh = planCatalog({ products: [], prices: [] }, options);
-  assert.equal(fresh.steps[0].params.tax_code, "txcd_10103000");
-  assert.equal(fresh.steps[2].params.tax_behavior, "exclusive");
-
+test("existing objects get the ruled tax settings where Stripe allows; an inclusive price blocks", () => {
+  const untaxed = PRODUCTS.map((product) => ({ ...product, tax_code: null }));
+  const unspecified = PRICES.slice(0, 3).map((price) => ({ ...price, tax_behavior: "unspecified" }));
   const existing = planCatalog(
-    { products: PRODUCTS, prices: [...PRICES.slice(0, 3), stripePrice("lifetime_t2", { tax_behavior: "inclusive" })] },
-    options,
+    { products: untaxed, prices: [...unspecified, stripePrice("lifetime_t2", { tax_behavior: "inclusive" })] },
+    NO_OPTIONS,
   );
   assert.deepEqual(
     existing.steps.map((step) => `${step.kind} ${step.priceKey ?? step.productKey}`),
@@ -281,8 +290,13 @@ test("with O1's choices, new objects carry them and existing ones get them where
     ],
   );
   assert.deepEqual(existing.findings, [
-    "lifetime_t2: tax behavior is fixed at inclusive. Stripe cannot change it; create a replacement price.",
+    "lifetime_t2: tax behavior inclusive, expected exclusive. Create a replacement price by hand.",
   ]);
+  // An override the price cannot take is reported, never forced.
+  const override = planCatalog({ products: PRODUCTS, prices: PRICES }, { ...NO_OPTIONS, taxBehavior: "inclusive" });
+  assert.deepEqual(override.steps, []);
+  assert.equal(override.findings.length, 4);
+  assert.match(override.findings[0], /^monthly: tax behavior is fixed at exclusive/);
 });
 
 test("a complete catalog plans nothing; a wrong price is reported, never edited", () => {
