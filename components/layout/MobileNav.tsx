@@ -16,80 +16,10 @@ import {
 import { IconButton } from "@/components/primitives/IconButton";
 import { Logo } from "@/components/primitives/Logo";
 import { NavAuthLinks } from "@/components/layout/NavAuthLinks";
+import { SITE_NAV_SECTIONS } from "@/components/layout/site-navigation";
 import { newsreaderEditorial } from "@/lib/fonts";
 
-type MobileLink = { label: string; href: string; emphasis?: boolean };
-type MobileGroup = { heading?: string; links: MobileLink[] };
-type MobileSection = { id: string; label: string; groups: MobileGroup[] };
-
-/** Ported verbatim from the mobile menu in partials/nav-mega.html. */
-const SECTIONS: MobileSection[] = [
-  {
-    id: "browse-ideas",
-    label: "Browse Ideas",
-    groups: [
-      {
-        heading: "By Category",
-        links: [
-          { label: "SaaS", href: "/ideas/saas" },
-          { label: "AI Tools", href: "/ideas/ai-tools" },
-          { label: "Productivity", href: "/ideas/productivity" },
-          { label: "Automation", href: "/ideas/automation" },
-        ],
-      },
-      {
-        heading: "By Revenue",
-        links: [
-          { label: "$1K/month", href: "/ideas/1k-month" },
-          { label: "Passive Income", href: "/ideas/passive-income" },
-          {
-            label: "View All Ideas →",
-            href: "/startup-ideas",
-            emphasis: true,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "build-with",
-    label: "Build With",
-    groups: [
-      {
-        heading: "AI Code Editors",
-        links: [
-          { label: "Cursor", href: "/build-with/cursor" },
-          { label: "Claude", href: "/build-with/claude" },
-          { label: "Claude Code", href: "/build-with/claude-code" },
-          { label: "Windsurf", href: "/build-with/windsurf" },
-        ],
-      },
-      {
-        heading: "No-Code",
-        links: [
-          { label: "Bolt.new", href: "/build-with/bolt" },
-          { label: "Lovable", href: "/build-with/lovable" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "ideas-for",
-    label: "Ideas For",
-    groups: [
-      {
-        links: [
-          { label: "Developers", href: "/ideas-for/developers" },
-          { label: "Designers", href: "/ideas-for/designers" },
-          { label: "Non-Technical", href: "/ideas-for/non-technical" },
-          { label: "Solo Founders", href: "/ideas-for/solo-founders" },
-          { label: "Side Hustlers", href: "/ideas-for/side-hustlers" },
-        ],
-      },
-    ],
-  },
-];
-
+type MobileLink = { label: string; href: string };
 const BOTTOM_LINKS: MobileLink[] = [
   { label: "Articles", href: "/articles" },
   { label: "Newsletter", href: "/newsletter" },
@@ -97,8 +27,7 @@ const BOTTOM_LINKS: MobileLink[] = [
 ];
 
 /**
- * Mobile slide-in menu (shadcn Sheet), porting the legacy mobile menu from
- * partials/nav-mega.html and the mobile-nav-toggle behavior from scripts.js:
+ * Mobile slide-in menu (shadcn Sheet), sharing MegaNav's discovery links:
  * collapsible submenus where opening one closes the others, Escape/backdrop
  * close, and links close the menu on navigation.
  *
@@ -113,6 +42,7 @@ export function MobileNav({
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [openSection, setOpenSection] = React.useState<string | null>(null);
+  const navId = React.useId();
 
   // Close the sheet (and collapse submenus) after navigation.
   React.useEffect(() => {
@@ -153,7 +83,7 @@ export function MobileNav({
             </IconButton>
           </SheetClose>
         </div>
-        <nav className="p-6 space-y-1">
+        <nav aria-label="Primary mobile" className="p-6 space-y-1">
           <Link
             href="/"
             onClick={closeMenu}
@@ -168,14 +98,16 @@ export function MobileNav({
             Home
           </Link>
 
-          {SECTIONS.map((section) => {
+          {SITE_NAV_SECTIONS.map((section) => {
             const expanded = openSection === section.id;
+            const panelId = `${navId}-${section.id}`;
             return (
               <div key={section.id}>
                 <button
                   type="button"
                   className="flex w-full items-center justify-between rounded-lg px-4 py-3 font-editorial text-[22px] leading-tight text-home-ink transition-colors hover:bg-home-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
                   aria-expanded={expanded}
+                  aria-controls={panelId}
                   onClick={() =>
                     setOpenSection(expanded ? null : section.id)
                   }
@@ -191,12 +123,13 @@ export function MobileNav({
                   />
                 </button>
                 <div
+                  id={panelId}
                   className={cn(
                     "pl-4 mt-1 space-y-1",
                     expanded ? "block" : "hidden"
                   )}
                 >
-                  {section.groups.map((group, groupIndex) => (
+                  {section.columns.map((group, groupIndex) => (
                     <React.Fragment key={group.heading ?? groupIndex}>
                       {group.heading && (
                         <p
@@ -217,15 +150,10 @@ export function MobileNav({
                             isActive(link.href) ? "page" : undefined
                           }
                           className={cn(
-                            "block px-4 py-2.5 text-[15px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
-                            link.emphasis
-                              ? "font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink"
-                              : cn(
-                                  "rounded-lg hover:bg-home-card",
-                                  isActive(link.href)
-                                    ? "bg-home-card font-medium text-home-ink"
-                                    : "text-home-ink-2 hover:text-home-ink"
-                                )
+                            "block rounded-lg px-4 py-2.5 text-[15px] transition-colors hover:bg-home-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
+                            isActive(link.href)
+                              ? "bg-home-card font-medium text-home-ink"
+                              : "text-home-ink-2 hover:text-home-ink"
                           )}
                         >
                           {link.label}
@@ -233,6 +161,16 @@ export function MobileNav({
                       ))}
                     </React.Fragment>
                   ))}
+                  <Link
+                    href={section.footerLink.href}
+                    onClick={closeMenu}
+                    aria-current={
+                      isActive(section.footerLink.href) ? "page" : undefined
+                    }
+                    className="block px-4 py-2.5 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+                  >
+                    {section.footerLink.label} →
+                  </Link>
                 </div>
               </div>
             );

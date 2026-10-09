@@ -117,7 +117,12 @@ read the response as text before parsing JSON.
   `?view=rows`), `Sections`. Public pages use the `home-*` tokens only — the old
   `#050505` dark palette is retired. Headings keep their existing words first;
   only an italic `<Em>` tail may be appended (`scripts/seo-snapshot.mjs diff`
-  enforces it). The idea detail page keeps its own cream chrome.
+  enforces it). Anonymous idea detail pages use the same cream MegaNav;
+  verified members keep their workspace menu. Desktop and mobile discovery
+  links share `components/layout/site-navigation.ts` (WP63).
+  Anonymous mobile idea pages place the single account card after the title
+  and description, before the long public summary/teasers/prompts; desktop
+  keeps the sticky account rail beside the reader column (WP63-S4).
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

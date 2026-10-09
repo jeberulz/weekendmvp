@@ -9,113 +9,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/primitives/Logo";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { NavAuthLinks } from "@/components/layout/NavAuthLinks";
-
-type NavLink = { label: string; href: string };
-type DropdownColumn = { heading: string; links: NavLink[] };
-type DropdownDef = {
-  id: string;
-  label: string;
-  columns: DropdownColumn[];
-  footerLink: NavLink;
-  panelClassName: string;
-  gridClassName: string;
-};
-
-/** Ported verbatim from partials/nav-mega.html (hrefs made extensionless). */
-const DROPDOWNS: DropdownDef[] = [
-  {
-    id: "browse-ideas",
-    label: "Browse Ideas",
-    panelClassName: "min-w-[480px]",
-    gridClassName: "grid-cols-3",
-    columns: [
-      {
-        heading: "By Category",
-        links: [
-          { label: "SaaS", href: "/ideas/saas" },
-          { label: "AI Tools", href: "/ideas/ai-tools" },
-          { label: "Productivity", href: "/ideas/productivity" },
-          { label: "Automation", href: "/ideas/automation" },
-          { label: "Developer Tools", href: "/ideas/developer-tools" },
-        ],
-      },
-      {
-        heading: "By Revenue",
-        links: [
-          { label: "$1K/month", href: "/ideas/1k-month" },
-          { label: "$5K/month", href: "/ideas/5k-month" },
-          { label: "Passive Income", href: "/ideas/passive-income" },
-        ],
-      },
-      {
-        heading: "By Time",
-        links: [
-          { label: "8 Hours", href: "/ideas/build-in-8-hours" },
-          { label: "Weekend", href: "/ideas/build-in-weekend" },
-          { label: "1 Week", href: "/ideas/build-in-1-week" },
-        ],
-      },
-    ],
-    footerLink: { label: "View All Ideas", href: "/startup-ideas" },
-  },
-  {
-    id: "build-with",
-    label: "Build With",
-    panelClassName: "min-w-[400px]",
-    gridClassName: "grid-cols-3",
-    columns: [
-      {
-        heading: "AI Code Editors",
-        links: [
-          { label: "Cursor", href: "/build-with/cursor" },
-          { label: "Windsurf", href: "/build-with/windsurf" },
-          { label: "Claude", href: "/build-with/claude" },
-          { label: "Claude Code", href: "/build-with/claude-code" },
-        ],
-      },
-      {
-        heading: "No-Code",
-        links: [
-          { label: "Bolt.new", href: "/build-with/bolt" },
-          { label: "Lovable", href: "/build-with/lovable" },
-        ],
-      },
-      {
-        heading: "Other",
-        links: [
-          { label: "Replit", href: "/build-with/replit" },
-          { label: "v0", href: "/build-with/v0" },
-        ],
-      },
-    ],
-    footerLink: { label: "All Tools", href: "/build-with/no-code" },
-  },
-  {
-    id: "ideas-for",
-    label: "Ideas For",
-    panelClassName: "min-w-[320px]",
-    gridClassName: "grid-cols-2",
-    columns: [
-      {
-        heading: "By Skill Level",
-        links: [
-          { label: "Developers", href: "/ideas-for/developers" },
-          { label: "Designers", href: "/ideas-for/designers" },
-          { label: "Non-Technical", href: "/ideas-for/non-technical" },
-        ],
-      },
-      {
-        heading: "By Situation",
-        links: [
-          { label: "Solo Founders", href: "/ideas-for/solo-founders" },
-          { label: "Side Hustlers", href: "/ideas-for/side-hustlers" },
-          { label: "Weekend Builders", href: "/ideas-for/weekend-builders" },
-        ],
-      },
-    ],
-    footerLink: { label: "View All Ideas", href: "/startup-ideas" },
-  },
-];
+import { SITE_NAV_SECTIONS } from "@/components/layout/site-navigation";
 
 type MegaNavVariant = "dark" | "cream";
 
@@ -155,15 +49,15 @@ const TOKENS: Record<
   cream: {
     shell: "bg-[#fcfaf7]/80 border-neutral-200",
     logo: "text-black",
-    desktopLinks: "text-neutral-500",
+    desktopLinks: "text-neutral-600",
     link: "hover:text-black focus:text-black",
     linkActive: "text-black",
     panel: "bg-white/95 border-neutral-200",
-    heading: "text-neutral-400",
-    panelLink: "text-neutral-500 hover:text-black",
+    heading: "text-neutral-600",
+    panelLink: "text-neutral-600 hover:text-black",
     panelLinkActive: "text-black",
     divider: "border-neutral-200/60",
-    footerLink: "text-neutral-500 hover:text-black",
+    footerLink: "text-neutral-600 hover:text-black",
     ctaRing: "focus:ring-black/30 focus:ring-offset-[#fcfaf7]",
     menuBtn: "text-black hover:text-neutral-600",
   },
@@ -178,8 +72,11 @@ const TOKENS: Record<
  */
 export function MegaNav({
   variant = "cream",
+  id,
 }: {
   variant?: MegaNavVariant;
+  /** Reader TOCs measure this fixed shell, including its top gap. */
+  id?: string;
 }) {
   const t = TOKENS[variant];
   const pathname = usePathname();
@@ -187,6 +84,7 @@ export function MegaNav({
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = React.useRef<HTMLElement>(null);
   const triggerRefs = React.useRef(new Map<string, HTMLButtonElement>());
+  const navId = React.useId();
 
   const clearCloseTimer = React.useCallback(() => {
     if (closeTimer.current) {
@@ -240,15 +138,20 @@ export function MegaNav({
     pathname === href || pathname === `${href}/`;
 
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+    <header id={id} className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
       <nav
+        aria-label="Primary"
         ref={navRef}
         className={cn(
           "flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 backdrop-blur-xl border rounded-full shadow-2xl",
           t.shell
         )}
       >
-        <Link href="/" className="flex items-center gap-2">
+        <Link
+          href="/"
+          aria-label="Weekend MVP home"
+          className="flex items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4"
+        >
           <Logo className={cn("h-4 w-32 md:h-5 md:w-40", t.logo)} />
         </Link>
 
@@ -258,11 +161,14 @@ export function MegaNav({
             t.desktopLinks
           )}
         >
-          {DROPDOWNS.map((dropdown) => {
+          {SITE_NAV_SECTIONS.map((dropdown) => {
             const open = openId === dropdown.id;
-            const sectionActive = dropdown.columns.some((col) =>
-              col.links.some((link) => isActive(link.href))
-            );
+            const panelId = `${navId}-${dropdown.id}`;
+            const sectionActive =
+              isActive(dropdown.footerLink.href) ||
+              dropdown.columns.some((col) =>
+                col.links.some((link) => isActive(link.href))
+              );
             return (
               <div
                 key={dropdown.id}
@@ -284,12 +190,12 @@ export function MegaNav({
                     else triggerRefs.current.delete(dropdown.id);
                   }}
                   className={cn(
-                    "flex items-center gap-1 transition-colors focus:outline-none",
+                    "flex items-center gap-1 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-4",
                     t.link,
                     sectionActive && t.linkActive
                   )}
                   aria-expanded={open}
-                  aria-haspopup="true"
+                  aria-controls={panelId}
                   onClick={() => (open ? setOpenId(null) : show(dropdown.id))}
                 >
                   {dropdown.label}
@@ -303,6 +209,7 @@ export function MegaNav({
                   />
                 </button>
                 <div
+                  id={panelId}
                   className={cn(
                     "absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-200",
                     open
@@ -353,6 +260,9 @@ export function MegaNav({
                     <div className={cn("mt-4 pt-4 border-t", t.divider)}>
                       <Link
                         href={dropdown.footerLink.href}
+                        aria-current={
+                          isActive(dropdown.footerLink.href) ? "page" : undefined
+                        }
                         className={cn(
                           "flex items-center gap-1 text-sm transition-colors",
                           t.footerLink
@@ -379,6 +289,6 @@ export function MegaNav({
           />
         </div>
       </nav>
-    </div>
+    </header>
   );
 }
