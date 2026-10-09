@@ -12,11 +12,7 @@ import { FeaturedIdeas, InkBand, KeepBrowsing, SectionHeading } from "@/componen
 import { ButtonLink } from "@/components/home/ui";
 import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { IDEA_COLLECTION_SLUGS, isIdeaCollectionSlug, type IdeaCollectionSlug } from "@/lib/idea-collection-slugs";
-import {
-  fetchAllIdeas,
-  fetchIdeasByCategory,
-  fetchIdeasByRevenueGoal,
-} from "@/components/hubs/hub-data";
+import { fetchAllIdeas } from "@/components/hubs/hub-data";
 import { toPublicIdeas } from "@/lib/public/ideas";
 import {
   SITE,
@@ -285,10 +281,15 @@ const RELATED_HUBS = [
 async function CachedCollectionHub({ slug }: { slug: string }) {
   "use cache";
   cacheTag("ideas", `collection:${slug}`);
-  cacheLife("hours");
+  // Tag revalidation on upsert keeps hubs fresh; hourly TTL was pure I/O.
+  cacheLife("days");
   if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
-  const [ideas, all] = await Promise.all([fetchIdeasForCollection(def), fetchAllIdeas()]);
+  // One catalogue drain per cache miss. Category/revenue paths used to call
+  // fetchAllIdeas again inside fetchIdeasForCollection (or byRevenueGoal),
+  // doubling ideas.list I/O on every collection hub.
+  const all = await fetchAllIdeas();
+  const ideas = ideasFromCollection(def, all);
   const schema = buildCollectionSchema(def, ideas);
   const list = toPublicIdeas(ideas);
 
@@ -385,33 +386,34 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
   );
 }
 
-async function fetchIdeasForCollection(def: CollectionDef) {
+function byBuilderConfidence(
+  a: { scores?: { builder_confidence?: number } | null },
+  b: { scores?: { builder_confidence?: number } | null },
+) {
+  return (b.scores?.builder_confidence ?? 0) - (a.scores?.builder_confidence ?? 0);
+}
+
+/** Filter a shared catalogue drain — never issues a second Convex list. */
+function ideasFromCollection(
+  def: CollectionDef,
+  all: Awaited<ReturnType<typeof fetchAllIdeas>>,
+) {
   if (def.kind === "category") {
-    const list = await fetchIdeasByCategory(def.slug);
-    return list.sort(
-      (a, b) =>
-        (b.scores?.builder_confidence ?? 0) -
-        (a.scores?.builder_confidence ?? 0),
-    );
+    const canonical = normalizeCategorySlug(def.slug);
+    return all
+      .filter((idea) => normalizeCategorySlug(idea.category) === canonical)
+      .sort(byBuilderConfidence);
   }
   if (def.kind === "revenue") {
-    const list = await fetchIdeasByRevenueGoal(def.slug);
-    return list.sort(
-      (a, b) =>
-        (b.scores?.builder_confidence ?? 0) -
-        (a.scores?.builder_confidence ?? 0),
-    );
+    return all
+      .filter((idea) => idea.revenueGoal === def.slug)
+      .sort(byBuilderConfidence);
   }
   // buildTime: no dedicated index — scan + filter (≤57 rows).
-  const all = await fetchAllIdeas();
   const values = def.buildTimeValues ?? [];
   return all
     .filter((idea) => values.includes(idea.buildTime))
-    .sort(
-      (a, b) =>
-        (b.scores?.builder_confidence ?? 0) -
-        (a.scores?.builder_confidence ?? 0),
-    );
+    .sort(byBuilderConfidence);
 }
 
 function buildCollectionSchema(

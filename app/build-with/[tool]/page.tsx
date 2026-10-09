@@ -915,7 +915,8 @@ type ToolData = {
 async function getToolData(slug: string): Promise<ToolData> {
   "use cache";
   cacheTag("ideas", "ref-tables", `tool:${slug}`);
-  cacheLife("hours");
+  // Tag revalidation on upsert keeps hubs fresh; hourly TTL was pure I/O.
+  cacheLife("days");
   const page = TOOL_PAGES[slug];
   const ideasTool = page.ideasTool ?? slug;
   const [ideas, featured, toolRow] = await Promise.all([
@@ -1046,7 +1047,7 @@ export default async function ToolHubPage({
 async function CachedToolHub({ slug }: { slug: string }) {
   "use cache";
   cacheTag("ideas", "ref-tables", `tool:${slug}`);
-  cacheLife("hours");
+  cacheLife("days");
   const page = TOOL_PAGES[slug];
   const data = await getToolData(slug);
   const schema = buildSchema(page, data);

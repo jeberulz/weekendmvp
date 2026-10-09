@@ -1,87 +1,108 @@
 # Convex DB I/O cut (Oct 2026)
 
-## Root cause
+## Round 1 (PR #123, merged 8 Oct) — what shipped
 
-1. **E6 editorial commit `943b14a` removed `"use cache"`** from public hubs
-   (`/build-with`, `/ideas-for`, `/solve`, `/startup-ideas`, collection hubs)
-   and replaced it with `connection()` + `instant = false`. Every page view
-   started hitting Convex again. Component names like `CachedToolHub` kept
-   the old name but no longer cached.
+Restored `"use cache"` on public hubs, added `idea_tools` / `idea_audiences`
+join tables with dual-write + backfill, and batched `libraryPage` plan lookups.
+Backfill completed on `first-squirrel-244` (~230 ideas).
 
-2. **`ideas.byTool` / `ideas.byAudience` full-table `.collect()`** — tools and
-   audiences are array fields, so membership required scanning every idea
-   document (~230 rows) on each call. That is why those two functions led
-   production DB I/O (190 MB + 143 MB in early Oct).
+**Observed after deploy:** DB I/O fell only ~25% (≈2.4 MB/h → ≈1.8 MB/h).
+`ideas.byTool` still ≈0.6 MB/h. Cap trajectory still pointed at mid-Oct.
 
-3. **`platform/ideas.libraryPage`** did an `activePlanForIdea` point read per
-   card on every page (N+1), on top of paginating full idea docs for the
-   member catalogue.
+## Round 2 root cause (9 Oct audit)
 
-4. **`_system_job/snapshot_export` (~41 MB)** is a Convex platform backup /
-   export job, **not** something this repo schedules. The only app cron is
-   `editorial release recovery` in `convex/crons.ts`. Do **not** disable
-   Convex dashboard backups without an explicit owner decision — flag only.
+1. **Hubs still requested `limit: 1000`.** `components/hubs/hub-data.ts` passed
+   `UNCAPPED = 1000` into `byTool` / `byAudience`, then sliced to 30 after
+   `onlyPublicIdeas`. The indexed path therefore still did
+   `.take(1000)` + `ctx.db.get` per link. **`cursor` matches all ~227 ideas**,
+   so each `/build-with/cursor` cache miss re-read the whole catalogue. Same
+   pattern for `claude` (~220), `solo-founders` (~190), etc. Indexing helped
+   niche facets; popular hubs barely changed.
 
-## Fixes in this PR
+2. **Hourly `cacheLife` re-fetched every hub every hour** even when nothing
+   changed. Upserts already `revalidateTag("ideas"…)`, so the TTL was pure I/O.
+   ~7 tool + ~5 audience + ~5 solve + ~20 collection + archive + related rails
+   × 24 misses/day kept `byTool` / `byAudience` / `list` / `relatedFor` warm.
 
-| Change | Effect |
-| --- | --- |
-| Restore `"use cache"` + `cacheLife("hours")` + `cacheTag("ideas"…)` on hubs, collections, startup-ideas (member path), and `RelatedIdeas` | Cuts call volume for byTool / byAudience / list / relatedFor to roughly one miss per slug per hour (plus revalidate) |
-| Additive `idea_tools` / `idea_audiences` tables + dual-write on upsert/seed/editorial publish | Index-backed byTool/byAudience; each call reads ~`limit` idea docs instead of all ~230 |
-| `libraryPage` uses one `activePlansOf` set instead of per-card plan lookups | Removes N plan-index reads per library page |
+3. **Collection hubs double-drained `ideas.list`.** `CachedCollectionHub`
+   called `fetchAllIdeas()` for tab counts *and* `fetchIdeasForCollection`,
+   which for category hubs called `fetchAllIdeas()` again (and revenue hubs
+   hit `byRevenueGoal` collect). ~20 collection routes × 2 drains per miss.
 
-## Expected I/O reduction (order-of-magnitude)
+4. **`"use cache"` is effective in production** for these hubs (call volume
+   dropped; residual I/O is bytes-per-miss, not uncached page views). Client
+   `useQuery` is not the public-hub path. `testQuery` is **not in this repo** —
+   check the Convex dashboard for a leftover Run / playground call and delete it.
 
-Assumptions: ~230 ideas, ~1 KB/doc, current Oct run-rate from the dashboard.
+5. **Still deferred (lower risk/reward for this cut):** middleware
+   `editorial.public.visibility` (~15 MB/mo), full-doc reads for
+   `libraryPage` / `list` (need a slim card projection table), reactive
+   member catalogue exhaust on every `ideas` write.
 
-| Function | Before (month to 8 Oct) | After (estimate) | Why |
+## Round 2 fixes
+
+| Change | Effect | Est. I/O delta |
+| --- | --- | --- |
+| Hard-cap `facetCap` at **48** (default 30); hubs request `HUB_FETCH = 48` not 1000 | Popular tool/audience hubs read ≤48 idea docs per miss instead of ~150–227 | **byTool ~0.6 → ~0.08–0.15 MB/h**; **byAudience** similar (~70–80% cut on those two) |
+| `cacheLife("days")` on build-with / ideas-for / solve / collections / startup-ideas / RelatedIdeas (tags unchanged) | Steady-state misses fall from ~hourly to ~daily + revalidate-on-write | Further **~10–20×** cut on hub call volume when catalogue is quiet |
+| Collections: one `fetchAllIdeas()` then pure filter | Removes second list/byRevenueGoal drain per collection miss | **ideas.list** roughly **halved** on collection traffic |
+| Member `libraryPage` page size 100 → 40 | Same full drain when exploring; cheaper reactive re-reads while open | Modest; spikes on `ideas` writes shrink |
+
+Public card grids still show **30** ideas sorted by `builder_confidence`. The
+48 buffer only covers a few `onlyPublicIdeas` exclusions.
+
+## Expected run-rate after Round 2 (order-of-magnitude)
+
+Assumptions: ~230 ideas ≈1 KB/doc metadata (mdx `bodyMode`, no stored body),
+current Oct rates, quiet catalogue (few upserts/day).
+
+| Function | Oct cumulative (to ~9 Oct) | After Round 1 (observed) | After Round 2 (est.) |
 | --- | --- | --- | --- |
-| `ideas.byTool` | 190 MB | **~5–20 MB** | Cache ≈ 90%+ fewer calls; indexed path ≈ 30/230 docs per miss |
-| `ideas.byAudience` | 143 MB | **~4–15 MB** | Same |
-| `ideas.list` | 65 MB | **~5–15 MB** | Hub/archive caching restored |
-| `ideas.relatedFor` | 48 MB | **~5–10 MB** | RelatedIdeas cached hourly |
-| `platform/ideas.libraryPage` | 76 MB | **~50–65 MB** | N+1 plans gone; still paginates full docs for members |
-| `_system_job/snapshot_export` | 41 MB | unchanged | Platform backup — leave alone |
+| `ideas.byTool` | 209 MB | ~0.6 MB/h | **~1–3 MB/day** → **~30–90 MB/mo** |
+| `ideas.byAudience` | 150 MB | ~proportional | **~1–2 MB/day** |
+| `ideas.list` | 80 MB | still high (collections) | **~2–5 MB/day** |
+| `ideas.relatedFor` | 48 MB | cached hourly | **≪1 MB/day** with daily TTL |
+| `platform/ideas.libraryPage` | 79 MB | member traffic | **~40–70 MB/mo** (unchanged architecture) |
+| `testQuery` | 16 MB | unknown caller | **0** if dashboard leftover removed |
+| `_system_job/snapshot_export` | 41 MB | platform backup | unchanged — leave alone |
 
-**Net:** public browse I/O should drop on the order of **~350–450 MB/month** at
-current traffic, enough to stay inside the 1 GB Free cap if call patterns
-hold. Re-check the Convex dashboard 48h after deploy.
+**Net target:** public+member app I/O **under ~15 MB/day** (~450 MB/mo), leaving
+headroom under the 1 GB Free cap together with platform backup. Re-check the
+Convex dashboard **24h after Convex + Vercel deploy**.
 
-## Deploy steps (John)
+## Deploy steps (John) — Round 2
 
-Order matters: **Convex first**, then Vercel (frontend cache).
+Order: **Convex first** (limit hard-cap), then **Vercel** (cacheLife + hub-data
+fetch size + collection single-drain). No schema change. **No backfill.**
 
-1. Deploy Convex (additive schema — no data drop):
+1. Deploy Convex to live `first-squirrel-244` (john-iseghohi:weekendmvp:production):
    ```bash
    npx convex deploy
    ```
-   Target the live production deployment (`efficient-emu-764` / weekendmvp).
-   Do **not** use this checkout’s `--prod` shorthand if it still points at a
-   different project.
+   Do **not** use this checkout’s `--prod` if it still points elsewhere.
 
-2. Backfill facet rows (bounded, idempotent). Dry-run first:
-   ```bash
-   npx convex run ideaFacets:backfill '{"dryRun":true}'
-   ```
-   Then apply, repeating with the returned `continueCursor` until `isDone`:
-   ```bash
-   npx convex run ideaFacets:backfill '{"dryRun":false}'
-   npx convex run ideaFacets:backfill '{"dryRun":false,"cursor":"<continueCursor>"}'
-   ```
-   Until backfill has written ≥1 row, `byTool`/`byAudience` keep the legacy
-   full scan (correct results, higher I/O).
+2. Ship the Next.js build (Vercel) from the merged PR so hubs request
+   `limit: 48` and use `cacheLife("days")`.
 
-3. Ship the Next.js build (Vercel) so `"use cache"` restores. Existing
-   `ideas` / `idea:<slug>` revalidation from upserts and editorial publish
-   still invalidates hubs.
+3. Verify in Convex dashboard → Logs / Data usage:
+   - `ideas.byTool` / `byAudience` bytes/hour drop within a few hours.
+   - After ~24h, daily total for those two should be well under Round 1 rates.
+   - Confirm `testQuery` volume; if still present with no app caller, remove
+     any dashboard saved query / cron / external script.
 
-4. Optional: confirm Convex dashboard scheduled backups are intentional;
-   snapshot export I/O is separate from app code.
+4. Optional pre-merge (no code): none required. Do **not** disable Convex
+   backups without an explicit owner decision.
 
 ## Non-goals
 
-- Claim→pay flow untouched.
-- No URL or public behaviour change.
+- Claim→pay / member research access unchanged.
+- No URL or public card content change (still top 30 by confidence).
 - No removal of Convex backups.
-- Digest/projection table for full idea cards deferred (list/libraryPage
-  still read full docs; caching covers most public traffic).
+- Slim idea-card projection table still deferred.
+- Middleware visibility caching deferred.
+
+## Sources
+
+- Production cumulative function I/O (owner, 9 Oct 2026 ~10:40 BST).
+- Manifest tool/audience cardinality (`cursor` 227/227, `solo-founders` 190).
+- PR #123 / `docs/convex-db-io-cut.md` Round 1.
