@@ -47,3 +47,14 @@ Append-only progress log. Do not rely on chat history for project state.
 - Fix (`lib/home/rotation.ts`): per-week hash ranking over ideas published before that Monday, top two picked, last week's picks skipped by replaying four weeks. Ruling row added
 - Tests (`tests/home/rotation.test.ts`): picks hold Monday to Sunday and change on Monday; a midweek publish never enters the running week; removing any non-winner leaves the picks unchanged; a newly qualifying older idea either wins outright or changes nothing; no back-to-back repeats over 80 weeks; 03 never equals 06
 - This week's picks under the new rule: `non-toxic-appliance-verification-platform` (03/05) and `youth-sports-team-messaging-hub` (06). The design canvas examples (SlackToDoc, Workflow Audit App) show the template, not the live pick
+
+## 2026-10-09 - Hero spacing repair (Small Fix)
+
+- Branch: `codex/home-hero-spacing`, isolated under `.worktrees/home-hero-spacing` while the root checkout contains parallel WP64 work.
+- Owner report: the desktop prompt panel touches the following "What is Weekend MVP?" section and its lower edge is clipped.
+- Cause: `lg:pb-0` removes the hero's bottom space, while `lg:h-[456px]` constrains a wrapper below the panel's actual height.
+- Repair: let the wrapper take its content height and retain the existing `pb-12 md:pb-16` spacing at every breakpoint. Copy, panel internals, controls, and section order retain their existing behavior.
+- Scope: `components/home/sections/Hero.tsx` and this progress log only; no new product ruling or architecture documentation is needed for this layout repair.
+- Verification: `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run check:server-traces`, and `git diff --check` pass. Lint reports 34 existing script warnings and no errors.
+- Production-build browser checks at 1536, 1024, 768, 390, and 320px confirm a 64px gap on desktop/tablet and 48px on phones. The wrapper matches the panel's actual height, the panel is fully inside the hero, and fresh renders have no horizontal overflow. Desktop/mobile screenshots were reviewed; Cursor and Claude Code tabs remain operable.
+- The design hook reports no deterministic issues. Browser measurements and screenshots are kept as local verification artifacts; no new implementation-mirroring test was added for this two-class repair.
