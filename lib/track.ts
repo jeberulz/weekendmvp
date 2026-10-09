@@ -75,7 +75,7 @@ export function trackPageSection(section: string): void {
 export type DashboardState = "new" | "set_up" | "choosing" | "building" | "finished";
 export type DashboardPlan = "free" | "builders_hub";
 export type DashboardSurface = "sidebar" | "sheet" | "tag" | "billing";
-export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare";
+export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare" | "live_builds";
 export type DashboardSource = "home" | "ideas" | "saved" | "idea_page";
 export type OfferKind = "starter_kit" | "promo" | "founding_lifetime";
 /** WP63-S6. How the member chose to pay. */
@@ -111,7 +111,9 @@ export type DashboardEvent =
   // `entitlements.mine` confirms. Revenue reporting comes from Stripe, not GA.
   | { name: "checkout_started"; props: { surface: DashboardSurface; term: MembershipTermProp } }
   | { name: "checkout_completed"; props: { term: MembershipTermProp } }
-  | { name: "founding_seat_taken"; props: { tranche: FoundingTranche } };
+  | { name: "founding_seat_taken"; props: { tranche: FoundingTranche } }
+  // WP63-S8. A Builder's Hub member followed a join or replay link. Never the link itself.
+  | { name: "live_build_opened"; props: { action: "join" | "replay" } };
 
 export const DASHBOARD_EVENT_PROPS = {
   dashboard_viewed: ["state", "plan"],
@@ -129,6 +131,7 @@ export const DASHBOARD_EVENT_PROPS = {
   checkout_started: ["surface", "term"],
   checkout_completed: ["term"],
   founding_seat_taken: ["tranche"],
+  live_build_opened: ["action"],
 } as const satisfies { [N in DashboardEvent["name"]]: readonly string[] };
 
 export function trackDashboardEvent(event: DashboardEvent): void {

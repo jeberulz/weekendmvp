@@ -41,6 +41,10 @@ const SHEET_COPY: Record<GatedFeature, { title: string; body: (activeTitle?: str
     title: "Compare ideas side by side?",
     body: () => `Compare is part of ${HUB}. Every idea page stays free to read.`,
   },
+  live_builds: {
+    title: "Join the live build?",
+    body: () => `Live builds and their replays are part of ${HUB}. The schedule stays free to see.`,
+  },
 };
 
 export type FreeWayForward = { label: string; onSelect: () => void; pending?: boolean };

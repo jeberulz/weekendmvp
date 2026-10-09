@@ -29,6 +29,7 @@ import {
   stripeSubscriptionStatusValidator,
   subscriptionTermValidator,
 } from "./platform/membership/validators";
+import { liveBuildStatusValidator } from "./platform/liveBuildRules";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
@@ -895,4 +896,25 @@ export default defineSchema({
     .index("by_emailHash", ["emailHash"])
     .index("by_cohort_and_emailHash", ["cohort", "emailHash"])
     .index("by_batchId", ["batchId"]),
+
+  /**
+   * WP63-S8 (additive, same schema window). One row per live build. Written
+   * only by the operator (`platform/liveBuildsOperator`). `status` is
+   * flipped by scheduled mutations, so the member query stays clock-free.
+   * Links are returned only to Builder's Hub members, and only while open
+   * (join) or after the end (replay).
+   */
+  live_builds: defineTable({
+    title: v.string(),
+    summary: v.string(),
+    startsAt: v.number(),
+    durationMin: v.number(),
+    status: liveBuildStatusValidator,
+    joinUrl: v.optional(v.string()),
+    replayUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_startsAt", ["startsAt"])
+    .index("by_status_and_startsAt", ["status", "startsAt"]),
 });

@@ -338,6 +338,7 @@ describe("WP63-S7 Home founding card", () => {
         "Unlimited weekend plans, with history",
         "Prompt pack export for your AI tool",
         "Compare up to 4 ideas side by side",
+        "One live build a month, with replays",
       ],
       cta: { label: "See Founding Lifetime", href: "/dashboard/billing#builders-hub" },
     });

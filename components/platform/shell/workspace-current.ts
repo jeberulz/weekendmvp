@@ -3,7 +3,7 @@
  * Settings (S8) sits in the account menu beside Plan and billing.
  * "New idea" and "Interested" left the nav by rulings R4 and R3.
  */
-export type WorkspaceNavId = "home" | "ideas" | "saved" | "builds" | "billing" | "settings";
+export type WorkspaceNavId = "home" | "ideas" | "saved" | "builds" | "live" | "billing" | "settings";
 
 export type WorkspaceNavItem = {
   id: WorkspaceNavId;
@@ -17,6 +17,16 @@ export const PRIMARY_NAV: readonly WorkspaceNavItem[] = [
   { id: "saved", label: "Saved", href: "/dashboard/saved" },
   { id: "builds", label: "Builds", href: "/dashboard/builds" },
 ];
+
+/**
+ * WP63-S8. Builder's Hub only, so it shows with the flag on: under Builds in
+ * the sidebar, and in the phone Account sheet (the tab bar has five slots).
+ */
+export const LIVE_NAV: WorkspaceNavItem = {
+  id: "live",
+  label: "Live builds",
+  href: "/dashboard/live",
+};
 
 export const BILLING_NAV: WorkspaceNavItem = {
   id: "billing",
@@ -58,6 +68,8 @@ export function isWorkspaceNavCurrent(
       );
     case "builds":
       return isAtOrUnder(pathname, "/dashboard/builds");
+    case "live":
+      return isAtOrUnder(pathname, "/dashboard/live");
     case "billing":
       return isAtOrUnder(pathname, "/dashboard/billing");
     case "settings":

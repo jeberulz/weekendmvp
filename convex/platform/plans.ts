@@ -91,12 +91,14 @@ export const PLANS = {
       "Unlimited weekend plans, with history",
       "Prompt pack export for your AI tool",
       "Compare up to 4 ideas side by side",
+      // WP63-S8 shipped the live builds hub (ruling "WP55 / bundle").
+      "One live build a month, with replays",
     ],
   },
 } as const;
 
 /** The features a plan can gate (PRD 6.5). Same names as the analytics events. */
-export type GatedFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare";
+export type GatedFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare" | "live_builds";
 
 export type PlanLimits = {
   /** Weekend plans running at once. Null means no limit. */
@@ -105,12 +107,14 @@ export type PlanLimits = {
   promptPack: boolean;
   /** How many ideas fit side by side. 0 means compare is off. */
   compareMax: number;
+  /** WP63-S8. Join links and replays. Everyone sees the schedule. */
+  liveBuilds: boolean;
 };
 
 /** Ruling R2 for Free. Builder's Hub lifts each one. */
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  free: { activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0 },
-  builders_hub: { activeWeekendPlans: null, collections: true, promptPack: true, compareMax: 4 },
+  free: { activeWeekendPlans: 1, collections: false, promptPack: false, compareMax: 0, liveBuilds: false },
+  builders_hub: { activeWeekendPlans: null, collections: true, promptPack: true, compareMax: 4, liveBuilds: true },
 };
 
 /** The error code every gated mutation throws. The UI opens the upgrade sheet. */
@@ -122,6 +126,7 @@ export const PLAN_COMPARISON: readonly { feature: GatedFeature; free: string; hu
   { feature: "collections", free: "One saved list", hub: "Collections and notes" },
   { feature: "prompt_pack", free: "Copy prompts", hub: "Prompt pack export" },
   { feature: "compare", free: "One idea at a time", hub: "Compare up to 4 ideas" },
+  { feature: "live_builds", free: "See the schedule", hub: "Join live, watch replays" },
 ];
 
 /** Plan and billing's table: what each plan includes, row by row (PRD 6.5, member columns). */
@@ -133,6 +138,7 @@ export const BILLING_COMPARISON: readonly { label: string; free: string; hub: st
   { label: "Weekend plans", free: "1 active plan", hub: "Unlimited, with history" },
   { label: "Prompts", free: "Copy any prompt", hub: "Copy, plus prompt pack export" },
   { label: "Compare ideas", free: "Not included", hub: "Up to 4 side by side" },
+  { label: "Live builds", free: "See the schedule", hub: "One a month, with replays" },
   {
     label: "Price",
     free: PLANS.free.priceLabel,

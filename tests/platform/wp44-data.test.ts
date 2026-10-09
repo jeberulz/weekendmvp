@@ -118,6 +118,8 @@ describe("WP44-S3 dashboard events", () => {
         "checkout_started",
         "checkout_completed",
         "founding_seat_taken",
+        // WP63-S8.
+        "live_build_opened",
       ].sort(),
     );
     const keys = Object.values(DASHBOARD_EVENT_PROPS).flat();
