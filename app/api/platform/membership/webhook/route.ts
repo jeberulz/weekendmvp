@@ -2,7 +2,7 @@ import { ConvexHttpClient } from "convex/browser";
 import type Stripe from "stripe";
 import { api } from "@/convex/_generated/api";
 import { signMembershipBridge } from "@/lib/membership-bridge";
-import { errorSummary, isHandledMembershipEvent, normalizeMembershipEvent, performFollowUps } from "../_events";
+import { errorSummary, normalizeMembershipEvent, performFollowUps } from "../_events";
 import { createMembershipStripe, readMembershipWebhookConfig } from "../_server";
 
 /** Stripe events are a few kilobytes. Anything this large is not one. */
@@ -42,7 +42,6 @@ export async function POST(request: Request) {
   }
   // A test event never settles against live data, nor the reverse.
   if (event.livemode !== config.livemode) return reply("Mode mismatch", 400);
-  if (!isHandledMembershipEvent(event.type)) return reply("Ignored", 200);
 
   try {
     const normalized = await normalizeMembershipEvent(stripe, event, config, Date.now());

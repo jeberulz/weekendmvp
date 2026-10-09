@@ -263,16 +263,16 @@ describe("WP64-S4 webhook route: requests that never reach settlement", () => {
     expect((await deliver(stripeEvent("checkout.session.completed", { id: "cs_test_one" }))).status).toBe(200);
     mocks.subscriptionRetrieve.mockResolvedValueOnce(subscription({ metadata: {} }));
     expect((await deliver(stripeEvent("customer.subscription.updated", { id: "sub_x" }))).status).toBe(200);
-    expect((await deliver(stripeEvent("invoice.paid", { id: "in_1", parent: null }))).status).toBe(200);
+    mocks.invoiceRetrieve.mockResolvedValueOnce({ id: "in_1", parent: null });
+    expect((await deliver(stripeEvent("invoice.paid", { id: "in_1" }))).status).toBe(200);
     expect(mocks.action).not.toHaveBeenCalled();
   });
 
-  test("an oversized body is 400 before any signature work", async () => {
-    const body = "x".repeat(512 * 1024 + 1);
-    const response = await POST(
-      new Request("https://x.test/webhook", { method: "POST", body, headers: { "stripe-signature": "t=1,v1=abc" } }),
-    );
-    expect(response.status).toBe(400);
+  test("an oversized body is 400 even when it is signed", async () => {
+    const big = stripeEvent("customer.created", { id: "cus_one", pad: "x".repeat(512 * 1024) });
+    expect((await deliver(big)).status).toBe(400);
+    const small = stripeEvent("customer.created", { id: "cus_one", pad: "x".repeat(1024) });
+    expect((await deliver(small)).status).toBe(200);
     expect(mocks.action).not.toHaveBeenCalled();
   });
 
@@ -378,10 +378,14 @@ describe("WP64-S4 webhook route: thin event, fat fetch", () => {
     expect(settledEvents()[0]).toMatchObject({ subscription: { priceKey: null, quantity: 0, currentPeriodEnd: null } });
   });
 
-  test("an invoice reaches its subscription through parent.subscription_details", async () => {
-    await deliver(
-      stripeEvent("invoice.payment_failed", { id: "in_1", parent: { type: "subscription_details", subscription_details: { subscription: "sub_one", metadata: {} } } }),
-    );
+  test("an invoice is re-read and reaches its subscription through parent.subscription_details", async () => {
+    mocks.invoiceRetrieve.mockResolvedValueOnce({
+      id: "in_1",
+      parent: { type: "subscription_details", subscription_details: { subscription: "sub_one", metadata: {} } },
+    });
+    // An endpoint on an older API version sends `subscription` at the top level instead. It is never read.
+    await deliver(stripeEvent("invoice.payment_failed", { id: "in_1", subscription: "sub_old_shape" }));
+    expect(mocks.invoiceRetrieve).toHaveBeenCalledWith("in_1");
     expect(mocks.subscriptionRetrieve).toHaveBeenCalledWith("sub_one");
     expect(settledEvents()[0]).toMatchObject({ kind: "subscription", eventType: "invoice.payment_failed" });
   });

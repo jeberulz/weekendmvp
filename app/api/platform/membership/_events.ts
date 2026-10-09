@@ -31,10 +31,6 @@ const ENDED: ReadonlySet<string> = new Set(["canceled", "incomplete_expired"]);
 /** A closed dispute that did not take the money back. */
 const DISPUTE_WON: ReadonlySet<string> = new Set(["won", "warning_closed", "prevented"]);
 
-export function isHandledMembershipEvent(type: string): boolean {
-  return HANDLED.has(type);
-}
-
 const idOf = (value: string | { id: string } | null | undefined): string | null =>
   typeof value === "string" ? value : (value?.id ?? null);
 
@@ -131,6 +127,7 @@ export async function normalizeMembershipEvent(
   config: MembershipWebhookConfig,
   now: number,
 ): Promise<MembershipEvent | null> {
+  // Any other type is not ours to settle. Nothing is fetched for it.
   if (!HANDLED.has(event.type)) return null;
   const header: Header = { eventId: event.id, eventType: event.type, livemode: event.livemode };
   const object = event.data.object as { id: string };
@@ -143,8 +140,9 @@ export async function normalizeMembershipEvent(
   }
 
   if (event.type.startsWith("invoice.")) {
-    // The invoice to subscription link never changes, so the event's copy is enough.
-    const subscriptionId = idOf((event.data.object as Stripe.Invoice).parent?.subscription_details?.subscription);
+    // Read on the pinned version, so the endpoint's own API version never hides the subscription link.
+    const invoice = await stripe.invoices.retrieve(object.id);
+    const subscriptionId = idOf(invoice.parent?.subscription_details?.subscription);
     if (!subscriptionId) return null;
     const subscription = await ourSubscription(stripe, subscriptionId, config, now);
     return subscription ? { kind: "subscription", ...header, subscription } : null;

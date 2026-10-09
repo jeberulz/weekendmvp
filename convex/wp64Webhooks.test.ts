@@ -287,11 +287,16 @@ describe("WP64-S4 subscriptions", () => {
     }
   });
 
-  test("a quantity other than one is rejected", async () => {
+  test("a quantity other than one is rejected, first or later", async () => {
     const t = setup();
     const opened = await order(t, await seedUser(t), "monthly");
     expect((await settle(t, subscriptionEvent(snapshot(opened.orderId, { quantity: 2 })))).outcome).toBe("rejected");
     expect(await table(t, "plan_subscriptions")).toHaveLength(0);
+    const other = await order(t, await seedUser(t), "monthly");
+    await settle(t, subscriptionEvent(snapshot(other.orderId, { subscriptionId: "sub_two", customerId: "cus_two" })));
+    const later = snapshot(other.orderId, { subscriptionId: "sub_two", customerId: "cus_two", quantity: 3, status: "past_due", snapshotAt: 9_000 });
+    expect((await settle(t, subscriptionEvent(later))).outcome).toBe("rejected");
+    expect((await table(t, "plan_subscriptions"))[0]).toMatchObject({ status: "active", snapshotAt: 1_000 });
   });
 
   test("a Stripe customer already linked to another member is refused, and the payment does not stand", async () => {
@@ -384,6 +389,16 @@ describe("WP64-S4 subscriptions", () => {
     // The operator clears the flag after looking. Access is not restored by it.
     expect(await t.mutation(internal.platform.membership.events.clearReview, { ownerId: member.userId })).toEqual({ cleared: 1 });
     expect((await order(t, member, "annual")).ok).toBe(true);
+  });
+
+  test("an ended subscription is not a duplicate of a new one", async () => {
+    const t = setup();
+    const member = await seedUser(t);
+    const first = await order(t, member, "monthly");
+    await settle(t, subscriptionEvent(snapshot(first.orderId, { status: "canceled", endedAt: 1_500, snapshotAt: 1_500 })));
+    const second = await order(t, member, "annual");
+    const result = await settle(t, subscriptionEvent(snapshot(second.orderId, { subscriptionId: "sub_two", priceKey: "annual" })));
+    expect(result).toEqual({ outcome: "applied", duplicate: false, actions: [] });
   });
 
   test("a second running subscription is canceled and refunded; the first stays", async () => {
@@ -550,6 +565,11 @@ describe("WP64-S4 founding lifetime", () => {
     expect(await seat(t, seatNumber)).toMatchObject({ status: "free" });
     expect(await order(t, member, "monthly").catch((error: Error) => error.message)).toMatch(/ACCOUNT_REVIEW/);
     expect((await settle(t, dispute("lost", { ...on }))).outcome).toBe("ignored");
+    // The operator clears the flag: the grant stays revoked, the account may buy again.
+    expect(await t.mutation(internal.platform.membership.events.clearReview, { ownerId: member.userId })).toEqual({ cleared: 1 });
+    expect((await table(t, "plan_grants"))[0]).toMatchObject({ revokeReason: "operator" });
+    expect((await plan(t, member)).plan).toBe("free");
+    expect((await order(t, member, "monthly")).ok).toBe(true);
   });
 
   test("O5: a subscriber who buys lifetime has the subscription end at period end, once", async () => {
