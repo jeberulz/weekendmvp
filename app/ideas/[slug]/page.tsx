@@ -384,6 +384,10 @@ async function loadPublicMarkdown(slug: string): Promise<string> {
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Render the idea's public preview and account card for anonymous visitors or
+ * its research content for members, falling back to a collection hub or 404.
+ */
 export default async function IdeaPage({
   params,
 }: {

@@ -1,5 +1,12 @@
 "use client";
 
+import * as React from "react";
+import { ChevronDown } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import type { TocSection } from "@/components/ideas/idea-meta";
+import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
+
 /**
  * Sticky TOC sidebar for idea pages — ports the legacy `initSidebar()` from
  * ideas/gate.js (smooth scroll with header offset + IntersectionObserver
@@ -8,14 +15,6 @@
  *
  * `children` is the server-rendered meta card (category/build-time/scores).
  */
-
-import * as React from "react";
-import { ChevronDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import type { TocSection } from "@/components/ideas/idea-meta";
-import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
-
 export function IdeaSidebar({
   sections,
   children,
@@ -45,6 +44,10 @@ export function IdeaSidebar({
     return () => observer.disconnect();
   }, [sections]);
 
+  /**
+   * Smooth-scroll below the floating header, mark the target section active,
+   * and collapse the mobile TOC. Missing targets leave the TOC state unchanged.
+   */
   function scrollToSection(
     event: React.MouseEvent<HTMLAnchorElement>,
     id: string,
