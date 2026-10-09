@@ -124,8 +124,26 @@ describe("WP64-S5 which customer the portal opens", () => {
   test("only the mode the deployment runs in", async () => {
     const t = setup();
     const member = await seedUser(t);
-    await subscribe(t, member);
+    await subscribe(t, member, { customerId: "cus_test_side" });
     expect(await openPortal(t, member, true)).toEqual({ ok: false, code: "INVALID_REQUEST" });
+    // A newer subscription in the other mode never hides this mode's customer.
+    // Inserted directly: one deployment runs one mode, so checkout never opens both.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("plan_subscriptions", {
+        ownerId: member.userId,
+        stripeSubscriptionId: "sub_live_side",
+        stripeCustomerId: "cus_live_side",
+        term: "monthly",
+        status: "active",
+        cancelAtPeriodEnd: false,
+        snapshotAt: 5_000,
+        updatedAt: Date.now() + 1_000,
+        livemode: true,
+      });
+      await ctx.db.insert("billing_customers", { ownerId: member.userId, stripeCustomerId: "cus_live_side", livemode: true, createdAt: 1 });
+    });
+    expect(await openPortal(t, member, false)).toEqual({ customerId: "cus_test_side" });
+    expect(await openPortal(t, member, true)).toEqual({ customerId: "cus_live_side" });
   });
 
   test("the newest subscription's customer", async () => {
