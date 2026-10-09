@@ -514,7 +514,8 @@ const CONSULT_URL = "https://cal.com/switchtoux/mvp-sprint";
 async function CachedStartupIdeasPage() {
   "use cache";
   cacheTag("ideas");
-  cacheLife("hours");
+  // Tag revalidation on upsert keeps the archive fresh; hourly TTL was pure I/O.
+  cacheLife("days");
   // Authoritative even when the public ideas projection is down — overlay
   // falls through to manifest-only membership via onlyPublicIdeas.
   const publications = await fetchQuery(api.editorial.public.listing, {});

@@ -30,7 +30,8 @@ export async function RelatedIdeas({
 }) {
   "use cache";
   cacheTag(`idea:${slug}`, "ideas");
-  cacheLife("hours");
+  // Tag revalidation on upsert keeps rails fresh; hourly TTL was pure I/O.
+  cacheLife("days");
 
   let related: RelatedIdea[] = [];
   try {
