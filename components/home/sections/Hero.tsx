@@ -42,9 +42,9 @@ export function Hero({ idea, total }: { idea: HeroIdea | null; total: number }) 
           </SignupCta>
         </div>
       </Container>
-      {idea && <Container className="relative pb-12 pt-[72px] md:pb-16 lg:pb-0 lg:pt-16">
+      {idea && <Container className="relative pb-12 pt-[72px] md:pb-16 lg:pt-16">
         {/* The stamp inherits this --d; the window sets its own. */}
-        <div className="relative lg:mx-10 lg:h-[456px]" style={introDelay(1.15)}>
+        <div className="relative lg:mx-10" style={introDelay(1.15)}>
           <div className="home-intro [--home-rise:36px]" style={introDelay(0.58)}>
             <HeroBuildWindow idea={idea} total={total} pasteFrom={0.95} />
           </div>
