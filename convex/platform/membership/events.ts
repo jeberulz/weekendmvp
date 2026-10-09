@@ -270,8 +270,10 @@ async function applyCheckout(ctx: MutationCtx, event: Extract<MembershipEvent, {
     await freeSeat(ctx, order, now);
     return { outcome: "applied", ownerId };
   }
-  // An async payment that has not cleared yet waits for its own event.
-  if (event.status !== "complete" || event.paymentStatus !== "paid") return { outcome: "ignored", ownerId };
+  // An async payment that has not cleared yet waits for its own event. A 100% promotion
+  // code completes with nothing to pay, which settles like a paid checkout.
+  const settled = event.paymentStatus === "paid" || event.paymentStatus === "no_payment_required";
+  if (event.status !== "complete" || !settled) return { outcome: "ignored", ownerId };
   const reported = {
     stripeCheckoutSessionId: event.sessionId,
     ...(event.paymentIntentId ? { stripePaymentIntentId: event.paymentIntentId } : {}),

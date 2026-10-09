@@ -561,3 +561,13 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Actions taken: `convex/platform/membership/windows.ts` sets `everyone` to 2026-10-09 13:32 UTC. `buyers` and `newsletter` stay null. The S7 test that pins the real config now pins the ruled date. Ruling "WP64 / founding windows" records the change to the S7 order and why the cohort import is skipped. Merged `main` (PRs #132 and #133). The only conflict was two RULINGS rows appended on both sides; both are kept.
 - Owner step: seed the 50 seats on the production deployment from the Convex dashboard, after a backup. Without the seats the offer stays hidden even with the window open.
 - Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (446 pages). Convex 651, platform 483, security 146 node and 121 Vitest. Two S6 seat-query tests read the real window config and expected it undated. They now mock the windows, like the other WP64 test files, and the S7 test pins the ruled date.
+
+## 2026-10-09 - WP64: promotion codes at checkout
+
+- Owner input, after seeding the seats: "i want to be able to use coupon code so i can give discounts at checkout - please activate this on stripe".
+- Ruling "WP64 / promotion codes" replaces the S3 criterion "Promotion codes are off".
+- Built: `checkoutSessionParams` in `app/api/platform/membership/_server.ts` sends `allow_promotion_codes: true` for every term and both tax modes. The Stripe sandbox accepted a session with it and Managed Payments on.
+- Gap found and fixed: a 100% code completes with `payment_status: "no_payment_required"`. `applyCheckout` ignored anything but `paid`, so a free Founding Lifetime seat would have got no grant. It now settles like `paid`. Async payments that have not cleared are still ignored. Settlement never checks the amount, so a discounted lifetime payment still takes its seat. A duplicate subscription with a $0 invoice is cancelled with nothing to refund (existing path).
+- Stripe has no account-wide switch. Codes are created as a coupon plus a promotion code. How to make one is in `docs/wp/wp64-go-live.md` ("Promotion codes"). No code exists yet.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (446 pages). Convex 653, platform 484, security 146 node and 121 Vitest. Break-on-purpose: dropping `no_payment_required` fails the new webhook test, and dropping `allow_promotion_codes` fails two route tests.
+- Docs updated: RULINGS, wp64-stories (S3), wp64-go-live, this log. Terms not changed.

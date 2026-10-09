@@ -333,6 +333,34 @@ describe("WP64-S4 subscriptions", () => {
     expect(await seat(t, c.seatNumber)).toMatchObject({ status: "free" });
   });
 
+  test("a 100% promotion code completes with nothing to pay and settles like a paid checkout", async () => {
+    const t = setup();
+    const member = await seedUser(t);
+    const monthly = await order(t, member, "monthly");
+    const free = checkout(monthly.orderId, { paymentStatus: "no_payment_required", amountTotal: 0, subscription: snapshot(monthly.orderId) });
+    expect((await settle(t, free)).outcome).toBe("applied");
+    expect(await orderRow(t, monthly.orderId)).toMatchObject({ status: "paid", presentedAmountMinor: 0 });
+
+    // Lifetime has no subscription event to fall back on, so this is what keeps the seat.
+    await seedSeats(t);
+    const buyer = await lifetimeBuyer(t);
+    const freeSeat = paid(buyer.orderId, buyer.seatNumber, { paymentStatus: "no_payment_required", amountTotal: 0, paymentIntentId: null });
+    expect(await settle(t, freeSeat)).toMatchObject({ outcome: "applied", actions: [] });
+    expect(await seat(t, buyer.seatNumber)).toMatchObject({ status: "taken" });
+    expect(await orderRow(t, buyer.orderId)).toMatchObject({ status: "paid", presentedAmountMinor: 0 });
+    expect((await table(t, "plan_grants")).filter((grant) => grant.kind === "lifetime")).toHaveLength(1);
+  });
+
+  test("a discounted lifetime payment still takes its seat; settlement never checks the amount", async () => {
+    const t = setup();
+    await seedSeats(t);
+    const buyer = await lifetimeBuyer(t);
+    const discounted = paid(buyer.orderId, buyer.seatNumber, { amountTotal: 12_450 });
+    expect((await settle(t, discounted)).outcome).toBe("applied");
+    expect(await seat(t, buyer.seatNumber)).toMatchObject({ status: "taken" });
+    expect(await orderRow(t, buyer.orderId)).toMatchObject({ status: "paid", presentedAmountMinor: 12_450 });
+  });
+
   test("an unpaid or open checkout waits for its own event", async () => {
     const t = setup();
     const opened = await order(t, await seedUser(t), "monthly");
