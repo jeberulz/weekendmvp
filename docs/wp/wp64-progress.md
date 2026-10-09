@@ -423,3 +423,21 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Checks run: docs only. `git diff --check` clean.
 - Result: S11 ready to run. Nothing run against Stripe yet.
 - Next: the owner runs Part A and the journeys. Claude runs Parts D and E and fills in the evidence.
+
+## 2026-10-09 - WP64-S11: Claude's checks, the independent review and its fixes
+
+- Owner input: "yes run your part now and publish the runbook with tick boxes", plus a `Missing script: "membership:stripe-setup"` error on the owner's laptop.
+- The npm error: the script exists only on this branch, so the laptop was on `main` or an old copy. Fix: check out and pull `claude/tender-heisenberg-bf94ku`, then `npm ci`. Added to the checklist as step A3. The script is optional for S11 because the sandbox catalog already exists.
+- Actions taken:
+  - Merged `main` (one article commit) so the checks ran on what would ship.
+  - Published the runbook as a checklist page with tick boxes, Pass/Fail and notes: https://claude.ai/artifact/2ysC2vgkP2oNJxS5Yj3jZp. Progress is stored in the page's database (collection `checks`, one document per step), which Claude reads to write up the evidence. Outside claude.ai it saves in the browser and says so.
+  - Part D: the suite, a secret-pattern scan of the 112-file diff, axe on 11 billing states and the three legal pages at 390 and 1440 px, and a dormancy proof that built `main` and the branch with no membership env and compared 165 routes.
+  - Part E: an independent reviewer (separate agent, read-only) covered authorization, pricing, exactly-once settlement, seats, replay and modes, refund and dispute policy, secrets, separation and dormancy. No critical. One high, four medium, nine low.
+  - Fixed: findings 1 to 7 and 9 (a replaced Price no longer freezes stored subscriptions; a rejected subscription is refunded and canceled; reconcile is dynamic; follow-ups are isolated, refusals logged and settled, scheduled plan switches released first, reconcile keeps going; a 30-minute grace before the clock reclaims a lapsed seat; snapshot stamps; a rejected lifetime frees its seat; 25 failed orders read and once-disputed charges refunded). Accepted with reasons: 8, 10, 11, 12. Suggested as separate tasks: 13 (WP24 webhook purpose check) and 14 (legacy webhook logs emails).
+  - The restricted key needs one more permission, Subscription schedules: Write (evidence step 1).
+- Decisions made (mine, reversible):
+  - Stripe's invalid-request refusals on a follow-up are logged and the event acknowledged, because retrying the same call cannot help and a forever-500 would get the endpoint disabled. Anything else (network, rate limit, permission) still gets a 500 so Stripe retries. Owed follow-ups are recomputed on the member's next event and on the daily reconcile.
+  - 30 minutes of grace on lapsed holds, on top of the 35-minute hold: a sell-out launch would rather show a seat as held a little longer than refund a buyer whose webhook was late.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (442 pages; `main` builds 435). Test stages pass: Convex 649, platform 409, security 144 node tests and 121 Vitest tests, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23. The same six failures as before (three OG-image, three editorial). `npm audit --omit=dev --audit-level=high` passes (four moderate in `gray-matter`/`js-yaml`, outside WP64). No secret in the diff. axe: 28 runs, 0 violations. Dormancy: 0 status and 0 selling-copy differences across 165 routes; reconcile proved dynamic on a build (no prerender entry, secret read at run time). Break-on-purpose on the fixes: 16 deliberate breakages, all caught.
+- Result: Claude's part of S11 is done and the review has no open critical or high finding. S11 stays open for the owner's journeys C1 to C20.
+- Next: the owner runs Part A and the journeys on the checklist page. Claude writes the evidence from the page and closes S11.
