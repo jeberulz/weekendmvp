@@ -178,6 +178,8 @@ export type OpenedOrder = {
  * Stripe idempotency key sends the same parameters and gets the same session.
  * Under Managed Payments Stripe collects the address and the tax, and rejects
  * `custom_text`, so the consent sentence shows beside our buy button instead.
+ * Promotion codes are on (ruling "WP64 / promotion codes"): the member types a
+ * code on Stripe's page, and each code's coupon sets which plans it applies to.
  */
 export function checkoutSessionParams(
   order: OpenedOrder,
@@ -194,6 +196,7 @@ export function checkoutSessionParams(
     cancel_url: back("cancelled"),
     client_reference_id: order.orderId,
     metadata,
+    allow_promotion_codes: true,
     ...(subscription ? { subscription_data: { metadata } } : { payment_intent_data: { metadata } }),
     ...(order.stripeCustomerId
       ? { customer: order.stripeCustomerId }

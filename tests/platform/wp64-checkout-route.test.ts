@@ -265,6 +265,7 @@ describe("WP64-S3 checkout route: the Stripe session", () => {
       cancel_url: "https://www.weekendmvp.app/dashboard/billing?checkout=cancelled",
       client_reference_id: "order1",
       metadata,
+      allow_promotion_codes: true,
       subscription_data: { metadata },
       customer_email: "member@example.test",
       consent_collection: { terms_of_service: "required" },
@@ -315,11 +316,25 @@ describe("WP64-S3 checkout route: the Stripe session", () => {
       "customer_update",
       "invoice_creation",
       "adaptive_pricing",
-      "allow_promotion_codes",
       "ui_mode",
     ]) {
       expect(params, field).not.toHaveProperty(field);
     }
+  });
+
+  test("every session lets the member enter a promotion code on Stripe's page, under either tax mode", async () => {
+    // Ruling "WP64 / promotion codes". The sandbox accepted it with Managed Payments on (2026-10-09).
+    await post({ term: "annual", idempotencyKey: KEY });
+    expect(mocks.create.mock.calls[0][0]).toMatchObject({ allow_promotion_codes: true, managed_payments: { enabled: true } });
+    answer(opened({ term: "lifetime", priceKey: "lifetime_t1", seatNumber: 1, sessionExpiresAt: 1_800_000_000_000 }));
+    await post({ term: "lifetime", idempotencyKey: KEY });
+    expect(mocks.create.mock.calls[1][0]).toMatchObject({ allow_promotion_codes: true, mode: "payment" });
+    vi.stubEnv("MEMBERSHIP_TAX_MODE", "automatic_tax");
+    answer(opened({ stripeCustomerId: "cus_2" }));
+    await post({ term: "monthly", idempotencyKey: KEY });
+    expect(mocks.create.mock.calls[2][0]).toMatchObject({ allow_promotion_codes: true });
+    // A code is chosen on Stripe's page. The session never carries one of ours.
+    for (const [params] of mocks.create.mock.calls) expect(params).not.toHaveProperty("discounts");
   });
 
   test("the Stripe Tax fallback adds tax, the address and the consent sentence instead", async () => {

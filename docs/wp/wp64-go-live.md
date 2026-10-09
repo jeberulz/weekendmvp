@@ -145,6 +145,17 @@ Once Steps 5 and 6 are both live, every signed-in member sees Founding Lifetime 
 
 Daily for the first week: webhook failures (Stripe, Developers, Webhooks), Vercel logs for `membership follow-up failed` and `membership portal flow refused`, refunds, disputes, and `platform/membership/events:counts`.
 
+## Promotion codes (ruling "WP64 / promotion codes")
+
+Every Checkout Session sends `allow_promotion_codes: true`, live once the PR that adds it merges. Stripe's page then shows an "Add promotion code" field. Nothing works until a code exists. In live mode, Product catalog, Coupons, Create coupon:
+
+- **Discount:** a percentage or a fixed amount in USD.
+- **Duration:** for monthly and annual, once (first payment only), repeating for some months, or forever. Founding Lifetime is one payment, so any duration takes off once.
+- **Apply to specific products:** Builder's Hub (`prod_VPR7BdtHNIAjiO`), Founding Lifetime (`prod_VPR7rrNHH46YKM`), or both. Leave it empty and the code works on both.
+- **Promotion code:** the word members type, with optional expiry, a redemption limit, first-time customers only, or a minimum amount.
+
+A code changes only what the member pays. The plan, the founding seat and its tranche price stay the same. A 100% code needs no card and still grants the plan. A refund returns what the member paid. To stop a code, archive the promotion code in Stripe.
+
 ## Rollback
 
 Set `MEMBERSHIP_BILLING_MODE` empty and redeploy: checkout and the portal answer 503, the webhook keeps settling. Turn `NEXT_PUBLIC_BUILDERS_HUB` off and rebuild. Never delete tables. Refunds happen in Stripe.
