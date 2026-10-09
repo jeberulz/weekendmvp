@@ -148,3 +148,40 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - React writes `checked` before `value` on a radio, so markup tests match attributes in any order.
   - `useSearchParams` sits inside a `Suspense` boundary. The billing route was already dynamic in the build, so this changes nothing today, but it keeps the page safe if it ever becomes static.
 - Next: S3 (Checkout Sessions), once O1 and O5 are ruled and S9 has the Terms text. S7 and S8 can start now, and both add a table, so they belong in this branch's schema window.
+
+## 2026-10-09 - WP63-S7 (founding offer: cohorts, windows and the seat counter)
+
+- Actions taken:
+  - `offer_cohorts` appended to `convex/schema.ts` in this branch's schema window: cohort (`buyers` or `newsletter`), `emailHash`, `importedAt`, `batchId`, with `by_emailHash`, `by_cohort_and_emailHash` and `by_batchId`. Additive only.
+  - Windows: `convex/platform/membership/windows.ts`, three dates, all null. Buyers open at window 1, newsletter at window 2 (buyers included), everyone at window 3. Each stays open until the seats are gone.
+  - Eligibility: `convex/platform/membership/offer.ts` (read-only, clock-free). It hashes the member's email only when it is verified and the account is not anonymous, and looks it up in `offer_cohorts`. `assertFoundingEligible(ctx, user, now)` is the guard S3's checkout must call. It throws `NOT_YET_ELIGIBLE`, with `opensAt` when the member's window is dated.
+  - Operator writes: `membership/cohorts:importBatch` (200 hashes per call, rejects a bad hash, a repeat or a mismatched batch id, skips rows already there), `removeBatch` (undo by batch id, a page at a time) and the internal query `launchCheck` (seat counts, window dates, and whether they are in order).
+  - Import script: `npm run membership:import-cohorts -- --cohort=buyers --file=PATH`. It reads a file outside the repo or under `tmp/`, hashes on the operator's machine, and prints counts and a batch id only. Applying needs `--apply`, the dry run's exact `--confirm=<batch id>`, an existing `--backup=PATH`, and env `MEMBERSHIP_COHORT_CONVEX_URL` and `MEMBERSHIP_COHORT_ADMIN_KEY` matching `--target`, the same rules as `editorial-submit-engine.mjs`.
+  - Ladder: the seat query now also returns this member's `eligibleFrom`. Founding Lifetime stays hidden until a window is dated for the member. Before it opens, it shows but can't be picked, with "Not open yet" and "Opens for you on November 4, 2026 at 5:00 PM" in the member's time zone.
+  - Home card: a new `founding_lifetime` offer kind. It shows to a free member past day one whose window is open, while seats remain and only with the Builder's Hub flag on (the browser passes the flag, because the card links to the ladder the flag hides). It shows the true seats left and the next seat's price, ranks above a promo and the Starter Kit, can be dismissed like any card, and retires when the seats are gone.
+  - Tests: `convex/wp63FoundingOffer.test.ts` (23), `tests/platform/wp63-founding.test.tsx` (11), `tests/security/membership-cohort-import.test.mjs` (7), and updated pins in the S2 static test, the WP44 offer test and the S6 tests.
+- Decisions made (mine, reversible, none is a ruling):
+  - Hash cohort emails instead of storing them. Convex already holds members' emails, so hashing protects buyers and subscribers who never signed up. It is unsalted, so a guessed address can still be checked: the table is still personal data. A secret pepper would add a key to manage for little gain.
+  - Normalize like sign-in does (NFKC, trim, lowercase). No plus-tag or dot stripping. A buyer who signs up with another address can be added with a new import.
+  - An unverified or anonymous account gets no cohort but still gets window 3. S3 requires a verified email to check out anyway.
+  - The founding card ranks first among Home cards while it is open. PRD 6.2 had promo, then the kit. Say if a promo should win.
+  - The card keeps the first-day quiet period (O6 not ruled). No invite parameter.
+- Checks run on the branch (final, single run):
+  - `npm run typecheck` passes. `npm run lint` has 0 errors and 34 warnings, the same count as before. `npm run build` succeeds (434 static pages).
+  - Test stages pass: links 6, redirects 76, auth 144, security (107 node tests, up from 100, and 121 Vitest tests), sitemap 11, Convex 560 (up from 537), engine 1,076, home 77, prompts 23, platform 290 (up from 279).
+  - The same six failures as before, none from this work: three OG-image tests (blocked hosts) and three editorial tests that also fail on `main`.
+  - Break-on-purpose: 39 deliberate breakages. 37 were caught on the first run. The 2 survivors were redundant guards. The "seats seeded" check in `readFoundingInput` changed nothing, because an unseeded table already reads as no seats and no price, so I removed it. The card's own seats-left guard overlaps with "the next seat has a price", so I kept it and added a test where the two disagree. That mutation is now caught. Examples of the 39: buyers left out of window 2, the latest window winning, a window opening a moment late or without a date, unverified or anonymous accounts getting a cohort, eligibility reading the subscription log, the checkout guard passing or hiding the date, hash drift between the script and Convex, the import accepting bad or repeated hashes or a foreign batch id, the undo touching other batches, the card ignoring the window, the flag, dismissal or the plan, windows dated by default, the dry run printing the list, and apply skipping the batch id, the backup or the repo-file check.
+  - Schema diff against `origin/main`: only added lines.
+- Accessibility: the ladder before a member's window, the Home founding card, the open ladder and the sheet, rendered to static HTML and checked with axe-core 4 (wcag2a, wcag2aa, wcag21a, wcag21aa, best-practice) and the built CSS at 390 px and 1440 px: 0 violations in all 8 runs, and no horizontal scroll. The unselectable lifetime radio drops out of the Tab order, and the arrow keys still move between monthly and annual.
+- Docs updated: `docs/wp/wp63-stories.md` (S7 status, the hashed-email contract change, S12 tooling pointers), `.env.example` (the two import keys). Not needed: `.agentic-workflow.yml` (S4), the cutover env lists (operator-only keys, like the editorial import), `docs/wp/AGENT_HANDOFF.md` (owner-managed).
+- Result: S7 built on the branch and pushed (`120fa57`, cleanup `b11139c`). Not merged. The offer stays closed after a merge, because every window date is null.
+- Handed on:
+  - S3: call `assertFoundingEligible` before reserving a seat and map its error to `{ ok: false, code: "NOT_YET_ELIGIBLE", opensAt }` with HTTP 409.
+  - S9: the privacy policy should say cohort emails are stored hashed, and name the sources (Stripe buyers, Beehiiv subscribers).
+  - S12: date the windows (a code change and a deploy), import each cohort (dry run, then apply with a backup and the exact target), then run `launchCheck` to confirm 50 free seats, none held or taken, and windows in order.
+  - Owner: export the ship·able and DARE buyer emails from Stripe and the newsletter list from Beehiiv to private files. Input 8 says both may be empty, which the code treats as normal.
+- Gotchas:
+  - The dashboard refuses anonymous sessions before any query runs, so the anonymous case is tested against the eligibility helper directly.
+  - `toEqual` ignores keys set to `undefined`. Tests that care whether a key exists use `toStrictEqual` (found in S6, reused here).
+  - Only the date list in `windows.ts` changes at launch. A test fails if the committed dates are not all null, so a launch commit must update that test on purpose.
+- Next: S8 (live builds) is the last story that adds a table in this schema window. S3 still waits on O1, O5 and S9.
