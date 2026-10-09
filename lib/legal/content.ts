@@ -337,16 +337,18 @@ export const REFUND_POLICY: LegalDoc = {
 };
 
 /**
- * WP64-S9. The privacy policy section for payments and Builder's Hub. Shown
- * under the same approval gate as the Terms.
+ * WP64-S9. The privacy policy section for Builder's Hub, under the same
+ * approval gate as the Terms. It follows the live "Payments" section (PR #129),
+ * which already names Stripe and links its privacy policy, so this one covers
+ * only what Builder's Hub adds.
  */
 export const PRIVACY_MEMBERSHIP: LegalSection = {
-  id: "payments-and-builders-hub",
-  heading: `Payments and ${HUB}`,
+  id: "builders-hub",
+  heading: HUB,
   blocks: [
     {
       kind: "p",
-      text: `When you buy ${HUB}, Stripe processes your payment. Stripe collects your card details and billing address directly. We never see or store your card number.`,
+      text: `${HUB} payments also go through Stripe, on Stripe Checkout. Stripe collects your card details and billing address directly, and we never see or store your card number.`,
     },
     {
       kind: "p",

@@ -122,6 +122,25 @@ export default function PrivacyPolicyPage() {
             Beehiiv contact is not reactivated by creating a site account.
           </SectionRow>
 
+          <SectionRow id="payments" heading="Payments">
+            When you buy a ship·able workshop seat, Stripe processes the
+            payment through a Stripe Payment Link. Stripe collects your card
+            details directly, and we never see or store your card number.
+            Stripe sends us a record of the purchase: your email address, your
+            Stripe customer id, the amount and currency, and the payment link
+            used. We keep that record to confirm your purchase. We also add
+            your email address to the ship·able workshop emails in Beehiiv,
+            which you can unsubscribe from at any time. Stripe handles the data
+            it holds under{" "}
+            <NavExternalLink
+              href="https://stripe.com/privacy"
+              className="text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
+              Stripe&apos;s privacy policy
+            </NavExternalLink>
+            .
+          </SectionRow>
+
           {/* WP64-S9: a draft under the Terms' approval gate, hidden in production until approved. */}
           {legalPagesVisible() ? <LegalSectionRow section={PRIVACY_MEMBERSHIP} /> : null}
 

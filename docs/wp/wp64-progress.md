@@ -241,7 +241,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 ## 2026-10-09 - WP64-S9 (Terms, refund policy and privacy section)
 
 - Actions taken:
-  - Content as data in `lib/legal/content.ts`: the Builder's Hub Terms (13 sections), the refund policy (7 sections) and a privacy section, "Payments and Builder's Hub". Prices, the lifetime tranches, the seat count, the plan's features, the refund line and the tax line come from `PRICING` and `PLANS`, so the pages cannot drift from checkout. Where a decision is open, the text is the recommended default from the stories, and the section carries a review note naming the decision (O1, O2, O3, O4, O8, O9), "lawyer" or "owner". Facts only the owner can supply (seller name, address, VAT status, support email) are `{{O2: …}}` gaps, never invented.
+  - Content as data in `lib/legal/content.ts`: the Builder's Hub Terms (13 sections), the refund policy (7 sections) and a privacy section, "Builder's Hub" (renamed from "Payments and Builder's Hub" after PR #129, see below). Prices, the lifetime tranches, the seat count, the plan's features, the refund line and the tax line come from `PRICING` and `PLANS`, so the pages cannot drift from checkout. Where a decision is open, the text is the recommended default from the stories, and the section carries a review note naming the decision (O1, O2, O3, O4, O8, O9), "lawyer" or "owner". Facts only the owner can supply (seller name, address, VAT status, support email) are `{{O2: …}}` gaps, never invented.
   - One approval switch, `MEMBERSHIP_LEGAL_APPROVED` in `lib/legal/status.ts`, off. While off, `/terms`, `/refund-policy` and the new privacy section show in local development only. A production build returns 404 for both pages and leaves the privacy policy exactly as it is. Not tied to the Builder's Hub flag: Stripe needs the Terms live at S12 step 4, before the flag turns on at step 7.
   - Renderer `components/public/LegalPage.tsx` in the privacy policy's layout, with an "On this page" list. While a draft, it shows a banner ("Draft for review. Not in force." and "This is not legal advice."), each section's review notes, and each gap as a highlighted "To be confirmed (O2): …". Drafts are `noindex, nofollow` with their own canonical.
   - Routes `app/(marketing)/terms/page.tsx` and `app/(marketing)/refund-policy/page.tsx`. The privacy policy adds the section before Contact, behind the same switch.
@@ -268,5 +268,17 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - S10: set the Terms and Privacy URLs in Stripe's public details, turn on the annual renewal reminder (at least 7 days, as the Terms say) and Smart Retries (the Terms say about two weeks).
 - Gotchas:
   - `legalPagesVisible()` reads `NODE_ENV` when called, so tests can stub it per case. Next sets it to `production` for every build, previews included.
-  - The privacy policy as it is today (outside this story) does not mention Stripe, though ship·able used a Stripe Payment Link. Reported to the owner, not changed here.
+  - The privacy policy (outside this story) did not mention Stripe, though ship·able used a Stripe Payment Link. Reported to the owner and fixed separately in PR #129, see below.
 - Next: S3 waits on O1 and O5 now, not on S9. The text needs the review above before S12.
+
+## 2026-10-09 - Privacy policy Stripe gap (PR #129) and sync
+
+- Actions taken:
+  - At the owner's request, a Small Fix outside WP64 on `claude/privacy-stripe-gap`: the live privacy policy gains a "Payments" section for ship·able seats (Stripe Payment Link, the purchase record the legacy webhook stores, Beehiiv enrollment, a link to Stripe's privacy policy), with `tests/platform/privacy-payments.test.tsx`. Merged to `main` as PR #129.
+  - Merged `origin/main` into this branch. One conflict, in `app/(marketing)/privacy-policy/page.tsx`, where both sides added a section before Contact. Kept both: the live "Payments" section, then the gated draft.
+  - The draft section is now "Builder's Hub" (id `builders-hub`) and covers only what Builder's Hub adds: Stripe Checkout and the billing address, what we store, cohort hashes and live builds. The Stripe link and the card line for ship·able stay in "Payments".
+  - `tests/platform/privacy-payments.test.tsx` renders as production, so it checks the live page. `tests/platform/wp64-legal.test.tsx` checks the order in both modes: the live sections in production, and "builders-hub" between "payments" and "contact" in development.
+- Decisions made: none beyond the merge.
+- Checks run on the merged tree: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (437 pages, and the built privacy policy has the Payments section and no draft). Test stages pass (platform 320, up from 317), with the same six failures as before (three OG-image, three editorial).
+- Result: the branch is in sync with `main` at `6dd2668`.
+- Next: unchanged. S3 waits on O1 and O5. The Terms text needs the owner's and a lawyer's review before S12.

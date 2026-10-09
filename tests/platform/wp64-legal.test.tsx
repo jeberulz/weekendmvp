@@ -206,12 +206,16 @@ describe("WP64-S9 the refund policy", () => {
 });
 
 describe("WP64-S9 the privacy policy", () => {
-  test("names Stripe and what we store, in development only until approved", () => {
+  const sectionIds = (html: string) => [...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1]);
+  const LIVE_IDS = ["cookies-and-analytics", "your-choices", "data-collection", "email-collection", "payments", "contact"];
+
+  test("adds a Builder's Hub section after Payments, in development only until approved", () => {
     vi.stubEnv("NODE_ENV", "development");
-    const draft = text(renderToStaticMarkup(<PrivacyPolicyPage />));
-    expect(draft).toContain("Payments and Builder’s Hub");
-    expect(draft).toContain("Stripe processes your payment");
-    expect(draft).toContain("We never see or store your card number.");
+    const html = renderToStaticMarkup(<PrivacyPolicyPage />);
+    const draft = text(html);
+    expect(sectionIds(html)).toEqual([...LIVE_IDS.slice(0, -1), "builders-hub", "contact"]);
+    expect(draft).toContain("Builder’s Hub payments also go through Stripe, on Stripe Checkout.");
+    expect(draft).toContain("billing address directly, and we never see or store your card number.");
     expect(draft).toContain("your Stripe customer id");
     expect(draft).toContain("Founding Lifetime seat number");
     expect(draft).toContain("one-way hashes of the addresses");
@@ -220,16 +224,14 @@ describe("WP64-S9 the privacy policy", () => {
 
     vi.stubEnv("NODE_ENV", "production");
     const live = renderToStaticMarkup(<PrivacyPolicyPage />);
-    expect(live).not.toContain("Stripe");
-    expect(live).not.toContain("payments-and-builders-hub");
-    // The existing sections are untouched.
-    for (const id of ["cookies-and-analytics", "your-choices", "data-collection", "email-collection", "contact"]) {
-      expect(live).toContain(`id="${id}"`);
-    }
+    // The live policy (with its Payments section, PR #129) is untouched.
+    expect(sectionIds(live)).toEqual(LIVE_IDS);
+    expect(live).not.toContain("Builder’s Hub");
   });
 
-  test("the section sits before Contact, behind the gate", () => {
+  test("the section sits between Payments and Contact, behind the gate", () => {
     expect(privacySource).toContain("{legalPagesVisible() ? <LegalSectionRow section={PRIVACY_MEMBERSHIP} /> : null}");
+    expect(privacySource.indexOf('id="payments"')).toBeLessThan(privacySource.indexOf("PRIVACY_MEMBERSHIP} />"));
     expect(privacySource.indexOf("PRIVACY_MEMBERSHIP} />")).toBeLessThan(privacySource.indexOf('id="contact"'));
   });
 });
