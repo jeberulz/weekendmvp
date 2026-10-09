@@ -462,3 +462,15 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - S11 C17: the O5 notice shows before checkout.
   - Owner: the Terms say nothing about switching plans or O5. Add a sentence if you want one.
 - Next: the owner runs S11 on the checklist page.
+
+## 2026-10-09 - WP64: Terms sentence on changing plans
+
+- Owner input: "yes keep \"not refunded automatically\" and add a Terms sentence". Also: "i cant see the Lifetime option in my localhost", with a screenshot of an annual member's page showing only the Monthly card.
+- Actions taken:
+  - `lib/legal/content.ts`: a new Terms section, "Changing your plan", between Founding Lifetime and Cancelling. It says Stripe shows the amount before you confirm. Monthly to annual starts at once, with a credit for the unused month. Annual to monthly starts when the annual year ends. Buying Founding Lifetime stops a monthly or annual plan renewing. A change of plan does not refund the time already paid for automatically, and the 30-day refund on the first payment still applies. No prices are typed: the section names "the annual price" and "the monthly price", so it cannot drift from `PRICING`.
+  - `tests/platform/wp64-legal.test.tsx`: the section order and a content test.
+  - The localhost question needed no code change. The Lifetime card shows only once founding seats are seeded and a window is dated for the member. In the repo all three windows are null until launch (O7), so a fresh local backend offers nobody a seat. Runbook step A5 seeds the seats and opens the `everyone` window locally.
+- Decisions made (mine, reversible): no review marker on the new section. The owner asked for it, and its wording follows the rules already in the stories and the Stripe setup evidence.
+- Checks run: `npm run typecheck` passes. The legal tests pass (19). axe on the Terms, refund and privacy pages at 390 and 1440 px: 0 violations, and the new section is in the contents list and the Tab order.
+- Result: the Terms cover plan changes. The page is still a draft until O2 and the approval switch.
+- Next: the owner runs S11 on the checklist page.

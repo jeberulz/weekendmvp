@@ -120,6 +120,7 @@ describe("WP64-S9 the Terms", () => {
       "what-you-get",
       "prices",
       "founding-lifetime",
+      "changing-plan",
       "cancelling",
       "refunds",
       "your-rights",
@@ -164,6 +165,15 @@ describe("WP64-S9 the Terms", () => {
     expect(body).toContain("goes down evenly over three years");
     expect(body).toContain("you can usually cancel an online purchase within 14 days");
     expect(body).toContain("Link and Stripe process payments. We never see or store your card details.");
+  });
+
+  test("say how switching plans works, and that a switch refunds nothing automatically (O5)", () => {
+    expect(body).toContain("Monthly to annual starts straight away.");
+    expect(body).toContain("less a credit for the unused part of your current month");
+    expect(body).toContain("Annual to monthly starts when your annual year ends.");
+    expect(body).toContain("your monthly or annual plan stops renewing and we do not charge you for it again.");
+    expect(body).toContain("does not refund the time you already paid for automatically");
+    expect(body).toContain("You can still ask for the 30-day refund on your first payment.");
   });
 
   test("name the seller and Link as merchant of record (O1, O2)", () => {

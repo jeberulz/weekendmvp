@@ -119,6 +119,28 @@ export const TERMS: LegalDoc = {
       ],
     },
     {
+      id: "changing-plan",
+      heading: "Changing your plan",
+      blocks: [
+        {
+          kind: "p",
+          text: "You can change your plan from Plan and billing. Stripe shows what you pay before you confirm a switch.",
+        },
+        {
+          kind: "list",
+          items: [
+            "Monthly to annual starts straight away. You pay the annual price, less a credit for the unused part of your current month, and your annual year starts that day.",
+            "Annual to monthly starts when your annual year ends. You keep annual until then, then pay the monthly price each month.",
+            "Monthly or annual to Founding Lifetime: once your lifetime payment goes through, your monthly or annual plan stops renewing and we do not charge you for it again.",
+          ],
+        },
+        {
+          kind: "p",
+          text: "A change of plan does not refund the time you already paid for automatically. You can still ask for the 30-day refund on your first payment.",
+        },
+      ],
+    },
+    {
       id: "cancelling",
       heading: "Cancelling",
       blocks: [
