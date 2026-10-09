@@ -14,7 +14,7 @@ import liveSource from "../../components/platform/live/LiveBuilds.tsx?raw";
 import sheetSource from "../../components/platform/plan/UpgradeSheet.tsx?raw";
 import operatorSource from "../../convex/platform/liveBuildsOperator.ts?raw";
 
-// WP63-S8. The live builds page, rendered from what the member query returns.
+// WP64-S8. The live builds page, rendered from what the member query returns.
 
 type Listing = FunctionReturnType<typeof api.platform.liveBuilds.list>;
 type Session = Listing["upcoming"][number];
@@ -68,7 +68,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe("WP63-S8 the page", () => {
+describe("WP64-S8 the page", () => {
   test("an empty schedule says so", () => {
     const html = render({ entitled: true, upcoming: [], past: [] });
     expect(html).toContain("No live build is scheduled yet. The next one will show here.");
@@ -123,7 +123,7 @@ describe("WP63-S8 the page", () => {
   });
 });
 
-describe("WP63-S8 navigation", () => {
+describe("WP64-S8 navigation", () => {
   test("Live builds sits under Builds in the sidebar and in the phone Account sheet, flag on only", () => {
     expect(LIVE_NAV).toEqual({ id: "live", label: "Live builds", href: "/dashboard/live" });
     expect(PRIMARY_NAV.map((item) => item.id)).toEqual(["home", "ideas", "saved", "builds"]);
@@ -140,7 +140,7 @@ describe("WP63-S8 navigation", () => {
   });
 });
 
-describe("WP63-S8 links never reach a client file, analytics or logs", () => {
+describe("WP64-S8 links never reach a client file, analytics or logs", () => {
   const clientFiles = {
     ...import.meta.glob("../../app/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }),
     ...import.meta.glob("../../components/**/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }),

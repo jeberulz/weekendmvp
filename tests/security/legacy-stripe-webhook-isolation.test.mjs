@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// Static pins for WP63-S1: the legacy ship·able payment path stays isolated,
+// Static pins for WP64-S1: the legacy ship·able payment path stays isolated,
 // the log it writes never decides access, and its hand-off is signed.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));

@@ -15,8 +15,8 @@ import {
 } from "./liveBuildRules";
 
 /**
- * WP63-S8. Operator-only writes for live builds. Internal, so only a deploy
- * key reaches them (`npx convex run`, see `docs/runbooks/wp63-live-builds.md`).
+ * WP64-S8. Operator-only writes for live builds. Internal, so only a deploy
+ * key reaches them (`npx convex run`, see `docs/runbooks/wp64-live-builds.md`).
  * There is no admin UI. They return ids and statuses, never a link.
  *
  * Each write schedules `advance` for the moment the join link opens and the

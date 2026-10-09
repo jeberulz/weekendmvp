@@ -25,7 +25,7 @@ export function upgradeRequired(feature: GatedFeature, detail: Record<string, st
   return new ConvexError({ ...detail, code: UPGRADE_REQUIRED, feature });
 }
 
-/** For the on/off features (S11): collections, prompt pack export, compare, and live builds (WP63-S8). */
+/** For the on/off features (S11): collections, prompt pack export, compare, and live builds (WP64-S8). */
 export async function requireFeature(
   ctx: QueryCtx,
   ownerId: Id<"users">,
@@ -77,7 +77,7 @@ export const mine = query({
     usage: v.object({ activeWeekendPlans: v.number(), activeWeekendPlansCapped: v.boolean() }),
     /** Account creation time. The client applies the first-day quiet period with its own clock. */
     joinedAt: v.number(),
-    /** WP63-S2. Term, status, dates and founding seat. Never a Stripe id. */
+    /** WP64-S2. Term, status, dates and founding seat. Never a Stripe id. */
     billing: billingSummaryValidator,
   }),
   handler: async (ctx) => {

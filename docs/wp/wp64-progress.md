@@ -1,9 +1,11 @@
-# WP63 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
+# WP64 Progress - Builder's Hub Billing (Subscriptions, Annual And Founding Lifetime)
 
-> Renumbered twice (see `docs/wp/RULINGS.md`): WP55 became WP62 on 2026-10-07 because a local
-> Codex branch, `codex/wp55-price-acceptance`, already uses WP55. WP62 became WP63 on 2026-10-08
-> because `main` took WP62 for the public idea SEO summary. Entries dated before 2026-10-08 keep
-> the old WP55 or WP62 labels and the old `wp55-*` and `wp62-*` file names. Read them as WP63.
+> Renumbered three times (see `docs/wp/RULINGS.md`): WP55 became WP62 on 2026-10-07 because a
+> local Codex branch, `codex/wp55-price-acceptance`, already uses WP55. WP62 became WP63 on
+> 2026-10-08 because `main` took WP62 for the public idea SEO summary. WP63 became WP64 on
+> 2026-10-09 because `main` took WP63 for public navigation consistency (PR #127). Entries dated
+> before 2026-10-08 keep the old WP55 or WP62 labels and file names. Entries from 2026-10-08 and
+> 2026-10-09 were relabeled WP64 in this file, and their commits still say WP63. Read all as WP64.
 
 Append-only progress log. Do not rely on chat history for project state. Treat this file as claims, not evidence. Verify before relying on a number.
 
@@ -62,7 +64,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Local-only branches are invisible from a cloud checkout. If one already uses WP62, renumber again the same way.
 - Next: unchanged. Owner rulings on O1 to O9, starting with Stripe's written answer on the live build. S1 and S2 can start once the owner opens the build lane, names a branch, and confirms no other package holds the schema writer slot.
 
-## 2026-10-08 - WP63-S1 (legacy webhook guard and signed payment-log hand-off)
+## 2026-10-08 - WP64-S1 (legacy webhook guard and signed payment-log hand-off)
 
 - Actions taken:
   - Renumbered the package from WP62 to WP63 first: `main` took WP62 for the public idea SEO summary (PR #125) and a remote branch also claims it. Merged `main` again (14 commits, one docs conflict in the registry table).
@@ -85,7 +87,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - `convex-test` ignores public versus internal visibility, so the static test pins that `recordEventInternal` is an `internalMutation` and that `api.payments.recordEvent` has exactly one caller. The contract step must update that test on purpose.
 - Next, owner steps, in order: (1) confirm whether the ship·able Payment Link is still active in Stripe. (2) Decide whether `subscriptions.record` (the email-list log, also public) gets the same fix now or later. (3) After merge and deploy, generate a 32+ character secret, set `LEGACY_PAYMENTS_BRIDGE_SECRET` in Convex first and then in Vercel, and confirm a test-mode Payment Link purchase is logged. (4) Only then the contract step. Next story S2 can start once nothing else holds the schema writer slot.
 
-## 2026-10-08 - WP63-S2 (plan model, membership tables, entitlement resolver)
+## 2026-10-08 - WP64-S2 (plan model, membership tables, entitlement resolver)
 
 - Actions taken:
   - Merged `origin/main` first (3 commits, PR #123, which added two tables to `convex/schema.ts`). No conflicts. Checked open pull requests for another schema writer: none touched in the last week, so this branch holds the schema writer slot until it merges.
@@ -93,7 +95,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Six tables appended to `convex/schema.ts` with the contract's indexes: `billing_customers`, `plan_subscriptions`, `membership_orders`, `plan_grants`, `founding_seats`, `billing_events`. No existing table, field or index changed (`git diff origin/main -- convex/schema.ts` shows only added lines).
   - `convex/platform/membership/state.ts` (read-only, clock-free): `readMembershipState` reads at most 25 grants and 25 subscriptions per owner, newest first, and `deriveMembership` picks the plan and the billing summary. `resolvePlan` now returns its plan. `entitlements.mine` also returns `billing` (term, status, renewsAt, endsAt, foundingSeat). `countSeats` reads at most 51 seat rows.
   - Operator-only internal mutations: `membership/seats:seed` (dry run unless `apply: true`, inserts missing seats only, refuses a bad or duplicate seat number) and `membership/comp:grant` and `:revoke` (comp grants only, never lifetime).
-  - Tests: `convex/wp63Membership.test.ts` (34: ladder, schema indexes and no arrays, the resolver matrix, precedence, isolation, no Stripe ids in `mine`, seed and comp) and `tests/security/membership-tables-isolation.test.mjs` (6 static pins). One WP54 test fixture gained the new `billing` field.
+  - Tests: `convex/wp64Membership.test.ts` (34: ladder, schema indexes and no arrays, the resolver matrix, precedence, isolation, no Stripe ids in `mine`, seed and comp) and `tests/security/membership-tables-isolation.test.mjs` (6 static pins). One WP54 test fixture gained the new `billing` field.
 - Decisions made (mine, reversible, none is a ruling):
   - Access: a live lifetime grant, then a subscription stored `active` or `past_due` with no open dispute, then a live comp grant. A dispute on a subscription suspends it, following O9, which the contract's resolver line did not spell out.
   - Summary status mirrors Stripe (`active`, `past_due`, `canceled`, `unpaid`, `paused`) plus `suspended`. `incomplete`, `incomplete_expired` and `trialing` grant nothing and show nothing. A revoked grant shows nothing.
@@ -105,7 +107,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - The same six failures as in S1, none from this work: three OG-image tests (OpenAI and Recraft are blocked in this sandbox) and three editorial tests ("headers was called outside a request scope"), which also fail on `main`.
   - Break-on-purpose: 34 deliberate breakages, each caught by at least one suite. Examples: past_due losing access, trialing granting it, an open dispute ignored, a suspended or revoked grant still granting, reads across owners, a clock read in the state module, `.collect()` in the seat count, a Stripe field in the summary, the seed writing without `apply` or re-inserting seats, the seed or comp revoke turning public, a renamed index, an array column, an off-by-one tranche. The index-rename case first matched the legacy `stripe_events` index too, so it was rerun with a pattern unique to `billing_events`, and caught.
   - Schema diff against `origin/main`: 91 lines added, 0 removed.
-- Docs updated: `docs/wp/wp63-stories.md` (S2 status, data contract clarifications, and a new S3 criterion that production refuses `test` mode), `docs/wp/wp44-dashboard-prd.md` 9.3 and 9.4 (pointers to the resolver and to WP63), and the `PRICING` comment in `plans.ts`. Not needed: `.agentic-workflow.yml` (the critical flows land with S4), the env lists in `docs/runbooks/2026-cutover.md` (S2 adds no env), `.env.example` (same reason), and `docs/wp/AGENT_HANDOFF.md` (owner-managed).
+- Docs updated: `docs/wp/wp64-stories.md` (S2 status, data contract clarifications, and a new S3 criterion that production refuses `test` mode), `docs/wp/wp44-dashboard-prd.md` 9.3 and 9.4 (pointers to the resolver and to WP64), and the `PRICING` comment in `plans.ts`. Not needed: `.agentic-workflow.yml` (the critical flows land with S4), the env lists in `docs/runbooks/2026-cutover.md` (S2 adds no env), `.env.example` (same reason), and `docs/wp/AGENT_HANDOFF.md` (owner-managed).
 - Result: S2 built on the branch and pushed (`8bc6831`). Not merged or deployed. The box stays open until the merge, because the schema only reaches Convex then.
 - Gotchas:
   - Union validators on a table break `convex/referenceTables.ts`, which spreads `.fields` from every table validator. Grants and seats are flat objects for that reason.
@@ -113,7 +115,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - `npx convex codegen` still needs a login. `convex/_generated/api.d.ts` gained four lines by hand. `dataModel.d.ts` derives from the schema and needed nothing.
 - Next: S3 (Checkout Sessions) needs O1 for the tax mode and O5 for lifetime-while-subscribed, plus S9 for the consent text. S6, S7 and S8 can start on top of S2. S7 and S8 add `offer_cohorts` and `live_builds`, so they should land in this same schema window or wait for the next one.
 
-## 2026-10-08 - WP63-S6 (dashboard surfaces: ladder, sheet, current plan, return state)
+## 2026-10-08 - WP64-S6 (dashboard surfaces: ladder, sheet, current plan, return state)
 
 - Actions taken:
   - Route contract `app/api/platform/membership/_contract.ts`, for S3 and S5 to import: paths, the body `{ term, idempotencyKey }`, the key pattern, error codes with their HTTP statuses, `{ ok: true, url }` answers, the return parameter (`?checkout=return` and `?checkout=cancelled`), and `isStripeRedirect` (https on `checkout.stripe.com` or `billing.stripe.com` only, no credentials or port). A 404 reads as "not open yet", so the surfaces work before S3 exists.
@@ -121,7 +123,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Signed-in query `membership/queries:ladder`: seeded or not, seats left, seats held by unfinished checkouts, and the next seat's price. Reads at most 51 rows plus one index lookup, no clock, no owner or order ids.
   - Surfaces: `TermPicker` (one native radio group with a legend, monthly and annual side by side, Founding Lifetime full width), `PurchaseFinePrint` (refund line, tax line, Terms and Refund policy links beside every buy button), `MembershipLadder` on Plan and billing, `CurrentPlan` (term, renewal or end date, founding seat, payment notices, Manage billing for subscribers), `CheckoutReturn` (confirming, slow after 90 seconds, confirmed, cancelled). The upgrade sheet now has the term picker and its button starts checkout.
   - Analytics: `upgrade_clicked` carries `term`. New `checkout_started` (fires after the route answers with a Stripe URL, before the redirect), `checkout_completed` and `founding_seat_taken` (fire once, only after `entitlements.mine` confirms the term this tab bought). Undefined props are no longer forwarded.
-  - Tests: `tests/platform/wp63-surfaces.test.tsx` (29), 3 more Convex tests for the seat query, and updated WP44 pins (see decisions).
+  - Tests: `tests/platform/wp64-surfaces.test.tsx` (29), 3 more Convex tests for the seat query, and updated WP44 pins (see decisions).
 - Decisions made (mine, reversible, none is a ruling):
   - One radio group and one button, on the page and in the sheet, rather than a button per card. The button label names the chosen price.
   - Monthly is selected by default. It is the smallest commitment and matches the old label. It is a choice of term, not an add-on, so it is not a pre-checked box.
@@ -135,7 +137,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - The same six failures as in S1 and S2, none from this work: three OG-image tests (blocked hosts) and three editorial tests that also fail on `main`.
   - Break-on-purpose: 42 deliberate breakages. 39 were caught on the first run. The 3 survivors were test gaps, not code bugs: a host-suffix match and a username-only URL were missing from the bad-URL list, and the analytics test omitted `term` instead of passing `undefined` (and `toEqual` ignores undefined keys, so it now uses `toStrictEqual`). After adding those cases, all 3 were caught. Examples of the 42: following an http or non-Stripe URL, sending an amount in the body, firing `checkout_started` before the answer, confirming from the URL, paid events without this tab's checkout or before clearing it, the ladder for Builder's Hub members, on day one or during a dispute, a selectable sold-out seat, lifetime before the seed, a lost legend or description, the refund line dropped, a typed-out price, a client secret.
 - Accessibility: each state was rendered to static HTML (free with the ladder, sold out, first day, annual past due, monthly set to cancel, lifetime, return confirming, return confirmed, cancelled, the open sheet, plus error and notice snippets) and checked in Chromium with axe-core 4 (wcag2a, wcag2aa, wcag21a, wcag21aa, best-practice) and the app's freshly built CSS, at 390 px and 1440 px. 0 violations in all 22 runs, and no horizontal scroll. A control page with a known faint color was flagged, so contrast really ran. Every color class in the new files was confirmed present in the built CSS. Tab order: the radio group, the buy button, Terms, Refund policy (the sheet adds Not now before the links). Arrow keys move and select within the radio group. The real app was not run with a signed-in session (that needs a temporary auth bypass, as WP44 did), so focus return and the Radix focus trap were not rechecked in a browser.
-- Docs updated: `docs/wp/wp63-stories.md` (S6 status), `docs/wp/wp44-dashboard-prd.md` 6.5 (pointer to the ladder), the comments in `plans.ts` and `flag.ts`. Not needed: `.env.example` and the cutover env lists (no env), `.agentic-workflow.yml` (S4), `docs/wp/AGENT_HANDOFF.md` (owner-managed).
+- Docs updated: `docs/wp/wp64-stories.md` (S6 status), `docs/wp/wp44-dashboard-prd.md` 6.5 (pointer to the ladder), the comments in `plans.ts` and `flag.ts`. Not needed: `.env.example` and the cutover env lists (no env), `.agentic-workflow.yml` (S4), `docs/wp/AGENT_HANDOFF.md` (owner-managed).
 - Result: S6 built on the branch and pushed (`9fafae8`). Not merged. Dormant: every surface sits behind `NEXT_PUBLIC_BUILDERS_HUB`, and until S3 ships the buy button answers "Checkout isn’t open yet. Nothing was charged."
 - Handed on:
   - S3 must answer exactly as `_contract.ts` says, use `/dashboard/billing?checkout=return` and `?checkout=cancelled`, and accept keys matching `IDEMPOTENCY_KEY_PATTERN`.
@@ -149,7 +151,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - `useSearchParams` sits inside a `Suspense` boundary. The billing route was already dynamic in the build, so this changes nothing today, but it keeps the page safe if it ever becomes static.
 - Next: S3 (Checkout Sessions), once O1 and O5 are ruled and S9 has the Terms text. S7 and S8 can start now, and both add a table, so they belong in this branch's schema window.
 
-## 2026-10-09 - WP63-S7 (founding offer: cohorts, windows and the seat counter)
+## 2026-10-09 - WP64-S7 (founding offer: cohorts, windows and the seat counter)
 
 - Actions taken:
   - `offer_cohorts` appended to `convex/schema.ts` in this branch's schema window: cohort (`buyers` or `newsletter`), `emailHash`, `importedAt`, `batchId`, with `by_emailHash`, `by_cohort_and_emailHash` and `by_batchId`. Additive only.
@@ -159,7 +161,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Import script: `npm run membership:import-cohorts -- --cohort=buyers --file=PATH`. It reads a file outside the repo or under `tmp/`, hashes on the operator's machine, and prints counts and a batch id only. Applying needs `--apply`, the dry run's exact `--confirm=<batch id>`, an existing `--backup=PATH`, and env `MEMBERSHIP_COHORT_CONVEX_URL` and `MEMBERSHIP_COHORT_ADMIN_KEY` matching `--target`, the same rules as `editorial-submit-engine.mjs`.
   - Ladder: the seat query now also returns this member's `eligibleFrom`. Founding Lifetime stays hidden until a window is dated for the member. Before it opens, it shows but can't be picked, with "Not open yet" and "Opens for you on November 4, 2026 at 5:00 PM" in the member's time zone.
   - Home card: a new `founding_lifetime` offer kind. It shows to a free member past day one whose window is open, while seats remain and only with the Builder's Hub flag on (the browser passes the flag, because the card links to the ladder the flag hides). It shows the true seats left and the next seat's price, ranks above a promo and the Starter Kit, can be dismissed like any card, and retires when the seats are gone.
-  - Tests: `convex/wp63FoundingOffer.test.ts` (23), `tests/platform/wp63-founding.test.tsx` (11), `tests/security/membership-cohort-import.test.mjs` (7), and updated pins in the S2 static test, the WP44 offer test and the S6 tests.
+  - Tests: `convex/wp64FoundingOffer.test.ts` (23), `tests/platform/wp64-founding.test.tsx` (11), `tests/security/membership-cohort-import.test.mjs` (7), and updated pins in the S2 static test, the WP44 offer test and the S6 tests.
 - Decisions made (mine, reversible, none is a ruling):
   - Hash cohort emails instead of storing them. Convex already holds members' emails, so hashing protects buyers and subscribers who never signed up. It is unsalted, so a guessed address can still be checked: the table is still personal data. A secret pepper would add a key to manage for little gain.
   - Normalize like sign-in does (NFKC, trim, lowercase). No plus-tag or dot stripping. A buyer who signs up with another address can be added with a new import.
@@ -173,7 +175,7 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
   - Break-on-purpose: 39 deliberate breakages. 37 were caught on the first run. The 2 survivors were redundant guards. The "seats seeded" check in `readFoundingInput` changed nothing, because an unseeded table already reads as no seats and no price, so I removed it. The card's own seats-left guard overlaps with "the next seat has a price", so I kept it and added a test where the two disagree. That mutation is now caught. Examples of the 39: buyers left out of window 2, the latest window winning, a window opening a moment late or without a date, unverified or anonymous accounts getting a cohort, eligibility reading the subscription log, the checkout guard passing or hiding the date, hash drift between the script and Convex, the import accepting bad or repeated hashes or a foreign batch id, the undo touching other batches, the card ignoring the window, the flag, dismissal or the plan, windows dated by default, the dry run printing the list, and apply skipping the batch id, the backup or the repo-file check.
   - Schema diff against `origin/main`: only added lines.
 - Accessibility: the ladder before a member's window, the Home founding card, the open ladder and the sheet, rendered to static HTML and checked with axe-core 4 (wcag2a, wcag2aa, wcag21a, wcag21aa, best-practice) and the built CSS at 390 px and 1440 px: 0 violations in all 8 runs, and no horizontal scroll. The unselectable lifetime radio drops out of the Tab order, and the arrow keys still move between monthly and annual.
-- Docs updated: `docs/wp/wp63-stories.md` (S7 status, the hashed-email contract change, S12 tooling pointers), `.env.example` (the two import keys). Not needed: `.agentic-workflow.yml` (S4), the cutover env lists (operator-only keys, like the editorial import), `docs/wp/AGENT_HANDOFF.md` (owner-managed).
+- Docs updated: `docs/wp/wp64-stories.md` (S7 status, the hashed-email contract change, S12 tooling pointers), `.env.example` (the two import keys). Not needed: `.agentic-workflow.yml` (S4), the cutover env lists (operator-only keys, like the editorial import), `docs/wp/AGENT_HANDOFF.md` (owner-managed).
 - Result: S7 built on the branch and pushed (`120fa57`, cleanup `b11139c`). Not merged. The offer stays closed after a merge, because every window date is null.
 - Handed on:
   - S3: call `assertFoundingEligible` before reserving a seat and map its error to `{ ok: false, code: "NOT_YET_ELIGIBLE", opensAt }` with HTTP 409.

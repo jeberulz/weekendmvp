@@ -18,7 +18,7 @@ import {
   parseAddresses,
 } from "../../scripts/lib/cohort-import.mjs";
 
-// WP63-S7. The cohort import never prints, logs or sends an address, hashes
+// WP64-S7. The cohort import never prints, logs or sends an address, hashes
 // exactly as Convex does, and refuses to apply without the dry run's batch
 // id, a backup and the exact target.
 
@@ -39,7 +39,7 @@ async function importScript(args, env = {}) {
 }
 
 async function privateList(text) {
-  const dir = await mkdtemp(path.join(os.tmpdir(), "wp63-cohort-"));
+  const dir = await mkdtemp(path.join(os.tmpdir(), "wp64-cohort-"));
   const file = path.join(dir, "list.csv");
   await writeFile(file, text);
   return { dir, file };

@@ -1,5 +1,5 @@
 /**
- * WP63-S7. How a founding-offer cohort stores an email: a SHA-256 of the
+ * WP64-S7. How a founding-offer cohort stores an email: a SHA-256 of the
  * normalized address with a fixed prefix, never the address itself. The
  * operator import script hashes on the operator's machine, so no buyer or
  * newsletter address reaches Convex, a log or git.

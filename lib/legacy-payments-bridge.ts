@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
- * Signed hand-off for the legacy ship·able payment log (WP63-S1).
+ * Signed hand-off for the legacy ship·able payment log (WP64-S1).
  *
  * `payments.recordEvent` used to be a public mutation, so any visitor could
  * write `stripe_events` rows. The webhook route now signs each event and a

@@ -1,5 +1,5 @@
 /**
- * WP63-S6. The contract between the dashboard and the membership billing
+ * WP64-S6. The contract between the dashboard and the membership billing
  * routes. The Checkout route (S3) and the Billing Portal route (S5) import it
  * and must answer in this shape. Pure: the browser imports it too.
  *

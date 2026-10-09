@@ -19,7 +19,7 @@ export const PRIMARY_NAV: readonly WorkspaceNavItem[] = [
 ];
 
 /**
- * WP63-S8. Builder's Hub only, so it shows with the flag on: under Builds in
+ * WP64-S8. Builder's Hub only, so it shows with the flag on: under Builds in
  * the sidebar, and in the phone Account sheet (the tab bar has five slots).
  */
 export const LIVE_NAV: WorkspaceNavItem = {

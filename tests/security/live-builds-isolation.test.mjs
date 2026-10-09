@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// WP63-S8. Static pins: only the operator module writes `live_builds`, it
+// WP64-S8. Static pins: only the operator module writes `live_builds`, it
 // registers nothing public, and the member query never writes or reads the
 // clock, so a browser clock cannot open a join link early.
 

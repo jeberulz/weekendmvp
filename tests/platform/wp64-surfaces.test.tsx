@@ -47,7 +47,7 @@ import hookSource from "../../components/platform/plan/useMembershipCheckout.ts?
 import returnSource from "../../components/platform/billing/CheckoutReturn.tsx?raw";
 import { trackDashboardEvent } from "../../lib/track";
 
-// WP63-S6. Plan and billing, the ladder and the return state, rendered from
+// WP64-S6. Plan and billing, the ladder and the return state, rendered from
 // what the server reports. Checkout itself is S3: here the browser side is
 // tested against the route contract with a fake fetch.
 
@@ -115,7 +115,7 @@ afterEach(() => {
   convex.search = "";
 });
 
-describe("WP63-S6 route contract", () => {
+describe("WP64-S6 route contract", () => {
   test("terms match the schema and the copy", () => {
     expect([...MEMBERSHIP_TERMS]).toEqual([...MEMBERSHIP_TERM_VALUES]);
     expect(Object.keys(TERM_COPY)).toEqual([...MEMBERSHIP_TERMS]);
@@ -221,7 +221,7 @@ describe("WP63-S6 route contract", () => {
   });
 });
 
-describe("WP63-S6 return state: the server confirms, the URL never does", () => {
+describe("WP64-S6 return state: the server confirms, the URL never does", () => {
   test("pending checkout is kept per tab, expires after a day and survives bad storage", () => {
     const store = fakeStorage();
     rememberPendingCheckout("lifetime", NOON, store);
@@ -296,7 +296,7 @@ describe("WP63-S6 return state: the server confirms, the URL never does", () => 
   });
 });
 
-describe("WP63-S6 current plan", () => {
+describe("WP64-S6 current plan", () => {
   test("each billing state says what the member has, when it renews or ends, and what to do", () => {
     expect(describePlan(entitlements("free"))).toEqual({
       title: "Free",
@@ -345,7 +345,7 @@ describe("WP63-S6 current plan", () => {
   });
 });
 
-describe("WP63-S6 the ladder", () => {
+describe("WP64-S6 the ladder", () => {
   test("one radio group: price, billing period and renewal in plain words, the real annual saving", () => {
     const html = renderToStaticMarkup(<TermPicker name="t" value="monthly" onChange={() => {}} now={NOON} seats={SEATS} />);
     expect(html).toMatch(/<fieldset[^>]*><legend[^>]*>Choose how to pay<\/legend>/);
@@ -400,7 +400,7 @@ describe("WP63-S6 the ladder", () => {
   });
 });
 
-describe("WP63-S6 Plan and billing", () => {
+describe("WP64-S6 Plan and billing", () => {
   const OLD = Date.now() - 2 * QUIET_PERIOD_MS;
 
   test("a free member past day one sees their plan, the table and the ladder", () => {
@@ -454,7 +454,7 @@ describe("WP63-S6 Plan and billing", () => {
   });
 });
 
-describe("WP63-S6 copy and safety pins", () => {
+describe("WP64-S6 copy and safety pins", () => {
   const surfaces = {
     ...import.meta.glob("../../components/platform/plan/*.{ts,tsx}", { query: "?raw", import: "default", eager: true }),
     ...import.meta.glob("../../components/platform/billing/{CurrentPlan,CheckoutReturn,PlanAndBilling}.tsx", {
@@ -495,7 +495,7 @@ describe("WP63-S6 copy and safety pins", () => {
   });
 });
 
-describe("WP63-S6 events", () => {
+describe("WP64-S6 events", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });

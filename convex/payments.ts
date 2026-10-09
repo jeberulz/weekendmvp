@@ -6,7 +6,7 @@ import { internalMutation, mutation, type MutationCtx } from "./_generated/serve
  * The legacy ship·able payment log. It is an append-only record of Stripe
  * events and never decides access, entitlement or offer eligibility.
  *
- * WP63-S1 moves writes behind a signed hand-off. Rollout is expand, switch,
+ * WP64-S1 moves writes behind a signed hand-off. Rollout is expand, switch,
  * contract, across separate deploys so the live webhook never breaks:
  *   1. Expand (this change): `recordEventInternal` and the signed action in
  *      `paymentsBridge.ts` exist next to the old public `recordEvent`.

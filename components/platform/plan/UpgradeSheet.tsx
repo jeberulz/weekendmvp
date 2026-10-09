@@ -80,7 +80,7 @@ export function UpgradeSheet({
 
   const copy = SHEET_COPY[feature];
   const notNow = useRef<HTMLButtonElement>(null);
-  // WP63-S6: the sheet starts checkout for the term chosen here.
+  // WP64-S6: the sheet starts checkout for the term chosen here.
   const seats = useQuery(api.platform.membership.queries.ladder, open ? {} : "skip");
   const [term, setTerm] = useState<MembershipTerm>("monthly");
   // Browser-only (behind a Convex gate). Display only: checkout checks the window with the server clock.

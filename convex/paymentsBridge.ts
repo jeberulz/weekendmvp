@@ -7,7 +7,7 @@ import { action, env } from "./_generated/server";
 
 /**
  * Verifies the signed event from `app/api/stripe-webhook/route.ts` and records
- * it through the internal mutation (WP63-S1). Fails closed when
+ * it through the internal mutation (WP64-S1). Fails closed when
  * `LEGACY_PAYMENTS_BRIDGE_SECRET` is unset or too short.
  */
 export const accept = action({

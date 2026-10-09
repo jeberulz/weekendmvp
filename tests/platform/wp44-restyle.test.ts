@@ -91,7 +91,7 @@ describe("WP44-S7 Plan and billing", () => {
     expect(PLANS.builders_hub.id).toBe("builders_hub");
     expect(PLANS.builders_hub.name).toBe("Builder’s Hub");
     expect(PLANS.builders_hub.priceMonthlyUsd).toBe(29);
-    // WP63-S6: the ladder (ruling "WP55 / price ladder", 2026-10-04).
+    // WP64-S6: the ladder (ruling "WP55 / price ladder", 2026-10-04).
     expect(PLANS.builders_hub.priceLabel).toBe("$29 a month or $199 a year");
     expect(Object.keys(PLANS)).not.toContain("builder");
   });

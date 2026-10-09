@@ -29,7 +29,7 @@ export type LifetimeState = {
 
 /**
  * Founding Lifetime shows once seats are seeded and a window is dated for
- * this member (WP63-S7). Sold out, or not open yet, keeps it visible and
+ * this member (WP64-S7). Sold out, or not open yet, keeps it visible and
  * unselectable. `now` is the browser's clock, for display only.
  */
 export function lifetimeState(seats: Seats | undefined, now: number): LifetimeState {
@@ -69,7 +69,7 @@ function SoldOutAnnouncer({ soldOut }: { soldOut: boolean }) {
 }
 
 /**
- * WP63-S6. How to pay, as one native radio group. Each option states the
+ * WP64-S6. How to pay, as one native radio group. Each option states the
  * price, the billing period and the renewal in plain words. No option is an
  * add-on, so choosing a term is not a pre-checked box.
  */

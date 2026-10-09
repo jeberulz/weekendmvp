@@ -288,7 +288,7 @@ const LEGACY_CLAIM_READ = 500;
  * log. Only the offer leaves the server, never the email. The client passes
  * `now` (queries must not read the clock); it only picks among public offers.
  *
- * WP63-S7: `foundingOffer` is the browser's Builder's Hub flag. The founding
+ * WP64-S7: `foundingOffer` is the browser's Builder's Hub flag. The founding
  * card links to the ladder, which the flag hides, so the card needs it too.
  * It only lets the card show. Checkout checks the window again on the server.
  */

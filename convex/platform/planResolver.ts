@@ -4,7 +4,7 @@ import { readMembershipState } from "./membership/state";
 import type { PlanId } from "./plans";
 
 /**
- * WP44-S10, filled in by WP63-S2. Which plan a member is on. Builder's Hub
+ * WP44-S10, filled in by WP64-S2. Which plan a member is on. Builder's Hub
  * for a live lifetime or comp grant, or a subscription stored as `active` or
  * `past_due` with no open dispute. Free otherwise. Every gate goes through
  * `getEntitlements`, which calls this. No clock read: see

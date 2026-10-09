@@ -6,7 +6,7 @@ import { readSeatOffer } from "./state";
 import { FOUNDING_WINDOWS, type FoundingWindows } from "./windows";
 
 /**
- * WP63-S7. Who may buy a Founding Lifetime seat, and from when. Read-only
+ * WP64-S7. Who may buy a Founding Lifetime seat, and from when. Read-only
  * and clock-free: callers pass `now`. The checkout mutation (S3) passes its
  * own `Date.now()`. A query never decides "open now", it returns the date
  * and the browser compares it with its own clock for display only.

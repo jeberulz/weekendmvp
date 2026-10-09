@@ -12,7 +12,7 @@
  * buyers simply re-enroll, which is a no-op for already-enrolled subscribers
  * in Beehiiv).
  *
- * WP63-S1: only Payment Link sessions without a `purpose` marker are handled
+ * WP64-S1: only Payment Link sessions without a `purpose` marker are handled
  * (see `_guard.ts`). The endpoint also receives Builder's Hub and credit-pack
  * checkouts, which belong to purpose-separated handlers and are ignored here.
  * With `LEGACY_PAYMENTS_BRIDGE_SECRET` set, the log write goes through a signed
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
   const session = event.data.object as Stripe.Checkout.Session;
 
-  // WP63-S1. This endpoint also receives the account's other checkouts
+  // WP64-S1. This endpoint also receives the account's other checkouts
   // (Builder's Hub, credit packs). Only a ship·able Payment Link purchase may
   // enroll a buyer or write the legacy log. Logged by session id and reason
   // only, so a real sale ever dropped here is visible without any PII.
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
         paymentLinkId:
           typeof session.payment_link === "string" ? session.payment_link : undefined,
       };
-      // Switch step of the WP63-S1 rollout: with the bridge secret set, the
+      // Switch step of the WP64-S1 rollout: with the bridge secret set, the
       // event goes through the signed hand-off. Without it, the old public
       // mutation is used until the contract step removes it.
       const bridgeSecret = process.env.LEGACY_PAYMENTS_BRIDGE_SECRET;

@@ -5,7 +5,7 @@ import { readFoundingEligibleFrom } from "./offer";
 import { readSeatOffer } from "./state";
 
 /**
- * WP63-S6 and S7. What the Founding Lifetime option shows: the true number
+ * WP64-S6 and S7. What the Founding Lifetime option shows: the true number
  * of free seats, the next seat's price, and when this member's window opens.
  * Read-only and clock-free: the browser compares `eligibleFrom` with its own
  * clock for display, and checkout (S3) checks again with the server clock.

@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// Static pins for WP63-S2. The `api` proxy is empty under convex-test, so the
+// Static pins for WP64-S2. The `api` proxy is empty under convex-test, so the
 // rule "no public function writes a membership table" is asserted on source.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -17,7 +17,7 @@ const TABLES = [
   "founding_seats",
   "billing_events",
 ];
-// WP63-S7 adds the eligibility rules, the cohort hash and the window dates.
+// WP64-S7 adds the eligibility rules, the cohort hash and the window dates.
 const READ_ONLY_MODULES = ["state.ts", "validators.ts", "offer.ts", "cohortHash.ts", "windows.ts"];
 
 async function read(relativePath) {

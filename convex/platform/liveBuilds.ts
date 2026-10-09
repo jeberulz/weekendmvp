@@ -5,7 +5,7 @@ import { requireCurrentPlatformUser } from "./authz";
 import { getEntitlements } from "./entitlements";
 
 /**
- * WP63-S8. The live builds hub for members. Read-only and clock-free: the
+ * WP64-S8. The live builds hub for members. Read-only and clock-free: the
  * stored status decides what opens (see `liveBuildRules.ts`).
  *
  * Everyone signed in sees the schedule and the titles. The join link goes

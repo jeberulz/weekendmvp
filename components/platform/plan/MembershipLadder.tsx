@@ -14,7 +14,7 @@ const BUTTON =
   "inline-flex min-h-11 items-center justify-center rounded-[9px] bg-home-ink px-5 text-center text-sm font-medium text-home-card transition-colors hover:bg-home-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink aria-disabled:cursor-wait aria-disabled:bg-home-panel";
 
 /**
- * WP63-S6, PRD 6.6 surface 4. The ladder on Plan and billing: monthly and
+ * WP64-S6, PRD 6.6 surface 4. The ladder on Plan and billing: monthly and
  * annual side by side, Founding Lifetime below with the true seats left.
  * Free members only, after the first day (the caller checks). The button
  * starts Stripe-hosted Checkout. Only a verified webhook grants the plan.

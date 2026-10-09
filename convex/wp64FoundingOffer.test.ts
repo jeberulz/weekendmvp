@@ -19,7 +19,7 @@ import type { FoundingWindows } from "./platform/membership/windows";
 import { QUIET_PERIOD_MS } from "./platform/plans";
 import schema from "./schema";
 
-// WP63-S7. The windows are config, so each test sets them through this mock.
+// WP64-S7. The windows are config, so each test sets them through this mock.
 const windows = vi.hoisted(() => ({ buyers: null, newsletter: null, everyone: null }) as FoundingWindows);
 vi.mock("./platform/membership/windows", () => ({ FOUNDING_WINDOWS: windows }));
 
@@ -87,7 +87,7 @@ async function errorData(run: () => Promise<unknown>): Promise<unknown> {
   return "no error";
 }
 
-describe("WP63-S7 window matrix (fixed windows passed in)", () => {
+describe("WP64-S7 window matrix (fixed windows passed in)", () => {
   const none = new Set<FoundingCohort>();
   const buyers = new Set<FoundingCohort>(["buyers"]);
   const newsletter = new Set<FoundingCohort>(["newsletter"]);
@@ -133,7 +133,7 @@ describe("WP63-S7 window matrix (fixed windows passed in)", () => {
   });
 });
 
-describe("WP63-S7 cohort emails are hashed", () => {
+describe("WP64-S7 cohort emails are hashed", () => {
   test("the hash uses the sign-in normalization, so case and spaces do not matter", async () => {
     for (const sample of ["  Buyer@Example.TEST ", "ｂｕｙｅｒ@example.test", "x@y.zz"]) {
       expect(normalizeCohortEmail(sample)).toBe(normalizeEmail(sample));
@@ -154,7 +154,7 @@ describe("WP63-S7 cohort emails are hashed", () => {
   });
 });
 
-describe("WP63-S7 eligibility on the server", () => {
+describe("WP64-S7 eligibility on the server", () => {
   test("a verified buyer opens at window 1, a subscriber at 2, everyone else at 3", async () => {
     setWindows({ buyers: W1, newsletter: W2, everyone: W3 });
     const t = convexTest(schema, modules);
@@ -253,7 +253,7 @@ describe("WP63-S7 eligibility on the server", () => {
   });
 });
 
-describe("WP63-S7 operator import", () => {
+describe("WP64-S7 operator import", () => {
   test("imports once, counts repeats, and keeps cohorts apart", async () => {
     const t = convexTest(schema, modules);
     const hashes = await Promise.all(["a@example.test", "b@example.test"].map(cohortEmailHash));
@@ -315,7 +315,7 @@ describe("WP63-S7 operator import", () => {
   });
 });
 
-describe("WP63-S7 Home founding card", () => {
+describe("WP64-S7 Home founding card", () => {
   async function ready(t: T, email = "member@example.test") {
     setWindows({ everyone: W3 });
     await seedSeats(t);

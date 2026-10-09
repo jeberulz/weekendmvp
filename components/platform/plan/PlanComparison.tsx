@@ -102,7 +102,7 @@ function LiveComparison() {
 /**
  * PRD 6.6 surface 4: Plan and billing with a Free against Builder's Hub
  * table and a "Current plan" label. The plan comes from entitlements. A
- * Builder's Hub member sees what they have and nothing to upgrade to. WP63-S6
+ * Builder's Hub member sees what they have and nothing to upgrade to. WP64-S6
  * adds the return banner, the member's plan and dates, and the ladder.
  */
 export function PlanComparison() {

@@ -166,7 +166,7 @@ function LiveList() {
 }
 
 /**
- * WP63-S8. The live builds hub. Client-rendered from the member query, so no
+ * WP64-S8. The live builds hub. Client-rendered from the member query, so no
  * join or replay link is ever in static HTML or a client bundle. Times show
  * in the member's own time zone, with the zone named.
  */

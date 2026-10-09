@@ -20,7 +20,7 @@ import offerRulesSource from "../../convex/platform/membership/offer.ts?raw";
 import cohortsSource from "../../convex/platform/membership/cohorts.ts?raw";
 import dashboardSource from "../../convex/platform/dashboard.ts?raw";
 
-// WP63-S7. The founding offer on Home and in the ladder, with a fixed clock.
+// WP64-S7. The founding offer on Home and in the ladder, with a fixed clock.
 
 const convex = vi.hoisted(() => ({ queries: new Map<string, unknown>(), args: [] as unknown[] }));
 vi.mock("convex/react", async () => {
@@ -56,7 +56,7 @@ afterEach(() => {
   convex.args = [];
 });
 
-describe("WP63-S7 the Home card rule (fixed clock)", () => {
+describe("WP64-S7 the Home card rule (fixed clock)", () => {
   test("the founding offer wins over a promo and the Starter Kit while it is open", () => {
     expect(chooseOffer({ ...base, promos: [PROMO], founding: OPEN })?.id).toBe(FOUNDING_OFFER_ID);
     expect(chooseOffer({ ...base, founding: OPEN })?.id).toBe(FOUNDING_OFFER_ID);
@@ -90,7 +90,7 @@ describe("WP63-S7 the Home card rule (fixed clock)", () => {
   });
 });
 
-describe("WP63-S7 the ladder before a member's window", () => {
+describe("WP64-S7 the ladder before a member's window", () => {
   const seats: Seats = { open: true, seatsTotal: 50, seatsLeft: 40, seatsHeld: 0, nextSeatAmountMinor: 34_900, eligibleFrom: NOW };
 
   test("not open yet: visible, unselectable, and says when it opens", () => {
@@ -122,7 +122,7 @@ describe("WP63-S7 the ladder before a member's window", () => {
   });
 });
 
-describe("WP63-S7 the Home card", () => {
+describe("WP64-S7 the Home card", () => {
   test("renders the founding card from the server, and asks for it only with the flag on", () => {
     convex.queries.set("platform/dashboard:offer", foundingOffer({ seatsLeft: 12, nextSeatAmountMinor: 34_900 }));
     const html = renderToStaticMarkup(<OfferCard onDismissed={() => {}} />);
@@ -134,7 +134,7 @@ describe("WP63-S7 the Home card", () => {
   });
 });
 
-describe("WP63-S7 source pins", () => {
+describe("WP64-S7 source pins", () => {
   test("eligibility never reads the publicly writable legacy tables", () => {
     for (const source of [offerRulesSource, cohortsSource]) {
       expect(source).not.toMatch(/["']stripe_events["']|["']subscriptions["']|payments/);

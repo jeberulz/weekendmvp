@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// WP63-S8. Part of Builder's Hub, so it exists only with the flag on.
+// WP64-S8. Part of Builder's Hub, so it exists only with the flag on.
 // No `main` here: the workspace shell owns the only one (WP44-S7).
 export default function LiveBuildsPage() {
   if (!buildersHubUiEnabled(process.env.NEXT_PUBLIC_BUILDERS_HUB)) notFound();

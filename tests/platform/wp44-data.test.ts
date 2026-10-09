@@ -114,11 +114,11 @@ describe("WP44-S3 dashboard events", () => {
         "upgrade_prompt_viewed",
         "weekend_plan_started",
         "weekend_step_completed",
-        // WP63-S6.
+        // WP64-S6.
         "checkout_started",
         "checkout_completed",
         "founding_seat_taken",
-        // WP63-S8.
+        // WP64-S8.
         "live_build_opened",
       ].sort(),
     );

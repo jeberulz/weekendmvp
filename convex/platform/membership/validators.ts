@@ -1,7 +1,7 @@
 import { v, type VLiteral } from "convex/values";
 
 /**
- * WP63-S2. Value lists and validators for the Builder's Hub membership
+ * WP64-S2. Value lists and validators for the Builder's Hub membership
  * tables. Pure, so `schema.ts` and the membership functions share one copy.
  *
  * Times are milliseconds since the epoch, like every other platform table.
@@ -102,6 +102,6 @@ export const foundingSeatValidator = v.object({
 export const BILLING_EVENT_OUTCOME_VALUES = ["applied", "ignored", "stale", "rejected"] as const;
 export const billingEventOutcomeValidator = stringLiteralUnion(BILLING_EVENT_OUTCOME_VALUES);
 
-/** WP63-S7. Who a founding offer window opens for before it opens to everyone. */
+/** WP64-S7. Who a founding offer window opens for before it opens to everyone. */
 export const FOUNDING_COHORT_VALUES = ["buyers", "newsletter"] as const;
 export const foundingCohortValidator = stringLiteralUnion(FOUNDING_COHORT_VALUES);

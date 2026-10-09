@@ -1,7 +1,7 @@
 import { v, type Infer } from "convex/values";
 
 /**
- * WP63-S8. Pure rules for live builds, shared by the schema, the member
+ * WP64-S8. Pure rules for live builds, shared by the schema, the member
  * query and the operator mutations. One live build a month, with a replay,
  * is part of Builder's Hub (ruling "WP55 / bundle").
  *

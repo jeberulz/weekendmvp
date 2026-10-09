@@ -123,7 +123,7 @@ function ManageBilling() {
   );
 }
 
-/** WP63-S6. The member's plan, its dates, any payment problem, and Manage billing for subscribers. */
+/** WP64-S6. The member's plan, its dates, any payment problem, and Manage billing for subscribers. */
 export function CurrentPlan({ entitlements }: { entitlements: Entitlements }) {
   const description = describePlan(entitlements);
   return (

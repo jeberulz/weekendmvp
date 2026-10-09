@@ -11,7 +11,7 @@
 export type PlanId = "free" | "builders_hub";
 
 /**
- * WP63 price ladder (ruling "WP55 / price ladder", 2026-10-04). Minor units,
+ * WP64 price ladder (ruling "WP55 / price ladder", 2026-10-04). Minor units,
  * USD. The one place a Builder's Hub price lives: Checkout checks each Stripe
  * Price against it, and UI strings derive from it. The browser never sends an
  * amount. A lifetime seat's number picks its tranche, so a refunded seat goes
@@ -84,14 +84,14 @@ export const PLANS = {
     id: "builders_hub",
     name: "Builder’s Hub",
     priceMonthlyUsd: PRICING.monthly.amountMinor / 100,
-    // WP63-S6: the ladder. Founding Lifetime is limited, so it is named where seats show.
+    // WP64-S6: the ladder. Founding Lifetime is limited, so it is named where seats show.
     priceLabel: `${formatUsd(PRICING.monthly.amountMinor)} a month or ${formatUsd(PRICING.annual.amountMinor)} a year`,
     adds: [
       "Collections and a private note on each idea",
       "Unlimited weekend plans, with history",
       "Prompt pack export for your AI tool",
       "Compare up to 4 ideas side by side",
-      // WP63-S8 shipped the live builds hub (ruling "WP55 / bundle").
+      // WP64-S8 shipped the live builds hub (ruling "WP55 / bundle").
       "One live build a month, with replays",
     ],
   },
@@ -107,7 +107,7 @@ export type PlanLimits = {
   promptPack: boolean;
   /** How many ideas fit side by side. 0 means compare is off. */
   compareMax: number;
-  /** WP63-S8. Join links and replays. Everyone sees the schedule. */
+  /** WP64-S8. Join links and replays. Everyone sees the schedule. */
   liveBuilds: boolean;
 };
 
@@ -153,7 +153,7 @@ export type MembershipTerm = "monthly" | "annual" | "lifetime";
 const FIRST_LIFETIME_AMOUNT = PRICING.lifetime.tranches[0].amountMinor;
 
 /**
- * WP63-S6. What each term costs and how it renews, in plain words. Every
+ * WP64-S6. What each term costs and how it renews, in plain words. Every
  * amount comes from `PRICING`. A lifetime seat's price depends on the next
  * free seat, so the caller passes it.
  */
@@ -197,7 +197,7 @@ export const REFUND_LINE = "Full refund within 30 days of your first payment.";
 /** Neutral until O1 picks the tax mechanism. True under either choice. */
 export const TAX_LINE = "Prices in US dollars. Any tax is shown at checkout before you pay.";
 
-/** WP63-S9 publishes these pages. Checkout stays closed (S12) until they exist and are reviewed. */
+/** WP64-S9 publishes these pages. Checkout stays closed (S12) until they exist and are reviewed. */
 export const MEMBERSHIP_LEGAL_LINKS = [
   { label: "Terms", href: "/terms" },
   { label: "Refund policy", href: "/refund-policy" },

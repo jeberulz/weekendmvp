@@ -10,7 +10,7 @@ import { JOIN_OPENS_BEFORE_MS, endOf, liveStatusAt, readHttpsUrl } from "./platf
 import { BILLING_COMPARISON, PLANS, PLAN_COMPARISON, PLAN_LIMITS } from "./platform/plans";
 import schema from "./schema";
 
-// WP63-S8. Live builds: stored status flipped by scheduled mutations, links
+// WP64-S8. Live builds: stored status flipped by scheduled mutations, links
 // only for Builder's Hub members, operator-only writes.
 
 const modules = import.meta.glob("./**/*.ts");
@@ -78,7 +78,7 @@ async function scheduledTimes(t: T): Promise<number[]> {
   });
 }
 
-describe("WP63-S8 status rules", () => {
+describe("WP64-S8 status rules", () => {
   const session = { startsAt: 100 * HOUR, durationMin: 90 };
 
   test("scheduled, then open 24 hours before, then ended at the end", () => {
@@ -113,7 +113,7 @@ describe("WP63-S8 status rules", () => {
   });
 });
 
-describe("WP63-S8 operator writes", () => {
+describe("WP64-S8 operator writes", () => {
   test("create stores a session and schedules the open and end flips", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(10 * HOUR);
@@ -246,7 +246,7 @@ describe("WP63-S8 operator writes", () => {
   });
 });
 
-describe("WP63-S8 the member query", () => {
+describe("WP64-S8 the member query", () => {
   async function scene(t: T) {
     // A replay added early stays hidden until the session ends.
     const open = await addRow(t, { title: "Open now", startsAt: 2_000, status: "open", joinUrl: JOIN, replayUrl: REPLAY });

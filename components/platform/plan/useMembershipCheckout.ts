@@ -29,7 +29,7 @@ function useResetOnRestore(reset: () => void) {
 }
 
 /**
- * WP63-S6. Starts Stripe-hosted Checkout for a term. One request at a time,
+ * WP64-S6. Starts Stripe-hosted Checkout for a term. One request at a time,
  * one idempotency key per term for the life of the page, and a redirect only
  * to a Stripe URL. Nothing here grants anything.
  */
@@ -69,7 +69,7 @@ export function useMembershipCheckout(surface: "sheet" | "billing") {
   return { state, start };
 }
 
-/** WP63-S6, for S5's route. Opens the Stripe Billing Portal for the member's own customer. */
+/** WP64-S6, for S5's route. Opens the Stripe Billing Portal for the member's own customer. */
 export function useBillingPortal() {
   const [state, setState] = useState<RedirectState>({ kind: "idle" });
   const busy = useRef(false);

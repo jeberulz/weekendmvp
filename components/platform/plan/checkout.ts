@@ -13,7 +13,7 @@ import { PLANS, lifetimeTrancheForSeat } from "@/convex/platform/plans";
 import type { DashboardEvent } from "@/lib/track";
 
 /**
- * WP63-S6. Browser side of membership checkout. Plain functions, so the
+ * WP64-S6. Browser side of membership checkout. Plain functions, so the
  * rules are tested without a DOM: post only `{ term, idempotencyKey }`,
  * follow only a Stripe URL, and never treat the return URL as proof of
  * payment. Only `entitlements.mine` confirms a purchase.

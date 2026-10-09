@@ -3,7 +3,7 @@ import { internalMutation } from "../../_generated/server";
 import { PRICING } from "../plans";
 
 /**
- * WP63-S2. Operator-only seed for the 50 founding seats (frozen contract 8).
+ * WP64-S2. Operator-only seed for the 50 founding seats (frozen contract 8).
  * Dry run unless `apply` is true. Idempotent: it inserts missing seat numbers
  * as free and never changes an existing row, so a re-run cannot free a
  * reserved or taken seat. Production runs it once, in S12, with the owner's

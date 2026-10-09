@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 
 /**
- * Which Checkout Sessions the legacy ship·able handler may act on (WP63-S1).
+ * Which Checkout Sessions the legacy ship·able handler may act on (WP64-S1).
  *
  * This endpoint is subscribed to every `checkout.session.completed` on the
  * Stripe account, so it also receives sessions it does not own: Builder's Hub

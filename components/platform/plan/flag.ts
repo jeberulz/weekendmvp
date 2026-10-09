@@ -8,6 +8,6 @@ export const BUILDERS_HUB_UI = buildersHubUiEnabled(process.env.NEXT_PUBLIC_BUIL
 
 /**
  * Where the sidebar Plan card's "See Builder's Hub" goes: the ladder on Plan
- * and billing. The upgrade sheet starts checkout itself (WP63-S6).
+ * and billing. The upgrade sheet starts checkout itself (WP64-S6).
  */
 export const UPGRADE_HREF = "/dashboard/billing#builders-hub";

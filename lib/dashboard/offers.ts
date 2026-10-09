@@ -39,7 +39,7 @@ export const STARTER_KIT_OFFER: Offer = {
  */
 export const PROMOS: readonly Promo[] = [];
 
-/** WP63-S7. The Founding Lifetime card's id. Its text is built from the live seat count. */
+/** WP64-S7. The Founding Lifetime card's id. Its text is built from the live seat count. */
 export const FOUNDING_OFFER_ID = "founding-lifetime";
 
 export const OFFER_IDS: ReadonlySet<string> = new Set([
@@ -91,14 +91,14 @@ export type OfferInput = {
   kitClaimed: boolean;
   dismissed: readonly string[];
   promos?: readonly Promo[];
-  /** WP63-S7. Null with the flag off, for Builder's Hub members, or before the query reads it. */
+  /** WP64-S7. Null with the flag off, for Builder's Hub members, or before the query reads it. */
   founding?: FoundingInput | null;
 };
 
 /**
  * PRD 6.2: in the first day, only the Starter Kit (until claimed). After
  * that, the founding offer while this free member's window is open and seats
- * remain (WP63-S7), else a running promo, else the Starter Kit while
+ * remain (WP64-S7), else a running promo, else the Starter Kit while
  * unclaimed, else nothing. The kit and the founding offer are for free
  * members (R6, FR-24); promos are for everyone. The first day stays quiet
  * for the founding offer too, until O6 says otherwise.

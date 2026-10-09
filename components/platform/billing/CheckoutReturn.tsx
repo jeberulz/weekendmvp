@@ -28,7 +28,7 @@ export function readReturnState(value: string | null): CheckoutReturnState | nul
 }
 
 /**
- * WP63-S6. What the member sees back from Stripe. The URL only says they
+ * WP64-S6. What the member sees back from Stripe. The URL only says they
  * came back. It never grants anything: the banner waits for
  * `entitlements.mine`, which updates live when the webhook lands.
  */

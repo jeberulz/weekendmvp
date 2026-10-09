@@ -62,7 +62,7 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
     expect(sheetSource).toContain("<Dialog.Description");
     expect(sheetSource).toMatch(/<Dialog\.Close asChild>\s*<button[^>]*>\s*Not now/);
     expect(sheetSource).toContain("freeWayForward.onSelect");
-    // WP63-S6: the button names the chosen term's price and starts checkout for it.
+    // WP64-S6: the button names the chosen term's price and starts checkout for it.
     expect(sheetSource).toContain("upgradeLabel(term, lifetime.amount)");
     expect(sheetSource).toContain('name: "upgrade_prompt_viewed", props: { surface: "sheet", feature }');
     expect(sheetSource).toContain('name: "upgrade_clicked", props: { surface: "sheet", feature, term }');
@@ -88,7 +88,7 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
   test("Plan and billing: the table, a Current plan label, and no upsell for Builder's Hub", () => {
     expect(comparisonSource).toContain("<CurrentLabel />");
     expect(comparisonSource).toContain('<th scope="row"');
-    // WP63-S6: the ladder replaced "Not open yet", for free members past day one only.
+    // WP64-S6: the ladder replaced "Not open yet", for free members past day one only.
     expect(ladderSource).toContain('id="builders-hub"');
     expect(comparisonSource).toContain("{ladderVisible ? <MembershipLadder /> : null}");
     expect(comparisonSource).toMatch(/entitlements\.plan === "free" &&\s*showUpsell &&/);
@@ -103,7 +103,7 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
 
 describe("WP44-S10 copy rules", () => {
   // Monthly only until the ladder ruling ("WP55 / price ladder", 2026-10-04).
-  // WP63-S6 sells annual and Founding Lifetime, so only R5 and R9 stay banned.
+  // WP64-S6 sells annual and Founding Lifetime, so only R5 and R9 stay banned.
   test("no hosting or credits (R5, R9), and never the id `builder`", () => {
     for (const [path, source] of Object.entries(planComponents)) {
       const code = withoutComments(source);

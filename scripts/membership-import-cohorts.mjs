@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * WP63-S7. Imports a founding offer cohort (ship·able and DARE buyers, or
+ * WP64-S7. Imports a founding offer cohort (ship·able and DARE buyers, or
  * newsletter subscribers) from a private file. Dry run first, always:
  *
  *   npm run membership:import-cohorts -- --cohort=buyers --file=/private/buyers.csv

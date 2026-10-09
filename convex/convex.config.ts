@@ -5,7 +5,7 @@ import { v } from "convex/values";
 const app = defineApp({
   env: {
     PLATFORM_BILLING_BRIDGE_SECRET: v.string(),
-    // WP63-S1. Signs the legacy ship·able payment log hand-off. Optional so a
+    // WP64-S1. Signs the legacy ship·able payment log hand-off. Optional so a
     // deploy without it boots; `paymentsBridge.accept` fails closed when it is
     // unset or under 32 characters. Set it in Convex before Vercel.
     LEGACY_PAYMENTS_BRIDGE_SECRET: v.optional(v.string()),

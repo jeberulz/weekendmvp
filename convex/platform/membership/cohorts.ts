@@ -7,7 +7,7 @@ import { foundingCohortValidator } from "./validators";
 import { FOUNDING_WINDOWS } from "./windows";
 
 /**
- * WP63-S7. Operator-only writes for the founding offer cohorts. Internal, so
+ * WP64-S7. Operator-only writes for the founding offer cohorts. Internal, so
  * only a deploy key reaches them, through `scripts/membership-import-cohorts.mjs`
  * (dry run first, exact target, backup, confirmation). They take email
  * hashes, never addresses, and return counts, never rows.

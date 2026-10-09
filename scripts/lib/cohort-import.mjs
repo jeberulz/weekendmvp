@@ -1,5 +1,5 @@
 /**
- * WP63-S7. Pure helpers for `scripts/membership-import-cohorts.mjs`. They
+ * WP64-S7. Pure helpers for `scripts/membership-import-cohorts.mjs`. They
  * turn a private list of addresses into hashes and counts. Nothing here
  * prints, logs or returns an address.
  *

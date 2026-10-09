@@ -801,7 +801,7 @@ export default defineSchema({
   editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
 
   /**
-   * WP63-S2 (additive, schema writer for this window). Builder's Hub
+   * WP64-S2 (additive, schema writer for this window). Builder's Hub
    * membership. No public function writes these tables: writes come from the
    * signed Stripe bridge (S4) or an operator run. `resolvePlan` reads
    * `plan_grants` and `plan_subscriptions`. Rows that mirror a Stripe object
@@ -882,7 +882,7 @@ export default defineSchema({
   }).index("by_stripeEventId", ["stripeEventId"]),
 
   /**
-   * WP63-S7 (additive, same schema window). Who a founding offer window opens
+   * WP64-S7 (additive, same schema window). Who a founding offer window opens
    * for early. Written only by the operator import (`membership/cohorts`).
    * Stores a hash of the normalized email (`membership/cohortHash.ts`), never
    * the address. `batchId` lets the operator undo one import.
@@ -898,7 +898,7 @@ export default defineSchema({
     .index("by_batchId", ["batchId"]),
 
   /**
-   * WP63-S8 (additive, same schema window). One row per live build. Written
+   * WP64-S8 (additive, same schema window). One row per live build. Written
    * only by the operator (`platform/liveBuildsOperator`). `status` is
    * flipped by scheduled mutations, so the member query stays clock-free.
    * Links are returned only to Builder's Hub members, and only while open

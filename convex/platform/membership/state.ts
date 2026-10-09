@@ -5,7 +5,7 @@ import { PRICING, lifetimeTrancheForSeat, type PlanId } from "../plans";
 import { ACCESS_SUBSCRIPTION_STATUSES } from "./validators";
 
 /**
- * WP63-S2. Read-only membership state: which plan an owner holds and the
+ * WP64-S2. Read-only membership state: which plan an owner holds and the
  * billing summary the dashboard shows. `resolvePlan` and `entitlements.mine`
  * both come here, so the plan and the summary always agree.
  *
@@ -188,7 +188,7 @@ export type SeatOffer = {
   nextSeatAmountMinor: number | null;
 };
 
-/** WP63-S6 and S7. The true free-seat count and the next seat's price, for the ladder and the Home card. */
+/** WP64-S6 and S7. The true free-seat count and the next seat's price, for the ladder and the Home card. */
 export async function readSeatOffer(ctx: QueryCtx): Promise<SeatOffer> {
   const [counts, nextFree] = await Promise.all([
     countSeats(ctx),

@@ -78,7 +78,7 @@ export type DashboardSurface = "sidebar" | "sheet" | "tag" | "billing";
 export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare" | "live_builds";
 export type DashboardSource = "home" | "ideas" | "saved" | "idea_page";
 export type OfferKind = "starter_kit" | "promo" | "founding_lifetime";
-/** WP63-S6. How the member chose to pay. */
+/** WP64-S6. How the member chose to pay. */
 export type MembershipTermProp = "monthly" | "annual" | "lifetime";
 export type FoundingTranche = "lifetime_t1" | "lifetime_t2";
 
@@ -100,19 +100,19 @@ export type DashboardEvent =
   | { name: "upgrade_prompt_viewed"; props: { surface: DashboardSurface; feature: DashboardFeature } }
   | {
       name: "upgrade_clicked";
-      /** `term` when the click picked one (WP63-S6). The sidebar link picks none. */
+      /** `term` when the click picked one (WP64-S6). The sidebar link picks none. */
       props: { surface: DashboardSurface; feature: DashboardFeature; term?: MembershipTermProp };
     }
   | { name: "offer_viewed"; props: { offer_id: string; kind: OfferKind } }
   | { name: "offer_clicked"; props: { offer_id: string; kind: OfferKind } }
   | { name: "offer_dismissed"; props: { offer_id: string; kind: OfferKind } }
-  // WP63-S6. Started fires from the browser before the redirect to Stripe.
+  // WP64-S6. Started fires from the browser before the redirect to Stripe.
   // Completed and seat taken fire once per checkout, only after
   // `entitlements.mine` confirms. Revenue reporting comes from Stripe, not GA.
   | { name: "checkout_started"; props: { surface: DashboardSurface; term: MembershipTermProp } }
   | { name: "checkout_completed"; props: { term: MembershipTermProp } }
   | { name: "founding_seat_taken"; props: { tranche: FoundingTranche } }
-  // WP63-S8. A Builder's Hub member followed a join or replay link. Never the link itself.
+  // WP64-S8. A Builder's Hub member followed a join or replay link. Never the link itself.
   | { name: "live_build_opened"; props: { action: "join" | "replay" } };
 
 export const DASHBOARD_EVENT_PROPS = {

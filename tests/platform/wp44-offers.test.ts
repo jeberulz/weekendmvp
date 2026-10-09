@@ -26,7 +26,7 @@ describe("WP44-S12 offer card", () => {
   });
 
   test("the choice runs on the server, with the clock passed in", () => {
-    // WP63-S7 adds the browser's Builder's Hub flag for the founding card.
+    // WP64-S7 adds the browser's Builder's Hub flag for the founding card.
     expect(offerCardSource).toContain("useQuery(api.platform.dashboard.offer, { now, foundingOffer: BUILDERS_HUB_UI })");
     expect(offerCardSource).toContain("const [now] = useState(() => Date.now());");
     const handler = dashboardSource.slice(dashboardSource.indexOf("export const offer = query"));

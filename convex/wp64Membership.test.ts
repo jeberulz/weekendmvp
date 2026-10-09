@@ -21,7 +21,7 @@ import {
 } from "./platform/plans";
 import schema from "./schema";
 
-// WP63-S2. The real resolver, never stubbed here: every test reads the
+// WP64-S2. The real resolver, never stubbed here: every test reads the
 // membership tables through `resolvePlan` and `entitlements.mine`.
 
 const modules = import.meta.glob("./**/*.ts");
@@ -117,7 +117,7 @@ async function errorCode(run: () => Promise<unknown>): Promise<unknown> {
   return "no error";
 }
 
-describe("WP63-S2 price ladder", () => {
+describe("WP64-S2 price ladder", () => {
   test("PRICING holds the approved ladder in minor units", () => {
     expect(PRICING.currency).toBe("usd");
     expect(PRICING.monthly).toEqual({ priceKey: "monthly", amountMinor: 2_900, interval: "month" });
@@ -153,7 +153,7 @@ describe("WP63-S2 price ladder", () => {
   });
 });
 
-describe("WP63-S2 schema", () => {
+describe("WP64-S2 schema", () => {
   const contract: Record<string, string[][]> = {
     billing_customers: [["ownerId"], ["stripeCustomerId"]],
     plan_subscriptions: [["ownerId", "updatedAt"], ["stripeSubscriptionId"], ["stripeCustomerId"]],
@@ -196,7 +196,7 @@ describe("WP63-S2 schema", () => {
   });
 });
 
-describe("WP63-S2 resolver matrix", () => {
+describe("WP64-S2 resolver matrix", () => {
   test("free: no grant and no subscription", async () => {
     const t = convexTest(schema, modules);
     const member = await seedUser(t, "free@example.test");
@@ -387,7 +387,7 @@ describe("WP63-S2 resolver matrix", () => {
   });
 });
 
-describe("WP63-S2 isolation and privacy", () => {
+describe("WP64-S2 isolation and privacy", () => {
   test("one member's grant or subscription never reaches another member", async () => {
     const t = convexTest(schema, modules);
     const paid = await seedUser(t, "paid@example.test");
@@ -418,7 +418,7 @@ describe("WP63-S2 isolation and privacy", () => {
   });
 });
 
-describe("WP63-S2 founding seats (operator seed)", () => {
+describe("WP64-S2 founding seats (operator seed)", () => {
   test("an unseeded table has no free seat, so checkout will fail closed", async () => {
     const t = convexTest(schema, modules);
     expect(await t.run((ctx) => countSeats(ctx))).toEqual({ free: 0, reserved: 0, taken: 0, overflow: false });
@@ -501,7 +501,7 @@ describe("WP63-S2 founding seats (operator seed)", () => {
   });
 });
 
-describe("WP63-S6 seat query for the ladder", () => {
+describe("WP64-S6 seat query for the ladder", () => {
   async function seed(t: T) {
     await t.mutation(internal.platform.membership.seats.seed, { apply: true });
   }
@@ -561,7 +561,7 @@ describe("WP63-S6 seat query for the ladder", () => {
   });
 });
 
-describe("WP63-S2 comp grants (operator)", () => {
+describe("WP64-S2 comp grants (operator)", () => {
   test("grant is idempotent and opens Builder's Hub, revoke closes it", async () => {
     const t = convexTest(schema, modules);
     const tester = await seedUser(t, "tester@example.test");

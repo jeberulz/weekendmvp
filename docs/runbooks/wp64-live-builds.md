@@ -1,4 +1,4 @@
-# Live builds: operator runbook (WP63-S8)
+# Live builds: operator runbook (WP64-S8)
 
 One live build a month, with a replay, is part of Builder's Hub (ruling "WP55 / bundle", 2026-10-04). Members see the schedule at `/dashboard/live`. This runbook is how the operator schedules, changes and cancels sessions. There is no admin UI.
 

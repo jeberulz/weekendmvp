@@ -3,7 +3,7 @@ import { internalMutation } from "../../_generated/server";
 import { MEMBERSHIP_SCAN_CAP } from "./state";
 
 /**
- * WP63-S2. Operator-only comp grants (frozen contract 2): Builder's Hub for
+ * WP64-S2. Operator-only comp grants (frozen contract 2): Builder's Hub for
  * testers and support, with no payment. Internal, so only a deploy key can
  * run them. Never run against production without the owner's go-ahead:
  *
