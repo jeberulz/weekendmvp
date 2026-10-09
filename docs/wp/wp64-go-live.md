@@ -73,6 +73,24 @@ Every price: USD, tax behavior **exclusive**, per unit. Both products: tax code 
 
 Checkout refuses a price that differs from `PRICING` (amount, currency, interval, mode, tax behavior, archived), so a mistake here stops a sale rather than charging the wrong amount.
 
+**Done 2026-10-09 by Claude, on the owner's word** ("create the LIVE prroducts and prices in stripe"), through the Stripe connection. Copied field for field from the sandbox catalog. All four prices pass `reviewPrice(price, key, livemode = true)` with no blocking issue and no warning.
+
+| Object | Live id |
+|---|---|
+| Product Builder’s Hub | `prod_VPR7BdtHNIAjiO` |
+| Product Builder’s Hub Founding Lifetime | `prod_VPR7rrNHH46YKM` |
+
+Vercel production values (not secrets):
+
+```bash
+STRIPE_MEMBERSHIP_PRICE_MONTHLY=price_1UOcFL4fUcq943uMv3X9nLWZ
+STRIPE_MEMBERSHIP_PRICE_ANNUAL=price_1UOcFR4fUcq943uMkXxyPfbO
+STRIPE_MEMBERSHIP_PRICE_LIFETIME_T1=price_1UOcFV4fUcq943uMO4xkV2hK
+STRIPE_MEMBERSHIP_PRICE_LIFETIME_T2=price_1UOcFX4fUcq943uMDRqSAf59
+```
+
+When setting up the Customer Portal (3c), add only the two Builder’s Hub prices (monthly and annual) to the plan switch.
+
 ### 3c. Customer Portal (owner)
 
 Settings, Billing, Customer portal, live mode. Match the sandbox table in `docs/wp/evidence/wp64-stripe-setup.md` ("Customer Portal"): cancel at period end with a reason, payment method update, invoice history, plan switch between the two Builder’s Hub prices only with prorations, downgrades scheduled when the interval shortens or the amount drops, quantity **off**, pause off, Terms and Privacy links. Save, so it becomes the default configuration.
@@ -145,7 +163,7 @@ Day 14, 30 and 60 from the day window 3 opens, with the triggers in the S12 stor
 |---|---|---|---|
 | 1 Merge, dormant | | | |
 | 2 Live env values | | | |
-| 3 Live Stripe objects | | | |
+| 3 Live Stripe objects | 3b Claude; 3a, 3c, 3d, 3e owner | 3b 2026-10-09 | 3b: 2 products and 4 prices, ids above, catalog check clean |
 | 4 Real-card smoke test | | | |
 | 5 Seats and cohorts | | | |
 | 6 Windows | | | |
