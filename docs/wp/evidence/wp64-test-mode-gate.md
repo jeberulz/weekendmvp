@@ -2,6 +2,10 @@
 
 Results of `docs/runbooks/wp64-test-mode-gate.md`. Test mode only, sandbox `acct_1ThX7a9tlBLUMkdP`. Ids are shortened to their last six characters. No email, card detail, key or secret.
 
+## Owner's result (2026-10-09)
+
+The owner reported: "i have tested the payment/billing on sandbox all look good now". The checklist page holds no per-step ticks or notes for Part A or the journeys, so the rows below stay blank. There is no record of which journeys ran or their Stripe ids. Claude's Parts D and E are recorded on the page and in `docs/wp/wp64-progress.md`.
+
 ## Setup (Part A)
 
 | Step | Date | Result | Notes |

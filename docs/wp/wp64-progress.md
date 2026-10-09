@@ -508,3 +508,17 @@ Append-only progress log. Do not rely on chat history for project state. Treat t
 - Checks run: `npm run typecheck` passes. The legal tests pass (20). A production build builds `/terms` and `/refund-policy` as static pages with no noindex and no draft text, the footer links both, and `/privacy-policy` includes the Builder's Hub section. axe on all three pages at 390 and 1440 px: 0 violations. Break-on-purpose: 4 deliberate breakages (pages hidden, email line dropped, a gap or a review note shipped), all caught. Full gate: typecheck passes, lint 0 errors and 34 warnings, build 442 pages, Convex 649, platform 483, security 146 node and 121 Vitest, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23, and the same six known failures (three OG-image, three editorial). The first gate run caught `tests/platform/privacy-payments.test.tsx` (from `main`, PR #129) still expecting the privacy page without the Builder's Hub section in production. Updated to the approved order: Payments, Builder's Hub, Contact.
 - Result: the legal pages are live on the branch. They reach the site when the branch merges.
 - Next: the owner sends the registered company name, number and office. They replace the email line, and the site then meets the trading-disclosure rules.
+
+## 2026-10-09 - WP64-S11 closed, S12 started: PR and go-live runbook
+
+- Owner input: "create a PR for this branch, i have tested the payment/billing on sandbox all look good now. lets move it to LIVE".
+- Actions taken:
+  - S11 closed on the owner's report. The checklist page held only Claude's D1 to D4 and E1, with no per-journey ticks, so the evidence file says so and the journey rows stay blank.
+  - Ruling "WP64 / go live": the owner's approval, and what is still open at approval.
+  - Merged `main` (PR #130, Convex DB I/O cut). No conflicts.
+  - Read the live Stripe account (`acct_1ThX6u4fUcq943uM`), read-only: no membership prices, only the legacy webhook endpoint, and no Customer Portal configuration in live mode.
+  - `docs/wp/wp64-go-live.md`: preconditions, the live account state, the nine steps with who does each, env names for Vercel and Convex, the live catalog table, the twelve webhook events, rollback, reviews and the signed checklist. Two corrections to the S12 order: the lifetime smoke test needs seeded seats and an open window, so it moves after the seed with a temporary window while the flag is off. With the flag off, the page shows only the Free plan, so the smoke test checks the Convex tables and opens checkout, cancel and switch from the browser console.
+  - Opened the WP64 PR for Step 1.
+- Decisions made (mine, reversible): secrets (restricted key, webhook signing secret, bridge secret, cron secret) are created and pasted by the owner, never through this session, so they never reach chat or logs. Claude can create the live products and prices through the Stripe connection on the owner's word, since price ids are not secrets.
+- Checks run: `npm run typecheck` passes, `npm run lint` has 0 errors and 34 warnings, `npm run build` succeeds (442 pages). Test stages pass: Convex 650 (one more from `main`), platform 483, security 146 node and 121 Vitest, engine 1,076, home 77, auth 146, redirects 76, sitemap 11, links 6, prompts 23. The same six known failures (three OG-image, three editorial).
+- Next: Step 1, merge the PR with everything dormant. Then Steps 2 and 3 with the owner.
