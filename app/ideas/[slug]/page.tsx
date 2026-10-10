@@ -81,17 +81,6 @@ type ResolvedIdea = {
 
 const AUTHOR_NAME = "John Iseghohi";
 
-/** Human-readable publish date, formatted in UTC so it is deterministic
- *  across build/runtime timezones (matches the ISO date in the JSON-LD). */
-function formatPublishedDate(ms: number): string {
-  return new Date(ms).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 /* ------------------------------------------------------------------ */
 /* Data resolution (R4-critical: everything is server-side)            */
 /*                                                                     */
@@ -535,26 +524,12 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                   {description}
                 </p>
                 {idea ? (
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-5 text-sm text-neutral-500">
-                    <span>
-                      By{" "}
-                      <span className="font-medium text-neutral-700">
-                        {AUTHOR_NAME}
-                      </span>
-                    </span>
-                    <span className="text-neutral-300" aria-hidden="true">
-                      ·
-                    </span>
-                    <span>
-                      Published{" "}
-                      <time
-                        dateTime={new Date(idea.publishedAt)
-                          .toISOString()
-                          .slice(0, 10)}
-                        className="text-neutral-700"
-                      >
-                        {formatPublishedDate(idea.publishedAt)}
-                      </time>
+                  // No visible publish date: it makes evergreen ideas look
+                  // stale. datePublished stays in the JSON-LD.
+                  <p className="mt-5 text-sm text-neutral-500">
+                    By{" "}
+                    <span className="font-medium text-neutral-700">
+                      {AUTHOR_NAME}
                     </span>
                   </p>
                 ) : null}
