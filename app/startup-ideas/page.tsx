@@ -17,6 +17,7 @@ import { Breadcrumbs } from "@/components/public/PageHeader";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
 import type { PublicIdea } from "@/components/public/types";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { fetchAllIdeas } from "@/components/hubs/hub-data";
 import { onlyPublicIdeas } from "@/lib/public/library";
 import { hasOgArt, liveIdeas, ogArtPath, publishOrder } from "@/lib/home/library";
 import type { ManifestIdea as HomeManifestIdea } from "@/lib/home/types";
@@ -138,22 +139,6 @@ function excerpt(markdown: string, max = 200): string {
     return `${plain.slice(0, max - 1).trimEnd()}…`;
   }
   return "";
-}
-
-/** All ideas from Convex, newest first (drains api.ideas.list pagination). */
-async function fetchAllIdeas(): Promise<IdeaDoc[]> {
-  const ideas: IdeaDoc[] = [];
-  let cursor: string | null = null;
-  do {
-    const result: {
-      page: IdeaDoc[];
-      isDone: boolean;
-      continueCursor: string;
-    } = await fetchQuery(api.ideas.list, { limit: 200, cursor });
-    ideas.push(...result.page);
-    cursor = result.isDone ? null : result.continueCursor;
-  } while (cursor);
-  return ideas;
 }
 
 /**

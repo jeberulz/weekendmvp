@@ -224,9 +224,9 @@ export const library = query({
 });
 
 /**
- * Bounded complete discovery: callers exhaust native pages before global
- * filtering/ranking with selectLibrary. No top-N search or catalog cutoff.
- * Every card includes all tools (display-only cards may abbreviate them).
+ * Paginated discovery cards. Home + explore no longer exhaust this into the
+ * client (they use `library`); kept for rollback/tests and any residual
+ * `useLibraryCatalogue` caller. Prefer `library` for new UI.
  */
 export const libraryPage = query({
   args: { paginationOpts: paginationOptsValidator },
@@ -253,8 +253,15 @@ export const libraryPage = query({
       activePlansOf(ctx, user._id),
     ]);
     const building = new Set(active.map((plan) => plan.ideaId));
+    // Prefer affinity rows already on this page before paying for extra gets.
+    // A full catalogue exhaust used to re-get up to 48 saved ideas on EVERY
+    // page (~6×48 full docs). Home/explore no longer exhaust libraryPage;
+    // this keeps residual callers cheap when saved ideas overlap the page.
+    const onPage = new Map(result.page.map((idea) => [idea._id, idea]));
     const savedIdeas = (
-      await Promise.all(recent.rows.map((row) => ctx.db.get("ideas", row.ideaId)))
+      await Promise.all(
+        recent.rows.map(async (row) => onPage.get(row.ideaId) ?? (await ctx.db.get("ideas", row.ideaId))),
+      )
     ).filter((idea) => idea !== null);
     const ranked = rankForYou(result.page, {
       tools: SETUP_TOOLS.filter((tool) => prefs?.tools.includes(tool)),

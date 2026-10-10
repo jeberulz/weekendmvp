@@ -83,13 +83,15 @@ describe("WP44-S5 library URL state", () => {
 });
 
 describe("WP44-S5 search and data", () => {
-  test("library uses native pagination and selects after complete catalogue loading", () => {
+  test("library uses the bounded library query, not a reactive catalogue exhaust", () => {
     expect(schemaSource).toContain('.searchIndex("search_title", { searchField: "title", filterFields: ["category"] })');
     expect(schemaSource).toContain('.searchIndex("search_description", {');
     expect(ideasQuerySource).toContain('.withSearchIndex("search_title"');
     expect(ideasQuerySource).toContain('.withSearchIndex("search_description"');
     expect(ideasQuerySource).toContain(".paginate(args.paginationOpts)");
-    expect(librarySource).toContain("catalogue.complete ? selectLibrary");
+    expect(librarySource).toContain("useQuery(api.platform.ideas.library");
+    expect(librarySource).not.toContain("useLibraryCatalogue");
+    expect(librarySource).not.toContain("selectLibrary");
     expect(ideasQuerySource).not.toContain(".collect()");
   });
 
