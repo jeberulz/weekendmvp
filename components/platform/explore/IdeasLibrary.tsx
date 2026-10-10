@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { useState } from "react";
-import { selectLibrary } from "@/convex/platform/libraryResults";
-import { useLibraryCatalogue } from "./useLibraryCatalogue";
+import { api } from "@/convex/_generated/api";
 import { LIBRARY_VIEWS } from "@/convex/platform/libraryFilters";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { cn } from "@/lib/utils";
@@ -76,8 +76,10 @@ function LiveLibrary() {
   if (page.key !== key) setPage({ key, limit: PAGE });
   const limit = page.key === key ? page.limit : PAGE;
 
-  const catalogue = useLibraryCatalogue();
-  const data = catalogue.complete ? selectLibrary(catalogue.cards, {
+  // One server-filtered library query instead of exhausting libraryPage into
+  // the client. With ~230 ideas, LIBRARY_READ_LIMIT (1000) is complete; we
+  // avoid N reactive pages × (docs + prefs + 48 saved-idea re-gets) per visit.
+  const data = useQuery(api.platform.ideas.library, {
     view: params.view,
     search: params.q || undefined,
     category: params.category,
@@ -87,7 +89,7 @@ function LiveLibrary() {
     sort: params.sort,
     publishedAfter: params.view === "new" ? since : undefined,
     limit,
-  }) : undefined;
+  });
 
   function update(patch: Partial<LibraryParams>) {
     router.replace(libraryHref(params, patch), { scroll: false });
@@ -162,10 +164,7 @@ function LiveLibrary() {
         </div>
       ) : (
         <ul
-          aria-busy={!catalogue.complete}
           className={cn(
-            "transition-opacity",
-            !catalogue.complete && "opacity-60",
             layout === "grid"
               ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
               : "divide-y divide-home-rule border-y border-home-ink",
@@ -188,16 +187,14 @@ function LiveLibrary() {
             <button
               type="button"
               onClick={() => setPage({ key, limit: limit + PAGE })}
-              disabled={!catalogue.complete}
               className={cn(
-                "inline-flex h-11 items-center rounded-[9px] border border-home-rule bg-home-card px-5 text-sm font-medium text-home-ink transition-colors hover:border-home-ink-3 disabled:cursor-wait disabled:opacity-60",
+                "inline-flex h-11 items-center rounded-[9px] border border-home-rule bg-home-card px-5 text-sm font-medium text-home-ink transition-colors hover:border-home-ink-3",
                 FOCUS,
               )}
             >
               Show more ideas
             </button>
           )}
-
         </div>
       )}
     </div>

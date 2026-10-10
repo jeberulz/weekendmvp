@@ -20,7 +20,7 @@ import { Container, Em } from "@/components/home/ui";
 import { categoryName } from "@/components/ideas/idea-meta";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { HubCta } from "@/components/hubs/HubCta";
-import { fetchAllIdeas } from "@/components/hubs/hub-data";
+import { fetchIdeasByCategory } from "@/components/hubs/hub-data";
 import { IdeaBrowser } from "@/components/public/IdeaBrowser";
 import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
@@ -352,10 +352,17 @@ async function CachedSolveHub({ slug }: { slug: string }) {
   // Tag revalidation on upsert keeps hubs fresh; hourly TTL was pure I/O.
   cacheLife("days");
   const page = PROBLEM_PAGES[slug];
-  const allIdeas = await fetchAllIdeas();
-  // Curate up to 6 ideas whose category matches this problem space.
-  const matched = allIdeas
-    .filter((idea) => page.categoryMatches.includes(idea.category))
+  // Indexed byCategory per match — not a full ideas.list drain.
+  const pooled = (
+    await Promise.all(page.categoryMatches.map((category) => fetchIdeasByCategory(category)))
+  ).flat();
+  const seen = new Set<string>();
+  const matched = pooled
+    .filter((idea) => {
+      if (seen.has(idea.slug)) return false;
+      seen.add(idea.slug);
+      return true;
+    })
     .sort(
       (a, b) =>
         (b.scores?.builder_confidence ?? 0) -

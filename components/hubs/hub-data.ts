@@ -12,12 +12,18 @@
  * counts match the homepage and no card links to a withheld page.
  */
 
+import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
-import { onlyPublicIdeas } from "@/lib/public/library";
+import {
+  manifestIdeas,
+  onlyPublicIdeas,
+  publicIdeaSlugs,
+  publicLibraryTotal,
+} from "@/lib/public/library";
 
 export type IdeaDoc = Doc<"ideas">;
 
@@ -97,18 +103,23 @@ export async function fetchIdeasBySlugs(
 }
 
 /**
- * Category hub lookup. Convex indexes are exact-match on `category`, but
- * historical rows used display casing ("SaaS"). Drain the archive and
- * filter with normalizeCategorySlug so hubs stay complete until a reseed.
+ * Category hub lookup via the `by_category_publishedAt` index. Seed normalizes
+ * categories to lowercase slugs; keep a normalize filter so any legacy casing
+ * in an indexed miss does not leak a wrong card.
  */
 export async function fetchIdeasByCategory(
   category: string,
 ): Promise<IdeaDoc[]> {
   const canonical = normalizeCategorySlug(category);
-  const all = await fetchAllIdeas();
-  return all
-    .filter((idea) => normalizeCategorySlug(idea.category) === canonical)
-    .sort((a, b) => b.publishedAt - a.publishedAt);
+  const rows = await safe(
+    () => fetchQuery(api.ideas.byCategory, { category: canonical }),
+    [],
+  );
+  return onlyPublicIdeas(
+    rows
+      .filter((idea) => normalizeCategorySlug(idea.category) === canonical)
+      .sort((a, b) => b.publishedAt - a.publishedAt),
+  );
 }
 
 export async function fetchIdeasByRevenueGoal(
@@ -118,12 +129,15 @@ export async function fetchIdeasByRevenueGoal(
 }
 
 /**
- * Full idea set (≤ a few hundred rows) — used by the collection hubs whose
- * legacy filters don't map to a single index (build-time pages, the
- * quick-wins / 10k-month fallbacks in generate-programmatic-pages.js).
- * Drains pagination so we don't silently drop ideas past the first page.
+ * Full idea set (≤ a few hundred rows). Cached under `ideas` so every
+ * collection / solve / archive caller shares one Convex drain per miss —
+ * previously each CachedCollectionHub slug drained `ideas.list` separately
+ * (~20× on every tag revalidation).
  */
 export async function fetchAllIdeas(): Promise<IdeaDoc[]> {
+  "use cache";
+  cacheTag("ideas");
+  cacheLife("days");
   const ideas: IdeaDoc[] = [];
   let cursor: string | null = null;
   try {
@@ -143,4 +157,29 @@ export async function fetchAllIdeas(): Promise<IdeaDoc[]> {
     return onlyPublicIdeas(ideas);
   }
   return onlyPublicIdeas(ideas);
+}
+
+/**
+ * Category tab counts without a Convex catalogue drain — same public
+ * membership rule as hubs (manifest ∩ editorial listing).
+ */
+export async function publicCategoryCounts(): Promise<{
+  counts: Map<string, number>;
+  total: number;
+}> {
+  "use cache";
+  cacheTag("ideas");
+  cacheLife("days");
+  const [allowed, total] = await Promise.all([
+    publicIdeaSlugs().then((slugs) => new Set(slugs)),
+    publicLibraryTotal(),
+  ]);
+  const counts = new Map<string, number>();
+  for (const idea of manifestIdeas()) {
+    if (!allowed.has(idea.slug)) continue;
+    const category = normalizeCategorySlug(idea.category ?? "");
+    if (!category) continue;
+    counts.set(category, (counts.get(category) ?? 0) + 1);
+  }
+  return { counts, total };
 }

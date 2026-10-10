@@ -5,8 +5,6 @@ import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
-import { selectLibrary } from "@/convex/platform/libraryResults";
-import { useLibraryCatalogue } from "@/components/platform/explore/useLibraryCatalogue";
 import { CategoryTag } from "@/components/home/ui";
 import { categoryName, normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { ReasonLine } from "@/components/platform/explore/ReasonLine";
@@ -22,11 +20,13 @@ function PicksSkeleton() {
 }
 
 function LivePicks({ exclude }: { exclude: string[] }) {
-  // Ranked over the whole library, saved ideas left out on the server.
-  const catalogue = useLibraryCatalogue();
-  const result = catalogue.complete ? selectLibrary(catalogue.cards, {
-    view: "for_you", unsavedOnly: true, limit: PICK_COUNT + exclude.length,
-  }) : undefined;
+  // One bounded library query — never exhaust libraryPage (that was ~6 reactive
+  // pages × full docs + 48 saved-idea re-gets on every ideas write / home visit).
+  const result = useQuery(api.platform.ideas.library, {
+    view: "for_you",
+    unsavedOnly: true,
+    limit: PICK_COUNT + exclude.length,
+  });
   // Pin the first three picks. Otherwise saving one would drop it from the
   // query and swap the card out from under the member's pointer.
   const [picks, setPicks] = useState<Pick[] | null>(null);
@@ -108,7 +108,7 @@ function PicksForMember({ exclude }: { exclude: string[] }) {
             and these picks get personal.
           </p>
         ) : (
-          <p className={HINT}><Link href="/dashboard/settings" className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-home-orange-ink">Set your tools, time and goal</Link> to get more personal picks.</p>
+          <p className={HINT}><Link href="/dashboard/settings" className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink">Set your tools, time and goal</Link> to get more personal picks.</p>
         ))}
     </>
   );
