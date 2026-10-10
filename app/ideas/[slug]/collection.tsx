@@ -10,9 +10,14 @@ import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { FeaturedIdeas, InkBand, KeepBrowsing, SectionHeading } from "@/components/public/Sections";
 import { ButtonLink } from "@/components/home/ui";
-import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { IDEA_COLLECTION_SLUGS, isIdeaCollectionSlug, type IdeaCollectionSlug } from "@/lib/idea-collection-slugs";
-import { fetchAllIdeas } from "@/components/hubs/hub-data";
+import {
+  fetchAllIdeas,
+  fetchIdeasByCategory,
+  fetchIdeasByRevenueGoal,
+  publicCategoryCounts,
+  type IdeaDoc,
+} from "@/components/hubs/hub-data";
 import { toPublicIdeas } from "@/lib/public/ideas";
 import {
   SITE,
@@ -285,19 +290,15 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
   cacheLife("days");
   if (!isIdeaCollectionSlug(slug)) return null;
   const def = COLLECTIONS[slug];
-  // One catalogue drain per cache miss. Category/revenue paths used to call
-  // fetchAllIdeas again inside fetchIdeasForCollection (or byRevenueGoal),
-  // doubling ideas.list I/O on every collection hub.
-  const all = await fetchAllIdeas();
-  const ideas = ideasFromCollection(def, all);
+  // Category/revenue use indexed queries. Tab counts come from the manifest
+  // membership set (no Convex list). buildTime still shares the cached
+  // fetchAllIdeas drain with other hubs.
+  const [ideas, { counts: categoryCounts, total }] = await Promise.all([
+    fetchIdeasForCollection(def),
+    publicCategoryCounts(),
+  ]);
   const schema = buildCollectionSchema(def, ideas);
   const list = toPublicIdeas(ideas);
-
-  const categoryCounts = new Map<string, number>();
-  for (const idea of all) {
-    const c = normalizeCategorySlug(idea.category);
-    categoryCounts.set(c, (categoryCounts.get(c) ?? 0) + 1);
-  }
   const tail = TAIL[def.kind];
   const more = IDEA_COLLECTION_SLUGS.filter((s) => s !== slug && COLLECTIONS[s].kind === def.kind)
     .slice(0, 2)
@@ -338,7 +339,7 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
         }
       />
 
-      <LinkTabs groups={collectionTabs(slug, categoryCounts, all.length)} className="pt-10" />
+      <LinkTabs groups={collectionTabs(slug, categoryCounts, total)} className="pt-10" />
 
       {list.length > 0 ? (
         <>
@@ -386,39 +387,27 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
   );
 }
 
-function byBuilderConfidence(
-  a: { scores?: { builder_confidence?: number } | null },
-  b: { scores?: { builder_confidence?: number } | null },
-) {
+function byBuilderConfidence(a: IdeaDoc, b: IdeaDoc) {
   return (b.scores?.builder_confidence ?? 0) - (a.scores?.builder_confidence ?? 0);
 }
 
-/** Filter a shared catalogue drain — never issues a second Convex list. */
-function ideasFromCollection(
-  def: CollectionDef,
-  all: Awaited<ReturnType<typeof fetchAllIdeas>>,
-) {
+async function fetchIdeasForCollection(def: CollectionDef): Promise<IdeaDoc[]> {
   if (def.kind === "category") {
-    const canonical = normalizeCategorySlug(def.slug);
-    return all
-      .filter((idea) => normalizeCategorySlug(idea.category) === canonical)
-      .sort(byBuilderConfidence);
+    return (await fetchIdeasByCategory(def.slug)).sort(byBuilderConfidence);
   }
   if (def.kind === "revenue") {
-    return all
-      .filter((idea) => idea.revenueGoal === def.slug)
-      .sort(byBuilderConfidence);
+    return (await fetchIdeasByRevenueGoal(def.slug)).sort(byBuilderConfidence);
   }
-  // buildTime: no dedicated index — scan + filter (≤57 rows).
+  // buildTime: no dedicated index — shared cached catalogue drain + filter.
   const values = def.buildTimeValues ?? [];
-  return all
+  return (await fetchAllIdeas())
     .filter((idea) => values.includes(idea.buildTime))
     .sort(byBuilderConfidence);
 }
 
 function buildCollectionSchema(
   def: CollectionDef,
-  ideas: Awaited<ReturnType<typeof fetchAllIdeas>>,
+  ideas: IdeaDoc[],
 ) {
   const url = `${SITE}/ideas/${def.slug}`;
   return buildGraph(
