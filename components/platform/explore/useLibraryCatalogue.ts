@@ -1,23 +1,17 @@
 "use client";
 
-import { usePaginatedQuery } from "convex/react";
-import { useEffect } from "react";
-import { api } from "@/convex/_generated/api";
-
-/** Page size for the member catalogue drain. Smaller pages cut reactive
- * re-read cost when `ideas` writes invalidate an open subscription; total
- * docs for a full drain stay the same. */
-const LIBRARY_PAGE = 40;
-
-/** Read every bounded page before claiming complete ranking or facet counts. */
-export function useLibraryCatalogue() {
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.platform.ideas.libraryPage,
-    {},
-    { initialNumItems: LIBRARY_PAGE },
+/**
+ * @deprecated Do not use for new UI. Exhausting `libraryPage` dominated Free-plan
+ * DB I/O (40 MB / 2 days while home+explore still called this). Home and explore
+ * now use `api.platform.ideas.library` directly.
+ *
+ * This stub remains only so a stale import fails loudly in review instead of
+ * silently re-subscribing to paginated full-doc reads. Prefer:
+ *   useQuery(api.platform.ideas.library, { view, limit, ...filters })
+ */
+export function useLibraryCatalogue(): never {
+  throw new Error(
+    "useLibraryCatalogue was removed: it exhausted platform/ideas.libraryPage " +
+      "(full idea docs × N pages × reactive re-runs). Use api.platform.ideas.library.",
   );
-  useEffect(() => {
-    if (status === "CanLoadMore") loadMore(LIBRARY_PAGE);
-  }, [status, loadMore]);
-  return { cards: results, complete: status === "Exhausted" };
 }

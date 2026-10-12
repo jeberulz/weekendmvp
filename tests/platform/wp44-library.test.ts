@@ -111,10 +111,14 @@ describe("WP44-S5 search and data", () => {
     }
   });
 
-  test("Home picks rank the whole library and skip saved ideas", () => {
-    expect(picksSource).toContain("api.platform.ideas.library");
+  test("Home picks use the library query and never exhaust libraryPage", () => {
+    // Require the live useQuery call — a type-only `typeof api.platform.ideas.library`
+    // reference used to satisfy the old assertion while still exhausting libraryPage.
+    expect(picksSource).toContain("useQuery(api.platform.ideas.library");
     expect(picksSource).toContain("unsavedOnly: true");
     expect(picksSource).not.toContain("paginationOpts");
+    expect(picksSource).not.toContain("useLibraryCatalogue");
+    expect(picksSource).not.toContain("selectLibrary");
   });
 });
 

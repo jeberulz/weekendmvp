@@ -1,98 +1,75 @@
 # Convex DB I/O cut (Oct 2026)
 
-## Status
+## Status (12 Oct 2026)
 
 | Round | PR | Result |
 | --- | --- | --- |
-| 1 | #123 | Cache restored + facet indexes. I/O only −25%. |
-| 2 | #130 | Facet hard-cap 48 + `cacheLife("days")`. **byTool/byAudience fixed** (209→214 / 150→153 MB in ~24h). |
-| 3 | this PR | Cut `libraryPage` + `ideas.list` leaders; document `testQuery`. |
+| 1 | #123 merged | Cache + facet indexes. I/O only −25%. |
+| 2 | #130 merged + Convex+Vercel deployed | byTool/byAudience fixed. **`libraryPage` got worse**: page size 100→40 meant more reactive pages while home/explore still exhausted. |
+| 3 | **#138 NEVER MERGED** (still open draft) | Explains everything: `platform/ideas.library` never appears in prod metrics; Vercel still serves `useLibraryCatalogue` → `libraryPage`. |
+| 4 | **this PR** | Re-lands Round 3 on current `main` + kills `useLibraryCatalogue` so it cannot silently return. |
 
-As of 10 Oct ~10:20 BST: **944 MB / 1 GB**, ~1.6 MB/h → cap ~11 Oct evening without Round 3.
+Team is **over** the Free cap (1.03 GB / 1 GB). 11–12 Oct UTC: libraryPage **40 MB**, ideas.list **17.6 MB**.
+
+### Verdict: Vercel production does **NOT** include PR #138
+
+- GitHub: PR #138 `state=OPEN`, `isDraft=true`, `mergedAt=null`.
+- Vercel production tip: `35be49a` = PR **#139** (“hide the publish date”), on `main`.
+- `main` still has `useLibraryCatalogue()` in `PickedForYou` + `IdeasLibrary`.
+- Convex `npx convex deploy` alone cannot fix this: the burn is **frontend callers**. The `library` query already existed; the UI never switched.
 
 ---
 
-## Round 3 root cause (verified)
+## Why libraryPage stayed hot (and looked worse)
 
-### `platform/ideas.libraryPage` (+21 MB in ~24h)
+1. Home + explore still mount `usePaginatedQuery(api.platform.ideas.libraryPage)` and **loadMore until Exhausted** (~230 full idea docs).
+2. Round 2 shrank page size to 40 → **more pages** per exhaust → more prefs/intent/saved-idea re-gets per visit.
+3. Open dashboard tabs keep reactive subscriptions; any `ideas` write re-runs every page.
 
-**Callers:** reactive `usePaginatedQuery` via `useLibraryCatalogue`, mounted on:
+`platform/ideas.library` missing from metrics = **no production client calls it**.
 
-1. **Dashboard home** — `PickedForYou` (only needs **3** cards)
-2. **`/dashboard/explore`** — `IdeasLibrary`
+## ideas.list
 
-Each mount **exhausted the whole catalogue** (~230 docs across ~6 pages of 40). Every page also re-ran prefs + intents + **up to 48 `ctx.db.get` of saved ideas**. Any `ideas` write re-ran every open subscription.
+Still drained per collection cache entry (and solve/startup) on `ideas` tag revalidate. Round 4 shares one cached drain + indexed category/revenue reads.
 
-`"use cache"` is **not** involved (client subscriptions).
+---
 
-### `ideas.list` (+18 MB in ~24h)
+## Round 4 fixes (this PR)
 
-**Callers (server `fetchQuery` only — no client `useQuery`):**
-
-| Caller | Before Round 3 |
+| Change | Effect |
 | --- | --- |
-| ~20 collection hubs | each `CachedCollectionHub` drained full list (own cache entry) |
-| ~5–8 solve hubs | full list then filter |
-| `/startup-ideas` | full paginated drain |
-| `fetchIdeasByCategory` | full drain (legacy casing) |
+| Home + explore → `useQuery(api.platform.ideas.library)` | Stops all UI `libraryPage` exhaust |
+| `useLibraryCatalogue` → throws if called | Prevents silent regress |
+| `fetchAllIdeas` itself `"use cache"` + `ideas` tag | One list drain shared across hubs |
+| Collections: indexed byCategory/byRevenueGoal; tab counts from manifest | Most hubs skip `ideas.list` |
+| Solve: byCategory pool | No full list |
+| startup-ideas uses shared cached drain | Shares the one miss |
 
-Sitemap does **not** call Convex. Round 2 `cacheLife("days")` helped, but **each collection slug was a separate cache entry**, so one `ideas` tag revalidation (e.g. publishing a few ideas) triggered **~20 independent full drains** ≈ tens of MB in one wave — matches the +18 MB day.
-
-### `testQuery` (16.4 MB prod + 20.3 MB dev MTD)
-
-**Not in this repo.** No cron, script, or export. Convex MCP / dashboard **one-off query runner** materializes a temporary module named `testQuery.js` (see Convex MCP `runOneoffQuery` schema: *"single file (testQuery.js)"*). Agents and dashboard "Run" against prod/dev are the callers. **Stop running large one-offs on prod.**
+Est. after Vercel ships: libraryPage → **~0** from app; ideas.list → **≪5 MB/day** unless frequent publishes.
 
 ---
 
-## Round 3 fixes
+## Exact steps for John (order matters)
 
-| Change | Est. impact |
-| --- | --- |
-| **PickedForYou** → `useQuery(api.platform.ideas.library)` (limit 3+exclude) | Home stops exhausting `libraryPage`. **~40–60% of libraryPage** if home is the common path |
-| **IdeasLibrary** → same `library` query with URL filters (no catalogue exhaust) | Explore: **1 take(~230)** per filter set instead of **6 pages × (40 docs + ≤48 saved gets)** |
-| **`fetchAllIdeas` wrapped in `"use cache"`** + `cacheTag("ideas")` | All hubs **share one** list drain per miss/revalidate instead of ~20 |
-| **Collections:** indexed `byCategory` / `byRevenueGoal`; tab counts from manifest membership (no list) | Category/revenue hubs: **~16–48 docs** not 230; tabs free |
-| **Solve:** `byCategory` per match, not full list | ~3–4 category collects, capped to 6 cards |
-| **`libraryPage`:** reuse on-page docs for affinity before extra gets | Residual callers cheaper |
-| **startup-ideas:** uses shared cached `fetchAllIdeas` | Shares the one drain |
+**Nothing is deployed until this PR merges to `main` and Vercel promotes production.**
 
-Public card grids / member ranking behaviour unchanged (still for_you / filters / top confidence sorts). With ~230 ideas, `LIBRARY_READ_LIMIT` (1000) remains complete.
+1. **Merge this PR** to `main` (mark ready / merge). Close draft **#138** as superseded (do not merge #138 — it is behind `main`).
+2. **Confirm Vercel production** builds from the merge commit on `main` and reaches READY. Tip SHA must contain the `useQuery(api.platform.ideas.library` change in `PickedForYou.tsx` / `IdeasLibrary.tsx`.
+3. **Convex** — only if this PR’s `convex/platform/ideas.ts` tweak is not yet on `first-squirrel-244`:
+   ```bash
+   npx convex deploy
+   ```
+   Target **first-squirrel-244**. No schema/backfill. (Frontend is the critical path.)
+4. **Verify** in Convex dashboard within 1–4h:
+   - `platform/ideas.libraryPage` → collapse
+   - `platform/ideas.library` → **appears** and stays modest
+   - `ideas.list` → sharp drop
+5. Optional immediate: close any long-open `/dashboard` tabs (old JS still exhausts until hard refresh after Vercel).
 
-**Target after Round 3:** libraryPage app traffic → **near zero**; ideas.list → **well under ~3–5 MB/day** unless frequent publishes revalidate `ideas`. Combined with Round 2, stay under **~15 MB/day** app I/O.
-
----
-
-## Deploy (John) — do not merge/deploy from the agent
-
-Order: **Convex first** (libraryPage affinity tweak), then **Vercel** (hub-data cache + UI callers).
-
-```bash
-# 1. Live production only
-npx convex deploy
-# Target: first-squirrel-244 (john-iseghohi:weekendmvp:production)
-
-# 2. Ship Vercel production from the merged PR
-```
-
-No schema change. No backfill.
-
-### Verify (Convex dashboard, ~4–24h)
-
-- `platform/ideas.libraryPage` bytes/hour → collapse (only tests/rollback if unused)
-- `ideas.list` bytes/hour → sharp drop; spikes only on `ideas` tag revalidate
-- `platform/ideas.library` may rise modestly (replaces libraryPage) — should be **far less** than prior libraryPage
-- `testQuery`: if still growing, someone is still running one-offs on that deployment
-
-### Before code (optional, immediate)
-
-1. **Do not run Convex MCP `runOneoffQuery` / dashboard Run against prod** for catalogue scans — use anonymous/dev.
-2. Do **not** disable Convex backups without an owner decision.
+Do **not** disable Convex backups. Do **not** run MCP/`testQuery` one-offs on prod.
 
 ---
 
-## Non-goals
+## testQuery
 
-- Slim `idea_cards` projection table (still deferred; Convex reads whole docs)
-- Middleware `editorial.public.visibility` caching
-- Removing `libraryPage` export (rollback / tests)
-- Deleting platform snapshot export
+Still not in repo. Convex dashboard/MCP one-off runner (`testQuery.js`). Ignore for this cut; stop large Runs on prod.
