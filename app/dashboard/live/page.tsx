@@ -19,7 +19,9 @@ export default function LiveBuildsPage() {
           Live builds
         </h1>
         <p className="text-[15px] text-home-ink-2">
-          One live build a month, with a replay after. Times show in your time zone.
+          One live build a month, with a replay after. Times show in your time
+          zone. Free accounts can browse the schedule; join links and replays
+          are a Builder&apos;s Hub benefit.
         </p>
       </header>
       <LiveBuilds />

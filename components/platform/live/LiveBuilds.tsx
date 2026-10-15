@@ -111,9 +111,16 @@ function SessionCard({
           {" · "}
           {session.durationMin} minutes
         </p>
-        <h3 id={titleId} className="font-editorial text-[22px] font-normal leading-[1.2] text-home-ink">
-          {session.title}
-        </h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 id={titleId} className="font-editorial text-[22px] font-normal leading-[1.2] text-home-ink">
+            {session.title}
+          </h3>
+          {!entitled ? (
+            <span className="inline-flex h-5 items-center rounded-full border border-home-rule bg-home-sunk px-2 font-mono text-[10px] uppercase tracking-[0.08em] text-home-ink-2">
+              Builder&apos;s Hub
+            </span>
+          ) : null}
+        </div>
         {session.summary ? <p className="text-[15px] leading-[1.5] text-home-ink-2">{session.summary}</p> : null}
         <SessionAction session={session} entitled={entitled} onLocked={onLocked} titleId={titleId} />
       </article>
@@ -130,6 +137,15 @@ function LiveList() {
 
   return (
     <div className="flex flex-col gap-10">
+      {!entitled ? (
+        <p className="rounded-[14px] border border-home-rule bg-home-sunk px-4 py-3 text-sm leading-5 text-home-ink-2">
+          <span className="mr-2 inline-flex h-5 items-center rounded-full border border-home-rule bg-home-card px-2 font-mono text-[10px] uppercase tracking-[0.08em] text-home-ink-2">
+            Builder&apos;s Hub
+          </span>
+          Schedule is free to browse. Join links and replays are included with
+          Builder&apos;s Hub.
+        </p>
+      ) : null}
       <section aria-labelledby="live-upcoming" className="flex flex-col gap-3">
         <h2 id="live-upcoming" className={EYEBROW}>
           Coming up
