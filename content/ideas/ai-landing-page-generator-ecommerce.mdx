@@ -83,7 +83,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, an owner reads only their own rows; published pages are readable by everyone through the public route):
 - pages(id, user_id, slug, brief jsonb, status, published_at)
 - page_versions(id, page_id, version, sections jsonb, created_at)
-- analytics_events(id, page_id, kind, created_at)  kind is view or cta_click
+- analytics_events(id, page_id, kind, created_at) kind is view or cta_click
 
 Screens: /login, /pages (the list), /pages/new (the wizard), /pages/[id] (preview, edit and publish), /p/[slug] (the public page).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
@@ -138,4 +138,4 @@ Market research and competitive data sourced from:
 - [SiteKick — AI Landing Page Future](https://www.sitekick.ai/blog/ai-landing-page-the-future-of-marketing)
 - [GetResponse — AI Landing Page Builder Comparison](https://www.getresponse.com/blog/ai-landing-page-builder)
 
-Research curated via the Ideabrowser database. Community signals verified across Reddit, YouTube, and Facebook groups.
+Research curated from community and open web sources. Community signals verified across Reddit, YouTube, and Facebook groups.

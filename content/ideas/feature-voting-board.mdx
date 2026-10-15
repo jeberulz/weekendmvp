@@ -117,7 +117,7 @@ Dedup flow on submission:
 1. User submits new feature via /submit Server Action.
 2. Run Postgres FTS against existing features for this tenant: SELECT id, title, body, vote_count, ts_rank(to_tsvector(title || ' ' || body), websearch_to_tsquery($query)) AS rank FROM features WHERE tenant_id=$tid AND status NOT IN ('shipped','wontfix') ORDER BY rank DESC LIMIT 10;
 3. If top candidate rank > 0.3, pass the submission + top 5 candidates to Claude Haiku 4.5:
-   System prompt: "You identify whether a new feature request is a duplicate of existing ones. Return JSON: {is_duplicate: bool, match_id: string|null, confidence: 0-1, reason: string}"
+ System prompt: "You identify whether a new feature request is a duplicate of existing ones. Return JSON: {is_duplicate: bool, match_id: string|null, confidence: 0-1, reason: string}"
 4. If is_duplicate AND confidence > 0.7: show user the modal: "This looks similar to [existing feature]. Vote for it instead?" with [Vote existing] or [Submit anyway].
 5. If user confirms submit anyway, create new feature. Track the "declined dedup" rate as a product metric.
 
@@ -162,6 +162,6 @@ This is the retention flywheel: voters get re-engaged on every ship event, admin
 - • [TechCrunch coverage — Canny acquired by Permanent Capital (2024)](https://techcrunch.com/2024/)
 - • [ProductBoard Series D ($125M round, $1.7B valuation, 2022)](https://productboard.com/press)
 - • [Intercom — Public roadmap and churn (25–35% churn reduction)](https://www.intercom.com/blog/reducing-churn/)
-- • Keyword volumes from Google Keyword Planner (April 2026), CPC from Ahrefs. Ideabrowser direct search returned no exact match for feature-voting-board wedge; web research fills the category.
+- • Keyword volumes from Google Keyword Planner (April 2026), CPC from Ahrefs. Direct search returned no exact match for feature-voting-board wedge; web research fills the category.
 
 Competitor pricing (Canny, ProductBoard, Nolt, Frill) shifts frequently; verify live pricing pages before marketing claims. Permanent Capital acquisition referenced from press coverage.

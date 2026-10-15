@@ -100,8 +100,8 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each admin reads only their own rows):
 - connections(id, user_id, provider, token_encrypted, status)
-- grants(id, user_id, contractor_name, contractor_email, board_ref, role, starts_at, ends_at, status, created_by)  status is pending, active, warned, revoked or failed
-- notices(id, grant_id, kind, sent_at)  kind is warning or revoked; unique on grant_id and kind
+- grants(id, user_id, contractor_name, contractor_email, board_ref, role, starts_at, ends_at, status, created_by) status is pending, active, warned, revoked or failed
+- notices(id, grant_id, kind, sent_at) kind is warning or revoked; unique on grant_id and kind
 - audit_events(id, grant_id, user_id, action, provider, payload jsonb, created_at)
 
 Screens: /login, /connect (the Trello key and token), /grants (who is in, days left, filter by status), /grants/new, /audit (events and a CSV export).
@@ -149,7 +149,7 @@ Done when: each deliverable is saved in one folder and each message variant is u
 
 ## Sources
 
-Market sizing and competitor models collated from Ideabrowser MCP idea 8546 and the analyst pages it cites (June 2026 snapshot). Re-check live Okta / Entra / Workspace / 1Password prices before you put them on a pricing slide. Access-control TAM mixes physical and digital — do not paste it into a seed deck as “our TAM.”
+Market sizing and competitor models collated from the analyst pages it cites (June 2026 snapshot). Re-check live Okta / Entra / Workspace / 1Password prices before you put them on a pricing slide. Access-control TAM mixes physical and digital — do not paste it into a seed deck as “our TAM.”
 
 - [MarketsandMarkets — Access Control Market (USD 10.62B 2025 to 15.80B 2030, 8.3% CAGR)](https://www.marketsandmarkets.com/Market-Reports/access-control-market-164562182.html)
 - [SkyQuest — Access Control Market (USD 9.91B 2024 to 19.82B 2033, about 8% CAGR)](https://www.skyquestt.com/report/access-control-market)
@@ -161,4 +161,4 @@ Market sizing and competitor models collated from Ideabrowser MCP idea 8546 and 
 - [1Password — Business pricing reference](https://1password.com/pricing)
 - [Google Workspace — admin bundled with seat pricing](https://workspace.google.com/pricing)
 
-Page sourced via Ideabrowser MCP (idea_id 8546): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, execution_plan.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, execution_plan.

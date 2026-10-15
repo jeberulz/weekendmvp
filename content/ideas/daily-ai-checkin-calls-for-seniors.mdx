@@ -89,7 +89,7 @@ Tables (Row Level Security on, a family reads only the rows for their own househ
 - households(id, user_id, family_name, family_phone)
 - seniors(id, household_id, name, phone, call_time, timezone, consent_confirmed_at, paused boolean)
 - calls(id, senior_id, started_at, status, transcript, flagged_topics text[])
-- alerts(id, senior_id, call_id, kind, reason, severity, sent_at, acknowledged_at)  kind is concern or no_answer
+- alerts(id, senior_id, call_id, kind, reason, severity, sent_at, acknowledged_at) kind is concern or no_answer
 
 Screens: /login, /household (add a senior and confirm consent), /seniors/[id] (call history and transcripts), /alerts.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, ANTHROPIC_API_KEY, CRON_SECRET.
@@ -136,7 +136,7 @@ Done when: each deliverable is saved in one folder and no alert text uses alarm 
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #7292 and the public research it cites (2026 snapshot). Triangulate before citing in investor materials.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (2026 snapshot). Triangulate before citing in investor materials.
 
 - [Precedence Research — AI Companion Market Report ($37.12B 2025 → $552.49B 2035, 31% CAGR)](https://www.precedenceresearch.com/ai-companion-market)
 - [InsightAce Analytic — AI in Aging and Elderly Care Market ($56.78B 2025 → $387.52B 2035, 21.3% CAGR)](https://www.insightaceanalytic.com/report/ai-in-aging-and-elderly-care-market/2696)
@@ -147,4 +147,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [ElliQ — product and pricing reference](https://elliq.com)
 - [Dialzara — Top AI Companions for Seniors in 2025](https://dialzara.com/blog/top-7-ai-companions-for-seniors-in-2025)
 
-Page sourced via Ideabrowser MCP (idea_id 7292): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

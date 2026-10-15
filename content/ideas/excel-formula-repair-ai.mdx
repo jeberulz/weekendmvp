@@ -93,12 +93,12 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 ```text
 Build the weekend MVP of "SheetDoctor": upload an Excel workbook and get a ranked list of structural formula defects, with a proposed fix for each that you accept one at a time. Detection is plain code; no model is involved.
 
-Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), SheetJS to read and write .xlsx, fast-formula-parser to read formulas. The audit runs in a route handler. A Vercel Cron route deletes files after 24 hours. Deploy on Vercel.
+Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), SheetJS to read and write.xlsx, fast-formula-parser to read formulas. The audit runs in a route handler. A Vercel Cron route deletes files after 24 hours. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
 - workbooks(id, user_id, filename, file_path, sheet_count, formula_count, uploaded_at, delete_after)
 - audits(id, workbook_id, status, defect_count, finished_at)
-- defects(id, audit_id, sheet, cell, kind, severity, original_formula, proposed_formula, explanation, blast_radius, status)  kind is broken_ref, range_off_by_one, inconsistent_column or hardcoded_constant; status is open, accepted or rejected
+- defects(id, audit_id, sheet, cell, kind, severity, original_formula, proposed_formula, explanation, blast_radius, status) kind is broken_ref, range_off_by_one, inconsistent_column or hardcoded_constant; status is open, accepted or rejected
 
 Screens: /login, /upload, /audit/[id] (ranked defects, show the first 25), /audit/[id]/defect/[defectId] (original and proposed side by side).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), CRON_SECRET.
@@ -111,12 +111,12 @@ Done when: npm run dev starts, you can sign in, and the three tables exist with 
 
 ```text
 Build the one feature that proves SheetDoctor: find the silent formula mistakes and let the user approve each fix.
-1. Upload an .xlsx to a private bucket. Set delete_after to 24 hours from now and show that on the page.
+1. Upload an.xlsx to a private bucket. Set delete_after to 24 hours from now and show that on the page.
 2. Read every sheet with SheetJS. For each formula cell, extract its references. Build a map from each cell to the formulas that read it, and count the cells that depend on a formula, directly or through others. That count is blast_radius.
 3. Detect four kinds of defect. broken_ref: the formula contains #REF!. range_off_by_one: a range ends 1 or 2 rows above the last filled row of its column while sibling formulas in the column reach that row. inconsistent_column: within a column of formulas, rewrite each as relative offsets, and flag a cell whose shape differs from the majority. hardcoded_constant: a number other than 0, 1 or 100 typed inside a formula in a column whose other formulas only use references.
 4. Propose each fix in code from the majority sibling shape, or by extending the range to the last filled row. A proposal must parse with the same parser, or the defect is marked manual review.
 5. Rank by severity, then blast_radius. Show the top 25 with a Show all link. Each detail page shows original and proposed side by side, a one-sentence plain explanation and "this affects N cells".
-6. Accept and Reject buttons set the status. A Download corrected copy button applies only the accepted fixes to a new .xlsx and leaves the original untouched.
+6. Accept and Reject buttons set the status. A Download corrected copy button applies only the accepted fixes to a new.xlsx and leaves the original untouched.
 Rules: never apply a fix the user did not accept. Never send a workbook to any outside service.
 Empty state: with no workbooks, show the upload box and one sample file to download.
 Done when: a sample workbook with a planted #REF!, a range one row short, one odd formula in a column and one typed-in number lists four defects in ranked order, accepting two and downloading changes exactly those two cells, and the cron removes files past delete_after.
@@ -145,7 +145,7 @@ Done when: each deliverable is saved in one folder and the severity badges are d
 
 ## Sources
 
-Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1245 and the public research it cites (August 2026 snapshot). Verify all competitor pricing on live pages — AI tooling in this category reprices frequently, and Microsoft's Copilot packaging in particular has changed multiple times.
+Market sizing, competitor set, and demand signals sourced from the public research it cites (August 2026 snapshot). Verify all competitor pricing on live pages — AI tooling in this category reprices frequently, and Microsoft's Copilot packaging in particular has changed multiple times.
 
 - [Precedence Research — Artificial Intelligence Market ($757.6B 2025, 19.2% CAGR, $3.68T by 2034)](https://www.precedenceresearch.com/artificial-intelligence-market)
 - [Virtue Market Research — AI Spreadsheet Tools Market (fragmentation and maturity assessment)](https://virtuemarketresearch.com/report/ai-spreadsheet-tools-market)
@@ -156,4 +156,4 @@ Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP i
 - [Microsoft Graph — Excel workbook API reference](https://learn.microsoft.com/en-us/graph/api/resources/excel)
 - [SheetJS — xlsx parsing library](https://docs.sheetjs.com/)
 
-Page sourced via Ideabrowser MCP (idea_id 1245): get_idea_research, competitive_analysis, go_to_market.
+Research methods: get_idea_research, competitive_analysis, go_to_market.

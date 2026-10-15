@@ -98,7 +98,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvec
 Tables (Row Level Security on, each creator reads only their own rows):
 - courses(id, user_id, title)
 - modules(id, course_id, title, order_index)
-- assets(id, module_id, type, storage_path)  where type is one of pdf, transcript, slide
+- assets(id, module_id, type, storage_path) where type is one of pdf, transcript, slide
 - chunks(id, asset_id, content, embedding vector(1536), metadata jsonb)
 - students(id, course_id, email)
 - conversations(id, student_id, messages jsonb)
@@ -149,14 +149,13 @@ Ship the tutor with citation links on day one — creators trust the product whe
 
 ## Sources
 
-Market sizing and competitor pricing collated from Ideabrowser MCP idea #4170 and public research (July 2026 snapshot). Triangulate before citing in investor materials.
+Market sizing and competitor pricing collated from public research (July 2026 snapshot). Triangulate before citing in investor materials.
 
 - [Business Research Insights — AI Companion Market Report](https://www.businessresearchinsights.com/market-reports/ai-companion-market-117494)
 - [DataIntelo — Global AI Companion Market](https://dataintelo.com/report/global-ai-companion-market)
 - [The Business Research Company — Artificial Intelligence (AI) Companion Global Market Report](https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-companion-global-market-report)
-- [Ideabrowser #4170 — AI Course Tutor Companion research synthesis](https://www.ideabrowser.com)
 - [Khan Academy — Khanmigo (tutoring UX benchmark)](https://www.khanacademy.org/khan-labs)
 - [Teachable — creator platform and pricing reference](https://teachable.com/pricing)
 - [Thinkific — creator platform and pricing reference](https://www.thinkific.com/pricing/)
 
-Page sourced via Ideabrowser MCP (idea_id 4170): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

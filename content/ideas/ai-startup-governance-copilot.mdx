@@ -91,7 +91,7 @@ Tables (Row Level Security on, each organization reads only its own rows):
 - organizations(id, user_id, name)
 - connections(id, org_id, provider, credential_ref)
 - inventory_items(id, org_id, provider, path, snippet_hash, last_seen_sha)
-- findings(id, org_id, inventory_item_id, control_id, severity, evidence, status, recommended_policy_slug)  where severity is low, medium or high and status is one of open, accepted, remediated
+- findings(id, org_id, inventory_item_id, control_id, severity, evidence, status, recommended_policy_slug) where severity is low, medium or high and status is one of open, accepted, remediated
 - policies(id, org_id, slug, version, markdown)
 Encrypt provider secrets and never log raw keys.
 
@@ -106,7 +106,7 @@ Done when: npm run dev starts, the GitHub App installs on a test org, and the fi
 
 ```text
 Build the one feature that proves AgentLedger: a scan, a ranked gap list, and a data-room pack.
-1. Scan: through the GitHub App, list default-branch files that match AI SDK patterns (openai, anthropic, bedrock, langchain, vercel/ai). Store the path, a snippet hash and the provider in inventory_items. Never store the contents of a .env file. Flag a suspected secret and ask the user to rotate it. Re-scan only when the git SHA changed.
+1. Scan: through the GitHub App, list default-branch files that match AI SDK patterns (openai, anthropic, bedrock, langchain, vercel/ai). Store the path, a snippet hash and the provider in inventory_items. Never store the contents of a.env file. Flag a suspected secret and ask the user to rotate it. Re-scan only when the git SHA changed.
 2. Map risk: score each item for prompt_pii_possible, training_opt_out, retention_known, subprocessors_listed, eu_ai_act_role and soc2_evidence_gap. Return JSON findings with control_id, severity, evidence and recommended_policy_slug.
 3. /app/gaps lists findings ranked by severity, with Draft policy and Mark accepted buttons.
 4. Draft policies with Claude. System prompt: "You are a startup compliance copilot. Draft short, lawyer-editable Markdown from a machine inventory. Never invent statutes. Cite finding IDs. If something is unknown, write a TODO. Do not guess a date or a DPA." Generate ai-acceptable-use, ai-vendor-inventory, model-card-stub, ai-incident-response-addendum and data-retention-for-prompts, each with purpose, scope, roles, allowed and prohibited uses, a vendor table, retention and escalation.
@@ -138,7 +138,7 @@ Done when: each deliverable is saved in one folder and the badges are distinguis
 
 ## Sources
 
-Market sizing and competitor pricing from Ideabrowser idea 5861 plus public reports. Triangulate before a pitch deck.
+Market sizing and competitor pricing from public reports. Triangulate before a pitch deck.
 
 - [Prophecy Market Insights — AI governance / related AI market cuts](https://www.prophecymarketinsights.com)
 - [Grand View Research — AI / governance-adjacent industry reports](https://www.grandviewresearch.com)
@@ -153,4 +153,4 @@ Market sizing and competitor pricing from Ideabrowser idea 5861 plus public repo
 - [Credo AI](https://www.credo.ai/)
 - [Holistic AI](https://www.holisticai.com/)
 
-Page sourced via Ideabrowser (idea_id 5861): opportunity 9, pain 9, timing 9, builder confidence 8.
+Research methods: opportunity 9, pain 9, timing 9, builder confidence 8.

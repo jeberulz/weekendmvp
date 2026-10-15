@@ -84,7 +84,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads and writes only their own rows):
 - intake_responses(id, user_id, current_salary_cents, monthly_expenses_cents, savings_cents, dependents, target_field, hours_per_week, skills jsonb)
 - roadmaps(id, user_id, version, generated_at, status)
-- milestones(id, roadmap_id, phase, target_month, title, description, category, completed)  where phase is one of 6mo, 1yr, 2yr and category is one of skill, network, financial, application
+- milestones(id, roadmap_id, phase, target_month, title, description, category, completed) where phase is one of 6mo, 1yr, 2yr and category is one of skill, network, financial, application
 
 Screens: /login, /intake, /roadmap (milestones by phase).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
@@ -138,4 +138,4 @@ Done when: each deliverable is saved in one folder and the money figures line up
 - [Replika — pricing reference (Premium $7.99/month)](https://replika.com)
 - [BetterUp — enterprise coaching pricing reference ($60-$300/user/month)](https://www.betterup.com)
 
-Page sourced via Ideabrowser MCP (idea_id 3529): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

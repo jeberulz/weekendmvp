@@ -99,9 +99,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows; merchants is a shared reference table):
 - imports(id, user_id, filename, row_count, created_at)
-- transactions(id, user_id, import_id, external_id, posted_at, amount_cents, raw_descriptor, normalized_descriptor, merchant_id)  external_id is unique per user
-- merchants(id, normalized_descriptor, display_name, category, cancel_url, requires_phone, cancel_phone, notes, typical_days_to_stop)  normalized_descriptor is unique
-- recurring_charges(id, user_id, merchant_id, cadence, amount_cents, confidence, first_seen, last_charged, next_expected, price_changes jsonb, status)  cadence is weekly, monthly, quarterly, annual or irregular; status is active, cancelling, cancelled or unverified
+- transactions(id, user_id, import_id, external_id, posted_at, amount_cents, raw_descriptor, normalized_descriptor, merchant_id) external_id is unique per user
+- merchants(id, normalized_descriptor, display_name, category, cancel_url, requires_phone, cancel_phone, notes, typical_days_to_stop) normalized_descriptor is unique
+- recurring_charges(id, user_id, merchant_id, cadence, amount_cents, confidence, first_seen, last_charged, next_expected, price_changes jsonb, status) cadence is weekly, monthly, quarterly, annual or irregular; status is active, cancelling, cancelled or unverified
 - cancellations(id, recurring_charge_id, user_id, method, initiated_at, script, verified_at, outcome)
 
 Screens: /login, /import, /charges (ranked list), /charges/[id], /cancel/[id], /savings.
@@ -152,7 +152,7 @@ Done when: each deliverable is saved in one folder and the status chips are dist
 
 ## Sources
 
-Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1823 and the public research it cites (August 2026 snapshot). Consumer fintech pricing changes constantly and Mint's status in particular has shifted — verify every competitor's current offering before quoting it. Anything touching bank data connection carries real regulatory obligations; get advice before shipping.
+Market sizing, competitor set, and demand signals sourced from the public research it cites (August 2026 snapshot). Consumer fintech pricing changes constantly and Mint's status in particular has shifted — verify every competitor's current offering before quoting it. Anything touching bank data connection carries real regulatory obligations; get advice before shipping.
 
 - [Straits Research — Subscription and Billing Management Software Market ($6.5B 2024 → $16.96B 2033, 11.25% CAGR)](https://straitsresearch.com/report/subscription-and-billing-management-software-market)
 - [Market.us — Subscription Economy Market (US $207.7B 2024; $1.5T+ globally by 2025)](https://market.us/report/subscription-economy-market/)
@@ -163,4 +163,4 @@ Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP i
 - [Plaid — Transactions API documentation](https://plaid.com/docs/api/products/transactions/)
 - [FTC — Negative Option Rule / click-to-cancel rulemaking](https://www.ftc.gov/legal-library/browse/rules/negative-option-rule)
 
-Page sourced via Ideabrowser MCP (idea_id 1823): get_idea_research, competitive_analysis, go_to_market.
+Research methods: get_idea_research, competitive_analysis, go_to_market.

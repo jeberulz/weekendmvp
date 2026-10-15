@@ -6,13 +6,16 @@
 
 export type IdeaMemberReturn = {
   href: string;
-  /** Visible label including the leading cue, e.g. "← Dashboard". */
+  /**
+   * Visible label. IdeaBackLink already renders an ArrowLeft icon, so do not
+   * put a ← prefix in the string (that reads as "← ← Dashboard").
+   */
   label: string;
 };
 
 const DEFAULT_RETURN: IdeaMemberReturn = {
   href: "/dashboard",
-  label: "← Dashboard",
+  label: "Dashboard",
 };
 
 const FROM_TARGETS: Record<string, IdeaMemberReturn> = {

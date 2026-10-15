@@ -95,8 +95,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - shows(id, user_id, name, bible_text, loudness_target)
 - episodes(id, show_id, status, duration_sec, raw_path, master_path, transcript_json)
-- cuts(id, episode_id, start_ms, end_ms, type, accepted)  where type is one of filler, silence, manual
-- assets(id, episode_id, kind, path, meta_json)  where kind is one of notes, chapters
+- cuts(id, episode_id, start_ms, end_ms, type, accepted) where type is one of filler, silence, manual
+- assets(id, episode_id, kind, path, meta_json) where kind is one of notes, chapters
 
 Screens: /login, /shows, /episodes/[id] (waveform with cut markers and the kit).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), DEEPGRAM_API_KEY, ANTHROPIC_API_KEY.
@@ -143,7 +143,7 @@ Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 
 ## Sources
 
-Market sizing, competitor pricing, and community signals collated from Ideabrowser MCP idea 1112 and the public research it cites. Triangulate before you cite in investor materials.
+Market sizing, competitor pricing, and community signals collated from the public research it cites. Triangulate before you cite in investor materials.
 
 - [The Business Research Company — Podcasting Global Market Report ($36.28B 2024, $47.83B 2025, 31.8% CAGR)](https://www.thebusinessresearchcompany.com/report/podcasting-global-market-report)
 - [EIN Presswire — AI in Podcasting Market Forecast 2025–2034 ($3.07B 2024, $4.06B 2025, 32.2% CAGR)](http://www.einpresswire.com/article/785338785/ai-in-podcasting-market-forecast-2025-2034-comprehensive-insights-on-market-size-growth-factors-trends)
@@ -152,4 +152,4 @@ Market sizing, competitor pricing, and community signals collated from Ideabrows
 - [Adobe — Creative Cloud pricing ($54.99/mo; Enhance Speech as a speech utility)](https://www.adobe.com/creativecloud/plans.html)
 - [Otter.ai — pricing reference (Free / Pro $16.99 / Business $30)](https://otter.ai/pricing)
 
-Page sourced via Ideabrowser MCP (idea_id 1112): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.

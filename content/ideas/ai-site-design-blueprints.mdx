@@ -96,8 +96,8 @@ There is no website generator. The output is a direction PDF and a copy-paste pr
 
 Tables (Row Level Security on: the agency sees its own clients and sheets, an admin confirms drafts):
 - clients(id, user_id, name)
-- projects(id, client_id, category, brand_notes, competitor_urls)  where category is one of saas, dtc, local_services, other
-- call_sheets(id, project_id, keep, kill, push, type_rules, palette_rules, section_order, paste_prompt, status, pdf_url)  where status is draft or confirmed
+- projects(id, client_id, category, brand_notes, competitor_urls) where category is one of saas, dtc, local_services, other
+- call_sheets(id, project_id, keep, kill, push, type_rules, palette_rules, section_order, paste_prompt, status, pdf_url) where status is draft or confirmed
 - audits(id, user_id, url, tells jsonb, memo)
 
 Screens: /intake (brand, three competitor URLs, category), /app (the list of sheets), /sheets/[id] (the draft and the confirm button).
@@ -145,9 +145,8 @@ Done when: each deliverable is saved in one folder and the kill-mark is readable
 
 ## Sources
 
-Pricing, adoption stats, and the “judgment not files” gap collated from Ideabrowser verified research on idea 8918 (completed 2026-09-04) plus the public pages those findings cite. Triangulate before investor use.
+Pricing, adoption stats, and the “judgment not files” gap collated from the public pages those findings cite. Triangulate before investor use.
 
-- [Ideabrowser verified research — idea 8918 (Siteprimer / pre-build direction sheets)](https://www.ideabrowser.com)
 - [TechCrunch — Lovable $400M ARR (Feb 2026)](https://techcrunch.com/2026/03/11/lovable-says-it-added-100m-in-revenue-last-month-alone-with-just-146-employees/)
 - [Bloomberg — Cursor $2B annualized revenue (Feb 2026)](https://www.bloomberg.com/news/articles/2026-03-02/cursor-recurring-revenue-doubles-in-three-months-to-2-billion)
 - [Hostinger — AI app builder statistics (Lovable project volume; Sacra)](https://www.hostinger.com/blog/ai-app-builder-statistics/)
@@ -168,4 +167,4 @@ Pricing, adoption stats, and the “judgment not files” gap collated from Idea
 - [r/vibecoding — all AI websites look the same](https://www.reddit.com/r/vibecoding/comments/1rr0dwy/all_ai_websites_and_designs_look_the_same_has/)
 - [Precedence / market.us class reports via competitive analysis — AI website builder TAM](https://market.us/report/ai-powered-website-builder-market/)
 
-Page sourced via Ideabrowser MCP (idea_id 8918): get_verified_research, get_idea_research, competitive_analysis, keyword findings, community_analysis.
+Research methods: get_verified_research, get_idea_research, competitive_analysis, keyword findings, community_analysis.

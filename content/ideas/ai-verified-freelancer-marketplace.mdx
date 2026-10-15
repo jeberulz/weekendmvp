@@ -87,7 +87,7 @@ Tables (Row Level Security on: freelancers see their own submissions, companies 
 - companies(id, user_id, name)
 - freelancers(id, user_id, name, specialties, verified)
 - challenges(id, specialty, prompt, rubric jsonb, time_limit_minutes, pass_threshold)
-- submissions(id, freelancer_id, challenge_id, content, score, grader_notes, status, started_at, submitted_at)  where status is one of pending, graded, flagged
+- submissions(id, freelancer_id, challenge_id, content, score, grader_notes, status, started_at, submitted_at) where status is one of pending, graded, flagged
 - grading_runs(id, submission_id, raw_output jsonb, created_at)
 
 Screens: /login, /challenge/[id] (the timed task), /directory (search for companies).
@@ -134,7 +134,7 @@ Done when: each deliverable is saved in one folder and the badge is readable at 
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #1430 and the public research it cites (June 2025 snapshot). Triangulate before you cite in investor materials.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (June 2025 snapshot). Triangulate before you cite in investor materials.
 
 - [The Business Research Company — Freelance Platforms Global Market Report (8.39B in 2025, 14.5% CAGR to 16.89B by 2029)](https://www.thebusinessresearchcompany.com/report/freelance-platforms-global-market-report)
 - [Upwork — Freelancing Statistics and Trends](https://www.upwork.com/resources/freelancing-stats)
@@ -145,4 +145,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [Fiverr — pricing reference (20% commission per gig)](https://www.fiverr.com/)
 - [Toptal — vetting process and pricing reference](https://www.toptal.com/)
 
-Page sourced via Ideabrowser MCP (idea_id 1430): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

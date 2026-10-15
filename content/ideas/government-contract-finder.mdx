@@ -86,7 +86,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on; a user reads only their own profile and matches, and opportunities are read-only to signed-in users):
 - profiles(id, user_id, naics_codes text[], certifications text[], state, capability_statement)
-- opportunities(id, notice_id, title, agency, naics, set_aside, response_deadline, description, posted_at, url)  notice_id is unique
+- opportunities(id, notice_id, title, agency, naics, set_aside, response_deadline, description, posted_at, url) notice_id is unique
 - matches(id, user_id, opportunity_id, fit_score, eligible boolean, reason, missing_requirements text[], status)
 - scan_runs(id, started_at, finished_at, fetched integer, errors jsonb)
 
@@ -135,7 +135,7 @@ Done when: each deliverable is saved in one folder and the fit bands are disting
 
 ## Sources
 
-Market sizing, competitor pricing, and demand signals collated from Ideabrowser MCP idea #6378 and the public research it cites (March 2026 snapshot). Triangulate before you cite in investor materials.
+Market sizing, competitor pricing, and demand signals collated from the public research it cites (March 2026 snapshot). Triangulate before you cite in investor materials.
 
 - [OpenPR — Government Contracting Software Market ($1,085M in 2025 to $2,006M by 2032, 9.3% CAGR)](https://www.openpr.com/news/4411726/government-contracting-software-market-report-the-global)
 - [Business Research Insights — Contract Discovery and Analytics Software Market ($2.14B in 2026 to $5.99B by 2035, 12.5% CAGR)](https://www.businessresearchinsights.com/market-reports/contract-discovery-and-analytics-software-market-113045)
@@ -148,4 +148,4 @@ Market sizing, competitor pricing, and demand signals collated from Ideabrowser 
 - [EZGovOpps — government contract opportunity search pricing](https://www.ezgovopps.com)
 - [GovTribe — federal contract and award tracking](https://govtribe.com)
 
-Page sourced via Ideabrowser MCP (idea_id 6378): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

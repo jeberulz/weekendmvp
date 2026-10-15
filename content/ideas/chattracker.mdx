@@ -85,9 +85,9 @@ Build the weekend MVP of "ChatTracker": it reads a small business's support chat
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API for classification and the weekly briefing, a Slack incoming webhook for follow-up alerts. Chats arrive through one generic webhook this weekend. Deploy on Vercel with a Vercel Cron route.
 
 Tables (Row Level Security on, scoped to the account's owner):
-- accounts(id, user_id, name, slack_webhook_url)  slack_webhook_url is read on the server only
+- accounts(id, user_id, name, slack_webhook_url) slack_webhook_url is read on the server only
 - sources(id, account_id, name, webhook_secret)
-- conversations(id, account_id, source_id, external_id, transcript jsonb, topic, sentiment, outcome, key_phrases text[], follow_up_recommended boolean, processed_at)  outcome is one of converted, stalled, unresolved, abandoned
+- conversations(id, account_id, source_id, external_id, transcript jsonb, topic, sentiment, outcome, key_phrases text[], follow_up_recommended boolean, processed_at) outcome is one of converted, stalled, unresolved, abandoned
 - insights(id, account_id, week_start, stats jsonb, recommendations jsonb, generated_at)
 
 Screens: /login, /conversations, /insights, /settings (the webhook URL and the Slack URL).
@@ -134,7 +134,7 @@ Done when: each deliverable is saved in one folder and the outcome tags are dist
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #2164 and the public research it cites.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites.
 
 - [Grand View Research — Chatbot Market Size, Share and Growth Report](https://www.grandviewresearch.com/industry-analysis/chatbot-market)
 - [Mordor Intelligence — Global Chatbot Market Report](https://www.mordorintelligence.com/industry-reports/global-chatbot-market)
@@ -145,4 +145,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [BotPenguin — Chatbot Analytics](https://botpenguin.com/chatbot-features/chatbot-analytics)
 - [Calabrio — Chatbot Analytics Platform](https://www.calabrio.com/chatbot-analytics-platform/)
 
-Page sourced via Ideabrowser MCP (idea_id 2164): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

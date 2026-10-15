@@ -90,9 +90,9 @@ Build the weekend MVP of "Staffer": write a job for an AI employee in plain Engl
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API with tool calling, a Slack incoming webhook for the one send tool. The run is a saved state machine, so it can stop at an approval and continue later. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- agents(id, user_id, name, spec_text, slack_webhook_url, status)  slack_webhook_url is read on the server only
-- runs(id, agent_id, status, started_at, ended_at, error)  status is running, waiting_approval, done or failed; one running or waiting run per agent
-- tool_calls(id, run_id, seq, name, args_json, result_json, approval_state, approved_at)  approval_state is not_needed, pending, approved or rejected
+- agents(id, user_id, name, spec_text, slack_webhook_url, status) slack_webhook_url is read on the server only
+- runs(id, agent_id, status, started_at, ended_at, error) status is running, waiting_approval, done or failed; one running or waiting run per agent
+- tool_calls(id, run_id, seq, name, args_json, result_json, approval_state, approved_at) approval_state is not_needed, pending, approved or rejected
 
 Screens: /login, /agents, /agents/[id] (the spec editor, a Run button and the last runs), /runs/[id] (every tool call and its approval).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.
@@ -139,7 +139,7 @@ Done when: each deliverable is saved in one folder and the status chips are dist
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #58 and the public research it cites. Triangulate before you cite in investor materials.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites. Triangulate before you cite in investor materials.
 
 - [Straits Research — No-Code AI Platform Market](https://straitsresearch.com/report/no-code-ai-platform-market)
 - [MarketsandMarkets — No-Code AI Platforms](https://www.marketsandmarkets.com/Market-Reports/no-code-ai-platforms-market-241336240.html)
@@ -151,4 +151,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [Microsoft Power Automate — pricing](https://www.microsoft.com/en-us/power-platform/products/power-automate/pricing)
 - [Lindy.ai — pricing](https://www.lindy.ai/pricing)
 
-Page sourced via Ideabrowser MCP (idea_id 58): get_idea_research, competitive_analysis, community_analysis.
+Research methods: get_idea_research, competitive_analysis, community_analysis.
