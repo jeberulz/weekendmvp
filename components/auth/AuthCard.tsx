@@ -2,12 +2,19 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import Link from "next/link";
-import { type FormEvent, useId, useState } from "react";
+import {
+  type FormEvent,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 import { Em } from "@/components/home/ui";
 import { Logo } from "@/components/primitives/Logo";
 import { authCallbackTarget, safePlatformReturn } from "@/lib/auth-return";
 
 export type AuthCardMode = "login" | "signup";
+
+const RESEND_COOLDOWN_SECONDS = 30;
 
 const COPY: Record<
   AuthCardMode,
@@ -15,7 +22,6 @@ const COPY: Record<
     title: string;
     subtitle: string;
     emailCta: string;
-    emailSent: string;
     emailFailed: string;
     crossPrompt: string;
     crossLabel: string;
@@ -25,11 +31,9 @@ const COPY: Record<
   login: {
     title: "Welcome back!",
     subtitle:
-      "Sign in with your email — we'll send a one-time code (magic link). No password needed.",
-    emailCta: "Send One-Time Code",
-    emailSent:
-      "Check your inbox. The link expires in one hour and will ask you to confirm before signing in.",
-    emailFailed: "We could not send a one-time code. Please try again.",
+      "We'll email you a link that signs you in. No password needed.",
+    emailCta: "Email me a sign-in link",
+    emailFailed: "We could not send a sign-in link. Please try again.",
     crossPrompt: "Don't have an account?",
     crossLabel: "Sign up",
     crossHref: "/signup",
@@ -37,11 +41,9 @@ const COPY: Record<
   signup: {
     title: "Create your free account",
     subtitle:
-      "Enter your email — we'll send a one-time code (magic link) to get you started. No password needed.",
-    emailCta: "Send One-Time Code",
-    emailSent:
-      "Check your inbox. The link expires in one hour and will ask you to confirm before creating your account.",
-    emailFailed: "We could not send a one-time code. Please try again.",
+      "We'll email you a link that signs you in. No password needed.",
+    emailCta: "Email me a sign-in link",
+    emailFailed: "We could not send a sign-in link. Please try again.",
     crossPrompt: "Already have an account?",
     crossLabel: "Login",
     crossHref: "/login",
@@ -65,9 +67,19 @@ export function AuthCard({
   const [googlePending, setGooglePending] = useState(false);
   const [googleFailed, setGoogleFailed] = useState(false);
   const [email, setEmail] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
   const [emailState, setEmailState] = useState<
     "idle" | "pending" | "sent" | "failed"
   >("idle");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setTimeout(() => {
+      setResendCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
 
   async function signInWithGoogle() {
     setGooglePending(true);
@@ -82,25 +94,111 @@ export function AuthCard({
     }
   }
 
-  async function requestEmailLink(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function sendSignInLink(targetEmail: string) {
     setEmailState("pending");
-    const normalizedEmail = email.normalize("NFKC").trim().toLowerCase();
     try {
       await signIn("email", {
-        email: normalizedEmail,
+        email: targetEmail,
         redirectTo: safePlatformReturn(returnTo),
       });
-      setEmail(normalizedEmail);
+      setEmail(targetEmail);
+      setSentEmail(targetEmail);
       setEmailState("sent");
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch {
       setEmailState("failed");
     }
   }
 
+  async function requestEmailLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedEmail = email.normalize("NFKC").trim().toLowerCase();
+    await sendSignInLink(normalizedEmail);
+  }
+
+  async function resendSignInLink() {
+    if (resendCooldown > 0 || emailState === "pending" || !sentEmail) return;
+    await sendSignInLink(sentEmail);
+  }
+
+  function useDifferentEmail() {
+    setEmailState("idle");
+    setSentEmail("");
+    setResendCooldown(0);
+    setEmail("");
+  }
+
   const busy = googlePending || emailState === "pending";
   const titleWords = copy.title.split(" ");
   const titleTail = titleWords.pop();
+
+  const showSentPanel = Boolean(sentEmail) && emailState !== "idle";
+
+  if (showSentPanel) {
+    return (
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-home-rule bg-home-card p-8 text-home-ink sm:p-10">
+          {embedded ? (
+            <h2 className="text-balance text-center font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[38px]">
+              Check your <Em>inbox</Em>
+            </h2>
+          ) : (
+            <h1 className="text-balance text-center font-editorial text-[40px] font-normal leading-[1.05] tracking-[-0.02em] text-home-ink sm:text-[44px]">
+              Check your <Em>inbox</Em>
+            </h1>
+          )}
+          <p className="mt-3 text-center text-[15px] leading-[1.55] text-home-ink-2">
+            We sent a sign-in link to{" "}
+            <span className="font-medium text-home-ink break-all">
+              {sentEmail}
+            </span>
+            . It comes from hello@switchtoux.com. Open it on this device.
+          </p>
+
+          <div
+            id={statusId}
+            aria-live="polite"
+            className="mt-8 flex flex-col gap-3"
+          >
+            <button
+              type="button"
+              onClick={resendSignInLink}
+              disabled={busy || resendCooldown > 0}
+              className="flex h-[52px] w-full items-center justify-center rounded-full bg-home-ink px-4 text-base font-semibold text-home-d1 transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+            >
+              {emailState === "pending"
+                ? "Sending…"
+                : resendCooldown > 0
+                  ? `Resend link (${resendCooldown}s)`
+                  : "Resend link"}
+            </button>
+            <button
+              type="button"
+              onClick={useDifferentEmail}
+              disabled={busy}
+              className="flex h-[52px] w-full items-center justify-center rounded-full border border-home-ink bg-home-card px-4 text-base font-medium text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink disabled:cursor-wait disabled:opacity-60 motion-reduce:transition-none"
+            >
+              Use a different email
+            </button>
+          </div>
+
+          {emailState === "failed" ? (
+            <p role="alert" className="mt-4 text-center text-sm leading-6 text-destructive">
+              {copy.emailFailed}
+            </p>
+          ) : null}
+
+          <p className="mt-6 text-center text-sm leading-6 text-home-ink-3">
+            Not there? Check Promotions or Spam.
+          </p>
+        </div>
+
+        <div className="mt-8 flex justify-center">
+          <Logo className="h-4 w-28 text-home-ink-3" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -175,11 +273,6 @@ export function AuthCard({
         </form>
 
         <div id={statusId} aria-live="polite" className="text-center">
-          {emailState === "sent" ? (
-            <p className="mt-4 text-sm leading-6 text-home-sage-ink">
-              {copy.emailSent}
-            </p>
-          ) : null}
           {emailState === "failed" ? (
             <p role="alert" className="mt-4 text-sm leading-6 text-destructive">
               {copy.emailFailed}
@@ -190,16 +283,38 @@ export function AuthCard({
         <p className="mt-8 text-center text-sm text-home-ink-2">
           {copy.crossPrompt}{" "}
           {embedded ? (
-            <button type="button" onClick={() => { setCurrentMode(currentMode === "signup" ? "login" : "signup"); setEmailState("idle"); }} className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink">
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentMode(currentMode === "signup" ? "login" : "signup");
+                setEmailState("idle");
+              }}
+              className="font-medium text-home-orange-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+            >
               {copy.crossLabel}
             </button>
           ) : (
-            <Link href={withReturnTo(copy.crossHref, returnTo)} className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none">
+            <Link
+              href={withReturnTo(copy.crossHref, returnTo)}
+              className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
               {copy.crossLabel}
             </Link>
           )}
         </p>
-        {currentMode === "signup" ? <p className="mt-5 text-center text-xs leading-5 text-home-ink-3">New accounts are added to the Weekend MVP newsletter. Beehiiv will ask you to confirm your email separately; account access starts when your site account is verified. <Link href="/privacy-policy#email-collection" className="underline underline-offset-2">Privacy Policy</Link></p> : null}
+        {currentMode === "signup" ? (
+          <p className="mt-5 text-center text-xs leading-5 text-home-ink-3">
+            New accounts are added to the Weekend MVP newsletter. Beehiiv will
+            ask you to confirm your email separately; account access starts when
+            your site account is verified.{" "}
+            <Link
+              href="/privacy-policy#email-collection"
+              className="underline underline-offset-2"
+            >
+              Privacy Policy
+            </Link>
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-8 flex justify-center">
