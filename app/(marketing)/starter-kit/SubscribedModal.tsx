@@ -5,12 +5,11 @@ import { useSearchParams } from "next/navigation";
 import { Info, MailCheck, X } from "lucide-react";
 
 import { IconButton } from "@/components/primitives/IconButton";
-import { cn } from "@/lib/utils";
 
 /**
- * "Check your inbox" confirmation modal, ported from the #inbox-modal block in
- * starter-kit.html. Opens when the page is visited with `?subscribed=true`
- * (the Beehiiv form redirect target), then cleans the query string.
+ * "Check your inbox" confirmation modal. Mounts only after a successful
+ * Beehiiv submit redirect (`?subscribed=true`), then cleans the query string.
+ * Direct loads of /starter-kit never render the dialog.
  * Must be rendered inside <Suspense> (uses useSearchParams).
  */
 export function SubscribedModal() {
@@ -20,23 +19,22 @@ export function SubscribedModal() {
 
   React.useEffect(() => {
     if (!subscribed) return;
-    // Small delay to ensure the DOM is ready so transitions can trigger
-    // (legacy behavior), then clean up the URL.
+    // Small delay so the open transition can run, then clean the URL.
     const t = setTimeout(() => setOpen(true), 100);
     window.history.replaceState({}, document.title, window.location.pathname);
     return () => clearTimeout(t);
   }, [subscribed]);
 
   React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!open) return;
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Only mount after a successful submit redirect — never on a direct load.
+  if (!open) return null;
 
   const close = () => setOpen(false);
 
@@ -46,63 +44,54 @@ export function SubscribedModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="inbox-modal-title"
-      className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-500",
-        open ? "opacity-100" : "opacity-0 pointer-events-none",
-      )}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div
-        className={cn(
-          "modal-container relative w-full max-w-md bg-white border border-neutral-200 rounded-[2.5rem] p-10 shadow-2xl transform transition-transform duration-500",
-          open ? "scale-100" : "scale-95",
-        )}
-      >
+      <div className="modal-container relative w-full max-w-md rounded-[2.5rem] border border-neutral-200 bg-white p-10 shadow-2xl">
         <IconButton
           aria-label="Close modal"
-          className="absolute top-8 right-8 text-neutral-400 hover:text-black transition-colors"
+          className="absolute top-8 right-8 text-neutral-400 transition-colors hover:text-black"
           onClick={close}
         >
           <X size={20} />
         </IconButton>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-8">
+          <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-600">
             <MailCheck size={40} aria-hidden="true" />
           </div>
 
           <h3
             id="inbox-modal-title"
-            className="text-2xl font-medium tracking-tight mb-4"
+            className="mb-4 text-2xl font-medium tracking-tight"
           >
             Check your inbox!
           </h3>
-          <p className="text-neutral-500 text-sm leading-relaxed mb-8">
+          <p className="mb-8 text-sm leading-relaxed text-neutral-500">
             The Weekend MVP Starter Kit is on its way. Please check your{" "}
-            <span className="text-black font-semibold">Inbox</span>,{" "}
-            <span className="text-black font-semibold">Spam</span>, or{" "}
-            <span className="text-black font-semibold">Promotions</span>{" "}
-            folder.
+            <span className="font-semibold text-black">Inbox</span>,{" "}
+            <span className="font-semibold text-black">Spam</span>, or{" "}
+            <span className="font-semibold text-black">Promotions</span> folder.
           </p>
 
-          <div className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-6 mb-8 text-left">
-            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">
+          <div className="mb-8 w-full rounded-2xl border border-neutral-100 bg-neutral-50 p-6 text-left">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
               Search for this subject:
             </p>
-            <p className="text-sm font-medium text-black select-all">
+            <p className="select-all text-sm font-medium text-black">
               Your Weekend MVP Starter Kit is here
             </p>
           </div>
 
-          <div className="flex items-start gap-3 text-left bg-blue-50/50 rounded-2xl p-4 mb-8">
+          <div className="mb-8 flex items-start gap-3 rounded-2xl bg-blue-50/50 p-4 text-left">
             <Info
-              className="text-blue-500 mt-0.5"
+              className="mt-0.5 text-blue-500"
               size={18}
               aria-hidden="true"
             />
-            <p className="text-xs text-blue-800 leading-relaxed">
+            <p className="text-xs leading-relaxed text-blue-800">
               If it landed in <span className="font-bold">SPAM</span>, please
               drag it to your <span className="font-bold">primary inbox</span>{" "}
               so you don&apos;t miss future guides.
@@ -112,7 +101,7 @@ export function SubscribedModal() {
           <button
             type="button"
             onClick={close}
-            className="w-full py-4 bg-black text-white rounded-full text-sm font-semibold hover:bg-neutral-800 transition-all shadow-lg"
+            className="w-full rounded-full bg-black py-4 text-sm font-semibold text-white shadow-lg transition-all hover:bg-neutral-800"
           >
             Got it, I&apos;ll check now
           </button>

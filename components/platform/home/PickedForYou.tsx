@@ -8,7 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { CategoryTag } from "@/components/home/ui";
 import { categoryName, normalizeCategorySlug } from "@/components/ideas/idea-meta";
 import { ReasonLine } from "@/components/platform/explore/ReasonLine";
-import { ModuleSkeleton, PersonalModule } from "./module-states";
+import { PersonalModule } from "./module-states";
 import { SaveIdeaButton } from "./SaveIdeaButton";
 
 const PICK_COUNT = 3;
@@ -16,7 +16,22 @@ const PICK_COUNT = 3;
 type Pick = FunctionReturnType<typeof api.platform.ideas.library>["items"][number];
 
 function PicksSkeleton() {
-  return <ModuleSkeleton label="Loading ideas picked for you" className="h-[172px]" />;
+  return (
+    <div
+      role="status"
+      className="grid grid-cols-1 gap-3 md:grid-cols-3"
+      aria-label="Loading ideas picked for you"
+    >
+      {[0, 1, 2].map((key) => (
+        <div
+          key={key}
+          aria-hidden
+          className="min-h-[172px] animate-pulse rounded-[14px] border border-home-rule bg-home-sunk motion-reduce:animate-none"
+        />
+      ))}
+      <span className="sr-only">Loading ideas picked for you</span>
+    </div>
+  );
 }
 
 function LivePicks({ exclude }: { exclude: string[] }) {

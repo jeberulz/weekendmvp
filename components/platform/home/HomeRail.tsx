@@ -7,7 +7,7 @@ import { useRef, type RefObject } from "react";
 import { api } from "@/convex/_generated/api";
 import { categoryName } from "@/components/ideas/idea-meta";
 import { ResearchTitle, RetiredTag, isResearchWithheld } from "@/components/platform/RetiredResearch";
-import { ModuleSkeleton, PersonalModule } from "./module-states";
+import { PersonalModule } from "./module-states";
 import { OfferCard } from "./OfferCard";
 
 type HomeState = FunctionReturnType<typeof api.platform.dashboard.home>;
@@ -77,7 +77,19 @@ function LiveRail() {
 }
 
 function RailSkeleton() {
-  return <ModuleSkeleton label="Loading your saved ideas" className="h-[200px]" />;
+  return (
+    <div className="flex flex-col gap-5" role="status" aria-label="Loading your saved ideas">
+      <div
+        aria-hidden
+        className="min-h-[200px] animate-pulse rounded-[14px] border border-home-rule bg-home-sunk motion-reduce:animate-none"
+      />
+      <div
+        aria-hidden
+        className="min-h-[120px] animate-pulse rounded-[14px] border border-home-rule bg-home-sunk motion-reduce:animate-none"
+      />
+      <span className="sr-only">Loading your saved ideas</span>
+    </div>
+  );
 }
 
 /**
