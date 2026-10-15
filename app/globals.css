@@ -160,9 +160,15 @@
   }
 }
 
+/* Canvas matches the research-desk paper so overscroll / short pages do not
+   flash the retired dark root (#050505) under cream and dashboard chrome. */
+html {
+  background-color: #f7f3ec;
+}
+
 body {
-  background-color: #050505;
-  color: #e5e5e5;
+  background-color: #f7f3ec;
+  color: #1a1814;
 }
 
 /* ===== Brand primitives (ported from src/input.css) ===== */

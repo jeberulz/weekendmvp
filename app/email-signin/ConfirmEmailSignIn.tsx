@@ -11,6 +11,7 @@ export function ConfirmEmailSignIn() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const email =
     params.get("email")?.normalize("NFKC").trim().toLowerCase() ?? "";
   const token = params.get("token") ?? "";
@@ -23,12 +24,26 @@ export function ConfirmEmailSignIn() {
     setFailed(false);
     try {
       await signIn("email", { code: token, email });
+      // Unmount the confirm card so it is not left in the DOM after success.
+      setSignedIn(true);
       router.replace(returnTo);
       router.refresh();
     } catch {
       setFailed(true);
       setPending(false);
     }
+  }
+
+  if (signedIn) {
+    return (
+      <div
+        className="w-full max-w-md rounded-2xl border border-home-rule bg-home-card p-8 text-center text-home-ink sm:p-10"
+        role="status"
+        aria-live="polite"
+      >
+        <p className="text-[15px] leading-6 text-home-ink-2">Signing you in…</p>
+      </div>
+    );
   }
 
   return (
