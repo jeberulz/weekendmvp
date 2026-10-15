@@ -29,8 +29,8 @@ Unified communication infrastructure has matured into a mass-market layer at the
 - **The global unified communications market reached $170B in 2025 and is projected to hit $613B by 2033, a 17.4% CAGR** (Precedence Research). The rails a niche messaging product runs on—cloud delivery, SMS gateways, push infrastructure—are now cheap and reliable enough to resell into a vertical for a few dollars per team.
 - **The U.S. unified communications market alone was $36B in 2024, growing to $144B by 2033 at a 14.8% CAGR** (IMARC Group). The domestic buyer base is large and expanding independent of global numbers.
 - **UCaaS is growing 18 to 20% year over year through 2034** (Precedence Research, Cognitive Market Research). Demand for integrated, cloud-delivered communication is structural, not a fad, and vertical-specific tools are the least-served slice of it.
-- **Youth sports participation rose 8 to 12% in recent years** (industry data cited in Ideabrowser community analysis, idea #2107), against an installed base of 500,000+ organized youth teams nationwide. More teams, more families, more coordination load per volunteer.
-- **Reddit's core communities total over 1.7M members**—r/Parenting (900,000+), r/SmallBusiness (754,000+), and r/YouthSports (137,000+)—actively trading tool recommendations and pain stories (Ideabrowser community analysis, idea #2107). You are routing existing demand, not manufacturing it.
+- **Youth sports participation rose 8 to 12% in recent years** (industry data cited in community research, idea #2107), against an installed base of 500,000+ organized youth teams nationwide. More teams, more families, more coordination load per volunteer.
+- **Reddit's core communities total over 1.7M members**—r/Parenting (900,000+), r/SmallBusiness (754,000+), and r/YouthSports (137,000+)—actively trading tool recommendations and pain stories (community research). You are routing existing demand, not manufacturing it.
 
 ## Competitive Landscape
 
@@ -87,8 +87,8 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, a coach reads only their own team's rows; the join and the SMS webhook write through the service role):
 - teams(id, name, sport, coach_user_id, invite_code)
 - families(id, team_id, parent_name, phone, email, athlete_first_name, sms_opt_in_at, email_opt_in_at, opted_out_at)
-- events(id, team_id, type, starts_at, location)  type is game, practice or other
-- messages(id, team_id, body, tag, created_at)  tag is schedule, urgent, payment or general
+- events(id, team_id, type, starts_at, location) type is game, practice or other
+- messages(id, team_id, body, tag, created_at) tag is schedule, urgent, payment or general
 - deliveries(id, message_id, family_id, channel, status, delivered_at, provider_id)
 - rsvps(id, event_id, family_id, status)
 

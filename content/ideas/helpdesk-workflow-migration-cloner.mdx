@@ -26,13 +26,13 @@ The MVP is deliberately not "magic full parity." It is a structured clone with h
 
 ## Market Research
 
-The macro tailwind is bigger than "help desks exist." Enterprise data migration — the parent category that ticket export tools sell into — is already a multi-billion-dollar market growing at high-teens CAGR through the mid-2020s, with broader migration-services projections climbing toward roughly $114B by 2035 in Ideabrowser analysis on idea #8492. Help desk switching is a subset of that spend, but it is accelerating on its own timeline because AI pricing and seat economics are forcing re-platforming decisions that used to wait for contract renewal.
+The macro tailwind is bigger than "help desks exist." Enterprise data migration — the parent category that ticket export tools sell into — is already a multi-billion-dollar market growing at high-teens CAGR through the mid-2020s, with broader migration-services projections climbing toward roughly $114B by 2035 in community research analysis on idea #8492. Help desk switching is a subset of that spend, but it is accelerating on its own timeline because AI pricing and seat economics are forcing re-platforming decisions that used to wait for contract renewal.
 
-- **Data migration services sit north of $25B globally in the mid-2020s**, with high-teens compound growth driven by cloud re-platforming, M&amp;A integration, and SaaS sprawl (Ideabrowser market analysis on idea #8492). Ticket export is a thin slice of that pie; workflow reconstruction is the upsell incumbents leave on the table.
+- **Data migration services sit north of $25B globally in the mid-2020s**, with high-teens compound growth driven by cloud re-platforming, M&amp;A integration, and SaaS sprawl (market analysis). Ticket export is a thin slice of that pie; workflow reconstruction is the upsell incumbents leave on the table.
 - **Help desk migration guides from Intercom, Zendesk partners, and independent operators consistently describe multi-week projects** where ticket import is the easy first week and automation rebuild is the long second week — evidence that buyers already pay for time, not just bytes moved ([Intercom helpdesk migration guide](https://www.intercom.com/learning-center/helpdesk-migration-guide)).
 - **Relokia's Help Desk Migration product advertises automated ticket migration starting around $37 per job** on Zendesk Marketplace — a price anchor that proves teams expect migration to be purchasable, but the listing and customer reviews center on tickets, users, and attachments, not triggers or SLAs ([Zendesk Marketplace — Help Desk Migration by Relokia](https://www.zendesk.com/marketplace/partners/1065/help-desk-migration-by-relokia-automated-data-migration-to-zendesk-consulting/)).
 - **SupportBee's migration overview notes that teams often delay platform switches specifically because operational workflows feel harder to move than historical tickets** — the fear this product names and prices ([SupportBee — help desk migration](https://supportbee.com/blog/help-desk-migration)).
-- **Commercial-intent search around "Zendesk to Freshdesk migration," "help desk migration tool," and "support automation" carries medium-to-high CPC** in Ideabrowser keyword research on idea #8492, which suggests buyers are already shopping with a credit card out, not just reading forum threads.
+- **Commercial-intent search around "Zendesk to Freshdesk migration," "help desk migration tool," and "support automation" carries medium-to-high CPC** in keyword research on idea #8492, which suggests buyers are already shopping with a credit card out, not just reading forum threads.
 
 ## Competitive Landscape
 
@@ -90,8 +90,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - migrations(id, user_id, route_pair, status, created_at)
-- source_rules(id, migration_id, external_id, rule_type, title, raw_json jsonb)  rule_type is trigger, automation or macro
-- translated_rules(id, migration_id, source_rule_id, dest_object_type, dest_payload jsonb, parity_status, confidence, gap_notes, manual_steps text[], human_approved boolean)  parity_status is clean, partial or no_equivalent
+- source_rules(id, migration_id, external_id, rule_type, title, raw_json jsonb) rule_type is trigger, automation or macro
+- translated_rules(id, migration_id, source_rule_id, dest_object_type, dest_payload jsonb, parity_status, confidence, gap_notes, manual_steps text[], human_approved boolean) parity_status is clean, partial or no_equivalent
 
 Screens: /login, /migrations/new (subdomain, email and token), /migrations/[id] (summary counts), /migrations/[id]/review (table, filter and side-by-side).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.

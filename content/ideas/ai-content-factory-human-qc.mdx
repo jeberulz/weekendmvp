@@ -31,7 +31,7 @@ The MVP is an ingest → draft → critic → human-QC → publish pipeline with
 AI content spend is real and still mostly going to generation, which is the wrong layer to compete on if you are late. The interesting money is the QC layer sitting on top of that spend:
 
 - **AI-powered content creation was about $2.09–$2.15B in 2023**, with Zion Market Research putting the category near $8.45B by 2032. A separate cut lands around $7.9B by 2033 at roughly 7.7% CAGR.
-- **Broader AI marketing is cited at $35.54B in 2025 growing to $106.54B by 2029** in Ideabrowser research on idea 1029. Treat that as parent TAM, not your SAM. You are not selling “AI marketing.” You are selling review-time reduction for people who already bought the writer.
+- **Broader AI marketing is cited at $35.54B in 2025 growing to $106.54B by 2029** in community research. Treat that as parent TAM, not your SAM. You are not selling “AI marketing.” You are selling review-time reduction for people who already bought the writer.
 - **Content moderation and review services are a parallel market** (Grand View Research). Publishers already pay humans to keep user-generated and branded copy on the right side of policy. Generative workflows just dumped a new firehose into the same cost center.
 - **Demand is already aggregated.** r/artificial (1.1M), r/SEO (~290k), and r/digital_marketing (~250k) are not looking for another “write a blog post” prompt. They are looking for a way to use the prompts they have without lighting brand equity on fire.
 - **Agencies still bill $0.10–$0.50/word for human copy.** That price exists because review and liability sit with the shop. A product that keeps the liability path (human sign-off) while cutting the hours is priced against editor salary, not against Jasper seats.
@@ -94,7 +94,7 @@ Tables (Row Level Security on, each user reads only their own rows):
 - brand_kits(id, user_id, voice_samples, banned_claims, icp_notes, policy_version)
 - briefs(id, user_id, brand_kit_id, brief, status)
 - documents(id, brief_id, title)
-- sections(id, document_id, ordinal, markdown, critic_json jsonb, status)  where status is one of drafted, needs_review, approved, rejected
+- sections(id, document_id, ordinal, markdown, critic_json jsonb, status) where status is one of drafted, needs_review, approved, rejected
 - reviews(id, section_id, reviewer_id, action, reason, created_at)
 
 Screens: /login, /kit (brand kit), /queue (flagged sections).

@@ -30,10 +30,10 @@ There is no dedicated “founder health OS” category yet. Adjacent markets are
 
 - **64 million independent workers in the U.S. in 2023** (MBO Partners State of Independence). Even a narrow slice of high-skill solo operators is a real SAM; at $15–25/month, capturing a few tens of thousands of them is a bootstrap-scale business, not a rounding error.
 - **U.S. business applications stayed near historic highs through 2024–2025** (Census Bureau Business Formation Statistics). Solo and micro-business formation is structurally elevated versus pre-2020, which expands the buyer pool beyond “venture-backed founder.”
-- **Productivity and work-management software sits in the $40–60B range** by the mid-2020s with roughly **7–10% CAGR through 2030** (Ideabrowser competitive analysis on idea 7784, aggregating project, time, and collaboration segments). Founders already pay Notion, Linear, Motion, and Toggl; this product rides that spend as the missing interpretation layer.
+- **Productivity and work-management software sits in the $40–60B range** by the mid-2020s with roughly **7–10% CAGR through 2030** (competitive analysis). Founders already pay Notion, Linear, Motion, and Toggl; this product rides that spend as the missing interpretation layer.
 - **Mental-health apps were estimated at $6–8B in 2023 with 20–25% CAGR through 2030** in the same analysis — Calm and Headspace trained people to pay for recovery, but none of them ingest git or calendar.
 - **Wearables exceed $60B globally**; Oura, Whoop, and Apple Watch normalized recovery data. McKinsey’s 2024 AI survey shows users now expect a next action, not another chart — which is why an ops coach works without a human bench.
-- Community demand is already loud: r/entrepreneur + r/startups + r/Productivity + r/SaaS exceed **4 million members**, and Ali Abdaal / Jeff Su-class YouTube still pulls millions of views on systems content (Ideabrowser community analysis, idea 7784). You are routing demand, not creating it.
+- Community demand is already loud: r/entrepreneur + r/startups + r/Productivity + r/SaaS exceed **4 million members**, and Ali Abdaal / Jeff Su-class YouTube still pulls millions of views on systems content (community research). You are routing demand, not creating it.
 
 Stage: *pre-category*. Time trackers, AI calendars, and quantified-self apps each own one axis. Nobody owns “solo founder operating health.” Product_offerings research puts a founder-specific TAM around **$500M globally** at roughly **10% CAGR**. Name the score before Motion or a wearable vendor ships a lightweight weekly summary and calls it done.
 
@@ -54,7 +54,7 @@ Incumbents will not move down into a $15/month founder-only score. RescueTime wi
 
 ## Business Model
 
-Subscription SaaS with a free weekly PDF that converts on history, not on hiding the score. Ideabrowser value ladder (idea 7784): bait report, $15 dashboard, $30 patterns, $50 AI coach, incubator backend at $500/user/year. The idea brief’s $19 / $49 GTM pitch sits inside that band — pick one ladder and stick to it.
+Subscription SaaS with a free weekly PDF that converts on history, not on hiding the score. community research value ladder (idea 7784): bait report, $15 dashboard, $30 patterns, $50 AI coach, incubator backend at $500/user/year. The idea brief’s $19 / $49 GTM pitch sits inside that band — pick one ladder and stick to it.
 
 - **Free** ($0) — Connect up to 2 sources, 4-week history, weekly PDF score. Lead-gen wedge; “Powered by” footer.
 - **Core** ($15/month, or $144/year) — Unlimited sources, live dashboard, 90-second check-in, one recommended action, CSV/PDF export.
@@ -95,8 +95,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - connections(id, user_id, provider, token_encrypted, repos text[], status, last_synced_at)
-- events(id, user_id, source, kind, occurred_at, numeric_value)  kind is commit or merged_pr
-- checkins(id, user_id, on_date, sleep_hours, energy, focus_hours)  energy is 1 to 5
+- events(id, user_id, source, kind, occurred_at, numeric_value) kind is commit or merged_pr
+- checkins(id, user_id, on_date, sleep_hours, energy, focus_hours) energy is 1 to 5
 - weekly_scores(id, user_id, week_start, momentum, recovery, flag, confidence, narrative, action)
 
 Screens: /login, /connect (a token and the repos), /checkin (three fields), /week (this week's score and action).

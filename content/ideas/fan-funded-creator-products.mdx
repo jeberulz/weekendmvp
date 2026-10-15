@@ -33,7 +33,7 @@ Fan funding and creator monetization sit inside multi-billion-dollar growth mark
 
 - Fan funding platforms projected from roughly **$2.1B (2024) toward $7.8B by 2033** (~15% CAGR) ([MarketIntelo](https://marketintelo.com/report/fan-funding-platforms-market)).
 - Fan engagement platforms ~**$5.9B in 2024** expanding toward ~**$19–20B by early 2030s** at mid-teens CAGR ([GM Insights](https://www.gminsights.com/industry-analysis/fan-engagement-platform-market)).
-- Creator economy narratives cite path toward **trillion-scale** aggregate value this decade; even a thin slice of merch validation is large ([Ideabrowser highlight data on idea 8566](https://www.ideabrowser.com)).
+- Creator economy narratives cite path toward **trillion-scale** aggregate value this decade; even a thin slice of merch validation is large ([community research highlight data on idea 8566](https://www.community research.com)).
 - Deposit behavior is proven on Kickstarter/Indiegogo; the gap is ongoing creator boards, not stranger crowdfunding.
 
 Willingness to pay is high when trust and refunds are clear — creators already burn five figures on wrong SKUs.
@@ -84,7 +84,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on; the public reads boards, ideas and campaign totals, and only the creator reads a pledge's email):
 - boards(id, user_id, handle, title)
 - ideas(id, board_id, title, description, proposed_by, status)
-- campaigns(id, idea_id, threshold_cents, deadline, status)  status is open, funded or expired
+- campaigns(id, idea_id, threshold_cents, deadline, status) status is open, funded or expired
 - pledges(id, campaign_id, fan_email, amount_cents, confirm_token, confirmed_at, created_at)
 
 Screens: /login, /dashboard (creator), /b/[handle] (the public board), /c/[id] (a campaign with its live total and status).

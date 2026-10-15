@@ -31,7 +31,7 @@ Two curves are crossing: postpartum care is becoming a spending priority at the 
 - **The global postpartum care market was valued between $5.3B and $15B in 2024/2025** depending on scope, and is projected to reach **$25B–$38B by 2033–2035**, with reported CAGRs of **7% to 8.65%** (MetaTech Insights, Verified Market Reports, Mordor Intelligence). The product segment is maturing; the digital-service segment is still early and fragmented.
 - **Postpartum depression affects roughly 1 in 7 women**, a figure consistent with WHO and public-health reporting cited across the maternal-health literature. Pain this prevalent and this acute is a structural market, not a trend.
 - **An estimated 94% of new mothers report inadequate postpartum care.** The willingness-to-pay signal is the gap itself—mothers are already spending on fragmented workarounds because the default system under-serves them.
-- **Search for "postpartum mental health app" grew roughly 40% year over year** (Ideabrowser go-to-market analysis, idea #1695). Demand is not something you would need to create here; it is something you would route.
+- **Search for "postpartum mental health app" grew roughly 40% year over year** (go-to-market research). Demand is not something you would need to create here; it is something you would route.
 - **The engaged community is enormous and already assembled:** r/Parenting (2.9M), r/Mommit (276K), r/BabyBumps (687K), and r/Postpartum, plus high-traffic Facebook groups. Single posts about postpartum depression regularly clear 300 comments—distribution and validation surfaces are pre-built.
 
 ## Competitive Landscape
@@ -90,7 +90,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, a user reads only their own rows; cohorts are read-only):
 - profiles(user_id, due_date, birth_date, timezone)
 - intakes(id, user_id, stage, focus_areas text[], concern_text_encrypted, risk_flag boolean, safety_result jsonb, created_at)
-- checkins(id, user_id, created_at, mood, sleep_hours, recovery_note_encrypted, feeding_note_encrypted)  mood is 1 to 5
+- checkins(id, user_id, created_at, mood, sleep_hours, recovery_note_encrypted, feeding_note_encrypted) mood is 1 to 5
 - cohorts(id, birth_month, name)
 - cohort_assignments(id, cohort_id, user_id)
 

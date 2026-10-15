@@ -27,10 +27,10 @@ A productized redesign service with a URL box as its entire front door. The owne
 The web design market and consumer AI have matured on the same timeline, and the intersection is a service that was economically impossible to run three years ago:
 
 - **The global web design services market was valued at USD 58.5 billion in 2022 and is projected to grow at an 8.5% CAGR to reach USD 92.06 billion by 2030** (Cognitive Market Research / Mordor Intelligence). This is not an emerging niche—it is a mature, tens-of-billions category whose delivery cost AI is about to cut in half.
-- **An estimated 50% of small businesses still lack a website, and roughly 71% of existing sites aren't mobile-friendly** (Ideabrowser pain analysis, idea #15). That is the total addressable backlog: not net-new demand you have to create, but a standing inventory of broken sites waiting for an affordable trigger to fix them.
-- **Searches for "affordable web design" spiked roughly 50%**, and "website redesign services," "website redesign agency," and "ai website design" all register high commercial intent (Ideabrowser keyword analysis, idea #15). Demand is already expressed as high-intent search—you are routing existing buyers, not educating cold ones.
-- **Reddit's small-business and web-design communities alone total over 5M members**—r/smallbusiness (2M+), r/webdev and r/web_design (roughly 917K each), and r/Entrepreneur (1.2M)—with affordable-redesign threads regularly clearing 140 comments (Ideabrowser community analysis). The audience is dense, self-identified, and already asking your exact question in public.
-- **AI web-design tutorials pull around 391,000 average views per video** on channels like Futurepedia (Ideabrowser YouTube analysis). The education layer is being built by creators for free; a productized service converts that attention into transactions.
+- **An estimated 50% of small businesses still lack a website, and roughly 71% of existing sites aren't mobile-friendly**. That is the total addressable backlog: not net-new demand you have to create, but a standing inventory of broken sites waiting for an affordable trigger to fix them.
+- **Searches for "affordable web design" spiked roughly 50%**, and "website redesign services," "website redesign agency," and "ai website design" all register high commercial intent. Demand is already expressed as high-intent search—you are routing existing buyers, not educating cold ones.
+- **Reddit's small-business and web-design communities alone total over 5M members**—r/smallbusiness (2M+), r/webdev and r/web_design (roughly 917K each), and r/Entrepreneur (1.2M)—with affordable-redesign threads regularly clearing 140 comments (community research). The audience is dense, self-identified, and already asking your exact question in public.
+- **AI web-design tutorials pull around 391,000 average views per video** on channels like Futurepedia. The education layer is being built by creators for free; a productized service converts that attention into transactions.
 
 ## Competitive Landscape
 
@@ -90,7 +90,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, shadcn/ui, Supabase (Postgres
 
 Tables (Row Level Security on, each owner reads only their own rows):
 - sites(id, user_id, source_url, industry, style_pref, extracted_brand jsonb, created_at)
-- redesigns(id, site_id, status, template_map jsonb, generated_url, delivered_at)  where status is one of queued, generating, review, delivered
+- redesigns(id, site_id, status, template_map jsonb, generated_url, delivered_at) where status is one of queued, generating, review, delivered
 - revisions(id, redesign_id, note, resolved)
 
 Screens: / (a URL box with an industry select and a style select), /app (redesigns and their status), /preview/[id].

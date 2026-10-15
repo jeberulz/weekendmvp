@@ -26,7 +26,7 @@ The wedge isn't the single book — it's what happens after. Kids don't want one
 
 ## Market Research
 
-The category has real numbers behind it, not just anecdote. The global personalized children's books market was valued at USD 569 million in 2024 and is projected to reach USD 1,051 million by 2031, a 9.2% CAGR (industry market sizing cited in Ideabrowser's research on idea 5268). The U.S. slice — roughly 60% of global revenue — was valued at USD 661.49 million in 2024, projected to USD 1,128.52 million by 2032 at a 7.1% CAGR. For scale, the broader children's and young adult book market sits at USD 12.16 billion in 2025, meaning personalized books are still only about 5% penetrated into a category more than 20x its size — plenty of room to grow before this looks saturated.
+The category has real numbers behind it, not just anecdote. The global personalized children's books market was valued at USD 569 million in 2024 and is projected to reach USD 1,051 million by 2031, a 9.2% CAGR (industry market sizing cited in Community research on idea 5268). The U.S. slice — roughly 60% of global revenue — was valued at USD 661.49 million in 2024, projected to USD 1,128.52 million by 2032 at a 7.1% CAGR. For scale, the broader children's and young adult book market sits at USD 12.16 billion in 2025, meaning personalized books are still only about 5% penetrated into a category more than 20x its size — plenty of room to grow before this looks saturated.
 
 The market is explicitly in a growth-stage window, not a mature one. Research on the space places it at "Stage 2" of the product lifecycle: proven demand, several profitable competitors, rising consumer awareness, and — critically — a technology stack that is still improving fast enough to change who wins. Premium pricing power (USD 25-40 per book) is intact today, but the same research flags that window as roughly 18-24 months before AI-native competitors compress it toward USD 12-20. That's the opening: incumbents built on human illustration cannot chase that price down without rebuilding their entire cost structure, and a diffusion-model pipeline can.
 
@@ -86,7 +86,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, a parent reads only their own children and stories):
 - children(id, user_id, name, age, reading_level, interests, favorite_things, fears_to_avoid, photo_urls, character_model_id)
 - templates(id, name, theme, interest_tags, plot_outline jsonb)
-- stories(id, child_id, template_id, title, pages jsonb, status, created_at)  where status is generating, ready or failed
+- stories(id, child_id, template_id, title, pages jsonb, status, created_at) where status is generating, ready or failed
 Seed 5 branching templates by hand.
 
 Screens: /login, /new (photos and five questions), /stories/[id] (the book).

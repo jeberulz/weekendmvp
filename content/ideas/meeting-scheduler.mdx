@@ -5,7 +5,7 @@ title: "Smart Meeting Scheduler"
 
 ## The Problem
 
-Global teams lose **7+ hours a week** (Ideabrowser #2161 TimeSync market signal) to cross-timezone scheduling. A sales rep in New York trying to schedule a prospect in Sydney. A design team coordinating a cross-functional review across EMEA, APAC, and the Americas. A founder hiring their first engineer in Europe. Current tools either show "everyone's availability" as a raw union (Calendly group polls, When2Meet) or pick a slot without considering that 6am for Singapore is a terrible time to think clearly.
+Global teams lose **7+ hours a week** to cross-timezone scheduling. A sales rep in New York trying to schedule a prospect in Sydney. A design team coordinating a cross-functional review across EMEA, APAC, and the Americas. A founder hiring their first engineer in Europe. Current tools either show "everyone's availability" as a raw union (Calendly group polls, When2Meet) or pick a slot without considering that 6am for Singapore is a terrible time to think clearly.
 
 Calendly dominates the scheduling-link category with **20M+ users** and a $3B+ valuation, but charges **$10–$20 per user per month**. For a 10-person team that's $1,200–$2,400/year just for booking links. SavvyCal and Cal.com chip at the edges with better UX and lower pricing, but the "AI conflict resolver that understands working hours" is not yet a standard feature. The wedge is opinionated defaults: never suggest outside a person's working hours, never suggest back-to-back meetings, always prefer slots after lunch.
 
@@ -28,7 +28,7 @@ The AI conflict resolver uses a simple rule engine + LLM judgment. Rules: within
 The **online scheduling software market is $5.5B in 2024, projected to $13B by 2030 at 15.6% CAGR** (Grand View Research). Calendly is the clear category leader with a **$3B+ valuation** (2021 Series B at $3B). Cal.com raised **$32M Series A+** (2023) as the open-source challenger. The market validates big outcomes; the question is whether a focused AI + flat-pricing entrant can carve out 1–2% share.
 
 - Calendly has **20M+ users across 100K+ companies** (public stats, 2023). SavvyCal reports strong indie traction. Cal.com GitHub repo has 30K+ stars and 5K+ self-hosted instances.
-- Cross-timezone pain validated by Ideabrowser #2161 (TimeSync, opp 9 pain 9 timing 9) and #2663 (Calendar Shield, opp 9 pain 9 timing 9). Both score high because the pain is universal for remote-first companies.
+- Cross-timezone pain validated by community research (TimeSync, opp 9 pain 9 timing 9) and #2663 (Calendar Shield, opp 9 pain 9 timing 9). Both score high because the pain is universal for remote-first companies.
 - Remote work plateau: **28% fully remote + 30% hybrid** in US knowledge work (McKinsey 2024). Distributed scheduling remains the default, not the exception.
 - Search: "meeting scheduler" 22K/mo, "calendly alternative" 5.4K/mo, "schedule across timezones" 1.3K/mo. CPC **$8–$15** is commercial and competitive.
 - Communities: r/remotework (180K), r/startups (1.8M), Indie Hackers (200K+). LinkedIn "distributed teams" content gets strong engagement. AI schedule-assistant tools are a common builder-community thread.
@@ -90,7 +90,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on; a host reads only their own rows, and the booking page reads through a server route):
 - profiles(user_id, username, timezone, working_hours jsonb, google_refresh_token_encrypted)
 - event_types(id, user_id, slug, title, duration_min, buffer_min, min_notice_hours, max_advance_days)
-- bookings(id, event_type_id, invitee_name, invitee_email, invitee_timezone, start_at, end_at, meeting_url, google_event_id, status)  unique on event_type_id and start_at
+- bookings(id, event_type_id, invitee_name, invitee_email, invitee_timezone, start_at, end_at, meeting_url, google_event_id, status) unique on event_type_id and start_at
 
 Screens: /login, /settings (timezone, working hours, event types), /[username]/[slug] (the booking page), /bookings.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, TOKEN_ENCRYPTION_KEY.

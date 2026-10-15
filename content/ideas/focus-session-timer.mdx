@@ -25,7 +25,7 @@ The adaptive-session feature is the long-term moat. After two weeks of data, the
 
 ## Market Research
 
-The **brain training and focus app market is projected to reach $130B by 2035** (multiple market reports, Ideabrowser #4076 synthesis). The productivity-app segment inside that is fragmented: Forest has **10M+ downloads** on App Store, Flow has 1M+, Be Focused has 500K+. Distribution is app-store discovery plus productivity YouTubers; the TAM includes knowledge workers, students, and creators.
+The **brain training and focus app market is projected to reach $130B by 2035** (multiple market reports, community research synthesis). The productivity-app segment inside that is fragmented: Forest has **10M+ downloads** on App Store, Flow has 1M+, Be Focused has 500K+. Distribution is app-store discovery plus productivity YouTubers; the TAM includes knowledge workers, students, and creators.
 
 - **UC Irvine research: 23 minutes to regain focus** after interruption. Gloria Mark's "Attention Span" (2023) documents steady decline from 2.5 minutes of focused attention on screens to 47 seconds.
 - Search: "pomodoro timer" 90K/mo, "focus app" 33K/mo, "deep work app" 8.1K/mo — combined CPC **$1.50–$3.50**. Lower CPC than SaaS, but volume compensates.
@@ -89,7 +89,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - tasks(id, user_id, name, last_used_at)
-- sessions(id, user_id, task_id, started_at, ended_at, duration_sec, completed boolean, quality_rating)  quality_rating is 1 to 5 and optional
+- sessions(id, user_id, task_id, started_at, ended_at, duration_sec, completed boolean, quality_rating) quality_rating is 1 to 5 and optional
 - user_preferences(user_id, default_work_min, default_break_min, adaptive_enabled, suggestion_dismissed_until)
 
 Screens: / (a demo timer, no sign-in), /app (task, timer, today), /app/history (heatmap, streak, weekly chart), /settings.

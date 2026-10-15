@@ -7,9 +7,9 @@ title: "Hold-Time Call Bot"
 
 A consultant blocks forty minutes for “call the insurance carrier.” The actual conversation with a human lasts six. The other thirty-four is hold music, a looping IVR, a “your call is important to us” that nobody believes, and a speakerphone face-down on the desk while they pretend to work. Nobody invoices that gap. It never hits a timesheet. It is why the morning felt productive and the afternoon is gone.
 
-The wait is not rare. Ideabrowser’s brief puts average U.S. phone-tree-and-hold time at about ten hours a year. At $150/hr that is a four-figure leak with no QuickBooks line. For everyone else it is the lunch that dies on United, the DMV, the prior-auth desk. Adjacent Reddit already argues the job: r/CustomerSuccess (27.1K), r/automation (71.1K), r/ArtificialIntelligence (124K) — 222K people, plus 290+ comments on “best AI assistant” threads.
+The wait is not rare. community research’s brief puts average U.S. phone-tree-and-hold time at about ten hours a year. At $150/hr that is a four-figure leak with no QuickBooks line. For everyone else it is the lunch that dies on United, the DMV, the prior-auth desk. Adjacent Reddit already argues the job: r/CustomerSuccess (27.1K), r/automation (71.1K), r/ArtificialIntelligence (124K) — 222K people, plus 290+ comments on “best AI assistant” threads.
 
-Incumbent “solutions” miss the job. Pixel Call Screen will screen a spam inbound. A human VA on Upwork will sit on hold if you pay them to. A Twilio tutorial will dial a number and dump you into a conference. None of them will walk an airline tree, detect the hold-music bed, stay alive through a twenty-minute queue, and ping you the second a living agent says hello — then hand the live call to your cell without dropping it. Ideabrowser’s competitive writeup also flags that roughly seven in ten people walk after a bad service experience; hold time is how that experience starts. That last mile is the product. Everything else is a demo.
+Incumbent “solutions” miss the job. Pixel Call Screen will screen a spam inbound. A human VA on Upwork will sit on hold if you pay them to. A Twilio tutorial will dial a number and dump you into a conference. None of them will walk an airline tree, detect the hold-music bed, stay alive through a twenty-minute queue, and ping you the second a living agent says hello — then hand the live call to your cell without dropping it. community research’s competitive writeup also flags that roughly seven in ten people walk after a bad service experience; hold time is how that experience starts. That last mile is the product. Everything else is a demo.
 
 ## The Solution
 
@@ -27,11 +27,11 @@ Weekend scope is ruthless: detect hold, survive the queue, notify, hand over. Do
 
 ## Market Research
 
-This is not “another chatbot.” It is a thin slice of a voice-agent boom that still has no dominant hold-skipper. Ideabrowser classifies the niche as emerging: lots of assistant hype, almost nobody productized as “wait on hold for me.”
+This is not “another chatbot.” It is a thin slice of a voice-agent boom that still has no dominant hold-skipper. community research classifies the niche as emerging: lots of assistant hype, almost nobody productized as “wait on hold for me.”
 
 - **AI assistants are already a multi-billion category.** IMARC, MarketsandMarkets, and Grand View Research put 2025 in a $3.35B–$17.1B band, expanding toward $21.11B–$124.9B by 2030–2034 (CAGRs 18.8–44.5%). OG Analysis’s 2026 outlook: $3.35B in 2025 to $24.53B by 2034 at 24.8% CAGR. You are aiming existing assistant spend at a hold queue.
 - **Agentic voice is the accelerating slice.** Fortune Business Insights sizes agentic AI at $7.29B in 2025 heading for $139B by 2034 (40.5% CAGR) — budget for agents that *do* things on a PSTN line, not summarize a ticket after.
-- **Search already pays for the pain.** Ideabrowser’s keyword list: `customer service automation` at $28.63 CPC (low competition), `ai phone assistant` at $22.12 CPC, plus growth on `conversational ai assistant` (+2305%), `ai powered virtual assistant` (+4276%, 83,150 projected volume), `conversational assistants` (+11552%). `call waiting music` is a pain-point query — people search the annoyance.
+- **Search already pays for the pain.** community research’s keyword list: `customer service automation` at $28.63 CPC (low competition), `ai phone assistant` at $22.12 CPC, plus growth on `conversational ai assistant` (+2305%), `ai powered virtual assistant` (+4276%, 83,150 projected volume), `conversational assistants` (+11552%). `call waiting music` is a pain-point query — people search the annoyance.
 - **Distribution is already warm.** ElevenLabs demos in the multi-million-view range, Salesforce AI content around 1.8M views, NetworkChuck-class tutorials around 700K. Facebook’s Google Home / Gemini / Assistant group (25.5K) still cannot finish a phone tree.
 - **Why a weekend, not a lab.** Twilio + open speech + realtime APIs turned “build a call center” into webhooks. Competitive analysis: inference costs roughly halved, “pennies per call versus a dollar of human wait.” North America ~30–36% of assistant spend; Pixel Duplex is US-only.
 
@@ -43,24 +43,24 @@ Three named players clear the “is this a real market” test. None of them is 
 
 - **Google Duplex / Pixel Call Screen** — Inbound spam screen, some outbound reservation calls, Pixel / Assistant distribution (Android, NA ~36% assistant share). Weakness: hardware lock-in, US-centric, privacy pushback. Not “sit on United for 40 minutes and text me.” Pricing: free on Pixel. Beat them on one boring job, not on platform.
 - **ElevenLabs Voice AI** — Best-in-class TTS / conversational agents, multi-million-view demos, real dev funnel. Weakness: voice API, not a hold queue. Wrap it or a cheaper STT/TTS pair. Pricing: $5–$99/mo.
-- **M1 AI Phone Assistant** — Missed-call / call-handling for SMBs; YouTube review traction. Weakness: receptionist (inbound), not outbound hold on IRS/airline trees. Pricing: about $20–$50/mo (Ideabrowser inferred band).
+- **M1 AI Phone Assistant** — Missed-call / call-handling for SMBs; YouTube review traction. Weakness: receptionist (inbound), not outbound hold on IRS/airline trees. Pricing: about $20–$50/mo.
 
 Indirect substitutes if you position as “AI assistant”: ChatGPT / Gemini, Siri / Alexa, Salesforce Einstein (1.8M-view tutorial cluster), Upwork VAs, DIY Twilio + n8n. Callback widgets only work when the *business* installed them. Your user does not control United’s stack.
 
 **Your Opportunity**
 
-Sell the job, not the model. Pixel is free and hardware-gated. ElevenLabs is infrastructure. M1 is a receptionist. The white space is outbound hold + IVR walk + human handoff at $19–$30/mo, starting with people who already live on the phone: consultants, insurance brokers, solo lawyers, anyone whose week includes a government or carrier queue. Log trees. Do not hallucinate a negotiation agent in v1 — Ideabrowser’s own competitive writeup flags nuance failure and legacy-tree breakage as the kill shots. Survive the wait. That is the wedge.
+Sell the job, not the model. Pixel is free and hardware-gated. ElevenLabs is infrastructure. M1 is a receptionist. The white space is outbound hold + IVR walk + human handoff at $19–$30/mo, starting with people who already live on the phone: consultants, insurance brokers, solo lawyers, anyone whose week includes a government or carrier queue. Log trees. Do not hallucinate a negotiation agent in v1 — community research’s own competitive writeup flags nuance failure and legacy-tree breakage as the kill shots. Survive the wait. That is the wedge.
 
 ## Business Model
 
-Subscription with a usage fuse — Twilio minutes are visible COGS. Ideabrowser’s ladder is already priced: free demo, $19.99/mo frontend, $29.99/mo pro, $5,000/year team, $20,000/year telco partnership. Mirror it. Do not ship $9 unlimited hold; one power user on three IRS lines erases the month.
+Subscription with a usage fuse — Twilio minutes are visible COGS. community research’s ladder is already priced: free demo, $19.99/mo frontend, $29.99/mo pro, $5,000/year team, $20,000/year telco partnership. Mirror it. Do not ship $9 unlimited hold; one power user on three IRS lines erases the month.
 
 - **Demo** ($0) — One live hold, capped minutes, watermarked SMS. The YouTube / Reddit clip is the ad.
 - **Line** ($19.99/mo) — 120 wait-minutes included, SMS handoff, three saved numbers, hold-music detector, basic call log.
 - **Desk** ($29.99/mo) — 400 wait-minutes, custom DTMF macros, shared presets, priority TTS, CSV export of wait time (the timesheet proof).
-- **Floor** ($5,000/year) — Ten seats, SSO later, pooled minutes, tree-map sharing inside the firm. Matches Ideabrowser’s enterprise rung without pretending you are a CCaaS.
+- **Floor** ($5,000/year) — Ten seats, SSO later, pooled minutes, tree-map sharing inside the firm. Matches community research’s enterprise rung without pretending you are a CCaaS.
 
-Overage: wait-minutes in Ideabrowser’s $0.05–$0.20/min pay-as-you-go band — above Twilio wholesale, below a human VA. The $20K telco partnership is year two.
+Overage: wait-minutes in community research’s $0.05–$0.20/min pay-as-you-go band — above Twilio wholesale, below a human VA. The $20K telco partnership is year two.
 
 **Unit Economics**
 
@@ -98,8 +98,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - profiles(user_id, phone)
 - destinations(id, user_id, nickname, e164, dtmf_macro, language)
-- calls(id, user_id, destination_id, twilio_call_sid, conference_name, state, started_at, human_at, bridged_at, ended_at, wait_seconds, error_code)  state is dialing, ivr, hold, human, bridged, failed or canceled
-- call_events(id, call_id, label, confidence, created_at)  the label only; no transcript text is stored
+- calls(id, user_id, destination_id, twilio_call_sid, conference_name, state, started_at, human_at, bridged_at, ended_at, wait_seconds, error_code) state is dialing, ivr, hold, human, bridged, failed or canceled
+- call_events(id, call_id, label, confidence, created_at) the label only; no transcript text is stored
 
 Screens: /login, /destinations, /call/[id] (live state), /history.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, OPENAI_API_KEY.

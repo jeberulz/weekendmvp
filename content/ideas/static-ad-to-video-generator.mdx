@@ -9,7 +9,7 @@ Performance marketers live in a split reality. Creative teams ship beautiful sta
 
 The workaround is worse. Teams screen-record a Canva slide deck, slap a trending audio track underneath, and call it a video ad. Engagement ticks up briefly, then quality scores tank because the motion is lazy and the CTA disappears off-frame in vertical crop. Reddit's r/PPC and r/FacebookAds threads repeat the same complaint weekly: "We have static winners—we just need them as video without rebuilding from scratch." r/aivideo (221K members) and r/ArtificialInteligence (1.5M) show the same hunger from the tool side: dozens of AI video generators, almost none optimized for *ad* conversion—aspect-ratio presets, safe zones, hook timing, platform export specs.
 
-The cost is measurable. Video ads consistently deliver roughly **34% higher conversion rates** than static placements on the same audience (Ideabrowser pain research, cross-platform benchmarks). Yet **86%+ of businesses now use video in marketing** while most still produce static creative first because it is faster to iterate. That gap—static creative velocity on the design side, video requirement on the distribution side—is where budget bleeds. A DTC brand running fifty static variants per month but only five videos is effectively leaving reach and ROAS on the table every time Meta's algorithm favors motion.
+The cost is measurable. Video ads consistently deliver roughly **34% higher conversion rates** than static placements on the same audience. Yet **86%+ of businesses now use video in marketing** while most still produce static creative first because it is faster to iterate. That gap—static creative velocity on the design side, video requirement on the distribution side—is where budget bleeds. A DTC brand running fifty static variants per month but only five videos is effectively leaving reach and ROAS on the table every time Meta's algorithm favors motion.
 
 ## The Solution
 
@@ -27,10 +27,10 @@ The wedge is static-to-video for performance marketers who already know which im
 
 Digital video advertising is in a hyper-growth phase—and AI tooling is collapsing production time at the same moment platforms bias harder toward motion:
 
-- **Global digital video advertising** is projected at **$140.18 billion in 2025**, up from $104.65 billion in 2024—a **34% CAGR**—and expected to reach **$458.37 billion by 2029** (Statista / industry analyst consensus cited in Ideabrowser competitive analysis).
+- **Global digital video advertising** is projected at **$140.18 billion in 2025**, up from $104.65 billion in 2024—a **34% CAGR**—and expected to reach **$458.37 billion by 2029** (Statista / industry analyst consensus cited in competitive analysis).
 - **Short-form video ad spend** alone is forecast at **$169.17 billion by 2030** (8.79% CAGR), driven by TikTok, Reels, and YouTube Shorts placement growth.
 - **Social video spend** hit **$23.4 billion in 2024** with **20% year-over-year growth** (IAB digital video report)—the segment where static-to-video conversion matters most.
-- **Search demand validates the category:** "ai video generator" alone carries **~1.5M monthly searches**; "ai video generation platform" shows **60K+ volume at $4.02 CPC** with low competition (Ideabrowser trend research, July 2026)—commercial intent is real, not hypothetical.
+- **Search demand validates the category:** "ai video generator" alone carries **~1.5M monthly searches**; "ai video generation platform" shows **60K+ volume at $4.02 CPC** with low competition —commercial intent is real, not hypothetical.
 - **Community scale:** Reddit AI video communities exceed **2M combined members**; Facebook groups like "AI ANIMATION & AI VIDEO" (140K+) and "AI Art Universe" (657K+) discuss tool quality and workflow gaps weekly—exactly the audience that will trial a focused static-to-video product.
 - **Venture signal:** **$1B+** has flowed into AI video startups (Runway, Synthesia, HeyGen, Pika)—category is funded, but almost no player owns the narrow "static ad in → ad video out" workflow for SMB performance marketers.
 
@@ -99,7 +99,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows; files are never stored):
 - projects(id, user_id, name)
 - assets(id, project_id, user_id, filename, width, height, created_at)
-- render_records(id, asset_id, user_id, template, formats text[], duration_seconds, status, error, created_at)  status is done or failed
+- render_records(id, asset_id, user_id, template, formats text[], duration_seconds, status, error, created_at) status is done or failed
 
 Screens: /login, /projects, /studio (drop an image, pick a template, formats and duration, preview and download).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).

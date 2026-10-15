@@ -23,7 +23,7 @@ The global SaaS analytics market sits above $500B in 2024 and is growing at roug
 
 - Reddit r/startups (1.9M members) and r/indiehackers run weekly threads confessing “I have no idea what my analytics mean” — the pain is loud and observable.
 - Plausible crossed $2M ARR; Mixpanel generates $200M+ ARR — analytics infrastructure is paid-for; the translation layer is the gap.
-- Keyword volumes: “google analytics software” and “sql for data analysis” both up YoY with high commercial intent (Ideabrowser keyword research).
+- Keyword volumes: “google analytics software” and “sql for data analysis” both up YoY with high commercial intent (keyword research).
 - 2.1M+ solo consultants plus millions of no-code builders = addressable base for whom the current dashboard-first UX fundamentally doesn’t work.
 
 ## Competitive Landscape
@@ -80,7 +80,7 @@ Tables (Row Level Security on, each user reads only their own rows):
 - sources(id, user_id, type, site_id, api_key_encrypted, status)
 - weekly_snapshots(id, source_id, week_of, metrics jsonb)
 - digests(id, source_id, week_of, insights jsonb, subject, created_at)
-- digest_settings(user_id, tone, exclude_paths text[])  tone is casual or formal
+- digest_settings(user_id, tone, exclude_paths text[]) tone is casual or formal
 
 Screens: /login, /sources (connect), /digest/[weekOf] (the five insights), /settings.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.

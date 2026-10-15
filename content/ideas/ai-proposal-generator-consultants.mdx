@@ -5,7 +5,7 @@ title: "AI Proposal Generator for Consultants"
 
 ## The Problem
 
-Every consulting engagement starts the same dispiriting way: a prospect asks for a proposal, and the consultant opens last quarter's Google Doc, strips out the old client's name, and starts the slow work of rewriting scope, pricing, and timeline from scratch. For a solo consultant billing $150-$300 an hour, that's 3-15 hours of unbillable work per proposal — hours that don't get invoiced, don't move a project forward, and directly compete with the actual client work that pays the rent. Ideabrowser's research on this space puts the number even higher for complex engagements, describing consultants who "shave 15 hours off each proposal" once they stop writing from a blank page.
+Every consulting engagement starts the same dispiriting way: a prospect asks for a proposal, and the consultant opens last quarter's Google Doc, strips out the old client's name, and starts the slow work of rewriting scope, pricing, and timeline from scratch. For a solo consultant billing $150-$300 an hour, that's 3-15 hours of unbillable work per proposal — hours that don't get invoiced, don't move a project forward, and directly compete with the actual client work that pays the rent. Community research on this space puts the number even higher for complex engagements, describing consultants who "shave 15 hours off each proposal" once they stop writing from a blank page.
 
 The frustration is loud where consultants actually talk to each other. r/consulting carries more than 322,000 members and regularly produces threads with dozens of comments asking how people speed up proposal and RFP turnaround. r/managementconsulting and the 261,000-member r/DigitalMarketing echo the same complaint from adjacent angles — deliverable creation eats the hours that should go to client delivery. On Facebook, the "AI For Business" group (24,000 members), the "Technology Consulting Community" (7,000+), and the "ERP Consultants" group (8,300) show the same pattern: professionals actively hunting for anything that removes the manual grind of assembling scope documents, pricing tables, and timelines by hand.
 
@@ -28,7 +28,7 @@ The wedge that matters most for a weekend build is narrow scope: this is not try
 
 The AI writing tools market broadly is projected to reach $244.2 billion by 2025, growing at more than 20% CAGR as AI-assisted document generation moves from novelty to default workflow across professional services (Virtue Market Research; Siege Media 2025 AI writing statistics). Inside that broader wave, the proposal writing services market specifically is sized at $208 million in 2025, on track to reach $295 million by 2030 at a 7.2% CAGR (360iResearch, Proposal Writing Services report) — a slower-growing but directly analogous segment that AI-native tools are positioned to eat into as automation shifts spend from human proposal writers to software.
 
-The buyer population is large and structurally underserved. The consulting industry overall exceeds $300 billion in the US alone, and Ideabrowser's scoring of this idea rates both opportunity and pain at 9/10, citing "strong market demand" and "high community engagement" as the core signal. Crucially, the research identifies the addressable gap precisely: existing proposal software clusters at two extremes — enterprise RFP platforms priced and built for teams with dedicated bid desks, and generic AI writers with zero domain specificity — leaving independent consultants and 2-25 person firms with no purpose-built option. Ideabrowser's go-to-market scoring rates this idea's traction potential at 9/10, flagging "strong signals on Reddit, YouTube, and Facebook" as validated demand rather than a hypothesis.
+The buyer population is large and structurally underserved. The consulting industry overall exceeds $300 billion in the US alone, and Research scoring of this idea rates both opportunity and pain at 9/10, citing "strong market demand" and "high community engagement" as the core signal. Crucially, the research identifies the addressable gap precisely: existing proposal software clusters at two extremes — enterprise RFP platforms priced and built for teams with dedicated bid desks, and generic AI writers with zero domain specificity — leaving independent consultants and 2-25 person firms with no purpose-built option. Go-to-market scoring rates this idea's traction potential at 9/10, flagging "strong signals on Reddit, YouTube, and Facebook" as validated demand rather than a hypothesis.
 
 The willingness-to-pay signal is explicit in the underlying research: consultants "show strong interest in AI solutions to streamline processes" (willingness-to-pay score 8/10), and the pain is classified as acute and increasing, not a slow-burn annoyance — proposal creation is the one task standing directly between a consultant and revenue.
 
@@ -48,14 +48,14 @@ No incumbent is building specifically for the solo-to-25-person consulting firm 
 
 ## Business Model
 
-Subscription SaaS with a value-ladder structure that starts free and grows with the consultant's team size. The core insight from Ideabrowser's revenue modeling: this is a $1M-$10M ARR-range opportunity because the buyer (a consultant who bills $150+/hour) values their own time enough to pay a real SaaS price for a tool that returns 10+ hours per proposal.
+Subscription SaaS with a value-ladder structure that starts free and grows with the consultant's team size. The core insight from community research's revenue modeling: this is a $1M-$10M ARR-range opportunity because the buyer (a consultant who bills $150+/hour) values their own time enough to pay a real SaaS price for a tool that returns 10+ hours per proposal.
 
 - **Free** ($0) — AI readiness / proposal-health assessment plus a limited number of generations per month; the lead-gen wedge that gets a consultant to try the core loop with zero commitment.
 - **Solo** ($49-$79/mo) — Unlimited proposal generation, custom branding, pricing benchmarking, PDF/link export, and view tracking for a single consultant.
 - **Team** ($150-$200/user/mo) — Shared template library, win/loss analytics across the team, and standardized pricing rules for firms with 3-25 consultants.
 - **Enterprise** ($5,000-$20,000/year) — Custom integrations (CRM, e-signature), dedicated support, and compliance features for larger consulting practices.
 
-Backend add-ons extend the ladder further: advanced analytics and industry-specific benchmarking sell for $500-$1,000/month on top of the core subscription, matching what Ideabrowser's value-ladder analysis flags as the highest-margin continuity offer. LLM inference is the primary variable cost — a full proposal draft (executive summary, scope, pricing table, timeline) runs roughly 4,000-8,000 output tokens, or well under $1 per generation using current-generation models — which keeps blended gross margin in the 80-85% range even at the Solo tier.
+Backend add-ons extend the ladder further: advanced analytics and industry-specific benchmarking sell for $500-$1,000/month on top of the core subscription, matching what community research's value-ladder analysis flags as the highest-margin continuity offer. LLM inference is the primary variable cost — a full proposal draft (executive summary, scope, pricing table, timeline) runs roughly 4,000-8,000 output tokens, or well under $1 per generation using current-generation models — which keeps blended gross margin in the 80-85% range even at the Solo tier.
 
 **Unit Economics**
 
@@ -89,9 +89,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres with pgvec
 Tables (Row Level Security on, consultants see only their own rows, and the share page reads one proposal by its token):
 - consultants(id, user_id, name, brand_primary_hex, default_hourly_rate)
 - clients(id, consultant_id, name, industry, contact_email)
-- proposals(id, consultant_id, client_id, title, status, scope_summary, pricing_model, total_price_cents, generated_at, share_token)  where status is one of draft, sent, viewed, won, lost
-- proposal_sections(id, proposal_id, type, content jsonb, position)  where type is one of summary, scope, timeline, pricing, terms
-- past_proposals(id, consultant_id, raw_text, outcome, embedding vector(1536))  where outcome is one of won, lost, unknown
+- proposals(id, consultant_id, client_id, title, status, scope_summary, pricing_model, total_price_cents, generated_at, share_token) where status is one of draft, sent, viewed, won, lost
+- proposal_sections(id, proposal_id, type, content jsonb, position) where type is one of summary, scope, timeline, pricing, terms
+- past_proposals(id, consultant_id, raw_text, outcome, embedding vector(1536)) where outcome is one of won, lost, unknown
 - view_events(id, proposal_id, viewed_at, referrer)
 
 Screens: /login, /new (client and scope form), /proposals/[id] (editor), /p/[token] (public share page).

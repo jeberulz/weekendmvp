@@ -5,7 +5,7 @@ title: "AI receptionist so solo contractors never ghost a customer"
 
 ## The Problem
 
-A one-truck plumber is wrist-deep in a P-trap when the phone rings in the cab. It dumps to voicemail. The homeowner does not leave a message and wait until tomorrow; they dial the next name on Google. That missed ring is not a scheduling inconvenience. It is a $400 to $2,800 job walking down the street. Directional vendor math that closes deals in this category puts an electrician job around $950, a plumber around $1,200, HVAC around $1,500, and a roof up to $2,800. The Ideabrowser catalog brief sizes the pool at 3.2 million solo home-service firms. DialCatch, which already ships a $29 solo plan, markets against 2.3 million U.S. tradespeople who lose thousands a year to unanswered calls. Either number is a TAM you do not need to invent.
+A one-truck plumber is wrist-deep in a P-trap when the phone rings in the cab. It dumps to voicemail. The homeowner does not leave a message and wait until tomorrow; they dial the next name on Google. That missed ring is not a scheduling inconvenience. It is a $400 to $2,800 job walking down the street. Directional vendor math that closes deals in this category puts an electrician job around $950, a plumber around $1,200, HVAC around $1,500, and a roof up to $2,800. The community research catalog brief sizes the pool at 3.2 million solo home-service firms. DialCatch, which already ships a $29 solo plan, markets against 2.3 million U.S. tradespeople who lose thousands a year to unanswered calls. Either number is a TAM you do not need to invent.
 
 The buyer already knows this. A Connecticut homeowner surveying plumbers, tilers, and appliance techs wrote that a courtesy callback is now so rare she is shocked when one arrives. A HomeAdvisor reviewer contacted three contractors and reported that only one called back. On Mike Holt’s Business Management board — verified electricians, closed to outsiders — a Nebraska contractor says he leaves the phone in the truck for hours because impatient “when can you come?” threads stop him from finishing the current job. Another electrician rejects any tool that lets strangers browse his calendar: how busy he is, he wrote, is his business. That is the wall. Voicemail is the moment the buyer walks, and auto-booking is the feature that makes the owner uninstall you.
 
@@ -15,7 +15,7 @@ They already pay to paper over it. “HVAC answering service” and “plumber a
 
 Never Ghost is a solo AI front desk for the one-truck operator in HVAC, plumbing, electrical, roofing, landscaping, and remodeling. It answers the existing business number in a trade-tuned voice, sizes the job against the owner’s zip list and rates, then texts the owner **before** anything is booked. No calendar exposure. No location share. No stranger picking a Tuesday 2 p.m. slot while the truck is still on a roof. One flat plan: $79/mo, unlimited calls on fair-use, month-to-month, 14-day trial. Optional Booked Jobs Kicker: $15 per completed job the AI originated, capped at $300/mo, so the line item can look like a revenue share instead of another SaaS tax.
 
-The Ideabrowser verified report (idea 8816, August 2026) pivoted the wedge on purpose. The catalog brief led with “professional decline with referral.” Across Rosie, Goodcall, Smith.ai, ServiceTitan, Numa, ServiceAgent, Ring-Ready, and HighLevel, nobody ships that flow — and no contractor has been quoted asking for it either. What buyers name is trust and control. Lead with owner-in-the-loop text veto. Ship decline-with-referral as feature five, not the homepage.
+The community research verified report (idea 8816, August 2026) pivoted the wedge on purpose. The catalog brief led with “professional decline with referral.” Across Rosie, Goodcall, Smith.ai, ServiceTitan, Numa, ServiceAgent, Ring-Ready, and HighLevel, nobody ships that flow — and no contractor has been quoted asking for it either. What buyers name is trust and control. Lead with owner-in-the-loop text veto. Ship decline-with-referral as feature five, not the homepage.
 
 **How it works:**
 
@@ -96,9 +96,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each owner reads only their own rows):
 - contractors(id, user_id, phone_e164, trade, service_zips, hourly_cents)
-- trade_scripts(id, trade, system_prompt, qualifying_questions jsonb)  where trade is one of hvac, plumbing, electrical, roofing, landscaping, remodeling
-- calls(id, contractor_id, twilio_sid, started_at, ended_at, transcript, outcome)  where outcome is one of veto_pending, approved, held, out_of_scope, hangup
-- veto_messages(id, call_id, sms_sid, job_summary, price_band, status)  where status is one of pending, approved, held
+- trade_scripts(id, trade, system_prompt, qualifying_questions jsonb) where trade is one of hvac, plumbing, electrical, roofing, landscaping, remodeling
+- calls(id, contractor_id, twilio_sid, started_at, ended_at, transcript, outcome) where outcome is one of veto_pending, approved, held, out_of_scope, hangup
+- veto_messages(id, call_id, sms_sid, job_summary, price_band, status) where status is one of pending, approved, held
 - jobs(id, call_id, completed_at)
 
 Screens: /login, /script (edit the trade script), /calls (call log).

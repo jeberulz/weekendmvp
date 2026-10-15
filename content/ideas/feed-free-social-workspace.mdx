@@ -32,8 +32,8 @@ Ship the MVP as a queue plus a clock. Scheduling can wait until card one is habi
 
 Social media management is a mature, still-fast category sitting on top of a cultural revolt against the infinite scroll. That collision is the wedge.
 
-- **The social media management software market is projected around $39.1B by 2026 at a 19.7% CAGR**, with longer-range forecasts stretching past $160B in the early 2030s (Fortune Business Insights; triangulated in Ideabrowser competitive analysis at $24–32B for 2024–2026 and roughly 20–23% CAGR). Incumbents are fighting over posting volume. The productivity layer on top of the same APIs is thinly occupied.
-- **“Social media scheduler” alone does about 165,000 monthly searches** with low competition and a $22.73 CPC. Adjacent commercial queries: “social media management software” (3,600/mo, $20.06 CPC), “hootsuite alternative” (1,900/mo, $17.50 CPC), “digital detox app” (2,400/mo). Combined keyword set in the Ideabrowser quick-check: 172,970 monthly searches. People are already typing the switching query. They are landing on Buffer roundups, not a feed-free product.
+- **The social media management software market is projected around $39.1B by 2026 at a 19.7% CAGR**, with longer-range forecasts stretching past $160B in the early 2030s (Fortune Business Insights; triangulated in competitive analysis at $24–32B for 2024–2026 and roughly 20–23% CAGR). Incumbents are fighting over posting volume. The productivity layer on top of the same APIs is thinly occupied.
+- **“Social media scheduler” alone does about 165,000 monthly searches** with low competition and a $22.73 CPC. Adjacent commercial queries: “social media management software” (3,600/mo, $20.06 CPC), “hootsuite alternative” (1,900/mo, $17.50 CPC), “digital detox app” (2,400/mo). Combined keyword set in the community research quick-check: 172,970 monthly searches. People are already typing the switching query. They are landing on Buffer roundups, not a feed-free product.
 - **Hootsuite’s own Social Trends research** documents the work-life and overstimulation backlash among the Millennial and Gen Z cohorts who staff social teams. The category leader is publishing the cultural case for a product it is structurally unwilling to build.
 - **Community demand is not hypothetical.** r/productivity (1.9–2.4M), r/SocialMediaMarketing (110K), r/digitalminimalism (261K), r/TimeManagement (50.7K), plus a 31K Facebook beginner-SMM group, already trade “batch the work and get out” workflows. You are routing existing demand.
 - **AI triage is finally cheap enough** to turn a raw comment stream into a deduplicated task list without a data-science team—the unlock the 2018 dashboards did not have. Wait, and Buffer ships a Focus Mode toggle that copies the screenshot and none of the time-per-client economics.
@@ -42,7 +42,7 @@ At $29/mo Solo, 175 paying users is $5K MRR. At a blended $45 ARPU, about 110 cu
 
 ## Competitive Landscape
 
-Every named incumbent still shows you a feed. Pricing below is from Zapier’s 2026 social-tool roundup (a source already in the Ideabrowser competitive packet); Web Ascender’s independent comparison is cited where list prices diverge.
+Every named incumbent still shows you a feed. Pricing below is from Zapier’s 2026 social-tool roundup (a source already in the community research competitive packet); Web Ascender’s independent comparison is cited where list prices diverge.
 
 - **Buffer** — Best UX in the creator/SMB band. Scheduling, light inbox, per-channel pricing. Still a growth product: more posting, more channels. No attention budgets, no time-per-client. Free (1 user, 3 accounts, 10 scheduled posts per profile) / Essentials $6 per channel per month / Team $12 per channel per month.
 - **Hootsuite** — Streams UI is the opposite of a finite queue. Zapier: Standard from $99/user/month billed annually (10 profiles). Web Ascender lists from $199/user/month. Either way you are in enterprise-adjacent money before the product respects a freelancer’s calendar.
@@ -56,14 +56,14 @@ No incumbent will lead with “spend less time in our app.” That copy cannibal
 
 ## Business Model
 
-Self-serve SaaS with a 14-day full-product trial (the Ideabrowser frontend offer). Convert on the moment the first Sunday digest makes a retainer conversation easier. Path to $5K/month is 170 Solo seats or a mix of about 40 Studio seats—reachable from agency Facebook groups and r/SocialMediaMarketing without paid acquisition if the case studies have minutes-saved numbers.
+Self-serve SaaS with a 14-day full-product trial (the community research frontend offer). Convert on the moment the first Sunday digest makes a retainer conversation easier. Path to $5K/month is 170 Solo seats or a mix of about 40 Studio seats—reachable from agency Facebook groups and r/SocialMediaMarketing without paid acquisition if the case studies have minutes-saved numbers.
 
 - **Trial** ($0, 14 days) — 3 brands, full queue, time tracking, Claude drafts. Card-complete email on day 12.
 - **Solo** ($29/month) — 5 brands, 1 user, attention budgets, weekly CSV, 500 AI drafts/month
 - **Studio** ($99/month) — 15 brands, 3 seats, shared queues, client-ready time report, 2,000 AI drafts/month
 - **Agency** ($299/month) — 50 brands, 10 seats, SSO-ready later, priority API quota, white-label PDF
 
-Backend ladder: $49/month Pro add-on on Solo (custom reports, matching the Ideabrowser continuity offer) and a $500+/month Enterprise SKU only after Agency accounts ask. Annual prepay at two months free for the freelancer who hates Stripe emails.
+Backend ladder: $49/month Pro add-on on Solo (custom reports, matching the community research continuity offer) and a $500+/month Enterprise SKU only after Agency accounts ask. Annual prepay at two months free for the freelancer who hates Stripe emails.
 
 **Unit Economics**
 
@@ -96,7 +96,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own brands and cards):
 - brands(id, user_id, name, platform, voice_notes, attention_budget_minutes, access_start, access_end, timezone)
-- queue_items(id, brand_id, type, external_ref, status, snippet, author_handle, received_at, ai_draft, cluster)  type is comment, dm or mention; status is todo, in_progress, done or snoozed
+- queue_items(id, brand_id, type, external_ref, status, snippet, author_handle, received_at, ai_draft, cluster) type is comment, dm or mention; status is todo, in_progress, done or snoozed
 - task_sessions(id, item_id, opened_at, closed_at, seconds_on_task)
 
 Screens: /login, /queue (three columns, no infinite scroll), /brands, /week.

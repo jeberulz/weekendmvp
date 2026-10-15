@@ -7,7 +7,7 @@ title: "Book closing service for businesses with no finance team"
 
 Electing S-Corp is the easy win. The hangover is monthly. A one-person consultancy at $80K–$250K now has officer payroll, a “reasonable salary,” shareholder distributions, estimated-tax reserves, and a CPA who only wants the packet in March. The owner still pays themselves whatever is left in the checking account. Receipts sit in a shoebox. April is a forensic rebuild billed by the hour.
 
-The supply side made it worse. The US accounting workforce shed more than 300,000 professionals between 2020 and 2023 — a 17% drop (BLS, cited in Ideabrowser verified research). US accounting degree completions fell to 55,152 in 2023–2024, a 20-year low (AICPA 2025 Trends). Firms drop the smallest clients first. That is the solo S-Corp: too little revenue per staff hour, too much paperwork.
+The supply side made it worse. The US accounting workforce shed more than 300,000 professionals between 2020 and 2023 — a 17% drop (BLS, cited in verified research). US accounting degree completions fell to 55,152 in 2023–2024, a 20-year low (AICPA 2025 Trends). Firms drop the smallest clients first. That is the solo S-Corp: too little revenue per staff hour, too much paperwork.
 
 Budget tools do not close the loop. QuickBooks Solopreneur is about $20/month and still costs 3–5 hours a week. Merritt Bookkeeping is a flat $250/month for QBO reconciliation — no payroll, no tax, no salary math; “ask your CPA.” Pilot Core is $299/month with annual prepay and a startup-shaped floor; S-Corp tax filing starts at $2,000/year. Heard does the full stack at $129–$255/month and only for therapists. Bench’s Grow plan sat at $199/month until the December 2024 shutdown left clients mid-season with a D-minus BBB aftertaste. Local CPAs start around $500/month and are booked.
 
@@ -17,7 +17,7 @@ This site already has a 1099 e-file wedge in [Freelancer Tax Filing Bot](/ideas/
 
 Monthlii is a **human-reviewed monthly finance desk** for one-person S-Corps — not a CPA firm, not tax advice, not an LLM inventing your reasonable salary. AI sorts bank and card feed. A human (you, then contractors) reviews flags, runs a rules-based owner-pay and tax-reserve snapshot, and ships a one-page brief plus a CPA-ready packet. The CPA you already have stays the CPA. You are the ops layer they wish every client arrived with.
 
-Scope v1 like a weekend product that becomes a practice. One S-Corp, US, owner-only payroll, no employees, no multi-state nexus, no K-1s from other entities. ICP: consultant, realtor, coach, or small agency at $80K–$250K who elected S-Corp for the tax savings and then discovered payroll. If they need 1120-S signed, partner with an EA/CPA or refer — do not file without a credential (see Ideabrowser extra: PTIN / EA / CPA for paid 1120-S work).
+Scope v1 like a weekend product that becomes a practice. One S-Corp, US, owner-only payroll, no employees, no multi-state nexus, no K-1s from other entities. ICP: consultant, realtor, coach, or small agency at $80K–$250K who elected S-Corp for the tax savings and then discovered payroll. If they need 1120-S signed, partner with an EA/CPA or refer — do not file without a credential (see community research extra: PTIN / EA / CPA for paid 1120-S work).
 
 Trust is the product. Bank tokens stay in Plaid/Rutter. QBO is the ledger of record so the client is never locked into proprietary books (the Bench lesson). The model categorizes and explains; it does not invent tax positions. The brief is heuristics plus a flagged queue, not “you should take this salary” as legal advice.
 
@@ -71,7 +71,7 @@ Service-shaped SaaS. Software is the factory; the SKU is the brief.
 **Unit Economics (illustrative)**
 
 - **under two hours** — Target operator time per client per month or the $300 SKU dies
-- **about 20 seats** — ~$8K MRR at $400 blended; Ideabrowser napkin for ~$100K year-one with setups and tax add-ons
+- **about 20 seats** — ~$8K MRR at $400 blended; community research napkin for ~$100K year-one with setups and tax add-ons
 - **about 40 seats** — Solo ceiling ~$16K/month bookkeeping before you hire
 - **$2K–$8K** — Capital to start (QBO, Plaid, insurance, a one-pager)
 - **30–60 days** — Time to first paid sprint if you already have a niche
@@ -103,12 +103,12 @@ Build the weekend MVP of "Monthlii": the operator console for a human-reviewed m
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the operator), the Anthropic API to suggest categories where no rule matches. Transactions come in by CSV (bank, card and a payroll register). Deploy on Vercel.
 
 Tables (Row Level Security on, the operator reads only their own clients):
-- clients(id, operator_id, name, owner_pay_pct, tax_reserve_pct)  the two percentages are numbers the operator types, never defaults
-- months(id, client_id, period, status, created_at)  status is open, review or sent
-- line_items(id, month_id, posted_at, description, amount_cents, source, category, category_source, flag, changed_by, changed_at)  category_source is rule, model or operator
+- clients(id, operator_id, name, owner_pay_pct, tax_reserve_pct) the two percentages are numbers the operator types, never defaults
+- months(id, client_id, period, status, created_at) status is open, review or sent
+- line_items(id, month_id, posted_at, description, amount_cents, source, category, category_source, flag, changed_by, changed_at) category_source is rule, model or operator
 - category_rules(id, client_id, pattern, category)
 - briefs(id, month_id, markdown, created_at)
-- audit_events(id, month_id, actor, action, before jsonb, after jsonb, at)  append-only
+- audit_events(id, month_id, actor, action, before jsonb, after jsonb, at) append-only
 
 Screens: /login, /clients, /months/[id] (the exception queue), /months/[id]/brief (the one-page brief), /months/[id]/packet.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.

@@ -9,7 +9,7 @@ Independent retailers open their doors to sell things you cannot find anywhere e
 
 The economics make it worse. On the dominant boutique marketplace, brands hand over roughly a 15% commission plus a 10 dollar new-customer fee on every order, which squeezes already-thin wholesale margins and pushes some suppliers to quietly resent the platform dependency they cannot escape. Minimum opening orders that start in the thousands force a small shop to make a large, non-refundable bet on an untested product. And the categories a curation-driven owner actually wants — clean beauty, local pantry goods, pet, sustainable and artisan lines — are exactly the ones that are under-served or buried under thousands of near-duplicate listings on the generalist platforms.
 
-The demand signal for a better path is loud and specific. On Reddit, r/SmallBusiness (about 450,000 members) runs recurring threads on sourcing pain, with individual posts pulling 200-plus upvotes and dozens of detailed comments. Adjacent communities compound the signal: r/handmade (about 641,800 members), r/EcoFriendly (about 150,000), r/SustainableFashion (about 95,200), and r/wholesaleproducts (about 67,400) all trade the same complaint — where do I find unique, small-batch, sustainable suppliers without a five-figure commitment? Ideabrowser scores willingness-to-pay for a fix at 9 out of 10. The pain is acute, frequent, and rising; the buyers already congregate in one place; and no incumbent is built for the small trial order that a curation-first boutique actually needs.
+The demand signal for a better path is loud and specific. On Reddit, r/SmallBusiness (about 450,000 members) runs recurring threads on sourcing pain, with individual posts pulling 200-plus upvotes and dozens of detailed comments. Adjacent communities compound the signal: r/handmade (about 641,800 members), r/EcoFriendly (about 150,000), r/SustainableFashion (about 95,200), and r/wholesaleproducts (about 67,400) all trade the same complaint — where do I find unique, small-batch, sustainable suppliers without a five-figure commitment? community research scores willingness-to-pay for a fix at 9 out of 10. The pain is acute, frequent, and rising; the buyers already congregate in one place; and no incumbent is built for the small trial order that a curation-first boutique actually needs.
 
 ## The Solution
 
@@ -32,9 +32,9 @@ The macro backdrop is a mature, enormous industry digitizing underneath a fast-g
 - **In wholesale e-commerce platforms, SMEs already represent 54.2% of market revenue and are growing at a 19.8% CAGR, outpacing large enterprises at 16.3%** (MarketIntelo). Small retailers are not a niche afterthought in digital wholesale; they are the growth engine.
 - **Digital B2B platforms deliver 12% to 25% lower landed costs than traditional distributors** (Aalpha), a concrete economic incentive that explains why boutiques are migrating sourcing online in the first place.
 - **North America holds roughly a 45% global share of the wholesale products market** (Market Research Future), which is why a North-America-first, category-first launch has enough density to reach liquidity.
-- Longer term, the wholesale market is projected to expand toward 152 trillion dollars by 2035 with the B2B e-commerce segment compounding at about 20.9%, per Ideabrowser's aggregated market analysis — the digitization wave is early enough that marketplace standards in niche verticals are still up for grabs.
+- Longer term, the wholesale market is projected to expand toward 152 trillion dollars by 2035 with the B2B e-commerce segment compounding at about 20.9%, per community research's aggregated market analysis — the digitization wave is early enough that marketplace standards in niche verticals are still up for grabs.
 
-Ideabrowser rates the opportunity 8 out of 10, market timing 9 out of 10, and pain 8 out of 10 — a "just right" window inside a growing market.
+community research rates the opportunity 8 out of 10, market timing 9 out of 10, and pain 8 out of 10 — a "just right" window inside a growing market.
 
 ## Competitive Landscape
 
@@ -92,11 +92,11 @@ Build the weekend MVP of "Smallshelf": a directory where boutiques find emerging
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres full-text search, Row Level Security, Storage, Auth with email magic link). Brands import their catalog by CSV. Discovery and the "fits your shelf" score are plain code. Deploy on Vercel.
 
 Tables (Row Level Security on; brands write their own rows, retailers their own orders, and the directory is readable by signed-in retailers):
-- brands(id, user_id, name, category, region, verified boolean)  you set verified by hand
+- brands(id, user_id, name, category, region, verified boolean) you set verified by hand
 - catalogs(id, brand_id, title, min_order_cents, lead_time_days, sample_policy)
 - products(id, catalog_id, name, wholesale_price_cents, msrp_cents, margin_pct, certifications text[], aesthetic_tags text[], image_path)
 - retailers(id, user_id, shop_name, region, concept_tags text[])
-- order_requests(id, retailer_id, brand_id, items jsonb, total_cents, status, created_at)  status is requested, accepted, declined or shipped
+- order_requests(id, retailer_id, brand_id, items jsonb, total_cents, status, created_at) status is requested, accepted, declined or shipped
 - sample_requests(id, retailer_id, product_id, status)
 
 Screens: /login, /brands (the directory), /brands/[id], /fits (your shelf), /requests, /brand/catalog (import).

@@ -34,11 +34,11 @@ You are not inventing body composition. You are attacking the home-frequency gap
 
 The global **body composition scanner / analyzer** category is about **$1.37 billion in 2024**, headed to **$2.44 billion by 2032** at an **8.7% CAGR**, per [Intel Market Research](https://www.intelmarketresearch.com/body-composition-scanner-market-23273) — clinic towers, portable BIA, and home scales, not AR apps. Fact.MR’s cut is **$714.2 million in 2024 toward $1.26 billion by 2033** ([Fact.MR](https://www.factmr.com/report/body-composition-analyzers-market)). Launch in the U.S.: body-fat measurement about **$279 million in 2022** ([Future Market Insights](https://www.futuremarketinsights.com/reports/united-states-body-fat-measurement-market)), North America analyzers near **$256 million in 2025** ([Market Data Forecast](https://www.marketdataforecast.com/market-reports/north-america-body-composition-analyzers-market)).
 
-Most of those dollars buy **bioimpedance**. Fortune Business Insights sizes BIA around **$700 million in 2026 toward $1.12 billion by 2034** ([Fortune Business Insights](https://www.fortunebusinessinsights.com/bioimpedance-analyzers-market-115282)). InBody and Tanita together hold **30–45%**; top five hardware names near **45%**. They sell devices. Ideabrowser’s market-stage pass found no scaled smartphone AR body-comp product — graveyard or a 12–18 month window before InBody ships a free camera mode.
+Most of those dollars buy **bioimpedance**. Fortune Business Insights sizes BIA around **$700 million in 2026 toward $1.12 billion by 2034** ([Fortune Business Insights](https://www.fortunebusinessinsights.com/bioimpedance-analyzers-market-115282)). InBody and Tanita together hold **30–45%**; top five hardware names near **45%**. They sell devices. community research’s market-stage pass found no scaled smartphone AR body-comp product — graveyard or a 12–18 month window before InBody ships a free camera mode.
 
-Search is real. An Ideabrowser topic discover on “body composition scanner app DEXA alternative GLP-1” returned **15 keywords and 851,200 combined monthly searches**. **GLP-1 weight loss** is about **90,500** volume (high competition, CPC north of $20). **Body fat percentage DEXA scan** is **49,500** at **low** competition and about **$2.40 CPC** — that is the SEO page, not another Ozempic listicle. Hardware queries still win shopping intent, which is why you sell the weekly companion, not the $400 object.
+Search is real. An community research topic discover on “body composition scanner app DEXA alternative GLP-1” returned **15 keywords and 851,200 combined monthly searches**. **GLP-1 weight loss** is about **90,500** volume (high competition, CPC north of $20). **Body fat percentage DEXA scan** is **49,500** at **low** competition and about **$2.40 CPC** — that is the SEO page, not another Ozempic listicle. Hardware queries still win shopping intent, which is why you sell the weekly companion, not the $400 object.
 
-Timing is the GLP-1 overlay. Ideabrowser puts **15 million-plus U.S. GLP-1 users by 2025**, with muscle loss as the talking point in NP obesity SIGs ([AANP](https://www.aanp.org/practice/clinical-resources-for-nps/clinical-resources-by-therapeutic-area/obesity-and-weight-management)). [JAMA Health Forum](https://jamanetwork.com/journals/jama-health-forum/fullarticle/2829222) is the spending backdrop; [glp1forum.com](https://glp1forum.com) and local meetups (Los Alamos Daily Post on muscle maintenance) are distribution. You need a camera flow they will repeat.
+Timing is the GLP-1 overlay. community research puts **15 million-plus U.S. GLP-1 users by 2025**, with muscle loss as the talking point in NP obesity SIGs ([AANP](https://www.aanp.org/practice/clinical-resources-for-nps/clinical-resources-by-therapeutic-area/obesity-and-weight-management)). [JAMA Health Forum](https://jamanetwork.com/journals/jama-health-forum/fullarticle/2829222) is the spending backdrop; [glp1forum.com](https://glp1forum.com) and local meetups (Los Alamos Daily Post on muscle maintenance) are distribution. You need a camera flow they will repeat.
 
 Stage: **emerging for software, mature for hardware.** LiDAR, ARKit/ARCore, and on-device pose make a weekend MVP plausible. Accuracy is the kill switch. Treat 70–80 percent DEXA correlation as a hypothesis, not a homepage claim.
 
@@ -48,7 +48,7 @@ Four hardware brands own trust. Clinics own precision. Wearables own “free and
 
 - **InBody** — Gym/clinic BIA leader (970-class). Published DEXA correlation, mobile SDKs, sports teams. You will not beat a single reading. Pro towers **$5,000+**; home units near **$300**. Weakness: hardware and appointments.
 - **Tanita** — 70-plus-year BIA brand, retail everywhere. **$50–$200** consumer. Weakness: foot-to-foot impedance, no optical capture, no GLP-1 layer.
-- **Withings (Body Scan)** — Premium scale plus app, ECG extras, Apple Health. About **$400**; model-name searches grew triple digits in Ideabrowser’s keyword list. Weakness: still a scale. No AR walk-around.
+- **Withings (Body Scan)** — Premium scale plus app, ECG extras, Apple Health. About **$400**; model-name searches grew triple digits in community research’s keyword list. Weakness: still a scale. No AR walk-around.
 - **Omron Healthcare** — Handheld and scale BIA. **$50–$100**. Beginner-easy, thin segmentation, no video.
 - **DEXA clinics** — Gold standard. **$100–$300 per visit**. Accurate, useless as a weekly loop. That is the pain budget, not a clone target. Apple Watch / Fitbit / Renpho estimates are ingest sources, not the product.
 
@@ -97,7 +97,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - profiles(user_id, height_cm, sex, units)
-- scans(id, user_id, captured_at, measurements jsonb, confidence, status, photo_path)  status is ok or retake; photo_path is empty unless the user chooses to keep the photo
+- scans(id, user_id, captured_at, measurements jsonb, confidence, status, photo_path) status is ok or retake; photo_path is empty unless the user chooses to keep the photo
 - weigh_ins(id, user_id, measured_on, weight_kg)
 
 Screens: /login, /scan (guided capture), /history (the trend), /settings (units, delete everything).

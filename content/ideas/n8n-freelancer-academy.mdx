@@ -28,7 +28,7 @@ Two markets are compounding at once: the online-education market that sells the 
 
 - **The global e-learning market is projected to grow from $218.9 billion in 2025 to $615.6 billion by 2033**, a CAGR in the 14 to 18.9 percent range (Cognitive Market Research; Future Market Insights). The United States alone is expected to generate roughly $74.8 billion in e-learning revenue in 2025—the tooling and buyer behavior for paid online skills training is fully mature.
 - **The business process automation and RPA markets sit above $100 billion and are projected to roughly double by 2030** (Precedence Research), with the broader process-automation category forecast to reach $210 billion by 2037 from about $99.76 billion in 2025. Every dollar of that spend needs people who can implement it—and n8n is where a growing share of the open-source, cost-conscious segment lands.
-- **Reddit's r/n8n has surpassed 104,000 members**, with workflow and pricing threads regularly exceeding 100 comments (Ideabrowser community analysis, idea #1680). This is not demand you have to create; it is demand already congregating and openly asking for exactly this product.
+- **Reddit's r/n8n has surpassed 104,000 members**, with workflow and pricing threads regularly exceeding 100 comments (community research). This is not demand you have to create; it is demand already congregating and openly asking for exactly this product.
 - **Facebook's "n8n Automation Community" holds 74,000 members**, dominated by freelancers, SMEs, and agency owners trading client-acquisition tactics and troubleshooting builds—a second, non-overlapping distribution channel of the same buyer.
 - **Leading n8n YouTube creators average 200,000 to 450,000 views per tutorial** (Nate Herk, Jono Catliff), proving the audience will spend hours on automation content—yet the advanced, business-focused, "how to run this as a practice" tier of content is almost entirely missing.
 
@@ -88,10 +88,10 @@ Build the weekend MVP of the "n8n Freelancer Academy": a Workflow Vault of ready
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API for the grading. Grading runs after the response returns, and the page updates when it finishes. Deploy on Vercel.
 
 Tables (Row Level Security on; members read the vault by level and only their own submissions):
-- profiles(user_id, display_name, tier, certified boolean)  tier is free or member, and you change it by hand
+- profiles(user_id, display_name, tier, certified boolean) tier is free or member, and you change it by hand
 - workflows(id, title, category, description, json_export jsonb, tier_required)
 - briefs(id, title, brief_markdown, scheduled_at)
-- submissions(id, user_id, brief_id, workflow_json jsonb, score, feedback jsonb, facts jsonb, status, graded_at)  status is pending, graded or failed
+- submissions(id, user_id, brief_id, workflow_json jsonb, score, feedback jsonb, facts jsonb, status, graded_at) status is pending, graded or failed
 
 Screens: /login, /vault, /vault/[id], /briefs/[id] (paste a workflow and see the grade).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.

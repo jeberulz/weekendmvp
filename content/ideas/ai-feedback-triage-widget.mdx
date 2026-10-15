@@ -23,7 +23,7 @@ The solo-developer segment is one of the fastest-growing in software. No-code to
 
 - Reddit’s r/IndieDev (678K+ members) and r/Startup (873K+) surface weekly threads on feedback overload — demand is observable, not inferred.
 - Canny has raised $15M+; UserVoice was acquired by 3Pillar in 2021 — category validated, just not solved for the solo tier.
-- Keyword volume: “product feedback” searches up 47% YoY; “user testing” at 110K monthly (Ideabrowser keyword research).
+- Keyword volume: “product feedback” searches up 47% YoY; “user testing” at 110K monthly (keyword research).
 - No-code growth on Webflow, Framer, and Vercel has spawned millions of solo-published apps — every one is a feedback-widget candidate.
 
 ## Competitive Landscape
@@ -78,7 +78,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, an owner reads only their own projects; the submit route writes through the service role):
 - projects(id, user_id, name, public_key, allowed_origins text[])
-- feedback(id, project_id, text, category, confidence, theme_slug, summary, status, created_at)  category is bug, feature_request, confusion or praise
+- feedback(id, project_id, text, category, confidence, theme_slug, summary, status, created_at) category is bug, feature_request, confusion or praise
 - clusters(id, project_id, theme_slug, summary, item_count, last_seen)
 - digests(id, project_id, week_start, sent_at)
 
