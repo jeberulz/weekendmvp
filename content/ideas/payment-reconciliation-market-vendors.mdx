@@ -30,7 +30,7 @@ The product wins by being narrow. A vendor should not need to configure a chart 
 
 - The cited reconciliation-software research describes a market growing at roughly 13–15% annually, supported by more digital payment methods and the operational need to match transactions across systems.
 - The vendor segment is still in an early-adoption phase. General platforms have strong penetration among larger SMBs, while micro-merchants and hybrid cash-plus-wallet businesses remain under-served.
-- Ideabrowser's trend snapshot returned about 107,000 monthly searches across related payment-processing and payment-management terms, with average growth above 18%. The broad search terms indicate commercial intent, while the product should target specific phrases around payment tracking and vendor reconciliation.
+- The trend snapshot returned about 107,000 monthly searches across related payment-processing and payment-management terms, with average growth above 18%. The broad search terms indicate commercial intent, while the product should target specific phrases around payment tracking and vendor reconciliation.
 - Community analysis identifies small-business Reddit communities, payment discussions, vendor associations, market events, and financial tracking tutorials as reachable channels. The most useful content asset is a free “close your market day” calculator that shows the cost of unreconciled gaps.
 - The willingness-to-pay question is real. The research explicitly tests whether a vendor will pay about $24 per month, so the MVP should measure recovered money and time saved in the first week instead of assuming that accounting pain automatically converts.
 
@@ -82,9 +82,9 @@ Tables (Row Level Security on, each user reads only their own rows):
 - imports(id, user_id, source, filename, row_count, created_at)
 - sales(id, user_id, market_name, sold_at, amount_cents, method, note)
 - payment_transactions(id, user_id, import_id, source, external_ref, occurred_at, gross_cents, fee_cents, net_cents, raw_row jsonb)
-- matches(id, sale_id, payment_id, state, score, reason, confirmed_at)  state is matched, ambiguous or unmatched
+- matches(id, sale_id, payment_id, state, score, reason, confirmed_at) state is matched, ambiguous or unmatched
 - exceptions(id, user_id, kind, ref_id, status, note)
-- audit_events(id, user_id, action, detail jsonb, created_at)  append-only; add a trigger that blocks update and delete
+- audit_events(id, user_id, action, detail jsonb, created_at) append-only; add a trigger that blocks update and delete
 
 Screens: /login, /close (five steps), /sales (add a sale by hand), /reports.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.

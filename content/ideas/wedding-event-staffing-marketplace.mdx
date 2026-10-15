@@ -29,7 +29,7 @@ Weekend MVP: Airtable matching for 10 photographers + 20 backups in one city, St
 
 ## Market Research
 
-- U.S. wedding services market cited around **$65B** with roughly **6.8% CAGR** in recent industry summaries ([Ideabrowser #7923](https://www.ideabrowser.com)).
+- U.S. wedding services market cited around **$65B** with roughly **6.8% CAGR** in recent industry summaries ([community research](https://www.community research.com)).
 - Gig economy normalization makes flexible day-of labor culturally acceptable for both sides.
 - Community evidence: peak-season staffing chaos dominates vendor Facebook groups and Reddit professional threads.
 - Adjacent platforms (The Knot, WeddingWire) prove wedding B2B spend; they do not solve backup labor.
@@ -78,9 +78,9 @@ Build the weekend MVP of "Gigvow": wedding vendors post shifts for second shoote
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for confirmations and reminders. A booked shift downloads as a calendar file. Deploy on Vercel.
 
 Tables (Row Level Security on; open gigs are public to signed-in users, a poster or worker reads their own gigs and claims):
-- profiles(user_id, role, display_name, city, reliability, rating, verified boolean, suspended boolean)  role is poster or worker; you set verified by hand
-- gigs(id, poster_id, city, role, event_date, start_time, end_time, rate_cents, status, claimed_by, created_at)  role is second_shooter, setup_assistant or day_of_coordinator; status is open, claimed, confirmed, completed, noshow or late_cancel
-- claims(id, gig_id, worker_id, claimed_at)  unique on gig_id
+- profiles(user_id, role, display_name, city, reliability, rating, verified boolean, suspended boolean) role is poster or worker; you set verified by hand
+- gigs(id, poster_id, city, role, event_date, start_time, end_time, rate_cents, status, claimed_by, created_at) role is second_shooter, setup_assistant or day_of_coordinator; status is open, claimed, confirmed, completed, noshow or late_cancel
+- claims(id, gig_id, worker_id, claimed_at) unique on gig_id
 - applications(id, gig_id, worker_id, note, created_at)
 - reviews(id, gig_id, reviewer_id, subject_id, rating, note)
 

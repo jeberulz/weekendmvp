@@ -30,9 +30,9 @@ The SEO services market is not a niche — it is a $100B+ budget line that still
 
 - **The global SEO services market grew from $90.35B in 2024 to a projected $106.9B in 2025**, with long-range forecasts at $143.9B by 2030 (8.3% CAGR). Schema automation is a thin slice of that spend (The Business Research Company; DesignRush / Exploding Topics).
 - **Schema markup is no longer optional in an AI-overview world.** Google uses Schema.org to understand entities for rich results and generative answers; 2025 SEO roundups treat structured data as table stakes, not a “nice to have” (Schema App 2025 semantic-value brief; Search Engine Land structured-data guide; CMSWire on Schema.org in the AI era).
-- **Search demand is real and cheap to capture.** A DataForSEO-backed quick check on five head terms returns **36,070 combined monthly searches**: “schema markup” 18,100 (CPC $4.66, LOW competition), “schema markup generator” 14,800 (CPC $9.11), “json-ld schema” 1,900, “structured data seo” 880, “schema markup tool” 390 at a **$16.85 CPC** — commercial intent with almost no paid competition on the exact product query (Ideabrowser trend research, Aug 2026).
-- **Community volume matches the keyword volume.** r/SEO 388K, r/bigseo 147K, r/webdev 3M, Facebook “AI + SEO” 72K, Ahrefs-class YouTube tutorials pulling hundreds of thousands of views per video. The “is schema worth it” Reddit threads get double-digit answers; the unanswered part is always implementation, not theory (Ideabrowser community analysis, idea 1117).
-- **60k+ new online stores launch monthly**, most on Shopify / WooCommerce / site builders that do not ship Yoast. A tiny attach rate against new stores — ignore the installed base — is a five-figure MRR business (Ideabrowser idea summary, 1117).
+- **Search demand is real and cheap to capture.** A DataForSEO-backed quick check on five head terms returns **36,070 combined monthly searches**: “schema markup” 18,100 (CPC $4.66, LOW competition), “schema markup generator” 14,800 (CPC $9.11), “json-ld schema” 1,900, “structured data seo” 880, “schema markup tool” 390 at a **$16.85 CPC** — commercial intent with almost no paid competition on the exact product query.
+- **Community volume matches the keyword volume.** r/SEO 388K, r/bigseo 147K, r/webdev 3M, Facebook “AI + SEO” 72K, Ahrefs-class YouTube tutorials pulling hundreds of thousands of views per video. The “is schema worth it” Reddit threads get double-digit answers; the unanswered part is always implementation, not theory (community research).
+- **60k+ new online stores launch monthly**, most on Shopify / WooCommerce / site builders that do not ship Yoast. A tiny attach rate against new stores — ignore the installed base — is a five-figure MRR business.
 - **Schema.org currently lists 792 types.** Coverage, not awareness, is the bottleneck. Picking LocalBusiness vs Product vs FAQ vs Event from page content, then keeping JSON-LD valid, is the work agencies bill in days.
 
 Stage: *mature category, open wedge*. All-in-one SEO platforms are established. Dedicated schema SaaS exists for enterprises. WordPress plugins own one CMS. The open cell is the non-technical SMB on Shopify / Webflow / Wix who will pay $29–$99/mo to stop pasting JSON by hand.
@@ -53,7 +53,7 @@ Incumbents will not cut Schema App to $29 or rip schema out of Semrush as a stan
 
 ## Business Model
 
-Subscription SaaS with a free scan that converts on inject-and-monitor, not a feature wall. Ideabrowser ladder: free assessment, $29 Starter, $99 Pro, $19 continuity add-on, $12k+/year backend. Ship Starter + Pro first. $5k/mo is 172 Starter logos — or ~120 Starter + 25 Pro ($5,955). LLM + crawl cost per page is cents; a 200-page catalog scanned weekly stays under $2 variable cost.
+Subscription SaaS with a free scan that converts on inject-and-monitor, not a feature wall. community research ladder: free assessment, $29 Starter, $99 Pro, $19 continuity add-on, $12k+/year backend. Ship Starter + Pro first. $5k/mo is 172 Starter logos — or ~120 Starter + 25 Pro ($5,955). LLM + crawl cost per page is cents; a 200-page catalog scanned weekly stays under $2 variable cost.
 
 - **Free** ($0) — Instant schema assessment on one URL, PDF of missing types, “powered by” footer. Lead magnet; no inject.
 - **Starter** ($29/mo) — Up to 3 domains, auto JSON-LD for Product / FAQ / LocalBusiness / Organization, one-click inject (GTM or snippet), weekly recrawl, Rich Results validation.
@@ -97,7 +97,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - sites(id, user_id, url, platform)
 - pages(id, site_id, url, title, extracted jsonb, last_crawled_at)
-- schema_docs(id, page_id, types, jsonld jsonb, status, inject_method)  where status is one of draft, validated, injected, failed
+- schema_docs(id, page_id, types, jsonld jsonb, status, inject_method) where status is one of draft, validated, injected, failed
 - validation_runs(id, schema_doc_id, passed, errors jsonb, tested_at)
 
 Screens: /login, /scan (URL box and preview), /sites.

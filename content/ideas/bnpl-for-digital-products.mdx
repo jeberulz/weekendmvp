@@ -26,7 +26,7 @@ A checkout add-on built exclusively for SaaS and online-education sellers: buyer
 
 BNPL is one of the fastest-growing segments of consumer payments, and the digital-goods slice of it is still largely unclaimed. Market-sizing estimates vary by methodology but agree on direction: global BNPL revenue was roughly $9.5B-$42.8B in 2024 depending on the study, with projections landing between $80.1B and $238.6B by 2033 — a 21-27% CAGR over that window (GlobeNewswire/IMARC; DataM Intelligence). A separate, widely cited figure puts global BNPL payment volume (GMV, not revenue) at $560.1B in 2025, heading toward roughly 900 million users worldwide by 2027 (Chargeflow 2025 BNPL statistics).
 
-U.S.-specific numbers tell the same story at smaller scale: U.S. BNPL revenue sat around $2.37B-$3.55B in 2024, projected to reach $15.9B-$25.3B by 2033, a 23-24% CAGR (IMARC; Novaone Advisor). About 20% of U.S. consumers had used BNPL by late 2023, and nearly half of top-1,000 online retailers now offer it at checkout, up from 28% in 2020 (NMI/Kansas City Fed data, cited in the Ideabrowser community research) — proof that both the consumer habit and the merchant tooling have already matured for physical goods.
+U.S.-specific numbers tell the same story at smaller scale: U.S. BNPL revenue sat around $2.37B-$3.55B in 2024, projected to reach $15.9B-$25.3B by 2033, a 23-24% CAGR (IMARC; Novaone Advisor). About 20% of U.S. consumers had used BNPL by late 2023, and nearly half of top-1,000 online retailers now offer it at checkout, up from 28% in 2020 (NMI/Kansas City Fed data, cited in the community research) — proof that both the consumer habit and the merchant tooling have already matured for physical goods.
 
 None of the major sizing studies break out a "digital goods" or "SaaS/edtech" sub-vertical specifically, which is itself the signal: the category doesn't exist as a distinct line item yet because no one has built for it deliberately. The overall market's own segmentation data hints at where it's headed — media, services, and "other" categories that include digital content are called out as recognized growth verticals even though physical retail (about 75% of transaction share by channel) still dominates today. Combine a 20%+ CAGR core market with a completely unclaimed vertical inside it, and the opportunity window looks less like "enter a mature market" and more like "define a new one before Klarna or Affirm bothers to."
 
@@ -83,7 +83,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on: a merchant reads only its own rows):
 - merchants(id, user_id, name, engagement_data_enabled)
 - buyers(id, email, phone)
-- plans(id, merchant_id, buyer_id, total_cents, installment_count, installment_cents, status, product_type)  where product_type is one of course, saas, membership
+- plans(id, merchant_id, buyer_id, total_cents, installment_count, installment_cents, status, product_type) where product_type is one of course, saas, membership
 - installments(id, plan_id, due_at, paid_at, status, amount_cents)
 - engagement_events(id, buyer_id, product_id, event_type, occurred_at)
 

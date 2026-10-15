@@ -30,12 +30,12 @@ Every developer on the platform passes a vetting process that tests not just cod
 
 The freelance platform market is growing fast, but the specialized segment — AI-native developers for rapid MVP builds — is barely served by existing players. The timing signal is unambiguous: "vibe coding" went from a Twitter meme to 550,000 monthly Google searches in under 18 months, and the freelance economy is accelerating behind it.
 
-- **550,000 monthly searches** for "vibe coding" globally, with medium competition and a $4.29 CPC — a brand-new keyword with no dominant player owning the SEO or the platform (Ideabrowser keyword research, 2025).
+- **550,000 monthly searches** for "vibe coding" globally, with medium competition and a $4.29 CPC — a brand-new keyword with no dominant player owning the SEO or the platform (keyword research).
 - **Global freelance platforms market** was valued at $5.2–7.3 billion in 2024 and is projected to reach $13.8 billion by 2030 at a 16.1% CAGR — with the specialized rapid/agile development segment growing even faster than the overall market ([GlobeNewswire, 2025](https://www.globenewswire.com/news-release/2025/04/23/3066710/28124/en/Freelance-Platforms-Market-Report-2025-2030-Industry-Growth-Driven-by-Shift-to-Gig-Economy-and-Technology-Advancements.html)).
 - **$21.6 billion by 2032** (17.18% CAGR) — the longer-horizon projection from SNS Insider underlines that this is a structural shift in how technical talent is hired and deployed, not a pandemic-era anomaly ([GlobeNewswire / SNS Insider, 2025](https://www.globenewswire.com/news-release/2025/05/09/3078276/0/en/Freelance-Platforms-Market-Size-to-Surpass-USD-21-6-Billion-by-2032-Owing-to-the-Growing-Shift-Toward-Flexible-Work-Models-SNS-Insider.html)).
-- **475,000 members on r/forhire** actively post and search for development talent. Recurring threads show founders frustrated by mismatched quality and slow ramp-up times — exactly the pain this platform solves (Reddit community data via Ideabrowser, 2025).
-- **14.5% CAGR** projected for the agile development market through 2029, driven by tech startups requiring faster iteration cycles and component-based delivery — the exact buyer profile for a vibe coder marketplace (Ideabrowser opportunity analysis, 2025).
-- **Software developer hire** keywords show LOW competition with CPCs reaching $54 — buyers searching for dev talent are highly commercial and underserved by ad inventory, a green-field paid acquisition channel (Ideabrowser keyword research, 2025).
+- **475,000 members on r/forhire** actively post and search for development talent. Recurring threads show founders frustrated by mismatched quality and slow ramp-up times — exactly the pain this platform solves (Reddit community data via community research, 2025).
+- **14.5% CAGR** projected for the agile development market through 2029, driven by tech startups requiring faster iteration cycles and component-based delivery — the exact buyer profile for a vibe coder marketplace.
+- **Software developer hire** keywords show LOW competition with CPCs reaching $54 — buyers searching for dev talent are highly commercial and underserved by ad inventory, a green-field paid acquisition channel (keyword research).
 
 ## Competitive Landscape
 
@@ -88,8 +88,8 @@ Build the weekend MVP of "VibeCoders": a founder describes a project and sees th
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link and roles), the OpenAI API (a small model) to read a project description, Resend for emails. Deploy on Vercel.
 
 Tables (Row Level Security on; founders read their own projects and matches, developers their own profile, admins everything):
-- profiles(user_id, role, display_name)  role is founder, developer or admin; you set admin by hand
-- developer_profiles(user_id, stack text[], ai_tools text[], hourly_rate, sprint_rating, status, github_url, sample_url, loom_url)  status is pending, active or rejected
+- profiles(user_id, role, display_name) role is founder, developer or admin; you set admin by hand
+- developer_profiles(user_id, stack text[], ai_tools text[], hourly_rate, sprint_rating, status, github_url, sample_url, loom_url) status is pending, active or rejected
 - projects(id, founder_id, name, description, stack text[], timeline, budget_range, parsed jsonb, status)
 - matches(id, project_id, developer_id, status, created_at)
 - screen_submissions(id, developer_id, repo_url, submitted_at, decision, notes)

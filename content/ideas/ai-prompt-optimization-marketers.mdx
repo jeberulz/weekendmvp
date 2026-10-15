@@ -9,7 +9,7 @@ A demand-gen manager has ChatGPT Plus, Claude, and a Notion doc titled “PROMPT
 
 That is the default stack for marketing teams “using AI.” Courses teach prompt basics. Consultants drop a PDF of 50 generic templates. PromptBase sells a $4.99 one-off that was written for a SaaS no one has heard of. Playground is a scratchpad with no memory of brand, ICP, or last month’s winners. None of those products own **strategic context**: the voice rules, the forbidden claims, the channel constraints, the offer, the proof points, the conversion job of this campaign. Models got cheaper and more fluent. The team’s prompts did not. Output volume went up. Output quality stayed a coin flip. By Friday the same manager is in a Reddit thread asking why ChatGPT “doesn’t get” her brand, which is a polite way of saying the brand was never in the prompt.
 
-The demand is not hypothetical. r/ChatGPTPromptGenius has 426,000 members trading fragments. Facebook’s “AI Prompts for Entrepreneurs” has 326,000 doing the same with worse formatting. Ideabrowser’s pain research cites about **60%** of marketers putting prompt optimization on the deadline-critical path, plus an 800-comment Reddit thread on models that “don’t understand” the brief. Agencies will sell $150–$500/hr and email a Google Doc. The team needs a library that still works on Tuesday, when the intern opens ChatGPT. Generic prompts are abundant. Brand-specific, conversion-tied, maintained prompts are the scarce asset.
+The demand is not hypothetical. r/ChatGPTPromptGenius has 426,000 members trading fragments. Facebook’s “AI Prompts for Entrepreneurs” has 326,000 doing the same with worse formatting. community research’s pain research cites about **60%** of marketers putting prompt optimization on the deadline-critical path, plus an 800-comment Reddit thread on models that “don’t understand” the brief. Agencies will sell $150–$500/hr and email a Google Doc. The team needs a library that still works on Tuesday, when the intern opens ChatGPT. Generic prompts are abundant. Brand-specific, conversion-tied, maintained prompts are the scarce asset.
 
 ## The Solution
 
@@ -26,12 +26,12 @@ You are not competing with PromptHub on logging. You are competing with the mark
 
 ## Market Research
 
-Keep two numbers separate or you will lie on the first slide. The **prompt-engineering market** — tools, services, and platforms whose job is prompts — was about **$381.7 million in 2024**, with Market.us projecting on the order of **$7.07 billion by 2034** at roughly **33.9% CAGR (2025–2034)**. Grand View Research covers the same category with a similar growth story. That is the TAM you are in. Ideabrowser also cites a **$505 billion (2025) → multi-trillion** figure in the idea-35 score notes. That is **broader generative-AI spend**, not prompt engineering. Use it as context (“buyers are already paying for models”) and never as if it were the prompt-tools market. Mixing them is how you get a deck that sophisticated buyers immediately distrust.
+Keep two numbers separate or you will lie on the first slide. The **prompt-engineering market** — tools, services, and platforms whose job is prompts — was about **$381.7 million in 2024**, with Market.us projecting on the order of **$7.07 billion by 2034** at roughly **33.9% CAGR (2025–2034)**. Grand View Research covers the same category with a similar growth story. That is the TAM you are in. community research also cites a **$505 billion (2025) → multi-trillion** figure in the idea-35 score notes. That is **broader generative-AI spend**, not prompt engineering. Use it as context (“buyers are already paying for models”) and never as if it were the prompt-tools market. Mixing them is how you get a deck that sophisticated buyers immediately distrust.
 
 - **$381.7M prompt-engineering market in 2024**, path toward **~$7.07B by 2034**, **~33.9% CAGR** — Market.us; Grand View as the second source. North America is the dense buyer region in both reports.
 - **GenAI context, not TAM:** hundreds of billions in model and application spend means marketing orgs already have ChatGPT/Claude seats. PromptPro sells the layer above the seat.
 - **426k on ChatGPTPromptGenius** and **326k on “AI Prompts for Entrepreneurs”** — these people are already collecting prompts. They are not waiting for you to invent the category. They are waiting for someone to make the collection *theirs*.
-- **~60% of marketers** (Ideabrowser pain evidence on idea 35) treat prompt quality as a deadline skill, not a hobby. That is a budget conversation inside the marketing org, not an IT RFP.
+- **~60% of marketers** treat prompt quality as a deadline skill, not a hobby. That is a budget conversation inside the marketing org, not an IT RFP.
 - **YouTube is tutorial-shaped** (Jeff Su-class channels at millions of views). The gap is not “what is a prompt.” It is a brand system that survives a new campaign brief.
 - **Why now:** the bottleneck moved from “can AI write” to “on-brand, on-offer, on-channel.” DSPy / PromptWizard / Vertex will eat generic rewrites. They will not eat a library that encodes legal, voice, and conversion context. That is the 18-month window.
 
@@ -96,7 +96,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on: the library is private to its owner, the audit table takes public inserts and no public reads):
 - brands(id, user_id, name, voice_rules, forbidden_claims, icp_summary)
 - prompt_kits(id, brand_id, channel, campaign_type)
-- prompts(id, kit_id, title, body, version, job)  where job is one of ads, email, landing, social, qa
+- prompts(id, kit_id, title, body, version, job) where job is one of ads, email, landing, social, qa
 - audits(id, user_id, submission jsonb, scores jsonb, report_markdown, created_at)
 
 Screens: /audit (public form), /library, /login.

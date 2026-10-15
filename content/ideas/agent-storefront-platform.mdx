@@ -27,8 +27,8 @@ Agentic AI is the fastest-growing category in software right now, and the supply
 - **Agentic AI is forecast to grow from $7.84B in 2025 to $52.62B by 2030** at a 46.3% CAGR (Fortune Business Insights / Grand View Research). Some analyst tracks push the 2033 figure as high as $182B—treat as directional, but the trajectory is well above 40% CAGR across vendors.
 - **ClawHub already has 3,000+ published skills and 50,000 monthly installs** (Solo Business Hub) on a platform that only does basic hosting—real demand for an agent distribution surface, with the analytics/monetization layer wide open.
 - **Multi-agent systems are growing at 46.3% CAGR** within the broader market (Grand View Research), and vertical agents specifically at ~62.7% CAGR (USAII). The supply side is fragmenting fast—a discovery layer is structurally necessary.
-- **r/AI_Agents has 299,800+ followers** and r/artificial has 1.2M, with high-comment threads consistently flagging tooling and monetization gaps (Ideabrowser community analysis). The audience is both creators and early buyers—rare alignment.
-- **Search demand for “artificial intelligence sdk” runs ~22K/mo with 68.6% YoY growth** and “ai developer tools” ~2,400/mo (Ideabrowser keyword research). Agent-related queries collectively pull 729K monthly searches across the cluster, signaling a real distribution surface.
+- **r/AI_Agents has 299,800+ followers** and r/artificial has 1.2M, with high-comment threads consistently flagging tooling and monetization gaps (community research). The audience is both creators and early buyers—rare alignment.
+- **Search demand for “artificial intelligence sdk” runs ~22K/mo with 68.6% YoY growth** and “ai developer tools” ~2,400/mo (keyword research). Agent-related queries collectively pull 729K monthly searches across the cluster, signaling a real distribution surface.
 
 ## Competitive Landscape
 
@@ -86,7 +86,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on: creators write their own agents, the public reads published listings):
 - creators(id, user_id, display_name)
-- agents(id, creator_id, name, description, endpoint_url, auth_header_name, auth_header_value_encrypted, pricing_model, price_cents, status)  where pricing_model is one of flat, metered, tiered
+- agents(id, creator_id, name, description, endpoint_url, auth_header_name, auth_header_value_encrypted, pricing_model, price_cents, status) where pricing_model is one of flat, metered, tiered
 - listings(id, agent_id, slug, hero_copy, demo_input, category)
 - usage_events(id, agent_id, buyer_id, tokens_in, tokens_out, latency_ms, cost_cents, created_at)
 

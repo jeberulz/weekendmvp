@@ -7,7 +7,7 @@ title: "Microschool Admin Platform"
 
 Microschool founders choose small, personal learning environments because they want to teach differently. The operational reality is less romantic: one director is also the registrar, attendance clerk, parent-communications manager, invoice chaser, and compliance coordinator. Student records live in one spreadsheet, tuition payments in another, and the latest parent update is buried in a group chat. The school may only have 15 students, but the admin surface still has to be trustworthy every day.
 
-The market signals are unusually specific. Ideabrowser's research puts the global school-management-software market in the roughly $15 billion range in 2024, with forecasts above $40 billion by the early 2030s. Microschools are a small slice, but they have the same recurring workflows and far fewer affordable tools designed for them. The research also identifies Reddit's r/edtech, with more than half a million members, Facebook education groups, and high-view YouTube tutorials as active channels where administrators share spreadsheet frustrations and integration questions.
+The market signals are unusually specific. Community research puts the global school-management-software market in the roughly $15 billion range in 2024, with forecasts above $40 billion by the early 2030s. Microschools are a small slice, but they have the same recurring workflows and far fewer affordable tools designed for them. The research also identifies Reddit's r/edtech, with more than half a million members, Facebook education groups, and high-view YouTube tutorials as active channels where administrators share spreadsheet frustrations and integration questions.
 
 That mismatch creates a painful compromise. Enterprise student-information systems are too expensive and too complex for a school with one administrator. A generic project-management tool can store tasks but cannot produce attendance reports, enrollment packets, or a parent-ready progress summary. A spreadsheet is cheap, but it turns every new student, absence, and payment into another opportunity for a silent error. The founder ends up spending evenings on administration instead of improving the learning experience.
 
@@ -30,9 +30,9 @@ The product's wedge is not “all of education software.” It is a dependable w
 
 The timing comes from two forces moving together: school administration is becoming more software-mediated, while small alternative education providers are growing without inheriting the budgets of large districts.
 
-- The school-management-software market is estimated at about $15 billion in 2024 and is projected to exceed $40 billion in the early 2030s, according to the market research cited by Ideabrowser. That creates a proven category without requiring a founder to educate buyers about the value of digital records.
+- The school-management-software market is estimated at about $15 billion in 2024 and is projected to exceed $40 billion in the early 2030s, according to the market research cited by community research. That creates a proven category without requiring a founder to educate buyers about the value of digital records.
 - K-12 learning-management software is forecast to grow at roughly 20% annually in the cited research. Microschools do not need a full LMS on day one, but the growth shows that schools are actively moving teaching and administration into digital workflows.
-- Ideabrowser's trend snapshot returned roughly 6 million monthly searches across related enrollment, registration, and school-portal terms, with average growth above 20%. The broad terms are not proof that microschool administrators will buy, but they show strong existing intent around the workflow surface.
+- The trend snapshot returned roughly 6 million monthly searches across related enrollment, registration, and school-portal terms, with average growth above 20%. The broad terms are not proof that microschool administrators will buy, but they show strong existing intent around the workflow surface.
 - Community research identifies microschool operators, education technology communities, Facebook groups, and founder networks as reachable channels. The important signal is not audience size alone; it is that operators already trade templates and advice for the exact jobs this product would consolidate.
 - The cited microschool sources describe a movement built around smaller, more flexible learning environments. Those schools are distributed and operationally lean, which is a good fit for self-serve SaaS if onboarding is simple and the product supports local requirements instead of pretending every school is a district.
 
@@ -84,11 +84,11 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on; staff read only rows with their school_id):
 - schools(id, name, state, created_by)
-- staff(id, school_id, user_id, role)  role is director, teacher or assistant; an assistant is read-only
+- staff(id, school_id, user_id, role) role is director, teacher or assistant; an assistant is read-only
 - students(id, school_id, first_name, last_name, guardian_email, grade, enrolled_on)
-- attendance_events(id, school_id, student_id, on_date, status, note, note_shareable boolean)  status is present, absent, late or excused
-- family_updates(id, school_id, student_id, week_start, draft jsonb, status, sent_at)  status is draft, approved or sent
-- compliance_tasks(id, school_id, student_id, kind, done_at)  kind is guardian_consent, emergency_contact, medical_note or state_document
+- attendance_events(id, school_id, student_id, on_date, status, note, note_shareable boolean) status is present, absent, late or excused
+- family_updates(id, school_id, student_id, week_start, draft jsonb, status, sent_at) status is draft, approved or sent
+- compliance_tasks(id, school_id, student_id, kind, done_at) kind is guardian_consent, emergency_contact, medical_note or state_document
 
 Screens: /login, /roster (mobile attendance), /import, /updates (drafts beside their source notes), /compliance.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY.

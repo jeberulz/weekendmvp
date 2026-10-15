@@ -63,7 +63,7 @@ Flat-rate SaaS priced for the freelancer and micro-SMB. Free tier captures price
 - **$20–$40** — Target CAC
 - **6–10%** — Free → Pro conv.
 
-MRR path: 50 Pro subs = $950/mo. 500 Pro + 20 Team = $10.4K/mo. At 2,500 Pro + 150 Team = $54.9K/mo ($659K ARR), well inside the $5M ARR ceiling Ideabrowser models for this category. Tax-season seasonality (Jan–April) spikes signups 3–4x; the retention story is whether users keep scanning in May.
+MRR path: 50 Pro subs = $950/mo. 500 Pro + 20 Team = $10.4K/mo. At 2,500 Pro + 150 Team = $54.9K/mo ($659K ARR), well inside the $5M ARR ceiling community research models for this category. Tax-season seasonality (Jan–April) spikes signups 3–4x; the retention story is whether users keep scanning in May.
 
 ## Recommended Tech Stack
 
@@ -107,7 +107,7 @@ Flow:
 1. User uploads image to Supabase Storage; server action gets signed URL
 2. POST to OpenAI Chat Completions with model gpt-4o, messages [system prompt, user message with image_url]
 3. System prompt: "You extract structured expense data from receipt images. Return JSON matching this schema: {vendor: string, amount: number, currency: ISO4217, date: YYYY-MM-DD, suggested_category: one of [user's category list], line_items: [{description, amount}], confidence: 0-1}. If you cannot read a field return null. Never hallucinate."
-4. Use response_format: {type: "json_schema", json_schema: {name: "Receipt", schema: ...}} for structured output
+4. Use response_format: {type: "json_schema", json_schema: {name: "Receipt", schema:...}} for structured output
 5. If confidence < 0.7 OR vendor is null, retry with Claude Haiku 3.5 (anthropic SDK, same schema)
 6. Show extracted data inline for user to confirm or edit; save user corrections to receipt row
 7. After user saves, run a small background job that looks at their last 20 corrections and updates a "preferences" JSON on the user row (e.g. "Starbucks near 94110 = Client Entertainment"). Inject preferences into the system prompt on future extractions.

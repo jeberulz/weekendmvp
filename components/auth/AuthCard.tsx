@@ -54,13 +54,33 @@ export function AuthCard({
   mode,
   returnTo,
   embedded = false,
+  gate = false,
 }: {
   mode: AuthCardMode;
   returnTo: string;
   embedded?: boolean;
+  /** Idea-page unlock gate: one primary create CTA + Sign in secondary. */
+  gate?: boolean;
 }) {
   const [currentMode, setCurrentMode] = useState(mode);
-  const copy = COPY[currentMode];
+  const baseCopy = COPY[currentMode];
+  const copy =
+    gate && currentMode === "signup"
+      ? {
+          ...baseCopy,
+          title: "Read the full research, free",
+          emailCta: "Create free account",
+          crossPrompt: "Already have one?",
+          crossLabel: "Sign in",
+        }
+      : gate && currentMode === "login"
+        ? {
+            ...baseCopy,
+            title: "Welcome back!",
+            crossPrompt: "Need an account?",
+            crossLabel: "Create free account",
+          }
+        : baseCopy;
   const { signIn } = useAuthActions();
   const emailFieldId = useId();
   const statusId = useId();

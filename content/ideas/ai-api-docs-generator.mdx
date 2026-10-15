@@ -27,9 +27,9 @@ A platform that turns whatever you already have—a GitHub repo, an OpenAPI/Swag
 Two curves are converging: AI has made document normalization cheap enough to sell for pennies, and API adoption has made stale documentation a universal, recurring cost. That intersection is the window.
 
 - **The AI API market is projected to grow from $44.41B in 2025 to $179.14B by 2030, a 32.2% CAGR** (Grand View Research / MarketsandMarkets). Documentation and doc-parsing APIs are an explicit segment of that number—the rails you would build on are being funded and standardized around you.
-- **Searches for "automated API documentation" are rising roughly 15% year over year** (Ideabrowser community and keyword analysis, idea #27). Intent keywords like "ai documentation," "api documentation," and "excel to word" show high volume with comparatively low competition—demand you route rather than create.
+- **Searches for "automated API documentation" are rising roughly 15% year over year** (community research). Intent keywords like "ai documentation," "api documentation," and "excel to word" show high volume with comparatively low competition—demand you route rather than create.
 - **GitHub passed 100M developers in 2023** (GitHub Octoverse), and API-first development means nearly every one of them ships a contract that someone has to document. The install surface for a GitHub-native docs tool is the entire modern developer population.
-- **Reddit's technical-writing and developer communities alone total 2.5M+ members**—r/technicalwriting (52.7K), r/learnprogramming (2.1M), r/ArtificialInteligence (362K)—actively trading complaints and workarounds about manual documentation (Ideabrowser community analysis). This is a self-identified, reachable buyer pool.
+- **Reddit's technical-writing and developer communities alone total 2.5M+ members**—r/technicalwriting (52.7K), r/learnprogramming (2.1M), r/ArtificialInteligence (362K)—actively trading complaints and workarounds about manual documentation (community research). This is a self-identified, reachable buyer pool.
 - **The developer-tools market is forecast past $13B by 2027** (Gartner), and Copilot normalized a $10–30/developer price band per tool. A docs product that installs in a minute fits cleanly inside a budget line teams already approve.
 
 The strategic point: incumbents in this space price and position for funded teams. The volume of the demand—solo maintainers, small startups, and legacy enterprise teams still shipping specs as spreadsheets—sits underneath them, largely unserved.
@@ -90,7 +90,7 @@ Build the weekend MVP of "DocForge": turn an OpenAPI file or a legacy Excel or W
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the descriptions and examples, swagger-parser, SheetJS and mammoth for the deterministic parsing, docx for export. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- projects(id, user_id, name, source_type, style_json)  where source_type is one of openapi, excel, word
+- projects(id, user_id, name, source_type, style_json) where source_type is one of openapi, excel, word
 - sources(id, project_id, raw_ref, parsed_schema jsonb, imported_at)
 - generated_docs(id, project_id, format, url, token_cost, created_at)
 - drift_events(id, project_id, field, kind, detected_at)
@@ -106,7 +106,7 @@ Done when: npm run dev starts, you can sign in, and the four tables exist with R
 
 ```text
 Build the one feature that proves DocForge: ingest a spec, normalize it, fill the gaps, and report drift.
-1. POST /api/generate takes a project_id and an uploaded source (an OpenAPI file, an .xlsx or a .docx). Detect the format and run the matching parser: swagger-parser, SheetJS or mammoth.
+1. POST /api/generate takes a project_id and an uploaded source (an OpenAPI file, an.xlsx or a.docx). Detect the format and run the matching parser: swagger-parser, SheetJS or mammoth.
 2. Map the result into one schema: { endpoints: [{ method, path, summary, params: [{ name, in, type, required, description }], request_example, responses: [{ status, schema, example }] }] }.
 3. For any field missing a description or example, ask Claude for strict JSON that fills it with a plain description and a realistic request and response example. Reuse the project's style guide as a cached system prompt to keep the cost low.
 4. Compare the new schema with the last stored parsed_schema and write every added, removed or changed field to drift_events.

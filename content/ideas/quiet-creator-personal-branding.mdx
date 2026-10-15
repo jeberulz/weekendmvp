@@ -30,8 +30,8 @@ The underlying category — AI-driven branding tooling — is scaling fast, and 
 
 - **AI-in-branding market: $2.86B (2024) → $3.29B (2025)**, tracking toward the broader $82.23B AI marketing market by 2030 at a 25% CAGR (Grand View Research, Research and Markets).
 - **Personal-branding consulting in the US alone is estimated north of $200M/year**, almost entirely delivered offline through agencies charging $2,000–$20,000+ per engagement — a price band no self-serve SaaS currently touches (founderpal.ai market-size analysis).
-- **30–50% of professionals self-identify as introverts** (Ideabrowser opportunity analysis, idea #1732), and the segment is large enough that even a narrow slice — freelancers and consultants specifically — represents millions of addressable users globally.
-- **Community demand signal: 4.7M+ combined members** across r/entrepreneur, r/branding, and r/personalbranding show sustained, unprompted discussion of non-video branding strategy, not a one-off spike (Ideabrowser community analysis).
+- **30–50% of professionals self-identify as introverts**, and the segment is large enough that even a narrow slice — freelancers and consultants specifically — represents millions of addressable users globally.
+- **Community demand signal: 4.7M+ combined members** across r/entrepreneur, r/branding, and r/personalbranding show sustained, unprompted discussion of non-video branding strategy, not a one-off spike (community research).
 
 Market stage is early-growth: traditional agencies are mature but under-digitized, and AI-driven personal branding is still fragmenting rather than consolidated around a leader. That combination — real budget already flowing to human agencies, no dominant self-serve product — is what makes the next 12–24 months the entry window before a generic AI tool bolts on an "introvert mode" feature and closes the gap.
 
@@ -90,7 +90,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - brand_profiles(id, user_id, raw_input, niche, tone_words text[], proof_points jsonb, target_client_profile, market_gap, positioning_statement, bio, pillars text[], created_at)
-- content_prompts(id, user_id, week_start, prompt_text, prompt_type, status, draft_text)  status is pending or drafted
+- content_prompts(id, user_id, week_start, prompt_text, prompt_type, status, draft_text) status is pending or drafted
 - pitch_assets(id, user_id, client_name, project_type, content jsonb, created_at)
 
 Screens: /login, /assess (paste your material), /brand (the result next to your original bio), /prompts (this week), /pitch/new and /pitch/[id] (a printable outline).

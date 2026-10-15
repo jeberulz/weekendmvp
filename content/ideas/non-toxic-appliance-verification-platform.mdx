@@ -7,7 +7,7 @@ title: "Non-Toxic Appliance Verification Platform"
 
 “Non-toxic” is an important buying filter for health-conscious families, but it is a poor product category today. Appliance pages list materials, coatings, and certifications in inconsistent language. A retailer may call a product eco-friendly because it saves energy, while a parent is trying to answer a different question: what touches the food, what off-gasses when heated, and which claims are independently verified? The buyer is left comparing vague labels and product reviews that were never designed to evaluate chemical exposure.
 
-The pain is not that families lack concern. It is that concern does not translate into a confident decision. The Ideabrowser community research points to active conversations around non-toxic living, environmental health, and certification credibility across Reddit, YouTube, and Facebook. The most motivated buyers are health-focused parents, people with chemical sensitivities, and shoppers already spending more for products they believe are safer.
+The pain is not that families lack concern. It is that concern does not translate into a confident decision. The community research points to active conversations around non-toxic living, environmental health, and certification credibility across Reddit, YouTube, and Facebook. The most motivated buyers are health-focused parents, people with chemical sensitivities, and shoppers already spending more for products they believe are safer.
 
 Manufacturers face the mirror-image problem. A responsible brand may have testing documents but no simple way to turn them into a consumer-friendly trust signal. Existing certification bodies are respected, but their scope is usually electrical safety, food contact, energy use, or a specific regulatory standard. That leaves a gap between rigorous lab work and the plain-language “should I buy this?” question.
 
@@ -32,7 +32,7 @@ The research supports a focused trust product, but it also argues for careful po
 
 - The cited research estimates the global household-appliance testing market at about $2.5 billion in 2025, growing around 7% annually toward roughly $4 billion in the early 2030s. This is a more relevant initial market than treating the entire appliance industry as immediately addressable.
 - The broader global appliance market is measured in the hundreds of billions of dollars. Even a small evidence and certification layer can become valuable if it reaches retailers and manufacturers rather than depending only on consumer subscriptions.
-- Ideabrowser's trend snapshot found roughly 20,000 monthly searches across the narrow non-toxic appliance keyword set. The volume is modest and declining in the snapshot, which is a warning against a broad consumer-only subscription; it also suggests a sharper wedge around high-intent product comparisons and certification pages.
+- The trend snapshot found roughly 20,000 monthly searches across the narrow non-toxic appliance keyword set. The volume is modest and declining in the snapshot, which is a warning against a broad consumer-only subscription; it also suggests a sharper wedge around high-intent product comparisons and certification pages.
 - Community signals point to non-toxic living groups, environmental-health discussions, appliance-safety communities, and influencer content. The best acquisition asset is likely a free product checker or evidence guide that answers one high-friction question before asking for payment.
 - Regulatory and retailer pressure favors traceable documentation. A product record with sources, test dates, and a visible review method can serve manufacturers and retailers even when consumer language changes.
 
@@ -82,10 +82,10 @@ Build the weekend MVP of the "Non-Toxic Appliance Verification Platform": a revi
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link for reviewers), pdf-parse for page text, the Anthropic API for extraction. Reviewers upload on a manufacturer's behalf this weekend. Deploy on Vercel.
 
 Tables (Row Level Security on; the public reads approved fields only, reviewers read everything):
-- products(id, manufacturer, model, category, slug, status)  status is evidence_missing, partially_verified or verified
+- products(id, manufacturer, model, category, slug, status) status is evidence_missing, partially_verified or verified
 - evidence_documents(id, product_id, file_path, uploaded_by, uploaded_at)
-- extractions(id, document_id, raw_json jsonb, model, created_at)  the raw model output, kept apart from any decision
-- claim_reviews(id, product_id, document_id, claim_text, source_page, source_quote, status, reviewer_id, decided_at)  status is pending, approved, rejected or needs_more_evidence
+- extractions(id, document_id, raw_json jsonb, model, created_at) the raw model output, kept apart from any decision
+- claim_reviews(id, product_id, document_id, claim_text, source_page, source_quote, status, reviewer_id, decided_at) status is pending, approved, rejected or needs_more_evidence
 
 Screens: /login, /review/[documentId] (each claim beside its source page), /products/[slug] (public), /compare (up to three products), /methodology.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.

@@ -7,7 +7,7 @@ title: "Virtual Knowledge Hub for Business Leaders & Emerging Professionals"
 
 A mid-career director wants to know how someone became a VP of Product at a public company. She does not want a LinkedIn course. She does not want a $2,000 Reforge cohort. She wants thirty minutes with the person who actually did it, five years ago, at a comparable-sized company. That conversation is worth the cost of a plane ticket. Today, she has no reliable way to have it.
 
-The supply exists. Every post-exit founder, every retiring CFO, every sabbatical-taking VP has explicit interest in mentoring. A recent Ideabrowser research pass found **r/careerchange with 71.8K members, r/careerguidance at 4.8M members, and 1-3M-view TEDx talks** on mid-career pivots — the demand is not subtle. And **98% of Fortune 500 companies run internal mentorship programs** that deliver measurable retention lifts. The structure works when it exists.
+The supply exists. Every post-exit founder, every retiring CFO, every sabbatical-taking VP has explicit interest in mentoring. A recent community research research pass found **r/careerchange with 71.8K members, r/careerguidance at 4.8M members, and 1-3M-view TEDx talks** on mid-career pivots — the demand is not subtle. And **98% of Fortune 500 companies run internal mentorship programs** that deliver measurable retention lifts. The structure works when it exists.
 
 The gap: outside the Fortune 500 bubble, there is no meeting place. LinkedIn's cold-DM strategy has a **90% ghost rate**. ADPList is free but high-churn for mentors. MentorCruise is 1:1 only and skews tech-heavy. Maven and Reforge sell cohort courses, not mentor relationships. Nobody runs the middle layer: curated executive mentors, semantic AI matching, async Q&A library, small-group cohorts, and price points between $49 (aspiring) and $149/month (serious), with clean payouts so mentors actually show up.
 
@@ -88,11 +88,11 @@ Build the weekend MVP of the "Virtual Knowledge Hub": curated business leaders l
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres full-text search, Row Level Security, Auth with email magic link), the Anthropic API to re-rank candidate mentors, Resend for booking emails. Mentors paste their own meeting link into each slot. Deploy on Vercel.
 
 Tables (Row Level Security on; mentors read their own rows and public questions, mentees their own rows, the library and approved mentor profiles are public to signed-in users):
-- mentors(id, user_id, display_name, title, company, years_experience, career_arc_text, bio, tags text[], status)  status is applied, approved or paused; you approve by hand
+- mentors(id, user_id, display_name, title, company, years_experience, career_arc_text, bio, tags text[], status) status is applied, approved or paused; you approve by hand
 - mentees(id, user_id, display_name, current_role, target_role)
-- questions(id, mentee_id, title, body, desired_outcome, tags text[], privacy, created_at)  privacy is public, anonymous or private
+- questions(id, mentee_id, title, body, desired_outcome, tags text[], privacy, created_at) privacy is public, anonymous or private
 - answers(id, question_id, mentor_id, body, created_at)
-- slots(id, mentor_id, starts_at, duration_min, meeting_url, booked_by, question_id, status)  status is open, booked or done
+- slots(id, mentor_id, starts_at, duration_min, meeting_url, booked_by, question_id, status) status is open, booked or done
 
 Screens: /login, /ask (describe the moment and see three matches), /mentors/[id], /library (search), /slots (a mentor's slots), /admin/applications.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, RESEND_API_KEY.

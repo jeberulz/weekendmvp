@@ -5,6 +5,7 @@ import { createResendMagicLinkEmail } from "../../convex/resendMagicLink";
 import ideaPageSource from "../../app/ideas/[slug]/page.tsx?raw";
 import archivePageSource from "../../app/startup-ideas/page.tsx?raw";
 import emailGateSource from "../../components/ideas/EmailGate.tsx?raw";
+import authCardSource from "../../components/auth/AuthCard.tsx?raw";
 
 describe("verified-account ideas gate", () => {
   test.each(["/startup-ideas", "/ideas/freelance-scope-creep-detector"])(
@@ -38,8 +39,19 @@ describe("verified-account ideas gate", () => {
     expect(ideaPageSource).toContain("IdeaPublicSummary");
     expect(ideaPageSource).toContain("buildPublicSchema");
     expect(emailGateSource).toContain("<AuthCard mode=\"signup\"");
+    expect(emailGateSource).toContain("gate");
     expect(emailGateSource).toContain("children: React.ReactNode");
     // Deep research stays out of the gate; public children hold teasers/prompts only.
     expect(emailGateSource).not.toContain("title: string");
+    expect(emailGateSource).not.toMatch(/Sign in to read/i);
+  });
+});
+
+describe("idea gate copy contract", () => {
+  test("gate mode uses one create CTA and a Sign in secondary", () => {
+    expect(authCardSource).toContain("Read the full research, free");
+    expect(authCardSource).toContain("Create free account");
+    expect(authCardSource).toContain("Already have one?");
+    expect(authCardSource).toContain('"Sign in"');
   });
 });

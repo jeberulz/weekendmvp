@@ -43,7 +43,7 @@ Four clusters, none sitting on the prediction wedge. Marketplace escrow is on-pl
 - **Fiverr** — 3.6M active buyers, 380K sellers, ~27% buyer conversion. Escrow on gigs, automated dispute flow, 20% seller fee. Fast for packaged work; useless the second a client says “can we just do this on Stripe.” No client risk score, no off-platform chase.
 - **Freelancer.com** — Global marketplace with milestone escrow and contests. Transaction fees plus paid membership / promo listings. Weaker collections UX than Upwork or Fiverr; no predictive module. Fine if the job stays on-platform, which high-value work often does not.
 - **Wave / Zoho Invoice / FreshBooks** — The actual default invoicing stack. Wave: free invoicing, paid payments (~2.9% + $0.30 card). Zoho Invoice: free up to 5 clients, paid above that. FreshBooks: Lite from ~$19/mo, Plus ~$33/mo, Premium ~$55/mo. Automated reminders exist. None of them score a prospect before you send the proposal, and none will make the collection call for you.
-- **HoneyBook** — Ideabrowser’s listed main competitor. Client-flow CRM for creatives: proposals, contracts, invoices, limited automation. Emerging from ~$36/mo, higher tiers ~$79/mo and up. Strong on “look professional.” Weak on “this client has a 70 late-pay score, take 50% up front.”
+- **HoneyBook** — community research’s listed main competitor. Client-flow CRM for creatives: proposals, contracts, invoices, limited automation. Emerging from ~$36/mo, higher tiers ~$79/mo and up. Strong on “look professional.” Weak on “this client has a 70 late-pay score, take 50% up front.”
 - **Invoice factoring / financing** — The nuclear option people Google when an invoice is already late. 6,600 monthly searches, $67–$125 CPC, typical haircut 1–5% of face value plus origination. Solves cash *after* the miss. Does not stop the next one.
 
 **Your Opportunity**
@@ -94,10 +94,10 @@ Build the weekend MVP of "LatePay": score a new client before you start work, tr
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API (a small model) to read a proposal, Resend to send the chase emails. Invoices come in by CSV or by hand this weekend. A Vercel Cron route runs daily. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- clients(id, user_id, name, domain, domain_age, notes, last_score, last_scored_at)  domain_age is new, older or unknown
+- clients(id, user_id, name, domain, domain_age, notes, last_score, last_scored_at) domain_age is new, older or unknown
 - scores(id, client_id, score, reasons jsonb, recommended_deposit_pct, recommended_net_days, created_at)
-- invoices(id, user_id, client_id, external_id, amount_cents, currency, issued_at, due_at, status, paid_at)  status is open, overdue, paid or void
-- sequences(id, invoice_id, step, send_at, sent_at, subject, body)  unique on invoice_id and step
+- invoices(id, user_id, client_id, external_id, amount_cents, currency, issued_at, due_at, status, paid_at) status is open, overdue, paid or void
+- sequences(id, invoice_id, step, send_at, sent_at, subject, body) unique on invoice_id and step
 
 Screens: /login, /clients, /clients/[id] (score and reasons), /invoices, /sequences.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY, RESEND_API_KEY, CRON_SECRET.

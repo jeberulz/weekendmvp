@@ -18,7 +18,7 @@ A web app whose primary surface is a phone number. Users sign up once, set an ho
 **How it works:**
 
 1. **Text start** — User texts “start” (or “start uber”) to your Twilio number; webhook opens a timer in Postgres, replies with confirmation in \<1s
-2. **Track** — Timer accumulates; auto-stop fires after 8 hrs to catch forgotten sessions; user can text “break” or “note ...” mid-stream
+2. **Track** — Timer accumulates; auto-stop fires after 8 hrs to catch forgotten sessions; user can text “break” or “note...” mid-stream
 3. **Categorize** — gpt-4o-mini classifies each session into a project bucket; ambiguous entries surface for one-tap confirmation in the dashboard
 4. **Invoice** — Sunday SMS summary with hours by project, earnings against rate, and a CSV/PDF link ready to attach to an invoice
 
@@ -29,7 +29,7 @@ SMS infrastructure has matured into a primary commerce channel at the same time 
 - **SMS marketing is a $12.6B industry in 2025**, with some forecasts projecting $38.4B by 2030 (Telnyx 2025 SMS report). The infrastructure cost to run a behavioral SMS product has fallen below the price point most side-hustlers will pay for it—a precondition that didn’t exist five years ago.
 - **84% of U.S. consumers are opted in to business SMS in 2025**, a 35-point jump since 2021 (SimpleTexting 2025 stats). The channel itself is no longer the problem; the question is whether you build a tool that respects it.
 - **SMS marketing spend grew 42% YoY in the Americas in 2025** (Dotdigital 2025 Benchmark), and 67% of businesses plan to increase SMS budgets this year (SimpleTexting). Capital is flowing to the rails; the productivity layer on top is largely uncontested.
-- **Reddit’s r/sidehustle alone has 3.1M members**, plus r/productivity (261K), r/Frugal (2.4M), and r/Entrepreneur (1.4M)—a combined 7M+ self-identified gig workers and solopreneurs actively trading recommendations on tracking tools (Ideabrowser community analysis on idea #1241). You are not creating demand; you are routing existing demand.
+- **Reddit’s r/sidehustle alone has 3.1M members**, plus r/productivity (261K), r/Frugal (2.4M), and r/Entrepreneur (1.4M)—a combined 7M+ self-identified gig workers and solopreneurs actively trading recommendations on tracking tools (community research). You are not creating demand; you are routing existing demand.
 - **The U.S. gig workforce sits at 64M+ workers** (BLS / McKinsey 2024 estimates) and the global freelance population is projected to cross 86M by 2027 (Statista). At a $9/mo entry price, capturing 0.05% of just the U.S. number is a ~$3.5M ARR business—below most VC bars, well above most bootstrap thresholds.
 - **21–30% of online revenue is now attributed to SMS** for businesses that have adopted the channel (SimpleTexting 2025). Side-hustlers are the consumer-side mirror image: the channel that already converts for them is where their tooling should live.
 
@@ -90,7 +90,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows; the SMS route writes through the service role):
 - profiles(user_id, phone, phone_verified_at, timezone, default_rate_cents)
 - projects(id, user_id, name, rate_cents)
-- sessions(id, user_id, project_id, started_at, ended_at, note, source, confidence, auto_stopped boolean)  source is sms or web
+- sessions(id, user_id, project_id, started_at, ended_at, note, source, confidence, auto_stopped boolean) source is sms or web
 - messages(id, user_id, direction, body, twilio_sid, created_at)
 - summaries(id, user_id, week_start, total_seconds, total_cents, sent_at)
 

@@ -414,6 +414,17 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     }
   }
 
+  // Competitor brand must stay out of body copy; Sources may still cite it.
+  const bodyOutsideSources = sections
+    .filter((s) => s.title !== SOURCES_TITLE)
+    .map((s) => s.content)
+    .join("\n");
+  if (/ideabrowser/i.test(bodyOutsideSources)) {
+    errors.push(
+      "body copy cites Ideabrowser outside ## Sources — use neutral wording (e.g. community research) and keep sources in ## Sources",
+    );
+  }
+
   const competitive = sections.find(
     (s) => s.title === "Competitive Landscape",
   );

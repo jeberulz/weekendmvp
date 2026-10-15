@@ -26,12 +26,12 @@ The product surface is GitHub, not a dashboard you forget to open. Install the A
 
 ## Market Research
 
-The category is not “another linter.” It is merge-time assurance for a codebase increasingly not written by the people who own the blast radius. Firms tracking AI code tools put the market at **$10.12 billion in 2026**, with a path to **$91.09 billion by 2035** (Ideabrowser idea 8902, triangulating Grand View / TBRC-class reports). That is the parent category. MergeGate’s slice is the review-and-governance layer that appeared because assistants won: more PR volume than seniors can actually read.
+The category is not “another linter.” It is merge-time assurance for a codebase increasingly not written by the people who own the blast radius. Firms tracking AI code tools put the market at **$10.12 billion in 2026**, with a path to **$91.09 billion by 2035**. That is the parent category. MergeGate’s slice is the review-and-governance layer that appeared because assistants won: more PR volume than seniors can actually read.
 
-- **$10.12B AI code tools in 2026 → $91.09B by 2035** — parent TAM; MergeGate sells the merge-gate, not the autocomplete (Ideabrowser idea 8902 highlight justification).
+- **$10.12B AI code tools in 2026 → $91.09B by 2035** — parent TAM; MergeGate sells the merge-gate, not the autocomplete.
 - **Copilot at $10 / $19 per developer per month** normalized a $10–$30/dev band for anything that sits next to GitHub. Buyers already have a line item. You are competing for the second seat, not inventing the budget.
 - **CodeRabbit closed a $16M Series A in 2024** (TechCrunch) and proved teams will pay for PR-native AI review. The category is funded. The remaining gap is origin, not comments.
-- **r/codereview (13.2k), r/ExperiencedDevs, GitHub Discussions at 203k followers** — the evaluation committee, not an awareness play. Tool-comparison threads with 140-plus comments are how this buyer picks vendors (Ideabrowser community analysis).
+- **r/codereview (13.2k), r/ExperiencedDevs, GitHub Discussions at 203k followers** — the evaluation committee, not an awareness play. Tool-comparison threads with 140-plus comments are how this buyer picks vendors (community research).
 - **Seat math:** 5–30 person teams already on Copilot will add a $20 required-check if it prevents one production incident.
 - **Why now:** agentic PRs made “who wrote this line” a merge question. Window is 12–24 months before GitHub ships a first-party origin tag and CodeRabbit bolts provenance onto comments.
 
@@ -95,8 +95,8 @@ Tables (Row Level Security on: the dashboard reads only the installations the si
 - installations(id, account_login)
 - repos(id, installation_id, full_name)
 - pull_requests(id, repo_id, number, head_sha)
-- hunks(id, pr_id, path, start_line, end_line, origin, assistant)  where origin is one of ai, human, unknown and assistant is cursor, copilot or other
-- flags(id, hunk_id, kind, confidence, reason, status, dismissed_reason)  where kind is one of hallucinated_dep, permission_escalation, thin_comment_dense_logic and status is one of open, accepted, dismissed
+- hunks(id, pr_id, path, start_line, end_line, origin, assistant) where origin is one of ai, human, unknown and assistant is cursor, copilot or other
+- flags(id, hunk_id, kind, confidence, reason, status, dismissed_reason) where kind is one of hallucinated_dep, permission_escalation, thin_comment_dense_logic and status is one of open, accepted, dismissed
 - check_runs(id, pr_id, github_check_id, conclusion)
 
 Screens: /login, /repos (installed repos and recent pull requests).

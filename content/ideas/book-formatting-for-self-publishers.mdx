@@ -9,7 +9,7 @@ A first-time novelist finishes a manuscript she has been writing for two years, 
 
 This is not a niche complaint. On Reddit, r/selfpublish has more than 193,000 members and r/writing has over a million, and formatting threads surface constantly alongside r/KDP (19,600 members) asking for the simplest possible way to get a clean interior. The Facebook group "Amazon KDP: Self-Publishing Success for Beginners" has 209,000 members, most of them decision-makers aged 25 to 55 who are actively hunting for tools. YouTube tutorials on book formatting routinely pull 100,000 to 250,000 views each — a clear signal that the process is confusing enough that hundreds of thousands of authors go looking for help every month.
 
-The two failure modes are equally painful. Authors either spend days wrestling with tools that were never designed for book interiors, or they spend hundreds of dollars hiring a professional formatter and then wait days for each revision. Ideabrowser's research scores this pain a 9 out of 10: acute, increasing, and backed by high willingness to pay. The technical hurdle of turning a plain manuscript into a print-ready and Kindle-ready book is the single most common thing that blocks a finished draft from reaching readers — and it is a hurdle that software can eliminate entirely.
+The two failure modes are equally painful. Authors either spend days wrestling with tools that were never designed for book interiors, or they spend hundreds of dollars hiring a professional formatter and then wait days for each revision. Community research scores this pain a 9 out of 10: acute, increasing, and backed by high willingness to pay. The technical hurdle of turning a plain manuscript into a print-ready and Kindle-ready book is the single most common thing that blocks a finished draft from reaching readers — and it is a hurdle that software can eliminate entirely.
 
 ## The Solution
 
@@ -28,10 +28,10 @@ The magic is that the app removes decisions the author does not want to make. In
 
 Self-publishing sits inside one of the largest and steadiest content markets in the world, and the formatting layer is where automation is most under-built.
 
-- **The self-publishing and books market is projected to reach 192.1 billion dollars by 2030**, up from roughly 151 billion in 2024, with self-publishing driving a disproportionate share of the growth and nearly all of the technological churn (Ideabrowser market analysis on idea #1904). That is a market expanding by tens of billions of dollars while its production tooling remains fragmented.
+- **The self-publishing and books market is projected to reach 192.1 billion dollars by 2030**, up from roughly 151 billion in 2024, with self-publishing driving a disproportionate share of the growth and nearly all of the technological churn (market analysis). That is a market expanding by tens of billions of dollars while its production tooling remains fragmented.
 - **The global book publishers market was valued at about 103.7 billion dollars in 2025 and is forecast to reach 149.2 billion by 2035, a CAGR of 3.7%** (Future Market Insights). The steady baseline matters: this is not a fad category, and the digital and self-publishing segments innovate fastest within it.
-- **India's books and ebook market alone is projected to hit 14.6 billion dollars by 2030**, one of the fastest-growing regions globally, with almost no incumbent formatting tool serving it (Ideabrowser market-stage analysis). Mobile-first, price-sensitive authors in emerging markets are effectively unserved today.
-- **Self-publishing is growing roughly 5% year over year**, and community enrollment tracks it: r/selfpublish (193K), r/writing (1M+), and the 209K-member KDP Facebook group keep expanding, with visible spikes during NaNoWriMo and after every KDP policy update (Ideabrowser community analysis). Demand is not something you have to manufacture here — it is something you route.
+- **India's books and ebook market alone is projected to hit 14.6 billion dollars by 2030**, one of the fastest-growing regions globally, with almost no incumbent formatting tool serving it. Mobile-first, price-sensitive authors in emerging markets are effectively unserved today.
+- **Self-publishing is growing roughly 5% year over year**, and community enrollment tracks it: r/selfpublish (193K), r/writing (1M+), and the 209K-member KDP Facebook group keep expanding, with visible spikes during NaNoWriMo and after every KDP policy update (community research). Demand is not something you have to manufacture here — it is something you route.
 
 The convergence that makes this a now-or-never wedge is that AI and cloud rendering have finally made true one-click, cross-format automation cheap enough to sell at consumer prices, right as the author population hits critical mass. The timing score on this idea is a 9 out of 10 for exactly that reason.
 
@@ -86,13 +86,13 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 **1. Project Setup**
 
 ```text
-Build the weekend MVP of "FormatFlex": upload a .docx manuscript and get a formatted EPUB with a working table of contents and a paginated print preview you can save as a PDF. One template and three trim sizes this weekend.
+Build the weekend MVP of "FormatFlex": upload a.docx manuscript and get a formatted EPUB with a working table of contents and a paginated print preview you can save as a PDF. One template and three trim sizes this weekend.
 
-Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Mammoth to read the .docx, Paged.js in the browser for the print preview, JSZip to build the EPUB, the Anthropic API only when a manuscript has no real headings. Deploy on Vercel.
+Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link), Mammoth to read the.docx, Paged.js in the browser for the print preview, JSZip to build the EPUB, the Anthropic API only when a manuscript has no real headings. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows; templates are read-only):
-- projects(id, user_id, title, template_id, trim_size, status, structure jsonb)  trim_size is 5x8, 5.25x8 or 6x9
-- exports(id, project_id, format, file_path, created_at)  format is epub
+- projects(id, user_id, title, template_id, trim_size, status, structure jsonb) trim_size is 5x8, 5.25x8 or 6x9
+- exports(id, project_id, format, file_path, created_at) format is epub
 - templates(id, name, css, metadata jsonb, trim_sizes text[])
 
 Screens: /login, /projects, /projects/[id] (upload, template and trim size, live preview), /projects/[id]/export.
@@ -106,7 +106,7 @@ Done when: npm run dev starts, you can sign in, and the three tables exist with 
 
 ```text
 Build the one feature that proves FormatFlex: a manuscript becomes a clean EPUB and a believable print preview without hand layout.
-1. Accept a .docx up to 10 MB. Read it with Mammoth into HTML that keeps headings, italics, block quotes and images.
+1. Accept a.docx up to 10 MB. Read it with Mammoth into HTML that keeps headings, italics, block quotes and images.
 2. Detect structure in code first: a Heading 1 starts a chapter, a line of only asterisks or a centered ornament is a scene break, and the front matter ends at the first chapter. Only when there are no headings, ask the Anthropic API for JSON { chapters: [{ title, start_index }], scene_breaks: number[], front_matter_end: number } and check that every index is in range and in order, or reject it. Save the structure so the result is reproducible.
 3. Build the EPUB 3 with JSZip: one file per chapter, a navigation document with a hyperlinked table of contents, the template's stylesheet and the book's metadata. Save it and offer a download.
 4. The template is a CSS Paged Media stylesheet for literary fiction. The trim size selector sets the page size, margins and gutter. Running heads show the title and the chapter, and page numbers restart at 1 after the front matter.

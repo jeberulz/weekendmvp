@@ -41,7 +41,7 @@ Catalogs proved people pay for datasets. They did not prove people can *commissi
 
 - **Cloud catalogs = paid demand, not custom delivery.** AWS Data Exchange: 3,700-plus datasets since 2019. Snowflake Marketplace: 1,300-plus from 300 providers since 2020. Catalogs sell what is packaged. You sell the job that produces what is not.
 - **Search is commercial.** “Data marketplace” ~9,900 monthly searches, 3.7% growth (toward 11,000). Adjacent: “data quality tools” ~2,900; “tools for data profiling” ~1,600 at 27% growth. Buyers shop for trust infrastructure, not another profile grid.
-- **Annotation demand dwarfs the marketplace keyword.** Ideabrowser trend research on “data freelancer bounty marketplace labeling analysis” expanded to 15 keywords totaling ~1.76 million monthly searches (avg growth ~50%). Head terms: “data annotation” / “dataset annotation” at 550,000 each (low competition, CPC ~$0.92); “data annotation jobs” 60,500 (CPC ~$3.09); “sql data analytics” 33,100. People paying $3 a click for annotation jobs will pay a four-figure bounty if delivery is scored.
+- **Annotation demand dwarfs the marketplace keyword.** trend research on “data freelancer bounty marketplace labeling analysis” expanded to 15 keywords totaling ~1.76 million monthly searches (avg growth ~50%). Head terms: “data annotation” / “dataset annotation” at 550,000 each (low competition, CPC ~$0.92); “data annotation jobs” 60,500 (CPC ~$3.09); “sql data analytics” 33,100. People paying $3 a click for annotation jobs will pay a four-figure bounty if delivery is scored.
 - **Communities already match, unpaid.** r/datasets 284K, r/dataengineering 168K, r/bigdata 200K-plus, Facebook Data and Leads Marketplace 8.9K-plus. YouTube quality explainers (IBM Technology ~80K avg views) prove the education funnel. None hold escrow or a schema.
 - **Stage: emerging.** Direct bounty players in the low single digits (DataBounties live; DoltHub ran bounties then stopped; Replit Bounties is generalist software). Nobody owns schema-backed data bounties as a category.
 
@@ -54,7 +54,7 @@ SAM: mid-market one-offs in the $2,000–$50,000 band plus a few-hundred-dollar 
 Three clusters: gigs with no schema, catalogs with no freelancers, bounty experiments that never productized quality.
 
 - **Fiverr** — Default scrape / “data cleaning” gig. Instant checkout, huge supply, **20% seller commission**. No schema, no method disclosure, no accuracy score that follows the freelancer. Fine for a logo. Expensive in cleanup hours for anything that has to land in a warehouse.
-- **DataBounties** — Closest analog: post a niche request, bid with samples, collaborate. Buyer-set budgets, implied platform fee, three-step flow. Speaks “bounty.” Ideabrowser’s teardown is explicit: schema templates and a hard quality gate are not the product. That gap is yours.
+- **DataBounties** — Closest analog: post a niche request, bid with samples, collaborate. Buyer-set budgets, implied platform fee, three-step flow. Speaks “bounty.” community research’s teardown is explicit: schema templates and a hard quality gate are not the product. That gap is yours.
 - **DoltHub bounties (discontinued)** — Real money: **$25,000** election-data cleaning in 2020, top payouts ~**$11,000**. Then they pivoted off bounties. You are picking up a format they abandoned, not fighting a live board.
 - **Replit Bounties** — Fast, **$50-plus** fixed prices, five-hour transcript jobs. Proof bounties convert. It is a software-MVP board, not a data-quality board. Wrong specialist graph.
 - **AWS Data Exchange / Snowflake Marketplace** — **3,700-plus** and **1,300-plus** listings. Subscription or usage revenue, warehouse-native delivery. Zero freelancer matching. If the file exists, they win. If it must be made, they are not in the RFP.
@@ -111,8 +111,8 @@ Build the weekend MVP of "ProofSet": a bounty board for data cleaning where a bu
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Storage, Auth with email magic link). The quality gate is plain code, with no model. Deploy on Vercel.
 
 Tables (Row Level Security on; buyers own their bounties, freelancers read open bounties and their own deliveries):
-- profiles(id, user_id, role, skills text[], accuracy_score, status)  role is buyer or freelancer; status is pending or active and you set it by hand
-- bounties(id, buyer_id, title, brief, schema_json jsonb, max_null_rate, max_dupe_rate, deadline, status)  status is open, claimed, in_review, passed, failed or accepted
+- profiles(id, user_id, role, skills text[], accuracy_score, status) role is buyer or freelancer; status is pending or active and you set it by hand
+- bounties(id, buyer_id, title, brief, schema_json jsonb, max_null_rate, max_dupe_rate, deadline, status) status is open, claimed, in_review, passed, failed or accepted
 - claims(id, bounty_id, freelancer_id, status, claimed_at)
 - deliveries(id, bounty_id, freelancer_id, file_path, checksum, submitted_at)
 - quality_reports(id, delivery_id, schema_pass boolean, null_rate, dupe_rate, row_errors jsonb, notes)

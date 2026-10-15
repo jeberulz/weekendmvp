@@ -32,13 +32,13 @@ A sunset recommendation never ships as a silent delete. The report names remaini
 
 The product-analytics category is loud. The deprecation category is almost silent — which is the opening.
 
-Ideabrowser keyword research on idea 5076 puts **product analytics platform** at **590 monthly searches with 182% recent growth**, projecting toward **860**. Broader **data analytics software** sits at **12,100 monthly searches**, **8.8% growth**, projecting to **13,450**, with CPC around **$9.02** and LOW competition. A September 2026 Ideabrowser quick-check on adjacent terms found **product analytics** at **2,400 monthly searches** (LOW competition, CPC **$13.91**), **mixpanel alternative** at **480** (MEDIUM, CPC **$20.19** — buyers with a wallet), and **PostHog** at **135,000** monthly searches. **Feature deprecation** itself is a **20-search** ghost. People hunt analytics platforms and Mixpanel replacements. Almost nobody has a productized query for “kill unused features.” You intercept teams already inside Mixpanel or PostHog who still paste CSVs into Sheets.
+keyword research on idea 5076 puts **product analytics platform** at **590 monthly searches with 182% recent growth**, projecting toward **860**. Broader **data analytics software** sits at **12,100 monthly searches**, **8.8% growth**, projecting to **13,450**, with CPC around **$9.02** and LOW competition. A September 2026 community research quick-check on adjacent terms found **product analytics** at **2,400 monthly searches** (LOW competition, CPC **$13.91**), **mixpanel alternative** at **480** (MEDIUM, CPC **$20.19** — buyers with a wallet), and **PostHog** at **135,000** monthly searches. **Feature deprecation** itself is a **20-search** ghost. People hunt analytics platforms and Mixpanel replacements. Almost nobody has a productized query for “kill unused features.” You intercept teams already inside Mixpanel or PostHog who still paste CSVs into Sheets.
 
-Developer-productivity tooling in the same pack is cited at **23–31% CAGR** through 2025. Amplitude (2012, public) and Mixpanel (2009) are decade-plus incumbents; PostHog is the open-source gravity well. None sell a funeral. ProductBoard, Canny, and Featurebase decide what to **build**. The gap is what to **remove**, with a confidence score and a concentration check — zero direct “safe sunset” vendors in the Ideabrowser competitive set.
+Developer-productivity tooling in the same pack is cited at **23–31% CAGR** through 2025. Amplitude (2012, public) and Mixpanel (2009) are decade-plus incumbents; PostHog is the open-source gravity well. None sell a funeral. ProductBoard, Canny, and Featurebase decide what to **build**. The gap is what to **remove**, with a confidence score and a concentration check — zero direct “safe sunset” vendors in the community research competitive set.
 
 Community heat matches the keyword skew: 100-comment threads on r/analytics (248K) and r/ProductManagement (210K), dashboard sprawl on r/PowerBI (188K), YouTube analytics tutorials at 100K-plus views with a hole around “how to sunset a feature without a war room.” GDPR/CCPA data-minimisation is a second tailwind: unused flows are processing surface legal will eventually ask you to justify.
 
-Stage: **emerging**. Exports and feature flags are mature; the decision product is not. Ideabrowser flags a **12–18 month** window before Amplitude or Mixpanel bolt on an “unused features” module. Ship the export-first auditor now.
+Stage: **emerging**. Exports and feature flags are mature; the decision product is not. community research flags a **12–18 month** window before Amplitude or Mixpanel bolt on an “unused features” module. Ship the export-first auditor now.
 
 ## Competitive Landscape
 
@@ -57,7 +57,7 @@ Price in the gap between PostHog’s free tier and Amplitude’s ~$995 enterpris
 
 ## Business Model
 
-Subscription SaaS with a free bait that converts on audit depth, not vanity charts. Ideabrowser’s value ladder on idea 5076 already prices the rungs: a free utilization heatmap, a **$49** 14-day Feature Trimmer trial, **$99/month** for the core subscription, a **$200/month** advanced-analytics add-on, and an **Enterprise Optimization Package** at **$10,000–$50,000/year**. Cheap enough for a Series A PM to expense; expensive enough at the top for a scoped cleanup.
+Subscription SaaS with a free bait that converts on audit depth, not vanity charts. community research’s value ladder on idea 5076 already prices the rungs: a free utilization heatmap, a **$49** 14-day Feature Trimmer trial, **$99/month** for the core subscription, a **$200/month** advanced-analytics add-on, and an **Enterprise Optimization Package** at **$10,000–$50,000/year**. Cheap enough for a Series A PM to expense; expensive enough at the top for a scoped cleanup.
 
 - **Free** ($0) — One export, 20-feature cap, heatmap only, “audited with” footer on the PDF
 - **Audit** ($49 / 14 days) — Full scoring, funeral copy, CSV export — the “prove it on our Mixpanel dump” wedge
@@ -102,7 +102,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - exports(id, user_id, source, filename, column_map jsonb, event_count, created_at)
 - features(id, export_id, name, event_names text[])
-- feature_scores(id, feature_id, unique_users, events_per_user, decay_30, decay_90, top1_share, top3_share, last_seen, band)  band is abandoned, concentrated or healthy
+- feature_scores(id, feature_id, unique_users, events_per_user, decay_30, decay_90, top1_share, top3_share, last_seen, band) band is abandoned, concentrated or healthy
 - reports(id, export_id, verdicts jsonb, created_at)
 
 Screens: /login, /upload, /map (split and merge feature groups), /report/[id] (a printable page).

@@ -9,7 +9,7 @@ Restoring a classic car is often blocked by a part that is tiny, discontinued, a
 
 The frustration is shared by hobbyists and professional restoration shops. A collector wants an accurate replacement without sacrificing an original part. A shop needs predictable fitment, material information, and a supplier who will answer a question about a particular model year. General 3D-printing services can produce the object, but they do not necessarily have a verified blueprint, a fitment history, or a community that can identify the part from a blurry photo.
 
-Ideabrowser's community research points to large, active spaces around classic cars and additive manufacturing: r/3Dprinting, classic-car groups, restoration channels, maker events, and automotive trade shows. These communities already share scans, fabrication techniques, and parts-hunting stories. The opportunity is to convert scattered knowledge into a catalog with enough confidence that a restorer can move from “does anyone have one?” to a documented order.
+community research's community research points to large, active spaces around classic cars and additive manufacturing: r/3Dprinting, classic-car groups, restoration channels, maker events, and automotive trade shows. These communities already share scans, fabrication techniques, and parts-hunting stories. The opportunity is to convert scattered knowledge into a catalog with enough confidence that a restorer can move from “does anyone have one?” to a documented order.
 
 ## The Solution
 
@@ -32,7 +32,7 @@ The market case is a combination of a growing manufacturing capability and a dur
 
 - The cited research places the global automotive 3D-printing market around $3.4–$3.8 billion in 2024, with projections reaching roughly $17–$25 billion in the early 2030s and annual growth in the high teens to low twenties.
 - The classic restoration parts segment is estimated in the multi-billion-dollar range in the research. The more useful MVP signal is not total market size; it is the presence of many expensive, low-volume parts where a digital file and small-batch print can beat traditional tooling.
-- Ideabrowser's trend snapshot returned about 176,000 monthly searches across related performance and aftermarket-parts terms, with average growth above 28%. The broadness of those terms means the launch should target model-specific queries rather than buy generic automotive traffic.
+- The trend snapshot returned about 176,000 monthly searches across related performance and aftermarket-parts terms, with average growth above 28%. The broadness of those terms means the launch should target model-specific queries rather than buy generic automotive traffic.
 - Community research identifies r/3Dprinting with more than 3 million members, large classic-car Facebook groups, and restoration YouTube channels as high-signal distribution. Tutorials that show a broken original becoming a fitted replacement can sell the product and teach the buyer why verification matters.
 - The platform can begin with polymers and interior or trim components, then move into higher-value materials and professional restoration workflows after fitment data accumulates. Avoid safety-critical steering, brake, and suspension components until testing and liability processes are mature.
 
@@ -82,8 +82,8 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on; the public reads approved versions only, suppliers write their own, reviewers read everything):
 - vehicles(id, make, model, year_from, year_to)
-- parts(id, vehicle_id, name, safety_class, status)  safety_class is non_safety; a safety-critical part cannot be created
-- part_versions(id, part_id, version, supported_years, material, print_settings jsonb, tolerances jsonb, install_guide, file_path, verification_status, reviewed_by, reviewed_at)  verification_status is pending, approved or rejected
+- parts(id, vehicle_id, name, safety_class, status) safety_class is non_safety; a safety-critical part cannot be created
+- part_versions(id, part_id, version, supported_years, material, print_settings jsonb, tolerances jsonb, install_guide, file_path, verification_status, reviewed_by, reviewed_at) verification_status is pending, approved or rejected
 - fitment_requests(id, user_id, vehicle_id, component, photo_paths text[], measurements jsonb, triage jsonb, status)
 - fitment_reports(id, part_version_id, user_id, result, photo_paths text[], notes, created_at)
 

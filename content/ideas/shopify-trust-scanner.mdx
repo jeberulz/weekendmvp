@@ -25,7 +25,7 @@ Weekend MVP: Puppeteer screenshots + Claude Vision checklist + PDF report. $99 o
 
 ## Market Research
 
-- Shopify ecosystem: millions of stores globally with strong merchant CAGR in public analyses (~20%+ cited in Ideabrowser #5360 synthesis).
+- Shopify ecosystem: millions of stores globally with strong merchant CAGR in public analyses (~20%+ cited in community research synthesis).
 - Community: r/shopify and r/ecommerce obsess over conversion and trust badges; Neil Patel / CRO YouTube content draws hundreds of thousands of views.
 - Regulatory and privacy shifts raise the bar for transparent policies — trust copy is not optional.
 - Adjacent spend proves wallets: Judge.me, Loox, Klaviyo, Chargeflow.
@@ -76,7 +76,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - stores(id, user_id, url, last_scan_at)
 - scans(id, store_id, trust_score, pages jsonb, created_at)
-- findings(id, scan_id, signal, present boolean, severity, effort, evidence, fix, url)  severity and effort are 1 to 5
+- findings(id, scan_id, signal, present boolean, severity, effort, evidence, fix, url) severity and effort are 1 to 5
 
 Screens: /login, /scan/new (paste a URL), /scan/[id] (the score and the ranked fix list), /history (scans of one store over time).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).

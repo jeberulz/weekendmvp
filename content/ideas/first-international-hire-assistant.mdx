@@ -40,7 +40,7 @@ The money is already in Employer of Record, which is why you do not buy ads agai
 - **About 60 percent of multinationals still run fragmented cross-border payroll** (Deloitte). **35 percent of global companies now pay workers in ten-plus countries**, up from 22 percent in 2023.
 - Adjacent: **AI in HR around $7.0 to $8.2 billion in 2024–2025**, long-range **$14 to $30.8 billion by 2029–2034** (Precedence, Grand View). **Onboarding software ~$1.77 billion in 2024 toward ~$2.9 billion by 2029.** **81 percent of orgs planned onboarding-tech spend in 2025;** **45 percent of HR pros already use AI in onboarding.** That spend lands in suites and EORs. The first-hire SKU is still unowned.
 
-Search is EOR-shaped. **“employer of record” is about 1,900 US searches a month at roughly $360 CPC.** **“eor companies” / “EOR services” ~720 each, CPCs $318 to $543.** **“Deel alternatives” is 140 at $573 CPC.** DIY queries (“first international hire,” “international hiring for startups”) return **zero** US searches in the verified pass. Google Trends for “employer of record” roughly doubled from ~38 in August 2025 to a peak of 100 in late April 2026. Ideabrowser trend discover expanded to **15 keywords and 10,480 monthly searches**, led by **“employer of record services” at 5,400 volume and $335 CPC**. You do not win that auction. You win the r/Payroll thread.
+Search is EOR-shaped. **“employer of record” is about 1,900 US searches a month at roughly $360 CPC.** **“eor companies” / “EOR services” ~720 each, CPCs $318 to $543.** **“Deel alternatives” is 140 at $573 CPC.** DIY queries (“first international hire,” “international hiring for startups”) return **zero** US searches in the verified pass. Google Trends for “employer of record” roughly doubled from ~38 in August 2025 to a peak of 100 in late April 2026. community research trend discover expanded to **15 keywords and 10,480 monthly searches**, led by **“employer of record services” at 5,400 volume and $335 CPC**. You do not win that auction. You win the r/Payroll thread.
 
 Stage: **emerging wedge inside a competitive EOR market**. Build playbooks and done-with-you, with partner APIs when they actually need an EOR. A $99 AI compliance SaaS is already bundled free inside Deel, G-P Gia, and RemoFirst’s country guides.
 
@@ -104,7 +104,7 @@ Build the weekend MVP of the "First International Hire Assistant": a founder ans
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for the reminder emails. The path rules and the country pack are plain data and code, with no model. A Vercel Cron route sends due reminders. Deploy on Vercel.
 
 Tables (Row Level Security on, a founder reads only their own rows; country_templates is read-only to signed-in users):
-- hire_files(id, user_id, country_code, role, start_date, cash_comp_cents, has_local_entity boolean, wants_path, visa_needed boolean, path, reasons jsonb)  path is contractor, local_entity or eor
+- hire_files(id, user_id, country_code, role, start_date, cash_comp_cents, has_local_entity boolean, wants_path, visa_needed boolean, path, reasons jsonb) path is contractor, local_entity or eor
 - country_templates(id, country_code, version, lawyer_signed_at, checklist jsonb, contract_markdown, tax_notes, visa_notes, reminder_offsets jsonb)
 - packs(id, hire_file_id, template_version, content jsonb, created_at)
 - reminders(id, hire_file_id, due_on, title, sent_at)

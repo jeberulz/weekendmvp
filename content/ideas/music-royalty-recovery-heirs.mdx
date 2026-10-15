@@ -65,7 +65,7 @@ No hourly billing. Every dollar of fee is either a percentage of a recovered che
 - **Estate recovery** (15% private / 10% or state cap on escheat) — Core. One engagement letter, two fee lines. Collect only when a check posts.
 - **Catalog monitoring** ($199/year) — Continuity after the first recovery. Quarterly sweeps plus one statement review. Priced under a single lawyer hour on purpose.
 
-Illustrative year-one napkin (Ideabrowser verified math, not a forecast): 300 leads from Reddit plus probate referrals → 33 signed estates. Average recovered pool around $6,500. Gross recovered ~$214K. Blended contingency ~$30K plus ~$4K monitoring. Year-one band **$34K–$85K** for a single operator. Ceiling with a referral network is a $2M–$3.5M services shop, not a venture outcome. Heir search volume will not buy this.
+Illustrative year-one napkin : 300 leads from Reddit plus probate referrals → 33 signed estates. Average recovered pool around $6,500. Gross recovered ~$214K. Blended contingency ~$30K plus ~$4K monitoring. Year-one band **$34K–$85K** for a single operator. Ceiling with a referral network is a $2M–$3.5M services shop, not a venture outcome. Heir search volume will not buy this.
 
 **Unit Economics**
 
@@ -97,7 +97,7 @@ Build the weekend MVP of "Legato": the heir of an independent musician types a l
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link for the operator). The public lists are CSV files you download by hand from each organization's public page and import with the page address and the date. The matching is plain code. Deploy on Vercel.
 
 Tables (Row Level Security on; only the signed-in operator reads any row, and the public form writes through a server route):
-- list_snapshots(id, source, source_url, fetched_on, row_count)  source is mlc_unmatched, soundexchange_unclaimed or pro_repertory
+- list_snapshots(id, source, source_url, fetched_on, row_count) source is mlc_unmatched, soundexchange_unclaimed or pro_repertory
 - list_entries(id, snapshot_id, raw_name, normalized_name, work_title)
 - estates(id, legal_name, stage_name, death_year, contact_email, status, created_at)
 - matches(id, estate_id, entry_id, snapshot_id, confidence, needs_review boolean)

@@ -62,8 +62,8 @@ Incumbents will not productize “our April import is why you miss deductions.�
 Seasonal SaaS with a year-round pull. Free proves the ledger. File season captures the panicked. Always-on is the real business.
 
 - **Free** ($0) — One connected source, 90 days of categorization, read-only P and L, no e-file. Lead magnet for Reddit and YouTube.
-- **File season** ($49/month, typically January–April) — Full connections, deduction queue, Schedule C assembly, one federal + one state transmit. Matches the Ideabrowser frontend.
-- **Always-on** ($29/month or $399/year) — Year-round books, quarterly 1040-ES worksheets, included filing, accountant share link. Cheaper per month than File season because you want the twelve-month ledger. Annual at $399–$499 sits on the Ideabrowser middle offer.
+- **File season** ($49/month, typically January–April) — Full connections, deduction queue, Schedule C assembly, one federal + one state transmit. Matches the community research frontend.
+- **Always-on** ($29/month or $399/year) — Year-round books, quarterly 1040-ES worksheets, included filing, accountant share link. Cheaper per month than File season because you want the twelve-month ledger. Annual at $399–$499 sits on the community research middle offer.
 - **Later, not v1:** bookkeeping depth add-ons ($20–$100/month) and a white-label agency SKU ($25K/year in the ladder).
 
 **Unit Economics (illustrative)**
@@ -102,7 +102,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - imports(id, user_id, filename, row_count, created_at)
-- transactions(id, user_id, import_id, posted_at, description, amount_cents, category, category_source, review_state)  category_source is rule, model or user; review_state is posted or needs_user
+- transactions(id, user_id, import_id, posted_at, description, amount_cents, category, category_source, review_state) category_source is rule, model or user; review_state is posted or needs_user
 - category_rules(id, user_id, pattern, category)
 - schedule_c_drafts(id, user_id, tax_year, lines jsonb, reviewed_at, created_at)
 

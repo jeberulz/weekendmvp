@@ -7,7 +7,7 @@ title: "Markdown Publish Everywhere for Creators"
 
 You finish a newsletter draft in Obsidian at 10 p.m. It reads perfectly in markdown. Then the real work starts: paste into Ghost for the blog, strip headings for Substack, rewrite the intro for LinkedIn, split the middle into a Twitter thread, fix the links that broke on copy, and realize you already published a version with the wrong CTA. Most solo creators who write in markdown lose 45–90 minutes per piece just on distribution—not editing, not research, just reformatting the same ideas for four surfaces.
 
-The pain is loudest in technical creator communities. r/Markdown (13.7K members) and r/ObsidianMD (48K) run weekly threads on conversion fidelity—PDF exports that drop tables, Word pastes that murder list nesting, HTML previews that look nothing like the source file. Ideabrowser community analysis surfaced 110+ comments on a single r/Markdown thread about bulk conversion alone. The workflow everyone actually runs: write once in a markdown editor, manually fork into Ghost or Substack, then open Buffer or Typefully and hand-craft social variants. ChatGPT can reformat on demand, but every session starts from scratch—no saved brand voice, no one-click publish, no sync when you fix a typo in the source file.
+The pain is loudest in technical creator communities. r/Markdown (13.7K members) and r/ObsidianMD (48K) run weekly threads on conversion fidelity—PDF exports that drop tables, Word pastes that murder list nesting, HTML previews that look nothing like the source file. community research surfaced 110+ comments on a single r/Markdown thread about bulk conversion alone. The workflow everyone actually runs: write once in a markdown editor, manually fork into Ghost or Substack, then open Buffer or Typefully and hand-craft social variants. ChatGPT can reformat on demand, but every session starts from scratch—no saved brand voice, no one-click publish, no sync when you fix a typo in the source file.
 
 Multi-channel publishing is no longer optional for indie founders and newsletter writers who also post on X and LinkedIn. The stack is fragmented by design: Ghost owns blog→email, Buffer owns social scheduling, Typeshare owns thread templates—but nobody treats a single `.md` file as the canonical artifact and pushes formatted outputs everywhere. That gap is where an hour per week becomes an hour per post.
 
@@ -26,7 +26,7 @@ The wedge is speed with consistency: not “AI writes your post,” but “your 
 
 ## Market Research
 
-Markdown adoption has crossed from developer docs into mainstream creator workflows—Obsidian, Ghost, Git-backed blogs, and Notion exports all normalize `.md` as the authoring format. Adjacent search demand validates the category: Ideabrowser trend research on “markdown publishing automation content repurposing” surfaced 54,640 combined monthly searches across related keywords, with “markdown reader” alone at 27,100 volume and low competition. “Content repurposing” sits in the same cluster as high-intent conversion queries (“markdown converter,” “convert markdown to html”), signaling buyers who already feel format pain.
+Markdown adoption has crossed from developer docs into mainstream creator workflows—Obsidian, Ghost, Git-backed blogs, and Notion exports all normalize `.md` as the authoring format. Adjacent search demand validates the category: trend research on “markdown publishing automation content repurposing” surfaced 54,640 combined monthly searches across related keywords, with “markdown reader” alone at 27,100 volume and low competition. “Content repurposing” sits in the same cluster as high-intent conversion queries (“markdown converter,” “convert markdown to html”), signaling buyers who already feel format pain.
 
 - **Creator economy scale:** AI writing and content-tool SaaS products routinely price at **$10–$99/month**, proving willingness to pay for publishing productivity (Jasper, Copy.ai, Buffer AI tier, and comparable tools in the competitive set).
 - **Community demand:** r/ObsidianMD (48K), r/Markdown (13.7K+), and r/SideProject (267K) combine into a reachable audience already discussing conversion, bulk export, and multi-channel workflows—not abstract “creator economy” chatter.
@@ -59,7 +59,7 @@ Freemium SaaS with usage caps on outputs, not features—creators feel value on 
 - **Pro** ($49/mo) — Unlimited documents, custom style guides, AI rewrite within voice guardrails, analytics tying performance back to source markdown, priority integrations (Substack, LinkedIn export)
 - **Team** ($99/mo) — 5 seats, shared template library, approval workflow, API access for programmatic publish
 
-Backend ladder (post-PMF): **Enterprise** at **$5,000+/year** for white-label API, custom integrations, and SSO—aligned with Ideabrowser value-ladder research.
+Backend ladder (post-PMF): **Enterprise** at **$5,000+/year** for white-label API, custom integrations, and SSO—aligned with value-ladder research.
 
 **Unit Economics**
 
@@ -93,7 +93,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - posts(id, user_id, title, markdown, updated_at)
-- outputs(id, post_id, channel, body, status, ai_used boolean, generated_at)  channel is blog, newsletter, linkedin or twitter; status is fresh or stale
+- outputs(id, post_id, channel, body, status, ai_used boolean, generated_at) channel is blog, newsletter, linkedin or twitter; status is fresh or stale
 - style_guides(user_id, voice_notes, banned_phrases text[])
 
 Screens: /login, /posts, /posts/[id] (the four outputs side by side with Copy and Download), /settings (the style guide).
@@ -111,7 +111,7 @@ Build the one feature that proves Fmttr: one markdown file becomes four outputs 
 2. Build four outputs in plain code. blog: HTML with heading anchors. newsletter: HTML with inline CSS and a preheader taken from the first sentence. linkedin: plain text with line breaks and the hook in the first 210 characters. twitter: a numbered thread where each tweet is 280 characters or fewer, split on paragraph breaks and then sentences, never inside a code block or a link.
 3. An optional AI pass sends one output and the style guide to the Anthropic API and may only restructure: shorten an intro, reorder, split. Check in code that every number, URL and capitalized name in the result also appears in the source. If anything new appears, discard the AI version, keep the plain output and show "AI changes rejected: it added new facts".
 4. Lint before showing: flag empty or malformed link URLs and images with no alt text.
-5. Show the four outputs side by side with an editable box for each, Copy, and Download as .html or .md. Editing the source marks every output stale and offers Regenerate all.
+5. Show the four outputs side by side with an editable box for each, Copy, and Download as.html or.md. Editing the source marks every output stale and offers Regenerate all.
 Rules: code blocks are never split into tweets. Never invent a fact, a link or a quote.
 Empty state: with no posts, show a paste box with a sample post.
 Done when: a sample post produces four outputs, every tweet is 280 characters or fewer, the LinkedIn hook fits in 210, an AI result with an injected number is rejected, and editing the source marks the outputs stale.

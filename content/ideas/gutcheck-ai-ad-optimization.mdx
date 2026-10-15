@@ -28,10 +28,10 @@ The product sits above walled-garden tools: Google Experiments and Meta’s hub 
 
 Digital advertising is simultaneously massive and harder to measure than ever. Privacy regulation collapsed last-click attribution; incrementality testing moved from enterprise luxury to table stakes. The convergence creates a narrow window for indie-tier tools that combine creative generation with honest lift measurement.
 
-- **Global digital ad spend is projected to exceed $700 billion by 2025**, with AI-driven optimization cited as a primary growth driver (Ideabrowser opportunity analysis on idea #38). Budget exists; waste is the pain merchants pay to eliminate.
+- **Global digital ad spend is projected to exceed $700 billion by 2025**, with AI-driven optimization cited as a primary growth driver. Budget exists; waste is the pain merchants pay to eliminate.
 - **The broader software testing and analytics services market is forecast to grow by USD 24.5 billion from 2024–2029 at an 11.4% CAGR** (Technavio via competitive analysis citations)—incrementality and creative optimization tools ride the same data-driven marketing wave.
 - **Reddit’s r/PPC (209K+ members) and r/FacebookAds (140K+)** show sustained engagement on AI ad tools, dynamic creative optimization, and skepticism toward platform-native scoring—validated demand for third-party testing discipline.
-- **Keyword demand validates commercial intent**: “google ads optimization” and “ad optimization” carry high CPC; “AI marketing tools” alone drives ~9,900 monthly searches at $20+ CPC (Ideabrowser trend research, July 2026 snapshot).
+- **Keyword demand validates commercial intent**: “google ads optimization” and “ad optimization” carry high CPC; “AI marketing tools” alone drives ~9,900 monthly searches at $20+ CPC.
 - **YouTube signals are asymmetric**: AI ad tutorials pull millions of views, but incremental testing case studies remain a content gap—early movers who publish real lift numbers will own trust in this category.
 
 Stage: *emerging to growth*. Platform-native experiments are mature inside each walled garden; cross-channel, AI-assisted incrementality for mid-market spenders is fragmented. The 12–18 month window favors a focused MVP before larger suites bolt on equivalent features.
@@ -91,10 +91,10 @@ Build the weekend MVP of "GutCheck": generate single-change ad variants from a b
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the OpenAI API (a small model) to write variants, Zod to validate its output. The statistics are plain code. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- experiments(id, user_id, name, variable_type, status, min_conversions, created_at)  variable_type is headline, primary_text or cta
+- experiments(id, user_id, name, variable_type, status, min_conversions, created_at) variable_type is headline, primary_text or cta
 - variants(id, experiment_id, is_baseline boolean, headline, primary_text, cta, mutated_field, mutation_rationale, hypothesis)
 - results(id, variant_id, recorded_on, impressions, clicks, conversions, spend_cents)
-- lift_results(id, experiment_id, variant_id, lift, confidence, verdict, computed_at)  verdict is winner, loser or keep_running
+- lift_results(id, experiment_id, variant_id, lift, confidence, verdict, computed_at) verdict is winner, loser or keep_running
 
 Screens: /login, /experiments/new, /experiments/[id] (variants, results upload and verdicts).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), OPENAI_API_KEY.

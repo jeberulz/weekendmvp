@@ -5,7 +5,7 @@ title: "AI Wiki Keeper"
 
 ## The Problem
 
-Every engineering team says the same thing about its internal wiki: it's wrong. Not maliciously, just quietly — a Confluence page describes a deploy process that changed three sprints ago, a Notion onboarding doc still tells new hires to use a Slack channel that got archived, and the "source of truth" for how billing actually works lives in a thread nobody can find. The work of updating docs never disappears from anyone's job description, but it always loses to the next sprint, the next incident, the next customer call. One team captured the whole problem in a single sentence Ideabrowser's community research surfaced verbatim: *"We haven't written a doc in 3 months and nothing's gone stale"* is the sentence every team wants to say and none can.
+Every engineering team says the same thing about its internal wiki: it's wrong. Not maliciously, just quietly — a Confluence page describes a deploy process that changed three sprints ago, a Notion onboarding doc still tells new hires to use a Slack channel that got archived, and the "source of truth" for how billing actually works lives in a thread nobody can find. The work of updating docs never disappears from anyone's job description, but it always loses to the next sprint, the next incident, the next customer call. One team captured the whole problem in a single sentence community research's community research surfaced verbatim: *"We haven't written a doc in 3 months and nothing's gone stale"* is the sentence every team wants to say and none can.
 
 The pain is structural, not incidental. Engineers change code but rarely update the docs that describe it, because updating docs is a second, unrewarded job layered on top of the first one. Support and onboarding teams then waste hours hunting through wikis that no longer match reality, second-guessing whether a page is current or a fossil. Knowledge that does get captured — in a Slack thread, a Zoom call, a PR description — gets trapped there, one search query away from being lost forever. Reddit's r/selfhosted (542K+ members) and r/automation (85.8K+) surface this constantly: threads about integration pain, privacy concerns with AI tools touching internal docs, and a recurring wish for something that updates "without anyone lifting a finger." r/MachineLearning, at 1.9M members, shows the same appetite from the other direction — teams actively discussing AI-driven document processing as the obvious next step past manual wikis.
 
@@ -90,9 +90,9 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own repositories; the webhook writes through the service role):
 - repos(id, user_id, full_name, token_encrypted, docs_path, webhook_secret, excluded_paths text[])
-- doc_pages(id, repo_id, path, title, content, sha, covers text[], last_synced_at)  covers lists the code paths the page documents
-- proposed_edits(id, repo_id, doc_page_id, kind, pr_number, diff_summary, unified_diff, status, opened_pr_url, created_at)  kind is edit or new_page; status is pending, approved or rejected
-- webhook_events(id, repo_id, delivery_id, processed_at)  delivery_id is unique
+- doc_pages(id, repo_id, path, title, content, sha, covers text[], last_synced_at) covers lists the code paths the page documents
+- proposed_edits(id, repo_id, doc_page_id, kind, pr_number, diff_summary, unified_diff, status, opened_pr_url, created_at) kind is edit or new_page; status is pending, approved or rejected
+- webhook_events(id, repo_id, delivery_id, processed_at) delivery_id is unique
 
 Screens: /login, /repos (connect one and copy the webhook URL), /pages (the docs and what each covers), /edits (pending proposals with the diff).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY, TOKEN_ENCRYPTION_KEY.

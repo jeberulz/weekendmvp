@@ -9,7 +9,7 @@ A seller agrees to meet a stranger in a parking lot for a $180 bike rack. The tr
 
 The job is not “share my GPS with my family forever.” That is Life360, and it is the wrong shape. The job is a one-off stranger handoff: pick a place that is actually a SafeTrade lot or a well-lit retail pad, time-box the share so it dies when the meetup should have ended, and escalate if it does not. Google Maps will share a pin. WhatsApp will share a live location inside the chat you already used to negotiate price. Neither will tell you the police-station lot three miles away is the designated exchange zone, and neither will text Dad if you have not checked in after twenty minutes.
 
-Recommerce keeps making this worse by volume. The secondhand market is projected around $227 billion (Ideabrowser highlight on this idea). eBay is a small slice of U.S. e-commerce — about 3.5 percent versus Amazon at about 40 percent (Matrix BCG) — and it still had to ship Secure Local Pickup with QR confirmation because local handoffs are now a real checkout mode, not a Craigslist leftover. OfferUp and Facebook Marketplace still treat safety as a help-center paragraph. The people who feel the risk are often not even the seller: they are the partner or parent who never opened the listing.
+Recommerce keeps making this worse by volume. The secondhand market is projected around $227 billion. eBay is a small slice of U.S. e-commerce — about 3.5 percent versus Amazon at about 40 percent (Matrix BCG) — and it still had to ship Secure Local Pickup with QR confirmation because local handoffs are now a real checkout mode, not a Craigslist leftover. OfferUp and Facebook Marketplace still treat safety as a help-center paragraph. The people who feel the risk are often not even the seller: they are the partner or parent who never opened the listing.
 
 Search already pays for the generic half of the job. “Live location sharing” does about 14,800 monthly searches at +18.5 percent growth. “Google map live location sharing” sits at 3,600 volume with +132.4 percent growth. r/androidapps (1.5M) and r/privacy (1M) argue constantly about trackers that are too nosy or too flaky. Nobody in those threads is asking for another always-on family map. They are asking for a share that starts when the meetup starts and ends when it should have ended.
 
@@ -35,7 +35,7 @@ MVP is ruthless: map of verified spots in one metro, time-boxed share, timeout S
 
 There is no tidy “local pickup safety SaaS” TAM. You are at the intersection of recommerce handoffs, consumer live-location, and personal-safety apps. The behavior is mature. The specialist category is not.
 
-- **Recommerce is the volume engine.** Ideabrowser’s why-now on this idea flags the secondhand market on a path toward **$227 billion**. Not all of that is in-person, but bulky SKUs still force a parking-lot meeting.
+- **Recommerce is the volume engine.** community research’s why-now on this idea flags the secondhand market on a path toward **$227 billion**. Not all of that is in-person, but bulky SKUs still force a parking-lot meeting.
 - **Live location is already a habit.** Keyword set on idea #7874: **live location sharing at 14,800 monthly volume, +18.5 percent growth**; **google map live location sharing at 3,600 volume, +132.4 percent**. People can share a pin. They do not have a meetup object around it.
 - **Marketplaces admitted the offline step is checkout.** eBay launched Secure Local Pickup with QR confirmation so the handoff is a first-class flow ([eBay Innovation](https://innovation.ebayinc.com/stories/ebay-launches-secure-local-pickup-to-simplify-the-shipping-experience/)). That validates the moment. It does not give a Facebook Marketplace seller a cross-platform safety layer.
 - **eBay is small next to Amazon and still huge in local.** Matrix BCG: eBay around **3.5 percent of U.S. e-commerce versus Amazon around 40 percent** ([Matrix BCG](https://matrixbcg.com/blogs/competitors/ebay)). Local pickup is how a non-Amazon marketplace competes on bulky goods.
@@ -101,9 +101,9 @@ Stack: Expo (React Native) with TypeScript, Supabase (Auth with email magic link
 
 Tables (Row Level Security on: the meetup owner and the invited contact only):
 - trusted_contacts(id, user_id, name, phone_e164)
-- spots(id, name, lat, lng, kind, verified_at, source_url)  where kind is one of police_lot, municipal_safetrade, retail_verified
-- meetups(id, user_id, spot_id, contact_id, starts_at, ends_at, status)  where status is one of live, closed
-- pings(meetup_id, lat, lng, recorded_at)  with Realtime turned on
+- spots(id, name, lat, lng, kind, verified_at, source_url) where kind is one of police_lot, municipal_safetrade, retail_verified
+- meetups(id, user_id, spot_id, contact_id, starts_at, ends_at, status) where status is one of live, closed
+- pings(meetup_id, lat, lng, recorded_at) with Realtime turned on
 
 Screens: spot list and map, start meetup, live meetup.
 Env vars (names only): SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_MAPS_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER.

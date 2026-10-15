@@ -54,7 +54,7 @@ Own SME plain-English scanning at **$29–$99/month** without selling a controve
 **Unit Economics (illustrative)**
 
 - Crawl + LLM explain cost well under $1/scan at early volume
-- Path: 2,000 customers × $50 ARPU = $100K MRR directional target from Ideabrowser modeling
+- Path: 2,000 customers × $50 ARPU = $100K MRR directional target from market modeling
 
 ## Recommended Tech Stack
 
@@ -77,7 +77,7 @@ Build the weekend MVP of "AccessCheck": paste a small-business web page address,
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), a serverless build of headless Chromium with Playwright core to load the page, axe-core to find problems, the Anthropic API to write the explanations. One page per scan this weekend. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- sites(id, user_id, url, cms_hint, created_at)  cms_hint is wordpress, shopify, squarespace or unknown
+- sites(id, user_id, url, cms_hint, created_at) cms_hint is wordpress, shopify, squarespace or unknown
 - scans(id, site_id, status, violation_count, created_at)
 - issues(id, scan_id, rule_id, impact, description, html_snippet, selector, help_url, explanation, fix_steps jsonb, priority)
 

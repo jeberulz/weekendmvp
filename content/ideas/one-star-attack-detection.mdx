@@ -25,7 +25,7 @@ Weekend MVP: polling Google/Yelp data sources + Twilio SMS + threshold rules. Tu
 
 ## Market Research
 
-- Online reputation management is a multi-billion-dollar mature market; search for reputation services shows high CPC and commercial intent ([Ideabrowser #8946](https://www.ideabrowser.com)).
+- Online reputation management is a multi-billion-dollar mature market; search for reputation services shows high CPC and commercial intent ([community research](https://www.community research.com)).
 - 90%+ of consumers use reviews in purchase decisions in widely cited surveys — rating drops have immediate local SEO and conversion impact.
 - Community: r/smallbusiness and ORM Facebook groups complain about fake review attacks and overpriced suites.
 - Regulatory attention on fake reviews increases value of documented incident evidence.
@@ -77,7 +77,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - locations(id, user_id, name, phone, timezone, sensitivity, quiet_start, quiet_end, always_alert boolean, sms_opted_in_at)
 - reviews(id, location_id, external_id, rating, text, created_at)
-- incidents(id, location_id, detected_at, rule, evidence jsonb, status, resolved_as)  status is open or closed; resolved_as is attack or fine
+- incidents(id, location_id, detected_at, rule, evidence jsonb, status, resolved_as) status is open or closed; resolved_as is attack or fine
 - alert_log(id, incident_id, sent_at, twilio_sid)
 
 Screens: /login, /locations (add a location, the phone and the opt-in), /reviews/import, /incidents/[id] (evidence, a dispute template, a suggested reply).

@@ -30,8 +30,8 @@ The MVP is deliberately narrow: no marketplace, no payment processing, no comple
 Tourism is rebounding globally, and the long tail of independent guides is expanding faster than enterprise booking software can serve them. WhatsApp has crossed from "nice to have" to infrastructure: Meta reports over 2 billion users worldwide, and in Europe, Latin America, and much of Asia-Pacific it is the default channel for local service businesses. The WhatsApp Business Platform and Cloud API have matured to the point where a solo developer can send templated, compliant messages without negotiating enterprise contracts—exactly the unlock this product needs.
 
 - **$11.7 trillion projected global travel and tourism market by 2030**, growing at roughly 5.6% CAGR from a 2023 base of $8.5 trillion (Grand View Research). Within that, guided experiences and on-the-ground interpretation sit in the experiences layer that OTAs and marketplaces are actively pushing—more volume landing on independent operators, not fewer.
-- **$17.8B to $56.7B tourism guidance market** depending on whether analysts count only professional guiding services or the broader experiential tour segment (Ideabrowser market summary, idea #3820). Even at the low bound, the slice of independent guides paying out of pocket for software is large: tens of thousands of operators globally who run fewer than five departures per week.
-- **Adventure tourism growing at ~15% CAGR** through 2030 (industry estimates cited in Ideabrowser research), pulling new guides into the market who are mobile-native and already live in WhatsApp—but have no ops stack beyond a spreadsheet.
+- **$17.8B to $56.7B tourism guidance market** depending on whether analysts count only professional guiding services or the broader experiential tour segment. Even at the low bound, the slice of independent guides paying out of pocket for software is large: tens of thousands of operators globally who run fewer than five departures per week.
+- **Adventure tourism growing at ~15% CAGR** through 2030 (industry estimates cited in community research), pulling new guides into the market who are mobile-native and already live in WhatsApp—but have no ops stack beyond a spreadsheet.
 - **WhatsApp Business API adoption accelerating** — Meta's Cloud API documentation and partner ecosystem lowered integration friction; template messaging, location pins, and interactive buttons are now standard primitives a weekend MVP can ship against ([WhatsApp Cloud API docs](https://developers.facebook.com/docs/whatsapp/cloud-api)).
 - **High willingness to pay for no-show reduction** — A single recovered seat on a $45 walking tour pays for a month of subscription; guides feel the pain daily and compare against lost revenue, not against free group chat.
 
@@ -94,7 +94,7 @@ Tables (Row Level Security on, a guide reads only their own rows; the webhook wr
 - guides(id, user_id, display_name, timezone, whatsapp_phone_id)
 - tours(id, guide_id, name, default_meeting_lat, default_meeting_lng, default_meeting_note, duration_min)
 - bookings(id, tour_id, guest_name, guest_phone, starts_at, meeting_override, guest_acknowledged boolean, opted_out boolean)
-- scheduled_jobs(id, booking_id, kind, run_at, status, attempts)  kind is confirm, day_before, morning_of or review
+- scheduled_jobs(id, booking_id, kind, run_at, status, attempts) kind is confirm, day_before, morning_of or review
 - message_log(id, booking_id, wa_message_id, kind, status, read_at)
 - faq_entries(id, guide_id, question, answer)
 

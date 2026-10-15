@@ -25,7 +25,7 @@ Do not launch a marketplace SaaS. Aspire and GRIN already tax brands $24k a year
 
 ## Market Research
 
-US TikTok ads were about $11 billion in 2025 and are forecast at $14.5 billion in 2026. Meta CPMs sat at $13.48, up 20% year over year — you are paying more to show the same tired static. TikTok Spark Ads still print: 7.21% CTR and $0.89 CPC in the published cuts Ideabrowser pulled. That is the format you are licensing, not a new ad unit.
+US TikTok ads were about $11 billion in 2025 and are forecast at $14.5 billion in 2026. Meta CPMs sat at $13.48, up 20% year over year — you are paying more to show the same tired static. TikTok Spark Ads still print: 7.21% CTR and $0.89 CPC in the published cuts community research pulled. That is the format you are licensing, not a new ad unit.
 
 Meta required AI-content disclosure in March 2026. Human UGC still beats AI UGC 85–110% on CTR in trust categories (supplements, finance, baby). That is your moat against the "just generate 50 ads" tools. r/UGCcreators crossed 84,700 members. The talent exists. The clearinghouse for *already-viral* posts with paid rights does not.
 
@@ -85,8 +85,8 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on; a brand reads only its own requests and licenses, the board shows only posts with creator agreement, the operator reads everything):
 - brands(id, user_id, name, category)
-- posts(id, category, platform, url, thumbnail_path, creator_handle, metrics jsonb, rights_status, rights_note, curated_by)  rights_status is creator_agreed or not_cleared; a post with not_cleared never shows on the board
-- license_requests(id, brand_id, post_id, usage_window_days, platforms text[], status, requested_at, sla_due_at)  status is requested, in_progress, cleared, delivered or declined
+- posts(id, category, platform, url, thumbnail_path, creator_handle, metrics jsonb, rights_status, rights_note, curated_by) rights_status is creator_agreed or not_cleared; a post with not_cleared never shows on the board
+- license_requests(id, brand_id, post_id, usage_window_days, platforms text[], status, requested_at, sla_due_at) status is requested, in_progress, cleared, delivered or declined
 - licenses(id, request_id, terms_text, signed_name, signed_at, creator_fee_cents, spark_code, delivered_at)
 
 Screens: /login, /board (public thumbnails behind an email gate), /request/[postId], /requests (a brand's own), /admin/desk (the operator's queue).

@@ -32,7 +32,7 @@ The wedge is entertainment. The hook is visible progress. The outcome is employa
 
 Gamified learning is a high-CAGR market whose adult-coding corner is still thin:
 
-- **Global gamified learning is projected around $25.7B by 2025 at a 27.3% CAGR from 2020** (figures cited throughout Ideabrowser competitive analysis, idea 7147). Coding education as a subset is described as $5B+ with ~25% annual growth in the same research. Treat the $25.7B number as the ocean; your SAM is adults who start Python/JS and quit.
+- **Global gamified learning is projected around $25.7B by 2025 at a 27.3% CAGR from 2020** (figures cited throughout competitive analysis, idea 7147). Coding education as a subset is described as $5B+ with ~25% annual growth in the same research. Treat the $25.7B number as the ocean; your SAM is adults who start Python/JS and quit.
 - **Keyword demand for "coding games" is on the order of 74,000 searches**, with adjacent "scratch coding games" growing fast (122% in the keyword work) — that growth is *kids*. Your SEO should not fight Scratch. Rank for "learn python by making a game" and "coding rpg for adults."
 - **Community pull is documented.** r/learnprogramming 1M+, 90-comment threads on adult coding games; YouTube challenge/coding-game videos routinely in the 1M+ view range (Code Bullet, n8dev, Goodgis). Facebook gamification groups are educator-heavy — useful for B2B later, not the v1 buyer.
 - **Retention claims in the category** (3x engagement, 70% module completion vs traditional) are vendor-favorable. Use them as a hypothesis to measure, not as a homepage fact. Your own chapter-1 completion rate is the only number that matters in month one.
@@ -98,7 +98,7 @@ Tables (Row Level Security on, each user reads only their own profile, attempts 
 - profiles(user_id, display_name, xp, chapter)
 - quests(id, slug, ordinal, title, story_md, starter_code, tests, hint, xp_reward, loot_name, loot_snippet)
 - attempts(id, user_id, quest_id, passed boolean, code, created_at)
-- inventory(id, user_id, quest_id, name, snippet)  one row per user and quest
+- inventory(id, user_id, quest_id, name, snippet) one row per user and quest
 
 Screens: /login, / (the chapter map), /play/[slug], /inventory.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).

@@ -7,7 +7,7 @@ title: "HR Insight Engine"
 
 A People Ops lead at a 280-person company gets a Slack message on a Thursday afternoon: the CFO wants turnover by department, by tenure band, and by manager, for the board deck on Monday. The data exists—some of it in the HRIS, some in the payroll system, some in a performance tool nobody has logged into since the last review cycle, and a lot of it in a spreadsheet one analyst maintains by hand. Pulling it together means three CSV exports, a weekend of VLOOKUPs, and a pivot table that will be stale the moment someone resigns. By the time the chart is ready, the question has already moved on to "so why are the top performers the ones leaving?"—and there is no time left to answer it.
 
-This is not an edge case; it is the default operating condition of mid-market HR. Ideabrowser's research on this idea leads with a stat that keeps surfacing across the industry press: 79% of HR leaders report being unable to use their data effectively. The pain is chronic and, per the community signals, intensifying—not because the data is missing but because the tooling assumes one of two extremes. Either you are a Fortune 500 with a Visier contract and a dedicated people-analytics team, or you are stitching dashboards together in Excel and Power BI by hand. The 100-to-1,000-employee company in the middle has executive-grade questions and a spreadsheet-grade toolkit.
+This is not an edge case; it is the default operating condition of mid-market HR. Community research on this idea leads with a stat that keeps surfacing across the industry press: 79% of HR leaders report being unable to use their data effectively. The pain is chronic and, per the community signals, intensifying—not because the data is missing but because the tooling assumes one of two extremes. Either you are a Fortune 500 with a Visier contract and a dedicated people-analytics team, or you are stitching dashboards together in Excel and Power BI by hand. The 100-to-1,000-employee company in the middle has executive-grade questions and a spreadsheet-grade toolkit.
 
 The downstream cost is strategic, not just clerical. Attrition among high performers, pay-equity exposure, and manager-level retention gaps are exactly the metrics a board asks about—and exactly the ones that take weeks to assemble manually, by which point the answer is a post-mortem instead of an intervention. There are more than 200,000 mid-sized companies in the US alone, most of them running an HRIS that emits data faster than any human can reconcile it. The gap between "we have the data" and "we can act on it" is where this product lives.
 
@@ -31,7 +31,7 @@ The HR software market is large, growing, and—critically for a wedge player—
 - **The global HR software market is projected to reach $54.6B in 2025**, growing at roughly 9.3% CAGR toward at least $76.9B by 2029 (Global HR Software Market Insights 2025). This is the pond; people-analytics is the fastest-warming corner of it.
 - **The HR analytics sub-segment is forecast to surpass $9.89B by 2031 at a 14.9% CAGR** (PR Newswire / market research, 2025)—materially faster than the parent market, which is what "emerging category inside a mature one" looks like on a chart.
 - **84% of HR leaders expect to deploy AI or analytics dashboards by 2026** (five.co HR dashboard research). The buying intent is already committed; the open question is which tool captures it in the mid-market.
-- **79% of HR leaders report being unable to use their data effectively** (industry survey cited across Ideabrowser research). That is not a niche complaint—it is a near-universal admission of unmet need from the exact buyer you are selling to.
+- **79% of HR leaders report being unable to use their data effectively** (industry survey cited across community research research). That is not a niche complaint—it is a near-universal admission of unmet need from the exact buyer you are selling to.
 - **Reddit's r/humanresources has 177K+ members and r/analytics 224K+**, with r/PowerBI at 146K+ and the niche r/HRAnalytics concentrated at 5.2K. Threads on HRIS integration and dashboard building routinely draw 20-30+ engaged replies—demand you route, not create.
 - **Facebook groups like "People Analytics (The Science of HR)" and "HR Analytics Hub" (3.7K+)** run continuous requests for dashboard templates and integration help, and YouTube channels such as AIHR and MyOnlineTrainingHub pull 50K to 1M+ views on HR-dashboard tutorials—a content gap you can convert into a distribution channel.
 
@@ -91,8 +91,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - uploads(id, user_id, filename, row_count, created_at)
-- employees(id, user_id, upload_id, external_id, name, department, department_canonical, title, title_canonical, manager_external_id, hired_at, terminated_at, termination_type)  termination_type is regretted, non_regretted or active
-- taxonomy_maps(id, upload_id, kind, raw_value, canonical_value, approved boolean)  kind is department or title
+- employees(id, user_id, upload_id, external_id, name, department, department_canonical, title, title_canonical, manager_external_id, hired_at, terminated_at, termination_type) termination_type is regretted, non_regretted or active
+- taxonomy_maps(id, upload_id, kind, raw_value, canonical_value, approved boolean) kind is department or title
 - data_quality_flags(id, upload_id, employee_id, flag)
 
 Screens: /login, /upload, /cleanup (review the mapping), /dashboard (turnover).

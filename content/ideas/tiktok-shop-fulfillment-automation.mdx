@@ -9,7 +9,7 @@ A TikTok Shop seller posts a video at 9pm. By midnight it has half a million vie
 
 This is not a hypothetical. TikTok Shop's global GMV hit $33.2B in 2024 and is on pace for roughly $66B by the end of 2025 — over 100% year-over-year growth — with more than 15 million merchants selling on the platform worldwide. U.S. GMV alone reached $9B in 2024, up 650% year over year. Growth on this scale means viral spikes are now a routine operating condition, not an edge case, for sellers who have zero fulfillment infrastructure and no warning before a video takes off.
 
-The community signal backs this up directly. Reddit's r/TikTokshop has more than 18,000 members, and threads about manual order processing and shipping delays routinely pull 50-plus comments — an unusually high engagement rate for a niche subreddit. Facebook's "TikTok Shop Community" (nearly 10,000 members) and "TikTok Shop US-Seller" (4,700 members, officially run by TikTok) are full of the same complaint: sellers want automation and cross-platform order sync, and the tools that exist either assume you're a big brand or don't integrate deeply enough with TikTok's own systems. Google Trends shows searches for TikTok fulfillment climbing 300 to 700% over the past year. The pain is acute, frequent, and — per Ideabrowser's willingness-to-pay scoring — sellers are already primed to spend to make it go away.
+The community signal backs this up directly. Reddit's r/TikTokshop has more than 18,000 members, and threads about manual order processing and shipping delays routinely pull 50-plus comments — an unusually high engagement rate for a niche subreddit. Facebook's "TikTok Shop Community" (nearly 10,000 members) and "TikTok Shop US-Seller" (4,700 members, officially run by TikTok) are full of the same complaint: sellers want automation and cross-platform order sync, and the tools that exist either assume you're a big brand or don't integrate deeply enough with TikTok's own systems. Google Trends shows searches for TikTok fulfillment climbing 300 to 700% over the past year. The pain is acute, frequent, and — per community research's willingness-to-pay scoring — sellers are already primed to spend to make it go away.
 
 TikTok itself offers Fulfilled by TikTok (FBT), a native pick-pack-ship service. But FBT isn't available everywhere, isn't built for sellers who want to keep their own inventory and 3PL relationships, and doesn't help the huge tier of nano and micro-sellers doing under 500 orders a month who don't clear FBT's onboarding bar in every market. That gap — sellers big enough to be drowning, too small or too international for FBT — is where a plug-and-play automation layer belongs.
 
@@ -30,7 +30,7 @@ The wedge is depth of TikTok-specific integration rather than being one more con
 
 TikTok Shop is the fastest-scaling e-commerce channel in the world right now, and the fulfillment layer underneath it has not caught up. Global GMV reached $33.2B in 2024, and H1 2025 alone brought in $26.2B, putting the platform on track for roughly $66B by year-end 2025 — over 100% year-over-year growth. U.S. GMV specifically hit $9B in 2024, a 650% year-over-year jump, with Southeast Asia currently driving the highest absolute order volume globally.
 
-That growth is landing on a merchant base that is still largely unequipped to handle it. TikTok counts more than 15 million sellers worldwide, the overwhelming majority of them small shops, solo creators, and micro-brands rather than enterprise retailers with dedicated ops teams. Ideabrowser's market-gap research is explicit on this: nano and micro-sellers — those moving under 500 orders a month — remain structurally underserved, both because TikTok's own Fulfilled by TikTok program isn't available in every market yet (notably parts of the EU, LatAm, and non-core Southeast Asia) and because no sub-$30/month tool currently offers deep, TikTok-native API integration at that price point.
+That growth is landing on a merchant base that is still largely unequipped to handle it. TikTok counts more than 15 million sellers worldwide, the overwhelming majority of them small shops, solo creators, and micro-brands rather than enterprise retailers with dedicated ops teams. community research's market-gap research is explicit on this: nano and micro-sellers — those moving under 500 orders a month — remain structurally underserved, both because TikTok's own Fulfilled by TikTok program isn't available in every market yet (notably parts of the EU, LatAm, and non-core Southeast Asia) and because no sub-$30/month tool currently offers deep, TikTok-native API integration at that price point.
 
 Demand signals independently confirm the gap. Keyword research shows high, high-commercial-intent search volume clustered around "tiktok seller," "tiktok shop seller," and "tiktok seller center" — exactly the terms a seller types when hunting for tools, not just information. Community engagement mirrors it: YouTube creators like Santrel Media and Hayden Bowles are pulling anywhere from 34,000 to over 530,000 views on TikTok monetization and fulfillment content, a strong proxy for how many sellers are actively hunting for operational solutions rather than just marketing advice.
 
@@ -63,7 +63,7 @@ A free "efficiency calculator" — enter your current daily order volume and see
 - **$35–50** — Target CAC (community-led acquisition keeps this low relative to paid social)
 - **$85/mo** — Blended ARPU across tiers
 - **~75%** — Gross margin (API/infrastructure costs are low relative to subscription price)
-- **8,000 paying sellers** — the path to roughly $8M ARR at blended ARPU, consistent with Ideabrowser's $10M ARR framing for the category
+- **8,000 paying sellers** — the path to roughly $8M ARR at blended ARPU, consistent with community research's $10M ARR framing for the category
 
 Path to revenue: launch with Starter and Growth only, targeting sellers already active in TikTok Shop Reddit and Facebook communities; add Scale and white-label once churn and support load are proven manageable at 500+ paying accounts.
 
@@ -90,9 +90,9 @@ Build the weekend MVP of "ShopAutopilot": a TikTok Shop seller imports orders an
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the EasyPost API for rates and labels (test mode first). Orders and inventory come in as the CSV files that Seller Center exports. Deploy on Vercel.
 
 Tables (Row Level Security on, each user reads only their own rows):
-- imports(id, user_id, kind, filename, row_count, created_at)  kind is orders or inventory
+- imports(id, user_id, kind, filename, row_count, created_at) kind is orders or inventory
 - products(id, user_id, sku, name, stock_qty)
-- orders(id, user_id, tiktok_order_id, status, buyer_name, address jsonb, items jsonb, region, carrier, tracking_number, label_url, created_at, shipped_at)  tiktok_order_id is unique per user
+- orders(id, user_id, tiktok_order_id, status, buyer_name, address jsonb, items jsonb, region, carrier, tracking_number, label_url, created_at, shipped_at) tiktok_order_id is unique per user
 - sync_errors(id, user_id, order_id, error jsonb, created_at)
 
 Screens: /login, /import, /orders (select and ship), /inventory (stock and low-stock badges), /export (the tracking CSV), /calculator (public).

@@ -15,7 +15,7 @@ The positioning claim you will hear is "40–60% higher approval." Treat that as
 
 A customer-facing explainer that sits on top of the estimate the shop already wrote. Paste the RO (or pull it from Shopmonkey / Tekmetric). Get a one-pager: what failed, why it failed, what we will do, what it costs in English, three annotated photos, and a "defer this / do this now" split. SMS the link. The advisor still talks. They stop translating.
 
-SaaS from $50/month in the Ideabrowser ladder; the street price that matches independent shops is $99–$299/month. Hardware vendors will not unbundle their tablet UI to do this.
+SaaS from $50/month in the pricing ladder; the street price that matches independent shops is $99–$299/month. Hardware vendors will not unbundle their tablet UI to do this.
 
 **How it works:**
 
@@ -34,7 +34,7 @@ ADAS and EV work makes the English problem worse. "Calibrate forward camera afte
 ## Competitive Landscape
 
 - **Bosch / Autel / Hitachi** — AI diagnostics inside hardware that costs thousands. Dealership-oriented. The customer never sees the output.
-- **AutoLeap AIR** — shop OS with AI features. Subscription unspecified in the Ideabrowser cut. They will add an explainer if this wedge prints. Integrate, do not pretend you replace the OS.
+- **AutoLeap AIR** — shop OS with AI features. Subscription unspecified in the community research cut. They will add an explainer if this wedge prints. Integrate, do not pretend you replace the OS.
 - **Shopmonkey / Tekmetric / Mitchell / ShopWare** — the RO systems shops already pay. Integration targets. None of them made the customer-facing one-pager the product.
 - **RepairPal** — consumer price benchmark. The competitor in the customer's other tab. You will not beat their database. You can beat "here is *this* shop's photo of *this* compressor."
 
@@ -82,7 +82,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, a shop reads only its own rows; the customer page reads through a server route that checks the token):
 - profiles(user_id, shop_name, phone)
 - estimates(id, user_id, token, vin, mileage, concern, customer_phone, status, created_at, sent_at, expires_at)
-- line_items(id, estimate_id, raw_line, price_cents, cause, fix, risk_if_wait, priority, safety_flag boolean, decision, decided_at)  priority is do_now or can_wait; decision is approved, deferred or pending
+- line_items(id, estimate_id, raw_line, price_cents, cause, fix, risk_if_wait, priority, safety_flag boolean, decision, decided_at) priority is do_now or can_wait; decision is approved, deferred or pending
 - photos(id, estimate_id, storage_key, label, x_pct, y_pct)
 - followups(id, estimate_id, line_item_id, due_on, status)
 

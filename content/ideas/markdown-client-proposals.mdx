@@ -25,7 +25,7 @@ Weekend MVP: web upload → Playwright/PDF rendering with CSS templates → Stri
 
 ## Market Research
 
-- Document automation, proposal software, and markdown tooling are large overlapping markets; even a thin freelancer slice supports a bootstrap SaaS ([Ideabrowser #8023](https://www.ideabrowser.com)).
+- Document automation, proposal software, and markdown tooling are large overlapping markets; even a thin freelancer slice supports a bootstrap SaaS ([community research](https://www.community research.com)).
 - Search interest in markdown-to-PDF workflows has grown; Obsidian's audience expanded beyond pure engineers.
 - Community: r/Markdown (70K+), r/graphic_design, r/webdevelopment discussions on conversion and branding; YouTube tutorials on markdown PDF pipelines draw strong views.
 - Freelancers already pay for PandaDoc/HelloSign — willingness exists; they hate the editor switch.
@@ -76,7 +76,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows; templates are read-only):
 - brand_kits(id, user_id, primary_color, logo_path, font_heading, font_body)
-- templates(id, name, kind, config jsonb)  name is Studio, Editorial or Technical; kind is proposal, sow or brief
+- templates(id, name, kind, config jsonb) name is Studio, Editorial or Technical; kind is proposal, sow or brief
 - proposals(id, user_id, title, markdown, client_name, variables jsonb, created_at)
 - exports(id, proposal_id, template_id, file_path, duration_ms, created_at)
 

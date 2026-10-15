@@ -30,7 +30,7 @@ The creator economy has crossed from "trend" into durable infrastructure, and th
 
 - **The global creator economy was valued at roughly $191.55B in 2025 and is projected to surpass $528B by 2030**, a 22.5% CAGR (Exploding Topics / market.us). That is not a niche—it is one of the fastest-compounding software markets, and the tooling spend rides on top of it.
 - **North America accounts for 40–45.6% of that market—about $32–34B in 2025—and is forecast to grow even faster regionally** (Coherent Market Insights). The highest-willingness-to-pay creators are concentrated exactly where a English-first launch tool lands first.
-- **An estimated 91% of creators already use AI tools in their workflow** (industry surveys cited in Ideabrowser research on idea #2456). The behavior change—creators trusting AI to draft and generate—has already happened; the question is which product owns the launch moment.
+- **An estimated 91% of creators already use AI tools in their workflow** (industry surveys cited in community research on idea #2456). The behavior change—creators trusting AI to draft and generate—has already happened; the question is which product owns the launch moment.
 - **Demand is concentrated and self-identifying**: r/NewTubers (583K+), r/FacebookAds (179K+), r/digital_marketing (136K+), plus Facebook creator groups (105K+ and 20K+). That is a combined audience of self-declared buyers actively asking for exactly this in public.
 - **The market is fragmented with no all-in-one launch leader.** Canva owns design, ConvertKit owns email, ManyChat owns DM automation—each a large business, none of them the launch layer that ties promo creation to customer support for a single product.
 
@@ -91,7 +91,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each creator reads only their own rows):
 - products(id, user_id, name, description, audience, links jsonb)
 - briefs(id, product_id, brand_voice, voice_samples text[], created_at)
-- assets(id, product_id, type, content jsonb, status, error, updated_at)  type is video_script, carousel, email_sequence or faq; status is pending, ready or failed; one row per product and type
+- assets(id, product_id, type, content jsonb, status, error, updated_at) type is video_script, carousel, email_sequence or faq; status is pending, ready or failed; one row per product and type
 
 Screens: /login, /products/new (the brief), /products/[id] (the four assets, each with Regenerate and Copy).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
