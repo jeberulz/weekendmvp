@@ -100,7 +100,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on; a creator reads only their own audits, and partners are read-only to signed-in creators):
 - audits(id, user_id, source_name, uplift_assumption, memo jsonb, created_at)
 - order_rows(id, audit_id, ordered_at, country_code, gross_cents, currency)
-- partners(id, country_code, name, languages text[], notes)  you add these by hand
+- partners(id, country_code, name, languages text[], notes) you add these by hand
 - pilot_requests(id, audit_id, country_code, status, created_at)
 
 Screens: /login, /audits/new (CSV upload), /audits/[id] (the memo), /partners (read-only list).
@@ -148,7 +148,7 @@ Done when: each deliverable is saved in one folder and the stamp is still readab
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #9334 and the public research it cites (September 2026 snapshot). Triangulate before you cite in investor materials. LATAM/APAC figures are the primary cited stats; broader e-learning and localization TAM numbers are secondary context only.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (September 2026 snapshot). Triangulate before you cite in investor materials. LATAM/APAC figures are the primary cited stats; broader e-learning and localization TAM numbers are secondary context only.
 
 - [GlobeNewswire — Latin America e-learning market ($30.51B 2024, $52.1B 2030, 9.3% CAGR)](https://www.globenewswire.com/news-release/2025/10/21/3169985/0/en/Latin-America-E-Learning-Market-Research-Report-2025-2035.html)
 - [IMARC — E-learning market (North America share context)](https://www.imarcgroup.com/e-learning-market)
@@ -163,4 +163,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [AI dubbing pricing 2026 ($1–$10/min vs studio)](https://videodubbing.com/blog/post/ai-dubbing-pricing-cost-guide-2026/)
 - [SimulTrans — eLearning translation (agency price foil)](https://www.simultrans.com/elearning-translation)
 
-Page sourced via Ideabrowser MCP (idea_id 9334): get_idea_research, competitive_analysis, keyword_list, community_analysis, get_verified_research.
+Research methods: get_idea_research, competitive_analysis, keyword_list, community_analysis, get_verified_research.

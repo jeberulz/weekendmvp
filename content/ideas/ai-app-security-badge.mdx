@@ -89,9 +89,9 @@ Roles: a signed-in user is a builder or a hacker, decided by which profile row t
 Tables (Row Level Security on: a builder sees only their own apps, audits and findings, and a hacker sees only the audits they claimed):
 - builders(id, user_id, company_name)
 - hackers(id, user_id, name, verified, specialties)
-- apps(id, builder_id, name, url, repo_url, complexity_tier)  where complexity_tier is one of starter, standard, deep
-- audits(id, app_id, hacker_id, status, started_at, completed_at, price_cents)  where status is one of open, claimed, in_review, remediation, verified, certified
-- findings(id, audit_id, severity, title, description, reproduction_steps, status)  where severity is one of critical, high, medium, low, info and status is one of open, fixed, verified, wont_fix
+- apps(id, builder_id, name, url, repo_url, complexity_tier) where complexity_tier is one of starter, standard, deep
+- audits(id, app_id, hacker_id, status, started_at, completed_at, price_cents) where status is one of open, claimed, in_review, remediation, verified, certified
+- findings(id, audit_id, severity, title, description, reproduction_steps, status) where severity is one of critical, high, medium, low, info and status is one of open, fixed, verified, wont_fix
 - badges(id, app_id, audit_id, issued_at, expires_at, public_slug)
 
 Screens: /login, /submit (builder), /queue (hacker).
@@ -138,7 +138,7 @@ Done when: each deliverable is saved in one folder and the badge is readable at 
 
 ## Sources
 
-Market sizing, competitive landscape, and demand signals collated from Ideabrowser MCP idea #1616 and the public research it cites (July 2026 snapshot). Triangulate before you cite in investor materials.
+Market sizing, competitive landscape, and demand signals collated from the public research it cites (July 2026 snapshot). Triangulate before you cite in investor materials.
 
 - [Cyvent — Cybersecurity Statistics 2025 ($267.5B 2025 spend)](https://www.cyvent.com/post/cybersecurity-statistics-2025)
 - [IMARC Group — Cybersecurity Market Report ($644.4B by 2033, CAGR)](https://www.imarcgroup.com/cybersecurity-market)
@@ -150,4 +150,4 @@ Market sizing, competitive landscape, and demand signals collated from Ideabrows
 - [Bugcrowd — pricing/positioning reference (managed programs from ~$1,500/mo)](https://www.bugcrowd.com/products/pricing/)
 - [OWASP Foundation — free security frameworks reference (ZAP, ASVS, Top 10)](https://owasp.org/)
 
-Page sourced via Ideabrowser MCP (idea_id 1616): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

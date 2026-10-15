@@ -97,8 +97,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, a user reads only their own profiles; interaction_records is read-only to signed-in users):
 - profiles(id, owner_user_id, display_name, birth_year)
-- medications(id, profile_id, rxcui, display_name, raw_input, dose, kind, prescriber, added_at, stopped_at)  kind is prescription, otc or supplement
-- interaction_records(id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text)  severity is major, moderate or minor
+- medications(id, profile_id, rxcui, display_name, raw_input, dose, kind, prescriber, added_at, stopped_at) kind is prescription, otc or supplement
+- interaction_records(id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text) severity is major, moderate or minor
 - screens(id, profile_id, run_at, medication_ids uuid[], flag_count)
 - flags(id, screen_id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text)
 
@@ -147,7 +147,7 @@ Done when: each deliverable is saved in one folder and the severity chips are di
 
 ## Sources
 
-Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #6765 and the public research it cites (August 2026 snapshot). This page describes a consumer information tool, not a clinical decision system — verify regulatory posture before building anything that makes a treatment recommendation.
+Market sizing, competitor set, and demand signals sourced from the public research it cites (August 2026 snapshot). This page describes a consumer information tool, not a clinical decision system — verify regulatory posture before building anything that makes a treatment recommendation.
 
 - [Fortune Business Insights — Medication Management Software Market ($8.17B 2025 → $23.29B 2034, 12.45% CAGR)](https://www.fortunebusinessinsights.com/medication-management-software-market-115703)
 - [Research and Markets — Medication Side Effect Tracker App Market ($1.65B 2026 → $2.79B 2030, 14% CAGR)](https://www.researchandmarkets.com/reports/6190943/medication-side-effect-tracker-app-market-report)
@@ -159,4 +159,4 @@ Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP i
 - [Drugs.com Interaction Checker — free consumer benchmark](https://www.drugs.com/drug_interactions.html)
 - [Medisafe — pricing reference for the consumer medication app category](https://www.medisafe.com/)
 
-Page sourced via Ideabrowser MCP (idea_id 6765): get_idea_research, competitive_analysis, go_to_market, keyword_list.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list.

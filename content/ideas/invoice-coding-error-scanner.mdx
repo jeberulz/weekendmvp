@@ -94,7 +94,7 @@ Tables (Row Level Security on, each user reads only their own rows):
 - clients(id, user_id, name, owner_name, chart_of_accounts text[])
 - batches(id, client_id, filename, created_at)
 - bills(id, client_id, batch_id, vendor, bill_date, amount_cents, source_total_cents, account, payee, memo)
-- flags(id, bill_id, flag_type, confidence, explanation, suggested_account, status)  flag_type is amount_mismatch, category_drift, near_duplicate or owner_draw; status is open, accepted, recoded or escalated
+- flags(id, bill_id, flag_type, confidence, explanation, suggested_account, status) flag_type is amount_mismatch, category_drift, near_duplicate or owner_draw; status is open, accepted, recoded or escalated
 - reviews(id, flag_id, decision, recoded_account, note, decided_at)
 
 Screens: /login, /clients, /batches/[id] (the review queue, 20 rows a page), /export.
@@ -142,7 +142,7 @@ Done when: each deliverable is saved in one folder and the flag chips are distin
 
 ## Sources
 
-Market sizing and pricing collated from Ideabrowser MCP idea 8377 and the reports below. Error-rate and “clerical tax” figures are vendor-adjacent; check a prospect’s recode log before using them in a deck.
+Market sizing and pricing collated from the reports below. Error-rate and “clerical tax” figures are vendor-adjacent; check a prospect’s recode log before using them in a deck.
 
 - [Research and Markets — Invoice Processing Software Market Report](https://www.researchandmarkets.com/reports/5980383/invoice-processing-software-market-report)
 - [Market.us — AI for Invoice Management Market](https://market.us/report/ai-for-invoice-management-market/)
@@ -152,4 +152,4 @@ Market sizing and pricing collated from Ideabrowser MCP idea 8377 and the report
 - [QuickBooks Online — pricing reference (~$30–$90/mo plans)](https://quickbooks.intuit.com/pricing/)
 - [Dext — pricing reference (~$20–$40/client/mo capture)](https://dext.com/pricing)
 
-Page sourced via Ideabrowser MCP (idea_id 8377).
+Research methods recorded for this page.

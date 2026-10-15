@@ -91,7 +91,7 @@ Build the weekend MVP of "FlowLibrary": a catalog of ready-made automations with
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Claude (Anthropic API) for the quiz recommendations. Deploy on Vercel.
 
 Tables (Row Level Security on: templates are readable by everyone, quiz answers and installs by their owner):
-- templates(id, title, outcome, tags, apps_required, time_saved_hours, difficulty, export_targets, pack jsonb)  where tags include onboarding, content, leads and ops
+- templates(id, title, outcome, tags, apps_required, time_saved_hours, difficulty, export_targets, pack jsonb) where tags include onboarding, content, leads and ops
 - quiz_answers(id, user_id, answers jsonb, recommended jsonb, created_at)
 - installs(id, user_id, template_id, status, installed_at)
 Seed 10 hard-coded templates, including "Coach Client Onboarding" and "Podcast to Newsletter".
@@ -143,4 +143,4 @@ Done when: each deliverable is saved in one folder and the icon reads at 32 px.
 - [AI Adoption 2025 Stats — JetRuby](https://jetruby.com/blog/ai-adoption-2025-stats-market-growth-and-insight/)
 - [Artificial Intelligence Market — Precedence Research](https://www.precedenceresearch.com/artificial-intelligence-market)
 - Zapier, Make, n8n, and HubSpot pricing referenced from public tiers — verify before marketing.
-- Workflow automation TAM/CAGR figures summarized from industry market reports cited in Ideabrowser competitive analysis — verify primary sources before investor materials.
+- Workflow automation TAM/CAGR figures summarized from industry market reports cited in competitive analysis — verify primary sources before investor materials.

@@ -126,9 +126,9 @@ Step 2 — Persona ID check:
 Step 3 — Admin cert cross-check:
 - /admin/verification route shows queue of pending credentials.
 - Admin opens the PDF, cross-references cert_number against:
-  - NASM: https://my.nasm.org (manual lookup for first 100; build scraper later)
-  - ACE: https://www.acefitness.org/find-a-pro
-  - ISSA: https://www.issaonline.com/verify
+ - NASM: https://my.nasm.org (manual lookup for first 100; build scraper later)
+ - ACE: https://www.acefitness.org/find-a-pro
+ - ISSA: https://www.issaonline.com/verify
 - Admin clicks Approve (sets verified_at = NOW, verified_by_admin_id, trainer.status='active') or Reject (with free-form reason emailed to trainer).
 
 Step 4 — Public display:
@@ -146,21 +146,21 @@ Implement the escrow-protected booking flow. Key insight: Stripe Connect support
 Booking flow:
 1. Client clicks "Book session" on a trainer profile. Selects slot from trainer's calendar availability.
 2. Server creates a PaymentIntent:
-   stripe.paymentIntents.create({
-     amount: session_price_cents + client_service_fee_cents,
-     currency: 'usd',
-     customer: client.stripe_customer_id,
-     application_fee_amount: platform_take_cents,
-     transfer_data: { destination: trainer.stripe_account_id },
-     capture_method: 'manual',  // this is the escrow primitive
-     metadata: { booking_id }
-   });
+ stripe.paymentIntents.create({
+ amount: session_price_cents + client_service_fee_cents,
+ currency: 'usd',
+ customer: client.stripe_customer_id,
+ application_fee_amount: platform_take_cents,
+ transfer_data: { destination: trainer.stripe_account_id },
+ capture_method: 'manual', // this is the escrow primitive
+ metadata: { booking_id }
+ });
 3. Client confirms via Stripe Elements. Status of PaymentIntent becomes 'requires_capture' — funds held by Stripe, not yet captured.
 4. booking.status = 'held'.
 5. Session happens (in person or via Daily.co embedded room).
 6. 24 hours after scheduled_at, a Vercel Cron job scans bookings where status='held' AND (scheduled_at + 24h) < NOW. For each:
-   - If client has not filed a dispute: stripe.paymentIntents.capture(pi_id) -> funds transfer to trainer minus application_fee. booking.status = 'captured'.
-   - If trainer canceled (trainer.status_change event): stripe.paymentIntents.cancel(pi_id) -> full auto-refund. booking.status = 'refunded'.
+ - If client has not filed a dispute: stripe.paymentIntents.capture(pi_id) -> funds transfer to trainer minus application_fee. booking.status = 'captured'.
+ - If trainer canceled (trainer.status_change event): stripe.paymentIntents.cancel(pi_id) -> full auto-refund. booking.status = 'refunded'.
 7. After capture, prompt client via Resend email for a 1-5 star review + short text.
 
 Dispute path: client can hit "Something went wrong" within the 24h window, which freezes capture and opens a 72-hour support ticket. Admin decides capture vs. refund. Build this route; human-review for disputes is fine until you're at 1K+ bookings/month.
@@ -173,6 +173,6 @@ Dispute path: client can hit "Something went wrong" within the 24h window, which
 - • [IHRSA — Global Health Club Industry Report ($35B US, $97B global)](https://www.ihrsa.org/publications/)
 - • [Stripe — Manual Capture docs (the escrow primitive)](https://stripe.com/docs/payments/place-a-hold-on-a-payment-method)
 - • [NASM Credential Verification Directory](https://www.nasm.org/verify)
-- • Ideabrowser research passes — adjacent fitness ideas #1220 (fitness data marketplace, opp 8) and #2320 (virtual trainer form checker, opp 9); no direct match for certification-verified trainer marketplace, April 2026.
+- • community research research passes — adjacent fitness ideas #1220 (fitness data marketplace, opp 8) and #2320 (virtual trainer form checker, opp 9); no direct match for certification-verified trainer marketplace, April 2026.
 
 Mindbody acquisition (Vista Equity, 2019, $1.9B) referenced from public M&A databases; verify against press release before marketing use.

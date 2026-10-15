@@ -124,17 +124,17 @@ Prompt construction:
 System prompt:
 "You extract actionable tasks from a single email. Return strict JSON matching this schema:
 {
-  thread_summary: 'one sentence of what the email is about',
-  tasks: [
-    {
-      title: 'imperative verb + object, max 80 chars',
-      due_date: 'ISO date or null, inferred from phrases like by Friday, EOD, next Monday',
-      priority: 'low' | 'medium' | 'high' based on urgency language and explicit markers,
-      owner: 'the person the task is for — null if ambiguous, or the user email if clearly a personal ask',
-      context_snippet: '15-30 word quote from the email that establishes the ask'
-    }
-  ],
-  sender_urgency: 'low' | 'medium' | 'high' — the overall tone
+ thread_summary: 'one sentence of what the email is about',
+ tasks: [
+ {
+ title: 'imperative verb + object, max 80 chars',
+ due_date: 'ISO date or null, inferred from phrases like by Friday, EOD, next Monday',
+ priority: 'low' | 'medium' | 'high' based on urgency language and explicit markers,
+ owner: 'the person the task is for — null if ambiguous, or the user email if clearly a personal ask',
+ context_snippet: '15-30 word quote from the email that establishes the ask'
+ }
+ ],
+ sender_urgency: 'low' | 'medium' | 'high' — the overall tone
 }
 
 Rules:
@@ -160,28 +160,28 @@ Todoist adapter (destinations/todoist.ts):
 - OAuth flow: user clicks 'Connect Todoist', redirect to https://todoist.com/oauth/authorize?client_id=X&scope=data:read_write&state=user_id. Callback at /api/destinations/todoist/callback exchanges code for token.
 - Store access_token encrypted + project_id where tasks should go (default Inbox).
 - pushTasks: for each task, POST to https://api.todoist.com/rest/v2/tasks with body:
-  {
-    content: task.title,
-    description: task.context_snippet,
-    due_date: task.due_date,
-    priority: task.priority === 'high' ? 4 : task.priority === 'medium' ? 3 : 2,
-    project_id: config.project_id
-  }
+ {
+ content: task.title,
+ description: task.context_snippet,
+ due_date: task.due_date,
+ priority: task.priority === 'high' ? 4 : task.priority === 'medium' ? 3 : 2,
+ project_id: config.project_id
+ }
 - Handle rate limit: 450 tasks/15min. Batch with Promise.all, max 5 concurrent.
 
 Notion adapter (destinations/notion.ts):
 - OAuth flow: user authorizes a Notion integration scoped to a specific database.
 - Store access_token + database_id.
 - pushTasks: for each task, POST to https://api.notion.com/v1/pages:
-  {
-    parent: { database_id: config.database_id },
-    properties: {
-      Name: { title: [{ text: { content: task.title } }] },
-      'Due Date': task.due_date ? { date: { start: task.due_date } } : null,
-      Priority: { select: { name: task.priority } },
-      Context: { rich_text: [{ text: { content: task.context_snippet } }] }
-    }
-  }
+ {
+ parent: { database_id: config.database_id },
+ properties: {
+ Name: { title: [{ text: { content: task.title } }] },
+ 'Due Date': task.due_date ? { date: { start: task.due_date } } : null,
+ Priority: { select: { name: task.priority } },
+ Context: { rich_text: [{ text: { content: task.context_snippet } }] }
+ }
+ }
 - User must pre-create database with these property names; show schema doc on connect.
 
 Digest email adapter (destinations/email_digest.ts):
@@ -199,6 +199,6 @@ Error handling: on 401, mark OAuth token as expired, email user to reconnect. Ne
 - • [Todoist REST API v2 documentation](https://developer.todoist.com/rest/v2/)
 - • [Notion API — Create page in database](https://developers.notion.com/reference/post-page)
 - • [Resend Inbound Email API documentation](https://resend.com/docs/api-reference/inbound-email)
-- • Todoist 30M+ users / 5M+ paid + Superhuman $30/mo pricing referenced from public company pages. Ideabrowser MCP search returned no direct match for email-to-todo wedge.
+- • Todoist 30M+ users / 5M+ paid + Superhuman $30/mo pricing referenced from public company pages. Research search returned no direct match for email-to-todo wedge.
 
 Verify competitor pricing and feature claims on live pages before marketing.

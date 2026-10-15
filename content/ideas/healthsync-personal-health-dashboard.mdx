@@ -92,7 +92,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own rows):
 - imports(id, user_id, filename, row_count, created_at)
-- metrics(id, user_id, metric_type, value, unit, recorded_on, source)  metric_type is sleep_minutes, hrv_ms, resting_hr, steps, glucose_mgdl or weight_kg; unique on user, metric_type, recorded_on and source
+- metrics(id, user_id, metric_type, value, unit, recorded_on, source) metric_type is sleep_minutes, hrv_ms, resting_hr, steps, glucose_mgdl or weight_kg; unique on user, metric_type, recorded_on and source
 - insights(id, user_id, week_start, body, metric_refs jsonb, created_at)
 - alerts(id, user_id, metric_type, comparison, threshold, days_in_a_row, is_active, last_triggered_on)
 
@@ -153,4 +153,4 @@ Done when: each deliverable is saved in one folder and the label reads clearly i
 - [Gyroscope — plans and G1/Max pricing](https://gyrosco.pe/announcements/version-10/)
 - [Welltory — subscription plans ($19.99/mo, $119.99/yr, $599 lifetime)](https://app.welltory.com/payments/plans/main/)
 
-Page sourced via Ideabrowser MCP (idea_id 1255): get_idea_research, competitive_analysis, go_to_market, community_analysis, market_stage_analysis, keyword_list, why_now, product_offerings. Competitor pricing verified against public 2026 pricing pages.
+Research methods: get_idea_research, competitive_analysis, go_to_market, community_analysis, market_stage_analysis, keyword_list, why_now, product_offerings. Competitor pricing verified against public 2026 pricing pages.

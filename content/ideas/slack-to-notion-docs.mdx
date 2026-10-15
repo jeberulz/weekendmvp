@@ -95,7 +95,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, a user reads only their own workspace's rows):
 - workspaces(id, slack_team_id, bot_token_encrypted, created_by)
 - channels_watched(id, workspace_id, slack_channel_id, mode)
-- extracted_items(id, workspace_id, slack_channel_id, source_message_ts, source_permalink, item_type, content, owner_hint, due_hint, confidence, status, created_at)  item_type is decision, action_item or open_question; status is draft, accepted or rejected; unique on workspace_id, source_message_ts and item_type
+- extracted_items(id, workspace_id, slack_channel_id, source_message_ts, source_permalink, item_type, content, owner_hint, due_hint, confidence, status, created_at) item_type is decision, action_item or open_question; status is draft, accepted or rejected; unique on workspace_id, source_message_ts and item_type
 - audit_log(id, workspace_id, item_id, action, actor, before jsonb, after jsonb, occurred_at)
 
 Screens: /login, /workspace (connect the Slack app), /threads (one page per thread), /threads/[id] (decisions, actions and questions with Accept and Edit).
@@ -143,7 +143,7 @@ Done when: each deliverable is saved in one folder and the item chips are distin
 
 ## Sources
 
-Market sizing, competitive pricing, and community demand signals collated from Ideabrowser MCP idea #1688 (competitive_analysis, community_analysis, go_to_market, keyword_list). The `research_market_insight` and `research_trend` MCP calls hit monthly plan limits at research time; market-sizing figures below are sourced from the citations `competitive_analysis` itself returned, not fabricated.
+Market sizing, competitive pricing, and community demand signals collated from community research (competitive_analysis, community_analysis, go_to_market, keyword_list). The `research_market_insight` and `research_trend` MCP calls hit monthly plan limits at research time; market-sizing figures below are sourced from the citations `competitive_analysis` itself returned, not fabricated.
 
 - [Future Market Insights — Conversation Intelligence Software Market ($25.3B 2025 → $55.7B by 2035, 8.2% CAGR)](https://www.futuremarketinsights.com/reports/conversation-intelligence-software-market)
 - [Research Nester — Conversational Systems Market ($289.8B 2025 → $6.76T by 2037, 29.5% CAGR)](https://www.researchnester.com/reports/conversational-systems-market/4181)
@@ -156,4 +156,4 @@ Market sizing, competitive pricing, and community demand signals collated from I
 - [Reddit r/Slack — community demand signal (29.5K+ members)](https://www.reddit.com/r/Slack/)
 - [Reddit r/PKMS — personal knowledge management community (51K+ members)](https://www.reddit.com/r/PKMS/)
 
-Page sourced via Ideabrowser MCP (idea_id 1688): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis. Verify current competitor pricing on live product pages before citing in investor materials — SaaS packaging shifts quarterly.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis. Verify current competitor pricing on live product pages before citing in investor materials — SaaS packaging shifts quarterly.

@@ -90,8 +90,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, a renter reads only their own rows):
 - properties(id, user_id, address, state, lease_start, lease_end)
-- rooms(id, property_id, name, stage)  stage is movein or moveout
-- photos(id, room_id, storage_key, sha256, captured_at, lat, lng, confirmed_description, flagged_items jsonb)  captured_at is set by the server; a trigger blocks any update or delete of storage_key, sha256 and captured_at
+- rooms(id, property_id, name, stage) stage is movein or moveout
+- photos(id, room_id, storage_key, sha256, captured_at, lat, lng, confirmed_description, flagged_items jsonb) captured_at is set by the server; a trigger blocks any update or delete of storage_key, sha256 and captured_at
 - reports(id, property_id, stage, created_at)
 - letters(id, property_id, amount_withheld_cents, deadline_date, body, created_at)
 
@@ -141,7 +141,7 @@ Done when: each deliverable is saved in one folder and the stage labels are dist
 
 ## Sources
 
-Market sizing, competitor pricing, and demand signals were collated from Ideabrowser MCP idea #3883 and the public research it cites (2025-2026 snapshot). Triangulate before citing any figure in investor materials. This page describes a self-help documentation tool and is not legal advice.
+Market sizing, competitor pricing, and demand signals were collated from the public research it cites (2025-2026 snapshot). Triangulate before citing any figure in investor materials. This page describes a self-help documentation tool and is not legal advice.
 
 - [Market Research Intellect - AI Home Inspection Software Market (USD 1.3B in 2024 to USD 5B by 2035, 13.1% CAGR)](https://www.marketresearchintellect.com/product/ai-home-inspection-software-market/)
 - [The Business Research Company - AI in Real Estate Global Market Report (USD 303B in 2025, 36.1% CAGR, USD 988.59B by 2029)](https://www.thebusinessresearchcompany.com/report/ai-in-real-estate-global-market-report)
@@ -152,4 +152,4 @@ Market sizing, competitor pricing, and demand signals were collated from Ideabro
 - [Buildium - property management software pricing reference](https://www.buildium.com/pricing/)
 - [r/Renters - 255K-member community documenting deposit disputes](https://www.reddit.com/r/Renters/)
 
-Page sourced via Ideabrowser MCP (idea_id 3883): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

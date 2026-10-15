@@ -79,10 +79,10 @@ Build the weekend MVP of "SellerShield": it flags risky orders before they ship 
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Shopify Admin API for order webhooks, the Anthropic API for the dispute draft. Deploy on Vercel. A seller can also upload orders as a CSV, so you can test without a live store.
 
 Tables (Row Level Security on, scoped to the store's owner):
-- stores(id, user_id, shop_domain, access_token)  access_token is read on the server only
+- stores(id, user_id, shop_domain, access_token) access_token is read on the server only
 - orders(id, store_id, external_order_id, buyer_email, shipping_address, bill_to_address, total_cents, placed_at)
 - fraud_scores(id, order_id, score, signals jsonb, scored_at)
-- disputes(id, order_id, reason_code, filed_at, response_due_at, status, outcome)  reason_code is one of not_received, not_as_described, fraudulent
+- disputes(id, order_id, reason_code, filed_at, response_due_at, status, outcome) reason_code is one of not_received, not_as_described, fraudulent
 - evidence_items(id, dispute_id, type, label, url, extracted_text)
 
 Screens: /login, /orders (risk badges), /disputes/[id] (evidence and the draft).
@@ -137,4 +137,4 @@ Done when: each deliverable is saved in one folder and the badges are distinguis
 - [GetApp — FraudLabs Pro Pricing](https://www.getapp.com/finance-accounting-software/a/fraudlabs-pro/)
 - [IBISWorld — Security Services Industry Report](https://www.ibisworld.com/united-states/industry/security-services/1487/)
 
-Page sourced via Ideabrowser MCP (idea_id 1472): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
