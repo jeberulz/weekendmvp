@@ -76,7 +76,7 @@ function IdeaBackLinkInner({
 
 /**
  * Sidebar (and optional footer) return control. Anonymous: All Ideas →
- * /startup-ideas (or a custom label). Signed-in: Back to Home / Explore /
+ * /startup-ideas (or a custom label). Signed-in: ← Dashboard / Explore /
  * Builds from `?from=` or a safe dashboard referrer.
  */
 export function IdeaBackLink({

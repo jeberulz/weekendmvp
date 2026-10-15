@@ -93,7 +93,7 @@ describe("WP44-S8 setup vocabulary", () => {
 
   test("reasons read as plain sentences", () => {
     expect(reasonText({ kind: "saved_like", title: "SlackToDoc" })).toBe("Like SlackToDoc, which you saved");
-    expect(reasonText({ kind: "hours", hours: "12" })).toBe("Fits a 12-hour weekend");
+    expect(reasonText({ kind: "hours", hours: "12" })).toBe("Fits in 12 hours or less");
     expect(reasonText({ kind: "tool", tool: "bolt" })).toBe("You build with Bolt");
     expect(reasonText({ kind: "goal", goal: "side-income" })).toBe("Fits your side income goal");
   });

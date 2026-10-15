@@ -23,7 +23,7 @@ describe("idea member return targets", () => {
   test("maps bounded ?from= values", () => {
     expect(ideaReturnFromParam("home")).toEqual({
       href: "/dashboard",
-      label: "Back to Home",
+      label: "← Dashboard",
     });
     expect(ideaReturnFromParam("explore")?.href).toBe("/dashboard/explore");
     expect(ideaReturnFromParam("ideas")?.label).toBe("Back to Explore");
@@ -34,7 +34,7 @@ describe("idea member return targets", () => {
   });
 
   test("maps same-origin dashboard referrer paths", () => {
-    expect(ideaReturnFromReferrerPath("/dashboard")?.label).toBe("Back to Home");
+    expect(ideaReturnFromReferrerPath("/dashboard")?.label).toBe("← Dashboard");
     expect(ideaReturnFromReferrerPath("/dashboard/explore")?.href).toBe(
       "/dashboard/explore",
     );
@@ -66,7 +66,7 @@ describe("idea member return targets", () => {
     ).toBe("Back to Explore");
     expect(
       resolveIdeaMemberReturn({ from: null, referrerPath: null }),
-    ).toEqual({ href: "/dashboard", label: "Back to Home" });
+    ).toEqual({ href: "/dashboard", label: "← Dashboard" });
   });
 
   test("only trusts same-origin referrers", () => {

@@ -86,7 +86,8 @@ export function reasonText(reason: PickReason): string {
         ? "Aims at $10K a month, for your replace-my-job goal"
         : "Fits your side income goal";
     case "hours":
-      return `Fits a ${reason.hours}-hour weekend`;
+      // Ranking uses fitsWeekend (buildHours <= N). Say so in the reason line.
+      return `Fits in ${reason.hours} hours or less`;
     case "tool":
       return `You build with ${TOOL_NAME[reason.tool]}`;
   }

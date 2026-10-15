@@ -1,18 +1,18 @@
 /**
  * Where a signed-in member should return from a public `/ideas/{slug}` page.
  * Prefer an explicit `?from=` query; fall back to a same-origin dashboard
- * referrer; otherwise Home. Not an authorization check.
+ * referrer; otherwise Dashboard. Not an authorization check.
  */
 
 export type IdeaMemberReturn = {
   href: string;
-  /** Visible label including the leading cue, e.g. "Back to Home". */
+  /** Visible label including the leading cue, e.g. "← Dashboard". */
   label: string;
 };
 
 const DEFAULT_RETURN: IdeaMemberReturn = {
   href: "/dashboard",
-  label: "Back to Home",
+  label: "← Dashboard",
 };
 
 const FROM_TARGETS: Record<string, IdeaMemberReturn> = {
@@ -58,14 +58,14 @@ export function ideaReturnFromReferrerPath(
   ) {
     return FROM_TARGETS.builds;
   }
-  // Other /dashboard/* (billing, settings) still return to Home.
+  // Other /dashboard/* (billing, settings) still return to Dashboard.
   if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
     return DEFAULT_RETURN;
   }
   return null;
 }
 
-/** Prefer `?from=`, then a safe dashboard referrer path, else Home. */
+/** Prefer `?from=`, then a safe dashboard referrer path, else Dashboard. */
 export function resolveIdeaMemberReturn(input: {
   from: string | null;
   referrerPath: string | null;
