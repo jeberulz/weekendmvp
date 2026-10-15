@@ -62,7 +62,15 @@ describe("auth platform request-time boundary", () => {
 describe("free auth UI contract", () => {
   test("auth card exposes Google + one-time email path without passwords", () => {
     expect(authCardSource).toContain("Continue with Google");
-    expect(authCardSource).toContain("Send One-Time Code");
+    expect(authCardSource).toContain("Email me a sign-in link");
+    expect(authCardSource).toContain("We'll email you a link that signs you in");
+    expect(authCardSource).toContain("Check your");
+    expect(authCardSource).toContain("Resend link");
+    expect(authCardSource).toContain("Use a different email");
+    expect(authCardSource).toContain("hello@switchtoux.com");
+    expect(authCardSource).not.toContain("weekendmvp.app");
+    expect(authCardSource).not.toMatch(/one-time code/i);
+    expect(authCardSource).not.toContain("Send One-Time Code");
     expect(authCardSource).toContain("Welcome back!");
     expect(authCardSource).toContain('signIn("google"');
     expect(authCardSource).toContain('signIn("email"');
