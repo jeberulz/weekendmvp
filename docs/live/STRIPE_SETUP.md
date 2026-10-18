@@ -88,8 +88,9 @@ npx convex run --internal live/workshopCheckout:seedSeats '{"eventKey":"build-al
 npx convex run --internal live/workshopCheckout:seedSeats '{"eventKey":"build-along-2026-11-14","apply":true}'
 ```
 
-4. Magic-link sign-in needs `AUTH_RESEND_KEY` and `AUTH_RESEND_FROM` on Convex
-   (may already be set for membership).
+4. Magic-link sign-in relies on the existing `AUTH_RESEND_*` env on Convex prod
+   `first-squirrel-244`. It was reported working 15 Oct; not re-verified from
+   env, and no change needed.
 
 ## Cron
 
