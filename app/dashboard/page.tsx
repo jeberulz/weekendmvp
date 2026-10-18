@@ -1,11 +1,17 @@
+import { connection } from "next/server";
 import { DashboardHome } from "@/components/platform/home/DashboardHome";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
 import { getDashboardEditorial } from "@/lib/dashboard/editorial";
+import { readLiveClockMs } from "@/lib/live/now";
+
+export const instant = false;
 
 export default async function DashboardPage() {
+  await connection();
   // The homepage's hourly cache: idea of the week and newest ideas match `/`.
   const editorial = await getDashboardEditorial();
+  const nowMs = readLiveClockMs();
   return (
     <>
       {/* WP27-S5. Claims a capability stashed on `/login` or `/signup`, if there
@@ -15,7 +21,7 @@ export default async function DashboardPage() {
       <WhenConvexReady>
         <PreviewClaimRunner />
       </WhenConvexReady>
-      <DashboardHome editorial={editorial} />
+      <DashboardHome editorial={editorial} nowMs={nowMs} />
     </>
   );
 }

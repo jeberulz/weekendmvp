@@ -53,11 +53,14 @@ const COPY: Record<
 export function AuthCard({
   mode,
   returnTo,
+  src = null,
   embedded = false,
   gate = false,
 }: {
   mode: AuthCardMode;
   returnTo: string;
+  /** Optional signup attribution (allowlisted values only, e.g. live-buildalong). */
+  src?: string | null;
   embedded?: boolean;
   /** Idea-page unlock gate: one primary create CTA + Sign in secondary. */
   gate?: boolean;
@@ -315,7 +318,7 @@ export function AuthCard({
             </button>
           ) : (
             <Link
-              href={withReturnTo(copy.crossHref, returnTo)}
+              href={withReturnTo(copy.crossHref, returnTo, src)}
               className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
             >
               {copy.crossLabel}
@@ -344,9 +347,12 @@ export function AuthCard({
   );
 }
 
-function withReturnTo(href: string, returnTo: string) {
-  if (returnTo === "/dashboard") return href;
-  return `${href}?returnTo=${encodeURIComponent(returnTo)}`;
+function withReturnTo(href: string, returnTo: string, src?: string | null) {
+  const params = new URLSearchParams();
+  if (returnTo !== "/dashboard") params.set("returnTo", returnTo);
+  if (src) params.set("src", src);
+  const qs = params.toString();
+  return qs ? `${href}?${qs}` : href;
 }
 
 function GoogleGlyph() {

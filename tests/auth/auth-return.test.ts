@@ -33,6 +33,14 @@ describe("auth redirect allowlist", () => {
     expect(safePlatformReturn(target)).toBe(expected);
   });
 
+  test("allows Build-Along checkout return with src attribution", () => {
+    expect(
+      safePlatformReturn("/live/build-along?src=live-buildalong#ticket"),
+    ).toBe("/live/build-along?src=live-buildalong#ticket");
+    expect(safePlatformReturn("/live/48-hours")).toBe(DEFAULT_AUTH_RETURN);
+    expect(safePlatformReturn("/live/other")).toBe(DEFAULT_AUTH_RETURN);
+  });
+
   test("constructs a dedicated callback without exposing an external target", () => {
     expect(authCallbackTarget("https://evil.example/steal")).toBe(
       "/auth/callback?returnTo=%2Fdashboard",

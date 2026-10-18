@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CopyablePre } from "@/components/ideas/PromptCopyButton";
+import { LiveIdeaModule } from "@/components/live/LiveIdeaModule";
 import type { PublicIdeaPreview } from "@/lib/ideas/public-preview";
 
 /**
@@ -84,6 +85,8 @@ export function IdeaPublicSummary({ preview }: { preview: PublicIdeaPreview }) {
           </ol>
         </section>
       ) : null}
+
+      <LiveIdeaModule />
     </div>
   );
 }

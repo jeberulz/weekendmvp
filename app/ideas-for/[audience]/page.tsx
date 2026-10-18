@@ -42,6 +42,7 @@ import {
 } from "@/components/hubs/hub-data";
 import { IdeaBrowser } from "@/components/public/IdeaBrowser";
 import { LinkTabs } from "@/components/public/LinkTabs";
+import { LiveBanner } from "@/components/live/LiveBanner";
 import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { InkBand, KeepBrowsing, SectionHeading } from "@/components/public/Sections";
@@ -836,6 +837,8 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
           page.timeChip,
         ]}
       />
+
+      {slug === "non-technical" ? <LiveBanner /> : null}
 
       <LinkTabs
         className="pt-10"

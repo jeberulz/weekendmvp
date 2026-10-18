@@ -42,6 +42,24 @@ export default defineConfig([
     },
   },
   {
+    // Live workshop pages are intentionally clock-driven (early-bird, live-now,
+    // banner auto-hide). The clock lives in `lib/live/now.ts`; render bodies
+    // call it after deciding the schedule phase. Purity still applies elsewhere.
+    files: [
+      "lib/live/now.ts",
+      "app/(marketing)/live/**/*.{ts,tsx}",
+      "app/(live-checkout)/**/*.{ts,tsx}",
+      "app/dashboard/page.tsx",
+      "components/live/**/*.{ts,tsx}",
+      "components/ideas/IdeaPublicSummary.tsx",
+      "components/platform/home/DashboardHome.tsx",
+    ],
+    rules: {
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
+  {
     files: ["scripts/check-og-cards.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "warn",

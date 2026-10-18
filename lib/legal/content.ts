@@ -6,6 +6,7 @@ import {
   TAX_LINE,
   formatUsd,
 } from "@/convex/platform/plans";
+import { SUPPORT_EMAIL } from "@/lib/legal/support";
 
 /**
  * WP64-S9. The Builder's Hub Terms, refund policy and privacy section, as
@@ -48,7 +49,7 @@ const MONTHLY = formatUsd(PRICING.monthly.amountMinor);
 const ANNUAL = formatUsd(PRICING.annual.amountMinor);
 /** Ruling "WP64 / seller identity" (O2, 2026-10-09). */
 const SELLER = "Rulz&Co";
-const SUPPORT = "iseghohi.john@gmail.com";
+const SUPPORT = SUPPORT_EMAIL;
 
 export const TERMS: LegalDoc = {
   path: "/terms",
@@ -255,8 +256,8 @@ export const REFUND_POLICY: LegalDoc = {
   path: "/refund-policy",
   title: "Refund policy",
   footerLabel: "Refund Policy",
-  description: `How refunds work for ${HUB}: a full refund within 30 days of your first payment.`,
-  intro: `${REFUND_LINE} This page explains how to ask and what happens next. It is part of the ${HUB} Terms.`,
+  description: `How refunds work for ${HUB} and live workshops.`,
+  intro: `This page covers refunds for ${HUB} and live workshops. It explains how to ask and what happens next. For ${HUB}, it is part of the ${HUB} Terms.`,
   sections: [
     {
       id: "in-short",
@@ -266,6 +267,10 @@ export const REFUND_POLICY: LegalDoc = {
           kind: "p",
           text: `${REFUND_LINE} This covers monthly, annual and Founding Lifetime. You do not need to give a reason.`,
           link: { href: "/terms", label: `Read the ${HUB} Terms` },
+        },
+        {
+          kind: "p",
+          text: "Live workshops: full refund within 30 days of purchase, no reason needed. Just email us. A refund ends your replay access. If we cancel a session, we'll email you. Reply within 48 hours if you'd rather move to the next date. Otherwise we refund you in full, automatically.",
         },
       ],
     },
@@ -311,12 +316,38 @@ export const REFUND_POLICY: LegalDoc = {
       ],
     },
     {
+      id: "live-workshop-tickets",
+      heading: "Live workshop tickets",
+      blocks: [
+        {
+          kind: "p",
+          text: "This covers tickets for live workshops, like the Weekend MVP Build-Along.",
+        },
+        {
+          kind: "p",
+          text: "Full refund within 30 days of purchase, no reason needed. Just email us. A refund ends your replay access.",
+        },
+        {
+          kind: "p",
+          text: "If we cancel: we'll email you. Reply within 48 hours if you'd rather move to the next date. Otherwise we refund you in full, automatically. If we cancel and you move to a later date, your 30 days start again from the day we cancel.",
+        },
+        {
+          kind: "p",
+          text: `How to ask: email ${SUPPORT} from the address you bought your ticket with, within 30 days of purchase.`,
+        },
+        {
+          kind: "p",
+          text: "We refund the full amount to the card you paid with. Banks usually take 5 to 10 working days to show it.",
+        },
+      ],
+    },
+    {
       id: "disputes",
       heading: "Before you dispute a payment",
       blocks: [
         {
           kind: "p",
-          text: `Please contact us before you dispute a payment with your bank. A refund from us is faster. While a dispute is open, your ${HUB} access is paused.`,
+          text: `Please contact us before you dispute a payment with your bank. A refund from us is faster. While a dispute is open, your ${HUB} access is paused, or your workshop replay.`,
         },
       ],
     },

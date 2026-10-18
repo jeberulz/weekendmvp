@@ -20,8 +20,20 @@ export function isIdeaReturnPath(pathname: string): boolean {
   return pathname === "/startup-ideas" || /^\/ideas\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
 }
 
+/**
+ * Build-Along checkout return: signed-out buyers who click Buy go through
+ * magic-link / Google, then straight back to the paid ticket page.
+ */
+export function isLiveWorkshopReturnPath(pathname: string): boolean {
+  return pathname === "/live/build-along";
+}
+
 export function isAllowedAuthReturnPath(pathname: string): boolean {
-  return isPrivateReturnPath(pathname) || isIdeaReturnPath(pathname);
+  return (
+    isPrivateReturnPath(pathname) ||
+    isIdeaReturnPath(pathname) ||
+    isLiveWorkshopReturnPath(pathname)
+  );
 }
 
 /** Operator surfaces: never indexed, cached, referred from or measured by analytics. */

@@ -72,6 +72,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/links", { priority: 0.9, changeFrequency: "daily" }),
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
+    entry("/live", { priority: 0.85, changeFrequency: "weekly" }),
+    entry("/live/48-hours", { priority: 0.85, changeFrequency: "weekly" }),
+    entry("/live/build-along", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/john-iseghohi", { priority: 0.8, changeFrequency: "monthly" }),
     entry("/about", { priority: 0.7, changeFrequency: "monthly" }),
     entry("/privacy-policy", {

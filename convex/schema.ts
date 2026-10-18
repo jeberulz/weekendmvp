@@ -284,6 +284,8 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     stripeCustomerId: v.optional(v.string()),
     createdAt: v.optional(v.number()),
+    /** Optional signup attribution (e.g. live-buildalong). Set once, never overwritten. */
+    signupSrc: v.optional(v.string()),
   })
     // `email` and `phone` are required exact names for Convex Auth internals.
     .index("email", ["email"])
@@ -917,4 +919,57 @@ export default defineSchema({
   })
     .index("by_startsAt", ["startsAt"])
     .index("by_status_and_startsAt", ["status", "startsAt"]),
+
+  /**
+   * Live Build-Along seats (mirrors founding_seats). 20 rows, seeded once.
+   * free → reserved (35 min hold) → taken. Never poll from the browser.
+   */
+  workshop_seats: defineTable({
+    eventKey: v.string(),
+    seatNumber: v.number(),
+    status: v.union(v.literal("free"), v.literal("reserved"), v.literal("taken")),
+    ownerId: v.optional(v.id("users")),
+    orderId: v.optional(v.id("workshop_orders")),
+    reservedUntil: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_eventKey_and_seatNumber", ["eventKey", "seatNumber"])
+    .index("by_eventKey_and_status_and_seatNumber", ["eventKey", "status", "seatNumber"]),
+
+  /** Build-Along ticket orders (one per checkout attempt / paid seat). */
+  workshop_orders: defineTable({
+    eventKey: v.string(),
+    ownerId: v.id("users"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("expired"),
+      v.literal("refunded"),
+    ),
+    seatNumber: v.optional(v.number()),
+    lookupKey: v.string(),
+    priceId: v.optional(v.string()),
+    stripeCheckoutSessionId: v.optional(v.string()),
+    idempotencyKey: v.string(),
+    livemode: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_ownerId_and_status", ["ownerId", "status"])
+    .index("by_stripeCheckoutSessionId", ["stripeCheckoutSessionId"])
+    .index("by_eventKey_and_status", ["eventKey", "status"]),
+
+  /**
+   * Cached public seat tally (one row per event). Pages read this via a
+   * tagged Next cache; the webhook / reconcile patch it. Avoids Free I/O
+   * burn from per-request seat scans.
+   */
+  workshop_seat_counts: defineTable({
+    eventKey: v.string(),
+    sold: v.number(),
+    reserved: v.number(),
+    free: v.number(),
+    updatedAt: v.number(),
+  }).index("by_eventKey", ["eventKey"]),
 });
