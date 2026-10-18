@@ -22,6 +22,7 @@ import {
 } from "next-mdx-remote-client/rsc";
 import { isEngineDraftSlug } from "./engine-drafts.ts";
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
+import { AffiliateAwareAnchor } from "@/lib/affiliates/mdx-anchor";
 
 /* ------------------------------------------------------------------ */
 /* Filesystem helpers                                                  */
@@ -97,7 +98,10 @@ export const defaultMdxComponents: MDXComponents = {
     <p className="text-neutral-300 leading-relaxed mb-6" {...props} />
   ),
   a: (props: ElProps<"a">) => (
-    <a className="text-white break-words hover:underline" {...props} />
+    <AffiliateAwareAnchor
+      className="text-white break-words hover:underline"
+      {...props}
+    />
   ),
   strong: (props: ElProps<"strong">) => (
     <strong className="text-white font-medium" {...props} />

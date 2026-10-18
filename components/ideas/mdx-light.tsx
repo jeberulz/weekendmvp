@@ -10,8 +10,17 @@
 import * as React from "react";
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 
+import {
+  AffiliateDisclosure,
+  LovableAffiliateDisclosure,
+} from "@/components/affiliates/LovableAffiliateDisclosure";
+import {
+  LovableAffiliateLink,
+  LovableLink,
+} from "@/components/affiliates/LovableAffiliateLink";
 import { CopyablePre } from "@/components/ideas/PromptCopyButton";
 import { ideaHeadingId } from "@/components/ideas/idea-meta";
+import { AffiliateAwareAnchor } from "@/lib/affiliates/mdx-anchor";
 
 type ElProps<T extends keyof React.JSX.IntrinsicElements> =
   React.JSX.IntrinsicElements[T];
@@ -55,11 +64,15 @@ export const ideaMdxComponents: MDXComponents = {
     <p className="text-neutral-600 leading-relaxed mb-6" {...props} />
   ),
   a: (props: ElProps<"a">) => (
-    <a
+    <AffiliateAwareAnchor
       className="text-black underline underline-offset-2 break-words hover:text-neutral-600 transition-colors"
       {...props}
     />
   ),
+  LovableLink,
+  LovableAffiliateLink,
+  AffiliateDisclosure,
+  LovableAffiliateDisclosure,
   strong: (props: ElProps<"strong">) => (
     <strong className="text-black font-medium" {...props} />
   ),
