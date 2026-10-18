@@ -17,8 +17,8 @@ export type CrawlLink = {
  * Drawn as ruled serif links on paper.
  */
 export function HubCrawlLinks({
-  heading = "Fresh ideas worth opening",
-  intro = "Start with the full library, then dig into two newly published builds.",
+  heading = "Start here: ideas and guides",
+  intro = "Browse the full library, then dig into the guides and builds below.",
   links,
   headingId = "crawl-links-heading",
   className,

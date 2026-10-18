@@ -88,6 +88,17 @@ type AudiencePage = {
   faqs?: HubFaqItem[];
   /** Prominent article link(s) under the positioning band (no duplicate H2). */
   articleLinks?: Array<{ href: string; label: string }>;
+  /**
+   * How-to / answer-page lead-in under PageHeader (before LinkTabs).
+   * Kept separate from `description` — Convex `audienceRow.description`
+   * overrides that field at render time.
+   */
+  answerPage?: {
+    lead: string;
+    href: string;
+    label: string;
+    secondary?: { text: string; href: string; label: string };
+  };
 };
 
 const GENERATED_ADVANTAGE_ICONS: LucideIcon[] = [Sparkles, Target, TrendingUp];
@@ -148,6 +159,20 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
           "Tech community for product discovery and feedback. Great for Show HN launches and getting early users.",
       },
     ],
+    articleLinks: [
+      {
+        href: "/articles/build-an-ai-agent-app-in-a-weekend",
+        label: "Build an AI agent app in a weekend (not another wrapper) →",
+      },
+      {
+        href: "/articles/is-it-too-late-to-build-an-ai-wrapper",
+        label: "Is it too late to build an AI wrapper in 2026? →",
+      },
+      {
+        href: "/articles/claude-code-on-your-phone",
+        label: "Ship from anywhere: Claude Code on your phone →",
+      },
+    ],
   },
   designers: {
     slug: "designers",
@@ -200,7 +225,7 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
     title: "MVP Ideas for Non-Technical Founders (No Code)",
     h1: "Startup Ideas for Non-Technical Founders",
     metaDescription:
-      "MVP ideas for non-technical founders, plus how to build one without code or a technical co-founder: AI builders, no-code tools, weekend-sized scope.",
+      "Startup and MVP ideas sized for non-technical founders: each one buildable in a weekend with AI builders or no-code tools, with the stack and a starter prompt.",
     description:
       "Ideas you can build without coding. Use no-code tools, AI builders, or hire developers for specific components.",
     icon: Lightbulb,
@@ -240,6 +265,16 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         description: "No-code courses and tutorials for founders",
       },
     ],
+    answerPage: {
+      lead: "Looking for how to build the MVP, not what to build? The step-by-step guide covers what to cut, which tool to pick, and why you don't need a technical co-founder for version one.",
+      href: "/articles/mvp-for-non-technical-founders",
+      label: "How to build an MVP as a non-technical founder →",
+      secondary: {
+        text: "Weighing a co-founder anyway?",
+        href: "/articles/do-you-need-a-technical-co-founder-2026",
+        label: "Do you need a technical co-founder in 2026? →",
+      },
+    },
     articleLinks: [
       {
         href: "/articles/best-ai-app-builder-non-technical-founders",
@@ -250,15 +285,23 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         label: "No-code MVP: how to build one in a weekend →",
       },
       {
-        href: "/articles/mvp-for-non-technical-founders",
-        label: "How to build an MVP as a non-technical founder →",
+        href: "/articles/validate-startup-idea-48-hours",
+        label: "Validate your idea in 48 hours, before you build →",
+      },
+      {
+        href: "/articles/ship-it-saturday-framework",
+        label: "Ship It Saturday: the weekend plan for non-technical builders →",
+      },
+      {
+        href: "/articles/vibe-coding-security-for-founders",
+        label: "Seven safety checks before real users touch your AI-built app →",
       },
     ],
     faqs: [
       {
         question: "How do I build an MVP without a technical co-founder?",
         answer:
-          "Cut the idea until one screen solves it, talk to ten people who already have the problem, then build it with an AI builder like Lovable, Bolt.new, or Cursor. You don't need to learn to code or give away 30–50% equity first. Look for a technical partner later, if the product proves it needs one.",
+          "Cut the idea to one screen, talk to ten people who already have the problem, then build it with an AI builder. The full step-by-step — and when you actually need a co-founder — lives in the guides linked below.",
         readMore: [
           {
             href: "/articles/mvp-for-non-technical-founders",
@@ -348,11 +391,15 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         description: "Community and events for bootstrapped founders",
       },
     ],
+    answerPage: {
+      lead: "Asking which accelerator or program will get you from idea to MVP? Short answer: most solo founders need a deadline, not a program. Here's which equity-free programs, co-founder programs, and accelerators fit, and when.",
+      href: "/articles/programs-solo-founders-idea-to-mvp",
+      label: "What programs help solo founders build an MVP? →",
+    },
+    // programs article lives in answerPage above — do not list it twice.
+    // §2.15 trim (drop build-in-public + stop-selling) skipped: optional, and
+    // those targets already get stronger indexed sources elsewhere in this map.
     articleLinks: [
-      {
-        href: "/articles/programs-solo-founders-idea-to-mvp",
-        label: "What programs help solo founders go from idea to MVP? →",
-      },
       {
         href: "/articles/the-1k-month-idea",
         label: "The $1K/month idea →",
@@ -452,6 +499,20 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         title: "r/SideProject",
         url: "https://www.reddit.com/r/SideProject/",
         description: "Community for launching and sharing side projects",
+      },
+    ],
+    articleLinks: [
+      {
+        href: "/articles/the-1k-month-idea",
+        label: "The $1K/month idea: why small is the point →",
+      },
+      {
+        href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
+        label: "Sell AI work, not AI subscriptions →",
+      },
+      {
+        href: "/articles/the-real-cost-of-not-shipping",
+        label: "The real cost of not shipping →",
       },
     ],
   },
@@ -836,6 +897,32 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
           page.timeChip,
         ]}
       />
+
+      {page.answerPage ? (
+        <Container className="pt-8">
+          <p className="max-w-3xl text-[17px] leading-[1.65] text-home-ink-2">
+            {page.answerPage.lead}{" "}
+            <Link
+              href={page.answerPage.href}
+              className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
+              {page.answerPage.label}
+            </Link>
+            {page.answerPage.secondary ? (
+              <>
+                {" "}
+                {page.answerPage.secondary.text}{" "}
+                <Link
+                  href={page.answerPage.secondary.href}
+                  className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+                >
+                  {page.answerPage.secondary.label}
+                </Link>
+              </>
+            ) : null}
+          </p>
+        </Container>
+      ) : null}
 
       <LinkTabs
         className="pt-10"
