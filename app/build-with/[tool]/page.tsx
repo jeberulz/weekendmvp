@@ -311,6 +311,14 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/claude-projects-vs-claude-code",
+        label: "Claude Projects vs Claude Code: which do you need? →",
+      },
+      {
+        href: "/articles/claude-projects-for-founders",
+        label: "Claude Projects for Founders →",
+      },
+      {
         href: "/articles/7-things-to-build-with-claude-code-this-weekend",
         label: "7 Things to Build with Claude Code this Weekend →",
       },
@@ -326,10 +334,16 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         question: "What are Claude Projects, and do they help you build?",
         answer:
           "Claude Projects are workspaces inside claude.ai. You set custom instructions once and upload a few reference files, and every chat in that project inherits both. For a weekend build, make one Project per product so Claude remembers your user, scope, and stack. Projects are for thinking and planning. Claude Code is what edits files.",
-        readMore: {
-          href: "/articles/claude-projects-for-founders",
-          label: "Set one up: Claude Projects for Founders →",
-        },
+        readMore: [
+          {
+            href: "/articles/claude-projects-vs-claude-code",
+            label: "Claude Projects vs Claude Code →",
+          },
+          {
+            href: "/articles/claude-projects-for-founders",
+            label: "Set one up: Claude Projects for Founders →",
+          },
+        ],
       },
     ],
   },
@@ -401,6 +415,20 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       body: "Planning, debugging, and long-form drafting in claude.ai still live on the main Claude hub.",
       cta: "Browse Build with Claude",
     },
+    articleLinks: [
+      {
+        href: "/articles/claude-projects-vs-claude-code",
+        label: "Claude Projects vs Claude Code →",
+      },
+      {
+        href: "/articles/claude-code-for-non-technical-founders",
+        label: "Claude Code for non-technical founders →",
+      },
+      {
+        href: "/articles/7-things-to-build-with-claude-code-this-weekend",
+        label: "7 Things to Build with Claude Code this Weekend →",
+      },
+    ],
     ideasTool: "claude",
     faqs: [
       {
@@ -476,11 +504,37 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These fit Bolt's sweet spot — browser-native full-stack apps, landing pages, and form tools you can prompt, refine, and deploy without opening a local IDE.",
     },
+    articleLinks: [
+      {
+        href: "/articles/bolt-new-examples-weekend",
+        label: "Bolt.new examples: 8 apps for this weekend →",
+      },
+      {
+        href: "/articles/lovable-examples-what-to-build",
+        label: "Lovable examples (sister list) →",
+      },
+      {
+        href: "/articles/move-off-lovable-bolt-to-real-code",
+        label: "Move off Bolt into a real codebase →",
+      },
+    ],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/bolt-new-examples-weekend",
+        label: "Bolt.new examples",
+        blurb: "Eight weekend apps, plus Free vs Pro token costs.",
+      },
+    ],
     faqs: [
       {
         question: "What apps can you build with Bolt.new?",
         answer:
           "Bolt.new is best for web apps you build in the browser and share the same day: landing pages, form tools that turn inputs into results, waitlists, and simple SaaS dashboards. Good weekend picks include a waitlist manager with referrals, an AI meeting-notes cleaner, and a rental maintenance dashboard. Prompt it, iterate in chat, then click Deploy.",
+        readMore: {
+          href: "/articles/bolt-new-examples-weekend",
+          label: "8 Bolt.new examples you can finish this weekend →",
+        },
       },
     ],
   },
@@ -627,6 +681,20 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "Built for non-technical founders — marketplaces, portals, and schedulers you can stand up in Bubble, Softr, or Glide before writing a line of code.",
     },
+    articleLinks: [
+      {
+        href: "/articles/no-code-mvp-guide-2026",
+        label: "How to build a no-code MVP in a weekend →",
+      },
+      {
+        href: "/articles/mvp-for-non-technical-founders",
+        label: "MVP for non-technical founders →",
+      },
+      {
+        href: "/articles/non-technical-founder-stack-2026",
+        label: "Non-technical founder stack 2026 →",
+      },
+    ],
     faqs: [
       {
         question: "What are the best no-code tools for an MVP?",
@@ -636,6 +704,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           { text: "Lovable", href: "/build-with/lovable" },
           { text: "Bolt.new", href: "/build-with/bolt" },
         ],
+        readMore: {
+          href: "/articles/no-code-mvp-guide-2026",
+          label: "No-Code MVP: How to Build One in a Weekend →",
+        },
       },
     ],
   },

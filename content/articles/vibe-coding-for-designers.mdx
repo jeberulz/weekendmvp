@@ -1,0 +1,155 @@
+---
+slug: "vibe-coding-for-designers"
+title: "Vibe Coding for Designers: Ship a Real App in a Weekend"
+description: "Vibe coding for designers: use Figma taste and state craft to ship a real weekend app with Lovable, Cursor, or Claude Code — no computer-science degree needed."
+category: "Tutorial"
+publishedAt: "2026-10-18"
+wordCount: 1267
+readMinutes: 6
+heroAlt: "A soft pencil beside a closed paperback on a dark desk, single emerald side light, shallow focus"
+faq:
+  - question: "What is vibe coding for designers?"
+    answer: "Using AI coding tools as the hands while you stay the art director: you define scope, states, copy, and taste; the agent writes the implementation. It is not 'skip design.' It is shipping the design as a working product."
+  - question: "Can a designer build an app without learning to code?"
+    answer: "Yes for a weekend MVP, if you can review what the agent produced and refuse scope creep. You do not need CS theory. You do need to click through empty, error, and paid states yourself."
+  - question: "Which vibe coding tool is best for designers?"
+    answer: "Lovable or Bolt when you want a full app from a brief in the browser. Cursor or Claude Code when you want a real repo and diffs you can review. Figma Make when you are still exploring interaction, not hosting customers."
+  - question: "How do I go from a Figma design to a working app?"
+    answer: "Freeze three screens and their states in Figma, export reference frames or describe tokens in the prompt, then build one screen at a time in Lovable/Cursor/Claude Code. Do not paste the entire file and hope."
+  - question: "What do designers do better than developers when vibe coding?"
+    answer: "Scope discipline, empty/error/loading states, visual hierarchy, and saying no to default AI chrome. Agents fill vague prompts with median patterns. Designers notice."
+  - question: "Is vibe coding worth learning for UX designers?"
+    answer: "Yes if your bottleneck is getting interactive proof in front of users. No if your job is research synthesis with no shipping mandate. The skill compounds either way once you have shipped once."
+---
+
+## Quick Answer
+
+Vibe coding for designers means **you keep taste and scope; the agent types**. A weekend is enough for a real URL if you freeze three screens, name every state, and refuse the default purple-gradient SaaS look the models love.
+
+Need an idea sized for that weekend? Start in the [startup ideas library](/startup-ideas), then filter for designer-friendly builds on [ideas for designers](/ideas-for/designers).
+
+## What is vibe coding for designers?
+
+Using AI coding tools as the hands while you stay the art director: you define scope, states, copy, and taste; the agent writes the implementation. It is not "skip design." It is shipping the design as a working product.
+
+If you want the general definition without the designer lens, read [Vibe Coding 101](/articles/vibe-coding-101).
+
+## Can a designer build an app without learning to code?
+
+Yes for a weekend MVP, if you can review what the agent produced and refuse scope creep. You do not need CS theory. You do need to click through empty, error, and paid states yourself.
+
+"The agent said it works" is not a critique. Opening the empty state with zero data is.
+
+## The designer's edge
+
+Developers often under-specify states. Designers already think in them.
+
+You win when you bring:
+
+- **Scope** — three screens, not twelve
+- **States** — empty, loading, error, success, permission denied
+- **Taste** — type scale, spacing, one accent, no stock illustration pack
+- **Copy** — real words for a real buyer, not "Unlock synergy"
+
+The [3-screen MVP framework](/articles/the-3-screen-mvp-framework) is basically a design critique checklist with a ship date.
+
+## Which vibe coding tool is best for designers?
+
+Lovable or Bolt when you want a full app from a brief in the browser. Cursor or Claude Code when you want a real repo and diffs you can review. Figma Make when you are still exploring interaction, not hosting customers.
+
+### Tool map
+
+| Job | Tool | Why |
+| --- | --- | --- |
+| Explore interaction inside Figma | Figma Make | Stays in the design tool; great for exploration |
+| Ship a full web app from a brief | [Lovable](/build-with/lovable) | Auth + UI + deploy without a local IDE |
+| Same-day landing / form tool | [Bolt.new](/build-with/bolt) | Fast browser loop |
+| Repo + reviewable diffs | [Cursor](/build-with/cursor) or [Claude Code](/build-with/claude-code) | You stay close to the code |
+| UI components into an existing Next app | v0 | Generates React/Tailwind you paste or sync |
+
+Disclosure: Weekend MVP may earn a commission if you sign up for [Lovable](https://lovable.dev) through on-site links.
+
+Pricing changes — verify on each vendor's pricing page before you budget a month. For builder comparisons aimed at non-technical founders, see [Best AI App Builder for Non-Technical Founders](/articles/best-ai-app-builder-non-technical-founders).
+
+## How do I go from a Figma design to a working app?
+
+Freeze three screens and their states in Figma, export reference frames or describe tokens in the prompt, then build one screen at a time in Lovable/Cursor/Claude Code. Do not paste the entire file and hope.
+
+### A weekend build, step by step
+
+**Friday — frame**
+
+1. Pick one buyer and one job.
+2. Draw three screens max (or reuse the [3-screen MVP](/articles/the-3-screen-mvp-framework)).
+3. List states per screen. Empty states get real copy, not a grey box.
+4. Write tokens in one paragraph: font pairing, radius, accent, what is banned (gradients, three equal cards, badge-above-headline, emoji).
+
+**Saturday — prompt**
+
+1. Paste the brief + banned list + reference description into Lovable/Cursor/Claude Code.
+2. Build screen one until the happy path works.
+3. Then screen two. Then states. Not "the whole app."
+4. Replace every piece of placeholder copy with words a buyer would say.
+
+**Sunday — ship**
+
+1. Click every state with real and empty data.
+2. Check auth boundaries if you have login (user A must not see user B).
+3. Deploy. Send to five people who already have the problem.
+4. Write down what they misunderstood — that is Monday's design work.
+
+Designer-shaped ideas to point that workflow at: [AI site design blueprints](/ideas/ai-site-design-blueprints) and the rest of the [designers hub](/ideas-for/designers).
+
+When you need another researched problem, open the [startup ideas library](/startup-ideas).
+
+## What do designers do better than developers when vibe coding?
+
+Scope discipline, empty/error/loading states, visual hierarchy, and saying no to default AI chrome. Agents fill vague prompts with median patterns. Designers notice.
+
+That is the whole game. Vague prompt → median UI. Specific prompt with banned defaults → something that looks like you.
+
+## The five things designers still get wrong
+
+1. **Data.** A beautiful table with no seed data teaches nothing. Put five real rows in.
+2. **Auth.** Skip accounts unless the product breaks without them. Portals need auth; quote calculators usually do not.
+3. **Empty states.** Design them first. Agents design them last, poorly.
+4. **Security.** Secrets in the browser, prices trusted from the client, IDs in URLs without checks. Do the short pass in [Vibe coding security for founders](/articles/vibe-coding-security-for-founders).
+5. **Scope.** A design system rebuild is not a weekend MVP. Ship the job.
+
+## Is vibe coding worth learning for UX designers?
+
+Yes if your bottleneck is getting interactive proof in front of users. No if your job is research synthesis with no shipping mandate. The skill compounds either way once you have shipped once.
+
+The market is full of static decks. A clickable URL with empty states wins the room.
+
+## FAQ
+
+### What is vibe coding for designers?
+
+Using AI coding tools as the hands while you stay the art director: you define scope, states, copy, and taste; the agent writes the implementation. It is not "skip design." It is shipping the design as a working product.
+
+### Can a designer build an app without learning to code?
+
+Yes for a weekend MVP, if you can review what the agent produced and refuse scope creep. You do not need CS theory. You do need to click through empty, error, and paid states yourself.
+
+### Which vibe coding tool is best for designers?
+
+Lovable or Bolt when you want a full app from a brief in the browser. Cursor or Claude Code when you want a real repo and diffs you can review. Figma Make when you are still exploring interaction, not hosting customers.
+
+### How do I go from a Figma design to a working app?
+
+Freeze three screens and their states in Figma, export reference frames or describe tokens in the prompt, then build one screen at a time in Lovable/Cursor/Claude Code. Do not paste the entire file and hope.
+
+### What do designers do better than developers when vibe coding?
+
+Scope discipline, empty/error/loading states, visual hierarchy, and saying no to default AI chrome. Agents fill vague prompts with median patterns. Designers notice.
+
+### Is vibe coding worth learning for UX designers?
+
+Yes if your bottleneck is getting interactive proof in front of users. No if your job is research synthesis with no shipping mandate. The skill compounds either way once you have shipped once.
+
+## TL;DR
+
+Stay the art director. Freeze three screens and every state. Ban default AI chrome in the prompt. Build one screen at a time in Lovable, Bolt, Cursor, or Claude Code. Ship a URL, not a Case Study PDF. Grab a designer-sized problem from the [startup ideas library](/startup-ideas).
+
+Sources: [Lovable](https://lovable.dev), [Bolt.new](https://bolt.new), [Cursor](https://cursor.com), [Claude Code docs](https://code.claude.com/docs/en/overview), [Figma resource library](https://www.figma.com/resource-library/)

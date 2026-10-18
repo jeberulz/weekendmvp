@@ -1,0 +1,135 @@
+---
+slug: "claude-projects-vs-claude-code"
+title: "Claude Projects vs Claude Code: Which One Do You Need?"
+description: "Claude Projects vs Claude Code: Projects keep files and instructions in one workspace; Claude Code edits your repo. Which founders need for a weekend MVP."
+category: "Guide"
+publishedAt: "2026-10-18"
+wordCount: 1337
+readMinutes: 7
+heroAlt: "Two stacked index cards on a near-black desk, one lit mint and one in shadow, shallow focus"
+faq:
+  - question: "What are Claude Projects?"
+    answer: "Claude Projects are self-contained workspaces on Claude with their own chat history, uploaded files, and project instructions. Free accounts can create up to five Projects; paid plans remove that cap and add larger knowledge handling."
+  - question: "What is the difference between Claude Projects and Claude Code?"
+    answer: "Projects organize thinking: files, instructions, and chats that stay in one workspace. Claude Code is Anthropic's agentic coding tool that plans, edits files, and runs commands in a real project directory. One remembers context; the other changes code."
+  - question: "Claude Projects vs chats: when should I use a Project?"
+    answer: "Use a Project when the same product, client, or research base will span more than one conversation. Use a normal chat for one-off questions you will not reopen."
+  - question: "Claude Projects vs Skills: which one stores my instructions?"
+    answer: "Project instructions live inside one Project and apply to chats in that Project. Skills are reusable capabilities you can use across Claude; they are not a substitute for per-product Project context."
+  - question: "Do I need Claude Code if I already use Claude Projects?"
+    answer: "Only when you want an agent editing a real codebase. Projects help you plan and write; Claude Code is what turns that plan into diffs in a folder."
+  - question: "Which Claude plans include Projects?"
+    answer: "Projects are available on Free (up to five), Pro, Max, Team, and Enterprise. Claude Code is included on paid plans and shares the same usage pool as chat."
+---
+
+## Quick Answer
+
+**Claude Projects** = a workspace with memory (files + instructions + related chats). **Claude Code** = an agent that edits code in a real directory. Most founders need Projects for planning and Claude Code (or another coding agent) when it is time to change files. They are not two names for the same feature.
+
+If you want product ideas before tool setup, start in the [startup ideas library](/startup-ideas).
+
+## What are Claude Projects?
+
+Claude Projects are self-contained workspaces on Claude with their own chat history, uploaded files, and project instructions. Free accounts can create up to five Projects; paid plans remove that cap and add larger knowledge handling.
+
+Per Anthropic's help docs, you upload documents into a Project knowledge base and define instructions so every chat in that Project inherits the same context. On paid plans, large knowledge bases can use RAG when content approaches context limits.
+
+There is also a **new Projects experience in beta**, rolling out first for some Pro and Max users who use Claude Code. In that version, a Project can coordinate parallel cloud threads. If you do not see it yet, the classic Project workspace above is still the default. Check Anthropic's docs for your account rather than assuming every screenshot you saw on X is live for you.
+
+## What is the difference between Claude Projects and Claude Code?
+
+Projects organize thinking: files, instructions, and chats that stay in one workspace. Claude Code is Anthropic's agentic coding tool that plans, edits files, and runs commands in a real project directory. One remembers context; the other changes code.
+
+| | Claude Projects | Claude Code |
+| --- | --- | --- |
+| Where it runs | Claude chat (web/desktop/mobile); Code UI for the new beta | Terminal, desktop app, IDE integrations, cloud |
+| What it remembers | Project files, instructions, chat history in that Project | Repo files, `CLAUDE.md`, session context |
+| What it changes | Nothing in your filesystem by itself | Source files, commands, tests |
+| Who it is for | Anyone clarifying a product, brief, or research base | Anyone shipping or changing a codebase |
+| Plan gate | Free: up to 5 Projects; paid: full Projects + RAG | Paid Claude plans (Pro, Max, Team, Enterprise) |
+
+Claude Code's own docs describe it as an agent that explores, edits, and verifies work in a project directory. That is a different job from "keep my PRD and brand voice in one place."
+
+## Claude Projects vs chats: when should I use a Project?
+
+Use a Project when the same product, client, or research base will span more than one conversation. Use a normal chat for one-off questions you will not reopen.
+
+Rule of thumb: if you would paste the same brief into a new chat tomorrow, it belongs in a Project.
+
+For founder-specific Project setups (one Project per product, instructions that stick), continue with [Claude Projects for Founders](/articles/claude-projects-for-founders).
+
+## Claude Projects vs Skills: which one stores my instructions?
+
+Project instructions live inside one Project and apply to chats in that Project. Skills are reusable capabilities you can use across Claude; they are not a substitute for per-product Project context.
+
+Anthropic's pricing table lists Skills on Free and paid individual plans. Treat Skills as portable playbooks. Treat Project instructions as the standing brief for **this** product.
+
+## Projects vs Cowork (one line)
+
+Cowork is Anthropic's desktop/agent workflow surface for longer tasks; Projects (classic) still hold the knowledge base and instructions. If your account has started migrating Projects into the new Claude Code-linked version, follow the in-product notice — Anthropic says existing files and history move with the Project.
+
+## Founder workflows: when to use which
+
+**Weekend research and scoping** → Project. Drop interviews, competitor notes, and a one-page brief. Ask for a 3-screen MVP outline.
+
+**Writing copy and prompts** → Project. Keep voice samples in knowledge so every landing-page draft matches.
+
+**Editing the app** → Claude Code (or Cursor). Point it at the folder. Paste the brief from the Project as the first message, or keep a `CLAUDE.md` that mirrors the Project instructions.
+
+**Example weekend:** Friday you create a Project called "Invoice chaser" with a buyer description and out-of-scope list. Saturday morning you open an empty folder, start Claude Code, and paste the Project brief. Sunday you review diffs and deploy. The Project did not write the React files. Claude Code did.
+
+More on the coding path: [Claude Code for Non-Technical Founders](/articles/claude-code-for-non-technical-founders) and [5 Claude Code Skills for Solo Founders](/articles/5-claude-code-skills-for-solo-founders). Idea prompts tagged for Claude live on the [Claude hub](/build-with/claude) and [Claude Code hub](/build-with/claude-code).
+
+When you need the next build candidate already researched, grab one from the [startup ideas library](/startup-ideas).
+
+## Do I need Claude Code if I already use Claude Projects?
+
+Only when you want an agent editing a real codebase. Projects help you plan and write; Claude Code is what turns that plan into diffs in a folder.
+
+If you are happy staying in a browser builder (Lovable, Bolt), you may never need Claude Code for v1. If you want a repo you can host anywhere, you will.
+
+## How to move from a Project to a Claude Code build
+
+1. In the Project, ask for a one-page build brief: buyer, one job, screens, out-of-scope list, stack default.
+2. Create a local folder (or empty git repo).
+3. Add a short `CLAUDE.md` with the same rules (stack, "do not build," done-when).
+4. Start Claude Code in that folder and paste the brief.
+5. One feature per prompt. Review every diff. Run the app yourself.
+
+## Which Claude plans include Projects?
+
+Projects are available on Free (up to five), Pro, Max, Team, and Enterprise. Claude Code is included on paid plans and shares the same usage pool as chat.
+
+Checked against Anthropic's pricing page (individual plans): Free $0; Pro $20/month ($17/month billed annually); Max from $100/month. Team and Enterprise add sharing for Projects. Prices exclude tax and can change — confirm on [claude.com/pricing](https://claude.com/pricing) before you buy.
+
+## FAQ
+
+### What are Claude Projects?
+
+Claude Projects are self-contained workspaces on Claude with their own chat history, uploaded files, and project instructions. Free accounts can create up to five Projects; paid plans remove that cap and add larger knowledge handling.
+
+### What is the difference between Claude Projects and Claude Code?
+
+Projects organize thinking: files, instructions, and chats that stay in one workspace. Claude Code is Anthropic's agentic coding tool that plans, edits files, and runs commands in a real project directory. One remembers context; the other changes code.
+
+### Claude Projects vs chats: when should I use a Project?
+
+Use a Project when the same product, client, or research base will span more than one conversation. Use a normal chat for one-off questions you will not reopen.
+
+### Claude Projects vs Skills: which one stores my instructions?
+
+Project instructions live inside one Project and apply to chats in that Project. Skills are reusable capabilities you can use across Claude; they are not a substitute for per-product Project context.
+
+### Do I need Claude Code if I already use Claude Projects?
+
+Only when you want an agent editing a real codebase. Projects help you plan and write; Claude Code is what turns that plan into diffs in a folder.
+
+### Which Claude plans include Projects?
+
+Projects are available on Free (up to five), Pro, Max, Team, and Enterprise. Claude Code is included on paid plans and shares the same usage pool as chat.
+
+## TL;DR
+
+Projects remember. Claude Code edits. Use a Project for the brief and knowledge base; use Claude Code when files on disk must change. Free gets up to five Projects; Claude Code needs a paid plan. Then pick a weekend-sized idea from the [startup ideas library](/startup-ideas).
+
+Sources: [What are projects? (Claude Help)](https://support.claude.com/en/articles/9517075-what-are-projects), [Claude pricing](https://claude.com/pricing), [Claude Code overview](https://code.claude.com/docs/en/overview)
