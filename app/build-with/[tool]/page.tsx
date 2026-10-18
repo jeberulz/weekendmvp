@@ -125,13 +125,16 @@ type ToolPage = {
    */
   relatedHub?: { href: string; label: string; body: string; cta: string };
   /** Extra article links rendered under the related-hub line. */
-  articleLinks?: Array<{ href: string; label: string }>;
+  articleLinks?: Array<{ href: string; label: string; lead?: string }>;
   /**
    * Prominent crawl-priority internal links (hub + newest idea pages).
    * Rendered under the hero so Google’s frequently crawled tool pages
    * pass equity to URLs that are discovered but not yet indexed.
    */
   crawlLinks?: CrawlLink[];
+  /** HubCrawlLinks heading/intro — per-hub, not the stale ideas-only default. */
+  crawlHeading?: string;
+  crawlIntro?: string;
   /**
    * Convex `ideas.tools` value used for the ideas grid. Defaults to `slug`.
    * Claude Code reuses the `claude` tag until a dedicated retag ships.
@@ -211,6 +214,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/cursor-project-examples",
+        label: "8 Cursor project examples you can finish this weekend →",
+        lead: "Want worked examples, including two that shipped?",
+      },
+      {
         href: "/articles/is-it-too-late-to-build-an-ai-wrapper",
         label: "Is it too late to build an AI wrapper? →",
       },
@@ -219,14 +227,12 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Cursor vs Claude Code vs Lovable →",
       },
     ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then open the Cursor guides search already crawls from this hub.",
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
       CURSOR_HYDRATION_LINK,
-      {
-        href: "/articles/cursor-project-examples",
-        label: "Cursor project examples",
-        blurb: "Eight weekend apps, including two builds people actually shipped.",
-      },
       {
         href: "/articles/vibe-coding-101",
         label: "Vibe Coding 101",
@@ -346,7 +352,36 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "7 Things to Build with Claude Code this Weekend →",
       },
     ],
-    crawlLinks: SEO_PRIORITY_LINKS,
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then dig into Claude guides this hub already ranks for.",
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/claude-code-on-your-phone",
+        label: "Run Claude Code from your phone",
+        blurb:
+          "Plan in Claude, then keep the agent shipping from Termius, Codespaces, or GitHub mobile.",
+      },
+      {
+        href: "/articles/build-an-ai-agent-app-in-a-weekend",
+        label: "Turn Claude into an agent app",
+        blurb:
+          "Tools, memory, and a human approval step: an agent product, not a chat wrapper.",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe coding with Claude, explained",
+        blurb:
+          "How Claude fits next to Cursor and Bolt when you prompt instead of type.",
+      },
+      {
+        href: "/articles/is-it-too-late-to-build-an-ai-wrapper",
+        label: "Is a Claude wrapper still a business?",
+        blurb:
+          "When a thin layer on the Claude API still sells, and when it gets eaten.",
+      },
+    ],
     faqs: [
       {
         question: "What can I build with Claude?",
@@ -440,6 +475,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/7-things-to-build-with-claude-code-this-weekend",
+        label: "7 things to build with Claude Code this weekend →",
+        lead: "Want seven builds scoped to one weekend?",
+      },
+      {
         href: "/articles/claude-projects-vs-claude-code",
         label: "Claude Projects vs Claude Code →",
       },
@@ -447,11 +487,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         href: "/articles/claude-code-for-non-technical-founders",
         label: "Claude Code for non-technical founders →",
       },
-      {
-        href: "/articles/7-things-to-build-with-claude-code-this-weekend",
-        label: "7 Things to Build with Claude Code this Weekend →",
-      },
     ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then keep an agent moving with the Claude Code guides below.",
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
       {
@@ -547,6 +586,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/bolt-new-examples-weekend",
+        label: "8 Bolt.new examples for this weekend →",
+        lead: "Want worked Bolt builds with token costs?",
+      },
+      {
         href: "/articles/lovable-examples-what-to-build",
         label: "Lovable examples (sister list) →",
       },
@@ -555,13 +599,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Move off Bolt into a real codebase →",
       },
     ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then open the Bolt guides this hub already ranks for.",
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
-      {
-        href: "/articles/bolt-new-examples-weekend",
-        label: "Bolt.new examples",
-        blurb: "Eight weekend apps, plus Free vs Pro token costs.",
-      },
       {
         href: "/articles/vibe-coding-101",
         label: "Vibe Coding 101",
@@ -649,6 +691,41 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas play to Lovable's strength — full-stack apps with auth, dashboards, and deployable UIs from a plain-English brief.",
     },
+    articleLinks: [
+      {
+        href: "/articles/lovable-examples-what-to-build",
+        label: "9 Lovable examples worth building →",
+        lead: "Want to see finished builds before you pick one?",
+      },
+    ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then open the Lovable guides this hub should pass equity to.",
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/vibe-coding-security-for-founders",
+        label: "Security checks before your Lovable app goes live",
+        blurb:
+          "Row-level rules, secrets, and server-side prices: the seven things AI builders get wrong.",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe Coding 101 for Lovable prompts",
+        blurb:
+          "Describe outcomes, not specs, so the build doesn't loop all weekend.",
+      },
+      {
+        href: "/articles/how-to-price-your-weekend-mvp",
+        label: "Price your Lovable app before launch",
+        blurb: "Pick a number on Friday so Sunday's link can take money.",
+      },
+      {
+        href: "/articles/ship-it-saturday-framework",
+        label: "Ship It Saturday for Lovable builds",
+        blurb: "Friday scope, Saturday build, Sunday share.",
+      },
+    ],
     faqs: [
       {
         question: "What are the best Lovable projects to build?",
@@ -658,11 +735,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       {
         question: "What can you build with Lovable?",
         answer:
-          "Lovable builds web apps from a description: landing pages with an email waitlist, SaaS dashboards with login, and personal finance trackers with charts, often on a Supabase backend. It handles the stack and deployment, so your weekend goes into scope and copy. For real examples and scoping rules, read Lovable Examples: 9 Apps Worth Building.",
-        readMore: {
-          href: "/articles/lovable-examples-what-to-build",
-          label: "Lovable Examples: 9 Apps Worth Building →",
-        },
+          "Lovable builds web apps from a description: landing pages with an email waitlist, SaaS dashboards with login, and personal finance trackers with charts, often on a Supabase backend. It handles the stack and deployment, so your weekend goes into scope and copy. For finished builds and scoping rules, start with the Lovable examples link under the hero.",
       },
     ],
   },
@@ -742,6 +815,9 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Non-technical founder stack 2026 →",
       },
     ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then open the no-code weekend guides below.",
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
       {
@@ -841,6 +917,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/replit-project-ideas-weekend",
+        label: "Replit project ideas you can deploy by Sunday →",
+        lead: "Want scoped bots, APIs, and small apps?",
+      },
+      {
         href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
         label: "Stop selling AI subscriptions — sell AI work →",
       },
@@ -849,17 +930,15 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Is it too late to build an AI wrapper? →",
       },
     ],
+    crawlHeading: "Start here: ideas and guides",
+    crawlIntro:
+      "Browse the full library, then open the Replit guides this hub already ranks for.",
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
       {
         href: "/articles/build-an-ai-agent-app-in-a-weekend",
         label: "Build an AI agent app",
         blurb: "Agent-shaped products that fit Replit Agent + one-click Deploy.",
-      },
-      {
-        href: "/articles/replit-project-ideas-weekend",
-        label: "Replit weekend ideas",
-        blurb: "Bots, APIs, and small web apps scoped for Sunday.",
       },
       {
         href: "/articles/vibe-coding-security-for-founders",
@@ -1317,6 +1396,7 @@ async function CachedToolHub({ slug }: { slug: string }) {
           ) : null}
           {page.articleLinks?.map((link) => (
             <p key={link.href} className="max-w-3xl text-[15px] leading-[1.6] text-home-ink-2">
+              {link.lead ? <>{link.lead} </> : null}
               <Link
                 href={link.href}
                 className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
@@ -1328,7 +1408,13 @@ async function CachedToolHub({ slug }: { slug: string }) {
         </Container>
       ) : null}
 
-      {page.crawlLinks && page.crawlLinks.length > 0 ? <HubCrawlLinks links={page.crawlLinks} /> : null}
+      {page.crawlLinks && page.crawlLinks.length > 0 ? (
+        <HubCrawlLinks
+          links={page.crawlLinks}
+          heading={page.crawlHeading}
+          intro={page.crawlIntro}
+        />
+      ) : null}
 
       {/* What the tool is best for: a ruled, numbered serif list */}
       {data.strengths.length > 0 ? (
