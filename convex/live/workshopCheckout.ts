@@ -157,13 +157,20 @@ export const begin = internalMutation({
     if (prior && prior.status === "pending" && prior.seatNumber !== undefined) {
       const seat = await seatByNumber(ctx, args.eventKey, prior.seatNumber);
       if (seat && seat.status === "reserved" && (seat.reservedUntil ?? 0) > now) {
-        // Fresh Stripe session each attempt — never reuse an expired Checkout Session.
+        // Renew the hold so Checkout Session expires_at stays ≥ ~31 minutes
+        // (Stripe rejects anything under 30 minutes from now).
+        const reservedUntil = now + RESERVATION_MS;
+        await ctx.db.patch(seat._id, { reservedUntil, updatedAt: now });
+        await ctx.db.patch(prior._id, {
+          lookupKey: args.lookupKey,
+          updatedAt: now,
+        });
         return {
           ok: true as const,
           orderId: prior._id,
           seatNumber: prior.seatNumber,
-          reservedUntil: seat.reservedUntil!,
-          sessionExpiresAt: seat.reservedUntil! - SESSION_GRACE_MS,
+          reservedUntil,
+          sessionExpiresAt: reservedUntil - SESSION_GRACE_MS,
           email,
           checkoutSessionId: prior.stripeCheckoutSessionId,
         };
@@ -176,6 +183,8 @@ export const begin = internalMutation({
       const orderId = reservedMine.orderId!;
       const order = await ctx.db.get(orderId);
       if (order && order.status === "pending") {
+        const reservedUntil = now + RESERVATION_MS;
+        await ctx.db.patch(reservedMine._id, { reservedUntil, updatedAt: now });
         await ctx.db.patch(order._id, {
           lookupKey: args.lookupKey,
           idempotencyKey: args.idempotencyKey,
@@ -185,8 +194,8 @@ export const begin = internalMutation({
           ok: true as const,
           orderId: order._id,
           seatNumber: reservedMine.seatNumber,
-          reservedUntil: reservedMine.reservedUntil!,
-          sessionExpiresAt: reservedMine.reservedUntil! - SESSION_GRACE_MS,
+          reservedUntil,
+          sessionExpiresAt: reservedUntil - SESSION_GRACE_MS,
           email,
           checkoutSessionId: order.stripeCheckoutSessionId,
         };

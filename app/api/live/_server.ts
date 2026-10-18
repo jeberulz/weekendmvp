@@ -194,6 +194,8 @@ export function checkoutSessionParams(
 
   return {
     mode: "payment",
+    // Cards only — avoids delayed methods; webhook still guards payment_status.
+    payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: success,
     cancel_url: cancel,

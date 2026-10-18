@@ -18,6 +18,7 @@ import {
   LIVE_BUILDALONG_SIGNUP_SRC,
   LIVE_WORKSHOP_SELLER_LINE,
   NEXT_BUILD_ALONG,
+  NEXT_SESSION_CHECKOUT_ENABLED,
   POLICY_ANCHOR,
   POLICY_SECTION_LIVE,
   STARTUP_IDEAS_PAID_HREF,
@@ -192,14 +193,16 @@ function TicketCard({
             All 20 seats are taken. The next build-along is {NEXT_BUILD_ALONG.label}. Same 2
             hours, same price rules, 20 seats.
           </p>
-          <div className="mt-5">
-            <TicketCheckoutButton
-              label="Get a seat for 5 Dec"
-              nextSession
-              fullWidth
-              className="w-full"
-            />
-          </div>
+          {NEXT_SESSION_CHECKOUT_ENABLED ? (
+            <div className="mt-5">
+              <TicketCheckoutButton
+                label="Get a seat for 5 Dec"
+                nextSession
+                fullWidth
+                className="w-full"
+              />
+            </div>
+          ) : null}
           <p className="mt-3 text-center text-sm">
             <Link
               href="/starter-kit"
@@ -390,7 +393,9 @@ export default async function BuildAlongPage({
           Next build-along: {NEXT_BUILD_ALONG.label}.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <TicketCheckoutButton label="Get my ticket" nextSession variant="primary" />
+          {NEXT_SESSION_CHECKOUT_ENABLED ? (
+            <TicketCheckoutButton label="Get my ticket" nextSession variant="primary" />
+          ) : null}
           <LiveButton href="/starter-kit" variant="ghost">
             Get the free Starter Kit
           </LiveButton>
@@ -709,14 +714,16 @@ export default async function BuildAlongPage({
               <p className="mt-2 text-sm text-[#4A453C]">
                 Next: {NEXT_BUILD_ALONG.label}.
               </p>
-              <div className="mt-4">
-                <TicketCheckoutButton
-                  label="Get a seat for 5 Dec"
-                  nextSession
-                  fullWidth
-                  className="w-full"
-                />
-              </div>
+              {NEXT_SESSION_CHECKOUT_ENABLED ? (
+                <div className="mt-4">
+                  <TicketCheckoutButton
+                    label="Get a seat for 5 Dec"
+                    nextSession
+                    fullWidth
+                    className="w-full"
+                  />
+                </div>
+              ) : null}
             </>
           ) : (
             <>
@@ -861,7 +868,17 @@ export default async function BuildAlongPage({
           </p>
           <div className="mt-6 flex justify-center">
             {soldOut ? (
-              <TicketCheckoutButton label="Get a seat for 5 Dec" nextSession variant="secondary" />
+              NEXT_SESSION_CHECKOUT_ENABLED ? (
+                <TicketCheckoutButton
+                  label="Get a seat for 5 Dec"
+                  nextSession
+                  variant="secondary"
+                />
+              ) : (
+                <LiveButton href="/starter-kit" variant="secondary">
+                  Get the free Starter Kit
+                </LiveButton>
+              )
             ) : preSale ? (
               <LiveButton disabled>Tickets open Sun 1 Nov</LiveButton>
             ) : (

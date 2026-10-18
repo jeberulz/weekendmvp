@@ -33,11 +33,20 @@ describe("live workshop Stripe isolation", () => {
     const liveWebhook = read("app/api/live/webhook/route.ts");
     assert.match(liveWebhook, /LIVE_WORKSHOP_PURPOSE/);
     assert.match(liveWebhook, /checkout\.session\.expired/);
+    assert.match(liveWebhook, /checkout\.session\.async_payment_succeeded/);
+    assert.match(liveWebhook, /checkout\.session\.async_payment_failed/);
+    assert.match(liveWebhook, /payment_status !== "paid"/);
+    assert.match(liveWebhook, /charge\.refunded !== true/);
     assert.doesNotMatch(liveWebhook, /recordEvent|paymentsBridge/);
+
+    const catalogEvents = read("lib/live/stripe-catalog.ts");
+    assert.match(catalogEvents, /txcd_20060045/);
+    assert.match(catalogEvents, /async_payment_succeeded/);
 
     const server = read("app/api/live/_server.ts");
     assert.match(server, /automatic_tax:\s*\{\s*enabled:\s*true/);
     assert.match(server, /billing_address_collection:\s*"required"/);
+    assert.match(server, /payment_method_types:\s*\[\s*"card"\s*\]/);
     assert.doesNotMatch(server, /managed_payments/);
   });
 

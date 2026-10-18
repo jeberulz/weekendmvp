@@ -24,7 +24,7 @@
     "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts tests/redirects/tenant-publish-check.test.ts",
     "test:auth": "vitest run tests/auth",
     "test:security": "node --experimental-strip-types --test tests/security/*.test.mjs && vitest run tests/security/wp27-templates.test.tsx tests/security/wp28-templates-tenant.test.tsx tests/security/jsonld-script.test.tsx tests/security/legacy-stripe-webhook.test.ts tests/security/legacy-payments-bridge.test.ts",
-    "test:live": "vitest run tests/live/schedule.test.ts && node --experimental-strip-types --test tests/live/*.test.mjs",
+    "test:live": "vitest run tests/live/schedule.test.ts tests/live/webhook-route.test.ts && node --experimental-strip-types --test tests/live/*.test.mjs",
     "test:sitemap": "node --experimental-strip-types --test tests/sitemap/*.test.mjs",
     "convex:dev": "convex dev",
     "og:generate": "node scripts/generate-og-cards.mjs",

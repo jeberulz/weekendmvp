@@ -67,6 +67,13 @@ export const NEXT_BUILD_ALONG = {
 } as const;
 
 /**
+ * Off until the Dec 5 price/seat pool is wired. When false, sold-out and
+ * ended CTAs keep the date copy but hide "Get a seat for 5 Dec" buttons
+ * (those incorrectly read the 14 Nov seat counter today).
+ */
+export const NEXT_SESSION_CHECKOUT_ENABLED = false;
+
+/**
  * Public URLs — placeholders until John fills them.
  * Luma: `NEXT_PUBLIC_LIVE_LUMA_URL`
  * YouTube live (public during the hour): `NEXT_PUBLIC_LIVE_YOUTUBE_URL`

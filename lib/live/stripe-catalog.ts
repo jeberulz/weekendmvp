@@ -80,9 +80,14 @@ export const LIVE_WORKSHOP_PRICES = [
 
 export const LIVE_WORKSHOP_WEBHOOK_EVENTS = [
   "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
   "checkout.session.expired",
   "charge.refunded",
 ] as const;
+
+/** Stripe Tax product tax code — digitally delivered education / training. */
+export const LIVE_WORKSHOP_TAX_CODE = "txcd_20060045" as const;
 
 /** Next.js cache tag for the public seats-left render. */
 export const LIVE_SEATS_CACHE_TAG = "live-workshop-seats" as const;
