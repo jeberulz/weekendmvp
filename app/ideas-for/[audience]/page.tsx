@@ -353,6 +353,26 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         href: "/articles/programs-solo-founders-idea-to-mvp",
         label: "What programs help solo founders go from idea to MVP? →",
       },
+      {
+        href: "/articles/the-1k-month-idea",
+        label: "The $1K/month idea →",
+      },
+      {
+        href: "/articles/build-in-public-2026",
+        label: "Build in public in 2026 →",
+      },
+      {
+        href: "/articles/how-to-get-your-first-10-customers",
+        label: "How to get your first 10 customers →",
+      },
+      {
+        href: "/articles/how-to-price-your-weekend-mvp",
+        label: "How to price your weekend MVP →",
+      },
+      {
+        href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
+        label: "Stop selling AI subscriptions — sell AI work →",
+      },
     ],
   },
   "weekend-builders": {
@@ -383,6 +403,24 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         title: "Weekend MVP",
         url: SITE,
         description: "Templates and prompts to ship by Sunday",
+      },
+    ],
+    articleLinks: [
+      {
+        href: "/articles/ship-it-saturday-framework",
+        label: "Ship It Saturday framework →",
+      },
+      {
+        href: "/articles/stop-overthinking-start-building",
+        label: "Stop overthinking, start building →",
+      },
+      {
+        href: "/articles/how-to-price-your-weekend-mvp",
+        label: "How to price your weekend MVP →",
+      },
+      {
+        href: "/articles/the-real-cost-of-not-shipping",
+        label: "The real cost of not shipping →",
       },
     ],
   },
