@@ -19,10 +19,13 @@ import {
   Zap,
 } from "lucide-react";
 
+import { LovableAffiliateDisclosure } from "@/components/affiliates/LovableAffiliateDisclosure";
+import { LovableAffiliateLink } from "@/components/affiliates/LovableAffiliateLink";
 import { ToolLogo, type ToolKey } from "@/components/home/tool-logos";
 import { ButtonLink, Container, Em, StepList } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { LOVABLE_AFFILIATE_URL } from "@/lib/affiliates/lovable";
 import { HubCta } from "@/components/hubs/HubCta";
 import { HubEmailCapture } from "@/components/hubs/HubEmailCapture";
 import { HubFeaturedIdeas } from "@/components/hubs/HubFeaturedIdeas";
@@ -593,7 +596,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Lovable projects with starter prompts — 30+ app ideas where Lovable builds the full stack from plain English. Pick one and go live this weekend.",
     description:
       "Build full applications with natural language. Lovable handles the entire stack and deploys your app automatically.",
-    url: "https://lovable.dev",
+    url: LOVABLE_AFFILIATE_URL,
     icon: Heart,
     operatingSystem: "Web",
     schemaDescription:
@@ -1093,7 +1096,9 @@ async function getToolData(slug: string): Promise<ToolData> {
     // Editorial hub copy lives in TOOL_PAGES (titles, MVP positioning).
     // Convex tool rows still supply url/strengths when present.
     description: page.description,
-    url: toolRow?.url ?? page.url,
+    // Lovable always uses the Impact affiliate URL — never a raw lovable.dev
+    // row from Convex, even before a tools reseed.
+    url: slug === "lovable" ? LOVABLE_AFFILIATE_URL : (toolRow?.url ?? page.url),
     strengths: toolRow?.strengths ?? page.strengths,
     gettingStarted: page.gettingStarted,
   };
@@ -1272,14 +1277,29 @@ async function CachedToolHub({ slug }: { slug: string }) {
           {featuredCards.length > 0 ? <ButtonLink href="#start-here">Start here</ButtonLink> : null}
           {/* Outbound tool link — deliberately secondary: this page's job is to
               send the visitor to an idea, not to the tool's homepage. */}
-          <NavExternalLink
-            href={data.url}
-            className="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
-          >
-            Visit {page.name}
-            <ArrowUpRight size={15} aria-hidden="true" />
-          </NavExternalLink>
+          {page.slug === "lovable" ? (
+            <LovableAffiliateLink
+              newTab
+              className="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
+              Visit {page.name}
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </LovableAffiliateLink>
+          ) : (
+            <NavExternalLink
+              href={data.url}
+              className="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+            >
+              Visit {page.name}
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </NavExternalLink>
+          )}
         </div>
+        {page.slug === "lovable" ? (
+          <div className="pt-4">
+            <LovableAffiliateDisclosure className="mb-0 max-w-3xl" />
+          </div>
+        ) : null}
       </PageHeader>
 
       {page.relatedHub || (page.articleLinks && page.articleLinks.length > 0) ? (

@@ -8,6 +8,15 @@
 
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 
+import {
+  LovableAffiliateDisclosure,
+  AffiliateDisclosure,
+} from "@/components/affiliates/LovableAffiliateDisclosure";
+import {
+  LovableAffiliateLink,
+  LovableLink,
+} from "@/components/affiliates/LovableAffiliateLink";
+import { AffiliateAwareAnchor } from "@/lib/affiliates/mdx-anchor";
 import { cn } from "@/lib/utils";
 
 type ElProps<T extends keyof React.JSX.IntrinsicElements> =
@@ -51,7 +60,7 @@ export const articleMdxComponents: MDXComponents = {
     />
   ),
   a: ({ className, ...props }: ElProps<"a">) => (
-    <a
+    <AffiliateAwareAnchor
       className={cn(
         "break-words text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none",
         className,
@@ -59,6 +68,10 @@ export const articleMdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  LovableLink,
+  LovableAffiliateLink,
+  AffiliateDisclosure,
+  LovableAffiliateDisclosure,
   strong: ({ className, ...props }: ElProps<"strong">) => (
     <strong className={cn("font-semibold text-home-ink", className)} {...props} />
   ),

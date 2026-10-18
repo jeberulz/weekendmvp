@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 
+import { LovableAffiliateDisclosure } from "@/components/affiliates/LovableAffiliateDisclosure";
 import { Logo } from "@/components/primitives/Logo";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { LEGAL_DOCS } from "@/lib/legal/content";
@@ -206,19 +207,22 @@ export function SiteFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-home-dr pt-8 md:flex-row">
-          <p className="font-mono text-[11px] tracking-[0.06em] text-home-d3">
-            © <CopyrightYear /> Weekend MVP. Built to ship.
-          </p>
-          <div className="flex items-center gap-6">
-            <NavExternalLink
-              href="https://twitter.com/weekendmvp"
-              className="text-home-d3 transition-colors hover:text-home-d1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light"
-              aria-label="Follow Weekend MVP on Twitter"
-            >
-              <TwitterIcon size={18} />
-            </NavExternalLink>
+        <div className="flex flex-col gap-4 border-t border-home-dr pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <p className="font-mono text-[11px] tracking-[0.06em] text-home-d3">
+              © <CopyrightYear /> Weekend MVP. Built to ship.
+            </p>
+            <div className="flex items-center gap-6">
+              <NavExternalLink
+                href="https://twitter.com/weekendmvp"
+                className="text-home-d3 transition-colors hover:text-home-d1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-light"
+                aria-label="Follow Weekend MVP on Twitter"
+              >
+                <TwitterIcon size={18} />
+              </NavExternalLink>
+            </div>
           </div>
+          <LovableAffiliateDisclosure variant="footer" />
         </div>
       </div>
     </footer>
