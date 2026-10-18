@@ -179,6 +179,20 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         description: "Resources for design founders",
       },
     ],
+    articleLinks: [
+      {
+        href: "/articles/vibe-coding-for-designers",
+        label: "Vibe coding for designers: ship a real app in a weekend →",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe Coding 101 →",
+      },
+      {
+        href: "/articles/the-3-screen-mvp-framework",
+        label: "The 3-screen MVP framework →",
+      },
+    ],
   },
   "non-technical": {
     slug: "non-technical",
@@ -226,6 +240,20 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         description: "No-code courses and tutorials for founders",
       },
     ],
+    articleLinks: [
+      {
+        href: "/articles/best-ai-app-builder-non-technical-founders",
+        label: "Best AI app builder for non-technical founders →",
+      },
+      {
+        href: "/articles/no-code-mvp-guide-2026",
+        label: "No-code MVP: how to build one in a weekend →",
+      },
+      {
+        href: "/articles/mvp-for-non-technical-founders",
+        label: "How to build an MVP as a non-technical founder →",
+      },
+    ],
     faqs: [
       {
         question: "How do I build an MVP without a technical co-founder?",
@@ -238,6 +266,10 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
               "The full guide: How to Build an MVP as a Non-Technical Founder →",
           },
           {
+            href: "/articles/no-code-mvp-guide-2026",
+            label: "No-Code MVP weekend guide →",
+          },
+          {
             href: "/articles/do-you-need-a-technical-co-founder-2026",
             label: "Do You Need a Technical Co-Founder in 2026? →",
           },
@@ -248,10 +280,16 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
           "Which platforms do non-technical founders use to ship an MVP quickly?",
         answer:
           "Most start in a browser builder: Lovable or Bolt.new turns a plain-English brief into a working app with no setup. When they need more control, they move the project into Cursor or Claude Code. Add Stripe for payments and Vercel for hosting, and a first stack can start for under $40 a month.",
-        readMore: {
-          href: "/articles/non-technical-founder-stack-2026",
-          label: "Non-Technical Founder Stack 2026 →",
-        },
+        readMore: [
+          {
+            href: "/articles/best-ai-app-builder-non-technical-founders",
+            label: "Best AI App Builder for Non-Technical Founders →",
+          },
+          {
+            href: "/articles/non-technical-founder-stack-2026",
+            label: "Non-Technical Founder Stack 2026 →",
+          },
+        ],
       },
       {
         question:
@@ -315,6 +353,26 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         href: "/articles/programs-solo-founders-idea-to-mvp",
         label: "What programs help solo founders go from idea to MVP? →",
       },
+      {
+        href: "/articles/the-1k-month-idea",
+        label: "The $1K/month idea →",
+      },
+      {
+        href: "/articles/build-in-public-2026",
+        label: "Build in public in 2026 →",
+      },
+      {
+        href: "/articles/how-to-get-your-first-10-customers",
+        label: "How to get your first 10 customers →",
+      },
+      {
+        href: "/articles/how-to-price-your-weekend-mvp",
+        label: "How to price your weekend MVP →",
+      },
+      {
+        href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
+        label: "Stop selling AI subscriptions — sell AI work →",
+      },
     ],
   },
   "weekend-builders": {
@@ -345,6 +403,24 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         title: "Weekend MVP",
         url: SITE,
         description: "Templates and prompts to ship by Sunday",
+      },
+    ],
+    articleLinks: [
+      {
+        href: "/articles/ship-it-saturday-framework",
+        label: "Ship It Saturday framework →",
+      },
+      {
+        href: "/articles/stop-overthinking-start-building",
+        label: "Stop overthinking, start building →",
+      },
+      {
+        href: "/articles/how-to-price-your-weekend-mvp",
+        label: "How to price your weekend MVP →",
+      },
+      {
+        href: "/articles/the-real-cost-of-not-shipping",
+        label: "The real cost of not shipping →",
       },
     ],
   },

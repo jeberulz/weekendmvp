@@ -1,0 +1,168 @@
+---
+slug: "bolt-new-examples-weekend"
+title: "Bolt.new Examples: 8 Apps You Can Build This Weekend"
+description: "Bolt.new examples: eight weekend apps you can ship, real customer stories from Bolt's blog, Free vs Pro token costs, and when Bolt is really the wrong tool."
+category: "Ideas"
+publishedAt: "2026-10-18"
+wordCount: 1385
+readMinutes: 7
+heroAlt: "A crumpled paper scrap beside a fresh blank notebook on a dark desk, lit by a single lime beam"
+faq:
+  - question: "What can you build with Bolt.new?"
+    answer: "Browser-native web apps you can prompt, refine, and deploy without opening a local IDE: landing pages, form tools, waitlists, simple dashboards, and light SaaS. The constraint is scope and tokens, not whether Bolt can draw a button."
+  - question: "What are some real apps built with Bolt.new?"
+    answer: "Bolt's customer-story blog covers products like Ginger Pulse (meal tracking), FlagStat (flag football stats), Postglow (writer share-image receipts), and a San Diego photographer's print store. Those are multi-day or multi-week builds — use them for inspiration, not as Saturday checklists."
+  - question: "Can Bolt.new build a full-stack app with a database and payments?"
+    answer: "Yes for a thin stack: UI, a database, and a Checkout-style payment flow. Deep custom billing, complex roles, and heavy backend jobs are where weekends die. Start with one table and one paid action."
+  - question: "Can I build a landing page with Bolt instead of a funnel builder?"
+    answer: "Yes. A hero, proof, one form, and a thank-you state is a classic Bolt weekend. Skip the seven-step funnel until someone asks for step two."
+  - question: "Is Bolt.new free to use?"
+    answer: "There is a Free plan with daily and monthly token caps and Bolt branding on sites. Pro is $25/month with higher token limits, custom domains, and token rollover while subscribed. Check bolt.new/pricing for the live numbers."
+  - question: "Bolt vs Lovable: which is better for a first app?"
+    answer: "Bolt is usually faster for landing pages and form tools in the browser. Lovable is usually stronger when you want a fuller app with auth and backend in one product. Many founders try both on the same brief for an hour and keep the one that ships the happy path first."
+---
+
+## Quick Answer
+
+Bolt.new examples that finish are **front-end-heavy web apps** with one input and one output: landing pages, waitlists, form tools, and thin dashboards. You prompt in the browser, iterate in chat, and click Deploy.
+
+If you want a researched buyer already attached, start from the [startup ideas library](/startup-ideas).
+
+## What can you build with Bolt.new?
+
+Browser-native web apps you can prompt, refine, and deploy without opening a local IDE: landing pages, form tools, waitlists, simple dashboards, and light SaaS. The constraint is scope and tokens, not whether Bolt can draw a button.
+
+The [Bolt hub](/build-with/bolt) keeps prompts and tagged ideas. This page is the examples list — same job as [Cursor project examples](/articles/cursor-project-examples) and [Lovable examples](/articles/lovable-examples-what-to-build).
+
+## What are some real apps built with Bolt.new?
+
+Bolt's customer-story blog covers products like Ginger Pulse (meal tracking), FlagStat (flag football stats), Postglow (writer share-image receipts), and a San Diego photographer's print store. Those are multi-day or multi-week builds — use them for inspiration, not as Saturday checklists.
+
+A few sourced patterns worth stealing:
+
+- **Ginger Pulse** — picture-first meal tracking for diabetes management, built after a spreadsheet workflow worked in real life ([Bolt customer story](https://bolt.new/blog/category/customer-stories)).
+- **FlagStat** — scoring/ops for flag football programs; Bolt reports customers across multiple US states ([same series](https://bolt.new/blog/category/customer-stories)).
+- **Print store** — a photographer replaced a ~$10,000 agency quote with a Bolt build they priced around $450 of effort/cost in the writeup ([same series](https://bolt.new/blog/category/customer-stories)).
+
+Impressive. Not "start at 9am, Product Hunt at 5pm." The eight below are the weekend-shaped versions.
+
+## The Eight
+
+### 1. A waitlist that stores an email and nothing else
+
+Given an email, save it and say thanks.
+
+Landing page, one field, one table. Optional referral code later. Ideas already tagged for this shape live under [waitlist manager](/ideas/waitlist-manager).
+
+### 2. A lead-gen landing page that replaces a funnel builder
+
+Given a visitor, capture name + email + one qualifying answer.
+
+Hero, three proof points, form, thank-you. No seven-step funnel. This is the answer to "can I skip ClickFunnels for v1."
+
+### 3. A quote calculator for one trade
+
+Given job inputs you already use, return a price.
+
+Roofers, tutors, photographers. Hard-code the formula. Wrong quotes are worse than no app.
+
+### 4. An intake form that writes the brief
+
+Given answers, return a one-page brief the client can approve.
+
+No accounts. Email yourself the PDF or markdown. Add login when a client asks — usually they will not this weekend.
+
+### 5. A booking page that keeps the slot unless they pay
+
+Given an open slot, take a deposit or leave it free.
+
+Stripe Checkout + a list of upcoming bookings. [Adding Stripe](/articles/add-stripe-to-weekend-mvp) is a session and a webhook signature check, not a custom card form.
+
+### 6. A single-purpose directory you type in by hand
+
+Given a filter, return a curated list.
+
+One hundred rows you entered yourself. No marketplace matching. Monetise listings after someone uses it.
+
+### 7. A client portal with three fields
+
+Given a login, show files, invoice status, and next step.
+
+See [client portal](/ideas/client-portal). Auth is allowed here because the product breaks without it. Still: one role, one client view.
+
+### 8. An AI landing-page generator for one niche
+
+Given a product URL or three bullets, return a draft landing page.
+
+Keep it niche (e.g. ecommerce brands) so the prompt can be opinionated. Pair with [AI landing page generator for ecommerce](/ideas/ai-landing-page-generator-ecommerce) if you want the researched angle.
+
+Want more of this shape? The [startup ideas library](/startup-ideas) is already filtered to one buyer and one job.
+
+## Can Bolt.new build a full-stack app with a database and payments?
+
+Yes for a thin stack: UI, a database, and a Checkout-style payment flow. Deep custom billing, complex roles, and heavy backend jobs are where weekends die. Start with one table and one paid action.
+
+## Can I build a landing page with Bolt instead of a funnel builder?
+
+Yes. A hero, proof, one form, and a thank-you state is a classic Bolt weekend. Skip the seven-step funnel until someone asks for step two.
+
+## Where Bolt struggles
+
+- **Token burn on large projects.** Bolt's own pricing FAQ notes most token usage comes from syncing the project file system to the model — bigger projects cost more per message.
+- **Backend depth.** Fine for one table and one webhook. Painful for multi-tenant permissions you have not designed.
+- **Native mobile.** Ship responsive web. Native stores are a different sport.
+
+When you outgrow it, [move off Lovable or Bolt into a real codebase](/articles/move-off-lovable-bolt-to-real-code). Before you share the URL, run the short [vibe coding security](/articles/vibe-coding-security-for-founders) pass — Bolt makes it easy to ship, including the mistakes.
+
+## Is Bolt.new free to use?
+
+There is a Free plan with daily and monthly token caps and Bolt branding on sites. Pro is $25/month with higher token limits, custom domains, and token rollover while subscribed. Check bolt.new/pricing for the live numbers.
+
+**Free vs Pro for a weekend (list prices, Oct 2026):**
+
+| | Free | Pro ($25/mo) |
+| --- | --- | --- |
+| Tokens | 300K daily / 1M monthly | Start at 10M monthly; no daily cap |
+| Branding | Bolt branding on sites | No Bolt branding |
+| Domains | Hosting included | Custom domain support |
+| Rollover | — | Unused tokens roll over one extra month while paid |
+
+A scoped landing page often fits Free. A chatty rebuild-the-whole-app loop will not.
+
+## Bolt vs Lovable: which is better for a first app?
+
+Bolt is usually faster for landing pages and form tools in the browser. Lovable is usually stronger when you want a fuller app with auth and backend in one product. Many founders try both on the same brief for an hour and keep the one that ships the happy path first. If you want the mindset behind prompting these builders at all, start with [Vibe Coding 101](/articles/vibe-coding-101).
+
+Also see [Replit project ideas](/articles/replit-project-ideas-weekend) if you want the IDE+Deploy shape instead.
+
+## FAQ
+
+### What can you build with Bolt.new?
+
+Browser-native web apps you can prompt, refine, and deploy without opening a local IDE: landing pages, form tools, waitlists, simple dashboards, and light SaaS. The constraint is scope and tokens, not whether Bolt can draw a button.
+
+### What are some real apps built with Bolt.new?
+
+Bolt's customer-story blog covers products like Ginger Pulse (meal tracking), FlagStat (flag football stats), Postglow (writer share-image receipts), and a San Diego photographer's print store. Those are multi-day or multi-week builds — use them for inspiration, not as Saturday checklists.
+
+### Can Bolt.new build a full-stack app with a database and payments?
+
+Yes for a thin stack: UI, a database, and a Checkout-style payment flow. Deep custom billing, complex roles, and heavy backend jobs are where weekends die. Start with one table and one paid action.
+
+### Can I build a landing page with Bolt instead of a funnel builder?
+
+Yes. A hero, proof, one form, and a thank-you state is a classic Bolt weekend. Skip the seven-step funnel until someone asks for step two.
+
+### Is Bolt.new free to use?
+
+There is a Free plan with daily and monthly token caps and Bolt branding on sites. Pro is $25/month with higher token limits, custom domains, and token rollover while subscribed. Check bolt.new/pricing for the live numbers.
+
+### Bolt vs Lovable: which is better for a first app?
+
+Bolt is usually faster for landing pages and form tools in the browser. Lovable is usually stronger when you want a fuller app with auth and backend in one product. Many founders try both on the same brief for an hour and keep the one that ships the happy path first.
+
+## TL;DR
+
+Bolt.new examples that ship are one input → one output in the browser. Copy the waitlist, landing page, quote calculator, intake brief, deposit booking, hand-typed directory, thin client portal, or niche page generator. Read Bolt's customer stories for ambition; keep Saturday scoped. Free has token caps; Pro is $25/month. Then point the URL at a buyer from the [startup ideas library](/startup-ideas).
+
+Sources: [Bolt pricing](https://bolt.new/pricing), [Bolt customer stories](https://bolt.new/blog/category/customer-stories), [Bolt gallery](https://bolt.new/gallery)

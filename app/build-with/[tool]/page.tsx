@@ -206,6 +206,16 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas lean on Cursor's strength — multi-file refactors, API work, and full-stack scaffolding — so you spend the weekend building product, not fighting the editor.",
     },
+    articleLinks: [
+      {
+        href: "/articles/is-it-too-late-to-build-an-ai-wrapper",
+        label: "Is it too late to build an AI wrapper? →",
+      },
+      {
+        href: "/articles/cursor-vs-claude-code-vs-lovable-2026",
+        label: "Cursor vs Claude Code vs Lovable →",
+      },
+    ],
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
       CURSOR_HYDRATION_LINK,
@@ -213,6 +223,16 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         href: "/articles/cursor-project-examples",
         label: "Cursor project examples",
         blurb: "Eight weekend apps, including two builds people actually shipped.",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe Coding 101",
+        blurb: "The mindset behind prompting Cursor, Claude, and Bolt without drowning in options.",
+      },
+      {
+        href: "/articles/vibe-coding-security-for-founders",
+        label: "Vibe coding security",
+        blurb: "Seven checks before you put a vibe-coded app in front of paying users.",
       },
     ],
     faqs: [
@@ -311,6 +331,14 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/claude-projects-vs-claude-code",
+        label: "Claude Projects vs Claude Code: which do you need? →",
+      },
+      {
+        href: "/articles/claude-projects-for-founders",
+        label: "Claude Projects for Founders →",
+      },
+      {
         href: "/articles/7-things-to-build-with-claude-code-this-weekend",
         label: "7 Things to Build with Claude Code this Weekend →",
       },
@@ -326,10 +354,16 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         question: "What are Claude Projects, and do they help you build?",
         answer:
           "Claude Projects are workspaces inside claude.ai. You set custom instructions once and upload a few reference files, and every chat in that project inherits both. For a weekend build, make one Project per product so Claude remembers your user, scope, and stack. Projects are for thinking and planning. Claude Code is what edits files.",
-        readMore: {
-          href: "/articles/claude-projects-for-founders",
-          label: "Set one up: Claude Projects for Founders →",
-        },
+        readMore: [
+          {
+            href: "/articles/claude-projects-vs-claude-code",
+            label: "Claude Projects vs Claude Code →",
+          },
+          {
+            href: "/articles/claude-projects-for-founders",
+            label: "Set one up: Claude Projects for Founders →",
+          },
+        ],
       },
     ],
   },
@@ -401,6 +435,38 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       body: "Planning, debugging, and long-form drafting in claude.ai still live on the main Claude hub.",
       cta: "Browse Build with Claude",
     },
+    articleLinks: [
+      {
+        href: "/articles/claude-projects-vs-claude-code",
+        label: "Claude Projects vs Claude Code →",
+      },
+      {
+        href: "/articles/claude-code-for-non-technical-founders",
+        label: "Claude Code for non-technical founders →",
+      },
+      {
+        href: "/articles/7-things-to-build-with-claude-code-this-weekend",
+        label: "7 Things to Build with Claude Code this Weekend →",
+      },
+    ],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/claude-code-on-your-phone",
+        label: "Claude Code on your phone",
+        blurb: "Keep an agent moving from Termius, Codespaces, or GitHub mobile.",
+      },
+      {
+        href: "/articles/build-an-ai-agent-app-in-a-weekend",
+        label: "Build an AI agent app in a weekend",
+        blurb: "Scoped agent products with tools, memory, and a human gate — not another chat wrapper.",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe Coding 101",
+        blurb: "How Claude Code fits next to Cursor and Bolt when you're prompting, not typing.",
+      },
+    ],
     ideasTool: "claude",
     faqs: [
       {
@@ -476,11 +542,43 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These fit Bolt's sweet spot — browser-native full-stack apps, landing pages, and form tools you can prompt, refine, and deploy without opening a local IDE.",
     },
+    articleLinks: [
+      {
+        href: "/articles/lovable-examples-what-to-build",
+        label: "Lovable examples (sister list) →",
+      },
+      {
+        href: "/articles/move-off-lovable-bolt-to-real-code",
+        label: "Move off Bolt into a real codebase →",
+      },
+    ],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/bolt-new-examples-weekend",
+        label: "Bolt.new examples",
+        blurb: "Eight weekend apps, plus Free vs Pro token costs.",
+      },
+      {
+        href: "/articles/vibe-coding-101",
+        label: "Vibe Coding 101",
+        blurb: "Prompting Bolt without turning Saturday into a rebuild loop.",
+      },
+      {
+        href: "/articles/vibe-coding-security-for-founders",
+        label: "Vibe coding security",
+        blurb: "The checks that stop a same-day deploy from becoming an open API key.",
+      },
+    ],
     faqs: [
       {
         question: "What apps can you build with Bolt.new?",
         answer:
           "Bolt.new is best for web apps you build in the browser and share the same day: landing pages, form tools that turn inputs into results, waitlists, and simple SaaS dashboards. Good weekend picks include a waitlist manager with referrals, an AI meeting-notes cleaner, and a rental maintenance dashboard. Prompt it, iterate in chat, then click Deploy.",
+        readMore: {
+          href: "/articles/bolt-new-examples-weekend",
+          label: "8 Bolt.new examples you can finish this weekend →",
+        },
       },
     ],
   },
@@ -627,6 +725,38 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "Built for non-technical founders — marketplaces, portals, and schedulers you can stand up in Bubble, Softr, or Glide before writing a line of code.",
     },
+    articleLinks: [
+      {
+        href: "/articles/no-code-mvp-guide-2026",
+        label: "How to build a no-code MVP in a weekend →",
+      },
+      {
+        href: "/articles/mvp-for-non-technical-founders",
+        label: "MVP for non-technical founders →",
+      },
+      {
+        href: "/articles/non-technical-founder-stack-2026",
+        label: "Non-technical founder stack 2026 →",
+      },
+    ],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/ship-it-saturday-framework",
+        label: "Ship It Saturday",
+        blurb: "Friday scope, Saturday build, Sunday share — the ritual for no-code weekends.",
+      },
+      {
+        href: "/articles/validate-startup-idea-48-hours",
+        label: "Validate in 48 hours",
+        blurb: "Ten conversations and a priced page before you open Bubble or Glide.",
+      },
+      {
+        href: "/articles/stop-overthinking-start-building",
+        label: "Stop overthinking, start building",
+        blurb: "When the tool choice is fine and the only problem is still planning.",
+      },
+    ],
     faqs: [
       {
         question: "What are the best no-code tools for an MVP?",
@@ -636,6 +766,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           { text: "Lovable", href: "/build-with/lovable" },
           { text: "Bolt.new", href: "/build-with/bolt" },
         ],
+        readMore: {
+          href: "/articles/no-code-mvp-guide-2026",
+          label: "No-Code MVP: How to Build One in a Weekend →",
+        },
       },
     ],
   },
@@ -702,6 +836,34 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "Browser IDE + Agent + one-click Deploy — these ideas are small enough to finish and public enough to share the moment they run.",
     },
+    articleLinks: [
+      {
+        href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
+        label: "Stop selling AI subscriptions — sell AI work →",
+      },
+      {
+        href: "/articles/is-it-too-late-to-build-an-ai-wrapper",
+        label: "Is it too late to build an AI wrapper? →",
+      },
+    ],
+    crawlLinks: [
+      ...SEO_PRIORITY_LINKS,
+      {
+        href: "/articles/build-an-ai-agent-app-in-a-weekend",
+        label: "Build an AI agent app",
+        blurb: "Agent-shaped products that fit Replit Agent + one-click Deploy.",
+      },
+      {
+        href: "/articles/replit-project-ideas-weekend",
+        label: "Replit weekend ideas",
+        blurb: "Bots, APIs, and small web apps scoped for Sunday.",
+      },
+      {
+        href: "/articles/vibe-coding-security-for-founders",
+        label: "Vibe coding security",
+        blurb: "Lock down secrets and auth before Agent ships a public URL.",
+      },
+    ],
     faqs: [
       {
         question: "What are some Replit project examples?",
