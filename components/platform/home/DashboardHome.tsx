@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WorkshopDashboardCards } from "@/components/live/WorkshopDashboardCards";
 import type { DashboardEditorial } from "@/lib/dashboard/editorial-map";
 import { Greeting } from "./Greeting";
 import { HomeRail } from "./HomeRail";
@@ -27,7 +28,14 @@ function WeeklyPickUnavailable() {
  * homepage cache. Personal modules (greeting, 1, 3 and the rail) load from
  * Convex in the browser, each behind its own skeleton and error state.
  */
-export function DashboardHome({ editorial }: { editorial: DashboardEditorial | null }) {
+export function DashboardHome({
+  editorial,
+  nowMs,
+}: {
+  editorial: DashboardEditorial | null;
+  /** Clock for workshop abandoned/paid cards (server-stamped). */
+  nowMs: number;
+}) {
   const weekly = editorial?.weekly ? { slug: editorial.weekly.slug, title: editorial.weekly.title } : null;
   // Picks skip what Home already shows, so no idea appears twice.
   const shown = editorial ? [...(editorial.weekly ? [editorial.weekly.slug] : []), ...editorial.newest.map((row) => row.slug)] : [];
@@ -36,6 +44,7 @@ export function DashboardHome({ editorial }: { editorial: DashboardEditorial | n
     <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10 xl:grid-cols-[minmax(0,1fr)_272px] xl:items-start">
       <div className="flex min-w-0 flex-col gap-8">
         <Greeting />
+        <WorkshopDashboardCards nowMs={nowMs} />
         <NextStepCard weekly={weekly} total={editorial?.total ?? null} />
         {editorial?.weekly ? (
           <WeeklyPick idea={editorial.weekly} weekLabel={editorial.week.label} />

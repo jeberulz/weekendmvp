@@ -92,13 +92,21 @@ describe("WP44-S4 greeting copy", () => {
 describe("WP44-S4 Home composition", () => {
   test("the page reads the homepage cache and keeps the preview claim", () => {
     expect(dashboardPageSource).toContain("await getDashboardEditorial()");
-    expect(dashboardPageSource).toContain("<DashboardHome editorial={editorial} />");
+    expect(dashboardPageSource).toContain("<DashboardHome editorial={editorial} nowMs={nowMs} />");
     expect(dashboardPageSource).toContain("<PreviewClaimRunner />");
     expect(dashboardPageSource).not.toContain("components/platform/shell/DashboardHome");
   });
 
   test("orders modules personal, editorial, then discovery", () => {
-    const order = ["<Greeting", "<NextStepCard", "<WeeklyPick", "<PickedForYou", "<NewestIdeas", "<HomeRail"];
+    const order = [
+      "<Greeting",
+      "<WorkshopDashboardCards",
+      "<NextStepCard",
+      "<WeeklyPick",
+      "<PickedForYou",
+      "<NewestIdeas",
+      "<HomeRail",
+    ];
     const positions = order.map((tag) => homeSource.indexOf(tag));
     expect(positions.every((p) => p > -1)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);

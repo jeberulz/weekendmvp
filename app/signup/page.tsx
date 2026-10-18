@@ -6,6 +6,7 @@ import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { PreviewClaimStash } from "@/components/preview/PreviewClaimHandoff";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { safePlatformReturn } from "@/lib/auth-return";
+import { LIVE_BUILDALONG_SIGNUP_SRC } from "@/lib/live/config";
 
 export const metadata: Metadata = {
   title: "Sign up",
@@ -17,18 +18,25 @@ export const metadata: Metadata = {
 
 export const instant = false;
 
+function readSrc(raw: string | string[] | undefined): string | null {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value === LIVE_BUILDALONG_SIGNUP_SRC ? value : null;
+}
+
 export default async function SignupPage({
   searchParams,
 }: {
   searchParams: Promise<{
     returnTo?: string | string[];
     claimPreview?: string | string[];
+    src?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const returnTo = safePlatformReturn(
     Array.isArray(params.returnTo) ? params.returnTo[0] : params.returnTo,
   );
+  const src = readSrc(params.src);
 
   const claimPreview = normalizeCapabilityToken(
     Array.isArray(params.claimPreview)
@@ -49,7 +57,7 @@ export default async function SignupPage({
   return (
     <AuthPageShell>
       {claimPreview !== null && <PreviewClaimStash token={claimPreview} continueTo={continueTo} />}
-      <AuthCard mode="signup" returnTo={returnTo} />
+      <AuthCard mode="signup" returnTo={returnTo} src={src} />
     </AuthPageShell>
   );
 }

@@ -88,7 +88,11 @@ test("reconcile runs only with the cron secret, compared in constant time", asyn
   const stripe = route.indexOf("createMembershipStripe(");
   assert.ok(skip > 0 && auth > skip && stripe > auth);
   const vercel = JSON.parse(await read("vercel.json"));
-  assert.deepEqual(vercel.crons, [{ path: "/api/platform/membership/reconcile", schedule: "17 4 * * *" }]);
+  assert.deepEqual(vercel.crons, [
+    { path: "/api/platform/membership/reconcile", schedule: "17 4 * * *" },
+    // Live Build-Along lapsed seat holds (same CRON_SECRET; purpose-isolated route).
+    { path: "/api/live/reconcile", schedule: "23 4 * * *" },
+  ]);
 });
 
 test("server-only bridge kinds must be fresh before Convex runs anything", async () => {

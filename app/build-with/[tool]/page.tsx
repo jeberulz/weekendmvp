@@ -46,6 +46,7 @@ import {
   type IdeaDoc,
 } from "@/components/hubs/hub-data";
 import { IdeaBrowser } from "@/components/public/IdeaBrowser";
+import { LiveBanner } from "@/components/live/LiveBanner";
 import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
@@ -1301,6 +1302,8 @@ async function CachedToolHub({ slug }: { slug: string }) {
           </div>
         ) : null}
       </PageHeader>
+
+      <LiveBanner />
 
       {page.relatedHub || (page.articleLinks && page.articleLinks.length > 0) ? (
         <Container className="flex flex-col gap-3 pt-10">
