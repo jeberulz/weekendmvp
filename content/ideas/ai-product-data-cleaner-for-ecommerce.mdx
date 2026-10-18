@@ -87,8 +87,8 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each user reads only their own catalogs):
 - catalogs(id, user_id, name)
-- raw_uploads(id, catalog_id, source_type, file_url, status)  where source_type is one of csv, excel, pdf, email_text
-- normalized_products(id, catalog_id, upload_id, sku, title, unit_value, unit_type, price_cents, spec_json jsonb, confidence, status)  where status is one of clean, needs_review, duplicate
+- raw_uploads(id, catalog_id, source_type, file_url, status) where source_type is one of csv, excel, pdf, email_text
+- normalized_products(id, catalog_id, upload_id, sku, title, unit_value, unit_type, price_cents, spec_json jsonb, confidence, status) where status is one of clean, needs_review, duplicate
 - review_queue(id, product_id, issue_type, suggested_fix jsonb, resolved)
 - correction_history(id, catalog_id, field_name, original_value, corrected_value, created_at)
 
@@ -144,4 +144,4 @@ Done when: each deliverable is saved in one folder and the two badges are distin
 - [HabileData — Data Cleansing Companies overview](https://www.habiledata.com/blog/data-cleansing-companies/)
 - [Alation — Data Cleansing + AI Best Practices Guide](https://www.alation.com/blog/data-cleansing-ai-best-practices-guide/)
 
-Page sourced via Ideabrowser MCP (idea_id 1993): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

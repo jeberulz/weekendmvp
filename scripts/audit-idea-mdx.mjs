@@ -414,14 +414,10 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     }
   }
 
-  // Competitor brand must stay out of body copy; Sources may still cite it.
-  const bodyOutsideSources = sections
-    .filter((s) => s.title !== SOURCES_TITLE)
-    .map((s) => s.content)
-    .join("\n");
-  if (/ideabrowser/i.test(bodyOutsideSources)) {
+  // Competitor brand must not render anywhere on the idea page (body or Sources).
+  if (/ideabrowser/i.test(raw)) {
     errors.push(
-      "body copy cites Ideabrowser outside ## Sources — use neutral wording (e.g. community research) and keep sources in ## Sources",
+      "MDX cites Ideabrowser (including ## Sources) — use neutral wording (e.g. community research / public research) with no brand attribution",
     );
   }
 

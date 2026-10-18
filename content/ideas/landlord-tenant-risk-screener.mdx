@@ -94,9 +94,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, a landlord reads only their own rows):
 - properties(id, user_id, address, rent_cents)
-- applicants(id, property_id, label, claimed_income_cents, claimed_employer)  label is a short tag such as "Applicant A"; no other personal details are stored
-- packets(id, applicant_id, file_path, sha256, uploaded_at, doc_kind)  uploaded_at is set by the server
-- findings(id, packet_id, kind, severity, evidence_quote, explanation, human_check, confidence)  kind is metadata, income, employment or inconsistency; severity is info, warn or high
+- applicants(id, property_id, label, claimed_income_cents, claimed_employer) label is a short tag such as "Applicant A"; no other personal details are stored
+- packets(id, applicant_id, file_path, sha256, uploaded_at, doc_kind) uploaded_at is set by the server
+- findings(id, packet_id, kind, severity, evidence_quote, explanation, human_check, confidence) kind is metadata, income, employment or inconsistency; severity is info, warn or high
 
 Screens: /login, /properties, /applicants/[id] (upload and the findings card), /applicants/[id]/checklist (printable).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
@@ -143,7 +143,7 @@ Done when: each deliverable is saved in one folder and the finding chips are dis
 
 ## Sources
 
-Market sizing, competitor pricing, and demand signals collated from Ideabrowser MCP idea #5026 (January 2026 snapshot) plus a topic trend pass on tenant screening software for small landlords. Triangulate before you cite in investor materials. This page describes a document-analysis and decision-support tool, not a consumer reporting agency and not legal advice.
+Market sizing, competitor pricing, and demand signals collated from community research (January 2026 snapshot) plus a topic trend pass on tenant screening software for small landlords. Triangulate before you cite in investor materials. This page describes a document-analysis and decision-support tool, not a consumer reporting agency and not legal advice.
 
 - [Business Research Insights — Tenant Screening Services Market ($1.85B in 2025 to $2.83B by 2034, 4.97% CAGR)](https://www.businessresearchinsights.com/market-reports/tenant-screening-services-market-122847)
 - [Precision Business Insights — Tenant Screening Services Market](https://www.precisionbusinessinsights.com/market-reports/tenant-screening-services-market)
@@ -157,4 +157,4 @@ Market sizing, competitor pricing, and demand signals collated from Ideabrowser 
 - [r/Landlord](https://www.reddit.com/r/Landlord/)
 - [r/realestateinvesting](https://www.reddit.com/r/realestateinvesting/)
 
-Page sourced via Ideabrowser MCP (idea_id 5026): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend. No verified research report on file.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend. No verified research report on file.

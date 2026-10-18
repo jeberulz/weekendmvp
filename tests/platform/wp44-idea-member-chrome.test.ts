@@ -21,10 +21,12 @@ import { PRIMARY_NAV } from "../../components/platform/shell/workspace-current";
 
 describe("idea member return targets", () => {
   test("maps bounded ?from= values", () => {
+    // Label has no ← — IdeaBackLink already renders ArrowLeft.
     expect(ideaReturnFromParam("home")).toEqual({
       href: "/dashboard",
-      label: "← Dashboard",
+      label: "Dashboard",
     });
+    expect(ideaReturnFromParam("home")?.label).not.toMatch(/←/);
     expect(ideaReturnFromParam("explore")?.href).toBe("/dashboard/explore");
     expect(ideaReturnFromParam("ideas")?.label).toBe("Back to Explore");
     expect(ideaReturnFromParam("builds")?.href).toBe("/dashboard/builds");
@@ -34,7 +36,7 @@ describe("idea member return targets", () => {
   });
 
   test("maps same-origin dashboard referrer paths", () => {
-    expect(ideaReturnFromReferrerPath("/dashboard")?.label).toBe("← Dashboard");
+    expect(ideaReturnFromReferrerPath("/dashboard")?.label).toBe("Dashboard");
     expect(ideaReturnFromReferrerPath("/dashboard/explore")?.href).toBe(
       "/dashboard/explore",
     );
@@ -66,7 +68,7 @@ describe("idea member return targets", () => {
     ).toBe("Back to Explore");
     expect(
       resolveIdeaMemberReturn({ from: null, referrerPath: null }),
-    ).toEqual({ href: "/dashboard", label: "← Dashboard" });
+    ).toEqual({ href: "/dashboard", label: "Dashboard" });
   });
 
   test("only trusts same-origin referrers", () => {
@@ -137,6 +139,9 @@ describe("idea page member chrome wiring", () => {
     expect(crumbsSource).toContain('href: "/startup-ideas"');
     expect(backSource).toContain("resolveIdeaMemberReturn");
     expect(backSource).toContain("hasSessionHintCookie(document.cookie)");
+    // Single leading arrow: lucide ArrowLeft + plain "Dashboard" label (no ← in copy).
+    expect(backSource).toContain("<ArrowLeft");
+    expect(backSource).not.toContain("←");
     // JSON-LD stays on the public marketing path for SEO.
     expect(pageSource).toContain('{ label: "Startup Ideas", href: "/startup-ideas" }');
   });

@@ -101,9 +101,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on: the public reads active listings and open slots, only the admin writes):
 - operators(id, name, email, phone, notes, active)
-- listings(id, operator_id, title, vibe, price_cents, duration_min, photo_url, description, active)  where vibe is one of adventure, cozy, food, outdoors
-- slots(id, listing_id, starts_at, capacity, status)  where status is one of open, held, sold, canceled
-- orders(id, type, listing_id, slot_id, theme, amount_cents, stripe_session_id, buyer_email, recipient_email, surprise, notes, status)  where type is booking or voucher
+- listings(id, operator_id, title, vibe, price_cents, duration_min, photo_url, description, active) where vibe is one of adventure, cozy, food, outdoors
+- slots(id, listing_id, starts_at, capacity, status) where status is one of open, held, sold, canceled
+- orders(id, type, listing_id, slot_id, theme, amount_cents, stripe_session_id, buyer_email, recipient_email, surprise, notes, status) where type is booking or voucher
 - vouchers(id, order_id, code, theme, amount_cents, redeemed_order_id, expires_at)
 
 Screens: / (city grid with vibe and max-price filters), /listings/[id], /admin (add listings and slots, see orders).
@@ -148,7 +148,7 @@ Done when: each deliverable is saved in one folder and the wordmark reads at 18p
 
 ## Sources
 
-Ideabrowser idea 5688 verified report (2026-08-26; pivot off a national marketplace). Trend discover: 15 keywords, 15,170 monthly volume. Triangulate before citing in investor materials.
+Trend discover: 15 keywords, 15,170 monthly volume. Triangulate before citing in investor materials.
 
 - [PYMNTS / Circana — 1B fewer US restaurant meals, Q1 2025](https://www.pymnts.com/restaurant-roundup/2025/restaurant-sales-slide-as-americans-lose-appetite-for-dining-out/)
 - [QSR Media / CACI — restaurant spend down 3 percent, H1 2026](https://qsrmedia.com/research/in-focus/cafes-rise-restaurants-feel-pinch-in-consumer-spending-shift)

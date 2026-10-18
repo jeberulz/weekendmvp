@@ -84,7 +84,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - imports(id, user_id, filename, row_count, created_at)
 - transactions(id, user_id, import_id, posted_at, amount_cents, merchant, category)
-- challenges(id, user_id, pattern, title, prompt, action_type, estimated_minutes, for_date, created_at)  action_type is categorize, set_trigger or scenario_answer
+- challenges(id, user_id, pattern, title, prompt, action_type, estimated_minutes, for_date, created_at) action_type is categorize, set_trigger or scenario_answer
 - completions(id, user_id, challenge_id, completed_at, skipped boolean, response jsonb)
 - behavioral_profile(id, user_id, habit_category, shift_score, last_updated)
 
@@ -133,7 +133,7 @@ Done when: each deliverable is saved in one folder and the challenge card is rea
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea 6285 and the public research it cites (March 2026 snapshot). Triangulate before citing in investor materials.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (March 2026 snapshot). Triangulate before citing in investor materials.
 
 - [The Business Research Company — Gamification Global Market Report ($26.91B 2025 to $34.43B 2026, 28% CAGR, $92.37B by 2030)](https://www.thebusinessresearchcompany.com/report/gamification-global-market-report)
 - [MarketsandMarkets — Game-Based Learning Market ($6.23B 2025 to $17.82B 2030, 23.4% CAGR)](https://www.marketsandmarkets.com/Market-Reports/game-based-learning-market-146337112.html)
@@ -149,4 +149,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [World Economic Forum — Managing Money: Financial Literacy Resources](https://www.weforum.org/stories/2025/10/managing-money-financial-literacy-resources/)
 - [Enrich — Common Strategies to Enhance Learning and Engagement in Financial Wellness Programs](https://enrich.org/common-strategies-to-enhance-learning-and-engagement-in-financial-wellness-programs/)
 
-Page sourced via Ideabrowser MCP (idea_id 6285): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

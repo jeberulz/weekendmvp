@@ -100,10 +100,10 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, scoped to the account that owns the rows):
 - accounts(id, user_id, business_name, trade)
-- platform_rules(id, account_id, platform, window_days, reason_labels jsonb)  platform is angi, homeadvisor or bark; the owner fills the values from each platform's own policy page
+- platform_rules(id, account_id, platform, window_days, reason_labels jsonb) platform is angi, homeadvisor or bark; the owner fills the values from each platform's own policy page
 - leads(id, account_id, platform, external_lead_id, charged_at, amount_cents, service_type, zip, transcript)
 - classifications(id, lead_id, category, confidence, quotes jsonb, model, prompt_version)
-- claims(id, lead_id, reason_text, window_closes_at, status, credit_cents)  status is draft, filed, approved or denied
+- claims(id, lead_id, reason_text, window_closes_at, status, credit_cents) status is draft, filed, approved or denied
 
 Screens: /login, /import (CSV), /leads (the dollar number and the list), /claims.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
@@ -151,7 +151,7 @@ Done when: each deliverable is saved in one folder and the stamp is still readab
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #9266 and the public research it cites (September 2026 snapshot). Triangulate before you cite in investor materials.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (September 2026 snapshot). Triangulate before you cite in investor materials.
 
 - [Tack Tools Pro — Fair Credit (Thumbtack refund drafting, $99/$149)](https://tacktoolspro.com/fair-credit)
 - [Tack Tools Pro pricing](https://tacktoolspro.com/pricing)
@@ -169,4 +169,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [OpenAI Whisper pricing context ($0.006/min)](https://tokenmix.ai/blog/whisper-api-pricing)
 - [r/Contractor — Angi lead threads](https://www.reddit.com/r/Contractor/comments/1g2fkig/angi_leads/)
 
-Page sourced via Ideabrowser MCP (idea_id 9266): get_idea_research, competitive_analysis, keyword_list, community_analysis, get_verified_research.
+Research methods: get_idea_research, competitive_analysis, keyword_list, community_analysis, get_verified_research.

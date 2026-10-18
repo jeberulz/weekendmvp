@@ -118,10 +118,10 @@ Upstash QStash schedule fires on each workspace's cron. Worker flow:
 2. Use Notion API /v1/search with filter=page to enumerate all pages in the workspace. Respect rate limit (3 req/s): use bottleneck or p-limit.
 3. For each page, fetch /v1/blocks/{page_id}/children recursively (Notion nests arbitrarily; depth-first, max depth 5 for MVP).
 4. For each block:
-   a. Compute content_hash = sha256(JSON.stringify(canonicalBlock(block))) — canonicalize by sorting keys, stripping timestamps.
-   b. If content_hash exists in block_content table: reuse, increment reference count.
-   c. Otherwise: upload JSON to R2 at tenants/{tid}/blocks/{content_hash}.json, insert block_content row.
-   d. Insert snapshot_blocks row linking snapshot_id → content_hash.
+ a. Compute content_hash = sha256(JSON.stringify(canonicalBlock(block))) — canonicalize by sorting keys, stripping timestamps.
+ b. If content_hash exists in block_content table: reuse, increment reference count.
+ c. Otherwise: upload JSON to R2 at tenants/{tid}/blocks/{content_hash}.json, insert block_content row.
+ d. Insert snapshot_blocks row linking snapshot_id → content_hash.
 5. Compute page_hash = hash(sorted child block hashes). Compute root_hash from all page hashes.
 6. Update snapshot with page_count, block_count, bytes_stored, root_hash, status='completed'.
 7. If root_hash unchanged from prior snapshot, mark this snapshot as 'identical' — still record it but no new storage.
@@ -155,8 +155,8 @@ Page-level restore:
 1. User clicks "Restore this page to version X" on a diff view.
 2. Server fetches all blocks for the chosen (snapshot, page_id) from R2 via content_hash table.
 3. Options:
-   a. Restore in-place: use Notion API PATCH /v1/blocks/{page_id} to update title, then replace children via DELETE existing blocks then POST children from snapshot. Warning: this is destructive; require double-confirmation.
-   b. Restore as new page: create new sibling page with suffix "(restored from YYYY-MM-DD)" and POST children. Default, safest.
+ a. Restore in-place: use Notion API PATCH /v1/blocks/{page_id} to update title, then replace children via DELETE existing blocks then POST children from snapshot. Warning: this is destructive; require double-confirmation.
+ b. Restore as new page: create new sibling page with suffix "(restored from YYYY-MM-DD)" and POST children. Default, safest.
 4. Track restore_jobs row; emit progress; notify via Resend on completion.
 
 Full workspace restore (Team tier only):
@@ -173,6 +173,6 @@ Full workspace restore (Team tier only):
 - • [Notion API rate limits (3 requests/second)](https://developers.notion.com/reference/request-limits)
 - • [Rewind.io Pricing (accessed April 2026)](https://www.rewind.io/pricing)
 - • [GDPR Article 32 — Data integrity and availability requirements](https://gdpr-info.eu/art-32-gdpr/)
-- • Rewind Series A ($65M, 2021-2022) referenced from press coverage. Notion 30M+ users referenced from public company statements. Ideabrowser MCP returned no direct match for Notion-specific backup wedge.
+- • Rewind Series A ($65M, 2021-2022) referenced from press coverage. Notion 30M+ users referenced from public company statements. Research search returned no direct match for Notion-specific backup wedge.
 
 Verify Rewind pricing and Notion API rate limits against current docs before marketing claims.

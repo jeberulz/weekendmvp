@@ -90,7 +90,7 @@ Calendar: Google Calendar only, read-only scope, requested in the same Google si
 Tables (Row Level Security on, so each user reads only their own rows):
 - calendar_connections(id, user_id, provider, refresh_token_encrypted, connected_at)
 - events(id, user_id, external_id, start_at, end_at, attendees jsonb, recurring_series_id, title_hash)
-- reactions(id, event_id, user_id, sentiment, created_at)  where sentiment is one of like, meh, drain
+- reactions(id, event_id, user_id, sentiment, created_at) where sentiment is one of like, meh, drain
 - weekly_reports(id, user_id, week_start, summary_markdown, top_drain_series_id)
 
 Screens: /login, /review, /dashboard.
@@ -138,7 +138,7 @@ Done when: each deliverable is saved in one folder and the wordmark is readable 
 
 ## Sources
 
-Market sizing, growth rates, and competitive pricing pulled from public research summaries and vendor pages in May 2026 via Ideabrowser MCP (idea_id 1297). Triangulate before quoting in investor materials.
+Market sizing, growth rates, and competitive pricing pulled from public research summaries and vendor pages in May 2026 via community research. Triangulate before quoting in investor materials.
 
 - [Market Research Intellect — Mood Tracker App Market ($1.5B → $4.2B, 15.3% CAGR)](https://www.marketresearchintellect.com/product/mood-tracker-app-market/)
 - [OpenPR / Mental Health Apps Market — $7.03B (2024) → $15.69B (2033)](https://www.openpr.com/news/4039854/mental-health-apps-market-2025-2033-teens-adults)

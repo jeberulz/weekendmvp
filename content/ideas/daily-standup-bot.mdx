@@ -112,14 +112,14 @@ Build the scheduled DM collection flow via Vercel Cron.
 Cron job (every 5 min):
 1. Query SELECT p.*, s.questions, w.bot_token_encrypted FROM participants p JOIN standups s ON p.standup_id=s.id JOIN workspaces w ON s.workspace_id=w.id WHERE p.active AND s.active AND p.personal_dm_time BETWEEN NOW()-INTERVAL '5 min' AND NOW() AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.participant_id=p.id AND r.date=CURRENT_DATE);
 2. For each participant, decrypt bot token, send DM via Slack Web API chat.postMessage:
-   - Opens thread with "Morning! Ready for today's standup?" + 3 questions in a numbered list
-   - Uses Slack Block Kit for a friendly, scannable layout
+ - Opens thread with "Morning! Ready for today's standup?" + 3 questions in a numbered list
+ - Uses Slack Block Kit for a friendly, scannable layout
 3. Enqueue Upstash QStash follow-up: if no response row created in 1 hour, send a gentle nudge.
 
 Response parsing:
 - User replies in DM thread with either numbered answers or free-form text.
 - Try structured parse first (if lines start with "1.", "2.", "3."): map to question indices.
-- Fallback to Claude Haiku: "Parse this standup response into JSON matching schema {q1, q2, q3}: ..."
+- Fallback to Claude Haiku: "Parse this standup response into JSON matching schema {q1, q2, q3}:..."
 - Save to responses table. Bot reacts with 👍 emoji on the user's message as ack.
 
 Edge cases:
@@ -149,11 +149,11 @@ Responses:
 
 3. Call Claude Haiku 4.5 with response_format json_schema.
 4. Render to Slack Block Kit:
-   - Header: 'Team Standup — {today}'
-   - Themes section: bulleted
-   - Blockers section: each with :warning: emoji, owner @mention, suggested helpers @mention
-   - Individuals section: compact list
-   - Footer: '{N} of {M} responded' + skip list
+ - Header: 'Team Standup — {today}'
+ - Themes section: bulleted
+ - Blockers section: each with :warning: emoji, owner @mention, suggested helpers @mention
+ - Individuals section: compact list
+ - Footer: '{N} of {M} responded' + skip list
 5. Post to workspace.digest_channel_id, save message_ts to digests table.
 6. Email-only option: also send via Resend to a configured CC address for managers who don't live in Slack.
 
@@ -167,6 +167,6 @@ Blocker threading: if a digest has blockers, reply in thread 4 hours later askin
 - • [McKinsey — 58% of US workers remote-eligible (2023)](https://www.mckinsey.com/featured-insights/future-of-work)
 - • [Slack API — Bolt SDK + OAuth + Block Kit documentation](https://api.slack.com/apis)
 - • [Slack App Directory (primary distribution channel for this category)](https://slack.com/marketplace)
-- • Geekbot 20K+ teams + Spectrum Labs 2023 acquisition referenced from public press coverage. Ideabrowser MCP returned no direct match for async-standup wedge; web research fills the category.
+- • Geekbot 20K+ teams + Spectrum Labs 2023 acquisition referenced from public press coverage. Research search returned no direct match for async-standup wedge; web research fills the category.
 
 Competitor pricing and user counts shift frequently; verify live pricing pages before marketing claims.

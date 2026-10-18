@@ -89,7 +89,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, every row is scoped to its trainer):
 - trainers(user_id, brand_name, brand_primary_hex)
-- clients(id, trainer_id, name, goal, target_calories, target_protein_g, target_carbs_g, target_fat_g, allergies jsonb, cuisines jsonb, budget_weekly)  goal is cut, bulk, recomp or maintain
+- clients(id, trainer_id, name, goal, target_calories, target_protein_g, target_carbs_g, target_fat_g, allergies jsonb, cuisines jsonb, budget_weekly) goal is cut, bulk, recomp or maintain
 - plans(id, client_id, week_start, target_macros jsonb, actual_macros jsonb, status, llm_model, created_at)
 - meals(id, plan_id, day, meal_type, name, ingredients jsonb, macros jsonb, prep_minutes, recipe_text)
 
@@ -143,6 +143,6 @@ Done when: each deliverable is saved in one folder and the macro bars are distin
 - • [US Bureau of Labor Statistics — Fitness Trainers and Instructors (340K+ workforce, 14% growth through 2033)](https://www.bls.gov/ooh/personal-care-and-service/fitness-trainers-and-instructors.htm)
 - • [Grand View Research — Online Fitness Market ($7.5B 2024 → $24B by 2030, 21.3% CAGR)](https://www.grandviewresearch.com/industry-analysis/online-fitness-market-report)
 - • [USDA FoodData Central — Free nutrition API for macro validation](https://fdc.nal.usda.gov/)
-- • Ideabrowser idea #1591 "TrainerShield" (opportunity 9, pain 9, timing 9) and adjacent meal-planning research (#3506 FamilyFeast, #1828 ThyroidChef), April 2026.
+- • Community research record.
 
 Verify competitor pricing on live product pages; trainer SaaS packaging shifts quarterly after Trainerize/TrueCoach acquisitions.

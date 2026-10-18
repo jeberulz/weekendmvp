@@ -91,7 +91,7 @@ Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, each technician reads only their own rows):
 - profiles(user_id, shop_name, fsm_name, keep_audio boolean)
-- jobs(id, user_id, external_job_ref, status, created_at)  status is recording, queued, confirm or exported
+- jobs(id, user_id, external_job_ref, status, created_at) status is recording, queued, confirm or exported
 - recordings(id, job_id, file_path, duration_sec, created_at)
 - payloads(id, job_id, transcript, structured_json jsonb, confirmed_json jsonb, confirmed_at, diffs jsonb)
 
@@ -140,7 +140,7 @@ Done when: each deliverable is saved in one folder and the three card styles are
 
 ## Sources
 
-Market sizing and competitor pricing from Ideabrowser idea 8166 plus public vendor pages. Triangulate before quoting TAM.
+Market sizing and competitor pricing from public vendor pages. Triangulate before quoting TAM.
 
 - [Grand View Research — Voice Recognition Market](https://www.grandviewresearch.com/industry-analysis/voice-recognition-market)
 - [MarketsandMarkets — Voice Assistant Market](https://www.marketsandmarkets.com/Market-Reports/voice-assistant-market-145315234.html)
@@ -152,4 +152,4 @@ Market sizing and competitor pricing from Ideabrowser idea 8166 plus public vend
 - [Nuance Dragon speech recognition](https://www.nuance.com/dragon.html)
 - [Reddit r/FieldService](https://www.reddit.com/r/FieldService/)
 
-Page sourced via Ideabrowser (idea_id 8166): opportunity 9, pain 9, timing 9, builder confidence 8.
+Research methods: opportunity 9, pain 9, timing 9, builder confidence 8.

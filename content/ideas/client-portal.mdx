@@ -113,7 +113,7 @@ Flow:
 1. In /admin/settings/domain the agency owner types their domain (projects.agency.com).
 2. Server action calls POST https://api.vercel.com/v10/projects/{PROJECT_ID}/domains with { name: "projects.agency.com" } using VERCEL_API_TOKEN.
 3. Vercel returns verification records. Display them to the user: "Add these DNS records to your domain:"
-   - CNAME projects -> cname.vercel-dns.com
+ - CNAME projects -> cname.vercel-dns.com
 4. Poll Vercel's GET /v6/domains/:name/config every 30s; when verified=true, update tenants.custom_domain.
 5. Vercel auto-provisions Let's Encrypt SSL within ~60s of verification.
 
@@ -143,11 +143,11 @@ B) Service templates (the product's core UX):
 - When an agency signs up, ask one question: "What do you deliver?"
 - Options: design, consulting, marketing, coaching, development
 - Based on the choice, seed the first project with:
-  - design: milestones = [Brief approved, First round, Revisions, Final delivery]
-  - consulting: milestones = [Kickoff, Discovery, Recommendations, Implementation]
-  - marketing: milestones = [Audit, Strategy approved, Campaign live, Reporting]
-  - coaching: milestones = [Intake, Session 1, Mid-point check-in, Session N, Wrap]
-  - development: milestones = [Scope, Spike, Sprint 1, Sprint 2, Launch]
+ - design: milestones = [Brief approved, First round, Revisions, Final delivery]
+ - consulting: milestones = [Kickoff, Discovery, Recommendations, Implementation]
+ - marketing: milestones = [Audit, Strategy approved, Campaign live, Reporting]
+ - coaching: milestones = [Intake, Session 1, Mid-point check-in, Session N, Wrap]
+ - development: milestones = [Scope, Spike, Sprint 1, Sprint 2, Launch]
 - Seed a starter message thread with a welcome message using the agency's logo.
 - Defaults are the product. Let power users edit them; never force them to build from blank.
 ```
@@ -158,6 +158,6 @@ B) Service templates (the product's core UX):
 - • [Cognitive Market Research — Client Portal Software Market Report](https://www.cognitivemarketresearch.com/client-portal-software-market-report)
 - • [Custom Market Insights — AI Website Builder Market (17.7% CAGR, 22.3% custom AI code gen)](https://www.custommarketinsights.com/report/ai-powered-website-builder-market/)
 - • [Upwork Freelance Forward 2024 — 57M US freelancers](https://www.upwork.com/research/freelance-forward-2024)
-- • Ideabrowser idea #6761 (opportunity 9, pain 9, builder_confidence 9, timing 9) competitive and market stage research, April 2026.
+- • Community research record.
 
 Verify competitor pricing against live product pages before marketing claims; tiers and packaging shift quarterly.

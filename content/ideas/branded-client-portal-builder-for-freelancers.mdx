@@ -88,8 +88,8 @@ Tables (Row Level Security on: a client's session reads only rows for its own po
 - clients(id, account_id, name, email, invite_token, status)
 - portals(id, account_id, client_id, subdomain)
 - files(id, portal_id, uploaded_by, storage_path, filename)
-- messages(id, portal_id, sender_type, body, created_at)  where sender_type is freelancer or client
-- milestones(id, portal_id, title, status, approved_at)  where status is one of not_started, in_progress, awaiting_approval, approved
+- messages(id, portal_id, sender_type, body, created_at) where sender_type is freelancer or client
+- milestones(id, portal_id, title, status, approved_at) where status is one of not_started, in_progress, awaiting_approval, approved
 
 Screens: /login, /settings (logo and two colors with a live preview), /clients, and the client portal at its subdomain.
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only).
@@ -135,7 +135,7 @@ Done when: each deliverable is saved in one folder and both example brands stay 
 
 ## Sources
 
-Market sizing, competitive pricing, and community signals collated from Ideabrowser MCP idea #1745 and the public research it cites (2025 snapshot). Triangulate before citing in investor materials.
+Market sizing, competitive pricing, and community signals collated from the public research it cites (2025 snapshot). Triangulate before citing in investor materials.
 
 - [VerifiedMarketReports — Client Portal Software Market](https://www.verifiedmarketreports.com/product/client-portal-software-market/)
 - [GMInsights — Client Portal Software Market Analysis](https://www.gminsights.com/industry-analysis/client-portal-software-market)
@@ -148,4 +148,4 @@ Market sizing, competitive pricing, and community signals collated from Ideabrow
 - [Copilot — Client Portal Product Page](https://www.copilot.app/client-portal)
 - [SuiteDash — Pricing Reference](https://suitedash.com)
 
-Page sourced via Ideabrowser MCP (idea_id 1745): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

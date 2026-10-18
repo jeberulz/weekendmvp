@@ -101,7 +101,7 @@ Tables (Row Level Security on, a brand reads only its own rows):
 - brands(id, user_id, name)
 - drops(id, brand_id, season, status)
 - skus(id, drop_id, name, wholesale_cents, colors jsonb, sizes)
-- assets(id, sku_id, kind, storage_key, ref_hash)  where kind is one of flat, swatch, plate
+- assets(id, sku_id, kind, storage_key, ref_hash) where kind is one of flat, swatch, plate
 - plates(id, sku_id, page_no, prompt, seed, lock_score, status)
 
 Screens: /login, /drop (add a SKU and its five flat-lays), /plates (review).
@@ -150,7 +150,7 @@ Done when: each deliverable is saved in one folder and the six icons are distinc
 
 ## Sources
 
-Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #7279 and the public research it cites (2026 snapshot). Triangulate before you cite in investor materials. Prefer Dataintelo’s $1.42B photography figure over the $2.01B alt.
+Market sizing, competitive pricing, and demand signals collated from the public research it cites (2026 snapshot). Triangulate before you cite in investor materials. Prefer Dataintelo’s $1.42B photography figure over the $2.01B alt.
 
 - [Dataintelo — AI-Generated Fashion Photography Market ($1.42B 2024 → $13.66B 2033, 27.8% CAGR)](https://dataintelo.com/report/ai-generated-fashion-photography-market)
 - [Meticulous Research — AI-Generated Fashion Market ($2.14B 2024 → $2.91B 2025 → $75.9B 2035, 38.6% CAGR)](https://www.meticulousresearch.com/product/ai-generated-fashion-market-6254)
@@ -160,4 +160,4 @@ Market sizing, competitive pricing, and demand signals collated from Ideabrowser
 - [Photoroom — pricing reference (~$10–$30/mo)](https://www.photoroom.com/pricing)
 - [Adobe Firefly / Creative Cloud — pricing reference](https://www.adobe.com/products/firefly.html)
 
-Page sourced via Ideabrowser MCP (idea_id 7279): get_idea_research, competitive_analysis, go_to_market, community_analysis, why_now_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, community_analysis, why_now_analysis.

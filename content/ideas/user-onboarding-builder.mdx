@@ -131,48 +131,48 @@ Build the standalone widget runtime. This is what ships in customer apps.
 widget.js (vanilla, ~25KB minified, no framework):
 
 (function() {
-  const tenantId = document.currentScript.getAttribute('data-tenant');
-  const visitorId = getOrCreateVisitorId(); // localStorage
-  const apiBase = 'https://api.product.com';
+ const tenantId = document.currentScript.getAttribute('data-tenant');
+ const visitorId = getOrCreateVisitorId(); // localStorage
+ const apiBase = 'https://api.product.com';
 
-  // 1. Fetch live flows for this tenant (cached 60s at CDN)
-  fetch(`${apiBase}/v1/flows?tenant=${tenantId}`).then(r => r.json()).then(({flows}) => {
-    // 2. For each flow, check trigger conditions vs current URL / user segment
-    flows.forEach(flow => evaluateAndRun(flow, visitorId));
-  });
+ // 1. Fetch live flows for this tenant (cached 60s at CDN)
+ fetch(`${apiBase}/v1/flows?tenant=${tenantId}`).then(r => r.json()).then(({flows}) => {
+ // 2. For each flow, check trigger conditions vs current URL / user segment
+ flows.forEach(flow => evaluateAndRun(flow, visitorId));
+ });
 
-  function evaluateAndRun(flow, visitorId) {
-    // Trigger check: url_match uses minimatch on window.location.pathname
-    if (!matchesTrigger(flow)) return;
-    // Segment check: simple key/value match against window.__product_identify__ or cookie
-    if (!matchesSegment(flow, visitorId)) return;
-    // Mount a Shadow DOM root so our styles don't leak
-    const root = document.createElement('div');
-    root.attachShadow({mode: 'open'});
-    document.body.appendChild(root);
-    runTour(flow, root.shadowRoot, visitorId);
-  }
+ function evaluateAndRun(flow, visitorId) {
+ // Trigger check: url_match uses minimatch on window.location.pathname
+ if (!matchesTrigger(flow)) return;
+ // Segment check: simple key/value match against window.__product_identify__ or cookie
+ if (!matchesSegment(flow, visitorId)) return;
+ // Mount a Shadow DOM root so our styles don't leak
+ const root = document.createElement('div');
+ root.attachShadow({mode: 'open'});
+ document.body.appendChild(root);
+ runTour(flow, root.shadowRoot, visitorId);
+ }
 
-  function runTour(flow, root, visitorId) {
-    let stepIndex = 0;
-    renderStep(flow.steps[0]);
-    // Send 'fired' event
-    trackEvent('fired', flow.id, flow.steps[0].id, visitorId);
+ function runTour(flow, root, visitorId) {
+ let stepIndex = 0;
+ renderStep(flow.steps[0]);
+ // Send 'fired' event
+ trackEvent('fired', flow.id, flow.steps[0].id, visitorId);
 
-    function renderStep(step) {
-      const target = document.querySelector(step.target_selector);
-      if (!target) {
-        // Retry with MutationObserver for 5 seconds, then skip
-        return waitForElement(step.target_selector, 5000).then(el => renderStep({...step, _target: el})).catch(() => advance());
-      }
-      // Position tooltip/modal relative to target; attach Next/Prev/Skip buttons.
-      // ... render Shadow DOM content ...
-    }
-  }
+ function renderStep(step) {
+ const target = document.querySelector(step.target_selector);
+ if (!target) {
+ // Retry with MutationObserver for 5 seconds, then skip
+ return waitForElement(step.target_selector, 5000).then(el => renderStep({...step, _target: el})).catch(() => advance());
+ }
+ // Position tooltip/modal relative to target; attach Next/Prev/Skip buttons.
+ //... render Shadow DOM content...
+ }
+ }
 
-  function trackEvent(event, flowId, stepId, visitorId) {
-    navigator.sendBeacon(`${apiBase}/v1/events`, JSON.stringify({tenantId, event, flowId, stepId, visitorId, ts: Date.now()}));
-  }
+ function trackEvent(event, flowId, stepId, visitorId) {
+ navigator.sendBeacon(`${apiBase}/v1/events`, JSON.stringify({tenantId, event, flowId, stepId, visitorId, ts: Date.now()}));
+ }
 })();
 
 Customer embed:
@@ -189,6 +189,6 @@ Test matrix: React SPA (Next.js dev), Vue SPA (Nuxt), vanilla static site, Shopi
 - • [OpenView — SaaS onboarding impact on day-7 retention](https://openviewpartners.com/blog/saas-onboarding/)
 - • [ProfitWell — Onboarding and churn research](https://www.profitwell.com/recur/all/churn-onboarding)
 - • [OpenAI — GPT-4 Vision structured output docs](https://platform.openai.com/docs/guides/vision)
-- • Pendo $2.6B valuation (Series F, 2021) and Appcues $30M+ Series B (2021) referenced from public press coverage. Ideabrowser MCP returned no direct match for user-onboarding-builder wedge.
+- • Pendo $2.6B valuation (Series F, 2021) and Appcues $30M+ Series B (2021) referenced from public press coverage. Research search returned no direct match for user-onboarding-builder wedge.
 
 Competitor pricing (Appcues, Pendo, Userpilot, ProductFruits) shifts frequently; verify live pricing pages before marketing claims.

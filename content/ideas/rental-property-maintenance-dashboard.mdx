@@ -85,9 +85,9 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 
 Tables (Row Level Security on, an owner reads only their own properties and what hangs off them):
 - properties(id, user_id, address, unit_count)
-- systems(id, property_id, type, install_date, expected_lifespan_years, risk_score, source_quote, confidence, status)  type is water_heater, hvac, roof, plumbing or electrical; status is confirmed or needs_review
-- source_files(id, property_id, file_path, doc_kind, uploaded_at)  doc_kind is inspection, receipt, photo or note
-- flags(id, system_id, severity, description, evidence jsonb, status, created_at)  status is open, done or dismissed
+- systems(id, property_id, type, install_date, expected_lifespan_years, risk_score, source_quote, confidence, status) type is water_heater, hvac, roof, plumbing or electrical; status is confirmed or needs_review
+- source_files(id, property_id, file_path, doc_kind, uploaded_at) doc_kind is inspection, receipt, photo or note
+- flags(id, system_id, severity, description, evidence jsonb, status, created_at) status is open, done or dismissed
 
 Screens: /login, /properties, /properties/[id] (cards for each system and its open flags), /review (low-confidence reads to confirm).
 Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.
@@ -143,4 +143,4 @@ Done when: each deliverable is saved in one folder and the risk chips are distin
 - [Buildium — Pricing](https://www.buildium.com/pricing/)
 - [Zillow Rental Manager](https://www.zillow.com/rental-manager/)
 
-Page sourced via Ideabrowser MCP (idea_id 4969): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

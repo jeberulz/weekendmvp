@@ -94,7 +94,7 @@ Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level
 Tables (Row Level Security on, each user reads only their own rows):
 - shops(id, user_id, shop_domain, access_token_encrypted)
 - scans(id, shop_id, break_points jsonb, score, created_at)
-- configs(id, shop_id, catalog_count, payment_terms, approval_mode, visibility, created_at)  catalog_count is 1 to 3
+- configs(id, shop_id, catalog_count, payment_terms, approval_mode, visibility, created_at) catalog_count is 1 to 3
 - plans(id, shop_id, config_id, steps jsonb, snapshot jsonb, runbook_md, created_at)
 
 Screens: /login, /shop (connect the store), /scan (the six checks), /wizard (five questions), /plan (the dry-run steps and the runbook).
@@ -141,7 +141,7 @@ Done when: each deliverable is saved in one folder and the check states are dist
 
 ## Sources
 
-Market sizing, competitor pricing, and demand signals collated from Ideabrowser verified research on idea #9168 (August 2026 snapshot) plus competitive_analysis, go_to_market, keyword_list, and community_analysis. Triangulate before you cite in investor materials.
+Market sizing, competitor pricing, and demand signals collated from competitive_analysis, go_to_market, keyword_list, and community_analysis. Triangulate before you cite in investor materials.
 
 - [Shopify News — B2B for all (April 2, 2026)](https://www.shopify.com/news/b2b-for-all)
 - [Shopify Changelog — Key B2B features on non-Plus plans](https://changelog.shopify.com/posts/key-b2b-features-now-available-on-non-plus-plans)

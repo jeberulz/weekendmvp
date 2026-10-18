@@ -97,10 +97,10 @@ Build the weekend MVP of "OffHours": a concierge-run marketplace that lists unde
 Stack: Next.js (App Router, TypeScript), Tailwind, Supabase (Postgres with PostGIS, Row Level Security, Storage, Auth with email magic link), the Anthropic API to draft each listing. Listing pages are server-rendered for search. Deploy on Vercel.
 
 Tables (Row Level Security on; hosts read and write their own venues and requests, live venues and spaces are public):
-- venues(id, owner_user_id, name, type, address, lat, lng, city, description, status)  type is worship, fitness, club, community or other; status is draft, live or paused
+- venues(id, owner_user_id, name, type, address, lat, lng, city, description, status) type is worship, fitness, club, community or other; status is draft, live or paused
 - spaces(id, venue_id, name, capacity_seated, capacity_standing, square_feet, hourly_rate_cents, minimum_hours, amenities jsonb, photos jsonb)
 - house_rules(id, venue_id, no_alcohol boolean, no_amplified_music_after, restricted_areas text[], custom_terms)
-- availability_rules(id, space_id, kind, weekday, start_time, end_time, start_date, end_date)  kind is recurring_block, one_off_block or open_window
+- availability_rules(id, space_id, kind, weekday, start_time, end_time, start_date, end_date) kind is recurring_block, one_off_block or open_window
 - booking_requests(id, space_id, guest_user_id, starts_at, ends_at, headcount, declares_alcohol boolean, declares_music boolean, status)
 
 Screens: /login, /[city] (browse), /space/[id] (listing), /request/[spaceId], /host (requests and calendar), /admin/intake (the operator's mobile form).
@@ -148,7 +148,7 @@ Done when: each deliverable is saved in one folder and the status chips are dist
 
 ## Sources
 
-Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1185 and the public research it cites (August 2026 snapshot). Marketplace take rates and host fees change frequently — verify each platform's current fee schedule on its live pricing page before quoting it.
+Market sizing, competitor set, and demand signals sourced from the public research it cites (August 2026 snapshot). Marketplace take rates and host fees change frequently — verify each platform's current fee schedule on its live pricing page before quoting it.
 
 - [The Business Research Company — Events Industry Outlook ($1,346.92B 2025 → $1,930.26B 2029)](https://blog.tbrc.info/2025/03/events-industry-outlook-2/)
 - [Cvent — Event Statistics (industry benchmarks and planner behavior)](https://www.cvent.com/en/blog/events/event-statistics)
@@ -159,4 +159,4 @@ Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP i
 - [Giggster — host fee reference](https://giggster.com/host)
 - [Stripe Connect — marketplace payments and destination charges](https://docs.stripe.com/connect)
 
-Page sourced via Ideabrowser MCP (idea_id 1185): get_idea_research, competitive_analysis, go_to_market.
+Research methods: get_idea_research, competitive_analysis, go_to_market.

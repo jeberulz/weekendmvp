@@ -98,10 +98,10 @@ Build the weekend MVP of "TaskPatch": a board where a no-code builder posts a br
 Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), Resend for claim, confirm and dispute emails. Deploy on Vercel.
 
 Tables (Row Level Security on; posters edit their own tickets, specialists read open tickets and their own claims):
-- profiles(user_id, role, display_name)  role is poster, specialist or admin
-- specialist_profiles(user_id, platforms text[], bio, completed_count, avg_hours_to_close, accuracy_score, verified boolean)  you set verified by hand
-- tickets(id, poster_id, platform, title, repro, budget_cents, status, specialist_id, created_at)  platform comes from a fixed list of no-code platforms kept in one file; status is open, claimed, in_progress, complete, disputed or cancelled
-- claims(id, ticket_id, specialist_id, claimed_at)  unique on ticket_id
+- profiles(user_id, role, display_name) role is poster, specialist or admin
+- specialist_profiles(user_id, platforms text[], bio, completed_count, avg_hours_to_close, accuracy_score, verified boolean) you set verified by hand
+- tickets(id, poster_id, platform, title, repro, budget_cents, status, specialist_id, created_at) platform comes from a fixed list of no-code platforms kept in one file; status is open, claimed, in_progress, complete, disputed or cancelled
+- claims(id, ticket_id, specialist_id, claimed_at) unique on ticket_id
 - reviews(id, ticket_id, rating, hours_to_close, note)
 
 Screens: /login, /board (public), /tickets/new, /tickets/[id], /inbox (specialist), /admin/disputes.
@@ -149,7 +149,7 @@ Done when: each deliverable is saved in one folder and the status chips are dist
 
 ## Sources
 
-Market sizing, competitor fees, and community counts collated from Ideabrowser MCP idea 7255 (April 2026 snapshot) plus trend research on “no-code Bubble Webflow specialist marketplace” (192,600 combined monthly searches). Triangulate before you cite in investor materials.
+Market sizing, competitor fees, and community counts collated from community research (April 2026 snapshot) plus trend research on “no-code Bubble Webflow specialist marketplace” (192,600 combined monthly searches). Triangulate before you cite in investor materials.
 
 - [The Business Research Company — No-Code Development Platforms Global Market Report ($35.61B 2025, $45.24B 2026, 27.1 percent CAGR)](https://www.thebusinessresearchcompany.com/report/no-code-development-platforms-global-market-report)
 - [Integrate.io — No-Code Transformations Usage Trends ($30B+ low-code 2026, 70 percent of new enterprise apps, 4:1 citizen developers, 38 percent Fortune 500, 18.7 percent SME CAGR)](https://www.integrate.io/blog/no-code-transformations-usage-trends/)
@@ -166,4 +166,4 @@ Market sizing, competitor fees, and community counts collated from Ideabrowser M
 - [Bubble — certified / expert developer directory](https://bubble.io/agencies)
 - [Webflow — Experts directory](https://webflow.com/experts)
 
-Page sourced via Ideabrowser MCP (idea_id 7255): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, product_offerings, research_trend.
+Research methods: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, product_offerings, research_trend.
