@@ -7,6 +7,7 @@ import { HostBlock } from "@/components/live/HostBlock";
 import { LiveButton } from "@/components/live/LiveButton";
 import { LiveFaq } from "@/components/live/LiveFaq";
 import { LocalTime } from "@/components/live/LocalTime";
+import { PersistLiveAttrib } from "@/components/live/PersistLiveAttrib";
 import { live } from "@/components/live/tokens";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { STARTUP_IDEAS_HREF, liveUrls } from "@/lib/live/config";
@@ -218,6 +219,7 @@ export default async function LiveHubPage() {
       className={`${newsreaderEditorial.variable} theme-cream min-h-screen overflow-x-hidden bg-home-paper text-home-ink`}
       style={{ colorScheme: "light" }}
     >
+      <PersistLiveAttrib />
       <main>
         {/* a-1 Hero */}
         <header className="mx-auto max-w-[1120px] px-5 pt-12 pb-10 sm:px-10 sm:pt-[88px] sm:pb-10">

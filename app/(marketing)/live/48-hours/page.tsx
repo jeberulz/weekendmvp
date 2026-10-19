@@ -7,6 +7,8 @@ import { HostBlock } from "@/components/live/HostBlock";
 import { LiveButton } from "@/components/live/LiveButton";
 import { LiveFaq } from "@/components/live/LiveFaq";
 import { LocalTime } from "@/components/live/LocalTime";
+import { LumaRegisterLink } from "@/components/live/LumaRegisterLink";
+import { PersistLiveAttrib } from "@/components/live/PersistLiveAttrib";
 import { Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { newsreaderEditorial } from "@/lib/fonts";
@@ -139,9 +141,7 @@ function RegisterCta({
   }
   return (
     <div className={className}>
-      <LiveButton href={lumaUrl} external variant="primary">
-        Save my seat (free)
-      </LiveButton>
+      <LumaRegisterLink href={lumaUrl}>Save my seat (free)</LumaRegisterLink>
       <p className="mt-2 font-mono text-[11px] text-[#6B6457]">Register on Luma ↗</p>
     </div>
   );
@@ -197,6 +197,7 @@ export default async function FreeWebinarPage() {
     <div
       className={`${newsreaderEditorial.variable} theme-desk overflow-x-clip bg-home-paper font-sans text-home-ink`}
     >
+      <PersistLiveAttrib />
       <JsonLd schema={SCHEMA} />
 
       {/* Date bar */}
@@ -273,15 +274,13 @@ export default async function FreeWebinarPage() {
                 <LiveButton disabled>Stream link coming soon</LiveButton>
               )}
               {urls.lumaEventUrl ? (
-                <a
+                <LumaRegisterLink
                   href={urls.lumaEventUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  variant="inline"
                   className="inline-flex h-[52px] items-center text-sm font-medium text-home-ink underline decoration-home-rule underline-offset-4"
                 >
                   Register for the replay
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                </LumaRegisterLink>
               ) : null}
             </div>
           </section>
@@ -354,9 +353,9 @@ export default async function FreeWebinarPage() {
               <div className="mt-8">
                 <div className="flex flex-wrap gap-3">
                   {urls.lumaEventUrl ? (
-                    <LiveButton href={urls.lumaEventUrl} external variant="primary">
+                    <LumaRegisterLink href={urls.lumaEventUrl}>
                       Save my seat (free)
-                    </LiveButton>
+                    </LumaRegisterLink>
                   ) : (
                     <LiveButton disabled>Registration link coming soon</LiveButton>
                   )}

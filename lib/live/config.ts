@@ -118,7 +118,7 @@ export const LIVE_ASSETS: LiveAssets = {
   hostVideoUrl: "",
   hostVideoCaption: "A minute from John on what we'll cover.",
   personalNoteHtml: "",
-  hostEveningsConfirmed: false,
+  hostEveningsConfirmed: true,
   toolList: [],
   demoIdeaSlug: "",
   freeNowIdeaSlugs: [],
@@ -150,6 +150,33 @@ export const UTM = {
   paid: "live-p1",
   hubBanner: "hub",
 } as const;
+
+export type LivePlacement = "hero" | "end";
+
+/** Internal free-webinar href with consistent UTM tags for hub surfaces. */
+export function liveFreeHref(opts: { src: string; placement: LivePlacement }) {
+  const q = new URLSearchParams({
+    utm_source: opts.src,
+    utm_medium: "site",
+    utm_campaign: UTM.free,
+    utm_content: opts.placement,
+  });
+  return `/live/48-hours?${q}`;
+}
+
+/** Internal Build-Along href with consistent UTM tags. */
+export function liveBuildAlongHref(opts: {
+  src: string;
+  placement: LivePlacement;
+}) {
+  const q = new URLSearchParams({
+    utm_source: opts.src,
+    utm_medium: "site",
+    utm_campaign: UTM.paid,
+    utm_content: opts.placement,
+  });
+  return `/live/build-along?${q}`;
+}
 
 export const STARTUP_IDEAS_HREF = `/startup-ideas?utm_campaign=${UTM.free}`;
 export const STARTUP_IDEAS_PAID_HREF = `/startup-ideas?utm_campaign=${UTM.paid}`;

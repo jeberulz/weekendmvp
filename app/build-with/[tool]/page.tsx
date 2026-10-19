@@ -47,6 +47,7 @@ import {
 } from "@/components/hubs/hub-data";
 import { IdeaBrowser } from "@/components/public/IdeaBrowser";
 import { LiveBanner } from "@/components/live/LiveBanner";
+import { LiveHubLine } from "@/components/live/LiveHubLine";
 import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
@@ -98,6 +99,12 @@ type ToolEmailCapture = {
   buttonLabel: string;
 };
 
+/** Per-tool copy for the /live webinar banner + end line. Omit → generic banner, no end line. */
+type ToolLiveCta = {
+  hero: { headline: string; body: string; cta: string };
+  end: { lead: string; linkLabel: string };
+};
+
 type ToolPage = {
   slug: string;
   name: string;
@@ -143,6 +150,8 @@ type ToolPage = {
    * Visible in SSR HTML; also emitted as FAQPage JSON-LD when present.
    */
   faqs?: HubFaqItem[];
+  /** Per-tool /live webinar banner + SSR end line. Omit → generic banner only. */
+  liveCta?: ToolLiveCta;
 };
 
 const TOOL_PAGES: Record<string, ToolPage> = {
@@ -250,6 +259,17 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         },
       },
     ],
+    liveCta: {
+      hero: {
+        headline: "Cursor examples are easy to find. Shipping one by Sunday isn't.",
+        body: "Free live hour, Sat 31 Oct, 16:00 GMT. One idea, three screens, the 48-hour plan. Not a tool tour.",
+        cta: "Watch it live, free",
+      },
+      end: {
+        lead: "See one idea scoped, built to its first screen and planned for Sunday, live and free on Sat 31 Oct at 16:00 GMT.",
+        linkLabel: "Ship a Weekend MVP in 48 Hours",
+      },
+    },
   },
   claude: {
     slug: "claude",
@@ -370,6 +390,17 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         ],
       },
     ],
+    liveCta: {
+      hero: {
+        headline: "Picked a Claude project? Size it for one weekend first.",
+        body: "Free live hour, Sat 31 Oct, 16:00 GMT: the weekend test, one idea taken to its first screen, and the 48-hour plan.",
+        cta: "Save my free seat",
+      },
+      end: {
+        lead: "Not sure which Claude project to start? Watch one idea go from its page to its first screen, live and free on Sat 31 Oct at 16:00 GMT.",
+        linkLabel: "Ship a Weekend MVP in 48 Hours",
+      },
+    },
   },
   "claude-code": {
     slug: "claude-code",
@@ -585,6 +616,17 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         },
       },
     ],
+    liveCta: {
+      hero: {
+        headline: "Bolt makes the first screen fast. Scope decides if you finish.",
+        body: "Free live hour, Sat 31 Oct, 16:00 GMT: the weekend test, one live build to first screen, and the Fri–Sun plan.",
+        cta: "Save my free seat",
+      },
+      end: {
+        lead: "Watch one idea go from its page to its first screen, plus the Friday-to-Sunday plan, free and live on Sat 31 Oct at 16:00 GMT.",
+        linkLabel: "Ship a Weekend MVP in 48 Hours",
+      },
+    },
   },
   lovable: {
     slug: "lovable",
@@ -666,6 +708,18 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         },
       },
     ],
+    liveCta: {
+      hero: {
+        headline:
+          "Before you open Lovable, run your idea through the weekend test.",
+        body: "Free live hour, Sat 31 Oct, 16:00 GMT: six checks, then one idea from its page to its first screen, live.",
+        cta: "Join free on 31 Oct",
+      },
+      end: {
+        lead: "Want to see the whole weekend before you start in Lovable? It's a free live hour on Sat 31 Oct at 16:00 GMT.",
+        linkLabel: "Ship a Weekend MVP in 48 Hours",
+      },
+    },
   },
   "no-code": {
     slug: "no-code",
@@ -1214,13 +1268,14 @@ export default async function ToolHubPage({
 
 async function CachedToolHub({ slug }: { slug: string }) {
   "use cache";
-  cacheTag("ideas", "ref-tables", `tool:${slug}`);
+  cacheTag("ideas", "ref-tables", `tool:${slug}`, "live");
   cacheLife("days");
   const page = TOOL_PAGES[slug];
   const data = await getToolData(slug);
   const schema = buildSchema(page, data);
   const ideaCount = data.ideas.length;
   const tail = H1_TAIL[slug] ?? null;
+  const liveSrc = `bw-${slug}`;
 
   // Editorial curation. Slugs that no longer resolve (unpublished, retagged,
   // or below the byTool cap) are dropped, so the section either renders a
@@ -1303,7 +1358,7 @@ async function CachedToolHub({ slug }: { slug: string }) {
         ) : null}
       </PageHeader>
 
-      <LiveBanner />
+      <LiveBanner src={liveSrc} copy={page.liveCta?.hero} />
 
       {page.relatedHub || (page.articleLinks && page.articleLinks.length > 0) ? (
         <Container className="flex flex-col gap-3 pt-10">
@@ -1441,6 +1496,10 @@ async function CachedToolHub({ slug }: { slug: string }) {
         ctaLabel="Browse all startup ideas"
         note="Every idea includes the stack, the build plan, and what it could earn."
       />
+
+      {page.liveCta ? (
+        <LiveHubLine src={liveSrc} copy={page.liveCta.end} />
+      ) : null}
 
       {/* Other tools — kept for internal linking */}
       <section aria-labelledby="other-tools-heading" className="py-14 lg:py-20">
