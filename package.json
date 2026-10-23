@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Weekend MVP Starter Kit Landing Page",
   "engines": {
-    "node": ">=22.6.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",

@@ -17,12 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node 22, not 20: `test:redirects`, `test:sitemap`, and `test:security`
-      # run `node --experimental-strip-types`, which was added in 22.6 and does
-      # not exist in 20 — on 20 they die with `node: bad option`.
+      # Node 22 LTS patched release (CVE-2026-111497 / Oct 2026 security
+      # releases). `test:redirects`, `test:sitemap`, and `test:security` need
+      # `--experimental-strip-types` (Node >= 22.6). Pin the patch, not `22.x`,
+      # so CI cannot land on an unpatched 22 build.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '22.23.4'
           cache: npm
 
       - name: Install locked dependencies
