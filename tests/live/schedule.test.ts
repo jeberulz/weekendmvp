@@ -4,9 +4,12 @@ import {
   EARLY_BIRD_ENDS_AT,
   FREE_WEBINAR,
   SALES_OPEN_AT,
+  liveBuildAlongHref,
+  liveFreeHref,
 } from "@/lib/live/config";
 import { livePriceAt } from "@/lib/live/pricing";
 import {
+  bannerDayLabel,
   bannerPhase,
   buildAlongPhase,
   freeWebinarPhase,
@@ -36,7 +39,41 @@ describe("live schedule", () => {
     expect(freeWebinarPhase(FREE_WEBINAR.startAt)).toBe("live");
     expect(freeWebinarPhase(FREE_WEBINAR.endAt)).toBe("replay");
     expect(bannerPhase(FREE_WEBINAR.startAt)).toBe("live_now");
+    expect(bannerPhase(FREE_WEBINAR.endAt)).toBe("paid_early");
     expect(bannerPhase(BUILD_ALONG.startAt)).toBe("hidden");
+  });
+
+  test("banner day labels use GMT calendar days (never 0/negative)", () => {
+    expect(bannerDayLabel(Date.parse("2026-10-28T12:00:00.000Z"))).toBe(
+      "Starts in 3 days",
+    );
+    expect(bannerDayLabel(Date.parse("2026-10-30T12:00:00.000Z"))).toBe(
+      "Starts tomorrow",
+    );
+    expect(bannerDayLabel(Date.parse("2026-10-31T10:00:00.000Z"))).toBe(
+      "Today, 16:00 GMT",
+    );
+    expect(bannerDayLabel(FREE_WEBINAR.startAt - 60_000)).toBe(
+      "Today, 16:00 GMT",
+    );
+    expect(bannerDayLabel(FREE_WEBINAR.startAt)).toBe("Live now");
+  });
+});
+
+describe("live href helpers", () => {
+  test("liveFreeHref tags source + placement", () => {
+    expect(liveFreeHref({ src: "bw-claude", placement: "hero" })).toBe(
+      "/live/48-hours?utm_source=bw-claude&utm_medium=site&utm_campaign=live-w1&utm_content=hero",
+    );
+    expect(liveFreeHref({ src: "bw-lovable", placement: "end" })).toContain(
+      "utm_content=end",
+    );
+  });
+
+  test("liveBuildAlongHref uses paid campaign", () => {
+    expect(liveBuildAlongHref({ src: "bw-cursor", placement: "hero" })).toBe(
+      "/live/build-along?utm_source=bw-cursor&utm_medium=site&utm_campaign=live-p1&utm_content=hero",
+    );
   });
 });
 

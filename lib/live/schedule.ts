@@ -72,12 +72,28 @@ export function daysUntil(targetMs: number, nowMs: number): number | null {
   return days;
 }
 
+/** Whole GMT calendar days from `now` midnight to `target` midnight. Never 0. */
+export function gmtCalendarDaysUntil(
+  targetMs: number,
+  nowMs: number,
+): number | null {
+  const nowDay = new Date(nowMs).toISOString().slice(0, 10);
+  const targetDay = new Date(targetMs).toISOString().slice(0, 10);
+  const nowMidnight = Date.parse(`${nowDay}T00:00:00.000Z`);
+  const targetMidnight = Date.parse(`${targetDay}T00:00:00.000Z`);
+  const diff = Math.round(
+    (targetMidnight - nowMidnight) / (24 * 60 * 60 * 1000),
+  );
+  if (diff <= 0) return null;
+  return diff;
+}
+
 export function bannerDayLabel(nowMs: number): string | null {
   const phase = bannerPhase(nowMs);
   if (phase === "live_now") return "Live now";
   if (phase === "free_promo") {
     const start = FREE_WEBINAR.startAt;
-    const days = daysUntil(start, nowMs);
+    const days = gmtCalendarDaysUntil(start, nowMs);
     if (days === null) {
       const sameDay =
         new Date(nowMs).toISOString().slice(0, 10) ===
@@ -89,7 +105,7 @@ export function bannerDayLabel(nowMs: number): string | null {
   }
   if (phase === "paid_early" || phase === "paid_standard") {
     const start = BUILD_ALONG.startAt;
-    const days = daysUntil(start, nowMs);
+    const days = gmtCalendarDaysUntil(start, nowMs);
     if (days === null) {
       const sameDay =
         new Date(nowMs).toISOString().slice(0, 10) ===

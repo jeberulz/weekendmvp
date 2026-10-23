@@ -838,7 +838,9 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
         ]}
       />
 
-      {slug === "non-technical" ? <LiveBanner /> : null}
+      {slug === "non-technical" ? (
+        <LiveBanner src="ideas-non-technical" />
+      ) : null}
 
       <LinkTabs
         className="pt-10"
