@@ -56,6 +56,7 @@ export const metadata: Metadata = {
   description:
     "Today's Weekend MVP idea plus every previously released buildable startup concept.",
   alternates: { canonical: "/links" },
+  robots: { index: false, follow: false },
   openGraph: {
     type: "website",
     url: `${SITE}/links`,

@@ -172,23 +172,6 @@ const COLLECTIONS: Record<IdeaCollectionSlug, CollectionDef> = {
     description:
       "Ambitious ideas with paths to $10,000 MRR or beyond. These are real businesses — quit-your-job money built on a weekend foundation.",
   },
-  "passive-income": {
-    slug: "passive-income",
-    tab: "Passive income",
-    kind: "revenue",
-    title: "Passive Income Startup Ideas",
-    description:
-      "Low-maintenance products that earn while you sleep. Automation-first, async delivery, minimal customer support burden.",
-  },
-  "quick-wins": {
-    slug: "quick-wins",
-    tab: "Quick wins",
-    kind: "revenue",
-    title: "Quick-Win Startup Ideas",
-    description:
-      "Ideas with the shortest path from build to first paying customer. Tight scope, obvious value, fast feedback.",
-  },
-
   // Build time hubs (matches buildTime hour values from ideas/manifest.json)
   "build-in-weekend": {
     slug: "build-in-weekend",
@@ -357,6 +340,8 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
           </div>
         </>
       ) : (
+        // Empty hubs are not routed (see IDEA_COLLECTION_SLUGS). A zero-length
+        // list here means the Convex fetch failed closed via hub-data `safe`.
         <p className="mx-auto w-full max-w-[1200px] px-5 py-14 text-home-ink-2 md:px-10 xl:px-0">
           Ideas in this collection will appear once the live data source is reachable. Refresh in a moment.
         </p>
