@@ -74,28 +74,40 @@ Next.js PWA + Supabase storage for images, OpenAI vision for v1 scoring, backgro
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**Project Setup. Scaffold BrakeVision SaaS: Next.js 14, Supabase (shops, inspections, images, overrides), OpenAI vision wrapper returning JSON \{wearPct, severity, recommendations[], confidence}. Include Zod validation and shop-level API keys.**
+**1. Project Setup**
 
 ```text
-undefined
+Scaffold BrakeVision SaaS: Next.js 14, Supabase (shops, inspections, images, overrides), OpenAI vision wrapper returning JSON {wearPct, severity, recommendations[], confidence}. Include Zod validation and shop-level API keys.
+
+Do not build: billing beyond a single shop login, multi-tenant marketplace, or mobile native apps.
+Done when: a shop can sign in, create an inspection, upload a pad photo, and receive structured wear JSON.
 ```
 
-**Core Feature. Mobile capture flow with SVG overlay guiding pad photo angle. On upload, queue analysis job, display results with editable advisor notes, generate PDF with shop logo. Log human overrides for future prompt tuning.**
+**2. Core Feature**
 
 ```text
-undefined
+Mobile capture flow with SVG overlay guiding pad photo angle. On upload, queue analysis job, display results with editable advisor notes, generate PDF with shop logo. Log human overrides for future prompt tuning.
+
+Do not build: SMS integrations, fleet accounts, or automatic parts ordering.
+Done when: an advisor can edit AI notes, export a branded PDF, and see overrides logged against the inspection.
 ```
 
-**Vision Prompt. Write system prompt for automotive brake pad analysis: identify pad thickness vs rotor, classify green/yellow/red, list likely services, refuse to guess if image blurry—return confidence score and re-shoot instructions.**
+**3. Vision Prompt**
 
 ```text
-undefined
+Write system prompt for automotive brake pad analysis: identify pad thickness vs rotor, classify green/yellow/red, list likely services, refuse to guess if image blurry—return confidence score and re-shoot instructions.
+
+Do not build: full vehicle diagnostics beyond brake pads, or any medical/safety certification claim.
+Done when: blurry images return a re-shoot instruction and clear images return severity plus recommendations with a confidence score.
 ```
 
-**Sales Landing. Landing page for shop owners: ROI calculator (extra brake jobs/week), 20 free inspections CTA, testimonial layout, comparison vs generic MPI modules. Dark garage aesthetic with high-contrast safety yellow accents.**
+**4. Sales Landing**
 
 ```text
-undefined
+Landing page for shop owners: ROI calculator (extra brake jobs/week), 20 free inspections CTA, testimonial layout, comparison vs generic MPI modules. Dark garage aesthetic with high-contrast safety yellow accents.
+
+Do not build: a marketing CMS, A/B testing suite, or paid ads dashboard.
+Done when: the page states the offer, shows the ROI calculator, and CTAs to start the free inspections.
 ```
 
 ## Sources

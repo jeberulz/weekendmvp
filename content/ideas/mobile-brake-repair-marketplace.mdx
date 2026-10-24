@@ -74,28 +74,40 @@ Next.js for SEO city pages, Supabase + PostGIS for geo queries, Stripe Connect f
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**Project Setup. Scaffold BrakeMobile marketplace: Next.js 14 App Router, Supabase schema (techs, jobs, packages, reviews), Stripe Connect onboarding flow, and PostGIS function matching jobs to techs within 25 miles. Include Zod validation and role-based middleware (consumer, tech, admin).**
+**1. Project Setup**
 
 ```text
-undefined
+Scaffold BrakeMobile marketplace: Next.js 14 App Router, Supabase schema (techs, jobs, packages, reviews), Stripe Connect onboarding flow, and PostGIS function matching jobs to techs within 25 miles. Include Zod validation and role-based middleware (consumer, tech, admin).
+
+Do not build: parts inventory, fleet contracts, or native mobile apps.
+Done when: consumer/tech/admin roles resolve, Connect onboarding starts, and a 25-mile match query returns nearby techs.
 ```
 
-**Core Feature. Build consumer booking: select brake package (front pads, rear pads, pads+rotors), enter VIN/YMM, pick arrival window, pay via Stripe Checkout with Connect destination charges. Tech app view: accept job, navigate, upload completion photos, mark complete to trigger payout.**
+**2. Core Feature**
 
 ```text
-undefined
+Build consumer booking: select brake package (front pads, rear pads, pads+rotors), enter VIN/YMM, pick arrival window, pay via Stripe Checkout with Connect destination charges. Tech app view: accept job, navigate, upload completion photos, mark complete to trigger payout.
+
+Do not build: real-time GPS tracking beyond a maps link, or in-app messaging threads.
+Done when: a consumer can pay for a package and a tech can accept, complete with photos, and trigger payout.
 ```
 
-**Landing Page. City landing template “Mobile brake repair in \{city}”: hero with upfront pricing table, how-it-works, tech recruitment CTA, FAQ on warranties and parts brands. Safety-orange accent on warm off-white—automotive trust without shop grime aesthetic.**
+**3. Landing Page**
 
 ```text
-undefined
+City landing template "Mobile brake repair in {city}": hero with upfront pricing table, how-it-works, tech recruitment CTA, FAQ on warranties and parts brands. Safety-orange accent on warm off-white—automotive trust without shop grime aesthetic.
+
+Do not build: a marketing CMS or per-city custom designs.
+Done when: one city page renders pricing, how-it-works, FAQ, and both consumer and tech CTAs.
 ```
 
-**Supply Onboarding. Tech onboarding wizard: Stripe Connect Express, upload brake certification, set service radius, select supported vehicle classes. Admin dashboard to approve techs and edit regional price cards per metro.**
+**4. Supply Onboarding**
 
 ```text
-undefined
+Tech onboarding wizard: Stripe Connect Express, upload brake certification, set service radius, select supported vehicle classes. Admin dashboard to approve techs and edit regional price cards per metro.
+
+Do not build: background-check integrations or multi-country tax tooling.
+Done when: a tech completes Connect + certification upload and an admin can approve them and edit a metro price card.
 ```
 
 ## Sources
