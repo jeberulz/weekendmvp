@@ -66,13 +66,30 @@ function boldBullets(text: string): { name: string; rest: string }[] {
  */
 const YEAR_ONE_LINE_RE = /^\s*[\d,]+\s*[×xX*]\s*\$\s?[\d,.]+(?:\s*\/\s*[A-Za-z]+)*\s*=\s*\$?\s?\d/;
 
+function isMissingPromptBody(lines: string[]): boolean {
+  const body = lines.join("\n").trim().toLowerCase();
+  return body === "" || body === "undefined" || body === "null";
+}
+
+/**
+ * Titles come from `**1. Project Setup**`, `### Prompt 1: …`, or the
+ * generator form `**Project Setup. scaffold text**` (title before the first
+ * `. `). Fenced bodies that are empty/`undefined`/`null` are dropped so a
+ * bad serialize never prints "Prompt N undefined" on the public page.
+ */
 function prompts(body: string): Prompt[] {
   const text = section(body, "AI Prompts to Build This");
-  const titles = [...text.matchAll(/^\*\*\d+\.\s*([^*]+?)\*\*|^###\s+(?:Prompt\s*\d+[:.]?\s*)?(.+)$/gm)].map(
-    (m) => (m[1] ?? m[2] ?? "").trim(),
+  const titles = [
+    ...text.matchAll(
+      /^\*\*\d+\.\s*([^*]+?)\*\*|^\*\*([^*]+?)\.\s+[^*][\s\S]*?\*\*|^###\s+(?:Prompt\s*\d+[:.]?\s*)?(.+)$/gm,
+    ),
+  ].map((m) => (m[1] ?? m[2] ?? m[3] ?? "").trim());
+  const blocks = [...text.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) =>
+    m[1].replace(/\n+$/, "").split("\n"),
   );
-  const blocks = [...text.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1].replace(/\n+$/, "").split("\n"));
-  return blocks.map((lines, i) => ({ title: titles[i] ?? `Prompt ${i + 1}`, lines }));
+  return blocks
+    .map((lines, i) => ({ title: titles[i] ?? `Prompt ${i + 1}`, lines }))
+    .filter((prompt) => !isMissingPromptBody(prompt.lines));
 }
 
 export function extractIdea(body: string): IdeaExtract {

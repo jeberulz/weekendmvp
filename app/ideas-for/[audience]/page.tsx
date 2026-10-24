@@ -740,7 +740,7 @@ function buildSchema(
     },
     breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "Ideas For", href: "/ideas-for/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
       { label: page.name, href: url },
     ]),
     page.faqs?.length

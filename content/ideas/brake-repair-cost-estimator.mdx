@@ -74,28 +74,40 @@ Static-friendly Next.js on Vercel, Supabase for saved estimates and lead routing
 
 Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
-**Project Setup. Create BrakeQuote estimator: Next.js 14, Supabase tables (vehicles, rate_cards, estimates, shop_partners), VIN decode via NHTSA vPIC, Zod schemas for estimate request/response. Include regional labor multiplier by zip prefix.**
+**1. Project Setup**
 
 ```text
-undefined
+Create BrakeQuote estimator: Next.js 14, Supabase tables (vehicles, rate_cards, estimates, shop_partners), VIN decode via NHTSA vPIC, Zod schemas for estimate request/response. Include regional labor multiplier by zip prefix.
+
+Do not build: shop billing, inventory management, or a full CRM.
+Done when: a VIN or year/make/model returns a validated estimate request/response against the rate card tables.
 ```
 
-**Core Feature. Build estimate wizard UI: symptom checklist → axle selection → instant low/fair/high card with parts/labor bar chart. Allow user to paste shop quote and highlight overage vs fair band. Generate PDF export server-side.**
+**2. Core Feature**
 
 ```text
-undefined
+Build estimate wizard UI: symptom checklist → axle selection → instant low/fair/high card with parts/labor bar chart. Allow user to paste shop quote and highlight overage vs fair band. Generate PDF export server-side.
+
+Do not build: live shop booking calendars or in-app chat.
+Done when: a user can complete the wizard, compare a pasted quote to the fair band, and download a PDF.
 ```
 
-**SEO Pages. Programmatic SEO template: “\{year} \{make} \{model} brake pad replacement cost” with FAQ schema, internal links to estimator, and city variants. Include canonical tags and sitemap generation script.**
+**3. SEO Pages**
 
 ```text
-undefined
+Programmatic SEO template: "{year} {make} {model} brake pad replacement cost" with FAQ schema, internal links to estimator, and city variants. Include canonical tags and sitemap generation script.
+
+Do not build: a full CMS or city microsite network beyond the template.
+Done when: one vehicle page renders with FAQ schema, canonical tags, and a link into the estimator.
 ```
 
-**Lead Routing. Partner shop inbox: when user clicks “Book fair-price shop,” send lead to top 3 partners in zip via webhook and email. Track attribution for pay-per-lead billing dashboard.**
+**4. Lead Routing**
 
 ```text
-undefined
+Partner shop inbox: when user clicks "Book fair-price shop," send lead to top 3 partners in zip via webhook and email. Track attribution for pay-per-lead billing dashboard.
+
+Do not build: auctions, dynamic pricing, or multi-state franchise tooling.
+Done when: a book click fans out to three partners and an attribution row is stored for the lead.
 ```
 
 ## Sources

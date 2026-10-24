@@ -1242,7 +1242,7 @@ function buildSchema(page: ToolPage, data: ToolData) {
     },
     breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "Build With", href: "/build-with/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
       { label: page.name, href: url },
     ]),
     page.faqs?.length

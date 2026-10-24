@@ -32,7 +32,7 @@ export const SITE_NAV_SECTIONS: DropdownDef[] = [
         links: [
           { label: "$1K/month", href: "/ideas/1k-month" },
           { label: "$5K/month", href: "/ideas/5k-month" },
-          { label: "Passive Income", href: "/ideas/passive-income" },
+          { label: "$10K/month", href: "/ideas/10k-month" },
         ],
       },
       {

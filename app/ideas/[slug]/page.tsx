@@ -47,6 +47,8 @@ import {
   tocFromMarkdown,
   toolName,
 } from "@/components/ideas/idea-meta";
+import { audienceHubHref, toolHubHref } from "@/lib/hub-chip-links";
+import { isIdeaCollectionSlug } from "@/lib/idea-collection-slugs";
 import {
   COLLECTION_SLUGS,
   getCollectionMeta,
@@ -596,26 +598,28 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                       </div>
                     </Link>
 
-                    <Link
-                      href={`/ideas/${idea.revenueGoal}`}
-                      className="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all"
-                    >
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                        <DollarSign
-                          size={20}
-                          className="text-neutral-600"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">
-                          {revenueName(idea.revenueGoal)} Ideas
-                        </span>
-                        <p className="text-xs text-neutral-500">
-                          By revenue potential
-                        </p>
-                      </div>
-                    </Link>
+                    {isIdeaCollectionSlug(idea.revenueGoal) ? (
+                      <Link
+                        href={`/ideas/${idea.revenueGoal}`}
+                        className="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all"
+                      >
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                          <DollarSign
+                            size={20}
+                            className="text-neutral-600"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">
+                            {revenueName(idea.revenueGoal)} Ideas
+                          </span>
+                          <p className="text-xs text-neutral-500">
+                            By revenue potential
+                          </p>
+                        </div>
+                      </Link>
+                    ) : null}
                   </div>
 
                   {idea.tools.length > 0 ? (
@@ -624,15 +628,25 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                         Build with
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {idea.tools.map((tool) => (
-                          <Link
-                            key={tool}
-                            href={`/build-with/${tool}`}
-                            className="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs font-medium text-neutral-600 hover:text-black hover:border-neutral-300 transition-all"
-                          >
-                            {toolName(tool)}
-                          </Link>
-                        ))}
+                        {idea.tools.map((tool) => {
+                          const href = toolHubHref(tool);
+                          const label = toolName(tool);
+                          const chipClass =
+                            "px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs font-medium text-neutral-600";
+                          return href ? (
+                            <Link
+                              key={tool}
+                              href={href}
+                              className={`${chipClass} hover:text-black hover:border-neutral-300 transition-all`}
+                            >
+                              {label}
+                            </Link>
+                          ) : (
+                            <span key={tool} className={chipClass}>
+                              {label}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : null}
@@ -643,15 +657,25 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                         Perfect for
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {idea.audiences.map((audience) => (
-                          <Link
-                            key={audience}
-                            href={`/ideas-for/${audience}`}
-                            className="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs font-medium text-neutral-600 hover:text-black hover:border-neutral-300 transition-all"
-                          >
-                            {audienceName(audience)}
-                          </Link>
-                        ))}
+                        {idea.audiences.map((audience) => {
+                          const href = audienceHubHref(audience);
+                          const label = audienceName(audience);
+                          const chipClass =
+                            "px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs font-medium text-neutral-600";
+                          return href ? (
+                            <Link
+                              key={audience}
+                              href={href}
+                              className={`${chipClass} hover:text-black hover:border-neutral-300 transition-all`}
+                            >
+                              {label}
+                            </Link>
+                          ) : (
+                            <span key={audience} className={chipClass}>
+                              {label}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : null}

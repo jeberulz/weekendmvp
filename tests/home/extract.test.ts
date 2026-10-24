@@ -43,6 +43,66 @@ describe("idea extraction", () => {
     expect(x.prompts).toEqual([]);
   });
 
+  test("drops fenced prompt bodies that are empty, undefined, or null", () => {
+    const x = extractIdea(`## AI Prompts to Build This
+
+**1. Project Setup**
+
+\`\`\`text
+undefined
+\`\`\`
+
+**2. Core Feature**
+
+\`\`\`text
+Build the actual feature.
+\`\`\`
+
+**3. Empty**
+
+\`\`\`text
+
+\`\`\`
+
+**4. Nullish**
+
+\`\`\`text
+null
+\`\`\`
+`);
+    expect(x.prompts).toEqual([{ title: "Core Feature", lines: ["Build the actual feature."] }]);
+  });
+
+  test("reads titles from the generator '**Title. body**' form", () => {
+    const x = extractIdea(`## AI Prompts to Build This
+
+**Project Setup. Scaffold the app with Next.js and Supabase.**
+
+\`\`\`text
+Scaffold the app with Next.js and Supabase.
+\`\`\`
+`);
+    expect(x.prompts).toEqual([
+      { title: "Project Setup", lines: ["Scaffold the app with Next.js and Supabase."] },
+    ]);
+  });
+
+  test("brake ideas no longer expose undefined prompt bodies", () => {
+    for (const slug of [
+      "ai-brake-inspection-analyser",
+      "brake-repair-cost-estimator",
+      "brake-safety-education-platform",
+      "mobile-brake-repair-marketplace",
+    ]) {
+      const x = extractIdea(body(slug));
+      expect(x.prompts.length).toBeGreaterThanOrEqual(3);
+      for (const prompt of x.prompts) {
+        expect(prompt.lines.join("\n").trim().toLowerCase()).not.toBe("undefined");
+        expect(prompt.title).not.toMatch(/^Prompt \d+$/);
+      }
+    }
+  });
+
   test("section() stops at the next heading", () => {
     expect(section("## A\none\n## B\ntwo\n", "A").trim()).toBe("one");
     expect(section("intro\n## B\ntwo\n", "A")).toBe("");

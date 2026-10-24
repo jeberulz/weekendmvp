@@ -3,8 +3,10 @@ export const IDEA_COLLECTION_SLUGS = [
   "saas", "ai-tools", "automation", "developer-tools", "productivity",
   "marketplace", "education", "health", "b2b", "creator-tools",
   "fintech", "ecommerce", "1k-month", "5k-month", "10k-month",
-  "passive-income", "quick-wins", "build-in-weekend", "build-in-8-hours",
-  "build-in-1-week",
+  // Empty revenue-goal hubs (no live ideas tagged) are omitted on purpose —
+  // they stay in the revenueGoal taxonomy for tagging, and get hub routes
+  // again only once ideas use those goals.
+  "build-in-weekend", "build-in-8-hours", "build-in-1-week",
 ] as const;
 
 export type IdeaCollectionSlug = (typeof IDEA_COLLECTION_SLUGS)[number];
