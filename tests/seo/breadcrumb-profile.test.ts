@@ -6,7 +6,7 @@ describe("breadcrumbSchema", () => {
   test("puts a name on every ListItem and nested item", () => {
     const schema = breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "Build With", href: "/build-with/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
       { label: "Claude", href: "/build-with/claude" },
     ]);
 

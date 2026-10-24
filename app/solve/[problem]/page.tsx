@@ -302,7 +302,7 @@ function buildSchema(page: SolvePage) {
     }),
     breadcrumbSchema([
       { label: "Home", href: "/" },
-      { label: "Solve", href: "/solve/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
       { label: page.shortTitle, href: url },
     ]),
   );
