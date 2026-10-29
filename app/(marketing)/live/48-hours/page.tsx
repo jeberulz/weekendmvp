@@ -398,7 +398,7 @@ export default async function FreeWebinarPage() {
                 </li>
               </ul>
               <div className="mt-5">
-                <RegisterCta lumaUrl={urls.lumaEventUrl} className="text-center [&_a]:w-full [&_span]:w-full" />
+                <RegisterCta lumaUrl={urls.lumaEventUrl} className="text-center [&>a]:w-full [&>span]:w-full" />
               </div>
             </aside>
           </section>
