@@ -84,7 +84,7 @@ export default function PrivacyPolicyPage() {
       <main id="main">
         <PageHeader
           title="Privacy Policy"
-          meta={["Last updated: October 2026"]}
+          meta={["Last updated: 29 Oct 2026"]}
           size="md"
           className="pb-10 lg:pb-12"
         />
@@ -139,6 +139,13 @@ export default function PrivacyPolicyPage() {
               Stripe&apos;s privacy policy
             </NavExternalLink>
             .
+          </SectionRow>
+
+          <SectionRow id="live-workshops" heading="Live workshops">
+            Live workshops (including the Build-Along) may be recorded. We may
+            reuse the recording in a paid self-paced course. Unless you tell us
+            you are happy to be shown, we blur or cut your name, camera, and
+            chat messages in any published version.
           </SectionRow>
 
           {/* WP64-S9: a draft under the Terms' approval gate, hidden in production until approved. */}
