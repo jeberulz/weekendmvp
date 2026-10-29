@@ -42,7 +42,7 @@ import {
   freeFaqItemsVisible,
 } from "./free-data";
 
-const TITLE = "Ship a Weekend MVP in 48 Hours — Free Live Webinar";
+const TITLE = "Build a real app live in one hour (free)";
 const DESCRIPTION =
   "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One real idea, HydroTrail, taken from its page to its first working screen with Prompt 1. Register for reminders and the 7-day replay.";
 
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: `${SITE}/image/og-image.png`,
-        alt: "Ship a Weekend MVP in 48 Hours",
+        alt: TITLE,
         type: "image/png",
         width: 1200,
         height: 630,
@@ -93,7 +93,7 @@ const SCHEMA = buildGraph(
   ]),
   {
     "@type": "EducationEvent",
-    name: FREE_WEBINAR.title,
+    name: TITLE,
     description: DESCRIPTION,
     startDate: new Date(FREE_WEBINAR.startAt).toISOString(),
     endDate: new Date(FREE_WEBINAR.endAt).toISOString(),
@@ -212,7 +212,7 @@ export default async function FreeWebinarPage() {
               <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
                 Live now
               </span>
-              <span className="hidden sm:inline">Ship a Weekend MVP in 48 Hours</span>
+              <span className="hidden sm:inline">{TITLE}</span>
               <span className="text-[#5a544a]" aria-hidden="true">
                 ·
               </span>
@@ -348,7 +348,7 @@ export default async function FreeWebinarPage() {
                 Free live webinar
               </p>
               <h1 className="font-editorial mt-4 text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[76px]">
-                Ship a Weekend MVP in <Em>48 Hours</Em>
+                Build a real app live in <Em>one hour</Em> (free)
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
                 Live and free on Sat 31 Oct, 16:00 GMT. One real idea (
@@ -727,7 +727,7 @@ export default async function FreeWebinarPage() {
           <section className="mx-auto max-w-[1120px] px-5 pb-24 sm:px-10">
             <div className="rounded-2xl border border-home-rule bg-home-card px-8 py-14 text-center sm:px-14">
               <h2 className="font-editorial text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
-                Ship a Weekend MVP in <Em>48 Hours</Em>
+                Build a real app live in <Em>one hour</Em> (free)
               </h2>
               <p className="mt-4 font-mono text-xs tracking-[0.06em] text-[#6B6457] uppercase">
                 Sat 31 Oct 2026 · 16:00 GMT · YouTube Live · Free
