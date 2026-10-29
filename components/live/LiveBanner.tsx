@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   BUILD_ALONG,
   FREE_WEBINAR,
+  freeWebinarTitlePlain,
   liveBuildAlongHref,
   liveFreeHref,
   liveUrls,
@@ -20,8 +21,7 @@ const DISMISS_KEY = "wmvp-live-banner-dismissed";
 const DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const WEBINAR_DATETIME = "2026-10-31T16:00:00Z";
-const WEBINAR_SR =
-  " for Ship a Weekend MVP in 48 Hours, Saturday 31 October, 16:00 GMT";
+const WEBINAR_SR = ` for ${FREE_WEBINAR.title}, Saturday 31 October, 16:00 GMT`;
 
 export type LiveBannerHeroCopy = {
   headline: string;
@@ -82,7 +82,8 @@ function contentAt(
     }
     return {
       eyebrow: "Live · Free",
-      line: `${FREE_WEBINAR.title}. Sat 31 Oct, 16:00 GMT.`,
+      // Plain title — eyebrow already says Free; avoid "(free)" doubling.
+      line: `${freeWebinarTitlePlain()}. Sat 31 Oct, 16:00 GMT.`,
       body: null,
       label: day,
       ctaLabel: "Save my seat",

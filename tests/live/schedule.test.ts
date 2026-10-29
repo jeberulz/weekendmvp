@@ -4,6 +4,7 @@ import {
   EARLY_BIRD_ENDS_AT,
   FREE_WEBINAR,
   SALES_OPEN_AT,
+  freeWebinarTitlePlain,
   liveBuildAlongHref,
   liveFreeHref,
 } from "@/lib/live/config";
@@ -17,6 +18,13 @@ import {
   salesOpen,
 } from "@/lib/live/schedule";
 import { seatsFromSold, seatsLine } from "@/lib/live/seats";
+
+describe("free webinar title", () => {
+  test("canonical title and Free-badged plain form", () => {
+    expect(FREE_WEBINAR.title).toBe("Build a real app live in one hour (free)");
+    expect(freeWebinarTitlePlain()).toBe("Build a real app live in one hour");
+  });
+});
 
 describe("live schedule", () => {
   test("early-bird inclusive through 23:59:59 GMT Sun 8 Nov 2026", () => {

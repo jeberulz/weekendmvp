@@ -42,9 +42,13 @@ import {
   freeFaqItemsVisible,
 } from "./free-data";
 
-const TITLE = "Ship a Weekend MVP in 48 Hours — Free Live Webinar";
+const TITLE = FREE_WEBINAR.title;
 const DESCRIPTION =
-  "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One idea, three screens, and Prompt 1 on screen. Register for reminders and the 7-day replay.";
+  "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One real idea, HydroTrail, taken from its page to its first working screen with Prompt 1. Register for reminders and the 7-day replay.";
+
+const DEMO_IDEA_HREF = LIVE_ASSETS.demoIdeaSlug
+  ? `/ideas/${LIVE_ASSETS.demoIdeaSlug}`
+  : null;
 
 export const instant = false;
 
@@ -63,7 +67,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: `${SITE}/image/og-image.png`,
-        alt: "Ship a Weekend MVP in 48 Hours",
+        alt: TITLE,
         type: "image/png",
         width: 1200,
         height: 630,
@@ -85,11 +89,11 @@ const SCHEMA = buildGraph(
   breadcrumbSchema([
     { label: "Home", href: `${SITE}/` },
     { label: "Live", href: `${SITE}/live` },
-    { label: "48 Hours", href: `${SITE}/live/48-hours` },
+    { label: "Live in one hour", href: `${SITE}/live/48-hours` },
   ]),
   {
     "@type": "EducationEvent",
-    name: FREE_WEBINAR.title,
+    name: TITLE,
     description: DESCRIPTION,
     startDate: new Date(FREE_WEBINAR.startAt).toISOString(),
     endDate: new Date(FREE_WEBINAR.endAt).toISOString(),
@@ -141,7 +145,7 @@ function RegisterCta({
   }
   return (
     <div className={className}>
-      <LumaRegisterLink href={lumaUrl}>Save my seat (free)</LumaRegisterLink>
+      <LumaRegisterLink href={lumaUrl}>Save my free seat</LumaRegisterLink>
       <p className="mt-2 font-mono text-[11px] text-[#6B6457]">Register on Luma ↗</p>
     </div>
   );
@@ -208,7 +212,7 @@ export default async function FreeWebinarPage() {
               <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
                 Live now
               </span>
-              <span className="hidden sm:inline">Ship a Weekend MVP in 48 Hours</span>
+              <span className="hidden sm:inline">{TITLE}</span>
               <span className="text-[#5a544a]" aria-hidden="true">
                 ·
               </span>
@@ -344,17 +348,27 @@ export default async function FreeWebinarPage() {
                 Free live webinar
               </p>
               <h1 className="font-editorial mt-4 text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[76px]">
-                Ship a Weekend MVP in <Em>48 Hours</Em>
+                Build a real app live in <Em>one hour</Em> (free)
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-                Live and free on Sat 31 Oct, 16:00 GMT. One idea, three screens, and Prompt 1
-                on screen.
+                Live and free on Sat 31 Oct, 16:00 GMT. One real idea (
+                {DEMO_IDEA_HREF ? (
+                  <Link
+                    href={DEMO_IDEA_HREF}
+                    className="underline decoration-home-rule underline-offset-4 hover:text-home-orange-ink"
+                  >
+                    HydroTrail
+                  </Link>
+                ) : (
+                  "HydroTrail"
+                )}
+                , a hydration coach for hikers), three screens, and Prompt 1 on screen.
               </p>
               <div className="mt-8">
                 <div className="flex flex-wrap gap-3">
                   {urls.lumaEventUrl ? (
                     <LumaRegisterLink href={urls.lumaEventUrl}>
-                      Save my seat (free)
+                      Save my free seat
                     </LumaRegisterLink>
                   ) : (
                     <LiveButton disabled>Registration link coming soon</LiveButton>
@@ -569,9 +583,23 @@ export default async function FreeWebinarPage() {
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-[#d6cdbd]">
               This isn&apos;t an hour of tool demos. We don&apos;t compare twelve AI apps or
-              chase whatever launched this week. We take one idea and go from its page to its
-              first working screen, live, with the same prompts you can use tonight. If
-              something breaks, you&apos;ll see me fix it.
+              chase whatever launched this week. We take one idea
+              {DEMO_IDEA_HREF ? (
+                <>
+                  ,{" "}
+                  <Link
+                    href={DEMO_IDEA_HREF}
+                    className="underline decoration-[#5a544a] underline-offset-4 hover:text-white"
+                  >
+                    HydroTrail
+                  </Link>
+                  ,
+                </>
+              ) : (
+                ", HydroTrail,"
+              )}{" "}
+              and go from its page to its first working screen, live, with the same prompts
+              you can use tonight. If something breaks, you&apos;ll see me fix it.
             </p>
           </div>
         </section>
@@ -670,8 +698,7 @@ export default async function FreeWebinarPage() {
                 <em className="text-home-orange">{BUILD_ALONG.subline}</em>
                 ): <strong>2 hours on Sat 14 Nov at 15:00 GMT</strong>, on Zoom. You bring an
                 idea, or pick one from the library, and build it live while I build one too.
-                It&apos;s <strong>$19 until 23:59 GMT Sun 8 Nov, then $29</strong>, and the
-                replay is yours to keep. Tickets open Sun 1 Nov.
+                The replay is yours to keep. Tickets open Sun 1 Nov.
               </p>
               <p className="mt-3">
                 You don&apos;t need it to get value from the free session, and I won&apos;t
@@ -700,7 +727,7 @@ export default async function FreeWebinarPage() {
           <section className="mx-auto max-w-[1120px] px-5 pb-24 sm:px-10">
             <div className="rounded-2xl border border-home-rule bg-home-card px-8 py-14 text-center sm:px-14">
               <h2 className="font-editorial text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
-                Ship a Weekend MVP in <Em>48 Hours</Em>
+                Build a real app live in <Em>one hour</Em> (free)
               </h2>
               <p className="mt-4 font-mono text-xs tracking-[0.06em] text-[#6B6457] uppercase">
                 Sat 31 Oct 2026 · 16:00 GMT · YouTube Live · Free

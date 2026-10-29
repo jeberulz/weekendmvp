@@ -48,6 +48,7 @@ import {
 import { IdeaBrowser } from "@/components/public/IdeaBrowser";
 import { LiveBanner } from "@/components/live/LiveBanner";
 import { LiveHubLine } from "@/components/live/LiveHubLine";
+import { freeWebinarTitlePlain } from "@/lib/live/config";
 import { PageHeader } from "@/components/public/PageHeader";
 import { PublicShell } from "@/components/public/PublicShell";
 import { InkBand, SectionHeading } from "@/components/public/Sections";
@@ -267,7 +268,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       },
       end: {
         lead: "See one idea scoped, built to its first screen and planned for Sunday, live and free on Sat 31 Oct at 16:00 GMT.",
-        linkLabel: "Ship a Weekend MVP in 48 Hours",
+        linkLabel: freeWebinarTitlePlain(),
       },
     },
   },
@@ -398,7 +399,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       },
       end: {
         lead: "Not sure which Claude project to start? Watch one idea go from its page to its first screen, live and free on Sat 31 Oct at 16:00 GMT.",
-        linkLabel: "Ship a Weekend MVP in 48 Hours",
+        linkLabel: freeWebinarTitlePlain(),
       },
     },
   },
@@ -624,7 +625,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       },
       end: {
         lead: "Watch one idea go from its page to its first screen, plus the Friday-to-Sunday plan, free and live on Sat 31 Oct at 16:00 GMT.",
-        linkLabel: "Ship a Weekend MVP in 48 Hours",
+        linkLabel: freeWebinarTitlePlain(),
       },
     },
   },
@@ -717,7 +718,7 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       },
       end: {
         lead: "Want to see the whole weekend before you start in Lovable? It's a free live hour on Sat 31 Oct at 16:00 GMT.",
-        linkLabel: "Ship a Weekend MVP in 48 Hours",
+        linkLabel: freeWebinarTitlePlain(),
       },
     },
   },

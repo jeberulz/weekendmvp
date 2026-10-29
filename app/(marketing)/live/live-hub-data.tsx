@@ -5,6 +5,7 @@ import type { LiveFaqItem } from "@/components/live/LiveFaq";
 import {
   BUILD_ALONG,
   FREE_WEBINAR,
+  freeWebinarTitlePlain,
   LIVE_ASSETS,
   NEXT_BUILD_ALONG,
   STARTUP_IDEAS_HREF,
@@ -159,7 +160,8 @@ function freeCard(
     month: "OCT",
     day: "31",
     weekday: "SAT",
-    title: FREE_WEBINAR.title,
+    // Plain title — chips / sidePrice already say Free.
+    title: freeWebinarTitlePlain(),
     dateLine: "Sat 31 Oct 2026 · 16:00 GMT · 60 min",
     cityLine: "12:00 New York · 09:00 Los Angeles",
     startMs: FREE_WEBINAR.startAt,

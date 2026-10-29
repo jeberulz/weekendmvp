@@ -44,7 +44,7 @@ export const LIVE_BUILDALONG_SIGNUP_SRC = "live-buildalong" as const;
 
 export const FREE_WEBINAR = {
   slug: "48-hours",
-  title: "Ship a Weekend MVP in 48 Hours",
+  title: "Build a real app live in one hour (free)",
   startAt: Date.parse("2026-10-31T16:00:00.000Z"),
   endAt: Date.parse("2026-10-31T17:00:00.000Z"),
   /** 7-day registrant replay window after the session. */
@@ -52,6 +52,11 @@ export const FREE_WEBINAR = {
   durationMin: 60,
   platform: "YouTube Live" as const,
 } as const;
+
+/** Drop trailing "(free)" when the surface already badges Free. */
+export function freeWebinarTitlePlain(): string {
+  return FREE_WEBINAR.title.replace(/\s*\(free\)\s*$/i, "");
+}
 
 export const BUILD_ALONG = {
   slug: "build-along",
@@ -127,7 +132,7 @@ export const LIVE_ASSETS: LiveAssets = {
   personalNoteHtml: "",
   hostEveningsConfirmed: true,
   toolList: [],
-  demoIdeaSlug: "",
+  demoIdeaSlug: "hydration-app-for-hikers",
   freeNowIdeaSlugs: [],
   dryRunPassed: false,
   freeProofQuotes: [],
