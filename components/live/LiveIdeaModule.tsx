@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { FREE_WEBINAR, UTM } from "@/lib/live/config";
+import { freeWebinarTitlePlain, UTM } from "@/lib/live/config";
 import { readLiveClockMs } from "@/lib/live/now";
 import { freeWebinarPhase, bannerPhase } from "@/lib/live/schedule";
 
@@ -21,9 +21,10 @@ export async function LiveIdeaModule() {
 
   const line =
     freePhase === "live"
-      ? "We're live now — watch Ship a Weekend MVP in 48 Hours on YouTube."
+      ? `We're live now — watch ${freeWebinarTitlePlain()} on YouTube.`
       : freePhase === "open"
-        ? `${FREE_WEBINAR.title}. Free, live Sat 31 Oct, 16:00 GMT. Register for reminders and the 7-day replay — then an edited version on YouTube.`
+        ? // Plain title — next sentence already says Free.
+          `${freeWebinarTitlePlain()}. Free, live Sat 31 Oct, 16:00 GMT. Register for reminders and the 7-day replay — then an edited version on YouTube.`
         : freePhase === "replay"
           ? "Replay for registrants for 7 days, then an edited version on YouTube. Or join the Build-Along on Sat 14 Nov."
           : "Join the Weekend MVP Build-Along — build it Saturday, ship it Sunday.";

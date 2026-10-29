@@ -42,7 +42,7 @@ import {
   freeFaqItemsVisible,
 } from "./free-data";
 
-const TITLE = "Build a real app live in one hour (free)";
+const TITLE = FREE_WEBINAR.title;
 const DESCRIPTION =
   "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One real idea, HydroTrail, taken from its page to its first working screen with Prompt 1. Register for reminders and the 7-day replay.";
 
@@ -89,7 +89,7 @@ const SCHEMA = buildGraph(
   breadcrumbSchema([
     { label: "Home", href: `${SITE}/` },
     { label: "Live", href: `${SITE}/live` },
-    { label: "48 Hours", href: `${SITE}/live/48-hours` },
+    { label: "Live in one hour", href: `${SITE}/live/48-hours` },
   ]),
   {
     "@type": "EducationEvent",
