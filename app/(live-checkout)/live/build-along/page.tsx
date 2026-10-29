@@ -16,6 +16,7 @@ import {
   BUILD_ALONG,
   LIVE_ASSETS,
   LIVE_BUILDALONG_SIGNUP_SRC,
+  LIVE_RECORDING_NOTICE,
   LIVE_WORKSHOP_SELLER_LINE,
   NEXT_BUILD_ALONG,
   NEXT_SESSION_CHECKOUT_ENABLED,
@@ -159,6 +160,15 @@ function GuaranteeLine() {
   );
 }
 
+/** Fine print above every ticket CTA (pre-sale, buy, sold-out). */
+function RecordingNotice() {
+  return (
+    <p className="mb-3 text-left text-xs leading-relaxed text-[#6B6457]">
+      {LIVE_RECORDING_NOTICE}
+    </p>
+  );
+}
+
 function TicketCard({
   price,
   seats,
@@ -193,16 +203,17 @@ function TicketCard({
             All 20 seats are taken. The next build-along is {NEXT_BUILD_ALONG.label}. Same 2
             hours, same price rules, 20 seats.
           </p>
-          {NEXT_SESSION_CHECKOUT_ENABLED ? (
-            <div className="mt-5">
+          <div className="mt-5">
+            <RecordingNotice />
+            {NEXT_SESSION_CHECKOUT_ENABLED ? (
               <TicketCheckoutButton
                 label="Get a seat for 5 Dec"
                 nextSession
                 fullWidth
                 className="w-full"
               />
-            </div>
-          ) : null}
+            ) : null}
+          </div>
           <p className="mt-3 text-center text-sm">
             <Link
               href="/starter-kit"
@@ -243,6 +254,7 @@ function TicketCard({
             ))}
           </ul>
           <div className="mt-5">
+            <RecordingNotice />
             {disabled ? (
               <LiveButton disabled className="w-full">
                 Tickets open Sun 1 Nov
@@ -714,16 +726,17 @@ export default async function BuildAlongPage({
               <p className="mt-2 text-sm text-[#4A453C]">
                 Next: {NEXT_BUILD_ALONG.label}.
               </p>
-              {NEXT_SESSION_CHECKOUT_ENABLED ? (
-                <div className="mt-4">
+              <div className="mt-4">
+                <RecordingNotice />
+                {NEXT_SESSION_CHECKOUT_ENABLED ? (
                   <TicketCheckoutButton
                     label="Get a seat for 5 Dec"
                     nextSession
                     fullWidth
                     className="w-full"
                   />
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </>
           ) : (
             <>
@@ -751,6 +764,7 @@ export default async function BuildAlongPage({
                 ))}
               </ul>
               <div className="mt-5">
+                <RecordingNotice />
                 {preSale ? (
                   <LiveButton disabled className="w-full">
                     Tickets open Sun 1 Nov
