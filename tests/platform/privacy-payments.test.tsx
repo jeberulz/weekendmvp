@@ -32,7 +32,7 @@ describe("privacy policy: payments", () => {
     );
   });
 
-  test("sits before Builder's Hub and Contact and leaves the other sections in place", () => {
+  test("sits before Live workshops, Builder's Hub and Contact and leaves the other sections in place", () => {
     const ids = [...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1]);
     expect(ids).toEqual([
       "cookies-and-analytics",
@@ -40,6 +40,7 @@ describe("privacy policy: payments", () => {
       "data-collection",
       "email-collection",
       "payments",
+      "live-workshops",
       "builders-hub",
       "contact",
     ]);

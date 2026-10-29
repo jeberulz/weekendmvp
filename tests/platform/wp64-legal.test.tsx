@@ -222,14 +222,22 @@ describe("WP64-S9 the refund policy", () => {
 
 describe("WP64-S9 the privacy policy", () => {
   const sectionIds = (html: string) => [...html.matchAll(/<section id="([^"]+)"/g)].map((match) => match[1]);
-  const LIVE_IDS = ["cookies-and-analytics", "your-choices", "data-collection", "email-collection", "payments", "contact"];
+  const LIVE_IDS = [
+    "cookies-and-analytics",
+    "your-choices",
+    "data-collection",
+    "email-collection",
+    "payments",
+    "live-workshops",
+    "contact",
+  ];
 
-  test("adds a Builder's Hub section after Payments, now in production too", () => {
+  test("adds a Builder's Hub section after Live workshops, now in production too", () => {
     for (const nodeEnv of ["production", "development"]) {
       vi.stubEnv("NODE_ENV", nodeEnv);
       const html = renderToStaticMarkup(<PrivacyPolicyPage />);
       const page = text(html);
-      // The rest of the policy (with its Payments section, PR #129) is unchanged around it.
+      // Always-visible sections (incl. Live workshops) stay around the gated Hub block.
       expect(sectionIds(html)).toEqual([...LIVE_IDS.slice(0, -1), "builders-hub", "contact"]);
       expect(page).toContain("Builder’s Hub payments go through Stripe Checkout with Managed Payments.");
       expect(page).toContain("Link, a Stripe service, is the merchant of record");
@@ -238,13 +246,17 @@ describe("WP64-S9 the privacy policy", () => {
       expect(page).toContain("Founding Lifetime seat number");
       expect(page).toContain("one-way hashes of the addresses");
       expect(page).toContain("We do not keep a list of who joins.");
+      expect(page).toContain(
+        "Live workshops (including the Build-Along) may be recorded. We may reuse the recording in a paid self-paced course. Unless you tell us you are happy to be shown, we blur or cut your name, camera, and chat messages in any published version.",
+      );
       expect(page).not.toContain("Review notes");
     }
   });
 
-  test("the section sits between Payments and Contact, behind the gate", () => {
+  test("the Hub section sits between Live workshops and Contact, behind the gate", () => {
     expect(privacySource).toContain("{legalPagesVisible() ? <LegalSectionRow section={PRIVACY_MEMBERSHIP} /> : null}");
-    expect(privacySource.indexOf('id="payments"')).toBeLessThan(privacySource.indexOf("PRIVACY_MEMBERSHIP} />"));
+    expect(privacySource.indexOf('id="payments"')).toBeLessThan(privacySource.indexOf('id="live-workshops"'));
+    expect(privacySource.indexOf('id="live-workshops"')).toBeLessThan(privacySource.indexOf("PRIVACY_MEMBERSHIP} />"));
     expect(privacySource.indexOf("PRIVACY_MEMBERSHIP} />")).toBeLessThan(privacySource.indexOf('id="contact"'));
   });
 });

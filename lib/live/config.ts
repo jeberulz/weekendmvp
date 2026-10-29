@@ -27,6 +27,13 @@ export const EARLY_BIRD_ENDS_AT = Date.parse("2026-11-08T23:59:59.000Z");
 export const LIVE_WORKSHOP_SELLER_LINE =
   "No VAT added: Rulz&Co is not VAT-registered." as const;
 
+/**
+ * Recording / reuse notice shown directly above Build-Along ticket CTAs
+ * (pre-sale, live buy, sold-out). Verbatim owner-approved copy.
+ */
+export const LIVE_RECORDING_NOTICE =
+  "This session is recorded and may be reused in a paid Weekend MVP self-paced course. Your name, camera and chat messages are blurred or cut unless you tell us you're happy to be shown." as const;
+
 /** Zoom join link placeholder — fill via NEXT_PUBLIC_LIVE_ZOOM_URL. */
 export function liveZoomUrl(env: NodeJS.ProcessEnv = process.env): string {
   return (env.NEXT_PUBLIC_LIVE_ZOOM_URL ?? "").trim();
