@@ -204,61 +204,10 @@ export default async function FreeWebinarPage() {
       <PersistLiveAttrib />
       <JsonLd schema={SCHEMA} />
 
-      {/* Date bar */}
-      <div className="bg-[#1A1814] text-[#F7F3EC]">
-        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 py-2.5 font-mono text-[11px] tracking-[0.06em] uppercase sm:px-10 sm:text-xs">
-          {phase === "live" ? (
-            <>
-              <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
-                Live now
-              </span>
-              <span className="hidden sm:inline">{TITLE}</span>
-              <span className="text-[#5a544a]" aria-hidden="true">
-                ·
-              </span>
-              <span>on YouTube</span>
-            </>
-          ) : (
-            <>
-              <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
-                Live
-              </span>
-              <span>Sat 31 Oct 2026</span>
-              <span className="text-[#5a544a]" aria-hidden="true">
-                ·
-              </span>
-              <span>16:00 GMT</span>
-              <span className="hidden text-[#c9bfae] sm:inline">
-                · 12:00 New York · 09:00 Los Angeles
-              </span>
-              <span className="hidden text-[#5a544a] sm:inline" aria-hidden="true">
-                ·
-              </span>
-              <span className="hidden sm:inline">60 min</span>
-              <span className="text-[#5a544a]" aria-hidden="true">
-                ·
-              </span>
-              <span>Free</span>
-              <span className="hidden text-[#5a544a] sm:inline" aria-hidden="true">
-                ·
-              </span>
-              <span className="hidden sm:inline">YouTube Live</span>
-            </>
-          )}
-        </div>
-        <div className="mx-auto max-w-[1120px] px-5 pb-2 text-center sm:px-10">
-          <LocalTime
-            startMs={FREE_WEBINAR.startAt}
-            endMs={FREE_WEBINAR.endAt}
-            className="font-mono text-[11px] text-[#c9bfae]"
-          />
-        </div>
-      </div>
-
       <main>
         {/* Hero / state banners */}
         {phase === "live" ? (
-          <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-10 sm:py-20">
+          <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
               Free live webinar
             </p>
@@ -289,7 +238,7 @@ export default async function FreeWebinarPage() {
             </div>
           </section>
         ) : phase === "replay" ? (
-          <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-10 sm:py-20">
+          <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <h1 className="font-editorial text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[64px]">
               This session has <Em>ended.</Em>
             </h1>
@@ -311,7 +260,7 @@ export default async function FreeWebinarPage() {
             </div>
           </section>
         ) : phase === "ended" ? (
-          <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-10 sm:py-20">
+          <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <h1 className="font-editorial text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[64px]">
               This session has <Em>ended.</Em>
             </h1>
@@ -342,7 +291,7 @@ export default async function FreeWebinarPage() {
             </div>
           </section>
         ) : (
-          <section className="mx-auto grid max-w-[1120px] items-center gap-10 px-5 py-14 sm:px-10 sm:py-20 lg:grid-cols-[1.25fr_0.9fr] lg:gap-14">
+          <section className="mx-auto grid max-w-[1120px] items-center gap-10 px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20 lg:grid-cols-[1.25fr_0.9fr] lg:gap-14">
             <div>
               <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
                 Free live webinar
@@ -742,6 +691,57 @@ export default async function FreeWebinarPage() {
           </section>
         ) : null}
       </main>
+
+      {/* Pinned to the viewport bottom: the fixed MegaNav owns the top edge. */}
+      <div className="sticky bottom-0 z-40 border-t border-[#2e2a24] bg-[#1A1814] pb-[env(safe-area-inset-bottom)] text-[#F7F3EC]">
+        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 py-2.5 font-mono text-[11px] tracking-[0.06em] uppercase sm:px-10 sm:text-xs">
+          {phase === "live" ? (
+            <>
+              <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
+                Live now
+              </span>
+              <span className="hidden sm:inline">{TITLE}</span>
+              <span className="text-[#5a544a]" aria-hidden="true">
+                ·
+              </span>
+              <span>on YouTube</span>
+            </>
+          ) : (
+            <>
+              <span className="rounded-full border border-[#5a544a] px-2 py-0.5 text-[10px]">
+                Live
+              </span>
+              <span>Sat 31 Oct 2026</span>
+              <span className="text-[#5a544a]" aria-hidden="true">
+                ·
+              </span>
+              <span>16:00 GMT</span>
+              <span className="hidden text-[#c9bfae] sm:inline">
+                · 12:00 New York · 09:00 Los Angeles
+              </span>
+              <span className="hidden text-[#5a544a] sm:inline" aria-hidden="true">
+                ·
+              </span>
+              <span className="hidden sm:inline">60 min</span>
+              <span className="text-[#5a544a]" aria-hidden="true">
+                ·
+              </span>
+              <span>Free</span>
+              <span className="hidden text-[#5a544a] sm:inline" aria-hidden="true">
+                ·
+              </span>
+              <span className="hidden sm:inline">YouTube Live</span>
+            </>
+          )}
+        </div>
+        <div className="mx-auto max-w-[1120px] px-5 pb-2 text-center sm:px-10">
+          <LocalTime
+            startMs={FREE_WEBINAR.startAt}
+            endMs={FREE_WEBINAR.endAt}
+            className="font-mono text-[11px] text-[#c9bfae]"
+          />
+        </div>
+      </div>
     </div>
   );
 }
