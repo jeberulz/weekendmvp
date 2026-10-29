@@ -127,7 +127,7 @@ export const LIVE_ASSETS: LiveAssets = {
   personalNoteHtml: "",
   hostEveningsConfirmed: true,
   toolList: [],
-  demoIdeaSlug: "",
+  demoIdeaSlug: "hydration-app-for-hikers",
   freeNowIdeaSlugs: [],
   dryRunPassed: false,
   freeProofQuotes: [],

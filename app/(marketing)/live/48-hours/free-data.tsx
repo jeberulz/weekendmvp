@@ -9,7 +9,7 @@ export const FREE_LEAVE_WITH = [
   },
   {
     title: "One real idea taken from its page to its first screen",
-    body: "live, using its Prompt 1.",
+    body: "live, using its Prompt 1. This time it's HydroTrail, a hydration coach for hikers.",
   },
   {
     title: "The 48-hour plan",
@@ -49,13 +49,13 @@ export const FREE_AGENDA = [
     range: "8–18 MIN",
     clock: "16:08",
     title: "The weekend test",
-    body: "The six checks, then we score two ideas from the chat.",
+    body: "The six checks. We score HydroTrail, then two ideas from the chat.",
   },
   {
     range: "18–33 MIN",
     clock: "16:18",
-    title: "Live site tour",
-    body: "One idea page, its research, then Prompt 1 pasted into the tool until the first screen appears.",
+    title: "The live build",
+    body: "The HydroTrail idea page and its research, then Prompt 1 pasted into the tool until the first screen appears. If it holds, it goes live on a public link before the hour's up.",
   },
   {
     range: "33–43 MIN",
@@ -97,8 +97,7 @@ export function freeFaqItems(): LiveFaqItem[] {
         <>
           Yes. The webinar is free, and you can watch it live without registering. Register
           (also free) and you get the replay for 7 days too. There&apos;s an optional paid
-          build-along on Sat 14 Nov ($19 until 23:59 GMT Sun 8 Nov, then $29; tickets open Sun 1
-          Nov). You never need it.
+          build-along on Sat 14 Nov (tickets open Sun 1 Nov). You never need it.
         </>
       ),
     },

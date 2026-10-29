@@ -44,7 +44,11 @@ import {
 
 const TITLE = "Ship a Weekend MVP in 48 Hours — Free Live Webinar";
 const DESCRIPTION =
-  "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One idea, three screens, and Prompt 1 on screen. Register for reminders and the 7-day replay.";
+  "Free 60-minute live webinar on Sat 31 Oct 2026, 16:00 GMT. One real idea, HydroTrail, taken from its page to its first working screen with Prompt 1. Register for reminders and the 7-day replay.";
+
+const DEMO_IDEA_HREF = LIVE_ASSETS.demoIdeaSlug
+  ? `/ideas/${LIVE_ASSETS.demoIdeaSlug}`
+  : null;
 
 export const instant = false;
 
@@ -141,7 +145,7 @@ function RegisterCta({
   }
   return (
     <div className={className}>
-      <LumaRegisterLink href={lumaUrl}>Save my seat (free)</LumaRegisterLink>
+      <LumaRegisterLink href={lumaUrl}>Save my free seat</LumaRegisterLink>
       <p className="mt-2 font-mono text-[11px] text-[#6B6457]">Register on Luma ↗</p>
     </div>
   );
@@ -347,14 +351,24 @@ export default async function FreeWebinarPage() {
                 Ship a Weekend MVP in <Em>48 Hours</Em>
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-                Live and free on Sat 31 Oct, 16:00 GMT. One idea, three screens, and Prompt 1
-                on screen.
+                Live and free on Sat 31 Oct, 16:00 GMT. One real idea (
+                {DEMO_IDEA_HREF ? (
+                  <Link
+                    href={DEMO_IDEA_HREF}
+                    className="underline decoration-home-rule underline-offset-4 hover:text-home-orange-ink"
+                  >
+                    HydroTrail
+                  </Link>
+                ) : (
+                  "HydroTrail"
+                )}
+                , a hydration coach for hikers), three screens, and Prompt 1 on screen.
               </p>
               <div className="mt-8">
                 <div className="flex flex-wrap gap-3">
                   {urls.lumaEventUrl ? (
                     <LumaRegisterLink href={urls.lumaEventUrl}>
-                      Save my seat (free)
+                      Save my free seat
                     </LumaRegisterLink>
                   ) : (
                     <LiveButton disabled>Registration link coming soon</LiveButton>
@@ -569,9 +583,23 @@ export default async function FreeWebinarPage() {
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-[#d6cdbd]">
               This isn&apos;t an hour of tool demos. We don&apos;t compare twelve AI apps or
-              chase whatever launched this week. We take one idea and go from its page to its
-              first working screen, live, with the same prompts you can use tonight. If
-              something breaks, you&apos;ll see me fix it.
+              chase whatever launched this week. We take one idea
+              {DEMO_IDEA_HREF ? (
+                <>
+                  ,{" "}
+                  <Link
+                    href={DEMO_IDEA_HREF}
+                    className="underline decoration-[#5a544a] underline-offset-4 hover:text-white"
+                  >
+                    HydroTrail
+                  </Link>
+                  ,
+                </>
+              ) : (
+                ", HydroTrail,"
+              )}{" "}
+              and go from its page to its first working screen, live, with the same prompts
+              you can use tonight. If something breaks, you&apos;ll see me fix it.
             </p>
           </div>
         </section>
@@ -670,8 +698,7 @@ export default async function FreeWebinarPage() {
                 <em className="text-home-orange">{BUILD_ALONG.subline}</em>
                 ): <strong>2 hours on Sat 14 Nov at 15:00 GMT</strong>, on Zoom. You bring an
                 idea, or pick one from the library, and build it live while I build one too.
-                It&apos;s <strong>$19 until 23:59 GMT Sun 8 Nov, then $29</strong>, and the
-                replay is yours to keep. Tickets open Sun 1 Nov.
+                The replay is yours to keep. Tickets open Sun 1 Nov.
               </p>
               <p className="mt-3">
                 You don&apos;t need it to get value from the free session, and I won&apos;t
