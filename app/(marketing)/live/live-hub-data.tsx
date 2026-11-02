@@ -15,18 +15,29 @@ import type {
   BuildAlongPhase,
   FreeWebinarPhase,
 } from "@/lib/live/schedule";
+import {
+  nextUpcomingSession,
+  pastSessions,
+  sessionPhase,
+} from "@/lib/live/session-phase";
+import {
+  LIVE_HUB_SEO,
+  LIVE_SERIES_SUBSCRIBE_HREF,
+  sessionPath,
+  type LiveSession,
+} from "@/lib/live/sessions";
 import type { SeatsInfo } from "@/lib/live/seats";
 import { seatsLine } from "@/lib/live/seats";
 
 export const LIVE_HUB_PATH = "/live";
-export const FREE_HUB_HREF = "/live/48-hours";
+/** Prefer the permanent session page; /live/48-hours redirects in PR 5. */
+export const FREE_HUB_HREF = sessionPath(FREE_WEBINAR.sessionSlug);
 export const PAID_HUB_HREF = "/live/build-along";
 export const STARTER_KIT_HREF = "/starter-kit";
 
 export const HUB_META = {
-  title: "Weekend MVP Live — free webinar & build-along",
-  description:
-    "Free and paid live sessions where we take one idea from a page to a live link. Free webinar Sat 31 Oct, build-along Sat 14 Nov. Times in GMT.",
+  title: LIVE_HUB_SEO.title,
+  description: LIVE_HUB_SEO.description,
 } as const;
 
 /** Host blurb — evenings sentence only when confirmed. */
@@ -47,7 +58,7 @@ export function hubFaqItems(): LiveFaqItem[] {
     {
       question: "Do I need to register for the free webinar?",
       answer:
-        "Not to watch live. Registering gets you reminders and the replay for 7 days.",
+        "Not to watch live. Registering gets you reminders. The edited replay stays public on the session page and on YouTube.",
     },
     {
       question: "What's the difference between the free and paid sessions?",
@@ -57,12 +68,12 @@ export function hubFaqItems(): LiveFaqItem[] {
     {
       question: "Can I watch the free webinar later?",
       answer:
-        "Yes. Registrants get the replay for 7 days after the session. After that, an edited version goes up publicly on YouTube.",
+        "Yes. Replays are free and public on YouTube, embedded on each session page. Registrants also get the raw recording by email for 7 days. Prompt packs, build files and extras sit in the Builder's Hub.",
     },
     {
       question: "Do I have to do the free one before the paid one?",
       answer:
-        "No, but it helps. The build-along moves fast and assumes you've seen the weekend test once. If you can't make 31 Oct live, the replay works.",
+        "No, but it helps. The build-along moves fast and assumes you've seen the weekend test once. If you missed a free session, watch the public replay.",
     },
     {
       question: "What time is that for me?",
@@ -471,11 +482,116 @@ function nextFreeComingSoonCard(): HubSessionCard {
     sidePrice: "Free",
     cta: {
       kind: "link",
-      href: STARTUP_IDEAS_HREF,
-      label: "Browse free ideas",
+      href: LIVE_SERIES_SUBSCRIBE_HREF,
+      label: "Get session dates by email",
       variant: "ghost",
     },
   };
+}
+
+function utcParts(iso: string): { month: string; day: string; weekday: string } {
+  const d = new Date(iso);
+  return {
+    month: d
+      .toLocaleDateString("en-US", { month: "short", timeZone: "UTC" })
+      .toUpperCase(),
+    day: d.toLocaleDateString("en-GB", { day: "numeric", timeZone: "UTC" }),
+    weekday: d
+      .toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })
+      .toUpperCase(),
+  };
+}
+
+/** Hub card for the next free session from LIVE_SESSIONS (spec §1 / §3). */
+export function nextFreeSessionCard(nowMs: number): HubSessionCard | null {
+  const session = nextUpcomingSession(nowMs);
+  if (!session) return null;
+  const phase = sessionPhase(session, nowMs);
+  const parts = utcParts(session.startsAt);
+  const startMs = Date.parse(session.startsAt);
+  const endMs = Date.parse(session.endsAt);
+  const href = sessionPath(session.slug);
+
+  return {
+    id: session.id,
+    featured: true,
+    month: parts.month,
+    day: parts.day,
+    weekday: parts.weekday,
+    chips: [
+      {
+        label: phase === "live" ? "LIVE NOW" : "Free webinar · YouTube Live",
+        tone: "live",
+      },
+      {
+        label: phase === "live" ? "YouTube Live" : "Registration open",
+        tone: "ok",
+      },
+    ],
+    title: `Build ${session.ideaName} live`,
+    dateLine: `${new Date(session.startsAt).toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    })} · ${new Date(session.startsAt).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "UTC",
+    })} GMT · ${Math.round((endMs - startMs) / 60_000)} min`,
+    cityLine: "",
+    startMs,
+    endMs,
+    oneLine: `${session.ideaName}, ${session.oneLiner}. Free live build with AI.`,
+    replayLine:
+      "Free to watch live. The edited replay stays public on the session page.",
+    sidePrice: "Free",
+    cta: {
+      kind: "link",
+      href,
+      label: phase === "live" ? "Watch live" : "Save my free seat",
+      variant: "primary",
+    },
+  };
+}
+
+export type PastSessionCard = {
+  id: string;
+  href: string;
+  ideaName: string;
+  oneLiner: string;
+  dateLabel: string;
+  durationLabel: string;
+  phaseLabel: string;
+  thumbnail?: string;
+};
+
+export function pastSessionCards(nowMs: number): PastSessionCard[] {
+  return pastSessions(nowMs).map((session: LiveSession) => {
+    const phase = sessionPhase(session, nowMs);
+    const startMs = Date.parse(session.startsAt);
+    const endMs = Date.parse(session.endsAt);
+    const mins = Math.round((endMs - startMs) / 60_000);
+    return {
+      id: session.id,
+      href: sessionPath(session.slug),
+      ideaName: session.ideaName,
+      oneLiner: session.oneLiner,
+      dateLabel: new Date(session.startsAt).toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }),
+      durationLabel: `${mins} min`,
+      phaseLabel:
+        phase === "past" ? "Watch the replay" : "Replay coming soon",
+      thumbnail: session.thumbnail,
+    };
+  });
 }
 
 /**
