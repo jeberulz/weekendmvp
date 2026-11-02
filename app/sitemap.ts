@@ -8,6 +8,7 @@ import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
 import { LEGAL_DOCS } from "@/lib/legal/content";
 import { MEMBERSHIP_LEGAL_APPROVED } from "@/lib/legal/status";
+import { publishedSessions, sessionPath } from "@/lib/live/sessions";
 import {
   listMdxFrontmatter,
   loadIdeaPublishedAtMap,
@@ -72,8 +73,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live", { priority: 0.85, changeFrequency: "weekly" }),
+    // Legacy path until the redirect PR; session pages below are the permanent URLs.
     entry("/live/48-hours", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live/build-along", { priority: 0.85, changeFrequency: "weekly" }),
+    ...publishedSessions().map((session) =>
+      entry(sessionPath(session.slug), {
+        priority: 0.85,
+        changeFrequency: "weekly",
+        lastModified: Date.parse(session.updatedAt),
+      }),
+    ),
     entry("/john-iseghohi", { priority: 0.8, changeFrequency: "monthly" }),
     entry("/about", { priority: 0.7, changeFrequency: "monthly" }),
     entry("/privacy-policy", {
