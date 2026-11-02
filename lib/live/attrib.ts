@@ -1,7 +1,7 @@
 /**
  * First-touch live attribution for Luma register links.
  * Captures utm_* (and src/placement aliases) from the page URL into
- * sessionStorage so /live → /live/48-hours keeps the tag.
+ * sessionStorage so /live → session page keeps the tag.
  */
 
 export const LIVE_ATTRIB_KEY = "wmvp-live-attrib";

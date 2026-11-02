@@ -73,8 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live", { priority: 0.85, changeFrequency: "weekly" }),
-    // Legacy path until the redirect PR; session pages below are the permanent URLs.
-    entry("/live/48-hours", { priority: 0.85, changeFrequency: "weekly" }),
+    // /live/48-hours 308s to HydroTrail — omit from the sitemap.
     entry("/live/build-along", { priority: 0.85, changeFrequency: "weekly" }),
     ...publishedSessions().map((session) =>
       entry(sessionPath(session.slug), {

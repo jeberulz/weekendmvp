@@ -12,7 +12,7 @@ const DATE_LABEL = "Sat 31 Oct at 16:00 GMT";
 const DATE_TIME = "2026-10-31T16:00:00Z";
 
 /**
- * SSR end-of-page line under HubPrimaryCta — crawlable link to /live/48-hours.
+ * SSR end-of-page line under HubPrimaryCta — crawlable link to the free session.
  * Hidden client-side at FREE_WEBINAR.startAt (cached HTML would otherwise linger).
  * Skip for hubs without liveCta. No Build-Along swap in this PR.
  */
