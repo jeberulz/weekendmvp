@@ -11,9 +11,14 @@ import { LumaRegisterLink } from "@/components/live/LumaRegisterLink";
 import { NextSessionModule } from "@/components/live/NextSessionModule";
 import { PersistLiveAttrib } from "@/components/live/PersistLiveAttrib";
 import { PhaseRefresh } from "@/components/live/PhaseRefresh";
+import { RecordSignupSrc } from "@/components/live/RecordSignupSrc";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { newsreaderEditorial } from "@/lib/fonts";
-import { STARTUP_IDEAS_HREF } from "@/lib/live/config";
+import {
+  LIVE_REPLAY_SIGNUP_SRC,
+  STARTUP_IDEAS_HREF,
+  liveReplayExtrasSignupHref,
+} from "@/lib/live/config";
 import { readLiveClockMs } from "@/lib/live/now";
 import {
   nextPhaseBoundaryMs,
@@ -37,6 +42,7 @@ export const instant = false;
 
 type PageProps = {
   params: Promise<{ session: string }>;
+  searchParams: Promise<{ src?: string }>;
 };
 
 export function generateStaticParams() {
@@ -352,9 +358,34 @@ function SessionHero({
   );
 }
 
-export default async function LiveSessionPage({ params }: PageProps) {
+function SessionExtrasLink({ session }: { session: LiveSession }) {
+  const returnTo = session.extrasHref ?? sessionPath(session.slug);
+  const href = liveReplayExtrasSignupHref(returnTo);
+  return (
+    <section className={SECTION}>
+      <div className="rounded-2xl border border-home-rule bg-[#FCFAF7] p-6 sm:p-8">
+        <div className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
+          Extras
+        </div>
+        <h2 className="font-editorial mt-2 text-[28px] leading-tight font-medium tracking-[-0.015em]">
+          Prompt pack and build files
+        </h2>
+        <p className="mt-2 max-w-[52ch] text-[15px] leading-relaxed text-[#4A453C]">
+          The replay stays free on YouTube. The prompt pack, build files and
+          checklist are in a free account.
+        </p>
+        <LiveButton href={href} variant="secondary" className="mt-5 w-auto">
+          Get the extras (free account)
+        </LiveButton>
+      </div>
+    </section>
+  );
+}
+
+export default async function LiveSessionPage({ params, searchParams }: PageProps) {
   await connection();
   const { session: slug } = await params;
+  const { src } = await searchParams;
   const session = getSessionBySlug(slug);
   if (!session || session.status === "draft") notFound();
 
@@ -367,17 +398,23 @@ export default async function LiveSessionPage({ params }: PageProps) {
     phase === "replay-pending" ||
     phase === "cancelled" ||
     phase === "postponed";
+  const showExtras = phase === "past" || phase === "replay-pending";
+  const signupSrc =
+    src === LIVE_REPLAY_SIGNUP_SRC ? LIVE_REPLAY_SIGNUP_SRC : null;
 
   return (
     <div
       className={`${newsreaderEditorial.variable} theme-desk overflow-x-clip bg-home-paper font-sans text-home-ink selection:bg-home-orange/20`}
     >
       <PersistLiveAttrib />
+      <RecordSignupSrc src={signupSrc} />
       <PhaseRefresh atMs={refreshAt} />
       <JsonLd schema={schema} />
 
       <main>
         <SessionHero session={session} phase={phase} />
+
+        {showExtras ? <SessionExtrasLink session={session} /> : null}
 
         {session.recap ? (
           <section aria-labelledby="recap-heading" className={SECTION}>
