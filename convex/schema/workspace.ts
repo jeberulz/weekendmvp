@@ -1,13 +1,62 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// Mirrors WP69 C-WIZARD's in-progress answer shape. Writers must parse with
+// wizardAnswersProgressSchema or wizardAnswersSchema before inserting a row.
+const founderSignal = v.object({
+  signal: v.union(v.literal("kept"), v.literal("edited")),
+  note: v.optional(v.string()),
+});
+
+const wizardAnswers = v.object({
+  idea: v.optional(v.union(
+    v.object({ source: v.literal("library"), ideaSlug: v.string() }),
+    v.object({ source: v.literal("own_idea"), text: v.string() }),
+  )),
+  blueprintDecision: v.optional(v.union(
+    v.object({ decision: v.literal("looks_good") }),
+    v.object({ decision: v.literal("rework"), notes: v.optional(v.string()) }),
+  )),
+  platform: v.optional(v.union(
+    v.object({ kind: v.literal("native") }),
+    v.object({ kind: v.literal("web") }),
+    v.object({ kind: v.literal("custom"), description: v.string() }),
+  )),
+  commercialModel: v.optional(v.union(
+    v.literal("free"), v.literal("freemium"), v.literal("subscription"), v.literal("one_time"),
+  )),
+  goal: v.optional(v.object({
+    kind: v.union(v.literal("waitlist"), v.literal("first_sale"), v.literal("mrr_500"), v.literal("replace_income"), v.literal("just_testing")),
+    timeframe: v.union(v.literal("weekend"), v.literal("2w"), v.literal("30d"), v.literal("none")),
+    paidPush: v.optional(v.union(v.object({ dailyBudgetUsd: v.number() }), v.null())),
+  })),
+  name: v.optional(v.object({ chosen: v.string(), alternatives: v.array(v.string()) })),
+  partnerPersonality: v.optional(v.union(
+    v.literal("hustler"), v.literal("strategist"), v.literal("creative"), v.literal("operator"),
+  )),
+  partnerName: v.optional(v.union(
+    v.object({ kind: v.literal("preset"), name: v.union(v.literal("Wren"), v.literal("Juno"), v.literal("Ridge")) }),
+    v.object({ kind: v.literal("custom"), name: v.string() }),
+  )),
+  signals: v.optional(v.object({
+    idea: v.optional(founderSignal),
+    blueprint: v.optional(founderSignal),
+    platform: v.optional(founderSignal),
+    commercial_model: v.optional(founderSignal),
+    goal: v.optional(founderSignal),
+    name: v.optional(founderSignal),
+    partner_personality: v.optional(founderSignal),
+    partner_name: v.optional(founderSignal),
+  })),
+});
+
 export const workspaceTables = {
   wizard_sessions: defineTable({
     ownerId: v.id("users"),
     ideaSlug: v.optional(v.string()),
     ownIdeaText: v.optional(v.string()),
     step: v.string(),
-    answers: v.record(v.string(), v.any()),
+    answers: wizardAnswers,
     startedAt: v.number(),
     updatedAt: v.number(),
     completedAt: v.optional(v.number()),
