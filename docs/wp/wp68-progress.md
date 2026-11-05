@@ -96,3 +96,8 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: production dependency audit `npm audit --omit=dev --audit-level=high` passed (0 high, 0 critical; 1 moderate). Revalidation of the schema correction is next.
 - Result: the D12 ownership ambiguity is resolved in code; C-ART shape questions and Claude's independent review remain open.
 - Revalidation: C-DATA schema test (35 passed), static security test (3 passed), typecheck and diff check passed. The corrected schema deployed to isolated anonymous local Convex on 3310/3311 (passed). The earlier full lint/test/build pass predates only this required-field correction; no runtime function changed.
+
+## 2026-11-05 - Exact-head gate
+
+- Checks run on `d5924b19`: `npm run typecheck` passed; `npm run lint` passed (0 errors, 37 warnings); `npm test` passed (all suites, 0 failures); `npm run build` passed; `git diff --check` passed. The required owner-ID schema had already deployed to isolated local Convex successfully. `npm audit --omit=dev --audit-level=high` passed (0 high/critical, 1 moderate).
+- Result: the code and local gates are ready for the other lane's independent contract/security review. PR #167 stays draft; it must not merge before Claude confirms C-ART shapes, records John's two clarifications, and reviews C-AUTHZ/C-OPS.
