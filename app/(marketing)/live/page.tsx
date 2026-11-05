@@ -33,8 +33,11 @@ import {
   type HubSessionCard,
   hostBody,
   hubFaqItems,
+  nextFreeSessionCard,
+  pastSessionCards,
   upcomingCards,
 } from "./live-hub-data";
+import { LIVE_SERIES_SUBSCRIBE_HREF } from "@/lib/live/sessions";
 
 export const instant = false;
 
@@ -204,6 +207,7 @@ export default async function LiveHubPage() {
   const seats = await loadSeatsInfo();
   const urls = liveUrls();
   const salesAreOpen = salesOpen(nowMs);
+  const nextFree = nextFreeSessionCard(nowMs);
   const sessions = upcomingCards({
     nowMs,
     freePhase,
@@ -213,6 +217,12 @@ export default async function LiveHubPage() {
     salesAreOpen,
     urls,
   });
+  // Prefer the LIVE_SESSIONS next-free card when one is scheduled; otherwise
+  // keep the paid + coming-soon free cards from upcomingCards.
+  const upcoming = nextFree
+    ? [nextFree, ...sessions.filter((c) => c.id === "paid" || c.id === "next-paid")]
+    : sessions;
+  const past = pastSessionCards(nowMs);
 
   return (
     <div
@@ -228,8 +238,8 @@ export default async function LiveHubPage() {
             Weekend MVP <em className="font-normal text-home-orange italic">Live</em>
           </h1>
           <p className="mt-5 max-w-[680px] text-lg leading-relaxed text-[#4A453C] sm:text-xl">
-            Free and paid live sessions where we take one idea from a page to a
-            live link. Times in GMT.
+            Free live app builds with AI, every two weeks. Plus a paid
+            build-along when you want to build yours with me. Times in GMT.
           </p>
           <p className="mt-4 max-w-[640px] text-[15px] leading-relaxed text-[#4A453C] sm:text-base">
             Most ideas don&apos;t fail because they&apos;re bad. They fail
@@ -240,9 +250,15 @@ export default async function LiveHubPage() {
             enough, and then build it, start to finish, on screen.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <LiveButton href={FREE_HUB_HREF} variant="primary">
-              Save my free seat
-            </LiveButton>
+            {nextFree ? (
+              <LiveButton href={nextFree.cta.kind === "link" ? nextFree.cta.href : FREE_HUB_HREF} variant="primary">
+                {nextFree.cta.kind === "link" ? nextFree.cta.label : "Save my free seat"}
+              </LiveButton>
+            ) : (
+              <LiveButton href={LIVE_SERIES_SUBSCRIBE_HREF} variant="primary">
+                Get session dates by email
+              </LiveButton>
+            )}
             <LiveButton href={PAID_HUB_HREF} variant="ghost">
               See the build-along
             </LiveButton>
@@ -258,7 +274,7 @@ export default async function LiveHubPage() {
             Upcoming · in date order
           </p>
           <div className="flex flex-col gap-5">
-            {sessions.map((card) => (
+            {upcoming.map((card) => (
               <SessionCard key={card.id} card={card} />
             ))}
           </div>
@@ -335,11 +351,11 @@ export default async function LiveHubPage() {
               <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
                 Free webinar
               </p>
-              <p className="font-editorial mt-1.5 text-[22px]">Replay for 7 days</p>
+              <p className="font-editorial mt-1.5 text-[22px]">Public on YouTube</p>
               <p className="mt-2 text-sm text-[#6B6457]">
-                Register and you&apos;ll get the replay for 7 days after the
-                session. After that, an edited version goes up publicly on
-                YouTube.
+                Edited replays stay free and public on each session page and on
+                YouTube. Registrants also get the raw recording by email for 7
+                days. Prompt packs and build files sit in the Builder&apos;s Hub.
               </p>
             </div>
             <div className="border-t border-home-rule p-5 sm:border-t-0 sm:p-6">
@@ -407,9 +423,36 @@ export default async function LiveHubPage() {
         {/* Past sessions */}
         <section className="mx-auto max-w-[1120px] px-5 pb-14 sm:px-10 sm:pb-24">
           <p className={cn(live.mono, "mb-4 text-[#6B6457]")}>Past sessions</p>
-          <div className="rounded-2xl border border-dashed border-[#cdbfa8] bg-[repeating-linear-gradient(135deg,transparent_0_10px,rgba(221,212,196,0.25)_10px_20px)] px-6 py-9 text-center text-sm text-[#6B6457]">
-            Nothing here yet…
-          </div>
+          {past.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[#cdbfa8] bg-[repeating-linear-gradient(135deg,transparent_0_10px,rgba(221,212,196,0.25)_10px_20px)] px-6 py-9 text-center text-sm text-[#6B6457]">
+              Nothing here yet…
+            </div>
+          ) : (
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {past.map((card) => (
+                <li key={card.id}>
+                  <Link
+                    href={card.href}
+                    className="flex h-full flex-col rounded-2xl border border-home-rule bg-home-card p-5 transition-colors hover:border-[#e6b48c]"
+                  >
+                    <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
+                      {card.dateLabel} · {card.durationLabel}
+                    </p>
+                    <h3 className="font-editorial mt-2 text-[24px] leading-tight font-medium">
+                      {card.ideaName}
+                    </h3>
+                    <p className="mt-1.5 flex-1 text-sm leading-relaxed text-[#4A453C]">
+                      {card.oneLiner}
+                    </p>
+                    <p className="mt-4 text-sm font-semibold text-[#A84A00]">
+                      {card.phaseLabel}
+                      <span aria-hidden="true"> →</span>
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* a-7 Free right now */}
@@ -456,16 +499,24 @@ export default async function LiveHubPage() {
             Pick your <em className="font-normal text-home-orange italic">Saturday.</em>
           </h2>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <LiveButton href={FREE_HUB_HREF} variant="primary">
-              Save my free seat
-            </LiveButton>
+            {nextFree ? (
+              <LiveButton
+                href={nextFree.cta.kind === "link" ? nextFree.cta.href : FREE_HUB_HREF}
+                variant="primary"
+              >
+                {nextFree.cta.kind === "link" ? nextFree.cta.label : "Save my free seat"}
+              </LiveButton>
+            ) : (
+              <LiveButton href={LIVE_SERIES_SUBSCRIBE_HREF} variant="primary">
+                Get session dates by email
+              </LiveButton>
+            )}
             <LiveButton href={PAID_HUB_HREF} variant="ghost">
               See the build-along
             </LiveButton>
           </div>
           <p className="mt-3 font-mono text-xs text-[#6B6457]">
-            Free webinar Sat 31 Oct, 16:00 GMT · Build-along Sat 14 Nov, 15:00
-            GMT
+            Build-along Sat 14 Nov, 15:00 GMT · Free sessions every two weeks
           </p>
         </section>
       </main>

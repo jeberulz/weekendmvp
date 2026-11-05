@@ -71,7 +71,7 @@ describe("live schedule", () => {
 describe("live href helpers", () => {
   test("liveFreeHref tags source + placement", () => {
     expect(liveFreeHref({ src: "bw-claude", placement: "hero" })).toBe(
-      "/live/48-hours?utm_source=bw-claude&utm_medium=site&utm_campaign=live-w1&utm_content=hero",
+      "/live/hydration-app-for-hikers?utm_source=bw-claude&utm_medium=site&utm_campaign=live-w1&utm_content=hero",
     );
     expect(liveFreeHref({ src: "bw-lovable", placement: "end" })).toContain(
       "utm_content=end",

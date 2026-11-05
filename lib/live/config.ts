@@ -181,7 +181,7 @@ export const UTM = {
 
 export type LivePlacement = "hero" | "end";
 
-/** Internal free-webinar href with consistent UTM tags for hub surfaces. */
+/** Internal free-session href with consistent UTM tags for hub surfaces. */
 export function liveFreeHref(opts: { src: string; placement: LivePlacement }) {
   const q = new URLSearchParams({
     utm_source: opts.src,
@@ -189,7 +189,8 @@ export function liveFreeHref(opts: { src: string; placement: LivePlacement }) {
     utm_campaign: UTM.free,
     utm_content: opts.placement,
   });
-  return `/live/48-hours?${q}`;
+  // Permanent session page (HydroTrail). /live/48-hours redirects in PR 5.
+  return `/live/${FREE_WEBINAR.sessionSlug}?${q}`;
 }
 
 /** Internal Build-Along href with consistent UTM tags. */
