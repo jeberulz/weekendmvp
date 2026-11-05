@@ -86,7 +86,8 @@ export type PricedArtifactJobType = keyof typeof REGENERATE_ACTION_BY_JOB_TYPE;
 /**
  * Crew artifacts with no D4 price yet. First draft and rounds 1–2 are free like
  * every artifact; round 3 and later are NOT free and throw `PRICE_NOT_SET` until
- * the owner sets a price. Open question for the owner (WP69-S5).
+ * one is set. Left unpriced at the G0 freeze (owner, 2026-11-05); pricing one
+ * later is a contract change (`05` §5).
  */
 export const PRICE_TBD_JOB_TYPES = [
   "crew_blueprint",
@@ -227,14 +228,19 @@ export const WORKSPACE_PLAN_REFERENCE = {
 // ---------------------------------------------------------------------------
 
 /**
- * Prices are provisional. The Phase 0 spike (WP69-S4, 2026-11-05) measured them,
- * and the owner raised the two that broke the cost rule. They stay provisional
- * until the remaining owner decisions are made (video, the unpriced change
- * rounds, the paid global budget) and a Recraft measurement confirms the image
- * prices; then S5 flips this to `"frozen"`. Re-check after the first 200 paid
- * actions.
+ * Prices are frozen. The owner froze them on 2026-11-05 at G0 (WP69-S5), after
+ * the Phase 0 spike (WP69-S4) measured them.
+ * - Any change goes through the contract-change rule in
+ *   `docs/plans/launch-workspace/05-lanes-codex-claude.md` §5.
+ * - Still unpriced: short video and launch film (`UNPRICED_CREDIT_ACTIONS`,
+ *   priced in WP82), and change round 3+ of the five `PRICE_TBD_JOB_TYPES`
+ *   (blueprint, roster, SEO pack, launch plan, ads drafts). Both throw
+ *   `PRICE_NOT_SET`.
+ * - Re-check every price after the first 200 paid actions.
+ * - The Recraft logo-mark measurement is still owed. If it breaks the 11-credit
+ *   brand kit price, raising it is a contract change.
  */
-export const PRICES_STATUS: "provisional" | "frozen" = "provisional";
+export const PRICES_STATUS: "provisional" | "frozen" = "frozen";
 
 export type CreditActionConstraints = {
   /** Longest render this price covers, in seconds. */
@@ -289,20 +295,6 @@ export const CREDIT_ACTIONS = {
     label: "Story or post image",
     constraints: { imageQuality: "standard" },
   },
-  short_video: {
-    credits: 30,
-    jobType: "studio_video",
-    billing: "always",
-    label: "Short video (up to 8 s)",
-    constraints: { maxVideoSeconds: 8, providerTier: "cheapest" },
-  },
-  launch_film: {
-    credits: 150,
-    jobType: "studio_video",
-    billing: "always",
-    label: "UGC or launch film (up to 30 s)",
-    constraints: { maxVideoSeconds: 30, providerTier: "cheapest", requiresFeature: "studioLongVideo" },
-  },
   brand_kit_regenerate: {
     // 11 credits (owner, 2026-11-05): brand kit text $0.027 + 3 Recraft logo marks at
     // $0.035 ≈ $0.132 (WP69-S4), just over 10 × $0.013.
@@ -355,9 +347,55 @@ export function isCreditActionKey(value: unknown): value is CreditActionKey {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(CREDIT_ACTIONS, value);
 }
 
-/** Whether a plan may run an action at all (feature gate only; balance is the ledger's job). */
-export function actionAllowedOnPlan(action: CreditActionKey, plan: WorkspacePlanId): boolean {
-  const constraints: CreditActionConstraints = CREDIT_ACTIONS[action].constraints;
+/** A credit action's definition without its price; shared by priced and unpriced actions. */
+export type CreditActionDefinition = Omit<CreditAction, "credits">;
+
+/** An unpriced credit action: a definition with no `credits`. */
+export type UnpricedCreditAction = CreditActionDefinition;
+
+/**
+ * Studio video actions with no credit price yet (owner, 2026-11-05: "Freeze,
+ * leave rest unpriced"). No video provider has been measured, and the old
+ * 30-credit short video broke the D4 cost rule against its $0.40 planning cost.
+ * WP82 prices them through the contract-change rule (`05` §5), before the video
+ * job ships; then each moves into `CREDIT_ACTIONS`.
+ *
+ * They sit apart so every `CREDIT_ACTIONS` entry has a real price: the ledger
+ * never sees a null or placeholder credits number. `creditCostFor` validates
+ * them like priced actions, then throws `PRICE_NOT_SET` (or `PLAN_GATED` first).
+ * The `satisfies` clause stops a key from being in both tables.
+ */
+export const UNPRICED_CREDIT_ACTIONS = {
+  short_video: {
+    jobType: "studio_video",
+    billing: "always",
+    label: "Short video (up to 8 s)",
+    constraints: { maxVideoSeconds: 8, providerTier: "cheapest" },
+  },
+  launch_film: {
+    jobType: "studio_video",
+    billing: "always",
+    label: "UGC or launch film (up to 30 s)",
+    constraints: { maxVideoSeconds: 30, providerTier: "cheapest", requiresFeature: "studioLongVideo" },
+  },
+} as const satisfies Record<string, UnpricedCreditAction> & { readonly [K in CreditActionKey]?: never };
+
+export type UnpricedCreditActionKey = keyof typeof UNPRICED_CREDIT_ACTIONS;
+
+export function isUnpricedCreditActionKey(value: unknown): value is UnpricedCreditActionKey {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(UNPRICED_CREDIT_ACTIONS, value);
+}
+
+function creditActionDefinition(action: CreditActionKey | UnpricedCreditActionKey): CreditActionDefinition {
+  return isUnpricedCreditActionKey(action) ? UNPRICED_CREDIT_ACTIONS[action] : CREDIT_ACTIONS[action];
+}
+
+/**
+ * Whether a plan may run an action at all (feature gate only; balance is the
+ * ledger's job). Unpriced actions are gated the same way.
+ */
+export function actionAllowedOnPlan(action: CreditActionKey | UnpricedCreditActionKey, plan: WorkspacePlanId): boolean {
+  const constraints: CreditActionConstraints = creditActionDefinition(action).constraints;
   const feature = constraints.requiresFeature;
   if (!feature) return true;
   const features: WorkspaceFeatures = WORKSPACE_PLAN_REFERENCE[plan].features;
@@ -429,9 +467,11 @@ export type CreditCostInput = {
   readonly changeRound: number;
   /**
    * Set for Studio renders (required), extra packs, and optionally hires or a
-   * paid revision's own regenerate action. Any other action throws.
+   * paid revision's own regenerate action. Any other action throws. An
+   * unpriced action (`UNPRICED_CREDIT_ACTIONS`) is accepted and validated, then
+   * throws `PRICE_NOT_SET`.
    */
-  readonly action?: CreditActionKey;
+  readonly action?: CreditActionKey | UnpricedCreditActionKey;
   /** The owner's plan; a priced action the plan lacks throws `PLAN_GATED`. */
   readonly plan: WorkspacePlanId;
 };
@@ -441,6 +481,11 @@ export type CreditCostInput = {
  * only when `free` is false and a `spend` approval exists.
  *
  * Rules, in order:
+ * 0. An action must be known (`UNKNOWN_ACTION`) and run as this job type
+ *    (`ACTION_JOB_MISMATCH`). An unpriced action then throws `PLAN_GATED` if
+ *    the plan lacks its feature, else `PRICE_NOT_SET`. The plan gate comes
+ *    first so a Free owner asking for a launch film hears "not on your plan",
+ *    which stays true once WP82 prices it.
  * 1. Studio jobs need an action and always cost credits (`always_paid`).
  * 2. `crew_hire` always costs `hire_skipped_specialist` (`always_paid`).
  * 3. An explicit always-paid action on a crew job (an extra social pack) always
@@ -468,13 +513,23 @@ export function creditCostFor(input: CreditCostInput): CreditCost {
     throw new JobsContractError("UNKNOWN_PLAN", `unknown plan: ${String(plan)}`);
   }
   if (action !== undefined) {
-    if (!isCreditActionKey(action)) {
+    if (!isCreditActionKey(action) && !isUnpricedCreditActionKey(action)) {
       throw new JobsContractError("UNKNOWN_ACTION", `unknown credit action: ${String(action)}`);
     }
-    if (CREDIT_ACTIONS[action].jobType !== jobType) {
+    const actionJobType = creditActionDefinition(action).jobType;
+    if (actionJobType !== jobType) {
       throw new JobsContractError(
         "ACTION_JOB_MISMATCH",
-        `action ${action} runs as ${CREDIT_ACTIONS[action].jobType}, not ${jobType}`,
+        `action ${action} runs as ${actionJobType}, not ${jobType}`,
+      );
+    }
+    if (isUnpricedCreditActionKey(action)) {
+      if (!actionAllowedOnPlan(action, plan)) {
+        throw new JobsContractError("PLAN_GATED", `${action} is not included in the ${plan} plan`);
+      }
+      throw new JobsContractError(
+        "PRICE_NOT_SET",
+        `${action} has no credit price yet; WP82 sets it through a contract change`,
       );
     }
   }

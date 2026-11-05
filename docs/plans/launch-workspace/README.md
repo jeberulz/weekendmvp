@@ -35,7 +35,7 @@ and `briefs/kickoff-codex.md`.
 | Same launch with Opus for every draft | ≈ $0.90 (why the model router matters) |
 | Precompute for all 231 library ideas | ≈ $40–$51 per seed version (Opus, Batch API) |
 | Provider cost rule for credits | ≤ $0.013 per credit (one credit earns $0.058 on Builder's Hub, $0.040 on Growth) |
-| Credit action gross margin on Growth | 67–88% at recommended prices; video is the thinnest |
+| Credit action gross margin on Growth | 70–88% at the frozen prices (2026-11-05); video unpriced until WP82 |
 | Typical paid member, monthly provider cost | ≈ $3–$4 on Builder's Hub, ≈ $12 on Growth |
 | Private beta (L1) | End of week 5 (about 2026-12-18) |
 | Public launch (L3) | End of week 8 plus two holiday buffer weeks (about 2027-01-22) |
