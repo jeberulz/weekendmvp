@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main` at `601ee2a8`, but C-JOBS prices are not frozen yet (`04` Gate G0). The gate closes when the owner freezes the prices or waives the criterion. Phase 1 waits for that.
+Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main` at `601ee2a8`, and the owner has frozen the C-JOBS prices ("Freeze, leave rest unpriced"). The freeze is in PR #175. **G0 closes when #175 merges.** Phase 1 then waits for the owner's go.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 checks green | G0 held: C-JOBS prices not frozen | Owner freezes or waives, then the go for Phase 1 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 checks green | G0 held until the freeze PR #175 merges | Owner merges #175, then the go for Phase 1 |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 measured, two prices amended (D4) | — | C-JOBS prices stay provisional until the open S5 decisions (owner actions) |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 freeze in #175 (video and five change rounds unpriced) | #175 to merge | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting for G0 to close | — (C-METER merged) | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting for G0 to close | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting for G0 to close | — (C-OPS merged) | — |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting for G0 to close | — (C-JOBS merged; prices provisional) | — |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting for G0 to close | — (C-JOBS frozen in #175) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -42,7 +42,7 @@ Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | WP72 (was "before G0"; G0 ran without it) | Open |
 | Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | D23: before WP71's gateway design. D24, D25: WP75 | Partly done |
-| WP69 open decisions: paid global daily budget ($50 provisional); whether precompute and evals use the free pool; prices for the blueprint, roster, SEO pack, launch plan and ads change rounds; short video (35 credits or 6 s clips, now WP82); a Recraft logo measurement (top up ≈ $1.25). Done 2026-11-05: images 4 credits, brand kit regenerate 11 (D4 amendment) | Before C-JOBS freezes (WP73, WP80) | Partly done |
+| WP69 open decisions: paid global daily budget ($50 provisional, a C-METER ops value); whether precompute and evals use the free pool; a Recraft logo measurement (top up ≈ $1.25; if it breaks 11 credits, a contract change). Done 2026-11-05: images 4, brand kit 11 (D4 amendment); C-JOBS frozen with video (WP82) and five change rounds left unpriced (#175) | Paid budget and free pool: WP70/WP71. Recraft: before WP80 | Partly done |
 
 ## Cross-lane contract reviews for G0
 
@@ -161,3 +161,18 @@ Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main
   C-JOBS price.
 - **Stopped here for the owner:** freeze C-JOBS (and decide the open items), or waive this criterion. After that,
   the go for Phase 1.
+
+## 2026-11-05 - G0: C-JOBS freeze
+
+- Owner: "Freeze, leave rest unpriced".
+- PR #175 (`claude/wp69-price-freeze`, `bd3541ab`):
+  - `PRICES_STATUS` is `"frozen"`, and every existing price stands.
+  - Short video and launch film moved to `UNPRICED_CREDIT_ACTIONS` (`PRICE_NOT_SET`). WP82 prices them through
+    the `05` §5 rule.
+  - The five unpriced change rounds stay unpriced.
+- Review: an independent Opus review found nothing blocking; its five low findings are fixed in the PR.
+- Checks on the branch: typecheck 0, lint 0, `npm test` 0 (test:platform 786), build 0.
+- G0 criteria: all are met once #175 merges. No re-run is needed for the gate: #175 changes one contract file,
+  its tests and docs, and its own checks are green on `main` + #175.
+- **Stopped here for the owner:** merge #175, then give the go for Phase 1 (WP71 gateway and WP72 shell in
+  parallel).
