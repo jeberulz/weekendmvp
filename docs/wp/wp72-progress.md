@@ -39,3 +39,27 @@
   - the optional build-time flag `NEXT_PUBLIC_LAUNCH_WORKSPACE` (`02` §15) in `.env.example`, if wanted.
 - Checks (orchestrator, with S3 in the tree): typecheck 0, lint 0 (37 existing warnings), `npm test` 0, build 0. The
   build lists every `/dashboard/b/[projectId]/*` route.
+
+## 2026-11-05 - S3 component kit
+
+- Author: a Sonnet sub-agent. The kit is in `components/workspace/kit/`:
+  - StatusPill, with the employee, output and site sets
+  - EmployeeCard and SkippedRoleCard
+  - ApprovalCard, with the free / credits / not-enough cost badge
+  - the Wren thread and its cards, plus the composer
+  - WorkstreamPanel, covering 8 kinds, and BuildPackPromptCard
+  - CreditMeter
+  - the empty, loading and error states
+  - fixtures
+  All of them are presentational and take typed props.
+- The orchestrator changed the paid-plan label from the canvas draft's "Starter" to the product name "Builder's Hub",
+  and the Autopilot gate copy to "paid plans".
+- Tests: `tests/platform/workspace-kit.test.tsx`, 40 tests, using `renderToStaticMarkup`. Testing Library and jsdom
+  are not installed, so keyboard activation is checked through native `<button>` semantics and pure helpers. Real
+  keyboard tests wait for S4's browser check.
+- Token gaps: 9 canvas colours have no `home-*` token (ember soft, the borders, disabled fill, low-credit bar, lilac
+  ink). They are arbitrary values in a few kit files. Proposed follow-up: add tokens to `app/globals.css`.
+- Needs from Codex: `@testing-library/react`, `@testing-library/user-event` and `jsdom` as devDependencies, if real
+  DOM tests are wanted.
+- Checks (orchestrator): typecheck 0, lint 0, `npm test` 0 after fixing one assertion for the escaped apostrophe,
+  build 0.

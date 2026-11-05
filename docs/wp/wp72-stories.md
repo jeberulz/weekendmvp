@@ -42,7 +42,7 @@ Standing rules:
     - Nav entries from canvas row 02.
     - Keyboard and screen-reader support.
 
-- [ ] `WP72-S3` - Component kit
+- [x] `WP72-S3` - Component kit
   - Scope: `components/workspace/**`
   - Acceptance criteria:
     - Built from canvas row 05:
