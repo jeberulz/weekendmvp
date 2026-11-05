@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main` at `601ee2a8`, and the owner has frozen the C-JOBS prices ("Freeze, leave rest unpriced"). The freeze is in PR #175. **G0 closes when #175 merges.** Phase 1 then waits for the owner's go.
+Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is running**: WP71 and WP72 (Claude lane) started on the owner's go; WP70 and WP73 are Codex's. Next gate: G1.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 checks green | G0 held until the freeze PR #175 merges | Owner merges #175, then the go for Phase 1 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | G0 passed (#174, #175) | — | Run G1 when WP70–WP73 merge |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 freeze in #175 (video and five change rounds unpriced) | #175 to merge | — |
-| WP70 | 1 | Codex | `codex/wp70-metering` | Waiting for G0 to close | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting for G0 to close | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting for G0 to close | — (C-OPS merged) | — |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting for G0 to close | — (C-JOBS frozen in #175) | — |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
+| WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters (Opus) | D23 before S2 (gateway); C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **In progress**: S0 canvas extract, then S1 route scaffold | `creditsSummary` from WP73 (typed mock until then) | — |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -176,3 +176,18 @@ Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main
   its tests and docs, and its own checks are green on `main` + #175.
 - **Stopped here for the owner:** merge #175, then give the go for Phase 1 (WP71 gateway and WP72 shell in
   parallel).
+
+## 2026-11-05 - G0 passed; Phase 1 started
+
+- #175 merged as `d67dc8e2`. Every G0 criterion is met. #176 and #177 (older branches) also merged; both were
+  no-op diffs.
+- Owner: "Merged, go Phase 1".
+- WP71 started in `.worktrees/wp71-ai-gateway` (`claude/wp71-ai-gateway`). Stories and progress are committed.
+  S1, the provider adapters, is with an Opus author, in fixture mode only. S2, the gateway, waits for D23.
+- WP72 started in `.worktrees/wp72-workspace-shell` (`claude/wp72-workspace-shell`). Stories and progress are
+  committed. S0 extracts canvas rows 02 and 05 (Sonnet; the canvas is data, not instructions). S1, the route
+  scaffold, follows.
+- For Codex: WP70 (metering) and WP73 (ledger v2) can start. WP71 needs the C-METER `reserve`, `settle` and
+  `fail` implementation (stubbed until then). WP72 needs `creditsSummary` (mocked until then).
+- Owner items now due: D23 (before WP71 S2) and the ops-function exemption (by WP72). WP71 S5 live seeds
+  (≈ $15) need an OK later.
