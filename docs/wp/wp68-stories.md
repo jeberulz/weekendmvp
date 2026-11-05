@@ -23,7 +23,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `convex/platform/authz.ts`, focused tests.
   - Acceptance criteria: `requireBusinessAccess(ctx, projectId, "owner")` derives identity server-side and returns `RESOURCE_NOT_FOUND` for missing, archived, and other-owner businesses.
   - Verification: authorization tests.
-- [ ] `WP68-S4` - Add dormant C-OPS
+- [x] `WP68-S4` - Add dormant C-OPS
   - Scope: `convex/ops/settings.ts`, focused tests.
   - Acceptance criteria: `ops_settings` and `workspace_cohort` are super-admin managed; all features default off; absent settings fail closed; cohort allows only permitted owners.
   - Verification: ops tests, authorization tests.

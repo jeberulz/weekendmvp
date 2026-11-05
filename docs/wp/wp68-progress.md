@@ -9,6 +9,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 ## Needs from the other lane
 
 - Claude: review C-DATA after S1 and S2 and review C-AUTHZ/C-OPS before merge.
+- Claude: confirm whether `site_versions.landingSpec` is serialized validated JSON or a typed Convex object; confirm the schema for wizard answers and per-idea seed payloads before C-DATA freezes.
+- Claude: confirm the intended owner for global per-idea seeds and batch `ai_usage` rows. Architecture §4.2 makes usage owner optional while D12 says every new row carries an owner.
+- Claude: in the later image-file writer, enforce required alt text for image kinds; cap the variable arrays in workstreams, Wren memory and ad decisions before activation.
+- Claude orchestrator: record John's 2026-11-05 approval that only super-admin ops control functions are exempt from `assertFeatureEnabled`, so activation and shutdown work while the workspace flag is off.
 
 ## 2026-11-05 - Setup
 
@@ -63,3 +67,11 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npx vitest run convex/growth/connectors/types.test.ts` (1 passed), `npm run typecheck` (passed), `git diff --check` (passed).
 - Result: connector contract fixture ready; native connectors remain dormant.
 - Next: resolve the C-OPS control-plane flag rule, then S4 and S6.
+
+## 2026-11-05 - WP68-S4
+
+- Actions taken: added `getOpsSettings`, `assertFeatureEnabled` and `assertWorkspaceCohort`, all failing closed when the singleton is absent. Added super-admin-only settings read/update and cohort change functions, with audit rows and idempotent cohort updates. All runtime switches default off; the AI gate also requires a positive global budget.
+- Decisions made: John approved a narrow exemption from the feature gate for super-admin ops controls because the workspace must be activatable and shut off while disabled. Those functions still use the existing server-verified `requireSuperAdmin`; the Claude orchestrator is asked above to record the ruling.
+- Checks run: `npx convex codegen --typecheck disable` against isolated local Convex (passed); `npx vitest run convex/ops/settings.test.ts` (3 passed); `npm run typecheck` (passed); focused ESLint and `git diff --check` (passed).
+- Result: C-OPS implemented, with no active workspace behavior. No production deployment.
+- Next: S6 security matrix, final full gate and Claude review.
