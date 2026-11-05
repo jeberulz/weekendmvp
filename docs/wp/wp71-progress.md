@@ -8,6 +8,6 @@
 - File boundaries are listed in `wp71-stories.md`. Metering is Codex's (WP70); until it merges, the gateway
   uses a stub with the C-METER signatures.
 - Required checks: typecheck, lint, test, build.
-- Open before S2: ruling D23 (no model tool loops in the hosted crew), which is still proposed.
+- D23 ruled 2026-11-05 (owner: "Approve D23"): no model tool loops; S2 is unblocked.
 - Needs from Codex: the optional env entries in `.env.example` (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
   `RECRAFT_API_KEY`, `RECRAFT_STYLE_ID`, `AI_PROVIDER_MODE`), already requested as WP69 ask 8.

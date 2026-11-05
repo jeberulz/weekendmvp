@@ -35,7 +35,7 @@ Standing rules:
       reason (refusal is surfaced).
   - Verification: vitest on the adapters with a fake fetch/client; `npm run typecheck`
 
-- [ ] `WP71-S2` - Gateway action (needs D23 ruled first)
+- [ ] `WP71-S2` - Gateway action (D23 ruled 2026-11-05: single calls, no tool loops)
   - Scope: `convex/ai/gateway.ts`, a C-METER stub, tests
   - Acceptance criteria:
     - The `02` §5.1 flow runs in order: spec, reserve, call, validate, settle.
