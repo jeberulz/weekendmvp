@@ -104,6 +104,37 @@ describe("WP70 C-METER", () => {
     expect(await t.run(async (ctx) => await ctx.db.query("ai_usage").collect())).toHaveLength(1);
   });
 
+  test("one attempt key cannot be reused by another owner or task", async () => {
+    const t = meterTest();
+    const { ownerId } = await seedMeter(t);
+    const otherOwnerId = await t.run(async (ctx) => await ctx.db.insert("users", { email: "other-owner@example.test" }));
+    const base = reservation(ownerId, "crew:collision:1", 100_000);
+    await t.mutation(internal.ai.metering.reserve, base);
+    await expect(t.mutation(internal.ai.metering.reserve, { ...base, ownerId: otherOwnerId }))
+      .rejects.toThrow("attemptKey reused for a different call");
+
+    const { projectId, taskAId, taskBId } = await t.run(async (ctx) => {
+      const projectId = await ctx.db.insert("projects", {
+        ownerId, source: "own_idea", title: "Collision project", status: "draft",
+        idempotencyKey: "collision-project", createdAt: 1, updatedAt: 1,
+      });
+      const taskAId = await ctx.db.insert("tasks", {
+        ownerId, projectId, type: "research", status: "queued", title: "A",
+        idempotencyKey: "collision-a", createdAt: 1, updatedAt: 1,
+      });
+      const taskBId = await ctx.db.insert("tasks", {
+        ownerId, projectId, type: "research", status: "queued", title: "B",
+        idempotencyKey: "collision-b", createdAt: 1, updatedAt: 1,
+      });
+      return { projectId, taskAId, taskBId };
+    });
+    const taskArgs = { ...reservation(ownerId, "crew:task-collision:1", 100_000), projectId, taskId: taskAId };
+    await t.mutation(internal.ai.metering.reserve, taskArgs);
+    await expect(t.mutation(internal.ai.metering.reserve, { ...taskArgs, taskId: taskBId }))
+      .rejects.toThrow("attemptKey reused for a different call");
+    expect(await t.run(async (ctx) => await ctx.db.query("ai_usage").collect())).toHaveLength(2);
+  });
+
   test("ownerless platform work uses the free pool and no owner budget", async () => {
     const t = meterTest();
     await seedMeter(t);
@@ -135,7 +166,7 @@ describe("WP70 C-METER", () => {
       });
       const debitId = await ctx.db.insert("credit_ledger", {
         ownerId, accountId, projectId, taskId, reason: "task_debit", delta: -1n,
-        balanceAfter: 0n, idempotencyKey: "task-debit:meter", createdAt: 1,
+        balanceAfter: 0n, idempotencyKey: `task-debit:${taskId}`, createdAt: 1,
       });
       return { projectId, taskId, debitId };
     });
@@ -146,6 +177,18 @@ describe("WP70 C-METER", () => {
     expect(usage).toMatchObject({ creditFunded: true, globalPool: "paid", projectId, taskId });
     expect(await t.run((ctx) => readGlobalBudget(ctx, "paid", new Date().toISOString().slice(0, 10))))
       .toEqual({ spentTodayMicroUsd: 0, inFlightMicroUsd: 100_000 });
+    await t.run(async (ctx) => await ctx.db.insert("credit_ledger", {
+      ownerId, accountId: (await ctx.db.get("credit_ledger", debitId))!.accountId,
+      projectId, taskId, reason: "task_refund", delta: 1n, balanceAfter: 1n,
+      idempotencyKey: `task-refund:${debitId}`, createdAt: 2,
+    }));
+    await expect(t.mutation(internal.ai.metering.reserve, {
+      ...reservation(ownerId, "crew:meter:2", 100_000), projectId, taskId, creditDebitId: debitId,
+    })).rejects.toThrow("RESOURCE_NOT_FOUND");
+    await t.run(async (ctx) => await ctx.db.patch("tasks", taskId, { status: "failed" }));
+    await expect(t.mutation(internal.ai.metering.reserve, {
+      ...reservation(ownerId, "crew:meter:3", 100_000), projectId, taskId,
+    })).rejects.toThrow("RESOURCE_NOT_FOUND");
     await t.run(async (ctx) => await ctx.db.patch("credit_ledger", debitId, { reason: "plan_grant" }));
     await expect(t.mutation(internal.ai.metering.reserve, {
       ...reservation(ownerId, "crew:meter:2", 100_000), projectId, taskId, creditDebitId: debitId,
@@ -206,6 +249,8 @@ describe("WP70 C-METER", () => {
       await expect(t.mutation(internal.ai.metering.markSent, { usageId: unsent.usageId as Id<"ai_usage"> }))
         .rejects.toThrow("AI_DISABLED");
       await expect(t.mutation(internal.ai.metering.reserve, reservation(ownerId, "chat:sweep:3")))
+        .rejects.toThrow("AI_DISABLED");
+      await expect(t.mutation(internal.ai.metering.reserve, reservation(ownerId, "chat:sweep:1", 200_000)))
         .rejects.toThrow("AI_DISABLED");
       vi.setSystemTime(new Date("2026-11-05T12:16:00.000Z"));
       expect(await t.mutation(internal.ai.metering.sweepStale, { limit: 1 })).toEqual({ swept: 1, hasMore: true });

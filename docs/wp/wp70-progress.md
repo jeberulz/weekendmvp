@@ -24,3 +24,8 @@ Append-only progress log. Do not rely on chat history for project state.
 - Owner ruling received through the Platform lane: `reserve` and `markSent` must be gated while the workspace is off; cleanup-only internal `settle`, `fail` and stale sweep may finalize existing reservations after shutdown. The `markSent` repeat of an already sent row is a no-op. This permits kill-switch shutdown without leaving money reserved forever.
 - Needs from Claude orchestrator: append this narrow cleanup-only internal-function ruling to `docs/wp/RULINGS.md` before the WP70 PR is merged. That file belongs to the orchestrator lane.
 - Next: S4 alarms/cron, S5 limits, S6 spend console; full verification and independent review remain pending.
+
+## 2026-11-05 - Independent S1-S3 review repairs
+
+- The independent reviewer found two P1s: a reused `attemptKey` could return another owner's usage ID before identity/gate checks, and a refunded debit or terminal task could still fund a new attempt. Fixed by checking the caller's owner/project/task and debit, enforcing the gate, comparing all immutable attempt fields, requiring queued/running tasks, and rejecting task debits with a matching refund row.
+- Regression tests cover cross-owner and cross-task collisions, refunded debits, failed tasks, and a duplicate reserve after shutdown. Focused C-METER tests passed (9/9), typecheck and focused ESLint passed. A fresh full gate on the repaired tree remains next.

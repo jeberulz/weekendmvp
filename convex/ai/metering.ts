@@ -79,6 +79,7 @@ async function verifiedProject(
   if (args.taskId !== undefined) {
     const task = await ctx.db.get("tasks", args.taskId);
     if (task === null || task.ownerId !== args.ownerId || task.archivedAt !== undefined ||
+      (task.status !== "queued" && task.status !== "running") ||
       (projectId !== undefined && task.projectId !== projectId)) {
       throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
     }
@@ -96,9 +97,15 @@ async function verifyCreditDebit(
   if (args.creditDebitId === undefined) return false;
   const debit = await ctx.db.get("credit_ledger", args.creditDebitId);
   if (debit === null || debit.ownerId !== args.ownerId || debit.taskId !== args.taskId ||
-    debit.projectId !== projectId || debit.reason !== "task_debit" || debit.delta >= 0n) {
+    debit.projectId !== projectId || debit.reason !== "task_debit" || debit.delta >= 0n ||
+    debit.idempotencyKey !== `task-debit:${args.taskId}`) {
     throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
   }
+  const refund = await ctx.db.query("credit_ledger")
+    .withIndex("by_ownerId_and_idempotencyKey", (q) =>
+      q.eq("ownerId", debit.ownerId).eq("idempotencyKey", `task-refund:${debit._id}`))
+    .unique();
+  if (refund !== null) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
   const account = await ctx.db.get("credit_accounts", debit.accountId);
   if (account === null || account.ownerId !== args.ownerId) {
     throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
@@ -120,21 +127,44 @@ async function settingsForCall(
   return settings;
 }
 
+function sameAttempt(
+  existing: Doc<"ai_usage">,
+  args: ReserveInput,
+  projectId: Id<"projects"> | undefined,
+): boolean {
+  return existing.ownerId === args.ownerId &&
+    existing.projectId === projectId &&
+    existing.taskId === args.taskId &&
+    existing.promptRef === args.promptRef &&
+    existing.provider === args.provider &&
+    existing.model === args.model &&
+    existing.tier === args.tier &&
+    existing.feature === args.feature &&
+    existing.reservedMicroUsd === microUsdToInt64(args.reservedMicroUsd) &&
+    existing.creditDebitId === args.creditDebitId &&
+    existing.batch === args.batch &&
+    existing.escalation === args.escalation &&
+    existing.reask === args.reask;
+}
+
 export const reserve = internalMutation({
   args: reserveArgs,
   handler: async (ctx, args): Promise<ReserveResult> => {
     assertReserveArgs(args);
+    const projectId = await verifiedProject(ctx, args);
+    const creditFunded = await verifyCreditDebit(ctx, args, projectId);
+    const settings = await settingsForCall(ctx, args.feature, args.ownerId);
     const duplicate = await ctx.db.query("ai_usage")
       .withIndex("by_attemptKey", (q) => q.eq("attemptKey", args.attemptKey))
       .unique();
-    if (duplicate !== null) return { usageId: duplicate._id, existing: true };
+    if (duplicate !== null) {
+      if (!sameAttempt(duplicate, args, projectId)) throw new Error("attemptKey reused for a different call");
+      return { usageId: duplicate._id, existing: true };
+    }
 
-    const projectId = await verifiedProject(ctx, args);
     const ownerPlan = args.ownerId === undefined
       ? undefined
       : (await readMembershipState(ctx, args.ownerId)).plan;
-    const creditFunded = await verifyCreditDebit(ctx, args, projectId);
-    const settings = await settingsForCall(ctx, args.feature, args.ownerId);
     const now = Date.now();
     const dayKey = utcDayKey(now);
     const pool = globalPoolFor({ plan: ownerPlan, creditFunded });
