@@ -145,4 +145,50 @@ describe("WP72-S1 getWorkspaceAccess", () => {
       projectId: ids.ownerId as unknown as Id<"projects">,
     })).rejects.toThrow();
   });
+
+  test("the wizard workspace name wins over the project title", async () => {
+    const { t, owner, ids } = await seed(ON);
+    await t.run(async (ctx) => {
+      const wizardSessionId = await ctx.db.insert("wizard_sessions", {
+        ownerId: ids.ownerId, step: "done", answers: {}, startedAt: 1, updatedAt: 1,
+      });
+      await ctx.db.patch("projects", ids.projectId, {
+        workspace: {
+          version: 1,
+          name: "HydroTrail Co",
+          slug: "hydrotrail-co",
+          platform: "web",
+          commercialModel: "free",
+          goal: "waitlist",
+          partner: { personality: "strategist", name: "Wren" },
+          wizardSessionId,
+          createdVia: "wizard",
+        },
+      });
+    });
+    await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
+      .resolves.toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail Co" } });
+  });
+
+  test("the project title is used when there is no workspace name", async () => {
+    const { owner, ids } = await seed(ON);
+    const access = await owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId });
+    expect(access).toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail" } });
+  });
+
+  test("an unexpected fault is rethrown, not reported as no access", async () => {
+    const { t, owner, ids } = await seed(ON);
+    // A second singleton row makes C-OPS `.unique()` throw a plain Error,
+    // which is not one of the access-denial codes.
+    await t.run(async (ctx) => {
+      const settings = await ctx.db.query("ops_settings").first();
+      if (settings === null) throw new Error("fixture missing ops_settings");
+      const { _id, _creationTime, ...row } = settings;
+      void _id;
+      void _creationTime;
+      await ctx.db.insert("ops_settings", row);
+    });
+    await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
+      .rejects.toThrow(/unique|more than one|multiple/i);
+  });
 });

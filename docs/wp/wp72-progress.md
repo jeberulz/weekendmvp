@@ -35,10 +35,27 @@
 - `convex/_generated/api.d.ts`: two lines added by hand to match codegen. Regenerate the file at the next
   `convex dev`.
 - Needs from Codex:
-  - a hard 404 status for refused routes, through middleware; `notFound()` can stream a soft 404;
+  - a hard 404 status for refused routes, through middleware. **Required, not optional:** `next build` lists every
+    `/dashboard/b/[projectId]/*` route as `◐` (Partial Prerender, because of the dynamic param), and Next 16 streams
+    page responses with an initial `200`. A refusal therefore streams the not-found page with `noindex` at status 200,
+    with no workspace content (the gate runs before any JSX). The legacy `/dashboard/builds/[planId]` behaves the same way;
   - the optional build-time flag `NEXT_PUBLIC_LAUNCH_WORKSPACE` (`02` §15) in `.env.example`, if wanted.
 - Checks (orchestrator, with S3 in the tree): typecheck 0, lint 0 (37 existing warnings), `npm test` 0, build 0. The
   build lists every `/dashboard/b/[projectId]/*` route.
+- Review follow-ups (after the independent review of `a5e7fc65`, no blockers):
+  - `NEXT_PUBLIC_LAUNCH_WORKSPACE` build flag (02 §15) deferred. It needs Codex to add the key to `.env.example`
+    first; the env-documentation scanner fails otherwise. The runtime `workspaceEnabled` flag keeps the routes
+    dormant meanwhile. Add the check plus tests as a follow-up once the key lands.
+  - The session token read moved inside the try, so a token failure is a 404, not a 500. `connection()` stays
+    outside, and `unstable_rethrow` is still the first line of the catch.
+  - A guard test keeps the 404 hard: no `loading.*` under `app/(launch-workspace)`, no `"use cache"` under the
+    route root, and no `<Suspense>` above the gate in the route layout or its ancestors.
+  - New Convex tests: the workspace name wins over the title, and an unexpected fault is rethrown.
+- Notes:
+  - `convex/_generated/api.d.ts` was edited by hand. The next codegen will also add `crew/roles`, which `main` is
+    already missing; that gap predates this story.
+  - Project ids in workspace URLs reach Impact and GA. Optional follow-up for Codex: `Referrer-Policy: no-referrer`
+    on `/dashboard/b/`, and a GA path redaction.
 
 ## 2026-11-05 - S3 component kit
 

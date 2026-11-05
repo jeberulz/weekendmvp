@@ -33,6 +33,14 @@ function pageSegments(dir: string, prefix = ""): string[] {
   return found;
 }
 
+/** Every file under a directory, recursively. */
+function allFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = path.join(dir, entry);
+    return statSync(full).isDirectory() ? allFiles(full) : [full];
+  });
+}
+
 describe("WP72-S1 workspace route manifest", () => {
   test("every manifest entry has a route folder, and every route folder is in the manifest", () => {
     const expected = [
@@ -85,6 +93,33 @@ describe("WP72-S1 route scaffold stays dormant and private", () => {
     expect(layout).toMatch(/robots:\s*\{\s*index:\s*false,\s*follow:\s*false/);
     expect(layout).toContain("export const instant = false");
     expect(layout.match(/<main\b/g)).toHaveLength(1);
+  });
+
+  // Hard 404s only. A `loading.*` file or a <Suspense> boundary above the gate
+  // makes Next.js stream a shell first, so a later notFound() is a soft 404
+  // served with status 200. A cached ("use cache") segment could also replay
+  // one visitor's allowed render to someone the gate would refuse.
+  test("nothing above the gate can turn a denial into a soft 404", () => {
+    const groupRoot = path.join(root, "app", "(launch-workspace)");
+    const files = allFiles(groupRoot);
+    expect(files.length).toBeGreaterThan(15);
+    expect(files.filter((file) => /^loading\./.test(path.basename(file)))).toEqual([]);
+    for (const file of allFiles(routeRoot)) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toContain('"use cache"');
+      expect(source, file).not.toContain("'use cache'");
+    }
+    const layout = read("layout.tsx");
+    const gateAt = layout.indexOf("await requireWorkspaceAccess(projectId)");
+    expect(gateAt).toBeGreaterThan(-1);
+    const suspenseAt = layout.indexOf("<Suspense");
+    expect(suspenseAt === -1 || suspenseAt > gateAt, "Suspense opens above the gate").toBe(true);
+    // Ancestor layouts must not open a boundary either.
+    const ancestors = [path.join(root, "app", "layout.tsx"), ...files.filter((file) =>
+      path.basename(file).startsWith("layout.") && !file.startsWith(routeRoot))];
+    for (const file of ancestors) {
+      expect(readFileSync(file, "utf8"), file).not.toContain("<Suspense");
+    }
   });
 
   test("every page gates itself, keeps noindex metadata and authors no landmark", () => {
