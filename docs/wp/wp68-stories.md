@@ -11,7 +11,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `package.json`, `package-lock.json`.
   - Acceptance criteria: `@anthropic-ai/sdk`, `@convex-dev/sharded-counter`, and `@convex-dev/resend` install and remain unused until later WPs.
   - Verification: `npm ci`, `npm run typecheck`.
-- [ ] `WP68-S1` - Add the C-DATA tables
+- [x] `WP68-S1` - Add the C-DATA tables
   - Scope: `convex/schema.ts`, `convex/schema/{workspace,ai,growth}.ts`.
   - Acceptance criteria: Every new table and index in architecture §4.2 exists; validators are flat; existing tables and indexes remain.
   - Verification: schema inventory test, `npm run typecheck`, safe dev schema deploy.

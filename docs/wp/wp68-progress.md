@@ -26,3 +26,11 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npm ci` passed before edits; `npm run typecheck` passed; package diff reviewed.
 - Result: S7 complete. npm reported 24 existing audit findings (13 moderate, 11 high); no audit fix was run.
 - Next: S1 schema modules.
+
+## 2026-11-05 - WP68-S1
+
+- Actions taken: added 26 new tables in flat `workspace`, `ai`, and `growth` schema modules and spread them into `schema.ts`; each has an owner index and the architecture's primary lookup index.
+- Decisions made: `ai_usage.ownerId` remains optional as explicitly specified in architecture §4.2; singleton ops settings still carries the admin owner ID. Flexible wizard answers and idea seed payloads use Convex dynamic validators until Claude's C-ART review fixes their shapes.
+- Checks run: `npx vitest run convex/wp68Schema.test.ts` (26 passed), `npm run typecheck` (passed), `git diff --check` (passed).
+- Result: S1 schema contract ready for S2's additive amendments. No deployment has been attempted; the safe nonproduction target is being confirmed with John.
+- Next: S2 WP22 amendments, then C-DATA review PR.

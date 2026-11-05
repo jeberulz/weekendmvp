@@ -31,6 +31,9 @@ import {
 } from "./platform/membership/validators";
 import { liveBuildStatusValidator } from "./platform/liveBuildRules";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
+import { workspaceTables } from "./schema/workspace";
+import { aiTables } from "./schema/ai";
+import { growthTables } from "./schema/growth";
 import {
   auditActorValidator,
   briefStatusValidator,
@@ -57,6 +60,9 @@ import {
 // optional so existing document IDs and saved_ideas references remain valid.
 export default defineSchema({
   ...authTables,
+  ...workspaceTables,
+  ...aiTables,
+  ...growthTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),
