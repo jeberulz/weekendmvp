@@ -2,7 +2,7 @@ export { ApprovalCard, CostBadge } from "./ApprovalCard";
 export type { ApprovalCardProps, ApprovalDecisionState } from "./ApprovalCard";
 export { BuildPackPromptCard, copyButtonLabel, copyStatusMessage, copyText } from "./BuildPackPromptCard";
 export type { BuildPackPromptCardProps, CopyState } from "./BuildPackPromptCard";
-export { creditMeterNote, creditMeterState, CreditMeter, LOW_CREDIT_FRACTION, PLAN_LABELS, sanitizeCredits } from "./CreditMeter";
+export { creditMeterNote, creditMeterRightText, creditMeterState, creditMeterVisibleLabel, CreditMeter, LOW_CREDIT_FRACTION, PLAN_LABELS, sanitizeCredits } from "./CreditMeter";
 export type { CreditMeterProps, CreditMeterState } from "./CreditMeter";
 export { DefaultLink } from "./DefaultLink";
 export { EmployeeAvatar } from "./EmployeeAvatar";

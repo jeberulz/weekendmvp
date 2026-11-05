@@ -194,7 +194,7 @@ export function OutputCard({
         <p className="font-mono text-[11px] uppercase text-home-ink-3">{output.kindLabel}</p>
         <StatusPill set="output" status={output.status} className="ml-auto" />
       </div>
-      <Heading level={titleLevel} ref={titleRef} tabIndex={-1} className="text-[15px] font-semibold text-home-ink outline-none">
+      <Heading level={titleLevel} ref={titleRef} tabIndex={-1} className={cn("rounded text-[15px] font-semibold text-home-ink", FOCUS)}>
         {output.title}
       </Heading>
       {output.preview ? <div>{output.preview}</div> : null}
@@ -374,7 +374,7 @@ export function WorkstreamPanel({
           {data.files.map((file, i) => (
             <li key={`${i}-${file.name}`} className="flex items-center gap-2 text-sm text-home-ink">
               <FileText aria-hidden="true" className="size-4 text-home-ink-3" />
-              <span className="font-mono text-[13px]">{file.name}</span>
+              <span className="min-w-0 break-all font-mono text-[13px]">{file.name}</span>
               {file.meta ? <span className="text-xs text-home-ink-3">{file.meta}</span> : null}
             </li>
           ))}

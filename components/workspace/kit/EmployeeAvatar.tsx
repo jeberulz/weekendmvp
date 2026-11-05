@@ -52,7 +52,7 @@ export function EmployeeAvatar({
       {showAiBadge ? (
         <span
           aria-hidden="true"
-          className="absolute -bottom-1 -right-1 rounded-sm border border-home-rule bg-home-card px-0.5 font-mono text-[8px] leading-none text-home-ink"
+          className="absolute -bottom-1 -right-1 rounded-sm border border-home-rule bg-home-card px-0.5 font-mono text-[10px] leading-none text-home-ink"
         >
           AI
         </span>

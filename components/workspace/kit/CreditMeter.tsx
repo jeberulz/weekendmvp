@@ -51,6 +51,23 @@ export function creditMeterNote(plan: WorkspacePlanId, max: number, state: Credi
     : `${max} refresh on the 5th`;
 }
 
+/** The visible right-hand text: the real balance, "· low" when low, or "Not set" with no allowance. */
+export function creditMeterRightText(balance: number, max: number): string {
+  const real = sanitizeCredits(balance);
+  const cap = sanitizeCredits(max);
+  if (cap <= 0 && real > 0) return "Not set";
+  return creditMeterState(real, cap) === "low" ? `${real} left · low` : `${real} left`;
+}
+
+/**
+ * The meter's visible label as one string ("Credits Free 48 left", in reading order).
+ * A link that wraps the meter starts its accessible name with this so the visible
+ * text is contained in the name (WCAG 2.5.3 Label in Name).
+ */
+export function creditMeterVisibleLabel(balance: number, max: number, plan: WorkspacePlanId): string {
+  return `Credits ${PLAN_LABELS[plan]} ${creditMeterRightText(balance, max)}`;
+}
+
 export type CreditMeterProps = {
   balance: number;
   max: number;
@@ -68,7 +85,7 @@ export function CreditMeter({ balance, max, plan, className }: CreditMeterProps)
   // A balance with no allowance is a misconfiguration. Say so once, in the visible
   // text and in aria-valuetext, instead of showing a count next to "no allowance".
   const noAllowance = cap <= 0 && real > 0;
-  const right = noAllowance ? "Not set" : state === "low" ? `${real} left · low` : `${real} left`;
+  const right = creditMeterRightText(real, cap);
   const valueText = noAllowance ? "Credit allowance not set" : `${real} of ${cap} credits left`;
   return (
     <div data-state={state} className={cn("flex flex-col gap-1.5", className)}>

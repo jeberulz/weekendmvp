@@ -51,7 +51,7 @@ export function FromAttribution({
 }) {
   const roleLabel = ROLE_LABELS[from.role];
   return (
-    <div className="flex items-center gap-2 text-[13px] text-home-ink-2">
+    <div className="flex flex-wrap items-center gap-2 text-[13px] text-home-ink-2">
       <EmployeeAvatar name={from.name} role={from.role} size="sm" />
       <p>
         <strong className="font-semibold text-home-ink">From {roleLabel}</strong> · {from.name} ·
@@ -102,7 +102,7 @@ export function SiteLiveCard({
   return (
     <div data-card="site-live" className={CARD_SHELL}>
       <p className="flex flex-wrap items-center gap-2 text-[13px]">
-        <span className="font-mono text-xs text-home-ink">{url}</span>
+        <span className="break-all font-mono text-xs text-home-ink">{url}</span>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-home-sage-ink/30 bg-home-sage px-2.5 py-0.5 text-xs font-medium text-home-sage-ink">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
           Live

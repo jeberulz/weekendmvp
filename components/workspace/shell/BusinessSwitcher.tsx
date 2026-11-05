@@ -11,7 +11,7 @@ import { workspacePath } from "@/lib/workspace/routes";
 export const SWITCHER_LIST_ID = "workspace-switcher-list";
 
 export function switcherLabel(currentName: string): string {
-  return `Switch business. Current: ${currentName}`;
+  return `${currentName}, switch business`;
 }
 
 /**
@@ -53,7 +53,10 @@ export function BusinessSwitcher({
 
   function onBlur(event: FocusEvent<HTMLDivElement>) {
     const next = event.relatedTarget;
-    if (next instanceof Node && rootRef.current?.contains(next)) return;
+    // A null target (pointer-down on a non-focusable link in Safari/Firefox, or focus
+    // leaving the window) must not close the list: that would hide the link mid-click.
+    // The outside pointer-down handler covers real outside clicks.
+    if (!(next instanceof Node) || rootRef.current?.contains(next)) return;
     setOpen(false);
   }
 
@@ -94,12 +97,7 @@ export function BusinessSwitcher({
                   className={`flex min-h-10 items-center gap-2 rounded-md px-2.5 text-[13px] text-home-ink hover:bg-home-sunk ${FOCUS}`}
                 >
                   <span className="min-w-0 flex-1 truncate">{business.name}</span>
-                  {isCurrent ? (
-                    <>
-                      <Check aria-hidden="true" className="size-4 shrink-0 text-home-sage-ink" />
-                      <span className="sr-only">(current)</span>
-                    </>
-                  ) : null}
+                  {isCurrent ? <Check aria-hidden="true" className="size-4 shrink-0 text-home-sage-ink" /> : null}
                 </Link>
               </li>
             );

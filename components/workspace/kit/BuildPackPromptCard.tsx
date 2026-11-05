@@ -97,7 +97,7 @@ export function BuildPackPromptCard({
       aria-label={`Prompt ${index}: ${title}`}
       className="flex flex-col gap-2 rounded-xl border border-home-rule bg-home-card p-4"
     >
-      <header className="flex items-center gap-2">
+      <header className="flex flex-wrap items-center gap-2">
         <p className="font-mono text-[11px] text-home-ink-3">
           PROMPT {index} · {duration}
         </p>
@@ -121,7 +121,7 @@ export function BuildPackPromptCard({
         role="region"
         aria-label={`Prompt ${index} text`}
         tabIndex={0}
-        className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-home-sunk p-3 font-mono text-xs text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+        className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-home-sunk p-3 font-mono text-xs text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
       >
         {body}
       </pre>

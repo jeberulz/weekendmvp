@@ -80,7 +80,7 @@ export function ApprovalCard({
       aria-busy={pending}
       className={cn(CARD, "flex flex-col gap-3 p-4")}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <EmployeeAvatar name={from.name} role={from.role} size="md" />
         <p className="font-mono text-[11px] text-home-ink-3">
           From {ROLE_LABELS[from.role]} · {from.name}
@@ -102,7 +102,7 @@ export function ApprovalCard({
             if (!pending) onApprove(id);
           }}
         >
-          {state === "approved" ? "✓ " : ""}Looks good
+          {state === "approved" ? <span aria-hidden="true">✓ </span> : null}Looks good
           <span className="sr-only"> · {title}</span>
         </button>
         <button

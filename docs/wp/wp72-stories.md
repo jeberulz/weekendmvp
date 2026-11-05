@@ -54,7 +54,7 @@ Standing rules:
       - empty, loading and error states.
     - Each renders from fixture data.
 
-- [ ] `WP72-S4` - Tests and accessibility
+- [x] `WP72-S4` - Tests and accessibility
   - Acceptance criteria:
     - vitest component tests.
     - The a11y-check skill on every component, with findings fixed.

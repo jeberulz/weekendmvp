@@ -227,7 +227,7 @@ describe("ApprovalCard", () => {
 
   test("approved and changes states set aria-pressed and show the status message", () => {
     const approved = html(<ApprovalCard {...base} state="approved" statusMessage="Brand kit approved. Iris moves on." />);
-    expect(approved).toContain("✓ Looks good");
+    expect(approved).toContain('<span aria-hidden="true">✓ </span>Looks good');
     expect(approved).toContain("Brand kit approved. Iris moves on.");
     expect(approved.match(/aria-pressed="true"/g)).toHaveLength(1);
     const changes = html(<ApprovalCard {...base} state="changes" statusMessage="Changes asked on the brand kit." />);

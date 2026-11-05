@@ -5,13 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { FOCUS } from "@/components/workspace/kit/styles";
-import { CreditMeter } from "@/components/workspace/kit";
+import { CreditMeter, creditMeterVisibleLabel } from "@/components/workspace/kit";
 import { groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell/nav-utils";
 import type { CreditsSummary } from "@/lib/workspace/credits";
 import { workspaceRoute } from "@/lib/workspace/routes";
 
 export const NAV_PANEL_ID = "workspace-nav-panel";
 const MAIN_ID = "workspace-main";
+
+export function billingLinkLabel(credits: CreditsSummary): string {
+  return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing`;
+}
 
 export function WorkspaceLogo() {
   return (
@@ -68,7 +72,8 @@ export function WorkspaceSidebar({
 
   const billing = workspaceRoute("billing");
   const billingActive = isRouteActive(pathname, projectId, billing);
-  const billingLabel = `Billing, ${credits.balance} of ${credits.max} credits left`;
+  // Starts with the visible text ("Credits Free 48 left") so the name contains it (WCAG 2.5.3).
+  const billingLabel = billingLinkLabel(credits);
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key !== "Escape" || !open) return;

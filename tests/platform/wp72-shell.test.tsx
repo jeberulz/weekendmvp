@@ -174,7 +174,7 @@ describe("WorkspaceFrame markup", () => {
     expect(markup).not.toContain("Account");
     expect(markup).not.toContain(groupHeadingId("Account"));
     const link = markup.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>/);
-    expect(link?.[0]).toContain('aria-label="Billing, 48 of 50 credits left"');
+    expect(link?.[0]).toContain('aria-label="Credits Free 48 left, open Billing"');
     expect(link?.[0]).not.toContain("aria-current");
     // inside the single nav
     const navHtml = markup.slice(markup.indexOf("<nav"), markup.indexOf("</nav>"));
@@ -209,8 +209,9 @@ describe("WorkspaceFrame markup", () => {
   test("a business switcher on its own keeps integrity", () => {
     const markup = renderToStaticMarkup(<BusinessSwitcher currentId={PROJECT} businesses={businesses} />);
     expectIdIntegrity(markup);
-    expect(markup).toContain("(current)");
     expect(markup).toContain('aria-current="true"');
+    // aria-current alone says "current"; a duplicate sr-only "(current)" would read twice.
+    expect(markup).not.toContain("(current)");
   });
 });
 

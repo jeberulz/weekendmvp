@@ -140,7 +140,7 @@ export function BrandKitCardView({
             if (!pending) onApprove();
           }}
         >
-          {state === "approved" ? "✓ " : ""}Looks good<span className="sr-only"> · brand kit</span>
+          {state === "approved" ? <span aria-hidden="true">✓ </span> : null}Looks good<span className="sr-only"> · brand kit</span>
         </button>
         <button
           type="button"
@@ -197,6 +197,7 @@ export type WrenComposerProps = {
 export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
   const [draft, setDraft] = useState("");
   const inputId = useId();
+  const hintId = `${inputId}-hint`;
 
   function submit() {
     const text = prepareMessage(draft);
@@ -234,6 +235,7 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
         rows={1}
         value={draft}
         placeholder="Message Wren…"
+        aria-describedby={hintId}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={handleKeyDown}
         className={cn(
@@ -241,6 +243,9 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
           FOCUS,
         )}
       />
+      <span id={hintId} className="sr-only">
+        Press Enter to send. Press Shift and Enter for a new line.
+      </span>
       <button
         type="submit"
         aria-label="Send message"
