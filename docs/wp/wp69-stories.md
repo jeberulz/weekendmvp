@@ -59,7 +59,7 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
   - Acceptance criteria: measured numbers replace estimates with dates; any estimate off by
     more than 30% goes to the owner with a price or budget proposal before C-JOBS is frozen.
 
-- [ ] `WP69-S6` - Visual system in C-ART (proposed, needs owner OK)
+- [x] `WP69-S6` - Visual system in C-ART (owner approved 2026-11-05; done)
   - Scope: `lib/workspace/contracts/artifacts.ts`, fixtures and tests; plan in
     `docs/plans/launch-workspace/07-landing-design.md` §5.
   - Acceptance criteria: remove the hero eyebrow; replace free-text font families with a `typePair` enum

@@ -43,6 +43,8 @@ copy them exactly.
 9. Type `wizard_sessions.answers` from `wizardAnswersSchema` (`lib/workspace/contracts/wizard.ts`), and store `parse()` output only. Assert that the validator accepts `wizardAnswersSchema.parse(hydrotrailWizardAnswers)`. `answers.idea` is the source of truth; any session-level `ideaSlug` must equal it.
 10. Throw gate errors in the shapes `isWorkspaceGateErrorData` accepts. `AI_DISABLED` carries a `scope` that is absent or a `METER_FEATURES` value.
 
+11. Add the `@phosphor-icons/react` dependency (MIT) before the tenant renderer is built (WP72/WP75 S5). `LANDING_ICONS` in C-ART are Phosphor core 2.1.1 names. Not needed for G0.
+
 ## 2026-11-05 - Setup
 
 - Branch/worktree: `claude/wp69-crew-contracts` in `.worktrees/wp69-crew-contracts`, from
@@ -223,3 +225,36 @@ copy them exactly.
   rounds.
 - Added proposed S6 (visual system in C-ART) from the landing design brief (`07-landing-design.md`).
 - Docs updated: `03-ai-cost-model.md`, `wp69-spike-results.md`, stories, this file. No code changed.
+
+## 2026-11-05 - WP69-S6 (visual system in C-ART) - done
+
+- Owner approved the amendment on 2026-11-05. Plan: `docs/plans/launch-workspace/07-landing-design.md` §5 (board branch).
+- What changed in C-ART:
+  - Eyebrows removed.
+  - `ART_DIRECTIONS` (6) added, with `brandKit.visualSystem` (direction, shape, density, theme with a reason).
+  - `TYPE_PAIRS` (14 curated OFL pairs, each with the directions it suits and a `defaultWeight`) replaces free-text fonts. The model no longer picks a weight.
+  - `BANNED_DISPLAY_FAMILIES` added.
+  - Per-section `layout` enums (`SECTION_LAYOUTS`) and `DIRECTION_LAYOUTS` added.
+  - `LANDING_ICONS`: 73 Phosphor names, checked against Phosphor core 2.1.1.
+  - `checkLandingAgainstBrandKit` added; WP75 S4 wires it in.
+  - `typePairBrief()` returns the pair list per direction for prompts.
+- Rules added:
+  - Theme mode must match palette luminance.
+  - Landing text rejects emoji and headings that lead with a section number.
+- The spec-level landing rules and the brand kit cross-field rules now run alongside field errors (zod `when`
+  with guarded reads), so a single repair re-ask sees every issue.
+- Grammar: brand_kit 4,955 / 5,000 B; landing_spec 6,622 / 7,000 B. Little headroom on either; any new
+  model-facing field needs a size check first.
+- Independent Opus review: no high findings. M1–M4 and L5–L8 fixed, and the same guard was extended to the
+  brand kit. M2 (where the layout rule runs) is resolved in 07 §5. L9: no artifact is stored anywhere yet,
+  so `schemaVersion` stays 1. L10 is recorded in 07 §5.
+- Checks:
+  - typecheck: exit 0.
+  - lint: exit 0 (37 existing warnings).
+  - test:platform: 782 passed.
+  - test:convex: 693 passed.
+  - `tsc -p scripts/spikes`: exit 0.
+  - build: exit 0.
+- Follow-up before any further live spike: the spike crew prompt (`scripts/spikes/wp69/prompts/crew.ts`, uncommitted)
+  still describes free-text fonts.
+- Needs from Codex: item 11 (`@phosphor-icons/react`) added.
