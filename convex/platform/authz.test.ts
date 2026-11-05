@@ -6,6 +6,7 @@ import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import {
   PLATFORM_AUTH_ERROR,
+  requireBusinessAccess,
   requireCurrentPlatformUser,
   requireOwnedProject,
   requireOwnedProjectChild,
@@ -102,6 +103,35 @@ function asUser(
 }
 
 describe("platform owner-only authorization", () => {
+  test("C-AUTHZ grants only the owner and hides missing, archived and other-owner businesses", async () => {
+    const t = convexTest(schema, modules);
+    const fixture = await seedFixture(t);
+    const owner = asUser(t, fixture.ownerId, fixture.ownerSessionId);
+    const stranger = asUser(t, fixture.strangerId, fixture.strangerSessionId);
+
+    await expect(owner.run((ctx) => requireBusinessAccess(ctx, fixture.ownerProjectId, "owner")))
+      .resolves.toMatchObject({ _id: fixture.ownerProjectId, ownerId: fixture.ownerId });
+    await expect(stranger.run((ctx) => requireBusinessAccess(ctx, fixture.ownerProjectId, "owner")))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireBusinessAccess(ctx, fixture.strangerProjectId, "owner")))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+
+    await t.run(async (ctx) => { await ctx.db.patch("projects", fixture.ownerProjectId, { archivedAt: 2 }); });
+    await expect(owner.run((ctx) => requireBusinessAccess(ctx, fixture.ownerProjectId, "owner")))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+  });
+
+  test("C-AUTHZ rejects an expired stored session on mutation calls", async () => {
+    const t = convexTest(schema, modules);
+    const fixture = await seedFixture(t);
+    await t.run(async (ctx) => {
+      await ctx.db.patch("authSessions", fixture.ownerSessionId, { expirationTime: 1 });
+    });
+    const owner = asUser(t, fixture.ownerId, fixture.ownerSessionId);
+    await expect(owner.run((ctx) => requireBusinessAccess(ctx, fixture.ownerProjectId, "owner")))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.unauthenticated);
+  });
+
   test("denies anonymous and anonymous-user identities", async () => {
     const t = convexTest(schema, modules);
     await expect(t.run(requireCurrentPlatformUser)).rejects.toThrow(

@@ -49,3 +49,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npm run typecheck` passed; `npm run lint` passed with 37 warnings and zero errors; `npm test` passed (all suites, zero failures); `npm run build` passed (455 static page generation targets); `git diff --check` passed. `CONVEX_AGENT_MODE=anonymous npx convex dev --once --local-cloud-port 3310 --local-site-port 3311 --typecheck disable --codegen disable` deployed successfully to the isolated local instance after setting a dummy local-only value for the pre-existing required billing bridge env entry. No cloud or production deployment was touched.
 - Result: C-DATA is ready for an early draft PR and Claude contract review. S3–S6 remain open. `@convex-dev/workpool` remains a WP70 dependency request.
 - Next: push the branch and open the draft PR, then implement S3–S6 on this branch.
+
+## 2026-11-05 - WP68-S3
+
+- Actions taken: opened draft PR #167 for early C-DATA review; added `requireBusinessAccess(ctx, projectId, "owner")` on the existing project ownership helpers, using the expiry-aware mutation helper when a mutation context is passed.
+- Checks run: `npx vitest run convex/platform/authz.test.ts` (7 passed, including cross-owner, archived and expired-session cases), `npm run typecheck` (passed).
+- Result: C-AUTHZ implemented for owner-only Phase 0; no editor access is active.
+- Next: S4 C-OPS, then S5/S6 and final PR gate.

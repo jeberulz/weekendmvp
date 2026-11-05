@@ -312,6 +312,19 @@ export async function requireOwnedProject(
   return await ownedProjectForUser(ctx, user._id, projectId);
 }
 
+/** C-AUTHZ: owner-only business access until WP85 enables scoped editors.
+ * Mutations use the expiry-aware path; reactive queries keep clock-free reads. */
+export async function requireBusinessAccess(
+  ctx: PlatformReadCtx | MutationCtx,
+  projectId: Id<"projects">,
+  minRole: "owner",
+): Promise<Doc<"projects">> {
+  if (minRole !== "owner") return denyNotFound();
+  return "scheduler" in ctx
+    ? await requireOwnedProjectForMutation(ctx, projectId)
+    : await requireOwnedProject(ctx, projectId);
+}
+
 async function ownedProjectForUser(
   ctx: PlatformReadCtx,
   ownerId: Id<"users">,

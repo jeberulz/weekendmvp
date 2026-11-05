@@ -19,7 +19,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `convex/schema.ts`, `convex/platform/validators.ts`.
   - Acceptance criteria: Every §4.1 optional field and literal is present; prior literals and required fields remain; existing tests stay green.
   - Verification: schema diff review, `npm run typecheck`, targeted platform tests.
-- [ ] `WP68-S3` - Add owner-only C-AUTHZ
+- [x] `WP68-S3` - Add owner-only C-AUTHZ
   - Scope: `convex/platform/authz.ts`, focused tests.
   - Acceptance criteria: `requireBusinessAccess(ctx, projectId, "owner")` derives identity server-side and returns `RESOURCE_NOT_FOUND` for missing, archived, and other-owner businesses.
   - Verification: authorization tests.
