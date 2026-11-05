@@ -3,13 +3,24 @@ import { z } from "zod";
 
 import {
   ARTIFACT_KINDS,
+  ART_DIRECTIONS,
+  ART_DIRECTION_INFO,
+  BANNED_DISPLAY_FAMILIES,
   BRAND_TEXT_PAIRS,
   DEFAULT_PROOF_SLOTS,
+  DIRECTION_LAYOUTS,
+  LANDING_ICONS,
   LANDING_SECTION_ORDER,
   LIMITS,
   PLATFORM_CAPTION_LIMITS,
   SECTION_ANCHORS,
+  SECTION_LAYOUTS,
   SOCIAL_PLATFORMS,
+  THEME_MODES,
+  TYPE_PAIRS,
+  TYPE_PAIR_IDS,
+  VISUAL_DENSITIES,
+  VISUAL_SHAPES,
   adsDraftsSchema,
   OBJECT_ARTIFACT_KINDS,
   UNION_ARTIFACT_KINDS,
@@ -26,6 +37,7 @@ import {
   buildPackSchema,
   buildPackVariantSchemas,
   captionFor,
+  checkLandingAgainstBrandKit,
   contrastRatio,
   emailSequenceSchema,
   emailsInOrder,
@@ -46,6 +58,7 @@ import {
   socialPostsInOrder,
   structuredOutputComplexity,
   toStructuredOutputSchema,
+  typePairBrief,
   withDefaultProofSlots,
 } from "@/lib/workspace/contracts/artifacts";
 import type { JsonSchema } from "@/lib/workspace/contracts/artifacts";
@@ -461,6 +474,194 @@ describe("BrandKit", () => {
     expect(brandKitSchema.safeParse(longTagline).success).toBe(false);
     expect(brandKitSchema.safeParse(twoLines).success).toBe(false);
   });
+
+  it("rejects a type pair that does not suit the kit's direction", () => {
+    const bad = mutate(hydrotrailBrandKit, (draft) => {
+      draft.type.pair = "syne_manrope";
+    });
+    const result = brandKitSchema.safeParse(bad);
+    expectIssueAt(result, ["type", "pair"]);
+    expect(result.error?.issues.map((issue) => issue.path.join("."))).toEqual(["type.pair"]);
+  });
+
+  it("reports cross-field issues alongside unrelated field errors", () => {
+    const broken = mutate(hydrotrailBrandKit, (draft) => {
+      Object.assign(draft.visualSystem, { shape: "blob" });
+      draft.tagline = { text: over(LIMITS.brandKit.tagline) };
+      draft.type.pair = "syne_manrope";
+      draft.visualSystem.theme.mode = "dark";
+      draft.voice.traits = ["Calm", "calm", "Practical"];
+    });
+    const result = brandKitSchema.safeParse(broken);
+    expectIssueAt(result, ["visualSystem", "shape"]);
+    expectIssueAt(result, ["tagline", "text"]);
+    expectIssueAt(result, ["type", "pair"]);
+    expectIssueAt(result, ["visualSystem", "theme", "mode"]);
+    expectIssueAt(result, ["voice", "traits", 1]);
+  });
+
+  it("survives malformed brand kit input without throwing", () => {
+    const badHex = mutate(hydrotrailBrandKit, (draft) => {
+      draft.palette.ground.hex = "cream";
+      Object.assign(draft.type, { pair: 7 });
+      Object.assign(draft.voice, { traits: [1, null, "Calm"] });
+    });
+    for (const value of [null, [], "kit", { palette: [], type: "x", visualSystem: { theme: 1 } }, badHex]) {
+      expect(brandKitSchema.safeParse(value).success).toBe(false);
+    }
+  });
+
+  it("takes no heading weight from the model: the pair's defaultWeight is used", () => {
+    const withWeight = mutate(hydrotrailBrandKit, (draft) => {
+      Object.assign(draft.type, { headingWeight: 700 });
+    });
+    expectIssueAt(brandKitSchema.safeParse(withWeight), ["type"]);
+    expect(containsKey(artifactJsonSchema("brand_kit"), "headingWeight")).toBe(false);
+  });
+
+  it("ties the theme mode to the palette: light needs a lighter ground, dark a darker one", () => {
+    const darkOnLightPalette = mutate(hydrotrailBrandKit, (draft) => {
+      draft.visualSystem.theme.mode = "dark";
+    });
+    const lightOnDarkPalette = mutate(hydrotrailBrandKit, (draft) => {
+      const { ground, ink } = draft.palette;
+      draft.palette.ground = { ...ground, hex: ink.hex };
+      draft.palette.ink = { ...ink, hex: ground.hex };
+    });
+    const darkOnDarkPalette = mutate(lightOnDarkPalette as typeof hydrotrailBrandKit, (draft) => {
+      draft.visualSystem.theme.mode = "dark";
+    });
+    expectIssueAt(brandKitSchema.safeParse(darkOnLightPalette), ["visualSystem", "theme", "mode"]);
+    expectIssueAt(brandKitSchema.safeParse(lightOnDarkPalette), ["visualSystem", "theme", "mode"]);
+    const ok = brandKitSchema.safeParse(darkOnDarkPalette);
+    expect(ok.success, JSON.stringify(ok.error?.issues)).toBe(true);
+  });
+
+  it("rejects free-text font families, an unknown pair or direction and an over-limit theme reason", () => {
+    const freeText = mutate(hydrotrailBrandKit, (draft) => {
+      Object.assign(draft.type, { heading: { family: "Inter", weight: 700, notes: "Bold" } });
+    });
+    const unknownPair = mutate(hydrotrailBrandKit, (draft) => {
+      Object.assign(draft.type, { pair: "inter_inter" });
+    });
+    const unknownDirection = mutate(hydrotrailBrandKit, (draft) => {
+      Object.assign(draft.visualSystem, { direction: "brutalist" });
+    });
+    const longReason = mutate(hydrotrailBrandKit, (draft) => {
+      draft.visualSystem.theme.reason = over(LIMITS.brandKit.themeReason);
+    });
+    const noVisualSystem = mutate(hydrotrailBrandKit, (draft) => {
+      Reflect.deleteProperty(draft, "visualSystem");
+    });
+    expect(brandKitSchema.safeParse(freeText).success).toBe(false);
+    expect(brandKitSchema.safeParse(unknownPair).success).toBe(false);
+    expect(brandKitSchema.safeParse(unknownDirection).success).toBe(false);
+    expectIssueAt(brandKitSchema.safeParse(longReason), ["visualSystem", "theme", "reason"]);
+    expect(brandKitSchema.safeParse(noVisualSystem).success).toBe(false);
+  });
+});
+
+describe("visual system lists", () => {
+  it("describes every art direction", () => {
+    expect(Object.keys(ART_DIRECTION_INFO).sort()).toEqual([...ART_DIRECTIONS].sort());
+    for (const direction of ART_DIRECTIONS) {
+      expect(ART_DIRECTION_INFO[direction].label.length).toBeGreaterThan(0);
+      expect(ART_DIRECTION_INFO[direction].summary.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keys TYPE_PAIRS by TYPE_PAIR_IDS; every pair suits a direction and has valid weights", () => {
+    expect(Object.keys(TYPE_PAIRS).sort()).toEqual([...TYPE_PAIR_IDS].sort());
+    for (const id of TYPE_PAIR_IDS) {
+      const pair = TYPE_PAIRS[id];
+      expect(pair.directions.length, id).toBeGreaterThan(0);
+      expect(new Set(pair.directions).size, id).toBe(pair.directions.length);
+      for (const face of [pair.heading, pair.body, ...(pair.mono ? [pair.mono] : [])]) {
+        expect(face.weights.length, `${id} ${face.family}`).toBeGreaterThan(0);
+        for (const weight of face.weights) {
+          expect(Number.isInteger(weight) && weight >= 100 && weight <= 900 && weight % 100 === 0, `${id} ${weight}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("gives every art direction at least 3 type pairs", () => {
+    for (const direction of ART_DIRECTIONS) {
+      const pairs = TYPE_PAIR_IDS.filter((id) => TYPE_PAIRS[id].directions.includes(direction));
+      expect(pairs.length, direction).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("gives every pair's heading a default weight it actually has", () => {
+    for (const id of TYPE_PAIR_IDS) {
+      const { heading } = TYPE_PAIRS[id];
+      expect(heading.weights, id).toContain(heading.defaultWeight);
+      if (heading.weights.length === 1) expect(heading.defaultWeight, id).toBe(400);
+    }
+  });
+
+  it("briefs the prompt with every direction and every pair id, with its families", () => {
+    const brief = typePairBrief();
+    const lines = brief.split("\n");
+    expect(lines).toHaveLength(ART_DIRECTIONS.length);
+    ART_DIRECTIONS.forEach((direction, index) => expect(lines[index]?.startsWith(`${direction}: `)).toBe(true));
+    for (const id of TYPE_PAIR_IDS) {
+      const pair = TYPE_PAIRS[id];
+      expect(brief).toContain(`${id} (${pair.heading.family} / ${pair.body.family})`);
+      for (const direction of pair.directions) {
+        expect(lines.find((entry) => entry.startsWith(`${direction}: `)), `${id} under ${direction}`).toContain(`${id} (`);
+      }
+    }
+    expect(typePairBrief()).toBe(brief);
+  });
+
+  it("never uses a banned family as a display face", () => {
+    const banned = new Set<string>(BANNED_DISPLAY_FAMILIES.map((family) => family.toLowerCase()));
+    for (const id of TYPE_PAIR_IDS) expect(banned.has(TYPE_PAIRS[id].heading.family.toLowerCase()), id).toBe(false);
+  });
+
+  it("allows only real layouts per direction: 2+ hero layouts and 1+ for every other section", () => {
+    expect(Object.keys(DIRECTION_LAYOUTS).sort()).toEqual([...ART_DIRECTIONS].sort());
+    expect(Object.keys(SECTION_LAYOUTS).sort()).toEqual([...LANDING_SECTION_ORDER].sort());
+    for (const direction of ART_DIRECTIONS) {
+      for (const section of LANDING_SECTION_ORDER) {
+        const allowed: readonly string[] = DIRECTION_LAYOUTS[direction][section];
+        const known: readonly string[] = SECTION_LAYOUTS[section];
+        expect(allowed.length, `${direction} ${section}`).toBeGreaterThanOrEqual(section === "hero" ? 2 : 1);
+        expect(new Set(allowed).size, `${direction} ${section}`).toBe(allowed.length);
+        for (const layout of allowed) expect(known, `${direction} ${section}`).toContain(layout);
+      }
+    }
+    expect(SECTION_LAYOUTS.promises as readonly string[]).not.toContain("cards");
+  });
+
+  it("curates 60–80 unique kebab-case Phosphor icons", () => {
+    expect(LANDING_ICONS.length).toBeGreaterThanOrEqual(60);
+    expect(LANDING_ICONS.length).toBeLessThanOrEqual(80);
+    expect(new Set(LANDING_ICONS).size).toBe(LANDING_ICONS.length);
+    for (const icon of LANDING_ICONS) expect(icon).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+  });
+
+  it("freezes the lookup tables", () => {
+    expect(Object.isFrozen(TYPE_PAIRS)).toBe(true);
+    expect(Object.isFrozen(TYPE_PAIRS.ibm_plex.heading.weights)).toBe(true);
+    expect(Object.isFrozen(DIRECTION_LAYOUTS)).toBe(true);
+    expect(Object.isFrozen(DIRECTION_LAYOUTS.editorial.hero)).toBe(true);
+    expect(Object.isFrozen(ART_DIRECTION_INFO.handmade)).toBe(true);
+    for (const list of [
+      ART_DIRECTIONS,
+      TYPE_PAIR_IDS,
+      LANDING_ICONS,
+      BANNED_DISPLAY_FAMILIES,
+      VISUAL_SHAPES,
+      VISUAL_DENSITIES,
+      THEME_MODES,
+      SECTION_LAYOUTS,
+      ...Object.values(SECTION_LAYOUTS),
+    ]) {
+      expect(Object.isFrozen(list)).toBe(true);
+    }
+  });
 });
 
 describe("contrast", () => {
@@ -607,6 +808,149 @@ describe("LandingSpec", () => {
     });
     expectIssueAt(landingSpecSchema.safeParse(otherTag), ["waitlist", "successMessage"]);
     expectIssueAt(landingSpecSchema.safeParse(noConfirm), ["waitlist", "successMessage"]);
+  });
+
+  it("has no eyebrow anywhere: strict sections reject one and the model never sees the key", () => {
+    expect(containsKey(artifactJsonSchema("landing_spec"), "eyebrow")).toBe(false);
+    expect(Object.keys(LIMITS.landingSpec)).not.toContain("eyebrow");
+    for (const section of ["hero", "how_it_works", "app_preview", "waitlist", "footer"] as const) {
+      const bad = mutate(hydrotrailLandingSpec, (draft) => {
+        const target = draft[section];
+        if (target) Object.assign(target, { eyebrow: "How it works" });
+      });
+      expectIssueAt(landingSpecSchema.safeParse(bad), [section]);
+    }
+  });
+
+  it("requires a section layout from SECTION_LAYOUTS, with no card grid for promises", () => {
+    const noLayout = mutate(hydrotrailLandingSpec, (draft) => {
+      Reflect.deleteProperty(draft.hero, "layout");
+    });
+    const cards = mutate(hydrotrailLandingSpec, (draft) => {
+      if (draft.promises) Object.assign(draft.promises, { layout: "cards" });
+    });
+    const wrongSection = mutate(hydrotrailLandingSpec, (draft) => {
+      Object.assign(draft.footer, { layout: "split_media" });
+    });
+    expectIssueAt(landingSpecSchema.safeParse(noLayout), ["hero", "layout"]);
+    expectIssueAt(landingSpecSchema.safeParse(cards), ["promises", "layout"]);
+    expectIssueAt(landingSpecSchema.safeParse(wrongSection), ["footer", "layout"]);
+  });
+
+  it("accepts only curated Phosphor icons on promises", () => {
+    const lucide = mutate(hydrotrailLandingSpec, (draft) => {
+      const first = draft.promises?.items[0];
+      if (first) Object.assign(first, { icon: "droplets" });
+    });
+    const noIcon = mutate(hydrotrailLandingSpec, (draft) => {
+      const first = draft.promises?.items[0];
+      if (first) Reflect.deleteProperty(first, "icon");
+    });
+    expectIssueAt(landingSpecSchema.safeParse(lucide), ["promises", "items", 0, "icon"]);
+    expect(landingSpecSchema.safeParse(noIcon).success).toBe(true);
+  });
+
+  it("reports a missing addedReason alongside another section's issue, on draft and stored schemas", () => {
+    const broken = mutate(hydrotrailLandingSpec, (draft) => {
+      Object.assign(draft.footer, { layout: "split_media" });
+      Reflect.deleteProperty(draft.waitlist, "addedReason");
+      draft.nav.cta.target = "#pricing";
+    });
+    const draft = { ...(broken as Record<string, unknown>) };
+    Reflect.deleteProperty(draft, "proofSlots");
+    for (const result of [landingSpecSchema.safeParse(broken), landingSpecDraftSchema.safeParse(draft)]) {
+      expectIssueAt(result, ["footer", "layout"]);
+      expectIssueAt(result, ["waitlist", "addedReason"]);
+      expectIssueAt(result, ["nav", "cta", "target"]);
+    }
+  });
+
+  it("survives a malformed spec without throwing", () => {
+    for (const value of [null, [], "spec", { nav: 1, hero: [], promises: { items: "x" }, waitlist: null }]) {
+      expect(landingSpecSchema.safeParse(value).success).toBe(false);
+    }
+  });
+
+  it("rejects emoji in landing copy but keeps © and ™", () => {
+    const emoji = mutate(hydrotrailLandingSpec, (draft) => {
+      draft.hero.subhead = "Plan your water 💧 before the climb.";
+    });
+    const selector = mutate(hydrotrailLandingSpec, (draft) => {
+      draft.footer.closingLine = "Drink before you're thirsty ☀\uFE0F";
+    });
+    const marks = mutate(hydrotrailLandingSpec, (draft) => {
+      draft.footer.copyrightName = "HydroTrail™ ©";
+    });
+    expectIssueAt(landingSpecSchema.safeParse(emoji), ["hero", "subhead"]);
+    expectIssueAt(landingSpecSchema.safeParse(selector), ["footer", "closingLine"]);
+    expect(landingSpecSchema.safeParse(marks).success).toBe(true);
+  });
+
+  it.each(["01 — Plan the route", "02. Pack the litres", "3 / Sip on the trail", "1) Plan", "04 Plan"])(
+    'rejects a heading that leads with a section number: "%s"',
+    (heading) => {
+      const how = mutate(hydrotrailLandingSpec, (draft) => {
+        if (draft.how_it_works) draft.how_it_works.heading = heading;
+      });
+      const promise = mutate(hydrotrailLandingSpec, (draft) => {
+        const first = draft.promises?.items[0];
+        if (first) first.title = heading;
+      });
+      expectIssueAt(landingSpecSchema.safeParse(how), ["how_it_works", "heading"]);
+      expectIssueAt(landingSpecSchema.safeParse(promise), ["promises", "items", 0, "title"]);
+    },
+  );
+
+  it("allows headings that merely start with a number, and numbered step titles", () => {
+    const ok = mutate(hydrotrailLandingSpec, (draft) => {
+      if (draft.how_it_works) {
+        draft.how_it_works.heading = "3 steps before you leave the car park";
+        const first = draft.how_it_works.steps[0];
+        if (first) first.title = "1. Plan the route";
+      }
+      draft.waitlist.heading = "2.5 litres, planned for you";
+    });
+    const result = landingSpecSchema.safeParse(ok);
+    expect(result.success, JSON.stringify(result.error?.issues)).toBe(true);
+  });
+});
+
+describe("checkLandingAgainstBrandKit", () => {
+  it("passes the HydroTrail spec and draft against the HydroTrail kit", () => {
+    expect(checkLandingAgainstBrandKit(hydrotrailLandingSpec, hydrotrailBrandKit)).toEqual([]);
+    const draft = { ...hydrotrailLandingSpec };
+    Reflect.deleteProperty(draft, "proofSlots");
+    expect(checkLandingAgainstBrandKit(landingSpecDraftSchema.parse(draft), hydrotrailBrandKit)).toEqual([]);
+  });
+
+  it("flags a layout the kit's direction does not allow", () => {
+    const spec = landingSpecSchema.parse(
+      mutate(hydrotrailLandingSpec, (draft) => {
+        draft.hero.layout = "type_led";
+      }),
+    );
+    const issues = checkLandingAgainstBrandKit(spec, hydrotrailBrandKit);
+    expect(issues.map((issue) => issue.path)).toEqual([["hero", "layout"]]);
+    expect(issues[0]?.message).toContain("warm_utility");
+  });
+
+  it("checks every present section against another direction and skips absent ones", () => {
+    const boldKit = brandKitSchema.parse(
+      mutate(hydrotrailBrandKit, (draft) => {
+        draft.visualSystem.direction = "bold_geometric";
+      }),
+    );
+    expect(checkLandingAgainstBrandKit(hydrotrailLandingSpec, boldKit).map((issue) => issue.path)).toEqual([
+      ["promises", "layout"],
+      ["waitlist", "layout"],
+      ["footer", "layout"],
+    ]);
+    const withoutPromises = landingSpecSchema.parse(
+      mutate(hydrotrailLandingSpec, (draft) => {
+        Reflect.deleteProperty(draft, "promises");
+      }),
+    );
+    expect(checkLandingAgainstBrandKit(withoutPromises, boldKit).map((issue) => issue.path[0])).toEqual(["waitlist", "footer"]);
   });
 });
 

@@ -119,10 +119,16 @@ export const hydrotrailBrandKit: BrandKit = {
     ground: { name: "Granite", hex: "#F2EEE6", use: "Page background and cards." },
     ink: { name: "Basalt", hex: "#13242A", use: "Body text, icons, dark panels." },
   },
+  visualSystem: {
+    direction: "warm_utility",
+    shape: "soft",
+    density: "balanced",
+    theme: { mode: "light", reason: "Hikers plan at home and glance at it outdoors in daylight, where a light page reads best." },
+  },
   type: {
-    heading: { family: "Archivo", weight: 800, notes: "ExtraBold, tight tracking, sentence case." },
-    body: { family: "Geist", weight: 400, notes: "Regular for body, labels and UI." },
+    pair: "bricolage_grotesque_figtree",
     scale: "H1 56/0.98 · H2 32/1.05 · Body 16/1.5",
+    notes: "Bricolage Bold with tight tracking in sentence case; Figtree Regular for body, labels and UI.",
   },
   voice: {
     traits: ["Calm", "Practical", "Trail-tested", "Never preachy"],
@@ -153,7 +159,7 @@ export const hydrotrailLandingSpec: LandingSpec = {
     cta: { label: "Join the waitlist", target: "#waitlist" },
   },
   hero: {
-    eyebrow: "Hydration for long solo routes",
+    layout: "split_media",
     headline: { text: "Know your water. Drink before you're thirsty.", emphasis: "Drink before you're thirsty." },
     subhead:
       "HydroTrail turns distance, heat and climb into litres to carry, then reminds you to sip on pace, so you reach the next source with water to spare.",
@@ -171,14 +177,15 @@ export const hydrotrailLandingSpec: LandingSpec = {
     },
   },
   promises: {
+    layout: "list",
     items: [
-      { title: "Carry the right amount", body: "Litres from your route's distance, heat and climb, not a guess.", icon: "droplets" },
+      { title: "Carry the right amount", body: "Litres from your route's distance, heat and climb, not a guess.", icon: "drop" },
       { title: "Sip on pace", body: "Gentle reminders timed to effort, before thirst slows you down.", icon: "timer" },
       { title: "Know the next source", body: "See how far it is to water, even with no signal.", icon: "map-pin" },
     ],
   },
   how_it_works: {
-    eyebrow: "How it works",
+    layout: "numbered_steps",
     heading: "Three steps before you leave the car park",
     steps: [
       { title: "Plan the route", body: "Enter distance, climb and the forecast high." },
@@ -189,7 +196,7 @@ export const hydrotrailLandingSpec: LandingSpec = {
   app_preview: {
     addedByWeekendMvp: true,
     addedReason: "early-access app preview",
-    eyebrow: "The app",
+    layout: "device_frame",
     heading: "Your water plan, in your pocket",
     body: "A planner, a reminder and a log in one mobile web app. Install it from your browser; it works offline on the trail.",
     cta: { label: "Get early access", target: "#waitlist" },
@@ -201,6 +208,7 @@ export const hydrotrailLandingSpec: LandingSpec = {
   waitlist: {
     addedByWeekendMvp: true,
     addedReason: "waitlist capture → your first goal",
+    layout: "panel",
     heading: "Be first on the trail",
     body: "Join the waitlist and get early access when HydroTrail opens.",
     emailLabel: "Email address",
@@ -208,6 +216,7 @@ export const hydrotrailLandingSpec: LandingSpec = {
     successMessage: "Almost there. Check {email} and confirm your address to join the list.",
   },
   footer: {
+    layout: "minimal",
     closingLine: "Drink before you're thirsty.",
     cta: { label: "Join the waitlist", target: "#waitlist" },
     copyrightName: "HydroTrail",
