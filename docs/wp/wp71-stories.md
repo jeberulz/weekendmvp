@@ -47,9 +47,9 @@ Standing rules:
       gpt-image-2 output tokens above the table price), so a rate-card drift is visible.
   - Verification: a fixture-mode end-to-end test, reserve → settle and reserve → fail
 
-- [ ] `WP71-S3` - Router, registry, prompt-version CI, import boundary
+- [x] `WP71-S3` - Router, registry, prompt-version CI, import boundary
   - Scope: `convex/ai/{router,registry}.ts`, `convex/ai/prompts/**`, `scripts/check-prompt-versions.mjs`,
-    `tests/security/ai-imports.test.ts`
+    `tests/security/ai-imports.test.ts` (shipped as `.mjs`; see the S3 progress entry)
   - Acceptance criteria:
     - The tier comes from the spec.
     - The registry maps `id@version` to a spec.
