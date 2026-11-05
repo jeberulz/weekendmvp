@@ -33,7 +33,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Item | Needed by | Status |
 |---|---|---|
 | Merge the plan PR (`claude/wp67-launch-crew-plan`) so both lanes start from `main` | Before any WP starts | Done (#166) |
-| Approve up to $25 of live AI spend for the WP69 cost spike | WP69 S4 | Open (WP69 asks first) |
+| Approve up to $25 of live AI spend for the WP69 cost spike | WP69 S4 | Done (approved 2026-11-05) |
 | Start Meta business verification and app review (D7, D8) | Phase 5; lead time is weeks | Open |
 | Create the tenant Resend project and sending domain (D6) | WP79 | Open |
 | Wildcard DNS plan for `*.weekendmvp.app` (D2) | WP78 S3 | Open |
@@ -41,6 +41,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
+| Share the landing-page agent brief (skills, MCP servers and tools the AI employees use to design the page). The tool and MCP list is needed before the WP71 gateway design, because C-PROMPT has no tool-use field yet and every call goes through the gateway; the design detail can wait for WP75 | Tool list: WP71 S1. Full brief: WP75 | Open (John will share) |
 | WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
