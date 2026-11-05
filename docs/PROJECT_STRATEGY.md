@@ -37,6 +37,34 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 
 | WP65 | Preliminary thin-category idea publication | Work Package | `codex/wp65-manual-thin-ideas` | Complete — PR #132 merged; four pages and exact-slug catalogue inserts verified live 2026-10-09 | Four accurate, editable concept pages pass content/technical checks and are published and catalogue-seeded with exact targets. See `docs/wp/wp65-stories.md`. |
 
+## Launch Workspace Program (WP67)
+
+Reserved 2026-11-05 by owner ruling D14 (`docs/wp/RULINGS.md`). Manifest: `docs/wp/wp67-program-manifest.md`. Plan: `docs/plans/launch-workspace/`. Status board: `docs/wp/wp67-progress.md`. No other work may use WP67–WP87.
+
+| WP | Title | Phase | Lane | Branch | Status | Definition of done |
+|---|---|---|---|---|---|---|
+| WP67 | Program setup, rulings and status board | 0–7 | Claude (orchestrator) | `claude/wp67-launch-crew-plan` | In progress: rulings recorded and manifest frozen 2026-11-05 | Numbers reserved on `main`; rulings recorded; manifest frozen; every gate result recorded in `docs/wp/wp67-progress.md`. |
+| WP68 | Data contract and ops switches | 0 | Codex | `codex/wp68-data-contract` | Reserved | Every new table and the WP22 union amendments added additively; `requireBusinessAccess`; ops switches default off; known dependencies added; dev deploy succeeds. |
+| WP69 | Crew contracts and the cost spike | 0 | Claude | `claude/wp69-crew-contracts` | Reserved | Artifact, job, prompt and metering contracts merged as types only; role rules tested; spike costs measured and recorded. |
+| WP70 | Metering, budgets and runtime plumbing | 1 | Codex | `codex/wp70-metering` | Reserved | Components mounted; reserve, settle and fail enforced and idempotent; limits; sweeper and spend alarms. |
+| WP71 | AI gateway, prompt registry and evals | 1 | Claude | `claude/wp71-ai-gateway` | Reserved | A fixture-mode gateway call writes a settled usage row; CI graders run; no live call is possible with the kill switch on. |
+| WP72 | Workspace shell and component kit | 1 | Claude | `claude/wp72-workspace-shell` | Reserved | The kit renders behind the flag with fixture data; a11y-check passes; existing dashboard pages unchanged. |
+| WP73 | Ledger v2 and plan catalogue | 1 | Codex | `codex/wp73-ledger-v2` | Reserved | Buckets, grants and refunds exactly once; `PLAN_LIMITS` rows; property tests; existing billing tests unchanged and green. |
+| WP74 | Wizard and business creation | 2 | Claude | `claude/wp74-wizard` | Reserved | A member goes idea → Meet your co-founder in under three minutes on fixture data; signals recorded; idea pages unchanged with the flag off. |
+| WP75 | Crew engine: roster, launch workflow, brand, landing, build pack | 2 | Claude | `claude/wp75-crew-engine` | Reserved | A fixture launch for HydroTrail produces every artifact with its approval; a live run on 5 ideas stays within the spike's cost. |
+| WP76 | Growth drafts: email, social, SEO, launch plan, ads | 2 | Claude | `claude/wp76-growth-drafts` | Reserved | Every growth artifact exists as an approvable draft; nothing sends or posts. |
+| WP77 | Wren chat and the approvals loop | 2 | Claude | `claude/wp77-wren-approvals` | Reserved | A founder runs the weekend from chat and cards; prompt-injection cases cannot trigger a side effect. |
+| WP78 | Publishing un-park (WP29/30/31 slices) | 2 | Codex | `codex/wp78-publishing` | Reserved | An approved page is live on `{slug}.weekendmvp.app` on a test deployment; takedown works in under a minute. |
+| WP79 | Tenant email engine | 2 | Codex | `codex/wp79-tenant-email` | Reserved | An approved four-email sequence sends to a test inbox on schedule; unsubscribe stops the next step. |
+| WP80 | Credits live and the Growth plan | 3 | Codex | `codex/wp80-credits-growth` | Reserved | In Stripe test mode a Builder's Hub renewal grants 500 credits exactly once; Growth checkout works end to end. |
+| WP81 | Paywall and upgrade UX | 3 | Claude | `claude/wp81-paywall` | Reserved | A Free founder who runs out mid-action upgrades and lands back on the same action, which runs once. |
+| WP82 | Studio: images and video | 4 | Claude | `claude/wp82-studio` | Reserved | 20 image and 5 video test renders: every failure refunds once; cost per credit within the rule. |
+| WP83 | Connectors: native social, ads, outbound sends | 5 | Codex | `codex/wp83-connectors` | Reserved | Approved posts publish to Instagram and Facebook Pages; ads launch only on an approved, ready campaign; all behind flags. |
+| WP84 | Autopilot and growth UI | 5 | Claude | `claude/wp84-autopilot` | Reserved | Autopilot does only what D13 allows, per employee, off by default; every action audited. |
+| WP85 | Members, multiple businesses, custom domains | 6 | Codex | `codex/wp85-members-domains` | Reserved | Editors see only invited businesses; Growth gets three businesses; custom domains verify with a subdomain fallback. |
+| WP86 | Hire skipped roles, team variants, members UI | 6 | Claude | `claude/wp86-team-variants` | Reserved | Skipped roles can be hired; the course-idea team works; Members and Danger zone UI pass a11y-check. |
+| WP87 | Program gate and launch review | 7 | Gate (Claude runs, Codex reviews) | `claude/wp87-program-gate` | Reserved | Full regression, load, cost, security and accessibility review pass; the owner gives go or no-go. |
+
 ## Build Platform Program
 
 **Consolidation:** `codex/wp28-tenant-hosts` is the integration tip for Waves 0–3 platform work (WP19–28). Draft PR targets `main`. Revised v1 launch scope: `docs/wp/v1-scope-cut.md` (2026-08-12).
