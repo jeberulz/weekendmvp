@@ -9,9 +9,14 @@
  * `sweepOutcome`, `lateSettleAdjustment`), so its arithmetic is the
  * contract's, not a copy.
  *
- * Never use it in a deployed function. Its state lives in one JS object, so a
- * fresh action invocation would start from zero budgets and enforce nothing.
- * It registers no Convex function and reads no env.
+ * It lives under `tests/` so no Convex bundle can include it: its state is one
+ * JS object, so a deployed action would start every run from zero budgets and
+ * enforce nothing. It registers no Convex function and reads no env.
+ *
+ * It is no more permissive than the real meter: `reserve` runs
+ * `assertReserveArgs`, and `settle` / `fail` reject a non-integer or negative
+ * amount, token count or latency, an unknown `billed` state and an unknown
+ * `errorClass` with a `RangeError`.
  *
  * Stand-ins for what the real meter derives itself:
  * - the owner's plan comes from `owners` (an unknown owner counts as `free`,
@@ -26,6 +31,9 @@ import { ConvexError } from "convex/values";
 
 import {
   assertReserveArgs,
+  BILLED_STATES,
+  isMicroUsd,
+  METER_ERROR_CLASSES,
   chargeOnFail,
   FREE_GLOBAL_DAILY_BUDGET_DEFAULT_MICRO_USD,
   firstReserveFailure,
@@ -41,12 +49,14 @@ import {
   zeroAiBudgets,
   type AiBudgetsRow,
   type AiUsageRow,
+  type FailArgs,
   type FinalizeResult,
   type GlobalPool,
   type MeterPlan,
+  type SettleArgs,
   type SpendDeltas,
-} from "../../lib/workspace/contracts/metering";
-import type { MeterPort } from "./gateway";
+} from "@/lib/workspace/contracts/metering";
+import type { MeterPort } from "@/convex/ai/gateway";
 
 export type { MeterPort };
 
@@ -263,6 +273,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
     },
 
     async settle(args) {
+      assertSettleArgs(args);
       const row = requireRow(args.usageId);
       countFinalize(args.usageId);
       if (row.status !== "reserved") {
@@ -301,6 +312,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
     },
 
     async fail(args) {
+      assertFailArgs(args);
       const row = requireRow(args.usageId);
       countFinalize(args.usageId);
       if (row.status !== "reserved") return alreadyFinal(args.usageId, row, 0);
@@ -346,6 +358,37 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       killSwitches[name] = on;
     },
   };
+}
+
+function assertInteger(name: string, value: unknown): void {
+  if (!isMicroUsd(value)) throw new RangeError(`${name} must be a safe non-negative integer, got ${String(value)}`);
+}
+
+function assertUsageId(value: unknown): void {
+  if (typeof value !== "string" || value.length === 0) throw new RangeError("usageId is required");
+}
+
+/** What the real `settle` validator (`v.int64()` fields, `v.boolean()`) would reject. */
+export function assertSettleArgs(args: SettleArgs): void {
+  assertUsageId(args.usageId);
+  for (const key of ["inputTokens", "cacheReadTokens", "cacheWriteTokens", "outputTokens", "costMicroUsd", "latencyMs"] as const) {
+    assertInteger(key, args[key]);
+  }
+  if (args.images !== undefined) assertInteger("images", args.images);
+  if (args.videoSeconds !== undefined) assertInteger("videoSeconds", args.videoSeconds);
+  if (typeof args.estimated !== "boolean") throw new RangeError("estimated must be a boolean");
+  if (args.stopReason !== undefined && typeof args.stopReason !== "string") throw new RangeError("stopReason must be a string");
+}
+
+/** What the real `fail` validator would reject. */
+export function assertFailArgs(args: FailArgs): void {
+  assertUsageId(args.usageId);
+  if (!(BILLED_STATES as readonly string[]).includes(args.billed)) throw new RangeError(`unknown billed state ${String(args.billed)}`);
+  if (!(METER_ERROR_CLASSES as readonly string[]).includes(args.errorClass)) {
+    throw new RangeError(`unknown errorClass ${String(args.errorClass)}`);
+  }
+  if (args.costMicroUsd !== undefined) assertInteger("costMicroUsd", args.costMicroUsd);
+  assertInteger("latencyMs", args.latencyMs);
 }
 
 function todayTotals(entry: GlobalCounter): { spentTodayMicroUsd: number; inFlightMicroUsd: number } {
