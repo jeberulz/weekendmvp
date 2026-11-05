@@ -34,3 +34,11 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npx vitest run convex/wp68Schema.test.ts` (26 passed), `npm run typecheck` (passed), `git diff --check` (passed).
 - Result: S1 schema contract ready for S2's additive amendments. No deployment has been attempted; the safe nonproduction target is being confirmed with John.
 - Next: S2 WP22 amendments, then C-DATA review PR.
+
+## 2026-11-05 - WP68-S2
+
+- Actions taken: extended the existing project, task, document, site, lead and ledger tables with optional fields; added crew, Studio, document and ledger literals while keeping every prior value. Added owner/workspace slug and owner/job key indexes.
+- Decisions made: `site_versions.landingSpec` holds serialized validated JSON until C-ART defines the runtime shape; senders must validate before writing. No phone-number field was added. Existing audit action is a string, so no audit validator change was needed.
+- Checks run: `npx vitest run convex/wp68Schema.test.ts` (35 passed), `npm run typecheck` (passed), `git diff --check` (passed); existing `convex/platform/billing/billing.test.ts` passed in the prior focused run.
+- Result: S1 and S2 are ready for the early C-DATA PR, subject to the required full checks and isolated local schema check.
+- Next: run full checks, validate schema locally, open C-DATA PR for Claude review.

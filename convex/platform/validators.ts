@@ -49,6 +49,19 @@ export const TASK_TYPE_VALUES = [
   "validation_report",
   "landing_page",
   "publish",
+  "crew_blueprint",
+  "crew_roster",
+  "crew_brand_kit",
+  "crew_landing",
+  "crew_email_sequence",
+  "crew_social_pack",
+  "crew_seo_pack",
+  "crew_launch_plan",
+  "crew_ads_drafts",
+  "crew_build_pack",
+  "crew_hire",
+  "studio_image",
+  "studio_video",
 ] as const;
 export const taskTypeValidator = stringLiteralUnion(TASK_TYPE_VALUES);
 export type TaskType = Infer<typeof taskTypeValidator>;
@@ -70,6 +83,19 @@ export const STEP_TYPE_VALUES = [
   "review",
   "render",
   "publish",
+  "crew_blueprint",
+  "crew_roster",
+  "crew_brand_kit",
+  "crew_landing",
+  "crew_email_sequence",
+  "crew_social_pack",
+  "crew_seo_pack",
+  "crew_launch_plan",
+  "crew_ads_drafts",
+  "crew_build_pack",
+  "crew_hire",
+  "studio_image",
+  "studio_video",
 ] as const;
 export const stepTypeValidator = stringLiteralUnion(STEP_TYPE_VALUES);
 export type StepType = Infer<typeof stepTypeValidator>;
@@ -90,6 +116,16 @@ export const DOCUMENT_KIND_VALUES = [
   "brief",
   "landing_page",
   "site_copy",
+  "blueprint",
+  "brand_kit",
+  "landing_spec",
+  "email_sequence",
+  "social_pack",
+  "seo_pack",
+  "seo_article",
+  "launch_plan",
+  "ads_drafts",
+  "build_pack",
 ] as const;
 export const documentKindValidator = stringLiteralUnion(DOCUMENT_KIND_VALUES);
 export type DocumentKind = Infer<typeof documentKindValidator>;
@@ -137,6 +173,9 @@ export const LEDGER_REASON_VALUES = [
   "task_refund",
   "purchase_refund",
   "dispute",
+  "plan_grant",
+  "starter_grant",
+  "allowance_expiry",
 ] as const;
 export const ledgerReasonValidator = stringLiteralUnion(LEDGER_REASON_VALUES);
 export type LedgerReason = Infer<typeof ledgerReasonValidator>;
@@ -146,6 +185,19 @@ export const WORKFLOW_TYPE_VALUES = [
   "validation_report",
   "landing_page",
   "publish",
+  "crew_blueprint",
+  "crew_roster",
+  "crew_brand_kit",
+  "crew_landing",
+  "crew_email_sequence",
+  "crew_social_pack",
+  "crew_seo_pack",
+  "crew_launch_plan",
+  "crew_ads_drafts",
+  "crew_build_pack",
+  "crew_hire",
+  "studio_image",
+  "studio_video",
 ] as const;
 export const workflowTypeValidator = stringLiteralUnion(WORKFLOW_TYPE_VALUES);
 export type WorkflowType = Infer<typeof workflowTypeValidator>;

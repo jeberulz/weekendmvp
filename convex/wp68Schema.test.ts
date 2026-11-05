@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
 import schema from "./schema";
+import {
+  DOCUMENT_KIND_VALUES,
+  LEDGER_REASON_VALUES,
+  STEP_TYPE_VALUES,
+  TASK_TYPE_VALUES,
+  WORKFLOW_TYPE_VALUES,
+} from "./platform/validators";
 
 const newTables = [
   "wizard_sessions", "founder_signals", "roster_plans", "crew_members",
@@ -52,5 +59,38 @@ describe("WP68 C-DATA schema", () => {
     })[" indexes"]();
     expect(indexes.some((index) => index.fields[0] === "ownerId"), name).toBe(true);
     expect(indexes.map((index) => index.indexDescriptor), name).toContain(requiredIndexes[name]);
+  });
+
+  test("WP22 literals remain while the crew, document, and ledger values are additive", () => {
+    for (const value of ["research", "validation_report", "landing_page", "publish", "crew_blueprint", "studio_video"]) {
+      expect(TASK_TYPE_VALUES).toContain(value);
+      expect(WORKFLOW_TYPE_VALUES).toContain(value);
+    }
+    for (const value of ["research", "generate", "review", "render", "publish", "crew_blueprint", "studio_video"]) {
+      expect(STEP_TYPE_VALUES).toContain(value);
+    }
+    for (const value of ["research", "validation_report", "brief", "landing_page", "site_copy", "blueprint", "brand_kit", "landing_spec", "email_sequence", "social_pack", "seo_pack", "seo_article", "launch_plan", "ads_drafts", "build_pack"]) {
+      expect(DOCUMENT_KIND_VALUES).toContain(value);
+    }
+    for (const value of ["purchase_grant", "task_debit", "task_refund", "purchase_refund", "dispute", "plan_grant", "starter_grant", "allowance_expiry"]) {
+      expect(LEDGER_REASON_VALUES).toContain(value);
+    }
+  });
+
+  test.each([
+    ["projects", ["workspace"]],
+    ["tasks", ["employeeKey", "creditCost", "changeRound", "revisionOfTaskId", "approvalId", "jobKey"]],
+    ["documents", ["supersedesDocumentId", "schemaVersion", "promptRef"]],
+    ["site_configs", ["takedownAt", "takedownReason"]],
+    ["site_versions", ["landingSpec"]],
+    ["leads", ["consentText", "consentVersion", "doubleOptInAt", "unsubscribedAt", "deletedAt", "source"]],
+    ["credit_accounts", ["allowanceRemaining", "allowancePeriodEnd"]],
+    ["credit_ledger", ["bucket", "bucketSplit"]],
+  ] as const)("%s adds only optional fields", (name, fieldNames) => {
+    const table = schema.tables[name];
+    const fields = table.validator.fields as Record<string, { isOptional: string }>;
+    for (const fieldName of fieldNames) {
+      expect(fields[fieldName]?.isOptional, `${name}.${fieldName}`).toBe("optional");
+    }
   });
 });

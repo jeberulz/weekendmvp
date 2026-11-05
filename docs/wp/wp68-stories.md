@@ -15,7 +15,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `convex/schema.ts`, `convex/schema/{workspace,ai,growth}.ts`.
   - Acceptance criteria: Every new table and index in architecture §4.2 exists; validators are flat; existing tables and indexes remain.
   - Verification: schema inventory test, `npm run typecheck`, safe dev schema deploy.
-- [ ] `WP68-S2` - Amend WP22 tables additively
+- [x] `WP68-S2` - Amend WP22 tables additively
   - Scope: `convex/schema.ts`, `convex/platform/validators.ts`.
   - Acceptance criteria: Every §4.1 optional field and literal is present; prior literals and required fields remain; existing tests stay green.
   - Verification: schema diff review, `npm run typecheck`, targeted platform tests.
