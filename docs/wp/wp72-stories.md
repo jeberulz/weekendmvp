@@ -26,7 +26,7 @@ Standing rules:
   - Acceptance criteria: nav entries, page list, component inventory and copy for rows 02 and 05 extracted as
     plain data; reviewed by the orchestrator.
 
-- [ ] `WP72-S1` - Route scaffold
+- [x] `WP72-S1` - Route scaffold
   - Scope: `app/dashboard/b/[projectId]/**`
   - Acceptance criteria:
     - One route per workspace page in the extract.
