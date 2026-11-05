@@ -10,13 +10,13 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05 (Phase 0 started). Next gate: **G0** (Phase 0 close).
+Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 close).
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
 | WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | In progress (no commits on `origin` yet, 2026-11-05) | — | Open the contract PR; Claude reviews C-DATA, C-AUTHZ, C-OPS |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 in progress (sub-agents) | S4 needs the owner's OK for up to $25 of live spend | Contract PR after S1+S2 pass; Codex reviews C-ART, C-METER |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review running | — | Claude posts review on #167; owner merges after fixes |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 done; contract PR #168 open, all four checks green locally | S4 needs the owner's OK for up to $25 of live spend | Codex reviews C-ART, C-METER on #168; S4 spike on OK; S5 freezes prices |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting | G0; C-OPS from WP68 | — |
@@ -39,13 +39,14 @@ Updated 2026-11-05 (Phase 0 started). Next gate: **G0** (Phase 0 close).
 | Wildcard DNS plan for `*.weekendmvp.app` (D2) | WP78 S3 | Open |
 | Terms review for credits | WP80 S7 | Open |
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
+| WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
 
 | Contract | Owner | Reviewer | Status |
 |---|---|---|---|
-| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Open |
-| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | Open |
+| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Review running on #167 |
+| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | PR #168 open, awaiting Codex review |
 
 ## 2026-11-05 - Setup
 
@@ -80,3 +81,18 @@ Updated 2026-11-05 (Phase 0 started). Next gate: **G0** (Phase 0 close).
   Opus), S2 (C-JOBS, C-PROMPT, C-METER, Opus) and S3 (roles, Sonnet) running in parallel on
   disjoint files.
 - WP68: no branch on `origin` yet. Review starts when the PR opens.
+
+## 2026-11-05 - WP69 contract PR open; WP68 review started
+
+- WP69 PR #168 (https://github.com/jeberulz/weekendmvp/pull/168): S1 (C-ART), S2 (C-JOBS, C-PROMPT,
+  C-METER) and S3 (role rules) committed after independent Opus reviews (S1: 16 findings, S2: 15, S3: 7;
+  all fixed). Local checks on the branch: typecheck, lint, test and build all exit 0.
+- Asks for Codex are listed under "Needs from Codex" in `docs/wp/wp69-progress.md`:
+  - `documents.kind` and task type literals.
+  - Extra `ai_usage` and `ai_budgets` fields.
+  - `ops_settings.paidGlobalDailyBudgetMicroUsd`.
+  - Plan feature keys.
+  - A `markSent` mutation.
+- WP68 PR #167 is open. An Opus reviewer has the diff, `02` §4/§14, the rulings, and the WP69
+  contracts for cross-checking. Findings go to #167 as a comment and are logged here.
+- S4 cost spike not started: waiting for the owner's OK (cap $25).
