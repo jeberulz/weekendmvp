@@ -10,13 +10,13 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
+Updated 2026-11-05 (Phase 0 started). Next gate: **G0** (Phase 0 close).
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-launch-crew-plan` | Rulings recorded, manifest frozen | Plan PR not merged yet | Owner merges the plan PR; orchestrator runs G0 |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | Not started | Plan PR on `main` | Start S7 and S1 |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | Not started | Plan PR on `main`; S4 needs the owner's OK for up to $25 of live spend | Start S1–S3 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | In progress (no commits on `origin` yet, 2026-11-05) | — | Open the contract PR; Claude reviews C-DATA, C-AUTHZ, C-OPS |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 in progress (sub-agents) | S4 needs the owner's OK for up to $25 of live spend | Contract PR after S1+S2 pass; Codex reviews C-ART, C-METER |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting | G0; C-OPS from WP68 | — |
@@ -32,7 +32,7 @@ Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
 
 | Item | Needed by | Status |
 |---|---|---|
-| Merge the plan PR (`claude/wp67-launch-crew-plan`) so both lanes start from `main` | Before any WP starts | Open |
+| Merge the plan PR (`claude/wp67-launch-crew-plan`) so both lanes start from `main` | Before any WP starts | Done (#166) |
 | Approve up to $25 of live AI spend for the WP69 cost spike | WP69 S4 | Open (WP69 asks first) |
 | Start Meta business verification and app review (D7, D8) | Phase 5; lead time is weeks | Open |
 | Create the tenant Resend project and sending domain (D6) | WP79 | Open |
@@ -69,3 +69,14 @@ Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
 - Next: the owner merges the plan PR; then the Claude lane starts WP69 and the Codex
   lane starts WP68 with the kickoff prompts in
   `docs/plans/launch-workspace/briefs/kickoff-claude.md` and `kickoff-codex.md`.
+
+## 2026-11-05 - Phase 0 kickoff (orchestrator)
+
+- Checked `origin/main`: manifest line 3 reads RATIFIED. Plan PR #166 is merged.
+- Board worktree: `.worktrees/wp67-board` on `claude/wp67-board`.
+- Read the program docs and the canvas (rows 01–05 boards needed for WP69). A field extract
+  for sub-agents is on the WP69 branch at `docs/wp/wp69-canvas-extract.md`.
+- WP69 started in `.worktrees/wp69-crew-contracts`: stories and progress committed, S1 (C-ART,
+  Opus), S2 (C-JOBS, C-PROMPT, C-METER, Opus) and S3 (roles, Sonnet) running in parallel on
+  disjoint files.
+- WP68: no branch on `origin` yet. Review starts when the PR opens.
