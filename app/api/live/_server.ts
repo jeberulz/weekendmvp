@@ -10,10 +10,12 @@ import {
 import { SUPPORT_EMAIL } from "@/lib/legal/support";
 import {
   LIVE_WORKSHOP_ENV,
+  LIVE_WORKSHOP_INTEGRATION_ID,
   LIVE_WORKSHOP_LOOKUP_KEYS,
   LIVE_WORKSHOP_PRICES,
   LIVE_WORKSHOP_PURPOSE,
   LIVE_WORKSHOP_SELLER,
+  LIVE_WORKSHOP_STATEMENT_SUFFIX,
   LIVE_WORKSHOP_STRIPE_API_VERSION,
   type LiveWorkshopPriceKey,
 } from "@/lib/live/stripe-catalog";
@@ -194,7 +196,8 @@ export function checkoutSessionParams(
 
   return {
     mode: "payment",
-    // Cards only — avoids delayed methods; webhook still guards payment_status.
+    // Cards only. A delayed method can settle after the ~31 minute seat hold
+    // expires, and this SDK's API version has no allowlist param besides this.
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: success,
@@ -203,14 +206,29 @@ export function checkoutSessionParams(
     customer_email: order.email,
     customer_creation: "always",
     metadata,
-    payment_intent_data: { metadata },
+    payment_intent_data: {
+      metadata,
+      receipt_email: order.email,
+      statement_descriptor_suffix: LIVE_WORKSHOP_STATEMENT_SUFFIX,
+      description: "Weekend MVP Build-Along ticket",
+    },
     expires_at: Math.floor(order.sessionExpiresAt / 1000),
     automatic_tax: { enabled: true },
     billing_address_collection: "required",
     phone_number_collection: { enabled: false },
+    integration_identifier: LIVE_WORKSHOP_INTEGRATION_ID,
+    origin_context: "web",
+    name_collection: { individual: { enabled: true } },
+    branding_settings: {
+      display_name: "Weekend MVP",
+      background_color: "#F7F3EC",
+      button_color: "#A84A00",
+      border_style: "rounded",
+      font_family: "lora",
+    },
     custom_text: {
       submit: {
-        message: `${LIVE_WORKSHOP_SELLER_LINE} Your Zoom link and prep list come by email. Price in USD.`,
+        message: `${LIVE_WORKSHOP_SELLER_LINE} Price in USD. Stripe emails the receipt.`,
       },
       after_submit: {
         message: `${refundLine} Seller: ${LIVE_WORKSHOP_SELLER}.`,

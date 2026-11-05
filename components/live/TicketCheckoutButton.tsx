@@ -4,7 +4,7 @@ import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { LiveButton } from "@/components/live/LiveButton";
-import { LIVE_BUILDALONG_SIGNUP_SRC } from "@/lib/live/config";
+import { LIVE_BUILDALONG_SIGNUP_SRC, LIVE_WORKSHOP_SELLER_LINE } from "@/lib/live/config";
 
 /** returnTo carries src so magic-link / Google land back with attribution. */
 const BUILD_ALONG_RETURN = `/live/build-along?src=${LIVE_BUILDALONG_SIGNUP_SRC}#ticket`;
@@ -26,12 +26,15 @@ export function TicketCheckoutButton({
   className,
   variant = "primary",
   fullWidth,
+  tone = "paper",
 }: {
   label: string;
   nextSession?: boolean;
   className?: string;
   variant?: "primary" | "secondary";
   fullWidth?: boolean;
+  /** Dark final CTA. Paper is the cream ticket card. */
+  tone?: "paper" | "dark";
 }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
@@ -91,8 +94,10 @@ export function TicketCheckoutButton({
     });
   }
 
+  const caption = tone === "dark" ? "text-[#F7F3EC]" : "text-[#4A453C]";
+
   return (
-    <div className={fullWidth ? "w-full" : undefined}>
+    <div className={fullWidth ? "w-full" : undefined} aria-live="polite">
       <LiveButton
         type="button"
         variant={variant}
@@ -100,17 +105,14 @@ export function TicketCheckoutButton({
         className={className}
         disabled={pending || isLoading}
       >
-        {pending
-          ? "Taking you to checkout…"
-          : !isAuthenticated && !isLoading
-            ? label
-            : label}
+        {pending ? "Taking you to checkout…" : label}
       </LiveButton>
-      <p className="mt-2 text-center font-mono text-xs text-[#6B6457]">
-        No VAT added: Rulz&amp;Co is not VAT-registered.
-      </p>
+      <p className={`mt-2 text-center font-mono text-xs ${caption}`}>{LIVE_WORKSHOP_SELLER_LINE}</p>
       {error ? (
-        <p className="mt-2 text-center text-sm text-[#6B6457]" role="status">
+        <p
+          className={`mt-2 text-center text-sm font-medium ${tone === "dark" ? "text-[#F7F3EC]" : "text-home-ink"}`}
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

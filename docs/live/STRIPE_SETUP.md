@@ -11,8 +11,10 @@ Buyers must be signed in (magic-link / Google). Guest checkout is not offered.
 
 **Seller / MoR:** Rulz&Co (confirmed). Checkout uses Stripe Payments (not Managed
 Payments) with `automatic_tax`, required billing address, tax-inclusive prices,
-and `payment_method_types: ["card"]`. Checkout copy:
-`No VAT added: Rulz&Co is not VAT-registered.`
+and `payment_method_types: ["card"]`. Checkout copy, under the pay button:
+`No VAT added: Rulz&Co is not VAT-registered. Price in USD. Stripe emails the receipt.`
+
+Hosted Checkout also sets `branding_settings` (cream `#F7F3EC`, button `#A84A00`, Lora, rounded, display name Weekend MVP), collects an individual name, forces `receipt_email`, and uses statement suffix `BUILDALONG`. `payment_method_types: ["card"]` stays: this SDK's pinned API version has no `allowed_payment_method_types`, and a delayed method can settle after the ~31 minute seat hold. Return states: `?thanks=1` does not promise a calendar invite or a prep email (those are not sent). `?checkout=cancelled` tells the buyer the seat hold is still briefly alive.
 
 ## Product
 
@@ -21,7 +23,7 @@ and `payment_method_types: ["card"]`. Checkout copy:
 | Name | Weekend MVP Build-Along: Sat 14 Nov 2026, 15:00 GMT |
 | Description | Build it Saturday, ship it Sunday. 2 hours live on Zoom. Ship Sheet, prompts and the replay (no expiry) included. |
 | Metadata | `purpose=weekendmvp_workshop_v1` |
-| Tax code | `txcd_20060045` (digitally delivered education / training materials) |
+| Tax code | `txcd_20060045` (Stripe name: Training Services - Live Virtual). Confirmed on the Tax Codes API. The code's own description excludes video replays; this product includes a no-expiry replay. Left as specified — confirm with a tax advisor before changing it. [Tax codes](https://docs.stripe.com/tax/tax-codes) |
 
 ## Prices (one-time, USD, tax_behavior=inclusive)
 
@@ -151,6 +153,23 @@ npx convex run --internal live/workshopCheckout:seedSeats '{"eventKey":"build-al
 Magic-link sign-in relies on the existing `AUTH_RESEND_*` env on Convex prod
 `first-squirrel-244`. It was reported working 15 Oct; not re-verified from
 env, and no change needed.
+
+## Live account status (18 Oct 2026)
+
+Created on `acct_1ThX6u4fUcq943uM` (WeekendMVP, livemode). Checkout resolves these by lookup key in `lib/live/stripe-catalog.ts`. Production Vercel also has the three price ids as optional overrides, plus `STRIPE_LIVE_WORKSHOP_WEBHOOK_SECRET`. The signing secret is not written here.
+
+| Object | Id | Lookup key |
+|--------|----|------------|
+| Product | `prod_VSt8a31duN2kMA` | `purpose=weekendmvp_workshop_v1`, tax code `txcd_20060045` |
+| Early-bird $19 | `price_1URxM54fUcq943uMgByNC0P3` | `weekendmvp_buildalong_20261114_early` |
+| Regular $29 | `price_1URxM54fUcq943uMFlfAUU9E` | `weekendmvp_buildalong_20261114_regular` |
+| 5 Dec $29 (UI gated off) | `price_1URxM64fUcq943uMbe208KAg` | `weekendmvp_buildalong_20261205_regular` |
+| Webhook | `we_1URxMO4fUcq943uM3ajI4O2H` | `https://www.weekendmvp.app/api/live/webhook` |
+
+- Tax settings `status=active`. Head office is Manchester, GB, `M14 5JT`. Account default tax code `txcd_10804001` was left as-is.
+- Tax registrations: none. With `automatic_tax` on and no registration, Stripe calculates no tax (`not_collecting`). That matches "Rulz&Co is not VAT-registered."
+- Membership webhook and `/api/stripe-webhook` were not changed.
+- `STRIPE_LIVE_WORKSHOP_RESTRICTED_KEY` and `LIVE_WORKSHOP_BILLING_MODE` are still unset. Buy stays off until those exist. Do not point a test key at these live price ids.
 
 ## Test-mode purchase walkthrough
 

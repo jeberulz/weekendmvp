@@ -16,10 +16,10 @@ import {
   BUILD_ALONG,
   LIVE_ASSETS,
   LIVE_BUILDALONG_SIGNUP_SRC,
-  LIVE_WORKSHOP_SELLER_LINE,
   NEXT_BUILD_ALONG,
   NEXT_SESSION_CHECKOUT_ENABLED,
   POLICY_ANCHOR,
+  liveZoomUrl,
   POLICY_SECTION_LIVE,
   STARTUP_IDEAS_PAID_HREF,
 } from "@/lib/live/config";
@@ -256,8 +256,7 @@ function TicketCard({
             )}
           </div>
           <p className="mt-2.5 text-center font-mono text-xs text-[#6B6457]">
-            Sat 14 Nov 2026 · 15:00–17:00 GMT · Price shown in USD. Any tax is shown at
-            checkout. {LIVE_WORKSHOP_SELLER_LINE}
+            Sat 14 Nov 2026 · 15:00–17:00 GMT · USD
           </p>
           <div className="mt-3">
             <GuaranteeLine />
@@ -271,10 +270,11 @@ function TicketCard({
 export default async function BuildAlongPage({
   searchParams,
 }: {
-  searchParams: Promise<{ thanks?: string; src?: string }>;
+  searchParams: Promise<{ thanks?: string; src?: string; checkout?: string }>;
 }) {
   const params = await searchParams;
   const thanks = params.thanks === "1";
+  const cancelled = params.checkout === "cancelled" && !thanks;
   const signupSrc =
     params.src === LIVE_BUILDALONG_SIGNUP_SRC ? LIVE_BUILDALONG_SIGNUP_SRC : null;
   await connection();
@@ -285,6 +285,7 @@ export default async function BuildAlongPage({
   const ended = phase === "ended";
   const soldOut = seats.soldOut && !ended && !thanks;
   const preSale = phase === "pre_sale";
+  const zoom = liveZoomUrl();
   const proof = LIVE_ASSETS.paidProofQuotes;
   const dealLine = LIVE_ASSETS.dryRunPassed ? DEAL_DRY_RUN : DEAL_FALLBACK;
   const tools = LIVE_ASSETS.toolList;
@@ -319,28 +320,35 @@ export default async function BuildAlongPage({
           {BUILD_ALONG.title} · {BUILD_ALONG.subline}
         </p>
         <p className="mt-5 text-lg leading-relaxed text-[#4A453C]">
-          15:00–17:00 GMT on Zoom. Your receipt is on its way from Stripe. The Zoom link and a
-          reminder come by email before the session.
+          15:00–17:00 GMT on Zoom. Stripe is emailing the receipt. That&apos;s the only email
+          this checkout sends.
         </p>
         <LocalTime
           startMs={BUILD_ALONG.startAt}
           endMs={BUILD_ALONG.endAt}
           className="mt-2 font-mono text-sm text-[#6B6457]"
         />
-        <h2 className="font-editorial mt-10 text-2xl font-medium">
-          Before Saturday, do three things:
-        </h2>
+        {zoom ? (
+          <p className="mt-4 text-[15px] leading-relaxed text-home-ink">
+            Zoom link:{" "}
+            <a href={zoom} className="underline decoration-home-rule underline-offset-4">
+              join the session
+            </a>
+            .
+          </p>
+        ) : (
+          <p className="mt-4 text-[15px] leading-relaxed text-[#4A453C]">
+            The Zoom link isn&apos;t posted yet. It will be on this page before Saturday.
+          </p>
+        )}
+        <h2 className="font-editorial mt-10 text-2xl font-medium">Before Saturday:</h2>
         <ol className="mt-4 list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-home-ink">
           <li>
-            <strong>Add it to your calendar.</strong> The confirmation email has the invite.
+            <strong>Block 15:00–17:00 GMT</strong> on Sat 14 Nov. Checkout does not send a
+            calendar invite.
           </li>
           <li>
-            <strong>Open the Ship Sheet</strong> when it arrives and make your own copy.
-          </li>
-          <li>
-            <strong>Set up a free account</strong>
-            {tools.length > 0 ? ` on ${tools[0]}` : " on the tool named in your prep email"} and
-            pick an idea, or a couple to choose from.{" "}
+            <strong>Pick an idea</strong>, or two to choose from.{" "}
             <Link
               href={STARTUP_IDEAS_PAID_HREF}
               className="underline decoration-home-rule underline-offset-4"
@@ -348,6 +356,11 @@ export default async function BuildAlongPage({
               Browse free ideas
             </Link>
             .
+          </li>
+          <li>
+            <strong>Open a free account</strong>
+            {tools.length > 0 ? ` on ${tools[0]}` : " on the tool you'll build with"}. The Ship
+            Sheet is used in the session. It isn&apos;t emailed by checkout.
           </li>
         </ol>
         <p className="mt-8 text-sm text-[#6B6457]">
@@ -414,6 +427,16 @@ export default async function BuildAlongPage({
     <div>
       {signupRecorder}
       <JsonLd schema={SCHEMA} />
+      {cancelled ? (
+        <div className="border-b border-home-rule bg-home-card">
+          <p
+            className="mx-auto max-w-[1120px] px-5 py-3 text-center text-sm text-home-ink sm:px-10"
+            role="status"
+          >
+            No charge. Your seat stays held for a few minutes if you want to try again.
+          </p>
+        </div>
+      ) : null}
 
       {/* Date + price bar */}
       <div className="bg-[#1A1814] text-[#F7F3EC]">
@@ -482,7 +505,7 @@ export default async function BuildAlongPage({
           <p className="mt-3.5 max-w-lg text-sm text-[#6B6457]">
             {soldOut
               ? `Sat 14 Nov · Sold out · Next: ${NEXT_BUILD_ALONG.shortLabel}`
-              : `${price.priceLine}. Replay included, no expiry. Price shown in USD. Any tax is shown at checkout.`}
+              : `${price.priceLine}. Replay included, no expiry. Price in USD.`}
           </p>
           {!soldOut ? (
             <p className="mt-2 text-sm text-home-ink">{seatsLine(seats)}</p>
@@ -764,8 +787,7 @@ export default async function BuildAlongPage({
                 )}
               </div>
               <p className="mt-2.5 text-center font-mono text-xs text-[#6B6457]">
-                Sat 14 Nov 2026 · 15:00–17:00 GMT · Price shown in USD. Any tax is shown at
-                checkout.
+                Sat 14 Nov 2026 · 15:00–17:00 GMT · USD
               </p>
               <div className="mt-3">
                 <GuaranteeLine />
@@ -873,6 +895,7 @@ export default async function BuildAlongPage({
                   label="Get a seat for 5 Dec"
                   nextSession
                   variant="secondary"
+                  tone="dark"
                 />
               ) : (
                 <LiveButton href="/starter-kit" variant="secondary">

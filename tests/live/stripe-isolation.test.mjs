@@ -47,7 +47,14 @@ describe("live workshop Stripe isolation", () => {
     assert.match(server, /automatic_tax:\s*\{\s*enabled:\s*true/);
     assert.match(server, /billing_address_collection:\s*"required"/);
     assert.match(server, /payment_method_types:\s*\[\s*"card"\s*\]/);
+    assert.match(server, /receipt_email: order\.email/);
+    assert.match(server, /LIVE_WORKSHOP_INTEGRATION_ID/);
+    assert.match(catalog, /weekendmvp_workshop_v1_kptwmbxr/);
+    assert.match(catalog, /BUILDALONG/);
+    assert.match(server, /LIVE_WORKSHOP_STATEMENT_SUFFIX/);
+    assert.match(server, /name_collection/);
     assert.doesNotMatch(server, /managed_payments/);
+    assert.doesNotMatch(server, /prep list come by email/);
   });
 
   test("refund policy ships the live workshop section", () => {

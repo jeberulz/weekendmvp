@@ -17,6 +17,12 @@
 
 export const LIVE_WORKSHOP_PURPOSE = "weekendmvp_workshop_v1" as const;
 
+/** Stable Checkout integration label. Suffix is 8 letters, shared by every session. */
+export const LIVE_WORKSHOP_INTEGRATION_ID = "weekendmvp_workshop_v1_kptwmbxr" as const;
+
+/** Card statement suffix. Prefix lives on the Stripe account; together they must stay ≤ 22. */
+export const LIVE_WORKSHOP_STATEMENT_SUFFIX = "BUILDALONG" as const;
+
 /** Pin to the same Stripe SDK apiVersion the membership catalog uses. */
 export const LIVE_WORKSHOP_STRIPE_API_VERSION = "2026-05-27.dahlia" as const;
 
