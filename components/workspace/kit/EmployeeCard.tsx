@@ -125,7 +125,14 @@ export function EmployeeCard({
           <span aria-hidden="true" className="font-mono text-[11px]">
             {employee.autopilot ? "On" : "Off"}
           </span>
-          {autopilotAvailable ? null : <Lock aria-hidden="true" className="size-3.5" />}
+          {autopilotAvailable ? null : (
+            <>
+              <Lock aria-hidden="true" className="size-3.5" />
+              <span aria-hidden="true" className="text-[11px] font-medium text-home-ink-2">
+                Paid
+              </span>
+            </>
+          )}
         </button>
         {autopilotAvailable ? null : (
           <span id={hintId} className="sr-only">

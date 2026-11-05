@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ApprovalCard,
   BrandKitCard,
@@ -87,11 +87,18 @@ function ApprovalsDemo() {
   const [runtime, setRuntime] = useState<Record<string, ApprovalRuntime>>({});
   const read = (id: string): ApprovalRuntime => runtime[id] ?? { state: "open", pending: false };
   const write = (id: string, next: ApprovalRuntime) => setRuntime((previous) => ({ ...previous, [id]: next }));
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(clearTimeout);
+  }, []);
 
   function approve(fixture: ApprovalFixture) {
     if (fixture.simulatePending) {
       write(fixture.id, { state: "open", pending: true });
-      setTimeout(() => write(fixture.id, { state: "approved", pending: false, message: "Approved. Wren will route this." }), 1500);
+      timers.current.push(
+        setTimeout(() => write(fixture.id, { state: "approved", pending: false, message: "Approved. Wren will route this." }), 1500),
+      );
       return;
     }
     write(fixture.id, { state: "approved", pending: false, message: "Approved. Wren will route this." });

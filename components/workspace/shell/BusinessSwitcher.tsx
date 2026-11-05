@@ -15,6 +15,19 @@ export function switcherLabel(currentName: string): string {
 }
 
 /**
+ * Whether a blur should close the open list. Only a move to a node outside the
+ * switcher closes it. A null target (a pointer press on a non-focusable link in
+ * Safari or Firefox, or focus leaving the window) must not, or the list would
+ * hide mid-click. A missing root never closes.
+ */
+export function shouldCloseOnBlur(next: EventTarget | null, root: Node | null): boolean {
+  if (root === null || next === null) return false;
+  // Duck-typed: the target can be a non-Node EventTarget (window), and tests run without a DOM.
+  if (typeof (next as Partial<Node>).nodeType !== "number") return false;
+  return !root.contains(next as Node);
+}
+
+/**
  * Disclosure, not a menu: a button toggles a plain list of links. Escape
  * closes it and returns focus to the button. It also closes, without moving
  * focus, when focus leaves it or the pointer goes down outside it, so the open
@@ -52,12 +65,7 @@ export function BusinessSwitcher({
   }
 
   function onBlur(event: FocusEvent<HTMLDivElement>) {
-    const next = event.relatedTarget;
-    // A null target (pointer-down on a non-focusable link in Safari/Firefox, or focus
-    // leaving the window) must not close the list: that would hide the link mid-click.
-    // The outside pointer-down handler covers real outside clicks.
-    if (!(next instanceof Node) || rootRef.current?.contains(next)) return;
-    setOpen(false);
+    if (shouldCloseOnBlur(event.relatedTarget, rootRef.current)) setOpen(false);
   }
 
   return (

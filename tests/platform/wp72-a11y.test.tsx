@@ -11,14 +11,14 @@ import {
   BuildPackPromptCard,
   CreditMeter,
   EmployeeAvatar,
+  EmployeeCard,
   FromAttribution,
   WrenComposer,
-  creditMeterRightText,
   creditMeterVisibleLabel,
 } from "@/components/workspace/kit";
-import { freeCost, hydrotrailPrompt, irisIdentity } from "@/components/workspace/kit/fixtures";
+import { freeCost, hydrotrailEmployees, hydrotrailPrompt, irisIdentity } from "@/components/workspace/kit/fixtures";
 import { WorkspaceFrame, billingLinkLabel } from "@/components/workspace/shell";
-import { switcherLabel } from "@/components/workspace/shell/BusinessSwitcher";
+import { shouldCloseOnBlur, switcherLabel } from "@/components/workspace/shell/BusinessSwitcher";
 
 const root = path.resolve(__dirname, "../..");
 const read = (...parts: string[]) => readFileSync(path.join(root, ...parts), "utf8");
@@ -33,16 +33,36 @@ describe("label in name (WCAG 2.5.3)", () => {
     { balance: 600, max: 500, plan: "builders_hub" },
   ] as const;
 
-  test.each(cases)("the Billing link name starts with the meter's visible text: %o", (credits) => {
-    const label = billingLinkLabel(credits);
-    const visible = creditMeterVisibleLabel(credits.balance, credits.max, credits.plan);
+  const decode = (text: string) =>
+    text
+      .replace(/&#x27;|&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+
+  /** The meter's first visible row (label, plan, count), read from the rendered markup. */
+  function firstRowText(markup: string): string {
+    const row = markup.match(/<div class="flex items-center gap-2 text-\[13px\]">([\s\S]*?)<\/div>/)?.[1] ?? "";
+    return decode(row.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+  }
+
+  test.each(cases)("the Billing link name starts with the rendered meter's first row: %o", (credits) => {
+    const visible = firstRowText(renderToStaticMarkup(<CreditMeter {...credits} />));
+    expect(visible.length).toBeGreaterThan("Credits".length);
+    expect(visible.startsWith("Credits")).toBe(true);
+    const frame = renderToStaticMarkup(
+      <WorkspaceFrame projectId="proj1" businesses={[{ id: "proj1", name: "HydroTrail" }]} credits={credits}>
+        <main id="workspace-main" tabIndex={-1} />
+      </WorkspaceFrame>,
+    );
+    const tag = frame.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>/)?.[0] ?? "";
+    const label = decode(tag.match(/aria-label="([^"]*)"/)?.[1] ?? "");
     expect(label.startsWith(visible)).toBe(true);
     expect(label).toContain("Billing");
-    // The visible words really are in the rendered meter, in this order.
-    const markup = renderToStaticMarkup(<CreditMeter {...credits} />);
-    const text = markup.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-    expect(text).toContain(`Credits`);
-    expect(text).toContain(creditMeterRightText(credits.balance, credits.max));
+    // The helpers agree with what was rendered.
+    expect(billingLinkLabel(credits)).toBe(label);
+    expect(creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)).toBe(visible);
   });
 
   test("the rendered Billing link carries that label", () => {
@@ -84,6 +104,44 @@ describe("decorative glyphs and legibility", () => {
   });
 });
 
+describe("shouldCloseOnBlur", () => {
+  const inside = { nodeType: 1 };
+  const outside = { nodeType: 1 };
+  const root = { contains: (node: unknown) => node === inside } as unknown as Node;
+
+  test("a null target keeps the list open", () => {
+    expect(shouldCloseOnBlur(null, root)).toBe(false);
+  });
+  test("a target inside keeps it open", () => {
+    expect(shouldCloseOnBlur(inside as unknown as EventTarget, root)).toBe(false);
+  });
+  test("a target outside closes it", () => {
+    expect(shouldCloseOnBlur(outside as unknown as EventTarget, root)).toBe(true);
+  });
+  test("a missing root never closes", () => {
+    expect(shouldCloseOnBlur(outside as unknown as EventTarget, null)).toBe(false);
+  });
+  test("a non-node target (window) keeps it open", () => {
+    expect(shouldCloseOnBlur({} as EventTarget, root)).toBe(false);
+  });
+});
+
+describe("autopilot gate is visible", () => {
+  test("Free shows a visible Paid label next to the lock; paid plans do not", () => {
+    const iris = hydrotrailEmployees[0];
+    const gated = renderToStaticMarkup(
+      <EmployeeCard employee={iris} autopilotAvailable={false} workstreamHref="/x" onAutopilotToggle={noop} />,
+    );
+    expect(gated).toMatch(/<span aria-hidden="true" class="text-\[11px\] font-medium text-home-ink-2">Paid<\/span>/);
+    const open = renderToStaticMarkup(
+      <EmployeeCard employee={iris} autopilotAvailable workstreamHref="/x" onAutopilotToggle={noop} />,
+    );
+    expect(open).not.toContain(">Paid<");
+    // Name still starts with the visible "Autopilot" and mentions paid plans.
+    expect(gated).toContain('aria-label="Autopilot for Iris, Brand (paid plans)"');
+  });
+});
+
 describe("composer", () => {
   test("the textarea is described by the Enter / Shift+Enter hint", () => {
     const markup = renderToStaticMarkup(<WrenComposer onSend={noop} />);
@@ -114,9 +172,11 @@ describe("source guards", () => {
     expect(source).not.toContain("outline-none");
   });
 
-  test("the switcher blur handler never closes on a null relatedTarget", () => {
+  test("the switcher keeps its outside pointer-down listener and removes it on cleanup", () => {
     const source = read("components", "workspace", "shell", "BusinessSwitcher.tsx");
-    expect(source).toContain("!(next instanceof Node)");
+    expect(source).toContain('document.addEventListener("pointerdown", onPointerDown)');
+    expect(source).toContain('document.removeEventListener("pointerdown", onPointerDown)');
+    expect(source).toContain("shouldCloseOnBlur(event.relatedTarget, rootRef.current)");
   });
 
   test("no kit or shell file uses inline styles, any or console.log", () => {
@@ -137,22 +197,40 @@ describe("kit preview page", () => {
   const page = read(...dir, "page.tsx");
   const client = read(...dir, "KitPreviewClient.tsx");
 
-  test("the NODE_ENV check runs, and calls notFound, before any JSX", () => {
-    const check = page.indexOf('process.env.NODE_ENV !== "development"');
+  test("the dynamic import and all JSX sit inside the development branch, before notFound()", () => {
+    const check = page.indexOf('if (process.env.NODE_ENV === "development") {', page.indexOf("export default async function"));
+    const dynamicImport = page.indexOf('await import("./KitPreviewClient")');
+    const firstReturn = page.indexOf("return (", check);
     const notFoundCall = page.indexOf("notFound();", check);
-    const firstReturn = page.indexOf("return (");
     expect(check).toBeGreaterThan(-1);
-    expect(notFoundCall).toBeGreaterThan(check);
-    expect(firstReturn).toBeGreaterThan(notFoundCall);
-    // No JSX element appears in the function before the check.
-    const fnStart = page.indexOf("export default function");
-    expect(page.slice(fnStart, check)).not.toMatch(/<[A-Za-z]/);
+    expect(dynamicImport).toBeGreaterThan(check);
+    expect(firstReturn).toBeGreaterThan(dynamicImport);
+    expect(notFoundCall).toBeGreaterThan(firstReturn);
+    // Nothing renders before the check.
+    expect(page.slice(page.indexOf("export default async function"), check)).not.toMatch(/<[A-Za-z]/);
   });
 
-  test("robots is noindex and nofollow", () => {
-    expect(page).toMatch(/export const metadata/);
-    expect(page).toMatch(/robots:\s*\{[^}]*index:\s*false/);
-    expect(page).toMatch(/robots:\s*\{[^}]*follow:\s*false/);
+  test("page.tsx has no static import of the client preview or the fixtures", () => {
+    expect(page).not.toMatch(/^import[^;]*KitPreviewClient/m);
+    expect(page).not.toMatch(/^import[^;]*fixtures/m);
+    expect(page).not.toMatch(/from\s+"\.\/KitPreviewClient"/);
+    expect(page).not.toMatch(/kit\/fixtures/);
+  });
+
+  test("robots is noindex and nofollow, and the title is set only in development", () => {
+    expect(page).toMatch(/export function generateMetadata/);
+    expect(page).not.toMatch(/export const metadata/);
+    expect(page).toMatch(/robots\s*=\s*\{[^}]*index:\s*false/);
+    expect(page).toMatch(/robots\s*=\s*\{[^}]*follow:\s*false/);
+    const body = page.slice(page.indexOf("export function generateMetadata"), page.indexOf("const PROJECT_ID"));
+    const devBranch = body.indexOf('process.env.NODE_ENV === "development"');
+    const title = body.indexOf("title:");
+    expect(devBranch).toBeGreaterThan(-1);
+    expect(title).toBeGreaterThan(devBranch);
+    // The title is inside the dev branch's braces, and the fallback return has none.
+    const afterBranch = body.slice(body.indexOf("}", title));
+    expect(afterBranch).toMatch(/return \{ robots \};/);
+    expect(body.match(/title:/g)).toHaveLength(1);
   });
 
   test("it lives outside /dashboard and needs no Convex, auth or network", () => {
@@ -169,6 +247,7 @@ describe("kit preview page", () => {
   test("the server page passes no functions; callbacks live in the client wrapper", () => {
     expect(client.startsWith('"use client"')).toBe(true);
     expect(page).not.toMatch(/=>|onApprove|onSend|onRetry/);
+    expect(client).toMatch(/clearTimeout/);
   });
 
   test("the preview renders every kit area (client wrapper, static markup)", async () => {
