@@ -207,3 +207,19 @@ copy them exactly.
   - `test:platform`, `test:convex`, `test:prompts`: exit 0 (296 contract tests).
   - `tsc -p scripts/spikes`: exit 0.
   - Full `npm test` is still blocked only by the uncommitted spike files (Needs from Codex item 8).
+
+## 2026-11-05 - S4 done; S5 recorded, freeze pending owner
+
+- Live spike finished: $5.72 of the $25 cap; results in `docs/wp/wp69-spike-results.md`.
+- Typical free launch measured at $0.57 (config A), under the $0.75 target. Config A stays: Haiku social
+  and email scored 0.32 below Sonnet, past the 0.3 rule.
+- Rows more than 30% off: launch plan (+96%), social on Sonnet (by design), OpenAI images (+77% logos,
+  +37% hero), seeds (-77%, good news).
+- Credit rule fails for brand kit regenerate and the standard offer image with either image provider.
+  Proposals sent to the owner (3 credits offer image, 11 brand kit regenerate, Recraft default).
+- Measured values written into `03-ai-cost-model.md` §1, §3, §4, §7, including the Sonnet cache-read price
+  correction ($0.10).
+- Not measured: Recraft (no credits, plus a spike bug on hero size), video (no provider), chat and change
+  rounds.
+- Added proposed S6 (visual system in C-ART) from the landing design brief (`07-landing-design.md`).
+- Docs updated: `03-ai-cost-model.md`, `wp69-spike-results.md`, stories, this file. No code changed.
