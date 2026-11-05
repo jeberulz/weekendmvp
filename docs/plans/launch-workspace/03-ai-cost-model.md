@@ -1,13 +1,16 @@
 # Launch Workspace — AI cost model
 
-**Status:** Planning estimates, 2026-11-05. Every number below is an estimate until
-the Phase 0 spike (§10) measures it. Replace estimates with measured values in this
-file when the spike lands, and keep the date on each.
+**Status:** Estimates of 2026-11-05, with measured values from the WP69-S4 spike
+(live, 2026-11-05, 6 businesses, $5.72) added beside them in §1, §3, §4 and §7.
+Full results: `docs/wp/wp69-spike-results.md`. Not yet measured: Recraft images,
+video, chat and change rounds. **The credit prices in §7 are not frozen**: two
+of them fail the per-credit rule, and the proposals are with the owner.
 
 The short version:
 
 - **A free weekend launch on a library idea should cost about $0.55 in AI calls**
-  (range $0.40–$0.70), under the $0.75 target. The heaviest single item is the build
+  (range $0.40–$0.70), under the $0.75 target. **Measured: $0.57** (range
+  $0.35–$0.80; config A, with social and email on Sonnet; 2026-11-05). The heaviest single item is the build
   pack, then the landing page and brand kit. Images are about a fifth of the total.
 - **Running every drafting call on Opus instead of Sonnet would cost about $0.90**,
   over target. The model router is the most important cost control we have, after
@@ -22,11 +25,11 @@ The short version:
 | Item | Price | Source |
 |---|---|---|
 | Claude Haiku 5.5 | $0.10 in / $0.50 out per MTok (prompts ≤ 100K tokens); cache read 0.1×, 5-min cache write 1.25×; tokenizer counts about 30% more tokens than older models | Claude API reference, 2026-11 |
-| Claude Sonnet 5.5 | $2 in / $10 out per MTok; cache read $0.20; 5-min cache write $2.50 | Claude API reference, 2026-11 |
+| Claude Sonnet 5.5 | $2 in / $10 out per MTok; cache read **$0.10** (corrected 2026-11-05 from the live pricing page; earlier copies said $0.20); 5-min cache write $2.50 | platform.claude.com pricing, read 2026-11-05 |
 | Claude Opus 5.5 | $4 in / $20 out per MTok; cache read $0.20 | Claude API reference, 2026-11 |
 | Message Batches | 50% off every token, cache reads and writes included | Claude API reference, 2026-11 |
-| Images | $0.006–$0.06 per image across current models and quality settings. Planning value: **$0.03** for a logo mark or hero, $0.02 for a standard offer image, $0.05 for high quality | Web pricing surveys, Oct 2026 (sources at the end) |
-| Video | $0.05–$0.40 per second across current API models. Planning value: **$0.05/s** (cheapest tier) | Web pricing surveys, Aug–Oct 2026 |
+| Images | $0.006–$0.06 per image across current models and quality settings. Planning value: **$0.03** for a logo mark or hero, $0.02 for a standard offer image, $0.05 for high quality. **List prices read 2026-11-05:** Recraft V4.1 raster $0.035; OpenAI gpt-image-2 medium $0.053 at 1024², $0.041 at 1536×1024 (the spike measured exactly these) | Web pricing surveys, Oct 2026 (sources at the end); provider pricing pages 2026-11-05 |
+| Video | $0.05–$0.40 per second across current API models. Planning value: **$0.05/s** (cheapest tier). Not measured: the OpenAI Videos API shut down 2026-09-24 and there is no Veo key | Web pricing surveys, Aug–Oct 2026 |
 | OpenAI `gpt-5.6-sol` (engine only) | $5 / $30 per MTok | `lib/engine/providers/pricing.ts` |
 
 Thinking tokens bill as output. Sonnet 5.5 defaults to adaptive thinking at `high`
@@ -51,27 +54,27 @@ minutes read it at a tenth of the price (Sonnet) or a twentieth (Opus).
 
 Assumes per-idea seeds exist (§4), Sonnet for drafts, Haiku for bulk, effort `low`.
 
-| Step | Model | Task input | Output | Est. cost |
-|---|---|---|---|---|
-| Blueprint personalise (seeds + wizard answers) | Sonnet | 5k | 1.5k | $0.030 |
-| Brand kit text (names, voice, palette, type, taglines) | Sonnet | 2k (+4k cache write) | 2k | $0.034 |
-| Landing spec (LandingSpec JSON, waitlist) | Sonnet | 3k | 3k | $0.037 |
-| Email sequence (4 emails) | Sonnet | 1.5k | 2.5k | $0.029 |
-| SEO pack (titles, meta) and first article (~1,000 words) | Sonnet | 1.5k | 3k | $0.034 |
-| Launch plan | Sonnet | 1k | 1.5k | $0.018 |
-| Build pack (4 phases, 8 prompts, from the idea's existing prompts) | Sonnet | 6k | 6k | $0.073 |
-| **Drafting subtotal** | | | | **$0.26** |
-| Social pack (7 posts, one call) | Haiku | 1k | 2k | $0.003 |
-| Ads drafts | Haiku | 1k | 1k | $0.002 |
-| Quality checks (one per artifact, 9) | Haiku | 4k each | 0.2k each | $0.006 |
-| Publish policy check, memory summaries | Haiku | | | $0.003 |
-| **Bulk subtotal** | | | | **$0.014** |
-| Logo marks ×3 | Recraft | | | $0.09 |
-| Landing hero image ×1 | Image model | | | $0.03 |
-| **Images subtotal** | | | | **$0.12** |
-| Wren chat, typical (25 turns: 90% Haiku ≈ $0.0006, 10% Sonnet ≈ $0.010) | Mixed | | | $0.04 |
-| Free change rounds, typical (3 revisions at ≈ $0.035) | Sonnet | | | $0.11 |
-| **Typical free launch** | | | | **≈ $0.54** |
+| Step | Model | Task input | Output | Est. cost | Measured (median, A, 2026-11-05) |
+|---|---|---|---|---|---|
+| Blueprint personalise (seeds + wizard answers) | Sonnet | 5k | 1.5k | $0.030 | $0.024 |
+| Brand kit text (names, voice, palette, type, taglines) | Sonnet | 2k (+4k cache write) | 2k | $0.034 | $0.027 |
+| Landing spec (LandingSpec JSON, waitlist) | Sonnet | 3k | 3k | $0.037 | $0.034 |
+| Email sequence (4 emails) | Sonnet | 1.5k | 2.5k | $0.029 | $0.031 |
+| SEO pack (titles, meta) and first article (~1,000 words) | Sonnet | 1.5k | 3k | $0.034 | $0.041 |
+| Launch plan | Sonnet | 1k | 1.5k | $0.018 | **$0.035** (+96%) |
+| Build pack (4 phases, 8 prompts, from the idea's existing prompts) | Sonnet | 6k | 6k | $0.073 | $0.077 |
+| **Drafting subtotal** | | | | **$0.26** | |
+| Social pack (7 posts, one call) | Haiku | 1k | 2k | $0.003 | **$0.043 on Sonnet** (kept on Sonnet: Haiku scored 0.32 lower) |
+| Ads drafts | Haiku | 1k | 1k | $0.002 | $0.002 |
+| Quality checks (one per artifact, 9) | Haiku | 4k each | 0.2k each | $0.006 | $0.008 |
+| Publish policy check, memory summaries | Haiku | | | $0.003 | $0.002 |
+| **Bulk subtotal** | | | | **$0.014** | |
+| Logo marks ×3 | Recraft | | | $0.09 | $0.159 on OpenAI; Recraft not measured |
+| Landing hero image ×1 | Image model | | | $0.03 | $0.041 on OpenAI |
+| **Images subtotal** | | | | **$0.12** | $0.20 (OpenAI) |
+| Wren chat, typical (25 turns: 90% Haiku ≈ $0.0006, 10% Sonnet ≈ $0.010) | Mixed | | | $0.04 | not measured |
+| Free change rounds, typical (3 revisions at ≈ $0.035) | Sonnet | | | $0.11 | not measured |
+| **Typical free launch** | | | | **≈ $0.54** | **$0.57** (calls + images measured, chat and rounds estimated) |
 
 Roster, contrast checks, the build-pack compile step and launch-plan dates are code,
 not model calls, and cost nothing.
@@ -100,6 +103,7 @@ artifact (9 × 2, logo marks regenerated on each brand round) $0.90 = **≈ $1.5
 | Opus 5.5 on the Batch API | $0.05 in + $0.12 out ≈ **$0.17 per idea** |
 | Optional judge pass | ≈ $0.05 per idea |
 | All 231 library ideas, one seed version | **≈ $40–$51** |
+| **Measured (5 ideas, 2026-11-05)** | ≈ 5k input + 3k cached + 2.8k output tokens; **$0.040 per idea**, so ≈ $9 for 231 ideas (≈ $15 with a judge pass) |
 
 A seed version is regenerated when the seed prompt changes or an idea's content
 changes. Expect two or three versions during the program: about $150 in total.
@@ -136,7 +140,7 @@ month, or about $3k–$9k a year at realistic use, as strategy §5 states.
 
 ## 7. Credit action margins
 
-Rule: provider cost ≤ $0.013 per credit. One credit earns $0.058 on Builder's Hub and
+Rule: provider cost ≤ $0.013 per credit. **Measured 2026-11-05:** landing ($0.0067), email ($0.0104), extra social pack on Sonnet ($0.0086) and engineering pack ($0.0096) per credit pass. **Brand kit regenerate and the standard offer image fail** with either image provider (OpenAI measured; Recraft at list price): brand kit $0.0186 (OpenAI) / ≈ $0.0132 (Recraft) per credit, and offer image $0.0205 / $0.0175. The proposals in `docs/wp/wp69-spike-results.md` are 3 credits for the offer image and 11 for brand kit regenerate (Recraft default). They await the owner. One credit earns $0.058 on Builder's Hub and
 $0.040 on Growth.
 
 | Action | Est. provider cost | Credits | Cost per credit | Revenue (BH / Growth) | Gross margin on Growth |
