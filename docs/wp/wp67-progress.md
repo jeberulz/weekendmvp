@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 close).
+Updated 2026-11-05. **G0 passed** on `main` at `601ee2a8` (see the G0 entry below). Phase 1 waits on the owner's go. Next gate: **G1**.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review posted (2 high, 5 medium, 7 low) | — (H2 ruled: D22) | Codex fixes H1–H2, M1–M4 before G0 |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 done; contract PR #168 open, all four checks green locally | S4 needs the owner's OK for up to $25 of live spend | Codex reviews C-ART, C-METER on #168; S4 spike on OK; S5 freezes prices |
-| WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting | G0; C-OPS from WP68 | — |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting | G0; C-JOBS from WP69 | — |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 run and recorded | — | Owner's go for Phase 1 |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 measured, two prices amended (D4) | — | C-JOBS prices stay provisional until the open S5 decisions (owner actions) |
+| WP70 | 1 | Codex | `codex/wp70-metering` | Ready, waiting for the owner's go | — (C-METER merged) | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Ready, waiting for the owner's go | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Ready, waiting for the owner's go | — (C-OPS merged) | — |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready, waiting for the owner's go | — (C-JOBS merged; prices provisional) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -40,16 +40,16 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Terms review for credits | WP80 S7 | Open |
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
-| Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
-| Landing-page agent brief: received 2026-11-05; response is `07-landing-design.md`. C-ART amendment (WP69-S6) **approved 2026-11-05**, in progress. Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | Before G0 | Partly done |
-| WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
+| Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | WP72 (was "before G0"; G0 ran without it) | Open |
+| Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | D23: before WP71's gateway design. D24, D25: WP75 | Partly done |
+| WP69 open decisions: paid global daily budget ($50 provisional); whether precompute and evals use the free pool; prices for the blueprint, roster, SEO pack, launch plan and ads change rounds; short video (35 credits or 6 s clips, now WP82); a Recraft logo measurement (top up ≈ $1.25). Done 2026-11-05: images 4 credits, brand kit regenerate 11 (D4 amendment) | Before C-JOBS freezes (WP73, WP80) | Partly done |
 
 ## Cross-lane contract reviews for G0
 
 | Contract | Owner | Reviewer | Status |
 |---|---|---|---|
-| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Reviewed on #167 (https://github.com/jeberulz/weekendmvp/pull/167#issuecomment-6663584469): fixes requested |
-| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | PR #168 open, awaiting Codex review |
+| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Reviewed on #167; fixes merged in #171 |
+| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | Owner reports Codex is satisfied; #168 and the follow-up #172 merged |
 
 ## 2026-11-05 - Setup
 
@@ -128,3 +128,24 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 - Finding: C-ART in #168 carries three slop patterns (hero eyebrow, free-text font family, free lucide icon string on three same-size cards) and has no art-direction or layout fields, so every founder page would render through one template. Proposed WP69-S6 to fix before G0.
 - Licences checked via the GitHub API and gsap.com: all MIT or Apache-2.0 except Vercel web-design-guidelines (no licence, link only) and GSAP (Standard License bars no-code animation builders; AI-written code allowed).
 - Waiting on John: D23–D25 and the go for WP69-S6.
+
+## 2026-11-05 - G0 (Phase 0 close): passed
+
+- Run by a gate-runner sub-agent in `.worktrees/wp67-gate` on fresh `main` at `601ee2a8`. That is the #172 merge,
+  so it includes WP68 (#167, #171) and WP69 (#168, #172, with the S6 visual system and the D4 price amendment).
+
+| Check | Exit | Result |
+|---|---|---|
+| `npm ci` | 0 | 835 packages; `npm audit` reports 24 existing advisories (not part of the gate) |
+| `npm run typecheck` | 0 | no errors |
+| `npm run lint` | 0 | 0 errors, 37 existing warnings (unused vars in `scripts/*.mjs`) |
+| `npm test` | 0 | 3,692 tests passed, 0 failed, 0 skipped across 13 chained suites |
+| `npm run build` | 0 | build completed |
+
+- The working tree was clean before and after. Tests ran in fixture mode only: no live model calls, no Convex
+  deploy.
+- Merge history worth knowing: #168 was squash-merged before its last four commits were pushed. #172 carried
+  them over, cherry-picked onto `main` with no conflicts.
+- Open owner items that don't block G0 are listed under Owner actions: D23–D25, the remaining S5 price
+  decisions, and the ops-function exemption.
+- **Stopped here for the owner's go on Phase 1** (WP70 and WP73 for Codex; WP71 and WP72 for Claude).
