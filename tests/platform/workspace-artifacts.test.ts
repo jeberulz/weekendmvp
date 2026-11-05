@@ -4,12 +4,19 @@ import { z } from "zod";
 import {
   ARTIFACT_KINDS,
   BRAND_TEXT_PAIRS,
+  DEFAULT_PROOF_SLOTS,
   LANDING_SECTION_ORDER,
   LIMITS,
   PLATFORM_CAPTION_LIMITS,
+  SECTION_ANCHORS,
   SOCIAL_PLATFORMS,
   adsDraftsSchema,
+  OBJECT_ARTIFACT_KINDS,
+  UNION_ARTIFACT_KINDS,
   artifactJsonSchema,
+  artifactOutputSchemas,
+  artifactVariantJsonSchema,
+  artifactVariantSchemas,
   artifactSchemas,
   blueprintIsValidated,
   blueprintSchema,
@@ -27,9 +34,11 @@ import {
   isSafeMarkdown,
   landingHasWaitlist,
   landingSections,
+  landingSpecDraftSchema,
   landingSpecSchema,
   launchPlanSchema,
   parseArtifact,
+  parseModelOutput,
   promptCopyText,
   rosterPlanSchema,
   seoPackSchema,
@@ -37,6 +46,7 @@ import {
   socialPostsInOrder,
   structuredOutputComplexity,
   toStructuredOutputSchema,
+  withDefaultProofSlots,
 } from "@/lib/workspace/contracts/artifacts";
 import type { JsonSchema } from "@/lib/workspace/contracts/artifacts";
 import {
@@ -185,13 +195,61 @@ describe("C-ART registry", () => {
   });
 });
 
+/**
+ * Every structured-output schema the gateway can send: the object kinds plus
+ * one schema per variant of the union kinds (no combined union is ever sent).
+ */
+const SENT_SCHEMAS: readonly (readonly [string, JsonSchema])[] = [
+  ...OBJECT_ARTIFACT_KINDS.map((kind) => [kind, artifactJsonSchema(kind)] as const),
+  ["blueprint.library", artifactVariantJsonSchema("blueprint", "library")],
+  ["blueprint.own_idea", artifactVariantJsonSchema("blueprint", "own_idea")],
+  ["build_pack.full", artifactVariantJsonSchema("build_pack", "full")],
+  ["build_pack.light", artifactVariantJsonSchema("build_pack", "light")],
+];
+
+/**
+ * Early warning before the API's "compiled grammar is too large": a byte
+ * ceiling per sent schema (today's size plus headroom). Every live rejection
+ * so far was ≥ 8,288 bytes (WP69-S4 probes); no ceiling is above 7,000.
+ */
+const SCHEMA_BYTE_CEILINGS: Readonly<Record<string, number>> = {
+  roster_plan: 2_000,
+  brand_kit: 5_000,
+  landing_spec: 7_000,
+  email_sequence: 3_000,
+  social_pack: 3_000,
+  seo_pack: 2_500,
+  launch_plan: 2_500,
+  ads_drafts: 3_000,
+  "blueprint.library": 2_500,
+  "blueprint.own_idea": 2_000,
+  "build_pack.full": 3_000,
+  "build_pack.light": 2_000,
+};
+
+const DROPPED_KEYWORDS = ["oneOf", "minLength", "maxLength", "maxItems", "minimum", "maximum", "multipleOf", "$schema"];
+
+function minItemsOverOne(node: JsonValue): boolean {
+  if (Array.isArray(node)) return node.some(minItemsOverOne);
+  if (!isNode(node)) return false;
+  if (typeof node.minItems === "number" && node.minItems > 1) return true;
+  return Object.values(node).some(minItemsOverOne);
+}
+
 describe("structured-output JSON Schema", () => {
-  it.each(ARTIFACT_KINDS)("%s converts with no oneOf and no unhonoured keywords", (kind) => {
-    const schema = artifactJsonSchema(kind);
-    for (const keyword of ["oneOf", "minLength", "maxLength", "maxItems", "minimum", "maximum", "multipleOf", "$schema"]) {
-      expect(containsKey(schema, keyword), `${kind} still has ${keyword}`).toBe(false);
+  it("covers every kind: object kinds directly, union kinds by variant", () => {
+    expect([...OBJECT_ARTIFACT_KINDS, ...UNION_ARTIFACT_KINDS].sort()).toEqual([...ARTIFACT_KINDS].sort());
+    expect(Object.keys(SCHEMA_BYTE_CEILINGS).sort()).toEqual(SENT_SCHEMAS.map(([name]) => name).sort());
+  });
+
+  it.each(SENT_SCHEMAS)("%s converts with no oneOf, no unhonoured keywords and no minItems > 1, $defs included", (name, schema) => {
+    const defs = isNode(schema.$defs) ? schema.$defs : {};
+    for (const [where, node] of [["schema", schema], ["$defs", defs]] as const) {
+      for (const keyword of DROPPED_KEYWORDS) {
+        expect(containsKey(node, keyword), `${name} ${where} still has ${keyword}`).toBe(false);
+      }
+      expect(minItemsOverOne(node), `${name} ${where} has minItems > 1`).toBe(false);
     }
-    expect(JSON.stringify(schema)).not.toContain('"minItems":2');
     expect(JSON.stringify(schema)).not.toContain("\\p{");
   });
 
@@ -200,18 +258,114 @@ describe("structured-output JSON Schema", () => {
     expect(schema).toContain(`≤ ${LIMITS.seoPack.title} characters`);
   });
 
-  it.each(ARTIFACT_KINDS)("%s stays within the per-request complexity limits", (kind) => {
-    const { optionalParams, unionParams } = structuredOutputComplexity(artifactJsonSchema(kind));
+  it.each(SENT_SCHEMAS)("%s stays within the complexity limits and its byte ceiling", (name, schema) => {
+    const { optionalParams, unionParams } = structuredOutputComplexity(schema);
     expect(optionalParams).toBeLessThanOrEqual(24);
     expect(unionParams).toBeLessThanOrEqual(16);
+    expect(JSON.stringify(schema).length, `${name} grew past its ceiling`).toBeLessThanOrEqual(SCHEMA_BYTE_CEILINGS[name]);
   });
 
-  it("converts the single-variant schemas the gateway can ask for", () => {
-    for (const schema of [...Object.values(blueprintVariantSchemas), ...Object.values(buildPackVariantSchemas)]) {
-      const converted = toStructuredOutputSchema(schema);
-      expect(converted.type).toBe("object");
-      expect(converted.additionalProperties).toBe(false);
+  it("would have flagged the shapes the API rejected (inlined union BuildPack, inlined social posts)", () => {
+    const ceiling = Math.max(...Object.values(SCHEMA_BYTE_CEILINGS));
+    expect(JSON.stringify(rawJsonSchema(buildPackSchema)).length).toBeGreaterThan(ceiling);
+    expect(JSON.stringify(rawJsonSchema(socialPackSchema)).length).toBeGreaterThan(ceiling);
+  });
+
+  it("never builds a combined schema for a union kind", () => {
+    // @ts-expect-error union kinds are not accepted by the type
+    expect(() => artifactJsonSchema("build_pack")).toThrow(TypeError);
+    // @ts-expect-error union kinds are not accepted by the type
+    expect(() => artifactJsonSchema("blueprint")).toThrow(TypeError);
+    expect(() => toStructuredOutputSchema(buildPackSchema)).toThrow(TypeError);
+    expect(() => toStructuredOutputSchema(blueprintSchema)).toThrow(TypeError);
+  });
+
+  it("sends each repeated subschema once, as a $defs entry (seven social posts, one post schema)", () => {
+    const schema = artifactJsonSchema("social_pack");
+    const posts = (schema.properties as JsonSchema).posts as JsonSchema;
+    const days = Object.values(posts.properties as JsonSchema) as JsonSchema[];
+    expect(days).toHaveLength(7);
+    expect(new Set(days.map((day) => day.$ref)).size).toBe(1);
+    // Counted once per use: 7 posts × (imageAlt, pollOptions).
+    expect(structuredOutputComplexity(schema).optionalParams).toBe(14);
+  });
+
+  it.each(SENT_SCHEMAS)("%s resolves every $ref locally and has an object root", (name, schema) => {
+    expect(schema.type, name).toBe("object");
+    expect(schema.additionalProperties, name).toBe(false);
+    const defs = (schema.$defs ?? {}) as JsonSchema;
+    const refs = JSON.stringify(schema).match(/"\$ref":"[^"]+"/g) ?? [];
+    for (const ref of refs) {
+      expect(ref.startsWith('"$ref":"#/$defs/'), ref).toBe(true);
+      expect(defs[ref.slice('"$ref":"#/$defs/'.length, -1)], ref).toBeDefined();
     }
+  });
+
+  it("rejects a recursive $ref in the complexity count", () => {
+    const recursive: JsonSchema = {
+      type: "object",
+      properties: { a: { $ref: "#/$defs/A" } },
+      required: ["a"],
+      additionalProperties: false,
+      $defs: { A: { type: "object", properties: { b: { $ref: "#/$defs/A" } }, required: ["b"], additionalProperties: false } },
+    };
+    expect(() => structuredOutputComplexity(recursive)).toThrow(RangeError);
+    const shared: JsonSchema = {
+      type: "object",
+      properties: { a: { $ref: "#/$defs/A" }, b: { $ref: "#/$defs/A" } },
+      required: ["a", "b"],
+      additionalProperties: false,
+      $defs: { A: { type: "object", properties: { x: { type: "string" } }, required: [], additionalProperties: false } },
+    };
+    expect(structuredOutputComplexity(shared).optionalParams).toBe(2);
+  });
+
+  it("asks the model for a landing draft without proof slots; code adds them", () => {
+    expect(artifactOutputSchemas.landing_spec).toBe(landingSpecDraftSchema);
+    expect(containsKey(artifactJsonSchema("landing_spec"), "proofSlots")).toBe(false);
+    const draft = { ...hydrotrailLandingSpec };
+    Reflect.deleteProperty(draft, "proofSlots");
+    expect(landingSpecDraftSchema.safeParse({ ...draft, proofSlots: DEFAULT_PROOF_SLOTS }).success).toBe(false);
+
+    const parsed = parseModelOutput("landing_spec", draft);
+    expect(parsed.success, JSON.stringify(parsed.error?.issues)).toBe(true);
+    expect(parsed.data?.proofSlots).toEqual(DEFAULT_PROOF_SLOTS);
+    expect(parsed.data?.proofSlots?.[0]).not.toBe(DEFAULT_PROOF_SLOTS[0]);
+
+    const stored = withDefaultProofSlots(draft);
+    expect(landingSpecSchema.safeParse(stored).success).toBe(true);
+    expect(() => withDefaultProofSlots({ ...draft, hero: undefined })).toThrow();
+  });
+
+  it("parseModelOutput keeps stored proof slots on a revision and rejects a draft that brings its own", () => {
+    const draft = { ...hydrotrailLandingSpec };
+    Reflect.deleteProperty(draft, "proofSlots");
+    const mine = [{ kind: "press", placeholder: true, outlet: "[Trail Runner Weekly]" }] as const;
+    const existing = landingSpecSchema.parse({ ...draft, proofSlots: mine });
+    const revised = parseModelOutput("landing_spec", { ...draft, hero: { ...draft.hero, subhead: "A new subhead." } }, existing);
+    expect(revised.success, JSON.stringify(revised.error?.issues)).toBe(true);
+    expect(revised.data?.proofSlots).toEqual(mine);
+    const emptied = parseModelOutput("landing_spec", draft, landingSpecSchema.parse({ ...draft, proofSlots: [] }));
+    expect(emptied.data?.proofSlots).toEqual([]);
+    expect(parseModelOutput("landing_spec", { ...draft, proofSlots: mine }).success).toBe(false);
+  });
+
+  it("parseModelOutput validates other kinds as stored, unchanged", () => {
+    const social = parseModelOutput("social_pack", hydrotrailSocialPack);
+    expect(social.success).toBe(true);
+    expect(social.data).toEqual(hydrotrailSocialPack);
+    expect(parseModelOutput("build_pack", lightBuildPack).success).toBe(true);
+    expect(parseModelOutput("social_pack", { schemaVersion: 1, posts: {} }).success).toBe(false);
+  });
+
+  it("tells the model every section anchor in the CTA target description", () => {
+    const schema = JSON.stringify(artifactJsonSchema("landing_spec"));
+    for (const anchor of Object.values(SECTION_ANCHORS)) expect(schema).toContain(anchor);
+  });
+
+  it("names a variant for every union-kind schema", () => {
+    expect(Object.keys(artifactVariantSchemas.blueprint)).toEqual(Object.keys(blueprintVariantSchemas));
+    expect(Object.keys(artifactVariantSchemas.build_pack)).toEqual(Object.keys(buildPackVariantSchemas));
   });
 
   it.each(ARTIFACT_KINDS)("%s bounds every string and array", (kind) => {

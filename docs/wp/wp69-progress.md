@@ -180,3 +180,30 @@ copy them exactly.
   - Every suite after `test:security` passes when run separately (sitemap, convex, engine, editorial,
     home, prompts, platform, live).
   - The committed tree has no spike files.
+
+## 2026-11-05 - S4 finding: two schemas too large for structured outputs (C-ART fix)
+
+- Live spike, config A: every `landing_spec` and `social_pack` call was rejected with HTTP 400 "The compiled
+  grammar is too large" (billed $0). Spike paused at $1.84.
+- Cause, from 11 live probes:
+  - Social: 7 inlined copies of the post schema (8.3 KB).
+  - Landing: the `proofSlots` 5-way union array.
+  - Neither the optional count nor patterns caused it.
+  - The API also rejects `$defs` beside a root `anyOf`, and rejects the combined build_pack union.
+- Fix in `artifacts.ts`, with the stored shape unchanged for every kind:
+  - Model-facing schemas use local `$ref`s.
+  - Landing gets a draft schema without `proofSlots`; code adds the placeholder slots.
+  - `parseModelOutput(kind, raw, existing?)` is the single entry point for model output.
+  - Union kinds (blueprint, build_pack) only go out through `artifactVariantJsonSchema`.
+  - Per-schema byte ceilings: ≤ 7,000 B; the smallest live rejection was 8,288 B.
+  - Anchors and `imageAlt` rules are spelled out in the field descriptions.
+- Independent Opus review: no high findings; M1 (proof slots never added) and M2 (combined union still
+  obtainable) fixed, along with the low findings.
+- Probe spend: $0.24 (separate ledger, $0.50 cap). Every one of the 19 schemas the spike sends compiled
+  live. A full landing and social call each parsed first try.
+- Checks:
+  - typecheck: exit 0.
+  - lint: exit 0.
+  - `test:platform`, `test:convex`, `test:prompts`: exit 0 (296 contract tests).
+  - `tsc -p scripts/spikes`: exit 0.
+  - Full `npm test` is still blocked only by the uncommitted spike files (Needs from Codex item 8).

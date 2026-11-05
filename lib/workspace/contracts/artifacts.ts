@@ -20,7 +20,8 @@
  *   control character. Stricter per-platform limits and contrast are graders.
  * - Objects are strict: unknown keys fail.
  * - "Never fake it": proof exists only as LandingSpec `proofSlots`, every one a
- *   bracketed placeholder with `placeholder: true`.
+ *   bracketed placeholder with `placeholder: true`. Code adds them
+ *   (`parseModelOutput`); the model drafts `landingSpecDraftSchema`.
  * - No model output carries keyword volume, CPC, competition or other market
  *   numbers; library market data stays in the idea pipeline.
  *
@@ -272,6 +273,29 @@ export function isSafeHttpsUrl(value: string): boolean {
   return true;
 }
 
+/** LandingSpec sections in render order (the renderer owns the order). */
+export const LANDING_SECTION_ORDER = [
+  "hero",
+  "promises",
+  "how_it_works",
+  "app_preview",
+  "waitlist",
+  "footer",
+] as const;
+export type LandingSectionKey = (typeof LANDING_SECTION_ORDER)[number];
+
+/** The in-page anchor each section renders with; anchor CTAs must hit a present one. */
+export const SECTION_ANCHORS = {
+  hero: "#top",
+  promises: "#why",
+  how_it_works: "#how",
+  app_preview: "#app",
+  waitlist: "#waitlist",
+  footer: "#footer",
+} as const satisfies Record<LandingSectionKey, `#${string}`>;
+
+const SECTION_ANCHOR_LIST = Object.values(SECTION_ANCHORS).join(", ");
+
 const ANCHOR = /^#[a-z][a-z0-9-]*$/;
 
 /** An in-page anchor (`#waitlist`) or a safe https URL. */
@@ -281,7 +305,11 @@ export const ctaTargetSchema = z
   .refine((value) => ANCHOR.test(value) || isSafeHttpsUrl(value), {
     message: "Use an in-page anchor such as #waitlist or an https URL",
   })
-  .meta(describe(`an in-page anchor such as #waitlist, or an https URL; ≤ ${LIMITS.common.url} characters`));
+  .meta(
+    describe(
+      `an in-page anchor of a section you include (${SECTION_ANCHOR_LIST}), or an https URL; ≤ ${LIMITS.common.url} characters`,
+    ),
+  );
 
 export const ctaSchema = z
   .object({
@@ -607,26 +635,6 @@ export function failingTextPairs(
 // checkout in v1, so email capture is the conversion.
 // ---------------------------------------------------------------------------
 
-export const LANDING_SECTION_ORDER = [
-  "hero",
-  "promises",
-  "how_it_works",
-  "app_preview",
-  "waitlist",
-  "footer",
-] as const;
-export type LandingSectionKey = (typeof LANDING_SECTION_ORDER)[number];
-
-/** The in-page anchor each section renders with; anchor CTAs must hit a present one. */
-export const SECTION_ANCHORS = {
-  hero: "#top",
-  promises: "#why",
-  how_it_works: "#how",
-  app_preview: "#app",
-  waitlist: "#waitlist",
-  footer: "#footer",
-} as const satisfies Record<LandingSectionKey, `#${string}`>;
-
 /** Sections Weekend MVP may gap-fill carry this flag and, when added, a reason. */
 const addedFields = {
   addedByWeekendMvp: z.boolean().meta(describe("true when Weekend MVP added the section")),
@@ -795,7 +803,14 @@ export const proofSlotSchema = z.discriminatedUnion("kind", [
 ]);
 export type ProofSlot = z.infer<typeof proofSlotSchema>;
 
-export const landingSpecSchema = z
+/**
+ * What the crew drafts: the landing spec without `proofSlots`. The five-way
+ * proof-slot union does not compile as a structured-output grammar ("The
+ * compiled grammar is too large", WP69-S4 live probe, 2026-11-05), and the
+ * slots are fixed workspace placeholders, so code adds them
+ * (`withDefaultProofSlots`) instead of the model.
+ */
+const landingDraftObject = z
   .object({
     schemaVersion: z.literal(1),
     nav: z
@@ -811,18 +826,47 @@ export const landingSpecSchema = z
     app_preview: appPreviewSchema.optional(),
     waitlist: waitlistSchema,
     footer: footerSchema,
+  })
+  .strict();
+
+function checkLandingAnchors(spec: z.infer<typeof landingDraftObject>, ctx: z.RefinementCtx): void {
+  const anchors = new Set<string>(landingSections(spec).map((key) => SECTION_ANCHORS[key]));
+  for (const { target, path } of landingCtas(spec)) {
+    if (target.startsWith("#") && !anchors.has(target)) {
+      ctx.addIssue({ code: "custom", message: `Anchor ${target} matches no section`, path });
+    }
+  }
+}
+
+/** The model-facing landing spec (structured output); a valid draft is also a valid `LandingSpec`. */
+export const landingSpecDraftSchema = landingDraftObject.superRefine(checkLandingAnchors);
+export type LandingSpecDraft = z.infer<typeof landingSpecDraftSchema>;
+
+/** The stored landing spec: the draft plus the workspace-only proof slots. */
+export const landingSpecSchema = landingDraftObject
+  .extend({
     proofSlots: list(proofSlotSchema, 0, LIMITS.landingSpec.proofSlotsMax, "Workspace-only placeholders").optional(),
   })
   .strict()
-  .superRefine((spec, ctx) => {
-    const anchors = new Set<string>(landingSections(spec).map((key) => SECTION_ANCHORS[key]));
-    for (const { target, path } of landingCtas(spec)) {
-      if (target.startsWith("#") && !anchors.has(target)) {
-        ctx.addIssue({ code: "custom", message: `Anchor ${target} matches no section`, path });
-      }
-    }
-  });
+  .superRefine(checkLandingAnchors);
 export type LandingSpec = z.infer<typeof landingSpecSchema>;
+
+/** The workspace's "replace with real proof" slots, added by code (never drafted, never published in v1). */
+export const DEFAULT_PROOF_SLOTS: readonly ProofSlot[] = [
+  { kind: "testimonial", placeholder: true, quote: "[Quote from an early user]", attribution: "[Name, role]" },
+  { kind: "stat", placeholder: true, value: "[N]", label: "people on the waitlist" },
+  { kind: "logo", placeholder: true, name: "[Partner or community name]", alt: "[Partner or community] logo" },
+];
+
+const copySlots = (slots: readonly ProofSlot[]): ProofSlot[] => slots.map((slot) => ({ ...slot }));
+
+/**
+ * A drafted landing spec as stored: the draft (parsed, never trusted) plus a
+ * fresh copy of the default proof slots. Throws a ZodError on an invalid draft.
+ */
+export function withDefaultProofSlots(draft: unknown): LandingSpec {
+  return landingSpecSchema.parse({ ...landingSpecDraftSchema.parse(draft), proofSlots: copySlots(DEFAULT_PROOF_SLOTS) });
+}
 
 /** The sections present in a spec, in render order. */
 export function landingSections(spec: Partial<Record<LandingSectionKey, unknown>>): LandingSectionKey[] {
@@ -835,7 +879,7 @@ export function landingHasWaitlist(spec: { waitlist?: unknown }): boolean {
 }
 
 /** Every CTA target in a spec with its path, for anchor checks and link graders. */
-export function landingCtas(spec: LandingSpec): { target: string; path: (string | number)[] }[] {
+export function landingCtas(spec: LandingSpecDraft): { target: string; path: (string | number)[] }[] {
   const found: { target: string; path: (string | number)[] }[] = [
     { target: spec.nav.cta.target, path: ["nav", "cta", "target"] },
     ...spec.nav.links.map((link, index) => ({ target: link.target, path: ["nav", "links", index, "target"] })),
@@ -982,7 +1026,7 @@ export const socialPostSchema = z
     caption: body(LIMITS.socialPack.caption, "Full caption"),
     shortCaption: body(LIMITS.socialPack.shortCaption, "Used where the full caption is too long"),
     imageText: line(LIMITS.socialPack.imageText, 'The 2–3 word card text, e.g. "500 ml / hr"'),
-    imageAlt: line(LIMITS.common.alt, "Required for image and carousel posts").optional(),
+    imageAlt: line(LIMITS.common.alt, "Required for image and carousel posts; leave the field out for other formats, never empty").optional(),
     pollOptions: list(
       line(LIMITS.socialPack.pollOption),
       LIMITS.socialPack.pollOptionsMin,
@@ -1465,40 +1509,118 @@ function rewriteForStructuredOutput(value: JsonValue): JsonValue {
 /**
  * A zod schema as a structured-output JSON Schema: `oneOf` becomes `anyOf`,
  * `minItems` is clamped to 0 or 1, and unhonoured keywords are dropped. Pure.
+ *
+ * A subschema used more than once becomes one `$defs` entry referenced by
+ * `$ref` (supported by structured outputs). Inlined, the seven SocialPack
+ * posts compile to a grammar the API rejects as too large; referenced, they
+ * compile (WP69-S4 live probe, 2026-11-05).
  */
 export function toStructuredOutputSchema(schema: z.ZodType): JsonSchema {
-  const converted: JsonValue = JSON.parse(JSON.stringify(z.toJSONSchema(schema)));
+  const converted: JsonValue = JSON.parse(JSON.stringify(z.toJSONSchema(schema, { reused: "ref" })));
+  // A root union is never sent: the API rejects `$defs` beside a root `anyOf`, and
+  // the combined BuildPack is too large inlined. Ask for one variant instead.
+  if (!isJsonSchema(converted) || converted.type !== "object") {
+    throw new TypeError("Structured output needs a single object schema; pass one variant of a union");
+  }
   const rewritten = rewriteForStructuredOutput(converted);
   if (!isJsonSchema(rewritten)) throw new TypeError("Expected an object JSON Schema");
   return rewritten;
 }
 
-/** The structured-output JSON Schema for an artifact kind. */
-export function artifactJsonSchema(kind: ArtifactKind): JsonSchema {
-  return toStructuredOutputSchema(artifactSchemas[kind]);
+/**
+ * What the model is asked to produce per kind. The same as `artifactSchemas`
+ * except LandingSpec, whose model-facing shape omits the code-added proof slots.
+ * Every valid draft also passes `parseArtifact`.
+ */
+export const artifactOutputSchemas: { readonly [K in ArtifactKind]: z.ZodType<ArtifactByKind[K]> } = {
+  ...artifactSchemas,
+  landing_spec: landingSpecDraftSchema,
+};
+
+/**
+ * The single entry point for model output: parses `raw` with the model-facing
+ * schema, adds what code owns (LandingSpec proof slots: the stored ones from
+ * `existing` when set, so a revision never overwrites them, else the defaults),
+ * then validates the stored shape with `parseArtifact`.
+ */
+export function parseModelOutput<K extends ArtifactKind>(
+  kind: K,
+  raw: unknown,
+  existing?: ArtifactByKind[K] | null,
+): z.ZodSafeParseResult<ArtifactByKind[K]> {
+  const schema: z.ZodType<ArtifactByKind[K]> = artifactOutputSchemas[kind];
+  const drafted = schema.safeParse(raw);
+  if (!drafted.success || kind !== "landing_spec") return drafted.success ? parseArtifact(kind, drafted.data) : drafted;
+  const stored = landingSpecSchema.safeParse(existing ?? undefined);
+  const slots = stored.success && stored.data.proofSlots !== undefined ? stored.data.proofSlots : DEFAULT_PROOF_SLOTS;
+  return parseArtifact(kind, { ...drafted.data, proofSlots: copySlots(slots) });
+}
+
+/** Kinds whose stored schema is a union; the model is always asked for one variant. */
+export const UNION_ARTIFACT_KINDS = ["blueprint", "build_pack"] as const;
+export type UnionArtifactKind = (typeof UNION_ARTIFACT_KINDS)[number];
+export type ObjectArtifactKind = Exclude<ArtifactKind, UnionArtifactKind>;
+export const OBJECT_ARTIFACT_KINDS: readonly ObjectArtifactKind[] = ARTIFACT_KINDS.filter(
+  (kind): kind is ObjectArtifactKind => !(UNION_ARTIFACT_KINDS as readonly string[]).includes(kind),
+);
+
+/** The single-variant schemas of the union kinds. */
+export const artifactVariantSchemas = {
+  blueprint: blueprintVariantSchemas,
+  build_pack: buildPackVariantSchemas,
+} as const;
+export type ArtifactVariant<K extends UnionArtifactKind> = keyof (typeof artifactVariantSchemas)[K];
+
+/**
+ * The structured-output JSON Schema for a kind with one object schema. Union
+ * kinds have no combined schema (the combined BuildPack is rejected live as
+ * too large): use `artifactVariantJsonSchema`.
+ */
+export function artifactJsonSchema(kind: ObjectArtifactKind): JsonSchema {
+  if ((UNION_ARTIFACT_KINDS as readonly string[]).includes(kind)) {
+    throw new TypeError(`${kind} is a union kind; use artifactVariantJsonSchema`);
+  }
+  return toStructuredOutputSchema(artifactOutputSchemas[kind]);
+}
+
+/** The structured-output JSON Schema for one variant of a union kind. */
+export function artifactVariantJsonSchema<K extends UnionArtifactKind>(kind: K, variant: ArtifactVariant<K>): JsonSchema {
+  const variants: Readonly<Record<PropertyKey, z.ZodType>> = artifactVariantSchemas[kind];
+  const schema = variants[variant];
+  if (schema === undefined) throw new TypeError(`Unknown ${kind} variant ${String(variant)}`);
+  return toStructuredOutputSchema(schema);
 }
 
 /**
  * Counts against the structured-output complexity limits (24 optional
  * parameters and 16 union parameters across a request's strict schemas).
+ * Conservative: a `$defs` entry counts once per `$ref` that uses it.
  */
 export function structuredOutputComplexity(schema: JsonSchema): { optionalParams: number; unionParams: number } {
   let optionalParams = 0;
   let unionParams = 0;
-  const walk = (value: JsonValue): void => {
+  const defs = isJsonSchema(schema.$defs ?? null) ? (schema.$defs as JsonSchema) : {};
+  const walk = (value: JsonValue, refPath: readonly string[]): void => {
     if (Array.isArray(value)) {
-      value.forEach(walk);
+      value.forEach((item) => walk(item, refPath));
       return;
     }
     if (!isJsonSchema(value)) return;
+    if (typeof value.$ref === "string") {
+      const name = value.$ref.startsWith("#/$defs/") ? value.$ref.slice("#/$defs/".length) : null;
+      const target = name === null ? undefined : defs[name];
+      if (name === null || target === undefined) throw new TypeError(`Unresolvable $ref ${value.$ref}`);
+      if (refPath.includes(name)) throw new RangeError(`Recursive $ref ${[...refPath, name].join(" → ")}`);
+      walk(target, [...refPath, name]);
+    }
     if (Array.isArray(value.anyOf) || Array.isArray(value.type)) unionParams += 1;
     const { properties, required } = value;
     if (properties !== undefined && isJsonSchema(properties)) {
       const requiredKeys = new Set(Array.isArray(required) ? required.filter((key) => typeof key === "string") : []);
       optionalParams += Object.keys(properties).filter((key) => !requiredKeys.has(key)).length;
     }
-    Object.values(value).forEach(walk);
+    for (const [key, child] of Object.entries(value)) if (key !== "$defs") walk(child, refPath);
   };
-  walk(schema);
+  walk(schema, []);
   return { optionalParams, unionParams };
 }
