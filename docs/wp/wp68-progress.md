@@ -75,3 +75,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npx convex codegen --typecheck disable` against isolated local Convex (passed); `npx vitest run convex/ops/settings.test.ts` (3 passed); `npm run typecheck` (passed); focused ESLint and `git diff --check` (passed).
 - Result: C-OPS implemented, with no active workspace behavior. No production deployment.
 - Next: S6 security matrix, final full gate and Claude review.
+
+## 2026-11-05 - WP68-S6
+
+- Actions taken: added a TypeScript-AST security test in `tests/security/` for the 26 flat owner-indexed tables, direct capability guards on every new public WP68 function, and provider SDK import confinement to `convex/ai/providers/`.
+- Checks run: `npm run test:security` passed (149 Node security tests and 121 Vitest security tests), focused ESLint and `git diff --check` passed after correcting a Next.js lint rule on the test variable name.
+- Result: S6 complete. No new customer function is active, no new env entry is required, and no provider call runs in tests.
+- Next: final full checks and Claude's independent review before handing the WP to John.

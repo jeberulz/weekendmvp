@@ -31,7 +31,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `convex/growth/connectors/types.ts`, focused tests.
   - Acceptance criteria: Social and ads connector interfaces exist; CopyConnector creates a copy-ready result without a network call or external send.
   - Verification: connector tests.
-- [ ] `WP68-S6` - Add security matrix
+- [x] `WP68-S6` - Add security matrix
   - Scope: new files in `tests/security/`.
   - Acceptance criteria: Every new table has an owner index; every new public function enforces business or super-admin access; provider import restrictions are pinned.
   - Verification: `npm run test:security`, then standard checks.
