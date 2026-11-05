@@ -258,3 +258,21 @@ copy them exactly.
 - Follow-up before any further live spike: the spike crew prompt (`scripts/spikes/wp69/prompts/crew.ts`, uncommitted)
   still describes free-text fonts.
 - Needs from Codex: item 11 (`@phosphor-icons/react`) added.
+
+## 2026-11-05 - S5: owner approved two price changes
+
+- The owner approved standard offer image 2 → 3 credits and brand kit regenerate 10 → 11. The story / post
+  image moves to 3 too, because it is the same render.
+- Updated:
+  - `CREDIT_ACTIONS` in `jobs.ts`;
+  - the C-JOBS tests, whose cost table now uses the measured values plus a test that the image prices hold
+    only on Recraft;
+  - `01-strategy.md` §6, `03-ai-cost-model.md` §7 and the spike results.
+- The D4 amendment row is in `RULINGS.md` on the board branch.
+- `PRICES_STATUS` stays `"provisional"`. Before it can freeze:
+  - video;
+  - prices for the change rounds still unpriced (blueprint, roster, SEO pack, launch plan, ads);
+  - the paid global budget;
+  - a Recraft measurement;
+  - **D11 vs Recraft**: 3 credits holds the rule only if standard offer images render on Recraft. D11 sends
+    photo-style offer images to gpt-image-2 ($0.041 measured), which would need 4 credits. Asked the owner.

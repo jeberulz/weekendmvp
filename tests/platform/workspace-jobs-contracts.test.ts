@@ -116,17 +116,17 @@ describe("C-JOBS", () => {
     ]);
   });
 
-  test("credit prices match the D4 table exactly", () => {
+  test("credit prices match the D4 table (amended 2026-11-05) exactly", () => {
     const prices = Object.fromEntries(
       Object.entries(CREDIT_ACTIONS).map(([key, action]) => [key, action.credits]),
     );
     expect(prices).toEqual({
-      offer_image_standard: 2,
+      offer_image_standard: 3,
       offer_image_high_quality: 5,
-      post_image: 2,
+      post_image: 3,
       short_video: 30,
       launch_film: 150,
-      brand_kit_regenerate: 10,
+      brand_kit_regenerate: 11,
       landing_regenerate: 5,
       email_sequence_regenerate: 3,
       extra_social_pack: 5,
@@ -147,18 +147,21 @@ describe("C-JOBS", () => {
   });
 
   // Planning provider costs (03 §7, 2026-11-05). S5 replaces these with measured values.
+  // Measured in the WP69-S4 spike (2026-11-05) where it ran; `03` §7 planning values elsewhere
+  // (high-quality image, video, launch film, hire). Images use Recraft V4.1's list price, the
+  // default provider.
   const PLANNING_PROVIDER_MICRO_USD: Record<CreditActionKey, number> = {
-    offer_image_standard: 20_000,
+    offer_image_standard: 35_000,
     offer_image_high_quality: 50_000,
-    post_image: 20_000,
+    post_image: 35_000,
     short_video: 400_000,
     launch_film: 1_500_000,
-    brand_kit_regenerate: 120_000,
-    landing_regenerate: 40_000,
-    email_sequence_regenerate: 30_000,
-    extra_social_pack: 30_000,
+    brand_kit_regenerate: 132_300,
+    landing_regenerate: 33_500,
+    email_sequence_regenerate: 31_300,
+    extra_social_pack: 43_100,
     hire_skipped_specialist: 100_000,
-    build_pack_regenerate: 75_000,
+    build_pack_regenerate: 77_100,
   };
 
   test("the cost rule is $0.013 a credit", () => {
@@ -178,6 +181,15 @@ describe("C-JOBS", () => {
     expect(maxProviderMicroUsdFor(CREDIT_ACTIONS.short_video.credits)).toBe(390_000);
   });
 
+  test("the image prices hold the rule on Recraft, not on OpenAI", () => {
+    expect(CREDIT_ACTIONS.offer_image_standard.credits).toBe(3);
+    expect(CREDIT_ACTIONS.post_image.credits).toBe(3);
+    expect(CREDIT_ACTIONS.brand_kit_regenerate.credits).toBe(11);
+    // OpenAI gpt-image-2 medium measured $0.041 a hero and $0.053 a logo mark (WP69-S4).
+    expect(priceRespectsCostRule(CREDIT_ACTIONS.offer_image_standard.credits, 41_000)).toBe(false);
+    expect(priceRespectsCostRule(CREDIT_ACTIONS.brand_kit_regenerate.credits, 27_300 + 3 * 53_000)).toBe(false);
+  });
+
   test("first draft and change rounds 1–2 are free; round 3 costs the regenerate price", () => {
     expect(FREE_CHANGE_ROUNDS).toBe(2);
     expect(creditCostFor({ jobType: "crew_brand_kit", changeRound: 0, plan: "free" })).toEqual({
@@ -193,14 +205,14 @@ describe("C-JOBS", () => {
       });
     }
     expect(creditCostFor({ jobType: "crew_brand_kit", changeRound: 3, plan: "free" })).toEqual({
-      credits: 10,
+      credits: 11,
       free: false,
       reason: "paid_change_round",
       action: "brand_kit_regenerate",
     });
     expect(
       creditCostFor({ jobType: "crew_brand_kit", changeRound: 3, action: "brand_kit_regenerate", plan: "free" }).credits,
-    ).toBe(10);
+    ).toBe(11);
   });
 
   test("each priced artifact maps to its regenerate action", () => {
@@ -229,7 +241,7 @@ describe("C-JOBS", () => {
     for (const changeRound of [0, 1, 2, 3]) {
       expect(
         creditCostFor({ jobType: "studio_image", changeRound, action: "offer_image_standard", plan: "free" }),
-      ).toEqual({ credits: 2, free: false, reason: "always_paid", action: "offer_image_standard" });
+      ).toEqual({ credits: 3, free: false, reason: "always_paid", action: "offer_image_standard" });
     }
     expect(
       creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "builders_hub" }).credits,
