@@ -25,11 +25,14 @@ import {
   WrenComposer,
   WrenMessage,
   WrenThread,
+  copyButtonLabel,
   copyStatusMessage,
   copyText,
   costLabel,
   creditMeterState,
   prepareMessage,
+  sanitizeCredits,
+  shouldSendOnKeyDown,
   validateChangeNote,
 } from "@/components/workspace/kit";
 import {
@@ -143,6 +146,8 @@ describe("EmployeeCard", () => {
     expect(out).toContain('aria-checked="false"');
     expect(out).toContain('aria-label="Autopilot for Iris, Brand (paid plans)"');
     expect(out).toContain('title="Autopilot is on paid plans. On Free, Iris asks before acting."');
+    expect(out).toContain('aria-describedby="employee-iris-autopilot-hint"');
+    expect(out).toContain('id="employee-iris-autopilot-hint" class="sr-only">Autopilot is on paid plans. On Free, Iris asks before acting.');
     const on = html(<EmployeeCard employee={hydrotrailEmployees[6]} autopilotAvailable workstreamHref="/x" onAutopilotToggle={() => {}} />);
     expect(on).toContain('aria-checked="true"');
     expect(on).toContain('title="Autopilot for Kai"');
@@ -177,7 +182,12 @@ describe("EmployeeCard", () => {
     expect(onHire).toHaveBeenCalledWith("merch");
     const requested = html(<SkippedRoleCard role="merch" reason="r" hireRequested onHire={onHire} />);
     expect(requested).toContain("Hire requested");
-    expect(requested).toContain("disabled");
+    expect(requested).toContain('aria-disabled="true"');
+    expect(requested).not.toMatch(/\sdisabled=""/);
+    const requestedHire = buttonsOf(expand(<SkippedRoleCard role="merch" reason="r" hireRequested onHire={onHire} />))[0];
+    onHire.mockClear();
+    (requestedHire.props.onClick as () => void)();
+    expect(onHire).not.toHaveBeenCalled();
   });
 });
 
@@ -238,7 +248,13 @@ describe("ApprovalCard", () => {
     const pendingOut = html(<ApprovalCard {...base} pending />);
     expect(pendingOut).toContain('aria-busy="true"');
     expect(pendingOut).toContain("Sending your decision…");
-    expect(pendingOut.match(/disabled=""/g)).toHaveLength(2);
+    expect(pendingOut.match(/aria-disabled="true"/g)).toHaveLength(2);
+    expect(pendingOut).not.toMatch(/\sdisabled=""/);
+    const guarded = vi.fn();
+    const [gApprove, gAsk] = buttonsOf(expand(<ApprovalCard {...base} pending onApprove={guarded} onAskChanges={guarded} />));
+    (gApprove.props.onClick as () => void)();
+    (gAsk.props.onClick as () => void)();
+    expect(guarded).not.toHaveBeenCalled();
   });
 });
 
@@ -246,18 +262,21 @@ describe("Wren thread", () => {
   test("the list is a labelled log; loading and error are announced", () => {
     const ready = html(<WrenThread><WrenMessage time="Thu 9:02 PM">Hey John</WrenMessage></WrenThread>);
     expect(ready).toContain('role="log"');
+    expect(ready).not.toContain("aria-live");
     expect(ready).toContain('aria-label="Messages"');
     expect(ready).toContain("Wren");
     expect(ready).toContain("Thu 9:02 PM");
     expect(ready).toContain("Hey John");
 
     const loading = html(<WrenThread status="loading" />);
-    expect(loading).toContain('aria-busy="true"');
+    expect(loading).not.toContain('role="log"');
+    expect(loading).toContain('role="status"');
     expect(loading).toContain("Loading messages…");
 
     const onRetry = vi.fn();
     const error = html(<WrenThread status="error" onRetry={onRetry} />);
     expect(error).toContain('role="alert"');
+    expect(error).not.toContain('role="log"');
     expect(error).toContain("Retry loading messages");
     const retry = buttonsOf(expand(<WrenThread status="error" onRetry={onRetry} />))[0];
     expectNativeKeyboard(retry);
@@ -280,6 +299,14 @@ describe("Wren thread", () => {
     const props = { openHref: "/brand", onApprove, onAskChanges: () => {} };
     const pending = html(<BrandKitCard {...props} state="pending" />);
     for (const text of ["Generated brand kit · 9 pieces", "Looks good", "Ask for changes", "Open brand kit"]) expect(pending).toContain(text);
+    expect(pending.match(/ · brand kit/g)).toHaveLength(2);
+    const busy = html(<BrandKitCard {...props} state="pending" pending />);
+    expect(busy).toContain('aria-disabled="true"');
+    expect(busy).toContain("Sending your decision…");
+    const guard = vi.fn();
+    const [busyApprove] = buttonsOf(expand(<BrandKitCard {...props} onApprove={guard} state="pending" pending />));
+    (busyApprove.props.onClick as () => void)();
+    expect(guard).not.toHaveBeenCalled();
     expect(html(<BrandKitCard {...props} state="approved" />)).toContain("Approved. Site, emails and Studio now use it.");
     expect(html(<BrandKitCard {...props} state="asking" />)).toContain("Tell me what to change below");
     const [approve] = buttonsOf(expand(<BrandKitCard {...props} state="pending" />));
@@ -320,8 +347,10 @@ describe("Wren thread", () => {
     expect(out).toContain("Message Wren");
     expect(out).toContain('placeholder="Message Wren…"');
     expect(out).toContain('aria-label="Send message"');
-    expect(out).toContain('for="wren-composer"');
-    expect(html(<WrenComposer onSend={() => {}} sending />)).toContain("disabled");
+    expect(out).toMatch(/for="([^"]+)"/);
+    const sending = html(<WrenComposer onSend={() => {}} sending />);
+    expect(sending).toContain('aria-disabled="true"');
+    expect(sending).not.toMatch(/\sdisabled=""/);
   });
 
   test("an empty draft never sends and a real one is trimmed", () => {
@@ -344,7 +373,8 @@ describe("WorkstreamPanel", () => {
     for (const output of data.outputs) expect(out).toContain(output.title.replace(/&/g, "&amp;"));
     for (const file of data.files) expect(out).toContain(file.name);
     expect(out).toContain("outputs ·");
-    expect(out).toContain('aria-labelledby="ws-' + kind + '-h"');
+    expect(out).toMatch(/aria-labelledby="[^"]+-h"/);
+    expect(out).toContain("<h1 ");
   });
 
   test("status text, blocker severity and holds are shown in words", () => {
@@ -384,7 +414,7 @@ describe("WorkstreamPanel", () => {
     await expect(copyText("x", { writeText })).resolves.toBe("copied");
     expect(writeText).toHaveBeenCalledWith("x");
     await expect(copyText("x", { writeText: vi.fn().mockRejectedValue(new Error("denied")) })).resolves.toBe("blocked");
-    await expect(copyText("x", undefined)).resolves.toBeDefined();
+    await expect(copyText("x", undefined)).resolves.toBe("blocked");
     expect(copyStatusMessage("copied", 2, "Claude Code")).toBe("Copied Prompt 2 for Claude Code.");
     expect(copyStatusMessage("blocked", 2, "Claude Code")).toContain("Copy is blocked in this preview.");
     expect(copyStatusMessage("idle", 2, "Claude Code")).toBe("");
@@ -452,5 +482,138 @@ describe("Empty, loading and error states", () => {
     (retry.props.onClick as () => void)();
     expect(onRetry).toHaveBeenCalledTimes(1);
     expect(html(<ErrorState message="m" />)).not.toContain("<button");
+  });
+});
+
+describe("review fixes", () => {
+  test("shouldSendOnKeyDown: Enter sends; Shift+Enter, composition and keyCode 229 do not", () => {
+    const base = { key: "Enter", shiftKey: false, isComposing: false };
+    expect(shouldSendOnKeyDown(base)).toBe(true);
+    expect(shouldSendOnKeyDown({ ...base, keyCode: 13 })).toBe(true);
+    expect(shouldSendOnKeyDown({ ...base, shiftKey: true })).toBe(false);
+    expect(shouldSendOnKeyDown({ ...base, isComposing: true })).toBe(false);
+    expect(shouldSendOnKeyDown({ ...base, keyCode: 229 })).toBe(false);
+    expect(shouldSendOnKeyDown({ ...base, key: "a" })).toBe(false);
+  });
+
+  test("costLabel pluralises and treats 0 credits as Free", () => {
+    expect(costLabel({ kind: "credits", credits: 1, balance: 10 })).toBe("1 credit");
+    expect(costLabel({ kind: "credits", credits: 2, balance: 10 })).toBe("2 credits");
+    expect(costLabel({ kind: "credits", credits: 0, balance: 10 })).toBe("Free");
+    expect(costLabel({ kind: "credits", credits: 1, balance: 0 })).toBe("1 credit · not enough");
+    expect(html(<ApprovalCard id="a" title="t" from={irisIdentity} cost={{ kind: "credits", credits: 0, balance: 0 }} state="open" onApprove={() => {}} onAskChanges={() => {}} />)).toContain('data-cost="free"');
+  });
+
+  test("CreditMeter edge cases: max 0, balance over max, negative, NaN", () => {
+    expect(sanitizeCredits(Number.NaN)).toBe(0);
+    expect(sanitizeCredits(-5)).toBe(0);
+    expect(sanitizeCredits(Number.POSITIVE_INFINITY)).toBe(0);
+    expect(creditMeterState(5, 0)).toBe("normal");
+    expect(creditMeterState(0, 0)).toBe("zero");
+    expect(creditMeterState(-3, 50)).toBe("zero");
+    expect(creditMeterState(Number.NaN, 50)).toBe("zero");
+    expect(creditMeterState(600, 500)).toBe("normal");
+
+    const over = html(<CreditMeter balance={600} max={500} plan="builders_hub" />);
+    expect(over).toContain("600 left");
+    expect(over).toContain('aria-valuetext="600 of 500 credits left"');
+    expect(over).toContain('aria-valuenow="500"');
+    expect(over).toContain('aria-valuemax="500"');
+    expect(over).toContain("w-full");
+
+    const noMax = html(<CreditMeter balance={5} max={0} plan="free" />);
+    expect(noMax).toContain('aria-valuemax="0"');
+    expect(noMax).toContain('aria-valuenow="0"');
+    expect(noMax).toContain("No credit allowance on this plan");
+
+    const nan = html(<CreditMeter balance={Number.NaN} max={Number.NaN} plan="free" />);
+    expect(nan).toContain("0 left");
+    expect(nan).toContain('aria-valuenow="0"');
+    expect(nan).not.toContain("NaN");
+    expect(html(<CreditMeter balance={-4} max={50} plan="free" />)).toContain('aria-valuenow="0"');
+    expect(html(<CreditMeter balance={8} max={50} plan="free" />)).toContain("bg-home-ochre-ink");
+  });
+
+  test("workstream: pending outputs, parent-owned status message, hidden form, plural, heading levels", () => {
+    const data = {
+      ...hydrotrailWorkstreams.brand,
+      outputs: [
+        { ...hydrotrailWorkstreams.brand.outputs[0], pending: true },
+        { ...hydrotrailWorkstreams.brand.outputs[1], statusMessage: "Logo lockup approved. Wren will route this." },
+      ],
+    };
+    const out = html(<WorkstreamPanel businessName="HydroTrail" data={data} headingLevel={2} onApproveOutput={() => {}} onRequestChanges={() => {}} />);
+    expect(out).toContain('aria-busy="true"');
+    expect(out).toContain("Sending your decision…");
+    expect(out).toContain('aria-disabled="true"');
+    expect(out).not.toMatch(/\sdisabled=""/);
+    expect(out).toContain("Logo lockup approved. Wren will route this.");
+    expect(out).toMatch(/<form [^>]*hidden/);
+    expect(out).toContain("<h2 ");
+    expect(out).toContain("<h3 ");
+    expect(out).toContain("<h4 ");
+    expect(out).not.toContain("<h1 ");
+    expect(out).toContain("2 outputs");
+    const one = html(<WorkstreamPanel businessName="HydroTrail" data={{ ...data, outputs: [data.outputs[0]] }} onApproveOutput={() => {}} onRequestChanges={() => {}} />);
+    expect(one).toContain("1 output ·");
+  });
+
+  test("prompt card: accessible name tracks the visible text; heading level is configurable", () => {
+    expect(copyButtonLabel("idle", 2, "T")).toBe("Copy prompt 2: T");
+    expect(copyButtonLabel("copied", 2, "T")).toBe("Copied prompt 2: T");
+    expect(copyButtonLabel("blocked", 2, "T")).toBe("Copy blocked for prompt 2: T");
+    for (const [state, visible] of [["idle", "Copy prompt"], ["copied", "Copied"], ["blocked", "Copy blocked"]] as const) {
+      expect(copyButtonLabel(state, 2, "T").startsWith(visible)).toBe(true);
+    }
+    expect(html(<BuildPackPromptCard {...hydrotrailPrompt} />)).toContain("<h3 ");
+    expect(html(<BuildPackPromptCard {...hydrotrailPrompt} headingLevel={4} />)).toContain("<h4 ");
+  });
+});
+
+/** Every ARIA reference and label target must resolve to a unique id in the same markup. */
+function expectIdIntegrity(markup: string) {
+  const ids = [...markup.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+  expect(new Set(ids).size).toBe(ids.length);
+  const refs: string[] = [];
+  for (const m of markup.matchAll(/\s(?:aria-describedby|aria-labelledby|aria-controls)="([^"]+)"/g)) refs.push(...m[1].split(/\s+/));
+  for (const m of markup.matchAll(/\sfor="([^"]+)"/g)) refs.push(m[1]);
+  for (const ref of refs) expect(ids, `dangling reference: ${ref}`).toContain(ref);
+  return { ids, refs };
+}
+
+describe("id integrity", () => {
+  test("every fixture render resolves its ARIA references with unique ids", () => {
+    const noop = () => {};
+    const employees = html(
+      <ul>
+        {hydrotrailEmployees.map((employee) => (
+          <EmployeeCard key={employee.id} employee={employee} autopilotAvailable={false} workstreamHref="/x" onAutopilotToggle={noop} />
+        ))}
+      </ul>,
+    );
+    expect(expectIdIntegrity(employees).refs.length).toBeGreaterThan(0);
+
+    const approvals = html(
+      <ul>
+        <ApprovalCard id="a" title="A" from={irisIdentity} cost={freeCost} state="open" onApprove={noop} onAskChanges={noop} />
+        <ApprovalCard id="b" title="B" from={irisIdentity} cost={paidCost} state="approved" onApprove={noop} onAskChanges={noop} />
+      </ul>,
+    );
+    expect(expectIdIntegrity(approvals).refs.length).toBe(2);
+
+    for (const kind of WORKSTREAM_KINDS) {
+      const panel = html(<WorkstreamPanel businessName="HydroTrail" data={hydrotrailWorkstreams[kind]} onApproveOutput={noop} onRequestChanges={noop} />);
+      expectIdIntegrity(panel);
+    }
+    const both = html(
+      <>
+        <WorkstreamPanel businessName="HydroTrail" data={hydrotrailWorkstreams.brand} onApproveOutput={noop} onRequestChanges={noop} />
+        <WorkstreamPanel businessName="HydroTrail" data={hydrotrailWorkstreams.brand} onApproveOutput={noop} onRequestChanges={noop} />
+        <WrenComposer onSend={noop} />
+        <WrenComposer onSend={noop} />
+      </>,
+    );
+    expectIdIntegrity(both);
+    expectIdIntegrity(html(<BrandKitCard state="pending" openHref="/b" onApprove={noop} onAskChanges={noop} />));
   });
 });

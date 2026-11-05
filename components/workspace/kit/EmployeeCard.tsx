@@ -28,6 +28,8 @@ export type EmployeeCardProps = {
   /** Called with the requested next value. The page decides what happens (toggle or gate). */
   onAutopilotToggle: (employeeId: string, next: boolean) => void;
   linkComponent?: LinkComponent;
+  /** Prefix for generated ids. Defaults to `employee-<id>`; pass one if the same employee renders twice. */
+  idPrefix?: string;
 };
 
 export function autopilotTooltip(name: string, available: boolean): string {
@@ -42,7 +44,9 @@ export function EmployeeCard({
   workstreamHref,
   onAutopilotToggle,
   linkComponent: Link = DefaultLink,
+  idPrefix,
 }: EmployeeCardProps) {
+  const hintId = `${idPrefix ?? `employee-${employee.id}`}-autopilot-hint`;
   const roleLabel = ROLE_LABELS[employee.role];
   const who = `${employee.name}, ${roleLabel}`;
   return (
@@ -94,6 +98,7 @@ export function EmployeeCard({
           aria-checked={employee.autopilot}
           aria-label={`Autopilot for ${who}${autopilotAvailable ? "" : " (paid plans)"}`}
           title={autopilotTooltip(employee.name, autopilotAvailable)}
+          aria-describedby={autopilotAvailable ? undefined : hintId}
           onClick={() => onAutopilotToggle(employee.id, !employee.autopilot)}
           className={cn(
             "inline-flex min-h-10 items-center gap-2 rounded-full px-2 text-[13px] text-home-ink",
@@ -122,6 +127,11 @@ export function EmployeeCard({
           </span>
           {autopilotAvailable ? null : <Lock aria-hidden="true" className="size-3.5" />}
         </button>
+        {autopilotAvailable ? null : (
+          <span id={hintId} className="sr-only">
+            {autopilotTooltip(employee.name, false)}
+          </span>
+        )}
       </div>
     </li>
   );
@@ -140,7 +150,7 @@ export function SkippedRoleCard({ role, reason, hireRequested = false, onHire }:
   return (
     <li
       data-skipped-role={role}
-      className="flex flex-col gap-3 rounded-xl border border-dashed border-[#cfc6b6] bg-home-card p-4"
+      className="flex flex-col gap-3 rounded-xl border border-dashed border-home-d2 bg-home-card p-4"
     >
       <h3 className="text-base font-semibold text-home-ink">{label}</h3>
       <p className="rounded-md bg-home-clay px-2.5 py-1.5 text-[13px] text-home-clay-ink">
@@ -149,9 +159,11 @@ export function SkippedRoleCard({ role, reason, hireRequested = false, onHire }:
       <button
         type="button"
         className={cn(BTN_SECONDARY, "self-start")}
-        disabled={hireRequested}
+        aria-disabled={hireRequested || undefined}
         aria-label={hireRequested ? `Hire requested for ${label}` : `Hire ${label}`}
-        onClick={() => onHire(role)}
+        onClick={() => {
+          if (!hireRequested) onHire(role);
+        }}
       >
         {hireRequested ? "Hire requested" : "Hire"}
       </button>

@@ -59,8 +59,21 @@ export type ApprovalCost =
   | { kind: "free" }
   | { kind: "credits"; credits: number; balance: number };
 
+export type CostState = "free" | "credits" | "not-enough";
+
+/** 0 credits counts as free. Over the balance is its own state. */
+export function costState(cost: ApprovalCost): CostState {
+  if (cost.kind === "free" || cost.credits <= 0) return "free";
+  return cost.credits > cost.balance ? "not-enough" : "credits";
+}
+
+export function pluralize(count: number, one: string, many: string): string {
+  return count === 1 ? `${count} ${one}` : `${count} ${many}`;
+}
+
 export function costLabel(cost: ApprovalCost): string {
-  if (cost.kind === "free") return "Free";
-  if (cost.credits > cost.balance) return `${cost.credits} credits · not enough`;
-  return `${cost.credits} credits`;
+  const state = costState(cost);
+  if (state === "free" || cost.kind === "free") return "Free";
+  const base = pluralize(cost.credits, "credit", "credits");
+  return state === "not-enough" ? `${base} · not enough` : base;
 }

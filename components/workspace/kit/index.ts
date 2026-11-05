@@ -1,8 +1,8 @@
 export { ApprovalCard, CostBadge } from "./ApprovalCard";
 export type { ApprovalCardProps, ApprovalDecisionState } from "./ApprovalCard";
-export { BuildPackPromptCard, copyStatusMessage, copyText } from "./BuildPackPromptCard";
+export { BuildPackPromptCard, copyButtonLabel, copyStatusMessage, copyText } from "./BuildPackPromptCard";
 export type { BuildPackPromptCardProps, CopyState } from "./BuildPackPromptCard";
-export { creditMeterNote, creditMeterState, CreditMeter, LOW_CREDIT_FRACTION, PLAN_LABELS } from "./CreditMeter";
+export { creditMeterNote, creditMeterState, CreditMeter, LOW_CREDIT_FRACTION, PLAN_LABELS, sanitizeCredits } from "./CreditMeter";
 export type { CreditMeterProps, CreditMeterState } from "./CreditMeter";
 export { DefaultLink } from "./DefaultLink";
 export { EmployeeAvatar } from "./EmployeeAvatar";
@@ -16,8 +16,6 @@ export {
 } from "./StatusPill";
 export type { StatusPillProps } from "./StatusPill";
 export {
-  approvedMessage,
-  changesSentMessage,
   countOutputs,
   validateChangeNote,
   WORKSTREAM_KIND_CONFIG,
@@ -32,17 +30,20 @@ export type {
   WorkstreamPanelProps,
 } from "./WorkstreamPanel";
 export {
-  BrandKitCard,
   BuildPackCard,
   FromAttribution,
   LaunchPlanNudgeCard,
   MilestoneCard,
-  prepareMessage,
   SiteLiveCard,
-  UserMessage,
-  WrenComposer,
   WrenMark,
   WrenMessage,
+} from "./WrenCards";
+export {
+  BrandKitCard,
+  prepareMessage,
+  shouldSendOnKeyDown,
+  UserMessage,
+  WrenComposer,
   WrenThread,
 } from "./WrenThread";
 export type {
@@ -56,6 +57,8 @@ export type {
 export { EmptyState, ErrorState, LoadingState } from "./states";
 export {
   costLabel,
+  costState,
+  pluralize,
   EMPLOYEE_STATUSES,
   OUTPUT_STATUSES,
   ROLE_LABELS,
@@ -64,6 +67,7 @@ export {
 } from "./types";
 export type {
   ApprovalCost,
+  CostState,
   EmployeeIdentity,
   EmployeeStatus,
   LinkComponent,

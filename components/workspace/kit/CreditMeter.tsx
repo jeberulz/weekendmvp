@@ -5,9 +5,16 @@ export type CreditMeterState = "normal" | "low" | "zero";
 
 export const LOW_CREDIT_FRACTION = 0.2;
 
+/** NaN, infinities and negatives become 0; fractions round down. */
+export function sanitizeCredits(value: number): number {
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
 export function creditMeterState(balance: number, max: number): CreditMeterState {
-  if (balance <= 0) return "zero";
-  if (max > 0 && balance <= max * LOW_CREDIT_FRACTION) return "low";
+  const b = sanitizeCredits(balance);
+  const m = sanitizeCredits(max);
+  if (b <= 0) return "zero";
+  if (m > 0 && b <= m * LOW_CREDIT_FRACTION) return "low";
   return "normal";
 }
 
@@ -32,12 +39,13 @@ function fillWidth(balance: number, max: number): string {
 
 const STATE_CLASSES: Record<CreditMeterState, { text: string; bar: string }> = {
   normal: { text: "text-home-sage-ink", bar: "bg-home-sage-ink" },
-  low: { text: "text-home-ochre-ink", bar: "bg-[#c9962e]" },
+  low: { text: "text-home-ochre-ink", bar: "bg-home-ochre-ink" },
   zero: { text: "text-home-orange-ink", bar: "bg-home-orange-ink" },
 };
 
 export function creditMeterNote(plan: WorkspacePlanId, max: number, state: CreditMeterState): string {
   if (state === "zero") return "Studio extras paused · see plans";
+  if (!(max > 0)) return "No credit allowance on this plan";
   return plan === "free"
     ? `Free · ${max} starter credits, one-time`
     : `${max} refresh on the 5th`;
@@ -51,10 +59,13 @@ export type CreditMeterProps = {
 };
 
 export function CreditMeter({ balance, max, plan, className }: CreditMeterProps) {
-  const state = creditMeterState(balance, max);
+  const real = sanitizeCredits(balance);
+  const cap = sanitizeCredits(max);
+  const state = creditMeterState(real, cap);
   const colours = STATE_CLASSES[state];
-  const shown = Math.max(0, Math.min(balance, max));
-  const right = state === "low" ? `${shown} left · low` : `${shown} left`;
+  // Only the bar and aria-valuenow clamp; the visible text and valuetext show the real balance.
+  const barValue = Math.min(real, cap);
+  const right = state === "low" ? `${real} left · low` : `${real} left`;
   return (
     <div data-state={state} className={cn("flex flex-col gap-1.5", className)}>
       <div className="flex items-center gap-2 text-[13px]">
@@ -68,14 +79,14 @@ export function CreditMeter({ balance, max, plan, className }: CreditMeterProps)
         role="meter"
         aria-label="Credits"
         aria-valuemin={0}
-        aria-valuemax={max}
-        aria-valuenow={shown}
-        aria-valuetext={`${shown} of ${max} credits left`}
+        aria-valuemax={cap}
+        aria-valuenow={barValue}
+        aria-valuetext={`${real} of ${cap} credits left`}
         className="h-1.5 overflow-hidden rounded-[3px] bg-home-sunk"
       >
-        <div className={cn("h-full", fillWidth(shown, max), colours.bar)} />
+        <div className={cn("h-full", fillWidth(barValue, cap), colours.bar)} />
       </div>
-      <p className="text-[11px] text-home-ink-3">{creditMeterNote(plan, max, state)}</p>
+      <p className="text-[11px] text-home-ink-3">{creditMeterNote(plan, cap, state)}</p>
     </div>
   );
 }

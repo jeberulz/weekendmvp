@@ -16,7 +16,7 @@ export function EmptyState({
     <div
       data-state="empty"
       className={cn(
-        "rounded-xl border border-dashed border-[#cfc6b6] px-4 py-6 text-center text-sm text-home-ink-2",
+        "rounded-xl border border-dashed border-home-d2 px-4 py-6 text-center text-sm text-home-ink-2",
         className,
       )}
     >
@@ -49,6 +49,7 @@ export function LoadingState({
   );
 }
 
+/** `onRetry` is a function prop: render this from a client component when you pass it. */
 export function ErrorState({
   message,
   onRetry,

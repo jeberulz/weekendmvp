@@ -30,6 +30,8 @@ export type BuildPackPromptCardProps = {
   body: string;
   doNotBuild: string;
   doneWhen: string;
+  /** Heading level for the prompt title (default 3, under an h2 section). */
+  headingLevel?: 3 | 4 | 5;
 };
 
 export function copyStatusMessage(state: CopyState, index: number, tool: string): string {
@@ -37,6 +39,13 @@ export function copyStatusMessage(state: CopyState, index: number, tool: string)
   if (state === "blocked")
     return "Copy is blocked in this preview. Select the prompt text and copy it by hand.";
   return "";
+}
+
+/** The accessible name always contains the visible text ("Copy prompt", "Copied", "Copy blocked"). */
+export function copyButtonLabel(state: CopyState, index: number, title: string): string {
+  if (state === "copied") return `Copied prompt ${index}: ${title}`;
+  if (state === "blocked") return `Copy blocked for prompt ${index}: ${title}`;
+  return `Copy prompt ${index}: ${title}`;
 }
 
 export function BuildPackPromptCard({
@@ -47,22 +56,33 @@ export function BuildPackPromptCard({
   body,
   doNotBuild,
   doneWhen,
+  headingLevel = 3,
 }: BuildPackPromptCardProps) {
   const [state, setState] = useState<CopyState>("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mounted = useRef(false);
+  const Heading = `h${headingLevel}` as "h3" | "h4" | "h5";
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
       if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
+    };
+  }, []);
 
   async function handleCopy() {
-    const result = await copyText(body);
-    setState(result);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setState("idle"), 2000);
+    const result = await copyText(body);
+    // A late clipboard promise after unmount must do nothing.
+    if (!mounted.current) return;
+    setState(result);
+    // "Copied" fades; "Copy blocked" stays until the next action.
+    if (result === "copied") {
+      timer.current = setTimeout(() => {
+        if (mounted.current) setState("idle");
+      }, 2000);
+    }
   }
 
   return (
@@ -75,10 +95,10 @@ export function BuildPackPromptCard({
         <p className="font-mono text-[11px] text-home-ink-3">
           PROMPT {index} · {duration}
         </p>
-        <h4 className="text-sm font-semibold text-home-ink">{title}</h4>
+        <Heading className="text-sm font-semibold text-home-ink">{title}</Heading>
         <button
           type="button"
-          aria-label={`Copy prompt ${index}: ${title}`}
+          aria-label={copyButtonLabel(state, index, title)}
           onClick={handleCopy}
           className={cn(BTN_SECONDARY, "ml-auto")}
         >

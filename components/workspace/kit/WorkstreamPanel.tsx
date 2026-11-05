@@ -1,6 +1,15 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  createElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentPropsWithRef,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RoleKey } from "@/lib/workspace/contracts/roster";
@@ -10,6 +19,7 @@ import { StatusPill } from "./StatusPill";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, FOCUS } from "./styles";
 import { EmptyState } from "./states";
 import {
+  pluralize,
   ROLE_LABELS,
   type EmployeeStatus,
   type LinkComponent,
@@ -44,6 +54,10 @@ export type WorkstreamOutput = {
   preview?: ReactNode;
   /** The founder's last change note, shown after a change request. */
   changeNote?: string;
+  /** A decision is in flight: buttons stay focusable but ignore activation. */
+  pending?: boolean;
+  /** Owned by the parent (e.g. "Brand kit approved. Wren will route this."). Announced politely. */
+  statusMessage?: string;
 };
 
 export type WorkstreamBlocker = {
@@ -71,14 +85,6 @@ export function validateChangeNote(note: string, name: string, title: string): s
   return note.trim().length === 0 ? `Write what ${name} should change in ${title} first.` : null;
 }
 
-export function approvedMessage(title: string): string {
-  return `${title} approved. Wren will route this.`;
-}
-
-export function changesSentMessage(name: string, title: string): string {
-  return `Sent to ${name}. A new version of ${title} comes back here, and Wren will flag it in chat.`;
-}
-
 export function countOutputs(outputs: readonly WorkstreamOutput[]) {
   return {
     total: outputs.length,
@@ -91,12 +97,21 @@ function holderLabel(holder: RoleKey | "you"): string {
   return holder === "you" ? "You" : ROLE_LABELS[holder];
 }
 
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+const headingTag = (level: number): HeadingTag => `h${Math.min(6, Math.max(1, level))}` as HeadingTag;
+
+function Heading({ level, ...props }: { level: number } & ComponentPropsWithRef<"h1">) {
+  return createElement(headingTag(level), props);
+}
+
 export type WorkstreamPanelProps = {
   businessName: string;
   data: WorkstreamData;
+  /** Level of the page title (default 1). Sections sit one below, output titles two below. */
+  headingLevel?: 1 | 2 | 3;
   onApproveOutput: (outputId: string) => void;
   onRequestChanges: (outputId: string, note: string) => void;
-  /** Extra content under Outputs, e.g. build-pack prompt cards. */
+  /** Extra content under Outputs, e.g. build-pack prompt cards (their headings are level `headingLevel + 1`). */
   extra?: ReactNode;
   linkComponent?: LinkComponent;
   filesHref?: string;
@@ -105,40 +120,62 @@ export type WorkstreamPanelProps = {
 function OutputCard({
   output,
   employeeName,
+  titleLevel,
   onApprove,
   onRequestChanges,
 }: {
   output: WorkstreamOutput;
   employeeName: string;
+  titleLevel: number;
   onApprove: (id: string) => void;
   onRequestChanges: (id: string, note: string) => void;
 }) {
+  const uid = useId();
   const [asking, setAsking] = useState(false);
   const [note, setNote] = useState("");
-  const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const formId = `${output.id}-ask`;
-  const noteId = `${output.id}-note`;
-  const errorId = `${output.id}-note-error`;
+  const askButtonRef = useRef<HTMLButtonElement>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const formId = `${uid}-ask`;
+  const noteId = `${uid}-note`;
+  const errorId = `${uid}-note-error`;
+  const pending = output.pending === true;
+
+  useEffect(() => {
+    if (asking) noteRef.current?.focus();
+  }, [asking]);
+
+  function closeForm() {
+    setAsking(false);
+    setError(null);
+    askButtonRef.current?.focus();
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
     const problem = validateChangeNote(note, employeeName, output.title);
-    setError(problem);
-    if (problem) return;
+    if (problem) {
+      // Focus the textarea so its aria-describedby error is read.
+      setError(problem);
+      noteRef.current?.focus();
+      return;
+    }
     onRequestChanges(output.id, note.trim());
-    setMessage(changesSentMessage(employeeName, output.title));
-    setAsking(false);
     setNote("");
+    closeForm();
   }
 
   return (
-    <li data-output={output.id} className={cn(CARD, "flex flex-col gap-3 p-4")}>
+    <li data-output={output.id} aria-busy={pending} className={cn(CARD, "flex flex-col gap-3 p-4")}>
       <div className="flex flex-wrap items-center gap-2">
         <p className="font-mono text-[11px] uppercase text-home-ink-3">{output.kindLabel}</p>
         <StatusPill set="output" status={output.status} className="ml-auto" />
       </div>
-      <h3 className="text-[15px] font-semibold text-home-ink">{output.title}</h3>
+      <Heading level={titleLevel} ref={titleRef} tabIndex={-1} className="text-[15px] font-semibold text-home-ink outline-none">
+        {output.title}
+      </Heading>
       {output.preview ? <div>{output.preview}</div> : null}
       {output.changeNote ? (
         <p className="text-[13px] text-home-ink-2">
@@ -152,67 +189,74 @@ function OutputCard({
           <button
             type="button"
             className={BTN_PRIMARY}
+            aria-disabled={pending || undefined}
             onClick={() => {
+              if (pending) return;
               onApprove(output.id);
-              setMessage(approvedMessage(output.title));
-              setAsking(false);
+              // This button may unmount once the parent marks the output approved.
+              titleRef.current?.focus();
             }}
           >
             Looks good<span className="sr-only"> · {output.title}</span>
           </button>
           <button
+            ref={askButtonRef}
             type="button"
             className={BTN_SECONDARY}
             aria-expanded={asking}
             aria-controls={formId}
-            onClick={() => setAsking((open) => !open)}
+            aria-disabled={pending || undefined}
+            onClick={() => {
+              if (!pending) setAsking((open) => !open);
+            }}
           >
             Ask for changes<span className="sr-only"> · {output.title}</span>
           </button>
         </div>
       ) : null}
-      {asking ? (
-        <form id={formId} onSubmit={handleSubmit} noValidate className="flex flex-col gap-2">
-          <label htmlFor={noteId} className="text-[13px] font-medium text-home-ink">
-            What should {employeeName} change in “{output.title}”?
-          </label>
-          <textarea
-            id={noteId}
-            rows={3}
-            value={note}
-            placeholder="Be specific — e.g. what to keep, what to drop."
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
-            onChange={(event) => setNote(event.target.value)}
-            className={cn(
-              "rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink placeholder:text-home-ink-3",
-              FOCUS,
-            )}
-          />
-          {error ? (
-            <p id={errorId} className="text-[13px] text-home-clay-ink">
-              {error}
-            </p>
-          ) : null}
-          <div className="flex gap-2">
-            <button type="submit" className={BTN_PRIMARY}>
-              Send to {employeeName}
-            </button>
-            <button
-              type="button"
-              className={BTN_SECONDARY}
-              onClick={() => {
-                setAsking(false);
-                setError(null);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      ) : null}
+      <form
+        id={formId}
+        hidden={!asking}
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-2"
+      >
+        <label htmlFor={noteId} className="text-[13px] font-medium text-home-ink">
+          What should {employeeName} change in “{output.title}”?
+        </label>
+        <textarea
+          id={noteId}
+          ref={noteRef}
+          rows={3}
+          value={note}
+          placeholder="Be specific — e.g. what to keep, what to drop."
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          onChange={(event) => {
+            setNote(event.target.value);
+            if (error) setError(null);
+          }}
+          className={cn(
+            "rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink placeholder:text-home-ink-3",
+            FOCUS,
+          )}
+        />
+        {error ? (
+          <p id={errorId} role="alert" className="text-[13px] text-home-clay-ink">
+            {error}
+          </p>
+        ) : null}
+        <div className="flex gap-2">
+          <button type="submit" className={BTN_PRIMARY} aria-disabled={pending || undefined}>
+            Send to {employeeName}
+          </button>
+          <button type="button" className={BTN_SECONDARY} onClick={closeForm}>
+            Cancel
+          </button>
+        </div>
+      </form>
       <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-        {message}
+        {pending ? "Sending your decision…" : output.statusMessage}
       </p>
     </li>
   );
@@ -221,17 +265,19 @@ function OutputCard({
 export function WorkstreamPanel({
   businessName,
   data,
+  headingLevel = 1,
   onApproveOutput,
   onRequestChanges,
   extra,
   linkComponent: Link = DefaultLink,
   filesHref,
 }: WorkstreamPanelProps) {
+  const uid = useId();
   const config = WORKSTREAM_KIND_CONFIG[data.kind];
   const { employee } = data;
   const roleLabel = ROLE_LABELS[config.role];
   const counts = countOutputs(data.outputs);
-  const headingId = `ws-${data.kind}-h`;
+  const headingId = `${uid}-h`;
   return (
     <article aria-labelledby={headingId} data-kind={data.kind} className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
@@ -239,9 +285,9 @@ export function WorkstreamPanel({
           <EmployeeAvatar name={employee.name} role={config.role} size="lg" showAiBadge />
           <p className={EYEBROW}>AI employee · {businessName} workstream</p>
         </div>
-        <h1 id={headingId} className="font-editorial text-3xl text-home-ink">
+        <Heading level={headingLevel} id={headingId} className="font-editorial text-3xl text-home-ink">
           {employee.name} · <em>{roleLabel}</em>
-        </h1>
+        </Heading>
         <p className="text-sm text-home-ink-2">{employee.specialty}</p>
         <p className="text-[13px] text-home-ink-2">
           Reports to <strong className="font-semibold text-home-ink">Wren, Crew Lead</strong> · Why hired:{" "}
@@ -251,26 +297,26 @@ export function WorkstreamPanel({
           <StatusPill set="employee" status={employee.status} />
           <span>{employee.statusDetail}</span>
           <span className="font-mono text-[11px] text-home-ink-3">
-            {counts.total} outputs · {counts.waiting} waiting · {counts.approved} approved
+            {pluralize(counts.total, "output", "outputs")} · {counts.waiting} waiting · {counts.approved} approved
           </span>
         </p>
       </header>
 
-      <section aria-labelledby={`${headingId}-brief`} className="flex flex-col gap-2">
-        <h2 id={`${headingId}-brief`} className="font-editorial text-xl text-home-ink">
+      <section aria-labelledby={`${uid}-brief`} className="flex flex-col gap-2">
+        <Heading level={headingLevel + 1} id={`${uid}-brief`} className="font-editorial text-xl text-home-ink">
           Brief <em>from the Blueprint</em>
-        </h2>
+        </Heading>
         <ul className="list-disc pl-5 text-sm text-home-ink">
-          {data.brief.map((line) => (
-            <li key={line}>{line}</li>
+          {data.brief.map((line, i) => (
+            <li key={`${i}-${line}`}>{line}</li>
           ))}
         </ul>
       </section>
 
-      <section aria-labelledby={`${headingId}-outputs`} className="flex flex-col gap-3">
-        <h2 id={`${headingId}-outputs`} className="font-editorial text-xl text-home-ink">
+      <section aria-labelledby={`${uid}-outputs`} className="flex flex-col gap-3">
+        <Heading level={headingLevel + 1} id={`${uid}-outputs`} className="font-editorial text-xl text-home-ink">
           Outputs <em>for your OK</em>
-        </h2>
+        </Heading>
         <p className="text-[13px] text-home-ink-2">
           Approvals go to Wren, who routes them to the rest of the team.
         </p>
@@ -280,6 +326,7 @@ export function WorkstreamPanel({
               key={output.id}
               output={output}
               employeeName={employee.name}
+              titleLevel={headingLevel + 2}
               onApprove={onApproveOutput}
               onRequestChanges={onRequestChanges}
             />
@@ -288,11 +335,11 @@ export function WorkstreamPanel({
         {extra}
       </section>
 
-      <section aria-labelledby={`${headingId}-files`} className="flex flex-col gap-2">
+      <section aria-labelledby={`${uid}-files`} className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <h2 id={`${headingId}-files`} className="font-editorial text-xl text-home-ink">
+          <Heading level={headingLevel + 1} id={`${uid}-files`} className="font-editorial text-xl text-home-ink">
             Files <em>{employee.name} owns</em>
-          </h2>
+          </Heading>
           {filesHref ? (
             <Link
               href={filesHref}
@@ -303,8 +350,8 @@ export function WorkstreamPanel({
           ) : null}
         </div>
         <ul className="flex flex-col gap-1">
-          {data.files.map((file) => (
-            <li key={file.name} className="flex items-center gap-2 text-sm text-home-ink">
+          {data.files.map((file, i) => (
+            <li key={`${i}-${file.name}`} className="flex items-center gap-2 text-sm text-home-ink">
               <FileText aria-hidden="true" className="size-4 text-home-ink-3" />
               <span className="font-mono text-[13px]">{file.name}</span>
               {file.meta ? <span className="text-xs text-home-ink-3">{file.meta}</span> : null}
@@ -313,19 +360,19 @@ export function WorkstreamPanel({
         </ul>
       </section>
 
-      <section aria-labelledby={`${headingId}-blockers`} className="flex flex-col gap-2">
-        <h2 id={`${headingId}-blockers`} className="font-editorial text-xl text-home-ink">
+      <section aria-labelledby={`${uid}-blockers`} className="flex flex-col gap-2">
+        <Heading level={headingLevel + 1} id={`${uid}-blockers`} className="font-editorial text-xl text-home-ink">
           Blockers
-        </h2>
+        </Heading>
         {data.blockers.length === 0 ? (
           <EmptyState>No blockers. {config.noBlockers(employee.name)}</EmptyState>
         ) : null}
         {data.blockers.length > 0 ? (
           <div>
-            <h3 className="text-sm font-semibold text-home-ink">{employee.name} is waiting on</h3>
+            <Heading level={headingLevel + 2} className="text-sm font-semibold text-home-ink">{employee.name} is waiting on</Heading>
             <ul className="mt-1 flex flex-col gap-1 text-sm text-home-ink">
-              {data.blockers.map((b) => (
-                <li key={`${b.waitingOn}-${b.detail}`}>
+              {data.blockers.map((b, i) => (
+                <li key={`${i}-${b.waitingOn}-${b.detail}`}>
                   <strong className="font-semibold">
                     {b.severity === "blocking" ? "Blocking" : "Soft"} · {holderLabel(b.waitingOn)}
                   </strong>{" "}
@@ -337,10 +384,10 @@ export function WorkstreamPanel({
         ) : null}
         {data.holds.length > 0 ? (
           <div>
-            <h3 className="text-sm font-semibold text-home-ink">Waiting on {employee.name}</h3>
+            <Heading level={headingLevel + 2} className="text-sm font-semibold text-home-ink">Waiting on {employee.name}</Heading>
             <ul className="mt-1 flex flex-col gap-1 text-sm text-home-ink">
-              {data.holds.map((h) => (
-                <li key={h.holder}>
+              {data.holds.map((h, i) => (
+                <li key={`${i}-${h.holder}-${h.detail ?? ""}`}>
                   <strong className="font-semibold">{holderLabel(h.holder)}</strong>
                   {h.detail ? ` — ${h.detail}` : ""}
                 </li>
