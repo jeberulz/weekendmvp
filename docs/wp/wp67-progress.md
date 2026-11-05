@@ -18,7 +18,7 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters (Opus) | D23 before S2 (gateway); C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters (Opus) | C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **In progress**: S0 canvas extract, then S1 route scaffold | `creditsSummary` from WP73 (typed mock until then) | — |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
@@ -41,7 +41,7 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | WP72 (was "before G0"; G0 ran without it) | Open |
-| Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | D23: before WP71's gateway design. D24, D25: WP75 | Partly done |
+| Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). D23 ruled 2026-11-05 (no tool loops). Still open: D24 (founder-page bans), D25 (CSS-only tenant motion) | D24, D25: WP75 | Partly done |
 | WP69 open decisions: paid global daily budget ($50 provisional, a C-METER ops value); whether precompute and evals use the free pool; a Recraft logo measurement (top up ≈ $1.25; if it breaks 11 credits, a contract change). Done 2026-11-05: images 4, brand kit 11 (D4 amendment); C-JOBS frozen with video (WP82) and five change rounds left unpriced (#175) | Paid budget and free pool: WP70/WP71. Recraft: before WP80 | Partly done |
 
 ## Cross-lane contract reviews for G0
@@ -191,3 +191,5 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
   `fail` implementation (stubbed until then). WP72 needs `creditsSummary` (mocked until then).
 - Owner items now due: D23 (before WP71 S2) and the ops-function exemption (by WP72). WP71 S5 live seeds
   (≈ $15) need an OK later.
+- D23 ruled (owner: "Approve D23"): no model tool loops in the hosted crew. WP71 S2 is unblocked. Recorded in
+  `RULINGS.md` and `07` §6.
