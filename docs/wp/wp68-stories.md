@@ -7,7 +7,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
 
 ## Stories
 
-- [ ] `WP68-S7` - Add known dependencies
+- [x] `WP68-S7` - Add known dependencies
   - Scope: `package.json`, `package-lock.json`.
   - Acceptance criteria: `@anthropic-ai/sdk`, `@convex-dev/sharded-counter`, and `@convex-dev/resend` install and remain unused until later WPs.
   - Verification: `npm ci`, `npm run typecheck`.

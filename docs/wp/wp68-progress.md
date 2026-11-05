@@ -18,3 +18,11 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Required checks: typecheck, lint, full test, build, schema diff, safe dev Convex deployment, `git diff --check`.
 - Initial risks: merges deploy production Convex; new env entries must be optional; table validators must stay flat; all new functionality is off by default. The main checkout has unrelated uncommitted work and stays untouched.
 - Inventory note: architecture §2 says `@convex-dev/workpool` is installed, but `origin/main`'s `package.json` does not list it. WP70 explicitly mounts it. No WP68 scope change is made here.
+
+## 2026-11-05 - WP68-S7
+
+- Actions taken: installed the three specified, currently unused dependencies with npm; lockfile updated.
+- Decisions made: left `@convex-dev/workpool` for WP70 because it is outside S7's explicit list; the architecture inventory discrepancy is recorded above.
+- Checks run: `npm ci` passed before edits; `npm run typecheck` passed; package diff reviewed.
+- Result: S7 complete. npm reported 24 existing audit findings (13 moderate, 11 high); no audit fix was run.
+- Next: S1 schema modules.
