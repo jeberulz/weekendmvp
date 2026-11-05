@@ -17,7 +17,7 @@ function setup() {
 }
 
 describe("WP70 spend alarms and console", () => {
-  test("80 and 100 percent alarms are durable and deduped by UTC day", async () => {
+  test("spend after shutdown raises the remaining alarms once", async () => {
     const t = setup();
     const adminId = await t.run(async (ctx) => {
       const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
@@ -30,17 +30,37 @@ describe("WP70 spend alarms and console", () => {
       });
       return adminId;
     });
-    await t.mutation(internal.ai.metering.reserve, {
+    const sent = await t.mutation(internal.ai.metering.reserve, {
       attemptKey: "alarm:one", promptRef: "alarm@1", provider: "anthropic", model: "fixture",
       tier: "fast", feature: "ai", reservedMicroUsd: 800_000,
     });
+    await t.mutation(internal.ai.metering.markSent, { usageId: sent.usageId as Id<"ai_usage"> });
     expect((await t.mutation(internal.ops.spend.checkDailyAlarms, {})).raised).toEqual(["free80"]);
     expect((await t.mutation(internal.ops.spend.checkDailyAlarms, {})).raised).toEqual([]);
-    await t.mutation(internal.ai.metering.reserve, {
+    const unsent = await t.mutation(internal.ai.metering.reserve, {
       attemptKey: "alarm:two", promptRef: "alarm@1", provider: "anthropic", model: "fixture",
-      tier: "fast", feature: "ai", reservedMicroUsd: 200_000,
+      tier: "fast", feature: "ai", reservedMicroUsd: 100_000,
+    });
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("ops_settings").unique();
+      if (row) await ctx.db.patch("ops_settings", row._id, { workspaceEnabled: false });
+    });
+    await expect(t.mutation(internal.ai.metering.markSent, { usageId: unsent.usageId as Id<"ai_usage"> }))
+      .rejects.toThrow("WORKSPACE_DISABLED");
+    await expect(t.mutation(internal.ai.metering.reserve, {
+      attemptKey: "alarm:third", promptRef: "alarm@1", provider: "anthropic", model: "fixture",
+      tier: "fast", feature: "ai", reservedMicroUsd: 1,
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+    await t.mutation(internal.ai.metering.settle, {
+      usageId: sent.usageId as Id<"ai_usage">, inputTokens: 10, cacheReadTokens: 0,
+      cacheWriteTokens: 0, outputTokens: 10, costMicroUsd: 1_000_000,
+      estimated: false, latencyMs: 5,
     });
     expect((await t.mutation(internal.ops.spend.checkDailyAlarms, {})).raised).toEqual(["free100"]);
+    await t.mutation(internal.ai.metering.fail, {
+      usageId: unsent.usageId as Id<"ai_usage">, billed: "none", errorClass: "permanent", latencyMs: 1,
+    });
+    expect((await t.mutation(internal.ops.spend.checkDailyAlarms, {})).raised).toEqual([]);
     const dayKey = new Date().toISOString().slice(0, 10);
     await t.run(async (ctx) => {
       const row = await ctx.db.query("ops_settings").unique();
@@ -58,7 +78,7 @@ describe("WP70 spend alarms and console", () => {
     expect(events.map((event) => event.action)).toEqual(Array(4).fill("ops.spend.threshold"));
   });
 
-  test("only a bound super admin in the active workspace sees bounded summaries", async () => {
+  test("super-admin reads bypass cohort and shutdown; others cannot see bounded summaries", async () => {
     const t = setup();
     const { adminId, adminSessionId, customerId, customerSessionId } = await t.run(async (ctx) => {
       const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
@@ -68,7 +88,7 @@ describe("WP70 spend alarms and console", () => {
       await ctx.db.insert("super_admins", { userId: adminId, role: "super_admin", boundAt: 1, boundVia: "deployment_bootstrap" });
       await ctx.db.insert("ops_settings", {
         ownerId: adminId, singletonKey: "workspace", workspaceEnabled: true,
-        cohortMode: "open", freeSignupsOpen: false,
+        cohortMode: "allowlist", freeSignupsOpen: false,
         globalDailyBudgetMicroUsd: 1_000_000n, paidGlobalDailyBudgetMicroUsd: 0n,
         killSwitches: { ai: false, studioVideo: true, publish: true, email: true, social: true, ads: true },
         updatedAt: Date.now(),
@@ -79,6 +99,7 @@ describe("WP70 spend alarms and console", () => {
     const admin = t.withIdentity({ subject: `${adminId}|${adminSessionId}`, issuer: "https://local.test" });
     const customer = t.withIdentity({ subject: `${customerId}|${customerSessionId}`, issuer: "https://local.test" });
     await expect(customer.query(api.ops.spend.readDaily, { dayKey })).rejects.toThrow("FORBIDDEN");
+    await expect(t.query(api.ops.spend.readDaily, { dayKey })).rejects.toThrow("FORBIDDEN");
     const reservation = await t.mutation(internal.ai.metering.reserve, {
       attemptKey: "summary:one", promptRef: "summary@1", provider: "anthropic", model: "fixture",
       tier: "fast", feature: "ai", reservedMicroUsd: 300_000,
@@ -117,7 +138,10 @@ describe("WP70 spend alarms and console", () => {
       const row = await ctx.db.query("ops_settings").unique();
       if (row) await ctx.db.patch("ops_settings", row._id, { workspaceEnabled: false });
     });
-    await expect(admin.query(api.ops.spend.readDaily, { dayKey })).rejects.toThrow("WORKSPACE_DISABLED");
-    await expect(admin.query(api.ops.spend.readDaily, { dayKey: "not-a-day" })).rejects.toThrow("WORKSPACE_DISABLED");
+    expect(await admin.query(api.ops.spend.readDaily, { dayKey })).toMatchObject({
+      truncated: true, sampledCalls: 500,
+    });
+    await expect(admin.query(api.ops.spend.readDaily, { dayKey: "not-a-day" })).rejects.toThrow("INVALID_DAY");
+    await expect(customer.query(api.ops.spend.readDaily, { dayKey })).rejects.toThrow("FORBIDDEN");
   });
 });

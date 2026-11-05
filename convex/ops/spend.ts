@@ -4,7 +4,6 @@ import { internalMutation, query } from "../_generated/server";
 import { int64ToMicroUsd, utcDayKey } from "../../lib/workspace/contracts/metering";
 import { readGlobalBudget } from "../ai/budgets";
 import { requireSuperAdmin } from "../admin/superAdmin";
-import { assertFeatureEnabled } from "./settings";
 
 const MAX_DAILY_ROWS_PER_STATUS = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -40,11 +39,10 @@ function groups(rows: Doc<"ai_usage">[], key: (row: Doc<"ai_usage">) => string, 
     .slice(0, top);
 }
 
-/** Bounded super-admin console read. `truncated` warns when a day's sample exceeds the bound. */
+/** Bounded super-admin control-plane read, including during workspace shutdown. */
 export const readDaily = query({
   args: { dayKey: v.string() },
   handler: async (ctx, { dayKey }) => {
-    await assertFeatureEnabled(ctx, "workspace");
     await requireSuperAdmin(ctx);
     const { start, end } = dateRange(dayKey);
     const [settled, failed, settings, free, paid] = await Promise.all([
@@ -85,7 +83,8 @@ export const checkDailyAlarms = internalMutation({
     const settings = await ctx.db.query("ops_settings")
       .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
       .unique();
-    if (settings === null || !settings.workspaceEnabled) return { dayKey, raised: [] as AlarmKey[] };
+    // Cleanup can charge spend after shutdown, so monitoring remains active.
+    if (settings === null) return { dayKey, raised: [] as AlarmKey[] };
     const [free, paid] = await Promise.all([
       readGlobalBudget(ctx, "free", dayKey), readGlobalBudget(ctx, "paid", dayKey),
     ]);
