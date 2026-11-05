@@ -116,3 +116,8 @@ reviews authorization/ops; John alone merges and approves G0.
 - Additional hardening: the absent-settings default is frozen and returned by value so a caller cannot mutate the shared fallback into an enabled state.
 - Review question: `requireBusinessAccess` currently accepts owned legacy projects with no `workspace` object. Architecture §4.1 keeps that field optional; Claude should confirm whether workspace callers need a separate wizard-business check.
 - Checks run: targeted C-OPS and security tests, focused lint, typecheck and diff check passed. Full gate and isolated local Convex revalidation follow before pushing.
+
+## 2026-11-05 - Security review fix gate
+
+- Checks run on `e3949a48`: isolated anonymous local Convex deployment passed; `npm run typecheck` passed; `npm run lint` passed with 37 warnings and zero errors; `npm test` passed with zero failures (including 150 Node security tests and 121 security Vitest tests); `npm run build` passed; `git diff --check` passed.
+- Result: the C-OPS cohort bypass and SDK import scanner gap are fixed. The legacy-project semantics and C-ART schema shapes still need Claude's contract review; G0 cannot run until WP68 and WP69 are merged.
