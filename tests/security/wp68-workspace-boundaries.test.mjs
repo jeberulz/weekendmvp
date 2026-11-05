@@ -92,14 +92,43 @@ async function sourceFiles(dir) {
   return files;
 }
 
+const PROVIDER_SDK = /^(?:@anthropic-ai\/sdk|openai|@google\/generative-ai|@google\/genai|@fal-ai\/client|replicate)(?:\/|$)/;
+
+function providerImports(file) {
+  const imports = [];
+  function visit(node) {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      imports.push(node.moduleSpecifier.text);
+    }
+    if (ts.isCallExpression(node) && node.arguments.length > 0 && ts.isStringLiteral(node.arguments[0])) {
+      const isDynamicImport = node.expression.kind === ts.SyntaxKind.ImportKeyword;
+      const isRequire = ts.isIdentifier(node.expression) && node.expression.text === "require";
+      if (isDynamicImport || isRequire) imports.push(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(file);
+  return imports.filter((specifier) => PROVIDER_SDK.test(specifier));
+}
+
+test("provider import scanner catches static, subpath, dynamic and require forms", () => {
+  const source = `
+    import Anthropic from "@anthropic-ai/sdk";
+    import type { Client } from "@anthropic-ai/sdk/resources";
+    const loaded = import("openai/resources");
+    const required = require("@google/genai");
+  `;
+  const file = ts.createSourceFile("fixture.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  assert.deepEqual(providerImports(file), [
+    "@anthropic-ai/sdk", "@anthropic-ai/sdk/resources", "openai/resources", "@google/genai",
+  ]);
+});
+
 test("provider SDKs may be imported only by AI provider adapters", async () => {
   const offenders = [];
   for (const relative of await sourceFiles("convex")) {
     const file = await parse(relative);
-    for (const statement of file.statements) {
-      if (!ts.isImportDeclaration(statement)) continue;
-      const specifier = statement.moduleSpecifier.text;
-      if (!/^(@anthropic-ai\/sdk|openai|@google\/generative-ai)$/.test(specifier)) continue;
+    for (const specifier of providerImports(file)) {
       if (!relative.startsWith(path.join("convex", "ai", "providers") + path.sep)) {
         offenders.push(`${relative}: ${specifier}`);
       }

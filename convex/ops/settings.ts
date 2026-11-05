@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { requireSuperAdmin } from "../admin/superAdmin";
+import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../platform/authz";
 
 type OpsReadCtx = Pick<QueryCtx, "db">;
 
@@ -21,20 +22,20 @@ export type OpsSettings = Pick<
   "globalDailyBudgetMicroUsd" | "killSwitches"
 >;
 
-export const DEFAULT_OPS_SETTINGS: OpsSettings = {
+export const DEFAULT_OPS_SETTINGS: OpsSettings = Object.freeze({
   workspaceEnabled: false,
   cohortMode: "allowlist",
   freeSignupsOpen: false,
   globalDailyBudgetMicroUsd: 0n,
-  killSwitches: {
+  killSwitches: Object.freeze({
     ai: true,
     studioVideo: true,
     publish: true,
     email: true,
     social: true,
     ads: true,
-  },
-};
+  }),
+});
 
 const killSwitchesValidator = v.object({
   ai: v.boolean(),
@@ -58,7 +59,10 @@ export async function getOpsSettings(ctx: OpsReadCtx): Promise<OpsSettings> {
   const row = await ctx.db.query("ops_settings")
     .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
     .unique();
-  if (row === null) return DEFAULT_OPS_SETTINGS;
+  if (row === null) return {
+    ...DEFAULT_OPS_SETTINGS,
+    killSwitches: { ...DEFAULT_OPS_SETTINGS.killSwitches },
+  };
   return {
     workspaceEnabled: row.workspaceEnabled,
     cohortMode: row.cohortMode,
@@ -68,11 +72,7 @@ export async function getOpsSettings(ctx: OpsReadCtx): Promise<OpsSettings> {
   };
 }
 
-export async function assertFeatureEnabled(
-  ctx: OpsReadCtx,
-  feature: WorkspaceFeature,
-): Promise<OpsSettings> {
-  const settings = await getOpsSettings(ctx);
+function assertSwitchOpen(settings: OpsSettings, feature: WorkspaceFeature): void {
   const enabled = settings.workspaceEnabled && (
     feature === "workspace" ||
     (feature === "freeSignups"
@@ -84,20 +84,54 @@ export async function assertFeatureEnabled(
     const code = feature === "ai" ? "AI_DISABLED" : "WORKSPACE_DISABLED";
     throw new ConvexError({ code });
   }
-  return settings;
 }
 
-/** Use only after the caller has authenticated or supplied a trusted internal owner ID. */
-export async function assertWorkspaceCohort(
+async function assertOwnerInCohort(
   ctx: OpsReadCtx,
+  settings: OpsSettings,
   ownerId: Id<"users">,
 ): Promise<void> {
-  const settings = await assertFeatureEnabled(ctx, "workspace");
   if (settings.cohortMode === "open") return;
   const allowed = await ctx.db.query("workspace_cohort")
     .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
     .unique();
   if (allowed === null) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+}
+
+/** Public Convex functions use this two-argument guard. It enforces both the
+ * runtime switch and the signed-in owner's cohort in one call. */
+export async function assertFeatureEnabled(
+  ctx: Pick<QueryCtx, "auth" | "db"> | MutationCtx,
+  feature: WorkspaceFeature,
+): Promise<OpsSettings> {
+  const settings = await getOpsSettings(ctx);
+  assertSwitchOpen(settings, feature);
+  const user = "scheduler" in ctx
+    ? await requireCurrentPlatformUserForMutation(ctx)
+    : await requireCurrentPlatformUser(ctx);
+  await assertOwnerInCohort(ctx, settings, user._id);
+  return settings;
+}
+
+/** Internal jobs use this only with an owner ID from an already-authorized
+ * project or trusted system work. It enforces the same switch and cohort. */
+export async function assertFeatureEnabledForOwner(
+  ctx: OpsReadCtx,
+  feature: WorkspaceFeature,
+  ownerId: Id<"users">,
+): Promise<OpsSettings> {
+  const settings = await getOpsSettings(ctx);
+  assertSwitchOpen(settings, feature);
+  await assertOwnerInCohort(ctx, settings, ownerId);
+  return settings;
+}
+
+/** Compatibility helper for callers that only need workspace cohort access. */
+export async function assertWorkspaceCohort(
+  ctx: OpsReadCtx,
+  ownerId: Id<"users">,
+): Promise<void> {
+  await assertFeatureEnabledForOwner(ctx, "workspace", ownerId);
 }
 
 /** The admin control plane is owner-approved to work while workspaceEnabled is off. */

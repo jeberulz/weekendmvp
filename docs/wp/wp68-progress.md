@@ -18,6 +18,7 @@ reviews authorization/ops; John alone merges and approves G0.
 - Claude: confirm whether `site_versions.landingSpec` is serialized validated JSON or a typed Convex object; confirm the schema for wizard answers and per-idea seed payloads before C-DATA freezes.
 - Claude orchestrator: update architecture §4.2 and the dated rulings for John's decision that system/admin owner IDs are required on every new row, including library seeds and batch `ai_usage`.
 - Claude: in the later image-file writer, enforce required alt text for image kinds; cap the variable arrays in workstreams, Wren memory and ad decisions before activation.
+- Claude: confirm whether C-AUTHZ should accept owned legacy `projects` rows without a `workspace` object. The current helper does, matching the optional project amendment; workspace-only behavior may need a separate caller check.
 - Claude orchestrator: record John's 2026-11-05 approval that only super-admin ops control functions are exempt from `assertFeatureEnabled`, so activation and shutdown work while the workspace flag is off.
 
 ## 2026-11-05 - Setup
@@ -107,3 +108,11 @@ reviews authorization/ops; John alone merges and approves G0.
 
 - Checks run on `d5924b19`: `npm run typecheck` passed; `npm run lint` passed (0 errors, 37 warnings); `npm test` passed (all suites, 0 failures); `npm run build` passed; `git diff --check` passed. The required owner-ID schema had already deployed to isolated local Convex successfully. `npm audit --omit=dev --audit-level=high` passed (0 high/critical, 1 moderate).
 - Result: the code and local gates are ready for the other lane's independent contract/security review. PR #167 stays draft; it must not merge before Claude confirms C-ART shapes, records John's two clarifications, and reviews C-AUTHZ/C-OPS.
+
+## 2026-11-05 - Independent security review follow-up
+
+- Finding: the two-argument `assertFeatureEnabled` checked switches but left beta cohort enforcement to a second helper that a consumer could forget. Fixed by deriving the signed-in owner and checking both switch and cohort in one call. Internal jobs have a separate `assertFeatureEnabledForOwner` for an already-authorized/trusted owner ID. Read checks stay clock-free; mutation checks use stored-session expiry.
+- Finding: the provider SDK static check missed subpath imports, dynamic `import()` and `require()`. Expanded the AST scanner and added a fixture proving all four forms are caught.
+- Additional hardening: the absent-settings default is frozen and returned by value so a caller cannot mutate the shared fallback into an enabled state.
+- Review question: `requireBusinessAccess` currently accepts owned legacy projects with no `workspace` object. Architecture §4.1 keeps that field optional; Claude should confirm whether workspace callers need a separate wizard-business check.
+- Checks run: targeted C-OPS and security tests, focused lint, typecheck and diff check passed. Full gate and isolated local Convex revalidation follow before pushing.

@@ -6,6 +6,7 @@ import { api } from "../_generated/api";
 import schema from "../schema";
 import {
   assertFeatureEnabled,
+  assertFeatureEnabledForOwner,
   assertWorkspaceCohort,
   DEFAULT_OPS_SETTINGS,
   getOpsSettings,
@@ -17,6 +18,10 @@ describe("C-OPS defaults and cohort", () => {
   test("missing singleton disables every feature", async () => {
     const t = convexTest(schema, modules);
     await expect(t.run(getOpsSettings)).resolves.toEqual(DEFAULT_OPS_SETTINGS);
+    const snapshot = await t.run(getOpsSettings);
+    snapshot.workspaceEnabled = true;
+    snapshot.killSwitches.ai = false;
+    await expect(t.run(getOpsSettings)).resolves.toEqual(DEFAULT_OPS_SETTINGS);
     for (const feature of ["workspace", "freeSignups", "ai", "studioVideo", "publish", "email", "social", "ads"] as const) {
       await expect(t.run((ctx) => assertFeatureEnabled(ctx, feature)))
         .rejects.toThrow(feature === "ai" ? "AI_DISABLED" : "WORKSPACE_DISABLED");
@@ -25,10 +30,12 @@ describe("C-OPS defaults and cohort", () => {
 
   test("allowlist limits enabled workspace to included owners", async () => {
     const t = convexTest(schema, modules);
-    const { allowedId, blockedId } = await t.run(async (ctx) => {
+    const { allowedId, blockedId, allowedSessionId, blockedSessionId } = await t.run(async (ctx) => {
       const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
       const allowedId = await ctx.db.insert("users", { email: "allowed@example.test" });
       const blockedId = await ctx.db.insert("users", { email: "blocked@example.test" });
+      const allowedSessionId = await ctx.db.insert("authSessions", { userId: allowedId, expirationTime: 9_999_999_999_999 });
+      const blockedSessionId = await ctx.db.insert("authSessions", { userId: blockedId, expirationTime: 9_999_999_999_999 });
       await ctx.db.insert("ops_settings", {
         ownerId: adminId,
         singletonKey: "workspace",
@@ -40,17 +47,23 @@ describe("C-OPS defaults and cohort", () => {
         updatedAt: 1,
       });
       await ctx.db.insert("workspace_cohort", { ownerId: allowedId, addedBy: adminId, addedAt: 1 });
-      return { allowedId, blockedId };
+      return { allowedId, blockedId, allowedSessionId, blockedSessionId };
     });
 
     await expect(t.run((ctx) => assertWorkspaceCohort(ctx, allowedId))).resolves.toBeNull();
     await expect(t.run((ctx) => assertWorkspaceCohort(ctx, blockedId)))
       .rejects.toThrow("RESOURCE_NOT_FOUND");
     await expect(t.run((ctx) => assertFeatureEnabled(ctx, "ai"))).rejects.toThrow("AI_DISABLED");
-    await expect(t.run((ctx) => assertFeatureEnabled(ctx, "workspace"))).resolves.toMatchObject({
+    const allowed = t.withIdentity({ subject: `${allowedId}|${allowedSessionId}`, issuer: "https://local.test" });
+    const blocked = t.withIdentity({ subject: `${blockedId}|${blockedSessionId}`, issuer: "https://local.test" });
+    await expect(allowed.run((ctx) => assertFeatureEnabled(ctx, "workspace"))).resolves.toMatchObject({
       workspaceEnabled: true,
       cohortMode: "allowlist",
     });
+    await expect(blocked.run((ctx) => assertFeatureEnabled(ctx, "workspace")))
+      .rejects.toThrow("RESOURCE_NOT_FOUND");
+    await expect(t.run((ctx) => assertFeatureEnabled(ctx, "workspace")))
+      .rejects.toThrow("UNAUTHENTICATED");
   });
 
   test("only a bound super admin can operate the off-by-default control plane", async () => {
@@ -95,7 +108,7 @@ describe("C-OPS defaults and cohort", () => {
       globalDailyBudgetMicroUsd: 50_000_000n,
       killSwitches: { ai: false },
     });
-    await expect(t.run((ctx) => assertFeatureEnabled(ctx, "ai"))).resolves.toMatchObject({
+    await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "ai", customerId))).resolves.toMatchObject({
       globalDailyBudgetMicroUsd: 50_000_000n,
     });
     await admin.mutation(api.ops.settings.updateForAdmin, { killSwitches: { ai: true } });
