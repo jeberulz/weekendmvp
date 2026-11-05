@@ -266,8 +266,13 @@ describe("WP70 C-METER", () => {
       await expect(t.mutation(internal.ai.metering.reserve, reservation(ownerId, "chat:sweep:1", 200_000)))
         .rejects.toThrow("AI_DISABLED");
       vi.setSystemTime(new Date("2026-11-05T12:16:00.000Z"));
-      expect(await t.mutation(internal.ai.metering.sweepStale, { limit: 1 })).toEqual({ swept: 1, hasMore: true });
-      expect(await t.mutation(internal.ai.metering.sweepStale, { limit: 1 })).toEqual({ swept: 1, hasMore: false });
+      expect(await t.mutation(internal.ai.metering.sweepStale, { limit: 1, remainingBatches: 1 }))
+        .toEqual({ swept: 1, hasMore: true });
+      const queued = await t.run((ctx) => ctx.db.system.query("_scheduled_functions").collect());
+      expect(queued.filter((job) => job.state.kind === "pending")).toHaveLength(1);
+      await t.finishAllScheduledFunctions(() => vi.runAllTimers());
+      expect(await t.mutation(internal.ai.metering.sweepStale, { limit: 1 }))
+        .toEqual({ swept: 0, hasMore: false });
       const rows = await t.run(async (ctx) => await ctx.db.query("ai_usage").collect());
       expect(rows.find((row) => row._id === sentId)?.costMicroUsd).toBe(200_000n);
       expect(rows.find((row) => row._id === unsent.usageId)?.costMicroUsd).toBe(0n);
