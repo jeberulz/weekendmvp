@@ -146,3 +146,19 @@ optional; founder usage still requires an owner in the writer.
 - Added a HydroTrail-shaped insertion test and a negative test for a phone field (D10). The test cannot import WP69's exported `hydrotrailWizardAnswers` until WP69 merges; G0 should assert the direct `wizardAnswersSchema.parse(hydrotrailWizardAnswers)` compatibility on the merged tree.
 - Added optional `ANTHROPIC_API_KEY=` to `.env.example` for WP69's measurement script and WP71's gateway. No value or production credential was added.
 - Checks: targeted schema tests (37 passed), typecheck, lint (0 errors, 37 existing warnings), build, isolated anonymous local Convex deployment, and `git diff --check` passed. A full-suite run concurrent with the build hit one 5-second timeout in an unrelated engine CLI test; that test passed alone (10/10), and a serial full `npm test` rerun passed all suites.
+
+## 2026-11-05 - Cross-lane review repairs after WP69 merge
+
+- Claude's PR #167 review H1/H2 are reflected in C-DATA: C-METER fields/indexes and D22 ownerless platform usage. The remaining M1/M2 ops issues are fixed: Studio video now inherits the AI master switch and the shared AI gate accepts either positive global pool; C-METER still enforces the specific free/paid pool at reservation time.
+- M3: the AST security scan now covers every exported public query, mutation, action and HTTP action in the workspace, crew, studio, AI, growth and ops runtime directories. Admin controls are explicitly exempt from the workspace feature gate under the owner's ruling, but still require `requireSuperAdmin`. Comments cannot satisfy the scanner.
+- M4: added `requireBusinessForOwner` for trusted internal jobs and `requireBusinessChild` for project-bound WP68 tables. The helper checks direct owner/project and the linked employee, approval, document, file, task, sequence, lead, enrollment, step, social account and outbound list chains. Focused tests deny forged cross-business links and a mismatched email send sequence. Rows without a required project ID (wizard sessions, founder signals, idea seeds and platform usage) remain handled by their later owner/system writers, not the project-child helper.
+- Checks on this repair: focused C-OPS/C-AUTHZ/security tests, typecheck, full lint (0 errors, 37 existing warnings), serial full `npm test` (all suites passed), build, `git diff --check`, and isolated anonymous local Convex deployment at 3310/3311 passed. No production deployment or activation.
+- WP69 PR #168 has merged; its spike results are recorded on its branch, but C-JOBS prices remain provisional. WP68 PR #167 remains open, and G0 has not run.
+
+## 2026-11-05 - Merged-tree G0 follow-up
+
+- PR #167 merged into `main` as `4a7831d6` while the review repairs above were being validated. The earlier "remains open" status is superseded. The M1-M4 repairs are now on `codex/wp68-g0-review-fixes`, based on that merge.
+- The C-WIZARD compatibility test now inserts answers parsed from WP69's actual HydroTrail fixture and contract, replacing the hand-written lookalike. Focused schema, ops, authz and security tests passed on the merged tree (41 Vitest and 5 Node tests). The full gate and follow-up PR are in progress.
+- WP70/WP73 remain gated on this follow-up review and Claude's recorded G0 decision. C-JOBS prices remain provisional.
+- Full merged-tree gate passed: `npm run typecheck`, `npm run lint` (0 errors, 37 existing warnings), serial `npm test` (all suites), `npm run build`, and `git diff --check`. The schema and functions deployed to an isolated anonymous local Convex instance on 3310/3311 after setting a dummy local-only billing bridge secret. No cloud or production target was used.
+- Follow-up PR #171 is open for Claude's independent M1-M4/G0 review and John's merge. G0 has not yet been recorded; WP70/WP73 remain paused.

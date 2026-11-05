@@ -76,15 +76,20 @@ export async function getOpsSettings(ctx: OpsReadCtx): Promise<OpsSettings> {
 }
 
 function assertSwitchOpen(settings: OpsSettings, feature: WorkspaceFeature): void {
+  const aiAvailable = !settings.killSwitches.ai &&
+    (settings.globalDailyBudgetMicroUsd > 0n || settings.paidGlobalDailyBudgetMicroUsd > 0n);
   const enabled = settings.workspaceEnabled && (
     feature === "workspace" ||
     (feature === "freeSignups"
       ? settings.freeSignupsOpen
-      : !settings.killSwitches[feature] &&
-        (feature !== "ai" || settings.globalDailyBudgetMicroUsd > 0n))
+      : feature === "ai"
+        ? aiAvailable
+        : feature === "studioVideo"
+          ? aiAvailable && !settings.killSwitches.studioVideo
+          : !settings.killSwitches[feature])
   );
   if (!enabled) {
-    const code = feature === "ai" ? "AI_DISABLED" : "WORKSPACE_DISABLED";
+    const code = feature === "ai" || feature === "studioVideo" ? "AI_DISABLED" : "WORKSPACE_DISABLED";
     throw new ConvexError({ code });
   }
 }
