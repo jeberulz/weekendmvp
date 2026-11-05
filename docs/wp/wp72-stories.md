@@ -21,7 +21,7 @@ Standing rules:
 
 ## Stories
 
-- [ ] `WP72-S0` - Canvas extract
+- [x] `WP72-S0` - Canvas extract
   - Scope: `docs/wp/wp72-canvas-extract.md`
   - Acceptance criteria: nav entries, page list, component inventory and copy for rows 02 and 05 extracted as
     plain data; reviewed by the orchestrator.
