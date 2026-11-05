@@ -41,7 +41,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
-| Landing-page agent brief: received 2026-11-05, saved as `briefs/design-skills-crew-brief.md`; response is `07-landing-design.md`. Owner to rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) and OK the C-ART amendment (WP69-S6) | Before G0 | Open |
+| Landing-page agent brief: received 2026-11-05; response is `07-landing-design.md`. C-ART amendment (WP69-S6) **approved 2026-11-05**, in progress. Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | Before G0 | Partly done |
 | WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
