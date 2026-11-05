@@ -40,3 +40,64 @@ Not yet. Written when the WP closes.
   (no functions; harmless).
 - Checks: `npx vitest run convex/crew/roles.test.ts` 36 passed; eslint clean on the three files;
   `tsc -p convex` clean for these files. Full-suite checks run before the PR.
+
+## 2026-11-05 - WP69-S2 (job, prompt and metering contracts) - done
+
+- Files: `lib/workspace/contracts/{jobs,prompts,metering}.ts`,
+  `tests/platform/workspace-jobs-contracts.test.ts`. Author: Opus. Reviewer: Opus (diff + contract).
+- Review: 15 findings (4 high). Decisions sent to the author:
+  - `extra_social_pack` is always paid (it was free at round 0).
+  - Job key gains a subject discriminator (`crew:{projectId}:{type}:{subject}:{revision}`). changeRound
+    is derived server-side from prior non-failed revisions. Failed rounds don't use a free round.
+  - Batch reservations: `batch` flag, `expiresAt`, 25 h sweep horizon, settle by `custom_id` = usageId.
+  - Global budget is a soft check (bounded overshoot, reservations counted). Owner checks are exact.
+    Separate free and paid global budgets (paid default $50, provisional, owner to confirm). `dayKey`
+    on the usage row.
+  - Fail closed on missing owner rows and on NaN or negative state.
+  - `reserve` derives the plan itself. A `creditDebitId` replaces the `creditFunded` boolean.
+  - `attemptKey` makes reserve idempotent. `markSent`/`sentAt`: the sweep charges the worst case only
+    for calls that were sent.
+  - A late settle records `lateCostMicroUsd` and adds the difference to the totals.
+  - The gateway sends no server-side fallbacks (a refusal fails and refunds the job, `02` §5.8).
+  - `purpose: escalation | eval_judge` on deep realtime specs.
+  - Worst-case reservation is at least 1 micro-USD.
+  - `creditCostFor` takes `plan` and throws `PLAN_GATED`.
+  - Separate Free lifetime reservations.
+  - Per-tier input caps. Escalation and re-ask flags. 3 escalations per owner per day (provisional).
+  - Media reservation helper.
+- Repair result: all 15 applied. Fallbacks finding: the claude-api skill says server-side fallbacks are
+  opt-in per request (param + beta header), so `PromptSpec.fallbacks: "none"` is required and the gateway
+  never sends the param. Ownerless work (precompute, evals) counts against the free global pool for now.
+  New provisional caps: `MAX_RESERVATION_MICRO_USD` $2, 3 deep escalations per owner per day.
+- Checks (orchestrator re-run): vitest on `workspace-jobs-contracts.test.ts` 50 passed; eslint on the
+  four files exit 0; `tsc -p .` shows no errors in S2 files (remaining errors are S1 mid-repair, untracked).
+- Owner questions raised by this story (not invented in code): paid global budget amount; whether
+  seed precompute counts against the global budget; prices for the five job types without one; short
+  video at 35 credits or 6 s clips.
+
+## 2026-11-05 - WP69-S1 (artifact schemas) - in review repair
+
+- Files: `lib/workspace/contracts/artifacts.ts`, `fixtures/hydrotrail.ts`,
+  `tests/platform/workspace-artifacts.test.ts` (plus bounds in `roster.ts`). Author: Opus. Reviewer: Opus.
+- First pass: 61 tests passed, eslint clean. Review: 16 findings. Decisions sent to the author:
+  - Fixed shapes become keyed objects so the output grammar enforces them: palette roles, the 4 emails,
+    build-pack phases × prompts, landing slots (the renderer owns the order), social posts by day.
+    Limits go into field descriptions. Zod stays the post-parse check, with one re-ask.
+  - Markdown fields: CommonMark, raw HTML off, https/relative links only, never MDX. Prompt bodies are
+    plain text.
+  - Proof is never published in v1: workspace-only slots with bracketed placeholder text; `rating` added.
+  - `BRAND_TEXT_PAIRS` (ink/ground, primary/ground, ground/primary, ground/ink). Accent is never text.
+  - Blueprint is a union on `source`; own ideas carry no market data (D15).
+  - Ads: USD only; the budget and cap are platform-set from the founder's paid push.
+  - Social: `caption` + `shortCaption` and per-platform limits.
+  - Email: first-name fallback "there"; the platform owns the opt-in email; delays count from
+    confirmation; optional CTA; no URLs in bodies. Privacy text is platform-owned (D5).
+  - Control characters banned; size test under 256 KiB.
+  - Build-pack variant of prompt standard v1: setup rules on `scaffold.first`; the light pack is
+    exempt from "no billing".
+  - `artifactJsonSchema(kind)` rewrites oneOf to anyOf.
+  - Strict URL checks.
+  - Roster plan bounded.
+  - Emphasis must end the text.
+  - The launch link is split into site path or workspace page.
+  - Every landing page keeps a waitlist (v1 sites have no checkout).
