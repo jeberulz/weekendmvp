@@ -43,7 +43,7 @@ function schemaCallChain(initializer, file) {
   return { fields: call.arguments[0].properties, indexes };
 }
 
-test("every Phase 0 table has a flat validator, owner field and owner-first index", async () => {
+test("every Phase 0 table has a flat validator, D22 ownership and owner-first index", async () => {
   let count = 0;
   for (const domain of schemaModules) {
     const file = await parse(`convex/schema/${domain}.ts`);
@@ -52,7 +52,8 @@ test("every Phase 0 table has a flat validator, owner field and owner-first inde
       const { fields, indexes } = schemaCallChain(table.initializer, file);
       const ownerField = fields.find((field) => field.name?.getText(file) === "ownerId");
       assert.ok(ownerField, `${table.name} missing ownerId`);
-      assert.doesNotMatch(ownerField.initializer.getText(file), /\bv\.optional\s*\(/, `${table.name}.ownerId must be required`);
+      const ownerOptional = /\bv\.optional\s*\(/.test(ownerField.initializer.getText(file));
+      assert.equal(ownerOptional, table.name === "ai_usage", `${table.name}.ownerId ownership follows D22`);
       assert.ok(indexes.some((index) => index.fields[0] === "ownerId"), `${table.name} missing owner-first index`);
       for (const index of indexes) {
         assert.ok(index.name?.startsWith("by_"), `${table.name} has an unnamed index`);

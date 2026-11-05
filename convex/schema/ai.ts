@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export const aiTables = {
   ai_usage: defineTable({
-    ownerId: v.id("users"),
+    ownerId: v.optional(v.id("users")),
     projectId: v.optional(v.id("projects")),
     taskId: v.optional(v.id("tasks")),
     attemptKey: v.string(),

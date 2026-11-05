@@ -10,7 +10,8 @@ super admin changes ops settings. To test, run `npm ci`, the four standard npm
 checks, `npm run test:security`, and the anonymous local Convex command recorded
 below. After merge, Claude can build against C-DATA, C-AUTHZ, C-OPS and C-CONNECT.
 Claude must confirm the C-ART shapes and independently review authorization/ops
-before John merges or approves G0.
+before John merges or approves G0. D22 now makes platform `ai_usage.ownerId`
+optional; founder usage still requires an owner in the writer.
 
 ## Needs from the other lane
 
@@ -20,7 +21,7 @@ before John merges or approves G0.
 - Claude: in the later image-file writer, enforce required alt text for image kinds; cap the variable arrays in workstreams, Wren memory and ad decisions before activation.
 - Claude: confirm whether C-AUTHZ should accept owned legacy `projects` rows without a `workspace` object. The current helper does, matching the optional project amendment; workspace-only behavior may need a separate caller check.
 - Claude orchestrator: record John's 2026-11-05 approval that only super-admin ops control functions are exempt from `assertFeatureEnabled`, so activation and shutdown work while the workspace flag is off.
-- Claude/WP69: revise the ownerless C-METER precompute/eval path to use the system/admin owner ID John required for every new row. The semantic free-pool exception must be explicit so deriving that owner's paid plan does not silently route system work to the paid pool.
+- Claude/WP69: D22 now allows ownerless platform `ai_usage`; no C-METER system-owner change is needed. Confirm whether `idea_crew_seeds` remains system/admin-owned under D12 or needs a separate exception.
 
 ## 2026-11-05 - Setup
 
@@ -131,3 +132,10 @@ before John merges or approves G0.
 - Kept `ai_usage.ownerId` required under John's ruling. WP69's optional owner/ownerless precompute contract needs to distinguish a system/admin owner from a founder and charge those rows to the free pool. WP70 must implement that semantic distinction while keeping a concrete owner ID on every usage row.
 - Checks run: targeted schema and ops tests (39 passed), typecheck, lint (0 errors, 37 existing warnings), full `npm test` (all suites passed), `npm run test:security` (150 Node and 121 Vitest security tests passed), build (455 static targets), `git diff --check`, and isolated anonymous local Convex deployment at 3310/3311 (new indexes accepted). No cloud or production deployment.
 - WP70 and WP73 remain closed until WP68 and WP69 merge and Claude runs G0. Claude's C-ART and C-METER review findings will be posted on PR #168.
+
+## 2026-11-05 - D22 ownerless platform usage correction
+
+- The later owner ruling D22, recorded on `claude/wp67-board`, supersedes the earlier system/admin owner choice for platform `ai_usage` only. The owner answered "Yes, no owner" for per-idea precompute and eval usage. Founder usage remains owner-bound by writer logic; schema permits the platform exception.
+- Changed only `ai_usage.ownerId` to optional and updated the schema/security tests to require an owner ID on every other new table. `idea_crew_seeds.ownerId` remains required pending a separate ruling; this is a durable library row, not an AI meter row.
+- WP68 PR #167 and WP69 PR #168 are both open. The WP69 C-METER contract already supports this ownerless path. Main still lacks the D22 board ruling until that docs branch merges.
+- Revalidation after D22: targeted C-DATA (36 passed) and AST security (4 passed), typecheck, lint (0 errors, 37 existing warnings), full `npm test` (all suites passed), build (455 static targets), `git diff --check`, and isolated anonymous local Convex deployment at 3310/3311 all passed. No cloud or production deployment.

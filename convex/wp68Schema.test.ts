@@ -53,7 +53,8 @@ describe("WP68 C-DATA schema", () => {
     const validator = table.validator as unknown as { fields?: Record<string, unknown> };
     expect(validator.fields, `${name} must be a flat table validator`).toBeDefined();
     expect(validator.fields?.ownerId, `${name} must carry ownerId`).toBeDefined();
-    expect((validator.fields?.ownerId as { isOptional?: string }).isOptional, `${name}.ownerId must be required`).toBe("required");
+    expect((validator.fields?.ownerId as { isOptional?: string }).isOptional, `${name}.ownerId ownership follows D22`)
+      .toBe(name === "ai_usage" ? "optional" : "required");
 
     const indexes = (table as unknown as {
       " indexes": () => { indexDescriptor: string; fields: string[] }[];
