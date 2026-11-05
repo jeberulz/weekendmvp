@@ -19,7 +19,7 @@ export type WorkspaceFeature =
 export type OpsSettings = Pick<
   Doc<"ops_settings">,
   "workspaceEnabled" | "cohortMode" | "freeSignupsOpen" |
-  "globalDailyBudgetMicroUsd" | "killSwitches"
+  "globalDailyBudgetMicroUsd" | "paidGlobalDailyBudgetMicroUsd" | "killSwitches"
 >;
 
 export const DEFAULT_OPS_SETTINGS: OpsSettings = Object.freeze({
@@ -27,6 +27,7 @@ export const DEFAULT_OPS_SETTINGS: OpsSettings = Object.freeze({
   cohortMode: "allowlist",
   freeSignupsOpen: false,
   globalDailyBudgetMicroUsd: 0n,
+  paidGlobalDailyBudgetMicroUsd: 0n,
   killSwitches: Object.freeze({
     ai: true,
     studioVideo: true,
@@ -51,6 +52,7 @@ const settingsValidator = v.object({
   cohortMode: v.union(v.literal("allowlist"), v.literal("open")),
   freeSignupsOpen: v.boolean(),
   globalDailyBudgetMicroUsd: v.int64(),
+  paidGlobalDailyBudgetMicroUsd: v.int64(),
   killSwitches: killSwitchesValidator,
 });
 
@@ -68,6 +70,7 @@ export async function getOpsSettings(ctx: OpsReadCtx): Promise<OpsSettings> {
     cohortMode: row.cohortMode,
     freeSignupsOpen: row.freeSignupsOpen,
     globalDailyBudgetMicroUsd: row.globalDailyBudgetMicroUsd,
+    paidGlobalDailyBudgetMicroUsd: row.paidGlobalDailyBudgetMicroUsd,
     killSwitches: row.killSwitches,
   };
 }
@@ -181,6 +184,7 @@ export const updateForAdmin = mutation({
     cohortMode: v.optional(v.union(v.literal("allowlist"), v.literal("open"))),
     freeSignupsOpen: v.optional(v.boolean()),
     globalDailyBudgetMicroUsd: v.optional(v.int64()),
+    paidGlobalDailyBudgetMicroUsd: v.optional(v.int64()),
     killSwitches: v.optional(killSwitchPatchValidator),
   },
   returns: settingsValidator,
@@ -188,6 +192,9 @@ export const updateForAdmin = mutation({
     const now = Date.now();
     const admin = await requireSuperAdmin(ctx, now);
     if (args.globalDailyBudgetMicroUsd !== undefined && args.globalDailyBudgetMicroUsd < 0n) {
+      throw new ConvexError({ code: "INVALID_BUDGET" });
+    }
+    if (args.paidGlobalDailyBudgetMicroUsd !== undefined && args.paidGlobalDailyBudgetMicroUsd < 0n) {
       throw new ConvexError({ code: "INVALID_BUDGET" });
     }
     const row = await ctx.db.query("ops_settings")
@@ -200,6 +207,7 @@ export const updateForAdmin = mutation({
       cohortMode: args.cohortMode ?? current.cohortMode,
       freeSignupsOpen: args.freeSignupsOpen ?? current.freeSignupsOpen,
       globalDailyBudgetMicroUsd: args.globalDailyBudgetMicroUsd ?? current.globalDailyBudgetMicroUsd,
+      paidGlobalDailyBudgetMicroUsd: args.paidGlobalDailyBudgetMicroUsd ?? current.paidGlobalDailyBudgetMicroUsd,
       killSwitches: {
         ai: switches?.ai ?? current.killSwitches.ai,
         studioVideo: switches?.studioVideo ?? current.killSwitches.studioVideo,
@@ -221,6 +229,7 @@ export const updateForAdmin = mutation({
       cohortMode: next.cohortMode,
       freeSignupsOpen: next.freeSignupsOpen,
       globalDailyBudgetMicroUsd: next.globalDailyBudgetMicroUsd.toString(),
+      paidGlobalDailyBudgetMicroUsd: next.paidGlobalDailyBudgetMicroUsd.toString(),
       killSwitches: next.killSwitches,
     }), now);
     return next;

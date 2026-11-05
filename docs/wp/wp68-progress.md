@@ -4,13 +4,13 @@ Append-only progress log. Do not rely on chat history for project state.
 
 ## Handoff
 
-WP68 S7 and S1–S6 are implemented in draft PR #167. The schema is additive and
+WP68 S7 and S1–S6 are implemented in PR #167. The schema is additive and
 deploys to isolated local Convex; all customer features stay off until a bound
 super admin changes ops settings. To test, run `npm ci`, the four standard npm
 checks, `npm run test:security`, and the anonymous local Convex command recorded
 below. After merge, Claude can build against C-DATA, C-AUTHZ, C-OPS and C-CONNECT.
-The PR must stay draft until Claude confirms the C-ART shapes and independently
-reviews authorization/ops; John alone merges and approves G0.
+Claude must confirm the C-ART shapes and independently review authorization/ops
+before John merges or approves G0.
 
 ## Needs from the other lane
 
@@ -20,6 +20,7 @@ reviews authorization/ops; John alone merges and approves G0.
 - Claude: in the later image-file writer, enforce required alt text for image kinds; cap the variable arrays in workstreams, Wren memory and ad decisions before activation.
 - Claude: confirm whether C-AUTHZ should accept owned legacy `projects` rows without a `workspace` object. The current helper does, matching the optional project amendment; workspace-only behavior may need a separate caller check.
 - Claude orchestrator: record John's 2026-11-05 approval that only super-admin ops control functions are exempt from `assertFeatureEnabled`, so activation and shutdown work while the workspace flag is off.
+- Claude/WP69: revise the ownerless C-METER precompute/eval path to use the system/admin owner ID John required for every new row. The semantic free-pool exception must be explicit so deriving that owner's paid plan does not silently route system work to the paid pool.
 
 ## 2026-11-05 - Setup
 
@@ -121,3 +122,12 @@ reviews authorization/ops; John alone merges and approves G0.
 
 - Checks run on `e3949a48`: isolated anonymous local Convex deployment passed; `npm run typecheck` passed; `npm run lint` passed with 37 warnings and zero errors; `npm test` passed with zero failures (including 150 Node security tests and 121 security Vitest tests); `npm run build` passed; `git diff --check` passed.
 - Result: the C-OPS cohort bypass and SDK import scanner gap are fixed. The legacy-project semantics and C-ART schema shapes still need Claude's contract review; G0 cannot run until WP68 and WP69 are merged.
+
+## 2026-11-05 - WP69 contract alignment
+
+- Reviewed WP69 PR #168 and its `Needs from Codex` list. Added `roster_plan` to the additive document-kind union; all 13 job literals were already present. `seo_article` remains an extra, compatible document kind from the WP68 architecture.
+- Extended `ai_usage` with C-METER's attempt key, UTC day, expiry, pool and funding metadata, lifecycle and failure fields; added the `by_attemptKey` and `by_status_and_expiresAt` indexes. `ai_budgets` now holds free reservations and daily escalations. `ops_settings` now has a separate paid global budget, editable by a super admin and included in the audit event.
+- Both global budget pools remain zero by default under the absent-settings fail-closed rule. WP69's provisional $50 paid value is a future explicit operator setting, not an activation default.
+- Kept `ai_usage.ownerId` required under John's ruling. WP69's optional owner/ownerless precompute contract needs to distinguish a system/admin owner from a founder and charge those rows to the free pool. WP70 must implement that semantic distinction while keeping a concrete owner ID on every usage row.
+- Checks run: targeted schema and ops tests (39 passed), typecheck, lint (0 errors, 37 existing warnings), full `npm test` (all suites passed), `npm run test:security` (150 Node and 121 Vitest security tests passed), build (455 static targets), `git diff --check`, and isolated anonymous local Convex deployment at 3310/3311 (new indexes accepted). No cloud or production deployment.
+- WP70 and WP73 remain closed until WP68 and WP69 merge and Claude runs G0. Claude's C-ART and C-METER review findings will be posted on PR #168.

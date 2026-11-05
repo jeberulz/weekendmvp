@@ -70,12 +70,29 @@ describe("WP68 C-DATA schema", () => {
     for (const value of ["research", "generate", "review", "render", "publish", "crew_blueprint", "studio_video"]) {
       expect(STEP_TYPE_VALUES).toContain(value);
     }
-    for (const value of ["research", "validation_report", "brief", "landing_page", "site_copy", "blueprint", "brand_kit", "landing_spec", "email_sequence", "social_pack", "seo_pack", "seo_article", "launch_plan", "ads_drafts", "build_pack"]) {
+    for (const value of ["research", "validation_report", "brief", "landing_page", "site_copy", "blueprint", "roster_plan", "brand_kit", "landing_spec", "email_sequence", "social_pack", "seo_pack", "seo_article", "launch_plan", "ads_drafts", "build_pack"]) {
       expect(DOCUMENT_KIND_VALUES).toContain(value);
     }
     for (const value of ["purchase_grant", "task_debit", "task_refund", "purchase_refund", "dispute", "plan_grant", "starter_grant", "allowance_expiry"]) {
       expect(LEDGER_REASON_VALUES).toContain(value);
     }
+  });
+
+  test("WP69 metering row fields and sweep/idempotency indexes are present", () => {
+    const usage = schema.tables.ai_usage;
+    const fields = usage.validator.fields;
+    for (const field of ["attemptKey", "dayKey", "expiresAt", "feature", "globalPool", "creditFunded"]) {
+      expect(fields[field as keyof typeof fields]?.isOptional, `ai_usage.${field}`).toBe("required");
+    }
+    for (const field of ["plan", "creditDebitId", "batch", "escalation", "reask", "sentAt", "finalizedAt", "sweptAt", "billed", "errorClass", "lateCostMicroUsd"]) {
+      expect(fields[field as keyof typeof fields]?.isOptional, `ai_usage.${field}`).toBe("optional");
+    }
+    const indexes = (usage as unknown as { " indexes": () => { indexDescriptor: string; fields: string[] }[] })[" indexes"]();
+    expect(indexes).toContainEqual(expect.objectContaining({ indexDescriptor: "by_attemptKey", fields: ["attemptKey"] }));
+    expect(indexes).toContainEqual(expect.objectContaining({ indexDescriptor: "by_status_and_expiresAt", fields: ["status", "expiresAt"] }));
+    expect(schema.tables.ai_budgets.validator.fields.freeReservedMicroUsd.isOptional).toBe("required");
+    expect(schema.tables.ai_budgets.validator.fields.dayEscalations.isOptional).toBe("required");
+    expect(schema.tables.ops_settings.validator.fields.paidGlobalDailyBudgetMicroUsd.isOptional).toBe("required");
   });
 
   test.each([

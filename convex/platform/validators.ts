@@ -117,6 +117,7 @@ export const DOCUMENT_KIND_VALUES = [
   "landing_page",
   "site_copy",
   "blueprint",
+  "roster_plan",
   "brand_kit",
   "landing_spec",
   "email_sequence",

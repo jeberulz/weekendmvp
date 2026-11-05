@@ -43,6 +43,7 @@ describe("C-OPS defaults and cohort", () => {
         cohortMode: "allowlist",
         freeSignupsOpen: false,
         globalDailyBudgetMicroUsd: 50_000_000n,
+        paidGlobalDailyBudgetMicroUsd: 0n,
         killSwitches: { ai: true, studioVideo: true, publish: true, email: true, social: true, ads: true },
         updatedAt: 1,
       });
@@ -89,6 +90,8 @@ describe("C-OPS defaults and cohort", () => {
     await expect(admin.query(api.ops.settings.readForAdmin, {})).resolves.toEqual(DEFAULT_OPS_SETTINGS);
     await expect(admin.mutation(api.ops.settings.updateForAdmin, { globalDailyBudgetMicroUsd: -1n }))
       .rejects.toThrow("INVALID_BUDGET");
+    await expect(admin.mutation(api.ops.settings.updateForAdmin, { paidGlobalDailyBudgetMicroUsd: -1n }))
+      .rejects.toThrow("INVALID_BUDGET");
 
     const enabled = await admin.mutation(api.ops.settings.updateForAdmin, { workspaceEnabled: true });
     expect(enabled.workspaceEnabled).toBe(true);
@@ -106,10 +109,12 @@ describe("C-OPS defaults and cohort", () => {
     await expect(t.run((ctx) => assertWorkspaceCohort(ctx, customerId))).resolves.toBeNull();
     await admin.mutation(api.ops.settings.updateForAdmin, {
       globalDailyBudgetMicroUsd: 50_000_000n,
+      paidGlobalDailyBudgetMicroUsd: 25_000_000n,
       killSwitches: { ai: false },
     });
     await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "ai", customerId))).resolves.toMatchObject({
       globalDailyBudgetMicroUsd: 50_000_000n,
+      paidGlobalDailyBudgetMicroUsd: 25_000_000n,
     });
     await admin.mutation(api.ops.settings.updateForAdmin, { killSwitches: { ai: true } });
     await expect(t.run((ctx) => assertFeatureEnabled(ctx, "ai"))).rejects.toThrow("AI_DISABLED");
