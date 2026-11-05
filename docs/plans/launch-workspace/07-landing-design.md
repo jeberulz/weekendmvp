@@ -125,12 +125,26 @@ the freeze than to migrate stored artifacts later:
 4. Add to `brandKit` a `visualSystem` field holding `direction`, `shape` (radius)
    and `density`, plus `theme` (light or dark, with a one-line reason).
 5. Add to `landingSpec` a `layout` enum for each section, with one rule: it must
-   be allowed by the brand kit's direction. That rule is checked in
-   `parseArtifact`, which has the brand kit, not in the grammar.
+   be allowed by the brand kit's direction. The landing schema can't see the brand
+   kit, so the rule is a separate pure check, `checkLandingAgainstBrandKit(spec, kit)`.
+   **WP75 S4 owns wiring it in**: it runs after every landing generation, and any
+   issue it finds triggers the single repair call. Until then, nothing calls it.
 
 The enum values start small and can grow; adding a value later is a widening
-that needs no migration. Grammar size stays under the 7,000 B per-schema
-ceiling, because enums are cheap. The change is tested against that ceiling.
+that needs no migration. Grammar size is tested against the per-schema ceilings.
+As built (2026-11-05): landing_spec is 6,622 of 7,000 B. That leaves little room:
+about 30 more icons would break the ceiling, so a larger icon list needs a smaller
+schema elsewhere first. brand_kit is about 5,000 B; its ceiling was raised from
+5,000 to 5,500 B, still far under the smallest live rejection of 8,288 B.
+
+As built, these changes go beyond the list above:
+- The heading weight comes from the type pair, not from the model.
+- Theme mode must match the palette's ground and ink luminance.
+- Emoji and leading section numbers are rejected in landing text.
+- `typePairBrief()` gives prompts the list of pairs allowed for each direction.
+These are breaking changes at `schemaVersion: 1`. That is fine before G0, because
+no brand kit or landing spec has been stored anywhere yet; spike outputs live only
+in the scratchpad.
 
 Owners: WP69 amends C-ART. WP72 and WP75 S5 build the directions and the CI
 matrix. WP71 adds the distinctiveness eval. WP75 S3–S4 add the Pro Max lookup,
