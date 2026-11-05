@@ -1,0 +1,410 @@
+/**
+ * WP71-S1. Claude adapter over the official SDK (`@anthropic-ai/sdk`).
+ *
+ * The only file outside `providers/fixtures.ts` that touches the SDK, and
+ * the only one that imports its runtime (D11, `02` §5.5).
+ *
+ * Request shape (Claude 5.5, checked against the installed SDK 1.5.0 types
+ * and the `claude-api` skill on 2026-11-05):
+ * - `output_config.effort` is always sent (Haiku and Opus 5.5 default to
+ *   `medium`, Sonnet 5.5 to `high`; an unset effort is a hidden cost line).
+ * - `thinking` is always sent, exactly as the spec sets it
+ *   (`adaptive` / `between_tools` / `disabled`; C-PROMPT validates which
+ *   model accepts which). Never `budget_tokens`.
+ * - Structured output is `output_config.format: { type: "json_schema", schema }`
+ *   with the caller's JSON Schema.
+ * - System blocks carry `cache_control: { type: "ephemeral", ttl: "5m" }`
+ *   where the caller asks for a breakpoint (at most four).
+ * - No `fallbacks`, no beta header: a refusal stops the request and fails
+ *   the job (C-PROMPT header, `02` §5.8). No sampling parameters, no prefill.
+ * - The SDK's own retries are off (`maxRetries: 0`): a retry would bill a
+ *   second call against one reservation. The gateway owns retries.
+ *
+ * Outcomes:
+ * - A usable reply returns a `TextResult` (text, parsed JSON when a schema
+ *   was sent, stop reason, usage and cost).
+ * - `stop_reason: "refusal"` throws `ProviderError` kind `refusal`, billed
+ *   `actual`, with the cost, usage and `stop_details` category.
+ * - A billed reply we cannot use throws kind `invalid_output`, billed
+ *   `actual`, with its cost: empty, not JSON (when a schema was sent), or
+ *   stopped by anything but `end_turn` / `stop_sequence`. That covers
+ *   `max_tokens` (truncated) in text mode too, and `tool_use`, `pause_turn`
+ *   and `model_context_window_exceeded`: we never send tools (D23). The
+ *   gateway re-asks once with a new reservation (`02` §5.1).
+ * - Fixture results carry `billedAs` ending in ` (fixture)`.
+ * - HTTP and transport failures throw the kinds in `transport.ts`.
+ *
+ * Batch (S5): `buildMessageParams` is the `params` of a Message Batches
+ * request and `readMessage(message, request, { batch: true })` reads one
+ * succeeded result at the batch rate, so submit and poll can be added here
+ * without changing the request or cost code.
+ */
+
+import Anthropic from "@anthropic-ai/sdk";
+
+import type { PromptModel, PromptThinking } from "../../../lib/workspace/contracts/prompts";
+import { ANTHROPIC_RATE_CARDS, anthropicCostMicroUsd, anthropicRateCard } from "../pricing";
+import { createFixtureAnthropicClient, type AnthropicFixtureResponder } from "./fixtures";
+import { resolveProviderAccess, type ProviderEnv } from "./mode";
+import {
+  isRecord,
+  kindForHttpStatus,
+  noReplyError,
+  startDeadline,
+  tokenCount,
+  utf8Bytes,
+} from "./transport";
+import {
+  FIXTURE_BILLED_AS_SUFFIX,
+  ProviderError,
+  type ProviderCost,
+  type TextRequest,
+  type TextResult,
+  type TextStopReason,
+  type TextUsage,
+} from "./types";
+
+// ---------------------------------------------------------------------------
+// Client seam
+// ---------------------------------------------------------------------------
+
+export type AnthropicRequestOptions = {
+  readonly signal?: AbortSignal;
+  readonly timeout?: number;
+  readonly maxRetries?: number;
+};
+
+/** The part of the SDK client the adapter uses. A real `Anthropic` instance satisfies it. */
+export type AnthropicMessagesClient = {
+  readonly messages: {
+    create(
+      params: Anthropic.MessageCreateParamsNonStreaming,
+      options?: AnthropicRequestOptions,
+    ): Promise<Anthropic.Message>;
+  };
+};
+
+/** Builds the live client from the key. Injected in tests. */
+export type AnthropicClientFactory = (apiKey: string) => AnthropicMessagesClient;
+
+/** The only host live Claude traffic may reach. Explicit, so a stray `ANTHROPIC_BASE_URL` cannot redirect it. */
+export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
+
+export const defaultAnthropicClientFactory: AnthropicClientFactory = (apiKey) =>
+  new Anthropic({ apiKey, baseURL: ANTHROPIC_BASE_URL, maxRetries: 0 });
+
+/** The API's limit on `cache_control` breakpoints per request. */
+export const MAX_CACHE_BREAKPOINTS = 4;
+
+/**
+ * Headroom for message framing when usage is missing, the same allowance as
+ * the engine's OpenAI adapter.
+ */
+const FRAMING_TOKENS = 200;
+
+// ---------------------------------------------------------------------------
+// Request
+// ---------------------------------------------------------------------------
+
+function configError(message: string): ProviderError {
+  return new ProviderError("anthropic", "config", message);
+}
+
+function thinkingParam(thinking: PromptThinking): Anthropic.ThinkingConfigParam {
+  switch (thinking.type) {
+    case "adaptive":
+      return thinking.display === undefined
+        ? { type: "adaptive" }
+        : { type: "adaptive", display: thinking.display };
+    case "between_tools":
+      return { type: "between_tools" };
+    case "disabled":
+      return { type: "disabled" };
+    default: {
+      const unreachable: never = thinking;
+      throw configError(`unknown thinking ${JSON.stringify(unreachable)}`);
+    }
+  }
+}
+
+/** Throws `config` for a request no caller should send. Nothing has gone out. */
+export function assertTextRequest(request: TextRequest): void {
+  if (!Object.hasOwn(ANTHROPIC_RATE_CARDS, request.model)) {
+    throw configError(`model ${String(request.model)} has no rate card`);
+  }
+  if (!Number.isSafeInteger(request.maxTokens) || request.maxTokens < 1) {
+    throw configError(`maxTokens must be a positive integer, got ${request.maxTokens}`);
+  }
+  if (request.system.length === 0 || request.system.some((block) => block.text.trim().length === 0)) {
+    throw configError("every system block needs text");
+  }
+  const breakpoints = request.system.filter((block) => block.cacheBreakpoint === true).length;
+  if (breakpoints > MAX_CACHE_BREAKPOINTS) {
+    throw configError(`at most ${MAX_CACHE_BREAKPOINTS} cache breakpoints, got ${breakpoints}`);
+  }
+  if (request.user.trim().length === 0) throw configError("the task block is empty");
+  if (request.outputSchema !== undefined && !isRecord(request.outputSchema)) {
+    throw configError("outputSchema must be a JSON Schema object");
+  }
+}
+
+/**
+ * The Messages API body for a request. Also the `params` of a Message
+ * Batches request (S5).
+ */
+export function buildMessageParams(request: TextRequest): Anthropic.MessageCreateParamsNonStreaming {
+  assertTextRequest(request);
+  const system: Anthropic.TextBlockParam[] = request.system.map((block) =>
+    block.cacheBreakpoint === true
+      ? { type: "text", text: block.text, cache_control: { type: "ephemeral", ttl: "5m" } }
+      : { type: "text", text: block.text },
+  );
+  const outputConfig: Anthropic.OutputConfig =
+    request.outputSchema === undefined
+      ? { effort: request.effort }
+      : { effort: request.effort, format: { type: "json_schema", schema: { ...request.outputSchema } } };
+  return {
+    model: request.model,
+    max_tokens: request.maxTokens,
+    system,
+    messages: [{ role: "user", content: request.user }],
+    thinking: thinkingParam(request.thinking),
+    output_config: outputConfig,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Usage and cost
+// ---------------------------------------------------------------------------
+
+type BilledUsage = { readonly usage: TextUsage; readonly estimated: boolean };
+
+/**
+ * The tokens a 2xx reply is charged for. Usage that is missing or malformed
+ * is never recorded as zero:
+ * - input: the request's UTF-8 bytes plus framing (a token is never shorter
+ *   than a byte), booked as cache writes, the dearest input rate;
+ * - output: `maxTokens`, which the API enforces and which includes thinking.
+ * A `null` or absent cache count is the API saying "none" and counts as 0. A
+ * cache count that is present but not a non-negative integer makes the input
+ * side unknown, so the whole input takes the fallback.
+ */
+export function billedUsage(raw: unknown, request: TextRequest): BilledUsage {
+  const reported = isRecord(raw) ? raw : {};
+  const cacheCount = (value: unknown): number | null =>
+    value === null || value === undefined ? 0 : tokenCount(value);
+  const cacheRead = cacheCount(reported.cache_read_input_tokens);
+  const cacheWrite = cacheCount(reported.cache_creation_input_tokens);
+  const reportedInput = tokenCount(reported.input_tokens);
+  const input = cacheRead === null || cacheWrite === null ? null : reportedInput;
+  const output = tokenCount(reported.output_tokens);
+  const details = isRecord(reported.output_tokens_details) ? reported.output_tokens_details : {};
+  const thinking = tokenCount(details.thinking_tokens);
+
+  const fallbackInput =
+    request.system.reduce((sum, block) => sum + utf8Bytes(block.text), 0) +
+    utf8Bytes(request.user) +
+    (request.outputSchema === undefined ? 0 : utf8Bytes(JSON.stringify(request.outputSchema))) +
+    FRAMING_TOKENS;
+
+  const usage: TextUsage = {
+    inputTokens: input ?? 0,
+    cacheReadTokens: input === null ? 0 : (cacheRead ?? 0),
+    cacheWriteTokens: input === null ? fallbackInput : (cacheWrite ?? 0),
+    outputTokens: output ?? request.maxTokens,
+    ...(thinking === null ? {} : { thinkingTokens: thinking }),
+  };
+  return { usage, estimated: input === null || output === null };
+}
+
+export type ReadOptions = {
+  /** A Message Batches result: priced at the batch rate. */
+  readonly batch?: boolean;
+  /** A fixture reply: `billedAs` gets the ` (fixture)` suffix. */
+  readonly fixture?: boolean;
+};
+
+export function textCost(model: PromptModel, billed: BilledUsage, options: ReadOptions = {}): ProviderCost {
+  const { usage } = billed;
+  return {
+    provider: "anthropic",
+    billedAs: `${model}${options.batch ? " (batch)" : ""}${options.fixture ? FIXTURE_BILLED_AS_SUFFIX : ""}`,
+    microUsd: anthropicCostMicroUsd(model, usage, { batch: options.batch }),
+    estimated: billed.estimated,
+    units: {
+      inputTokens: usage.inputTokens,
+      cacheReadTokens: usage.cacheReadTokens,
+      cacheWriteTokens: usage.cacheWriteTokens,
+      outputTokens: usage.outputTokens,
+    },
+    rateCard: anthropicRateCard(model).effectiveFrom,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Reply
+// ---------------------------------------------------------------------------
+
+const STOP_REASONS: readonly TextStopReason[] = [
+  "end_turn",
+  "max_tokens",
+  "stop_sequence",
+  "tool_use",
+  "pause_turn",
+  "refusal",
+  "model_context_window_exceeded",
+];
+
+/**
+ * The only stops that mean a complete answer. `max_tokens` is truncated;
+ * `tool_use` / `pause_turn` cannot be finished without a tool loop (D23);
+ * `model_context_window_exceeded` is cut off.
+ */
+const USABLE_STOPS: readonly TextStopReason[] = ["end_turn", "stop_sequence"];
+
+function stopReasonOf(value: unknown): TextStopReason | null {
+  return typeof value === "string" && (STOP_REASONS as readonly string[]).includes(value)
+    ? (value as TextStopReason)
+    : null;
+}
+
+function joinedText(content: unknown): string {
+  if (!Array.isArray(content)) return "";
+  const parts: string[] = [];
+  for (const block of content) {
+    if (isRecord(block) && block.type === "text" && typeof block.text === "string") parts.push(block.text);
+  }
+  return parts.join("");
+}
+
+/**
+ * Reads a 2xx reply (a realtime response, or one succeeded batch result with
+ * `batch: true`). Returns the result, or throws `refusal` / `invalid_output`
+ * carrying the cost. Typed `unknown` so a malformed body is handled, not trusted.
+ */
+export function readMessage(message: unknown, request: TextRequest, options: ReadOptions = {}): TextResult {
+  const body = isRecord(message) ? message : {};
+  const billed = billedUsage(body.usage, request);
+  const cost = textCost(request.model, billed, options);
+  const stopReason = stopReasonOf(body.stop_reason);
+  const billedError = (kind: "refusal" | "invalid_output", text: string, extra: object = {}) =>
+    new ProviderError("anthropic", kind, text, {
+      cost,
+      usage: billed.usage,
+      stopReason: stopReason ?? undefined,
+      ...extra,
+    });
+
+  if (stopReason === "refusal") {
+    const details = isRecord(body.stop_details) ? body.stop_details : {};
+    throw billedError("refusal", "the model declined the request", {
+      refusal: {
+        category: typeof details.category === "string" ? details.category : null,
+        explanation: typeof details.explanation === "string" ? details.explanation : null,
+      },
+    });
+  }
+
+  const structured = request.outputSchema !== undefined;
+  if (stopReason === null || !USABLE_STOPS.includes(stopReason)) {
+    throw billedError("invalid_output", `the reply stopped with ${String(body.stop_reason)}`);
+  }
+
+  const text = joinedText(body.content);
+  if (text.trim().length === 0) throw billedError("invalid_output", "the reply had no text");
+
+  const base = {
+    provider: "anthropic" as const,
+    model: request.model,
+    messageId: typeof body.id === "string" ? body.id : "",
+    stopReason,
+    text,
+    usage: billed.usage,
+    cost,
+  };
+  if (!structured) return base;
+
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch (cause) {
+    throw billedError("invalid_output", "the structured reply is not valid JSON", { cause });
+  }
+  return { ...base, json };
+}
+
+// ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+function errorForThrown(error: unknown, deadline: ReturnType<typeof startDeadline>): ProviderError {
+  if (error instanceof ProviderError) return error;
+  if (deadline.timedOut() || deadline.parentAborted()) return noReplyError("anthropic", deadline, error);
+  if (error instanceof Anthropic.APIConnectionTimeoutError) {
+    return new ProviderError("anthropic", "timeout", "the SDK timed out waiting for a reply", { cause: error });
+  }
+  if (error instanceof Anthropic.APIError && typeof error.status === "number") {
+    const kind = kindForHttpStatus(error.status);
+    return new ProviderError("anthropic", kind, `Anthropic returned ${error.status}`, {
+      status: error.status,
+      cause: error,
+    });
+  }
+  return noReplyError("anthropic", deadline, error);
+}
+
+// ---------------------------------------------------------------------------
+// Adapter
+// ---------------------------------------------------------------------------
+
+export type AnthropicAdapter = {
+  readonly provider: "anthropic";
+  complete(request: TextRequest): Promise<TextResult>;
+};
+
+export type AnthropicAdapterOptions = {
+  /** Read for `AI_PROVIDER_MODE` and `ANTHROPIC_API_KEY`. Never `process.env` implicitly. */
+  readonly env: ProviderEnv;
+  /** Live mode only. Defaults to the real SDK client with retries off. */
+  readonly clientFactory?: AnthropicClientFactory;
+  /** Fixture mode only: replaces the default deterministic replies. */
+  readonly fixtureResponder?: AnthropicFixtureResponder;
+};
+
+export function createAnthropicAdapter(options: AnthropicAdapterOptions): AnthropicAdapter {
+  return {
+    provider: "anthropic",
+    async complete(request: TextRequest): Promise<TextResult> {
+      // Build first: a bad request, mode or key fails before any client exists.
+      const params = buildMessageParams(request);
+      const access = resolveProviderAccess("anthropic", options.env);
+      let client: AnthropicMessagesClient;
+      try {
+        client =
+          access.mode === "live"
+            ? (options.clientFactory ?? defaultAnthropicClientFactory)(access.apiKey)
+            : createFixtureAnthropicClient(options.fixtureResponder);
+      } catch (cause) {
+        throw new ProviderError("anthropic", "config", "the Anthropic client could not be created", {
+          billed: "none",
+          cause,
+        });
+      }
+
+      const deadline = startDeadline("anthropic", request.timeoutMs, request.signal);
+      let message: Anthropic.Message;
+      try {
+        message = await client.messages.create(params, {
+          signal: deadline.signal,
+          timeout: request.timeoutMs,
+          maxRetries: 0,
+        });
+      } catch (error) {
+        throw errorForThrown(error, deadline);
+      } finally {
+        deadline.clear();
+      }
+      return readMessage(message, request, { fixture: access.mode === "fixture" });
+    },
+  };
+}

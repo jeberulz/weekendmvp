@@ -20,7 +20,7 @@ Standing rules:
 
 ## Stories
 
-- [ ] `WP71-S1` - Provider adapters
+- [x] `WP71-S1` - Provider adapters
   - Scope: `convex/ai/providers/{anthropic,openaiImages,recraft,types,fixtures}.ts`, `convex/ai/pricing.ts`, tests
   - Acceptance criteria:
     - Each adapter has injectable `fetch` (or an injectable SDK client for Anthropic), an `AbortSignal`
@@ -43,6 +43,8 @@ Standing rules:
     - A refusal settles as failed.
     - When the provider may have billed, the worst case is charged.
     - No tool loop (D23).
+    - A settle above the reservation is recorded at the true cost and flagged as an overrun (for example
+      gpt-image-2 output tokens above the table price), so a rate-card drift is visible.
   - Verification: a fixture-mode end-to-end test, reserve → settle and reserve → fail
 
 - [ ] `WP71-S3` - Router, registry, prompt-version CI, import boundary
