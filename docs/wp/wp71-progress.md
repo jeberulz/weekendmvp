@@ -40,3 +40,39 @@
     conservative);
   - the gpt-image-2 token rates on OpenAI's live pricing page.
 - Checks: see the S1 commit.
+
+## 2026-11-05 - S2 gateway core
+
+- Files:
+  - `convex/ai/gateway.ts`: the pure, injectable core. `runTextGateway` and `runImageGateway`, plus the
+    `MeterPort`, adapter and clock ports and an optional `onOverrun` hook.
+  - `convex/ai/meterStub.ts`: an in-memory C-METER built from the contract's pure helpers, with no new
+    contract fields.
+  - `tests/platform/ai-gateway.test.ts`: 31 tests, in fixture mode or with fakes.
+- Flow per attempt: spec → worst case → `reserve` → `markSent` → call → zod validate → exactly one
+  `settle` or `fail`. If `settle` or `fail` itself throws, the row is left for the WP70 sweep.
+- D23 rules:
+  - One re-ask on a schema failure, with its own row. The re-ask note lists the failed paths and never
+    echoes the reply.
+  - `tool_use` and `pause_turn` fail at once with no re-ask, because neither is a finished answer and
+    continuing would be a tool loop.
+  - No tools, `tool_choice` or betas are ever sent.
+- Overrun: the settle records the true cost, and the gap shows on `GatewayAttempt.overrun` and through
+  `deps.onOverrun`.
+- No Convex `internalAction` wrapper yet. Binding the ports to the stub would enforce no real budgets.
+  The thin `"use node"` wrapper lands once WP70 ships the real `convex/ai/metering.ts` (and S3's
+  registry).
+- Orchestrator decisions on the author's contract questions:
+  - A schema-failure attempt is recorded as `fail({ billed: "actual", costMicroUsd, errorClass:
+    "schema_invalid" })`. It is charged the same as a settle, and the failure-rate alarm can see it.
+  - The re-ask of an escalation does not count as a second daily escalation (`escalation: true` is sent
+    on the first reserve only).
+  - A replayed attempt key returns `duplicate_attempt` and sends nothing. Callers bump `attempt`; this
+    is the idempotency rule.
+- Contract questions for Codex (C-METER, through the `05` §5 change rule):
+  - Optional usage token fields on `FailArgs`, so failed rows keep their token counts.
+  - An optional overrun marker on `FinalizeResult` or `ai_usage`, so metering records rate-card drift itself.
+- Known limit: the byte-based input bound can be up to about 4x the true token count, so a large prompt
+  can be refused as over the lane ceiling. Revisit with `count_tokens` (or a calibrated ratio) in
+  S3 or S4.
+- Checks: see the S2 commit.
