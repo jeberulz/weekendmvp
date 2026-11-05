@@ -158,7 +158,7 @@ describe("WP70 C-METER", () => {
   test("credit-funded work verifies its task debit and uses the paid pool", async () => {
     const t = meterTest();
     const { ownerId } = await seedMeter(t);
-    const { projectId, taskId, debitId } = await t.run(async (ctx) => {
+    const { projectId, taskId, accountId, debitId } = await t.run(async (ctx) => {
       const projectId = await ctx.db.insert("projects", {
         ownerId, source: "own_idea", title: "Meter project", status: "draft",
         idempotencyKey: "meter-project", createdAt: 1, updatedAt: 1,
@@ -174,7 +174,7 @@ describe("WP70 C-METER", () => {
         ownerId, accountId, projectId, taskId, reason: "task_debit", delta: -1n,
         balanceAfter: 0n, idempotencyKey: `task-debit:${taskId}`, createdAt: 1,
       });
-      return { projectId, taskId, debitId };
+      return { projectId, taskId, accountId, debitId };
     });
     const row = await t.mutation(internal.ai.metering.reserve, {
       ...reservation(ownerId, "crew:meter:1", 100_000), projectId, taskId, creditDebitId: debitId,
@@ -184,14 +184,18 @@ describe("WP70 C-METER", () => {
     expect(await t.run((ctx) => readGlobalBudget(ctx, "paid", new Date().toISOString().slice(0, 10))))
       .toEqual({ spentTodayMicroUsd: 0, inFlightMicroUsd: 100_000 });
     await t.run(async (ctx) => await ctx.db.insert("credit_ledger", {
-      ownerId, accountId: (await ctx.db.get("credit_ledger", debitId))!.accountId,
+      ownerId, accountId,
       projectId, taskId, reason: "task_refund", delta: 1n, balanceAfter: 1n,
       idempotencyKey: `task-refund:${debitId}`, createdAt: 2,
     }));
+    await expect(t.mutation(internal.ai.metering.markSent, { usageId: row.usageId as Id<"ai_usage"> }))
+      .rejects.toThrow("RESOURCE_NOT_FOUND");
     await expect(t.mutation(internal.ai.metering.reserve, {
       ...reservation(ownerId, "crew:meter:2", 100_000), projectId, taskId, creditDebitId: debitId,
     })).rejects.toThrow("RESOURCE_NOT_FOUND");
-    await t.run(async (ctx) => await ctx.db.patch("tasks", taskId, { status: "failed" }));
+    await t.run(async (ctx) => await ctx.db.patch("tasks", taskId, { status: "cancelled" }));
+    await expect(t.mutation(internal.ai.metering.markSent, { usageId: row.usageId as Id<"ai_usage"> }))
+      .rejects.toThrow("RESOURCE_NOT_FOUND");
     await expect(t.mutation(internal.ai.metering.reserve, {
       ...reservation(ownerId, "crew:meter:3", 100_000), projectId, taskId,
     })).rejects.toThrow("RESOURCE_NOT_FOUND");
@@ -199,6 +203,9 @@ describe("WP70 C-METER", () => {
     await expect(t.mutation(internal.ai.metering.reserve, {
       ...reservation(ownerId, "crew:meter:2", 100_000), projectId, taskId, creditDebitId: debitId,
     })).rejects.toThrow("RESOURCE_NOT_FOUND");
+    expect(await t.mutation(internal.ai.metering.fail, {
+      usageId: row.usageId as Id<"ai_usage">, billed: "none", errorClass: "permanent", latencyMs: 0,
+    })).toMatchObject({ status: "failed", costMicroUsd: 0 });
   });
 
   test("day rollover releases the original global pool while owner day spend follows the budget row", async () => {

@@ -70,7 +70,7 @@ type ReserveInput = ReserveArgs & {
 
 async function verifiedProject(
   ctx: MutationCtx,
-  args: ReserveInput,
+  args: Pick<ReserveInput, "ownerId" | "projectId" | "taskId">,
 ): Promise<Id<"projects"> | undefined> {
   if (args.ownerId === undefined) return undefined;
   const owner = await ctx.db.get("users", args.ownerId);
@@ -91,7 +91,7 @@ async function verifiedProject(
 
 async function verifyCreditDebit(
   ctx: MutationCtx,
-  args: ReserveInput,
+  args: Pick<ReserveInput, "ownerId" | "taskId" | "creditDebitId">,
   projectId: Id<"projects"> | undefined,
 ): Promise<boolean> {
   if (args.creditDebitId === undefined) return false;
@@ -249,6 +249,11 @@ export const markSent = internalMutation({
     if (row.status !== "reserved") return { usageId: row._id, changed: false, sentAt: row.sentAt };
     if (row.sentAt !== undefined) return { usageId: row._id, changed: false, sentAt: row.sentAt };
     await settingsForCall(ctx, row.feature, row.ownerId);
+    // A task can be cancelled and refunded after reserve. Re-read the live
+    // task/debit in this same transaction, immediately before permitting send.
+    const projectId = await verifiedProject(ctx, row);
+    if (projectId !== row.projectId) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+    await verifyCreditDebit(ctx, row, projectId);
     const sentAt = Date.now();
     await ctx.db.patch("ai_usage", row._id, { sentAt });
     return { usageId: row._id, changed: true, sentAt };
