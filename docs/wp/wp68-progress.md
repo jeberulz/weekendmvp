@@ -56,3 +56,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npx vitest run convex/platform/authz.test.ts` (7 passed, including cross-owner, archived and expired-session cases), `npm run typecheck` (passed).
 - Result: C-AUTHZ implemented for owner-only Phase 0; no editor access is active.
 - Next: S4 C-OPS, then S5/S6 and final PR gate.
+
+## 2026-11-05 - WP68-S5
+
+- Actions taken: added C-CONNECT SocialConnector and AdsConnector interfaces and a fixture CopyConnector that returns copy-ready content, with no external post or send. The caller will persist the result in WP83 after authorization and approval checks.
+- Checks run: `npx vitest run convex/growth/connectors/types.test.ts` (1 passed), `npm run typecheck` (passed), `git diff --check` (passed).
+- Result: connector contract fixture ready; native connectors remain dormant.
+- Next: resolve the C-OPS control-plane flag rule, then S4 and S6.

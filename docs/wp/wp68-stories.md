@@ -27,7 +27,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: `convex/ops/settings.ts`, focused tests.
   - Acceptance criteria: `ops_settings` and `workspace_cohort` are super-admin managed; all features default off; absent settings fail closed; cohort allows only permitted owners.
   - Verification: ops tests, authorization tests.
-- [ ] `WP68-S5` - Add connector contract and CopyConnector
+- [x] `WP68-S5` - Add connector contract and CopyConnector
   - Scope: `convex/growth/connectors/types.ts`, focused tests.
   - Acceptance criteria: Social and ads connector interfaces exist; CopyConnector creates a copy-ready result without a network call or external send.
   - Verification: connector tests.
