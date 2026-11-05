@@ -48,6 +48,18 @@ export function liveZoomUrl(env: NodeJS.ProcessEnv = process.env): string {
 /** Signup attribution tag for Build-Along gate → account creation. */
 export const LIVE_BUILDALONG_SIGNUP_SRC = "live-buildalong" as const;
 
+/** Signup attribution for free-session prompt pack / extras (public replay stays free). */
+export const LIVE_REPLAY_SIGNUP_SRC = "live-replay" as const;
+
+/** Free-account signup link for gated session extras (prompt pack, build files). */
+export function liveReplayExtrasSignupHref(returnTo: string): string {
+  const q = new URLSearchParams({
+    returnTo,
+    src: LIVE_REPLAY_SIGNUP_SRC,
+  });
+  return `/signup?${q}`;
+}
+
 const HYDROTRAIL = hydrotrailSession();
 const HYDROTRAIL_START_MS = Date.parse(HYDROTRAIL.startsAt);
 const HYDROTRAIL_END_MS = Date.parse(HYDROTRAIL.endsAt);

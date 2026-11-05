@@ -2,10 +2,11 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireCurrentPlatformUserForMutation } from "../platform/authz";
 
-const ALLOWED = new Set(["live-buildalong"]);
+const ALLOWED = new Set(["live-buildalong", "live-replay"]);
 
 /**
- * Record signup attribution once (e.g. src=live-buildalong from Build-Along gate).
+ * Record signup attribution once (e.g. src=live-buildalong from Build-Along
+ * gate, or src=live-replay from a free-session extras link).
  * Does not overwrite an existing value. Minimal optional field on users.
  */
 export const record = mutation({
