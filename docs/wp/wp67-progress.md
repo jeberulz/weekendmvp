@@ -15,7 +15,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
 | WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review posted (2 high, 5 medium, 7 low) | H2 needs an owner ruling (`ai_usage.ownerId`) | Codex fixes H1–H2, M1–M4 before G0 |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review posted (2 high, 5 medium, 7 low) | — (H2 ruled: D22) | Codex fixes H1–H2, M1–M4 before G0 |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 done; contract PR #168 open, all four checks green locally | S4 needs the owner's OK for up to $25 of live spend | Codex reviews C-ART, C-METER on #168; S4 spike on OK; S5 freezes prices |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
@@ -39,7 +39,8 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Wildcard DNS plan for `*.weekendmvp.app` (D2) | WP78 S3 | Open |
 | Terms review for credits | WP80 S7 | Open |
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
-| Rule on `ai_usage.ownerId`: optional per `02` §4.2 (precompute and evals ownerless), or required plus `ownerKind`; also record the ops-function feature-flag exemption WP68 cites | Before G0 | Open |
+| Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
+| Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
 | WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
