@@ -31,6 +31,9 @@ import {
 } from "./platform/membership/validators";
 import { liveBuildStatusValidator } from "./platform/liveBuildRules";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
+import { workspaceTables } from "./schema/workspace";
+import { aiTables } from "./schema/ai";
+import { growthTables } from "./schema/growth";
 import {
   auditActorValidator,
   briefStatusValidator,
@@ -57,6 +60,9 @@ import {
 // optional so existing document IDs and saved_ideas references remain valid.
 export default defineSchema({
   ...authTables,
+  ...workspaceTables,
+  ...aiTables,
+  ...growthTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),
@@ -302,6 +308,19 @@ export default defineSchema({
 
   projects: defineTable({
     ownerId: v.id("users"),
+    workspace: v.optional(v.object({
+      version: v.literal(1),
+      name: v.string(),
+      slug: v.string(),
+      ideaSlug: v.optional(v.string()),
+      ownIdeaText: v.optional(v.string()),
+      platform: v.string(),
+      commercialModel: v.string(),
+      goal: v.string(),
+      partner: v.object({ personality: v.string(), name: v.string() }),
+      wizardSessionId: v.id("wizard_sessions"),
+      createdVia: v.literal("wizard"),
+    })),
     source: projectSourceValidator,
     sourceIdeaId: v.optional(v.id("ideas")),
     title: v.string(),
@@ -323,7 +342,8 @@ export default defineSchema({
       "ownerId",
       "sourceIdeaId",
       "archivedAt",
-    ]),
+    ])
+    .index("by_ownerId_and_workspaceSlug", ["ownerId", "workspace.slug"]),
 
   briefs: defineTable({
     ownerId: v.id("users"),
@@ -463,12 +483,19 @@ export default defineSchema({
     type: taskTypeValidator,
     status: taskStatusValidator,
     title: v.string(),
+    employeeKey: v.optional(v.string()),
+    creditCost: v.optional(v.int64()),
+    changeRound: v.optional(v.int64()),
+    revisionOfTaskId: v.optional(v.id("tasks")),
+    approvalId: v.optional(v.id("approvals")),
+    jobKey: v.optional(v.string()),
     idempotencyKey: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     archivedAt: v.optional(v.number()),
   })
     .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_ownerId_and_jobKey", ["ownerId", "jobKey"])
     .index("by_projectId_and_createdAt", ["projectId", "createdAt"])
     .index("by_projectId_and_status_and_createdAt", [
       "projectId",
@@ -500,6 +527,9 @@ export default defineSchema({
     kind: documentKindValidator,
     format: documentFormatValidator,
     title: v.string(),
+    supersedesDocumentId: v.optional(v.id("documents")),
+    schemaVersion: v.optional(v.string()),
+    promptRef: v.optional(v.string()),
     body: v.optional(v.string()),
     storageId: v.optional(v.id("_storage")),
     contentSha256: v.optional(v.string()),
@@ -535,6 +565,8 @@ export default defineSchema({
     status: siteStatusValidator,
     hostname: v.optional(v.string()),
     currentVersionId: v.optional(v.id("site_versions")),
+    takedownAt: v.optional(v.number()),
+    takedownReason: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
     archivedAt: v.optional(v.number()),
@@ -554,6 +586,7 @@ export default defineSchema({
     status: siteVersionStatusValidator,
     version: v.int64(),
     documentId: v.optional(v.id("documents")),
+    landingSpec: v.optional(v.string()),
     storageId: v.optional(v.id("_storage")),
     createdAt: v.number(),
     publishedAt: v.optional(v.number()),
@@ -573,6 +606,12 @@ export default defineSchema({
     email: v.optional(v.string()),
     payload: v.optional(v.string()),
     synthetic: v.boolean(),
+    consentText: v.optional(v.string()),
+    consentVersion: v.optional(v.string()),
+    doubleOptInAt: v.optional(v.number()),
+    unsubscribedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+    source: v.optional(v.string()),
     createdAt: v.number(),
     archivedAt: v.optional(v.number()),
   })
@@ -597,6 +636,8 @@ export default defineSchema({
   credit_accounts: defineTable({
     ownerId: v.id("users"),
     balance: v.int64(),
+    allowanceRemaining: v.optional(v.int64()),
+    allowancePeriodEnd: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_ownerId", ["ownerId"]),
@@ -608,6 +649,8 @@ export default defineSchema({
     purchaseId: v.optional(v.id("purchases")),
     taskId: v.optional(v.id("tasks")),
     reason: ledgerReasonValidator,
+    bucket: v.optional(v.union(v.literal("allowance"), v.literal("bonus"))),
+    bucketSplit: v.optional(v.object({ allowance: v.int64(), bonus: v.int64() })),
     delta: v.int64(),
     balanceAfter: v.int64(),
     idempotencyKey: v.string(),
