@@ -10,7 +10,7 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
 
 ## Stories
 
-- [ ] `WP69-S1` - Artifact schemas (C-ART)
+- [x] `WP69-S1` - Artifact schemas (C-ART)
   - Scope: `lib/workspace/contracts/artifacts.ts`, `lib/workspace/contracts/fixtures/hydrotrail.ts`,
     `tests/platform/workspace-artifacts.test.ts`
   - Acceptance criteria:
@@ -23,7 +23,7 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
     - No Convex imports, no runtime side effects.
   - Verification: `npx vitest run tests/platform/workspace-artifacts.test.ts`, `npm run typecheck`
 
-- [ ] `WP69-S2` - Job, prompt and metering contracts (C-JOBS, C-PROMPT, C-METER)
+- [x] `WP69-S2` - Job, prompt and metering contracts (C-JOBS, C-PROMPT, C-METER)
   - Scope: `lib/workspace/contracts/jobs.ts`, `lib/workspace/contracts/prompts.ts`,
     `lib/workspace/contracts/metering.ts`, `tests/platform/workspace-jobs-contracts.test.ts`
   - Acceptance criteria:
@@ -37,7 +37,7 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
     - Types and pure helpers only; Codex implements the functions in WP70.
   - Verification: `npx vitest run tests/platform/workspace-jobs-contracts.test.ts`, `npm run typecheck`
 
-- [ ] `WP69-S3` - Role catalogue and hiring rules
+- [x] `WP69-S3` - Role catalogue and hiring rules
   - Scope: `lib/workspace/contracts/roster.ts`, `convex/crew/roles.ts`, `convex/crew/roles.test.ts`
   - Acceptance criteria:
     - 13 roles; 8 always hired (Engineering weight by idea kind); 5 added or skipped by rule,

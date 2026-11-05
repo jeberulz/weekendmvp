@@ -8,7 +8,37 @@ Not yet. Written when the WP closes.
 
 ## Needs from Codex
 
-- None yet.
+These are for WP68 and WP70 schema work. They mirror the WP69 contracts; please import the literals or
+copy them exactly.
+
+1. `documents.kind`: the 10 values in `ARTIFACT_KINDS` (`lib/workspace/contracts/artifacts.ts`):
+   blueprint, roster_plan, brand_kit, landing_spec, email_sequence, social_pack, seo_pack,
+   launch_plan, ads_drafts, build_pack.
+2. Task type literals (D19): the 13 values in `JOB_TYPES` (`jobs.ts`): crew_blueprint, crew_roster,
+   crew_brand_kit, crew_landing, crew_email_sequence, crew_social_pack, crew_seo_pack,
+   crew_launch_plan, crew_ads_drafts, crew_build_pack, crew_hire, studio_image, studio_video.
+   Task job keys use the form `crew:{projectId}:{type}:{subject}:{revision}`. Dedupe applies to
+   live tasks only.
+3. `ai_usage` fields beyond `02` §4.2, as in `AiUsageRow` (`metering.ts`):
+   - attemptKey (unique, indexed)
+   - dayKey
+   - expiresAt
+   - feature, plan?, globalPool (free|paid)
+   - creditFunded, creditDebitId?
+   - batch?, escalation?, reask?
+   - sentAt?, finalizedAt?, sweptAt?
+   - billed?, errorClass?, lateCostMicroUsd?
+   The sweep reads `expiresAt`: 15 min realtime, 25 h batch.
+4. `ai_budgets` fields, as in `AiBudgetsRow`: freeReservedMicroUsd and dayEscalations, added to the
+   §4.2 set (freeLifetimeSpent, reserved, dayKey, daySpent).
+5. `ops_settings.paidGlobalDailyBudgetMicroUsd`, a second global pool next to the existing global
+   budget. The sharded global counter needs a free and a paid key, and it counts in-flight
+   reservations as well as spend.
+6. `PLAN_LIMITS` feature keys: `WORKSPACE_FEATURE_KEYS` (autopilot, adsLive, nativePublishing,
+   customDomain, studioLongVideo, hireSkippedRoles), with per-plan values in
+   `WORKSPACE_PLAN_REFERENCE`.
+7. The C-METER implementation adds a `markSent` mutation, `attemptKey` idempotency on `reserve`, and a
+   plan derived inside `reserve`. A `creditDebitId` is checked against the same owner and task.
 
 ## 2026-11-05 - Setup
 
@@ -119,4 +149,5 @@ Not yet. Written when the WP closes.
 - `npm run lint`: exit 0 (37 warnings, all in files this WP does not touch).
 - `npm test`: exit 0. All 13 suites pass; `test:platform` 37 files / 680 tests, including
   `workspace-artifacts` and `workspace-jobs-contracts`. `test:convex` includes `crew/roles.test.ts`.
-- `npm run build`: see the next entry.
+- `npm run build`: exit 0 (no errors or warnings in the output).
+- Docs updated: `wp69-stories.md`, this file. `02`, `03` and `05` unchanged; S5 updates `03` after the spike.
