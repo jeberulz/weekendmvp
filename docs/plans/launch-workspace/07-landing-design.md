@@ -1,7 +1,7 @@
 # 07 — Landing design quality: how Leo avoids generic AI pages
 
-Status: proposed, 2026-11-05. Needs owner OK on the rulings in §6 before the
-C-ART change in §5 lands (WP69, before G0).
+Status: the C-ART change in §5 was approved by the owner on 2026-11-05 and is being
+built as WP69-S6, before G0. The rulings in §6 (D23–D25) are still proposed.
 Input: John's brief, `briefs/design-skills-crew-brief.md`. Where this doc
 departs from it, §3 says why.
 
