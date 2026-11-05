@@ -34,7 +34,7 @@ Standing rules:
       (`requireBusinessAccess`).
     - Existing `/dashboard/*` routes are unchanged.
 
-- [ ] `WP72-S2` - Shell
+- [x] `WP72-S2` - Shell
   - Scope: `components/workspace/shell/**`, `components/platform/shell/**` (additive)
   - Acceptance criteria:
     - Business switcher.

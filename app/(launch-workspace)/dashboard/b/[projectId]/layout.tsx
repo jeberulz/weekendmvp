@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { AuthPlatformProvider } from "@/app/AuthPlatformProvider";
+import { WorkspaceFrame } from "@/components/workspace/shell";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
+import { listBusinesses } from "@/lib/workspace/businesses";
+import { getCreditsSummary } from "@/lib/workspace/credits";
 
 /**
  * WP72 launch-workspace layout for `/dashboard/b/[projectId]/*`.
@@ -14,7 +17,8 @@ import { requireWorkspaceAccess } from "@/lib/workspace/access";
  * Dormant: `requireWorkspaceAccess` answers 404 unless the workspace flag is
  * on for the caller's cohort and the caller owns the business. Layouts render
  * in parallel with pages, so every page calls the same (request-cached) gate.
- * S2 replaces the bare main landmark below with the new shell.
+ * S2 mounts the shell (nav, switcher, credit meter) after the gate; the page
+ * main landmark stays here so there is exactly one.
  */
 export const metadata: Metadata = {
   title: { template: "%s | Workspace", default: "Workspace" },
@@ -42,14 +46,22 @@ export default async function LaunchWorkspaceLayout({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  await requireWorkspaceAccess(projectId);
+  const project = await requireWorkspaceAccess(projectId);
+  const credits = await getCreditsSummary(project._id);
+  const businesses = listBusinesses({ id: project._id, name: project.name });
 
   return (
     <AuthPlatformProvider fallbackClassName="bg-home-paper">
       <div className={`${newsreaderEditorial.variable} theme-desk min-h-dvh bg-home-paper text-home-ink`}>
-        <main id="workspace-main" className="mx-auto w-full max-w-[1080px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-          {children}
-        </main>
+        <WorkspaceFrame projectId={project._id} businesses={businesses} credits={credits}>
+          <main
+            id="workspace-main"
+            tabIndex={-1}
+            className="mx-auto w-full max-w-[1080px] px-5 py-8 focus:outline-none sm:px-8 lg:px-10 lg:py-10"
+          >
+            {children}
+          </main>
+        </WorkspaceFrame>
       </div>
     </AuthPlatformProvider>
   );

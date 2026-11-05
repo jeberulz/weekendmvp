@@ -80,3 +80,31 @@
   DOM tests are wanted.
 - Checks (orchestrator): typecheck 0, lint 0, `npm test` 0 after fixing one assertion for the escaped apostrophe,
   build 0.
+
+## 2026-11-05 - S2 workspace shell
+
+- Author: a Sonnet sub-agent. Files:
+  - `components/workspace/shell/WorkspaceFrame.tsx`: server-safe frame (skip link, sidebar, credit meter card); synchronous, takes plain props.
+  - `components/workspace/shell/WorkspaceSidebar.tsx`: client; the only `usePathname` reader. One `<nav aria-label="Workspace">`, grouped by manifest group, `aria-current="page"`; mobile disclosure button (`aria-expanded`, `aria-controls`), Escape closes and refocuses it, closes on navigation.
+  - `components/workspace/shell/BusinessSwitcher.tsx`: client disclosure (`aria-expanded`, `aria-controls`, Escape and outside-click close, focus returns to the button). "Start a second idea" is a disabled row with the Growth gate copy; it links nowhere and creates nothing.
+  - `components/workspace/shell/nav-utils.ts`: pure helpers (`isRouteActive`, `visibleNavGroups`, `groupHeadingId`, `businessInitial`).
+  - `lib/workspace/credits.ts`, `lib/workspace/businesses.ts`: data seams.
+  - Layout mounts the frame after `requireWorkspaceAccess`; the single `<main id="workspace-main" tabIndex={-1}>` stays in the layout. No Suspense, loading file or `"use cache"`.
+- Component is named `WorkspaceFrame`, not `WorkspaceShell`, because the S1 guard test forbids `<WorkspaceShell` in the layout (the legacy shell's name).
+- Mocks and where WP73 replaces them:
+  - `getCreditsSummary(projectId)` returns a fixed `{ balance: 48, max: 50, plan: "free" }`; WP73 swaps its body for `creditsSummary`. The marker comment is in the file.
+  - `listBusinesses(current)` returns only the current business. A later WP replaces it with the owner's real list (fetched under `requireWorkspaceAccess`-style authorisation).
+- Left out on purpose: search box, "Subscribe" button, nav badges ("4 need you", "5/8", "New"), user row, switcher sub-line ("APP · FREE FOR NOW"). Their data sources are open canvas questions (extract §8). The footer meter is not a link because Billing is already a nav row.
+- `weekendActive` is a frame prop defaulting to true; the layout does not pass it yet.
+- Tests: `tests/platform/wp72-shell.test.tsx`, 14 tests (static markup; `next/navigation` mocked for the pathname).
+- Gaps:
+  - Focus behaviour (Escape returns focus, outside click, mobile panel close on navigation, skip link focusing main) is not DOM-tested; no jsdom. Covered by S4's browser check.
+  - Sticky sidebar height (`lg:min-h-[calc(100dvh-4.5rem)]`) and the mobile panel layout are unchecked visually.
+  - The a11y-check skill has not been run on the shell yet.
+- S2 review fixes (same day):
+  - The open switcher closes when focus leaves it (`onBlur` with a `relatedTarget instanceof Node` check) or on an outside pointer-down, without moving focus. Escape still returns focus to its button.
+  - Billing is the credits-card link inside the nav (`aria-current="page"` on billing, `aria-label` "Billing, N of M credits left"). The `role="meter"` is not interactive, so it is valid inside a link; the aria-label gives the link one clear name. The Account group is no longer rendered; Settings stays in Workspace.
+  - "Start a second idea" is plain text in an `li`: no role, no aria-disabled, not focusable.
+  - A link followed from the open mobile panel closes it and focuses `#workspace-main` (captured on the panel; desktop untouched).
+  - `onNavigate` and `activeRoute` removed; `<aside>` replaced with `<div>` (WP77 owns the chat aside); `server-only` added to `credits.ts` and `businesses.ts` (resolves via node_modules and the vitest stub; not in package.json, no dependency added); the layout uses `project._id` after the gate.
+  - Tests are now 24 in `wp72-shell.test.tsx`, including source guards. Still untested in a DOM: blur-close, focus-to-main.
