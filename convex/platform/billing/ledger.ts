@@ -14,6 +14,10 @@ type LedgerWrite = {
   idempotencyKey: string;
   provider?: string;
   providerEventId?: string;
+  bucket?: "allowance" | "bonus";
+  /** Positive source amounts on a debit or refund; their sum is |delta|. */
+  bucketSplit?: { allowance: bigint; bonus: bigint };
+  allowancePeriodEnd?: number;
   allowNegative: boolean;
 };
 
@@ -27,8 +31,34 @@ function idempotencyMatches(existing: Doc<"credit_ledger">, write: LedgerWrite) 
     existing.delta === write.delta &&
     existing.idempotencyKey === write.idempotencyKey &&
     existing.provider === write.provider &&
-    existing.providerEventId === write.providerEventId
+    existing.providerEventId === write.providerEventId &&
+    (write.bucket === undefined || existing.bucket === write.bucket) &&
+    (write.bucketSplit === undefined || (
+      existing.bucketSplit?.allowance === write.bucketSplit.allowance &&
+      existing.bucketSplit?.bonus === write.bucketSplit.bonus
+    )) &&
+    (write.allowancePeriodEnd === undefined || existing.allowancePeriodEnd === write.allowancePeriodEnd)
   );
+}
+
+type BucketSplit = { allowance: bigint; bonus: bigint };
+
+function splitForWrite(write: LedgerWrite, allowance: bigint): BucketSplit {
+  const magnitude = write.delta < 0n ? -write.delta : write.delta;
+  if (write.bucketSplit) {
+    const { allowance: fromAllowance, bonus } = write.bucketSplit;
+    if (fromAllowance < 0n || bonus < 0n || fromAllowance + bonus !== magnitude) {
+      throw new ConvexError({ code: "INVALID_BUCKET_SPLIT" });
+    }
+    return write.bucketSplit;
+  }
+  if (write.reason === "task_debit") {
+    const fromAllowance = allowance < magnitude ? allowance : magnitude;
+    return { allowance: fromAllowance, bonus: magnitude - fromAllowance };
+  }
+  return write.bucket === "allowance"
+    ? { allowance: magnitude, bonus: 0n }
+    : { allowance: 0n, bonus: magnitude };
 }
 
 async function requireTrustedTaskChain(
@@ -121,11 +151,38 @@ export async function applyLedgerDelta(
     }
   }
 
-  const account = await getOrCreateAccount(ctx, write.ownerId);
+  let account = await getOrCreateAccount(ctx, write.ownerId);
+  if (write.reason === "task_debit" && (account.allowanceRemaining ?? 0n) > 0n &&
+    account.allowancePeriodEnd !== undefined && account.allowancePeriodEnd <= Date.now()) {
+    await applyLedgerDelta(ctx, {
+      ownerId: write.ownerId,
+      reason: "allowance_expiry",
+      delta: -(account.allowanceRemaining ?? 0n),
+      idempotencyKey: `allowance-expiry:period:${write.ownerId}:${account.allowancePeriodEnd}`,
+      bucket: "allowance",
+      allowNegative: true,
+    });
+    const refreshed = await ctx.db.get("credit_accounts", account._id);
+    if (!refreshed) throw new ConvexError({ code: "CREDIT_ACCOUNT_NOT_FOUND" });
+    account = refreshed;
+  }
   const nextBalance = account.balance + write.delta;
   if (nextBalance < 0n && !write.allowNegative) {
     throw new ConvexError({ code: "INSUFFICIENT_CREDITS" });
   }
+
+  const split = splitForWrite(write, account.allowanceRemaining ?? 0n);
+  const allowanceDelta = write.delta < 0n ? -split.allowance : split.allowance;
+  const nextAllowance = (account.allowanceRemaining ?? 0n) + allowanceDelta;
+  if (nextAllowance < 0n) {
+    throw new ConvexError({ code: "INSUFFICIENT_ALLOWANCE" });
+  }
+  const bucketSplit = write.reason === "task_debit" || write.reason === "task_refund"
+    ? split
+    : write.bucketSplit;
+  const allowancePeriodEnd = write.allowancePeriodEnd ?? (
+    write.reason === "task_debit" && split.allowance > 0n ? account.allowancePeriodEnd : undefined
+  );
 
   const now = Date.now();
   const ledgerId = await ctx.db.insert("credit_ledger", {
@@ -135,6 +192,9 @@ export async function applyLedgerDelta(
     purchaseId: write.purchaseId,
     taskId: write.taskId,
     reason: write.reason,
+    bucket: write.bucket,
+    bucketSplit,
+    allowancePeriodEnd,
     delta: write.delta,
     balanceAfter: nextBalance,
     idempotencyKey: write.idempotencyKey,
@@ -144,6 +204,7 @@ export async function applyLedgerDelta(
   });
   await ctx.db.patch("credit_accounts", account._id, {
     balance: nextBalance,
+    allowanceRemaining: nextAllowance,
     updatedAt: now,
   });
   return { duplicate: false, balance: nextBalance, ledgerId };
@@ -197,14 +258,39 @@ export const refundFailedTask = internalMutation({
     ) {
       throw new ConvexError({ code: "TASK_DEBIT_NOT_FOUND" });
     }
-    return await applyLedgerDelta(ctx, {
+    const refund = await applyLedgerDelta(ctx, {
       ownerId: task.ownerId,
       projectId: task.projectId,
       taskId: task._id,
       reason: "task_refund",
       delta: -debit.delta,
       idempotencyKey: `task-refund:${debit._id}`,
+      bucketSplit: debit.bucketSplit ?? { allowance: 0n, bonus: -debit.delta },
+      allowancePeriodEnd: debit.allowancePeriodEnd,
       allowNegative: false,
     });
+    if (refund.duplicate || !debit.bucketSplit || debit.bucketSplit.allowance === 0n) return refund;
+
+    const account = await ctx.db.query("credit_accounts")
+      .withIndex("by_ownerId", (query) => query.eq("ownerId", task.ownerId)).unique();
+    if (!account) throw new ConvexError({ code: "CREDIT_ACCOUNT_NOT_FOUND" });
+    // The original allowance expired or a newer period replaced it. Record the
+    // exact original split on the refund, then remove that old-period portion
+    // in the same transaction so it cannot become spendable again.
+    if (debit.allowancePeriodEnd !== undefined &&
+      (debit.allowancePeriodEnd <= Date.now() || account.allowancePeriodEnd !== debit.allowancePeriodEnd)) {
+      const expiry = await applyLedgerDelta(ctx, {
+        ownerId: task.ownerId,
+        projectId: task.projectId,
+        taskId: task._id,
+        reason: "allowance_expiry",
+        delta: -debit.bucketSplit.allowance,
+        idempotencyKey: `allowance-expiry:task-refund:${debit._id}`,
+        bucket: "allowance",
+        allowNegative: true,
+      });
+      return { ...refund, balance: expiry.balance };
+    }
+    return refund;
   },
 });

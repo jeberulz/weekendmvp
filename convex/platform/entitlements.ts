@@ -1,10 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
-import { query, type QueryCtx } from "../_generated/server";
+import { query, type MutationCtx, type QueryCtx } from "../_generated/server";
+import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireCurrentPlatformUser } from "./authz";
 import { billingSummaryValidator, readMembershipState } from "./membership/state";
 import { resolvePlan } from "./planResolver";
-import { PLAN_LIMITS, UPGRADE_REQUIRED, type GatedFeature } from "./plans";
+import { PLAN_LIMITS, UPGRADE_REQUIRED, WORKSPACE_PLAN_LIMITS, type GatedFeature, type WorkspaceFeatureKey, type WorkspacePlanId } from "./plans";
 
 /**
  * WP44-S10 entitlements (PRD 9.3, FR-21 to FR-24). The one server-side
@@ -18,6 +19,22 @@ const ACTIVE_COUNT_CAP = 50;
 export async function getEntitlements(ctx: QueryCtx, ownerId: Id<"users">) {
   const plan = await resolvePlan(ctx, ownerId);
   return { plan, limits: PLAN_LIMITS[plan] };
+}
+
+/** Phase 1 workspace policy, separate from the live Builder's Hub storefront. */
+export function workspaceFeatureAllowed(plan: WorkspacePlanId, feature: WorkspaceFeatureKey): boolean {
+  return WORKSPACE_PLAN_LIMITS[plan].features[feature];
+}
+
+/** A caller with a trusted owner ID still needs the workspace switch and cohort. */
+export async function requireWorkspaceFeature(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: Id<"users">,
+  feature: WorkspaceFeatureKey,
+): Promise<void> {
+  await assertFeatureEnabledForOwner(ctx, "workspace", ownerId);
+  const plan = await resolvePlan(ctx, ownerId);
+  if (!workspaceFeatureAllowed(plan, feature)) throw new ConvexError({ code: UPGRADE_REQUIRED, feature });
 }
 
 /** The typed error the UI turns into the upgrade sheet for `feature`. */

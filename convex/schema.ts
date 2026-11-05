@@ -651,6 +651,7 @@ export default defineSchema({
     reason: ledgerReasonValidator,
     bucket: v.optional(v.union(v.literal("allowance"), v.literal("bonus"))),
     bucketSplit: v.optional(v.object({ allowance: v.int64(), bonus: v.int64() })),
+    allowancePeriodEnd: v.optional(v.number()),
     delta: v.int64(),
     balanceAfter: v.int64(),
     idempotencyKey: v.string(),
