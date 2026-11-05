@@ -413,7 +413,7 @@ export default async function IdeaPage({
             />
           }
         >
-          <IdeaPublicSummary preview={preview} />
+          <IdeaPublicSummary preview={preview} ideaSlug={slug} />
         </EmailGate>
       </>
     );

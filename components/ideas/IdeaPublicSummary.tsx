@@ -34,7 +34,13 @@ export function IdeaPublicHeader({
 }
 
 /** Server-rendered public summary, section teasers and ungated build prompts. */
-export function IdeaPublicSummary({ preview }: { preview: PublicIdeaPreview }) {
+export function IdeaPublicSummary({
+  preview,
+  ideaSlug,
+}: {
+  preview: PublicIdeaPreview;
+  ideaSlug?: string;
+}) {
   return (
     <div className="max-w-2xl">
       {preview.summaryParagraphs.length > 0 ? (
@@ -86,7 +92,7 @@ export function IdeaPublicSummary({ preview }: { preview: PublicIdeaPreview }) {
         </section>
       ) : null}
 
-      <LiveIdeaModule />
+      <LiveIdeaModule ideaSlug={ideaSlug} />
     </div>
   );
 }
