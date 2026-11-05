@@ -15,7 +15,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
 | WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review running | — | Claude posts review on #167; owner merges after fixes |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review posted (2 high, 5 medium, 7 low) | H2 needs an owner ruling (`ai_usage.ownerId`) | Codex fixes H1–H2, M1–M4 before G0 |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 done; contract PR #168 open, all four checks green locally | S4 needs the owner's OK for up to $25 of live spend | Codex reviews C-ART, C-METER on #168; S4 spike on OK; S5 freezes prices |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
@@ -39,13 +39,14 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Wildcard DNS plan for `*.weekendmvp.app` (D2) | WP78 S3 | Open |
 | Terms review for credits | WP80 S7 | Open |
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
+| Rule on `ai_usage.ownerId`: optional per `02` §4.2 (precompute and evals ownerless), or required plus `ownerKind`; also record the ops-function feature-flag exemption WP68 cites | Before G0 | Open |
 | WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
 
 | Contract | Owner | Reviewer | Status |
 |---|---|---|---|
-| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Review running on #167 |
+| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Reviewed on #167 (https://github.com/jeberulz/weekendmvp/pull/167#issuecomment-6663584469): fixes requested |
 | C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | PR #168 open, awaiting Codex review |
 
 ## 2026-11-05 - Setup
@@ -96,3 +97,25 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 - WP68 PR #167 is open. An Opus reviewer has the diff, `02` §4/§14, the rulings, and the WP69
   contracts for cross-checking. Findings go to #167 as a comment and are logged here.
 - S4 cost spike not started: waiting for the owner's OK (cap $25).
+
+## 2026-11-05 - WP68 review posted
+
+- Opus review of #167 at `23462b77`: safe to deploy dormant. The only new public functions are 3 ops
+  functions, all super-admin gated; no crons, routes or env vars; defaults fail closed. Typecheck, tests
+  and lint exit 0. It is not ready to freeze as a contract.
+- High:
+  - H1: AI tables are missing C-METER fields and indexes (attemptKey, expiresAt, dayKey, pools, tiers).
+  - H2: `ai_usage.ownerId` is required, against §4.2 and C-METER. That would put precompute under the
+    admin's owner caps. Needs an owner ruling.
+- Medium:
+  - M1: `studioVideo` is not gated by `ai`.
+  - M2: the AI gate ignores the paid pool.
+  - M3: the boundary test covers one file only.
+  - M4: no child-row or nested-parent authz for the new tables.
+  - M5: unannounced convex bump from 1.43 to 1.49.
+- Low: 7 findings.
+- WP69 follow-ups from the cross-check (Claude lane, on #168):
+  - Document the int64 ↔ number conversion for micro-USD.
+  - List `WORKSPACE_DISABLED` as a code the gateway may see.
+  - Say whether `seo_article` is ever written.
+  - Publish a wizard answers schema.
