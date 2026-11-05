@@ -136,9 +136,9 @@ $0.013**, so that even Growth keeps about a 3× gross margin on compute.
 
 | Action | Canvas draft | Recommended | Why |
 |---|---|---|---|
-| Offer image, standard quality | 2 | **3** (owner, 2026-11-05) | Measured in WP69-S4: $0.035 on Recraft V4.1 and $0.041 on gpt-image-2 medium. At 3 credits the rule allows ≤ $0.039, which only Recraft meets. |
+| Offer image, standard quality | 2 | **4** (owner, 2026-11-05) | Rendered on gpt-image-2 medium (D11), measured at $0.041 in WP69-S4. At 4 credits the rule allows ≤ $0.052. |
 | Offer image, high quality | — | **5** (new) | For the $0.04–$0.06 models and quality settings. |
-| Story / post image | 2 | **3** (owner, 2026-11-05) | Same render as the standard offer image. |
+| Story / post image | 2 | **4** (owner, 2026-11-05) | Same render as the standard offer image. |
 | Short video (≤8 s) | 15 | **30** | Video costs $0.05–$0.40 per second. 8 s on the cheapest tier is $0.40, so 30 credits is the floor, and only the cheapest tier is allowed at that price. |
 | UGC / launch film (≤30 s) | 25 | **150**, paid plans only | 30 s at $0.05/s is $1.50 of provider cost on the cheapest tier. 25 credits ($1.00 on Growth) loses money on every render. |
 | Brand kit regenerate | 10 | **11** (owner, 2026-11-05) | Measured: text $0.027 plus 3 Recraft logo marks at $0.035 ≈ $0.132, just over 10 × $0.013. |
