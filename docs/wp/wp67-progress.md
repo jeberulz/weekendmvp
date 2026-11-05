@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. **G0 passed** on `main` at `601ee2a8` (see the G0 entry below). Phase 1 waits on the owner's go. Next gate: **G1**.
+Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main` at `601ee2a8`, but C-JOBS prices are not frozen yet (`04` Gate G0). The gate closes when the owner freezes the prices or waives the criterion. Phase 1 waits for that.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 run and recorded | — | Owner's go for Phase 1 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 checks green | G0 held: C-JOBS prices not frozen | Owner freezes or waives, then the go for Phase 1 |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 measured, two prices amended (D4) | — | C-JOBS prices stay provisional until the open S5 decisions (owner actions) |
-| WP70 | 1 | Codex | `codex/wp70-metering` | Ready, waiting for the owner's go | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Ready, waiting for the owner's go | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Ready, waiting for the owner's go | — (C-OPS merged) | — |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready, waiting for the owner's go | — (C-JOBS merged; prices provisional) | — |
+| WP70 | 1 | Codex | `codex/wp70-metering` | Waiting for G0 to close | — (C-METER merged) | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting for G0 to close | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting for G0 to close | — (C-OPS merged) | — |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting for G0 to close | — (C-JOBS merged; prices provisional) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -129,7 +129,7 @@ Updated 2026-11-05. **G0 passed** on `main` at `601ee2a8` (see the G0 entry belo
 - Licences checked via the GitHub API and gsap.com: all MIT or Apache-2.0 except Vercel web-design-guidelines (no licence, link only) and GSAP (Standard License bars no-code animation builders; AI-written code allowed).
 - Waiting on John: D23–D25 and the go for WP69-S6.
 
-## 2026-11-05 - G0 (Phase 0 close): passed
+## 2026-11-05 - G0 (Phase 0 close): checks green, held on the price freeze
 
 - Run by a gate-runner sub-agent in `.worktrees/wp67-gate` on fresh `main` at `601ee2a8`. That is the #172 merge,
   so it includes WP68 (#167, #171) and WP69 (#168, #172, with the S6 visual system and the D4 price amendment).
@@ -148,4 +148,16 @@ Updated 2026-11-05. **G0 passed** on `main` at `601ee2a8` (see the G0 entry belo
   them over, cherry-picked onto `main` with no conflicts.
 - Open owner items that don't block G0 are listed under Owner actions: D23–D25, the remaining S5 price
   decisions, and the ops-function exemption.
-- **Stopped here for the owner's go on Phase 1** (WP70 and WP73 for Codex; WP71 and WP72 for Claude).
+- Criteria in `04` Gate G0:
+  - D1–D6, D11, D14, D19 and D21 ruled: **met** (every row is in `RULINGS.md`).
+  - WP68 and WP69 merged dormant: **met**.
+  - Spike measured: **met**.
+  - Codex reviewed C-ART and C-METER; Claude reviewed C-DATA: **met**.
+  - typecheck, lint, test and build pass on `main`: **met**.
+  - **Prices frozen in C-JOBS: not met.** `PRICES_STATUS` is still `"provisional"`.
+- Correction: the first version of this entry said "passed". Codex's review on #174 caught the unmet criterion.
+- The open price items are short video and launch film, the unpriced change rounds (blueprint, roster, SEO pack,
+  launch plan, ads), and a Recraft logo measurement. The paid daily budget is an ops setting (C-METER), not a
+  C-JOBS price.
+- **Stopped here for the owner:** freeze C-JOBS (and decide the open items), or waive this criterion. After that,
+  the go for Phase 1.
