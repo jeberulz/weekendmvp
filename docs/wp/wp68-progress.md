@@ -4,7 +4,13 @@ Append-only progress log. Do not rely on chat history for project state.
 
 ## Handoff
 
-Pending. This work package is dormant and has not been reviewed or merged.
+WP68 S7 and S1–S6 are implemented in draft PR #167. The schema is additive and
+deploys to isolated local Convex; all customer features stay off until a bound
+super admin changes ops settings. To test, run `npm ci`, the four standard npm
+checks, `npm run test:security`, and the anonymous local Convex command recorded
+below. After merge, Claude can build against C-DATA, C-AUTHZ, C-OPS and C-CONNECT.
+The PR must stay draft until Claude confirms the C-ART shapes and independently
+reviews authorization/ops; John alone merges and approves G0.
 
 ## Needs from the other lane
 
