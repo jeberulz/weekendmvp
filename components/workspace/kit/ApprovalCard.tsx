@@ -43,9 +43,9 @@ export function CostBadge({ cost, id }: { cost: ApprovalCost; id?: string }) {
       data-cost={state}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
-        state === "free" && "border-[#bcd0b0] bg-home-sage text-home-sage-ink",
+        state === "free" && "border-home-sage-ink/30 bg-home-sage text-home-sage-ink",
         state === "credits" && "border-home-rule bg-home-sunk text-home-ink-2",
-        state === "not-enough" && "border-[#e4bfb4] bg-home-clay text-home-clay-ink",
+        state === "not-enough" && "border-home-clay-ink/30 bg-home-clay text-home-clay-ink",
       )}
     >
       {state === "not-enough" ? (

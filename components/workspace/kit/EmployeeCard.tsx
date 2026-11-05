@@ -55,7 +55,7 @@ export function EmployeeCard({
       className={cn(
         CARD,
         "flex flex-col gap-3 p-4",
-        employee.status === "needs_you" && "border-[#e9c39a]",
+        employee.status === "needs_you" && "border-home-orange-ink/30",
       )}
     >
       <div className="flex items-start gap-3">

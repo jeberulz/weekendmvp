@@ -41,10 +41,12 @@ export function copyStatusMessage(state: CopyState, index: number, tool: string)
   return "";
 }
 
-/** The accessible name always contains the visible text ("Copy prompt", "Copied", "Copy blocked"). */
-export function copyButtonLabel(state: CopyState, index: number, title: string): string {
-  if (state === "copied") return `Copied prompt ${index}: ${title}`;
-  if (state === "blocked") return `Copy blocked for prompt ${index}: ${title}`;
+/**
+ * The button's accessible name is always this stable action; its visible text is
+ * always "Copy prompt" (so the name contains it). The result is announced once, by
+ * the status region, and shown in the button by the icon.
+ */
+export function copyButtonLabel(index: number, title: string): string {
   return `Copy prompt ${index}: ${title}`;
 }
 
@@ -59,6 +61,8 @@ export function BuildPackPromptCard({
   headingLevel = 3,
 }: BuildPackPromptCardProps) {
   const [state, setState] = useState<CopyState>("idle");
+  // Changes on every result so a repeat message is re-announced.
+  const [announceKey, setAnnounceKey] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(false);
   const Heading = `h${headingLevel}` as "h3" | "h4" | "h5";
@@ -72,11 +76,13 @@ export function BuildPackPromptCard({
   }, []);
 
   async function handleCopy() {
-    if (timer.current) clearTimeout(timer.current);
     const result = await copyText(body);
     // A late clipboard promise after unmount must do nothing.
     if (!mounted.current) return;
+    // Clear any earlier reset timer before deciding whether to start a new one.
+    if (timer.current) clearTimeout(timer.current);
     setState(result);
+    setAnnounceKey((key) => key + 1);
     // "Copied" fades; "Copy blocked" stays until the next action.
     if (result === "copied") {
       timer.current = setTimeout(() => {
@@ -98,7 +104,7 @@ export function BuildPackPromptCard({
         <Heading className="text-sm font-semibold text-home-ink">{title}</Heading>
         <button
           type="button"
-          aria-label={copyButtonLabel(state, index, title)}
+          aria-label={copyButtonLabel(index, title)}
           onClick={handleCopy}
           className={cn(BTN_SECONDARY, "ml-auto")}
         >
@@ -107,7 +113,7 @@ export function BuildPackPromptCard({
           ) : (
             <Copy aria-hidden="true" className="size-4" />
           )}
-          {state === "copied" ? "Copied" : state === "blocked" ? "Copy blocked" : "Copy prompt"}
+          Copy prompt
         </button>
       </header>
       <p className="text-xs text-home-ink-2">For {tool}</p>
@@ -126,7 +132,7 @@ export function BuildPackPromptCard({
         <strong className="font-semibold">Done when:</strong> {doneWhen}
       </p>
       <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-        {copyStatusMessage(state, index, tool)}
+        <span key={announceKey}>{copyStatusMessage(state, index, tool)}</span>
       </p>
     </article>
   );

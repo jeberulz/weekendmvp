@@ -111,29 +111,40 @@ export type WorkstreamPanelProps = {
   headingLevel?: 1 | 2 | 3;
   onApproveOutput: (outputId: string) => void;
   onRequestChanges: (outputId: string, note: string) => void;
-  /** Extra content under Outputs, e.g. build-pack prompt cards (their headings are level `headingLevel + 1`). */
+  /** Extra content under Outputs, e.g. build-pack prompt cards (pass each prompt card `headingLevel={headingLevel + 2}`: Outputs is a level `headingLevel + 1` section and output titles are `+ 2`). */
   extra?: ReactNode;
   linkComponent?: LinkComponent;
   filesHref?: string;
 };
 
-function OutputCard({
+/**
+ * `initialAsking` and `initialError` exist only so tests can render the open-form and
+ * error states without a DOM. Product code never passes them.
+ */
+export function OutputCard({
   output,
   employeeName,
   titleLevel,
   onApprove,
   onRequestChanges,
+  initialAsking = false,
+  initialError = null,
 }: {
   output: WorkstreamOutput;
   employeeName: string;
   titleLevel: number;
   onApprove: (id: string) => void;
   onRequestChanges: (id: string, note: string) => void;
+  initialAsking?: boolean;
+  initialError?: string | null;
 }) {
   const uid = useId();
-  const [asking, setAsking] = useState(false);
+  const [askingRequested, setAsking] = useState(initialAsking);
   const [note, setNote] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // `n` makes a repeat of the same message a new value, so focus returns each time.
+  const [errorState, setError] = useState<{ message: string; n: number } | null>(
+    initialError ? { message: initialError, n: 0 } : null,
+  );
   const askButtonRef = useRef<HTMLButtonElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -142,14 +153,23 @@ function OutputCard({
   const errorId = `${uid}-note-error`;
   const pending = output.pending === true;
 
+  // The form can only be open while a toggle exists (status "ready").
+  const asking = askingRequested && output.status === "ready";
+  const error = asking ? (errorState?.message ?? null) : null;
+
   useEffect(() => {
     if (asking) noteRef.current?.focus();
   }, [asking]);
 
-  function closeForm() {
+  // After commit, so aria-describedby is already on the textarea when focus lands.
+  useEffect(() => {
+    if (errorState) noteRef.current?.focus();
+  }, [errorState]);
+
+  function cancelForm() {
     setAsking(false);
     setError(null);
-    askButtonRef.current?.focus();
+    (askButtonRef.current ?? titleRef.current)?.focus();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -157,14 +177,15 @@ function OutputCard({
     if (pending) return;
     const problem = validateChangeNote(note, employeeName, output.title);
     if (problem) {
-      // Focus the textarea so its aria-describedby error is read.
-      setError(problem);
-      noteRef.current?.focus();
+      setError((previous) => ({ message: problem, n: (previous?.n ?? 0) + 1 }));
       return;
     }
     onRequestChanges(output.id, note.trim());
     setNote("");
-    closeForm();
+    setAsking(false);
+    setError(null);
+    // The ask button leaves the DOM once the parent changes the status, so focus the title.
+    titleRef.current?.focus();
   }
 
   return (
@@ -250,7 +271,7 @@ function OutputCard({
           <button type="submit" className={BTN_PRIMARY} aria-disabled={pending || undefined}>
             Send to {employeeName}
           </button>
-          <button type="button" className={BTN_SECONDARY} onClick={closeForm}>
+          <button type="button" className={BTN_SECONDARY} onClick={cancelForm}>
             Cancel
           </button>
         </div>

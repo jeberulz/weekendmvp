@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useContext, useId, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DefaultLink } from "./DefaultLink";
@@ -21,6 +21,9 @@ export type WrenThreadProps = {
   children?: ReactNode;
 };
 
+/** True inside the thread's `role="log"`, which already announces new content. */
+const InsideLogContext = createContext(false);
+
 /**
  * Loading and error render outside the log, as their own live regions. The
  * `role="log"` mounts only when there are messages to show (it is implicitly polite).
@@ -37,7 +40,7 @@ export function WrenThread({
   }
   return (
     <div role="log" aria-label="Messages" className="flex flex-col gap-4">
-      {children}
+      <InsideLogContext.Provider value={true}>{children}</InsideLogContext.Provider>
     </div>
   );
 }
@@ -85,9 +88,23 @@ export type BrandKitCardProps = {
   onApprove: () => void;
   onAskChanges: () => void;
   linkComponent?: LinkComponent;
+  /**
+   * Wrap the status text in its own live region. Defaults to true, except inside a
+   * WrenThread, whose `role="log"` already announces it (avoids a double announcement).
+   */
+  announce?: boolean;
 };
 
 export function BrandKitCard({
+  announce,
+  ...rest
+}: BrandKitCardProps) {
+  const insideLog = useContext(InsideLogContext);
+  return <BrandKitCardView {...rest} announce={announce ?? !insideLog} />;
+}
+
+/** Hook-free view; `announce` decides whether the status text is its own live region. */
+export function BrandKitCardView({
   pieceCount = 9,
   state,
   pending = false,
@@ -95,7 +112,15 @@ export function BrandKitCard({
   onApprove,
   onAskChanges,
   linkComponent: Link = DefaultLink,
-}: BrandKitCardProps) {
+  announce: live = true,
+}: Omit<BrandKitCardProps, "announce"> & { announce?: boolean }) {
+  const statusText = pending
+    ? "Sending your decision…"
+    : state === "approved"
+      ? "Approved. Site, emails and Studio now use it."
+      : state === "asking"
+        ? "Tell me what to change below — I'll rework it right here."
+        : "";
   return (
     <div data-card="brand-kit" aria-busy={pending} className={CARD_SHELL}>
       <Link href={openHref} className={cn("grid grid-cols-3 gap-1 rounded-lg", FOCUS)}>
@@ -132,14 +157,12 @@ export function BrandKitCard({
           Open brand kit
         </Link>
       </div>
-      <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-        {pending
-          ? "Sending your decision…"
-          : state === "approved"
-            ? "Approved. Site, emails and Studio now use it."
-            : state === "asking"
-              ? "Tell me what to change below — I'll rework it right here."
-              : ""}
+      <p
+        role={live ? "status" : undefined}
+        aria-live={live ? "polite" : undefined}
+        className="min-h-5 text-[13px] text-home-ink-2"
+      >
+        {statusText}
       </p>
     </div>
   );

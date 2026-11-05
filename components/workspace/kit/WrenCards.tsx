@@ -103,7 +103,7 @@ export function SiteLiveCard({
     <div data-card="site-live" className={CARD_SHELL}>
       <p className="flex flex-wrap items-center gap-2 text-[13px]">
         <span className="font-mono text-xs text-home-ink">{url}</span>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#bcd0b0] bg-home-sage px-2.5 py-0.5 text-xs font-medium text-home-sage-ink">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-home-sage-ink/30 bg-home-sage px-2.5 py-0.5 text-xs font-medium text-home-sage-ink">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
           Live
         </span>

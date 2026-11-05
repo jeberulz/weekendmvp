@@ -40,6 +40,7 @@ export {
 } from "./WrenCards";
 export {
   BrandKitCard,
+  BrandKitCardView,
   prepareMessage,
   shouldSendOnKeyDown,
   UserMessage,

@@ -65,7 +65,11 @@ export function CreditMeter({ balance, max, plan, className }: CreditMeterProps)
   const colours = STATE_CLASSES[state];
   // Only the bar and aria-valuenow clamp; the visible text and valuetext show the real balance.
   const barValue = Math.min(real, cap);
-  const right = state === "low" ? `${real} left · low` : `${real} left`;
+  // A balance with no allowance is a misconfiguration. Say so once, in the visible
+  // text and in aria-valuetext, instead of showing a count next to "no allowance".
+  const noAllowance = cap <= 0 && real > 0;
+  const right = noAllowance ? "Not set" : state === "low" ? `${real} left · low` : `${real} left`;
+  const valueText = noAllowance ? "Credit allowance not set" : `${real} of ${cap} credits left`;
   return (
     <div data-state={state} className={cn("flex flex-col gap-1.5", className)}>
       <div className="flex items-center gap-2 text-[13px]">
@@ -81,7 +85,7 @@ export function CreditMeter({ balance, max, plan, className }: CreditMeterProps)
         aria-valuemin={0}
         aria-valuemax={cap}
         aria-valuenow={barValue}
-        aria-valuetext={`${real} of ${cap} credits left`}
+        aria-valuetext={valueText}
         className="h-1.5 overflow-hidden rounded-[3px] bg-home-sunk"
       >
         <div className={cn("h-full", fillWidth(barValue, cap), colours.bar)} />

@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 import {
   ApprovalCard,
   BrandKitCard,
+  BrandKitCardView,
   BuildPackCard,
   BuildPackPromptCard,
   CreditMeter,
@@ -35,6 +36,7 @@ import {
   shouldSendOnKeyDown,
   validateChangeNote,
 } from "@/components/workspace/kit";
+import { OutputCard } from "@/components/workspace/kit/WorkstreamPanel";
 import {
   freeCost,
   hydrotrailCreditStates,
@@ -165,7 +167,7 @@ describe("EmployeeCard", () => {
 
   test("the needs-you card gets the ember border", () => {
     const out = html(<EmployeeCard employee={iris} autopilotAvailable workstreamHref="/x" onAutopilotToggle={() => {}} />);
-    expect(out).toContain("border-[#e9c39a]");
+    expect(out).toContain("border-home-orange-ink/30");
   });
 
   test("skipped-role variant shows the reason and a Hire button", () => {
@@ -304,12 +306,12 @@ describe("Wren thread", () => {
     expect(busy).toContain('aria-disabled="true"');
     expect(busy).toContain("Sending your decision…");
     const guard = vi.fn();
-    const [busyApprove] = buttonsOf(expand(<BrandKitCard {...props} onApprove={guard} state="pending" pending />));
+    const [busyApprove] = buttonsOf(expand(<BrandKitCardView {...props} onApprove={guard} state="pending" pending />));
     (busyApprove.props.onClick as () => void)();
     expect(guard).not.toHaveBeenCalled();
     expect(html(<BrandKitCard {...props} state="approved" />)).toContain("Approved. Site, emails and Studio now use it.");
     expect(html(<BrandKitCard {...props} state="asking" />)).toContain("Tell me what to change below");
-    const [approve] = buttonsOf(expand(<BrandKitCard {...props} state="pending" />));
+    const [approve] = buttonsOf(expand(<BrandKitCardView {...props} state="pending" />));
     expectNativeKeyboard(approve);
     (approve.props.onClick as () => void)();
     expect(onApprove).toHaveBeenCalled();
@@ -525,6 +527,10 @@ describe("review fixes", () => {
     expect(noMax).toContain('aria-valuemax="0"');
     expect(noMax).toContain('aria-valuenow="0"');
     expect(noMax).toContain("No credit allowance on this plan");
+    expect(noMax).toContain('aria-valuetext="Credit allowance not set"');
+    expect(noMax).toContain("Not set");
+    expect(noMax).not.toContain("5 left");
+    expect(html(<CreditMeter balance={0} max={0} plan="free" />)).toContain("0 left");
 
     const nan = html(<CreditMeter balance={Number.NaN} max={Number.NaN} plan="free" />);
     expect(nan).toContain("0 left");
@@ -559,19 +565,20 @@ describe("review fixes", () => {
   });
 
   test("prompt card: accessible name tracks the visible text; heading level is configurable", () => {
-    expect(copyButtonLabel("idle", 2, "T")).toBe("Copy prompt 2: T");
-    expect(copyButtonLabel("copied", 2, "T")).toBe("Copied prompt 2: T");
-    expect(copyButtonLabel("blocked", 2, "T")).toBe("Copy blocked for prompt 2: T");
-    for (const [state, visible] of [["idle", "Copy prompt"], ["copied", "Copied"], ["blocked", "Copy blocked"]] as const) {
-      expect(copyButtonLabel(state, 2, "T").startsWith(visible)).toBe(true);
-    }
+    // Stable name that starts with the always-visible button text "Copy prompt".
+    expect(copyButtonLabel(2, "T")).toBe("Copy prompt 2: T");
+    const card = html(<BuildPackPromptCard {...hydrotrailPrompt} />);
+    expect(card).toContain(">Copy prompt</button>");
+    expect(card).not.toContain("Copied</button>");
+    expect(card).toMatch(/role="status" aria-live="polite"[^>]*><span><\/span>/);
     expect(html(<BuildPackPromptCard {...hydrotrailPrompt} />)).toContain("<h3 ");
     expect(html(<BuildPackPromptCard {...hydrotrailPrompt} headingLevel={4} />)).toContain("<h4 ");
   });
 });
 
 /** Every ARIA reference and label target must resolve to a unique id in the same markup. */
-function expectIdIntegrity(markup: string) {
+function expectIdIntegrity(markup: string, requiredAttrs: readonly string[] = []) {
+  for (const attr of requiredAttrs) expect(markup, `missing ${attr}`).toMatch(new RegExp(`\\s${attr}="[^"]+"`));
   const ids = [...markup.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
   expect(new Set(ids).size).toBe(ids.length);
   const refs: string[] = [];
@@ -615,5 +622,65 @@ describe("id integrity", () => {
     );
     expectIdIntegrity(both);
     expectIdIntegrity(html(<BrandKitCard state="pending" openHref="/b" onApprove={noop} onAskChanges={noop} />));
+  });
+});
+
+describe("OutputCard states (id integrity, focus targets, live regions)", () => {
+  const noop = () => {};
+  const ready = { id: "kit", title: "Brand kit", kindLabel: "Board", status: "ready" as const };
+  const card = (props: Partial<Parameters<typeof OutputCard>[0]> = {}) =>
+    html(
+      <ul>
+        <OutputCard output={ready} employeeName="Iris" titleLevel={3} onApprove={noop} onRequestChanges={noop} {...props} />
+      </ul>,
+    );
+
+  test("collapsed: the form exists but is hidden, and aria-controls resolves to it", () => {
+    const out = card();
+    expectIdIntegrity(out, ["aria-controls", "for"]);
+    expect(out).toMatch(/<form [^>]*hidden/);
+    expect(out).toContain('aria-expanded="false"');
+    expect(out).toContain('tabindex="-1"');
+  });
+
+  test("open: the form is shown and expanded", () => {
+    const out = card({ initialAsking: true });
+    expectIdIntegrity(out, ["aria-controls", "for"]);
+    expect(out).not.toMatch(/<form [^>]*hidden/);
+    expect(out).toContain('aria-expanded="true"');
+  });
+
+  test("error: role=alert text is the textarea's description and references resolve", () => {
+    const out = card({ initialAsking: true, initialError: "Write what Iris should change in Brand kit first." });
+    const { ids } = expectIdIntegrity(out, ["aria-controls", "aria-describedby", "for"]);
+    expect(out).toContain('aria-invalid="true"');
+    expect(out).toMatch(/<p id="[^"]+-note-error" role="alert"/);
+    expect(ids.some((id) => id.endsWith("-note-error"))).toBe(true);
+  });
+
+  test("the form cannot stay open once the status is no longer ready", () => {
+    const out = card({ output: { ...ready, status: "changes_requested" }, initialAsking: true, initialError: "x" });
+    expect(out).toMatch(/<form [^>]*hidden/);
+    expect(out).not.toContain('role="alert"');
+    expect(out).not.toContain("aria-controls");
+  });
+
+  test("BrandKitCard: its status is a live region alone, and silent inside a thread log", () => {
+    const props = { openHref: "/b", onApprove: noop, onAskChanges: noop, state: "approved" as const };
+    expect(html(<BrandKitCard {...props} />)).toContain('role="status"');
+    const inLog = html(<WrenThread><BrandKitCard {...props} /></WrenThread>);
+    expect(inLog).toContain('role="log"');
+    expect(inLog).not.toContain('role="status"');
+    expect(inLog).toContain("Approved. Site, emails and Studio now use it.");
+    expect(html(<WrenThread><BrandKitCard {...props} announce /></WrenThread>)).toContain('role="status"');
+  });
+
+  test("pending styles are visible for every button style", async () => {
+    const styles = await import("@/components/workspace/kit/styles");
+    for (const cls of [styles.BTN_PRIMARY, styles.BTN_SECONDARY, styles.BTN_APPROVED, styles.BTN_CHANGES, styles.ICON_BTN]) {
+      expect(cls).toContain("aria-disabled:bg-home-sunk");
+      expect(cls).toContain("aria-disabled:text-home-ink-2");
+      expect(cls).toContain("aria-disabled:border-dashed");
+    }
   });
 });

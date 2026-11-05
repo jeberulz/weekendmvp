@@ -66,7 +66,7 @@ export function ErrorState({
       role="alert"
       data-state="error"
       className={cn(
-        "flex flex-col items-start gap-3 rounded-xl border border-[#e4bfb4] bg-home-clay px-4 py-4 text-sm text-home-clay-ink",
+        "flex flex-col items-start gap-3 rounded-xl border border-home-clay-ink/30 bg-home-clay px-4 py-4 text-sm text-home-clay-ink",
         className,
       )}
     >
