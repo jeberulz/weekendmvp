@@ -2,6 +2,8 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
+import { hydrotrailWizardAnswers } from "../lib/workspace/contracts/fixtures/hydrotrail";
+import { wizardAnswersSchema } from "../lib/workspace/contracts/wizard";
 import type { Doc } from "./_generated/dataModel";
 import schema from "./schema";
 import {
@@ -104,17 +106,7 @@ describe("WP68 C-DATA schema", () => {
 
   test("wizard answers accept the C-WIZARD HydroTrail shape and reject a phone field", async () => {
     const t = convexTest(schema, modules);
-    const answers: Doc<"wizard_sessions">["answers"] = {
-      idea: { source: "library", ideaSlug: "hydrotrail" },
-      blueprintDecision: { decision: "looks_good" },
-      platform: { kind: "web" },
-      commercialModel: "free",
-      goal: { kind: "waitlist", timeframe: "weekend", paidPush: { dailyBudgetUsd: 7 } },
-      name: { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
-      partnerPersonality: "strategist",
-      partnerName: { kind: "preset", name: "Wren" },
-      signals: { platform: { signal: "kept" }, goal: { signal: "edited" } },
-    };
+    const answers: Doc<"wizard_sessions">["answers"] = wizardAnswersSchema.parse(hydrotrailWizardAnswers);
     await t.run(async (ctx) => {
       const ownerId = await ctx.db.insert("users", { email: "hydrotrail@example.test" });
       const base = { ownerId, ideaSlug: "hydrotrail", step: "partner_name", startedAt: 1, updatedAt: 1 };

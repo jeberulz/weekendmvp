@@ -154,3 +154,10 @@ optional; founder usage still requires an owner in the writer.
 - M4: added `requireBusinessForOwner` for trusted internal jobs and `requireBusinessChild` for project-bound WP68 tables. The helper checks direct owner/project and the linked employee, approval, document, file, task, sequence, lead, enrollment, step, social account and outbound list chains. Focused tests deny forged cross-business links and a mismatched email send sequence. Rows without a required project ID (wizard sessions, founder signals, idea seeds and platform usage) remain handled by their later owner/system writers, not the project-child helper.
 - Checks on this repair: focused C-OPS/C-AUTHZ/security tests, typecheck, full lint (0 errors, 37 existing warnings), serial full `npm test` (all suites passed), build, `git diff --check`, and isolated anonymous local Convex deployment at 3310/3311 passed. No production deployment or activation.
 - WP69 PR #168 has merged; its spike results are recorded on its branch, but C-JOBS prices remain provisional. WP68 PR #167 remains open, and G0 has not run.
+
+## 2026-11-05 - Merged-tree G0 follow-up
+
+- PR #167 merged into `main` as `4a7831d6` while the review repairs above were being validated. The earlier "remains open" status is superseded. The M1-M4 repairs are now on `codex/wp68-g0-review-fixes`, based on that merge.
+- The C-WIZARD compatibility test now inserts answers parsed from WP69's actual HydroTrail fixture and contract, replacing the hand-written lookalike. Focused schema, ops, authz and security tests passed on the merged tree (41 Vitest and 5 Node tests). The full gate and follow-up PR are in progress.
+- WP70/WP73 remain gated on this follow-up review and Claude's recorded G0 decision. C-JOBS prices remain provisional.
+- Full merged-tree gate passed: `npm run typecheck`, `npm run lint` (0 errors, 37 existing warnings), serial `npm test` (all suites), `npm run build`, and `git diff --check`. The schema and functions deployed to an isolated anonymous local Convex instance on 3310/3311 after setting a dummy local-only billing bridge secret. No cloud or production target was used.
