@@ -18,8 +18,8 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters (Opus) | C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **In progress**: S0 canvas extract, then S1 route scaffold | `creditsSummary` from WP73 (typed mock until then) | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters committed (`a79a6814`, reviewed); S2 gateway (Opus) running | C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **In progress**: S0 extract, S1 gated routes and S3 component kit committed and reviewed (S3 re-review running); S2 shell (Sonnet) running | `creditsSummary` from WP73 (typed mock until then); middleware 404 from Codex | — |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
@@ -43,6 +43,7 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | WP72 (was "before G0"; G0 ran without it) | Open |
 | Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). D23 ruled 2026-11-05 (no tool loops). Still open: D24 (founder-page bans), D25 (CSS-only tenant motion) | D24, D25: WP75 | Partly done |
 | WP69 open decisions: paid global daily budget ($50 provisional, a C-METER ops value); whether precompute and evals use the free pool; a Recraft logo measurement (top up ≈ $1.25; if it breaks 11 credits, a contract change). Done 2026-11-05: images 4, brand kit 11 (D4 amendment); C-JOBS frozen with video (WP82) and five change rounds left unpriced (#175) | Paid budget and free pool: WP70/WP71. Recraft: before WP80 | Partly done |
+| Provider 5xx policy: a 5xx stays billed `possible`, so the worst case is charged (conservative). Could a provider outage lock Free users out of their lifetime pool? Keep it, or refund the reservation on 5xx | WP71 S2 ships the conservative rule; decide before WP74 | Open |
 
 ## Cross-lane contract reviews for G0
 
@@ -193,3 +194,35 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
   (≈ $15) need an OK later.
 - D23 ruled (owner: "Approve D23"): no model tool loops in the hosted crew. WP71 S2 is unblocked. Recorded in
   `RULINGS.md` and `07` §6.
+
+## 2026-11-05 - Phase 1 progress
+
+- WP71-S1 provider adapters are committed (`a79a6814`) after an independent Opus review.
+  - The blocking finding is fixed: gpt-image-2 is billed per token, and was charged only the flat table price.
+    It now reserves the table price plus the prompt and settles on the token cost.
+  - A settle can go above its reservation. C-METER allows that, and the true cost is recorded. WP71-S2 flags it
+    as an overrun.
+  - Checks: typecheck, lint, `npm test`, build, all exit 0.
+  - WP71-S2 gateway (Opus) is running.
+- WP72:
+  - S1 gated route scaffold: `a5e7fc65`. The review had no blocking findings; the follow-ups are in `497d6b8a`.
+  - S3 component kit: `1e41e4e1`. The review found 5 blocking a11y and test defects, fixed in `16c75e65`. An
+    independent re-review is running.
+  - Checks: typecheck, lint, `npm test`, build, all exit 0.
+  - WP72-S2 shell (Sonnet) is running.
+- Finding: `next build` lists every `/dashboard/b/[projectId]/*` route as `◐` (Partial Prerender), and Next 16
+  streams page responses with an initial 200. A refused request therefore gets the not-found page with `noindex`
+  at status 200, with no workspace content, because the gate runs before any JSX. So the middleware hard 404 is
+  required, not optional.
+- Needs from Codex (added):
+  - a middleware hard 404 for refused `/dashboard/b/*` requests (now required);
+  - `NEXT_PUBLIC_LAUNCH_WORKSPACE` in `.env.example`. The 02 §15 build flag is deferred until then, because the
+    env-documentation scanner fails without it;
+  - optional: `Referrer-Policy: no-referrer` on `/dashboard/b/` and a GA path redaction for project ids;
+  - devDeps `jsdom`, `@testing-library/react`, `@testing-library/user-event` and `vitest-axe`, so the WP72 focus
+    behaviour can be DOM-tested;
+  - still open: the WP69 ask-8 env entries (`AI_PROVIDER_MODE`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
+    `RECRAFT_API_KEY`, `RECRAFT_STYLE_ID`) and item 11 (`@phosphor-icons/react`).
+- Verify before any live spend:
+  - the Sonnet 5.5 cache-read rate (the skill says $0.20, the spike says $0.10; $0.20 is kept);
+  - the gpt-image-2 token rates on OpenAI's live pricing page.
