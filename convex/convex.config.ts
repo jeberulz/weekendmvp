@@ -1,4 +1,8 @@
 import rateLimiter from "@convex-dev/rate-limiter/convex.config";
+import resend from "@convex-dev/resend/convex.config";
+import shardedCounter from "@convex-dev/sharded-counter/convex.config";
+import workflow from "@convex-dev/workflow/convex.config";
+import workpool from "@convex-dev/workpool/convex.config";
 import { defineApp } from "convex/server";
 import { v } from "convex/values";
 
@@ -47,5 +51,11 @@ const app = defineApp({
 // generation is the one endpoint a stranger can drive, so it uses the
 // component rather than a bespoke window scan.
 app.use(rateLimiter);
+// WP70-S1: mount all Phase 1 runtime components together while the workspace
+// switches remain off. The crew workpool is reserved for later WP75 jobs.
+app.use(workflow);
+app.use(workpool, { name: "crewWorkpool" });
+app.use(shardedCounter);
+app.use(resend);
 
 export default app;

@@ -7,7 +7,7 @@ Definition of done: C-METER implemented behind dormant workspace switches, exact
 
 ## Stories
 
-- [ ] `WP70-S1` - Mount workflow, workpool, sharded counter and Resend components together
+- [x] `WP70-S1` - Mount workflow, workpool, sharded counter and Resend components together
   - Scope: `convex/convex.config.ts`, generated API if needed.
   - Acceptance: one additive mount change, all new env entries optional, isolated local deploy boots.
 - [ ] `WP70-S2` - Implement reserve, markSent, settle and fail

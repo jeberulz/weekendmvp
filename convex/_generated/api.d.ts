@@ -14,6 +14,7 @@ import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
+import type * as crew_roles from "../crew/roles.js";
 import type * as crons from "../crons.js";
 import type * as currentUser from "../currentUser.js";
 import type * as editorial_args from "../editorial/args.js";
@@ -127,6 +128,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authEmail: typeof authEmail;
   authUser: typeof authUser;
+  "crew/roles": typeof crew_roles;
   crons: typeof crons;
   currentUser: typeof currentUser;
   "editorial/args": typeof editorial_args;
@@ -256,4 +258,8 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+  workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
+  crewWorkpool: import("@convex-dev/workpool/_generated/component.js").ComponentApi<"crewWorkpool">;
+  shardedCounter: import("@convex-dev/sharded-counter/_generated/component.js").ComponentApi<"shardedCounter">;
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
 };
