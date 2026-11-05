@@ -43,6 +43,8 @@ copy them exactly.
 9. Type `wizard_sessions.answers` from `wizardAnswersSchema` (`lib/workspace/contracts/wizard.ts`), and store `parse()` output only. Assert that the validator accepts `wizardAnswersSchema.parse(hydrotrailWizardAnswers)`. `answers.idea` is the source of truth; any session-level `ideaSlug` must equal it.
 10. Throw gate errors in the shapes `isWorkspaceGateErrorData` accepts. `AI_DISABLED` carries a `scope` that is absent or a `METER_FEATURES` value.
 
+11. Add the `@phosphor-icons/react` dependency (MIT) before the tenant renderer is built (WP72/WP75 S5). `LANDING_ICONS` in C-ART are Phosphor core 2.1.1 names. Not needed for G0.
+
 ## 2026-11-05 - Setup
 
 - Branch/worktree: `claude/wp69-crew-contracts` in `.worktrees/wp69-crew-contracts`, from
@@ -207,3 +209,78 @@ copy them exactly.
   - `test:platform`, `test:convex`, `test:prompts`: exit 0 (296 contract tests).
   - `tsc -p scripts/spikes`: exit 0.
   - Full `npm test` is still blocked only by the uncommitted spike files (Needs from Codex item 8).
+
+## 2026-11-05 - S4 done; S5 recorded, freeze pending owner
+
+- Live spike finished: $5.72 of the $25 cap; results in `docs/wp/wp69-spike-results.md`.
+- Typical free launch measured at $0.57 (config A), under the $0.75 target. Config A stays: Haiku social
+  and email scored 0.32 below Sonnet, past the 0.3 rule.
+- Rows more than 30% off: launch plan (+96%), social on Sonnet (by design), OpenAI images (+77% logos,
+  +37% hero), seeds (-77%, good news).
+- Credit rule fails for brand kit regenerate and the standard offer image with either image provider.
+  Proposals sent to the owner (3 credits offer image, 11 brand kit regenerate, Recraft default).
+- Measured values written into `03-ai-cost-model.md` §1, §3, §4, §7, including the Sonnet cache-read price
+  correction ($0.10).
+- Not measured: Recraft (no credits, plus a spike bug on hero size), video (no provider), chat and change
+  rounds.
+- Added proposed S6 (visual system in C-ART) from the landing design brief (`07-landing-design.md`).
+- Docs updated: `03-ai-cost-model.md`, `wp69-spike-results.md`, stories, this file. No code changed.
+
+## 2026-11-05 - WP69-S6 (visual system in C-ART) - done
+
+- Owner approved the amendment on 2026-11-05. Plan: `docs/plans/launch-workspace/07-landing-design.md` §5 (board branch).
+- What changed in C-ART:
+  - Eyebrows removed.
+  - `ART_DIRECTIONS` (6) added, with `brandKit.visualSystem` (direction, shape, density, theme with a reason).
+  - `TYPE_PAIRS` (14 curated OFL pairs, each with the directions it suits and a `defaultWeight`) replaces free-text fonts. The model no longer picks a weight.
+  - `BANNED_DISPLAY_FAMILIES` added.
+  - Per-section `layout` enums (`SECTION_LAYOUTS`) and `DIRECTION_LAYOUTS` added.
+  - `LANDING_ICONS`: 73 Phosphor names, checked against Phosphor core 2.1.1.
+  - `checkLandingAgainstBrandKit` added; WP75 S4 wires it in.
+  - `typePairBrief()` returns the pair list per direction for prompts.
+- Rules added:
+  - Theme mode must match palette luminance.
+  - Landing text rejects emoji and headings that lead with a section number.
+- The spec-level landing rules and the brand kit cross-field rules now run alongside field errors (zod `when`
+  with guarded reads), so a single repair re-ask sees every issue.
+- Grammar: brand_kit 4,955 / 5,000 B; landing_spec 6,622 / 7,000 B. Little headroom on either; any new
+  model-facing field needs a size check first.
+- Independent Opus review: no high findings. M1–M4 and L5–L8 fixed, and the same guard was extended to the
+  brand kit. M2 (where the layout rule runs) is resolved in 07 §5. L9: no artifact is stored anywhere yet,
+  so `schemaVersion` stays 1. L10 is recorded in 07 §5.
+- Checks:
+  - typecheck: exit 0.
+  - lint: exit 0 (37 existing warnings).
+  - test:platform: 782 passed.
+  - test:convex: 693 passed.
+  - `tsc -p scripts/spikes`: exit 0.
+  - build: exit 0.
+- Follow-up before any further live spike: the spike crew prompt (`scripts/spikes/wp69/prompts/crew.ts`, uncommitted)
+  still describes free-text fonts.
+- Needs from Codex: item 11 (`@phosphor-icons/react`) added.
+
+## 2026-11-05 - S5: owner approved two price changes
+
+- The owner approved standard offer image 2 → 3 credits and brand kit regenerate 10 → 11. The story / post
+  image moves to 3 too, because it is the same render.
+- Updated:
+  - `CREDIT_ACTIONS` in `jobs.ts`;
+  - the C-JOBS tests, whose cost table now uses the measured values plus a test that the image prices hold
+    only on Recraft;
+  - `01-strategy.md` §6, `03-ai-cost-model.md` §7 and the spike results.
+- The D4 amendment row is in `RULINGS.md` on the board branch.
+- `PRICES_STATUS` stays `"provisional"`. Before it can freeze:
+  - video;
+  - prices for the change rounds still unpriced (blueprint, roster, SEO pack, launch plan, ads);
+  - the paid global budget;
+  - a Recraft measurement;
+  - **D11 vs Recraft**: 3 credits holds the rule only if standard offer images render on Recraft. D11 sends
+    photo-style offer images to gpt-image-2 ($0.041 measured), which would need 4 credits. Asked the owner.
+
+## 2026-11-05 - S5: image provider settled (owner)
+
+- The owner chose to keep D11: standard offer and post images render on gpt-image-2 medium, at **4 credits**
+  ($0.0103 a credit, 74% margin on Growth). Brand kit regenerate stays at 11, with logo marks on Recraft. A test
+  pins both provider assumptions.
+- `PRICES_STATUS` stays provisional. Still open: video, the unpriced change rounds, the paid global budget,
+  and a Recraft measurement for logo marks.

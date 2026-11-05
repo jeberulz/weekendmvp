@@ -81,9 +81,9 @@ export const LIMITS = {
     tagline: 80,
     colourName: 24,
     colourUse: 160,
-    fontFamily: 60,
     fontNotes: 160,
     typeScale: 120,
+    themeReason: 120,
     voiceTrait: 24,
     voiceTraitsMin: 3,
     voiceTraitsMax: 5,
@@ -97,14 +97,12 @@ export const LIMITS = {
     brandName: 40,
     navLinksMax: 4,
     addedReason: 80,
-    eyebrow: 60,
     headline: 80,
     subhead: 220,
     reassurance: 140,
     heading: 80,
     itemTitle: 60,
     itemBody: 240,
-    iconKey: 40,
     sectionBody: 400,
     emailLabel: 40,
     successMessage: 200,
@@ -348,20 +346,46 @@ const emphasisTextSchema = (max: number) =>
       path: ["emphasis"],
     });
 
-/** Adds an issue for each value that appears more than once. */
+/** Adds an issue for each value that appears more than once; `null` entries are skipped. */
 function flagDuplicates(
-  values: readonly string[],
+  values: readonly (string | null)[],
   ctx: z.RefinementCtx,
   path: (index: number) => (string | number)[],
   label: string,
 ): void {
   const seen = new Set<string>();
   values.forEach((value, index) => {
+    if (value === null) return;
     if (seen.has(value)) {
       ctx.addIssue({ code: "custom", message: `Duplicate ${label} "${value}"`, path: path(index) });
     }
     seen.add(value);
   });
+}
+
+// Guarded reads for refinements that run with `when` on a possibly invalid value.
+
+type IssuePath = (string | number)[];
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** The value at `path` inside an unparsed or partly parsed value, or undefined. */
+function valueAt(value: unknown, path: readonly (string | number)[]): unknown {
+  let current = value;
+  for (const key of path) {
+    if (typeof key === "number" && Array.isArray(current)) current = current[key];
+    else if (typeof key === "string" && isRecord(current)) current = current[key];
+    else return undefined;
+  }
+  return current;
+}
+
+/** Every string inside `value` with its path. */
+function stringLeaves(value: unknown, path: IssuePath, found: { value: string; path: IssuePath }[]): void {
+  if (typeof value === "string") found.push({ value, path });
+  else if (Array.isArray(value)) value.forEach((child, index) => stringLeaves(child, [...path, index], found));
+  else if (isRecord(value)) for (const [key, child] of Object.entries(value)) stringLeaves(child, [...path, key], found);
 }
 
 /** True when every `{…}` in `value` is one of `allowed` and no stray braces remain. */
@@ -501,8 +525,337 @@ export function blueprintIsValidated(blueprint: Blueprint): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// BrandKit — read by the tenant site renderer (tokens, fonts), Studio and every
-// copywriting employee (voice). Contrast is graded with `failingTextPairs`.
+// Visual system — closed lists the renderer is built for (WP69-S6,
+// `docs/plans/launch-workspace/07-landing-design.md` §4–§5). Iris picks an art
+// direction, a curated type pair and shape, density and theme tokens; Leo picks
+// a layout per section from what that direction allows. Nothing here is free
+// text the renderer would have to interpret: every value is an enum, so a new
+// value is a widening that needs no migration.
+// ---------------------------------------------------------------------------
+
+/** Freezes `value` and everything inside it; returns it unchanged in type. */
+function deepFreeze<T>(value: T): T {
+  if (typeof value === "object" && value !== null) {
+    for (const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+/** The renderer's art directions: each a complete world of type, spacing, shape, surface and one motion moment. */
+export const ART_DIRECTIONS = Object.freeze([
+  "editorial",
+  "warm_utility",
+  "bold_geometric",
+  "quiet_technical",
+  "handmade",
+  "dense_product",
+] as const);
+export type ArtDirection = (typeof ART_DIRECTIONS)[number];
+
+export const ART_DIRECTION_INFO: Readonly<Record<ArtDirection, { readonly label: string; readonly summary: string }>> =
+  deepFreeze({
+    editorial: { label: "Editorial", summary: "Serif display, a long reading measure, paper ground and restrained colour." },
+    warm_utility: { label: "Warm utility", summary: "Friendly humanist sans, warm neutrals and plain-spoken layouts." },
+    bold_geometric: { label: "Bold geometric", summary: "Geometric or expanded display, big type and confident blocks of colour." },
+    quiet_technical: { label: "Quiet technical", summary: "Precise grotesk on a tight grid, data set in mono, minimal colour." },
+    handmade: { label: "Handmade", summary: "Expressive display, organic shapes and texture, warm throughout." },
+    dense_product: { label: "Dense product", summary: "Compact and screenshot-led, built for B2B scanning." },
+  });
+
+/** Corner radius family. */
+export const VISUAL_SHAPES = Object.freeze(["sharp", "soft", "round"] as const);
+/** Spacing rhythm. */
+export const VISUAL_DENSITIES = Object.freeze(["airy", "balanced", "compact"] as const);
+/** Set by the use scene, not the category (07 §4). */
+export const THEME_MODES = Object.freeze(["light", "dark"] as const);
+
+type FontFace = { readonly family: string; readonly weights: readonly number[] };
+export type TypePair = {
+  /** `defaultWeight` is the display weight the renderer sets headings in; it is one of `weights`. */
+  readonly heading: FontFace & { readonly defaultWeight: number };
+  readonly body: FontFace;
+  readonly mono?: FontFace;
+  /** The art directions this pair suits; a kit's pair must list its direction. */
+  readonly directions: readonly ArtDirection[];
+};
+
+/** Curated pair ids; the model picks one, never a font family. */
+export const TYPE_PAIR_IDS = Object.freeze([
+  "fraunces_newsreader",
+  "instrument_serif_instrument_sans",
+  "dm_serif_display_dm_sans",
+  "bricolage_grotesque_figtree",
+  "syne_manrope",
+  "archivo_archivo",
+  "ibm_plex",
+  "schibsted_grotesk_literata",
+  "young_serif_public_sans",
+  "caprasimo_karla",
+  "gloock_work_sans",
+  "red_hat_display_red_hat_text",
+  "hanken_grotesk_spectral",
+  "familjen_grotesk_onest",
+] as const);
+export type TypePairId = (typeof TYPE_PAIR_IDS)[number];
+
+/**
+ * The type pairs the renderer self-hosts. Every family is OFL on Google Fonts;
+ * `weights` are the static weights the renderer loads.
+ */
+export const TYPE_PAIRS: Readonly<Record<TypePairId, TypePair>> = deepFreeze({
+  fraunces_newsreader: {
+    heading: { family: "Fraunces", weights: [300, 400, 500, 600, 700, 800, 900], defaultWeight: 600 },
+    body: { family: "Newsreader", weights: [400, 500, 600] },
+    directions: ["editorial", "handmade"],
+  },
+  instrument_serif_instrument_sans: {
+    heading: { family: "Instrument Serif", weights: [400], defaultWeight: 400 },
+    body: { family: "Instrument Sans", weights: [400, 500, 600] },
+    directions: ["editorial", "quiet_technical"],
+  },
+  dm_serif_display_dm_sans: {
+    heading: { family: "DM Serif Display", weights: [400], defaultWeight: 400 },
+    body: { family: "DM Sans", weights: [400, 500, 600] },
+    directions: ["editorial", "warm_utility"],
+  },
+  bricolage_grotesque_figtree: {
+    heading: { family: "Bricolage Grotesque", weights: [500, 600, 700, 800], defaultWeight: 700 },
+    body: { family: "Figtree", weights: [400, 500, 600] },
+    directions: ["warm_utility", "handmade", "bold_geometric"],
+  },
+  syne_manrope: {
+    heading: { family: "Syne", weights: [600, 700, 800], defaultWeight: 700 },
+    body: { family: "Manrope", weights: [400, 500, 600] },
+    directions: ["bold_geometric"],
+  },
+  archivo_archivo: {
+    heading: { family: "Archivo", weights: [600, 700, 800, 900], defaultWeight: 800 },
+    body: { family: "Archivo", weights: [400, 500] },
+    directions: ["bold_geometric", "dense_product"],
+  },
+  ibm_plex: {
+    heading: { family: "IBM Plex Sans", weights: [500, 600, 700], defaultWeight: 600 },
+    body: { family: "IBM Plex Sans", weights: [400, 500] },
+    mono: { family: "IBM Plex Mono", weights: [400, 500] },
+    directions: ["quiet_technical", "dense_product"],
+  },
+  schibsted_grotesk_literata: {
+    heading: { family: "Schibsted Grotesk", weights: [600, 700, 800], defaultWeight: 700 },
+    body: { family: "Literata", weights: [400, 500] },
+    directions: ["editorial", "quiet_technical"],
+  },
+  young_serif_public_sans: {
+    heading: { family: "Young Serif", weights: [400], defaultWeight: 400 },
+    body: { family: "Public Sans", weights: [400, 500, 600] },
+    directions: ["warm_utility", "handmade"],
+  },
+  caprasimo_karla: {
+    heading: { family: "Caprasimo", weights: [400], defaultWeight: 400 },
+    body: { family: "Karla", weights: [400, 500, 600] },
+    directions: ["handmade"],
+  },
+  gloock_work_sans: {
+    heading: { family: "Gloock", weights: [400], defaultWeight: 400 },
+    body: { family: "Work Sans", weights: [400, 500] },
+    directions: ["editorial", "bold_geometric"],
+  },
+  red_hat_display_red_hat_text: {
+    heading: { family: "Red Hat Display", weights: [600, 700, 800, 900], defaultWeight: 800 },
+    body: { family: "Red Hat Text", weights: [400, 500] },
+    directions: ["dense_product", "warm_utility"],
+  },
+  hanken_grotesk_spectral: {
+    heading: { family: "Hanken Grotesk", weights: [600, 700, 800], defaultWeight: 700 },
+    body: { family: "Spectral", weights: [400, 500] },
+    directions: ["quiet_technical", "editorial"],
+  },
+  familjen_grotesk_onest: {
+    heading: { family: "Familjen Grotesk", weights: [500, 600, 700], defaultWeight: 600 },
+    body: { family: "Onest", weights: [400, 500] },
+    directions: ["dense_product", "quiet_technical"],
+  },
+});
+
+/**
+ * A compact text block for brand-kit prompts (WP75): one line per art
+ * direction listing the type pair ids it allows, each with its heading and body
+ * families, e.g. `editorial: fraunces_newsreader (Fraunces / Newsreader); …`.
+ * The grammar carries only the ids, so the prompt is where the model sees which
+ * pairs fit. Pure and deterministic.
+ */
+export function typePairBrief(): string {
+  return ART_DIRECTIONS.map((direction) => {
+    const pairs = TYPE_PAIR_IDS.filter((id) => TYPE_PAIRS[id].directions.includes(direction)).map(
+      (id) => `${id} (${TYPE_PAIRS[id].heading.family} / ${TYPE_PAIRS[id].body.family})`,
+    );
+    return `${direction}: ${pairs.join("; ")}`;
+  }).join("\n");
+}
+
+/** Overused or system faces that are never a founder page's display face (07 §4). */
+export const BANNED_DISPLAY_FAMILIES = Object.freeze([
+  "Inter",
+  "Roboto",
+  "Open Sans",
+  "Arial",
+  "Helvetica",
+  "Poppins",
+  "Montserrat",
+  "Space Grotesk",
+  "Plus Jakarta Sans",
+] as const);
+
+/**
+ * Layout variants per landing section; the renderer draws each. Promises has
+ * no card grid: same-size icon + heading + text cards are refused as a page
+ * structure (07 §4). The nav has one fixed layout.
+ */
+export const SECTION_LAYOUTS = deepFreeze({
+  hero: ["split_media", "type_led", "product_frame", "full_bleed_media"],
+  promises: ["list", "split", "feature_rows"],
+  how_it_works: ["numbered_steps", "timeline"],
+  app_preview: ["device_frame", "annotated", "plain_frame"],
+  waitlist: ["inline_band", "panel", "split"],
+  footer: ["minimal", "statement"],
+} as const satisfies Record<LandingSectionKey, readonly [string, ...string[]]>);
+export type SectionLayout<S extends LandingSectionKey> = (typeof SECTION_LAYOUTS)[S][number];
+export type DirectionLayouts = { readonly [S in LandingSectionKey]: readonly SectionLayout<S>[] };
+
+/** The layouts each art direction allows, per section. */
+export const DIRECTION_LAYOUTS: Readonly<Record<ArtDirection, DirectionLayouts>> = deepFreeze({
+  editorial: {
+    hero: ["type_led", "split_media", "full_bleed_media"],
+    promises: ["list", "split"],
+    how_it_works: ["numbered_steps", "timeline"],
+    app_preview: ["plain_frame", "annotated"],
+    waitlist: ["inline_band", "split"],
+    footer: ["statement", "minimal"],
+  },
+  warm_utility: {
+    hero: ["split_media", "full_bleed_media", "product_frame"],
+    promises: ["list", "feature_rows", "split"],
+    how_it_works: ["numbered_steps", "timeline"],
+    app_preview: ["device_frame", "annotated"],
+    waitlist: ["panel", "inline_band"],
+    footer: ["minimal", "statement"],
+  },
+  bold_geometric: {
+    hero: ["type_led", "full_bleed_media", "split_media"],
+    promises: ["split", "feature_rows"],
+    how_it_works: ["numbered_steps"],
+    app_preview: ["device_frame", "plain_frame"],
+    waitlist: ["inline_band", "split"],
+    footer: ["statement"],
+  },
+  quiet_technical: {
+    hero: ["product_frame", "type_led", "split_media"],
+    promises: ["list", "feature_rows"],
+    how_it_works: ["numbered_steps", "timeline"],
+    app_preview: ["annotated", "plain_frame"],
+    waitlist: ["inline_band", "panel"],
+    footer: ["minimal"],
+  },
+  handmade: {
+    hero: ["full_bleed_media", "split_media"],
+    promises: ["split", "list"],
+    how_it_works: ["timeline", "numbered_steps"],
+    app_preview: ["device_frame", "plain_frame"],
+    waitlist: ["panel", "split"],
+    footer: ["statement", "minimal"],
+  },
+  dense_product: {
+    hero: ["product_frame", "split_media"],
+    promises: ["feature_rows", "list"],
+    how_it_works: ["numbered_steps"],
+    app_preview: ["annotated", "device_frame", "plain_frame"],
+    waitlist: ["inline_band", "panel"],
+    footer: ["minimal"],
+  },
+});
+
+// Phosphor core 2.1.1 icon names (MIT), each checked against ~/.claude/skills/ui-ux-pro-max/data/phosphor-icons-upstream.json.
+export const LANDING_ICONS = Object.freeze([
+  "clock",
+  "timer",
+  "hourglass",
+  "calendar-check",
+  "currency-dollar",
+  "coins",
+  "wallet",
+  "piggy-bank",
+  "receipt",
+  "tag",
+  "map-pin",
+  "map-trifold",
+  "compass",
+  "globe-hemisphere-west",
+  "user",
+  "users",
+  "users-three",
+  "handshake",
+  "heart",
+  "chat-circle",
+  "chats-circle",
+  "envelope-simple",
+  "bell",
+  "megaphone",
+  "chart-line-up",
+  "chart-bar",
+  "trend-up",
+  "target",
+  "shield-check",
+  "lock-key",
+  "check-circle",
+  "lightning",
+  "rocket-launch",
+  "leaf",
+  "plant",
+  "drop",
+  "sun",
+  "mountains",
+  "book-open",
+  "graduation-cap",
+  "pencil-simple",
+  "lightbulb",
+  "storefront",
+  "shopping-bag",
+  "package",
+  "truck",
+  "gift",
+  "coffee",
+  "fork-knife",
+  "house",
+  "buildings",
+  "briefcase",
+  "camera",
+  "image",
+  "microphone",
+  "music-notes",
+  "paint-brush",
+  "code",
+  "cloud",
+  "device-mobile",
+  "laptop",
+  "magnifying-glass",
+  "list-checks",
+  "clipboard-text",
+  "file-text",
+  "arrows-clockwise",
+  "gear",
+  "puzzle-piece",
+  "barbell",
+  "bicycle",
+  "paw-print",
+  "first-aid",
+  "baby",
+] as const);
+export type LandingIcon = (typeof LANDING_ICONS)[number];
+
+// ---------------------------------------------------------------------------
+// BrandKit — read by the tenant site renderer (visual system, tokens, type
+// pair), Studio and every copywriting employee (voice). Contrast is graded
+// with `failingTextPairs`; the type pair must suit the direction (below).
 // ---------------------------------------------------------------------------
 
 export const PALETTE_ROLES = ["primary", "secondary", "accent", "ground", "ink"] as const;
@@ -516,13 +869,20 @@ export const paletteColourSchema = z
   })
   .strict();
 
-const typefaceSchema = z
+export const visualSystemSchema = z
   .object({
-    family: line(LIMITS.brandKit.fontFamily),
-    weight: z.number().int().min(100).max(900).multipleOf(100).meta(describe("CSS font-weight, 100–900 in steps of 100")),
-    notes: line(LIMITS.brandKit.fontNotes),
+    direction: z.enum(ART_DIRECTIONS),
+    shape: z.enum(VISUAL_SHAPES),
+    density: z.enum(VISUAL_DENSITIES),
+    theme: z
+      .object({
+        mode: z.enum(THEME_MODES),
+        reason: line(LIMITS.brandKit.themeReason, "Why the use scene calls for it"),
+      })
+      .strict(),
   })
   .strict();
+export type VisualSystem = z.infer<typeof visualSystemSchema>;
 
 export const brandKitSchema = z
   .object({
@@ -539,11 +899,12 @@ export const brandKitSchema = z
         ink: paletteColourSchema,
       })
       .strict(),
+    visualSystem: visualSystemSchema,
     type: z
       .object({
-        heading: typefaceSchema,
-        body: typefaceSchema,
+        pair: z.enum(TYPE_PAIR_IDS).meta(describe("must suit visualSystem.direction")),
         scale: line(LIMITS.brandKit.typeScale, "e.g. H1 56/0.98 · H2 32/1.05 · Body 16/1.5"),
+        notes: line(LIMITS.brandKit.fontNotes),
       })
       .strict(),
     voice: z
@@ -575,15 +936,59 @@ export const brandKitSchema = z
       .optional(),
   })
   .strict()
-  .superRefine((kit, ctx) => {
+  .superRefine(checkBrandKit, { when: (payload) => isRecord(payload.value) });
+export type BrandKit = z.infer<typeof brandKitSchema>;
+
+const isOneOf = <T extends string>(values: readonly T[], value: unknown): value is T =>
+  typeof value === "string" && (values as readonly string[]).includes(value);
+
+const HEX_COLOUR = /^#[0-9A-Fa-f]{6}$/;
+
+/**
+ * Cross-field brand kit rules. Runs with `when` so its issues report alongside
+ * other field errors (the single repair re-ask then sees them all); the value
+ * may be partly invalid, so every read is guarded.
+ */
+function checkBrandKit(kit: unknown, ctx: z.RefinementCtx): void {
+  const traits = valueAt(kit, ["voice", "traits"]);
+  if (Array.isArray(traits)) {
     flagDuplicates(
-      kit.voice.traits.map((trait) => trait.toLowerCase()),
+      traits.map((trait) => (typeof trait === "string" ? trait.trim().toLowerCase() : null)),
       ctx,
       (index) => ["voice", "traits", index],
       "voice trait",
     );
-  });
-export type BrandKit = z.infer<typeof brandKitSchema>;
+  }
+
+  const pairId = valueAt(kit, ["type", "pair"]);
+  const direction = valueAt(kit, ["visualSystem", "direction"]);
+  if (isOneOf(TYPE_PAIR_IDS, pairId) && isOneOf(ART_DIRECTIONS, direction)) {
+    if (!TYPE_PAIRS[pairId].directions.includes(direction)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Type pair ${pairId} does not suit the ${direction} direction`,
+        path: ["type", "pair"],
+      });
+    }
+  }
+
+  const mode = valueAt(kit, ["visualSystem", "theme", "mode"]);
+  const ground = valueAt(kit, ["palette", "ground", "hex"]);
+  const ink = valueAt(kit, ["palette", "ink", "hex"]);
+  if (isOneOf(THEME_MODES, mode) && typeof ground === "string" && typeof ink === "string" && HEX_COLOUR.test(ground) && HEX_COLOUR.test(ink)) {
+    const groundIsLighter = relativeLuminance(ground) > relativeLuminance(ink);
+    if (groundIsLighter !== (mode === "light")) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          mode === "light"
+            ? "A light theme needs a ground lighter than its ink"
+            : "A dark theme needs a ground darker than its ink",
+        path: ["visualSystem", "theme", "mode"],
+      });
+    }
+  }
+}
 
 /** WCAG 2.x relative luminance of a `#RRGGBB` colour. */
 export function relativeLuminance(hex: string): number {
@@ -636,6 +1041,12 @@ export function failingTextPairs(
 //
 // The waitlist is required for every idea kind: the published site has no
 // checkout in v1, so email capture is the conversion.
+//
+// Founder pages carry no eyebrow or kicker above any heading (07 §4). Every
+// section but the nav names a `layout` from `SECTION_LAYOUTS`; whether the
+// brand kit's direction allows it is a cross-artifact rule
+// (`checkLandingAgainstBrandKit`), because this schema has no kit. Promise
+// icons come from the curated `LANDING_ICONS` Phosphor set.
 // ---------------------------------------------------------------------------
 
 /** Sections Weekend MVP may gap-fill carry this flag and, when added, a reason. */
@@ -644,18 +1055,96 @@ const addedFields = {
   addedReason: line(LIMITS.landingSpec.addedReason, 'Shown on added sections, e.g. "waitlist capture → your first goal"').optional(),
 };
 
-const addedReasonRule = (value: { addedByWeekendMvp: boolean; addedReason?: string }, ctx: z.RefinementCtx): void => {
-  if (value.addedByWeekendMvp && value.addedReason === undefined) {
-    ctx.addIssue({ code: "custom", message: "A section added by Weekend MVP needs an addedReason", path: ["addedReason"] });
+/**
+ * Emoji shown as pictures (and the emoji variation selector). Not
+ * `Extended_Pictographic`, so © and ™ stay allowed. Validation only: `\p{…}`
+ * is not a structured-output pattern.
+ */
+const EMOJI = /[\p{Emoji_Presentation}\uFE0F]/u;
+
+/** A heading that leads with a section number: "01 Plan", "02. Plan", "3 / Plan", "1) Plan". */
+const LEADING_SECTION_NUMBER = /^(0\d|\d{1,2}\s*[./:)|·–—-])(\s|$)/u;
+
+/**
+ * Spec-level landing rules. They run from the spec's refinement, not per
+ * section (a refined object's fields each become a `$defs` entry in the
+ * structured-output schema, which costs grammar bytes), and with `when` so
+ * they report alongside other sections' issues: the single repair re-ask then
+ * sees everything at once. The value may be partly invalid, so every read is
+ * guarded.
+ */
+function checkLanding(spec: unknown, ctx: z.RefinementCtx): void {
+  if (!isRecord(spec)) return;
+  for (const section of ["app_preview", "waitlist"] as const) {
+    const value = spec[section];
+    if (!isRecord(value) || typeof value.addedByWeekendMvp !== "boolean") continue;
+    if (value.addedByWeekendMvp && value.addedReason === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "A section added by Weekend MVP needs an addedReason",
+        path: [section, "addedReason"],
+      });
+    }
+    if (!value.addedByWeekendMvp && value.addedReason !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "addedReason is only valid on sections added by Weekend MVP",
+        path: [section, "addedReason"],
+      });
+    }
   }
-  if (!value.addedByWeekendMvp && value.addedReason !== undefined) {
-    ctx.addIssue({
-      code: "custom",
-      message: "addedReason is only valid on sections added by Weekend MVP",
-      path: ["addedReason"],
-    });
+
+  const anchors = new Set<string>(landingSections(spec).map((key) => SECTION_ANCHORS[key]));
+  for (const { target, path } of collectCtas(spec)) {
+    if (target.startsWith("#") && !anchors.has(target)) {
+      ctx.addIssue({ code: "custom", message: `Anchor ${target} matches no section`, path });
+    }
   }
-};
+
+  const leaves: { value: string; path: IssuePath }[] = [];
+  stringLeaves(spec, [], leaves);
+  for (const { value, path } of leaves) {
+    if (EMOJI.test(value)) ctx.addIssue({ code: "custom", message: "No emoji in landing copy", path });
+  }
+
+  const items = valueAt(spec, ["promises", "items"]);
+  const headingPaths: IssuePath[] = [
+    ["hero", "headline", "text"],
+    ["how_it_works", "heading"],
+    ["app_preview", "heading"],
+    ["waitlist", "heading"],
+    ...(Array.isArray(items) ? items.map((_, index): IssuePath => ["promises", "items", index, "title"]) : []),
+  ];
+  for (const path of headingPaths) {
+    const heading = valueAt(spec, path);
+    if (typeof heading === "string" && LEADING_SECTION_NUMBER.test(heading)) {
+      ctx.addIssue({ code: "custom", message: "Headings never lead with a section number", path });
+    }
+  }
+}
+
+/** Run `checkLanding` whenever the value is an object, even after other issues. */
+const LANDING_RULES_WHEN = { when: (payload: { value: unknown }) => isRecord(payload.value) };
+
+/** CTA targets found in an unparsed or partly parsed spec, in a fixed order. */
+function collectCtas(spec: unknown): { target: string; path: IssuePath }[] {
+  const links = valueAt(spec, ["nav", "links"]);
+  const paths: IssuePath[] = [
+    ["nav", "cta", "target"],
+    ...(Array.isArray(links) ? links.map((_, index): IssuePath => ["nav", "links", index, "target"]) : []),
+    ["hero", "primaryCta", "target"],
+    ["footer", "cta", "target"],
+    ["hero", "secondaryCta", "target"],
+    ["app_preview", "cta", "target"],
+  ];
+  return paths.flatMap((path) => {
+    const target = valueAt(spec, path);
+    return typeof target === "string" ? [{ target, path }] : [];
+  });
+}
+
+/** A section's layout variant; `checkLandingAgainstBrandKit` checks it against the kit's direction. */
+const layoutSchema = <S extends LandingSectionKey>(section: S) => z.enum(SECTION_LAYOUTS[section]);
 
 const titledItemSchema = z
   .object({
@@ -666,7 +1155,7 @@ const titledItemSchema = z
 
 const heroSchema = z
   .object({
-    eyebrow: line(LIMITS.landingSpec.eyebrow).optional(),
+    layout: layoutSchema("hero"),
     headline: emphasisTextSchema(LIMITS.landingSpec.headline),
     subhead: line(LIMITS.landingSpec.subhead),
     primaryCta: ctaSchema,
@@ -684,17 +1173,14 @@ const heroSchema = z
   })
   .strict();
 
+/** Drawn as a list, a split or feature rows; never as a grid of same-size icon cards. */
 const promisesSchema = z
   .object({
+    layout: layoutSchema("promises"),
     items: list(
       titledItemSchema
         .extend({
-          icon: z
-            .string()
-            .max(LIMITS.landingSpec.iconKey)
-            .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use an icon key such as droplets")
-            .meta(describe(`lucide icon key such as droplets, ≤ ${LIMITS.landingSpec.iconKey} characters`))
-            .optional(),
+          icon: z.enum(LANDING_ICONS).optional(),
         })
         .strict(),
       3,
@@ -705,7 +1191,7 @@ const promisesSchema = z
 
 const howItWorksSchema = z
   .object({
-    eyebrow: line(LIMITS.landingSpec.eyebrow).optional(),
+    layout: layoutSchema("how_it_works"),
     heading: line(LIMITS.landingSpec.heading),
     steps: list(titledItemSchema, 3, 3),
   })
@@ -714,15 +1200,14 @@ const howItWorksSchema = z
 const appPreviewSchema = z
   .object({
     ...addedFields,
-    eyebrow: line(LIMITS.landingSpec.eyebrow).optional(),
+    layout: layoutSchema("app_preview"),
     heading: line(LIMITS.landingSpec.heading),
     body: body(LIMITS.landingSpec.sectionBody),
     cta: ctaSchema,
     /** The phone-screen mock; `alt` is its accessible label. */
     screen: imageSchema,
   })
-  .strict()
-  .superRefine(addedReasonRule);
+  .strict();
 
 /** Must mention confirming: the platform runs double opt-in before anyone is on the list. */
 const successMessageSchema = line(
@@ -735,17 +1220,18 @@ const successMessageSchema = line(
 const waitlistSchema = z
   .object({
     ...addedFields,
+    layout: layoutSchema("waitlist"),
     heading: line(LIMITS.landingSpec.heading),
     body: body(LIMITS.landingSpec.sectionBody),
     emailLabel: line(LIMITS.landingSpec.emailLabel),
     buttonLabel: line(LIMITS.common.ctaLabel),
     successMessage: successMessageSchema,
   })
-  .strict()
-  .superRefine(addedReasonRule);
+  .strict();
 
 const footerSchema = z
   .object({
+    layout: layoutSchema("footer"),
     closingLine: line(LIMITS.landingSpec.closingLine),
     cta: ctaSchema,
     copyrightName: line(LIMITS.landingSpec.copyrightName, 'The name after "©"'),
@@ -832,17 +1318,8 @@ const landingDraftObject = z
   })
   .strict();
 
-function checkLandingAnchors(spec: z.infer<typeof landingDraftObject>, ctx: z.RefinementCtx): void {
-  const anchors = new Set<string>(landingSections(spec).map((key) => SECTION_ANCHORS[key]));
-  for (const { target, path } of landingCtas(spec)) {
-    if (target.startsWith("#") && !anchors.has(target)) {
-      ctx.addIssue({ code: "custom", message: `Anchor ${target} matches no section`, path });
-    }
-  }
-}
-
 /** The model-facing landing spec (structured output); a valid draft is also a valid `LandingSpec`. */
-export const landingSpecDraftSchema = landingDraftObject.superRefine(checkLandingAnchors);
+export const landingSpecDraftSchema = landingDraftObject.superRefine(checkLanding, LANDING_RULES_WHEN);
 export type LandingSpecDraft = z.infer<typeof landingSpecDraftSchema>;
 
 /** The stored landing spec: the draft plus the workspace-only proof slots. */
@@ -851,7 +1328,7 @@ export const landingSpecSchema = landingDraftObject
     proofSlots: list(proofSlotSchema, 0, LIMITS.landingSpec.proofSlotsMax, "Workspace-only placeholders").optional(),
   })
   .strict()
-  .superRefine(checkLandingAnchors);
+  .superRefine(checkLanding, LANDING_RULES_WHEN);
 export type LandingSpec = z.infer<typeof landingSpecSchema>;
 
 /** The workspace's "replace with real proof" slots, added by code (never drafted, never published in v1). */
@@ -883,19 +1360,44 @@ export function landingHasWaitlist(spec: { waitlist?: unknown }): boolean {
 
 /** Every CTA target in a spec with its path, for anchor checks and link graders. */
 export function landingCtas(spec: LandingSpecDraft): { target: string; path: (string | number)[] }[] {
-  const found: { target: string; path: (string | number)[] }[] = [
-    { target: spec.nav.cta.target, path: ["nav", "cta", "target"] },
-    ...spec.nav.links.map((link, index) => ({ target: link.target, path: ["nav", "links", index, "target"] })),
-    { target: spec.hero.primaryCta.target, path: ["hero", "primaryCta", "target"] },
-    { target: spec.footer.cta.target, path: ["footer", "cta", "target"] },
-  ];
-  if (spec.hero.secondaryCta) {
-    found.push({ target: spec.hero.secondaryCta.target, path: ["hero", "secondaryCta", "target"] });
+  return collectCtas(spec);
+}
+
+export type CrossArtifactIssue = { path: (string | number)[]; message: string };
+
+/**
+ * Cross-artifact check: one issue per present section whose `layout` the brand
+ * kit's art direction does not allow (`DIRECTION_LAYOUTS`). Pure. It cannot
+ * live in the landing schema, which has no kit: WP75 S4 runs it after each
+ * LandingSpec generation, and any issue triggers the single repair call.
+ */
+export function checkLandingAgainstBrandKit(
+  spec: LandingSpec | LandingSpecDraft,
+  kit: BrandKit,
+): readonly CrossArtifactIssue[] {
+  const { direction } = kit.visualSystem;
+  const allowedFor = DIRECTION_LAYOUTS[direction];
+  const layouts: Record<LandingSectionKey, string | undefined> = {
+    hero: spec.hero.layout,
+    promises: spec.promises?.layout,
+    how_it_works: spec.how_it_works?.layout,
+    app_preview: spec.app_preview?.layout,
+    waitlist: spec.waitlist.layout,
+    footer: spec.footer.layout,
+  };
+  const issues: CrossArtifactIssue[] = [];
+  for (const section of LANDING_SECTION_ORDER) {
+    const layout = layouts[section];
+    if (layout === undefined) continue;
+    const allowed: readonly string[] = allowedFor[section];
+    if (!allowed.includes(layout)) {
+      issues.push({
+        path: [section, "layout"],
+        message: `The ${direction} direction does not allow the ${layout} ${section} layout (${allowed.join(", ")})`,
+      });
+    }
   }
-  if (spec.app_preview) {
-    found.push({ target: spec.app_preview.cta.target, path: ["app_preview", "cta", "target"] });
-  }
-  return found;
+  return issues;
 }
 
 // ---------------------------------------------------------------------------

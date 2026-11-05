@@ -47,17 +47,25 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
     - A course idea: a different team (Curriculum and Community added, Ads skipped, Engineering light).
   - Verification: `npx vitest run convex/crew/roles.test.ts`, `npm run typecheck`
 
-- [ ] `WP69-S4` - Measurement spike (`03` §10)
+- [x] `WP69-S4` - Measurement spike (`03` §10) — run 2026-11-05, $5.72; results in `docs/wp/wp69-spike-results.md`. Recraft images and video not measured (no credits, no provider)
   - **Owner approves the spend first. Cap $25. Nothing live runs before that.**
   - Scope: spike scripts on the branch only (`scripts/spikes/wp69-*`), results in
     `docs/wp/wp69-spike-results.md`.
   - Acceptance criteria: the seven steps of `03` §10 measured; tokens by class, cost, latency,
     cache hits, image and video cost and quality recorded; total spend reported.
 
-- [ ] `WP69-S5` - Record measured costs and freeze C-JOBS
+- [ ] `WP69-S5` - Record measured costs and freeze C-JOBS — measured values recorded in `03`; freeze waits on the owner (two prices fail the credit rule)
   - Scope: `docs/plans/launch-workspace/03-ai-cost-model.md`, `lib/workspace/contracts/jobs.ts`
   - Acceptance criteria: measured numbers replace estimates with dates; any estimate off by
     more than 30% goes to the owner with a price or budget proposal before C-JOBS is frozen.
+
+- [x] `WP69-S6` - Visual system in C-ART (owner approved 2026-11-05; done)
+  - Scope: `lib/workspace/contracts/artifacts.ts`, fixtures and tests; plan in
+    `docs/plans/launch-workspace/07-landing-design.md` §5.
+  - Acceptance criteria: remove the hero eyebrow; replace free-text font families with a `typePair` enum
+    and the lucide icon string with a curated Phosphor enum; add `brandKit.visualSystem` (direction,
+    shape, density, theme) and per-section `layout` enums checked against the direction; every
+    model-facing schema stays under the 7,000 B ceiling; HydroTrail fixture updated.
 
 ## Out Of Scope
 
