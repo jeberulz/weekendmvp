@@ -649,6 +649,10 @@ describe("Markdown safety", () => {
     ["protocol-relative", "[x](//evil.example)"],
     ["http image", "![x](http://example.com/a.png)"],
     ["reference definition", "[x]: data:text/html;base64,AAAA"],
+    ["reference definition in a block quote", "> [x]: javascript:alert(1)\n\n[click][x]"],
+    ["reference definition in a list item", "- [x]: data:text/html;base64,AAAA\n\n[click][x]"],
+    ["reference definition in an ordered list item", "1. [x]: javascript:alert(1)\n\n[click][x]"],
+    ["reference destination on the next line", "[x]:\n   javascript:alert(1)\n\n[click][x]"],
   ])("rejects %s", (_label, markdown) => {
     expect(isSafeMarkdown(markdown)).toBe(false);
   });

@@ -694,6 +694,21 @@ describe("C-METER", () => {
       expect(() => assertReserveArgs({ ...args, creditDebitId: "l1" })).not.toThrow();
     });
 
+    test("video renders must use the studioVideo feature (its kill switch applies)", () => {
+      const video: ReserveArgs = { ...args, provider: "video", model: "veo-3.1-fast", tier: "video", feature: "studioVideo" };
+      expect(() => assertReserveArgs(video)).not.toThrow();
+      expect(() => assertReserveArgs({ ...video, feature: "ai" })).toThrow(RangeError);
+      expect(() => assertReserveArgs({ ...args, feature: "studioVideo" })).toThrow(RangeError);
+    });
+
+    test("project and task work needs an owner (D22: only platform work is ownerless)", () => {
+      const noOwner: ReserveArgs = { ...args, ownerId: undefined };
+      expect(() => assertReserveArgs(noOwner)).toThrow(RangeError);
+      expect(() => assertReserveArgs({ ...noOwner, taskId: undefined })).toThrow(RangeError);
+      expect(() => assertReserveArgs({ ...noOwner, projectId: undefined })).toThrow(RangeError);
+      expect(() => assertReserveArgs({ ...noOwner, projectId: undefined, taskId: undefined })).not.toThrow();
+    });
+
     test("batch is deep only; escalation is realtime deep only", () => {
       expect(() => assertReserveArgs({ ...args, batch: true })).toThrow(RangeError);
       expect(() => assertReserveArgs({ ...args, escalation: true })).toThrow(RangeError);

@@ -747,8 +747,12 @@ export function assertReserveArgs(args: ReserveArgs): void {
   if (modelTier !== (args.provider === "anthropic")) {
     throw new RangeError(`provider ${args.provider} does not serve tier ${args.tier}`);
   }
-  if (args.feature === "studioVideo" && args.tier !== "video") {
-    throw new RangeError("the studioVideo feature is for video renders only");
+  if ((args.feature === "studioVideo") !== (args.tier === "video")) {
+    throw new RangeError("video renders use the studioVideo feature, and studioVideo is for video renders only");
+  }
+  if (args.ownerId === undefined && (args.projectId !== undefined || args.taskId !== undefined)) {
+    // D22: only platform work (precompute, evals) is ownerless, and it has no project or task.
+    throw new RangeError("projectId and taskId need ownerId; only platform work is ownerless");
   }
   if (args.batch !== undefined && (args.batch !== true || args.tier !== "deep")) {
     throw new RangeError("batch: true is for deep (precompute) requests only");

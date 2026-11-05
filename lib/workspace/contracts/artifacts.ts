@@ -390,7 +390,10 @@ function isSafeDestination(destination: string): boolean {
 export function isSafeMarkdown(markdown: string): boolean {
   if (/<[A-Za-z/!?]/.test(markdown)) return false;
   const inline = [...markdown.matchAll(/\]\(\s*(<[^>]*>|[^\s)]*)/g)].map((match) => match[1] ?? "");
-  const references = [...markdown.matchAll(/^ {0,3}\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S*)/gm)].map(
+  // Reference definitions count wherever they appear: CommonMark accepts them inside block quotes
+  // and list items too, and their labels apply document-wide. An empty destination (one on the next
+  // line) fails `isSafeDestination`, so it is rejected.
+  const references = [...markdown.matchAll(/\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S*)/g)].map(
     (match) => match[1] ?? "",
   );
   return [...inline, ...references].every((raw) => {

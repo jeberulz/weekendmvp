@@ -37,11 +37,11 @@ copy them exactly.
 6. `PLAN_LIMITS` feature keys: `WORKSPACE_FEATURE_KEYS` (autopilot, adsLive, nativePublishing,
    customDomain, studioLongVideo, hireSkippedRoles), with per-plan values in
    `WORKSPACE_PLAN_REFERENCE`.
+7. The C-METER implementation adds a `markSent` mutation, `attemptKey` idempotency on `reserve`, and a
+   plan derived inside `reserve`. A `creditDebitId` is checked against the same owner and task.
 8. Add `ANTHROPIC_API_KEY=` (empty, optional) to `.env.example`, with a comment saying the WP69 spike script and WP71 gateway read it. `tests/security/env-documentation.test.mjs` scans `scripts/`, so the WP69-S4 spike scripts can't be committed until this is in.
 9. Type `wizard_sessions.answers` from `wizardAnswersSchema` (`lib/workspace/contracts/wizard.ts`), and store `parse()` output only. Assert that the validator accepts `wizardAnswersSchema.parse(hydrotrailWizardAnswers)`. `answers.idea` is the source of truth; any session-level `ideaSlug` must equal it.
 10. Throw gate errors in the shapes `isWorkspaceGateErrorData` accepts. `AI_DISABLED` carries a `scope` that is absent or a `METER_FEATURES` value.
-7. The C-METER implementation adds a `markSent` mutation, `attemptKey` idempotency on `reserve`, and a
-   plan derived inside `reserve`. A `creditDebitId` is checked against the same owner and task.
 
 ## 2026-11-05 - Setup
 
