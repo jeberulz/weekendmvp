@@ -43,3 +43,8 @@ Append-only progress log. Do not rely on chat history for project state.
 - Refund replay now returns the current account balance after the idempotent old-period expiry; the rollover test asserts first and replay balances match.
 - WP80 must decide how to reconcile a legitimately paid invoice while the workspace flag is off. The three new grant entry points remain gated under the Phase 1 rule; no implicit exemption is made here. A later owner ruling or a separate idempotent catch-up design is needed before that invoice path goes live. This is deferred and does not block dormant WP73.
 - Verification note: two full-suite attempts hit five-second timeouts in unchanged editorial Convex tests under parallel workspace load; each affected file passed alone (`functions.test.ts` 11/11, `release.test.ts` 2/2). The requested quiet full-suite rerun is pending; these attempts are not reported as a passing full gate.
+
+## 2026-11-05 - WP73-S6 quiet full-suite result
+
+- `VITEST_MAX_WORKERS=2 npm test` passed (exit 0) with WP70's heavy checks paused. All chained suites passed, including the unchanged `convex/platform/billing/billing.test.ts` and new WP73 tests. Focused WP64 isolation tests also passed (27/27).
+- `npm run typecheck` passed; focused ESLint on changed source passed. Full lint previously passed with 0 errors and 37 existing warnings before the final gate refinements. Build, local Convex deployment, final lint and branch diff check remain to run before PR.

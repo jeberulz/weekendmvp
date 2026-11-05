@@ -1,8 +1,8 @@
 # WP73 Stories - Ledger v2 and plan catalogue
 
-Branch: `codex/wp73-ledger-v2`  
-Lane: Work Package  
-Registry: `docs/PROJECT_STRATEGY.md`  
+Branch: `codex/wp73-ledger-v2`
+Lane: Work Package
+Registry: `docs/PROJECT_STRATEGY.md`
 Definition of done: dormant additive credit buckets, idempotent grants and refunds, workspace plan limits and a summary query; existing billing tests unchanged and green.
 
 ## Stories
