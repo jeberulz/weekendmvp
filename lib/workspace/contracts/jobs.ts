@@ -227,9 +227,12 @@ export const WORKSPACE_PLAN_REFERENCE = {
 // ---------------------------------------------------------------------------
 
 /**
- * Prices are provisional. They are re-checked against the Phase 0 spike
- * (WP69-S5) and frozen here before any paid launch, then re-checked after the
- * first 200 paid actions. S5 flips this to `"frozen"`.
+ * Prices are provisional. The Phase 0 spike (WP69-S4, 2026-11-05) measured them,
+ * and the owner raised the two that broke the cost rule. They stay provisional
+ * until the remaining owner decisions are made (video, the unpriced change
+ * rounds, the paid global budget) and a Recraft measurement confirms the image
+ * prices; then S5 flips this to `"frozen"`. Re-check after the first 200 paid
+ * actions.
  */
 export const PRICES_STATUS: "provisional" | "frozen" = "provisional";
 
@@ -262,7 +265,10 @@ export type CreditAction = {
 
 export const CREDIT_ACTIONS = {
   offer_image_standard: {
-    credits: 2,
+    // 3 credits (owner, 2026-11-05): a standard image measured $0.035 (Recraft V4.1 list
+    // price) and $0.041 (OpenAI gpt-image-2 medium) in WP69-S4, over 2 × $0.013. Three
+    // credits hold the rule only on Recraft, so Recraft is the default image provider.
+    credits: 3,
     jobType: "studio_image",
     billing: "always",
     label: "Offer image, standard quality",
@@ -276,7 +282,8 @@ export const CREDIT_ACTIONS = {
     constraints: { imageQuality: "high" },
   },
   post_image: {
-    credits: 2,
+    // Same render as a standard offer image, so the same 3 credits.
+    credits: 3,
     jobType: "studio_image",
     billing: "always",
     label: "Story or post image",
@@ -297,7 +304,9 @@ export const CREDIT_ACTIONS = {
     constraints: { maxVideoSeconds: 30, providerTier: "cheapest", requiresFeature: "studioLongVideo" },
   },
   brand_kit_regenerate: {
-    credits: 10,
+    // 11 credits (owner, 2026-11-05): brand kit text $0.027 + 3 Recraft logo marks at
+    // $0.035 ≈ $0.132 (WP69-S4), just over 10 × $0.013.
+    credits: 11,
     jobType: "crew_brand_kit",
     billing: "after_free_rounds",
     label: "Brand kit regenerate",

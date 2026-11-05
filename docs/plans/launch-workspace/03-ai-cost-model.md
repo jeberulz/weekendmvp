@@ -140,17 +140,17 @@ month, or about $3k–$9k a year at realistic use, as strategy §5 states.
 
 ## 7. Credit action margins
 
-Rule: provider cost ≤ $0.013 per credit. **Measured 2026-11-05:** landing ($0.0067), email ($0.0104), extra social pack on Sonnet ($0.0086) and engineering pack ($0.0096) per credit pass. **Brand kit regenerate and the standard offer image fail** with either image provider (OpenAI measured; Recraft at list price): brand kit $0.0186 (OpenAI) / ≈ $0.0132 (Recraft) per credit, and offer image $0.0205 / $0.0175. The proposals in `docs/wp/wp69-spike-results.md` are 3 credits for the offer image and 11 for brand kit regenerate (Recraft default). They await the owner. One credit earns $0.058 on Builder's Hub and
+Rule: provider cost ≤ $0.013 per credit. **Measured 2026-11-05:** landing ($0.0067), email ($0.0104), extra social pack on Sonnet ($0.0086) and engineering pack ($0.0096) per credit pass. **Brand kit regenerate and the standard offer image fail** with either image provider (OpenAI measured; Recraft at list price): brand kit $0.0186 (OpenAI) / ≈ $0.0132 (Recraft) per credit, and offer image $0.0205 / $0.0175. **The owner approved** 3 credits for standard offer and post images and 11 for brand kit regenerate on 2026-11-05 (table below). Both prices assume Recraft renders standard images; on gpt-image-2 medium a standard image would need 4 credits. One credit earns $0.058 on Builder's Hub and
 $0.040 on Growth.
 
 | Action | Est. provider cost | Credits | Cost per credit | Revenue (BH / Growth) | Gross margin on Growth |
 |---|---|---|---|---|---|
-| Offer image, standard | $0.02 (must stay ≤ $0.026) | 2 | $0.010 | $0.12 / $0.08 | 75% |
+| Offer image, standard | **$0.035** (Recraft, measured list price) | **3** | $0.0117 | $0.17 / $0.12 | 71% |
 | Offer image, high quality | $0.05 | 5 | $0.010 | $0.29 / $0.20 | 75% |
-| Story / post image | $0.02 | 2 | $0.010 | $0.12 / $0.08 | 75% |
+| Story / post image | **$0.035** (Recraft) | **3** | $0.0117 | $0.17 / $0.12 | 71% |
 | Short video ≤ 8 s (cheapest tier) | $0.40 | 30 | $0.013 | $1.74 / $1.20 | **67%** |
 | Launch film ≤ 30 s (cheapest tier, paid only) | $1.50 | 150 | $0.010 | $8.70 / $6.00 | 75% |
-| Brand kit regenerate | $0.12 | 10 | $0.012 | $0.58 / $0.40 | 70% |
+| Brand kit regenerate | **$0.132** (measured, Recraft logos) | **11** | $0.0120 | $0.64 / $0.44 | 70% |
 | Landing regenerate | $0.04 | 5 | $0.008 | $0.29 / $0.20 | 80% |
 | Email sequence regenerate | $0.03 | 3 | $0.010 | $0.17 / $0.12 | 75% |
 | Extra social pack (7) | $0.003–$0.03 | 5 | ≤ $0.006 | $0.29 / $0.20 | ≥ 85% |
