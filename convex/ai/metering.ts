@@ -121,8 +121,10 @@ async function settingsForCall(
   if (ownerId !== undefined) return await assertFeatureEnabledForOwner(ctx, feature, ownerId);
   const settings = await getOpsSettings(ctx);
   if (!settings.workspaceEnabled) throw new ConvexError({ code: "WORKSPACE_DISABLED" });
-  if (settings.killSwitches.ai || (feature === "studioVideo" && settings.killSwitches.studioVideo)) {
-    throw new ConvexError({ code: "AI_DISABLED", scope: settings.killSwitches.ai ? "ai" : "studioVideo" });
+  const aiUnavailable = settings.killSwitches.ai ||
+    (settings.globalDailyBudgetMicroUsd <= 0n && settings.paidGlobalDailyBudgetMicroUsd <= 0n);
+  if (aiUnavailable || (feature === "studioVideo" && settings.killSwitches.studioVideo)) {
+    throw new ConvexError({ code: "AI_DISABLED", scope: aiUnavailable ? "ai" : "studioVideo" });
   }
   return settings;
 }

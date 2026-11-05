@@ -137,7 +137,7 @@ describe("WP70 C-METER", () => {
 
   test("ownerless platform work uses the free pool and no owner budget", async () => {
     const t = meterTest();
-    await seedMeter(t);
+    const { opsId } = await seedMeter(t);
     const row = await t.mutation(internal.ai.metering.reserve, {
       attemptKey: "precompute:idea:1:prompt@1:1", promptRef: "prompt@1",
       provider: "anthropic", model: "fixture-opus", tier: "deep", feature: "ai",
@@ -147,6 +147,12 @@ describe("WP70 C-METER", () => {
     expect(await t.run(async (ctx) => await ctx.db.query("ai_budgets").collect())).toHaveLength(0);
     expect(await t.run((ctx) => readGlobalBudget(ctx, "free", new Date().toISOString().slice(0, 10))))
       .toEqual({ spentTodayMicroUsd: 0, inFlightMicroUsd: 100_000 });
+    await t.run(async (ctx) => await ctx.db.patch("ops_settings", opsId, {
+      globalDailyBudgetMicroUsd: 0n,
+      paidGlobalDailyBudgetMicroUsd: 0n,
+    }));
+    await expect(t.mutation(internal.ai.metering.markSent, { usageId: row.usageId as Id<"ai_usage"> }))
+      .rejects.toThrow("AI_DISABLED");
   });
 
   test("credit-funded work verifies its task debit and uses the paid pool", async () => {
