@@ -10,13 +10,13 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
+Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 close).
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-launch-crew-plan` | Rulings recorded, manifest frozen | Plan PR not merged yet | Owner merges the plan PR; orchestrator runs G0 |
-| WP68 | 0 | Codex | `codex/wp68-data-contract` | Not started | Plan PR on `main` | Start S7 and S1 |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | Not started | Plan PR on `main`; S4 needs the owner's OK for up to $25 of live spend | Start S1–S3 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board` | Plan PR #166 merged; manifest RATIFIED on `main` | — | Review WP68; run G0 once WP68 and WP69 merge |
+| WP68 | 0 | Codex | `codex/wp68-data-contract` | PR #167 open; Claude review posted (2 high, 5 medium, 7 low) | — (H2 ruled: D22) | Codex fixes H1–H2, M1–M4 before G0 |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | S1–S3 done; contract PR #168 open, all four checks green locally | S4 needs the owner's OK for up to $25 of live spend | Codex reviews C-ART, C-METER on #168; S4 spike on OK; S5 freezes prices |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Waiting | G0; C-METER from WP69 | — |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting | G0; C-METER implementation from WP70 (stub until then) | — |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting | G0; C-OPS from WP68 | — |
@@ -32,20 +32,24 @@ Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
 
 | Item | Needed by | Status |
 |---|---|---|
-| Merge the plan PR (`claude/wp67-launch-crew-plan`) so both lanes start from `main` | Before any WP starts | Open |
-| Approve up to $25 of live AI spend for the WP69 cost spike | WP69 S4 | Open (WP69 asks first) |
+| Merge the plan PR (`claude/wp67-launch-crew-plan`) so both lanes start from `main` | Before any WP starts | Done (#166) |
+| Approve up to $25 of live AI spend for the WP69 cost spike | WP69 S4 | Done (approved 2026-11-05) |
 | Start Meta business verification and app review (D7, D8) | Phase 5; lead time is weeks | Open |
 | Create the tenant Resend project and sending domain (D6) | WP79 | Open |
 | Wildcard DNS plan for `*.weekendmvp.app` (D2) | WP78 S3 | Open |
 | Terms review for credits | WP80 S7 | Open |
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
+| Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
+| Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
+| Landing-page agent brief: received 2026-11-05, saved as `briefs/design-skills-crew-brief.md`; response is `07-landing-design.md`. Owner to rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) and OK the C-ART amendment (WP69-S6) | Before G0 | Open |
+| WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
 
 | Contract | Owner | Reviewer | Status |
 |---|---|---|---|
-| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Open |
-| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | Open |
+| C-DATA, C-AUTHZ, C-OPS (WP68) | Codex | Claude | Reviewed on #167 (https://github.com/jeberulz/weekendmvp/pull/167#issuecomment-6663584469): fixes requested |
+| C-ART, C-JOBS, C-PROMPT, C-METER (WP69) | Claude | Codex | PR #168 open, awaiting Codex review |
 
 ## 2026-11-05 - Setup
 
@@ -69,3 +73,58 @@ Updated 2026-11-05. Next gate: **G0** (Phase 0 close).
 - Next: the owner merges the plan PR; then the Claude lane starts WP69 and the Codex
   lane starts WP68 with the kickoff prompts in
   `docs/plans/launch-workspace/briefs/kickoff-claude.md` and `kickoff-codex.md`.
+
+## 2026-11-05 - Phase 0 kickoff (orchestrator)
+
+- Checked `origin/main`: manifest line 3 reads RATIFIED. Plan PR #166 is merged.
+- Board worktree: `.worktrees/wp67-board` on `claude/wp67-board`.
+- Read the program docs and the canvas (rows 01–05 boards needed for WP69). A field extract
+  for sub-agents is on the WP69 branch at `docs/wp/wp69-canvas-extract.md`.
+- WP69 started in `.worktrees/wp69-crew-contracts`: stories and progress committed, S1 (C-ART,
+  Opus), S2 (C-JOBS, C-PROMPT, C-METER, Opus) and S3 (roles, Sonnet) running in parallel on
+  disjoint files.
+- WP68: no branch on `origin` yet. Review starts when the PR opens.
+
+## 2026-11-05 - WP69 contract PR open; WP68 review started
+
+- WP69 PR #168 (https://github.com/jeberulz/weekendmvp/pull/168): S1 (C-ART), S2 (C-JOBS, C-PROMPT,
+  C-METER) and S3 (role rules) committed after independent Opus reviews (S1: 16 findings, S2: 15, S3: 7;
+  all fixed). Local checks on the branch: typecheck, lint, test and build all exit 0.
+- Asks for Codex are listed under "Needs from Codex" in `docs/wp/wp69-progress.md`:
+  - `documents.kind` and task type literals.
+  - Extra `ai_usage` and `ai_budgets` fields.
+  - `ops_settings.paidGlobalDailyBudgetMicroUsd`.
+  - Plan feature keys.
+  - A `markSent` mutation.
+- WP68 PR #167 is open. An Opus reviewer has the diff, `02` §4/§14, the rulings, and the WP69
+  contracts for cross-checking. Findings go to #167 as a comment and are logged here.
+- S4 cost spike not started: waiting for the owner's OK (cap $25).
+
+## 2026-11-05 - WP68 review posted
+
+- Opus review of #167 at `23462b77`: safe to deploy dormant. The only new public functions are 3 ops
+  functions, all super-admin gated; no crons, routes or env vars; defaults fail closed. Typecheck, tests
+  and lint exit 0. It is not ready to freeze as a contract.
+- High:
+  - H1: AI tables are missing C-METER fields and indexes (attemptKey, expiresAt, dayKey, pools, tiers).
+  - H2: `ai_usage.ownerId` is required, against §4.2 and C-METER. That would put precompute under the
+    admin's owner caps. Needs an owner ruling.
+- Medium:
+  - M1: `studioVideo` is not gated by `ai`.
+  - M2: the AI gate ignores the paid pool.
+  - M3: the boundary test covers one file only.
+  - M4: no child-row or nested-parent authz for the new tables.
+  - M5: unannounced convex bump from 1.43 to 1.49.
+- Low: 7 findings.
+- WP69 follow-ups from the cross-check (Claude lane, on #168):
+  - Document the int64 ↔ number conversion for micro-USD.
+  - List `WORKSPACE_DISABLED` as a code the gateway may see.
+  - Say whether `seo_article` is ever written.
+  - Publish a wizard answers schema.
+
+## 2026-11-05 - Landing design brief
+
+- John's design-skills brief received. Response written in `docs/plans/launch-workspace/07-landing-design.md`.
+- Finding: C-ART in #168 carries three slop patterns (hero eyebrow, free-text font family, free lucide icon string on three same-size cards) and has no art-direction or layout fields, so every founder page would render through one template. Proposed WP69-S6 to fix before G0.
+- Licences checked via the GitHub API and gsap.com: all MIT or Apache-2.0 except Vercel web-design-guidelines (no licence, link only) and GSAP (Standard License bars no-code animation builders; AI-written code allowed).
+- Waiting on John: D23–D25 and the go for WP69-S6.
