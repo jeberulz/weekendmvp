@@ -24,7 +24,8 @@ and `briefs/kickoff-codex.md`.
 | 4 | [`03-ai-cost-model.md`](03-ai-cost-model.md) | What every launch, chat turn and credit action costs us, the levers ranked, metering and budgets, the Phase 0 measurement spike |
 | 5 | [`04-build-plan.md`](04-build-plan.md) | Phases 0–7, every work package with its lane, files, stories, acceptance and gate; the contract list; the calendar |
 | 6 | [`05-lanes-codex-claude.md`](05-lanes-codex-claude.md) | How Codex and Claude split the work without conflicts: file ownership, single-writer files, branches, reviews, handoffs |
-| 7 | [`briefs/codex-lane.md`](briefs/codex-lane.md), [`briefs/claude-lane.md`](briefs/claude-lane.md) | Kickoff prompts to paste into each agent at the start of a work package |
+| 7 | [`07-landing-design.md`](07-landing-design.md) | How Leo and Iris avoid generic AI landing pages: where design quality is decided, the skills used at build time versus runtime, bans, the C-ART change before G0 (proposed, from [`briefs/design-skills-crew-brief.md`](briefs/design-skills-crew-brief.md)) |
+| 8 | [`briefs/codex-lane.md`](briefs/codex-lane.md), [`briefs/claude-lane.md`](briefs/claude-lane.md) | Kickoff prompts to paste into each agent at the start of a work package |
 
 ## The numbers that matter
 

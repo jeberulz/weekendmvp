@@ -41,7 +41,7 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | Before G0 | Open |
-| Share the landing-page agent brief (skills, MCP servers and tools the AI employees use to design the page). The tool and MCP list is needed before the WP71 gateway design, because C-PROMPT has no tool-use field yet and every call goes through the gateway; the design detail can wait for WP75 | Tool list: WP71 S1. Full brief: WP75 | Open (John will share) |
+| Landing-page agent brief: received 2026-11-05, saved as `briefs/design-skills-crew-brief.md`; response is `07-landing-design.md`. Owner to rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) and OK the C-ART amendment (WP69-S6) | Before G0 | Open |
 | WP69 owner decisions: paid global daily budget ($50 provisional); whether precompute/evals use the free pool; prices for blueprint, roster, SEO pack, launch plan, ads drafts change rounds; short video 35 credits or 6 s clips | WP69 S5 (before C-JOBS freezes) | Open |
 
 ## Cross-lane contract reviews for G0
@@ -121,3 +121,10 @@ Updated 2026-11-05 (both Phase 0 contract PRs open). Next gate: **G0** (Phase 0 
   - List `WORKSPACE_DISABLED` as a code the gateway may see.
   - Say whether `seo_article` is ever written.
   - Publish a wizard answers schema.
+
+## 2026-11-05 - Landing design brief
+
+- John's design-skills brief received. Response written in `docs/plans/launch-workspace/07-landing-design.md`.
+- Finding: C-ART in #168 carries three slop patterns (hero eyebrow, free-text font family, free lucide icon string on three same-size cards) and has no art-direction or layout fields, so every founder page would render through one template. Proposed WP69-S6 to fix before G0.
+- Licences checked via the GitHub API and gsap.com: all MIT or Apache-2.0 except Vercel web-design-guidelines (no licence, link only) and GSAP (Standard License bars no-code animation builders; AI-written code allowed).
+- Waiting on John: D23–D25 and the go for WP69-S6.
