@@ -10,10 +10,10 @@ Definition of done: C-METER implemented behind dormant workspace switches, exact
 - [x] `WP70-S1` - Mount workflow, workpool, sharded counter and Resend components together
   - Scope: `convex/convex.config.ts`, generated API if needed.
   - Acceptance: one additive mount change, all new env entries optional, isolated local deploy boots.
-- [ ] `WP70-S2` - Implement reserve, markSent, settle and fail
+- [x] `WP70-S2` - Implement reserve, markSent, settle and fail
   - Scope: `convex/ai/{metering,budgets}.ts`.
   - Acceptance: C-METER signatures, server-derived plan and verified debit; owner and global caps; idempotent lifecycle and exactly-once accounting.
-- [ ] `WP70-S3` - Prove concurrent reservations and failure accounting
+- [x] `WP70-S3` - Prove concurrent reservations and failure accounting
   - Scope: Convex tests alongside metering.
   - Acceptance: owner cap cannot be oversubscribed; duplicate attempt/finalization is a no-op; possible billing charges worst case.
 - [ ] `WP70-S4` - Sweep stale reservations and report spend alarms
