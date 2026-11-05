@@ -25,3 +25,18 @@ Not yet. Written when the WP closes.
   depend on blueprint fields that C-ART defines; any merge deploys production Convex, so
   nothing here registers a Convex function.
 - Spend: S4 needs the owner's OK (cap $25). Not requested yet.
+
+## 2026-11-05 - WP69-S3 (role catalogue and hiring rules)
+
+- Files: `lib/workspace/contracts/roster.ts`, `convex/crew/roles.ts`, `convex/crew/roles.test.ts`.
+- Author: Sonnet sub-agent. Independent review: Opus, given the files and the contract only.
+- Review findings (7), all fixed before commit: TEAM.md line injection through free text and
+  `leadName`; `rosterPlanSchema` let `always`, `hiredBy` and empty reasons through; float budgets
+  printed raw; capitalisation broke "iOS"; reasons keyed on idea kind, not the rule's own input;
+  catalogue could drift from `ALWAYS_HIRED_ROLE_KEYS`; missing negative tests and a full sweep.
+- Decisions: Merch is "Max" and Outbound is "Oli" (no canvas names); `rulesVersion`
+  "2026-11-05.1"; skipped order ads, merch, outbound, curriculum, community. `roles.ts` registers
+  no Convex function. The next Convex codegen will list `crew/roles` in `_generated/api.d.ts`
+  (no functions; harmless).
+- Checks: `npx vitest run convex/crew/roles.test.ts` 36 passed; eslint clean on the three files;
+  `tsc -p convex` clean for these files. Full-suite checks run before the PR.
