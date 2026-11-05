@@ -63,26 +63,73 @@ test("every Phase 0 table has a flat validator, D22 ownership and owner-first in
   assert.equal(count, 26, "the complete architecture §4.2 table inventory must be present");
 });
 
-test("every WP68 public Convex function checks a super-admin or business capability", async () => {
-  const file = await parse("convex/ops/settings.ts");
-  const publicFunctions = [];
+const WORKSPACE_RUNTIME_DIRS = ["workspace", "crew", "studio", "ai", "growth", "ops"];
+const ADMIN_CONTROLS = new Set(["convex/ops/settings.ts:readForAdmin", "convex/ops/settings.ts:setCohortMember", "convex/ops/settings.ts:updateForAdmin"]);
+const PUBLIC_REGISTRATIONS = new Set(["query", "mutation", "action", "httpAction"]);
+
+function publicRegistrations(file) {
+  const registrations = [];
   for (const statement of file.statements) {
-    if (!ts.isVariableStatement(statement)) continue;
+    if (!ts.isVariableStatement(statement) || !statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
     for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isCallExpression(declaration.initializer)) continue;
-      if (!ts.isIdentifier(declaration.initializer.expression)) continue;
-      if (!["query", "mutation", "action"].includes(declaration.initializer.expression.text)) continue;
-      publicFunctions.push(declaration.name.getText(file));
-      const functionBody = declaration.initializer.getText(file);
-      assert.match(functionBody, /\b(requireSuperAdmin|requireBusinessAccess)\s*\(/, `${declaration.name.getText(file)} missing an authorization guard`);
+      const initializer = declaration.initializer;
+      if (!ts.isCallExpression(initializer) || !ts.isIdentifier(initializer.expression)) continue;
+      if (!PUBLIC_REGISTRATIONS.has(initializer.expression.text)) continue;
+      const calls = new Set();
+      function visit(node) {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) calls.add(node.expression.text);
+        ts.forEachChild(node, visit);
+      }
+      visit(initializer);
+      registrations.push({ name: declaration.name.getText(file), calls });
     }
   }
-  assert.deepEqual(publicFunctions.sort(), ["readForAdmin", "setCohortMember", "updateForAdmin"]);
+  return registrations;
+}
+
+test("workspace public Convex functions check both the feature and the capability", async () => {
+  const seen = [];
+  for (const domain of WORKSPACE_RUNTIME_DIRS) {
+    for (const relative of await sourceFiles(path.join("convex", domain))) {
+      const file = await parse(relative);
+      for (const registration of publicRegistrations(file)) {
+        const key = `${relative}:${registration.name}`;
+        seen.push(key);
+        if (ADMIN_CONTROLS.has(key)) {
+          assert.ok(registration.calls.has("requireSuperAdmin"), `${key} missing super-admin guard`);
+          continue;
+        }
+        assert.ok(registration.calls.has("assertFeatureEnabled"), `${key} missing feature gate`);
+        assert.ok(registration.calls.has("requireBusinessAccess") || registration.calls.has("requireSuperAdmin"), `${key} missing capability guard`);
+      }
+    }
+  }
+  for (const control of ADMIN_CONTROLS) assert.ok(seen.includes(control), `${control} was not scanned`);
+});
+
+test("workspace guard scanner ignores comments and rejects unguarded functions", () => {
+  const file = ts.createSourceFile("fixture.ts", `
+    export const bad = mutation({ handler: async () => {
+      // assertFeatureEnabled(ctx, "workspace"); requireBusinessAccess(ctx, projectId, "owner");
+      return null;
+    }});
+  `, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [registration] = publicRegistrations(file);
+  assert.equal(registration.name, "bad");
+  assert.equal(registration.calls.has("assertFeatureEnabled"), false);
+  assert.equal(registration.calls.has("requireBusinessAccess"), false);
 });
 
 async function sourceFiles(dir) {
   const files = [];
-  for (const entry of await readdir(path.join(root, dir), { withFileTypes: true })) {
+  let entries;
+  try {
+    entries = await readdir(path.join(root, dir), { withFileTypes: true });
+  } catch (error) {
+    if (error.code === "ENOENT") return files;
+    throw error;
+  }
+  for (const entry of entries) {
     const relative = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (entry.name !== "_generated") files.push(...await sourceFiles(relative));

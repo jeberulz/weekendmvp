@@ -28,6 +28,31 @@ export const PROJECT_CHILD_TABLE_NAMES = [
 
 export type ProjectChildTable = (typeof PROJECT_CHILD_TABLE_NAMES)[number];
 
+export const WORKSPACE_PROJECT_CHILD_TABLE_NAMES = [
+  "roster_plans",
+  "crew_members",
+  "workstreams",
+  "launch_plan_items",
+  "approvals",
+  "chat_messages",
+  "wren_memory",
+  "business_files",
+  "provider_jobs",
+  "business_members",
+  "sequences",
+  "sequence_steps",
+  "enrollments",
+  "email_sends",
+  "social_accounts",
+  "social_posts",
+  "ad_campaigns",
+  "outbound_lists",
+  "outbound_messages",
+] as const;
+
+export type WorkspaceProjectChildTable = (typeof WORKSPACE_PROJECT_CHILD_TABLE_NAMES)[number];
+export type BusinessChildTable = ProjectChildTable | WorkspaceProjectChildTable;
+
 export const OWNER_RECORD_TABLE_NAMES = [
   "projects",
   "idea_intents",
@@ -88,6 +113,17 @@ async function documentMatchesProject(
     document.taskId === undefined ||
     (await taskMatchesProject(ctx, document.taskId, project))
   );
+}
+
+async function childMatchesProject<TableName extends BusinessChildTable>(
+  ctx: PlatformReadCtx,
+  tableName: TableName,
+  recordId: Id<TableName>,
+  project: Doc<"projects">,
+): Promise<boolean> {
+  const record = await ctx.db.get(tableName, recordId);
+  return record !== null && matchesProject(record as unknown as { ownerId: Id<"users">; projectId: Id<"projects"> }, project) &&
+    await nestedParentsMatch(ctx, tableName, record as Doc<TableName>, project);
 }
 
 async function siteConfigMatchesProject(
@@ -173,7 +209,7 @@ async function ledgerParentsMatch(
   return true;
 }
 
-async function nestedParentsMatch<TableName extends ProjectChildTable>(
+async function nestedParentsMatch<TableName extends BusinessChildTable>(
   ctx: PlatformReadCtx,
   tableName: TableName,
   record: Doc<TableName>,
@@ -244,6 +280,75 @@ async function nestedParentsMatch<TableName extends ProjectChildTable>(
         run.taskId === undefined ||
         (await taskMatchesProject(ctx, run.taskId, project))
       );
+    }
+    case "workstreams": {
+      const stream = record as unknown as Doc<"workstreams">;
+      return await childMatchesProject(ctx, "crew_members", stream.employeeId, project) &&
+        (stream.askApprovalId === undefined ||
+          await childMatchesProject(ctx, "approvals", stream.askApprovalId, project)) &&
+        (await Promise.all(stream.documentIds.map((id) => documentMatchesProject(ctx, id, project)))).every(Boolean) &&
+        (await Promise.all(stream.fileIds.map((id) => childMatchesProject(ctx, "business_files", id, project)))).every(Boolean);
+    }
+    case "launch_plan_items": {
+      const item = record as unknown as Doc<"launch_plan_items">;
+      return await childMatchesProject(ctx, "crew_members", item.ownerEmployeeId, project) &&
+        (item.approvalId === undefined || await childMatchesProject(ctx, "approvals", item.approvalId, project));
+    }
+    case "chat_messages": {
+      const message = record as unknown as Doc<"chat_messages">;
+      const approvalsMatch = (await Promise.all(message.cardApprovalIds.map((id) =>
+        childMatchesProject(ctx, "approvals", id, project)))).every(Boolean);
+      if (!approvalsMatch || message.usageId === undefined) return approvalsMatch;
+      const usage = await ctx.db.get("ai_usage", message.usageId);
+      return usage !== null && usage.ownerId === project.ownerId && usage.projectId === project._id;
+    }
+    case "business_files": {
+      const file = record as unknown as Doc<"business_files">;
+      return file.sourceTaskId === undefined || await taskMatchesProject(ctx, file.sourceTaskId, project);
+    }
+    case "provider_jobs": {
+      const job = record as unknown as Doc<"provider_jobs">;
+      return await taskMatchesProject(ctx, job.taskId, project);
+    }
+    case "sequence_steps": {
+      const step = record as unknown as Doc<"sequence_steps">;
+      return await childMatchesProject(ctx, "sequences", step.sequenceId, project) &&
+        await documentMatchesProject(ctx, step.documentId, project) &&
+        (step.approvalId === undefined || await childMatchesProject(ctx, "approvals", step.approvalId, project));
+    }
+    case "enrollments": {
+      const enrollment = record as unknown as Doc<"enrollments">;
+      const lead = await ctx.db.get("leads", enrollment.leadId);
+      return lead !== null && matchesProject(lead, project) &&
+        await nestedParentsMatch(ctx, "leads", lead, project) &&
+        await childMatchesProject(ctx, "sequences", enrollment.sequenceId, project);
+    }
+    case "email_sends": {
+      const send = record as unknown as Doc<"email_sends">;
+      const enrollment = await ctx.db.get("enrollments", send.enrollmentId);
+      const step = await ctx.db.get("sequence_steps", send.stepId);
+      return enrollment !== null && step !== null &&
+        matchesProject(enrollment, project) && matchesProject(step, project) &&
+        step.sequenceId === enrollment.sequenceId &&
+        await nestedParentsMatch(ctx, "enrollments", enrollment, project) &&
+        await nestedParentsMatch(ctx, "sequence_steps", step, project);
+    }
+    case "social_posts": {
+      const post = record as unknown as Doc<"social_posts">;
+      return (post.socialAccountId === undefined ||
+        await childMatchesProject(ctx, "social_accounts", post.socialAccountId, project)) &&
+        (post.documentId === undefined || await documentMatchesProject(ctx, post.documentId, project)) &&
+        (post.approvalId === undefined || await childMatchesProject(ctx, "approvals", post.approvalId, project));
+    }
+    case "ad_campaigns": {
+      const campaign = record as unknown as Doc<"ad_campaigns">;
+      return campaign.approvalId === undefined || await childMatchesProject(ctx, "approvals", campaign.approvalId, project);
+    }
+    case "outbound_messages": {
+      const message = record as unknown as Doc<"outbound_messages">;
+      return await childMatchesProject(ctx, "outbound_lists", message.listId, project) &&
+        (message.documentId === undefined || await documentMatchesProject(ctx, message.documentId, project)) &&
+        (message.approvalId === undefined || await childMatchesProject(ctx, "approvals", message.approvalId, project));
     }
     default:
       return true;
@@ -325,8 +430,31 @@ export async function requireBusinessAccess(
     : await requireOwnedProject(ctx, projectId);
 }
 
+/** Internal jobs use a trusted owner ID and still verify the project chain. */
+export async function requireBusinessForOwner(
+  ctx: Pick<QueryCtx, "db">,
+  projectId: Id<"projects">,
+  ownerId: Id<"users">,
+): Promise<Doc<"projects">> {
+  return await ownedProjectForUser(ctx, ownerId, projectId);
+}
+
+/** Public workspace reads and writes verify both business access and child links. */
+export async function requireBusinessChild<TableName extends BusinessChildTable>(
+  ctx: PlatformReadCtx | MutationCtx,
+  tableName: TableName,
+  recordId: Id<TableName>,
+  projectId: Id<"projects">,
+): Promise<Doc<TableName>> {
+  const project = await requireBusinessAccess(ctx, projectId, "owner");
+  const record = await ctx.db.get(tableName, recordId);
+  if (record === null || !matchesProject(record as unknown as { ownerId: Id<"users">; projectId: Id<"projects"> }, project) ||
+    !(await nestedParentsMatch(ctx, tableName, record as Doc<TableName>, project))) return denyNotFound();
+  return record;
+}
+
 async function ownedProjectForUser(
-  ctx: PlatformReadCtx,
+  ctx: Pick<QueryCtx, "db">,
   ownerId: Id<"users">,
   projectId: Id<"projects">,
 ): Promise<Doc<"projects">> {

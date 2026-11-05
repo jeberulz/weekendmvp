@@ -24,7 +24,7 @@ describe("C-OPS defaults and cohort", () => {
     await expect(t.run(getOpsSettings)).resolves.toEqual(DEFAULT_OPS_SETTINGS);
     for (const feature of ["workspace", "freeSignups", "ai", "studioVideo", "publish", "email", "social", "ads"] as const) {
       await expect(t.run((ctx) => assertFeatureEnabled(ctx, feature)))
-        .rejects.toThrow(feature === "ai" ? "AI_DISABLED" : "WORKSPACE_DISABLED");
+        .rejects.toThrow(feature === "ai" || feature === "studioVideo" ? "AI_DISABLED" : "WORKSPACE_DISABLED");
     }
   });
 
@@ -116,14 +116,31 @@ describe("C-OPS defaults and cohort", () => {
       globalDailyBudgetMicroUsd: 50_000_000n,
       paidGlobalDailyBudgetMicroUsd: 25_000_000n,
     });
+    await admin.mutation(api.ops.settings.updateForAdmin, { killSwitches: { studioVideo: false } });
+    await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "studioVideo", customerId)))
+      .resolves.toMatchObject({ workspaceEnabled: true });
+    await admin.mutation(api.ops.settings.updateForAdmin, { killSwitches: { ai: true } });
+    await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "studioVideo", customerId)))
+      .rejects.toThrow("AI_DISABLED");
+    await admin.mutation(api.ops.settings.updateForAdmin, {
+      globalDailyBudgetMicroUsd: 0n,
+      paidGlobalDailyBudgetMicroUsd: 25_000_000n,
+      killSwitches: { ai: false },
+    });
+    await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "ai", customerId)))
+      .resolves.toMatchObject({ paidGlobalDailyBudgetMicroUsd: 25_000_000n });
+    await admin.mutation(api.ops.settings.updateForAdmin, { paidGlobalDailyBudgetMicroUsd: 0n });
+    await expect(t.run((ctx) => assertFeatureEnabledForOwner(ctx, "ai", customerId)))
+      .rejects.toThrow("AI_DISABLED");
     await admin.mutation(api.ops.settings.updateForAdmin, { killSwitches: { ai: true } });
     await expect(t.run((ctx) => assertFeatureEnabled(ctx, "ai"))).rejects.toThrow("AI_DISABLED");
     await admin.mutation(api.ops.settings.updateForAdmin, { workspaceEnabled: false });
     expect((await admin.query(api.ops.settings.readForAdmin, {})).workspaceEnabled).toBe(false);
 
-    const audit = await t.run(async (ctx) => await ctx.db.query("audit_events").take(10));
+    const audit = await t.run(async (ctx) => await ctx.db.query("audit_events").take(20));
     expect(audit.map((row) => row.action)).toEqual([
       "ops.settings.changed", "ops.cohort.added", "ops.cohort.removed",
+      "ops.settings.changed", "ops.settings.changed", "ops.settings.changed", "ops.settings.changed",
       "ops.settings.changed", "ops.settings.changed", "ops.settings.changed", "ops.settings.changed",
     ]);
   });
