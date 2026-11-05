@@ -14,7 +14,7 @@ const modules = import.meta.glob("/convex/**/*.ts");
 type Owner = { userId: Id<"users">; sessionId: Id<"authSessions">; projectId: Id<"projects"> };
 const starterArgs = (owner: Owner) => ({ ownerId: owner.userId, projectId: owner.projectId });
 
-async function ownerFixture(t: TestConvex<typeof schema>, label: string): Promise<Owner> {
+async function ownerFixture(t: TestConvex<typeof schema>, label: string, workspaceOn = true): Promise<Owner> {
   return await t.run(async (ctx) => {
     const userId = await ctx.db.insert("users", { email: `${label}@example.test` });
     const sessionId = await ctx.db.insert("authSessions", { userId, expirationTime: 9_999_999_999_999 });
@@ -33,6 +33,12 @@ async function ownerFixture(t: TestConvex<typeof schema>, label: string): Promis
         partner: { personality: "strategist", name: "Wren" }, wizardSessionId, createdVia: "wizard",
       },
       createdAt: 1, updatedAt: 1,
+    });
+    const ops = await ctx.db.query("ops_settings")
+      .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique();
+    if (workspaceOn && !ops) await ctx.db.insert("ops_settings", {
+      singletonKey: "workspace", ownerId: userId, ...DEFAULT_OPS_SETTINGS,
+      workspaceEnabled: true, cohortMode: "open", updatedAt: 1,
     });
     return { userId, sessionId, projectId };
   });
@@ -104,8 +110,10 @@ describe("WP73 ledger v2", () => {
     });
     await t.run(async (ctx) => await ctx.db.patch("tasks", taskId, { status: "cancelled" }));
     const args = { taskId, projectId: owner.projectId };
-    await t.mutation(internal.platform.billing.ledger.refundFailedTask, args);
-    await t.mutation(internal.platform.billing.ledger.refundFailedTask, args);
+    const first = await t.mutation(internal.platform.billing.ledger.refundFailedTask, args);
+    const replay = await t.mutation(internal.platform.billing.ledger.refundFailedTask, args);
+    expect(first.balance).toBe(500n);
+    expect(replay.balance).toBe(first.balance);
     const { account, ledger } = await accountState(t, owner.userId);
     expect(account).toMatchObject({ balance: 500n, allowanceRemaining: 500n });
     expect(ledger.filter((row) => row.reason === "task_refund")).toHaveLength(1);
@@ -174,6 +182,31 @@ describe("WP73 ledger v2", () => {
     expect((await accountState(t, second.userId)).account).toBeNull();
   });
 
+  test("out-of-order or changed-period invoices never replace a newer allowance", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await ownerFixture(t, "late-invoice");
+    const newer = { ownerId: owner.userId, invoiceId: "in_newer_1", plan: "builders_hub" as const, ...period(2) };
+    await t.mutation(internal.platform.billing.grants.grantPaidInvoice, newer);
+    const before = await accountState(t, owner.userId);
+    await expect(t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
+      ownerId: owner.userId, invoiceId: "in_older_1", plan: "builders_hub", ...period(1),
+    })).rejects.toThrow("STALE_ALLOWANCE_PERIOD");
+    await expect(t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
+      ...newer, invoiceId: "in_duplicate_period",
+    })).rejects.toThrow("DUPLICATE_ALLOWANCE_PERIOD");
+    await expect(t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
+      ...newer, invoiceId: "in_overlapping_upgrade", plan: "growth",
+      periodStart: newer.periodStart + 1, periodEnd: newer.periodEnd + 100_000,
+    })).rejects.toThrow("OVERLAPPING_ALLOWANCE_PERIOD");
+    await expect(t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
+      ...newer, periodEnd: newer.periodEnd + 1,
+    })).rejects.toThrow("LEDGER_IDEMPOTENCY_CONFLICT");
+    expect((await t.mutation(internal.platform.billing.grants.grantPaidInvoice, newer)).duplicate).toBe(true);
+    const after = await accountState(t, owner.userId);
+    expect(after.account).toMatchObject({ balance: 500n, allowanceRemaining: 500n, allowancePeriodEnd: newer.periodEnd });
+    expect(after.ledger).toHaveLength(before.ledger.length);
+  });
+
   test("a disputed negative bonus does not block a real allowance grant", async () => {
     const t = convexTest(schema, modules);
     const owner = await ownerFixture(t, "disputed-grant");
@@ -230,6 +263,37 @@ describe("WP73 ledger v2", () => {
     expect(state.ledger.filter((row) => row.reason === "task_refund")).toHaveLength(1);
   });
 
+  test("a cancelled task sent to the provider cannot refund, while a failed task can", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await ownerFixture(t, "sent-cancel");
+    await t.mutation(internal.platform.billing.grants.grantStarter, starterArgs(owner));
+    const cancelledId = await taskFixture(t, owner, "sent-cancelled");
+    const failedId = await taskFixture(t, owner, "sent-failed");
+    for (const taskId of [cancelledId, failedId]) {
+      await t.mutation(internal.platform.billing.ledger.debitTask, { taskId, projectId: owner.projectId, credits: 10n });
+      await t.run(async (ctx) => await ctx.db.insert("ai_usage", {
+        ownerId: owner.userId, projectId: owner.projectId, taskId,
+        attemptKey: `sent-${taskId}`, promptRef: "fixture@1", provider: "fixture", model: "fixture",
+        tier: "draft", feature: "ai", plan: "free", globalPool: "free", creditFunded: true,
+        status: "reserved", reservedMicroUsd: 100n, costMicroUsd: 0n,
+        inputTokens: 0n, cacheReadTokens: 0n, cacheWriteTokens: 0n, outputTokens: 0n,
+        estimated: false, latencyMs: 0, createdAt: 1, dayKey: "2026-11-05",
+        expiresAt: 9_999_999_999_999, sentAt: 2,
+      }));
+    }
+    await t.run(async (ctx) => {
+      await ctx.db.patch("tasks", cancelledId, { status: "cancelled" });
+      await ctx.db.patch("tasks", failedId, { status: "failed" });
+    });
+    await expect(t.mutation(internal.platform.billing.ledger.refundFailedTask, {
+      taskId: cancelledId, projectId: owner.projectId,
+    })).rejects.toThrow("TASK_REFUND_NOT_ALLOWED");
+    await t.mutation(internal.platform.billing.ledger.refundFailedTask, { taskId: failedId, projectId: owner.projectId });
+    const state = await accountState(t, owner.userId);
+    expect(state.account?.balance).toBe(40n);
+    expect(state.ledger.filter((row) => row.reason === "task_refund")).toHaveLength(1);
+  });
+
   test("workspace plan reference and features include dormant Growth without a checkout price", () => {
     expect(WORKSPACE_PLAN_LIMITS).toEqual(WORKSPACE_PLAN_REFERENCE);
     expect(WORKSPACE_PLAN_LIMITS.free.limits.monthlyCredits).toBe(0);
@@ -240,16 +304,39 @@ describe("WP73 ledger v2", () => {
     expect(workspaceFeatureAllowed("growth", "hireSkippedRoles")).toBe(true);
   });
 
+  test("all new grant entry points fail closed with the workspace switch off", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await ownerFixture(t, "grant-disabled", false);
+    await expect(t.mutation(internal.platform.billing.grants.grantStarter, starterArgs(owner)))
+      .rejects.toThrow("WORKSPACE_DISABLED");
+    await expect(t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
+      ownerId: owner.userId, invoiceId: "in_disabled_1", plan: "builders_hub", ...period(1),
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+    await expect(t.mutation(internal.platform.billing.grants.grantRecurring, {
+      ownerId: owner.userId, grantId: "grant_disabled_1", plan: "builders_hub", ...period(1),
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+    expect((await accountState(t, owner.userId)).account).toBeNull();
+  });
+
   test("creditsSummary fails closed and isolates owner balances", async () => {
     const t = convexTest(schema, modules);
     const owner = await ownerFixture(t, "summary-owner");
     const stranger = await ownerFixture(t, "summary-stranger");
     await t.mutation(internal.platform.billing.grants.grantStarter, starterArgs(owner));
+    await t.run(async (ctx) => {
+      const ops = await ctx.db.query("ops_settings")
+        .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique();
+      if (!ops) throw new Error("missing ops fixture");
+      await ctx.db.patch("ops_settings", ops._id, { workspaceEnabled: false });
+    });
     await expect(asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {}))
       .rejects.toThrow("WORKSPACE_DISABLED");
-    await t.run(async (ctx) => await ctx.db.insert("ops_settings", {
-      singletonKey: "workspace", ownerId: owner.userId, ...DEFAULT_OPS_SETTINGS, workspaceEnabled: true, cohortMode: "open", updatedAt: 1,
-    }));
+    await t.run(async (ctx) => {
+      const ops = await ctx.db.query("ops_settings")
+        .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique();
+      if (!ops) throw new Error("missing ops fixture");
+      await ctx.db.patch("ops_settings", ops._id, { workspaceEnabled: true });
+    });
     const mine = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {});
     const theirs = await asOwner(t, stranger).query(api.platform.billing.queries.creditsSummary, {});
     expect(mine).toMatchObject({ balance: 50n, allowanceRemaining: 0n, bonusRemaining: 50n });
@@ -264,10 +351,6 @@ describe("WP73 ledger v2", () => {
     await t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
       ownerId: owner.userId, invoiceId: "in_summary_expiry", plan: "builders_hub", ...period(1),
     });
-    await t.run(async (ctx) => await ctx.db.insert("ops_settings", {
-      singletonKey: "workspace", ownerId: owner.userId, ...DEFAULT_OPS_SETTINGS,
-      workspaceEnabled: true, cohortMode: "open", updatedAt: 1,
-    }));
     const before = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {});
     expect(before).toMatchObject({ balance: 550n, allowanceRemaining: 500n, spendableBalance: 550n, spendableAllowance: 500n });
     await t.run(async (ctx) => {

@@ -241,6 +241,12 @@ export const refundFailedTask = internalMutation({
   handler: async (ctx, args) => {
     const task = await requireTrustedTaskChain(ctx, args.taskId, args.projectId);
     assertTaskRefundEligible(task.status);
+    if (task.status === "cancelled") {
+      const sent = await ctx.db.query("ai_usage")
+        .withIndex("by_taskId_and_sentAt", (query) => query.eq("taskId", task._id).gt("sentAt", 0))
+        .first();
+      if (sent) throw new ConvexError({ code: "TASK_REFUND_NOT_ALLOWED" });
+    }
     const debit = await ctx.db
       .query("credit_ledger")
       .withIndex("by_ownerId_and_idempotencyKey", (query) =>
@@ -269,7 +275,13 @@ export const refundFailedTask = internalMutation({
       allowancePeriodEnd: debit.allowancePeriodEnd,
       allowNegative: false,
     });
-    if (refund.duplicate || !debit.bucketSplit || debit.bucketSplit.allowance === 0n) return refund;
+    if (refund.duplicate) {
+      const current = await ctx.db.query("credit_accounts")
+        .withIndex("by_ownerId", (query) => query.eq("ownerId", task.ownerId)).unique();
+      if (!current) throw new ConvexError({ code: "CREDIT_ACCOUNT_NOT_FOUND" });
+      return { ...refund, balance: current.balance };
+    }
+    if (!debit.bucketSplit || debit.bucketSplit.allowance === 0n) return refund;
 
     const account = await ctx.db.query("credit_accounts")
       .withIndex("by_ownerId", (query) => query.eq("ownerId", task.ownerId)).unique();

@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Id } from "../../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../../_generated/server";
+import { assertFeatureEnabledForOwner } from "../../ops/settings";
 import { requireBusinessForOwner } from "../authz";
 import { WORKSPACE_PLAN_LIMITS, type WorkspacePlanId } from "../plans";
 import { STARTER_CREDITS } from "../../../lib/workspace/contracts/jobs";
@@ -24,6 +25,7 @@ async function grantAllowance(
   input: {
     ownerId: Id<"users">;
     plan: PaidPlan;
+    periodStart: number;
     periodEnd: number;
     idempotencyKey: string;
     provider?: string;
@@ -40,6 +42,7 @@ async function grantAllowance(
     provider: input.provider,
     providerEventId: input.providerEventId,
     bucket: "allowance" as const,
+    allowancePeriodEnd: input.periodEnd,
     // A prior dispute may have put the single balance below zero. A real
     // grant still posts, while paid actions remain suspended until recovery.
     allowNegative: true,
@@ -53,6 +56,12 @@ async function grantAllowance(
   if (existing) return await applyLedgerDelta(ctx, grant);
 
   const previous = await accountForOwner(ctx, input.ownerId);
+  if (input.periodEnd <= Date.now()) throw new ConvexError({ code: "EXPIRED_ALLOWANCE_PERIOD" });
+  if (previous?.allowancePeriodEnd !== undefined) {
+    if (input.periodEnd < previous.allowancePeriodEnd) throw new ConvexError({ code: "STALE_ALLOWANCE_PERIOD" });
+    if (input.periodEnd === previous.allowancePeriodEnd) throw new ConvexError({ code: "DUPLICATE_ALLOWANCE_PERIOD" });
+    if (input.periodStart < previous.allowancePeriodEnd) throw new ConvexError({ code: "OVERLAPPING_ALLOWANCE_PERIOD" });
+  }
   const unused = previous?.allowanceRemaining ?? 0n;
   if (unused > 0n) {
     await applyLedgerDelta(ctx, {
@@ -76,6 +85,7 @@ export const grantStarter = internalMutation({
   args: { ownerId: v.id("users"), projectId: v.id("projects") },
   handler: async (ctx, args) => {
     if (!await ctx.db.get("users", args.ownerId)) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+    await assertFeatureEnabledForOwner(ctx, "workspace", args.ownerId);
     const write = {
       ownerId: args.ownerId,
       projectId: args.projectId,
@@ -108,6 +118,7 @@ export const grantPaidInvoice = internalMutation({
     periodEnd: v.number(),
   },
   handler: async (ctx, args) => {
+    await assertFeatureEnabledForOwner(ctx, "workspace", args.ownerId);
     if (!/^in_[A-Za-z0-9_]{3,128}$/.test(args.invoiceId)) {
       throw new ConvexError({ code: "INVALID_INVOICE_ID" });
     }
@@ -115,6 +126,7 @@ export const grantPaidInvoice = internalMutation({
     return await grantAllowance(ctx, {
       ownerId: args.ownerId,
       plan: args.plan,
+      periodStart: args.periodStart,
       periodEnd: args.periodEnd,
       idempotencyKey: `plan-grant:stripe:${args.invoiceId}`,
       provider: "stripe",
@@ -133,12 +145,14 @@ export const grantRecurring = internalMutation({
     periodEnd: v.number(),
   },
   handler: async (ctx, args) => {
+    await assertFeatureEnabledForOwner(ctx, "workspace", args.ownerId);
     assertPeriod(args.periodStart, args.periodEnd);
     if (args.grantId.length < 8 || args.grantId.length > 128 || !/^[A-Za-z0-9_:-]+$/.test(args.grantId))
       throw new ConvexError({ code: "INVALID_GRANT_ID" });
     return await grantAllowance(ctx, {
       ownerId: args.ownerId,
       plan: args.plan,
+      periodStart: args.periodStart,
       periodEnd: args.periodEnd,
       idempotencyKey: `plan-grant:${args.grantId}:${args.periodStart}`,
       provider: "grant",
