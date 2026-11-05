@@ -50,7 +50,9 @@ test("every Phase 0 table has a flat validator, owner field and owner-first inde
     for (const table of tableDefinitions(file)) {
       count += 1;
       const { fields, indexes } = schemaCallChain(table.initializer, file);
-      assert.ok(fields.some((field) => field.name?.getText(file) === "ownerId"), `${table.name} missing ownerId`);
+      const ownerField = fields.find((field) => field.name?.getText(file) === "ownerId");
+      assert.ok(ownerField, `${table.name} missing ownerId`);
+      assert.doesNotMatch(ownerField.initializer.getText(file), /\bv\.optional\s*\(/, `${table.name}.ownerId must be required`);
       assert.ok(indexes.some((index) => index.fields[0] === "ownerId"), `${table.name} missing owner-first index`);
       for (const index of indexes) {
         assert.ok(index.name?.startsWith("by_"), `${table.name} has an unnamed index`);

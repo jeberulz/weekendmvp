@@ -10,7 +10,7 @@ Pending. This work package is dormant and has not been reviewed or merged.
 
 - Claude: review C-DATA after S1 and S2 and review C-AUTHZ/C-OPS before merge.
 - Claude: confirm whether `site_versions.landingSpec` is serialized validated JSON or a typed Convex object; confirm the schema for wizard answers and per-idea seed payloads before C-DATA freezes.
-- Claude: confirm the intended owner for global per-idea seeds and batch `ai_usage` rows. Architecture §4.2 makes usage owner optional while D12 says every new row carries an owner.
+- Claude orchestrator: update architecture §4.2 and the dated rulings for John's decision that system/admin owner IDs are required on every new row, including library seeds and batch `ai_usage`.
 - Claude: in the later image-file writer, enforce required alt text for image kinds; cap the variable arrays in workstreams, Wren memory and ad decisions before activation.
 - Claude orchestrator: record John's 2026-11-05 approval that only super-admin ops control functions are exempt from `assertFeatureEnabled`, so activation and shutdown work while the workspace flag is off.
 
@@ -89,3 +89,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Independent C-DATA review: all 26 named tables and their indexes are present, and existing WP22 amendments are additive. Before contract freeze, Claude should confirm the serialized LandingSpec field, bounded/validated wizard and seed payload shapes, and the owner model for global seed and batch usage rows. Future image-file writes must require alt text; variable arrays need writer caps before activation.
 - Decision pending from John: D12 requires an owner ID on every new row, while architecture §4.2 makes `ai_usage.ownerId` optional. Asked whether system-level rows use a system/admin owner ID or a narrow exception. Do not mark C-DATA merge-ready until the answer is reflected in schema and the Claude lane reviews it.
 - Result: implementation and local gate complete; PR #167 remains draft for contract review.
+
+## 2026-11-05 - C-DATA owner-ID correction
+
+- Owner decision: John chose a system/admin owner ID on every new row. The earlier S1 note following architecture §4.2's optional usage owner is superseded. `ai_usage.ownerId` is now required; `idea_crew_seeds.ownerId` was already required. The Claude orchestrator owns the architecture and ruling update.
+- Checks run: production dependency audit `npm audit --omit=dev --audit-level=high` passed (0 high, 0 critical; 1 moderate). Revalidation of the schema correction is next.
+- Result: the D12 ownership ambiguity is resolved in code; C-ART shape questions and Claude's independent review remain open.
+- Revalidation: C-DATA schema test (35 passed), static security test (3 passed), typecheck and diff check passed. The corrected schema deployed to isolated anonymous local Convex on 3310/3311 (passed). The earlier full lint/test/build pass predates only this required-field correction; no runtime function changed.
