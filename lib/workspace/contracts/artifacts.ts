@@ -30,6 +30,13 @@
  * also rejects raw HTML-looking input (`<` followed by a letter, `/`, `!` or
  * `?`) and any other destination (see `isSafeMarkdown`). Build prompt bodies are
  * plain text: shown and copied verbatim, never rendered as markdown.
+ *
+ * Document kinds (C-DATA): C-DATA's `documents.kind` must include every
+ * `ARTIFACT_KINDS` literal, `roster_plan` among them. The first SEO article is
+ * embedded in `seoPack.article`; it is not a separate document kind. C-DATA's
+ * `documents.kind` also lists `seo_article`: that literal is reserved for later
+ * stand-alone articles, WP69 never writes one, and C-ART defines no schema for
+ * it (it is deliberately absent from `ARTIFACT_KINDS`).
  */
 import { z } from "zod";
 

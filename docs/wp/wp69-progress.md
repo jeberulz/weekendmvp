@@ -37,6 +37,9 @@ copy them exactly.
 6. `PLAN_LIMITS` feature keys: `WORKSPACE_FEATURE_KEYS` (autopilot, adsLive, nativePublishing,
    customDomain, studioLongVideo, hireSkippedRoles), with per-plan values in
    `WORKSPACE_PLAN_REFERENCE`.
+8. Add `ANTHROPIC_API_KEY=` (empty, optional) to `.env.example`, with a comment saying the WP69 spike script and WP71 gateway read it. `tests/security/env-documentation.test.mjs` scans `scripts/`, so the WP69-S4 spike scripts can't be committed until this is in.
+9. Type `wizard_sessions.answers` from `wizardAnswersSchema` (`lib/workspace/contracts/wizard.ts`), and store `parse()` output only. Assert that the validator accepts `wizardAnswersSchema.parse(hydrotrailWizardAnswers)`. `answers.idea` is the source of truth; any session-level `ideaSlug` must equal it.
+10. Throw gate errors in the shapes `isWorkspaceGateErrorData` accepts. `AI_DISABLED` carries a `scope` that is absent or a `METER_FEATURES` value.
 7. The C-METER implementation adds a `markSent` mutation, `attemptKey` idempotency on `reserve`, and a
    plan derived inside `reserve`. A `creditDebitId` is checked against the same owner and task.
 
@@ -151,3 +154,29 @@ copy them exactly.
   `workspace-artifacts` and `workspace-jobs-contracts`. `test:convex` includes `crew/roles.test.ts`.
 - `npm run build`: exit 0 (no errors or warnings in the output).
 - Docs updated: `wp69-stories.md`, this file. `02`, `03` and `05` unchanged; S5 updates `03` after the spike.
+
+## 2026-11-05 - Contract follow-ups from the WP68 cross-check
+
+- Files:
+  - `metering.ts`: micro-USD int64 boundary helpers, gate error codes (incl. `UNAUTHENTICATED`) with
+    guards and a refund table.
+  - `artifacts.ts`: header note on `seo_article`.
+  - `wizard.ts` (new): 8-step answers schema, progress variant, `rosterInputFromWizard`.
+  - `roster.ts`: `singleLineText` rejects invisible and bidi characters; target count capped.
+  - Fixtures, and the roles and contract tests.
+- Review: independent Opus review, 1 high and 5 medium findings, all fixed.
+  - The goal target is derived from the goal kind (`GOAL_TARGETS`), not answered.
+  - A finished wizard requires `looks_good`.
+  - `paidPush` lives under `goal`.
+  - Gate errors have shapes and guards.
+  - Convex storage keeps only `parse()` output.
+- Orchestrator decisions: non-Latin business names allowed (names dedupe on the slug, else on the NFKC
+  name); `UNAUTHENTICATED` is a gate code.
+- Checks:
+  - `npm run typecheck`: exit 0.
+  - `npm run lint`: exit 0 (37 pre-existing warnings).
+  - `npm test`: exit 1, from the uncommitted spike files only. `test:security` fails
+    `env-documentation`: `ANTHROPIC_API_KEY` is not in `.env.example` (Needs from Codex item 8).
+  - Every suite after `test:security` passes when run separately (sitemap, convex, engine, editorial,
+    home, prompts, platform, live).
+  - The committed tree has no spike files.

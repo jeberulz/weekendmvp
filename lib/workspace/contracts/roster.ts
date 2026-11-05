@@ -72,8 +72,22 @@ export type EngineeringWeight = (typeof ENGINEERING_WEIGHTS)[number];
 export const engineeringWeightSchema = z.enum(ENGINEERING_WEIGHTS);
 
 /**
+ * Invisible and bidi-control characters a single line may not contain: zero
+ * width space (U+200B), LRM/RLM (U+200E, U+200F), the bidi embeddings and
+ * overrides (U+202A–U+202E), word joiner (U+2060), the bidi isolates
+ * (U+2066–U+2069) and the BOM (U+FEFF). ZWNJ (U+200C) and ZWJ (U+200D) stay
+ * allowed: ZWJ emoji sequences and Persian text need them.
+ */
+export const INVISIBLE_OR_BIDI_CHARACTERS = /[\u200B\u200E\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/u;
+
+/** At least one letter, number, symbol or punctuation mark. */
+const VISIBLE_CHARACTER = /[\p{L}\p{N}\p{S}\p{P}]/u;
+
+/**
  * Single-line text: trimmed, 1..max chars, no control characters or line
- * separators. Keeps founder-supplied values from injecting lines into TEAM.md.
+ * separators, no invisible or bidi-control characters, and at least one
+ * visible character. Keeps founder-supplied values from injecting lines into
+ * TEAM.md or reordering text around them.
  */
 export function singleLineText(max: number) {
   return z
@@ -83,8 +97,26 @@ export function singleLineText(max: number) {
     .max(max)
     .refine((value) => !/[\p{Cc}\u2028\u2029]/u.test(value), {
       message: "Must be a single line without control characters",
+    })
+    .refine((value) => !INVISIBLE_OR_BIDI_CHARACTERS.test(value), {
+      message: "Must not contain invisible or bidi-control characters",
+    })
+    .refine((value) => VISIBLE_CHARACTER.test(value), {
+      message: "Must contain at least one visible character",
     });
 }
+
+/** Upper bound on a goal target's count. */
+export const GOAL_TARGET_COUNT_MAX = 1_000_000;
+
+/** A goal's measurable target, e.g. 50 signups. */
+export const goalTargetSchema = z
+  .object({
+    count: z.number().int().min(1).max(GOAL_TARGET_COUNT_MAX),
+    unit: singleLineText(24),
+  })
+  .strict();
+export type GoalTarget = z.infer<typeof goalTargetSchema>;
 
 /** What the blueprint stores. */
 export const rosterProfileSchema = z
@@ -103,13 +135,7 @@ export const rosterInputSchema = rosterProfileSchema
     goal: z
       .object({
         kind: goalKindSchema,
-        target: z
-          .object({
-            count: z.number().int().min(1),
-            unit: singleLineText(24),
-          })
-          .strict()
-          .nullable(),
+        target: goalTargetSchema.nullable(),
         paidPush: z
           .object({
             dailyBudgetUsd: z.number().min(1).max(100).multipleOf(0.01),

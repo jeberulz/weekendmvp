@@ -49,6 +49,10 @@ import {
   METER_ALARMS,
   METER_ERROR_CODES,
   METER_MAX_INPUT_TOKENS,
+  type GatewayErrorCode,
+  METER_FEATURES,
+  REFUNDS_CREDITS,
+  WORKSPACE_GATE_ERROR_CODES,
   OWNER_DAILY_CAP_MICRO_USD,
   PAID_GLOBAL_DAILY_BUDGET_DEFAULT_MICRO_USD,
   RESERVATION_SWEEP_AFTER_MS,
@@ -60,12 +64,17 @@ import {
   firstReserveFailure,
   globalOvershootBoundMicroUsd,
   globalPoolFor,
+  int64ToMicroUsd,
+  isGatewayErrorData,
   isMeterErrorData,
+  isWorkspaceGateErrorData,
   jobAttemptKey,
   lateSettleAdjustment,
   mediaReservation,
   meterMaxInputTokens,
+  microUsdToInt64,
   reservationExpiresAt,
+  refundsCredits,
   reserveDeltas,
   spendDeltas,
   sweepOutcome,
@@ -495,6 +504,73 @@ describe("C-METER", () => {
     expect(reservationExpiresAt(1_000, true)).toBe(1_000 + 90_000_000);
     expect(DEEP_ESCALATIONS_PER_OWNER_PER_DAY).toBe(3);
     expect(METER_ERROR_CODES).toEqual(["BUDGET_EXHAUSTED", "AI_DISABLED"]);
+  });
+
+  test("micro-USD converts to and from int64 storage at the boundary", () => {
+    expect(microUsdToInt64(0)).toBe(BigInt(0));
+    expect(microUsdToInt64(66_000)).toBe(BigInt(66_000));
+    expect(microUsdToInt64(Number.MAX_SAFE_INTEGER)).toBe(BigInt(Number.MAX_SAFE_INTEGER));
+    for (const bad of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1, Number.NaN, Number.POSITIVE_INFINITY, -0.000001]) {
+      expect(() => microUsdToInt64(bad)).toThrow(RangeError);
+    }
+    expect(int64ToMicroUsd(BigInt(0))).toBe(0);
+    expect(int64ToMicroUsd(BigInt(1_500_000))).toBe(1_500_000);
+    expect(int64ToMicroUsd(BigInt(Number.MAX_SAFE_INTEGER))).toBe(Number.MAX_SAFE_INTEGER);
+    expect(() => int64ToMicroUsd(BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1))).toThrow(RangeError);
+    expect(() => int64ToMicroUsd(BigInt(-1))).toThrow(RangeError);
+    expect(() => int64ToMicroUsd(1 as unknown as bigint)).toThrow(TypeError);
+    for (const n of [0, 1, 999_999, 50_000_000, Number.MAX_SAFE_INTEGER]) {
+      expect(int64ToMicroUsd(microUsdToInt64(n))).toBe(n);
+    }
+  });
+
+  test("gate error codes sit alongside the meter codes", () => {
+    expect(WORKSPACE_GATE_ERROR_CODES).toEqual(["AI_DISABLED", "WORKSPACE_DISABLED", "RESOURCE_NOT_FOUND", "UNAUTHENTICATED"]);
+    const all: readonly GatewayErrorCode[] = [...METER_ERROR_CODES, ...WORKSPACE_GATE_ERROR_CODES];
+    expect(new Set(all)).toEqual(new Set(["BUDGET_EXHAUSTED", "AI_DISABLED", "WORKSPACE_DISABLED", "RESOURCE_NOT_FOUND", "UNAUTHENTICATED"]));
+    // Gate codes are not meter error data: the meter never raises them itself.
+    expect(isMeterErrorData({ code: "WORKSPACE_DISABLED", message: "off" })).toBe(false);
+    expect(isMeterErrorData({ code: "RESOURCE_NOT_FOUND", message: "missing" })).toBe(false);
+    expect(isMeterErrorData({ code: "UNAUTHENTICATED", message: "signed out" })).toBe(false);
+  });
+
+  test("gate error data has a contract shape (C-OPS throws { code })", () => {
+    // What C-OPS and C-AUTHZ throw today.
+    for (const code of WORKSPACE_GATE_ERROR_CODES) {
+      expect(isWorkspaceGateErrorData({ code }), code).toBe(true);
+      expect(isWorkspaceGateErrorData({ code, message: "closed" }), code).toBe(true);
+      expect(isGatewayErrorData({ code }), code).toBe(true);
+    }
+    for (const scope of METER_FEATURES) {
+      expect(isWorkspaceGateErrorData({ code: "AI_DISABLED", scope })).toBe(true);
+    }
+    // A gate-raised AI_DISABLED may only name a meter feature.
+    for (const scope of ["workspace", "publish", "email", "ads", "", 1]) {
+      expect(isWorkspaceGateErrorData({ code: "AI_DISABLED", scope }), String(scope)).toBe(false);
+      expect(isGatewayErrorData({ code: "AI_DISABLED", scope, message: "off" }), String(scope)).toBe(false);
+    }
+    expect(isWorkspaceGateErrorData({ code: "WORKSPACE_DISABLED", scope: "publish" })).toBe(false);
+    expect(isWorkspaceGateErrorData({ code: "RESOURCE_NOT_FOUND", scope: "ai" })).toBe(false);
+    expect(isWorkspaceGateErrorData({ code: "UNAUTHENTICATED", scope: "workspace" })).toBe(false);
+    expect(isWorkspaceGateErrorData({ code: "RESOURCE_NOT_FOUND", message: 404 })).toBe(false);
+    for (const bad of [null, undefined, "AI_DISABLED", [], {}, { code: "BUDGET_EXHAUSTED", scope: "owner_daily" }, { code: "UNAUTHORIZED" }]) {
+      expect(isWorkspaceGateErrorData(bad), JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  test("isGatewayErrorData covers meter and gate errors", () => {
+    expect(isGatewayErrorData({ code: "BUDGET_EXHAUSTED", scope: "owner_daily", message: "cap" })).toBe(true);
+    expect(isGatewayErrorData({ code: "AI_DISABLED", scope: "studioVideo", message: "off" })).toBe(true);
+    expect(isGatewayErrorData({ code: "AI_DISABLED" })).toBe(true);
+    expect(isGatewayErrorData({ code: "BUDGET_EXHAUSTED", message: "no scope" })).toBe(false);
+    expect(isGatewayErrorData({ code: "INVALID_BUDGET" })).toBe(false);
+  });
+
+  test("every gate code and pre-call meter code refunds the task's credits", () => {
+    const all: GatewayErrorCode[] = [...new Set<GatewayErrorCode>([...METER_ERROR_CODES, ...WORKSPACE_GATE_ERROR_CODES])];
+    expect(Object.keys(REFUNDS_CREDITS).sort()).toEqual([...all].sort());
+    for (const code of all) expect(refundsCredits(code), code).toBe(true);
+    expect(REFUNDS_CREDITS.UNAUTHENTICATED).toBe(true);
   });
 
   test("toMicroUsd mirrors the engine helper", () => {

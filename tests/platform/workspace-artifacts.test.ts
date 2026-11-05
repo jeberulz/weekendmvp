@@ -157,6 +157,13 @@ describe("C-ART registry", () => {
     expect(Object.keys(artifactSchemas).sort()).toEqual([...ARTIFACT_KINDS].sort());
   });
 
+  it("includes roster_plan and reserves seo_article outside C-ART (the first article lives in seoPack.article)", () => {
+    expect(ARTIFACT_KINDS).toContain("roster_plan");
+    expect(ARTIFACT_KINDS).toContain("seo_pack");
+    expect(ARTIFACT_KINDS as readonly string[]).not.toContain("seo_article");
+    expect(Object.keys(artifactSchemas)).not.toContain("seo_article");
+  });
+
   it.each(ARTIFACT_KINDS)("HydroTrail %s fixture parses and round-trips", (kind) => {
     const fixture = hydrotrailArtifacts[kind];
     const result = parseArtifact(kind, fixture);

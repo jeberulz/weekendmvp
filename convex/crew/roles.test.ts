@@ -9,6 +9,7 @@ import {
   type RosterInput,
   type RosterPlan,
 } from "../../lib/workspace/contracts/roster";
+import { hydrotrailRosterInput } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import {
   ROLE_CATALOGUE,
   ROSTER_RULES_VERSION,
@@ -18,18 +19,7 @@ import {
   summariseRoster,
 } from "./roles";
 
-const hydroTrail: RosterInput = {
-  ideaKind: "app",
-  buyer: "consumer",
-  deliveryFormat: "self_serve",
-  audiencePlural: "hikers",
-  commercialModel: "free",
-  goal: {
-    kind: "waitlist",
-    target: { count: 50, unit: "signups" },
-    paidPush: { dailyBudgetUsd: 7 },
-  },
-};
+const hydroTrail: RosterInput = hydrotrailRosterInput;
 
 const course: RosterInput = {
   ideaKind: "course",
@@ -252,6 +242,23 @@ describe("input hardening", () => {
     expect(leadNameSchema.safeParse("Juno").success).toBe(true);
     const blank = planRoster(hydroTrail, { leadName: "   " });
     expect(blank.hired.find((h) => h.roleKey === "lead")?.employeeName).toBe("Wren");
+  });
+
+  it("rejects invisible and bidi-control characters in leadName", () => {
+    for (const leadName of ["Ju\u200Bno", "\u202EnuJ", "Ju\u2066no\u2069", "Ju\u200Fno", "\u200B\u200B"]) {
+      expect(() => planRoster(hydroTrail, { leadName }), JSON.stringify(leadName)).toThrow();
+    }
+    // ZWJ emoji sequences stay valid.
+    expect(planRoster(hydroTrail, { leadName: "Wren \u{1F469}\u200D\u{1F4BB}" }).hired[0]?.employeeName).toBe(
+      "Wren \u{1F469}\u200D\u{1F4BB}",
+    );
+  });
+
+  it("caps a goal target at 1,000,000", () => {
+    const at = { ...hydroTrail, goal: { ...hydroTrail.goal, target: { count: 1_000_000, unit: "signups" } } };
+    expect(() => planRoster(at)).not.toThrow();
+    const over = { ...hydroTrail, goal: { ...hydroTrail.goal, target: { count: 1_000_001, unit: "signups" } } };
+    expect(() => planRoster(over)).toThrow();
   });
 
   it("renderTeamMd collapses newlines in meta", () => {

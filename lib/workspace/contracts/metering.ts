@@ -42,6 +42,20 @@
  * `Id<"users">`, `Id<"projects">`, `Id<"tasks">`, `Id<"credit_ledger">` and
  * `Id<"ai_usage">` in the validators. Money is integer micro-USD
  * (1 USD = 1_000_000), rounded up.
+ *
+ * Micro-USD storage: every amount in this contract is a safe-integer `number`
+ * in application code. The Convex schema (C-DATA, WP68) stores micro-USD and
+ * token counts as `v.int64()` (a `bigint`). The implementation converts at the
+ * storage boundary only — `microUsdToInt64` on write, `int64ToMicroUsd` on
+ * read — and never does arithmetic on `bigint`. Both throw rather than round or
+ * wrap, so a value outside 0..`Number.MAX_SAFE_INTEGER` is a loud error.
+ *
+ * Gate errors: before `reserve`, the gateway's own checks may throw C-OPS
+ * `assertFeatureEnabled` and C-AUTHZ `requireBusinessAccess` errors
+ * (`WORKSPACE_GATE_ERROR_CODES`, shape `WorkspaceGateErrorData`). The gateway
+ * maps them alongside `METER_ERROR_CODES` (`GatewayErrorCode`,
+ * `isGatewayErrorData`). Nothing was sent, so a gate error refunds the task's
+ * credits like any other pre-call failure (`REFUNDS_CREDITS`).
  */
 
 // ---------------------------------------------------------------------------
@@ -64,6 +78,31 @@ export function toMicroUsd(usd: number): number {
 
 export function isMicroUsd(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+/**
+ * Application micro-USD → the `v.int64()` storage value. Throws unless `n` is a
+ * safe non-negative integer (no rounding: round with `toMicroUsd` first).
+ */
+export function microUsdToInt64(n: number): bigint {
+  if (!isMicroUsd(n)) {
+    throw new RangeError(`micro-USD must be a safe non-negative integer, got ${String(n)}`);
+  }
+  return BigInt(n);
+}
+
+/**
+ * The `v.int64()` storage value → application micro-USD. Throws below 0 or
+ * above `Number.MAX_SAFE_INTEGER`, where a `number` would lose precision.
+ */
+export function int64ToMicroUsd(b: bigint): number {
+  if (typeof b !== "bigint") {
+    throw new TypeError(`int64 micro-USD must be a bigint, got ${typeof b}`);
+  }
+  if (b < BigInt(0) || b > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new RangeError(`int64 micro-USD must be within 0..${Number.MAX_SAFE_INTEGER}, got ${b.toString()}`);
+  }
+  return Number(b);
 }
 
 /**
@@ -512,6 +551,28 @@ function assertBudgets(budgets: AiBudgetsRow): void {
 export const METER_ERROR_CODES = ["BUDGET_EXHAUSTED", "AI_DISABLED"] as const;
 export type MeterErrorCode = (typeof METER_ERROR_CODES)[number];
 
+/**
+ * Errors the gateway may see before `reserve`, raised outside the meter: C-OPS
+ * `assertFeatureEnabled` (`AI_DISABLED`, `WORKSPACE_DISABLED`, and
+ * `RESOURCE_NOT_FOUND` for an owner outside the cohort), C-AUTHZ
+ * `requireBusinessAccess` (`RESOURCE_NOT_FOUND`), and the signed-in-user check
+ * inside the public `assertFeatureEnabled` that job-starting mutations call
+ * (`UNAUTHENTICATED`). The gateway maps them
+ * alongside `METER_ERROR_CODES`; `AI_DISABLED` is in both lists and means the
+ * same thing. A gate error is a pre-call failure: nothing was sent, no
+ * provider cost was incurred, and the task's credits are refunded.
+ */
+export const WORKSPACE_GATE_ERROR_CODES = [
+  "AI_DISABLED",
+  "WORKSPACE_DISABLED",
+  "RESOURCE_NOT_FOUND",
+  "UNAUTHENTICATED",
+] as const;
+export type WorkspaceGateErrorCode = (typeof WORKSPACE_GATE_ERROR_CODES)[number];
+
+/** Every error code the gateway maps around a provider call: meter codes plus gate codes. */
+export type GatewayErrorCode = MeterErrorCode | WorkspaceGateErrorCode;
+
 export const METER_BUDGET_SCOPES = [
   "global_daily_free",
   "global_daily_paid",
@@ -537,6 +598,61 @@ export function isMeterErrorData(value: unknown): value is MeterErrorData {
   if (code === "AI_DISABLED") return scope === undefined || inList(METER_FEATURES, scope);
   if (code === "BUDGET_EXHAUSTED") return inList(METER_BUDGET_SCOPES, scope);
   return false;
+}
+
+/**
+ * The `ConvexError.data` shape C-OPS and C-AUTHZ must throw for a gate error.
+ * C-OPS currently throws `{ code }` alone, so `message` is optional here.
+ * `AI_DISABLED` may name a scope, and if it does the scope must be a
+ * `METER_FEATURES` value (`ai` or `studioVideo`) — the same rule as the
+ * meter's own `AI_DISABLED`. C-OPS must not put any other feature name there.
+ * `WORKSPACE_DISABLED`, `RESOURCE_NOT_FOUND` and `UNAUTHENTICATED` carry no
+ * scope.
+ */
+export type WorkspaceGateErrorData =
+  | { readonly code: "AI_DISABLED"; readonly scope?: MeterFeature; readonly message?: string }
+  | { readonly code: "WORKSPACE_DISABLED"; readonly message?: string }
+  | { readonly code: "RESOURCE_NOT_FOUND"; readonly message?: string }
+  | { readonly code: "UNAUTHENTICATED"; readonly message?: string };
+
+/** Anything the gateway maps around a provider call. */
+export type GatewayErrorData = MeterErrorData | WorkspaceGateErrorData;
+
+/** Type guard for a gate error's `ConvexError.data`. */
+export function isWorkspaceGateErrorData(value: unknown): value is WorkspaceGateErrorData {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const { code, scope, message } = value as Record<string, unknown>;
+  if (message !== undefined && typeof message !== "string") return false;
+  if (code === "AI_DISABLED") return scope === undefined || inList(METER_FEATURES, scope);
+  if (code === "WORKSPACE_DISABLED" || code === "RESOURCE_NOT_FOUND" || code === "UNAUTHENTICATED") {
+    return scope === undefined;
+  }
+  return false;
+}
+
+/** Type guard for meter and gate errors together. */
+export function isGatewayErrorData(value: unknown): value is GatewayErrorData {
+  return isMeterErrorData(value) || isWorkspaceGateErrorData(value);
+}
+
+/**
+ * Whether an error code refunds the task's credits. Every gate code and every
+ * meter code is raised before `markSent` (nothing went out), so all refund.
+ * The table stays total even for codes that in practice fire before any debit
+ * (`UNAUTHENTICATED`), so a refund is never looked up on a missing key.
+ * Failures after `markSent` are classed by `METER_ERROR_CLASSES`, not by these
+ * codes, and follow `chargeOnFail`.
+ */
+export const REFUNDS_CREDITS = {
+  BUDGET_EXHAUSTED: true,
+  AI_DISABLED: true,
+  WORKSPACE_DISABLED: true,
+  RESOURCE_NOT_FOUND: true,
+  UNAUTHENTICATED: true,
+} as const satisfies Record<GatewayErrorCode, boolean>;
+
+export function refundsCredits(code: GatewayErrorCode): boolean {
+  return REFUNDS_CREDITS[code];
 }
 
 // ---------------------------------------------------------------------------

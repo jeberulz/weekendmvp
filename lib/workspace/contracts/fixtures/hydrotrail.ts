@@ -17,6 +17,8 @@ import type {
   SeoPack,
   SocialPack,
 } from "../artifacts";
+import type { RosterInput } from "../roster";
+import type { WizardAnswers } from "../wizard";
 
 export const hydrotrailBlueprint: Blueprint = {
   schemaVersion: 1,
@@ -618,4 +620,39 @@ export const hydrotrailArtifacts: ArtifactByKind = {
   launch_plan: hydrotrailLaunchPlan,
   ads_drafts: hydrotrailAdsDrafts,
   build_pack: hydrotrailBuildPack,
+};
+
+/**
+ * HydroTrail's wizard answers as the founder gave them on the canvas (board B).
+ * WP68 asserts that its `wizard_sessions` validator accepts
+ * `wizardAnswersSchema.parse(hydrotrailWizardAnswers)`.
+ */
+export const hydrotrailWizardAnswers: WizardAnswers = {
+  idea: { source: "library", ideaSlug: "hydrotrail" },
+  blueprintDecision: { decision: "looks_good" },
+  platform: { kind: "web" },
+  commercialModel: "free",
+  goal: { kind: "waitlist", timeframe: "weekend", paidPush: { dailyBudgetUsd: 7 } },
+  name: { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
+  partnerPersonality: "strategist",
+  partnerName: { kind: "preset", name: "Wren" },
+  signals: {
+    platform: { signal: "kept", note: "Approved suggested platform: Mobile web, installable" },
+    commercial_model: { signal: "kept" },
+    goal: { signal: "edited", note: "Changed goal: first sale → 50 waitlist signups" },
+  },
+};
+
+/** HydroTrail's roster input: what `rosterInputFromWizard` yields and `planRoster` reads. */
+export const hydrotrailRosterInput: RosterInput = {
+  ideaKind: "app",
+  buyer: "consumer",
+  deliveryFormat: "self_serve",
+  audiencePlural: "hikers",
+  commercialModel: "free",
+  goal: {
+    kind: "waitlist",
+    target: { count: 50, unit: "signups" },
+    paidPush: { dailyBudgetUsd: 7 },
+  },
 };
