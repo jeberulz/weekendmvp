@@ -7,7 +7,13 @@
  * Seller / MoR: Rulz&Co (confirmed). Checkout uses automatic_tax with
  * tax-inclusive Stripe prices and the line
  * "No VAT added: Rulz&Co is not VAT-registered."
+ *
+ * Free-session catalogue lives in `lib/live/sessions.ts`. FREE_WEBINAR is
+ * derived from the HydroTrail entry so the 31 Oct page and banner stay in
+ * sync while `/live/48-hours` still exists (redirect lands in a later PR).
  */
+
+import { hydrotrailSession } from "@/lib/live/sessions";
 
 export const LIVE_EVENT_KEY = "build-along-2026-11-14" as const;
 
@@ -42,15 +48,25 @@ export function liveZoomUrl(env: NodeJS.ProcessEnv = process.env): string {
 /** Signup attribution tag for Build-Along gate → account creation. */
 export const LIVE_BUILDALONG_SIGNUP_SRC = "live-buildalong" as const;
 
+const HYDROTRAIL = hydrotrailSession();
+const HYDROTRAIL_START_MS = Date.parse(HYDROTRAIL.startsAt);
+const HYDROTRAIL_END_MS = Date.parse(HYDROTRAIL.endsAt);
+/** 7-day registrant replay window after the session (Luma Blast). */
+const HYDROTRAIL_REPLAY_ENDS_MS =
+  HYDROTRAIL_END_MS + 7 * 24 * 60 * 60 * 1000;
+
 export const FREE_WEBINAR = {
+  /** Legacy path until the redirect PR; session page slug is HydroTrail.ideaSlug. */
   slug: "48-hours",
-  title: "Build a real app live in one hour (free)",
-  startAt: Date.parse("2026-10-31T16:00:00.000Z"),
-  endAt: Date.parse("2026-10-31T17:00:00.000Z"),
-  /** 7-day registrant replay window after the session. */
-  replayEndsAt: Date.parse("2026-11-07T17:00:00.000Z"),
-  durationMin: 60,
+  title: HYDROTRAIL.title,
+  startAt: HYDROTRAIL_START_MS,
+  endAt: HYDROTRAIL_END_MS,
+  replayEndsAt: HYDROTRAIL_REPLAY_ENDS_MS,
+  durationMin: Math.round((HYDROTRAIL_END_MS - HYDROTRAIL_START_MS) / 60_000),
   platform: "YouTube Live" as const,
+  /** Permanent session page once `/live/[session]` ships. */
+  sessionSlug: HYDROTRAIL.slug,
+  sessionId: HYDROTRAIL.id,
 } as const;
 
 /** Drop trailing "(free)" when the surface already badges Free. */
