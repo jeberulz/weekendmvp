@@ -100,7 +100,11 @@ pack, ads drafts, and the policy check with memory summary.
 
 ## Proposals for the owner (before C-JOBS freezes)
 
-**2026-11-05:** the owner approved proposals 1 and 2 (offer and post image 3 credits, brand kit regenerate 11), and C-JOBS now carries them. Proposals 3–5 are still open; proposal 3 (Recraft as the default for standard images) is load-bearing for the 3-credit price and conflicts with D11, which sends photo-style offer images to gpt-image-2.
+**2026-11-05, owner:**
+- Standard offer and post images are **4 credits** and stay on gpt-image-2, as D11 says.
+- Brand kit regenerate is **11 credits**, with logo marks on Recraft.
+- C-JOBS carries both. Proposal 3 is settled by keeping D11 as it is.
+- Proposals 4 and 5 are still open.
 
 1. **Offer / post image, standard: 2 → 3 credits** with Recraft as the default
    provider ($0.0117 per credit), or 4 credits if OpenAI is the default ($0.0103).

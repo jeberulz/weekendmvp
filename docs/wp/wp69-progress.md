@@ -276,3 +276,11 @@ copy them exactly.
   - a Recraft measurement;
   - **D11 vs Recraft**: 3 credits holds the rule only if standard offer images render on Recraft. D11 sends
     photo-style offer images to gpt-image-2 ($0.041 measured), which would need 4 credits. Asked the owner.
+
+## 2026-11-05 - S5: image provider settled (owner)
+
+- The owner chose to keep D11: standard offer and post images render on gpt-image-2 medium, at **4 credits**
+  ($0.0103 a credit, 74% margin on Growth). Brand kit regenerate stays at 11, with logo marks on Recraft. A test
+  pins both provider assumptions.
+- `PRICES_STATUS` stays provisional. Still open: video, the unpriced change rounds, the paid global budget,
+  and a Recraft measurement for logo marks.

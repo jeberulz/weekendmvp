@@ -265,10 +265,10 @@ export type CreditAction = {
 
 export const CREDIT_ACTIONS = {
   offer_image_standard: {
-    // 3 credits (owner, 2026-11-05): a standard image measured $0.035 (Recraft V4.1 list
-    // price) and $0.041 (OpenAI gpt-image-2 medium) in WP69-S4, over 2 × $0.013. Three
-    // credits hold the rule only on Recraft, so Recraft is the default image provider.
-    credits: 3,
+    // 4 credits (owner, 2026-11-05): photo-style offer images render on gpt-image-2
+    // medium (D11), measured at $0.041 in WP69-S4. 4 × $0.013 = $0.052 covers it, and
+    // covers Recraft V4.1 ($0.035) too.
+    credits: 4,
     jobType: "studio_image",
     billing: "always",
     label: "Offer image, standard quality",
@@ -282,8 +282,8 @@ export const CREDIT_ACTIONS = {
     constraints: { imageQuality: "high" },
   },
   post_image: {
-    // Same render as a standard offer image, so the same 3 credits.
-    credits: 3,
+    // Same render as a standard offer image, so the same 4 credits.
+    credits: 4,
     jobType: "studio_image",
     billing: "always",
     label: "Story or post image",

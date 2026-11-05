@@ -121,9 +121,9 @@ describe("C-JOBS", () => {
       Object.entries(CREDIT_ACTIONS).map(([key, action]) => [key, action.credits]),
     );
     expect(prices).toEqual({
-      offer_image_standard: 3,
+      offer_image_standard: 4,
       offer_image_high_quality: 5,
-      post_image: 3,
+      post_image: 4,
       short_video: 30,
       launch_film: 150,
       brand_kit_regenerate: 11,
@@ -148,12 +148,12 @@ describe("C-JOBS", () => {
 
   // Planning provider costs (03 §7, 2026-11-05). S5 replaces these with measured values.
   // Measured in the WP69-S4 spike (2026-11-05) where it ran; `03` §7 planning values elsewhere
-  // (high-quality image, video, launch film, hire). Images use Recraft V4.1's list price, the
-  // default provider.
+  // (high-quality image, video, launch film, hire). Standard images use gpt-image-2 medium
+  // (D11); logo marks in the brand kit use Recraft V4.1's list price.
   const PLANNING_PROVIDER_MICRO_USD: Record<CreditActionKey, number> = {
-    offer_image_standard: 35_000,
+    offer_image_standard: 41_000,
     offer_image_high_quality: 50_000,
-    post_image: 35_000,
+    post_image: 41_000,
     short_video: 400_000,
     launch_film: 1_500_000,
     brand_kit_regenerate: 132_300,
@@ -181,12 +181,15 @@ describe("C-JOBS", () => {
     expect(maxProviderMicroUsdFor(CREDIT_ACTIONS.short_video.credits)).toBe(390_000);
   });
 
-  test("the image prices hold the rule on Recraft, not on OpenAI", () => {
-    expect(CREDIT_ACTIONS.offer_image_standard.credits).toBe(3);
-    expect(CREDIT_ACTIONS.post_image.credits).toBe(3);
+  test("image prices hold the rule on the providers D11 names", () => {
+    expect(CREDIT_ACTIONS.offer_image_standard.credits).toBe(4);
+    expect(CREDIT_ACTIONS.post_image.credits).toBe(4);
     expect(CREDIT_ACTIONS.brand_kit_regenerate.credits).toBe(11);
-    // OpenAI gpt-image-2 medium measured $0.041 a hero and $0.053 a logo mark (WP69-S4).
-    expect(priceRespectsCostRule(CREDIT_ACTIONS.offer_image_standard.credits, 41_000)).toBe(false);
+    // Standard images on gpt-image-2 medium ($0.041, WP69-S4) or Recraft V4.1 ($0.035) both pass.
+    expect(priceRespectsCostRule(CREDIT_ACTIONS.offer_image_standard.credits, 41_000)).toBe(true);
+    expect(priceRespectsCostRule(CREDIT_ACTIONS.offer_image_standard.credits, 35_000)).toBe(true);
+    // Logo marks must stay on Recraft (D11): three gpt-image-2 marks at $0.053 break 11 credits.
+    expect(priceRespectsCostRule(CREDIT_ACTIONS.brand_kit_regenerate.credits, 27_300 + 3 * 35_000)).toBe(true);
     expect(priceRespectsCostRule(CREDIT_ACTIONS.brand_kit_regenerate.credits, 27_300 + 3 * 53_000)).toBe(false);
   });
 
@@ -241,7 +244,7 @@ describe("C-JOBS", () => {
     for (const changeRound of [0, 1, 2, 3]) {
       expect(
         creditCostFor({ jobType: "studio_image", changeRound, action: "offer_image_standard", plan: "free" }),
-      ).toEqual({ credits: 3, free: false, reason: "always_paid", action: "offer_image_standard" });
+      ).toEqual({ credits: 4, free: false, reason: "always_paid", action: "offer_image_standard" });
     }
     expect(
       creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "builders_hub" }).credits,
