@@ -22,7 +22,7 @@ Definition of done: dormant additive credit buckets, idempotent grants and refun
 - [x] `WP73-S5` - Credits summary
   - Add an owner-scoped query for balance, allowance, bonus and period end, failing closed behind the workspace switch.
   - Verify ownership and missing-account behavior.
-- [ ] `WP73-S6` - Property and full gate
+- [x] `WP73-S6` - Property and full gate
   - Test varied grant, debit, refund and expiry sequences for ledger sum and bucket invariants; leave `billing.test.ts` unchanged.
   - Run typecheck, lint, full tests, build, isolated local Convex and diff check; request Claude's independent review before merge.
 

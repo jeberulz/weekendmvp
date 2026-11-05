@@ -48,3 +48,9 @@ Append-only progress log. Do not rely on chat history for project state.
 
 - `VITEST_MAX_WORKERS=2 npm test` passed (exit 0) with WP70's heavy checks paused. All chained suites passed, including the unchanged `convex/platform/billing/billing.test.ts` and new WP73 tests. Focused WP64 isolation tests also passed (27/27).
 - `npm run typecheck` passed; focused ESLint on changed source passed. Full lint previously passed with 0 errors and 37 existing warnings before the final gate refinements. Build, local Convex deployment, final lint and branch diff check remain to run before PR.
+
+## 2026-11-05 - WP73-S6 complete
+
+- Final checks: `npm run typecheck` passed; `npm run lint` passed with 0 errors and 37 existing warnings; `VITEST_MAX_WORKERS=2 npm test` passed every chained suite; `npm run build` passed; isolated anonymous local Convex on 3330/3331 installed the new `ai_usage.by_taskId_and_sentAt` index and reported functions ready; `git diff --check origin/main...HEAD` passed after removing Markdown hard-break whitespace.
+- The unchanged `convex/platform/billing/billing.test.ts` stayed green. The new randomized grant/debit/refund/expiry test checks ledger sum equals balance, nonnegative buckets absent dispute and exact source splits after each step. No live provider, Stripe, cloud Convex or production call ran.
+- Docs updated: this WP's stories/progress. The post-G0 contract changes are requested from Claude for the orchestrator-owned `contract-changes.md`; WP74/WP80 preconditions and G1 race test are recorded here. Independent cross-lane review remains required before John merges the PR.
