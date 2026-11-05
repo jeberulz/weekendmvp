@@ -125,8 +125,8 @@ export type RosterInput = z.infer<typeof rosterInputSchema>;
 const hiredEntrySchema = z
   .object({
     roleKey: roleKeySchema,
-    employeeName: z.string().min(1),
-    roleLabel: z.string().min(1),
+    employeeName: singleLineText(40),
+    roleLabel: singleLineText(40),
     hiredBy: z.enum(["rule", "founder"]),
     always: z.boolean(),
     weight: engineeringWeightSchema.optional(),
@@ -137,7 +137,7 @@ const hiredEntrySchema = z
 const skippedEntrySchema = z
   .object({
     roleKey: roleKeySchema,
-    roleLabel: z.string().min(1),
+    roleLabel: singleLineText(40),
     reason: z.string().trim().min(1).max(160),
   })
   .strict();
@@ -145,10 +145,10 @@ const skippedEntrySchema = z
 export const rosterPlanSchema = z
   .object({
     schemaVersion: z.literal(1),
-    rulesVersion: z.string(),
+    rulesVersion: singleLineText(32),
     ideaKind: ideaKindSchema,
-    hired: z.array(hiredEntrySchema),
-    skipped: z.array(skippedEntrySchema),
+    hired: z.array(hiredEntrySchema).max(ROLE_KEYS.length),
+    skipped: z.array(skippedEntrySchema).max(ROLE_KEYS.length),
   })
   .strict()
   .superRefine((plan, ctx) => {

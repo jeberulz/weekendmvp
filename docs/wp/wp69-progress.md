@@ -75,7 +75,7 @@ Not yet. Written when the WP closes.
   seed precompute counts against the global budget; prices for the five job types without one; short
   video at 35 credits or 6 s clips.
 
-## 2026-11-05 - WP69-S1 (artifact schemas) - in review repair
+## 2026-11-05 - WP69-S1 (artifact schemas) - done
 
 - Files: `lib/workspace/contracts/artifacts.ts`, `fixtures/hydrotrail.ts`,
   `tests/platform/workspace-artifacts.test.ts` (plus bounds in `roster.ts`). Author: Opus. Reviewer: Opus.
@@ -101,3 +101,22 @@ Not yet. Written when the WP closes.
   - Emphasis must end the text.
   - The launch link is split into site path or workspace page.
   - Every landing page keeps a waitlist (v1 sites have no checkout).
+- Repair result: all 16 applied. Structured-outputs limits checked against the live docs: no length,
+  numeric or maxItems keywords; minItems only 0 or 1; anyOf yes, oneOf and `\p{}` undocumented (treated as
+  unsupported); 24 optional and 16 union parameters per request. `artifactJsonSchema(kind)` strips the
+  unsupported keywords and rewrites oneOf; zod keeps every limit as the post-parse check.
+  Every kind fits those limits (largest: landing_spec 15 optional, 1 union).
+- Author decisions accepted: FAQ section dropped (can return as an optional slot); launch links keep the
+  `artifactKind` variant; blueprint and build pack export per-variant schemas so the gateway sends a
+  single-object schema; URLs need a dotted host; email bodies reject bare domains.
+  `PLATFORM_CAPTION_LIMITS` values are marked unverified.
+- The fixture's `scaffold.first` passes the repo's own `lintPrompts` (setup rules).
+- Checks: 142 artifact tests + 36 role tests pass; `tsc -p .` exit 0; eslint clean on the touched files.
+
+## 2026-11-05 - Full checks before the contract PR
+
+- `npm run typecheck`: exit 0.
+- `npm run lint`: exit 0 (37 warnings, all in files this WP does not touch).
+- `npm test`: exit 0. All 13 suites pass; `test:platform` 37 files / 680 tests, including
+  `workspace-artifacts` and `workspace-jobs-contracts`. `test:convex` includes `crew/roles.test.ts`.
+- `npm run build`: see the next entry.
