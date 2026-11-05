@@ -3,8 +3,9 @@
 **Status:** Estimates of 2026-11-05, with measured values from the WP69-S4 spike
 (live, 2026-11-05, 6 businesses, $5.72) added beside them in §1, §3, §4 and §7.
 Full results: `docs/wp/wp69-spike-results.md`. Not yet measured: Recraft images,
-video, chat and change rounds. **The credit prices in §7 are not frozen**: two
-of them fail the per-credit rule, and the proposals are with the owner.
+video, chat and change rounds. **The credit prices in §7 are frozen** (owner,
+2026-11-05, at G0). Video and change round 3+ of the five unpriced artifacts stay
+unpriced; WP82 prices video through the `05` §5 contract-change rule.
 
 The short version:
 
@@ -17,8 +18,8 @@ The short version:
   precomputing per-idea material.
 - **The worst-case free account reaches the $1.50 ceiling** only by using every free
   change round and the full chat cap. The ceiling is a guard, not the normal case.
-- **Every credit action keeps 67–88% gross margin on Growth** at the recommended
-  prices. Video is the thinnest and is allowed only on the cheapest provider tier.
+- **Every priced credit action keeps 70–88% gross margin on Growth** at the frozen
+  prices. Video is unpriced until WP82 and will run only on the cheapest provider tier.
 
 ## 1. Prices used (dated)
 
@@ -148,8 +149,8 @@ $0.040 on Growth.
 | Offer image, standard | **$0.041** (gpt-image-2 medium, measured) | **4** | $0.0103 | $0.23 / $0.16 | 74% |
 | Offer image, high quality | $0.05 | 5 | $0.010 | $0.29 / $0.20 | 75% |
 | Story / post image | **$0.041** (gpt-image-2 medium) | **4** | $0.0103 | $0.23 / $0.16 | 74% |
-| Short video ≤ 8 s (cheapest tier) | $0.40 | 30 | $0.013 | $1.74 / $1.20 | **67%** |
-| Launch film ≤ 30 s (cheapest tier, paid only) | $1.50 | 150 | $0.010 | $8.70 / $6.00 | 75% |
+| Short video ≤ 8 s (cheapest tier) | $0.40 (planning) | **Unpriced (WP82)** | — | — | — |
+| Launch film ≤ 30 s (cheapest tier, paid only) | $1.50 (planning) | **Unpriced (WP82)** | — | — | — |
 | Brand kit regenerate | **$0.132** (measured, Recraft logos) | **11** | $0.0120 | $0.64 / $0.44 | 70% |
 | Landing regenerate | $0.04 | 5 | $0.008 | $0.29 / $0.20 | 80% |
 | Email sequence regenerate | $0.03 | 3 | $0.010 | $0.17 / $0.12 | 75% |
@@ -157,8 +158,10 @@ $0.040 on Growth.
 | Hire a skipped specialist | $0.05–$0.10 | 20 | ≤ $0.005 | $1.16 / $0.80 | ≥ 88% |
 | Engineering pack regenerate | $0.075 | 8 | $0.009 | $0.46 / $0.32 | 77% |
 
-Video sits below the 70% margin target on Growth. Two ways to fix it if the spike
-confirms the cost: price short video at 35 credits, or default clips to 6 s.
+Video is unpriced (owner, 2026-11-05). At 30 credits the short video broke the
+rule against its $0.40 planning cost, and no video provider has been measured.
+WP82 measures one, then prices both actions through a contract change; 35 credits
+or 6 s clips are the options for the short video.
 
 ## 8. Cost levers, ranked by savings
 

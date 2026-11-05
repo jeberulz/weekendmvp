@@ -284,3 +284,38 @@ copy them exactly.
   pins both provider assumptions.
 - `PRICES_STATUS` stays provisional. Still open: video, the unpriced change rounds, the paid global budget,
   and a Recraft measurement for logo marks.
+
+## 2026-11-05 - S5: C-JOBS frozen (owner, G0)
+
+- The owner decided: "Freeze, leave rest unpriced".
+- `jobs.ts`:
+  - `PRICES_STATUS` is `"frozen"`, and its doc comment now covers the `05` §5 rule, what stays unpriced, the
+    200-action re-check and the Recraft logo measurement that is still owed.
+  - `short_video` and `launch_film` left `CREDIT_ACTIONS`, so every entry there has a real price.
+  - Their definitions moved to `UNPRICED_CREDIT_ACTIONS`, with `UnpricedCreditActionKey` and
+    `isUnpricedCreditActionKey`. A `satisfies` clause stops a key from being in both tables.
+  - `creditCostFor` and `actionAllowedOnPlan` accept unpriced keys. An unpriced action is checked for
+    `UNKNOWN_ACTION` and `ACTION_JOB_MISMATCH`, then `PLAN_GATED`, then throws `PRICE_NOT_SET`.
+  - Every other price is unchanged.
+- Tests: the video rows left the D4 table and the cost-rule test (`failing` is now `[]`). New tests cover the
+  unpriced table (keys, no overlap, constraints) and the order of the errors.
+- The five unpriced change rounds still throw `PRICE_NOT_SET`. The decision does not cover the paid global
+  budget, which is a C-METER value, not a price.
+- Checks:
+  - typecheck: exit 0.
+  - lint: exit 0 (37 existing warnings, none in changed files).
+  - jobs test file (`vitest run`): 61 passed after the review fixes; `npm test` rerun exit 0 (test:platform 786).
+  - `npm test`: exit 0 (test:platform 785 passed).
+  - build: exit 0.
+- Docs updated: `03-ai-cost-model.md` (status, §7 video rows, margin line), `01-strategy.md` §6,
+  `04-build-plan.md` WP82 S1 and S2, `README.md` (margin headline), `RULINGS.md` (one new row),
+  `wp69-stories.md` (S5 ticked) and `wp69-spike-results.md` (proposals 4 and 5).
+- Independent Opus review: nothing blocking; 5 low findings, all fixed:
+  - stale margin headline in `README.md`;
+  - the `PRICE_TBD_JOB_TYPES` comment still called it an open question;
+  - `01` §6 did not say the prices are frozen;
+  - tests did not pin prototype keys, the compile-time overlap guard (`@ts-expect-error`), a crew job given
+    an unpriced action, or the launch film on Growth;
+  - `CreditActionDefinition` added as the shared type name.
+  Also fixed: the two stale 2-credit image references in `01` §6 and `04` WP82 S1. Left for C-METER: the
+  `MAX_RESERVATION_MICRO_USD` comment still says "provisional until the spike".

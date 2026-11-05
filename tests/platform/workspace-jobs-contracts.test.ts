@@ -13,12 +13,16 @@ import {
   PRICES_STATUS,
   REGENERATE_ACTION_BY_JOB_TYPE,
   STARTER_CREDITS,
+  UNPRICED_CREDIT_ACTIONS,
+  type UnpricedCreditAction,
   WORKSPACE_FEATURE_KEYS,
   WORKSPACE_PLAN_IDS,
   WORKSPACE_PLAN_REFERENCE,
   actionAllowedOnPlan,
   creditCostFor,
+  isCreditActionKey,
   isJobsContractError,
+  isUnpricedCreditActionKey,
   jobKey,
   maxProviderMicroUsdFor,
   parseJobKey,
@@ -116,7 +120,7 @@ describe("C-JOBS", () => {
     ]);
   });
 
-  test("credit prices match the D4 table (amended 2026-11-05) exactly", () => {
+  test("credit prices match the frozen D4 table (2026-11-05) exactly", () => {
     const prices = Object.fromEntries(
       Object.entries(CREDIT_ACTIONS).map(([key, action]) => [key, action.credits]),
     );
@@ -124,8 +128,6 @@ describe("C-JOBS", () => {
       offer_image_standard: 4,
       offer_image_high_quality: 5,
       post_image: 4,
-      short_video: 30,
-      launch_film: 150,
       brand_kit_regenerate: 11,
       landing_regenerate: 5,
       email_sequence_regenerate: 3,
@@ -133,12 +135,53 @@ describe("C-JOBS", () => {
       hire_skipped_specialist: 20,
       build_pack_regenerate: 8,
     });
-    expect(PRICES_STATUS).toBe("provisional");
+    expect(PRICES_STATUS).toBe("frozen");
+    for (const action of Object.values(CREDIT_ACTIONS)) {
+      expect(Number.isInteger(action.credits) && action.credits > 0).toBe(true);
+    }
+  });
+
+  test("video actions are unpriced until WP82 and never overlap the priced table", () => {
+    expect(Object.keys(UNPRICED_CREDIT_ACTIONS)).toEqual(["short_video", "launch_film"]);
+    const priced = new Set(Object.keys(CREDIT_ACTIONS));
+    expect(Object.keys(UNPRICED_CREDIT_ACTIONS).filter((key) => priced.has(key))).toEqual([]);
+    for (const action of Object.values(UNPRICED_CREDIT_ACTIONS)) {
+      expect(action).not.toHaveProperty("credits");
+      expect(action).toMatchObject({ jobType: "studio_video", billing: "always" });
+    }
+    expect(isUnpricedCreditActionKey("short_video")).toBe(true);
+    expect(isCreditActionKey("short_video")).toBe(false);
+    expect(isUnpricedCreditActionKey("offer_image_standard")).toBe(false);
+    // The `satisfies` clause rejects a key that is also priced (compile-time pin).
+    const overlapping = {
+      // @ts-expect-error a priced key may not appear in the unpriced table
+      post_image: { jobType: "studio_image", billing: "always", label: "dup", constraints: {} },
+    } as const satisfies Record<string, UnpricedCreditAction> & { readonly [K in CreditActionKey]?: never };
+    expect(Object.keys(overlapping)).toEqual(["post_image"]);
+  });
+
+  test("prototype keys are never credit actions", () => {
+    for (const key of ["constructor", "__proto__", "toString", "hasOwnProperty", "valueOf"]) {
+      expect(isCreditActionKey(key)).toBe(false);
+      expect(isUnpricedCreditActionKey(key)).toBe(false);
+      expectCode(
+        () => creditCostFor({ jobType: "studio_video", changeRound: 0, action: key as never, plan: "growth" }),
+        "UNKNOWN_ACTION",
+      );
+      expectCode(
+        () => creditCostFor({ jobType: "crew_landing", changeRound: 3, action: key as never, plan: "growth" }),
+        "UNKNOWN_ACTION",
+      );
+    }
   });
 
   test("action constraints: short video cheapest tier, film paid plans only", () => {
-    expect(CREDIT_ACTIONS.short_video.constraints).toMatchObject({ maxVideoSeconds: 8, providerTier: "cheapest" });
-    expect(CREDIT_ACTIONS.launch_film.constraints).toMatchObject({ maxVideoSeconds: 30 });
+    expect(UNPRICED_CREDIT_ACTIONS.short_video.constraints).toEqual({ maxVideoSeconds: 8, providerTier: "cheapest" });
+    expect(UNPRICED_CREDIT_ACTIONS.launch_film.constraints).toEqual({
+      maxVideoSeconds: 30,
+      providerTier: "cheapest",
+      requiresFeature: "studioLongVideo",
+    });
     expect(actionAllowedOnPlan("launch_film", "free")).toBe(false);
     expect(actionAllowedOnPlan("launch_film", "builders_hub")).toBe(true);
     expect(actionAllowedOnPlan("hire_skipped_specialist", "builders_hub")).toBe(false);
@@ -146,16 +189,14 @@ describe("C-JOBS", () => {
     expect(actionAllowedOnPlan("short_video", "free")).toBe(true);
   });
 
-  // Planning provider costs (03 §7, 2026-11-05). S5 replaces these with measured values.
-  // Measured in the WP69-S4 spike (2026-11-05) where it ran; `03` §7 planning values elsewhere
-  // (high-quality image, video, launch film, hire). Standard images use gpt-image-2 medium
-  // (D11); logo marks in the brand kit use Recraft V4.1's list price.
+  // Provider costs behind the frozen prices (2026-11-05). Measured in the WP69-S4 spike where
+  // it ran; `03` §7 planning values elsewhere (high-quality image, hire). Standard images use
+  // gpt-image-2 medium (D11); logo marks in the brand kit use Recraft V4.1's list price.
+  // Video is unpriced (WP82): its planning costs were $0.40 (short video) and $1.50 (launch film).
   const PLANNING_PROVIDER_MICRO_USD: Record<CreditActionKey, number> = {
     offer_image_standard: 41_000,
     offer_image_high_quality: 50_000,
     post_image: 41_000,
-    short_video: 400_000,
-    launch_film: 1_500_000,
     brand_kit_regenerate: 132_300,
     landing_regenerate: 33_500,
     email_sequence_regenerate: 31_300,
@@ -171,14 +212,11 @@ describe("C-JOBS", () => {
     expect(priceRespectsCostRule(10, 130_001)).toBe(false);
   });
 
-  test("every action but short video covers its planning provider cost", () => {
+  test("every priced action covers its provider cost", () => {
     const failing = (Object.keys(CREDIT_ACTIONS) as CreditActionKey[]).filter(
       (key) => !priceRespectsCostRule(CREDIT_ACTIONS[key].credits, PLANNING_PROVIDER_MICRO_USD[key]),
     );
-    // Known: 30 credits × $0.013 = $0.39 < $0.40 planning cost (03 §7: "$0.013" is rounded
-    // from $0.0133). Raised to the owner; S5 decides 35 credits or 6 s clips.
-    expect(failing).toEqual(["short_video"]);
-    expect(maxProviderMicroUsdFor(CREDIT_ACTIONS.short_video.credits)).toBe(390_000);
+    expect(failing).toEqual([]);
   });
 
   test("image prices hold the rule on the providers D11 names", () => {
@@ -246,9 +284,6 @@ describe("C-JOBS", () => {
         creditCostFor({ jobType: "studio_image", changeRound, action: "offer_image_standard", plan: "free" }),
       ).toEqual({ credits: 4, free: false, reason: "always_paid", action: "offer_image_standard" });
     }
-    expect(
-      creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "builders_hub" }).credits,
-    ).toBe(150);
     expect(creditCostFor({ jobType: "crew_hire", changeRound: 0, plan: "growth" })).toEqual({
       credits: 20,
       free: false,
@@ -264,6 +299,41 @@ describe("C-JOBS", () => {
     );
     expectCode(() => creditCostFor({ jobType: "crew_hire", changeRound: 0, plan: "builders_hub" }), "PLAN_GATED");
     expectCode(() => creditCostFor({ jobType: "crew_hire", changeRound: 0, plan: "free" }), "PLAN_GATED");
+  });
+
+  test("unpriced video actions are validated, then throw PRICE_NOT_SET (plan gate first)", () => {
+    for (const changeRound of [0, 3]) {
+      expectCode(
+        () => creditCostFor({ jobType: "studio_video", changeRound, action: "short_video", plan: "free" }),
+        "PRICE_NOT_SET",
+      );
+    }
+    expectCode(
+      () => creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "builders_hub" }),
+      "PRICE_NOT_SET",
+    );
+    // A Free owner hears "not on your plan" before "no price yet".
+    expectCode(
+      () => creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "free" }),
+      "PLAN_GATED",
+    );
+    expectCode(
+      () => creditCostFor({ jobType: "studio_image", changeRound: 0, action: "short_video", plan: "free" }),
+      "ACTION_JOB_MISMATCH",
+    );
+    expectCode(
+      () => creditCostFor({ jobType: "studio_video", changeRound: 0, action: "long_video" as never, plan: "growth" }),
+      "UNKNOWN_ACTION",
+    );
+    expectCode(() => creditCostFor({ jobType: "studio_video", changeRound: 0, plan: "growth" }), "ACTION_REQUIRED");
+    expectCode(
+      () => creditCostFor({ jobType: "studio_video", changeRound: 0, action: "launch_film", plan: "growth" }),
+      "PRICE_NOT_SET",
+    );
+    expectCode(
+      () => creditCostFor({ jobType: "crew_landing", changeRound: 3, action: "short_video", plan: "growth" }),
+      "ACTION_JOB_MISMATCH",
+    );
   });
 
   test("unpriced artifacts throw PRICE_NOT_SET past the free rounds", () => {
@@ -290,6 +360,10 @@ describe("C-JOBS", () => {
     expectCode(
       () => creditCostFor({ ...base, jobType: "studio_image", changeRound: 0, action: "short_video" }),
       "ACTION_JOB_MISMATCH",
+    );
+    expectCode(
+      () => creditCostFor({ ...base, jobType: "studio_image", changeRound: 0, action: "garbage" as never }),
+      "UNKNOWN_ACTION",
     );
     expectCode(() => creditCostFor({ ...base, jobType: "nope" as never, changeRound: 0 }), "UNKNOWN_JOB_TYPE");
     expectCode(

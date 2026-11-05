@@ -131,7 +131,7 @@ credit allotment with notice under the Terms.
 ## 6. Credit prices (ruled: D4)
 
 One credit is worth $0.058 on Builder's Hub ($29/500) and $0.040 on Growth
-($79/2,000). The rule we propose: **provider cost per credit must stay at or below
+($79/2,000). The rule (D4): **provider cost per credit must stay at or below
 $0.013**, so that even Growth keeps about a 3× gross margin on compute.
 
 | Action | Canvas draft | Recommended | Why |
@@ -139,17 +139,19 @@ $0.013**, so that even Growth keeps about a 3× gross margin on compute.
 | Offer image, standard quality | 2 | **4** (owner, 2026-11-05) | Rendered on gpt-image-2 medium (D11), measured at $0.041 in WP69-S4. At 4 credits the rule allows ≤ $0.052. |
 | Offer image, high quality | — | **5** (new) | For the $0.04–$0.06 models and quality settings. |
 | Story / post image | 2 | **4** (owner, 2026-11-05) | Same render as the standard offer image. |
-| Short video (≤8 s) | 15 | **30** | Video costs $0.05–$0.40 per second. 8 s on the cheapest tier is $0.40, so 30 credits is the floor, and only the cheapest tier is allowed at that price. |
-| UGC / launch film (≤30 s) | 25 | **150**, paid plans only | 30 s at $0.05/s is $1.50 of provider cost on the cheapest tier. 25 credits ($1.00 on Growth) loses money on every render. |
+| Short video (≤8 s) | 15 | **Unpriced until WP82** (owner, 2026-11-05) | 8 s on the cheapest tier is about $0.40, which 30 credits does not cover. No provider is measured yet; WP82 sets the price through a contract change. |
+| UGC / launch film (≤30 s) | 25 | **Unpriced until WP82**, paid plans only | About $1.50 for 30 s on the cheapest tier; 25 credits loses money. Priced in WP82 with the short video. |
 | Brand kit regenerate | 10 | **11** (owner, 2026-11-05) | Measured: text $0.027 plus 3 Recraft logo marks at $0.035 ≈ $0.132, just over 10 × $0.013. |
-| Landing regenerate | 8 | 5 | Text only (about $0.05). A new hero image is a separate 2-credit image. |
+| Landing regenerate | 8 | 5 | Text only (about $0.05). A new hero image is a separate 4-credit image. |
 | Email sequence regenerate | 5 | 3 | Text only (about $0.04). |
 | Extra social pack (7) | 5 | 5 | Text only (under $0.03); images are priced separately. |
 | Hire a skipped specialist | 20 | 20 | Covers its first workstream (about $0.05–$0.10). |
 | Engineering pack regenerate | 10 | 8 | Text, about $0.08 with the drafting model. |
 
-Every price is re-checked against measured cost (`03-ai-cost-model.md` §7) at the
-end of Phase 0 and again after the first 200 paid actions.
+These prices were measured in Phase 0 (`03-ai-cost-model.md` §7) and frozen in
+C-JOBS on 2026-11-05 at G0. Video and change round 3+ of the five unpriced
+artifacts stay unpriced. Any change is a contract change (`05` §5). Every price is
+re-checked after the first 200 paid actions.
 
 Every first draft in the weekend shell, and **two "Ask for changes" rounds per
 artifact**, stay free. Regenerations after that use credits. Wren always shows the

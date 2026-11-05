@@ -403,10 +403,12 @@ duplicated webhooks). Ledger property tests green. Owner approves live Growth ob
 **Owns:** `convex/studio/**`, `convex/ai/providers/video.ts`, Studio pages. Codex adds
 the one `convex/crons.ts` entry that calls Claude's poller.
 
-- S1 Image jobs: standard (2) and high quality (5); debit at start, refund on failure;
+- S1 Image jobs: standard (4) and high quality (5); debit at start, refund on failure;
   alt text required before use on the site.
-- S2 Video jobs: `provider_jobs` and the poller; short video (30) on every plan with
-  credits; launch film (150) paid only; `studioVideo` kill switch.
+- S2 Video jobs: `provider_jobs` and the poller; short video on every plan with
+  credits; launch film paid only; `studioVideo` kill switch. Both are unpriced in
+  C-JOBS: S2 measures a provider and sets their prices through a contract change
+  (`05` §5) before the job ships.
 - S3 Moderation check before a render and on the result.
 - S4 Studio page from the canvas: gallery, prompt, presets from the brand kit,
   credit cost shown, download.

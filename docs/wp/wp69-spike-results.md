@@ -104,7 +104,11 @@ pack, ads drafts, and the policy check with memory summary.
 - Standard offer and post images are **4 credits** and stay on gpt-image-2, as D11 says.
 - Brand kit regenerate is **11 credits**, with logo marks on Recraft.
 - C-JOBS carries both. Proposal 3 is settled by keeping D11 as it is.
-- Proposals 4 and 5 are still open.
+- Proposal 5 is decided (owner, 2026-11-05: "Freeze, leave rest unpriced"):
+  video stays unpriced until WP82, which prices it through the `05` §5
+  contract-change rule. C-JOBS is now frozen.
+- Proposal 4 (seed budget) is not a price. It is an approval for WP71 and is
+  asked there.
 
 1. **Offer / post image, standard: 2 → 3 credits** with Recraft as the default
    provider ($0.0117 per credit), or 4 credits if OpenAI is the default ($0.0103).

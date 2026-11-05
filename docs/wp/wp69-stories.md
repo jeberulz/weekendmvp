@@ -54,7 +54,7 @@ role rules tested, spike costs measured and recorded (`04` WP69 acceptance).
   - Acceptance criteria: the seven steps of `03` §10 measured; tokens by class, cost, latency,
     cache hits, image and video cost and quality recorded; total spend reported.
 
-- [ ] `WP69-S5` - Record measured costs and freeze C-JOBS — measured values recorded in `03`; freeze waits on the owner (two prices fail the credit rule)
+- [x] `WP69-S5` - Record measured costs and freeze C-JOBS — measured values recorded in `03`; C-JOBS frozen 2026-11-05 at G0 (owner: "Freeze, leave rest unpriced"). Short video and launch film are unpriced until WP82; change round 3+ of the five unpriced artifacts stays `PRICE_NOT_SET`
   - Scope: `docs/plans/launch-workspace/03-ai-cost-model.md`, `lib/workspace/contracts/jobs.ts`
   - Acceptance criteria: measured numbers replace estimates with dates; any estimate off by
     more than 30% goes to the owner with a price or budget proposal before C-JOBS is frozen.
