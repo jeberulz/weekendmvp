@@ -271,7 +271,7 @@ export const refundFailedTask = internalMutation({
       reason: "task_refund",
       delta: -debit.delta,
       idempotencyKey: `task-refund:${debit._id}`,
-      bucketSplit: debit.bucketSplit ?? { allowance: 0n, bonus: -debit.delta },
+      bucketSplit: debit.bucketSplit,
       allowancePeriodEnd: debit.allowancePeriodEnd,
       allowNegative: false,
     });

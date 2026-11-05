@@ -1,11 +1,13 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query } from "../../_generated/server";
 import { assertFeatureEnabled } from "../../ops/settings";
 import { requireCurrentPlatformUser } from "../authz";
 
 /** Owner-scoped meter for the dormant workspace shell. */
 export const creditsSummary = query({
-  args: {},
+  // The shell changes this argument every minute so a time-only expiry
+  // invalidates the query subscription even when no ledger row is written.
+  args: { minuteTick: v.number() },
   returns: v.object({
     balance: v.int64(),
     allowanceRemaining: v.int64(),
@@ -15,7 +17,12 @@ export const creditsSummary = query({
     allowancePeriodEnd: v.union(v.number(), v.null()),
     paidActionsSuspended: v.boolean(),
   }),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    if (!Number.isSafeInteger(args.minuteTick) ||
+      Math.abs(args.minuteTick - Math.floor(now / 60_000)) > 2) {
+      throw new ConvexError({ code: "INVALID_REFRESH_TICK" });
+    }
     await assertFeatureEnabled(ctx, "workspace");
     const owner = await requireCurrentPlatformUser(ctx);
     const account = await ctx.db.query("credit_accounts")
@@ -23,7 +30,7 @@ export const creditsSummary = query({
     const balance = account?.balance ?? 0n;
     const allowanceRemaining = account?.allowanceRemaining ?? 0n;
     const expiredAllowance = account?.allowancePeriodEnd !== undefined &&
-      account.allowancePeriodEnd <= Date.now() ? allowanceRemaining : 0n;
+      account.allowancePeriodEnd <= now ? allowanceRemaining : 0n;
     const spendableBalance = balance - expiredAllowance;
     return {
       balance,

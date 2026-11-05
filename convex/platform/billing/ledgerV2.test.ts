@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import { convexTest, type TestConvex } from "convex-test";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { api, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
@@ -70,6 +70,7 @@ async function accountState(t: TestConvex<typeof schema>, ownerId: Id<"users">) 
 }
 
 const period = (n: number) => ({ periodStart: Date.now() + n * 100_000, periodEnd: Date.now() + (n + 1) * 100_000 });
+const minuteTick = () => Math.floor(Date.now() / 60_000);
 
 describe("WP73 ledger v2", () => {
   test("debits allowance first and refunds exactly the original bucket split", async () => {
@@ -120,6 +121,41 @@ describe("WP73 ledger v2", () => {
     expect(ledger.filter((row) => row.reason === "allowance_expiry")).toHaveLength(2);
     expect(ledger.find((row) => row.reason === "task_refund")?.bucketSplit).toEqual({ allowance: 40n, bonus: 0n });
     expect(ledger.reduce((sum, row) => sum + row.delta, 0n)).toBe(account?.balance);
+  });
+
+  test("a pre-v2 failed-task refund row replays without bucket metadata", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await ownerFixture(t, "legacy-refund");
+    const taskId = await taskFixture(t, owner, "legacy-refund");
+    await t.run(async (ctx) => {
+      await ctx.db.patch("tasks", taskId, { status: "failed" });
+      const accountId = await ctx.db.insert("credit_accounts", {
+        ownerId: owner.userId, balance: 50n, createdAt: 1, updatedAt: 3,
+      });
+      await ctx.db.insert("credit_ledger", {
+        ownerId: owner.userId, accountId, reason: "purchase_grant", delta: 50n,
+        balanceAfter: 50n, idempotencyKey: "legacy-purchase:fixture", createdAt: 1,
+      });
+      const debitId = await ctx.db.insert("credit_ledger", {
+        ownerId: owner.userId, accountId, projectId: owner.projectId, taskId,
+        reason: "task_debit", delta: -10n, balanceAfter: 40n,
+        idempotencyKey: `task-debit:${taskId}`, createdAt: 2,
+      });
+      await ctx.db.insert("credit_ledger", {
+        ownerId: owner.userId, accountId, projectId: owner.projectId, taskId,
+        reason: "task_refund", delta: 10n, balanceAfter: 50n,
+        idempotencyKey: `task-refund:${debitId}`, createdAt: 3,
+      });
+    });
+    const replay = await t.mutation(internal.platform.billing.ledger.refundFailedTask, {
+      taskId, projectId: owner.projectId,
+    });
+    expect(replay).toMatchObject({ duplicate: true, balance: 50n });
+    const { account, ledger } = await accountState(t, owner.userId);
+    expect(account?.balance).toBe(50n);
+    expect(ledger).toHaveLength(3);
+    expect(ledger.reduce((sum, row) => sum + row.delta, 0n)).toBe(account?.balance);
+    expect(ledger.every((row) => row.bucketSplit === undefined)).toBe(true);
   });
 
   test("a debit cannot consume allowance after its period ends before renewal", async () => {
@@ -329,7 +365,7 @@ describe("WP73 ledger v2", () => {
       if (!ops) throw new Error("missing ops fixture");
       await ctx.db.patch("ops_settings", ops._id, { workspaceEnabled: false });
     });
-    await expect(asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {}))
+    await expect(asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() }))
       .rejects.toThrow("WORKSPACE_DISABLED");
     await t.run(async (ctx) => {
       const ops = await ctx.db.query("ops_settings")
@@ -337,8 +373,8 @@ describe("WP73 ledger v2", () => {
       if (!ops) throw new Error("missing ops fixture");
       await ctx.db.patch("ops_settings", ops._id, { workspaceEnabled: true });
     });
-    const mine = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {});
-    const theirs = await asOwner(t, stranger).query(api.platform.billing.queries.creditsSummary, {});
+    const mine = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
+    const theirs = await asOwner(t, stranger).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
     expect(mine).toMatchObject({ balance: 50n, allowanceRemaining: 0n, bonusRemaining: 50n });
     expect(mine).toMatchObject({ spendableBalance: 50n, spendableAllowance: 0n });
     expect(theirs).toMatchObject({ balance: 0n, allowanceRemaining: 0n, bonusRemaining: 0n, spendableBalance: 0n });
@@ -351,7 +387,7 @@ describe("WP73 ledger v2", () => {
     await t.mutation(internal.platform.billing.grants.grantPaidInvoice, {
       ownerId: owner.userId, invoiceId: "in_summary_expiry", plan: "builders_hub", ...period(1),
     });
-    const before = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {});
+    const before = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
     expect(before).toMatchObject({ balance: 550n, allowanceRemaining: 500n, spendableBalance: 550n, spendableAllowance: 500n });
     await t.run(async (ctx) => {
       const account = await ctx.db.query("credit_accounts")
@@ -359,8 +395,31 @@ describe("WP73 ledger v2", () => {
       if (!account) throw new Error("missing account fixture");
       await ctx.db.patch("credit_accounts", account._id, { allowancePeriodEnd: Date.now() - 1 });
     });
-    const after = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, {});
+    const after = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
     expect(after).toMatchObject({ balance: 550n, allowanceRemaining: 500n, spendableBalance: 50n, spendableAllowance: 0n });
+  });
+
+  test("a minute tick refreshes spendable credits across expiry without a write", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await ownerFixture(t, "summary-tick");
+    const start = Math.ceil(Date.now() / 60_000) * 60_000 + 1_000;
+    await t.run(async (ctx) => await ctx.db.insert("credit_accounts", {
+      ownerId: owner.userId, balance: 500n, allowanceRemaining: 500n,
+      allowancePeriodEnd: start + 30_000, createdAt: 1, updatedAt: 1,
+    }));
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(start);
+      const before = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
+      expect(before).toMatchObject({ balance: 500n, spendableBalance: 500n, spendableAllowance: 500n });
+      vi.setSystemTime(start + 60_000);
+      const after = await asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() });
+      expect(after).toMatchObject({ balance: 500n, spendableBalance: 0n, spendableAllowance: 0n });
+      await expect(asOwner(t, owner).query(api.platform.billing.queries.creditsSummary, { minuteTick: minuteTick() + 10 }))
+        .rejects.toThrow("INVALID_REFRESH_TICK");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   test("varied grant, debit, refund and expiry sequences preserve ledger and bucket conservation", async () => {
