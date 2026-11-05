@@ -114,6 +114,15 @@ const nextConfig: NextConfig = {
         destination: "/ideas/today",
         permanent: false,
       },
+
+      // Weekend MVP Live series: 31 Oct free session now lives at the
+      // HydroTrail session page. permanent: true → 308; query strings pass
+      // through (utm/src). middleware.ts stays untouched.
+      {
+        source: "/live/48-hours",
+        destination: "/live/hydration-app-for-hikers",
+        permanent: true,
+      },
     ];
   },
 };

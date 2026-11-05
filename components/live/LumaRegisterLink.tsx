@@ -14,7 +14,7 @@ const BUTTON =
 /**
  * Luma register CTA that copies utm_* (and src/placement aliases) from the
  * page URL onto the Luma link. First-touch tags persist in sessionStorage so
- * /live → /live/48-hours keeps attribution. SSR href stays the bare Luma URL.
+ * /live → session page keeps attribution. SSR href stays the bare Luma URL.
  */
 export function LumaRegisterLink({
   href,

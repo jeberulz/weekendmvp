@@ -10,7 +10,7 @@
  *
  * Free-session catalogue lives in `lib/live/sessions.ts`. FREE_WEBINAR is
  * derived from the HydroTrail entry so the 31 Oct page and banner stay in
- * sync while `/live/48-hours` still exists (redirect lands in a later PR).
+ * sync; `/live/48-hours` 308s to the HydroTrail session page.
  */
 
 import { hydrotrailSession } from "@/lib/live/sessions";
@@ -56,7 +56,7 @@ const HYDROTRAIL_REPLAY_ENDS_MS =
   HYDROTRAIL_END_MS + 7 * 24 * 60 * 60 * 1000;
 
 export const FREE_WEBINAR = {
-  /** Legacy path until the redirect PR; session page slug is HydroTrail.ideaSlug. */
+  /** Legacy slug (URL 308s to sessionSlug). */
   slug: "48-hours",
   title: HYDROTRAIL.title,
   startAt: HYDROTRAIL_START_MS,
@@ -189,7 +189,6 @@ export function liveFreeHref(opts: { src: string; placement: LivePlacement }) {
     utm_campaign: UTM.free,
     utm_content: opts.placement,
   });
-  // Permanent session page (HydroTrail). /live/48-hours redirects in PR 5.
   return `/live/${FREE_WEBINAR.sessionSlug}?${q}`;
 }
 

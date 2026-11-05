@@ -30,7 +30,7 @@ import type { SeatsInfo } from "@/lib/live/seats";
 import { seatsLine } from "@/lib/live/seats";
 
 export const LIVE_HUB_PATH = "/live";
-/** Prefer the permanent session page; /live/48-hours redirects in PR 5. */
+/** Permanent HydroTrail session page (/live/48-hours 308s here). */
 export const FREE_HUB_HREF = sessionPath(FREE_WEBINAR.sessionSlug);
 export const PAID_HUB_HREF = "/live/build-along";
 export const STARTER_KIT_HREF = "/starter-kit";
