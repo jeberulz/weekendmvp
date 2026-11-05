@@ -82,3 +82,10 @@ Pending. This work package is dormant and has not been reviewed or merged.
 - Checks run: `npm run test:security` passed (149 Node security tests and 121 Vitest security tests), focused ESLint and `git diff --check` passed after correcting a Next.js lint rule on the test variable name.
 - Result: S6 complete. No new customer function is active, no new env entry is required, and no provider call runs in tests.
 - Next: final full checks and Claude's independent review before handing the WP to John.
+
+## 2026-11-05 - Final local gate and review findings
+
+- Checks run: `npm run typecheck` passed; `npm run lint` passed with 37 warnings and zero errors; `npm test` passed with zero failures across all suites; `npm run build` passed; `npm run test:security` passed (149 Node and 121 Vitest security tests); `git diff --check` passed. The complete WP68 tree deployed successfully to the isolated anonymous local Convex instance on 3310/3311. No cloud target or production data was touched.
+- Independent C-DATA review: all 26 named tables and their indexes are present, and existing WP22 amendments are additive. Before contract freeze, Claude should confirm the serialized LandingSpec field, bounded/validated wizard and seed payload shapes, and the owner model for global seed and batch usage rows. Future image-file writes must require alt text; variable arrays need writer caps before activation.
+- Decision pending from John: D12 requires an owner ID on every new row, while architecture §4.2 makes `ai_usage.ownerId` optional. Asked whether system-level rows use a system/admin owner ID or a narrow exception. Do not mark C-DATA merge-ready until the answer is reflected in schema and the Claude lane reviews it.
+- Result: implementation and local gate complete; PR #167 remains draft for contract review.
