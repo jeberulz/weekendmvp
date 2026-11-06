@@ -13,6 +13,7 @@ Definition of done: the approved landing can publish on a test tenant host, take
 - [ ] `WP78-S4` — D5 real lead capture with consent notice and version, opt-in hook for WP79, founder CSV export and per-contact delete, and purge 30 days after business/account deletion. Keep real lead capture off until all D5 controls work together.
   - [x] `WP78-S4a` — In the owner-authorized `deleteContact` transaction, revoke WP79 tokens, active enrollment and queued component mail before erasing lead contact fields. A revocation failure leaves the lead unchanged; retry is idempotent. Keep real capture and real-lead purge off.
   - [x] `WP78-S4b` — Make the legacy archive-based internal purge fail closed for every project. Ordinary archive cannot delete synthetic or real leads under the owner's explicit-delete/closure ruling. Prove archived projects retain all leads while the workspace is off; leave the future deletion-request queue and real-lead cleanup for a revised C-DATA contract.
+  - [ ] `WP78-S4c` — Require a signed, short-lived Next-to-Convex bridge for the existing synthetic lead write. The client/IP rate key must be authenticated and pseudonymized, with the tenant bridge secret optional and fail-closed. Prove forged keys, expired payloads and missing configuration cannot write; keep real capture off.
 - [ ] `WP78-S5` — Security and integration gate: unapproved publish rejected; taken-down slug never served when Convex is down; tenant isolation, rate limit, kill switch and retention verified. Record checks and independent review.
 
 ## File boundary
