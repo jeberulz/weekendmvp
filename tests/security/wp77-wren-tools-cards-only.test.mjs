@@ -70,6 +70,21 @@ import { WREN_APPROVAL_SUBJECTS } from "../../lib/workspace/contracts/wrenTools.
 // Re-exports (`export * from`, `export { x } from`) go through the same
 // import allowlist as imports.
 //
+// Memory modules (WP77-S5: `convex/workspace/wrenMemory.ts`, the only
+// `wren_memory` writer, and `convex/workspace/memory.ts`, the founder's public
+// edits):
+// M1. Imports come from a per-file allowlist, by imported name.
+// M2. No reference to anything that creates or decides an approval, sends,
+//     posts, publishes, launches, spends, debits, refunds, touches a ledger
+//     or connector, schedules, runs an action / mutation / query, fetches,
+//     replaces or deletes a row, or reads `internal` / `api`.
+// M3. `ctx.db` only as a direct method call: `get`, `query`, `normalizeId`;
+//     `insert` / `patch` only with the string literal `wren_memory` or
+//     `audit_events`; never `replace` or `delete`.
+// M4. A1 and A2 as above.
+// The chat modules still may not write `wren_memory` themselves (C3): memory
+// is written only through `applyWrenMemoryProposal`.
+//
 // Pure helpers (`PURE_HELPERS`): no `ctx`, `db`, scheduler, run function,
 // `internal`, `api` or `fetch` at all; local imports only to other pure
 // helpers; packages only `zod`.
@@ -82,7 +97,10 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 
 const STRICT_FILES = {
   "lib/workspace/contracts/wrenTools.ts": new Map(),
-  "lib/workspace/wrenCards.ts": new Map([["./contracts/wrenTools", null]]),
+  "lib/workspace/wrenCards.ts": new Map([
+    ["./contracts/wrenTools", null],
+    ["./plainText", ["isControlChar", "isInvisibleChar"]],
+  ]),
   "convex/workspace/wrenCards.ts": new Map([
     ["convex/values", ["ConvexError", "v", "Infer"]],
     ["../_generated/dataModel", ["Doc", "Id"]],
@@ -114,6 +132,7 @@ const CHAT_IMPORTS = {
     ["../ai/prompts/wrenPlanTurn", ["wrenPlanTurnSpec"]],
     ["../ai/prompts/wrenShared", ["quotedData", "WREN_REPLY_MAX_CHARS"]],
     ["./wrenCards", ["approvalCardViews", "resolveWrenCards", "wrenCardProposalValidator", "wrenCardViewValidator"]],
+    ["./wrenMemory", ["applyWrenMemoryProposal", "wrenMemoryProposalValidator"]],
     ["./approvals", APPROVAL_VALIDATORS],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARDS_PER_TURN"]],
@@ -132,11 +151,48 @@ const CHAT_IMPORTS = {
     ["./approvals", APPROVAL_VALIDATORS],
     ["../../lib/workspace/wren", ["WrenFailureCause"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARD_FIELD_MAX_CHARS"]],
+    ["../../lib/workspace/contracts/wrenMemory", [
+      "WREN_MEMORY_FACT_MAX_CHARS", "WREN_MEMORY_PROPOSALS_MAX", "WREN_MEMORY_SUMMARY_MAX_CHARS",
+    ]],
     ["./chat", ["WREN_PROMPT_REFS", "finishOutcomeValidator"]],
   ]),
 };
 
 const CHAT_FILES = Object.keys(CHAT_IMPORTS);
+
+/** WP77-S5: the memory modules and what each may import (rules M1-M4). */
+const MEMORY_IMPORTS = {
+  "convex/workspace/wrenMemory.ts": new Map([
+    ["convex/values", ["v"]],
+    ["../_generated/dataModel", ["Doc", "Id"]],
+    ["../_generated/server", ["MutationCtx", "QueryCtx"]],
+    ["../../lib/workspace/wrenMemory", [
+      "deleteFact", "editFact", "editSummary", "EMPTY_WREN_MEMORY", "planWrenMemoryUpdate", "FounderMemoryEdit",
+      "WrenMemoryProposal", "WrenMemoryState",
+    ]],
+  ]),
+  "convex/workspace/memory.ts": new Map([
+    ["convex/values", ["v", "Infer"]],
+    ["../_generated/server", ["mutation", "query"]],
+    ["../ops/settings", ["assertFeatureEnabled"]],
+    ["../platform/authz", ["requireBusinessAccess"]],
+    ["../../lib/workspace/contracts/wrenMemory", [
+      "WREN_MEMORY_FACT_MAX_CHARS", "WREN_MEMORY_FACTS_MAX", "WREN_MEMORY_SUMMARY_MAX_CHARS",
+    ]],
+    ["../../lib/workspace/wrenMemory", ["FounderMemoryEdit"]],
+    ["./wrenMemory", ["applyFounderMemoryEdit", "readWrenMemory"]],
+  ]),
+};
+
+const MEMORY_FILES = Object.keys(MEMORY_IMPORTS);
+
+/** The only tables the memory modules may insert into or patch. */
+const MEMORY_WRITE_TABLES = new Set(["wren_memory", "audit_events"]);
+const MEMORY_DB_METHODS = new Set(["get", "query", "normalizeId", "insert", "patch"]);
+
+/** Names the memory modules must never call, reference or import. */
+const MEMORY_FORBIDDEN =
+  /^(decideApproval|createApprovalRecord|createApproval|raiseApprovalCard|resolveWrenCards|assertApproved|insertRevisionTask|assertPaidRevisionApproved|activateSequence|publishLanding|debit\w*|refund\w*|\w*ledger\w*|\w*connector\w*|send\w*|publish\w*|post[A-Z]\w*|launch\w*|scheduler|runAction|runMutation|runQuery|runAfter|runAt|fetch|replace|delete|checkLimit|internal|api)$/i;
 
 /** Imports that must be `import type` (erased at build: the module never loads). */
 const TYPE_ONLY_IMPORTS = new Set(["convex/ai/gatewayActions.ts"]);
@@ -164,6 +220,9 @@ const PURE_HELPERS = [
   "convex/ai/prompts/wrenPlanTurn.ts",
   "convex/ai/prompts/wrenShared.ts",
   "lib/workspace/contracts/approvals.ts",
+  "lib/workspace/contracts/wrenMemory.ts",
+  "lib/workspace/wrenMemory.ts",
+  "lib/workspace/plainText.ts",
 ];
 
 /** The only tables `chat.ts` / `chatActions.ts` may insert, patch or replace (C-LIMITS rows go through `checkLimit`). */
@@ -643,6 +702,29 @@ export function scanChat(fileName, source, allowedImports = CHAT_IMPORTS[fileNam
   return [...new Set(problems)];
 }
 
+/** Violations of rules M1-M4 for one memory module (fixtures default to `wrenMemory.ts`'s import allowlist). */
+export function scanMemory(
+  fileName,
+  source,
+  allowedImports = MEMORY_IMPORTS[fileName] ?? MEMORY_IMPORTS["convex/workspace/wrenMemory.ts"],
+) {
+  const sourceFile = parse(fileName, source);
+  const problems = [];
+  checkImports(fileName, sourceFile, allowedImports, problems);
+  for (const { bindings, from, node } of imports(sourceFile)) {
+    for (const binding of bindings) {
+      if (MEMORY_FORBIDDEN.test(binding)) problems.push(`${fileName}:${line(sourceFile, node)} imports ${binding} from ${from}`);
+    }
+  }
+  for (const { name, node } of referencedNames(sourceFile)) {
+    if (MEMORY_FORBIDDEN.test(name)) problems.push(`${fileName}:${line(sourceFile, node)} references ${name}`);
+  }
+  scanDb(fileName, sourceFile, MEMORY_DB_METHODS, MEMORY_WRITE_TABLES, problems);
+  scanAliasing(fileName, sourceFile, problems);
+  scanDynamic(fileName, sourceFile, problems);
+  return [...new Set(problems)];
+}
+
 const PURE_FORBIDDEN = /^(ctx|db|scheduler|runMutation|runQuery|runAction|runAfter|runAt|internal|api|fetch|process|require)$/u;
 const PURE_PACKAGES = new Set(["zod"]);
 
@@ -677,9 +759,16 @@ test("the chat modules call only the gateway, their own mutations and the turn",
   }
 });
 
+test("the memory modules write only wren_memory and audit_events, and reach no side effect", async () => {
+  for (const relative of MEMORY_FILES) {
+    const source = await readFile(path.join(root, relative), "utf8");
+    assert.deepEqual(scanMemory(relative, source), []);
+  }
+});
+
 test("every local module the chat and handler modules import is scanned, a named gate, or type-only", async () => {
-  const scanned = new Set([...Object.keys(STRICT_FILES), ...CHAT_FILES, ...PURE_HELPERS]);
-  const allowlists = [...Object.entries(CHAT_IMPORTS), ...Object.entries(STRICT_FILES)];
+  const scanned = new Set([...Object.keys(STRICT_FILES), ...CHAT_FILES, ...MEMORY_FILES, ...PURE_HELPERS]);
+  const allowlists = [...Object.entries(CHAT_IMPORTS), ...Object.entries(STRICT_FILES), ...Object.entries(MEMORY_IMPORTS)];
   for (const [fileName, allowed] of allowlists) {
     const source = await readFile(path.join(root, fileName), "utf8");
     const declared = imports(parse(fileName, source));
@@ -809,11 +898,54 @@ test("fixtures: the chat scan catches each side-effect shape", () => {
     entriesOfCtx: "export async function f(ctx){ for (const [k, v] of Object.entries(ctx)) void k; }",
     descriptor: "export async function f(ctx){ return Object.getOwnPropertyDescriptor(ctx, \"db\"); }",
     reflectApply: "export async function f(ctx){ return Reflect.apply(ctx.runMutation, ctx, []); }",
+    // WP77-S5: chat never writes memory itself, nor reaches the memory writer's other exports.
+    memoryPatch: "export async function f(ctx, id){ await ctx.db.patch(\"wren_memory\", id, { facts: [] }); }",
+    memoryInsert: "export async function f(ctx, b){ await ctx.db.insert(\"wren_memory\", { ownerId: b.o, projectId: b.p, facts: [\"x\"], summary: \"\", updatedAt: 1 }); }",
+    memoryFounderEdit: "import { applyFounderMemoryEdit } from \"./wrenMemory\"; export async function f(ctx, b){ await applyFounderMemoryEdit(ctx, b, { kind: \"delete_fact\", index: 0, expected: \"x\" }); }",
+    memoryPublicMutation: "import { internal } from \"../_generated/api\"; export async function f(ctx){ await ctx.runMutation(internal.workspace.memory.editWrenMemoryFact, {}); }",
   };
   for (const [label, source] of Object.entries(chatOffenders)) {
     assert.notDeepEqual(scanChat(`chat-${label}.ts`, source), [], label);
   }
   assert.deepEqual(scanChat("chat-ok.ts", "import { internal } from \"../_generated/api\"; export async function f(ctx) { await ctx.scheduler.runAfter(0, internal.workspace.chatActions.runWrenTurn, {}); await ctx.db.patch(\"chat_messages\", ctx.id, {}); }"), []);
+});
+
+test("fixtures: the memory scan catches each side-effect shape", () => {
+  const offenders = {
+    createApproval: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b){ await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: \"publish\", subjectTable: \"site_versions\", subjectId: b.s }); }",
+    decide: "import { decideApproval } from \"./approvals\"; export async function f(ctx){ await decideApproval(ctx, {}); }",
+    decideBare: "export async function f(ctx){ await decideApproval(ctx, {}); }",
+    raiseCard: "import { raiseApprovalCard } from \"./wrenCards\"; export async function f(ctx, b, c){ await raiseApprovalCard(ctx, b, c); }",
+    insertApproval: "export async function f(ctx){ await ctx.db.insert(\"approvals\", { status: \"approved\" }); }",
+    patchApproval: "export async function f(ctx, id){ await ctx.db.patch(\"approvals\", id, { status: \"approved\" }); }",
+    patchChat: "export async function f(ctx, id){ await ctx.db.patch(\"chat_messages\", id, { body: \"\" }); }",
+    replaceMemory: "export async function f(ctx, id){ await ctx.db.replace(\"wren_memory\", id, {}); }",
+    deleteMemory: "export async function f(ctx, id){ await ctx.db.delete(\"wren_memory\", id); }",
+    dynamicTable: "export async function f(ctx, t){ await ctx.db.insert(t, {}); }",
+    schedule: "export async function f(ctx){ await ctx.scheduler.runAfter(0, x, {}); }",
+    runMutation: "export async function f(ctx){ await ctx.runMutation(x, {}); }",
+    runAction: "export async function f(ctx){ await ctx.runAction(x, {}); }",
+    internalRef: "import { internal } from \"../_generated/api\"; const r = internal.workspace.approvals.decideApproval;",
+    fetch: "export async function f(){ await fetch(\"https://evil.example\"); }",
+    sender: "export async function f(ctx){ await sendSequenceEmail(ctx, {}); }",
+    publisher: "export async function f(ctx){ await publishLanding(ctx, {}); }",
+    poster: "export async function f(ctx){ await postSocial(ctx, {}); }",
+    debit: "export async function f(ctx){ await debitTask(ctx, {}); }",
+    limits: "import { checkLimit } from \"../platform/limits\"; export async function f(ctx, o){ await checkLimit(ctx, \"wrenMessage\", o); }",
+    importChat: "import { finishWrenTurn } from \"./chat\"; export const g = finishWrenTurn;",
+    elementAccess: "export async function f(ctx){ await ctx.db[\"insert\"](\"approvals\", {}); }",
+    aliasDb: "export async function f(ctx){ const d = ctx.db; await d.insert(\"wren_memory\", {}); }",
+    dynamicKey: "export function f(facts, i){ return facts[i]; }",
+    objectValues: "export async function f(ctx){ return Object.values(ctx); }",
+    reexport: "export * from \"./approvals\";",
+  };
+  for (const [label, source] of Object.entries(offenders)) {
+    assert.notDeepEqual(scanMemory(`memory-${label}.ts`, source), [], label);
+  }
+  assert.deepEqual(scanMemory(
+    "memory-ok.ts",
+    "import { v } from \"convex/values\"; export const x = v.string(); export async function f(ctx, b, id, n){ await ctx.db.insert(\"wren_memory\", { ownerId: b.o, projectId: b.p, facts: [], summary: \"\", updatedAt: n }); await ctx.db.patch(\"wren_memory\", id, { facts: [\"a\"] }); await ctx.db.insert(\"audit_events\", { action: \"memory.fact_edited\" }); return b.facts.at(0); }",
+  ), []);
 });
 
 test("fixtures: the pure-helper scan catches context and I/O", () => {

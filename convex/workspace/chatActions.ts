@@ -6,6 +6,11 @@ import type { GatewayRunResult, RunPromptArgs } from "../ai/gatewayActions";
 import { WREN_CARD_PROPOSALS_MAX, wrenReplyOutput, type WrenReplyOutput } from "../ai/prompts/wrenShared";
 import type { WrenFailureCause } from "../../lib/workspace/wren";
 import { WREN_CARD_FIELD_MAX_CHARS } from "../../lib/workspace/contracts/wrenTools";
+import {
+  WREN_MEMORY_FACT_MAX_CHARS,
+  WREN_MEMORY_PROPOSALS_MAX,
+  WREN_MEMORY_SUMMARY_MAX_CHARS,
+} from "../../lib/workspace/contracts/wrenMemory";
 import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
 
 /**
@@ -19,7 +24,8 @@ import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
  * S4, an optional `cards` array of proposals in the same structured output.
  * One gateway call per turn (plus its one re-ask), so every card a turn
  * proposes was metered with it. `finishWrenTurn` decides what the proposals
- * become (cards only, D13).
+ * become (cards only, D13). From S5 the same reply may carry notes for
+ * Wren's memory (`remember`, `memorySummary`): no extra model call.
  *
  * Endings:
  * - settled: the output is re-parsed with the Wren schema; `done` with it;
@@ -71,6 +77,32 @@ export function cardProposals(cards: WrenReplyOutput["cards"]): CardProposal[] |
       ...(route === undefined ? {} : { route }),
     };
   });
+}
+
+type MemoryProposal = NonNullable<Extract<FinishOutcome, { status: "done" }>["memory"]>;
+
+/** A note cut to one character past the server's limit: still refused there (`too_long`), but the argument stays small. */
+function boundedNote(value: string, max: number): string {
+  return value.length > max ? value.slice(0, max + 1) : value;
+}
+
+/**
+ * WP77-S5. The model's notes as a proposal for `finishWrenTurn`: null reads as
+ * absent, at most `WREN_MEMORY_PROPOSALS_MAX` facts, every value bounded. The
+ * server cleans, checks, dedupes and caps them (`applyWrenMemoryProposal`).
+ */
+export function memoryProposal(reply: Pick<WrenReplyOutput, "remember" | "memorySummary">): MemoryProposal | undefined {
+  const remember = (reply.remember ?? [])
+    .slice(0, WREN_MEMORY_PROPOSALS_MAX)
+    .map((fact) => boundedNote(fact, WREN_MEMORY_FACT_MAX_CHARS));
+  const summary = reply.memorySummary === null || reply.memorySummary === undefined
+    ? undefined
+    : boundedNote(reply.memorySummary, WREN_MEMORY_SUMMARY_MAX_CHARS);
+  if (remember.length === 0 && summary === undefined) return undefined;
+  return {
+    ...(remember.length === 0 ? {} : { remember }),
+    ...(summary === undefined ? {} : { summary }),
+  };
 }
 
 export const runWrenTurnArgs = {
@@ -153,12 +185,15 @@ export async function runWrenTurnWith(
       parsed = wrenReplyOutput.safeParse(null);
     }
     const cards = parsed.success ? cardProposals(parsed.data.cards) : undefined;
+    const memory = parsed.success ? memoryProposal(parsed.data) : undefined;
     await finish(parsed.success
       ? {
         status: "done",
         body: parsed.data.reply,
         // Proposals only; the server checks and caps them (`resolveWrenCards`).
         ...(cards === undefined ? {} : { cards }),
+        // Notes only; the server cleans, checks and caps them (`applyWrenMemoryProposal`).
+        ...(memory === undefined ? {} : { memory }),
         ...lastUsageId(result),
       }
       : { status: "failed", cause: "invalid", ...lastUsageId(result) }, lastAttempt(result, args.attempt));
