@@ -10,6 +10,11 @@ without `--force`, so a re-run after a failure needs `--force` or another
 `engine/records/fixtures/` by default and are refused directly in this
 folder, where published records live.
 
+Live compile and editorial submit also require a sealed Source Critic PASS at
+`engine/records/{slug}.source-review.json` (see
+`docs/plans/idea-engine/PIPELINE.md` and `lib/engine/source-review.ts`).
+Fixture-mode records skip that gate.
+
 ## Contract v2 (current)
 
 A v2 record (`contractVersion: 2`, `pipelineVersion: 2`) holds:

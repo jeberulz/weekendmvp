@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buildFixtureRecord } from "../../engine/__fixtures__/recordV2";
 import { compileResearchRecord } from "../../engine/compile";
 import { usedEvidenceIds } from "../../engine/page-format";
+import { buildPassingSourceReview } from "../../engine/source-review";
 import { validateEngineSubmission } from "./validated-artifact";
 
 /** Synthetic pages exercise the live-shaped contract without provider calls. */
@@ -26,6 +27,7 @@ function compiledInput() {
     recordJson: JSON.stringify(record),
     mdx: compiled.mdx,
     manifestJson: JSON.stringify(compiled.manifestEntry),
+    sourceReviewJson: JSON.stringify(buildPassingSourceReview(record)),
   };
 }
 
@@ -44,6 +46,22 @@ describe("validateEngineSubmission", () => {
     expect((await validateEngineSubmission(input)).envelope.submissionId).toBe(result.envelope.submissionId);
   });
 
+  it("refuses a live submission without a Source Critic PASS", async () => {
+    const input = compiledInput();
+    await expect(
+      validateEngineSubmission({ ...input, sourceReviewJson: "" }),
+    ).rejects.toThrow(/Source review is not valid JSON|Source Critic gate refused/);
+  });
+
+  it("refuses a tampered Source Critic review", async () => {
+    const input = compiledInput();
+    const review = JSON.parse(input.sourceReviewJson) as Record<string, unknown>;
+    review.reviewer = "tampered";
+    await expect(
+      validateEngineSubmission({ ...input, sourceReviewJson: JSON.stringify(review) }),
+    ).rejects.toThrow(/Source Critic gate refused/);
+  });
+
   it("refuses fixture records even when their MDX passes the deep audit", async () => {
     const input = compiledInput();
     const fixture = { ...input.record, mode: "fixture" as const };
@@ -55,7 +73,13 @@ describe("validateEngineSubmission", () => {
     input.record.market.statIds = input.record.evidence.accepted
       .filter((item) => item.kind === "market_stat" && item.sourceUrl === "https://research.example.com/ai-code-review-market")
       .map((item) => item.id);
-    await expect(validateEngineSubmission({ ...input, recordJson: JSON.stringify(input.record) })).rejects.toThrow(
+    await expect(
+      validateEngineSubmission({
+        ...input,
+        recordJson: JSON.stringify(input.record),
+        sourceReviewJson: JSON.stringify(buildPassingSourceReview(input.record)),
+      }),
+    ).rejects.toThrow(
       /Publication evidence needs review: Selected market figures need at least two distinct source hosts/,
     );
   });

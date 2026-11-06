@@ -1,6 +1,12 @@
 # Phase 9. Retire Ideabrowser MCP
 
-Back: [overview](overview.md)
+Back: [overview](overview.md) · Current truth: [PIPELINE.md](PIPELINE.md)
+
+> **Status (2026-11-06, WP88-S2).** Repo MCP configs, `.env.example`, `AGENTS.md`,
+> and `CLAUDE.md` no longer wire Ideabrowser. `npm run check:ideabrowser-runtime`
+> is the scoped grep gate. Hub credential / cloud-secret deletion remains
+> deferred until John gives an explicit irreversible-go (see Deferred in
+> `docs/wp/wp88-stories.md`).
 
 ## Goal
 

@@ -30,11 +30,12 @@ No hand-built CSS pipeline — never edit compiled output.
 
 ## Content pipeline — use the skills, don't author by hand
 
-New ideas/articles are MDX in `content/` + an entry in `ideas/manifest.json`
-/ `articles/manifest.json` (the metadata source of truth), then
-`npm run seed:convex` (Convex powers grids/hubs) and `npm run og:generate`
-(OG cards). Use `/publish-idea`, `/publish-article`, and
-`/publish-programmatic` rather than doing these steps manually.
+New ideas go through the owned Idea Engine (not Ideabrowser). Truth doc:
+`docs/plans/idea-engine/PIPELINE.md`. Live records need a sealed Source Critic
+PASS before compile or editorial submit. Articles/programmatic hubs still use
+`/publish-article` and `/publish-programmatic`. Grids/hubs need
+`npm run seed:convex` after MDX+manifest land; OG via `npm run og:generate`.
+New engine ideas stay on the private editorial path until WP46-E7 GO.
 
 An idea's four build prompts (Project Setup, Core Feature, Landing Page,
 Branding Package) follow the weekend prompt standard v1 in `ideas/SECTIONS.md`:

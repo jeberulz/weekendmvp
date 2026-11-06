@@ -14,7 +14,12 @@ import { internalAction } from "../_generated/server";
  * No browser/client token can invoke this action.
  */
 export const validateAndImport = internalAction({
-  args: { recordJson: v.string(), mdx: v.string(), manifestJson: v.string() },
+  args: {
+    recordJson: v.string(),
+    mdx: v.string(),
+    manifestJson: v.string(),
+    sourceReviewJson: v.string(),
+  },
   handler: async (ctx, args): Promise<CommandResult<ImportAck>> => {
     const validated = await validateEngineSubmission(args);
     return ctx.runMutation(internal.editorial.service.importValidatedEngine, {

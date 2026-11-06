@@ -1,12 +1,5 @@
 {
   "mcpServers": {
-    "ideabrowser": {
-      "type": "http",
-      "url": "https://www.ideabrowser.com/api/mcp/http",
-      "headers": {
-        "Authorization": "Bearer ${env:IDEABROWSER_API_KEY}"
-      }
-    },
     "beehiiv": {
       "type": "http",
       "url": "https://mcp.beehiiv.com/mcp"

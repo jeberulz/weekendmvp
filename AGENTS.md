@@ -42,34 +42,20 @@ Required defaults:
 - Run the configured checks and record docs updated/not needed.
 <!-- END:agentic-delivery-workflow -->
 
-<!-- BEGIN:ideabrowser-mcp -->
+<!-- BEGIN:idea-engine -->
 
-## Ideabrowser MCP (required for `/publish-idea` Mode A)
+## Idea research (owned engine — not Ideabrowser)
 
-Cloud agents do **not** inherit desktop/global MCP configs. Ideabrowser must be
-wired for Cloud Agents explicitly.
+Content research for `/publish-idea` uses the local Idea Engine under
+`docs/plans/idea-engine/PIPELINE.md`. There is no Ideabrowser MCP Mode A.
+Historical `source: "ideabrowser:{id}"` rows in `ideas/manifest.json` are
+provenance only.
 
-**Endpoint (HTTP — not SSE):** `https://www.ideabrowser.com/api/mcp/http`  
-Auth: `Authorization: Bearer ib_…` (key from Hub → MCP Connectors; Pro/Empire)
+Live research → sealed Source Critic PASS (`*.source-review.json`) →
+`engine:compile` / `editorial:submit-engine`. Fixture mode skips the source
+gate for hermetic replay only.
 
-### Cloud Agents (required)
-
-1. Generate an API key at https://www.ideabrowser.com/hub → MCP Connectors.
-2. Open https://cursor.com/agents → **MCP** dropdown → add custom HTTP server:
-   - Name: `ideabrowser`
-   - URL: `https://www.ideabrowser.com/api/mcp/http`
-   - Header: `Authorization` = `Bearer ib_YOUR_KEY`
-3. Enable the server for Cloud Agents. Start a **new** agent run (existing runs
-   do not pick up newly added MCPs).
-
-Optional: also set secret `IDEABROWSER_API_KEY=ib_…` on the Cloud Agent
-environment so project `.cursor/mcp.json` / `.mcp.json` can interpolate it.
-
-Do **not** use `/api/mcp/sse` for Cloud Agents — SSE/`mcp-remote` are unsupported.
-
-Repo config lives in `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code).
-
-<!-- END:ideabrowser-mcp -->
+<!-- END:idea-engine -->
 
 <!-- BEGIN:nextjs-agent-rules -->
 

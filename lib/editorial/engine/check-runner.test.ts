@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildFixtureRecord } from "../../engine/__fixtures__/recordV2";
 import { compileResearchRecord } from "../../engine/compile";
+import { buildPassingSourceReview } from "../../engine/source-review";
 import { submissionArtifactHash } from "../domain/artifact";
 import { runEngineChecks } from "./check-runner";
 import { validateEngineSubmission } from "./validated-artifact";
@@ -22,7 +23,12 @@ async function world() {
     publishedAt: "2026-10-01",
   });
   const manifestJson = JSON.stringify(compiled.manifestEntry);
-  const checked = await validateEngineSubmission({ recordJson: JSON.stringify(record), mdx: compiled.mdx, manifestJson });
+  const checked = await validateEngineSubmission({
+    recordJson: JSON.stringify(record),
+    mdx: compiled.mdx,
+    manifestJson,
+    sourceReviewJson: JSON.stringify(buildPassingSourceReview(record)),
+  });
   const envelope = checked.envelope;
   const revision = {
     title: envelope.title,
