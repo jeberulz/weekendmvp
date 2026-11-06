@@ -42,8 +42,9 @@ import {
  * decision returns, or the card leaves `pending` while focus was on its
  * buttons, focus moves to the card's status line (`tabIndex={-1}`), so it is
  * never dropped on `<body>` when the buttons go away, and the screen reader
- * reads the outcome there. There is no per-card live region: the thread's
- * `role="log"` already announces new content. Ids come from `useId`, so the
+ * reads the outcome there. There is no per-card live region: the panel
+ * announces Wren's replies once on its own status line (the thread's log is
+ * `aria-live="off"`), and a decision is read where focus lands. Ids come from `useId`, so the
  * same approval shown in two replies never duplicates an id.
  */
 

@@ -926,3 +926,41 @@ Docs: progress updated. No story, plan or ruling changes.
 
 Last round (after `a81a49bc`): Wren's notes now refuse any word that mixes Latin letters with another script, or that uses a phonetic Latin look-alike such as "ɑ" (`looks_encoded`). Repo-wide M5 now treats a row from the writer's row readers (`readWrenMemory`, found from its return type) or from destructuring as a `wren_memory` row. "no", "not" and "nor" count as content words. `WREN_FACT_MAX_UNSOURCED` is now 1. An ending is stripped only when 4 or more letters remain (3 for a plain "-s"), so "rated" no longer matches "rat" and "caring" no longer matches "car".
 Honest paraphrase set: Wren still accepts 24 of the 25 founder-said facts (the miss is "Co-founder's role: marketing", from "My co-founder does the marketing"). Checks: typecheck, convex tsc, lint, check:prompt-versions, test:security (219/0 node, 121 vitest), test:convex (1023), test:platform (1464), test:prompts (24) and build all exit 0.
+
+## S6 - Accessibility
+
+Changed: `components/workspace/chat/WrenChatPanel.tsx`, `components/workspace/chat/WrenChatCards.tsx` (comment only), `components/workspace/kit/WrenThread.tsx` (`liveUpdates` prop on `WrenThread`; composer focus), `lib/workspace/changeRounds.ts` (`JOB_TYPE_TITLES`), `convex/workspace/changeRounds.ts` (`revisionTitle` now exported and uses the map; no query or mutation signature changed).
+
+What changed:
+- The thread's `role="log"` is `aria-live="off"` in the chat, so streamed drafts are never read out. The one polite status line under the thread announces Wren's reply once per state change: "Wren is writing…", then "Wren replied: <text, up to 600 characters> [N cards …]", or the failed or stopped line. Send outcomes (busy, paused, error) use the same line and win. Nothing on the page at first load is announced. Stale handling is unchanged (`WREN_STREAM_STALE_MS` still flips a stuck reply to stopped).
+- After an accepted send, focus returns to the composer even when Send was pressed (`keepFocusInComposer`). "Try again" hands focus to the composer before the button leaves the page, so focus never lands on `<body>`. The card decision focus (status line) is unchanged and re-tested through a rerender.
+- Titles: `JOB_TYPE_TITLES: Record<JobType, string>` covers all 13 C-JOBS types, so a new type is a compile error. Revision jobs are now "SEO pack, change round 1" and "Landing page, change round 1". No change-round UI exists in the chat yet (S2 is server side), so there was nothing to audit there.
+- No skip link: the thread is one column with the composer directly below.
+
+Tests: `tests/platform/workspace-wren-a11y.test.tsx` (16: axe in the six states, announcements, keyboard), `tests/platform/workspace-change-rounds.test.ts` (+2), `convex/workspace/changeRounds.test.ts` (+1). It uses axe-core like the other `workspace-wren-*` tests (colour contrast is not checkable in jsdom).
+
+a11y-check:
+- [x] Icon-only button has `aria-label`, icon `aria-hidden`: Send, `WrenThread.tsx` composer.
+- [x] Input labelled (sr-only label, hint via `aria-describedby`): `WrenThread.tsx` composer.
+- [x] No images; decorative marks are `aria-hidden`.
+- [x] No external links; internal links carry sr-only context: `WrenChatCards.tsx`.
+- [x] Visible focus on every control and the status line (kit `FOCUS`): `WrenChatPanel.tsx`, `WrenChatCards.tsx`, `WrenThread.tsx`.
+- [x] Nothing by colour alone: status is text; in-flight uses `aria-disabled` plus text.
+- [x] Heading order: one `h2` "Chat with Wren"; no other headings in the chat.
+- [x] Keyboard: native buttons, links and textarea only; no overlay, so no focus trap or Escape handling is needed.
+- [x] axe clean (wcag2a/aa, 2.1) in empty, streaming, stopped, done with cards, decision pending, decided.
+
+Keyboard run-through (tested in `workspace-wren-a11y.test.tsx`):
+- [x] Tab order: each card's review link, Approve, Not now; navigate links; then the composer; then Send. Explain cards are not focusable. The thread is not a tab stop.
+- [x] Enter sends; Shift+Enter inserts a newline; Enter during IME composition does not send (existing `shouldSendOnKeyDown`).
+- [x] After Enter or Send, the composer keeps focus and is cleared on accept.
+- [x] Approve or Not now by keyboard: focus moves to the card's status line and stays there when the buttons unmount and later messages arrive.
+- [x] Try again: focus moves to the composer.
+- [x] Escape does nothing (no overlay).
+- [x] Buttons stay focusable while a send or decision is in flight (`aria-disabled`).
+
+Not verifiable without a browser or screen reader: real VoiceOver, NVDA and JAWS output (that `aria-live="off"` on the log plus the status line reads once, and that a 600-character reply is comfortable); colour contrast of the `home-*` tokens in situ; focus ring appearance; mobile zoom and reflow.
+
+Needs from Codex: none.
+
+Checks (exit codes): `npm run typecheck` 0, `npm run lint` 0 (existing warnings only), `npm run test:platform` 0 (69 files, 1482 tests), `npm run test:convex` 0 (76 files, 1027 tests), `npm run test:security` 0 (121 vitest), `npm run build` 0.

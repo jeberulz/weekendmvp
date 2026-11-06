@@ -12,7 +12,7 @@ import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { assertApproved, assertPaidRevisionApproved, createApprovalRecord } from "./approvals";
-import { insertRevisionTask, revisionNoteFor } from "./changeRounds";
+import { insertRevisionTask, revisionNoteFor, revisionTitle } from "./changeRounds";
 import { CREDIT_ACTIONS, jobKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import { APPROVAL_PENDING_TTL_MS } from "../../lib/workspace/contracts/approvals";
 
@@ -734,5 +734,13 @@ describe("WP77 PR #210: retrying a free round from its changes_requested card", 
     const again = await askForChanges(seeded, cardId);
     expect(again).toMatchObject({ changed: true, changeRound: { outcome: "spend_required", changeRound: 3 } });
     expect((await tasksOf(t, ids.projectId)).length).toBe(before);
+  });
+});
+
+describe("revisionTitle", () => {
+  test("uses the founder-facing job names, not the job type spelled out", () => {
+    expect(revisionTitle("crew_seo_pack", 1)).toBe("SEO pack, change round 1");
+    expect(revisionTitle("crew_landing", 2)).toBe("Landing page, change round 2");
+    expect(revisionTitle("crew_email_sequence", 3)).toBe("Email sequence, change round 3");
   });
 });

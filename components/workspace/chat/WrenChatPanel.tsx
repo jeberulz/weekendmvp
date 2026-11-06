@@ -19,22 +19,31 @@ import { resetsInLabel, WREN_STREAM_STALE_MS, WREN_TOMORROW_CARD } from "@/lib/w
  * reply streams in as the gateway writes it to the row. Full polish is S6.
  * WP77-S4: a finished reply shows its cards (`WrenChatCards`) under the text.
  *
- * Accessibility: the thread is the kit's `role="log"`. A reply still being
- * written is `aria-busy`, so screen readers announce it once it is complete,
- * not on every draft write. Send outcomes (busy, paused, an error) go to one
- * polite status line; the message cap shows the break card, outside the log,
- * with the reset time the limiter reported.
- *
- * S6 note: `aria-busy` on a child of `role="log"` is how the stream stays
- * quiet; support varies (NVDA and JAWS honour it, VoiceOver may still read
- * draft text). S6 should test with real screen readers and, if needed, hide
- * the draft from the log and announce the finished reply once.
+ * Accessibility (S6): the thread is the kit's `role="log"`, but it is switched
+ * to `aria-live="off"` here, so streamed drafts are never read out. Wren's
+ * replies are announced once, by the single polite status line under the
+ * thread: "Wren is writing…" when a reply starts, the finished reply when it
+ * is done, and a plain line when it fails or stops. Send outcomes (busy,
+ * paused, an error) use the same line and take priority. The message cap
+ * shows the break card, outside the log, with the reset time the limiter
+ * reported. Focus: sending keeps focus in the composer; "Try again" hands
+ * focus to the composer because the button leaves the page.
  */
 
 type Notice =
   | { kind: "none" }
   | { kind: "tomorrow"; resetsIn: string }
   | { kind: "message"; text: string };
+
+const ANNOUNCE_MAX_CHARS = 600;
+const UNLOADED = Symbol("unloaded");
+
+function repliedAnnouncement(body: string, cardCount: number): string {
+  const text = body.trim();
+  const shown = text.length > ANNOUNCE_MAX_CHARS ? `${text.slice(0, ANNOUNCE_MAX_CHARS)}… Read the rest in the thread.` : text;
+  const cards = cardCount === 0 ? "" : cardCount === 1 ? " 1 card from Wren is below the reply." : ` ${cardCount} cards from Wren are below the reply.`;
+  return `Wren replied: ${shown}${cards}`;
+}
 
 const TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
 
@@ -57,6 +66,10 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
   const inFlight = useRef(false);
   // The `updatedAt` of the streaming reply the timer has marked stopped.
   const [stoppedAt, setStoppedAt] = useState<number | undefined>(undefined);
+  // What the status line says about Wren's reply, set once per change of its state.
+  const [announcement, setAnnouncement] = useState("");
+  const [announcedKey, setAnnouncedKey] = useState<string | null | typeof UNLOADED>(UNLOADED);
+  const composerRef = useRef<HTMLDivElement>(null);
 
   const last = messages?.at(-1);
   const lastStreamingUpdatedAt =
@@ -71,9 +84,27 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
     return () => clearTimeout(timer);
   }, [lastStreamingUpdatedAt]);
 
+  const lastStale = lastStreamingUpdatedAt !== undefined && stoppedAt === lastStreamingUpdatedAt;
+  const lastState = last?.author === "wren" ? (lastStale ? "stopped" : last.status) : null;
+  const lastKey = last === undefined || lastState === null ? null : `${last._id}:${lastState}`;
+  const lastBody = last?.body ?? "";
+  const lastCardCount = last?.cards.length ?? 0;
+
+  // Announce Wren's reply once per state change (adjusted during render, not in
+  // an effect). What was already on the page when the thread first loaded is
+  // never announced.
+  if (messages !== undefined && announcedKey !== lastKey) {
+    setAnnouncedKey(lastKey);
+    if (announcedKey !== UNLOADED && lastKey !== null) {
+      if (lastState === "streaming") setAnnouncement("Wren is writing…");
+      else if (lastState === "done") setAnnouncement(repliedAnnouncement(lastBody, lastCardCount));
+      else if (lastState === "failed") setAnnouncement("Wren couldn't finish this reply. You can try again.");
+      else if (lastState === "stopped") setAnnouncement("Wren stopped partway through. You can try again.");
+    }
+  }
+
   if (messages === undefined) return <WrenThread status="loading" />;
 
-  const lastStale = lastStreamingUpdatedAt !== undefined && stoppedAt === lastStreamingUpdatedAt;
   const replying = lastStreamingUpdatedAt !== undefined && !lastStale;
 
   async function run(action: () => Promise<Notice>): Promise<boolean> {
@@ -111,6 +142,8 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
   }
 
   function retry(wrenMessageId: Id<"chat_messages">) {
+    // The button goes away once Wren starts again: keep focus on the page.
+    composerRef.current?.querySelector("textarea")?.focus();
     void run(async () => {
       const result = await retryReply({ projectId, wrenMessageId });
       if (result.kind === "exhausted") {
@@ -128,7 +161,7 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
           Wren answers here and can put cards in front of you. Nothing is sent, posted or spent unless you approve a card.
         </EmptyState>
       ) : (
-        <WrenThread>
+        <WrenThread liveUpdates={false}>
           {messages.map((message) => {
             if (message.author === "founder") {
               return <UserMessage key={message._id}>{message.body}</UserMessage>;
@@ -168,9 +201,9 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
       )}
       {notice.kind === "tomorrow" ? <TomorrowCard resetsIn={notice.resetsIn} /> : null}
       <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-        {notice.kind === "message" ? notice.text : notice.kind === "tomorrow" ? WREN_TOMORROW_CARD.title : ""}
+        {notice.kind === "message" ? notice.text : notice.kind === "tomorrow" ? WREN_TOMORROW_CARD.title : announcement}
       </p>
-      <div className="rounded-xl border border-home-rule bg-home-card">
+      <div ref={composerRef} className="rounded-xl border border-home-rule bg-home-card">
         <WrenComposer onSend={send} sending={sending || replying} />
       </div>
     </div>

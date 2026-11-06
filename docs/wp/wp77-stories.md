@@ -45,7 +45,7 @@ Standing rules:
 - [x] `WP77-S5` - Memory and Files
   - Summary and facts in `wren_memory`; the Files page shows them; the founder can edit or delete a fact.
 
-- [ ] `WP77-S6` - Accessibility
+- [x] `WP77-S6` - Accessibility
   - Live region for new messages, focus handling on cards, a11y-check, keyboard run-through.
 
 ## Out of scope

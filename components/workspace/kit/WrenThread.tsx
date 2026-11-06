@@ -18,6 +18,12 @@ export type WrenThreadProps = {
   status?: WrenThreadStatus;
   errorMessage?: string;
   onRetry?: () => void;
+  /**
+   * Default true: the log announces what is added (implicit polite). Pass
+   * false when the parent announces replies itself, e.g. to avoid reading
+   * every streamed draft.
+   */
+  liveUpdates?: boolean;
   children?: ReactNode;
 };
 
@@ -32,6 +38,7 @@ export function WrenThread({
   status = "ready",
   errorMessage = "Wren's messages didn't load.",
   onRetry,
+  liveUpdates = true,
   children,
 }: WrenThreadProps) {
   if (status === "loading") return <LoadingState label="Loading messages…" />;
@@ -39,7 +46,7 @@ export function WrenThread({
     return <ErrorState message={errorMessage} onRetry={onRetry} retryLabel="Retry loading messages" />;
   }
   return (
-    <div role="log" aria-label="Messages" className="flex flex-col gap-4">
+    <div role="log" aria-label="Messages" aria-live={liveUpdates ? undefined : "off"} className="flex flex-col gap-4">
       <InsideLogContext.Provider value={true}>{children}</InsideLogContext.Provider>
     </div>
   );
@@ -207,17 +214,24 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pending = useRef(false);
 
+  /** After an accepted send focus stays in the composer, even when Send was pressed. */
+  function keepFocusInComposer() {
+    const active = document.activeElement;
+    if (active === null || active === document.body || active !== textareaRef.current) textareaRef.current?.focus();
+  }
+
   function submit() {
     const text = prepareMessage(draft);
     if (!text || sending || pending.current) return;
     const result = onSend(text);
     if (result === undefined) {
       setDraft("");
+      keepFocusInComposer();
       return;
     }
     if (typeof result === "boolean") {
       if (result) setDraft("");
-      else textareaRef.current?.focus();
+      keepFocusInComposer();
       return;
     }
     pending.current = true;
@@ -227,7 +241,7 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
         pending.current = false;
         // Keep anything the founder typed while the send was pending.
         if (accepted) setDraft((current) => (prepareMessage(current) === text ? "" : current));
-        else textareaRef.current?.focus();
+        keepFocusInComposer();
       });
   }
 
