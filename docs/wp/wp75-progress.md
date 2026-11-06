@@ -249,3 +249,82 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 - Docs updated: `docs/wp/wp75-stories.md`, `docs/wp/wp75-progress.md` (new).
 - Not changed: plan docs, RULINGS, WP67 board (branch-name fix is the orchestrator's).
 - Checks: docs only; `git diff --check` run.
+
+## 2026-11-06 - S4a deterministic quality checks (branch `claude/wp75-checks`)
+
+Done: `WP75-S4a` (pure TypeScript, no Convex, no model call, no I/O). Code in `lib/workspace/crew/checks/`, tests in
+`tests/platform/workspace-crew-checks-*.test.ts` (so `npm run test:platform` runs them).
+
+### API (S4b and WP76 call this)
+
+- `checkArtifact(kind, artifact, { ownIdea?, brandKit?, buildPackStandard? })` returns `{ hard, soft }`, each a list of
+  `{ code, path, message, severity }`. `hasHardIssues`, `isClean`, `mergeResults`.
+- `toRepairIssues(result, max = 40)` is the repair call's data block: hard first, paths redacted by `formatIssuePath`
+  (index as `[n]`, identifier keys as `.key`, any other key as `.*`), messages quote at most 48 single-line characters.
+  The story names a `safeIssuePath`; none exists in the repo, so `formatIssuePath` is the redaction.
+- Policy: hard issues trigger the one repair; soft issues ride along when a repair happens and otherwise only show.
+- Individual checks are exported for reuse (`checkNeverFake`, `checkMarketNumbers`, `checkSlop`, `checkLandingSpec`,
+  `checkLandingLayouts`, `checkBrandKit`, `checkBuildPackStandard`, `checkBuildPrompt`).
+
+### Checks
+
+| Check | Codes | Severity | Applies to |
+|---|---|---|---|
+| Never fake it | `fake_testimonial`, `fake_rating`, `fake_review`, `fake_social_count`, `fake_trusted_by`, `fake_logo_wall`, `fake_press`, `fake_credential`, `fake_stat` | hard | every kind (copy strings) |
+| Unsourced evidence ("studies show") | `unsupported_evidence` | soft | every kind |
+| Market numbers in own ideas (wraps the WP74 `hasMarketClaim`; strips placeholders and product measures first) | `own_idea_market_number` | hard | own-idea blueprint, brand kit, landing, email, social, SEO (not roster, launch plan, ads, build pack) |
+| Slop lexicon, banned phrases | `slop_phrase` | hard | every kind except build pack and roster |
+| Slop, weak words, "not just X but Y", triads as a whole line, 2+ em dashes in one string | `slop_weak_phrase`, `slop_triad`, `slop_em_dash_stack` | soft | same |
+| Heading and title length vs `LIMITS` | `heading_too_long` | hard | landing |
+| Heading and title length vs display targets (`DISPLAY_TARGETS`: headline 70 chars/12 words, heading 50/9, item title 40/7) | `heading_long_for_display` | soft | landing |
+| No eyebrow, kicker, overline field; no section number or "Step 1" heading (D24) | `eyebrow_field`, `section_number` | hard | landing |
+| All-caps heading | `all_caps_heading` | soft | landing |
+| No emoji | `emoji_in_copy` | hard | landing |
+| Proof slots are placeholders, bracketed | `proof_not_placeholder`, `proof_not_bracketed` | hard | landing |
+| Waitlist present | `waitlist_missing` | hard | landing |
+| Layout allowed by the kit's direction (wraps `checkLandingAgainstBrandKit`) | `layout_not_allowed` | hard | landing, when `brandKit` given |
+| Alt text opens with "image of" | `alt_redundant` | soft | landing, brand kit |
+| AA contrast via `failingTextPairs`; malformed hex guarded | `low_contrast`, `invalid_hex` | hard | brand kit |
+| Type pair suits the direction; theme mode matches palette | `type_pair_direction`, `theme_mode_mismatch` | hard | brand kit |
+| Prompt standard v1, per prompt (TypeScript port of `scripts/lib/prompt-standard.mjs`) | `done_when`, `do_not_build`, `next_pin`, `code_fence`, `setup_billing`, `setup_services`, `setup_auth`, `setup_auth_rls`, `setup_tables`, `setup_structure`, `billing`, `stack_services` | hard (billing: see below) | build pack |
+| Body repeats the labels | `duplicate_label` | soft | build pack |
+
+Not walked as copy: `proofSlots`, `voice.dontSay` and `voice.dontSayWhy` (deliberately bad copy), any `doNotBuild`
+line (it names what is left out), and enum or colour fields (`hex`, `layout`, `kind`, ...).
+
+### Prompt standard v1 and the open owner questions (8, 9)
+
+`checkBuildPrompt(prompt, { role, billing })` and `checkBuildPackStandard(pack, { setupPromptNumbers, billing })` take
+both rulings as options, so S3d does not change code when the owner rules:
+
+- Default ruling (planned option A): per-prompt rules (Done when, Do not build, no Next major pin, no code fence) on all
+  eight prompts; the Project Setup rules (no billing, one login, 3 services, 3+ tables, 8+ lines) on prompt 3
+  (scaffold, first), which is the prompt the schema names as Project Setup. Billing is hard in that prompt and soft
+  elsewhere. A light pack has no setup prompt and billing is off, so a checkout prompt passes.
+- A v2 or "checkout allowed in light only" ruling is `setupPromptNumbers` and `billing`. Nothing else to change.
+- The port has parity tests against `lintPrompts` on shared fixtures and on every enforced idea's real prompts. The
+  title rule (four titles) and the Branding Package rule do not apply to a build pack and are not ported.
+
+### Tests
+
+242 tests in 5 files: positive and negative tables for every pattern (including no false positive on product units,
+years, bracketed placeholders, "5k" race names, "first 50 on the waitlist", "Product Hunt launch"), HydroTrail
+fixtures clean across all ten kinds plus the own-idea blueprint and the light pack, realistic bad artifacts failing,
+and `lintPrompts` parity for each shared rule.
+
+### Plan vs reality
+
+- No slop lexicon exists in the repo (only the phrase list in `07` §2B). S4a wrote it (`slop.ts`); the lists are the
+  owner's to tune.
+- No `safeIssuePath` exists (see above). No Convex file needed it.
+- `LEADING_SECTION_NUMBER` and the emoji regex in `artifacts.ts` are not exported, so `landing.ts` repeats them
+  (two lines each). Codex could export them; then the copies go.
+- S3d's story puts the standard port at `lib/workspace/crew/promptStandard.ts`. It lives in
+  `lib/workspace/crew/checks/promptStandard.ts` (exported from the checks index); S3d can re-export it from the story's
+  path or import it directly.
+- The never-fake patterns are strict by design ("5-star", "Join 50 hikers" and "trusted by" always fail). A founder who
+  has real proof adds it after review.
+
+### Docs
+
+- Docs updated: `docs/wp/wp75-stories.md` (S4a ticked), this file.

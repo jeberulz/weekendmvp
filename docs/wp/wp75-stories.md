@@ -195,7 +195,7 @@ Standing rules:
     a course idea stores a light pack; a fixture prompt with billing triggers one repair; the port agrees with
     `lintPrompts` on the four HydroTrail idea prompts (shared fixtures).
 
-- [ ] `WP75-S4a` - Deterministic quality and "never fake it" checks
+- [x] `WP75-S4a` - Deterministic quality and "never fake it" checks
   - Scope: `lib/workspace/crew/checks/*.ts` (pure, no Convex imports), tests. Reusable by WP76.
   - Checks over every string in an artifact (JSON walk): never-fake-it patterns (testimonials, star ratings and
     "4.9/5", "trusted by", user and customer counts, "as seen in", press names, invented statistics); market numbers
