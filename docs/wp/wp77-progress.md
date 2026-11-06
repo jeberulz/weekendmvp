@@ -964,3 +964,19 @@ Not verifiable without a browser or screen reader: real VoiceOver, NVDA and JAWS
 Needs from Codex: none.
 
 Checks (exit codes): `npm run typecheck` 0, `npm run lint` 0 (existing warnings only), `npm run test:platform` 0 (69 files, 1482 tests), `npm run test:convex` 0 (76 files, 1027 tests), `npm run test:security` 0 (121 vitest), `npm run build` 0.
+
+### S6 review fixes (commit `cbdcd630`)
+
+- M1/M3: the panel now has two lines. A visible polite line shows send and retry notices only. A separate sr-only polite region (`WrenChatPanel.tsx`) announces Wren's reply, and is cleared after 4 s. A new reply state also clears an old notice, so a stuck "Wren is still answering…" can no longer hide later announcements. The reply text is no longer shown a second time, and "Wren is writing…" shows once.
+- M2: each approval card's outcome text is a polite `role="status"` region that is always mounted inside the focusable status line (`WrenChatCards.tsx`), so the outcome is read even though focus moves before the text renders. Tested: approve, then an error, each in its own live region.
+- m1: `keepFocusInComposer` refocuses only when focus is on the page body or inside the composer form. m2: the 600-character cap cuts by code point. m3: the count uses the shared `visibleWrenCards` filter. m4: `WrenThread` passes `liveUpdates` as the `InsideLogContext` value and the comment is fixed (tested in `workspace-kit.test.tsx`: a `BrandKitCard` in `liveUpdates={false}` keeps `role="status"`). m5: the vacuous MutationObserver assertion is replaced by a real check of the distinct announcements.
+- Nits: removed `aria-busy` from the streaming wrapper (and its tests); "Try again" does nothing while `sending`; "Ads drafts" is now "Ad drafts"; the stale-at-load comment is reworded (a reply already stuck at load is announced once as stopped when the timer flips it).
+- Known limit: Convex may coalesce updates, so a fast reply can skip the "Wren is writing…" announcement and go straight to the finished reply. That is harmless and not handled.
+- Checks: typecheck 0; eslint on the changed files clean; `npm run test:platform` 0 (1490 tests; one earlier run showed a single failure that did not repeat in two later runs, cause not identified); `convex/workspace/changeRounds.test.ts` 30 pass; the reviewer's probes pass (10).
+
+### S6 re-check follow-ups
+
+- The same announcement twice in a row is now read again: the sr-only text gets a trailing no-break space on alternate announcements, so the text node changes (`WrenChatPanel.tsx`). Tested with two identical replies in a row.
+- A capped send no longer repeats "Wren needs a break": the card shows it, the visible notice line stays empty, and the sr-only region says it.
+- Tests: the "Try again" guard test now also asserts focus stays on the button (the `inFlight` check alone no longer passes it); the "Wren is writing…" test mounts empty and then streams, so it can fail; the file header is corrected.
+- Checks: workspace-wren-a11y, workspace-wren-panel, workspace-wren-panel-stale, workspace-change-rounds and workspace-kit, typecheck, eslint on changed files and `npm run test:platform` all pass (see the report for counts).

@@ -109,5 +109,6 @@ describe("JOB_TYPE_TITLES", () => {
     expect(JOB_TYPE_TITLES.crew_seo_pack).toBe("SEO pack");
     expect(JOB_TYPE_TITLES.crew_landing).toBe("Landing page");
     expect(JOB_TYPE_TITLES.crew_brand_kit).toBe("Brand kit");
+    expect(JOB_TYPE_TITLES.crew_ads_drafts).toBe("Ad drafts");
   });
 });

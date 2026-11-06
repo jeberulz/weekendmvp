@@ -68,7 +68,7 @@ export const JOB_TYPE_TITLES: Record<JobType, string> = {
   crew_social_pack: "Social pack",
   crew_seo_pack: "SEO pack",
   crew_launch_plan: "Launch plan",
-  crew_ads_drafts: "Ads drafts",
+  crew_ads_drafts: "Ad drafts",
   crew_build_pack: "Build pack",
   crew_hire: "Hire",
   studio_image: "Studio image",

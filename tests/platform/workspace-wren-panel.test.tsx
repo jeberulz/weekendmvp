@@ -69,13 +69,13 @@ describe("WrenChatPanel", () => {
     expect(await violations()).toEqual([]);
   });
 
-  test("streaming: the log holds the thread and the reply being written is aria-busy", async () => {
+  test("streaming: the log holds the thread and the reply being written shows no aria-busy", async () => {
     const markup = render([
       row("f1", "founder", "Move the launch email to Sunday?", "done"),
       row("w1", "wren", "Sunday works", "streaming"),
     ]);
     expect(markup).toContain('role="log"');
-    expect(markup).toContain('aria-busy="true"');
+    expect(markup).not.toContain("aria-busy");
     expect(markup).toContain("Sunday works");
     // The composer's Send waits for the reply (focusable, aria-disabled).
     expect(markup).toMatch(/aria-label="Send message" aria-disabled="true"/);
@@ -118,9 +118,10 @@ describe("WrenChatPanel", () => {
     expect(markup).toContain('href="/dashboard/b/p1/launch"');
     expect(markup).toContain("Review it on the launch page");
     expect(markup).toContain('tabindex="-1"');
-    // No live region nested in the thread's role="log".
-    expect(document.querySelector('[aria-label="Cards from Wren"] [aria-live], [aria-label="Cards from Wren"] [role="status"]'))
-      .toBeNull();
+    // The only live region on a card is its decision outcome, inside the focusable status line.
+    const live = [...document.querySelectorAll('[aria-label="Cards from Wren"] [aria-live], [aria-label="Cards from Wren"] [role="status"]')];
+    expect(live.length).toBe(1);
+    expect(live.every((element) => element.closest("[data-card-status]") !== null)).toBe(true);
     expect(markup).toContain("Not now");
     expect(markup).toContain("How approval cards work");
     expect(markup).toContain('href="/dashboard/b/p1/brand"');

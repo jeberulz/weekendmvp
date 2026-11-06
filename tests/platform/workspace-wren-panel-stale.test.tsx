@@ -68,7 +68,7 @@ describe("stale streaming reply", () => {
     expect(sendButton().getAttribute("aria-disabled")).toBe("true");
     expect(screen.queryByRole("button", { name: /Try again/u })).toBeNull();
     expect(screen.getByText("Wren is writing…")).toBeTruthy();
-    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    expect(container.querySelector('[aria-busy]')).toBeNull();
   });
 
   test("flips exactly when the window passes", () => {

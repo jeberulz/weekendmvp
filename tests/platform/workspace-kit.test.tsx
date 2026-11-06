@@ -673,6 +673,11 @@ describe("OutputCard states (id integrity, focus targets, live regions)", () => 
     expect(inLog).not.toContain('role="status"');
     expect(inLog).toContain("Approved. Site, emails and Studio now use it.");
     expect(html(<WrenThread><BrandKitCard {...props} announce /></WrenThread>)).toContain('role="status"');
+    // A log that is switched silent does not announce, so the card keeps its own live region.
+    const silent = html(<WrenThread liveUpdates={false}><BrandKitCard {...props} /></WrenThread>);
+    expect(silent).toContain('role="log"');
+    expect(silent).toContain('aria-live="off"');
+    expect(silent).toContain('role="status"');
   });
 
   test("pending styles are visible for every button style", async () => {

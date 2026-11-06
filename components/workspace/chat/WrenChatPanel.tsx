@@ -7,7 +7,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
 import { CARD_SHELL, WrenMessage } from "@/components/workspace/kit/WrenCards";
 import { UserMessage, WrenComposer, WrenThread } from "@/components/workspace/kit/WrenThread";
-import { WrenChatCards } from "@/components/workspace/chat/WrenChatCards";
+import { WrenChatCards, visibleWrenCards } from "@/components/workspace/chat/WrenChatCards";
 import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
@@ -38,9 +38,13 @@ type Notice =
 const ANNOUNCE_MAX_CHARS = 600;
 const UNLOADED = Symbol("unloaded");
 
+/** How long a screen-reader announcement stays in its region before it is cleared. */
+const ANNOUNCE_CLEAR_MS = 4_000;
+
 function repliedAnnouncement(body: string, cardCount: number): string {
-  const text = body.trim();
-  const shown = text.length > ANNOUNCE_MAX_CHARS ? `${text.slice(0, ANNOUNCE_MAX_CHARS)}… Read the rest in the thread.` : text;
+  // Cut by code point, so an emoji or other surrogate pair is never split.
+  const points = Array.from(body.trim());
+  const shown = points.length > ANNOUNCE_MAX_CHARS ? `${points.slice(0, ANNOUNCE_MAX_CHARS).join("")}… Read the rest in the thread.` : points.join("");
   const cards = cardCount === 0 ? "" : cardCount === 1 ? " 1 card from Wren is below the reply." : ` ${cardCount} cards from Wren are below the reply.`;
   return `Wren replied: ${shown}${cards}`;
 }
@@ -66,8 +70,11 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
   const inFlight = useRef(false);
   // The `updatedAt` of the streaming reply the timer has marked stopped.
   const [stoppedAt, setStoppedAt] = useState<number | undefined>(undefined);
-  // What the status line says about Wren's reply, set once per change of its state.
-  const [announcement, setAnnouncement] = useState("");
+  // What the screen-reader-only region says about Wren's reply, set once per change of its state.
+  const [announcement, setAnnouncementState] = useState({ text: "", count: 0 });
+  // The same text twice in a row must still be read: the count flips a trailing no-break space,
+  // so the text node changes and the live region speaks again.
+  const announce = (text: string) => setAnnouncementState((current) => ({ text, count: current.count + 1 }));
   const [announcedKey, setAnnouncedKey] = useState<string | null | typeof UNLOADED>(UNLOADED);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -88,18 +95,27 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
   const lastState = last?.author === "wren" ? (lastStale ? "stopped" : last.status) : null;
   const lastKey = last === undefined || lastState === null ? null : `${last._id}:${lastState}`;
   const lastBody = last?.body ?? "";
-  const lastCardCount = last?.cards.length ?? 0;
+  const lastCardCount = last === undefined ? 0 : visibleWrenCards(last.cards).length;
+
+  // The announcement is read once, then cleared so the region does not hold stale text.
+  useEffect(() => {
+    if (announcement.text === "") return;
+    const timer = setTimeout(() => setAnnouncementState((current) => ({ ...current, text: "" })), ANNOUNCE_CLEAR_MS);
+    return () => clearTimeout(timer);
+  }, [announcement]);
 
   // Announce Wren's reply once per state change (adjusted during render, not in
   // an effect). What was already on the page when the thread first loaded is
-  // never announced.
+  // never announced; a reply already stuck at load is announced once as stopped
+  // when the stale timer flips it. A new reply state also clears an old send notice.
   if (messages !== undefined && announcedKey !== lastKey) {
     setAnnouncedKey(lastKey);
     if (announcedKey !== UNLOADED && lastKey !== null) {
-      if (lastState === "streaming") setAnnouncement("Wren is writing…");
-      else if (lastState === "done") setAnnouncement(repliedAnnouncement(lastBody, lastCardCount));
-      else if (lastState === "failed") setAnnouncement("Wren couldn't finish this reply. You can try again.");
-      else if (lastState === "stopped") setAnnouncement("Wren stopped partway through. You can try again.");
+      setNotice((current) => (current.kind === "message" ? { kind: "none" } : current));
+      if (lastState === "streaming") announce("Wren is writing…");
+      else if (lastState === "done") announce(repliedAnnouncement(lastBody, lastCardCount));
+      else if (lastState === "failed") announce("Wren couldn't finish this reply. You can try again.");
+      else if (lastState === "stopped") announce("Wren stopped partway through. You can try again.");
     }
   }
 
@@ -114,6 +130,7 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
     try {
       const notice = await action();
       setNotice(notice);
+      if (notice.kind === "tomorrow") announce(WREN_TOMORROW_CARD.title);
       return notice.kind === "none";
     } catch {
       setNotice({ kind: "message", text: "That didn't go through. Try again in a moment." });
@@ -170,7 +187,7 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
             const stopped = message.status === "streaming" && isLast && lastStale;
             const writing = message.status === "streaming" && !stopped;
             return (
-              <div key={message._id} aria-busy={writing || undefined}>
+              <div key={message._id}>
                 <WrenMessage time={new Date(message.createdAt).toLocaleTimeString(undefined, TIME_FORMAT)}>
                   {stopped && message.body.length === 0 ? (
                     <p className="text-home-ink-2">Wren stopped partway through.</p>
@@ -185,7 +202,9 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
                     <p>
                       <button
                         type="button"
-                        onClick={() => retry(message._id)}
+                        onClick={() => {
+                          if (!sending) retry(message._id);
+                        }}
                         aria-disabled={sending || undefined}
                         className={cn("min-h-6 rounded px-1 text-[13px] font-medium underline", FOCUS)}
                       >
@@ -201,7 +220,10 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
       )}
       {notice.kind === "tomorrow" ? <TomorrowCard resetsIn={notice.resetsIn} /> : null}
       <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-        {notice.kind === "message" ? notice.text : notice.kind === "tomorrow" ? WREN_TOMORROW_CARD.title : announcement}
+        {notice.kind === "message" ? notice.text : ""}
+      </p>
+      <p role="status" aria-live="polite" className="sr-only">
+        {announcement.text === "" ? "" : `${announcement.text}${announcement.count % 2 === 0 ? "\u00A0" : ""}`}
       </p>
       <div ref={composerRef} className="rounded-xl border border-home-rule bg-home-card">
         <WrenComposer onSend={send} sending={sending || replying} />

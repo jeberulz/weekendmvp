@@ -27,7 +27,7 @@ export type WrenThreadProps = {
   children?: ReactNode;
 };
 
-/** True inside the thread's `role="log"`, which already announces new content. */
+/** True inside a thread `role="log"` that announces new content (`liveUpdates`). */
 const InsideLogContext = createContext(false);
 
 /**
@@ -47,7 +47,7 @@ export function WrenThread({
   }
   return (
     <div role="log" aria-label="Messages" aria-live={liveUpdates ? undefined : "off"} className="flex flex-col gap-4">
-      <InsideLogContext.Provider value={true}>{children}</InsideLogContext.Provider>
+      <InsideLogContext.Provider value={liveUpdates}>{children}</InsideLogContext.Provider>
     </div>
   );
 }
@@ -217,7 +217,11 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
   /** After an accepted send focus stays in the composer, even when Send was pressed. */
   function keepFocusInComposer() {
     const active = document.activeElement;
-    if (active === null || active === document.body || active !== textareaRef.current) textareaRef.current?.focus();
+    const form = textareaRef.current?.form;
+    // Only when focus is on the page, or on the composer's own controls: never take it back from elsewhere.
+    if (active === null || active === document.body || (form !== null && form !== undefined && form.contains(active))) {
+      textareaRef.current?.focus();
+    }
   }
 
   function submit() {
