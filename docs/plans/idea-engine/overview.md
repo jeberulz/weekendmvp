@@ -1,10 +1,14 @@
 # Idea Engine, operator path
 
+> **Current runtime truth:** [PIPELINE.md](PIPELINE.md) (2026-11-06). This
+> overview retains historical seven-step / Ideabrowser Mode A language for
+> archaeology; do not treat the Context section below as the live operator path.
+
 This plan is independent of the Build Platform program. It does not wait on WP29, WP30, WP38, or WP31. It does not edit `docs/wp/program-manifest.md`. It does not merge `codex/wp26-v1.1-engine` onto `main`. It does lift the pure provider and pipeline functions from that branch into `lib/engine/`, and it leaves the Convex workflow, credits, and `ownerId` there.
 
 The deliverable is a research-and-compile loop you already run by hand, owned in this repo, with Ideabrowser MCP removed from `/publish-idea`.
 
-## Context
+## Context (historical — superseded by PIPELINE.md)
 
 `/publish-idea` still requires Ideabrowser MCP as Mode A. Seven MCP calls feed the seven MDX sections. The subscription lapses on 2026-09-05.
 

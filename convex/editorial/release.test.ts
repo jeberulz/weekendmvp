@@ -4,6 +4,7 @@ import { afterEach, expect, test, vi } from "vitest";
 
 import { buildFixtureRecord } from "../../lib/engine/__fixtures__/recordV2";
 import { compileResearchRecord } from "../../lib/engine/compile";
+import { buildPassingSourceReview } from "../../lib/engine/source-review";
 import { validateEngineSubmission } from "../../lib/editorial/engine/validated-artifact";
 import { api, internal } from "../_generated/api";
 import schema from "../schema";
@@ -45,7 +46,12 @@ test.each(["canonical", "staging"] as const)("an exact private revision is activ
     record, slug: record.brief.slug, category: "ai-tools", tools: ["cursor", "claude"],
     audiences: ["developers", "weekend-builders"], buildTime: "10", revenueGoal: "1k-month", publishedAt: "2026-10-01",
   });
-  const source = { recordJson: JSON.stringify(record), mdx: compiled.mdx, manifestJson: JSON.stringify(compiled.manifestEntry) };
+  const source = {
+    recordJson: JSON.stringify(record),
+    mdx: compiled.mdx,
+    manifestJson: JSON.stringify(compiled.manifestEntry),
+    sourceReviewJson: JSON.stringify(buildPassingSourceReview(record)),
+  };
   const checked = await validateEngineSubmission(source);
   const imported = await t.mutation(internal.editorial.service.importValidatedEngine, {
     envelope: JSON.stringify(checked.envelope), recordJson: checked.recordJson,

@@ -23,6 +23,7 @@ const privateMode = privatePaths.some((source) => source !== undefined);
 if (privateMode && privatePaths.some((source) => !source)) {
   throw new Error("Private submission requires --record=PATH, --mdx=PATH and --manifest=PATH together.");
 }
+const sourceReviewArg = value("--source-review=");
 const realRoot = await realpath(root);
 
 function inside(parent, candidate) {
@@ -45,6 +46,26 @@ const [recordJson, mdx, manifestText] = privateMode
       readFile(path.join(root, "content/ideas", `${slug}.mdx`), "utf8"),
       readFile(path.join(root, "ideas/manifest.json"), "utf8"),
     ]);
+
+let sourceReviewJson;
+if (privateMode) {
+  if (!sourceReviewArg) {
+    throw new Error("Private submission requires --source-review=PATH (sealed Source Critic PASS JSON).");
+  }
+  sourceReviewJson = await privateInput(sourceReviewArg);
+} else {
+  const reviewPath = sourceReviewArg
+    ? path.resolve(root, sourceReviewArg)
+    : path.join(root, "engine/records", `${slug}.source-review.json`);
+  if (!existsSync(reviewPath)) {
+    throw new Error(
+      `Source Critic review required (fail-closed): missing ${path.relative(root, reviewPath)}. ` +
+        "Pass --source-review=PATH with a sealed PASS JSON bound to this record.",
+    );
+  }
+  sourceReviewJson = await readFile(reviewPath, "utf8");
+}
+
 let manifest;
 try {
   manifest = JSON.parse(manifestText);
@@ -69,7 +90,7 @@ await build({
   logLevel: "silent",
 });
 const { validateEngineSubmission } = await import(pathToFileURL(outputPath).href);
-const validated = await validateEngineSubmission({ recordJson, mdx, manifestJson });
+const validated = await validateEngineSubmission({ recordJson, mdx, manifestJson, sourceReviewJson });
 console.log(JSON.stringify({
   slug,
   source: privateMode ? "private-files" : "checked-in-baseline",
@@ -104,7 +125,12 @@ if (
 
 const client = new ConvexHttpClient(deploymentUrl);
 client.setAdminAuth(adminKey);
-const result = await client.action(internal.editorial.ingest.validateAndImport, { recordJson, mdx, manifestJson });
+const result = await client.action(internal.editorial.ingest.validateAndImport, {
+  recordJson,
+  mdx,
+  manifestJson,
+  sourceReviewJson,
+});
 if (!result.ok || result.value.slugConflict) {
   throw new Error(`Import stopped: ${result.ok ? "slug conflict" : result.error.code}. No public page was changed.`);
 }

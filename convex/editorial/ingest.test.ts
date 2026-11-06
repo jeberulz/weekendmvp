@@ -4,6 +4,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { buildFixtureRecord } from "../../lib/engine/__fixtures__/recordV2";
 import { compileResearchRecord } from "../../lib/engine/compile";
+import { buildPassingSourceReview } from "../../lib/engine/source-review";
 import { validateEngineSubmission } from "../../lib/editorial/engine/validated-artifact";
 import { submissionArtifactHash } from "../../lib/editorial/domain/artifact";
 import { sha256Hex } from "../../lib/editorial/domain/hash";
@@ -29,7 +30,12 @@ function input() {
     revenueGoal: "1k-month",
     publishedAt: "2026-10-01",
   });
-  return { recordJson: JSON.stringify(record), mdx: compiled.mdx, manifestJson: JSON.stringify(compiled.manifestEntry) };
+  return {
+    recordJson: JSON.stringify(record),
+    mdx: compiled.mdx,
+    manifestJson: JSON.stringify(compiled.manifestEntry),
+    sourceReviewJson: JSON.stringify(buildPassingSourceReview(record)),
+  };
 }
 
 describe("private engine ingestion", () => {

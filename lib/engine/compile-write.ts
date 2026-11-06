@@ -20,6 +20,7 @@ import {
   type CompileResult,
 } from "./compile.ts";
 import type { ResearchRecordV2 } from "./evidence/contract.ts";
+import { assertSourceReviewPass, SourceReviewError } from "./source-review.ts";
 
 export type WriteCompileOptions = CompileOptions & {
   ideasDir: string;
@@ -39,6 +40,11 @@ export type WriteCompileOptions = CompileOptions & {
    * would write, so --no-manifest still sees ideas/manifest.json).
    */
   ownershipManifestPath?: string;
+  /**
+   * Sealed Source Critic review JSON. Required for live-mode records
+   * (fail-closed). Fixture-mode records skip the gate.
+   */
+  sourceReview?: unknown;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -95,6 +101,17 @@ function writeFileAtomic(target: string, data: string): void {
 export function writeCompiledIdea(
   options: WriteCompileOptions,
 ): WriteCompileResult {
+  // Live research cannot hit disk without a sealed Source Critic PASS.
+  // Fixture mode (hermetic replay / synthetic pages) is exempt.
+  try {
+    assertSourceReviewPass(options.record, options.sourceReview);
+  } catch (error) {
+    if (error instanceof SourceReviewError) {
+      throw new Error(`refusing to compile without Source Critic PASS — ${error.message}`);
+    }
+    throw error;
+  }
+
   const compiled = compileResearchRecord(options);
   const ideasDir = path.resolve(options.ideasDir);
   const mdxPath = path.resolve(ideasDir, `${compiled.slug}.mdx`);

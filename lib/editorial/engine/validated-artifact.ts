@@ -15,12 +15,14 @@ import type { SectionKey } from "../contracts/sections";
 import { submissionArtifactHash } from "../domain/artifact";
 import { sha256Hex } from "../domain/hash";
 import { splitSections } from "../domain/structure";
+import { assertSourceReviewPass, SourceReviewError } from "../../engine/source-review";
 import { publicationEvidenceIssues } from "./source-quality";
 
 /** Node-only boundary: never import this module into a Convex query or mutation. */
 const MAX_RECORD_BYTES = 512_000;
 const MAX_MDX_BYTES = 220_000;
 const MAX_MANIFEST_BYTES = 32_000;
+const MAX_SOURCE_REVIEW_BYTES = 128_000;
 
 export class EngineSubmissionError extends Error {
   constructor(message: string) {
@@ -33,6 +35,8 @@ export type EngineArtifactInput = {
   recordJson: string;
   mdx: string;
   manifestJson: string;
+  /** Sealed Source Critic review JSON (required; fail-closed). */
+  sourceReviewJson: string;
 };
 
 export type ValidatedEngineSubmission = {
@@ -136,6 +140,23 @@ export async function validateEngineSubmission(input: EngineArtifactInput): Prom
   if (record.mode !== "live") throw new EngineSubmissionError("Fixture research cannot enter the live editorial workspace.");
   if (record.brief.slug.startsWith("engine-draft-") || record.brief.slug.startsWith("_")) {
     throw new EngineSubmissionError("An engine draft cannot enter the live editorial workspace.");
+  }
+  if (Buffer.byteLength(input.sourceReviewJson ?? "", "utf8") > MAX_SOURCE_REVIEW_BYTES) {
+    throw new EngineSubmissionError("Source review exceeds its size limit.");
+  }
+  let sourceReviewRaw: unknown;
+  try {
+    sourceReviewRaw = JSON.parse(input.sourceReviewJson);
+  } catch {
+    throw new EngineSubmissionError("Source review is not valid JSON.");
+  }
+  try {
+    assertSourceReviewPass(record, sourceReviewRaw);
+  } catch (error) {
+    if (error instanceof SourceReviewError) {
+      throw new EngineSubmissionError(`Source Critic gate refused: ${error.message}`);
+    }
+    throw error;
   }
   const evidenceIssues = publicationEvidenceIssues(record);
   if (evidenceIssues.length > 0) {

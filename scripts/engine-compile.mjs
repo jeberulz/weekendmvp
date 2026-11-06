@@ -62,6 +62,10 @@ Flags:
                       slug
   --allow-fixture     Test only: compile a mode "fixture" record to any slug
                       (otherwise only engine-draft-* or _temp slugs; R11)
+  --source-review path
+                      Sealed Source Critic PASS JSON (required for live-mode
+                      records; default: {record}.source-review.json next to
+                      --record). Fixture-mode records skip this gate.
   --json              Print one JSON result line (ok, mdxPath, slug, wordCount,
                       manifestWritten, researchMode; or ok:false with error
                       and issues). mdxPath is repo-relative inside the
@@ -145,6 +149,7 @@ function parseArgs(argv) {
     force: false,
     replaceHandwritten: false,
     allowFixture: false,
+    sourceReviewPath: null,
     json: false,
   };
   const value = (i, flag) => {
@@ -169,6 +174,7 @@ function parseArgs(argv) {
     else if (a === "--force") out.force = true;
     else if (a === "--replace-handwritten") out.replaceHandwritten = true;
     else if (a === "--allow-fixture") out.allowFixture = true;
+    else if (a === "--source-review") out.sourceReviewPath = path.resolve(value(++i, a));
     else if (a === "--json") out.json = true;
     else {
       console.error(`unknown arg: ${a}`);
@@ -250,6 +256,30 @@ async function main() {
     );
   }
 
+  let sourceReview;
+  if (record.mode === "live") {
+    const resolvedRecord = path.resolve(args.recordPath);
+    const defaultReviewPath = path.join(
+      path.dirname(resolvedRecord),
+      `${path.basename(resolvedRecord, path.extname(resolvedRecord))}.source-review.json`,
+    );
+    const reviewPath = args.sourceReviewPath ?? defaultReviewPath;
+    if (!fs.existsSync(reviewPath)) {
+      refuse(
+        args,
+        `source review required for live research (Source Critic PASS): missing ${displayPath(reviewPath)}`,
+      );
+    }
+    try {
+      sourceReview = JSON.parse(fs.readFileSync(reviewPath, "utf8"));
+    } catch (err) {
+      refuse(
+        args,
+        `source review is not valid JSON: ${displayPath(reviewPath)} (${err instanceof Error ? err.message : err})`,
+      );
+    }
+  }
+
   let result;
   try {
     result = writeCompiledIdea({
@@ -263,6 +293,7 @@ async function main() {
       force: args.force,
       replaceHandwritten: args.replaceHandwritten,
       allowFixture: args.allowFixture,
+      sourceReview,
     });
   } catch (err) {
     if (err instanceof CompileError) refuse(args, "record cannot compile into a publishable page", err.issues);
