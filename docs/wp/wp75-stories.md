@@ -55,8 +55,11 @@ Standing rules:
     `requireBusinessAccess(owner)`), called from Meet your co-founder after `createBusiness` returns. It does not
     change `convex/workspace/business.ts`. Idempotent: a second call returns the existing roster and launch.
   - Builds `RosterInput` with C-WIZARD `rosterInputFromWizard(answers, blueprint)` and runs `planRoster`
-    (`convex/crew/roles.ts`, `ROSTER_RULES_VERSION`). **The blueprint profile source is an open owner question**
-    (progress Stop-and-ask 1); the story builds against the ruled option.
+    (`convex/crew/roles.ts`, `ROSTER_RULES_VERSION`). **Profile source ruled 2026-11-06: blueprint first**
+    (`docs/wp/RULINGS.md`). `startLaunch` starts the blueprint step (S3a's `crew_blueprint` job through S2a's runner)
+    and returns; the roster is planned in the blueprint step's finish, from the stored blueprint's `profile`. Until
+    then Meet your co-founder shows "putting your team together"; a failed blueprint shows a retry and writes no
+    roster. S1 therefore lands after S2a and S3a's blueprint half.
   - Writes, in one transaction: a `crew_roster` task (status `succeeded`, no gateway call, job key revision 0),
     `roster_plans` (`rulesVersion`, `hired` role keys, `skipped[{roleKey, reason}]`), one `crew_members` row per hired
     role (`status: queued`, `hiredBy: rule`, `autopilot: false`) and per skipped role (`status: skipped`), a
@@ -120,7 +123,7 @@ Standing rules:
     `enqueueAction(internal.crew.runner.runCrewStep, …, { retry: false, onComplete: internal.crew.launch.stepDone })`.
     `stepDone` advances the DAG in a mutation. `@convex-dev/workflow` is not used: 0.4.4 runs its own internal pool
     and cannot use `crewWorkpool` (progress Stop-and-ask 4).
-  - DAG (`02` §6.2): roster (S1) → blueprint → {brand kit text → logo marks ×3 → landing spec; build pack; WP76 slots:
+  - DAG (`02` §6.2, reordered by the 2026-11-06 roster ruling): blueprint → roster (S1) → {brand kit text → logo marks ×3 → landing spec; build pack; WP76 slots:
     launch plan, SEO pack, email sequence, social pack, ads drafts}. The registry lists every step with its job type,
     employee, inputs and parents; WP76 steps are present as `pending_wp76` and finish as `skipped` with a reason until
     WP76 registers its generators.

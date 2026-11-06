@@ -12,7 +12,7 @@
 
 | Story | State | Runs in fixture mode now? | Waits on | Author / reviewer |
 |---|---|---|---|---|
-| S1 roster | Not started | Partly (rules, writes, UI) | Owner Q1 (profile source) | Opus (Sonnet UI) / Opus |
+| S1 roster | Not started | Yes, after S2a + S3a blueprint | S2a, S3a (ruled: blueprint first) | Opus (Sonnet UI) / Opus |
 | S2a job runner | Not started | **Yes** | — | Opus / Opus |
 | S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
 | S3a blueprint + brand text | Not started | Yes, after S2a | Seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
@@ -37,7 +37,7 @@ separate Sonnet session if capacity allows.
 
 Options are listed; none is resolved here.
 
-1. **Roster needs a blueprint profile that does not exist at Meet your co-founder.** C-WIZARD
+1. **Resolved 2026-11-06: (A) blueprint first** (`docs/wp/RULINGS.md`). **Roster needs a blueprint profile that does not exist at Meet your co-founder.** C-WIZARD
    `rosterInputFromWizard(answers, blueprint)` (`lib/workspace/contracts/wizard.ts:326`) needs a full Blueprint with
    `profile`. The wizard's blueprint preview is "Display only; never stored" (`lib/workspace/wizard/defaults.ts:30`),
    the light blueprint drops `profile` (`lib/workspace/wizard/light-blueprint.ts`), and `createBusiness`
@@ -217,7 +217,7 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 
 ## Owner questions
 
-1. Roster profile source: A, B or C (Stop-and-ask 1).
+1. ~~Roster profile source: A, B or C (Stop-and-ask 1).~~ Answered 2026-11-06: A, blueprint first.
 2. "Logo ×3": three alternative marks, or one mark in three variants? If alternatives, how is the pick stored?
 3. Recraft style for founder logos: none (planned), a neutral house style, or one per art direction?
 4. Hero image: render one per launch (cost model) or drop it?
