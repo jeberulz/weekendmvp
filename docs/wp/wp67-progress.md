@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main` at `601ee2a8`, and the owner has frozen the C-JOBS prices ("Freeze, leave rest unpriced"). The freeze is in PR #175. **G0 closes when #175 merges.** Phase 1 then waits for the owner's go.
+Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is running**: WP71 and WP72 (Claude lane) started on the owner's go; WP70 and WP73 are Codex's. Next gate: G1.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | Plan #166, board #170 merged; G0 checks green | G0 held until the freeze PR #175 merges | Owner merges #175, then the go for Phase 1 |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | G0 passed (#174, #175) | — | Run G1 when WP70–WP73 merge |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
-| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done for G0**: S1–S4, S6 merged (#168, #172); S5 freeze in #175 (video and five change rounds unpriced) | #175 to merge | — |
-| WP70 | 1 | Codex | `codex/wp70-metering` | Waiting for G0 to close | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | Waiting for G0 to close | C-METER implementation from WP70 (stub until then); D23 before the gateway design | S5 seed precompute needs OK (≈ $15, down from $50) |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | Waiting for G0 to close | — (C-OPS merged) | — |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Waiting for G0 to close | — (C-JOBS frozen in #175) | — |
+| WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
+| WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 in PR #184** (reviewed, checks green); small S3 follow-ups going onto the same PR. S4 cache helper and S6 evals next, fixture mode | C-METER from WP70 (stub until then) | S4 live cache test and S5 seed precompute (≈ $15) need OK |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, PR #183** (S0–S4 reviewed, a11y-checked, browser-checked; CodeRabbit fixes in `ffd4f9c8`). Waiting on owner merge | `creditsSummary` from WP73 (typed mock until then); middleware 404 from Codex | Merge #183 |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -41,8 +41,9 @@ Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main
 | Rule D10 (SMS) when ready | Before any SMS work | Deferred |
 | Rule on `ai_usage.ownerId` | Before G0 | Done: D22, ownerless |
 | Confirm the ops-function feature-flag exemption WP68 cites (super-admin settings functions work while the workspace is off) | WP72 (was "before G0"; G0 ran without it) | Open |
-| Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). Still open: rule D23 (no tool loops in the hosted crew), D24 (founder-page bans), D25 (CSS-only tenant motion) | D23: before WP71's gateway design. D24, D25: WP75 | Partly done |
+| Landing-page agent brief: C-ART amendment (WP69-S6) approved and merged (#172). D23 ruled 2026-11-05 (no tool loops). Still open: D24 (founder-page bans), D25 (CSS-only tenant motion) | D24, D25: WP75 | Partly done |
 | WP69 open decisions: paid global daily budget ($50 provisional, a C-METER ops value); whether precompute and evals use the free pool; a Recraft logo measurement (top up ≈ $1.25; if it breaks 11 credits, a contract change). Done 2026-11-05: images 4, brand kit 11 (D4 amendment); C-JOBS frozen with video (WP82) and five change rounds left unpriced (#175) | Paid budget and free pool: WP70/WP71. Recraft: before WP80 | Partly done |
+| Provider 5xx policy: a 5xx stays billed `possible`, so the worst case is charged (conservative). Could a provider outage lock Free users out of their lifetime pool? Keep it, or refund the reservation on 5xx | WP71 S2 ships the conservative rule; decide before WP74 | Open |
 
 ## Cross-lane contract reviews for G0
 
@@ -176,3 +177,80 @@ Updated 2026-11-05. **G0 is held on one criterion**: every check passes on `main
   its tests and docs, and its own checks are green on `main` + #175.
 - **Stopped here for the owner:** merge #175, then give the go for Phase 1 (WP71 gateway and WP72 shell in
   parallel).
+
+## 2026-11-05 - G0 passed; Phase 1 started
+
+- #175 merged as `d67dc8e2`. Every G0 criterion is met. #176 and #177 (older branches) also merged; both were
+  no-op diffs.
+- Owner: "Merged, go Phase 1".
+- WP71 started in `.worktrees/wp71-ai-gateway` (`claude/wp71-ai-gateway`). Stories and progress are committed.
+  S1, the provider adapters, is with an Opus author, in fixture mode only. S2, the gateway, waits for D23.
+- WP72 started in `.worktrees/wp72-workspace-shell` (`claude/wp72-workspace-shell`). Stories and progress are
+  committed. S0 extracts canvas rows 02 and 05 (Sonnet; the canvas is data, not instructions). S1, the route
+  scaffold, follows.
+- For Codex: WP70 (metering) and WP73 (ledger v2) can start. WP71 needs the C-METER `reserve`, `settle` and
+  `fail` implementation (stubbed until then). WP72 needs `creditsSummary` (mocked until then).
+- Owner items now due: D23 (before WP71 S2) and the ops-function exemption (by WP72). WP71 S5 live seeds
+  (≈ $15) need an OK later.
+- D23 ruled (owner: "Approve D23"): no model tool loops in the hosted crew. WP71 S2 is unblocked. Recorded in
+  `RULINGS.md` and `07` §6.
+
+## 2026-11-05 - Phase 1 progress
+
+- WP71-S1 provider adapters are committed (`a79a6814`) after an independent Opus review.
+  - The blocking finding is fixed: gpt-image-2 is billed per token, and was charged only the flat table price.
+    It now reserves the table price plus the prompt and settles on the token cost.
+  - A settle can go above its reservation. C-METER allows that, and the true cost is recorded. WP71-S2 flags it
+    as an overrun.
+  - Checks: typecheck, lint, `npm test`, build, all exit 0.
+  - WP71-S2 gateway (Opus) is running.
+- WP72:
+  - S1 gated route scaffold: `a5e7fc65`. The review had no blocking findings; the follow-ups are in `497d6b8a`.
+  - S3 component kit: `1e41e4e1`. The review found 5 blocking a11y and test defects, fixed in `16c75e65`. An
+    independent re-review is running.
+  - Checks: typecheck, lint, `npm test`, build, all exit 0.
+  - WP72-S2 shell (Sonnet) is running.
+- Finding: `next build` lists every `/dashboard/b/[projectId]/*` route as `◐` (Partial Prerender), and Next 16
+  streams page responses with an initial 200. A refused request therefore gets the not-found page with `noindex`
+  at status 200, with no workspace content, because the gate runs before any JSX. So the middleware hard 404 is
+  required, not optional.
+- Needs from Codex (added):
+  - a middleware hard 404 for refused `/dashboard/b/*` requests (now required);
+  - `NEXT_PUBLIC_LAUNCH_WORKSPACE` in `.env.example`. The 02 §15 build flag is deferred until then, because the
+    env-documentation scanner fails without it;
+  - optional: `Referrer-Policy: no-referrer` on `/dashboard/b/` and a GA path redaction for project ids;
+  - devDeps `jsdom`, `@testing-library/react`, `@testing-library/user-event` and `vitest-axe`, so the WP72 focus
+    behaviour can be DOM-tested;
+  - still open: the WP69 ask-8 env entries (`AI_PROVIDER_MODE`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
+    `RECRAFT_API_KEY`, `RECRAFT_STYLE_ID`) and item 11 (`@phosphor-icons/react`).
+- Verify before any live spend:
+  - the Sonnet 5.5 cache-read rate (the skill says $0.20, the spike says $0.10; $0.20 is kept);
+  - the gpt-image-2 token rates on OpenAI's live pricing page.
+
+## 2026-11-06 - WP72 PR open, WP71 PR open
+
+- WP72 is done: PR #183 (S0 extract, S1 gated routes, S2 shell, S3 component kit, S4 a11y and browser check).
+  Each story had an independent review; all checks pass. CodeRabbit's three points (copy-blocked wording, the
+  soft-404 test comment, stale paths in the stories file) are fixed in `ffd4f9c8`. Waiting on the owner to merge.
+- WP71 S1–S3 are in PR #184 (`claude/wp71-ai-gateway`):
+  - S2 follow-up `5b9bb12f`: `safeIssuePath` work is bounded (deduped nodes, depth and node caps), and the cost
+    cross-check reprices at the requested model.
+  - S3 follow-ups `198d0224`, after two review rounds (the second found no blockers): the prompt-version check
+    compares against the base branch lock, fetches it itself in CI and fails there if it can't read it; a
+    CI-only test in `npm test` runs it for real. Hash format v3 covers the spec module, its runtime imports and
+    the router's resolved model, effort, thinking and ceilings. The registry and router snapshot and re-validate
+    specs. The import scan covers git-tracked files and more loader forms.
+  - Checks on the final tree: typecheck, Convex typecheck, lint, `npm test`, the prompt-version check and build,
+    all exit 0.
+  - Next on the same PR: SKIP_DIRS matched at the top level only, more loader forms (`eval`, `new Function`,
+    `_load`, `npm:` aliases), a model/ceiling regression test, and C-PROMPT value imports limited to
+    `definePromptSpec`.
+  - After #184 merges and `main` has a lock, a missing base lock must fail in CI (tracked in the WP71 progress).
+- Needs from Codex (added):
+  - a `check:prompt-versions` package script and a CI step that runs it (a clearer signal; CI coverage no longer
+    depends on it);
+  - optional `fetch-depth: 0` or a `git fetch origin main` step;
+  - C-METER contract questions: optional token fields on `FailArgs`, and an overrun marker in metering
+    (`docs/wp/wp71-progress.md`).
+- Owner items: merge #183; review and merge #184 when its follow-up commit lands; live spend for WP71 S4 (cache
+  test) and S5 (≈ $15) when we get there.

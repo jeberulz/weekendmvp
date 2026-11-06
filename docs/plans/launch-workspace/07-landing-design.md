@@ -1,7 +1,7 @@
 # 07 — Landing design quality: how Leo avoids generic AI pages
 
-Status: the C-ART change in §5 was approved by the owner on 2026-11-05 and is being
-built as WP69-S6, before G0. The rulings in §6 (D23–D25) are still proposed.
+Status: the C-ART change in §5 was approved by the owner on 2026-11-05 and merged as
+WP69-S6 (#172), before G0. D23 is ruled (owner, 2026-11-05); D24 and D25 are still proposed.
 Input: John's brief, `briefs/design-skills-crew-brief.md`. Where this doc
 departs from it, §3 says why.
 
@@ -152,7 +152,7 @@ the copy lexicon and the DESIGN.md export.
 
 ## 6. Rulings proposed (owner)
 
-- **D23:** the hosted crew uses no model tool loops in Phase A. Skills reach it as
+- **D23 (ruled 2026-11-05):** the hosted crew uses no model tool loops in Phase A. Skills reach it as
   vendored data and deterministic checks. Full skills are for build agents and
   the founder's build pack.
 - **D24:** founder pages follow the bans in §4, enforced by C-ART enums and CI.
