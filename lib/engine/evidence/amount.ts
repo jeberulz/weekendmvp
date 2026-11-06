@@ -9,8 +9,11 @@
  *
  * NUMBERS (English, ASCII digits)
  *   1,400,000 | 1400000 | 1.4 | 24.99. A comma is only a thousands
- *   separator (groups of exactly three digits). European forms (1.400.000,
- *   "1,4"), space-grouped digits (1 400 000) and ".99" are not numbers.
+ *   separator (groups of exactly three digits). Optional horizontal
+ *   whitespace around a single decimal point is ignored ("99 . 99" =
+ *   99.99) so HTML/OCR artifacts still parse; European forms (1.400.000,
+ *   "1,4"), space-grouped thousands (1 400 000) and ".99" / "$ .99" are
+ *   not numbers.
  * MAGNITUDE
  *   k K thousand | m M mn MM million | b B bn billion | t T tn trillion.
  *   Single letters attach directly ("$5k", "$1.4B"); words and bn/mn/tn/MM
@@ -381,7 +384,12 @@ function isExcluded(text: string, start: number, end: number): boolean {
 // Amount scanning
 // ---------------------------------------------------------------------------
 
-const NUMBER_RE = /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g;
+/**
+ * One number token. Optional `[ \t\u00A0]*` around a single `.` collapses
+ * decorative decimal spacing ("99 . 99") without accepting space-grouped
+ * thousands ("1 400 000"), which stay separate `\d+` matches.
+ */
+const NUMBER_RE = /\d{1,3}(?:,\d{3})+(?:[ \t\u00A0]*\.[ \t\u00A0]*\d+)?|\d+(?:[ \t\u00A0]*\.[ \t\u00A0]*\d+)?/g;
 
 /** True when the number's left edge is a real token boundary. */
 function numberStartsCleanly(text: string, numberStart: number): boolean {
@@ -410,7 +418,8 @@ function readAmountAt(text: string, numberStart: number, numberText: string): Fo
   // A currency symbol we did not accept (e.g. "5$3") must not leave a bare number.
   if (!prefix && /[$€£]/.test(at(text, numberStart - 1))) return null;
 
-  const value = numberText.replace(/,/g, "");
+  // Drop thousands commas and any horizontal spaces kept around a decimal.
+  const value = numberText.replace(/,/g, "").replace(/[ \t\u00A0]/g, "");
   const mag = magnitudeAt(text, numberEnd);
   // "$1.4 M": a detached single letter could be a magnitude or a word.
   if (!mag && DETACHED_LETTER_RE.test(text.slice(numberEnd, numberEnd + 3))) return null;
