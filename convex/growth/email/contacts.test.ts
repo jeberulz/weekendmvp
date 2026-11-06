@@ -2,7 +2,7 @@ import { register as registerResend } from "@convex-dev/resend/test";
 import { convexTest } from "convex-test";
 import { makeFunctionReference } from "convex/server";
 import { describe, expect, it, vi } from "vitest";
-import { components } from "../../_generated/api";
+import { api, components } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
 import { tenantResend } from "./provider";
@@ -104,8 +104,8 @@ describe("WP79 contact revocation", () => {
     }));
 
     await expect(t.mutation(revoke, { leadId: ids.leadId })).resolves.toMatchObject({
-      tokensDeleted: 1, enrollmentsRevoked: 1, sendsChecked: 2,
-      queuedEmailsCancelled: 2, submittedEmails: 1,
+      tokensDeleted: 1, enrollmentsRevoked: 1, sendsChecked: 3,
+      queuedEmailsCancelled: 2, submittedEmails: 2,
     });
     expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("cancelled");
     expect((await t.query(component.lib.getStatus, { emailId: confirmationId }))?.status).toBe("cancelled");
@@ -148,10 +148,10 @@ describe("WP79 contact revocation", () => {
     });
   });
 
-  it("rolls back a queued cancellation when a component status query fails", async () => {
+  it.each(["active", "paused"])("rolls back a %s enrollment cancellation when component status fails", async (state) => {
     const { t, component } = setup();
     const ids = await seedLead(t);
-    const active = await seedEnrollment(t, ids, "active");
+    const active = await seedEnrollment(t, ids, state);
     const queuedId = await manualEmail(t, component);
     const confirmationId = await manualEmail(t, component);
     const sendId = await seedSend(t, ids, active, queuedId, "queued", "send:rollback:1");
@@ -172,7 +172,7 @@ describe("WP79 contact revocation", () => {
     }
     expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
     await t.run(async (ctx) => {
-      expect((await ctx.db.get(active))?.state).toBe("active");
+      expect((await ctx.db.get(active))?.state).toBe(state);
       expect((await ctx.db.get(sendId))?.status).toBe("queued");
       expect(await ctx.db.query("lead_email_tokens").collect()).toHaveLength(1);
     });
@@ -216,16 +216,90 @@ describe("WP79 contact revocation", () => {
     expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
   });
 
-  it("fails closed when more than one active enrollment is present", async () => {
+  it("revokes more than one active enrollment for the same lead", async () => {
     const { t } = setup();
     const ids = await seedLead(t);
     const first = await seedEnrollment(t, ids, "active");
     const second = await seedEnrollment(t, ids, "active");
     await expect(t.mutation(revoke, { leadId: ids.leadId }))
-      .rejects.toThrow("LEAD_ACTIVE_ENROLLMENT_LIMIT_EXCEEDED");
+      .resolves.toMatchObject({ enrollmentsRevoked: 2 });
     await t.run(async (ctx) => {
-      expect((await ctx.db.get(first))?.state).toBe("active");
-      expect((await ctx.db.get(second))?.state).toBe("active");
+      expect((await ctx.db.get(first))?.state).toBe("revoked");
+      expect((await ctx.db.get(second))?.state).toBe("revoked");
+    });
+  });
+
+  it("cancels queued mail across mixed active and paused enrollments", async () => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const active = await seedEnrollment(t, ids, "active");
+    const paused = await seedEnrollment(t, ids, "paused");
+    const activeMail = await manualEmail(t, component);
+    const pausedMail = await manualEmail(t, component);
+    await seedSend(t, ids, active, activeMail, "queued", "send:mixed:active");
+    await seedSend(t, ids, paused, pausedMail, "queued", "send:mixed:paused");
+    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+      .resolves.toMatchObject({ enrollmentsRevoked: 2, queuedEmailsCancelled: 2 });
+    expect((await t.query(component.lib.getStatus, { emailId: activeMail }))?.status).toBe("cancelled");
+    expect((await t.query(component.lib.getStatus, { emailId: pausedMail }))?.status).toBe("cancelled");
+    await t.run(async (ctx) => {
+      expect((await ctx.db.get(active))?.state).toBe("revoked");
+      expect((await ctx.db.get(paused))?.state).toBe("revoked");
+      expect((await ctx.db.get(ids.leadId))?.email).toBe("contact@example.test");
+    });
+  });
+
+  it.each([
+    ["completed", "completed", 0],
+    ["unrecognized", "revoked", 1],
+  ])("cancels queued mail for %s enrollment", async (state, expectedState, revoked) => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const enrollmentId = await seedEnrollment(t, ids, state);
+    const queuedId = await manualEmail(t, component);
+    const sendId = await seedSend(t, ids, enrollmentId, queuedId, "queued", `send:${state}:queued`);
+    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+      .resolves.toMatchObject({ enrollmentsRevoked: revoked, queuedEmailsCancelled: 1 });
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("cancelled");
+    await t.run(async (ctx) => {
+      expect((await ctx.db.get(enrollmentId))?.state).toBe(expectedState);
+      expect((await ctx.db.get(sendId))?.status).toBe("cancelled");
+    });
+  });
+
+  it("refuses an over-limit enrollment history before touching queued mail", async () => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const queuedId = await manualEmail(t, component);
+    const first = await seedEnrollment(t, ids, "paused");
+    await seedSend(t, ids, first, queuedId, "queued", "send:overflow:history");
+    for (let n = 0; n < 16; n += 1) await seedEnrollment(t, ids, "completed");
+    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+      .rejects.toThrow("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
+    expect((await t.run((ctx) => ctx.db.get(ids.leadId)))?.email).toBe("contact@example.test");
+  });
+
+  it("owner deletion revokes paused queued mail before erasing the lead", async () => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const sessionId = await t.run((ctx) => ctx.db.insert("authSessions", {
+      userId: ids.ownerId, expirationTime: Date.now() + 60_000,
+    }));
+    const paused = await seedEnrollment(t, ids, "paused");
+    const queuedId = await manualEmail(t, component);
+    const sendId = await seedSend(t, ids, paused, queuedId, "queued", "send:paused:owner-delete");
+    const owner = t.withIdentity({
+      subject: `${ids.ownerId}|${sessionId}`, issuer: "https://local.test",
+    });
+    await expect(owner.mutation(api.platform.sites.leads.deleteContact, { leadId: ids.leadId }))
+      .resolves.toEqual({ deleted: true });
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("cancelled");
+    await t.run(async (ctx) => {
+      expect((await ctx.db.get(paused))?.state).toBe("revoked");
+      expect((await ctx.db.get(sendId))?.status).toBe("cancelled");
+      expect((await ctx.db.get(ids.leadId))?.email).toBeUndefined();
+      expect((await ctx.db.get(ids.leadId))?.deletedAt).toBeTypeOf("number");
     });
   });
 

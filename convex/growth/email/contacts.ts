@@ -4,7 +4,7 @@ import { internalMutation, type MutationCtx } from "../../_generated/server";
 import { tenantResend } from "./provider";
 
 /** Issuance and state transitions must enforce these limits before enqueue. */
-export const MAX_ACTIVE_ENROLLMENTS_PER_LEAD = 1;
+export const MAX_ENROLLMENTS_PER_LEAD = 16;
 export const MAX_SENDS_PER_ENROLLMENT = 4;
 export const MAX_TOKENS_PER_PURPOSE = 1;
 
@@ -62,12 +62,13 @@ export const revokeLeadContact = internalMutation({
       tokens.push(...rows);
     }
     const enrollments = await ctx.db.query("enrollments")
-      .withIndex("by_leadId_and_state", (q) => q.eq("leadId", leadId).eq("state", "active"))
-      .take(MAX_ACTIVE_ENROLLMENTS_PER_LEAD + 1);
-    if (enrollments.length > MAX_ACTIVE_ENROLLMENTS_PER_LEAD) {
-      throw new Error("LEAD_ACTIVE_ENROLLMENT_LIMIT_EXCEEDED");
+      .withIndex("by_leadId", (q) => q.eq("leadId", leadId))
+      .take(MAX_ENROLLMENTS_PER_LEAD + 1);
+    if (enrollments.length > MAX_ENROLLMENTS_PER_LEAD) {
+      throw new Error("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
     }
 
+    let enrollmentsRevoked = 0;
     let sendsChecked = 0;
     let queuedEmailsCancelled = 0;
     let submittedEmails = 0;
@@ -101,8 +102,9 @@ export const revokeLeadContact = internalMutation({
         }
         sendsChecked += 1;
       }
-      if (enrollment.state !== "revoked") {
+      if (enrollment.state !== "completed" && enrollment.state !== "revoked") {
         await ctx.db.patch(enrollment._id, { state: "revoked", updatedAt: Date.now() });
+        enrollmentsRevoked += 1;
       }
     }
 
@@ -119,7 +121,7 @@ export const revokeLeadContact = internalMutation({
     }
     return {
       tokensDeleted: tokens.length,
-      enrollmentsRevoked: enrollments.length,
+      enrollmentsRevoked,
       sendsChecked,
       queuedEmailsCancelled,
       submittedEmails,

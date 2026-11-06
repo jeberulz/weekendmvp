@@ -12,7 +12,7 @@ Definition of done: an approved four-step sequence reaches a test inbox on sched
 - [ ] `WP79-S3` — Five-minute sender scans due opted-in enrollments, reserves a stable `send:{enrollmentId}:{stepId}` key, enforces plan caps including Free 50 lifetime, and handles retries exactly once.
 - [ ] `WP79-S4` — Double opt-in confirmation first, tokenized `/u/{token}` unsubscribe, and mandatory founder postal address in every tenant email before any send.
   - [x] `WP79-S4a` — Schedule daily seven-day finalized and 30-day abandoned Resend component cleanup, including while workspace/email is off. Prove cleanup removes due rows, preserves younger rows, and never enqueues mail. Keep tenant sending off.
-  - [ ] `WP79-S4b` — Revoke queued mail for both active and paused enrollments before contact erasure, enforce one combined sendable enrollment per lead, and prove the owner deletion path cannot leave a paused send queued. No new enrollment writer or sender.
+  - [x] `WP79-S4b` — Before contact erasure, inspect a bounded set of every enrollment state for the lead and cancel linked queued mail, including paused, completed and unknown states. Revoke nonterminal enrollments; prove owner deletion leaves no linked queued send behind. No new enrollment writer or sender.
 - [ ] `WP79-S5` — Verify Resend delivery webhook; bounce and complaint pause the sequence and surface state to Wren.
 - [ ] `WP79-S6` — Security and integration gate: no send without approval, opt-in, postal address or feature flag; no duplicate on retry; unsubscribe blocks the next step. Record checks and independent review.
 
