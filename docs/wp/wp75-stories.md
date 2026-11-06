@@ -80,18 +80,21 @@ Standing rules:
   - Scope: `convex/crew/jobs.ts` (task lifecycle mutations), `convex/crew/runner.ts` (internal action),
     `lib/workspace/crew/retry.ts` (pure classification), `convex/ai/providers/fixtureOutputs.ts` (new; see below),
     tests.
-  - `insertCrewTask`: computes `changeRound` server-side (C-JOBS rule: prior non-failed, non-cancelled revision
-    tasks for the same `(projectId, jobType, subject)`), builds `jobKey()`, dedupes live work through
-    `tasks.by_ownerId_and_jobKey`, checks `checkLimit(ctx, "crewJob", ownerId)` (C-LIMITS; semantics open, progress
-    Stop-and-ask 10). First drafts and rounds 1–2 carry `creditCost: 0` and no debit; paid rounds are WP77-S2's
-    trigger and pass a `creditDebitId` through.
+  - **As built** (the review rounds replaced the first design; `wp75-progress.md` § S2a has the detail, and where
+    this story and the progress doc disagree, the progress doc wins):
+    - `insertCrewTask` inserts first drafts only (round 0, `creditCost: 0`, no debit), built by `planFirstDraft`.
+      It builds `jobKey()`, dedupes live work through `tasks.by_ownerId_and_jobKey`, and checks
+      `checkLimit(ctx, "crewJob", ownerId)` (C-LIMITS; semantics open, progress Stop-and-ask 10).
+    - Revisions come only from WP77's `insertRevisionTask`, which prices the round and writes the debit.
+      Callers never pass a debit id: `startCrewRun` reads `task-debit:{taskId}` on the server, and a priced task
+      with no debit fails as `unpaid`.
   - Attempt numbers: one `workflow_runs` row per execution of a task (`type` = the task's job type, which
     `WORKFLOW_TYPE_VALUES` already allows; `idempotencyKey = run:{taskId}:{n}`; `attempt` holds the next gateway
     attempt number; `errorCode` holds the retry class). Every provider call of the task (text, re-ask, logos, quality,
     repair) takes the next number and stores the gateway's `nextAttempt` back, so `{jobKey}:{attempt}` is never
     reused. No schema change needed (progress Stop-and-ask 5).
   - `runCrewStep` (internal action) calls `internal.ai.gatewayActions.runPrompt` with
-    `attemptKey: { kind: "job", jobKey }`, `ownerId`, `projectId`, `taskId`, optional `creditDebitId`, and the
+    `attemptKey: { kind: "job", jobKey }`, `ownerId`, `projectId`, `taskId`, the server-read `creditDebitId` when the task is priced, and the
     per-business context block (`02` §5.4).
   - Retry classes (`02` §6.2, WP26 classes), owned by the runner, never by workpool retries (`retry: false`):
     - retryable and unbilled (`provider` with `retryable: true`, `billed: none`; `duplicate_attempt` with
@@ -112,8 +115,10 @@ Standing rules:
     (`providers/fixtures.ts:119`), which fails C-ART refinements. Add a fixture-output registry keyed by `promptRef`
     that the default fixture client consults (HydroTrail artifacts from `lib/workspace/contracts/fixtures/hydrotrail.ts`,
     a generic fallback per kind). Live mode never reads it. (Progress Stop-and-ask 3.)
-  - Revisions: the runner accepts `revisionOfTaskId` and the founder's note (quoted data block). The trigger and
-    round pricing are WP77-S2's.
+  - Revisions (as built): the runner takes no revision arguments. `startCrewRun` reads the revised draft from the
+    task's `revisionOfTaskId` and the founder's note with `revisionNoteFor`, both on the server, and passes the note
+    as a quoted data block. A revision whose draft is missing fails before any run opens. The trigger and round
+    pricing are WP77-S2's.
   - Wren cards: posting a chat card on finish needs WP77-S3's chat module. Until it lands, the approval row is the
     card (Team HQ and the dashboard list read `listPendingApprovals`).
   - Acceptance (fixture, convex-test with the real meter and ledger, like `tests/platform/ai-gateway-action.test.ts`):

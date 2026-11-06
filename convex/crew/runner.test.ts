@@ -387,6 +387,21 @@ describe("crew step runner", () => {
     expect(gw.calls()).toBe(1);
   });
 
+  test("a revision whose draft is gone fails before any run or model call", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "revise-missing");
+    const gw = gateway(t);
+    const draft = await finishedDraft(t, business, gw);
+    const revisionId = await askForChanges(business, draft.approvalId, "Warmer colours");
+    await t.run(async (ctx) => await ctx.db.patch("documents", draft.documentId, { archivedAt: Date.now() }));
+
+    const outcome = await runCrewStepWith(runnerCtx(t), stepArgs(revisionId), { runPrompt: gw.runPrompt });
+    expect(outcome).toEqual({ kind: "skipped", reason: "missing" });
+    expect(gw.calls()).toBe(1);
+    expect((await task(t, revisionId)).status).toBe("failed");
+    expect(await runs(t, revisionId)).toEqual([]);
+  });
+
   test("a WP77 revision: the note comes from the card, the old card is not left pending, the document supersedes", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "revise");

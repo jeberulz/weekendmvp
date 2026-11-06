@@ -652,6 +652,14 @@ export const startCrewRun = internalMutation({
       return { kind: "skip", reason: "unpaid" };
     }
 
+    // A revision never runs without the draft it revises: the model would
+    // write a fresh first draft and the founder would review the wrong thing.
+    const previous = await revisedDocument(ctx, task, CREW_STEP_ARTIFACTS[jobType].kind);
+    if (task.revisionOfTaskId !== undefined && previous?.body === undefined) {
+      await failTask(ctx, task, now);
+      return { kind: "skip", reason: "missing" };
+    }
+
     const attempt = await nextAttemptForJobKey(ctx, task.ownerId, taskJobKey);
     const runNumber = runs.length + 1;
     const runId = await ctx.db.insert("workflow_runs", {
@@ -668,7 +676,6 @@ export const startCrewRun = internalMutation({
     });
     await setCrewStatus(ctx, task, { member: "working", workstream: "working", blocker: null }, now);
 
-    const previous = await revisedDocument(ctx, task, CREW_STEP_ARTIFACTS[jobType].kind);
     const note = task.revisionOfTaskId === undefined ? null : await revisionNoteFor(ctx, task._id);
     return {
       kind: "run",
