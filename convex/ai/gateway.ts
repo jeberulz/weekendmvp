@@ -707,20 +707,41 @@ function asNode(value: unknown): JsonNode | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as JsonNode) : undefined;
 }
 
-/** The node itself plus its `anyOf` / `oneOf` / `allOf` branches and `$ref` target, flattened. */
-function branchesOf(node: JsonNode | undefined, root: JsonNode, depth = 0): JsonNode[] {
-  if (node === undefined || depth > 8) return [];
-  const out: JsonNode[] = [node];
-  const ref = node.$ref;
-  if (typeof ref === "string" && ref.startsWith("#/$defs/")) {
-    const defs = asNode(root.$defs);
-    out.push(...branchesOf(asNode(defs?.[ref.slice("#/$defs/".length)]), root, depth + 1));
+/**
+ * Work caps for `safeIssuePath`. Past either one the walk stops and every
+ * later name segment prints as `[key]`, which is always safe. Real output
+ * schemas sit far below both; the caps only bound a hostile or recursive
+ * schema and a deep path.
+ */
+export const MAX_SAFE_PATH_DEPTH = 64;
+export const MAX_SAFE_PATH_NODES = 256;
+
+/**
+ * Every schema node reachable from `start` through `anyOf` / `oneOf` /
+ * `allOf` branches and local `$ref`s (`#` or `#/$defs/...`), each node once
+ * (deduplicated by identity, so recursive `$defs` cannot loop or multiply).
+ * Returns undefined when the set would pass `MAX_SAFE_PATH_NODES`.
+ */
+function expandNodes(start: readonly (JsonNode | undefined)[], root: JsonNode): JsonNode[] | undefined {
+  const seen = new Set<JsonNode>();
+  const stack = [...start];
+  const defs = asNode(root.$defs);
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node === undefined || seen.has(node)) continue;
+    if (seen.size >= MAX_SAFE_PATH_NODES) return undefined;
+    seen.add(node);
+    const ref = node.$ref;
+    if (ref === "#") stack.push(root);
+    else if (typeof ref === "string" && ref.startsWith("#/$defs/")) {
+      stack.push(asNode(defs?.[ref.slice("#/$defs/".length)]));
+    }
+    for (const key of ["anyOf", "oneOf", "allOf"] as const) {
+      const list = node[key];
+      if (Array.isArray(list)) for (const item of list) stack.push(asNode(item));
+    }
   }
-  for (const key of ["anyOf", "oneOf", "allOf"] as const) {
-    const list = node[key];
-    if (Array.isArray(list)) for (const item of list) out.push(...branchesOf(asNode(item), root, depth + 1));
-  }
-  return out;
+  return [...seen];
 }
 
 /**
@@ -728,15 +749,18 @@ function branchesOf(node: JsonNode | undefined, root: JsonNode, depth = 0): Json
  * JSON Schema alongside the path: an array index prints as itself; a
  * property name prints only when the schema declares it under `properties`
  * and it matches `SAFE_PATH_SEGMENT`; anything else (`z.record` keys, unknown
- * keys) prints as `[key]`.
+ * keys) prints as `[key]`. Each step works on a deduplicated node set, and
+ * the walk stops (later names print as `[key]`) past `MAX_SAFE_PATH_DEPTH`
+ * segments or `MAX_SAFE_PATH_NODES` nodes, so its cost stays linear.
  */
 export function safeIssuePath(path: readonly PropertyKey[], schema: JsonNode): string {
-  let nodes: JsonNode[] = branchesOf(schema, schema);
+  let nodes: JsonNode[] = expandNodes([schema], schema) ?? [];
   const parts: string[] = [];
   for (const segment of path) {
+    if (parts.length >= MAX_SAFE_PATH_DEPTH) nodes = [];
     if (typeof segment === "number" && Number.isSafeInteger(segment) && segment >= 0) {
       parts.push(String(segment));
-      nodes = nodes.flatMap((node) => branchesOf(asNode(node.items), schema));
+      nodes = expandNodes(nodes.map((node) => asNode(node.items)), schema) ?? [];
       continue;
     }
     const declared =
@@ -748,10 +772,10 @@ export function safeIssuePath(path: readonly PropertyKey[], schema: JsonNode): s
       });
     if (declared) {
       parts.push(segment);
-      nodes = nodes.flatMap((node) => branchesOf(asNode(asNode(node.properties)?.[segment]), schema));
+      nodes = expandNodes(nodes.map((node) => asNode(asNode(node.properties)?.[segment])), schema) ?? [];
     } else {
       parts.push(REDACTED_SEGMENT);
-      nodes = nodes.flatMap((node) => branchesOf(asNode(node.additionalProperties), schema));
+      nodes = expandNodes(nodes.map((node) => asNode(node.additionalProperties)), schema) ?? [];
     }
   }
   return parts.length === 0 ? "(root)" : parts.join(".");
@@ -845,12 +869,16 @@ function repriceTextUsage(model: PromptModel, usage: TextUsage): number | undefi
 
 /**
  * The cost to charge a text reply: the larger of the adapter's figure and the
- * reported usage repriced with the S1 rate card. `estimated` stays the
+ * reported usage repriced with the S1 rate card at the model the gateway
+ * requested (never the model the adapter echoes back). `estimated` stays the
  * adapter's flag: both figures come from the same usage, so the charge is an
  * estimate exactly when that usage was (missing usage took the fallback).
  */
-export function crossCheckedTextCost(result: Pick<TextResult, "model" | "usage" | "cost">): number {
-  return Math.max(result.cost.microUsd, repriceTextUsage(result.model, result.usage) ?? 0);
+export function crossCheckedTextCost(
+  requestedModel: PromptModel,
+  result: Pick<TextResult, "usage" | "cost">,
+): number {
+  return Math.max(result.cost.microUsd, repriceTextUsage(requestedModel, result.usage) ?? 0);
 }
 
 /**
@@ -919,10 +947,10 @@ export async function runTextGateway<TInput, TOutput>(
       attempt,
       reserve,
       call: () => deps.adapter.complete(sent),
-      knownCost: (result) => crossCheckedTextCost(result),
+      knownCost: (result) => crossCheckedTextCost(model, result),
       classify: (error) => classifyError(error, "anthropic", (usage) => repriceTextUsage(model, usage)),
       read: (result) => {
-        const costMicroUsd = crossCheckedTextCost(result);
+        const costMicroUsd = crossCheckedTextCost(model, result);
         const usage: SettleUsage = {
           inputTokens: result.usage.inputTokens,
           cacheReadTokens: result.usage.cacheReadTokens,
