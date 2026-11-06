@@ -44,10 +44,12 @@ function schemaCallChain(initializer, file) {
 }
 
 test("every workspace table has a flat validator, D22 ownership and owner-first index", async () => {
+  let count = 0;
   const tableNames = new Set();
   for (const domain of schemaModules) {
     const file = await parse(`convex/schema/${domain}.ts`);
     for (const table of tableDefinitions(file)) {
+      count += 1;
       tableNames.add(table.name);
       const { fields, indexes } = schemaCallChain(table.initializer, file);
       const ownerField = fields.find((field) => field.name?.getText(file) === "ownerId");
@@ -60,7 +62,8 @@ test("every workspace table has a flat validator, D22 ownership and owner-first 
       }
     }
   }
-  assert.equal(tableNames.size, 28, "Phase 0 inventory plus WP79's two additive tenant-email tables");
+  assert.equal(count, 28, "Phase 0 inventory plus WP79's two additive tenant-email tables");
+  assert.equal(tableNames.size, count, "workspace table names must not be duplicated across schema modules");
   assert.ok(tableNames.has("business_email_settings"));
   assert.ok(tableNames.has("lead_email_tokens"));
 });
