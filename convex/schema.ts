@@ -329,6 +329,8 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     archivedAt: v.optional(v.number()),
+    // D5: set only by explicit Delete business or account closure, never archive.
+    deletionRequestedAt: v.optional(v.number()),
   })
     .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
     .index("by_ownerId_and_status_and_updatedAt", [
