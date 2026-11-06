@@ -68,7 +68,52 @@ type Rule = {
   readonly accept?: (match: RegExpMatchArray, text: string, options: MarketOptions) => boolean;
 };
 
-const nameKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+/**
+ * A name's words, normalised (NFKC, lower case, curly apostrophes made
+ * straight): "Sip&Go" and "sip go" both give ["sip", "go"]. An apostrophe
+ * inside a word stays in it, so "Joe's" is one word, never "joe" and a
+ * separate "s" (S3a review round 2).
+ */
+const nameWords = (name: string): string[] =>
+  name
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[’‘]/gu, "'")
+    .split(/[^\p{L}\p{N}']+/u)
+    .map((word) => word.replace(/^'+|'+$/gu, ""))
+    .filter((word) => word !== "");
+/** Words joined with spacing and apostrophes folded: "Hydro Trail" and "HydroTrail", "Joes" and "Joe's" compare equal. */
+const folded = (words: readonly string[]): string => words.join("").replace(/'/gu, "");
+/**
+ * Sentence-start words that may come before the business's name in a
+ * captured name ("Today HydroTrail costs $79"). A closed list: any other
+ * leading word makes the name someone else's ("Pokemon Go", "Trader Joe's",
+ * "Rei Patagonia"). A tail of a phrase counts too, because the capture can
+ * start mid-phrase ("launch HydroTrail" from "At launch HydroTrail").
+ */
+const SENTENCE_START_PHRASES = ["today", "now", "right now", "currently", "here", "so", "yes", "still", "then", "and", "but", "at launch"];
+const isSentenceStart = (words: readonly string[]): boolean => {
+  const phrase = words.join(" ");
+  return SENTENCE_START_PHRASES.some((start) => start === phrase || start.endsWith(` ${phrase}`));
+};
+/**
+ * The captured name is the business's own: it is the whole brand (spacing,
+ * case, apostrophes and NFKC folded: "Hydro Trail" for "HydroTrail"), or the
+ * brand after a sentence-start word from the closed list ("Today HydroTrail
+ * costs $79"). Never a substring of a word, and never a rival whose last
+ * words happen to be the brand: "Pokemon Go", "Disney Plus", "Trail Pro",
+ * "Trader Joe's", "McDonald's" and "Rei Patagonia" stay rivals.
+ */
+function isOwnName(captured: string, brandName: string | undefined): boolean {
+  const brand = brandName === undefined ? "" : folded(nameWords(brandName));
+  if (brand === "") return false;
+  const words = nameWords(captured);
+  for (let start = 0; start < words.length; start += 1) {
+    if (folded(words.slice(start)) !== brand) continue;
+    if (start === 0 || isSentenceStart(words.slice(0, start))) return true;
+  }
+  return false;
+}
 /** An explicit contrast with the business's own side: "ours is $79", "We charge $79", "our price", "vs", "cheaper than". */
 const OWN_CONTRAST =
   /\bours\b|\bwe\s+(?:charge|sell|ask|price)\b|\bour\s+(?:price|prices|pricing|version)\b|\bvs\.?(?![\p{L}])|\bversus\b|\b(?:cheaper|less|lower|pricier)\s+than\b|\bfor\s+less\b|\bhalf\s+the\s+price\b/iu;
@@ -160,8 +205,7 @@ const RULES: readonly Rule[] = [
     ),
     accept: (match, text, options) => {
       const index = match.index ?? 0;
-      const brand = options.brandName === undefined ? "" : nameKey(options.brandName);
-      if (brand !== "" && nameKey(match[1] ?? "").endsWith(brand)) return false;
+      if (isOwnName(match[1] ?? "", options.brandName)) return false;
       return OWN_CONTRAST.test(sentenceAndNext(text, index).slice(0, 400));
     },
   },

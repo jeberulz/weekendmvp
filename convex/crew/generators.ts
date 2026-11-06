@@ -1,8 +1,7 @@
 import { v, type Infer, type ObjectType } from "convex/values";
 
 import { internal } from "../_generated/api";
-import type { Doc } from "../_generated/dataModel";
-import { internalAction, internalQuery, type ActionCtx, type QueryCtx } from "../_generated/server";
+import { internalAction, internalQuery, type ActionCtx } from "../_generated/server";
 import { memoryForPrompt } from "../workspace/wrenMemory";
 import { blueprintSchema } from "../../lib/workspace/contracts/artifacts";
 import { wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
@@ -16,6 +15,7 @@ import {
   crewSeedFor,
   type CrewPromptInputs,
 } from "../../lib/workspace/crew/inputs";
+import { approvedBlueprint, platformSeedRow } from "./jobs";
 import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type CrewRunnerDeps, type CrewStepOutcome } from "./runner";
 
 /**
@@ -24,14 +24,21 @@ import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type Cre
  *
  * - `prepareCrewStep` reads only server rows: the task, its project, the
  *   project's wizard session (answers parsed with C-WIZARD), Wren's memory,
- *   the library idea and its seed (blueprint), or the stored blueprint (brand
- *   kit). It picks the prompt by the project's source (library or own idea).
+ *   the library idea and its platform seed (blueprint), or the approved
+ *   blueprint (brand kit; a draft is never used). It picks the prompt by the
+ *   project's source (library or own idea).
  * - `runCrewGeneratorStep` runs the step. Inputs that cannot be built (a
- *   project with no wizard session, a brand kit before any blueprint) still
+ *   project with no wizard session, a brand kit before an approved blueprint) still
  *   open a run, which settles as a `config` failure before any provider call:
  *   the task fails with the usual calm note and a debit is refunded.
  * - Retries scheduled by `settleCrewRun` re-run `runCrewStep` with the inputs
- *   built here, so every retry of one task sends the same prompt.
+ *   built here, so every retry of one task sends the same prompt. The seed
+ *   row's id travels with them (`seedId`): the quality gate stores that row's
+ *   market, never a newer seed's. A seed read that cannot see the newest
+ *   platform row (the bounded read was full) refuses as `config`.
+ * - The brand kit's brief (the approved blueprint document, `briefDocumentId`)
+ *   is checked again in `finishCrewStep`, so a blueprint changed or
+ *   un-approved mid-step never briefs a stored kit.
  *
  * Internal: S1's `startLaunch` and S2b's DAG call it after their own
  * authorisation and task insert.
@@ -45,6 +52,10 @@ const preparedCrewStep = v.union(
     promptRef: v.string(),
     inputs: promptInputsValidator,
     businessContext: v.string(),
+    /** The platform seed row the prompt was built from; the gate re-reads exactly it. */
+    seedId: v.optional(v.id("idea_crew_seeds")),
+    /** The approved blueprint document a brand kit is briefed from; `finishCrewStep` re-checks it. */
+    briefDocumentId: v.optional(v.id("documents")),
   }),
   v.object({ ok: v.literal(false), promptRef: v.string(), message: v.string() }),
 );
@@ -54,16 +65,6 @@ export type PreparedCrewStep = Infer<typeof preparedCrewStep>;
 type Refusal = { ok: false; promptRef: string; message: string };
 
 const refuse = (promptRef: string, message: string): Refusal => ({ ok: false, promptRef, message });
-
-/** The newest live document of a kind for the project. */
-async function latestDocument(ctx: QueryCtx, project: Doc<"projects">, kind: "blueprint"): Promise<Doc<"documents"> | null> {
-  const rows = await ctx.db
-    .query("documents")
-    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", kind))
-    .order("desc")
-    .take(10);
-  return rows.find((row) => row.ownerId === project.ownerId && row.archivedAt === undefined && row.body !== undefined) ?? null;
-}
 
 function parseJson(text: string): unknown {
   try {
@@ -118,11 +119,9 @@ export const prepareCrewStep = internalQuery({
         const ideaSlug = workspace.ideaSlug;
         if (ideaSlug === undefined || ideaSlug !== answers.idea.ideaSlug) return refuse(promptRef, "the business has no library idea");
         const idea = await ctx.db.query("ideas").withIndex("by_slug", (q) => q.eq("slug", ideaSlug)).first();
-        const seedRow = await ctx.db
-          .query("idea_crew_seeds")
-          .withIndex("by_ideaSlug_and_seedVersion", (q) => q.eq("ideaSlug", ideaSlug))
-          .order("desc")
-          .first();
+        const seedRead = await platformSeedRow(ctx, ideaSlug);
+        if (!seedRead.ok) return refuse(promptRef, "the idea's research seed could not be read");
+        const seedRow = seedRead.row;
         inputs = blueprintStepPlan({
           source: "library",
           answers,
@@ -138,13 +137,21 @@ export const prepareCrewStep = internalQuery({
             },
           seed: crewSeedFor(ideaSlug, seedRow?.blueprint),
         }).inputs;
+        const seedId = seedRow?._id;
+        return { ok: true, promptRef, inputs, businessContext: crewBusinessContext(facts), ...(seedId === undefined ? {} : { seedId }) };
       }
     } else {
-      const stored = await latestDocument(ctx, project, "blueprint");
+      const stored = await approvedBlueprint(ctx, project);
       const blueprint = stored?.body === undefined ? null : blueprintSchema.safeParse(parseJson(stored.body));
-      if (blueprint === null || !blueprint.success) return refuse(promptRef, "the brand kit needs the business's blueprint first");
+      if (blueprint === null || !blueprint.success) return refuse(promptRef, "the brand kit needs the business's approved blueprint first");
       inputs = brandKitStepPlan({ answers, blueprint: blueprint.data }).inputs;
-      return { ok: true, promptRef, inputs, businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }) };
+      return {
+        ok: true,
+        promptRef,
+        inputs,
+        businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
+        ...(stored === null ? {} : { briefDocumentId: stored._id }),
+      };
     }
     return { ok: true, promptRef, inputs, businessContext: crewBusinessContext(facts) };
   },
@@ -177,7 +184,15 @@ export async function runCrewGeneratorStepWith(
   }
   return await runCrewStepWith(
     ctx,
-    { taskId, promptRef: plan.promptRef, inputs: plan.inputs, businessContext: plan.businessContext, ...rest },
+    {
+      taskId,
+      promptRef: plan.promptRef,
+      inputs: plan.inputs,
+      businessContext: plan.businessContext,
+      ...(plan.seedId === undefined ? {} : { seedId: plan.seedId }),
+      ...(plan.briefDocumentId === undefined ? {} : { briefDocumentId: plan.briefDocumentId }),
+      ...rest,
+    },
     deps,
   );
 }

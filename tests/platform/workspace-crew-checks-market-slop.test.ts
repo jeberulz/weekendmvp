@@ -111,6 +111,50 @@ describe("market numbers in own ideas (D15 and the S4a review ruling)", () => {
     expect(carriesMarketNumber("Camelbak sells it for $120; ours is $79.", { brandName: "HydroTrail" })).toBe(true);
   });
 
+  it("only the whole business name is exempt, never a substring or suffix of a rival's (S3a review M2)", () => {
+    const rival = "Patagonia charges $200 for this. Ours is $79.";
+    for (const brandName of ["a", "gonia", "HydroTrail", "Agonia", "Pata"]) {
+      expect(carriesMarketNumber(rival, { brandName }), brandName).toBe(true);
+      expect(checkMarketNumbers({ copy: rival }, { brandName }).map((found) => found.severity), brandName).toEqual(["hard"]);
+    }
+    expect(carriesMarketNumber(rival, { brandName: "Patagonia" })).toBe(false);
+    expect(checkMarketNumbers({ copy: rival }, { brandName: "Patagonia" })).toEqual([]);
+    expect(carriesMarketNumber("Today HydroTrail costs $79; ours ships free.", { brandName: "HydroTrail" })).toBe(false);
+    expect(carriesMarketNumber("Trail Pack Co charges $79. Ours ships free.", { brandName: "Trail Pack Co" })).toBe(false);
+    expect(carriesMarketNumber("Big Trail Pack charges $79. Ours ships free.", { brandName: "Pack" })).toBe(true);
+    expect(carriesMarketNumber("Big Trail Packs charges $79. Ours ships free.", { brandName: "Pack" })).toBe(true);
+  });
+
+  it("a rival whose last words equal the brand is still a rival; only a sentence-start word may lead (S3a review round 2)", () => {
+    const rivals: readonly (readonly [brandName: string, text: string])[] = [
+      ["Go", "Pokemon Go charges $10. Ours is $5."],
+      ["Plus", "Disney Plus charges $8 a month. Ours is $5."],
+      ["Pro", "Trail Pro charges $200 for this. Ours is $79."],
+      ["Joe's", "Trader Joe's charges $6 for this. Ours is $4."],
+      ["S", "McDonald's charges $10 for this. Ours is $5."],
+      ["Patagonia", "Rei Patagonia charges $200 for this. Ours is $79."],
+      ["Pack", "Big Trail Pack charges $79. Ours ships free."],
+    ];
+    for (const [brandName, text] of rivals) {
+      // Hard with the brand, exactly as with a neutral brand.
+      expect(carriesMarketNumber(text, { brandName: "Zephyrine" }), `${brandName}: neutral`).toBe(true);
+      expect(carriesMarketNumber(text, { brandName }), brandName).toBe(true);
+      expect(checkMarketNumbers({ copy: text }, { brandName }).map((found) => found.severity), brandName).toEqual(["hard"]);
+    }
+    for (const text of [
+      "Today HydroTrail costs $79; ours ships free.",
+      "Hydro Trail costs $79; ours ships free.",
+      "Today Hydro Trail costs $79; ours ships free.",
+      "HydroTrail costs $79. Ours ships free.",
+    ]) {
+      expect(carriesMarketNumber(text, { brandName: "HydroTrail" }), text).toBe(false);
+    }
+    // A possessive never splits into a separate word that could match on its own.
+    expect(carriesMarketNumber("Trader Joe's charges $6 for this. Ours is $4.", { brandName: "Trader Joe's" })).toBe(false);
+    expect(carriesMarketNumber("Trader Joe’s charges $6 for this. Ours is $4.", { brandName: "Trader Joe's" })).toBe(false);
+    expect(carriesMarketNumber("McDonald's charges $10 for this. Ours is $5.", { brandName: "McDonald's" })).toBe(false);
+  });
+
   it("passes the own-idea light blueprint fixture", () => {
     expect(checkMarketNumbers(ownIdeaLightBlueprint)).toEqual([]);
   });

@@ -2,13 +2,13 @@ import { ConvexError, v, type Infer, type ObjectType } from "convex/values";
 
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
-import { internalMutation, type MutationCtx } from "../_generated/server";
+import { internalMutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireBusinessForOwner } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
 import { assertTaskTransition } from "../platform/transitions";
 import { assertGeneratedDocumentBody } from "../platform/validators";
-import { createApprovalRecord } from "../workspace/approvals";
+import { assertApproved, createApprovalRecord } from "../workspace/approvals";
 import { revisionNoteFor } from "../workspace/changeRounds";
 import type { LineageTask } from "../../lib/workspace/changeRounds";
 import { parseArtifact, parseModelOutput } from "../../lib/workspace/contracts/artifacts";
@@ -41,6 +41,7 @@ import {
   planFirstDraft,
   type CrewStepJobType,
 } from "../../lib/workspace/crew/tasks";
+import { crewSeedFor, newestPlatformSeed } from "../../lib/workspace/crew/inputs";
 import { gateCrewArtifact, issueCodes, type QualityContext } from "../../lib/workspace/crew/quality";
 
 /**
@@ -134,6 +135,20 @@ export const runCrewStepArgs = {
    * workpool `onComplete`), so retries stay on the pool.
    */
   retryMode: v.optional(v.union(v.literal("schedule"), v.literal("return"))),
+  /**
+   * S3a: the platform seed row the step's prompt was built from (a library
+   * blueprint), so the quality gate stores that row's market and no other.
+   * Unset: the prompt used no stored row (the fixture seed or none). Carried
+   * with the retry args, so every retry gates against the same seed.
+   */
+  seedId: v.optional(v.id("idea_crew_seeds")),
+  /**
+   * S3a: the approved blueprint document a brand kit's prompt was briefed
+   * from. `finishCrewStep` re-checks that exactly this document is still
+   * approved before the kit is stored. Unset for callers that build their own
+   * inputs (S2a's direct runs), which brief no blueprint.
+   */
+  briefDocumentId: v.optional(v.id("documents")),
 };
 
 export type RunCrewStepArgs = ObjectType<typeof runCrewStepArgs>;
@@ -370,21 +385,153 @@ async function debitOf(ctx: Ctx, task: Doc<"tasks">): Promise<Doc<"credit_ledger
     debit.projectId === task.projectId && debit.delta < 0n ? debit : null;
 }
 
-/** What the quality gate needs from the project (S3a): its source and, for a library idea, the slug. */
-export function qualityContextOf(project: Pick<Doc<"projects">, "source" | "workspace"> | null): QualityContext {
+/** Seed rows read per idea; WP71-S5 writes a handful of versions at most. */
+export const SEED_ROWS_READ_MAX = 100;
+
+/**
+ * A read of an idea's platform seed: the newest platform row (or none), or
+ * `overflow` when the bounded read was full and held no platform row, so the
+ * newest one may lie outside it (the caller fails closed as `config`).
+ */
+export type PlatformSeedRead = { readonly ok: true; readonly row: Doc<"idea_crew_seeds"> | null } | { readonly ok: false; readonly reason: "overflow" };
+
+/**
+ * The newest platform seed row for a library idea (WP71-S5 writes them):
+ * `projectId` unset, newest `seedVersion` by numeric-aware order. Seeds are
+ * per-idea research, so they are read without an owner filter (Needs from
+ * Codex 6). Read newest-first by the index (descending `seedVersion`), so
+ * per-business rows can crowd the window only from the old end; a full window
+ * with no platform row fails closed. Only the generator reads it; the quality
+ * gate re-reads the exact row the prompt saw by id (`seedId`).
+ */
+export async function platformSeedRow(ctx: Pick<QueryCtx, "db">, ideaSlug: string): Promise<PlatformSeedRead> {
+  const rows = await ctx.db
+    .query("idea_crew_seeds")
+    .withIndex("by_ideaSlug_and_seedVersion", (q) => q.eq("ideaSlug", ideaSlug))
+    .order("desc")
+    .take(SEED_ROWS_READ_MAX);
+  const row = newestPlatformSeed(rows);
+  if (row === null && rows.length >= SEED_ROWS_READ_MAX) return { ok: false, reason: "overflow" };
+  return { ok: true, row };
+}
+
+/** The seed row a step's prompt was built from, re-read by id: only a platform row for this idea counts. */
+async function stepSeedRow(
+  ctx: Pick<QueryCtx, "db">,
+  ideaSlug: string,
+  seedId: Id<"idea_crew_seeds">,
+): Promise<Doc<"idea_crew_seeds"> | null> {
+  const row = await ctx.db.get("idea_crew_seeds", seedId);
+  return row !== null && row.ideaSlug === ideaSlug && row.projectId === undefined ? row : null;
+}
+
+/**
+ * What the quality gate needs from the project (S3a): its source, the name
+ * the founder chose, and for a library idea the slug and the seed's market
+ * (the only market a stored blueprint may carry, S3a review M1).
+ *
+ * The seed is the one the step's prompt saw (S3a review round 2, minor 2):
+ * with `seedId`, exactly that row, re-read; if it is gone or no longer a
+ * platform row for this idea, no market is stored (never another row's).
+ * Without `seedId`, the prompt used no stored row, so the same fallback
+ * (`crewSeedFor` with no row: the HydroTrail fixture or none).
+ */
+export async function qualityContextFor(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "source" | "workspace"> | null,
+  seedId?: Id<"idea_crew_seeds">,
+): Promise<QualityContext> {
   const ideaSlug = project?.workspace?.ideaSlug;
   const businessName = project?.workspace?.name;
+  const ownIdea = project?.source === "own_idea";
+  let seedMarket: QualityContext["seedMarket"];
+  if (!ownIdea && ideaSlug !== undefined) {
+    const row = seedId === undefined ? undefined : await stepSeedRow(ctx, ideaSlug, seedId);
+    // A vanished row is not "no row": it must not fall back to the fixture seed.
+    const seed = row === null ? null : crewSeedFor(ideaSlug, row?.blueprint);
+    if (seed?.blueprint?.source === "library") seedMarket = seed.blueprint.market;
+  }
   return {
-    ownIdea: project?.source === "own_idea",
+    ownIdea,
     ...(ideaSlug === undefined ? {} : { ideaSlug }),
     ...(businessName === undefined ? {} : { businessName }),
+    ...(seedMarket === undefined ? {} : { seedMarket }),
   };
+}
+
+/** Blueprint documents looked at for an approved one, newest first. */
+const APPROVED_BLUEPRINT_SCAN_MAX = 20;
+/** Cards read per blueprint document. */
+const APPROVALS_PER_DOCUMENT_MAX = 20;
+
+/**
+ * A blueprint document of the project whose `artifact_review` card is
+ * approved and still valid for it (`assertApproved`: same business and owner,
+ * unchanged since the card).
+ */
+async function isApprovedBlueprint(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  row: Doc<"documents">,
+): Promise<boolean> {
+  if (row.projectId !== project._id || row.kind !== "blueprint") return false;
+  if (row.ownerId !== project.ownerId || row.archivedAt !== undefined || row.body === undefined) return false;
+  const cards = await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", row._id)).take(APPROVALS_PER_DOCUMENT_MAX);
+  for (const card of cards) {
+    if (card.kind !== "artifact_review" || card.status !== "approved" || card.subjectTable !== "documents") continue;
+    try {
+      await assertApproved(ctx, card._id, {
+        kind: "artifact_review",
+        projectId: project._id,
+        ownerId: project.ownerId,
+        subjectTable: "documents",
+        subjectId: row._id,
+      });
+      return true;
+    } catch {
+      // Not valid for this document (changed since, wrong business): try the next card.
+    }
+  }
+  return false;
+}
+
+/**
+ * The newest blueprint the founder approved (`isApprovedBlueprint`). A draft
+ * is never the brand kit's brief (S3a review minor 1).
+ */
+export async function approvedBlueprint(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+): Promise<Doc<"documents"> | null> {
+  const rows = await ctx.db
+    .query("documents")
+    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", "blueprint"))
+    .order("desc")
+    .take(APPROVED_BLUEPRINT_SCAN_MAX);
+  for (const row of rows) {
+    if (await isApprovedBlueprint(ctx, project, row)) return row;
+  }
+  return null;
+}
+
+/** The brief a brand kit was built from is still an approved blueprint (round 2, minor 3). */
+async function briefStillApproved(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  briefDocumentId: Id<"documents">,
+): Promise<boolean> {
+  const row = await ctx.db.get("documents", briefDocumentId);
+  return row !== null && (await isApprovedBlueprint(ctx, project, row));
 }
 
 const qualityContextValidator = v.object({
   ownIdea: v.boolean(),
   ideaSlug: v.optional(v.string()),
   businessName: v.optional(v.string()),
+  seedMarket: v.optional(v.object({
+    summary: v.string(),
+    competitors: v.array(v.object({ name: v.string(), note: v.string() })),
+  })),
 });
 
 async function sha256Hex(text: string): Promise<string> {
@@ -633,7 +780,7 @@ export type StartCrewRunResult = Infer<typeof startCrewRunResult>;
  * unless `resume` is set.
  */
 export const startCrewRun = internalMutation({
-  args: { taskId: v.id("tasks"), resume: v.optional(v.boolean()) },
+  args: { taskId: v.id("tasks"), resume: v.optional(v.boolean()), seedId: v.optional(v.id("idea_crew_seeds")) },
   returns: startCrewRunResult,
   handler: async (ctx, args): Promise<StartCrewRunResult> => {
     const found = await ctx.db.get("tasks", args.taskId);
@@ -719,7 +866,7 @@ export const startCrewRun = internalMutation({
       ...(debit === null ? {} : { creditDebitId: debit._id }),
       ...(previous?.body === undefined ? {} : { previousArtifactJson: previous.body }),
       ...(note === null ? {} : { revisionNote: note }),
-      quality: qualityContextOf(project),
+      quality: await qualityContextFor(ctx, project, args.seedId),
     };
   },
 });
@@ -775,6 +922,10 @@ export const finishCrewStep = internalMutation({
     promptRef: v.string(),
     outputJson: v.string(),
     nextAttempt: v.number(),
+    /** The seed row the prompt was built from (`runCrewStepArgs.seedId`). */
+    seedId: v.optional(v.id("idea_crew_seeds")),
+    /** The approved blueprint a brand kit was briefed from (`runCrewStepArgs.briefDocumentId`). */
+    briefDocumentId: v.optional(v.id("documents")),
   },
   returns: finishCrewStepResult,
   handler: async (ctx, args): Promise<FinishCrewStepResult> => {
@@ -806,6 +957,13 @@ export const finishCrewStep = internalMutation({
     }
 
     const { kind } = CREW_STEP_ARTIFACTS[jobType];
+    // S3a review round 2, minor 3: the kit's brief must still be approved when the kit is stored. A blueprint
+    // edited or un-approved since the step was prepared fails the step like a config failure would have at
+    // preflight: permanent, no document, the usual calm note, a debit refunded.
+    if (kind === "brand_kit" && args.briefDocumentId !== undefined && !(await briefStillApproved(ctx, project, args.briefDocumentId))) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now)) };
+    }
     const previous = await revisedDocument(ctx, task, kind);
     let body: string | null = null;
     let gate: ReturnType<typeof gateCrewArtifact> | null = null;
@@ -816,7 +974,7 @@ export const finishCrewStep = internalMutation({
       const parsed = parseModelOutput(kind, raw, stored?.success === true ? stored.data : null);
       if (parsed.success) {
         // S3a: the deterministic quality gate (S4a checks plus the server's facts) decides what is stored.
-        gate = gateCrewArtifact(kind, parsed.data, qualityContextOf(project));
+        gate = gateCrewArtifact(kind, parsed.data, await qualityContextFor(ctx, project, args.seedId));
         if (gate.artifact !== null) body = assertGeneratedDocumentBody(JSON.stringify(gate.artifact));
       }
     } catch {

@@ -37,7 +37,9 @@ import {
   BRAND_KIT_PROMPT_REF,
   blueprintStepPlan,
   brandKitStepPlan,
+  compareSeedVersions,
   crewSeedFor,
+  newestPlatformSeed,
 } from "@/lib/workspace/crew/inputs";
 import { gateCrewArtifact } from "@/lib/workspace/crew/quality";
 import { lightBlueprintSchema } from "@/lib/workspace/wizard/light-blueprint";
@@ -175,7 +177,60 @@ describe("step inputs", () => {
   });
 });
 
+describe("seed versions", () => {
+  test("numbers compare as numbers, not text", () => {
+    expect(compareSeedVersions("v10", "v9")).toBeGreaterThan(0);
+    expect(compareSeedVersions("2026-11-06.10", "2026-11-06.9")).toBeGreaterThan(0);
+    expect(compareSeedVersions("v010", "v10")).toBe(0);
+    expect(compareSeedVersions("v1", "v1.1")).toBeLessThan(0);
+    expect(compareSeedVersions("a", "b")).toBeLessThan(0);
+  });
+
+  test("only platform rows count, newest first", () => {
+    const rows = [
+      { seedVersion: "v9" },
+      { seedVersion: "v10" },
+      { seedVersion: "v11", projectId: "project-1" },
+      { seedVersion: "v2" },
+    ];
+    expect(newestPlatformSeed(rows)?.seedVersion).toBe("v10");
+    expect(newestPlatformSeed([{ seedVersion: "v1", projectId: "p" }])).toBeNull();
+  });
+});
+
 describe("quality gate", () => {
+  const rivalPrice = "Patagonia charges $200 for this. Ours is $79.";
+
+  test("market is code-owned: the seed's market replaces the model's; with no seed it is dropped (review M1)", () => {
+    if (hydrotrailBlueprint.source !== "library") throw new Error("fixture is a library blueprint");
+    const faked: Blueprint = {
+      ...hydrotrailBlueprint,
+      market: { summary: "Trusted by 10,000 hikers; a $4 billion market growing 20% a year.", competitors: [] },
+    };
+    const seedMarket = { summary: "Hikers guess at water.", competitors: [{ name: "Route planners", note: "Maps first." }] };
+    const seeded = gateCrewArtifact("blueprint", faked, { ownIdea: false, ideaSlug: "hydrotrail", seedMarket });
+    expect(seeded.artifact).toMatchObject({ market: seedMarket });
+    const unseeded = gateCrewArtifact("blueprint", faked, { ownIdea: false, ideaSlug: "hydrotrail" });
+    expect(unseeded.result.hard).toEqual([]);
+    expect(unseeded.artifact).not.toBeNull();
+    expect(unseeded.artifact).not.toHaveProperty("market");
+  });
+
+  test("the kit's name is code-owned: the founder's chosen name replaces the model's", () => {
+    const gated = gateCrewArtifact("brand_kit", { ...hydrotrailBrandKit, name: "SipLine Co" }, { ownIdea: false, businessName: "HydroTrail" });
+    expect(gated.artifact?.name).toBe("HydroTrail");
+  });
+
+  test("brandName comes from the workspace: a model-written kit name never widens the own-price exemption", () => {
+    const kit = { ...hydrotrailBrandKit, name: "Patagonia", voice: { ...hydrotrailBrandKit.voice, say: rivalPrice } };
+    const gated = gateCrewArtifact("brand_kit", kit, { ownIdea: true, businessName: "HydroTrail" });
+    expect(gated.artifact).toBeNull();
+    expect(gated.result.hard.map((found) => found.path.join("."))).toContain("voice.say");
+    // The founder really named the business Patagonia: their own price is allowed (S4a ruling).
+    expect(gateCrewArtifact("brand_kit", kit, { ownIdea: true, businessName: "Patagonia" }).result.hard).toEqual([]);
+  });
+
+
   test("a library blueprint gets the business's slug; a wrong source is a hard failure", () => {
     if (hydrotrailBlueprint.source !== "library") throw new Error("fixture is a library blueprint");
     const otherSlug: Blueprint = { ...hydrotrailBlueprint, ideaSlug: "something-else" };
@@ -217,6 +272,27 @@ describe("Pro Max lookup", () => {
     const banned = PRO_MAX_TYPE_PAIRINGS.filter((pairing) => (BANNED_DISPLAY_FAMILIES as readonly string[]).includes(pairing.heading));
     expect(banned.length).toBeGreaterThan(0);
     for (const pairing of allowedTypePairings()) expect(BANNED_DISPLAY_FAMILIES).not.toContain(pairing.heading);
+  });
+
+  test("a product whose own pattern is banned falls back to minimal-single-column", () => {
+    const healthcare: Blueprint = {
+      ...ownIdeaLightBlueprint,
+      pitch: "A patient app for a small medical clinic",
+      oneUser: "A healthcare clinic patient booking a visit",
+      features: ["Clinic visit booking", "Medical history for each patient", "Health reminders"],
+    };
+    const design = designCandidatesFor(healthcare);
+    expect(design.productType).toBe("Healthcare App");
+    expect(design.matchedBy).toBe("keywords");
+    expect(design.landingPattern.id).toBe(FALLBACK_LANDING_PATTERN_ID);
+    expect(design.excluded).toContainEqual({ kind: "landing_pattern", name: "Hero + Testimonials + CTA", reason: "fake_proof" });
+  });
+
+  test("tied type pairs are ordered by a stable hash of the product type, not list order", () => {
+    const first = designCandidatesFor(hydrotrailBlueprint).typePairs.map((pair) => pair.id);
+    expect(first).not.toEqual(TYPE_PAIR_IDS.slice(0, first.length));
+    const other = designCandidatesFor({ ...ownIdeaLightBlueprint, profile: { ...ownIdeaLightBlueprint.profile, ideaKind: "course" } });
+    expect(other.typePairs.map((pair) => pair.id)).not.toEqual(first);
   });
 
   test("a product's pattern text resolves through names and aliases", () => {

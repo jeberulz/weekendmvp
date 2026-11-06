@@ -33,6 +33,44 @@ export type CrewSeedSource = "idea_crew_seeds" | "fixture_hydrotrail" | "none";
 export type CrewSeed = { readonly source: CrewSeedSource; readonly blueprint: Blueprint | null };
 
 /**
+ * Seed versions compared with numbers as numbers ("v10" after "v9",
+ * "2026-11-06.10" after "2026-11-06.9"), not as text. Pure, no `Intl`.
+ */
+export function compareSeedVersions(a: string, b: string): number {
+  const chunks = (value: string): string[] => value.match(/\d+|\D+/gu) ?? [];
+  const left = chunks(a);
+  const right = chunks(b);
+  for (let i = 0; i < Math.min(left.length, right.length); i += 1) {
+    const x = left[i] ?? "";
+    const y = right[i] ?? "";
+    if (x === y) continue;
+    if (/^\d/u.test(x) && /^\d/u.test(y)) {
+      const xs = x.replace(/^0+(?=\d)/u, "");
+      const ys = y.replace(/^0+(?=\d)/u, "");
+      if (xs.length !== ys.length) return xs.length < ys.length ? -1 : 1;
+      if (xs !== ys) return xs < ys ? -1 : 1;
+      continue;
+    }
+    return x < y ? -1 : 1;
+  }
+  return left.length - right.length;
+}
+
+/**
+ * The platform seed to use: rows written by WP71-S5 for the idea itself
+ * (`projectId` unset), newest `seedVersion` first by `compareSeedVersions`.
+ * A row tied to one business is never another business's seed.
+ */
+export function newestPlatformSeed<R extends { readonly projectId?: unknown; readonly seedVersion: string }>(rows: readonly R[]): R | null {
+  let best: R | null = null;
+  for (const row of rows) {
+    if (row.projectId !== undefined) continue;
+    if (best === null || compareSeedVersions(row.seedVersion, best.seedVersion) > 0) best = row;
+  }
+  return best;
+}
+
+/**
  * The seed blueprint for a library idea. A stored seed is used only when it
  * parses as a library blueprint for the same slug (seeds are `v.any()`); any
  * other stored value is ignored rather than sent to the model.

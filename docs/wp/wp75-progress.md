@@ -820,6 +820,9 @@ Both halves are finished here, so the split is only a commit boundary.
 ### Needs from Codex (S3a)
 
 - 16 (optional), above; 6 still applies to seeds. 15 is resolved in the Claude lane.
+- 17 (before seed writers land): `idea_crew_seeds.seedVersion` sorts as text in its index ("v10" sorts before "v9"). The
+  read takes the newest 100 rows and picks the highest version numerically, so this only bites past 100 rows for one
+  slug. Fix: a numeric or zero-padded sort field in the index.
 
 ### Checks
 
@@ -843,3 +846,103 @@ carries the router's resolved model and input ceiling" read `listEntries()[0]` a
 instead (one line, test only; the WP77-S3 note in that file already reads the probe alone).
 
 - Docs updated: this file (S3a section, Status row, Needs from Codex 15 resolved and 16). Stories: S3a ticked, with the S4b repair note.
+
+## 2026-11-06 - S3a review fixes (independent Opus review of `e65d97a4`: no blockers, 2 majors, minors)
+
+Uncommitted in `.worktrees/wp75-blueprint`. Fixture mode only.
+
+### Majors
+
+- **M1, a library blueprint's `market` was model-written and unchecked.** S4a skips the market subtree as research
+  (`isResearchedMarketPath`), but the model wrote it, even with no seed. Route taken: **`market` is code-owned**, like
+  `ideaSlug`. The quality context now carries the seed's market (`seedMarket`, read by `qualityContextFor` from the
+  same platform seed the prompt saw, or the HydroTrail fixture seed). With a seed, the stored `market` is the seed's;
+  with no seed (or a seed with no market), `market` is dropped. Dropping, not checking, because C-ART's library
+  variant makes `market` optional, and market text with no research behind it is invented whatever the checks say;
+  running `checkNeverFake` / `checkMarketNumbers` on it would still store unresearched copy that happens to pass.
+  The "Trusted by 10,000 hikers; a $4 billion market growing 20% a year." repro is now dropped (stored without
+  `market`), and a seeded run stores the seed's market even when the model wrote different text (convex-test and
+  pure tests).
+- **M2, a short business name whitelisted competitor prices.** `marketNumbers.ts` matched the brand as a suffix of
+  the captured name (`endsWith`). It now matches whole words only: the whole captured name (spacing aside) equals
+  the brand, or its last N whole words equal the brand's N words. Brands "a", "gonia", "Agonia", "Pata" and
+  "HydroTrail" leave "Patagonia charges $200 for this. Ours is $79." hard; a business really named "Patagonia" is
+  clean (its own price, per the S4a ruling). "Today HydroTrail costs $79" stays the business's own. Every existing
+  S4a test is green.
+
+### Minors
+
+1. The brand kit reads the newest blueprint whose `artifact_review` card is approved and still valid for it
+   (`assertApproved`); a draft is never used. With none approved, preflight fails as `config` before any call. No
+   prompt change was needed: `brandKit.v1` already says "approved", which is now true.
+2. Seeds: `platformSeedRow` (in `jobs.ts`, shared by the generator and the gate) reads only platform rows
+   (`projectId` unset) and picks the newest `seedVersion` with `compareSeedVersions` (numbers as numbers, no `Intl`).
+   Tested with v9 / v10 plus a newer business-tied v11 that is ignored.
+3. The brand kit's `name` is code-owned: the gate sets it to `projects.workspace.name` and re-parses.
+4. Tests that kill the surviving mutations: preflight asserts `runPrompt` is never invoked and checks the settled
+   failure (`{kind: "config", message}`) and run `errorCode`; a Healthcare App blueprint (pattern "Social
+   Proof-Focused", banned) falls back to `minimal-single-column`; a model-written kit name "Patagonia" does not widen
+   the exemption when the workspace name is HydroTrail; the type-pair order differs from list order for HydroTrail
+   and between product types. The tie-break and landing-fallback tests were confirmed to fail with the protection
+   removed.
+5. Repair-throw numbering: the seam now passes `CrewRepairInput.attempt` (`result.nextAttempt`) and documents its
+   contract: at most one gateway run starting there, so a throw settled one `UNKNOWN_OUTCOME_ATTEMPT_STRIDE` later
+   covers it. A `TODO(S4b)` in `runner.ts` and an S4b note on the S3a story say what to do if the repair needs
+   more than one run (report the highest attempt used). Returning attempts from a seam with no implementation was
+   judged too invasive.
+
+Soft issues not being stored stays Codex 16.
+
+### Files
+
+- `lib/workspace/crew/checks/marketNumbers.ts`: whole-word own-name match (`isOwnName`), replacing `nameKey().endsWith`.
+- `lib/workspace/crew/quality.ts`: `seedMarket` and code-owned `market`; `normaliseBrandKit` (code-owned `name`).
+- `lib/workspace/crew/inputs.ts`: `compareSeedVersions`, `newestPlatformSeed`.
+- `convex/crew/jobs.ts`: `platformSeedRow`, `qualityContextFor` (async, adds `seedMarket`), validator updated.
+- `convex/crew/generators.ts`: `approvedBlueprint` (approved and valid card), `platformSeedRow`.
+- `convex/crew/runner.ts`: `CrewRepairInput.attempt`, the attempt contract and `TODO(S4b)`.
+- Tests: `convex/crew/generators.test.ts` (17), `tests/platform/workspace-crew-s3a.test.ts` (31),
+  `tests/platform/workspace-crew-checks-market-slop.test.ts` (+1 regression test).
+- Docs: this note; `wp75-stories.md` S3a S4b note.
+
+### Round 2 (Opus re-check: M1, minors 2, 3 and 5 and the four test gaps confirmed; one major and minors left)
+
+- **Major, a rival whose last words equal the brand was exempt.** The tail rule let "Pokemon Go" (brand "Go"),
+  "Disney Plus", "Trail Pro", "Trader Joe's", "McDonald's" (brand "S") and "Rei Patagonia" through. `isOwnName`
+  now exempts a captured name only when it is the whole brand (spacing, case, apostrophes and NFKC folded), or the
+  brand after a closed list of sentence-start words (today, now, right now, currently, here, so, yes, still, then,
+  and, but, at launch; the tail of a phrase counts, because the capture can start mid-phrase). An apostrophe stays
+  inside its word, so "Joe's" is one word and never yields a separate "s". Tests: every rival above is hard with its
+  brand, exactly as with a neutral brand; "Today HydroTrail costs $79", "Hydro Trail costs $79" and "Today Hydro
+  Trail costs $79" are clean for HydroTrail; "Big Trail Pack charges $79" with brand "Pack" is now hard. Every S4a
+  test is green.
+- **Minor 1, seed window.** `platformSeedRow` reads the index newest first (`order("desc")`), so per-business rows
+  crowd only the old end, and returns `overflow` when the bounded read (100) was full with no platform row; the
+  generator then refuses as `config` ("the idea's research seed could not be read") before any call. Residual: the
+  index orders `seedVersion` as text, so with more than 100 rows a numerically newer version that sorts lower as
+  text ("v10" below "v9") could fall outside the window. WP71-S5 writes a handful of rows per idea, so this is noted,
+  not fixed (a numeric sort key would need a schema field, which is Codex's).
+- **Minor 2, one seed per step.** No schema change was needed. `prepareCrewStep` returns the seed row's `_id`;
+  `runCrewStepArgs` carries it as `seedId` (so scheduled retries keep it); `startCrewRun` and `finishCrewStep` take
+  it; `qualityContextFor` re-reads exactly that row by id. A row that is gone, or is no longer a platform row for
+  the idea, drops `market`; it never falls back to another row or to the HydroTrail fixture. With no `seedId` (the
+  prompt read no stored row) the gate uses the same fallback the prompt did.
+- **Minor 3, approval at finish.** `approvedBlueprint` moved to `jobs.ts`. `prepareCrewStep` returns the brief's
+  document id; `runCrewStepArgs.briefDocumentId` carries it, and `finishCrewStep` re-checks that exact document is
+  still an approved blueprint (`isApprovedBlueprint`, the same `assertApproved` test) before a kit is stored. Only
+  generator runs carry a brief: a direct S2a `runCrewStep` with its own inputs briefs no blueprint and is not
+  re-checked (re-checking every brand kit run broke 10 S2a runner tests, which run a kit with no blueprint). Path taken: the existing permanent-failure path (`closeRun` permanent,
+  `failTask`: no document, the usual calm note, a debit refunded), returning `{kind: "failed"}`. It matches what a
+  preflight `config` failure ends as (errorCode `permanent`, same note), and a quality rejection would have told the
+  founder the draft was poor, which it was not.
+- **Minor 4, the `assertApproved` gap.** New test: the blueprint document is edited after its card was approved;
+  the kit's preflight fails as `config` with no call.
+- Mutation checks, each confirmed to fail a new test: `assertApproved` made a no-op; the seed read ascending; no
+  re-check at finish; the gate re-reading the newest seed instead of `seedId`; a vanished row falling back to the
+  fixture.
+
+Files (round 2): `lib/workspace/crew/checks/marketNumbers.ts`; `convex/crew/jobs.ts` (`seedId`, `briefDocumentId`,
+`platformSeedRow` overflow and order, `stepSeedRow`, `isApprovedBlueprint`, `approvedBlueprint`, the finish
+re-check); `convex/crew/generators.ts` (seed read result, `seedId`, `briefDocumentId`); `convex/crew/runner.ts`
+(passes both); tests: `convex/crew/generators.test.ts` (23, +6),
+`tests/platform/workspace-crew-checks-market-slop.test.ts` (+1 test, one case changed to hard).

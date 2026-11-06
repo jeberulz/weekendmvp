@@ -66,6 +66,8 @@ export type CrewRepairInput = {
   readonly start: Started;
   readonly result: Extract<GatewayRunResult, { ok: true }>;
   readonly issues: CheckResult;
+  /** The first attempt number the repair's gateway run must use (`result.nextAttempt`), same job key. */
+  readonly attempt: number;
 };
 
 /**
@@ -74,6 +76,13 @@ export type CrewRepairInput = {
  * or null for no repair. Not built: Owner Q6 (store flagged or fail) and Q7
  * (repair tier) are open. With no repair, `finishCrewStep` fails the step
  * closed on the hard issues.
+ *
+ * Attempt contract: the repair makes at most ONE gateway run, starting at
+ * `input.attempt`. A returned result carries its own `nextAttempt`; a repair
+ * that throws is settled at `input.attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE`,
+ * which covers one run (first try + one re-ask) and nothing more.
+ * TODO(S4b): if the repair ever needs more than one gateway run, return the
+ * highest attempt it used (or report it before each call) and settle after it.
  */
 export type CrewArtifactRepair = (input: CrewRepairInput) => Promise<GatewayRunResult | null>;
 
@@ -184,7 +193,7 @@ async function withRepair(
   if (!parsed.success) return result;
   const { result: issues } = gateCrewArtifact(kind, parsed.data, start.quality);
   if (issues.hard.length === 0) return result;
-  return (await repair({ args, start, result, issues })) ?? result;
+  return (await repair({ args, start, result, issues, attempt: result.nextAttempt })) ?? result;
 }
 
 /** The step's body. `runCrewStep` is this with the registered gateway action. */
@@ -196,6 +205,7 @@ export async function runCrewStepWith(
   const start = await ctx.runMutation(internal.crew.jobs.startCrewRun, {
     taskId: args.taskId,
     ...(args.resume === true ? { resume: true } : {}),
+    ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
   });
   if (start.kind === "skip") return { kind: "skipped", reason: start.reason };
   const retry = args.retryMode === "return" ? {} : { retry: args };
@@ -230,7 +240,8 @@ export async function runCrewStepWith(
     try {
       result = await withRepair(args, start, result, deps.repairArtifact ?? noArtifactRepair);
     } catch (error) {
-      // A repair that throws has an unknown outcome, like a gateway call that does not return.
+      // A repair that throws has an unknown outcome, like a gateway call that does not return. It started at
+      // `result.nextAttempt` and makes at most one gateway run (the seam's contract), so one stride covers it.
       return await settle(unknownOutcome(error, "the repair call did not return"), result.nextAttempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
     }
   }
@@ -242,6 +253,8 @@ export async function runCrewStepWith(
         promptRef: result.promptRef,
         outputJson: result.outputJson,
         nextAttempt: result.nextAttempt,
+        ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
+        ...(args.briefDocumentId === undefined ? {} : { briefDocumentId: args.briefDocumentId }),
       });
     }
     return await settle(result.failure, result.nextAttempt);

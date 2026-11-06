@@ -10,6 +10,7 @@
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import shardedCounterTest from "@convex-dev/sharded-counter/test";
 import { convexTest, type TestConvex } from "convex-test";
+import { getFunctionName, type FunctionReference } from "convex/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { internal } from "../_generated/api";
@@ -53,9 +54,15 @@ const OWN_IDEA = "A packing checklist that adapts to the weather forecast for we
 
 type Business = { readonly ownerId: Id<"users">; readonly projectId: Id<"projects">; readonly memberId: Id<"crew_members">; readonly workstreamId: Id<"workstreams"> };
 
-async function seedBusiness(t: T, label: string, source: "library" | "own_idea", ownIdea = OWN_IDEA): Promise<Business> {
+async function seedBusiness(
+  t: T,
+  label: string,
+  source: "library" | "own_idea",
+  ownIdea = OWN_IDEA,
+  ideaSlug = "hydrotrail",
+): Promise<Business> {
   const answers: WizardAnswers = source === "library"
-    ? hydrotrailWizardAnswers
+    ? { ...hydrotrailWizardAnswers, idea: { source: "library", ideaSlug } }
     : { ...hydrotrailWizardAnswers, idea: { source: "own_idea", text: ownIdea.slice(0, 200) } };
   return await t.run(async (ctx) => {
     const adminId = await ctx.db.insert("users", { email: `${label}-admin@example.test` });
@@ -74,7 +81,7 @@ async function seedBusiness(t: T, label: string, source: "library" | "own_idea",
       idempotencyKey: `${label}-business`,
       workspace: {
         version: 1, name: "HydroTrail", slug: label,
-        ...(source === "library" ? { ideaSlug: "hydrotrail" } : { ownIdeaText: ownIdea }),
+        ...(source === "library" ? { ideaSlug } : { ownIdeaText: ownIdea }),
         platform: "web", commercialModel: "free", goal: "waitlist",
         partner: { personality: "strategist", name: "Wren" }, wizardSessionId, createdVia: "wizard",
       },
@@ -128,12 +135,39 @@ function gateway(t: T, script: Script = () => undefined) {
     },
   });
   const meter = ctxFor(t);
-  const runPrompt: CrewRunPrompt = async (args) => await runPromptWithMeter(meter, args, { adapter });
-  return { runPrompt, requests, calls: () => calls };
+  let invoked = 0;
+  const runPrompt: CrewRunPrompt = async (args) => {
+    invoked += 1;
+    return await runPromptWithMeter(meter, args, { adapter });
+  };
+  return { runPrompt, requests, calls: () => calls, invoked: () => invoked };
 }
 
 async function run(t: T, taskId: Id<"tasks">, gw: ReturnType<typeof gateway>, repairArtifact?: CrewArtifactRepair) {
   return await runCrewGeneratorStepWith(ctxFor(t), { taskId }, { runPrompt: gw.runPrompt, ...(repairArtifact ? { repairArtifact } : {}) });
+}
+
+/** Runs the step with `before` applied just before the gateway call: something changes between prepare and finish. */
+async function runWithMidStep(t: T, taskId: Id<"tasks">, gw: ReturnType<typeof gateway>, before: () => Promise<void>) {
+  const runPrompt: CrewRunPrompt = async (args) => {
+    await before();
+    return await gw.runPrompt(args);
+  };
+  return await runCrewGeneratorStepWith(ctxFor(t), { taskId }, { runPrompt });
+}
+
+/** The settled failures a step reports, watched on the way to `settleCrewRun`. */
+function watchingCtx(t: T): { ctx: CrewGeneratorCtx; settled: unknown[] } {
+  const settled: unknown[] = [];
+  const base = ctxFor(t);
+  const ctx: CrewGeneratorCtx = {
+    ...base,
+    runMutation: (async (ref: FunctionReference<"mutation", "internal">, args: Record<string, unknown>) => {
+      if (getFunctionName(ref).endsWith("settleCrewRun")) settled.push(args.failure);
+      return await t.mutation(ref, args);
+    }) as ActionCtx["runMutation"],
+  };
+  return { ctx, settled };
 }
 
 async function stored(t: T, projectId: Id<"projects">) {
@@ -154,13 +188,31 @@ const systemText = (request: ProviderRequest | undefined): string[] =>
 const userText = (request: ProviderRequest | undefined): string =>
   JSON.stringify(request?.messages ?? []);
 
-/** A stored blueprint through the generator, as the brand kit step needs. */
-async function blueprintFirst(t: T, business: Business) {
+/** The founder approves a card (status only, as `decideApproval` records it). */
+async function approve(t: T, approvalId: Id<"approvals">) {
+  await t.run(async (ctx) => await ctx.db.patch("approvals", approvalId, { status: "approved", decidedAt: Date.now() }));
+}
+
+/** A stored blueprint through the generator; approved unless `approved: false`, as the brand kit step needs. */
+async function blueprintFirst(t: T, business: Business, options: { approved?: boolean } = {}) {
   const { taskId } = await createTask(t, business, "crew_blueprint");
   const outcome = await run(t, taskId, gateway(t));
   if (outcome.kind !== "finished") throw new Error(`blueprint did not finish: ${JSON.stringify(outcome)}`);
+  if (options.approved !== false) await approve(t, outcome.approvalId);
   return outcome;
 }
+
+/** A seed row; `projectId` set makes it a business's own row, never a platform seed. */
+async function insertSeed(t: T, business: Business, seedVersion: string, blueprint: unknown, projectId?: Id<"projects">) {
+  return await t.run(async (ctx) => await ctx.db.insert("idea_crew_seeds", {
+    ownerId: business.ownerId, ideaSlug: "hydrotrail", seedVersion, blueprint,
+    ...(projectId === undefined ? {} : { projectId }),
+    brandSeeds: null, landingSeeds: null, emailAngles: null, socialAngles: null, buildPackSeeds: null,
+    promptRefs: [], createdAt: 1,
+  }));
+}
+
+const storedBody = (doc: Doc<"documents"> | undefined): Record<string, unknown> => JSON.parse(doc?.body ?? "{}") as Record<string, unknown>;
 
 const withInk = (hex: string): BrandKit => ({
   ...hydrotrailBrandKit,
@@ -194,20 +246,123 @@ describe("blueprint step", () => {
     expect(await task(t, taskId)).toMatchObject({ status: "succeeded" });
   });
 
-  test("a stored idea_crew_seeds row is the seed when present", async () => {
+  test("a stored idea_crew_seeds row is the seed when present: v10 beats v9, a business's own row is ignored", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "seeded", "library");
-    const seedPitch = "A seeded hydration planner pitch from the stored seed row.";
-    await t.run(async (ctx) => await ctx.db.insert("idea_crew_seeds", {
-      ownerId: business.ownerId, ideaSlug: "hydrotrail", seedVersion: "2026-11-06.1",
-      blueprint: { ...hydrotrailBlueprint, pitch: seedPitch },
-      brandSeeds: null, landingSeeds: null, emailAngles: null, socialAngles: null, buildPackSeeds: null,
-      promptRefs: [], createdAt: 1,
-    }));
+    const pitch = (version: string) => `A seeded hydration planner pitch from seed ${version}.`;
+    await insertSeed(t, business, "v9", { ...hydrotrailBlueprint, pitch: pitch("v9") });
+    await insertSeed(t, business, "v10", { ...hydrotrailBlueprint, pitch: pitch("v10") });
+    await insertSeed(t, business, "v11", { ...hydrotrailBlueprint, pitch: pitch("v11") }, business.projectId);
     const { taskId } = await createTask(t, business, "crew_blueprint");
     const gw = gateway(t);
     expect((await run(t, taskId, gw)).kind).toBe("finished");
-    expect(userText(gw.requests[0])).toContain(seedPitch);
+    const user = userText(gw.requests[0]);
+    expect(user).toContain(pitch("v10"));
+    expect(user).not.toContain(pitch("v9"));
+    expect(user).not.toContain(pitch("v11"));
+  });
+
+  test("market is code-owned: a seeded run stores the seed's market, whatever the model wrote", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seed-market", "library");
+    if (hydrotrailBlueprint.source !== "library") throw new Error("fixture is a library blueprint");
+    const seedMarket = { summary: "Hikers plan routes but guess at water.", competitors: [{ name: "Route planners", note: "Maps first." }] };
+    await insertSeed(t, business, "v1", { ...hydrotrailBlueprint, market: seedMarket });
+    const modelMarket = { summary: "Trusted by 10,000 hikers; a $4 billion market growing 20% a year.", competitors: [] };
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const outcome = await run(t, taskId, gateway(t, () => ({ json: { ...hydrotrailBlueprint, market: modelMarket } })));
+    expect(outcome).toMatchObject({ kind: "finished" });
+    const { documents } = await stored(t, business.projectId);
+    expect(storedBody(documents[0]).market).toEqual(seedMarket);
+  });
+
+  test("market is code-owned: with no seed, a model-written market is dropped, never stored", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "no-seed", "library", OWN_IDEA, "trail-snacks");
+    if (hydrotrailBlueprint.source !== "library") throw new Error("fixture is a library blueprint");
+    const modelMarket = { summary: "Trusted by 10,000 hikers; a $4 billion market growing 20% a year.", competitors: [] };
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const gw = gateway(t, () => ({ json: { ...hydrotrailBlueprint, ideaSlug: "trail-snacks", market: modelMarket } }));
+    expect((await run(t, taskId, gw)).kind).toBe("finished");
+    expect(userText(gw.requests[0])).toContain("idea_seed");
+    const { documents } = await stored(t, business.projectId);
+    const body = storedBody(documents[0]);
+    expect(body).toMatchObject({ source: "library", ideaSlug: "trail-snacks" });
+    expect(body).not.toHaveProperty("market");
+    expect(documents[0]?.body).not.toContain("10,000");
+  });
+
+  test("seeds are read newest first: many old per-business rows never hide the platform seed", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seed-window", "library");
+    const pitch = "A seeded hydration planner pitch from the platform seed.";
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 150; i += 1) {
+        await ctx.db.insert("idea_crew_seeds", {
+          ownerId: business.ownerId, projectId: business.projectId, ideaSlug: "hydrotrail", seedVersion: `a${String(i).padStart(3, "0")}`,
+          blueprint: null, brandSeeds: null, landingSeeds: null, emailAngles: null, socialAngles: null, buildPackSeeds: null,
+          promptRefs: [], createdAt: 1,
+        });
+      }
+    });
+    await insertSeed(t, business, "v2", { ...hydrotrailBlueprint, pitch });
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const gw = gateway(t);
+    expect((await run(t, taskId, gw)).kind).toBe("finished");
+    expect(userText(gw.requests[0])).toContain(pitch);
+  });
+
+  test("a full seed window with no platform row fails closed as config, before any call", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seed-overflow", "library");
+    await insertSeed(t, business, "a1", { ...hydrotrailBlueprint, pitch: "An old platform seed, out of the window." });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 100; i += 1) {
+        await ctx.db.insert("idea_crew_seeds", {
+          ownerId: business.ownerId, projectId: business.projectId, ideaSlug: "hydrotrail", seedVersion: `z${String(i).padStart(3, "0")}`,
+          blueprint: null, brandSeeds: null, landingSeeds: null, emailAngles: null, socialAngles: null, buildPackSeeds: null,
+          promptRefs: [], createdAt: 1,
+        });
+      }
+    });
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const { ctx, settled } = watchingCtx(t);
+    const gw = gateway(t);
+    const outcome = await runCrewGeneratorStepWith(ctx, { taskId }, { runPrompt: gw.runPrompt });
+    expect(outcome).toMatchObject({ kind: "failed", retryClass: "permanent" });
+    expect(gw.invoked()).toBe(0);
+    expect(settled).toEqual([{ kind: "config", message: "the idea's research seed could not be read" }]);
+    expect((await stored(t, business.projectId)).documents).toEqual([]);
+  });
+
+  test("the gate stores the market of the seed the prompt saw, not a seed written mid-step", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seed-mid", "library");
+    const v1Market = { summary: "Hikers plan routes but guess at water.", competitors: [{ name: "Route planners", note: "Maps first." }] };
+    const v2Market = { summary: "A newer seed written while the step ran.", competitors: [] };
+    await insertSeed(t, business, "v1", { ...hydrotrailBlueprint, market: v1Market });
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const outcome = await runWithMidStep(t, taskId, gateway(t), async () => {
+      await insertSeed(t, business, "v2", { ...hydrotrailBlueprint, market: v2Market });
+    });
+    expect(outcome).toMatchObject({ kind: "finished" });
+    const { documents } = await stored(t, business.projectId);
+    expect(storedBody(documents[0]).market).toEqual(v1Market);
+  });
+
+  test("a seed row gone mid-step drops the market; it never falls back to another seed", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seed-gone", "library");
+    const v1Market = { summary: "Hikers plan routes but guess at water.", competitors: [{ name: "Route planners", note: "Maps first." }] };
+    const seedId = await insertSeed(t, business, "v1", { ...hydrotrailBlueprint, market: v1Market });
+    const { taskId } = await createTask(t, business, "crew_blueprint");
+    const outcome = await runWithMidStep(t, taskId, gateway(t), async () => {
+      await t.run(async (ctx) => await ctx.db.delete("idea_crew_seeds", seedId));
+    });
+    expect(outcome).toMatchObject({ kind: "finished" });
+    const { documents } = await stored(t, business.projectId);
+    // Not v1's market, and not the HydroTrail fixture seed's (the fallback when no row was read).
+    expect(storedBody(documents[0])).not.toHaveProperty("market");
   });
 
   test("the model's ideaSlug is replaced by the business's own idea", async () => {
@@ -296,6 +451,83 @@ describe("brand kit step", () => {
     ]);
   });
 
+  test("the kit's name is code-owned: the founder's chosen name is stored, whatever the model wrote", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "brand-name", "library");
+    await blueprintFirst(t, business);
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const outcome = await run(t, taskId, gateway(t, () => ({ json: { ...hydrotrailBrandKit, name: "SipLine Co" } })));
+    expect(outcome).toMatchObject({ kind: "finished" });
+    const kit = (await stored(t, business.projectId)).documents.find((doc) => doc.kind === "brand_kit");
+    expect(storedBody(kit).name).toBe("HydroTrail");
+  });
+
+  test("a draft blueprint is never the brief: with no approved blueprint the step fails preflight, no call", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "unapproved", "library");
+    await blueprintFirst(t, business, { approved: false });
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const settled: unknown[] = [];
+    const base = ctxFor(t);
+    const watching: CrewGeneratorCtx = {
+      ...base,
+      runMutation: (async (ref: FunctionReference<"mutation", "internal">, args: Record<string, unknown>) => {
+        if (getFunctionName(ref).endsWith("settleCrewRun")) settled.push(args.failure);
+        return await t.mutation(ref, args);
+      }) as ActionCtx["runMutation"],
+    };
+    const gw = gateway(t);
+    const outcome = await runCrewGeneratorStepWith(watching, { taskId }, { runPrompt: gw.runPrompt });
+    expect(outcome).toMatchObject({ kind: "failed", retryClass: "permanent", refundScheduled: false });
+    expect(gw.invoked()).toBe(0);
+    expect(gw.calls()).toBe(0);
+    expect(settled).toEqual([{ kind: "config", message: "the brand kit needs the business's approved blueprint first" }]);
+    const runs = await t.run(async (ctx) => await ctx.db.query("workflow_runs")
+      .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", taskId)).collect());
+    expect(runs.map((row) => row.errorCode)).toEqual(["permanent"]);
+    expect((await stored(t, business.projectId)).documents.map((doc) => doc.kind)).toEqual(["blueprint"]);
+  });
+
+  test("a blueprint edited after its card was approved is not approved: the kit fails preflight, no call", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "edited", "library");
+    const { documentId, approvalId } = await blueprintFirst(t, business);
+    await t.run(async (ctx) => {
+      const card = await ctx.db.get("approvals", approvalId);
+      const doc = await ctx.db.get("documents", documentId);
+      if (card === null || doc === null) throw new Error("blueprint or card missing");
+      await ctx.db.patch("documents", documentId, { body: doc.body?.replace("HydroTrail", "HydroTrail Edited"), updatedAt: card.createdAt + 60_000 });
+    });
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const { ctx, settled } = watchingCtx(t);
+    const gw = gateway(t);
+    const outcome = await runCrewGeneratorStepWith(ctx, { taskId }, { runPrompt: gw.runPrompt });
+    expect(outcome).toMatchObject({ kind: "failed", retryClass: "permanent" });
+    expect(gw.invoked()).toBe(0);
+    expect(settled).toEqual([{ kind: "config", message: "the brand kit needs the business's approved blueprint first" }]);
+    expect((await stored(t, business.projectId)).documents.map((doc) => doc.kind)).toEqual(["blueprint"]);
+  });
+
+  test("a blueprint un-approved mid-step: the kit is not stored, the step fails permanent with the calm note", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "unapproved-mid", "library");
+    const { approvalId } = await blueprintFirst(t, business);
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const gw = gateway(t);
+    const outcome = await runWithMidStep(t, taskId, gw, async () => {
+      await t.run(async (ctx) => await ctx.db.patch("approvals", approvalId, { status: "pending" }));
+    });
+    expect(outcome).toEqual({ kind: "failed", refundScheduled: false });
+    expect(gw.calls()).toBe(1);
+    expect((await stored(t, business.projectId)).documents.map((doc) => doc.kind)).toEqual(["blueprint"]);
+    expect(await task(t, taskId)).toMatchObject({ status: "failed" });
+    const runs = await t.run(async (ctx) => await ctx.db.query("workflow_runs")
+      .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", taskId)).collect());
+    expect(runs.map((row) => row.errorCode)).toEqual(["permanent"]);
+    const workstream = await t.run(async (ctx) => await ctx.db.get("workstreams", business.workstreamId));
+    expect(workstream?.blocker).toBe(FAILED_STEP_REASON);
+  });
+
   test("an own-idea business gets a brand kit too", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "own-brand", "own_idea");
@@ -356,7 +588,9 @@ describe("brand kit step", () => {
     const business = await seedBusiness(t, "repair", "library");
     await blueprintFirst(t, business);
     const seen: string[][] = [];
-    const repair: CrewArtifactRepair = async ({ issues, result }) => {
+    const repair: CrewArtifactRepair = async ({ issues, result, attempt }) => {
+      // The seam's attempt contract: the repair's one gateway run starts where the draft's call stopped.
+      expect(attempt).toBe(result.nextAttempt);
       seen.push(issues.hard.map((found) => found.code));
       return { ...result, outputJson: JSON.stringify(hydrotrailBrandKit) };
     };
@@ -380,6 +614,7 @@ describe("brand kit step", () => {
     const outcome = await run(t, taskId, gw);
     expect(outcome).toMatchObject({ kind: "failed", retryClass: "permanent", refundScheduled: false });
     expect(gw.calls()).toBe(0);
+    expect(gw.invoked()).toBe(0);
     expect(await task(t, taskId)).toMatchObject({ status: "failed" });
     const workstream = await t.run(async (ctx) => await ctx.db.get("workstreams", business.workstreamId));
     expect(workstream?.blocker).toBe(FAILED_STEP_REASON);

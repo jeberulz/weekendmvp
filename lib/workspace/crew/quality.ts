@@ -8,9 +8,14 @@
  *   (a server fact, never the model's output).
  * - Adds the facts only the server knows. A blueprint's `source` must match
  *   the business (a library business never stores an own-idea blueprint, and
- *   the reverse), and a library blueprint's `ideaSlug` is code-owned: it is
- *   set to the business's idea whatever the model wrote, then the artifact is
- *   parsed again with its C-ART schema.
+ *   the reverse). Code-owned fields are set whatever the model wrote, then the
+ *   artifact is parsed again with its C-ART schema:
+ *   - a library blueprint's `ideaSlug` is the business's idea;
+ *   - a library blueprint's `market` is the idea seed's (Weekend MVP
+ *     research), or left out when the seed has none. S4a skips the market
+ *     subtree as research, so model-written market text is never stored
+ *     (S3a review M1);
+ *   - a brand kit's `name` is the name the founder chose.
  * - Hard issues fail the step closed (S4b's one repair is not built: Owner
  *   Q6/Q7 are open). Soft issues never block.
  *
@@ -19,7 +24,9 @@
  * the brand kit).
  */
 
-import { parseArtifact, type ArtifactByKind, type ArtifactKind } from "../contracts/artifacts";
+import type { z } from "zod";
+
+import { blueprintMarketSchema, parseArtifact, type ArtifactByKind, type ArtifactKind } from "../contracts/artifacts";
 import { checkArtifact, issue, toResult, type CheckResult } from "./checks";
 
 export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit"] as const satisfies readonly ArtifactKind[];
@@ -37,7 +44,11 @@ export type QualityContext = {
   readonly ideaSlug?: string;
   /** The name the founder chose (`projects.workspace.name`). */
   readonly businessName?: string;
+  /** A library business's market from its idea seed; absent when the seed has none (or there is no seed). */
+  readonly seedMarket?: BlueprintMarket;
 };
+
+export type BlueprintMarket = z.infer<typeof blueprintMarketSchema>;
 
 export type QualityGateResult<K extends ArtifactKind> = {
   /** The artifact to store: parsed again after any code-owned field was set. Null when it cannot be stored. */
@@ -60,9 +71,25 @@ function normaliseBlueprint(
   if (context.ideaSlug === undefined) {
     return { result: blocked("blueprint_idea_missing", ["ideaSlug"], "The business has no library idea to attach the blueprint to.") };
   }
-  const reparsed = parseArtifact("blueprint", { ...blueprint, ideaSlug: context.ideaSlug });
+  const owned: Record<string, unknown> = { ...blueprint, ideaSlug: context.ideaSlug };
+  delete owned.market;
+  if (context.seedMarket !== undefined) owned.market = context.seedMarket;
+  const reparsed = parseArtifact("blueprint", owned);
   if (!reparsed.success) {
-    return { result: blocked("blueprint_idea_invalid", ["ideaSlug"], "The business's idea slug is not a valid blueprint slug.") };
+    return { result: blocked("blueprint_idea_invalid", ["ideaSlug"], "The business's idea slug or seed market is not valid for a blueprint.") };
+  }
+  return { artifact: reparsed.data };
+}
+
+/** The brand kit with the founder's chosen name, or the hard issue that stops it. */
+function normaliseBrandKit(
+  kit: ArtifactByKind["brand_kit"],
+  context: QualityContext,
+): { artifact: ArtifactByKind["brand_kit"] } | { result: CheckResult } {
+  if (context.businessName === undefined || kit.name === context.businessName) return { artifact: kit };
+  const reparsed = parseArtifact("brand_kit", { ...kit, name: context.businessName });
+  if (!reparsed.success) {
+    return { result: blocked("brand_name_invalid", ["name"], "The business's name is not valid for a brand kit.") };
   }
   return { artifact: reparsed.data };
 }
@@ -80,6 +107,10 @@ export function gateCrewArtifact<K extends ArtifactKind>(
   let subject: ArtifactByKind[K] = artifact;
   if (kind === "blueprint") {
     const normalised = normaliseBlueprint(artifact as ArtifactByKind["blueprint"], context);
+    if ("result" in normalised) return { artifact: null, result: normalised.result };
+    subject = normalised.artifact as ArtifactByKind[K];
+  } else if (kind === "brand_kit") {
+    const normalised = normaliseBrandKit(artifact as ArtifactByKind["brand_kit"], context);
     if ("result" in normalised) return { artifact: null, result: normalised.result };
     subject = normalised.artifact as ArtifactByKind[K];
   }
