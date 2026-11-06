@@ -82,8 +82,9 @@ They do not yet meet D5, for four reasons:
 
 7. **Paid plans have no hard sending ceiling.** CONFIRMED.
    - `convex/growth/email/caps.ts:29-31`: soft enforcement always allows the send. Ten million a month on Builder's Hub still returns `allowed: true`.
+   - **Ruled 2026-11-06** (`RULINGS.md`, "WP79 / D6 paid send ceiling"): a hard monthly ceiling at twice the soft threshold (10,000 / 40,000), a daily limit per business (1,000 / 3,000), and an automatic pause over 0.1% complaints or 4% bounces, with a manual operator override per business.
    - **Fix:**
-     - An owner ruling on a hard abuse ceiling, plus a daily rate per business.
+     - Enforce the three ruled layers on every enqueue path, in the same transaction as the enqueue: the sequence sender and the opt-in confirmation enqueue (`requestOptInForLead`), which runs before enrollment. A paused or capped business must not queue a confirmation either.
      - The sender reads exact `ShardedCounter.count()` totals in the enqueue mutation.
      - A test of two sends racing past the cap.
 8. **The opt-in and unsubscribe flow is unbuilt and unproven.** PLAUSIBLE.
@@ -165,5 +166,5 @@ They do not yet meet D5, for four reasons:
 ## Next steps
 
 - Codex lane (WP78/WP79): items 1–17 above. Items 1–6 and 10 come before D5; items 7–9 come before the first tenant send.
-- Owner: a hard abuse ceiling for tenant sends on paid plans (item 7).
+- Owner: ruled the paid-plan send ceiling (item 7), 2026-11-06.
 - Claude lane: this PR adds the five owner rulings from the WP78/WP79 logs to `RULINGS.md`, as both logs asked.
