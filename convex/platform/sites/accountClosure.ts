@@ -57,7 +57,10 @@ export const requestAccountClosure = mutation({
           (job.state === "complete" && job.completedAt === undefined)) {
         fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
       }
-      if (job.state === "scheduled" && Date.now() - job.updatedAt >= REPLAY_WAKE_AFTER_MS) {
+      const now = Date.now();
+      if (job.state === "scheduled" && job.nextAttemptAt <= now &&
+          now - job.updatedAt >= REPLAY_WAKE_AFTER_MS) {
+        await ctx.db.patch("account_closure_jobs", job._id, { updatedAt: now });
         await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, {
           jobId: job._id,
         });
@@ -191,11 +194,7 @@ export const processNext = internalMutation({
     }
     if (job.completedAt !== undefined) fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
     const now = Date.now();
-    if (job.nextAttemptAt > now) {
-      await ctx.scheduler.runAfter(job.nextAttemptAt - now,
-        internal.platform.sites.accountClosure.processNext, { jobId });
-      return { processed: 0, more: true };
-    }
+    if (job.nextAttemptAt > now) return { processed: 0, more: true };
 
     const query = () => ctx.db.query("projects")
       .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId));

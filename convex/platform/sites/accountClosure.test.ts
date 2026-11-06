@@ -148,6 +148,31 @@ describe("WP78-S4e2b2 account closure", () => {
       .toBe(first.requestedAt);
   });
 
+  test("replays and early worker calls cannot multiply a delayed retry chain", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t, 1);
+    const owner = asUser(t, ids.ownerId, ids.sessionId);
+    await owner.mutation(request, {});
+    const job = (await jobFor(t, ids.ownerId))!;
+    const now = Date.now();
+    await t.run((ctx) => ctx.db.patch(ids.sessionId, { expirationTime: now + 2 * 60 * 60_000 }));
+    await t.run((ctx) => ctx.db.patch(job._id, {
+      nextAttemptAt: now + 60 * 60_000, updatedAt: now - 10 * 60_000,
+    }));
+    const scheduledCount = () => t.run(async (ctx) =>
+      (await ctx.db.system.query("_scheduled_functions").collect()).length);
+    const before = await scheduledCount();
+    for (let n = 0; n < 5; n += 1) {
+      expect((await owner.mutation(request, {})).alreadyRequested).toBe(true);
+      expect(await t.mutation(next, { jobId: job._id })).toEqual({ processed: 0, more: true });
+    }
+    expect(await scheduledCount()).toBe(before);
+    vi.setSystemTime(now + 60 * 60_000);
+    await owner.mutation(request, {});
+    await owner.mutation(request, {});
+    expect(await scheduledCount()).toBe(before + 1);
+  });
+
   test("bounded fan-out includes archived projects, converts legacy jobs, and preserves an earlier deadline while off", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t, 3);
