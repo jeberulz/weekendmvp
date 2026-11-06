@@ -178,6 +178,44 @@ describe("WP79 contact revocation", () => {
     });
   });
 
+  it("does not claim cancellation for a queued send without a component ID", async () => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const active = await seedEnrollment(t, ids, "active");
+    const queuedId = await manualEmail(t, component);
+    const first = await seedSend(t, ids, active, queuedId, "queued", "send:no-id:1");
+    const second = await t.run((ctx) => ctx.db.insert("email_sends", {
+      ownerId: ids.ownerId, projectId: ids.projectId, enrollmentId: active,
+      stepId: ids.stepId, idempotencyKey: "send:no-id:2", status: "queued",
+      createdAt: Date.now(), updatedAt: Date.now(),
+    }));
+    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+      .rejects.toThrow("COMPONENT_EMAIL_ID_MISSING");
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
+    await t.run(async (ctx) => {
+      expect((await ctx.db.get(active))?.state).toBe("active");
+      expect((await ctx.db.get(first))?.status).toBe("queued");
+      expect((await ctx.db.get(second))?.status).toBe("queued");
+    });
+  });
+
+  it("rejects a cross-tenant lead graph before touching queued mail", async () => {
+    const { t, component } = setup();
+    const ids = await seedLead(t);
+    const active = await seedEnrollment(t, ids, "active");
+    const queuedId = await manualEmail(t, component);
+    await seedSend(t, ids, active, queuedId, "queued", "send:cross-tenant:1");
+    await t.run(async (ctx) => {
+      const otherOwnerId = await ctx.db.insert("users", { email: "other@example.test" });
+      const lead = await ctx.db.get(ids.leadId);
+      if (!lead) throw new Error("missing fixture lead");
+      await ctx.db.patch(lead.siteConfigId, { ownerId: otherOwnerId });
+    });
+    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+      .rejects.toThrow("LEAD_OWNERSHIP_GRAPH_MISMATCH");
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
+  });
+
   it("fails closed when more than one active enrollment is present", async () => {
     const { t } = setup();
     const ids = await seedLead(t);

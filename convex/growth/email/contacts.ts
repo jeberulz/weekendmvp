@@ -8,10 +8,6 @@ export const MAX_ACTIVE_ENROLLMENTS_PER_LEAD = 1;
 export const MAX_SENDS_PER_ENROLLMENT = 4;
 export const MAX_TOKENS_PER_PURPOSE = 1;
 
-const locallyFinalized = new Set([
-  "sent", "delivered", "delivery_delayed", "bounced", "complained", "failed", "cancelled",
-]);
-
 async function cancelLinkedEmail(
   ctx: MutationCtx,
   componentEmailId: string,
@@ -48,6 +44,14 @@ export const revokeLeadContact = internalMutation({
   handler: async (ctx, { leadId }) => {
     const lead = await ctx.db.get(leadId);
     if (!lead) throw new Error("LEAD_NOT_FOUND");
+    const [project, site] = await Promise.all([
+      ctx.db.get(lead.projectId),
+      ctx.db.get(lead.siteConfigId),
+    ]);
+    if (!project || project.ownerId !== lead.ownerId ||
+        !site || site.ownerId !== lead.ownerId || site.projectId !== lead.projectId) {
+      throw new Error("LEAD_OWNERSHIP_GRAPH_MISMATCH");
+    }
 
     const tokens = [];
     for (const purpose of ["opt_in", "unsubscribe"] as const) {
@@ -89,8 +93,11 @@ export const revokeLeadContact = internalMutation({
           } else if (result === "submitted") {
             submittedEmails += 1;
           }
-        } else if (!locallyFinalized.has(send.status)) {
+        } else if (send.status === "reserved") {
           await ctx.db.patch(send._id, { status: "cancelled", updatedAt: Date.now() });
+        } else if (send.status !== "cancelled") {
+          // A local queued/sent row without the component ID cannot be recalled.
+          throw new Error("COMPONENT_EMAIL_ID_MISSING");
         }
         sendsChecked += 1;
       }
