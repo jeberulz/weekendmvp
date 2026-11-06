@@ -37,7 +37,7 @@ import {
   type ApprovalSubjectTable,
 } from "../../lib/workspace/contracts/approvals";
 import { jobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
-import { spendTermsFor } from "../../lib/workspace/changeRounds";
+import { spendTermsFor, type ChangeRoundDecision } from "../../lib/workspace/changeRounds";
 import {
   changeRoundOutcomeValidator,
   insertRevisionTask,
@@ -92,7 +92,10 @@ import {
  * (`changes_requested`, the founder's note kept as data) and queue a free
  * revision task. Round 3+ closes the card and raises (or reuses) one `spend`
  * card on the revised document with the C-JOBS price and the round; nothing is
- * debited here. A round that is not available (`PRICE_NOT_SET`, plan gated, a
+ * debited here; the spend card carries the founder's note. Asking again on a
+ * `changes_requested` review card raises a fresh spend card only when the round
+ * is still paid and no live, unchanged one exists (after a decline, an expiry
+ * or a document change). A round that is not available (`PRICE_NOT_SET`, plan gated, a
  * draft still in progress, a stale draft, no task lineage) changes nothing and
  * returns `not_available`. The paid round's debit site calls
  * `assertPaidRevisionApproved` (below) in the debit mutation.
@@ -474,6 +477,12 @@ export type CreateApprovalInput = {
   readonly changeRound?: bigint;
   /** Required (positive) for `spend`, refused on every other kind: the C-JOBS price. */
   readonly costCredits?: bigint;
+  /**
+   * WP77-S2: `spend` only. The founder's "Ask for changes" note copied from the
+   * review card, so the paid revision task's card holds its note (data, never
+   * instructions). Normalised like a decision note; refused on other kinds.
+   */
+  readonly note?: string;
 };
 
 /**
@@ -490,6 +499,9 @@ export async function createApprovalRecord(
 ): Promise<{ approvalId: Id<"approvals">; created: boolean }> {
   const changeRound = input.changeRound ?? 0n;
   if (changeRound < 0n || !approvalCostFitsKind(input.kind, input.costCredits)) return refuse("APPROVAL_INVALID_INPUT");
+  const note = normalizeApprovalNote(input.note);
+  if (note === null) return refuse("APPROVAL_INVALID_NOTE");
+  if (note !== undefined && input.kind !== "spend") return refuse("APPROVAL_INVALID_INPUT");
   await requireBusinessForOwner(ctx, input.projectId, input.ownerId);
   await assertFeatureEnabledForOwner(ctx, "workspace", input.ownerId);
   if (!isSubjectTableAllowed(input.kind, input.subjectTable)) return refuse("APPROVAL_INVALID_SUBJECT");
@@ -544,6 +556,7 @@ export async function createApprovalRecord(
     status: "pending",
     changeRound,
     ...(input.costCredits === undefined ? {} : { costCredits: input.costCredits }),
+    ...(note === undefined ? {} : { note }),
     createdAt: now,
     updatedAt: now,
   });
@@ -606,11 +619,20 @@ type DecisionResult = {
   changeRound?: ChangeRoundOutcome;
 };
 
+/** Most approval rows one revised document's history may hold before a paid round fails closed. */
+export const SPEND_CARD_HISTORY_MAX = 100;
+
 /**
  * The live `spend` card for this exact paid round, if one exists: same revised
- * document, round and price, still pending or approved. Reusing it (instead of
+ * document, round and price, still pending (fresh) or approved, and the
+ * document unchanged since the card was raised. Reusing it (instead of
  * `createApprovalRecord`, which would supersede an approved card) keeps a
- * repeated request from raising a second card or revoking an approved one.
+ * repeated request from raising a second card or revoking an approved one. A
+ * card whose document changed is not reused; `createApprovalRecord` then
+ * supersedes it. The read is capped at `SPEND_CARD_HISTORY_MAX` rows of the
+ * document's approval history and fails closed past it
+ * (`CHANGE_ROUND_HISTORY_LIMIT`) until Codex's `by_subjectId_and_kind` index lets
+ * it read spend cards only.
  */
 async function liveSpendCard(
   ctx: MutationCtx,
@@ -619,27 +641,60 @@ async function liveSpendCard(
   costCredits: bigint,
   now: number,
 ): Promise<Doc<"approvals"> | null> {
-  for await (const card of ctx.db.query("approvals")
-    .withIndex("by_subjectId", (q) => q.eq("subjectId", lineage.revisedDocumentId))) {
-    if (
-      card.kind === "spend" &&
-      card.subjectTable === "documents" &&
-      card.projectId === lineage.projectId &&
-      card.ownerId === lineage.ownerId &&
-      card.changeRound === changeRound &&
-      card.costCredits === costCredits &&
-      (card.status === "approved" || (card.status === "pending" && !isPendingApprovalStale(card.createdAt, now)))
-    ) return card;
+  const history = await ctx.db.query("approvals")
+    .withIndex("by_subjectId", (q) => q.eq("subjectId", lineage.revisedDocumentId))
+    .take(SPEND_CARD_HISTORY_MAX + 1);
+  if (history.length > SPEND_CARD_HISTORY_MAX) throw new ConvexError({ code: "CHANGE_ROUND_HISTORY_LIMIT" });
+  const state = await readSubjectState(ctx, lineage.ownerId, lineage.projectId, "documents", lineage.revisedDocumentId);
+  if (!state.found) return null;
+  return history.find((card) =>
+    card.kind === "spend" &&
+    card.subjectTable === "documents" &&
+    card.projectId === lineage.projectId &&
+    card.ownerId === lineage.ownerId &&
+    card.changeRound === changeRound &&
+    card.costCredits === costCredits &&
+    (card.status === "approved" || (card.status === "pending" && !isPendingApprovalStale(card.createdAt, now))) &&
+    isSubjectUnchangedSince(state.writeTimes, card.createdAt)) ?? null;
+}
+
+/**
+ * Raises (or reuses) the `spend` card for a paid round. `changed` is true when
+ * a new card was written. The founder's note is copied onto a new card.
+ */
+async function raiseSpendCard(
+  ctx: MutationCtx,
+  lineage: ArtifactLineage,
+  decision: Extract<ChangeRoundDecision, { decision: "spend" }>,
+  note: string | undefined,
+  founder: { type: "user"; userId: Id<"users"> },
+  now: number,
+): Promise<{ spendApprovalId: Id<"approvals">; created: boolean }> {
+  const terms = spendTermsFor(decision);
+  const existing = await liveSpendCard(ctx, lineage, terms.expectedChangeRound, terms.expectedCostCredits, now);
+  if (existing !== null) return { spendApprovalId: existing._id, created: false };
+  const { approvalId, created } = await createApprovalRecord(ctx, {
+    ownerId: lineage.ownerId,
+    projectId: lineage.projectId,
+    kind: "spend",
+    subjectTable: "documents",
+    subjectId: lineage.revisedDocumentId,
+    changeRound: terms.expectedChangeRound,
+    costCredits: terms.expectedCostCredits,
+    ...(note === undefined ? {} : { note }),
+  });
+  if (created) {
+    const spendCard = await ctx.db.get("approvals", approvalId);
+    if (spendCard !== null) await auditApproval(ctx, spendCard, "approval.spend_raised", founder, now);
   }
-  return null;
+  return { spendApprovalId: approvalId, created };
 }
 
 /**
  * "Ask for changes" on a pending, fresh `artifact_review` card. Exactly once:
- * the card moves out of `pending` in the same transaction as the round starts,
- * so a repeated click sees `changes_requested` and is a no-op; two requests on
- * different cards of the same artifact conflict on the lineage read, and the
- * second finds the first round queued (`busy`).
+ * the card moves out of `pending` in the same transaction as the round starts.
+ * Two requests on different cards of the same artifact conflict on the lineage
+ * read, and the second finds the first round queued (`busy`).
  */
 async function requestArtifactChanges(
   ctx: MutationCtx,
@@ -681,33 +736,42 @@ async function requestArtifactChanges(
     };
   }
 
-  const terms = spendTermsFor(decision);
-  const existing = await liveSpendCard(ctx, lineage, terms.expectedChangeRound, terms.expectedCostCredits, now);
-  const spendApprovalId = existing !== null
-    ? existing._id
-    : (await createApprovalRecord(ctx, {
-      ownerId: lineage.ownerId,
-      projectId: lineage.projectId,
-      kind: "spend",
-      subjectTable: "documents",
-      subjectId: lineage.revisedDocumentId,
-      changeRound: terms.expectedChangeRound,
-      costCredits: terms.expectedCostCredits,
-    })).approvalId;
-  if (existing === null) {
-    const spendCard = await ctx.db.get("approvals", spendApprovalId);
-    if (spendCard !== null) await auditApproval(ctx, spendCard, "approval.spend_raised", founder, now);
-  }
+  const { spendApprovalId } = await raiseSpendCard(ctx, lineage, decision, note, founder, now);
   return {
     approvalId: approval._id,
     status: "changes_requested",
     changed: true,
-    changeRound: {
-      outcome: "spend_required",
-      changeRound: decision.changeRound,
-      costCredits: decision.costCredits,
-      spendApprovalId,
-    },
+    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId },
+  };
+}
+
+/**
+ * "Ask for changes" again on a `changes_requested` review card. The only thing
+ * it can do is give a paid round its spend card back after the founder declined
+ * it, it expired, or the document changed: when the round is still paid and no
+ * live, unchanged spend card exists, it raises a fresh one (the new note, else
+ * the review card's note). With a live card it returns that card and writes
+ * nothing. Every other case (a free round, a draft in progress, a newer draft,
+ * not available) is S1's plain no-op, so a double click never starts a second
+ * round.
+ */
+async function reaskPaidRound(
+  ctx: MutationCtx,
+  approval: Doc<"approvals">,
+  note: string | undefined,
+  founder: { type: "user"; userId: Id<"users"> },
+  now: number,
+): Promise<DecisionResult> {
+  const noop: DecisionResult = { approvalId: approval._id, status: approval.status, changed: false };
+  const resolution = await resolveChangeRound(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
+  if (!resolution.ok || resolution.decision.decision !== "spend") return noop;
+  const decision = resolution.decision;
+  const { spendApprovalId, created } = await raiseSpendCard(ctx, resolution.lineage, decision, note ?? approval.note, founder, now);
+  return {
+    approvalId: approval._id,
+    status: approval.status,
+    changed: created,
+    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId },
   };
 }
 
@@ -815,6 +879,9 @@ export const decideApproval = mutation({
     const target = APPROVAL_DECISION_STATUS[args.decision];
     const now = Date.now();
     if (approval.status !== "pending") {
+      if (approval.status === "changes_requested" && approval.kind === "artifact_review" && args.decision === "request_changes") {
+        return await reaskPaidRound(ctx, approval, note, founder, now);
+      }
       if (approval.status === target) return { approvalId: approval._id, status: approval.status, changed: false };
       if (approval.status === "approved" && args.decision === "cancel") {
         // Revocation: blocks every later side effect; one already performed stays done.

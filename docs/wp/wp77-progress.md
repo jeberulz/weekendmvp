@@ -204,3 +204,37 @@ Needs from Codex (S2, additions to the S1 list):
 8. When `approvals.consumedAt` lands (S1 item 2), the paid-round debit mutation also sets it on the spend card.
 
 Docs: progress updated; stories not ticked (S2 waits on review and item 7). No plan or ruling changes.
+
+## 2026-11-06 - S2 review fixes (after `ae7f0b56`)
+
+- P2 note on paid rounds: no schema change. `createApprovalRecord` takes an optional `note`, `spend` only (refused on
+  other kinds, normalised like a decision note), and the paid round copies the founder's note onto the spend card.
+  Rule: a revision task's `approvalId` card always holds its note (the review card on a free round, the spend card on
+  a paid one), whatever the review's subject (`documents` or `site_versions`). `revisionNoteFor(ctx, taskId)` reads
+  it for the generator, which quotes it as founder data and never treats it as instructions.
+- P2 dead end after decline or expiry: option (b). The review card keeps its single transition to
+  `changes_requested`. Asking again on that card (`reaskPaidRound`) raises a fresh spend card only when the round is
+  still paid and no live, unchanged spend card exists, using the new note or else the review card's note. With a live
+  card it returns that card (`changed: false`). In every other case (free round, busy, stale, not available) it is
+  S1's plain no-op, so a double click never starts a second round. It is simpler than holding the review card
+  pending, which would need a link from the spend card back to the review card to close it.
+- P2 stale spend card: `liveSpendCard` also requires `isSubjectUnchangedSince(document write times, card.createdAt)`.
+  A changed document gets a new card, and S1's supersede cancels the old one, approved or pending.
+- P3 `insertRevisionTask` refuses (`CHANGE_ROUND_JOB_KEY_LIVE`) when a queued, running, blocked or succeeded task
+  holds the key. `liveSpendCard` reads at most `SPEND_CARD_HISTORY_MAX` (100) rows of the document's approval history
+  and fails closed past it (`CHANGE_ROUND_HISTORY_LIMIT`). The `r1` / `r10` request-id prefix on `crew_social_pack` is
+  tested: separate lineages.
+- Tests: 8 new (21 change-round convex tests, 10 pure). A mutation test (dropping the unchanged check, the re-ask
+  path and the live-key refusal) turned 4 cases red; all were restored.
+
+- Checks: typecheck 0; `tsc -p convex` 0; lint 0 (0 errors, 37 existing warnings); approvals + change rounds 0
+  (64/64); `test:security` 0; `npm test` 0 (first run); `npm run build` 0.
+
+Decision for the orchestrator to record: S2 is the first non-test code on main to write `tasks` (the free revision
+task in `decideApproval`, and `insertRevisionTask` for the paid debit site). D19 (RULINGS 2026-11-05) makes a crew job
+a `tasks` row; `05` §2.1 gives `convex/workspace/**` to Claude and `convex/platform/**` (the ledger's `debitTask` /
+`refundFailedTask`) to Codex. So Claude's lane inserts crew task rows, and Codex's lane debits and refunds them. Please
+record this in RULINGS.md so WP75/WP76 and Codex's WP73 debit share one task-writing rule.
+
+Needs from Codex (update to item 5): the `by_subjectId_and_kind` index (better, `by_subjectId_and_kind_and_status`)
+would also let `liveSpendCard` read only the document's spend cards instead of its capped full history.

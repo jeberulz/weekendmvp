@@ -6,6 +6,7 @@ import { requireBusinessAccess } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
 import { jobKey, parseJobKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import {
+  ROUND_RELEASING_TASK_STATUSES,
   decideChangeRound,
   isRevisableJobType,
   nextChangeRound,
@@ -198,10 +199,13 @@ function revisionTitle(jobType: JobType, changeRound: number): string {
 /**
  * Inserts the queued revision job for one round. Callers must have just
  * resolved the round in the same mutation (`resolveChangeRound` returned it as
- * the next round), so the job key is new for live work. The founder's note is
- * not copied: the generator reads it from the `changes_requested`
- * `artifact_review` card on the revised subject, as quoted founder data inside
- * the prompt's data block, never as instructions.
+ * the next round). As a backstop it refuses (`CHANGE_ROUND_JOB_KEY_LIVE`) when a
+ * queued, running, blocked or succeeded task already holds the key (C-JOBS:
+ * a key may be reused only after failed or cancelled tasks).
+ *
+ * The founder's note: `approvalId` is always a card that holds it, the review
+ * card for a free round and the spend card (note copied at creation) for a paid
+ * one, so the generator reads it with `revisionNoteFor(ctx, taskId)`.
  */
 export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskInput): Promise<Id<"tasks">> {
   const { lineage, changeRound, creditCost, approvalId, now } = input;
@@ -209,6 +213,15 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
     throw new ConvexError({ code: "CHANGE_ROUND_INVALID_INPUT" });
   }
   const key = jobKey(lineage.projectId, lineage.jobType, lineage.subject, changeRound);
+  const holders = await ctx.db.query("tasks")
+    .withIndex("by_ownerId_and_jobKey", (q) => q.eq("ownerId", lineage.ownerId).eq("jobKey", key))
+    .take(CHANGE_ROUND_LINEAGE_MAX + 1);
+  if (
+    holders.length > CHANGE_ROUND_LINEAGE_MAX ||
+    holders.some((task) => !(ROUND_RELEASING_TASK_STATUSES as readonly string[]).includes(task.status))
+  ) {
+    throw new ConvexError({ code: "CHANGE_ROUND_JOB_KEY_LIVE" });
+  }
   return await ctx.db.insert("tasks", {
     ownerId: lineage.ownerId,
     projectId: lineage.projectId,
@@ -225,6 +238,26 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
     createdAt: now,
     updatedAt: now,
   });
+}
+
+/**
+ * The founder's "Ask for changes" note for a revision task, or null when there
+ * is none. Reads the task's `approvalId` card: the `artifact_review` card of a
+ * free round or the `spend` card of a paid round, in the same business. The
+ * generator puts it in the prompt's data block as quoted founder text, never as
+ * instructions.
+ */
+export async function revisionNoteFor(ctx: Pick<QueryCtx, "db">, taskId: Id<"tasks">): Promise<string | null> {
+  const task = await ctx.db.get("tasks", taskId);
+  if (task === null || task.revisionOfTaskId === undefined || task.approvalId === undefined) return null;
+  const card = await ctx.db.get("approvals", task.approvalId);
+  if (
+    card === null ||
+    card.ownerId !== task.ownerId ||
+    card.projectId !== task.projectId ||
+    (card.kind !== "artifact_review" && card.kind !== "spend")
+  ) return null;
+  return card.note ?? null;
 }
 
 // ---------------------------------------------------------------------------

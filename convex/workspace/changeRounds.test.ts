@@ -11,13 +11,14 @@ import { describe, expect, test } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
-import { assertApproved, assertPaidRevisionApproved } from "./approvals";
-import { insertRevisionTask } from "./changeRounds";
+import { assertApproved, assertPaidRevisionApproved, createApprovalRecord } from "./approvals";
+import { insertRevisionTask, revisionNoteFor } from "./changeRounds";
 import { CREDIT_ACTIONS, jobKey, type JobType } from "../../lib/workspace/contracts/jobs";
+import { APPROVAL_PENDING_TTL_MS } from "../../lib/workspace/contracts/approvals";
 
 const modules = import.meta.glob("/convex/**/*.ts");
 type T = TestConvex<typeof schema>;
-type DocKind = "brand_kit" | "seo_pack" | "landing_spec";
+type DocKind = "brand_kit" | "seo_pack" | "landing_spec" | "social_pack";
 
 async function seed(options: { workspaceEnabled?: boolean } = {}) {
   const t = convexTest(schema, modules);
@@ -69,12 +70,12 @@ async function seed(options: { workspaceEnabled?: boolean } = {}) {
 type Seeded = Awaited<ReturnType<typeof seed>>;
 
 /** A finished draft (task + document) of one artifact at `revision`. */
-async function draft(t: T, ids: Seeded["ids"], jobType: JobType, kind: DocKind, revision: number) {
+async function draft(t: T, ids: Seeded["ids"], jobType: JobType, kind: DocKind, revision: number, subject = "main", status: "succeeded" | "queued" = "succeeded") {
   return await t.run(async (ctx) => {
     const taskId = await ctx.db.insert("tasks", {
-      ownerId: ids.ownerId, projectId: ids.projectId, type: jobType, status: "succeeded", title: `${jobType} ${revision}`,
-      creditCost: 0n, changeRound: BigInt(revision), jobKey: jobKey(ids.projectId, jobType, "main", revision),
-      idempotencyKey: `seed:${jobType}:${revision}`, createdAt: 2, updatedAt: 2,
+      ownerId: ids.ownerId, projectId: ids.projectId, type: jobType, status, title: `${jobType} ${revision}`,
+      creditCost: 0n, changeRound: BigInt(revision), jobKey: jobKey(ids.projectId, jobType, subject, revision),
+      idempotencyKey: `seed:${jobType}:${subject}:${revision}`, createdAt: 2, updatedAt: 2,
     });
     const docId = await ctx.db.insert("documents", {
       ownerId: ids.ownerId, projectId: ids.projectId, taskId, kind, format: "json", title: kind, body: "{}",
@@ -460,5 +461,166 @@ describe("WP77-S2 spend terms (the later debit site)", () => {
     await t.run(async (ctx) => ctx.db.patch("tasks", taskId, { status: "succeeded", updatedAt: Date.now() }));
     await expect(t.run(async (ctx) => await assertPaidRevisionApproved(ctx, spendId, { projectId: ids.projectId, documentId: docId })))
       .rejects.toThrow("APPROVAL_TERMS_MISMATCH");
+  });
+});
+
+describe("WP77-S2 review fixes", () => {
+  /** Two free rounds of the landing page, each reviewed through its site version; returns round 2's version card. */
+  async function landingThroughTwoRounds(seeded: Seeded) {
+    const { t, ids } = seeded;
+    const siteConfigId = await t.run(async (ctx) => ctx.db.insert("site_configs", {
+      ownerId: ids.ownerId, projectId: ids.projectId, status: "draft", createdAt: 2, updatedAt: 2,
+    }));
+    const version = (documentId: Id<"documents">, n: bigint) => t.run(async (ctx) => ctx.db.insert("site_versions", {
+      ownerId: ids.ownerId, projectId: ids.projectId, siteConfigId, status: "ready", version: n, documentId, createdAt: 3,
+    }));
+    const first = await draft(t, ids, "crew_landing", "landing_spec", 0);
+    let docId = first.docId;
+    let cardId = await reviewCard(t, ids, await version(docId, 1n), 0n, "site_versions");
+    for (const round of [1, 2]) {
+      const result = await askForChanges(seeded, cardId, `landing note ${round}`);
+      if (result.changeRound?.outcome !== "free") throw new Error("expected free");
+      const free = result.changeRound;
+      expect(await t.run(async (ctx) => revisionNoteFor(ctx, free.taskId))).toBe(`landing note ${round}`);
+      ({ docId } = await finishRound(t, ids, free.taskId, "landing_spec", round));
+      cardId = await reviewCard(t, ids, await version(docId, BigInt(round + 1)), BigInt(round), "site_versions");
+    }
+    return { docId, cardId };
+  }
+
+  test("P2 a paid round keeps the note, reviewed on a site version, through to the paid task", async () => {
+    const seeded = await seed();
+    const { t, owner, ids } = seeded;
+    const { docId, cardId } = await landingThroughTwoRounds(seeded);
+    const result = await askForChanges(seeded, cardId, "Shorter hero, please");
+    if (result.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    const spendId = result.changeRound.spendApprovalId;
+    expect(await t.run(async (ctx) => ctx.db.get("approvals", spendId))).toMatchObject({
+      kind: "spend", subjectId: docId, note: "Shorter hero, please", costCredits: BigInt(CREDIT_ACTIONS.landing_regenerate.credits),
+    });
+    await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: spendId, decision: "approve" });
+    const taskId = await t.run(async (ctx) => {
+      const paid = await assertPaidRevisionApproved(ctx, spendId, { projectId: ids.projectId, documentId: docId });
+      return await insertRevisionTask(ctx, {
+        lineage: paid.lineage, changeRound: paid.changeRound, creditCost: BigInt(paid.costCredits), approvalId: paid.approval._id, now: Date.now(),
+      });
+    });
+    expect(await t.run(async (ctx) => revisionNoteFor(ctx, taskId))).toBe("Shorter hero, please");
+    // The note is refused on non-spend cards raised internally.
+    await expect(t.run(async (ctx) => await createApprovalRecord(ctx, {
+        ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents", subjectId: docId, note: "x",
+    }))).rejects.toThrow("APPROVAL_INVALID_INPUT");
+  });
+
+  test("P2 after a declined spend card, asking again raises a fresh one with the note; a repeat reuses it", async () => {
+    const seeded = await seed();
+    const { t, owner, ids } = seeded;
+    const { cardId } = await throughTwoFreeRounds(seeded);
+    const first = await askForChanges(seeded, cardId, "Warmer colours");
+    if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    const declined = first.changeRound.spendApprovalId;
+    await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: declined, decision: "cancel" });
+
+    const again = await askForChanges(seeded, cardId);
+    expect(again).toMatchObject({ approvalId: cardId, status: "changes_requested", changed: true, changeRound: { outcome: "spend_required", changeRound: 3 } });
+    if (again.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    const fresh = again.changeRound.spendApprovalId;
+    expect(fresh).not.toBe(declined);
+    expect(await t.run(async (ctx) => ctx.db.get("approvals", fresh))).toMatchObject({ status: "pending", note: "Warmer colours" });
+    const repeat = await Promise.all([askForChanges(seeded, cardId), askForChanges(seeded, cardId)]);
+    expect(repeat.every((r) => !r.changed && r.changeRound?.outcome === "spend_required" && r.changeRound.spendApprovalId === fresh)).toBe(true);
+    expect((await spendCards(t, ids.projectId)).filter((c) => c.status === "pending")).toHaveLength(1);
+  });
+
+  test("P2 after the spend card expires, asking again raises a fresh one", async () => {
+    const seeded = await seed();
+    const { t } = seeded;
+    const { cardId } = await throughTwoFreeRounds(seeded);
+    const first = await askForChanges(seeded, cardId, "Bolder");
+    if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    const old = first.changeRound.spendApprovalId;
+    await t.run(async (ctx) => ctx.db.patch("approvals", old, { createdAt: Date.now() - APPROVAL_PENDING_TTL_MS - 1 }));
+    await t.mutation(internal.workspace.approvals.expireStaleApprovalsBatch, {});
+    expect((await t.run(async (ctx) => ctx.db.get("approvals", old)))?.status).toBe("expired");
+    const again = await askForChanges(seeded, cardId, "Bolder still");
+    expect(again).toMatchObject({ changed: true, changeRound: { outcome: "spend_required", changeRound: 3 } });
+    if (again.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    expect(again.changeRound.spendApprovalId).not.toBe(old);
+    expect(await t.run(async (ctx) => ctx.db.get("approvals", (again.changeRound as { spendApprovalId: Id<"approvals"> }).spendApprovalId)))
+      .toMatchObject({ status: "pending", note: "Bolder still" });
+  });
+
+  test("P2 asking again after a free round stays a no-op", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const cardId = await reviewCard(t, ids, first.docId);
+    await askForChanges(seeded, cardId);
+    await expect(askForChanges(seeded, cardId)).resolves.toEqual({ approvalId: cardId, status: "changes_requested", changed: false });
+  });
+
+  test("P2 a spend card whose document changed is not reused; the new card supersedes it", async () => {
+    const seeded = await seed();
+    const { t, owner, ids } = seeded;
+    const { docId, cardId } = await throughTwoFreeRounds(seeded);
+    const first = await askForChanges(seeded, cardId, "note");
+    if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    const stale = first.changeRound.spendApprovalId;
+    await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: stale, decision: "approve" });
+    const staleRow = await t.run(async (ctx) => ctx.db.get("approvals", stale));
+    await t.run(async (ctx) => ctx.db.patch("documents", docId, { body: "{\"edited\":true}", updatedAt: (staleRow?.createdAt ?? 0) + 1 }));
+
+    const again = await askForChanges(seeded, cardId);
+    if (again.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    expect(again.changeRound.spendApprovalId).not.toBe(stale);
+    expect((await t.run(async (ctx) => ctx.db.get("approvals", stale)))?.status).toBe("cancelled");
+    expect(await t.run(async (ctx) => ctx.db.get("approvals", (again.changeRound as { spendApprovalId: Id<"approvals"> }).spendApprovalId)))
+      .toMatchObject({ status: "pending", note: "note" });
+  });
+
+  test("P3 insertRevisionTask refuses a key a live task already holds", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const cardId = await reviewCard(t, ids, first.docId);
+    await askForChanges(seeded, cardId);
+    await expect(t.run(async (ctx) => {
+      const reviewedTask = await ctx.db.get("tasks", first.taskId);
+      if (reviewedTask === null) throw new Error("missing task");
+      return await insertRevisionTask(ctx, {
+        lineage: { ownerId: ids.ownerId, projectId: ids.projectId, jobType: "crew_brand_kit", subject: "main", reviewedTask, revisedDocumentId: first.docId },
+        changeRound: 1, creditCost: 0n, approvalId: cardId, now: Date.now(),
+      });
+    })).rejects.toThrow("CHANGE_ROUND_JOB_KEY_LIVE");
+  });
+
+  test("P3 a revised document with too long an approval history fails closed", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { docId, cardId } = await throughTwoFreeRounds(seeded);
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 101; i += 1) {
+        await ctx.db.insert("approvals", {
+          ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents", subjectId: docId,
+          status: "cancelled", changeRound: 2n, createdAt: 3, updatedAt: 3,
+        });
+      }
+    });
+    await expect(askForChanges(seeded, cardId)).rejects.toThrow("CHANGE_ROUND_HISTORY_LIMIT");
+    expect((await t.run(async (ctx) => ctx.db.get("approvals", cardId)))?.status).toBe("pending");
+  });
+
+  test("P3 request ids r1 and r10 of crew_social_pack are separate lineages", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const r1 = await draft(t, ids, "crew_social_pack", "social_pack", 0, "r1");
+    // r10 has three finished drafts and one queued: none of it may leak into r1's count.
+    for (const revision of [0, 1, 2]) await draft(t, ids, "crew_social_pack", "social_pack", revision, "r10");
+    await draft(t, ids, "crew_social_pack", "social_pack", 3, "r10", "queued");
+    const result = await askForChanges(seeded, await reviewCard(t, ids, r1.docId));
+    expect(result.changeRound).toMatchObject({ outcome: "free", changeRound: 1, freeRoundsLeft: 1 });
+    if (result.changeRound?.outcome !== "free") throw new Error("expected free");
+    const free = result.changeRound;
+    expect((await t.run(async (ctx) => ctx.db.get("tasks", free.taskId)))?.jobKey).toBe(jobKey(ids.projectId, "crew_social_pack", "r1", 1));
   });
 });
