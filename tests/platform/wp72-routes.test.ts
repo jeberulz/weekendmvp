@@ -95,10 +95,13 @@ describe("WP72-S1 route scaffold stays dormant and private", () => {
     expect(layout.match(/<main\b/g)).toHaveLength(1);
   });
 
-  // Hard 404s only. A `loading.*` file or a <Suspense> boundary above the gate
-  // makes Next.js stream a shell first, so a later notFound() is a soft 404
-  // served with status 200. A cached ("use cache") segment could also replay
-  // one visitor's allowed render to someone the gate would refuse.
+  // Keeps refusals from getting worse. A `loading.*` file or a <Suspense>
+  // boundary above the gate makes Next.js stream a shell first, so a later
+  // notFound() is a soft 404. A cached ("use cache") segment could also replay
+  // one visitor's allowed render to someone the gate would refuse. This test
+  // does not assert the HTTP status: under Partial Prerender a refusal still
+  // returns 200 until middleware adds a hard 404 (docs/wp/wp72-progress.md,
+  // "Needs from Codex").
   test("nothing above the gate can turn a denial into a soft 404", () => {
     const groupRoot = path.join(root, "app", "(launch-workspace)");
     const files = allFiles(groupRoot);

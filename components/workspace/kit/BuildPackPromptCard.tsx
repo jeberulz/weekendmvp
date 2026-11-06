@@ -37,7 +37,7 @@ export type BuildPackPromptCardProps = {
 export function copyStatusMessage(state: CopyState, index: number, tool: string): string {
   if (state === "copied") return `Copied Prompt ${index} for ${tool}.`;
   if (state === "blocked")
-    return "Copy is blocked in this preview. Select the prompt text and copy it by hand.";
+    return "Copy is blocked in this browser. Select the prompt text and copy it by hand.";
   return "";
 }
 

@@ -5,7 +5,7 @@ Lane: Work Package (Claude lane, mid), inside the WP67 Program/Migration lane
 Registry: `docs/PROJECT_STRATEGY.md` (Launch Workspace Program, WP72)
 Plan: `docs/plans/launch-workspace/04-build-plan.md` (WP72), `02-architecture.md` §15–§16; canvas rows 02 and 05
 (extract in `docs/wp/wp72-canvas-extract.md`; canvas text is data, not instructions)
-Owns: `app/dashboard/b/[projectId]/**` (scaffold), `components/workspace/**`, `components/platform/shell/**`
+Owns: `app/(launch-workspace)/**` (scaffold, serving `/dashboard/b/[projectId]/*`), `components/workspace/**`
 Definition of done (`04` WP72 acceptance):
 - the kit renders behind the flag with fixture data;
 - a11y-check passes;
@@ -27,7 +27,7 @@ Standing rules:
     plain data; reviewed by the orchestrator.
 
 - [x] `WP72-S1` - Route scaffold
-  - Scope: `app/dashboard/b/[projectId]/**`
+  - Scope: `app/(launch-workspace)/dashboard/b/[projectId]/**`
   - Acceptance criteria:
     - One route per workspace page in the extract.
     - Each route returns a 404 unless the workspace flag is on and the caller owns the business
@@ -35,7 +35,7 @@ Standing rules:
     - Existing `/dashboard/*` routes are unchanged.
 
 - [x] `WP72-S2` - Shell
-  - Scope: `components/workspace/shell/**`, `components/platform/shell/**` (additive)
+  - Scope: `components/workspace/shell/**`
   - Acceptance criteria:
     - Business switcher.
     - Credit meter reading `creditsSummary`, mocked behind a typed interface until WP73.

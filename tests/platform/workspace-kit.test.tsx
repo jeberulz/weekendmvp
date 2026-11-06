@@ -418,7 +418,7 @@ describe("WorkstreamPanel", () => {
     await expect(copyText("x", { writeText: vi.fn().mockRejectedValue(new Error("denied")) })).resolves.toBe("blocked");
     await expect(copyText("x", undefined)).resolves.toBe("blocked");
     expect(copyStatusMessage("copied", 2, "Claude Code")).toBe("Copied Prompt 2 for Claude Code.");
-    expect(copyStatusMessage("blocked", 2, "Claude Code")).toContain("Copy is blocked in this preview.");
+    expect(copyStatusMessage("blocked", 2, "Claude Code")).toContain("Copy is blocked in this browser.");
     expect(copyStatusMessage("idle", 2, "Claude Code")).toBe("");
   });
 });
