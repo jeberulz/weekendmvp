@@ -8,6 +8,12 @@
  * catalog (`billing/catalog.ts`) already uses that id.
  */
 
+import { WORKSPACE_PLAN_REFERENCE, type WorkspacePlanEntry, type WorkspacePlanId } from "../../lib/workspace/contracts/jobs.ts";
+
+/** Workspace Growth is a dormant plan id. No Stripe price resolves to it yet. */
+export type { WorkspaceFeatureKey, WorkspacePlanId } from "../../lib/workspace/contracts/jobs.ts";
+export const WORKSPACE_PLAN_LIMITS: Record<WorkspacePlanId, WorkspacePlanEntry> = WORKSPACE_PLAN_REFERENCE;
+
 export type PlanId = "free" | "builders_hub";
 
 /**

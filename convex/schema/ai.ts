@@ -46,6 +46,7 @@ export const aiTables = {
     .index("by_status_and_createdAt", ["status", "createdAt"])
     .index("by_status_and_expiresAt", ["status", "expiresAt"])
     .index("by_attemptKey", ["attemptKey"])
+    .index("by_taskId_and_sentAt", ["taskId", "sentAt"])
     .index("by_projectId_and_createdAt", ["projectId", "createdAt"]),
 
   ai_budgets: defineTable({

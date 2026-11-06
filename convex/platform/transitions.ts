@@ -183,9 +183,9 @@ export function assertWorkflowRunTransition(
   );
 }
 
-/** WP24 may issue a task credit refund only after that task failed. */
-export function assertTaskRefundEligible(status: TaskStatus): "failed" {
-  if (status !== "failed") {
+/** A failed or cancelled task may reverse its debit exactly once. */
+export function assertTaskRefundEligible(status: TaskStatus): "failed" | "cancelled" {
+  if (status !== "failed" && status !== "cancelled") {
     throw new ConvexError({ code: "TASK_REFUND_NOT_ALLOWED" });
   }
   return status;
