@@ -439,3 +439,158 @@ describe("WP74-S4 createBusiness: guards", () => {
     expect(await projectsOf(t, owner)).toEqual([]);
   });
 });
+
+describe("WP74 C-AUTHZ requireOwnedWizardSession on every session call", () => {
+  /** The five session calls without `allowLinked`, plus the two that set it. */
+  function sessionCalls(as: Awaited<ReturnType<typeof seed>>["as"], key: string, sessionId: Id<"wizard_sessions">) {
+    const caller = as(key);
+    return {
+      unlinkedOnly: [
+        () => caller.mutation(api.workspace.wizard.saveStep, { sessionId, step: "partner_name", answer: { kind: "preset", name: "Wren" } }),
+        () => caller.mutation(api.workspace.wizard.skipStep, { sessionId, step: "partner_name" }),
+        () => caller.mutation(api.workspace.wizard.rewriteStep, { sessionId, step: "partner_name", text: "Ada" }),
+        () => caller.mutation(api.workspace.wizard.goBack, { sessionId, step: "partner_name" }),
+      ],
+      allowLinked: [
+        () => caller.query(api.workspace.wizard.getSession, { sessionId }),
+        () => caller.mutation(api.workspace.business.createBusiness, { sessionId }),
+      ],
+    };
+  }
+
+  /** Run one at a time, so each refusal is checked on its own. */
+  async function expectAllRefused(calls: (() => Promise<unknown>)[]) {
+    for (const call of calls) await expect(refusalOf(call())).resolves.toEqual({ code: "RESOURCE_NOT_FOUND" });
+  }
+
+  /** A session linked to its business by `createBusiness`, the way production links it. */
+  async function linkedSession(t: T, as: Awaited<ReturnType<typeof seed>>["as"], ownerId: Id<"users">) {
+    const sessionId = await finishedSession(t, ownerId);
+    const created = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId });
+    return { sessionId, projectId: created.projectId, created };
+  }
+
+  test("a stranger is refused on every session call, exactly like a missing session", async () => {
+    const { t, as, ids } = await seed();
+    const sessionId = await finishedSession(t, ids.users.owner.userId, {}, { completedAt: null });
+    const deleted = await finishedSession(t, ids.users.owner.userId);
+    await t.run(async (ctx) => ctx.db.delete("wizard_sessions", deleted));
+    // Someone else's session and the owner's own deleted one give the same answer.
+    for (const [key, id] of [["other", sessionId], ["owner", deleted]] as const) {
+      const calls = sessionCalls(as, key, id);
+      await expectAllRefused([...calls.unlinkedOnly, ...calls.allowLinked]);
+    }
+    expect(await projectsOf(t, ids.users.other.userId)).toEqual([]);
+    expect(await projectsOf(t, ids.users.owner.userId)).toEqual([]);
+  });
+
+  test("an abandoned session is refused on every call, linked or not", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const abandoned = await finishedSession(t, owner, {}, { abandonedAt: 3 });
+    const calls = sessionCalls(as, "owner", abandoned);
+    await expectAllRefused([...calls.unlinkedOnly, ...calls.allowLinked]);
+    expect(await projectsOf(t, owner)).toEqual([]);
+
+    const { sessionId } = await linkedSession(t, as, owner);
+    await t.run(async (ctx) => ctx.db.patch("wizard_sessions", sessionId, { abandonedAt: 4 }));
+    await expectAllRefused(sessionCalls(as, "owner", sessionId).allowLinked);
+  });
+
+  test("a linked session is refused by every call without allowLinked and accepted by getSession and the createBusiness replay", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const { sessionId, projectId, created } = await linkedSession(t, as, owner);
+    const before = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId));
+
+    await expectAllRefused(sessionCalls(as, "owner", sessionId).unlinkedOnly);
+    const after = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId));
+    expect(after).toEqual(before);
+
+    const view = await as("owner").query(api.workspace.wizard.getSession, { sessionId });
+    expect(view.business).toEqual({ projectId, name: "HydroTrail", slug: "hydrotrail" });
+    const replay = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId });
+    expect(replay).toEqual({ ...created, created: false });
+    expect(await projectsOf(t, owner)).toHaveLength(1);
+  });
+
+  test("a linked session whose business is archived or missing is refused, even with allowLinked", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const archived = await linkedSession(t, as, owner);
+    await t.run(async (ctx) => ctx.db.patch("projects", archived.projectId, { archivedAt: 5 }));
+    await expectAllRefused(sessionCalls(as, "owner", archived.sessionId).allowLinked);
+
+    // A second owner's linked session whose project row is gone.
+    const other = ids.users.other.userId;
+    const sessionId = await finishedSession(t, other);
+    const { projectId } = await as("other").mutation(api.workspace.business.createBusiness, { sessionId });
+    await t.run(async (ctx) => ctx.db.delete("projects", projectId));
+    await expectAllRefused(sessionCalls(as, "other", sessionId).allowLinked);
+
+    // Refusing writes nothing: no new project, and the archived one stays archived.
+    const projects = await projectsOf(t, owner);
+    expect(projects).toHaveLength(1);
+    expect(projects[0].archivedAt).toBe(5);
+    expect(await projectsOf(t, other)).toEqual([]);
+  });
+
+  test("an archived keyed project is not returned or relinked when the session link is missing", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const { sessionId, projectId } = await linkedSession(t, as, owner);
+    await t.run(async (ctx) => {
+      await ctx.db.patch("wizard_sessions", sessionId, { projectId: undefined });
+      await ctx.db.patch("projects", projectId, { archivedAt: 6 });
+    });
+    const before = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId));
+
+    await expect(refusalOf(as("owner").mutation(api.workspace.business.createBusiness, { sessionId })))
+      .resolves.toEqual({ code: "RESOURCE_NOT_FOUND" });
+
+    const after = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId));
+    expect(after).toEqual(before);
+    expect(after?.projectId).toBeUndefined();
+    const projects = await projectsOf(t, owner);
+    expect(projects).toHaveLength(1);
+    expect(projects[0]).toMatchObject({ _id: projectId, archivedAt: 6 });
+  });
+
+  test("a keyed project that links back to another session is not returned or relinked", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const real = await linkedSession(t, as, owner);
+    // A second session whose idempotency key finds `real`'s business (as if the key were reused or forged).
+    const other = await finishedSession(t, owner);
+    await t.run(async (ctx) => ctx.db.patch("projects", real.projectId, { idempotencyKey: businessIdempotencyKey(other) }));
+    const before = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", other));
+
+    await expect(refusalOf(as("owner").mutation(api.workspace.business.createBusiness, { sessionId: other })))
+      .resolves.toEqual({ code: "RESOURCE_NOT_FOUND" });
+
+    const after = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", other));
+    expect(after).toEqual(before);
+    expect(after?.projectId).toBeUndefined();
+    const projects = await projectsOf(t, owner);
+    expect(projects).toHaveLength(1);
+    expect(projects[0].workspace?.wizardSessionId).toBe(real.sessionId);
+  });
+
+  test("a forged link (the project's workspace.wizardSessionId names another session) is refused and writes nothing", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const real = await linkedSession(t, as, owner);
+    // A second session of the same owner pointed at that business, which links back to `real`.
+    const forged = await finishedSession(t, owner);
+    await t.run(async (ctx) => ctx.db.patch("wizard_sessions", forged, { projectId: real.projectId }));
+    const before = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", forged));
+
+    await expectAllRefused(sessionCalls(as, "owner", forged).allowLinked);
+
+    const after = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", forged));
+    expect(after).toEqual(before);
+    const projects = await projectsOf(t, owner);
+    expect(projects).toHaveLength(1);
+    expect(projects[0].workspace?.wizardSessionId).toBe(real.sessionId);
+  });
+});
