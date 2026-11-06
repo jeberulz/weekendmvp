@@ -1,5 +1,5 @@
 /**
- * WP77-S3 (version 2: WP77-S4 cards and WP77-S5 memory). Wren's everyday chat turn: the `fast` tier (`02` §5.2, D11).
+ * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory). Wren's everyday chat turn: the `fast` tier (`02` §5.2, D11).
  * Every turn runs this unless the routing rule in `lib/workspace/wren.ts`
  * marks it plan-changing and the business has an escalation left today.
  *
@@ -19,7 +19,7 @@ import {
 
 export const wrenChatSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   id: "wren-chat",
-  version: 2,
+  version: 3,
   tier: "fast",
   effort: "low",
   thinking: { type: "disabled" },

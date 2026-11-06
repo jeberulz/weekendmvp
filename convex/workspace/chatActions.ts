@@ -9,8 +9,11 @@ import { WREN_CARD_FIELD_MAX_CHARS } from "../../lib/workspace/contracts/wrenToo
 import {
   WREN_MEMORY_FACT_MAX_CHARS,
   WREN_MEMORY_PROPOSALS_MAX,
+  WREN_MEMORY_RAW_PASS_FACTOR,
   WREN_MEMORY_SUMMARY_MAX_CHARS,
+  wrenMemoryOverlongMarker,
 } from "../../lib/workspace/contracts/wrenMemory";
+import { dropLoneSurrogates } from "../../lib/workspace/plainText";
 import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
 
 /**
@@ -34,7 +37,11 @@ import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
  *   that owns the key, so there are never two replies or two charges;
  * - any other failure: `failed` with an honest line (`causeFor`), the
  *   attempt's `usageId` kept for audit;
- * - a throw from the gateway action: `failed`.
+ * - a throw from the gateway action: `failed`;
+ * - a throw from the `done` finish (a write the server refused): the run tries
+ *   once more with `failed`, so the row never stays `streaming` until the
+ *   stale rule. Every string the action sends is well-formed Unicode (lone
+ *   surrogates dropped) and never cut, so a valid reply does not throw.
  *
  * `runWrenTurnWith` is the body with the gateway call injectable, so tests can
  * drive the real gateway and meter with a scripted fixture adapter.
@@ -46,12 +53,13 @@ type FinishOutcome = Infer<typeof finishOutcomeValidator>;
 type CardProposal = NonNullable<Extract<FinishOutcome, { status: "done" }>["cards"]>[number];
 
 /**
- * A value cut to one character past the server's limit: still refused there
- * (`too_long`), but the mutation argument stays small.
+ * A card field for the server: well-formed, never cut. Past the server's
+ * limit it becomes a fixed over-long stand-in, still refused there, so the
+ * mutation argument stays small and no cut can split a surrogate pair.
  */
 function boundedField(value: string | null | undefined): string | undefined {
   if (value === null || value === undefined) return undefined;
-  return value.length > WREN_CARD_FIELD_MAX_CHARS ? value.slice(0, WREN_CARD_FIELD_MAX_CHARS + 1) : value;
+  return value.length > WREN_CARD_FIELD_MAX_CHARS ? "x".repeat(WREN_CARD_FIELD_MAX_CHARS + 1) : dropLoneSurrogates(value);
 }
 
 /**
@@ -81,17 +89,27 @@ export function cardProposals(cards: WrenReplyOutput["cards"]): CardProposal[] |
 
 type MemoryProposal = NonNullable<Extract<FinishOutcome, { status: "done" }>["memory"]>;
 
-/** A note cut to one character past the server's limit: still refused there (`too_long`), but the argument stays small. */
-function boundedNote(value: string, max: number): string {
-  return value.length > max ? value.slice(0, max + 1) : value;
+/**
+ * A note for the server, never cut: passed whole (lone surrogates dropped)
+ * when it is at most `WREN_MEMORY_RAW_PASS_FACTOR` times the limit in UTF-16
+ * units, since cleaning can shrink it (NFD accents, spacing). Past that, a
+ * fixed stand-in the server refuses as `too_long`.
+ */
+export function boundedNote(value: string, max: number): string {
+  return value.length > max * WREN_MEMORY_RAW_PASS_FACTOR ? wrenMemoryOverlongMarker(max) : dropLoneSurrogates(value);
 }
 
 /**
  * WP77-S5. The model's notes as a proposal for `finishWrenTurn`: null reads as
  * absent, at most `WREN_MEMORY_PROPOSALS_MAX` facts, every value bounded. The
  * server cleans, checks, dedupes and caps them (`applyWrenMemoryProposal`).
+ * `baseVersion` is the memory version the turn loaded, so a summary written
+ * over a founder's mid-turn edit is skipped.
  */
-export function memoryProposal(reply: Pick<WrenReplyOutput, "remember" | "memorySummary">): MemoryProposal | undefined {
+export function memoryProposal(
+  reply: Pick<WrenReplyOutput, "remember" | "memorySummary">,
+  baseVersion: string,
+): MemoryProposal | undefined {
   const remember = (reply.remember ?? [])
     .slice(0, WREN_MEMORY_PROPOSALS_MAX)
     .map((fact) => boundedNote(fact, WREN_MEMORY_FACT_MAX_CHARS));
@@ -102,6 +120,7 @@ export function memoryProposal(reply: Pick<WrenReplyOutput, "remember" | "memory
   return {
     ...(remember.length === 0 ? {} : { remember }),
     ...(summary === undefined ? {} : { summary }),
+    baseVersion,
   };
 }
 
@@ -147,10 +166,24 @@ export async function runWrenTurnWith(
   args: RunWrenTurnArgs,
   runPrompt: (prompt: RunPromptArgs) => Promise<GatewayRunResult>,
 ): Promise<null> {
-  const finish = async (outcome: FinishOutcome, attempt: number = args.attempt) => {
+  const finishOnce = async (outcome: FinishOutcome, attempt: number) => {
     await ctx.runMutation(internal.workspace.chat.finishWrenTurn, {
       ownerId: args.ownerId, projectId: args.projectId, messageId: args.wrenMessageId, attempt, outcome,
     });
+  };
+  // A `done` the server refuses to write must still end the row: fall back to `failed` once.
+  const finish = async (outcome: FinishOutcome, attempt: number = args.attempt) => {
+    if (outcome.status === "failed") {
+      await finishOnce(outcome, attempt);
+      return;
+    }
+    try {
+      await finishOnce(outcome, attempt);
+    } catch {
+      await finishOnce({
+        status: "failed", cause: "failed", ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
+      }, attempt);
+    }
   };
   const turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
     ownerId: args.ownerId,
@@ -185,11 +218,11 @@ export async function runWrenTurnWith(
       parsed = wrenReplyOutput.safeParse(null);
     }
     const cards = parsed.success ? cardProposals(parsed.data.cards) : undefined;
-    const memory = parsed.success ? memoryProposal(parsed.data) : undefined;
+    const memory = parsed.success ? memoryProposal(parsed.data, turn.memoryVersion) : undefined;
     await finish(parsed.success
       ? {
         status: "done",
-        body: parsed.data.reply,
+        body: dropLoneSurrogates(parsed.data.reply),
         // Proposals only; the server checks and caps them (`resolveWrenCards`).
         ...(cards === undefined ? {} : { cards }),
         // Notes only; the server cleans, checks and caps them (`applyWrenMemoryProposal`).

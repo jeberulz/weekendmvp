@@ -1,5 +1,5 @@
 /**
- * WP77-S3 (version 2: WP77-S4 cards and WP77-S5 memory). A plan-changing Wren turn: the `draft` tier (`02` §5.2: "Wren
+ * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory). A plan-changing Wren turn: the `draft` tier (`02` §5.2: "Wren
  * turns that change the plan"). Chosen only by the routing rule in
  * `lib/workspace/wren.ts`, and only while the business has an escalation left
  * today (`WREN_ESCALATIONS_PER_BUSINESS_PER_DAY`). Thinking stays off
@@ -24,7 +24,7 @@ import {
 
 export const wrenPlanTurnSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   id: "wren-plan-turn",
-  version: 2,
+  version: 3,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },

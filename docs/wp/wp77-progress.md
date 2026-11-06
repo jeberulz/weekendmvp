@@ -728,3 +728,107 @@ Docs: progress updated; stories S2, S3, S4 and S5 ticked (S6 open). No plan or r
     retries a failed or cancelled free round.
 
 Docs: progress updated. No plan, story or ruling changes.
+
+## 2026-11-06 - S5 review fixes (after `1ff353bf`)
+
+The independent review found no blockers: one major, four other findings, one scan gap and nits. All are fixed.
+
+1. **Truncation and lone surrogates (major).**
+   - `chatActions.boundedNote` never cuts now. A note goes to the server whole (lone surrogates dropped) while it is at
+     most `WREN_MEMORY_RAW_PASS_FACTOR` (8) times the limit in UTF-16 units. Past that the action sends the fixed
+     `wrenMemoryOverlongMarker(max)`, which the server refuses as `too_long`. Card fields get the same treatment
+     (whole or an over-long stand-in), and the reply body has lone surrogates dropped.
+   - `cleanMemoryText` drops lone surrogates (`dropLoneSurrogates` in `lib/workspace/plainText.ts`). `chat.ts` cuts
+     the reply body and draft with `sliceWellFormed`, so a cut never splits a pair.
+   - Before this, S3 had no catch around the finish: a throw from `finishWrenTurn` left the row `streaming` until the
+     12-minute stale rule. Now a `done` finish that throws is retried once as `failed`.
+   - Tests: an astral fact of 163 code points (313 units) is stored whole; NFD text of 303 units is stored as 153
+     characters after NFKC; lone surrogates in a fact and in the reply body; the marker; a done finish the server
+     refuses ends `failed`.
+2. **Summary overwrote a founder edit made during a turn.**
+   - `loadWrenTurn` returns `memoryVersion` (`wrenMemoryVersion`, an FNV-1a fingerprint of the facts and summary,
+     so two writes in one millisecond still differ). The action passes it as `memory.baseVersion`.
+   - `applyWrenMemoryProposal` applies Wren's summary only when the current memory has that version. Otherwise it
+     refuses the summary as `stale` in the audit row. Facts merge as before.
+   - Test: the founder clears the summary mid-turn; the clear stands and Wren's fact is still added.
+3. **Facts must come from the founder, in code.**
+   - The writer reads its sources from the database, never from the action: the founder row paired with the reply
+     (same business, same `createdAt`), current memory, and the project's title, name and idea text.
+   - Rule (`WREN_NOTE_MIN_OVERLAP`): at least 60% of a Wren note's content words must appear in its sources. A
+     content word is a run of letters or digits, 3 or more long, not a stop word, after NFKC and lower case. Words
+     are compared on their first 5 characters, so "launching" matches "launch". A note with no content word fails
+     (`not_from_founder`).
+   - Sources: for a fact, this turn's founder message only. For the summary, that message plus the current summary,
+     the facts and the founder's idea text.
+   - Stricter heuristic for Wren's notes only (`looks_like_instruction`): approvals or cards, pre-approval or consent
+     given, skipping, rules / priority / policy / guidance / instructions, earlier messages, "pay no attention",
+     "treat … as", "when asked", "going forward", Wren itself, and "you / Wren can / may / is allowed".
+     `looks_encoded` covers spelled-out letters ("I-g-n-o-r-e"), base64 blobs and `\u` / `\x` escapes. More link
+     forms are refused too: "dot com", `[.]`, spaced `@`, the ideographic full stop, and `domain/path`.
+   - All eight named paraphrases are corpus cases (Convex, full turn), refused with the founder's message holding the
+     same words. All 43 of the reviewer's `probe.mts` bypass attempts are refused in the unit tests.
+   - The prompt now asks for facts in the founder's own words, and nothing about approvals, cards, rules, priorities
+     or Wren itself.
+4. **False refusals.**
+   - Founder edits are as trusted as chat messages. They get cleaning, bounds, scheme URLs, markup tags and role tags
+     only. Bare domains, emails and imperatives are allowed, so no instruction heuristic and no provenance check.
+   - Markup means a tag: `<` followed by a letter, `/` or `!`, so "<500 words per post" passes for everyone.
+   - Wren's notes keep the strict rules.
+   - Result on the reviewer's 30 realistic facts:
+     - founder edits accept 30 of 30;
+     - Wren accepts 25 when the founder said them;
+     - the other 5 are refused by design: a domain, an email, Notion.so, "Always approve copy changes…" (about
+       approvals), and "Founder wants Wren to always ask…" (about Wren). The founder can still write any of them.
+5. **Scan gaps** (`tests/security/wp77-wren-tools-cards-only.test.mjs`).
+   - M3 is per method now: `insert` into `wren_memory` or `audit_events`, `patch` into `wren_memory` only. Audit rows
+     are append-only. `storage` is banned in the memory modules.
+   - New M5, repo-wide: across `convex/**` (not `_generated`, not tests), it flags any write call whose arguments
+     hold the literal `wren_memory`, also through `.call`, `.apply`, `as const` or optional chaining, and any name
+     bound to that literal. Only `convex/workspace/wrenMemory.ts` may have them. Generic child-table deletes that use
+     a list of table names (`convex/platform/authz.ts`) are outside this rule.
+   - Planted fixtures: `auditPatch`, `auditReplace`, `auditDelete` and `storageUpload` for the memory scan. For M5:
+     11 write-elsewhere shapes, including the reviewer's `wren_memory` patch from another file. Reads elsewhere and
+     the writer itself pass.
+   - Of `bypass3.mjs`, 25 of 28 are caught. Still passing, by design: `auditText` (an audit insert, the allowed
+     table), `authIdentity` (a read), and `memoryOtherOwner` (a `wren_memory` patch inside the writer itself).
+6. **Two memory readers.** `loadWrenTurn` uses `readWrenMemory` (`by_ownerId_and_projectId`), and the chat import
+   allowlist names it. Test: another owner's row for the same project is never read into the prompt.
+7. **Nits.**
+   - `over_cap` counts by position in `remember`, documented in code and here. A refused first entry does not free a
+     slot for the third, so a reply cannot pad the list to steer which entry is considered (tested).
+   - `WrenMemoryPanel`:
+     - An open edit or delete question is tied to index and text. If another tab or Wren moves the list, it closes,
+       the status line says so, and focus moves to the Facts heading.
+     - One status line in every state, so the last delete is announced in the empty state.
+     - The empty state has "Write a summary".
+     - The character count uses the server's cleaner.
+   - The pre-clean bound is 32 times the limit, so a short fact padded with 1,601 spaces is cleaned and accepted.
+
+**Prompt lock: a plan change, reported.** While I worked, PR #210 reached `origin/main` with `wren-chat@2` and
+`wren-plan-turn@2` (the S4 text). After that, the branch's in-place @2 entries failed the check with
+`base_entry_changed`, already at `1ff353bf`, before this round. A locked entry on main may never change. So the @2
+entries are restored to main's hashes and marked `retired` ("WP77-S5: replaced by version 3"), the prompts are bumped
+to version 3, and `--write` locked `wren-chat@3` and `wren-plan-turn@3`. Tests that name the refs now use `@3`.
+
+Files: `lib/workspace/{plainText,wrenMemory}.ts`, `lib/workspace/contracts/wrenMemory.ts`,
+`convex/workspace/{wrenMemory,memory,chat,chatActions}.ts`, `convex/ai/prompts/{wrenChat,wrenPlanTurn}.ts`,
+`convex/ai/prompts/versions.lock.json`, `components/workspace/files/WrenMemoryPanel.tsx`, the scan, and tests:
+- `tests/platform/workspace-wren-memory.test.ts` (34);
+- `convex/workspace/memory.test.ts` (25);
+- `tests/platform/workspace-wren-memory-panel.test.tsx` (19);
+- `convex/workspace/chat.test.ts` and `tests/platform/workspace-wren.test.ts` (refs to `@3`).
+
+Needs from Codex: none new (#15 stands).
+
+Checks (exit codes): `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing
+warnings, none in changed files); `npm run check:prompt-versions` 0 (3 versions match, against `origin/main`); node
+security tests 1, the known `convex/workspace/business.ts:createBusiness missing capability guard` only (217 pass /
+1 fail); security vitest half 0 (121); `test:convex` 0 (71 files, 997 tests); `test:platform` 0 (68 files, 1451
+tests); `test:prompts` 0; `npm run build` 0. WP77 scan alone 10/10.
+
+a11y-check (`WrenMemoryPanel.tsx`): unchanged pass on every item. New: "Write a summary" in the empty state is a
+native button with visible text and the kit focus outline; one `role="status"` line in every state; a closed-by-move
+form sends focus to the Facts heading (or the empty state), never `<body>`. axe clean in the new move, empty-summary
+and last-delete states (19 DOM tests).
+
+Docs: progress updated. No story, plan or ruling changes.

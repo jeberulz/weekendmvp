@@ -7,6 +7,7 @@ import {
   editSummary,
   EMPTY_WREN_MEMORY,
   planWrenMemoryUpdate,
+  wrenMemoryVersion,
   type FounderMemoryEdit,
   type WrenMemoryProposal,
   type WrenMemoryState,
@@ -19,7 +20,13 @@ import {
  * `lib/workspace/wrenMemory.ts` (clean, bound, refuse, dedupe, no eviction):
  * - Wren, from `finishWrenTurn` (`convex/workspace/chat.ts`), in the same
  *   transaction as the `done` write: `applyWrenMemoryProposal`. A failed,
- *   stale or refused reply never reaches it, so it never writes memory.
+ *   stale or refused reply never reaches it, so it never writes memory. The
+ *   sources a note must come from are read here, from the database, never
+ *   taken from the action: this turn's founder message (the founder row paired
+ *   with the reply by `createdAt`), the current memory and the founder's idea
+ *   text. The summary is applied only if memory still has the version the
+ *   turn loaded (`baseVersion`); otherwise it is refused `stale`, so a founder
+ *   edit made during the turn is never overwritten.
  * - The founder, from the public mutations in `./memory.ts` (owner checked
  *   there by C-OPS and C-AUTHZ): `applyFounderMemoryEdit`, addressed by fact
  *   index plus the text the founder saw, so an edit to a list that moved
@@ -39,10 +46,13 @@ import {
 export const wrenMemoryProposalValidator = v.object({
   remember: v.optional(v.array(v.string())),
   summary: v.optional(v.string()),
+  /** `wrenMemoryVersion` of the memory the turn loaded (`loadWrenTurn`); absent reads as changed. */
+  baseVersion: v.optional(v.string()),
 });
 
 type Business = { readonly ownerId: Id<"users">; readonly projectId: Id<"projects"> };
 type MemoryRow = Doc<"wren_memory">;
+type ChatRow = Doc<"chat_messages">;
 
 /** This business's memory row, or null. Only the owner's row counts. */
 export async function readWrenMemory(ctx: QueryCtx, business: Business): Promise<MemoryRow | null> {
@@ -53,6 +63,28 @@ export async function readWrenMemory(ctx: QueryCtx, business: Business): Promise
 
 function stateOf(row: MemoryRow | null): WrenMemoryState {
   return row === null ? EMPTY_WREN_MEMORY : { facts: row.facts, summary: row.summary };
+}
+
+/** The version a turn records when it loads memory (`loadWrenTurn`). */
+export function memoryVersionOf(row: MemoryRow | null): string {
+  return wrenMemoryVersion(row === null ? null : stateOf(row));
+}
+
+/** The founder message this reply answers: same business, same owner, same `createdAt`. Empty when missing. */
+async function founderMessageFor(ctx: QueryCtx, business: Business, reply: ChatRow): Promise<string> {
+  const pair = await ctx.db.query("chat_messages")
+    .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", business.projectId).eq("createdAt", reply.createdAt))
+    .take(4);
+  const founder = pair.find((row) => row.author === "founder" && row.ownerId === business.ownerId);
+  return founder === undefined ? "" : founder.body;
+}
+
+/** The founder's own words about the business (summary sources): the idea text and the business name. */
+async function businessTextFor(ctx: QueryCtx, business: Business): Promise<string[]> {
+  const project = await ctx.db.get("projects", business.projectId);
+  if (project === null || project.ownerId !== business.ownerId) return [];
+  const workspace = project.workspace;
+  return [project.title, workspace?.name ?? "", workspace?.ownIdeaText ?? ""].filter((text) => text.length > 0);
 }
 
 async function writeMemory(ctx: MutationCtx, business: Business, row: MemoryRow | null, next: WrenMemoryState, now: number) {
@@ -77,13 +109,17 @@ async function writeMemory(ctx: MutationCtx, business: Business, row: MemoryRow 
 export async function applyWrenMemoryProposal(
   ctx: MutationCtx,
   business: Business,
-  messageId: Id<"chat_messages">,
-  proposal: WrenMemoryProposal,
+  reply: ChatRow,
+  proposal: WrenMemoryProposal & { readonly baseVersion?: string },
 ): Promise<boolean> {
   const proposed = (proposal.remember?.length ?? 0) > 0 || proposal.summary !== undefined;
   if (!proposed) return false;
   const row = await readWrenMemory(ctx, business);
-  const plan = planWrenMemoryUpdate(stateOf(row), proposal);
+  const plan = planWrenMemoryUpdate(stateOf(row), proposal, {
+    founderMessage: await founderMessageFor(ctx, business, reply),
+    businessText: proposal.summary === undefined ? [] : await businessTextFor(ctx, business),
+    memoryUnchanged: proposal.baseVersion !== undefined && proposal.baseVersion === memoryVersionOf(row),
+  });
   const changed = plan.added > 0 || plan.summaryChanged;
   const now = Date.now();
   if (changed) await writeMemory(ctx, business, row, plan.next, now);
@@ -95,7 +131,7 @@ export async function applyWrenMemoryProposal(
       actorType: "system",
       action: changed ? "memory.updated_by_wren" : "memory.wren_note_refused",
       subjectType: "chat_message",
-      subjectId: messageId,
+      subjectId: reply._id,
       metadata: JSON.stringify({
         added: plan.added,
         summaryChanged: plan.summaryChanged,

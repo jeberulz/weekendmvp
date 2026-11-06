@@ -34,13 +34,24 @@
       "retired": "WP77-S4: replaced by version 2 (cards in the reply schema)"
     },
     "wren-chat@2": {
-      "hash": "sha256:e967bbda7f52be8d86648dbb7daf20d8cafe22fd87718d1168512f8e6bfcb351",
+      "hash": "sha256:02b347a5255795adb3df6c8399293c2e06931094869ace4e6bf3d373fd3fffe8",
       "parts": {
-        "system": "sha256:ea698d617c3dfe605e99abea141ee37d57254e949f760188e28a036e5c73c069",
+        "system": "sha256:b0d9f53581cd1d0980f156d96a4083de3e29ba506f57ea9d27a40d8e4ae50a39",
+        "task": "sha256:5dc78d3cdf60af80735e2f1f4f593a296dce5d93501728be060c7e04986ebad6",
+        "outputSchema": "sha256:dc96e6b7f45982c6559e2ac03be0022f21d46a00c030d799ad2df452e0d2334a",
+        "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
+        "module": "sha256:a4908eae03b4c2e26bab54fb902fd9e2073b344333c75a02ad9ff464c5c1fb01"
+      },
+      "retired": "WP77-S5: replaced by version 3 (memory in the reply schema)"
+    },
+    "wren-chat@3": {
+      "hash": "sha256:0645e32c3ffdbbbbecc01262eb14e36d197d12700286158178b353224818db6d",
+      "parts": {
+        "system": "sha256:4c44ad2dcaff2d3cc3a1417d8e38e3915ea95ba2809a6fea30699c084c989b61",
         "task": "sha256:5dc78d3cdf60af80735e2f1f4f593a296dce5d93501728be060c7e04986ebad6",
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
-        "module": "sha256:c848bf80f803748acf247997885022aaf5faa4f30e414e93e2d66feb62c8615a"
+        "module": "sha256:47c4bfdac914f6a9132ab2c2e25c234e235245a4f33aa043d6e6fb711eb84b76"
       }
     },
     "wren-plan-turn@1": {
@@ -55,13 +66,24 @@
       "retired": "WP77-S4: replaced by version 2 (cards in the reply schema)"
     },
     "wren-plan-turn@2": {
-      "hash": "sha256:475ac6a44c4ef4df9e921d015eb6d13a6fbcb133fb45b6a47bc2da93b882fc82",
+      "hash": "sha256:a5c5bfda2654131f527d2c694ab0dfd759b66cc10a3eb61801cad6ef8d6c8591",
       "parts": {
-        "system": "sha256:ea698d617c3dfe605e99abea141ee37d57254e949f760188e28a036e5c73c069",
+        "system": "sha256:b0d9f53581cd1d0980f156d96a4083de3e29ba506f57ea9d27a40d8e4ae50a39",
+        "task": "sha256:21d323894b8ce327f801a77a5d368cf8618bbd2e126689dba40d52d51d389a84",
+        "outputSchema": "sha256:dc96e6b7f45982c6559e2ac03be0022f21d46a00c030d799ad2df452e0d2334a",
+        "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
+        "module": "sha256:b1721d6bee1fae35e693faf3d6db42d6f7997e5f222eb4ec237648be43677b05"
+      },
+      "retired": "WP77-S5: replaced by version 3 (memory in the reply schema)"
+    },
+    "wren-plan-turn@3": {
+      "hash": "sha256:4c0caf8d9be84653a9d2b4836b46aec9c7007025824db2b7819f15ce39a1b8bf",
+      "parts": {
+        "system": "sha256:4c44ad2dcaff2d3cc3a1417d8e38e3915ea95ba2809a6fea30699c084c989b61",
         "task": "sha256:21d323894b8ce327f801a77a5d368cf8618bbd2e126689dba40d52d51d389a84",
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
-        "module": "sha256:ed0a4b9e0a564d09f69f2694ab4a1e54a699e3ef22916b9deb0ec6af32992cf0"
+        "module": "sha256:0243d29e7914bba0e54d8e5044c45cb63faca1a39c2ae9846687b1bf5e012031"
       }
     }
   }

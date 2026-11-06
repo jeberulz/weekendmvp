@@ -16,9 +16,11 @@ import { applyFounderMemoryEdit, readWrenMemory } from "./wrenMemory";
  *
  * Every function: C-OPS `assertFeatureEnabled(ctx, "workspace")`, then C-AUTHZ
  * `requireBusinessAccess(ctx, projectId, "owner")`. Writes go through
- * `./wrenMemory.ts` (the only `wren_memory` writer), which applies the same
- * cleaning, bounds and refusals as Wren's own notes and writes one
- * `audit_events` row per change, without the text.
+ * `./wrenMemory.ts` (the only `wren_memory` writer), which cleans and bounds
+ * the text and refuses scheme URLs, markup tags and role tags. The founder's
+ * words are as trusted as their chat messages, so Wren's stricter note rules
+ * (no domains, no instruction-like phrasing, provenance) do not apply here.
+ * One `audit_events` row per change, without the text.
  *
  * Concurrency: a fact is addressed by its index plus the exact text the
  * founder was looking at (`expected`), the summary by its expected text. If
@@ -45,7 +47,6 @@ const refusalCodeValidator = v.union(
   v.literal("has_link"),
   v.literal("has_markup"),
   v.literal("has_role_tag"),
-  v.literal("looks_like_instruction"),
   v.literal("duplicate"),
 );
 

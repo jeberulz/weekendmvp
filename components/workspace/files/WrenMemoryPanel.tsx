@@ -10,10 +10,10 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
 import {
-  checkMemoryFact,
-  checkMemorySummary,
+  checkFounderFact,
+  checkFounderSummary,
+  cleanedMemoryLength,
   memoryRefusalCopy,
-  memoryTextLength,
   WREN_MEMORY_STALE_COPY,
 } from "@/lib/workspace/wrenMemory";
 
@@ -32,8 +32,13 @@ import {
  *   the next fact's Edit button (or the previous one, or the Facts heading
  *   when none is left);
  * - outcomes ("Fact saved", "This changed since you opened it") go to one
- *   polite status line; a refused edit shows its reason under the field
- *   (`role="alert"`, tied by `aria-describedby`) and focus goes back to it.
+ *   polite status line, rendered in every state so the last delete is
+ *   announced too; a refused edit shows its reason under the field
+ *   (`role="alert"`, tied by `aria-describedby`) and focus goes back to it;
+ * - an open edit or delete question is tied to the fact's index AND its text.
+ *   If the list moves under it (Wren, or another tab), it closes, the status
+ *   line says so, and focus moves to the Facts heading instead of the form
+ *   reappearing under another fact.
  */
 
 export type MemoryActions = {
@@ -93,7 +98,8 @@ function MemoryEditForm({
   const fieldId = `${uid}-field`;
   const hintId = `${uid}-hint`;
   const errorId = `${uid}-error`;
-  const length = memoryTextLength(text);
+  // The server's own count: characters after cleaning.
+  const length = cleanedMemoryLength(text);
 
   useEffect(() => {
     fieldRef.current?.focus();
@@ -166,6 +172,16 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   const inFlight = useRef(false);
   const { facts, summary, limits } = memory;
 
+  // An open form or question still names what the founder opened it on (index plus text).
+  const editingValid = editing === null ||
+    (editing.target === "fact" ? facts.at(editing.index) === editing.expected : summary === editing.expected);
+  const confirmingValid = confirming === null || facts.at(confirming.index) === confirming.expected;
+  const openEdit = editingValid ? editing : null;
+  const openConfirm = confirmingValid ? confirming : null;
+  // While the founder's own change is in flight the list may move first; only a move from elsewhere is stale.
+  const movedUnderneath = !pending && (!editingValid || !confirmingValid);
+  const wasOpen = useRef(false);
+
   // Focus moves after the render that shows its target (an Edit button comes back once the form closes).
   // Runs after every commit and only reads and clears the ref: no state is set here.
   useEffect(() => {
@@ -195,8 +211,14 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   }
 
   useEffect(() => {
-    if (confirming !== null) keepButton.current?.focus();
-  }, [confirming]);
+    if (openConfirm !== null) keepButton.current?.focus();
+  }, [openConfirm]);
+
+  // The form or question closed because the list moved: focus would fall to the page, so move it to the heading.
+  useEffect(() => {
+    if (movedUnderneath && wasOpen.current) (factsHeading.current ?? emptyRef.current)?.focus();
+    wasOpen.current = !movedUnderneath && (openEdit !== null || openConfirm !== null);
+  });
 
   async function run(action: () => Promise<void>) {
     if (inFlight.current) return;
@@ -234,19 +256,19 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   }
 
   function cancelEdit() {
-    if (editing === null) return;
-    const from = editing;
+    if (openEdit === null) return;
+    const from = openEdit;
     setEditing(null);
     setFormError(null);
     requestFocus(returnFocusFrom(from));
   }
 
   function save(text: string) {
-    if (editing === null) return;
-    const current = editing;
+    if (openEdit === null) return;
+    const current = openEdit;
     const what = current.target;
     // Instant feedback with the server's own rules; the server checks again.
-    const local = what === "fact" ? checkMemoryFact(text) : checkMemorySummary(text);
+    const local = what === "fact" ? checkFounderFact(text) : checkFounderSummary(text);
     if (!local.ok) {
       setFormError(memoryRefusalCopy(local.code, what));
       requestFocus({ kind: "field" });
@@ -286,15 +308,15 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   }
 
   function keep() {
-    if (confirming === null) return;
-    const { index } = confirming;
+    if (openConfirm === null) return;
+    const { index } = openConfirm;
     setConfirming(null);
     requestFocus({ kind: "delete_fact", index });
   }
 
   function confirmDelete() {
-    if (confirming === null || pending) return;
-    const { index, expected } = confirming;
+    if (openConfirm === null || pending) return;
+    const { index, expected } = openConfirm;
     void run(async () => {
       const result = await actions.deleteFact(index, expected);
       setConfirming(null);
@@ -312,37 +334,57 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
     });
   }
 
+  // One status line in every state (empty or not), so "Fact deleted" is heard when the last fact goes.
   const statusLine = (
     <p role="status" aria-live="polite" className="min-h-5 text-[13px] text-home-ink-2">
-      {status}
+      {movedUnderneath ? WREN_MEMORY_STALE_COPY : status}
     </p>
   );
 
-  if (facts.length === 0 && summary === "" && editing === null) {
+  const empty = facts.length === 0 && summary === "" && openEdit === null;
+  return (
+    <div className="flex flex-col gap-5">
+      {empty ? renderEmpty() : renderMemory()}
+      {statusLine}
+    </div>
+  );
+
+  function renderEmpty() {
     return (
       <div className="flex flex-col gap-3">
         <div ref={emptyRef} tabIndex={-1} className={cn("rounded-xl", FOCUS)}>
           <EmptyState title="Wren hasn't noted anything yet">
-          As you chat, Wren keeps a short summary and a few facts about your business here, so it remembers what
-          matters. You can edit or delete any of them.
+            As you chat, Wren keeps a short summary and a few facts about your business here, so it remembers what
+            matters. You can edit or delete any of them.
           </EmptyState>
         </div>
-        {statusLine}
+        <p>
+          <button
+            ref={summaryButton}
+            type="button"
+            onClick={openSummary}
+            aria-disabled={pending || undefined}
+            className={LINK_BUTTON}
+          >
+            Write a summary
+          </button>
+        </p>
       </div>
     );
   }
 
-  const summaryHeadingId = `${uid}-summary`;
-  const factsHeadingId = `${uid}-facts`;
-  const full = facts.length >= limits.factsMax;
+  function renderMemory() {
+    const summaryHeadingId = `${uid}-summary`;
+    const factsHeadingId = `${uid}-facts`;
+    const full = facts.length >= limits.factsMax;
 
-  return (
+    return (
     <div className="flex flex-col gap-5">
       <section aria-labelledby={summaryHeadingId} className={cn(CARD, "flex flex-col gap-3 p-4")}>
         <h3 id={summaryHeadingId} className="text-[15px] font-semibold text-home-ink">
           Summary
         </h3>
-        {editing?.target === "summary" ? (
+        {openEdit?.target === "summary" ? (
           <MemoryEditForm
             label="Edit Wren's summary"
             initial={summary}
@@ -399,8 +441,8 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
           <ul className="flex flex-col gap-2">
             {facts.map((fact, index) => {
               const number = (index + 1).toString();
-              const isEditing = editing?.target === "fact" && editing.index === index;
-              const isConfirming = confirming?.index === index;
+              const isEditing = openEdit?.target === "fact" && openEdit.index === index;
+              const isConfirming = openConfirm?.index === index;
               const questionId = `${uid}-confirm-${number}`;
               return (
                 // Keyed by position: after an edit or a delete the buttons stay mounted, so focus can land on them.
@@ -481,9 +523,9 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
           </ul>
         )}
       </section>
-      {statusLine}
     </div>
-  );
+    );
+  }
 }
 
 function LiveWrenMemory({ projectId }: { projectId: Id<"projects"> }) {

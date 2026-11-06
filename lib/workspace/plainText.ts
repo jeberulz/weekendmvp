@@ -19,3 +19,19 @@ export function isInvisibleChar(code: number): boolean {
     (code >= 0x2060 && code <= 0x2064) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff ||
     (code >= 0xe0000 && code <= 0xe007f);
 }
+
+/** A UTF-16 surrogate unit with no partner (left by a cut through a pair, or sent broken). */
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
+/**
+ * The text with every lone surrogate dropped, so it is well-formed Unicode.
+ * Convex refuses a string that is not, which would throw the write.
+ */
+export function dropLoneSurrogates(text: string): string {
+  return text.replace(LONE_SURROGATE, "");
+}
+
+/** At most `max` UTF-16 units, never ending in half of a surrogate pair. */
+export function sliceWellFormed(text: string, max: number): string {
+  return dropLoneSurrogates(text.length > max ? text.slice(0, max) : text);
+}

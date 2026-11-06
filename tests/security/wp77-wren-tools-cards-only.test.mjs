@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -79,11 +79,19 @@ import { WREN_APPROVAL_SUBJECTS } from "../../lib/workspace/contracts/wrenTools.
 //     or connector, schedules, runs an action / mutation / query, fetches,
 //     replaces or deletes a row, or reads `internal` / `api`.
 // M3. `ctx.db` only as a direct method call: `get`, `query`, `normalizeId`;
-//     `insert` / `patch` only with the string literal `wren_memory` or
-//     `audit_events`; never `replace` or `delete`.
+//     `insert` only with the string literal `wren_memory` or `audit_events`,
+//     `patch` only with `wren_memory` (audit rows are append-only); never
+//     `replace` or `delete`.
 // M4. A1 and A2 as above.
 // The chat modules still may not write `wren_memory` themselves (C3): memory
 // is written only through `applyWrenMemoryProposal`.
+// M5 (repo-wide). Across `convex/**` (not `_generated`, not tests), a write
+//     call (`insert` / `patch` / `replace` / `delete`, also through `.call`
+//     or `.apply`) whose arguments hold the literal `wren_memory`, or a
+//     variable bound to that literal, appears only in
+//     `convex/workspace/wrenMemory.ts`. Generic code that writes child tables
+//     by a table name held in a list (account and business deletion) uses no
+//     literal and is outside this rule.
 //
 // Pure helpers (`PURE_HELPERS`): no `ctx`, `db`, scheduler, run function,
 // `internal`, `api` or `fetch` at all; local imports only to other pure
@@ -132,8 +140,9 @@ const CHAT_IMPORTS = {
     ["../ai/prompts/wrenPlanTurn", ["wrenPlanTurnSpec"]],
     ["../ai/prompts/wrenShared", ["quotedData", "WREN_REPLY_MAX_CHARS"]],
     ["./wrenCards", ["approvalCardViews", "resolveWrenCards", "wrenCardProposalValidator", "wrenCardViewValidator"]],
-    ["./wrenMemory", ["applyWrenMemoryProposal", "wrenMemoryProposalValidator"]],
+    ["./wrenMemory", ["applyWrenMemoryProposal", "memoryVersionOf", "readWrenMemory", "wrenMemoryProposalValidator"]],
     ["./approvals", APPROVAL_VALIDATORS],
+    ["../../lib/workspace/plainText", ["sliceWellFormed"]],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARDS_PER_TURN"]],
     ["../../lib/workspace/wren", [
@@ -152,8 +161,10 @@ const CHAT_IMPORTS = {
     ["../../lib/workspace/wren", ["WrenFailureCause"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARD_FIELD_MAX_CHARS"]],
     ["../../lib/workspace/contracts/wrenMemory", [
-      "WREN_MEMORY_FACT_MAX_CHARS", "WREN_MEMORY_PROPOSALS_MAX", "WREN_MEMORY_SUMMARY_MAX_CHARS",
+      "WREN_MEMORY_FACT_MAX_CHARS", "WREN_MEMORY_PROPOSALS_MAX", "WREN_MEMORY_RAW_PASS_FACTOR", "WREN_MEMORY_SUMMARY_MAX_CHARS",
+      "wrenMemoryOverlongMarker",
     ]],
+    ["../../lib/workspace/plainText", ["dropLoneSurrogates"]],
     ["./chat", ["WREN_PROMPT_REFS", "finishOutcomeValidator"]],
   ]),
 };
@@ -167,8 +178,8 @@ const MEMORY_IMPORTS = {
     ["../_generated/dataModel", ["Doc", "Id"]],
     ["../_generated/server", ["MutationCtx", "QueryCtx"]],
     ["../../lib/workspace/wrenMemory", [
-      "deleteFact", "editFact", "editSummary", "EMPTY_WREN_MEMORY", "planWrenMemoryUpdate", "FounderMemoryEdit",
-      "WrenMemoryProposal", "WrenMemoryState",
+      "deleteFact", "editFact", "editSummary", "EMPTY_WREN_MEMORY", "planWrenMemoryUpdate", "wrenMemoryVersion",
+      "FounderMemoryEdit", "WrenMemoryProposal", "WrenMemoryState",
     ]],
   ]),
   "convex/workspace/memory.ts": new Map([
@@ -186,13 +197,16 @@ const MEMORY_IMPORTS = {
 
 const MEMORY_FILES = Object.keys(MEMORY_IMPORTS);
 
-/** The only tables the memory modules may insert into or patch. */
-const MEMORY_WRITE_TABLES = new Set(["wren_memory", "audit_events"]);
+/** The only tables the memory modules may write, per method: audit rows are insert-only. */
+const MEMORY_WRITE_TABLES = new Map([
+  ["insert", new Set(["wren_memory", "audit_events"])],
+  ["patch", new Set(["wren_memory"])],
+]);
 const MEMORY_DB_METHODS = new Set(["get", "query", "normalizeId", "insert", "patch"]);
 
 /** Names the memory modules must never call, reference or import. */
 const MEMORY_FORBIDDEN =
-  /^(decideApproval|createApprovalRecord|createApproval|raiseApprovalCard|resolveWrenCards|assertApproved|insertRevisionTask|assertPaidRevisionApproved|activateSequence|publishLanding|debit\w*|refund\w*|\w*ledger\w*|\w*connector\w*|send\w*|publish\w*|post[A-Z]\w*|launch\w*|scheduler|runAction|runMutation|runQuery|runAfter|runAt|fetch|replace|delete|checkLimit|internal|api)$/i;
+  /^(decideApproval|createApprovalRecord|createApproval|raiseApprovalCard|resolveWrenCards|assertApproved|insertRevisionTask|assertPaidRevisionApproved|activateSequence|publishLanding|debit\w*|refund\w*|\w*ledger\w*|\w*connector\w*|send\w*|publish\w*|post[A-Z]\w*|launch\w*|scheduler|storage|runAction|runMutation|runQuery|runAfter|runAt|fetch|replace|delete|checkLimit|internal|api)$/i;
 
 /** Imports that must be `import type` (erased at build: the module never loads). */
 const TYPE_ONLY_IMPORTS = new Set(["convex/ai/gatewayActions.ts"]);
@@ -458,7 +472,9 @@ function scanDb(fileName, sourceFile, methods, writeTables, problems) {
       }
       if (WRITE_METHODS.has(method)) {
         const table = call.arguments[0];
-        if (table === undefined || !ts.isStringLiteralLike(table) || !writeTables.has(table.text)) {
+        // `writeTables`: one set for every write method, or a map of method to its own set.
+        const allowed = writeTables instanceof Map ? writeTables.get(method) ?? new Set() : writeTables;
+        if (table === undefined || !ts.isStringLiteralLike(table) || !allowed.has(table.text)) {
           problems.push(`${fileName}:${line(sourceFile, node)} db.${method} into ${table ? table.getText(sourceFile) : "?"}`);
         }
       }
@@ -725,6 +741,60 @@ export function scanMemory(
   return [...new Set(problems)];
 }
 
+/** The one module that may write `wren_memory` (rule M5). */
+const MEMORY_WRITER = "convex/workspace/wrenMemory.ts";
+
+/** Whether `node` is, or holds (an array for `.apply`), the string literal `wren_memory`. */
+function holdsMemoryTable(node) {
+  if (ts.isStringLiteralLike(node)) return node.text === "wren_memory";
+  if (ts.isArrayLiteralExpression(node)) return node.elements.some(holdsMemoryTable);
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) {
+    return holdsMemoryTable(node.expression);
+  }
+  return false;
+}
+
+function isBareMemoryTable(node) {
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) {
+    return isBareMemoryTable(node.expression);
+  }
+  return ts.isStringLiteralLike(node) && node.text === "wren_memory";
+}
+
+/** Rule M5 for one file: a `wren_memory` write outside `MEMORY_WRITER`. */
+export function scanMemoryWriters(fileName, source) {
+  if (fileName === MEMORY_WRITER) return [];
+  const sourceFile = parse(fileName, source);
+  const problems = [];
+  walk(sourceFile, (node) => {
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression.getText(sourceFile);
+      if (/\b(?:insert|patch|replace|delete)\b/u.test(callee) && node.arguments.some(holdsMemoryTable)) {
+        problems.push(`${fileName}:${line(sourceFile, node)} writes wren_memory outside ${MEMORY_WRITER}`);
+      }
+    }
+    // A name bound to the bare literal (not a list of table names, like authz's child-table list).
+    if (ts.isVariableDeclaration(node) && node.initializer !== undefined && isBareMemoryTable(node.initializer)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} binds the wren_memory table name outside ${MEMORY_WRITER}`);
+    }
+  });
+  return problems;
+}
+
+/** Every `.ts` file under `convex/`, except `_generated` and tests. */
+async function convexSources(dir = "convex") {
+  const out = [];
+  for (const entry of await readdir(path.join(root, dir), { withFileTypes: true })) {
+    const relative = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) {
+      if (entry.name !== "_generated" && entry.name !== "node_modules") out.push(...await convexSources(relative));
+    } else if (entry.name.endsWith(".ts") && !/\.test\.tsx?$/u.test(entry.name) && !entry.name.endsWith(".d.ts")) {
+      out.push(relative);
+    }
+  }
+  return out;
+}
+
 const PURE_FORBIDDEN = /^(ctx|db|scheduler|runMutation|runQuery|runAction|runAfter|runAt|internal|api|fetch|process|require)$/u;
 const PURE_PACKAGES = new Set(["zod"]);
 
@@ -764,6 +834,37 @@ test("the memory modules write only wren_memory and audit_events, and reach no s
     const source = await readFile(path.join(root, relative), "utf8");
     assert.deepEqual(scanMemory(relative, source), []);
   }
+});
+
+test("repo-wide: only convex/workspace/wrenMemory.ts writes wren_memory (M5)", async () => {
+  const files = await convexSources();
+  assert.ok(files.includes(MEMORY_WRITER) && files.length > 50, "the walk reached convex/");
+  const problems = [];
+  for (const relative of files) problems.push(...scanMemoryWriters(relative, await readFile(path.join(root, relative), "utf8")));
+  assert.deepEqual(problems, []);
+});
+
+test("fixtures: the repo-wide memory-writer scan catches a write elsewhere (M5)", () => {
+  const offenders = {
+    patch: "export async function f(ctx, id){ await ctx.db.patch(\"wren_memory\", id, { ownerId: id }); }",
+    insert: "export async function f(ctx){ await ctx.db.insert(\"wren_memory\", {}); }",
+    replace: "export async function f(ctx, id){ await ctx.db.replace(\"wren_memory\", id, {}); }",
+    remove: "export async function f(ctx, id){ await ctx.db.delete(\"wren_memory\", id); }",
+    optional: "export async function f(ctx){ await ctx.db?.insert(\"wren_memory\", {}); }",
+    template: "export async function f(ctx){ await ctx.db.insert(`wren_memory`, {}); }",
+    alias: "export async function f(ctx){ const d = ctx.db; await d.patch(\"wren_memory\", 1, {}); }",
+    viaCall: "export async function f(ctx){ await ctx.db.insert.call(ctx.db, \"wren_memory\", {}); }",
+    viaApply: "export async function f(ctx){ await ctx.db.insert.apply(ctx.db, [\"wren_memory\", {}]); }",
+    constTable: "const T = \"wren_memory\"; export async function f(ctx, id){ await ctx.db.patch(T, id, {}); }",
+    cast: "export async function f(ctx){ await ctx.db.insert((\"wren_memory\" as const), {}); }",
+  };
+  for (const [label, source] of Object.entries(offenders)) {
+    assert.notDeepEqual(scanMemoryWriters(`convex/workspace/other-${label}.ts`, source), [], label);
+  }
+  // Reads elsewhere are fine; the writer itself is exempt.
+  assert.deepEqual(scanMemoryWriters("convex/workspace/chat.ts",
+    "export async function f(ctx){ return await ctx.db.query(\"wren_memory\").first(); }"), []);
+  assert.deepEqual(scanMemoryWriters(MEMORY_WRITER, "export async function f(ctx){ await ctx.db.insert(\"wren_memory\", {}); }"), []);
 });
 
 test("every local module the chat and handler modules import is scanned, a named gate, or type-only", async () => {
@@ -920,6 +1021,10 @@ test("fixtures: the memory scan catches each side-effect shape", () => {
     patchApproval: "export async function f(ctx, id){ await ctx.db.patch(\"approvals\", id, { status: \"approved\" }); }",
     patchChat: "export async function f(ctx, id){ await ctx.db.patch(\"chat_messages\", id, { body: \"\" }); }",
     replaceMemory: "export async function f(ctx, id){ await ctx.db.replace(\"wren_memory\", id, {}); }",
+    auditPatch: "export async function f(ctx, id){ await ctx.db.patch(\"audit_events\", id, { metadata: \"x\" }); }",
+    auditReplace: "export async function f(ctx, id){ await ctx.db.replace(\"audit_events\", id, {}); }",
+    auditDelete: "export async function f(ctx, id){ await ctx.db.delete(\"audit_events\", id); }",
+    storageUpload: "export async function f(ctx){ return await ctx.storage.generateUploadUrl(); }",
     deleteMemory: "export async function f(ctx, id){ await ctx.db.delete(\"wren_memory\", id); }",
     dynamicTable: "export async function f(ctx, t){ await ctx.db.insert(t, {}); }",
     schedule: "export async function f(ctx){ await ctx.scheduler.runAfter(0, x, {}); }",

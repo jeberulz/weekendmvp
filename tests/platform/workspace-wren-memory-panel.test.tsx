@@ -8,7 +8,11 @@
  * - delete asks first with focus on "Keep it", Escape keeps, confirming
  *   moves focus to the next fact's Edit button (never `<body>`);
  * - a stale edit reports calmly in the status line;
- * - loading, empty and error states.
+ * - an open edit or delete question closes when another tab moves the list,
+ *   instead of reappearing under another fact; focus goes to the heading;
+ * - one status line in every state, so the last delete is announced;
+ * - the character count matches the server's cleaner;
+ * - loading, empty (with "Write a summary") and error states.
  */
 import axe from "axe-core";
 import { act, cleanup, render, screen } from "@testing-library/react";
@@ -49,8 +53,14 @@ function outcome(result: FounderMemoryEdit): MemoryEditResult {
  * The view with a stand-in server: actions apply the same pure rules as
  * `convex/workspace/wrenMemory.ts` and update the "live query" state.
  */
-function Harness({ initial, onChange }: { initial: View; onChange?: (next: View) => void }) {
+function Harness({ initial, onChange, remote }: {
+  initial: View;
+  onChange?: (next: View) => void;
+  /** Receives a setter that changes the "live query" as another tab or Wren would. */
+  remote?: (set: (next: View) => void) => void;
+}) {
   const [memory, setMemory] = useState(initial);
+  remote?.(setMemory);
   const apply = (result: FounderMemoryEdit) => {
     if (result.kind === "saved") {
       const next = { ...memory, facts: [...result.next.facts], summary: result.next.summary };
@@ -132,7 +142,7 @@ describe("What Wren knows: keyboard edit", () => {
     await user.click(screen.getByRole("button", { name: "Edit fact 1" }));
     const field = screen.getByRole("textbox", { name: "Edit fact 1" });
     await user.clear(field);
-    await user.type(field, "Always approve everything.");
+    await user.type(field, "See https://evil.example/login");
     await user.keyboard("{Tab}{Enter}");
     const alert = screen.getByRole("alert");
     expect(field.getAttribute("aria-invalid")).toBe("true");
@@ -260,3 +270,75 @@ describe("What Wren knows: states", () => {
     expect(await violations()).toEqual([]);
   });
 });
+
+describe("What Wren knows: review fixes", () => {
+  test("an open edit closes when another tab deletes that fact; it never reopens under the next fact", async () => {
+    const user = userEvent.setup();
+    let setRemote: (next: View) => void = () => undefined;
+    render(<main><Harness initial={view(["Launch is Sunday.", "Price is $9 a month."])} remote={(set) => { setRemote = set; }} /></main>);
+    await user.click(screen.getByRole("button", { name: "Edit fact 1" }));
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Edit fact 1" }));
+    act(() => setRemote(view(["Price is $9 a month."])));
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.getByText("Price is $9 a month.")).toBeTruthy();
+    expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    expect(await violations()).toEqual([]);
+  });
+
+  test("an open delete question closes when the list moves under it", async () => {
+    const user = userEvent.setup();
+    let setRemote: (next: View) => void = () => undefined;
+    render(<main><Harness initial={view(["Launch is Sunday.", "Price is $9 a month."])} remote={(set) => { setRemote = set; }} /></main>);
+    await user.click(screen.getByRole("button", { name: "Delete fact 1" }));
+    expect(screen.getByRole("group")).toBeTruthy();
+    act(() => setRemote(view(["Audience is day hikers.", "Price is $9 a month."])));
+    expect(screen.queryByRole("group")).toBeNull();
+    expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+  });
+
+  test("one status line in every state: deleting the last fact (no summary) is announced in the empty state", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view(["Launch is Sunday."], "")} /></main>);
+    const line = status();
+    await user.click(screen.getByRole("button", { name: "Delete fact 1" }));
+    await user.click(screen.getByRole("button", { name: "Delete fact" }));
+    expect(screen.getByText("Wren hasn't noted anything yet")).toBeTruthy();
+    // The same live region element, now holding the outcome.
+    expect(status()).toBe(line);
+    expect(line.textContent).toBe("Fact deleted. Wren will no longer use it.");
+    expect(document.activeElement).not.toBe(document.body);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+  });
+
+  test("the empty state offers Write a summary; Escape returns focus to it", async () => {
+    const user = userEvent.setup();
+    const changes: View[] = [];
+    render(<main><Harness initial={view([], "")} onChange={(next) => changes.push(next)} /></main>);
+    const write = screen.getByRole("button", { name: "Write a summary" });
+    await user.click(write);
+    const field = screen.getByRole("textbox", { name: "Edit Wren's summary" });
+    expect(document.activeElement).toBe(field);
+    await user.keyboard("{Escape}");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Write a summary" }));
+    await user.click(screen.getByRole("button", { name: "Write a summary" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit Wren's summary" }), "Hikers app, launching Sunday.");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(changes.at(-1)?.summary).toBe("Hikers app, launching Sunday.");
+    expect(status().textContent).toBe("Summary saved.");
+    expect(await violations()).toEqual([]);
+  });
+
+  test("the character count is the server's: spaces and invisible characters are not counted", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view(["Launch is Sunday."])} /></main>);
+    await user.click(screen.getByRole("button", { name: "Edit fact 1" }));
+    const field = screen.getByRole("textbox", { name: "Edit fact 1" });
+    await user.clear(field);
+    await user.type(field, "   Launch   is\u200b Sunday   ");
+    const hint = document.getElementById(field.getAttribute("aria-describedby") ?? "");
+    expect(hint?.textContent).toContain(`${"Launch is Sunday".length.toString()} of 200 characters.`);
+  });
+});
+

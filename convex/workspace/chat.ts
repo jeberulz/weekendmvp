@@ -22,7 +22,8 @@ import {
   wrenCardProposalValidator,
   wrenCardViewValidator,
 } from "./wrenCards";
-import { applyWrenMemoryProposal, wrenMemoryProposalValidator } from "./wrenMemory";
+import { applyWrenMemoryProposal, memoryVersionOf, readWrenMemory, wrenMemoryProposalValidator } from "./wrenMemory";
+import { sliceWellFormed } from "../../lib/workspace/plainText";
 import { parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts";
 import { WREN_CARDS_PER_TURN } from "../../lib/workspace/contracts/wrenTools";
 import {
@@ -359,6 +360,8 @@ export const loadedTurnValidator = v.union(
     message: v.string(),
     history: v.array(v.string()),
     businessContext: v.string(),
+    /** WP77-S5: `wrenMemoryVersion` of the memory read here; `finishWrenTurn` skips Wren's summary if it moved. */
+    memoryVersion: v.string(),
   }),
   v.object({ status: v.literal("skip") }),
 );
@@ -473,18 +476,14 @@ export const loadWrenTurn = internalQuery({
       .flatMap((row) => (row.author === "founder" || row.author === "wren" ? [historyLine(row.author, row.body)] : []))
       .slice(0, WREN_HISTORY_MESSAGES)
       .reverse();
-    const memory = await ctx.db.query("wren_memory")
-      .withIndex("by_projectId", (q) => q.eq("projectId", project._id))
-      .first();
+    // The same reader as the writer (`./wrenMemory`): this owner's row only.
+    const memory = await readWrenMemory(ctx, { ownerId: project.ownerId, projectId: project._id });
     return {
       status: "ready" as const,
       message: founder.body,
       history,
-      businessContext: wrenBusinessContext(
-        project,
-        memory !== null && memory.ownerId === project.ownerId ? memory : null,
-        await approvableSubjects(ctx, project),
-      ),
+      businessContext: wrenBusinessContext(project, memory, await approvableSubjects(ctx, project)),
+      memoryVersion: memoryVersionOf(memory),
     };
   },
 });
@@ -509,7 +508,7 @@ export const writeWrenDraft = internalMutation({
   handler: async (ctx, args) => {
     const row = await streamingRow(ctx, args.ownerId, args.projectId, args.messageId);
     if (row === null) return false;
-    await ctx.db.patch("chat_messages", row._id, { body: args.body.slice(0, WREN_REPLY_MAX_CHARS), updatedAt: Date.now() });
+    await ctx.db.patch("chat_messages", row._id, { body: sliceWellFormed(args.body, WREN_REPLY_MAX_CHARS), updatedAt: Date.now() });
     return true;
   },
 });
@@ -550,7 +549,7 @@ export const finishWrenTurn = internalMutation({
     if ((await nextChatAttempt(ctx, args.projectId, args.messageId)) - 1 > args.attempt) return false;
     const usageId = args.outcome.usageId === undefined ? null : ctx.db.normalizeId("ai_usage", args.outcome.usageId);
     const body = args.outcome.status === "done"
-      ? args.outcome.body.slice(0, WREN_REPLY_MAX_CHARS)
+      ? sliceWellFormed(args.outcome.body, WREN_REPLY_MAX_CHARS)
       : WREN_FAILURE_COPY[args.outcome.cause satisfies WrenFailureCause];
     // Cards only on a finished reply, in this transaction, from this row's own business.
     const cards = args.outcome.status === "done" && args.outcome.cards !== undefined && args.outcome.cards.length > 0
@@ -565,7 +564,7 @@ export const finishWrenTurn = internalMutation({
     });
     // Memory only on a finished reply, in this transaction, for this row's own business.
     if (args.outcome.status === "done" && args.outcome.memory !== undefined) {
-      await applyWrenMemoryProposal(ctx, { ownerId: row.ownerId, projectId: row.projectId }, row._id, args.outcome.memory);
+      await applyWrenMemoryProposal(ctx, { ownerId: row.ownerId, projectId: row.projectId }, row, args.outcome.memory);
     }
     return true;
   },
