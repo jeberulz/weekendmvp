@@ -543,3 +543,63 @@ describe("WP74-S2 founder signals", () => {
     expect((await row(t, sessionId)).completedAt).toBeTypeOf("number");
   });
 });
+
+describe("WP74-S3 own-idea light blueprint (interim, no model call)", () => {
+  const OWN = { source: "own_idea" as const, text: "Dog walking app for city owners, a $2B market with 500,000 users" };
+
+  test("the preview strips market numbers, keeps the founder's words stored, and spends nothing", async () => {
+    const { t, owner } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: OWN });
+    const view = await owner.query(api.workspace.wizard.getSession, { sessionId });
+    expect(view.blueprint).toMatchObject({
+      pitch: "Dog walking app for city owners",
+      validated: false,
+      origin: "own_fixture",
+      removedClaims: 1,
+    });
+    expect(JSON.stringify(view.blueprint)).not.toMatch(/\$|500,000/u);
+    expect((await row(t, sessionId)).answers.idea).toEqual(OWN);
+    // A reload reads the same preview and still makes no call.
+    expect(await owner.query(api.workspace.wizard.getSession, { sessionId })).toEqual(view);
+    expect(await t.run(async (ctx) => await ctx.db.query("ai_usage").collect())).toEqual([]);
+  });
+
+  test("an idea made only of market claims shows the fallback outline, and the founder can continue", async () => {
+    const { owner } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "own_idea", text: "$5B TAM growing 30% a year" },
+    });
+    const view = await owner.query(api.workspace.wizard.getSession, { sessionId });
+    expect(view.blueprint).toMatchObject({ validated: false, origin: "own_fallback", removedClaims: 0 });
+    const result = await owner.mutation(api.workspace.wizard.saveStep, {
+      sessionId,
+      step: "blueprint",
+      answer: { decision: "looks_good" },
+    });
+    expect(result).toMatchObject({ applied: true, step: "platform" });
+  });
+
+  test("another owner cannot read the own-idea preview", async () => {
+    const { owner, other } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: OWN });
+    await expect(other.query(api.workspace.wizard.getSession, { sessionId })).rejects.toThrow(/RESOURCE_NOT_FOUND/);
+  });
+
+  test("with the workspace flag off the preview is refused", async () => {
+    const { t, owner } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: OWN });
+    await t.run(async (ctx) => {
+      const settings = await ctx.db.query("ops_settings").first();
+      if (settings !== null) await ctx.db.patch("ops_settings", settings._id, { workspaceEnabled: false });
+    });
+    await expect(owner.query(api.workspace.wizard.getSession, { sessionId })).rejects.toThrow(/WORKSPACE_DISABLED/);
+  });
+
+  test("a library idea keeps its seeded, validated blueprint", async () => {
+    const { owner } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    const view = await owner.query(api.workspace.wizard.getSession, { sessionId });
+    expect(view.blueprint).toMatchObject({ validated: true, origin: "library", removedClaims: 0 });
+    expect(view.seedSource).toBe("fixture_hydrotrail");
+  });
+});

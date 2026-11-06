@@ -105,6 +105,8 @@ const blueprintPreviewValidator = v.object({
   features: v.array(v.string()),
   scopeCuts: v.array(v.string()),
   validated: v.boolean(),
+  origin: v.union(v.literal("library"), v.literal("own_fixture"), v.literal("own_drafted"), v.literal("own_fallback")),
+  removedClaims: v.number(),
 });
 
 const sessionViewValidator = v.object({
@@ -178,7 +180,12 @@ async function libraryIdea(ctx: Pick<QueryCtx, "db">, slug: string): Promise<Doc
 }
 
 async function seedFor(ctx: Pick<QueryCtx, "db">, idea: WizardIdea): Promise<{ seed: WizardSeed; title: string }> {
-  if (idea.source === "own_idea") return { seed: wizardSeedFor({ idea }), title: idea.text };
+  if (idea.source === "own_idea") {
+    // WP74-S3 seam (Option A, awaiting the owner's ruling): pass the session's
+    // stored gateway draft here as `ownIdeaDraft`. `wizardSeedFor` already runs
+    // it through `acceptLightBlueprint` and falls back when it is rejected.
+    return { seed: wizardSeedFor({ idea }), title: idea.text };
+  }
   const row = await libraryIdea(ctx, idea.ideaSlug);
   const title = row?.title ?? idea.ideaSlug;
   return { seed: wizardSeedFor({ idea, ideaTitle: title }), title };

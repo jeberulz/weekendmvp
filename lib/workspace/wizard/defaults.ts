@@ -4,7 +4,8 @@
  * Every step shows a suggested answer. Until WP71-S5 precomputes per-idea
  * seeds (`idea_crew_seeds`), the seed comes from fixtures: HydroTrail for its
  * slug, a generic fallback for every other library idea, and a light outline
- * for an own idea (D15: "Not yet validated", no market numbers).
+ * for an own idea (D15: "Not yet validated", no market numbers; built and
+ * checked in `light-blueprint.ts`).
  *
  * `wizardSeedFor` is the ONE place the seed source is chosen, so switching to
  * precomputed seeds later changes this function and nothing else.
@@ -22,6 +23,7 @@ import {
   type WizardStep,
 } from "../contracts/wizard";
 import { truncateText } from "./labels";
+import { ownIdeaBlueprintPreview, type OwnIdeaOutlineOrigin } from "./light-blueprint";
 
 export type WizardIdea = NonNullable<WizardAnswersProgress["idea"]>;
 
@@ -34,6 +36,10 @@ export type WizardBlueprintPreview = {
   readonly scopeCuts: readonly string[];
   /** Library ideas are researched; own ideas show "Not yet validated" (D15). */
   readonly validated: boolean;
+  /** `library` for library ideas; for own ideas, where the light outline came from. */
+  readonly origin: "library" | OwnIdeaOutlineOrigin;
+  /** Market-claim clauses or items removed from an own idea's outline (always 0 for library ideas). */
+  readonly removedClaims: number;
 };
 
 export type WizardSeedSource = "fixture_hydrotrail" | "fixture_generic" | "fixture_own_idea";
@@ -51,6 +57,11 @@ export type WizardSeedInput = {
   readonly idea: WizardIdea;
   /** The library idea's title, when known; used for the generic name. */
   readonly ideaTitle?: string;
+  /**
+   * An own idea's stored drafted blueprint (Option A, not built). Undefined
+   * until then, which gives the fixture outline.
+   */
+  readonly ownIdeaDraft?: unknown;
 };
 
 const GENERIC_FEATURES = [
@@ -127,16 +138,19 @@ function seed(
 export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
   const { idea } = input;
   if (idea.source === "own_idea") {
+    const preview = ownIdeaBlueprintPreview(idea.text, input.ownIdeaDraft);
     return seed(
       "fixture_own_idea",
       idea,
       {
-        pitch: idea.text,
-        oneUser: "The one person who feels this problem most.",
-        oneLoop: "They arrive, do the one core thing, and come back next time they need it.",
-        features: GENERIC_FEATURES,
-        scopeCuts: GENERIC_SCOPE_CUTS,
+        pitch: preview.blueprint.pitch,
+        oneUser: preview.blueprint.oneUser,
+        oneLoop: preview.blueprint.oneLoop,
+        features: preview.blueprint.features,
+        scopeCuts: preview.blueprint.scopeCuts,
         validated: false,
+        origin: preview.origin,
+        removedClaims: preview.removedClaims,
       },
       { chosen: nameFromOwnIdea(idea.text), alternatives: [] },
     );
@@ -152,6 +166,8 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         features: hydrotrailBlueprint.features,
         scopeCuts: hydrotrailBlueprint.scopeCuts,
         validated: true,
+        origin: "library",
+        removedClaims: 0,
       },
       { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
     );
@@ -167,6 +183,8 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
       features: GENERIC_FEATURES,
       scopeCuts: GENERIC_SCOPE_CUTS,
       validated: true,
+      origin: "library",
+      removedClaims: 0,
     },
     { chosen: nameFromTitle(title), alternatives: [] },
   );

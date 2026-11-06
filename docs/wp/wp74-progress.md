@@ -107,3 +107,78 @@
   (1 skipped, as before), and so do 121/121 Vitest security tests. Every other `npm test` suite exits 0 (og,
   links, redirects, auth, sitemap, convex 809, engine, editorial, home, prompts, platform 1087, live).
   `npm run build` 0.
+
+## 2026-11-06 - S3: Option D built as an interim; Option A awaits the owner's ruling
+
+- Why not the real draft: no C-METER attempt-key form fits a call made before the business exists.
+  - `job` needs `ownerId`, `taskId` and a `crew:` job key, and `tasks.projectId` is required.
+  - `chat` needs the run's `projectId`.
+  - `eval` is ownerless. It skips the owner's Free $1.50 lifetime ceiling and $1.00 daily cap, its gate
+    (`settingsForCall`) skips the cohort, and it is the CI graders' key. Rejected.
+  - The meter itself (`convex/ai/metering.ts`) already accepts an owner with no project and any key string. Only
+    the gateway's key forms and the C-METER contract list block it.
+  - There is also no place to keep the draft. A replayed `reserve` returns `duplicate_attempt` with no output,
+    `documents.projectId` is required, and `wizard_sessions` has no blueprint field.
+  - The orchestrator sent Option A to the owner and asked for D now.
+- Built (Option D, no model call, no new public function, no prompt file):
+  - `lib/workspace/wizard/light-blueprint.ts` (pure):
+    - `lightBlueprintSchema`: the C-ART own-idea `Blueprint` picked to pitch, one user, one loop, features and
+      scope cuts. Strict, so a `market` block or an `ideaSlug` is refused.
+    - `hasMarketClaim` / `stripMarketClaims`. Claims are money, percentages, market-size words, audience counts of
+      100 or more, per-period prices, market or keyword metrics, and TAM/SAM/SOM/CAGR/CPC (case-sensitive).
+      Stripping drops the clause that carries the claim and keeps the founder's other words. Small counts, B2B,
+      Web3 and "5k" runs are not claims.
+    - `acceptLightBlueprint(unknown)`: validate, strip every field (list items with a claim are dropped), then
+      re-validate. It rejects, never repairs, a candidate that is invalid (`invalid`) or empty once the claims are
+      gone (`only_market_claims`). The future gateway output goes through it unchanged.
+    - `ownIdeaBlueprintPreview(text, draft?)`: with no draft, the fixture outline (the founder's words, cut to the
+      160-character pitch limit, plus the generic weekend outline). With a rejected draft or fixture, the honest
+      fallback outline (`own_fallback`), so the founder can always continue.
+  - `wizardSeedFor` builds the own-idea branch from it, and takes an optional `ownIdeaDraft` (undefined for now).
+    The preview gains `origin` (`library` / `own_fixture` / `own_drafted` / `own_fallback`) and `removedClaims`.
+    `getSession`'s return validator carries both. The founder's stored idea text is never altered. Library ideas
+    keep their seeded path.
+  - The seam: one comment in `convex/workspace/wizard.ts` `seedFor`, where the session's stored gateway draft
+    will be passed as `ownIdeaDraft` once A lands.
+  - UI (`WizardStepPanel`): the visible "Not yet validated" label plus a plain-words line on what it means. A note
+    names the market figures that were left out, or says the outline is a plain fallback. "Looks good" is
+    `aria-describedby` the note, so screen readers hear the label before accepting.
+  - Tests:
+    - `tests/platform/wp74-light-blueprint.test.ts` (36): claims flagged and not flagged, stripping, accept and
+      reject, the fixture, fallback and drafted paths, instruction-like text kept as data, the library path.
+    - `tests/platform/wp74-light-blueprint-ui.test.tsx` (5, axe): the label, the describedby link, the
+      left-out-figures note, the fallback note, markup rendered as text, no label on library ideas.
+    - `convex/workspace/wizard.test.ts` +5: the stripped preview with stored text unchanged and no `ai_usage` rows
+      (a reload makes no call), the fallback with continue working, owner isolation, flag off, the library path.
+- Option A, a proposal awaiting the owner's ruling:
+  - Add a fourth C-METER attempt-key form, `wizard:{wizardSessionId}:{step}:{attempt}` (`wizardAttemptKey`). It
+    needs an owner and forbids a project, task or credit debit.
+  - It changes the C-METER contract (`lib/workspace/contracts/metering.ts`) plus `attemptKeyFormValidator` and
+    `keyFormMismatch` in `convex/ai/gatewayActions.ts`.
+  - The wizard action checks session ownership before calling, because the meter cannot see the session.
+  - One drafting call per session, idempotent through the stored draft and its `drafting` claim. The output goes
+    through `acceptLightBlueprint` at the seam above.
+  - The prompt would be `ownIdeaBlueprint.v1.ts`, because `04` gives WP75 `convex/ai/prompts/blueprint*`.
+  - **Open question for the owner:** does the light blueprint count inside the Free $1.50 lifetime ceiling? D15
+    puts the future Validation Report outside it but says nothing about the light blueprint.
+  - Rejected alternatives: create the business before the blueprint step (B: reorders C-WIZARD and spends the one
+    free business on a draft the founder may discard), and `eval` (C: see above).
+- Needs from Codex, **only if A is approved**:
+  - (d) A draft slot on `wizard_sessions`, e.g. `blueprintDraft: v.optional(v.object({ status: "drafting" |
+    "ready" | "failed", promptRef, attemptKey, usageId?, blueprint?: <light blueprint validator>, failedReason?,
+    updatedAt }))`.
+  - (e) `PRE_BUSINESS_CONTROLS` entries in `tests/security/wp68-workspace-boundaries.test.mjs` for the new public
+    functions (`requestOwnIdeaBlueprint`, `getOwnIdeaBlueprint`), guarded by `requireOwnedWizardSession`.
+  - Items (a)–(c) from the S1/S2 entry still stand.
+- S3 stays unticked: the gateway draft is not built.
+- Checks:
+  - `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings).
+  - The seven wizard and S3 test files 0 (100 tests). `npm run check:prompt-versions` 0 (no prompt changed).
+  - `npm run test:security` 1, only the known WP68 scanner failure (`not ok 200`,
+    `convex/workspace/wizard.ts:getWizardAccess missing capability guard`). 204 pass, 1 skipped. The Vitest half,
+    run on its own, passes 121/121.
+  - Every other suite exits 0: og, links, redirects, auth, sitemap, convex (814), engine, home, prompts, platform
+    (1128), live. Editorial exited 0 on a re-run (295 tests). Its first run hit hook timeouts while
+    `npm run build` ran alongside, as in S1.
+  - `npm run build` 0.
+- Docs: this entry.

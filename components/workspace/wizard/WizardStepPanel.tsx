@@ -37,6 +37,7 @@ import {
   STEP_TITLES,
   summarizeStep,
 } from "@/lib/workspace/wizard/labels";
+import { NOT_VALIDATED_LABEL } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
 
 export type WizardStepPanelProps = {
@@ -95,6 +96,7 @@ function Guarded({
   children,
   ariaExpanded,
   ariaControls,
+  ariaDescribedBy,
 }: {
   pending: boolean;
   onClick: () => void;
@@ -102,6 +104,7 @@ function Guarded({
   children: ReactNode;
   ariaExpanded?: boolean;
   ariaControls?: string;
+  ariaDescribedBy?: string;
 }) {
   return (
     <button
@@ -110,6 +113,7 @@ function Guarded({
       aria-disabled={pending || undefined}
       aria-expanded={ariaExpanded}
       aria-controls={ariaControls}
+      aria-describedby={ariaDescribedBy}
       onClick={() => {
         if (!pending) onClick();
       }}
@@ -119,25 +123,54 @@ function Guarded({
   );
 }
 
+/**
+ * The "Not yet validated" label for an own idea's light blueprint (D15), with
+ * what it means in words, and an honest note when figures were left out or the
+ * outline is the plain fallback. `id` lets the accept button reference it.
+ */
+function NotValidatedNote({ id, blueprint }: { id: string; blueprint: WizardBlueprintPreview }) {
+  const removed = blueprint.removedClaims;
+  return (
+    <div id={id} className="flex flex-col gap-1.5">
+      <p className="inline-flex w-fit items-center rounded-full border border-home-ochre-ink/40 bg-home-ochre px-2.5 py-0.5 text-[12px] font-medium text-home-ochre-ink">
+        {NOT_VALIDATED_LABEL}
+      </p>
+      <p className="text-sm text-home-ink-2">
+        This outline comes from your words only. Nobody has researched the market for it yet, so it has no market
+        numbers, prices or keyword data.
+      </p>
+      {blueprint.origin === "own_fallback" ? (
+        <p className="text-sm text-home-ink-2">
+          We couldn&rsquo;t draft a blueprint from your idea, so this is a plain starting outline. You can still
+          continue, or choose Rework it to add notes.
+        </p>
+      ) : removed > 0 ? (
+        <p className="text-sm text-home-ink-2">
+          We left out {removed === 1 ? "one market figure" : `${removed} market figures`}: they would be guesses until
+          the idea is researched.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function Suggestion({
   step,
   defaults,
   blueprint,
   ideaTitle,
+  noteId,
 }: {
   step: WizardStep;
   defaults: WizardAnswersProgress;
   blueprint: WizardBlueprintPreview;
   ideaTitle: string;
+  noteId: string;
 }) {
   if (step === "blueprint") {
     return (
       <div className="flex flex-col gap-3">
-        {!blueprint.validated ? (
-          <p className="inline-flex w-fit items-center rounded-full border border-home-ochre-ink/40 bg-home-ochre px-2.5 py-0.5 text-[12px] font-medium text-home-ochre-ink">
-            Not yet validated
-          </p>
-        ) : null}
+        {!blueprint.validated ? <NotValidatedNote id={noteId} blueprint={blueprint} /> : null}
         <p className="font-editorial text-[20px] leading-snug text-home-ink">{blueprint.pitch}</p>
         <dl className="grid gap-2 text-sm text-home-ink-2">
           <div>
@@ -563,6 +596,8 @@ export function WizardStepPanel({
   const base = useId();
   const headingId = `${base}-heading`;
   const editorId = `${base}-editor`;
+  const noteId = `${base}-not-validated`;
+  const describeAccept = step === "blueprint" && !blueprint.validated ? noteId : undefined;
   const [editing, setEditing] = useState(false);
   const index = WIZARD_STEPS.indexOf(step);
   const current = stepAnswerOf(step, answers);
@@ -586,9 +621,9 @@ export function WizardStepPanel({
 
       <div className={cn(CARD, "flex flex-col gap-4 p-5")}>
         <h3 className={EYEBROW}>Suggested</h3>
-        <Suggestion step={step} defaults={defaults} blueprint={blueprint} ideaTitle={ideaTitle} />
+        <Suggestion step={step} defaults={defaults} blueprint={blueprint} ideaTitle={ideaTitle} noteId={noteId} />
         <div className="flex flex-wrap gap-2">
-          <Guarded pending={pending} onClick={onAccept} className={BTN_PRIMARY}>
+          <Guarded pending={pending} onClick={onAccept} className={BTN_PRIMARY} ariaDescribedBy={describeAccept}>
             <Check aria-hidden="true" className="size-4" />
             {ACCEPT_LABELS[step]}
           </Guarded>
