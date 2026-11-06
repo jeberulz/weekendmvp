@@ -373,7 +373,19 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   const sections = splitSections(body);
   const titles = sections.map((s) => s.title);
 
-  const expected = [...CANONICAL_SECTION_TITLES, SOURCES_TITLE];
+  // Deep/engine pages may omit ## Market Research when the research record
+  // selects zero market stats (buyer-first). Legacy hand-written pages keep
+  // the seven-section contract. The deep artifact audit enforces the
+  // record↔heading match when a record is present.
+  const earlyManifest = manifestRowFor(slug, options.manifestPath);
+  const deepForHeadings =
+    options.engine === true || hasEngineMarker(raw) || isEnginePage(slug, earlyManifest.row);
+  const omitMarketResearch =
+    deepForHeadings && !titles.includes("Market Research");
+  const expectedBodyTitles = omitMarketResearch
+    ? CANONICAL_SECTION_TITLES.filter((title) => title !== "Market Research")
+    : CANONICAL_SECTION_TITLES;
+  const expected = [...expectedBodyTitles, SOURCES_TITLE];
   for (let i = 0; i < expected.length; i++) {
     if (titles[i] !== expected[i]) {
       errors.push(
@@ -446,9 +458,9 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   }
 
   const wordCount = countWords(body);
-  const manifest = manifestRowFor(slug, options.manifestPath);
+  const manifest = earlyManifest;
   if (manifest.error) errors.push(manifest.error);
-  const deep = options.engine === true || hasEngineMarker(raw) || isEnginePage(slug, manifest.row);
+  const deep = deepForHeadings;
   if (deep) {
     if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
       errors.push(

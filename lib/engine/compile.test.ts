@@ -608,7 +608,12 @@ describe("compile manifest stub", () => {
           textSha256: "0".repeat(64),
         },
       ];
-      r.market = { summary: "A single overview page backs every figure here.", statIds: byKind("market_stat") };
+      // One same-host market figure is allowed under buyer-first; the compile
+      // gate under test is distinct Sources links, not market host diversity.
+      r.market = {
+        summary: "A single overview page backs every figure here.",
+        statIds: byKind("market_stat").slice(0, 1),
+      };
       r.competitors = vendors.map((name, i) => ({ name, priceIds: [byKind("competitor_price")[i] ?? ""] }));
       r.community = { summary: "Reviewers describe noise.", quoteIds: byKind("community_quote") };
       r.goToMarket.pricingNotes = "Price below the per-seat incumbents.";
@@ -621,8 +626,35 @@ describe("compile manifest stub", () => {
 describe("parse errors surface at the compile boundary", () => {
   it("throws ResearchRecordParseError for an invalid v2 record", () => {
     const record = buildFixtureRecord();
-    const broken: unknown = JSON.parse(JSON.stringify({ ...record, market: { ...record.market, statIds: [] } }));
+    const broken: unknown = JSON.parse(
+      JSON.stringify({ ...record, market: { ...record.market, summary: "" } }),
+    );
     expect(() => compileResearchRecord({ record: broken as ResearchRecordV2 })).toThrow(ResearchRecordParseError);
+  });
+});
+
+describe("buyer-first optional market research", () => {
+  it("omits ## Market Research when the record selects no market stats", () => {
+    const record = buildFixtureRecord((r) => {
+      r.market = { summary: "", statIds: [] };
+      // whyNow may not cite market_stat tokens once stats are gone.
+      r.whyNow =
+        "Enterprise buyers send security questionnaires earlier, and legal rejects answers that cannot be traced to an approved source.";
+    });
+    const { mdx } = compileResearchRecord({ record, allowFixture: true });
+    const headings = [...mdx.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+    expect(headings).not.toContain("Market Research");
+    expect(headings).toEqual([
+      "The Problem",
+      "The Solution",
+      "Competitive Landscape",
+      "Business Model",
+      "Recommended Tech Stack",
+      "AI Prompts to Build This",
+      "Sources",
+    ]);
+    expect(mdx).not.toMatch(/\$\d[\d,.]*\s*(billion|million)|TAM\b|market size/i);
+    expect(mdx).toContain("Why now:");
   });
 });
 

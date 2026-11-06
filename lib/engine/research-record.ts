@@ -19,11 +19,12 @@
  */
 
 import { CANDIDATE_LIMITS, revalidateAcceptedEvidence } from "./evidence/accept.ts";
-import { canonicalSourceUrl, vendorKey } from "./evidence/citation.ts";
+import { canonicalSourceUrl, sourceHostLabel, vendorKey } from "./evidence/citation.ts";
 import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  EVIDENCE_POLICY_BUYER_FIRST_V1,
   formatControlIn,
   NUMERIC_PROPOSAL_FIELDS,
   PIPELINE_VERSION_V2,
@@ -34,6 +35,7 @@ import {
   type CodeRevision,
   type EditorialFieldsV2,
   type EvidenceKind,
+  type EvidencePolicy,
   type RejectedEvidence,
   type RejectionReason,
   type ResearchProvenanceV2,
@@ -1430,7 +1432,6 @@ function parseMarketV2(
 ): ResearchRecordV2["market"] | null {
   const raw = readObject(value, "market", ["summary", "statIds"], ctx);
   if (!raw) return null;
-  const summary = readEditorialText(raw.summary, "market.summary", ctx);
   const stats = readEvidenceIds(raw.statIds, "market.statIds", "market_stat", byId, ctx, {
     max: EVIDENCE_LIMITS.maxAccepted.market_stat,
   });
@@ -1438,6 +1439,34 @@ function parseMarketV2(
     ctx.issues.push(
       `market.statIds: need ≥${EVIDENCE_MINIMUMS.marketStats} distinct accepted market_stat ids (got ${stats.resolved.length})`,
     );
+  }
+  // When two or more stats are selected, they must come from independent hosts.
+  if (stats && stats.resolved.length >= 2) {
+    const hosts = new Set(stats.resolved.map(({ item }) => sourceHostLabel(item.sourceUrl)));
+    if (hosts.size < 2) {
+      ctx.issues.push(
+        `market.statIds: need ≥2 independent publisher hosts when selecting ${stats.resolved.length} market stats (got ${hosts.size})`,
+      );
+    }
+  }
+  // Buyer-first: empty summary is required when no stats are selected (the
+  // compiler omits ## Market Research entirely). Non-empty summary still
+  // fails closed through editorial text rules when stats are present.
+  let summary: string | null;
+  if (stats && stats.resolved.length === 0) {
+    if (typeof raw.summary !== "string") {
+      ctx.issues.push("market.summary: required string (empty when market.statIds is empty)");
+      summary = null;
+    } else if (raw.summary.trim() !== "") {
+      ctx.issues.push(
+        "market.summary: must be empty when market.statIds is empty (omit unverified market-size, growth and revenue claims)",
+      );
+      summary = null;
+    } else {
+      summary = "";
+    }
+  } else {
+    summary = readEditorialText(raw.summary, "market.summary", ctx);
   }
   if (summary === null || !stats) return null;
   return { summary, statIds: stats.ids };
@@ -1792,8 +1821,21 @@ function parseCodeRevisionV2(value: unknown, ctx: V2Context): CodeRevision | nul
   return { sha: typeof sha === "string" ? sha : null, dirty: typeof dirty === "boolean" ? dirty : null };
 }
 
+function parseEvidencePolicyV2(value: unknown, ctx: V2Context): EvidencePolicy | null {
+  if (value === EVIDENCE_POLICY_BUYER_FIRST_V1) return value;
+  ctx.issues.push(
+    `provenance.evidencePolicy: expected ${JSON.stringify(EVIDENCE_POLICY_BUYER_FIRST_V1)} when present (got ${describeValue(value)})`,
+  );
+  return null;
+}
+
 function parseProvenanceV2(value: unknown, ctx: V2Context): ResearchProvenanceV2 | null {
-  const raw = readObject(value, "provenance", ["providerCalls", "costUsd", "ranAt", "models", "attempts", "codeRevision"], ctx);
+  const raw = readObject(
+    value,
+    "provenance",
+    ["providerCalls", "costUsd", "ranAt", "models", "attempts", "codeRevision", "evidencePolicy"],
+    ctx,
+  );
   if (!raw) return null;
   const providerCalls = parseProviderCallsV2(raw.providerCalls, ctx);
   const { costUsd, ranAt } = raw;
@@ -1802,10 +1844,28 @@ function parseProvenanceV2(value: unknown, ctx: V2Context): ResearchProvenanceV2
   const models = parseModelsV2(raw.models, ctx);
   const attempts = parseAttemptsV2(raw.attempts, ctx);
   const codeRevision = raw.codeRevision === undefined ? undefined : parseCodeRevisionV2(raw.codeRevision, ctx);
-  if (!providerCalls || !isFiniteNonNegative(costUsd) || !isIsoTime(ranAt) || !models || !attempts || codeRevision === null) {
+  const evidencePolicy =
+    raw.evidencePolicy === undefined ? undefined : parseEvidencePolicyV2(raw.evidencePolicy, ctx);
+  if (
+    !providerCalls ||
+    !isFiniteNonNegative(costUsd) ||
+    !isIsoTime(ranAt) ||
+    !models ||
+    !attempts ||
+    codeRevision === null ||
+    evidencePolicy === null
+  ) {
     return null;
   }
-  return { providerCalls, costUsd, ranAt, models, attempts, ...(codeRevision ? { codeRevision } : {}) };
+  return {
+    providerCalls,
+    costUsd,
+    ranAt,
+    models,
+    attempts,
+    ...(codeRevision ? { codeRevision } : {}),
+    ...(evidencePolicy ? { evidencePolicy } : {}),
+  };
 }
 
 // --- editorial text rules -------------------------------------------------------

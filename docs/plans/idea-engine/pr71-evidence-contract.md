@@ -48,11 +48,14 @@ Rules:
   R13; originally 2), counting provider retries and regenerations after
   validation failure. Each regeneration repeats the same accepted bundle plus
   the list of validation issues. It is never more permissive.
-- Minimums apply to **accepted** evidence: ≥2 market stats, ≥3 distinct
-  competitors with price or first-party availability evidence (≥1 with a
-  numeric price), ≥2 distinct accepted community quotes
-  (distinct = different normalized quote text). Readable-page counts remain an
-  acquisition precondition for the supplement search only.
+- Minimums apply to **accepted** evidence: market stats are **optional**
+  (`EVIDENCE_MINIMUMS.marketStats = 0`, evidencePolicy `buyer-first-v1`);
+  ≥3 distinct competitors with price or first-party availability evidence
+  (≥1 with a numeric price), ≥2 distinct accepted community quotes
+  (distinct = different normalized quote text). When ≥2 market stats are
+  accepted they still need independent publisher hosts. Readable-page counts
+  remain an acquisition precondition for the supplement search only. Failed
+  `*.report.json` diagnostics are never reinterpreted as success.
 - The editorial input never contains search answer prose, raw page text,
   rejected candidates, extraction-model prose, or prior narratives.
 

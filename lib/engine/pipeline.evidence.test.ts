@@ -579,58 +579,19 @@ describe("extraction attempts", () => {
     expect(h.keywordLookups).toBe(0);
   });
 
-  it("uses the remaining attempt on market sources when only market figures are short", async () => {
-    let calls = 0;
+  it("accepts a single market stat without spending a host-diversity retry", async () => {
     const h = harness({
       synthesis: {
-        extraction: () => calls++ === 0
-          ? { ...FIXTURE_EXTRACTION, marketStats: FIXTURE_EXTRACTION.marketStats.slice(0, 1) }
-          : FIXTURE_EXTRACTION,
+        extraction: () => ({ ...FIXTURE_EXTRACTION, marketStats: FIXTURE_EXTRACTION.marketStats.slice(0, 1) }),
       },
     });
     const { record } = await run(h);
-    const requests = extractionRequests(h);
-    expect(requests).toHaveLength(2);
-    expect(requests[1]?.input).toContain("too few verified market statistics");
-    expect(record.evidence.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(3);
-    expect(record.provenance.attempts.evidence_extraction).toBe(2);
+    expect(extractionRequests(h)).toHaveLength(1);
+    expect(record.evidence.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(1);
+    expect(record.provenance.evidencePolicy).toBe("buyer-first-v1");
   });
 
-  it("keeps the market shortfall fail closed after its bounded retry", async () => {
-    const h = harness({ synthesis: { extraction: () => ({ ...FIXTURE_EXTRACTION, marketStats: [] }) } });
-    const error = await failureOf(run(h));
-    expect(error.stepId).toBe("evidence_acceptance");
-    expect(error.message).toContain("market stats: 0 accepted, need 2");
-    expect(extractionRequests(h)).toHaveLength(2);
-    expect(h.keywordLookups).toBe(0);
-  });
-
-  it("spends the remaining extraction attempt on market even when quotes and competitors are also short", async () => {
-    // Live batch signature: market 0 + competitors short + quotes 0. The old
-    // gate required market to be the *only* shortfall, so attempt 2 never ran.
-    let calls = 0;
-    const h = harness({
-      synthesis: {
-        extraction: () =>
-          calls++ === 0
-            ? { quotes: [], marketStats: [], competitorPrices: [], competitorAvailability: [] }
-            : FIXTURE_EXTRACTION,
-      },
-    });
-    const error = await failureOf(run(h));
-    const requests = extractionRequests(h);
-    expect(requests).toHaveLength(2);
-    expect(requests[1]?.input).toContain("too few verified market statistics");
-    // Market retry merges only market_stat; quotes/competitors stay short and fail closed.
-    expect(error.stepId).toBe("evidence_acceptance");
-    expect(error.report?.evidence.accepted.market_stat).toBeGreaterThanOrEqual(2);
-    expect(error.report?.evidence.preaccept.counts.market_stat).toBeGreaterThanOrEqual(2);
-    expect(error.report?.evidence.preaccept.bySource.some((row) => row.kind === "market_stat")).toBe(true);
-    expect(error.report?.evidence.extractionReadiness.some((row) => row.roles.includes("market") && row.included)).toBe(true);
-    expect(error.message).toMatch(/community quotes:|competitors:/);
-  });
-
-  it("records empty preaccept market proposals when the model returns none", async () => {
+  it("passes with zero market stats when quotes and competitors already clear the bar", async () => {
     const h = harness({
       synthesis: {
         extraction: () => ({
@@ -641,14 +602,51 @@ describe("extraction attempts", () => {
         }),
       },
     });
-    const error = await failureOf(run(h));
-    expect(error.stepId).toBe("evidence_acceptance");
-    expect(error.report?.evidence.preaccept.counts.market_stat).toBe(0);
-    expect(error.report?.evidence.preaccept.bySource.filter((row) => row.kind === "market_stat")).toEqual([]);
-    expect(error.report?.evidence.preaccept.counts.community_quote).toBeGreaterThan(0);
-    expect(error.report?.evidence.extractionReadiness.some((row) => row.roles.includes("market"))).toBe(true);
-    // Rejection trace keeps the bounded candidate claim when acceptance rejects one.
-    expect(error.report?.evidence.accepted.market_stat).toBe(0);
+    const { record } = await run(h);
+    expect(extractionRequests(h)).toHaveLength(1);
+    expect(record.evidence.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(0);
+    expect(record.market.statIds).toEqual([]);
+    expect(record.provenance.evidencePolicy).toBe("buyer-first-v1");
+    expect(h.keywordLookups).toBeGreaterThan(0);
+  });
+
+  it("prefers a quote retry over market when quotes and market are both short", async () => {
+    // Buyer-first: the spare extraction attempt goes to still-missing buyer
+    // quotes, not optional market enrichment.
+    let calls = 0;
+    const h = harness({
+      synthesis: {
+        extraction: () =>
+          calls++ === 0
+            ? { quotes: [], marketStats: [], competitorPrices: FIXTURE_EXTRACTION.competitorPrices }
+            : FIXTURE_EXTRACTION,
+      },
+    });
+    const { record } = await run(h);
+    const requests = extractionRequests(h);
+    expect(requests).toHaveLength(2);
+    expect(requests[1]?.input).toContain("too few exact buyer quotes");
+    expect(record.evidence.accepted.filter((item) => item.kind === "community_quote").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("records empty preaccept market proposals when the model returns none and still passes", async () => {
+    const h = harness({
+      synthesis: {
+        extraction: () => ({
+          quotes: FIXTURE_EXTRACTION.quotes,
+          marketStats: [],
+          competitorPrices: FIXTURE_EXTRACTION.competitorPrices,
+          competitorAvailability: FIXTURE_EXTRACTION.competitorAvailability ?? [],
+        }),
+      },
+    });
+    const { record, report } = await run(h);
+    expect(report.ok).toBe(true);
+    expect(report.evidence.preaccept.counts.market_stat).toBe(0);
+    expect(report.evidence.preaccept.bySource.filter((row) => row.kind === "market_stat")).toEqual([]);
+    expect(report.evidence.preaccept.counts.community_quote).toBeGreaterThan(0);
+    expect(report.evidence.extractionReadiness.some((row) => row.roles.includes("market"))).toBe(true);
+    expect(record.evidence.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(0);
   });
 
   it("re-asks once after a reply that is not JSON, under the same rules", async () => {

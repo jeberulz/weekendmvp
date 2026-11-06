@@ -1722,12 +1722,25 @@ export function auditEngineArtifact(
   auditLinkTargets(state, parsed.root);
   result.metrics.verifiedQuotes = auditQuotes(ctx, parsed.root, record, ev);
   const market = section("Market Research");
-  if (market) {
+  const competitive = section("Competitive Landscape");
+  if (record.market.statIds.length === 0) {
+    if (market) {
+      ctx.errors.push(
+        "## Market Research must be omitted when the research record selects no market stats (buyer-first: no placeholder market section)",
+      );
+    }
+  } else if (!market) {
+    ctx.errors.push(
+      "## Market Research is required when the research record selects market stats (got none on the page)",
+    );
+  } else {
     result.metrics.marketRows = auditMarketRows(state, market);
     auditKeywordRows(state, market);
   }
+  // When Market Research is omitted, Search demand rows (if any) live under
+  // Competitive Landscape — still audited for format when present.
+  if (!market && competitive) auditKeywordRows(state, competitive);
   auditStatSubjects(state);
-  const competitive = section("Competitive Landscape");
   if (competitive) {
     result.metrics.competitorRows = auditCompetitorRows(state, competitive, result.competitorLinks);
   }

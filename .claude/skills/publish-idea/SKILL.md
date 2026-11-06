@@ -74,7 +74,7 @@ If a live compile cannot clear the auditor on this machine, stop and report — 
 
 1. **Builds a brief** JSON (`title`, `audience`, `revenueModel`, `seedKeywords[]`, optional `slug` / `oneLiner`).
 2. **Runs** `npm run engine:research -- --brief {path} --live --out engine/records/{slug}.json` — a contract v2 research record plus a run report, or a run report and no record.
-3. **Writes a sealed Source Critic PASS** at `engine/records/{slug}.source-review.json` (Step 3.0) — every used price/stat/availability plus ≥2 quotes; machine gate refuses compile/submit without it.
+3. **Writes a sealed Source Critic PASS** at `engine/records/{slug}.source-review.json` (Step 3.0) — every **used** price/stat/availability plus ≥2 quotes (market stats optional when none selected); machine gate refuses compile/submit without it.
 4. **Runs** `npm run engine:compile -- --record engine/records/{slug}.json` → MDX + manifest row (`source: "engine:{slug}"`, generated `highlights`). Live records require the sealed review (default path `{record}.source-review.json`).
 5. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og).
 6. **Gates:** `npm run audit:idea -- --slug {slug}` then `npm run validate:idea-tags -- --slug {slug}`.
@@ -282,7 +282,7 @@ Compiler does **not** seed Convex, generate OG, or push git.
 
 `npm run audit:idea -- --slug {slug}` must pass (exit 0). It audits `content/ideas/{slug}.mdx` (else `engine/drafts/{slug}.mdx`) against `engine/records/{slug}.json`; `--record path` names another record, `--file path` audits an MDX file anywhere, `--manifest path` reads another manifest. The **deep bar** applies when the frontmatter says `engine: true`, the manifest source is `engine:*`, the slug is `engine-draft-*`, or `--record` is passed (see `ideas/SECTIONS.md` + `scripts/audit-idea-mdx.mjs --help`):
 
-- All **8** headings in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This → **Sources**
+- Headings in order: The Problem → The Solution → Market Research (omit entirely when the record has zero verified `market_stat` selections — buyer-first; never a placeholder) → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This → **Sources**
 - `**How it works:**` numbered list (≥2 named steps, never `Step 1`) under The Solution
 - **≥2** markdown citation links in Sources
 - Body **≥2,200 words**, no stock filler, no ≥8-word sentence repeated on the page or shared with another engine page, no near-duplicate paragraphs

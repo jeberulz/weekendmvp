@@ -181,12 +181,22 @@ export const EVIDENCE_LIMITS = {
   rejectedCandidateChars: 120,
 } as const;
 
+/**
+ * Buyer-first evidence bar (evidencePolicy `buyer-first-v1`):
+ * market_stat is optional (0 accepted is fine). Competitors and distinct
+ * buyer quotes remain mandatory. Verified market stats, when present, still
+ * fail-closed through acceptance, Source Critic, and the unbound-figure audit.
+ */
 export const EVIDENCE_MINIMUMS = {
-  marketStats: 2,
+  marketStats: 0,
   pricedCompetitors: 1,
   competitors: 3,
   distinctQuotes: 2,
 } as const;
+
+/** Provenance tag for records assembled under optional market-stat minima. */
+export const EVIDENCE_POLICY_BUYER_FIRST_V1 = "buyer-first-v1" as const;
+export type EvidencePolicy = typeof EVIDENCE_POLICY_BUYER_FIRST_V1;
 
 // ---------------------------------------------------------------------------
 // Rejections (operator-only; never reach the writer or the compiler)
@@ -436,6 +446,12 @@ export type ResearchProvenanceV2 = {
   attempts: Record<string, number>;
   /** Ruling R12; absent on records written before it. */
   codeRevision?: CodeRevision;
+  /**
+   * Evidence minima policy for this record. Absent on pre-buyer-first
+   * records (still parseable). New pipeline runs stamp `buyer-first-v1`.
+   * Failed `*.report.json` diagnostics are not records and never gain this.
+   */
+  evidencePolicy?: EvidencePolicy;
 };
 
 export type ResearchRecordV2 = {

@@ -894,16 +894,36 @@ describe("parseResearchRecord: references resolve to accepted evidence", () => {
     );
   });
 
-  it("rejects too few market stats", () => {
+  it("accepts zero market stats when summary is empty (buyer-first)", () => {
+    const input = fresh();
+    setAt(input, "market.statIds", []);
+    setAt(input, "market.summary", "");
+    const parsed = parseResearchRecord(input);
+    expect(parsed.market.statIds).toEqual([]);
+    expect(parsed.market.summary).toBe("");
+  });
+
+  it("accepts a single verified market stat without host diversity", () => {
     const input = fresh();
     setAt(input, "market.statIds", [EV.statMeasured.id]);
-    expectRejected(input, /^market\.statIds: need ≥2/m);
+    const parsed = parseResearchRecord(input);
+    expect(parsed.market.statIds).toEqual([EV.statMeasured.id]);
+  });
+
+  it("rejects a non-empty market summary when no stats are selected", () => {
+    const input = fresh();
+    setAt(input, "market.statIds", []);
+    setAt(input, "market.summary", "The niche is growing fast without a cited figure.");
+    expectRejected(
+      input,
+      /^market\.summary: must be empty when market\.statIds is empty/m,
+    );
   });
 
   it("rejects a repeated stat id", () => {
     const input = fresh();
     setAt(input, "market.statIds", [EV.statMeasured.id, EV.statMeasured.id]);
-    expectRejected(input, /^market\.statIds\[1\]: duplicate id/m, /^market\.statIds: need ≥2/m);
+    expectRejected(input, /^market\.statIds\[1\]: duplicate id/m);
   });
 
   it("rejects fewer than three priced competitors", () => {
@@ -1292,13 +1312,14 @@ describe("parseResearchRecord: closed schema and shape", () => {
     setAt(input, "mode", "replay");
     setAt(input, "whyNow", "");
     setAt(input, "market.statIds", []);
+    setAt(input, "market.summary", "leftover market prose");
     setAt(input, "editorial.yearOne.payingAccounts", 0.4);
     setAt(input, "provenance.models.search", "");
     expectRejected(
       input,
       /^mode: /m,
       /^whyNow: /m,
-      /^market\.statIds: /m,
+      /^market\.summary: must be empty when market\.statIds is empty/m,
       /^editorial\.yearOne\.payingAccounts: /m,
       /^provenance\.models\.search: /m,
     );

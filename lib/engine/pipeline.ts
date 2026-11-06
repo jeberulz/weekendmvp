@@ -56,6 +56,7 @@ import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  EVIDENCE_POLICY_BUYER_FIRST_V1,
   formatControlIn,
   REPORT_DIAGNOSTIC_LIMITS,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
@@ -1002,7 +1003,7 @@ export const EDITORIAL_INSTRUCTIONS = [
     '"seatsPerAccount":1,"assumptions":""},"dataModel":[{"table":"","columns":""}]}}',
   "The page title and description come from the operator's brief; do not write them.",
   "Evidence rules:",
-  "- Select ids only from the accepted evidence list. marketStatIds: at least 2 market_stat ids from different publisher hosts. quoteIds: at least 2 community_quote ids from different discussion URLs, neither text containing the other. competitors: at least 3 distinct vendors. Each row has either priceIds of competitor_price items or one availabilityId of a competitor_availability item, with name exactly equal to the item's vendor. At least one vendor must have a numeric software-plan price. Exclude setup and managed-service fees from competitor priceIds. Omit availabilityId for priced rows; use [] for unpriced rows.",
+  "- Select ids only from the accepted evidence list. marketStatIds: empty when no accepted market_stat items exist; otherwise select only verified market_stat ids (when selecting 2 or more, they must come from different publisher hosts). quoteIds: at least 2 community_quote ids from different discussion URLs, neither text containing the other. competitors: at least 3 distinct vendors. Each row has either priceIds of competitor_price items or one availabilityId of a competitor_availability item, with name exactly equal to the item's vendor. At least one vendor must have a numeric software-plan price. Exclude setup and managed-service fees from competitor priceIds. Omit availabilityId for priced rows; use [] for unpriced rows.",
   "- Choose market statistics measuring the product's specific niche, not adjacent categories as a substitute. Prefer original research over a vendor blog repeating a survey; a copied statistic is not independently verified merely because it appears on a cited page. Choose quotes from target buyers describing a concrete problem in that niche; a maker's launch comment, vendor reply or generic praise is not buyer pain. If the accepted list has too little suitable evidence, do not dress up irrelevant items as support.",
   "- Prefer exactly three distinct competitors when three have sound evidence. Prefer supported numeric offers to a contact-sales status. If using a status, describe it as an evidenced offer or option, not as proof that the vendor has no self-serve prices elsewhere on the page.",
   "- Cite an evidence item inside text as [[ev:<id>]], replacing <id> with an EXACT id copied from the accepted list. Each id is one kind letter, underscore, and exactly 12 lowercase hex digits (for example p_0123456789ab). Never extend, shorten, reconstruct or invent an id. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
@@ -1019,7 +1020,7 @@ export const EDITORIAL_INSTRUCTIONS = [
   "- yearOne is an assumption: funnel of 2–5 stages, each naming its channel in words, with integer counts that never increase; the last stage count equals payingAccounts. Copy yearOne.tier character-for-character from one pricingTiers[].name with a fixed price. It is the NAME ONLY: never append the price, billing period, description, dash or parenthetical. Put the price only in pricingTiers[].price. seatsPerAccount is an integer (1 for a flat price); assumptions explain the plan in words, without rates; never compute ARR or revenue totals.",
   "- unitEconomics: at least 3 rows, value first and at most 8 words, label at most 12 words. stackNotes at least 60 words, specific to this product. dataModel: 3–6 snake_case tables specific to this product's workflow (not workspaces, members or usage_events, which always exist), columns as id, workspace_id fk, … with enum values named plainly (status: draft, in review, approved).",
   "- scores: opportunity, pain, timing (market timing), builderConfidence and execution (build feasibility), each a number from 0 to 10.",
-  "Writing: marketSummary 180–280 words about the niche (never global SaaS or AI totals); communitySummary at least 100 words; problemNarrative 300–420 words with named buyers in their proper casing; solutionNarrative 220–320 words naming the product and its wedge; competitiveNarrative 120–180 words on how this product differs from the named competitors; competitors[].notes at least 25 words each, unique per competitor; goToMarket.positioning at least 40 words; pricingNotes at least 60 words; brandBrief 50–90 words on visual direction and voice for this buyer; audienceShort a 2–5 word label keeping acronyms such as SMB or SaaS uppercase; productName a short brand name unique to this idea; dontBuildYet one sentence on what not to build yet.",
+  "Writing: marketSummary must be an empty string when marketStatIds is empty (do not invent TAM, growth, revenue or market-size figures); when marketStatIds is non-empty, write 180–280 words about the niche citing only those stats (never global SaaS or AI totals). communitySummary at least 100 words; problemNarrative 300–420 words with named buyers in their proper casing; solutionNarrative 220–320 words naming the product and its wedge; competitiveNarrative 120–180 words on how this product differs from the named competitors; competitors[].notes at least 25 words each, unique per competitor; goToMarket.positioning at least 40 words; pricingNotes at least 60 words; brandBrief 50–90 words on visual direction and voice for this buyer; audienceShort a 2–5 word label keeping acronyms such as SMB or SaaS uppercase; productName a short brand name unique to this idea; dontBuildYet one sentence on what not to build yet.",
   "Never emit operator notes (no 're-check before publish'), never invent keyword volume or CPC, and never reuse padding phrases from other ideas.",
 ].join("\n");
 
@@ -1295,6 +1296,7 @@ function provenanceOf(state: RunState, ranAt: string): ResearchProvenanceV2 {
     models: currentModels(state),
     attempts: { ...state.attempts },
     codeRevision: { ...state.codeRevision },
+    evidencePolicy: EVIDENCE_POLICY_BUYER_FIRST_V1,
   };
 }
 
@@ -1490,50 +1492,20 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   state.accepted = accepted.accepted;
   state.rejected = [...extraction.rejected, ...accepted.rejected];
   let minimums = checkEvidenceMinimums(state.accepted);
-  const marketHosts = () => new Set(state.accepted
-    .filter((item) => item.kind === "market_stat")
-    .map((item) => sourceHostLabel(item.sourceUrl)));
-  // Prefer the market-focused retry whenever market figures are short — even
-  // when competitors/quotes are also short. Live batches often fail all three;
-  // the old "market-only shortfall" gate skipped the market retry entirely and
-  // left EMPTY market_stat proposals undiagnosed (report preaccept counts).
-  const marketCountIsShort = minimums.shortfalls.some((shortfall) => shortfall.startsWith("market stats:"));
-  const marketHostsNeedRetry = minimums.ok && marketHosts().size < 2;
-  if (
-    (marketCountIsShort || marketHostsNeedRetry) &&
-    attemptsLeft(state, stepById("evidence_extraction"))
-  ) {
-    const existingHosts = marketHosts();
-    const marketSources = acquisition.readable.filter((source) =>
-      source.roles.includes("market") && !existingHosts.has(sourceHostLabel(source.url)));
-    if (marketSources.length > 0) {
-      const marketRetry = await stepExtraction(state, brief, marketSources, EXTRACTION_MARKET_RETRY);
-      const stats = acceptEvidence({
-        candidates: { quotes: [], marketStats: marketRetry.candidates.marketStats, competitorPrices: [] },
-        citations: acquisition.citations,
-        sources: acquisition.inputs,
-        vendorHints: acquisition.vendorHints,
-      });
-      const seen = new Set(state.accepted.map((item) => item.id));
-      for (const item of stats.accepted) {
-        if (item.kind !== "market_stat" || seen.has(item.id)) continue;
-        if (state.accepted.filter((acceptedItem) => acceptedItem.kind === "market_stat").length >= EVIDENCE_LIMITS.maxAccepted.market_stat) break;
-        state.accepted.push(item);
-        seen.add(item.id);
-      }
-      state.rejected.push(...marketRetry.rejected, ...stats.rejected);
-      minimums = checkEvidenceMinimums(state.accepted);
-    }
-  }
+  const marketStatItems = () => state.accepted.filter((item) => item.kind === "market_stat");
+  const marketHosts = () => new Set(marketStatItems().map((item) => sourceHostLabel(item.sourceUrl)));
+  // Buyer-first: market stats are optional. Prefer the single spare extraction
+  // attempt for still-missing quotes or competitors. Spend it on market only
+  // when ≥2 accepted stats share one host and need an independent publisher.
+  const marketHostsNeedRetry = marketStatItems().length >= 2 && marketHosts().size < 2;
   if (
     !minimums.ok &&
-    minimums.shortfalls.length === 1 &&
-    minimums.shortfalls[0]?.startsWith("community quotes:") &&
+    minimums.shortfalls.some((shortfall) => shortfall.startsWith("community quotes:")) &&
     attemptsLeft(state, stepById("evidence_extraction"))
   ) {
-    // Spend the remaining extraction attempt on exact quotes only. Preserve
-    // the already verified statistics and competitor claims; the retry cannot
-    // replace them or inflate their per-kind caps.
+    // Spend the remaining extraction attempt on exact quotes. Preserve already
+    // verified statistics and competitor claims; the retry cannot replace them
+    // or inflate their per-kind caps.
     const quoteRetry = await stepExtraction(state, brief, acquisition.readable, EXTRACTION_QUOTE_RETRY);
     const quotes = acceptEvidence({
       candidates: { quotes: quoteRetry.candidates.quotes, marketStats: [], competitorPrices: [] },
@@ -1553,10 +1525,10 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   }
   if (
     !minimums.ok &&
-    minimums.shortfalls.every((shortfall) => shortfall.startsWith("priced competitors:") || shortfall.startsWith("competitors:")) &&
+    minimums.shortfalls.some((shortfall) => shortfall.startsWith("priced competitors:") || shortfall.startsWith("competitors:")) &&
     attemptsLeft(state, stepById("evidence_extraction"))
   ) {
-    // Use the same second extraction attempt for a competitor-only miss.
+    // Competitor-only miss when quotes already clear (or quote retry spent).
     // Previously accepted quotes and statistics cannot be replaced.
     const competitorRetry = await stepExtraction(state, brief, acquisition.readable, EXTRACTION_COMPETITOR_RETRY);
     const competitors = acceptEvidence({
@@ -1580,6 +1552,29 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
     state.rejected.push(...competitorRetry.rejected, ...competitors.rejected);
     minimums = checkEvidenceMinimums(state.accepted);
   }
+  if (marketHostsNeedRetry && attemptsLeft(state, stepById("evidence_extraction"))) {
+    const existingHosts = marketHosts();
+    const marketSources = acquisition.readable.filter((source) =>
+      source.roles.includes("market") && !existingHosts.has(sourceHostLabel(source.url)));
+    if (marketSources.length > 0) {
+      const marketRetry = await stepExtraction(state, brief, marketSources, EXTRACTION_MARKET_RETRY);
+      const stats = acceptEvidence({
+        candidates: { quotes: [], marketStats: marketRetry.candidates.marketStats, competitorPrices: [] },
+        citations: acquisition.citations,
+        sources: acquisition.inputs,
+        vendorHints: acquisition.vendorHints,
+      });
+      const seen = new Set(state.accepted.map((item) => item.id));
+      for (const item of stats.accepted) {
+        if (item.kind !== "market_stat" || seen.has(item.id)) continue;
+        if (state.accepted.filter((acceptedItem) => acceptedItem.kind === "market_stat").length >= EVIDENCE_LIMITS.maxAccepted.market_stat) break;
+        state.accepted.push(item);
+        seen.add(item.id);
+      }
+      state.rejected.push(...marketRetry.rejected, ...stats.rejected);
+      minimums = checkEvidenceMinimums(state.accepted);
+    }
+  }
   if (!minimums.ok) {
     throw new PipelineError(
       "evidence_acceptance",
@@ -1587,7 +1582,9 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
         "Stopped before keyword and editorial spend.",
     );
   }
-  if (marketHosts().size < 2) {
+  // Host diversity applies only when two or more market stats were accepted.
+  // Zero or one verified figure must not block an otherwise qualifying idea.
+  if (marketStatItems().length >= 2 && marketHosts().size < 2) {
     throw new PipelineError("evidence_acceptance", "Market statistics need two independent source hosts. Stopped before keyword and editorial spend.");
   }
   if (new Set(state.accepted.filter((item) => item.kind === "community_quote").map((item) => item.sourceUrl)).size < 2) {
