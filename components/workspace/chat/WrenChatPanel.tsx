@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
@@ -11,7 +11,7 @@ import { WrenChatCards } from "@/components/workspace/chat/WrenChatCards";
 import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
-import { resetsInLabel, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
+import { resetsInLabel, WREN_STREAM_STALE_MS, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
 
 /**
  * WP77-S3. The minimal Wren chat: the thread (`listWrenThread`), the composer
@@ -55,28 +55,46 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState<Notice>({ kind: "none" });
   const inFlight = useRef(false);
+  // The `updatedAt` of the streaming reply the timer has marked stopped.
+  const [stoppedAt, setStoppedAt] = useState<number | undefined>(undefined);
+
+  const last = messages?.at(-1);
+  const lastStreamingUpdatedAt =
+    last?.author === "wren" && last.status === "streaming" ? last.updatedAt : undefined;
+
+  // A reply still `streaming` after the stale window has stopped (the action died).
+  // Queries can't expire it, so flip at the threshold with one timer, no polling.
+  useEffect(() => {
+    if (lastStreamingUpdatedAt === undefined) return;
+    const remaining = Math.max(0, lastStreamingUpdatedAt + WREN_STREAM_STALE_MS - Date.now());
+    const timer = setTimeout(() => setStoppedAt(lastStreamingUpdatedAt), remaining + 1);
+    return () => clearTimeout(timer);
+  }, [lastStreamingUpdatedAt]);
 
   if (messages === undefined) return <WrenThread status="loading" />;
 
-  const last = messages.at(-1);
-  const replying = last?.author === "wren" && last.status === "streaming";
+  const lastStale = lastStreamingUpdatedAt !== undefined && stoppedAt === lastStreamingUpdatedAt;
+  const replying = lastStreamingUpdatedAt !== undefined && !lastStale;
 
-  async function run(action: () => Promise<Notice>) {
-    if (inFlight.current) return;
+  async function run(action: () => Promise<Notice>): Promise<boolean> {
+    if (inFlight.current) return false;
     inFlight.current = true;
     setSending(true);
     try {
-      setNotice(await action());
+      const notice = await action();
+      setNotice(notice);
+      return notice.kind === "none";
     } catch {
       setNotice({ kind: "message", text: "That didn't go through. Try again in a moment." });
+      return false;
     } finally {
       inFlight.current = false;
       setSending(false);
     }
   }
 
-  function send(text: string) {
-    void run(async () => {
+  function send(text: string): Promise<boolean> {
+    return run(async () => {
       const result = await sendMessage({ projectId, body: text });
       switch (result.kind) {
         case "sent":
@@ -115,17 +133,22 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
             if (message.author === "founder") {
               return <UserMessage key={message._id}>{message.body}</UserMessage>;
             }
-            const writing = message.status === "streaming";
+            const isLast = message._id === last?._id;
+            const stopped = message.status === "streaming" && isLast && lastStale;
+            const writing = message.status === "streaming" && !stopped;
             return (
               <div key={message._id} aria-busy={writing || undefined}>
                 <WrenMessage time={new Date(message.createdAt).toLocaleTimeString(undefined, TIME_FORMAT)}>
-                  {writing && message.body.length === 0 ? (
+                  {stopped && message.body.length === 0 ? (
+                    <p className="text-home-ink-2">Wren stopped partway through.</p>
+                  ) : writing && message.body.length === 0 ? (
                     <p className="text-home-ink-2">Wren is writing…</p>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.body}</p>
                   )}
                   {message.status === "done" ? <WrenChatCards projectId={projectId} cards={message.cards} /> : null}
-                  {message.status === "failed" && message._id === last?._id ? (
+                  {stopped && message.body.length > 0 ? <p className="text-[13px] text-home-ink-2">Wren stopped partway through.</p> : null}
+                  {(message.status === "failed" || stopped) && isLast ? (
                     <p>
                       <button
                         type="button"
