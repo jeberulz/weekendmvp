@@ -1,3 +1,4 @@
+import { register as registerResend } from "@convex-dev/resend/test";
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { internal } from "../../_generated/api";
@@ -7,9 +8,10 @@ import { LEAD_RETENTION_WINDOW_MS } from "./retention";
 const modules = import.meta.glob("/convex/**/*.ts");
 const DAY = 24 * 60 * 60 * 1000;
 
-describe("D5 deletion-request contract fixture", () => {
-  test("archive-only jobs never purge, and a valid explicit request stays inert", async () => {
+describe("D5 deletion-request contract", () => {
+  test("archive-only jobs never purge, while a converted explicit request can run when due", async () => {
     const t = convexTest(schema, modules);
+    registerResend(t);
     const now = Date.now();
     const archivedAt = now - 31 * DAY;
     const ids = await t.run(async (ctx) => {
@@ -45,7 +47,8 @@ describe("D5 deletion-request contract fixture", () => {
 
     await t.run(async (ctx) => {
       await ctx.db.patch(ids.jobId, {
-        deletionRequestedAt, deleteDueAt: deletionRequestedAt + LEAD_RETENTION_WINDOW_MS,
+        archivedAt: undefined, deletionRequestedAt,
+        deleteDueAt: deletionRequestedAt + LEAD_RETENTION_WINDOW_MS,
         nextAttemptAt: deletionRequestedAt + LEAD_RETENTION_WINDOW_MS,
       });
     });
@@ -75,7 +78,7 @@ describe("D5 deletion-request contract fixture", () => {
       nextAttemptAt: dueRequestAt + LEAD_RETENTION_WINDOW_MS,
     }));
     await expect(t.mutation(internal.platform.sites.retention.purgeDueProjectLeads,
-      { jobId: ids.jobId })).rejects.toThrow("LEAD_RETENTION_NOT_ACTIVE");
-    expect(await t.run((ctx) => ctx.db.get(ids.leadId))).not.toBeNull();
+      { jobId: ids.jobId })).resolves.toEqual({ deleted: 1, more: false });
+    expect(await t.run((ctx) => ctx.db.get(ids.leadId))).toBeNull();
   });
 });
