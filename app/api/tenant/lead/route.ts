@@ -104,10 +104,11 @@ export async function POST(request: Request) {
       || code === "TENANT_LEAD_BRIDGE_EXPIRED") {
       return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
     }
-    // An unpublished or unknown site arrives here as the same generic
-    // refusal the public resolver gives, so this endpoint cannot be used to
-    // enumerate which tenant sites are live.
-    return jsonError(404, "NOT_FOUND");
+    // An unpublished or unknown site gets the public resolver's refusal.
+    if (code === "TENANT_SITE_NOT_PUBLISHED") {
+      return jsonError(404, "NOT_FOUND");
+    }
+    return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
   }
 
   // Nothing about the lead is echoed back, and nothing is logged. The

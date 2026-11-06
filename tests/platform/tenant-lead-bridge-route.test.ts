@@ -79,4 +79,16 @@ describe("tenant lead signed handoff", () => {
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ ok: false, code: "TENANT_LEAD_UNAVAILABLE" });
   });
+
+  test("keeps unpublished sites private and reports other backend failures", async () => {
+    state.mutation.mockRejectedValueOnce(new ConvexError({ code: "TENANT_SITE_NOT_PUBLISHED" }));
+    const unpublished = await POST(request());
+    expect(unpublished.status).toBe(404);
+    expect(await unpublished.json()).toEqual({ ok: false, code: "NOT_FOUND" });
+
+    state.mutation.mockRejectedValueOnce(new Error("network unavailable"));
+    const outage = await POST(request());
+    expect(outage.status).toBe(503);
+    expect(await outage.json()).toEqual({ ok: false, code: "TENANT_LEAD_UNAVAILABLE" });
+  });
 });

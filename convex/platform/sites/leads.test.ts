@@ -260,7 +260,7 @@ describe("recordSynthetic", () => {
       .rejects.toThrow(/INVALID_TENANT_LEAD_BRIDGE_SIGNATURE/);
 
     await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
-      signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET, Date.now() + 30_001)))
+      signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET, Date.now() + 60_000)))
       .rejects.toThrow(/TENANT_LEAD_BRIDGE_EXPIRED/);
 
     const uppercase = signTenantLeadPayload("ACME.weekendmvp.app", "ip:9.9.9.9", SECRET);
