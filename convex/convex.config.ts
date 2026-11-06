@@ -43,6 +43,12 @@ const app = defineApp({
     // token to a protected, pinned Vercel deployment.
     EDITORIAL_STAGING_BACKEND_URL: v.optional(v.string()),
     EDITORIAL_STAGING_BYPASS_SECRET: v.optional(v.string()),
+    // WP78: fail-closed tenant takedown synchronization. Optional while the
+    // publishing feature remains off and provider objects are not configured.
+    TENANT_GLOBAL_CONFIG: v.optional(v.string()),
+    TENANT_GLOBAL_CONFIG_ID: v.optional(v.string()),
+    TENANT_GLOBAL_CONFIG_WRITE_TOKEN: v.optional(v.string()),
+    TENANT_GLOBAL_CONFIG_TEAM_ID: v.optional(v.string()),
   },
 });
 
