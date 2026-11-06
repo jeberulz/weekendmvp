@@ -548,9 +548,14 @@ describe("parseResearchRecord: valid records", () => {
 // ---------------------------------------------------------------------------
 
 const RECORDS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../engine/records");
-// Run reports (`{record}.report.json`) sit beside their records and are not records.
+// Run reports and Source Critic sidecars sit beside records and are not records.
 const COMMITTED_RECORDS = readdirSync(RECORDS_DIR)
-  .filter((f) => f.endsWith(".json") && !f.endsWith(".report.json"))
+  .filter(
+    (f) =>
+      f.endsWith(".json") &&
+      !f.endsWith(".report.json") &&
+      !f.endsWith(".source-review.json"),
+  )
   .sort();
 
 function readCommitted(file: string): Json {

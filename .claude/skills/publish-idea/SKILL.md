@@ -52,8 +52,15 @@ Examples:
 | User passes `--suggest {category}` or asks for idea suggestions | **Suggest** — Step 0 only: a shortlist, then wait for the operator's pick |
 | Research stops, compile refuses, or the page fails the auditor | **STOP** — surface the failure and the run report. Do not invent thin WebSearch filler to paper over it. Do not call Ideabrowser MCP. |
 
+**Runtime:** Idea Engine needs **Node >= 22.6** (`package.json` engines, `.nvmrc`
+pins `22`, CI uses `22.x`). Node 20 fails with exit 9
+(`bad option: --experimental-strip-types`) — unsupported, not polyfilled.
+Use `bash scripts/engine-replay.sh --work-root …` or `npm run engine:*` (they
+resolve a valid binary or exit 3 with install steps). Override with
+`ENGINE_NODE=/path/to/node-22.6+`.
+
 Checks that need no keys and spend nothing:
-- `npm run engine:replay` runs the synthetic fixture through the real research → compile → deep-audit CLIs in a temp dir (empty environment; nothing is written to the repo) and prints each step's exit code and the verdict. Run it after pulling engine changes or before a batch; if it fails, the engine itself is broken — stop. A pass says the code paths agree on the fixture, not that live sources or live models will behave.
+- `npm run engine:replay` / `bash scripts/engine-replay.sh --work-root DIR` runs the synthetic fixture through the real research → compile → deep-audit CLIs in a temp dir (empty environment; nothing is written to the repo) and prints each step's exit code and the verdict. A successful shell run writes `engine-replay-complete` under the work root. Run it after pulling engine changes or before a batch; if it fails, the engine itself is broken — stop. A pass says the code paths agree on the fixture, not that live sources or live models will behave.
 - `npm run test:engine` (part of `npm test`) runs the engine suites, including the same replay with authenticity and adversarial checks (`lib/engine/replay.test.ts`).
 - `npm run engine:eval` only re-audits three handwritten gold pages (a legacy auditor regression). It is not evidence of engine quality.
 - `npm run validate:idea-tags` checks the tagging allowlists and the shape of every `highlights` block.
@@ -93,7 +100,12 @@ Runs only for `/publish-idea --suggest {category|thinnest}` or when the operator
 
 **0.2 Raw candidates.** Draft 6 to 8 one-line candidates beyond what the backlog holds: a named buyer, what that buyer uses today, and the wedge the incumbents skip. These come from model knowledge, so label the list "unverified" until 0.5 and 0.6 have run.
 
-**0.3 Duplicate filter.** Search the manifest titles and descriptions, `content/ideas/`, `engine/records/` and `ideas/drafts/` for each candidate's buyer and job, then read the hits. Drop on buyer + job overlap (the Step 1 rule), not on slug alone, and show every drop with the slug it collided with.
+**0.3 Duplicate filter (Scout + Corpus Guardian — permanent, before any spend).**
+Search the manifest titles and descriptions, `content/ideas/`, `engine/records/`
+and `ideas/drafts/` for each candidate. Drop on semantic overlap of
+**customer + JTBD + workflow + mechanism** (not slug alone). Show every drop
+with the colliding slug and which dimension matched. Batch live runs must pass
+`--confirm-semantic-dedupe` on `npm run publish:ideas` only after this $0 check.
 
 **0.4 Pick evidence sources by buyer.** Look where the buyer actually complains, not where it is easiest to search. The engine has dedicated readers only for Hacker News (Algolia items API) and Reddit (needs `REDDIT_CLIENT_ID` and `REDDIT_CLIENT_SECRET`); every other site goes through the generic page fetch and is untested with `engine:research` until probed in 0.5.
 

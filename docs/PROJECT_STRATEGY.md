@@ -37,7 +37,8 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 
 | WP65 | Preliminary thin-category idea publication | Work Package | `codex/wp65-manual-thin-ideas` | Complete — PR #132 merged; four pages and exact-slug catalogue inserts verified live 2026-10-09 | Four accurate, editable concept pages pass content/technical checks and are published and catalogue-seeded with exact targets. See `docs/wp/wp65-stories.md`. |
 
-| WP88 | Source Critic gate + Ideabrowser Phase 9 cleanup | Work Package | `cursor/source-critic-gate-p0p2-53d8` | In progress — owner approved P0+P2 2026-11-06 | Live compile/editorial submit refuse without sealed Source Critic PASS; Ideabrowser MCP wiring removed from repo configs/docs; `docs/plans/idea-engine/PIPELINE.md` is the runtime truth. No publish/deploy. See `docs/wp/wp88-stories.md`. |
+| WP88 | Source Critic gate + Ideabrowser Phase 9 cleanup | Work Package | `cursor/source-critic-gate-p0p2-53d8` | Merged (#233) 2026-11-06 | Live compile/editorial submit refuse without sealed Source Critic PASS; Ideabrowser MCP wiring removed from repo configs/docs; `docs/plans/idea-engine/PIPELINE.md` is the runtime truth. No publish/deploy. See `docs/wp/wp88-stories.md`. |
+| WP89 | Engine runtime gate + batch research path | Work Package | `cursor/publish-ideas-batch-adapters-5637` | In progress 2026-11-06 | Node >= 22.6 resolver (Node 20 → exit 3 + install steps); `engine-replay.sh`; semantic-dedupe-before-spend; Source Critic draft CLI; E7 remains NO-GO. See `docs/wp/wp89-stories.md`. |
 
 ## Launch Workspace Program (WP67)
 
