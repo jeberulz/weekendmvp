@@ -1,0 +1,136 @@
+---
+slug: "lovable-vs-bolt-vs-replit-2026"
+title: "Lovable vs Bolt vs Replit: Which to Use This Weekend"
+description: "Lovable vs Bolt vs Replit (2026): compare credit and token burn, Supabase vs built-in backend, code export, and which browser AI builder ships fastest."
+category: "Guide"
+publishedAt: "2026-11-06"
+wordCount: 1780
+readMinutes: 9
+heroAlt: "Three small blank notecards arranged in a triangle on a dark surface, the top card lit by a single lime side beam"
+faq:
+  - question: "Lovable vs Bolt vs Replit: which is best for a weekend MVP?"
+    answer: "Pick Lovable when your MVP needs user login, a database, and a polished UI working together from a plain-English brief. Pick Bolt.new when you want the fastest browser loop for a landing page, calculator, or form-to-result tool. Pick Replit when you want an AI Agent plus a full browser IDE, backend runtime, and one-click hosting in the same tab."
+  - question: "What is the difference between Lovable and Bolt.new?"
+    answer: "Both generate web apps in your browser, but they meter and structure projects differently. Lovable bills in workspace credits (5 daily build credits plus 100+ monthly on Pro from $25/month) and pairs tightly with its built-in Cloud/Supabase backend. Bolt.new bills in tokens (300K daily/1M monthly on Free; 10M+ on Pro at $25/month) and re-syncs your file tree on prompts, making it blazingly fast for small apps and pricier as repos grow."
+  - question: "Is Replit better than Lovable or Bolt for backend apps?"
+    answer: "Yes when your app needs persistent background jobs, Python or Node scripts, Discord/Slack bots, or custom server runtimes. Lovable and Bolt focus on React/Vite web apps; Replit gives you a full Linux container, built-in database, and Agent in one workspace from $20/month ($18/month billed annually on Core)."
+  - question: "Which tool burns fewer credits: Lovable, Bolt, or Replit?"
+    answer: "Bolt burns the fewest resources on single-screen tools and landing pages, while Lovable is more predictable on multi-screen CRUD apps because small, focused edits cost less than broad rebuilds and Chat/Plan mode is metered per message. Replit Agent can burn through your $20 monthly Core credit allotment quickly if you ask it to debug loops instead of editing the file directly in the IDE."
+  - question: "Can you export your code from Lovable, Bolt, and Replit?"
+    answer: "Yes on all three. Lovable includes two-way GitHub sync even on Free (direct code download/edit in-browser is on Pro+). Bolt.new lets you download the project zip or push to GitHub/StackBlitz at any time. Replit gives you direct access to every file and git remote inside the workspace."
+  - question: "When should you switch from Lovable, Bolt, or Replit to Cursor or Claude Code?"
+    answer: "Switch when a single feature change starts breaking unrelated screens, when token/credit burn exceeds $50 a month on maintenance, or when you need strict multi-tenant security and automated test suites. Sync the project to GitHub and open it in Cursor or Claude Code."
+---
+
+## Quick Answer
+
+**All three build in your browser with zero local setup, but they win on different weekend shapes:**
+
+- **Full-stack web app with login + database** → **<LovableLink>Lovable</LovableLink>**
+- **Same-day landing page, waitlist, or form → result calculator** → **[Bolt.new](/build-with/bolt)**
+- **Bot, API, Python/Node backend, or browser IDE + hosting in one tab** → **[Replit](/build-with/replit)**
+
+<AffiliateDisclosure />
+
+Need a vetted problem before you pick the builder? Start in the [startup ideas library](/startup-ideas).
+
+## Lovable vs Bolt vs Replit: which is best for a weekend MVP?
+
+Pick Lovable when your MVP needs user login, a database, and a polished UI working together from a plain-English brief. Pick Bolt.new when you want the fastest browser loop for a landing page, calculator, or form-to-result tool. Pick Replit when you want an AI Agent plus a full browser IDE, backend runtime, and one-click hosting in the same tab.
+
+If you are also weighing local AI editors like Cursor or terminal agents like Claude Code, read [Lovable vs Cursor vs Claude Code](/articles/cursor-vs-claude-code-vs-lovable-2026) or the broader 5-tool buyer's guide in [Best AI App Builder for Non-Technical Founders](/articles/best-ai-app-builder-non-technical-founders).
+
+## Side-by-side comparison (November 2026 list prices)
+
+| Feature | Lovable | Bolt.new | Replit |
+| --- | --- | --- | --- |
+| **Sweet spot** | Full-stack web apps (auth + CRUD + UI) | Fast frontends, landing pages, form tools | Bots, APIs, multi-language apps + hosting |
+| **Free tier** | 5 daily build credits (up to 30/mo) + daily chat allowance | 300K daily / 1M monthly tokens (Bolt badge) | Limited Free Mode (up to 30 hrs chat / 60 projects) |
+| **Entry paid plan** | **Pro $25/mo** ($21/mo annual) — from 100 credits/mo | **Pro $25/mo** — starts at 10M tokens/mo | **Core $20/mo** ($18/mo annual) — $20 usage credits |
+| **How billing meters** | Complexity-based build credits + usage grants | Token consumption (syncs file tree per prompt) | Agent/model usage deducted from monthly credit pool |
+| **Rollover policy** | Monthly plan credits roll over (expire 2 mos after issue) | Unused Pro tokens roll over 1 extra month | Monthly included credits reset each billing cycle |
+| **Backend & DB** | Built-in Lovable Cloud / first-class Supabase | Built-in databases + Supabase/Netlify integrations | Built-in Replit Postgres / KV + full Linux server |
+| **Code export** | Two-way GitHub sync (Free+); in-app code edit (Pro+) | Download ZIP, open in StackBlitz, or GitHub sync | Full git CLI and file tree right in the browser IDE |
+
+## What is the difference between Lovable and Bolt.new?
+
+Both generate web apps in your browser, but they meter and structure projects differently. Lovable bills in workspace credits (5 daily build credits plus 100+ monthly on Pro from $25/month) and pairs tightly with its built-in Cloud/Supabase backend. Bolt.new bills in tokens (300K daily/1M monthly on Free; 10M+ on Pro at $25/month) and re-syncs your file tree on prompts, making it blazingly fast for small apps and pricier as repos grow.
+
+In practice, the difference shows up on Saturday afternoon:
+
+- **In <LovableLink>Lovable</LovableLink>**, you stay in a visual/chat loop designed for non-technical builders. Its credit system separates **usage-specific grants** (5 daily build credits, a daily chat allowance, 20 monthly Cloud credits, 4 AI credits) from your **general monthly credits**. Because build mode prices by task complexity, changing a button label costs a fraction of a full page scaffold. For deep mechanics, see [How Lovable Credits Work](/articles/how-lovable-credits-work) and browse [Lovable examples](/articles/lovable-examples-what-to-build).
+- **In [Bolt.new](/build-with/bolt)**, you get a full WebContainers browser environment running inside the tab. The first three screens appear almost instantly. The catch is token physics: Bolt's own pricing docs note that syncing your project's file system to the model accounts for most token consumption. Once your app crosses 25–30 files, every "fix this small bug" prompt sends that context along for the ride. See [Bolt.new Examples: 8 Apps You Can Build This Weekend](/articles/bolt-new-examples-weekend) for shapes that stay lean.
+
+## Is Replit better than Lovable or Bolt for backend apps?
+
+Yes when your app needs persistent background jobs, Python or Node scripts, Discord/Slack bots, or custom server runtimes. Lovable and Bolt focus on React/Vite web apps; Replit gives you a full Linux container, built-in database, and Agent in one workspace from $20/month ($18/month billed annually on Core).
+
+Choose [Replit](/build-with/replit) over Lovable and Bolt when:
+
+1. **Your MVP is not a standard React web app.** A Discord reminder bot, a Telegram scraper, a Python FastAPI service, or a scheduled cron worker fits Replit natively.
+2. **You can read a little code (or want to).** Because Replit is a real cloud IDE first and an AI builder second, you can open any file in the left pane, edit a line by hand without spending a cent of Agent credit, and click **Deploy**.
+3. **You want mobile building without SSH.** Replit's mobile app lets you prompt Agent and redeploy from your phone without configuring a terminal tunnel.
+
+For concrete weekend scopes that fit this setup, check [Replit Project Ideas: 8 Apps to Ship Without Burning Credits](/articles/replit-project-ideas-weekend).
+
+## Which tool burns fewer credits: Lovable, Bolt, or Replit?
+
+Bolt burns the fewest resources on single-screen tools and landing pages, while Lovable is more predictable on multi-screen CRUD apps because small, focused edits cost less than broad rebuilds and Chat/Plan mode is metered per message. Replit Agent can burn through your $20 monthly Core credit allotment quickly if you ask it to debug loops instead of editing the file directly in the IDE.
+
+To keep your weekend bill under $25 across all three:
+
+- **Freeze the 3-screen scope on Friday.** Every extra role or dashboard tab multiplies context size and retry loops. Use the [3-screen MVP framework](/articles/the-3-screen-mvp-framework).
+- **Separate planning from building.** Draft your data model and screen states in ChatGPT, Claude Projects, or each builder's Plan/Chat mode before triggering full multi-file generations.
+- **Stop after two failed retries.** If an AI builder fails to fix the same auth or state bug twice in a row, do not send a third angry prompt. Revert to the last working checkpoint and restate the requirement with the exact file and error message.
+
+Looking for an idea that already ships with four clean, scoped build prompts? Pick one in the [startup ideas library](/startup-ideas).
+
+## Can you export your code from Lovable, Bolt, and Replit?
+
+Yes on all three. Lovable includes two-way GitHub sync even on Free (direct code download/edit in-browser is on Pro+). Bolt.new lets you download the project zip or push to GitHub/StackBlitz at any time. Replit gives you direct access to every file and git remote inside the workspace.
+
+None of these three lock your code in a proprietary runtime the way classic no-code tools do (see [Vibe Coding vs No-Code vs Low-Code](/articles/vibe-coding-vs-no-code)). You get standard TypeScript/React or Python/Node files that any developer or coding agent can run locally.
+
+## When should you switch from Lovable, Bolt, or Replit to Cursor or Claude Code?
+
+Switch when a single feature change starts breaking unrelated screens, when token/credit burn exceeds $50 a month on maintenance, or when you need strict multi-tenant security and automated test suites. Sync the project to GitHub and open it in Cursor or Claude Code.
+
+Browser builders are built for **zero-to-one speed**. Once you have paying users, graduate the repo using [How to Move Your Lovable or Bolt App Into a Real Codebase](/articles/move-off-lovable-bolt-to-real-code) and run our [7-point vibe coding security checklist](/articles/vibe-coding-security-for-founders).
+
+## Weekend decision rules: pick in 60 seconds
+
+1. **"I cannot code at all and want a working SaaS with login and database by Sunday."** → Start on **<LovableLink>Lovable</LovableLink>** ([/build-with/lovable](/build-with/lovable)).
+2. **"I need a high-converting landing page, waitlist, or interactive calculator live tonight."** → Start on **[Bolt.new](/build-with/bolt)**.
+3. **"I'm building a bot, background worker, or Python/Node tool and want IDE + hosting together."** → Start on **[Replit](/build-with/replit)**.
+
+## FAQ
+
+### Lovable vs Bolt vs Replit: which is best for a weekend MVP?
+
+Pick Lovable when your MVP needs user login, a database, and a polished UI working together from a plain-English brief. Pick Bolt.new when you want the fastest browser loop for a landing page, calculator, or form-to-result tool. Pick Replit when you want an AI Agent plus a full browser IDE, backend runtime, and one-click hosting in the same tab.
+
+### What is the difference between Lovable and Bolt.new?
+
+Both generate web apps in your browser, but they meter and structure projects differently. Lovable bills in workspace credits (5 daily build credits plus 100+ monthly on Pro from $25/month) and pairs tightly with its built-in Cloud/Supabase backend. Bolt.new bills in tokens (300K daily/1M monthly on Free; 10M+ on Pro at $25/month) and re-syncs your file tree on prompts, making it blazingly fast for small apps and pricier as repos grow.
+
+### Is Replit better than Lovable or Bolt for backend apps?
+
+Yes when your app needs persistent background jobs, Python or Node scripts, Discord/Slack bots, or custom server runtimes. Lovable and Bolt focus on React/Vite web apps; Replit gives you a full Linux container, built-in database, and Agent in one workspace from $20/month ($18/month billed annually on Core).
+
+### Which tool burns fewer credits: Lovable, Bolt, or Replit?
+
+Bolt burns the fewest resources on single-screen tools and landing pages, while Lovable is more predictable on multi-screen CRUD apps because small, focused edits cost less than broad rebuilds and Chat/Plan mode is metered per message. Replit Agent can burn through your $20 monthly Core credit allotment quickly if you ask it to debug loops instead of editing the file directly in the IDE.
+
+### Can you export your code from Lovable, Bolt, and Replit?
+
+Yes on all three. Lovable includes two-way GitHub sync even on Free (direct code download/edit in-browser is on Pro+). Bolt.new lets you download the project zip or push to GitHub/StackBlitz at any time. Replit gives you direct access to every file and git remote inside the workspace.
+
+### When should you switch from Lovable, Bolt, or Replit to Cursor or Claude Code?
+
+Switch when a single feature change starts breaking unrelated screens, when token/credit burn exceeds $50 a month on maintenance, or when you need strict multi-tenant security and automated test suites. Sync the project to GitHub and open it in Cursor or Claude Code.
+
+## TL;DR
+
+Use **Lovable** for full-stack CRUD apps with auth, **Bolt.new** for same-day landing pages and calculators, and **Replit** when you want a browser IDE + Python/Node backend + one-click deploy. All three cost $20–$25/month on their entry paid plans and let you export your code to GitHub. Pick your tool, then grab a validated brief from the [startup ideas library](/startup-ideas).
+
+Sources: <LovableLink>Lovable plans & credits docs</LovableLink>, [Bolt.new pricing](https://bolt.new/pricing), [Replit pricing](https://replit.com/pricing)

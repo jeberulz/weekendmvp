@@ -186,6 +186,18 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
         label: "Vibe coding for designers: ship a real app in a weekend →",
       },
       {
+        href: "/articles/claude-code-for-designers",
+        label: "Claude Code for designers: from Figma frame to live app →",
+      },
+      {
+        href: "/articles/figma-make-vs-lovable",
+        label: "Figma Make vs Lovable: which should designers use? →",
+      },
+      {
+        href: "/articles/why-ai-built-apps-look-the-same",
+        label: "Why AI-built apps all look the same (and how to fix it) →",
+      },
+      {
         href: "/articles/vibe-coding-101",
         label: "Vibe Coding 101 →",
       },
@@ -245,6 +257,14 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       {
         href: "/articles/best-ai-app-builder-non-technical-founders",
         label: "Best AI app builder for non-technical founders →",
+      },
+      {
+        href: "/articles/mvp-agency-vs-freelancer-vs-ai-tools",
+        label: "MVP agency vs freelancer vs AI tools: what to pick in 2026 →",
+      },
+      {
+        href: "/articles/vibe-coding-vs-no-code",
+        label: "Vibe coding vs no-code vs low-code: what's the difference? →",
       },
       {
         href: "/articles/no-code-mvp-guide-2026",
@@ -410,6 +430,10 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       {
         href: "/articles/ship-it-saturday-framework",
         label: "Ship It Saturday framework →",
+      },
+      {
+        href: "/articles/collect-user-feedback-on-your-mvp",
+        label: "How to collect user feedback on your MVP →",
       },
       {
         href: "/articles/stop-overthinking-start-building",

@@ -1,0 +1,150 @@
+---
+slug: "collect-user-feedback-on-your-mvp"
+title: "How to Collect User Feedback on Your MVP (No-Code Friendly)"
+description: "How to collect user feedback on an MVP without writing backend code: the $0 Tally + Canny + PostHog stack, the 3 questions that work, and how to act on it."
+category: "Tutorial"
+publishedAt: "2026-11-06"
+wordCount: 1846
+readMinutes: 9
+heroAlt: "A small stack of handwritten comment cards clipped together on a dark wooden desk, top card lit by a single mint side beam"
+faq:
+  - question: "How do I collect user feedback on an MVP?"
+    answer: "Use three lightweight channels matched to user intent: a 1-question in-app prompt right after the user finishes your core workflow, a plain-text personal reply email sent 24 hours after signup asking what almost stopped them, and five 15-minute live screen-share sessions where you watch them use the product without coaching."
+  - question: "What are the best free no-code tools to collect MVP feedback in 2026?"
+    answer: "Tally.so offers unlimited forms and submissions for $0 (within fair use) for onboarding and exit surveys. Canny's Free plan covers up to 25 tracked users with unlimited feedback posts for a public feature board. PostHog's free tier includes 1,500 survey responses and 5,000 session replays per month so you can pair answers with what users actually clicked."
+  - question: "What questions should you ask early MVP users?"
+    answer: "Skip 'Do you like the app?' and NPS 1–10 sliders. Ask past-tense, specific questions: 'What were you trying to get done right before you signed up?', 'Which step felt confusing or slow today?', and the Sean Ellis test: 'How would you feel if you could no longer use this product tomorrow?' (Very disappointed, Somewhat disappointed, Not disappointed)."
+  - question: "How many users do you need for meaningful MVP feedback?"
+    answer: "Five live observation sessions will expose roughly 80% of your broken onboarding and UX friction. Ten to twenty active users completing your core workflow is enough to spot whether people come back on day two and which single missing capability blocks them from paying."
+  - question: "Why do most MVP feedback forms get zero responses?"
+    answer: "Forms get ignored when you send a 12-question survey link in a generic blast email three days after the user left. Ask one question at the exact moment of high intent—either right after they complete the first output or the moment they click cancel/close—and make the first input a single click."
+  - question: "How do you decide which user feedback to build vs ignore?"
+    answer: "Weight feedback by who gave it: a paying customer or a user who hit your core workflow three times outranks ten casual tourists asking for dark mode. Fix anything that blocks the happy path immediately, park 'nice-to-have' feature requests on a board until three target buyers ask for the same job, and read When to Add Your Second Feature before expanding scope."
+---
+
+## Quick Answer
+
+**To get honest feedback on a weekend MVP, stop sending 10-question email surveys.** Watch **five people** use your live URL on a screen share without coaching them, drop a **1-question micro-prompt** right on the output screen, and send one **plain-text "what almost stopped you?" email** 24 hours after signup. You can wire the entire feedback stack in 20 minutes for **$0** using Tally, Canny, and PostHog.
+
+If you still need a weekend-scoped product to put in front of users, start in the [startup ideas library](/startup-ideas).
+
+## How do I collect user feedback on an MVP?
+
+Use three lightweight channels matched to user intent: a 1-question in-app prompt right after the user finishes your core workflow, a plain-text personal reply email sent 24 hours after signup asking what almost stopped them, and five 15-minute live screen-share sessions where you watch them use the product without coaching.
+
+When you ship your first version (see [How to Get Your First 10 Customers](/articles/how-to-get-your-first-10-customers)), you have a small sample size by definition. With 10 to 30 early users, quantitative star ratings teach you nothing. You need **context on where the workflow broke**.
+
+Set up these three loops on Sunday afternoon before you share the URL:
+
+1. **The silent screen share (Users 1–5):** Get five target buyers on a 15-minute call, paste your URL in the chat, and say: *"Try to complete [the job] while thinking out loud—I won't explain anything until you finish."* Every pause or squint is a bug you need to fix.
+2. **The output-screen micro-survey (Every active user):** Trigger one question 3 seconds after the app delivers its main result, when the user actually has an opinion.
+3. **The 24-hour plain-text reply email (Drop-offs):** Ask one question they can answer in a single sentence from their phone.
+
+## What are the best free no-code tools to collect MVP feedback in 2026?
+
+Tally.so offers unlimited forms and submissions for $0 (within fair use) for onboarding and exit surveys. Canny's Free plan covers up to 25 tracked users with unlimited feedback posts for a public feature board. PostHog's free tier includes 1,500 survey responses and 5,000 session replays per month so you can pair answers with what users actually clicked.
+
+You do not need to build a custom feedback database table on launch weekend. Here is the zero-dollar no-code feedback stack (verified November 2026 pricing):
+
+| Tool | Role in Your MVP | 2026 Free Tier | When Paid Starts |
+| --- | --- | --- | --- |
+| **Tally.so** | Embeddable micro-forms, onboarding/churn surveys | **$0** — unlimited forms & submissions (fair use) | **Pro $24/mo** (removes branding, custom domains, partial submissions) |
+| **PostHog** | In-app popover surveys + session replay | **$0** — **1,500 survey responses/mo** + **5,000 session recordings/mo** | Usage-based only after crossing the monthly free tier |
+| **Canny** | Public feature-voting & bug board (`yourapp.canny.io`) | **$0** — up to **25 tracked users**, unlimited feedback posts | **Pro from $79/mo** billed yearly (100+ tracked users) |
+| **Featurebase** | Alternative feedback board + changelog | **$0** — 1 seat free tier | **Growth $29/seat/mo** billed yearly |
+| **Plain `mailto:` / Reply-To** | Direct founder inbox replies | **$0** | Free forever |
+
+If you are building on the [no-code hub](/build-with/no-code) or [non-technical founders hub](/ideas-for/non-technical), a Tally popup snippet or a link to a free Canny board takes five minutes to paste into Bubble, Softr, [Lovable](/build-with/lovable), or [Bolt.new](/build-with/bolt).
+
+## What questions should you ask early MVP users?
+
+Skip "Do you like the app?" and NPS 1–10 sliders. Ask past-tense, specific questions: "What were you trying to get done right before you signed up?", "Which step felt confusing or slow today?", and the Sean Ellis test: "How would you feel if you could no longer use this product tomorrow?" (Very disappointed, Somewhat disappointed, Not disappointed).
+
+Polite strangers will always tell you your app is "cool." To get past politeness (the core rule in [How to Talk to Customers Without Lying to Yourself](/articles/how-to-talk-to-customers-mom-test)), copy these four exact prompts:
+
+### 1. Right after signup (1-click attribution + intent)
+> *"What were you using to do this before today?"*
+> - A spreadsheet / manual doc
+> - Another tool (which one?)
+> - Nothing—I was putting it off
+
+### 2. Right after the first output (the friction check)
+> *"Did this result give you what you needed, or was something missing?"*
+> `[Yes, nailed it]` `[Almost — here's what was missing...]`
+
+### 3. The 24-hour plain-text email (for users who didn't finish)
+> **Subject:** quick question on [App Name]
+>
+> Hey [First Name] — saw you tried [App Name] yesterday. No pitch: what was the one thing that felt broken, confusing, or missing when you opened it? Even a one-line reply helps me fix it today.
+>
+> — [Your Name]
+
+(For how to set up transactional and onboarding email cleanly, see [How to Add Email to Your Weekend MVP](/articles/add-email-to-weekend-mvp).)
+
+### 4. After a user uses the app 3+ times (the PMF & testimonial check)
+> *"How would you feel if you could no longer use [App Name] tomorrow?"*
+> - Very disappointed
+> - Somewhat disappointed
+> - Not disappointed
+
+When someone clicks **Very disappointed**, follow up immediately to ask for a quote using [How to Get Your First Customer Testimonial (Without Begging)](/articles/first-customer-testimonial).
+
+## How many users do you need for meaningful MVP feedback?
+
+Five live observation sessions will expose roughly 80% of your broken onboarding and UX friction. Ten to twenty active users completing your core workflow is enough to spot whether people come back on day two and which single missing capability blocks them from paying.
+
+Pair your written feedback with the behavioral benchmarks in [What to Measure After You Ship (The First 30 Days)](/articles/what-to-measure-after-you-ship) and [SaaS Onboarding That Actually Activates (First 5 Minutes)](/articles/saas-onboarding-first-5-minutes). If 15 users sign up, zero complete the core action, and nobody replies to your email, PostHog's free session replay will show you the exact button or form field where they bailed out.
+
+Need a fresh weekend idea with a clearer single-screen value proposition? Browse the [startup ideas library](/startup-ideas).
+
+## Why do most MVP feedback forms get zero responses?
+
+Forms get ignored when you send a 12-question survey link in a generic blast email three days after the user left. Ask one question at the exact moment of high intent—either right after they complete the first output or the moment they click cancel/close—and make the first input a single click.
+
+Three tweaks that triple response rates on an early MVP:
+
+- **Embed Question 1 directly in the UI or email.** Once a user clicks one option (`[Worked great]` vs `[Something broke]`), 60%+ will type the follow-up sentence.
+- **Show that a human reads it immediately.** Put your real face or name on the widget: *"Goes straight to John's inbox—I fix bugs every evening."*
+- **Close the loop within 24 hours.** When a user reports a papercut and you reply the next morning saying *"Just fixed that and pushed it live for you,"* you turn a lukewarm tester into an evangelist (see [How to Retain Your First 10 Customers](/articles/how-to-retain-your-first-customers)).
+
+## How do you decide which user feedback to build vs ignore?
+
+Weight feedback by who gave it: a paying customer or a user who hit your core workflow three times outranks ten casual tourists asking for dark mode. Fix anything that blocks the happy path immediately, park "nice-to-have" feature requests on a board until three target buyers ask for the same job, and read [When to Add Your Second Feature](/articles/when-to-add-second-feature) before expanding scope.
+
+Sort every piece of incoming feedback into one of three buckets:
+
+1. **Bucket A — Broken happy path (Fix tonight):** Bugs, confusing copy, or missing inputs that stop a target buyer from getting the core output.
+2. **Bucket B — "I'll pay if it does X" from a real buyer (Verify & build next):** Ask them if they will pay a deposit or subscribe today if you ship X by Friday.
+3. **Bucket C — Tourist wishlists (Log & ignore for now):** Dark mode, Slack integrations, team roles, and CSV exports requested by people who haven't even used the core feature once. And if nobody cares about the core job at all, read [How to Pivot Your Weekend MVP When Nobody Buys](/articles/how-to-pivot-weekend-mvp).
+
+## FAQ
+
+### How do I collect user feedback on an MVP?
+
+Use three lightweight channels matched to user intent: a 1-question in-app prompt right after the user finishes your core workflow, a plain-text personal reply email sent 24 hours after signup asking what almost stopped them, and five 15-minute live screen-share sessions where you watch them use the product without coaching.
+
+### What are the best free no-code tools to collect MVP feedback in 2026?
+
+Tally.so offers unlimited forms and submissions for $0 (within fair use) for onboarding and exit surveys. Canny's Free plan covers up to 25 tracked users with unlimited feedback posts for a public feature board. PostHog's free tier includes 1,500 survey responses and 5,000 session replays per month so you can pair answers with what users actually clicked.
+
+### What questions should you ask early MVP users?
+
+Skip "Do you like the app?" and NPS 1–10 sliders. Ask past-tense, specific questions: "What were you trying to get done right before you signed up?", "Which step felt confusing or slow today?", and the Sean Ellis test: "How would you feel if you could no longer use this product tomorrow?" (Very disappointed, Somewhat disappointed, Not disappointed).
+
+### How many users do you need for meaningful MVP feedback?
+
+Five live observation sessions will expose roughly 80% of your broken onboarding and UX friction. Ten to twenty active users completing your core workflow is enough to spot whether people come back on day two and which single missing capability blocks them from paying.
+
+### Why do most MVP feedback forms get zero responses?
+
+Forms get ignored when you send a 12-question survey link in a generic blast email three days after the user left. Ask one question at the exact moment of high intent—either right after they complete the first output or the moment they click cancel/close—and make the first input a single click.
+
+### How do you decide which user feedback to build vs ignore?
+
+Weight feedback by who gave it: a paying customer or a user who hit your core workflow three times outranks ten casual tourists asking for dark mode. Fix anything that blocks the happy path immediately, park "nice-to-have" feature requests on a board until three target buyers ask for the same job, and read When to Add Your Second Feature before expanding scope.
+
+## TL;DR
+
+Skip the 12-question survey. Watch five users on a screen share, embed a 1-click Tally or PostHog prompt on your output screen, and send one plain-text reply email 24 hours after signup. Everything you need is free for your first 25+ active users. Ready for your next build? Pick a validated problem in the [startup ideas library](/startup-ideas).
+
+Sources: [Tally Pricing](https://tally.so/pricing), [Canny Pricing & Free Plan Docs](https://canny.io/pricing), [PostHog Pricing](https://posthog.com/pricing)

@@ -229,6 +229,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         href: "/articles/cursor-vs-claude-code-vs-lovable-2026",
         label: "Cursor vs Claude Code vs Lovable →",
       },
+      {
+        href: "/articles/how-much-does-vibe-coding-cost",
+        label: "How much does vibe coding cost in 2026? →",
+      },
     ],
     crawlLinks: [
       ...SEO_PRIORITY_LINKS,
@@ -481,6 +485,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Claude Code for non-technical founders →",
       },
       {
+        href: "/articles/claude-code-for-designers",
+        label: "Claude Code for designers: Figma to live app →",
+      },
+      {
         href: "/articles/7-things-to-build-with-claude-code-this-weekend",
         label: "7 Things to Build with Claude Code this Weekend →",
       },
@@ -579,6 +587,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         "These fit Bolt's sweet spot — browser-native full-stack apps, landing pages, and form tools you can prompt, refine, and deploy without opening a local IDE.",
     },
     articleLinks: [
+      {
+        href: "/articles/lovable-vs-bolt-vs-replit-2026",
+        label: "Lovable vs Bolt vs Replit: which to use this weekend →",
+      },
       {
         href: "/articles/lovable-examples-what-to-build",
         label: "Lovable examples (sister list) →",
@@ -693,6 +705,20 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       intro:
         "These ideas play to Lovable's strength — full-stack apps with auth, dashboards, and deployable UIs from a plain-English brief.",
     },
+    articleLinks: [
+      {
+        href: "/articles/how-lovable-credits-work",
+        label: "How Lovable credits work (and how to stop burning them) →",
+      },
+      {
+        href: "/articles/lovable-vs-bolt-vs-replit-2026",
+        label: "Lovable vs Bolt vs Replit: which to use this weekend →",
+      },
+      {
+        href: "/articles/figma-make-vs-lovable",
+        label: "Figma Make vs Lovable: which should designers use? →",
+      },
+    ],
     faqs: [
       {
         question: "What are the best Lovable projects to build?",
@@ -790,12 +816,20 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "How to build a no-code MVP in a weekend →",
       },
       {
+        href: "/articles/vibe-coding-vs-no-code",
+        label: "Vibe coding vs no-code vs low-code →",
+      },
+      {
         href: "/articles/mvp-for-non-technical-founders",
         label: "MVP for non-technical founders →",
       },
       {
         href: "/articles/non-technical-founder-stack-2026",
         label: "Non-technical founder stack 2026 →",
+      },
+      {
+        href: "/articles/collect-user-feedback-on-your-mvp",
+        label: "How to collect user feedback on your MVP →",
       },
     ],
     crawlLinks: [
@@ -897,6 +931,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
     },
     articleLinks: [
       {
+        href: "/articles/lovable-vs-bolt-vs-replit-2026",
+        label: "Lovable vs Bolt vs Replit: which to use this weekend →",
+      },
+      {
         href: "/articles/stop-selling-ai-subscriptions-start-selling-ai-work",
         label: "Stop selling AI subscriptions — sell AI work →",
       },
@@ -979,6 +1017,16 @@ const TOOL_PAGES: Record<string, ToolPage> = {
         label: "Pricing Cards",
         prompt:
           "Create a pricing section with 3 plan cards (Free, Pro, Enterprise). Include feature lists, price displays, and CTA buttons. Highlight the Pro plan as recommended. Add a monthly/annual toggle.",
+      },
+    ],
+    articleLinks: [
+      {
+        href: "/articles/why-ai-built-apps-look-the-same",
+        label: "Why AI-built apps all look the same (and how to fix it) →",
+      },
+      {
+        href: "/articles/how-much-does-vibe-coding-cost",
+        label: "How much does vibe coding cost in 2026? →",
       },
     ],
   },

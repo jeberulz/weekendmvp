@@ -1,0 +1,154 @@
+---
+slug: "automate-meeting-notes-with-ai"
+title: "How to Automate Meeting Notes With AI (Build It Yourself)"
+description: "How to automate meeting notes with AI in 2026: build a custom meeting-notes cleaner in a weekend with Deepgram or OpenAI transcription and structured JSON."
+category: "Tutorial"
+publishedAt: "2026-11-06"
+wordCount: 1661
+readMinutes: 8
+heroAlt: "An open steno notepad on a near-black desk with three underlined bullet lines caught by a single lime side beam"
+faq:
+  - question: "How do I automate meeting notes with AI?"
+    answer: "Connect three steps: capture the audio or raw transcript from Zoom, Google Meet, or a voice memo; transcribe it with a speech-to-text API (such as Deepgram Nova-3, OpenAI gpt-transcribe, or Gemini 3.5 Transcribe); and pass the transcript through an LLM prompt with a strict JSON schema that extracts decisions, owner-assigned action items, and client follow-up emails."
+  - question: "Should I buy an AI meeting notetaker or build my own?"
+    answer: "Buy an off-the-shelf tool (like Granola, Fireflies, or Fathom) if you just want generic call summaries for yourself. Build your own weekend workflow or vertical micro-SaaS when generic summaries miss domain-specific outputs—like extracting priced change orders for contractors, clinical SOAP notes, recruiting scorecards, or CRM field updates."
+  - question: "Which speech-to-text API is best for meeting notes in 2026?"
+    answer: "As of November 2026 published pricing: Deepgram Nova-3 costs $0.0043/minute ($0.26/hour) for pre-recorded audio and $0.0077/minute ($0.46/hour) for streaming with speaker diarization and a $200 free credit. OpenAI recommends gpt-transcribe at $0.0045/minute ($0.27/hour) for recorded files or gpt-4o-transcribe-diarize at $0.006/minute when you need speaker labels."
+  - question: "How do I automate meeting notes without a creepy bot joining the call?"
+    answer: "Skip headless browser meeting bots for version one. Either upload the local audio recording / Zoom cloud recording webhook after the call ends, or capture local microphone and system audio on desktop/mobile. Post-call file upload or webhook processing is 10x simpler to build in a weekend and never spooks clients in a Zoom waiting room."
+  - question: "What makes a vertical AI meeting notes app worth paying for?"
+    answer: "Buyers stop paying for generic bullet-point summaries within 60 days. They stay for the downstream artifact: a ready-to-send client proposal, a Jira/Linear ticket payload, a populated HubSpot deal record, or a compliance-checked intake form generated automatically 30 seconds after they hang up."
+  - question: "How much does it cost to run an automated meeting notes app?"
+    answer: "Less than $0.35 per hour of meeting audio. Transcribing a 60-minute call with Deepgram Nova-3 ($0.26) or OpenAI gpt-transcribe ($0.27) plus running a structured extraction pass on a ~9,000-token transcript with Claude Sonnet or GPT-5 costs roughly $0.03 to $0.06—giving a $29/month micro-SaaS healthy 80%+ gross margins."
+---
+
+## Quick Answer
+
+**Raw transcripts are free in 2026; the real automation is turning the transcript into the artifact you have to write after the call.** You can wire a custom AI meeting-notes workflow—or ship a vertical meeting-notes micro-SaaS—in one weekend by pairing a **speech-to-text API** (Deepgram Nova-3 at **$0.26/hour** or OpenAI `gpt-transcribe` at **$0.27/hour**) with a **structured LLM extraction prompt** that outputs decisions, owner-tagged action items, and a ready-to-send follow-up.
+
+Want curated startup ideas around this exact workflow? Explore the [automate meeting notes hub](/solve/meeting-notes) or browse the full [startup ideas library](/startup-ideas).
+
+## How do I automate meeting notes with AI?
+
+Connect three steps: capture the audio or raw transcript from Zoom, Google Meet, or a voice memo; transcribe it with a speech-to-text API (such as Deepgram Nova-3, OpenAI `gpt-transcribe`, or Gemini 3.5 Transcribe); and pass the transcript through an LLM prompt with a strict JSON schema that extracts decisions, owner-assigned action items, and client follow-up emails.
+
+Most teams already record calls, yet 70% of action items decided in meetings still get dropped within a week. Why? Because nobody wants to read a 45-minute wall of "um, yeah, let's circle back" text.
+
+A working automation pipeline has only three moving parts:
+
+```text
+[Audio File or Zoom/Meet Transcript]
+        │
+        ▼  1. Speech-to-Text + Speaker Diarization ($0.26–$0.36 / hr)
+[Speaker-Labeled Transcript]
+        │
+        ▼  2. Structured Extraction Prompt (Strict JSON Schema)
+[Decisions + Action Items + Draft Client Email / CRM Payload]
+        │
+        ▼  3. Delivery (Email, Slack, Notion, or Copy Button)
+[One-Click Review & Send]
+```
+
+## Should I buy an AI meeting notetaker or build my own?
+
+Buy an off-the-shelf tool (like Granola, Fireflies, or Fathom) if you just want generic call summaries for yourself. Build your own weekend workflow or vertical micro-SaaS when generic summaries miss domain-specific outputs—like extracting priced change orders for contractors, clinical SOAP notes, recruiting scorecards, or CRM field updates.
+
+Here is why vertical meeting-notes tools are one of the strongest weekend micro-SaaS categories on our [meeting notes problem hub](/solve/meeting-notes):
+
+- **Generic notetakers write book reports.** They summarize *"John and Sarah discussed the kitchen remodel timeline."*
+- **Vertical tools write the deliverable.** A remodel contractor doesn't want a summary; they want a **line-item scope change sheet** with materials, allowances, and a client sign-off button. A recruiter wants a **structured candidate scorecard** mapped to the job rubric. A freelancer wants a **scope-creep alert** when a client asks for out-of-contract work (see [Freelance Scope Creep Detector](/ideas/freelance-scope-creep-detector) and [AI Meeting Notes Cleaner](/ideas/ai-meeting-notes-cleaner)).
+
+## Which speech-to-text API is best for meeting notes in 2026?
+
+As of November 2026 published pricing: Deepgram Nova-3 costs $0.0043/minute ($0.26/hour) for pre-recorded audio and $0.0077/minute ($0.46/hour) for streaming with speaker diarization and a $200 free credit. OpenAI recommends `gpt-transcribe` at $0.0045/minute ($0.27/hour) for recorded files or `gpt-4o-transcribe-diarize` at $0.006/minute when you need speaker labels.
+
+Compare the top transcription engines for a weekend build (November 2026 list rates):
+
+| Provider & Model | Pre-Recorded Cost | Live Streaming Cost | Standout for Meeting Notes |
+| --- | --- | --- | --- |
+| **Deepgram Nova-3** | **$0.0043 / min** (~$0.26/hr) | **$0.0077 / min** (~$0.46/hr) | Fast diarization, keyterm prompting, **$200 free credit** (~700+ hours) |
+| **OpenAI `gpt-transcribe`** | **$0.0045 / min** (~$0.27/hr) | **$0.017 / min** (`gpt-live-transcribe`) | Replaces legacy `whisper-1` ($0.006/min, now deprecated in OpenAI docs) |
+| **OpenAI `gpt-4o-transcribe-diarize`** | **$0.0060 / min** (~$0.36/hr) | — | Built-in speaker diarization in the OpenAI ecosystem |
+| **Google Gemini 3.5 Transcribe** | Low per-minute token rate | Sub-second streaming | 2.6% WER across 85 languages (see [Gemini 3.5 Transcribe guide](/articles/gemini-3-5-transcribe-weekend-voice-apps)) |
+
+**Weekend builder tip:** Notice that OpenAI's older `whisper-1` endpoint is now marked deprecated in OpenAI's model docs in favor of `gpt-transcribe` and `gpt-4o-transcribe-diarize`. If you want speaker labels ("Speaker 0" vs "Speaker 1") out of the box with free prototyping credits, start with **Deepgram Nova-3** or **`gpt-4o-transcribe-diarize`**.
+
+## How do I automate meeting notes without a creepy bot joining the call?
+
+Skip headless browser meeting bots for version one. Either upload the local audio recording / Zoom cloud recording webhook after the call ends, or capture local microphone and system audio on desktop/mobile. Post-call file upload or webhook processing is 10x simpler to build in a weekend and never spooks clients in a Zoom waiting room.
+
+Trying to build a headless Chromium bot that joins Zoom, Google Meet, and Microsoft Teams calls will eat your entire month. For a [3-screen weekend MVP](/articles/the-3-screen-mvp-framework), use one of three clean inputs instead:
+
+1. **Drag-and-drop audio/transcript upload:** Let the user drop an `.m4a`, `.mp3`, `.vtt`, or pasted Zoom/Meet transcript into your web app.
+2. **Browser MediaRecorder API:** Add a single "Record in-person / desk call" button using standard browser audio capture.
+3. **Zoom / Google Drive webhook:** Trigger your pipeline automatically the moment a cloud recording finishes saving.
+
+## The weekend build: 3 screens and the extraction prompt
+
+You can ship this in [Bolt.new](/build-with/bolt), [Lovable](/build-with/lovable), [Cursor](/build-with/cursor), or [Claude Code](/build-with/claude-code) between Friday night and Sunday afternoon:
+
+- **Screen 1 (Landing):** Name the specific buyer and the post-call artifact (e.g., *"Turn discovery call recordings into a priced client SOW in 60 seconds"*).
+- **Screen 2 (Input):** Audio file upload + paste-transcript fallback + one dropdown for meeting type (Discovery, Weekly Sync, Kickoff).
+- **Screen 3 (Output):** Three clean tabs—**Decisions & Risks**, **Action Items (Owner + Due Date)**, and **Ready-to-Send Follow-Up Email**—with a one-click Copy button.
+
+### Copy-paste extraction prompt (structured JSON)
+
+Do not ask the model to *"summarize this meeting."* Use a strict schema that forces concrete extraction and bans invented commitments:
+
+```text
+You are an executive operations assistant for [TARGET NICHE, e.g., freelance agencies].
+Given the meeting transcript below, return a JSON object with this exact shape:
+- "decisions": array of strings (only explicit agreements made on the call; empty array if none)
+- "actionItems": array of { "owner": string, "task": string, "due": string, "quote": string }
+- "scopeRisks": array of strings (any request that sounds outside standard scope or unresolved)
+- "followUpEmail": { "subject": string, "bodyMarkdown": string }
+
+Rules:
+1. Never invent a deadline or owner not stated in the transcript; use "Unassigned" or "No date set" if omitted.
+2. Include the short verbatim "quote" from the transcript that justifies each action item.
+3. Keep followUpEmail under 180 words, plain-spoken, ready to send to the client.
+```
+
+Looking for more niche workflows where you can sell the finished output instead of a generic chatbot? Read [Stop Selling AI Subscriptions, Start Selling AI-Powered Work](/articles/stop-selling-ai-subscriptions-start-selling-ai-work) and browse the [startup ideas library](/startup-ideas).
+
+## What makes a vertical AI meeting notes app worth paying for?
+
+Buyers stop paying for generic bullet-point summaries within 60 days. They stay for the downstream artifact: a ready-to-send client proposal, a Jira/Linear ticket payload, a populated HubSpot deal record, or a compliance-checked intake form generated automatically 30 seconds after they hang up.
+
+## How much does it cost to run an automated meeting notes app?
+
+Less than $0.35 per hour of meeting audio. Transcribing a 60-minute call with Deepgram Nova-3 ($0.26) or OpenAI `gpt-transcribe` ($0.27) plus running a structured extraction pass on a ~9,000-token transcript with Claude Sonnet or GPT-5 costs roughly $0.03 to $0.06—giving a $29/month micro-SaaS healthy 80%+ gross margins.
+
+For the full unit-economics math on caching and model routing once users scale up, see [What It Actually Costs to Run an AI App](/articles/what-it-costs-to-run-an-ai-app).
+
+## FAQ
+
+### How do I automate meeting notes with AI?
+
+Connect three steps: capture the audio or raw transcript from Zoom, Google Meet, or a voice memo; transcribe it with a speech-to-text API (such as Deepgram Nova-3, OpenAI `gpt-transcribe`, or Gemini 3.5 Transcribe); and pass the transcript through an LLM prompt with a strict JSON schema that extracts decisions, owner-assigned action items, and client follow-up emails.
+
+### Should I buy an AI meeting notetaker or build my own?
+
+Buy an off-the-shelf tool (like Granola, Fireflies, or Fathom) if you just want generic call summaries for yourself. Build your own weekend workflow or vertical micro-SaaS when generic summaries miss domain-specific outputs—like extracting priced change orders for contractors, clinical SOAP notes, recruiting scorecards, or CRM field updates.
+
+### Which speech-to-text API is best for meeting notes in 2026?
+
+As of November 2026 published pricing: Deepgram Nova-3 costs $0.0043/minute ($0.26/hour) for pre-recorded audio and $0.0077/minute ($0.46/hour) for streaming with speaker diarization and a $200 free credit. OpenAI recommends `gpt-transcribe` at $0.0045/minute ($0.27/hour) for recorded files or `gpt-4o-transcribe-diarize` at $0.006/minute when you need speaker labels.
+
+### How do I automate meeting notes without a creepy bot joining the call?
+
+Skip headless browser meeting bots for version one. Either upload the local audio recording / Zoom cloud recording webhook after the call ends, or capture local microphone and system audio on desktop/mobile. Post-call file upload or webhook processing is 10x simpler to build in a weekend and never spooks clients in a Zoom waiting room.
+
+### What makes a vertical AI meeting notes app worth paying for?
+
+Buyers stop paying for generic bullet-point summaries within 60 days. They stay for the downstream artifact: a ready-to-send client proposal, a Jira/Linear ticket payload, a populated HubSpot deal record, or a compliance-checked intake form generated automatically 30 seconds after they hang up.
+
+### How much does it cost to run an automated meeting notes app?
+
+Less than $0.35 per hour of meeting audio. Transcribing a 60-minute call with Deepgram Nova-3 ($0.26) or OpenAI `gpt-transcribe` ($0.27) plus running a structured extraction pass on a ~9,000-token transcript with Claude Sonnet or GPT-5 costs roughly $0.03 to $0.06—giving a $29/month micro-SaaS healthy 80%+ gross margins.
+
+## TL;DR
+
+Don't build another generic call summarizer, and don't waste a month building a Zoom call bot. Take an uploaded recording or transcript, run it through Deepgram Nova-3 ($0.26/hr) or OpenAI `gpt-transcribe` ($0.27/hr), and extract the exact post-call document your niche buyer hates writing by hand. Check the [automate meeting notes hub](/solve/meeting-notes) or grab a scoped brief from the [startup ideas library](/startup-ideas).
+
+Sources: [Deepgram Pricing](https://deepgram.com/pricing), [OpenAI Audio & Transcription Guide](https://developers.openai.com/api/docs/guides/transcription), [OpenAI API Pricing](https://developers.openai.com/api/docs/pricing)
