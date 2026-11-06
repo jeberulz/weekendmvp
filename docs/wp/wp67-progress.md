@@ -10,18 +10,22 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **G1 passed** on `a3f54c17` once the WP71 gateway action merged (#192); Phase 1 is closed. **Stopped here as planned**: Phase 2 (WP74–WP79) starts on the owner's go. The should-fix list below is owed before Phase 2 uses each piece.
+Updated 2026-11-06. **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 started** on the owner's go ("Merged, go Phase 2"): Claude runs WP74 and WP77 first (lane limit two); WP75 follows WP74, WP76 follows WP75 S2. Codex: WP78, WP79. Next gate: G2.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-g1-pass` (board PR) | G0 passed (#174, #175); **G1 passed** (`a3f54c17`) | — | Phase 2 on the owner's go |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-phase2` (board PR) | G0, G1 passed | — | Run G2 when WP74–WP79 merge; G2 needs live spend (20 test launches) and an owner OK |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | **Done**: S1–S3 (#180), S4–S6 (#191, sweep and alarm crons, limits, ops summary); G1 reviews pass with should-fix | — | Alarm delivery and the P2s below before the AI switch goes on |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 merged (#184)**, lock follow-up (#185), **gateway action bound to the real meter (#192)**. S4 cache helper, S5 seed precompute and S6 evals open | — | S4 and S6 in fixture mode on the owner's go; the S4 live cache test and S5 seed precompute need OK |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)**; Codex's middleware hard 404 merged (#186, #190) | `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
-| WP74–WP79 | 2 | Both | see registry | Ready on the owner's go (G1 passed) | — | — |
+| WP74 | 2 | Claude | `claude/wp74-wizard` | **In progress**: S1–S2 (steps, signals) | PR cannot go green until Codex adds `requireOwnedWizardSession` and the `PRE_BUSINESS_CONTROLS` scanner allowlist | S3 own-idea blueprint, S4 business creation, S5 CTAs, S6 a11y |
+| WP75 | 2 | Claude | `claude/wp75-crew-engine` | Waiting | WP74 | — |
+| WP76 | 2 | Claude | `claude/wp76-growth-drafts` | Waiting | WP75 S2 | — |
+| WP77 | 2 | Claude | `claude/wp77-wren-approvals` | **In progress**: S1 approvals and C-APPROVAL first (Codex's WP78/WP79 call `assertApproved`) | — | S2–S6 |
+| WP78–WP79 | 2 | Codex | see registry | Ready (G1 passed): WP78 and the WP79 sending engine can start now | C-APPROVAL from WP77-S1 (stub until merged); D5, D6; WP79 also needs WP76 S1 email drafts (WP76 waits on WP75 S2) | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
 | WP83–WP84 | 5 | Both | see registry | Waiting | G4; Meta review | — |
@@ -351,3 +355,37 @@ Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **G1 passed** o
   Owner OKs still needed: WP71 S4 live cache test, WP71 S5 seed precompute (≈ $15 for the 5 spike ideas; it also
   needs `workspaceEnabled` on with an allowlist cohort, because ownerless `reserve` is gated).
 - **Stopped at G1 as the kickoff instructed.**
+
+## 2026-11-06 - Phase 2 started
+
+- The owner merged #194 and said "Merged, go Phase 2".
+- Claude lane, two at once (`05` §3): WP77 (`claude/wp77-wren-approvals`) with S1 approvals first, because Codex's
+  WP78 publisher and WP79 sender call `assertApproved` (C-APPROVAL); and WP74 (`claude/wp74-wizard`) with S1–S2.
+  WP75 starts when WP74 lands; WP76 when WP75 S2 lands.
+- Codex lane: WP78 (publishing un-park) and WP79 (tenant email) can start; build against C-APPROVAL once WP77-S1
+  merges (stub until then, per `05` §2.3).
+- G2 will need live spend (20 live test launches, median ≤ $0.75) and owner steps (kill switches on production,
+  the allowlist cohort). Nothing live runs without an OK.
+
+### Phase 2 status - Needs from Codex and owner questions
+
+- WP77-S1 (C-APPROVAL, `assertApproved`) is committed (`c402c967`). The independent review approved it with
+  should-fix items, which are being fixed before the PR opens.
+- WP74-S1/S2 (wizard steps, founder signals) is committed (`82036f77`). The independent review approved it with
+  should-fix items, which are being fixed. **The WP74 PR cannot go green until Codex lands the scanner change
+  below**: the WP68 boundaries scanner requires `requireBusinessAccess` in every public `convex/workspace`
+  function, and a wizard runs before any business exists.
+- Needs from Codex (added):
+  - C-AUTHZ `requireOwnedWizardSession(ctx, sessionId)` in `convex/platform/authz.ts`, and a `PRE_BUSINESS_CONTROLS`
+    exact allowlist in `tests/security/wp68-workspace-boundaries.test.mjs` (`getWizardAccess` and `startOrResume`
+    need the current-user guard; the other five wizard functions need `requireOwnedWizardSession`;
+    `assertFeatureEnabled` stays required for all).
+  - Middleware hard 404 for `/start` and `/start/*` (via `getWizardAccess`).
+  - Optional: `founder_signals` index `by_wizardSessionId_and_step`; `NEXT_PUBLIC_LAUNCH_WORKSPACE` in `.env.example`.
+  - For C-APPROVAL: an `approvals.subjectVersion` fingerprint over every content field (fail closed when missing),
+    `approvals.consumedAt`, index `by_status_and_createdAt`, and an hourly approval-expiry cron that cannot overlap.
+- Owner questions:
+  1. `checkLimit("wizardStart")` also requires the `ai` feature. Should a wizard start be refused when AI is off
+     (the current plan, since the crew spends AI right after start), or should Codex add a limit-only check?
+  2. Approval expiry while the workspace is switched off: may the expiry cron keep running then? It only takes
+     permission away, never grants it.
