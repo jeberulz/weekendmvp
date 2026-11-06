@@ -59,3 +59,11 @@ Standing rules:
     - vitest component tests.
     - The a11y-check skill on every component, with findings fixed.
     - A browser check of the kit from this worktree's dev server.
+
+- [x] `WP72-S5` - Hard HTTP 404 for refused workspace routes (Codex follow-up)
+  - Scope: `middleware.ts`, `tests/redirects/middleware.test.ts`
+  - Acceptance criteria:
+    - `/dashboard/b/[projectId]/*` checks the same workspace access query before PPR can stream.
+    - Missing token, disabled workspace, denied project, malformed path and backend failure answer HTTP 404.
+    - RSC and segment requests reach the gate; workspace responses are private and carry no referrer.
+    - A production build confirms the HTTP status for signed-out requests.

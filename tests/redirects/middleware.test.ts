@@ -10,6 +10,8 @@ import {
   hostRoutingDecision,
   middleware,
   syncSessionHintCookie,
+  workspaceAccessAllowed,
+  workspaceProjectId,
 } from "../../middleware";
 import { SESSION_HINT_COOKIE } from "../../lib/auth-session-cookie";
 import { IDEA_SLUGS, isKnownIdeaSlug } from "../../lib/idea-slugs.generated";
@@ -159,6 +161,28 @@ describe("build soft-404 upgrade", () => {
     // scope). The gate itself is: parse slug + known-set membership.
     expect(buildIdeaSlug(`/build/${slug}`)).toBe(slug);
     expect(isKnownIdeaSlug(slug!)).toBe(true);
+  });
+});
+
+describe("WP72 workspace hard-404 gate", () => {
+  it.each([
+    ["/dashboard/b/abc123", "abc123"],
+    ["/dashboard/b/abc123/blueprint", "abc123"],
+    ["/dashboard/b/abc123.rsc", "abc123"],
+    ["/dashboard/b/abc123.segments/_tree.segment", "abc123"],
+    ["/dashboard/b/%61bc123", "abc123"],
+    ["/%64ashboard/b/abc123", "abc123"],
+    ["/dashboard/b", ""],
+    ["/dashboard/b/%2F", ""],
+    ["/dashboard/b/%", ""],
+    ["/dashboard/builds/abc123", null],
+  ])("extracts the workspace id from %s", (path, expected) => {
+    expect(workspaceProjectId(path)).toBe(expected);
+  });
+
+  it("refuses a signed-out or malformed workspace request without querying Convex", async () => {
+    expect(await workspaceAccessAllowed(undefined, "abc123")).toBe(false);
+    expect(await workspaceAccessAllowed("token", "")).toBe(false);
   });
 });
 
@@ -350,6 +374,8 @@ describe("middleware matcher contract", () => {
     "/ideas/example",
     "/_next/image?url=%2Fimage%2Fog%2Fidea%2Fexample.png&w=640&q=75",
     "/dashboard/report.js",
+    "/dashboard/b/abc123.rsc",
+    "/dashboard/b/abc123.segments/_tree.segment",
   ])(
     "runs for %s",
     (pathname) => {

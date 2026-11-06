@@ -3,6 +3,7 @@ import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { api } from "./convex/_generated/api";
+import type { Id } from "./convex/_generated/dataModel";
 import {
   canonicalPath,
   isProdApexHost,
@@ -189,6 +190,51 @@ function hostRejectedResponse(): NextResponse {
   });
 }
 
+/** The first URL segment is the business id; Next's RSC transport may add a suffix. */
+export function workspaceProjectId(pathname: string): string | null {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return pathname.startsWith("/dashboard/b") ? "" : null;
+  }
+  if (decoded === "/dashboard/b" || decoded.startsWith("/dashboard/b.")) return "";
+  if (!decoded.startsWith("/dashboard/b/")) return null;
+  const id = decoded.slice("/dashboard/b/".length).split("/", 1)[0].split(".", 1)[0];
+  return id || "";
+}
+
+/** A refused workspace request must stop before PPR can flush a 200 shell. */
+const WORKSPACE_GATE_TIMEOUT_MS = 3_000;
+
+export async function workspaceAccessAllowed(token: string | undefined, projectId: string): Promise<boolean> {
+  if (!token || !projectId) return false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timedOut = new Promise<null>((resolve) => {
+      timer = setTimeout(() => resolve(null), WORKSPACE_GATE_TIMEOUT_MS);
+    });
+    const access = await Promise.race([
+      fetchQuery(api.workspace.access.getWorkspaceAccess, { projectId: projectId as Id<"projects"> }, { token }),
+      timedOut,
+    ]);
+    return access?.allowed === true;
+  } catch {
+    return false;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function applyWorkspaceResponseHeaders(pathname: string, response: Response) {
+  if (workspaceProjectId(pathname) !== null) {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
 export function applySensitiveAuthResponseHeaders(
   pathname: string,
   response: Response,
@@ -317,6 +363,17 @@ export function syncSessionHintCookie(
 const platformAuthMiddleware = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
     const pathname = request.nextUrl.pathname;
+    const workspaceId = workspaceProjectId(pathname);
+    if (workspaceId !== null) {
+      try {
+        if (await workspaceAccessAllowed(await convexAuth.getToken(), workspaceId)) {
+          return NextResponse.next({ request: { headers: request.headers } });
+        }
+      } catch {
+        // A token read failure is indistinguishable from every other refusal.
+      }
+      return hostRejectedResponse();
+    }
     // WP46-E4e. Pages, RSC and segment requests and server actions anywhere
     // under /admin pass this gate; the pages and actions check again.
     if (isOperatorRequestPath(pathname)) {
@@ -421,9 +478,12 @@ export async function middleware(
   const canonical = canonicalRedirect(request);
   if (canonical !== null) {
     // The Location of a redirect under /admin repeats the private path.
-    return applyOperatorResponseHeaders(
+    return applyWorkspaceResponseHeaders(
       request.nextUrl.pathname,
-      applySensitiveAuthResponseHeaders(request.nextUrl.pathname, canonical),
+      applyOperatorResponseHeaders(
+        request.nextUrl.pathname,
+        applySensitiveAuthResponseHeaders(request.nextUrl.pathname, canonical),
+      ),
     );
   }
 
@@ -503,7 +563,7 @@ export async function middleware(
   if (ideaSlug !== null || buildSlug !== null) {
     finalResponse.headers.set("Cache-Control", "no-store");
   }
-  return finalResponse;
+  return applyWorkspaceResponseHeaders(request.nextUrl.pathname, finalResponse);
 }
 
 export const config = {
