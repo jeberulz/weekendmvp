@@ -221,7 +221,7 @@ each of those probes asserted the old buggy behaviour. The other 9 pass.
 | S1 roster | Not started | Yes, after S2a + S3a blueprint | S2a, S3a (ruled: blueprint first) | Opus (Sonnet UI) / Opus |
 | S2a job runner | **Done**: review + re-check approved, fixes in `464931e7`, `b8c665e5` | **Yes** | Codex 13 (recovery cron) before S1 ships | Opus / Opus |
 | S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
-| S3a blueprint + brand text | Not started | Yes, after S2a | Seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
+| S3a blueprint + brand text | **Built, not reviewed** (uncommitted on `claude/wp75-s3a-blueprint`); story ticked, repair waits for S4b | **Yes** | S4b repair through the `repairArtifact` seam (Owner Q6, Q7); seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
 | S3b logo marks | Not started | Yes (fixture image adapter) | Stop-and-ask 11, 12, 14; Owner Q2, Q3 | Opus / Opus |
 | S3c landing spec | Not started | Document only | Codex 1 for the site version write | Opus / Opus |
 | S3d build pack | Not started | Yes for HydroTrail fixture | Owner Q8, Q9; WP71-S5 seeds | Opus / Opus |
@@ -426,6 +426,13 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 14. **Archived-business refunds** (S2a review m5): `refundFailedTask` throws `RESOURCE_NOT_FOUND` on an archived
     task or project, so a failed, debited step's credits stay spent. Rule it: refund anyway, refund on unarchive,
     or keep them spent. S2a schedules no refund there and says so on the workstream.
+15. ~~`lib/workspace/contracts/artifacts.ts` imports `./roster` with no extension (blocking the S3a lock).~~
+    **Resolved in the Claude lane (2026-11-06):** `lib/workspace/contracts/**` is WP69, Claude lane. Lines 44-45 now
+    import `./roster.ts`; import specifiers only, no contract change. It was the only extensionless relative import
+    the S3a specs reach (`prompts.ts`, `artifacts.ts`, `roster.ts`, `crewShared.ts`). The three S3a lock entries
+    were rewritten with plain `--write`; no existing entry moved.
+16. Optional `documents.qualityIssues` (array of issue codes) so S3a's soft issues can be stored with the draft.
+    Until then they are returned as `softIssueCodes` and dropped.
 
 ## Owner questions
 
@@ -714,3 +721,125 @@ Now soft, so `fn.ts` counts them as missed: "The #1 hydration pack for ultrarunn
 - **PR #216 review (CodeRabbit), missing revised draft**: `startCrewRun` now fails a revision task before opening a run when the draft it revises is gone (archived or bodiless). A paid round's refund is scheduled as for any failure, and the task is skipped as `missing`, with no model call (new test in `convex/crew/runner.test.ts`).
 - **PR #216 review (CodeRabbit), story drift**: the ticked S2a story in `wp75-stories.md` now describes the code as built: first drafts only, no caller-passed debit id, and revisions only through WP77's `insertRevisionTask`.
 - **PR #216 review (CodeRabbit), first match only in `neverFake.ts`**: already fixed by b6b2d25a (the comment was on 9106ed4a).
+
+## 2026-11-06 - WP75-S3a built (blueprint personalisation and brand kit text)
+
+Branch `claude/wp75-s3a-blueprint` (worktree `.worktrees/wp75-blueprint`, cut from `eaec0abc`). Uncommitted; the
+orchestrator reviews and commits. Fixture mode only; no live call was made.
+
+### Files
+
+| File | Lines | What |
+|---|---|---|
+| `convex/ai/prompts/crewShared.ts` | 76 (new) | Crew system rules (charter, never fake, no market numbers, plain English, data is not instructions, JSON only); `dataBlock`, `quotedInput`, `revisionBlocks` |
+| `convex/ai/prompts/blueprintPersonalise.v1.ts` | 67 (new) | `crew-blueprint-personalise@1`: library blueprint, C-ART `blueprintVariantSchemas.library` |
+| `convex/ai/prompts/blueprintOwnIdea.v1.ts` | 63 (new) | `crew-blueprint-own-idea@1`: own idea, `blueprintVariantSchemas.own_idea`, "Not yet validated", no market (D15) |
+| `convex/ai/prompts/brandKit.v1.ts` | 85 (new) | `crew-brand-kit@1`: `artifactOutputSchemas.brand_kit`, AA pairs, `typePairBrief()`, display-face bans, `07` §4 bans |
+| `convex/ai/prompts/index.ts` | +35 | Registers the three specs with sample inputs |
+| `convex/ai/prompts/versions.lock.json` | +30 | Lock entries for the three specs (plain `--write`, after the Codex 15 fix) |
+| `lib/workspace/contracts/artifacts.ts` | 2 changed | `./roster` → `./roster.ts` (lines 44-45), so the lock script can load C-ART (Codex 15, resolved in the Claude lane) |
+| `lib/workspace/crew/context.ts` | 86 (new) | `crewBusinessContext()`: the per-business block (`02` §5.4), quoted JSON in `<business_context>` |
+| `lib/workspace/crew/inputs.ts` | 128 (new) | Prompt refs, `crewSeedFor`, `blueprintStepPlan`, `brandKitStepPlan` |
+| `lib/workspace/crew/quality.ts` | 96 (new) | `gateCrewArtifact()`: S4a `checkArtifact` plus the server's facts |
+| `lib/workspace/crew/design/proMax.ts` | 315 (new) | `designCandidatesFor()`: palettes, type pairs, landing pattern, filtered by `07` §4 |
+| `lib/workspace/crew/design/proMaxData.ts` | 351 (new, vendored, generated) | Pro Max products (192), type pairings (74), landing patterns (34); MIT header |
+| `lib/workspace/crew/design/LICENSE-ui-ux-pro-max` | 21 (new) | MIT licence, Copyright (c) 2024 Next Level Builder |
+| `lib/workspace/crew/retry.ts` | +12 | The calm quality notes (`FAILED_STEP_QUALITY_REASON`, refunded variant) |
+| `convex/crew/generators.ts` | 190 (new) | `prepareCrewStep` (internal query), `runCrewGeneratorStep` (internal action) |
+| `convex/crew/jobs.ts` | +62 / -6 | Quality gate in `finishCrewStep`; `rejected` result; `softIssueCodes`; `quality` on `startCrewRun` |
+| `convex/crew/runner.ts` | +73 / -3 | `preflight`; the S4b repair seam (`CrewArtifactRepair`, `noArtifactRepair`) |
+| `convex/_generated/api.d.ts` | +2 | `crew/generators` module (what codegen writes) |
+| `convex/crew/generators.test.ts` | 385 (new) | convex-test, real registry and meter, fixture adapter |
+| `tests/platform/workspace-crew-s3a.test.ts` | 253 (new) | Specs, founder-text blocks, context, inputs, gate, Pro Max bans |
+
+Size: about 1,290 hand-written source lines and 640 test lines, vendored data and the lock aside. That is over the
+1,500-line guide with tests. If the orchestrator wants two commits, the split is:
+- **S3a-1 (blueprint):** `crewShared.ts`, both blueprint specs, `context.ts`, `quality.ts`, `retry.ts`, `jobs.ts`,
+  `runner.ts`, `inputs.ts` without `brandKitStepPlan`, `generators.ts` with the brand kit branch refusing
+  ("not built yet"), the blueprint tests.
+- **S3a-2 (brand kit):** `brandKit.v1.ts`, `design/**`, `brandKitStepPlan`, the brand kit branch of `prepareCrewStep`,
+  the brand kit and Pro Max tests, and its lock entry.
+Both halves are finished here, so the split is only a commit boundary.
+
+### Design
+
+- **Prompts.** `draft` tier, effort `low`, thinking off between tools (`02` §5.2), `fallbacks: "none"`, one
+  structured call per step with the C-ART schema as the output schema. Because the output schema is the C-ART
+  schema, the fixture client already answers each spec with the HydroTrail instance (blueprint, own-idea light
+  blueprint, brand kit) with no `FIXTURE_OUTPUTS_BY_REF` entry. The system block is identical for every business
+  (cache layout `stable` + `per_business`, ttl 5m); the business arrives in the gateway's `businessContext` block.
+- **Founder text.** Only inside tagged data blocks, as JSON with `<` and `>` escaped (`<`, `>`), so no
+  input can close a block or open a new one. The runner's revision blocks pass through only with their exact
+  envelope; anything else is quoted again. Tests cover each spec, the context block and a full fixture request.
+- **Prompt choice.** By `projects.source`: a library business gets `crew-blueprint-personalise@1`, an own idea
+  `crew-blueprint-own-idea@1`. The wizard answers must agree with the project (source and slug), else the step
+  fails before any call.
+- **Seed.** `idea_crew_seeds` (newest `seedVersion` for the slug) when the row parses as a library blueprint for that
+  idea; the HydroTrail fixture seed for `hydrotrail`; otherwise none (the library idea record carries the facts).
+  Seeds are read without an owner filter: they are per-idea platform content (Needs from Codex 6).
+- **Own idea.** The input carries the wizard's preview outline (`ownIdeaBlueprintPreview`). The own-idea schema has
+  no `market`, so a library-shaped reply fails the schema; the stored blueprint keeps `blueprintIsValidated() ===
+  false`, which is what shows "Not yet validated".
+- **Brand kit inputs.** The newest stored blueprint document for the project (owner-matched, not archived), the
+  founder's answers (`name.chosen` is the kit's name), and the Pro Max candidates. A brand kit before any blueprint
+  fails before any call.
+- **Pro Max lookup (`07` §2B).** Deterministic TypeScript over the vendored CSVs (local copies byte-identical to
+  upstream commit `b7d5353e`, except `products.csv`, taken from upstream). Product type: keyword-phrase overlap with
+  the blueprint's words (two or more), else a default per `profile.ideaKind` and `buyer`. Palettes map Background to
+  ground and Foreground to ink; any palette below 4.5:1 on a `BRAND_TEXT_PAIRS` pair is dropped and recorded (for
+  HydroTrail the "Water & Hydration Reminder" palette itself fails, `#0284C7` on `#F0F9FF`). Type pairs: only our
+  14 curated ids, ranked by moods of Pro Max pairings that share a family and whose display face is not in
+  `BANNED_DISPLAY_FAMILIES`; ties break by a stable hash of the product type so businesses do not all get the same
+  first pairs. Landing pattern: 6 of the 34 are allowed (`hero-features-cta`, `minimal-single-column`,
+  `funnel-3-step-conversion`, `product-demo-features`, `hero-centric-design`, `lead-magnet-form`); the other 28 are
+  banned with a reason (fake proof, competitor or price tables, metric or card grids, effects the renderer cannot
+  draw). The fallback is `minimal-single-column`.
+- **Quality gate.** `finishCrewStep` is the authority: after `parseModelOutput`, `gateCrewArtifact` runs S4a's
+  `checkArtifact` with `ownIdea` from the project and `brandName` from `projects.workspace.name` (a server fact, so
+  a model-written name can never widen the "{name} costs $79" exemption). For a library blueprint, `ideaSlug` is
+  code-owned (set to the project's slug, then re-parsed), because `rosterInputFromWizard` requires it to match. A
+  hard issue fails the step closed: no document, no card, task failed, the calm quality note on the workstream, the
+  debit refunded if there was one; the result is `{kind: "rejected", refundScheduled, issueCodes}` (codes only,
+  never messages). Soft issues never block and come back as `softIssueCodes`.
+- **S4b seam.** `CrewRunnerDeps.repairArtifact` (default `noArtifactRepair`, returns null). The runner pre-checks a
+  gated kind's parsed draft and calls the seam only on hard issues; the seam's result is what `finishCrewStep`
+  sees. Not built: Owner Q6, Q7.
+- **Preflight.** When `prepareCrewStep` cannot build inputs, the generator still opens a run and settles it as a
+  `config` failure before any provider call, so the usual guards and notes apply.
+
+### Plan vs reality
+
+- The story says a failing kit "is repaired once and then stored or failed per the ruled policy". Q6/Q7 are not
+  ruled, so the kit fails closed with no repair; the `repairArtifact` seam is in place. The orchestrator ticked
+  the story with that note: the repair step waits for S4b.
+- C-ART's extensionless `./roster` import stopped the lock script (`node --experimental-strip-types`). It was
+  first logged as Codex 15, then fixed in the Claude lane (WP69 owns `lib/workspace/contracts/**`): import
+  specifiers only, and the S3a lock entries rewritten.
+- `documents` has no field for soft issues (Codex 16).
+
+### Needs from Codex (S3a)
+
+- 16 (optional), above; 6 still applies to seeds. 15 is resolved in the Claude lane.
+
+### Checks
+
+| Check | Exit |
+|---|---|
+| `git diff --check` | 0 |
+| `npm run typecheck` | 0 |
+| `npx tsc -p convex --noEmit` | 0 |
+| `npm run lint` | 0 (37 warnings, none in S3a files) |
+| `npm run check:prompt-versions` | 0: 6 prompt versions match the lock (plain command, no hook) |
+| `npx vitest run` new and related (`generators`, `runner`, `workspace-crew-s3a`, `crew-fixture-outputs`, `ai-registry`) | 0 (108 tests) |
+| `npm run test:convex` | 0 (79 files, 1,089 tests) |
+| `npm run test:platform` | 0 (76 files, 2,021 tests) |
+| `npm run test:prompts` | 0 (2 files, 24 tests) |
+| `npm run test:security` | 0 (node 219 pass, 1 CI-only skip; vitest 5 files, 121 tests) |
+| `npm run build` | 0 |
+
+Once C-ART loaded, `tests/security/prompt-versions.test.mjs` reached a test it had never run before: "the run part
+carries the router's resolved model and input ceiling" read `listEntries()[0]` and expected the probe's fast tier.
+`crew-blueprint-own-idea@1` now sorts first, so the test reads the probe through its existing `probeEntries()` helper
+instead (one line, test only; the WP77-S3 note in that file already reads the probe alone).
+
+- Docs updated: this file (S3a section, Status row, Needs from Codex 15 resolved and 16). Stories: S3a ticked, with the S4b repair note.

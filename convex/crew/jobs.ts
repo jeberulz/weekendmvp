@@ -18,6 +18,8 @@ import {
   FAILED_STEP_ARCHIVED_REASON,
   FAILED_STEP_INTERRUPTED_REASON,
   FAILED_STEP_INTERRUPTED_REFUNDED_REASON,
+  FAILED_STEP_QUALITY_REASON,
+  FAILED_STEP_QUALITY_REFUNDED_REASON,
   FAILED_STEP_UNPAID_REASON,
   FAILED_STEP_REASON,
   FAILED_STEP_REFUNDED_REASON,
@@ -39,6 +41,7 @@ import {
   planFirstDraft,
   type CrewStepJobType,
 } from "../../lib/workspace/crew/tasks";
+import { gateCrewArtifact, issueCodes, type QualityContext } from "../../lib/workspace/crew/quality";
 
 /**
  * WP75-S2a — crew task lifecycle (C-JOBS), all internal. Callers authorise the
@@ -367,6 +370,23 @@ async function debitOf(ctx: Ctx, task: Doc<"tasks">): Promise<Doc<"credit_ledger
     debit.projectId === task.projectId && debit.delta < 0n ? debit : null;
 }
 
+/** What the quality gate needs from the project (S3a): its source and, for a library idea, the slug. */
+export function qualityContextOf(project: Pick<Doc<"projects">, "source" | "workspace"> | null): QualityContext {
+  const ideaSlug = project?.workspace?.ideaSlug;
+  const businessName = project?.workspace?.name;
+  return {
+    ownIdea: project?.source === "own_idea",
+    ...(ideaSlug === undefined ? {} : { ideaSlug }),
+    ...(businessName === undefined ? {} : { businessName }),
+  };
+}
+
+const qualityContextValidator = v.object({
+  ownIdea: v.boolean(),
+  ideaSlug: v.optional(v.string()),
+  businessName: v.optional(v.string()),
+});
+
 async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -474,8 +494,12 @@ async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskSta
  * archived task or business (`RESOURCE_NOT_FOUND`), so there the credits stay
  * spent and the note says so instead of promising a refund.
  */
-/** Why a task failed, for the founder-facing note: an ordinary failure, an interrupted action, or a missing payment. */
-type FailCause = "failed" | "interrupted" | "unpaid";
+/**
+ * Why a task failed, for the founder-facing note: an ordinary failure, an
+ * interrupted action, a missing payment, or a draft that failed the quality
+ * checks (S3a).
+ */
+type FailCause = "failed" | "interrupted" | "unpaid" | "quality";
 
 function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: boolean): string {
   if (hasDebit && !refundScheduled) return FAILED_STEP_ARCHIVED_REASON;
@@ -486,6 +510,8 @@ function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: bool
       return refundScheduled ? FAILED_STEP_INTERRUPTED_REFUNDED_REASON : FAILED_STEP_INTERRUPTED_REASON;
     case "unpaid":
       return FAILED_STEP_UNPAID_REASON;
+    case "quality":
+      return refundScheduled ? FAILED_STEP_QUALITY_REFUNDED_REASON : FAILED_STEP_QUALITY_REASON;
   }
 }
 
@@ -593,6 +619,8 @@ const startCrewRunResult = v.union(
     previousArtifactJson: v.optional(v.string()),
     /** The founder's note from the revision's card (`revisionNoteFor`); never from caller args. */
     revisionNote: v.optional(v.string()),
+    /** What the quality gate needs from the project (S3a), read on the server. */
+    quality: qualityContextValidator,
   }),
   v.object({ kind: v.literal("skip"), reason: startSkipReason }),
 );
@@ -677,6 +705,7 @@ export const startCrewRun = internalMutation({
     await setCrewStatus(ctx, task, { member: "working", workstream: "working", blocker: null }, now);
 
     const note = task.revisionOfTaskId === undefined ? null : await revisionNoteFor(ctx, task._id);
+    const project = await ctx.db.get("projects", task.projectId);
     return {
       kind: "run",
       runId,
@@ -690,6 +719,7 @@ export const startCrewRun = internalMutation({
       ...(debit === null ? {} : { creditDebitId: debit._id }),
       ...(previous?.body === undefined ? {} : { previousArtifactJson: previous.body }),
       ...(note === null ? {} : { revisionNote: note }),
+      quality: qualityContextOf(project),
     };
   },
 });
@@ -711,8 +741,16 @@ async function openRun(
 // ---------------------------------------------------------------------------
 
 export const finishCrewStepResult = v.union(
-  v.object({ kind: v.literal("finished"), documentId: v.id("documents"), approvalId: v.id("approvals") }),
+  v.object({
+    kind: v.literal("finished"),
+    documentId: v.id("documents"),
+    approvalId: v.id("approvals"),
+    /** S3a: soft quality issue codes. They never block; nothing stores them yet (progress Needs from Codex). */
+    softIssueCodes: v.optional(v.array(v.string())),
+  }),
   v.object({ kind: v.literal("failed"), refundScheduled: v.boolean() }),
+  /** S3a: the draft failed a hard quality check, so the step failed closed (no document, no card). */
+  v.object({ kind: v.literal("rejected"), refundScheduled: v.boolean(), issueCodes: v.array(v.string()) }),
   v.object({ kind: v.literal("parked") }),
   v.object({ kind: v.literal("stale") }),
 );
@@ -724,6 +762,12 @@ export type FinishCrewStepResult = Infer<typeof finishCrewStepResult>;
  * card, employee and workstream, together. An output that passed the prompt's
  * schema but fails the C-ART artifact schema fails the task (permanent); a
  * workspace switched off since the call parks it.
+ *
+ * S3a: a gated kind (`QUALITY_GATED_KINDS`) passes the deterministic quality
+ * gate first. A hard issue fails the step closed (`rejected`: no document, no
+ * card, the calm quality note, the debit refunded as for any failure); soft
+ * issue codes come back with `finished` and never block. This mutation is the
+ * authority: the runner's pre-check only feeds S4b's repair seam.
  */
 export const finishCrewStep = internalMutation({
   args: {
@@ -746,9 +790,10 @@ export const finishCrewStep = internalMutation({
     }
 
     // The card needs the workspace on and the business live; check before any write.
+    let project: Doc<"projects">;
     try {
       await assertFeatureEnabledForOwner(ctx, "workspace", task.ownerId);
-      await requireBusinessForOwner(ctx, task.projectId, task.ownerId);
+      project = await requireBusinessForOwner(ctx, task.projectId, task.ownerId);
     } catch (error) {
       const code = errorCodeOf(error);
       if (isParkingMeterCode(code)) {
@@ -763,19 +808,30 @@ export const finishCrewStep = internalMutation({
     const { kind } = CREW_STEP_ARTIFACTS[jobType];
     const previous = await revisedDocument(ctx, task, kind);
     let body: string | null = null;
+    let gate: ReturnType<typeof gateCrewArtifact> | null = null;
     try {
       const raw: unknown = JSON.parse(args.outputJson);
       // The revised draft, re-validated: a LandingSpec revision keeps the stored proof slots.
       const stored = previous?.body === undefined ? null : parseArtifact(kind, JSON.parse(previous.body));
       const parsed = parseModelOutput(kind, raw, stored?.success === true ? stored.data : null);
-      if (parsed.success) body = assertGeneratedDocumentBody(JSON.stringify(parsed.data));
+      if (parsed.success) {
+        // S3a: the deterministic quality gate (S4a checks plus the server's facts) decides what is stored.
+        gate = gateCrewArtifact(kind, parsed.data, qualityContextOf(project));
+        if (gate.artifact !== null) body = assertGeneratedDocumentBody(JSON.stringify(gate.artifact));
+      }
     } catch {
       body = null;
+    }
+    if (gate !== null && gate.result.hard.length > 0) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      const { refundScheduled } = await failTask(ctx, task, now, "quality");
+      return { kind: "rejected", refundScheduled, issueCodes: issueCodes(gate.result.hard) };
     }
     if (body === null) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
     }
+    const softIssueCodes = gate === null ? [] : issueCodes(gate.result.soft);
 
     const documentId = await ctx.db.insert("documents", {
       ownerId: task.ownerId,
@@ -809,7 +865,7 @@ export const finishCrewStep = internalMutation({
       addDocumentId: documentId,
       askApprovalId: approvalId,
     }, now);
-    return { kind: "finished", documentId, approvalId };
+    return { kind: "finished", documentId, approvalId, ...(softIssueCodes.length === 0 ? {} : { softIssueCodes }) };
   },
 });
 

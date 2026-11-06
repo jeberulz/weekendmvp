@@ -233,3 +233,15 @@ export const FAILED_STEP_INTERRUPTED_REFUNDED_REASON =
  */
 export const FAILED_STEP_UNPAID_REASON =
   "This step could not start because its payment was not recorded. Nothing was charged; you can ask your team to try again.";
+
+/**
+ * WP75-S3a: the founder-facing note when a draft failed the deterministic
+ * quality checks (a faked proof, a market number in an own idea, a colour pair
+ * below AA contrast). The draft is not shown; no credits were taken.
+ */
+export const FAILED_STEP_QUALITY_REASON =
+  "This draft did not pass our quality checks, so your team did not show it. It used none of your credits; you can ask your team to try again.";
+
+/** The same, when the step's credits are being returned (the refund is scheduled). */
+export const FAILED_STEP_QUALITY_REFUNDED_REASON =
+  "This draft did not pass our quality checks, so your team did not show it and its credits are being returned. You can ask your team to try again.";

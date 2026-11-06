@@ -35,6 +35,7 @@ import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
 import type * as buildCta from "../buildCta.js";
+import type * as crew_generators from "../crew/generators.js";
 import type * as crew_jobs from "../crew/jobs.js";
 import type * as crew_roles from "../crew/roles.js";
 import type * as crew_runner from "../crew/runner.js";
@@ -193,6 +194,7 @@ declare const fullApi: ApiFromModules<{
   authEmail: typeof authEmail;
   authUser: typeof authUser;
   buildCta: typeof buildCta;
+  "crew/generators": typeof crew_generators;
   "crew/jobs": typeof crew_jobs;
   "crew/roles": typeof crew_roles;
   "crew/runner": typeof crew_runner;

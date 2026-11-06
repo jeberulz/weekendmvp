@@ -156,7 +156,10 @@ Standing rules:
     a parked step resumes on `resumeLaunch`; replaying `startLaunch` creates nothing new; the landing spec is ready
     in the fixture timeline before the 5-minute target (`02` §6.2).
 
-- [ ] `WP75-S3a` - Blueprint personalisation and brand kit text
+- [x] `WP75-S3a` - Blueprint personalisation and brand kit text
+  - Built 2026-11-06 (`docs/wp/wp75-progress.md` § WP75-S3a). The repair step waits for S4b (Owner Q6/Q7):
+    until then a hard quality issue fails the step closed, and S4b plugs in through the runner's `repairArtifact`
+    seam (`convex/crew/runner.ts`, default `noArtifactRepair`).
   - Scope: `convex/ai/prompts/blueprintPersonalise.v1.ts`, `blueprintOwnIdea.v1.ts`, `brandKit.v1.ts`,
     `lib/workspace/crew/design/proMax.ts` + vendored data (MIT, attribution kept), `lib/workspace/crew/context.ts`
     (business context block), registry and lock entries, tests.

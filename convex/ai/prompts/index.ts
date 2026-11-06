@@ -21,6 +21,9 @@
  * lock entry.
  */
 
+import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v1.ts";
+import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v1.ts";
+import { brandKitSpec } from "./brandKit.v1.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
@@ -31,6 +34,14 @@ const WREN_SAMPLE = {
   history: ["founder: The brand kit looks good.", "wren: Great. The landing page is next."],
 } as const;
 
+/** WP75-S3a sample answers (the shape `lib/workspace/crew/inputs.ts` sends). */
+const CREW_SAMPLE_ANSWERS = JSON.stringify({
+  platform: { kind: "web" },
+  commercialModel: "free",
+  goal: { kind: "waitlist", timeframe: "weekend" },
+  name: { chosen: "HydroTrail", alternatives: ["SipLine"] },
+});
+
 export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
   promptEntry(registryProbeSpec, {
     module: "convex/ai/prompts/registryProbe.ts",
@@ -39,4 +50,28 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
   }),
   promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(wrenPlanTurnSpec, { module: "convex/ai/prompts/wrenPlanTurn.ts", sampleInputs: WREN_SAMPLE }),
+  promptEntry(blueprintPersonaliseSpec, {
+    module: "convex/ai/prompts/blueprintPersonalise.v1.ts",
+    sampleInputs: {
+      seed: null,
+      idea: JSON.stringify({ slug: "hydrotrail", title: "HydroTrail", description: "A hydration planner for solo hikers." }),
+      answers: CREW_SAMPLE_ANSWERS,
+    },
+  }),
+  promptEntry(blueprintOwnIdeaSpec, {
+    module: "convex/ai/prompts/blueprintOwnIdea.v1.ts",
+    sampleInputs: {
+      ownIdea: "A packing checklist that adapts to the weather forecast for weekend campers.",
+      outline: null,
+      answers: CREW_SAMPLE_ANSWERS,
+    },
+  }),
+  promptEntry(brandKitSpec, {
+    module: "convex/ai/prompts/brandKit.v1.ts",
+    sampleInputs: {
+      blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
+      answers: CREW_SAMPLE_ANSWERS,
+      design: JSON.stringify({ productType: "Micro SaaS", palettes: [], typePairs: [], landingPattern: { id: "minimal-single-column" } }),
+    },
+  }),
 ]);

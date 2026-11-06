@@ -41,8 +41,8 @@
  */
 import { z } from "zod";
 
-import { roleKeySchema, rosterPlanSchema, rosterProfileSchema, singleLineText } from "./roster";
-import type { RosterPlan } from "./roster";
+import { roleKeySchema, rosterPlanSchema, rosterProfileSchema, singleLineText } from "./roster.ts";
+import type { RosterPlan } from "./roster.ts";
 
 export { rosterPlanSchema };
 export type { RosterPlan };

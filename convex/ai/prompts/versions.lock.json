@@ -2,6 +2,36 @@
   "format": 1,
   "algorithm": "sha256",
   "prompts": {
+    "crew-blueprint-own-idea@1": {
+      "hash": "sha256:f0d067621a1b3654578f3f578cd392cfbc6abae141a05c432b137f27b21d775a",
+      "parts": {
+        "system": "sha256:a11cbfd4bf62145e17d37adc75cb96fc64e9c4d58f1aa19433032f1dfa08b7d9",
+        "task": "sha256:77e609bce18d7b5b48fe458cdd0dcf09f3ecb1a52fb0e154661f31ae81ef0991",
+        "outputSchema": "sha256:d2f585c0ce5c9d885f38d9cd8a650838cfef1bb94bf15d2c75bc99a656ca7751",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:7aab983fd43b6ffddeefe834a50688eb88253313dcffdc15cccc43c5a1b81f28"
+      }
+    },
+    "crew-blueprint-personalise@1": {
+      "hash": "sha256:9be8324a96910d8bfa045b383ebf47e4d98e0b14345ae33dbfdec326f6217563",
+      "parts": {
+        "system": "sha256:019e00e2425d6d1031c49ea9be9529aa70b82c9d054bd0b1552fc24df627944b",
+        "task": "sha256:4d3730f86d74ad2eeffcf67e03d4768ba5849e8e5b8a44620c8642e407dbe454",
+        "outputSchema": "sha256:d19b746aaa443a70998886cbe88e91089e4943a66847b03a749749d065810c3c",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:1448ad38e471839be36157e024c29cf2a11d0b61b1cd99eca88be1e79dc9df80"
+      }
+    },
+    "crew-brand-kit@1": {
+      "hash": "sha256:220e6ad511e671b147e37ebe1c8a1b94a19733f3030fa75680d617ede39b964a",
+      "parts": {
+        "system": "sha256:55721abaee7741920b42cf6967b2a2c8e2a225043cec551d6540932345f9d2b6",
+        "task": "sha256:8217770fd379a8fa1e213db0109a4ee7a06653f5a2bc7f5c006b2b9b8903ec52",
+        "outputSchema": "sha256:d32dd28185af67dc6ecb51dc52e0a716ab2a29a1ecd5e40626433e199614b4a6",
+        "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
+        "module": "sha256:bf292a7551b42105176653673f53534c3b8be567b29bb56d3fa20b5ad4dff9f2"
+      }
+    },
     "internal-registry-probe@1": {
       "hash": "sha256:b34ba1b7eadd841842e5547f18663869185a995e22e88bd1caae1c324ba02659",
       "parts": {
