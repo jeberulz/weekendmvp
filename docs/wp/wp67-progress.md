@@ -10,7 +10,7 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is running**: WP71 and WP72 (Claude lane) started on the owner's go; WP70 and WP73 are Codex's. Next gate: G1.
+Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is running**: WP71 and WP72 (Claude lane) started on the owner's go; WP70 and WP73 are Codex's. Next gate: G1.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
@@ -18,8 +18,8 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **In progress**: S1 provider adapters committed (`a79a6814`, reviewed); S2 gateway (Opus) running | C-METER from WP70 (stub until then) | S5 seed precompute needs OK (≈ $15) |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **In progress**: S0 extract, S1 gated routes and S3 component kit committed and reviewed (S3 re-review running); S2 shell (Sonnet) running | `creditsSummary` from WP73 (typed mock until then); middleware 404 from Codex | — |
+| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 in PR #184** (reviewed, checks green); small S3 follow-ups going onto the same PR. S4 cache helper and S6 evals next, fixture mode | C-METER from WP70 (stub until then) | S4 live cache test and S5 seed precompute (≈ $15) need OK |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, PR #183** (S0–S4 reviewed, a11y-checked, browser-checked; CodeRabbit fixes in `ffd4f9c8`). Waiting on owner merge | `creditsSummary` from WP73 (typed mock until then); middleware 404 from Codex | Merge #183 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
@@ -226,3 +226,31 @@ Updated 2026-11-05. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
 - Verify before any live spend:
   - the Sonnet 5.5 cache-read rate (the skill says $0.20, the spike says $0.10; $0.20 is kept);
   - the gpt-image-2 token rates on OpenAI's live pricing page.
+
+## 2026-11-06 - WP72 PR open, WP71 PR open
+
+- WP72 is done: PR #183 (S0 extract, S1 gated routes, S2 shell, S3 component kit, S4 a11y and browser check).
+  Each story had an independent review; all checks pass. CodeRabbit's three points (copy-blocked wording, the
+  soft-404 test comment, stale paths in the stories file) are fixed in `ffd4f9c8`. Waiting on the owner to merge.
+- WP71 S1–S3 are in PR #184 (`claude/wp71-ai-gateway`):
+  - S2 follow-up `5b9bb12f`: `safeIssuePath` work is bounded (deduped nodes, depth and node caps), and the cost
+    cross-check reprices at the requested model.
+  - S3 follow-ups `198d0224`, after two review rounds (the second found no blockers): the prompt-version check
+    compares against the base branch lock, fetches it itself in CI and fails there if it can't read it; a
+    CI-only test in `npm test` runs it for real. Hash format v3 covers the spec module, its runtime imports and
+    the router's resolved model, effort, thinking and ceilings. The registry and router snapshot and re-validate
+    specs. The import scan covers git-tracked files and more loader forms.
+  - Checks on the final tree: typecheck, Convex typecheck, lint, `npm test`, the prompt-version check and build,
+    all exit 0.
+  - Next on the same PR: SKIP_DIRS matched at the top level only, more loader forms (`eval`, `new Function`,
+    `_load`, `npm:` aliases), a model/ceiling regression test, and C-PROMPT value imports limited to
+    `definePromptSpec`.
+  - After #184 merges and `main` has a lock, a missing base lock must fail in CI (tracked in the WP71 progress).
+- Needs from Codex (added):
+  - a `check:prompt-versions` package script and a CI step that runs it (a clearer signal; CI coverage no longer
+    depends on it);
+  - optional `fetch-depth: 0` or a `git fetch origin main` step;
+  - C-METER contract questions: optional token fields on `FailArgs`, and an overrun marker in metering
+    (`docs/wp/wp71-progress.md`).
+- Owner items: merge #183; review and merge #184 when its follow-up commit lands; live spend for WP71 S4 (cache
+  test) and S5 (≈ $15) when we get there.
