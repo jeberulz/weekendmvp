@@ -9,7 +9,9 @@ import {
   config,
   hostRoutingDecision,
   middleware,
+  restoreWorkspaceRefusal,
   syncSessionHintCookie,
+  WORKSPACE_REFUSAL_HEADER,
   workspaceAccessAllowed,
   workspaceProjectId,
 } from "../../middleware";
@@ -183,6 +185,23 @@ describe("WP72 workspace hard-404 gate", () => {
   it("refuses a signed-out or malformed workspace request without querying Convex", async () => {
     expect(await workspaceAccessAllowed(undefined, "abc123")).toBe(false);
     expect(await workspaceAccessAllowed("token", "")).toBe(false);
+  });
+
+  it("restores HTTP 404 after Convex Auth wraps a denial during token refresh", async () => {
+    const denied = new NextResponse("Not Found", {
+      status: 404,
+      headers: { [WORKSPACE_REFUSAL_HEADER]: "1" },
+    });
+    const refreshed = NextResponse.next(denied);
+    refreshed.cookies.set("__convexAuthJWT", "new-token", { httpOnly: true, path: "/" });
+    expect(refreshed.status).toBe(200); // Installed Convex Auth's refresh path does this.
+
+    const restored = restoreWorkspaceRefusal(refreshed);
+    expect(restored.status).toBe(404);
+    expect(await restored.text()).toBe("Not Found");
+    expect(restored.headers.get("x-middleware-next")).toBeNull();
+    expect(restored.headers.get(WORKSPACE_REFUSAL_HEADER)).toBeNull();
+    expect(restored.headers.getSetCookie().join("\n")).toContain("__convexAuthJWT=new-token");
   });
 });
 
