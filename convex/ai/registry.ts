@@ -2,7 +2,11 @@
  * WP71-S3. The prompt registry (`02` §5.3): `id@version` → spec.
  *
  * Prompts live in code (`convex/ai/prompts/`), never in the database. The
- * registry is built once, at import, from `PROMPT_ENTRIES`, and refuses:
+ * registry is built once, at import, from `PROMPT_ENTRIES`. Each spec is first
+ * copied to plain data (`snapshotSpec`: every field read once, `thinking` and
+ * `cacheLayout` copied and frozen), and that copy is what is validated and
+ * registered, so a getter cannot pass validation with one value and register
+ * another. The registry refuses:
  * - an entry whose spec fails C-PROMPT validation (`PromptSpecError`);
  * - two entries with the same `id@version` (`DUPLICATE_REF`);
  * - two versions of one id with the same content (`DUPLICATE_CONTENT`): a
@@ -13,8 +17,12 @@
  * - `system`: the system block text;
  * - `task`: the `buildUser` source and its output for the entry's sample inputs;
  * - `outputSchema`: the zod schema as JSON Schema, as the gateway sends it;
- * - `run`: tier, effort, thinking, maxTokens, mode, purpose, cache layout and
- *   fallbacks, so an `id@version` on an `ai_usage` row names one exact call shape.
+ * - `run`: the router's full output (`routeSpec`: provider, resolved model,
+ *   effort, thinking, maxTokens, input ceiling, mode) plus tier, purpose, cache
+ *   layout and fallbacks, so an `id@version` on an `ai_usage` row names one exact
+ *   call shape, and a change to `TIER_MODELS` or a ceiling fails a locked version.
+ * The script adds a fifth part, `module`: the source of the spec's module and its
+ * repo-local imports. It needs the file system, which this file must not touch.
  * `canonicalJson` sorts object keys at every depth, so the key order in a spec
  * file never changes the hash.
  *
@@ -25,9 +33,10 @@
 
 import { z } from "zod";
 
-import { definePromptSpec, parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts.ts";
-import type { PromptEntry, RegisteredSpec } from "./prompts/entry.ts";
+import { parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts.ts";
+import { assertModulePath, validatedSpec, type PromptEntry, type RegisteredSpec } from "./prompts/entry.ts";
 import { PROMPT_ENTRIES } from "./prompts/index.ts";
+import { routeSpec } from "./router.ts";
 
 export type { PromptEntry, RegisteredSpec } from "./prompts/entry.ts";
 
@@ -86,11 +95,11 @@ export function promptContent(entry: PromptEntry): PromptContent {
     task: { source: String(spec.buildUser), sample: entry.renderSample() },
     outputSchema,
     run: {
+      // Everything the router derives (provider, model, input ceiling) plus the
+      // spec's own settings, so a change to `TIER_MODELS` or a lane ceiling
+      // fails a locked version just like a text change does.
+      ...routeSpec(spec),
       tier: spec.tier,
-      effort: spec.effort,
-      thinking: spec.thinking,
-      maxTokens: spec.maxTokens,
-      mode: spec.mode,
       purpose: spec.purpose ?? null,
       cacheLayout: spec.cacheLayout,
       fallbacks: spec.fallbacks,
@@ -153,15 +162,26 @@ export function createPromptRegistry(entries: readonly PromptEntry[]): PromptReg
   const contentByIdAndKey = new Map<string, string>();
 
   for (const entry of entries) {
-    // Re-validate: an entry built without `definePromptSpec` must not slip in.
-    const spec = definePromptSpec(entry.spec);
+    // Re-validate a plain-data snapshot: an entry built without `promptEntry`,
+    // or a spec with accessors, must not slip in.
+    const spec = validatedSpec(entry.spec);
     const ref = promptRef(spec);
+    assertModulePath(entry.module);
+    if (typeof entry.renderSample !== "function") {
+      throw new TypeError(`prompt registry: ${ref} entry needs renderSample`);
+    }
+    const safe: PromptEntry = Object.freeze({
+      spec,
+      module: entry.module,
+      internal: entry.internal === true,
+      renderSample: entry.renderSample,
+    });
     if (byRef.has(ref)) {
       throw new PromptRegistryError("DUPLICATE_REF", ref, `prompt registry: ${ref} is registered twice`);
     }
     let key: string;
     try {
-      key = promptContentKey({ ...entry, spec });
+      key = promptContentKey(safe);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       throw new PromptRegistryError("UNCANONICAL_CONTENT", ref, `prompt registry: ${ref} content cannot be fingerprinted: ${reason}`);
@@ -176,7 +196,7 @@ export function createPromptRegistry(entries: readonly PromptEntry[]): PromptReg
       );
     }
     contentByIdAndKey.set(idKey, ref);
-    byRef.set(ref, Object.freeze({ ...entry, spec }));
+    byRef.set(ref, safe);
   }
 
   const ordered = [...byRef.values()].sort(

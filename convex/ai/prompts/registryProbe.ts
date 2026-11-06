@@ -7,9 +7,13 @@
  * real entry to resolve, hash and lock. It is registered with `internal: true`
  * and no crew job may use it.
  *
- * Any change to the system text, the task template or the output schema needs a
- * version bump, then `node --experimental-strip-types
- * scripts/check-prompt-versions.mjs --write` to lock the new version.
+ * Any change to this file (comments included: the lock hashes the module
+ * source) or to a repo-local module it imports needs a version bump, then
+ * `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`
+ * to lock the new version.
+ *
+ * Version 2: unchanged prompt; `@1` was retired when the hash gained the
+ * `module` part ("hash format v2").
  */
 
 import { z } from "zod";
@@ -24,7 +28,7 @@ export type RegistryProbeOutput = z.infer<typeof registryProbeOutput>;
 
 export const registryProbeSpec = definePromptSpec<RegistryProbeInput, RegistryProbeOutput>({
   id: "internal-registry-probe",
-  version: 1,
+  version: 2,
   tier: "fast",
   effort: "low",
   thinking: { type: "disabled" },

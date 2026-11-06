@@ -4,11 +4,18 @@
  * The model comes from the spec's tier alone, through C-PROMPT's
  * `TIER_MODELS`; the input ceiling comes from the tier and mode, through
  * `TIER_MAX_INPUT_TOKENS`. Effort, thinking and max tokens are the spec's own
- * explicit (and already validated) settings. There is no caller-supplied model
- * override: `routeSpec` takes the spec and nothing else, and it reads no other
- * field, so a plan, an owner or an extra `model` property on the object cannot
- * change the model. "Paying founders get more work, not a pricier model for the
- * same work."
+ * explicit settings.
+ *
+ * `routeSpec` re-validates every spec it is given: it snapshots the spec to
+ * plain data (each field read once, unknown fields dropped) and runs
+ * `definePromptSpec` on that copy, then routes the copy. A hand-built spec
+ * therefore cannot carry an over-cap `maxTokens`, a missing effort, or
+ * thinking extras such as `budget_tokens` past the router.
+ *
+ * There is no caller-supplied model override: `routeSpec` takes the spec and
+ * nothing else, so a plan, an owner or an extra `model` property cannot change
+ * the model. "Paying founders get more work, not a pricier model for the same
+ * work."
  *
  * Every crew text call goes to Anthropic. Images (OpenAI, Recraft) are not
  * prompt specs and are not routed here.
@@ -16,17 +23,14 @@
 
 import {
   maxInputTokensForSpec,
-  PROMPT_MODES,
-  PROMPT_TIERS,
-  PromptSpecError,
   TIER_MODELS,
   type PromptEffort,
   type PromptMode,
   type PromptModel,
   type PromptSpec,
   type PromptThinking,
-  type PromptTier,
 } from "../../lib/workspace/contracts/prompts.ts";
+import { validatedSpec } from "./prompts/entry.ts";
 
 export type TextProvider = "anthropic";
 
@@ -42,40 +46,24 @@ export type PromptRoute = {
   readonly mode: PromptMode;
 };
 
-export type RoutableSpec = Pick<
-  PromptSpec<never, unknown>,
-  "id" | "tier" | "effort" | "thinking" | "maxTokens" | "mode"
->;
-
-function isTier(value: unknown): value is PromptTier {
-  return typeof value === "string" && (PROMPT_TIERS as readonly string[]).includes(value);
-}
-
-function isMode(value: unknown): value is PromptMode {
-  return typeof value === "string" && (PROMPT_MODES as readonly string[]).includes(value);
-}
+/** Any C-PROMPT spec; its input and output types do not matter for routing. */
+export type RoutableSpec = Readonly<PromptSpec<never, unknown>>;
 
 /**
- * The provider call settings for a spec. Throws `PromptSpecError`
- * (`INVALID_TIER` / `INVALID_MODE`) on a tier or mode outside C-PROMPT, which
- * only a spec built without `definePromptSpec` can carry.
+ * The provider call settings for a spec. Throws `PromptSpecError` for any spec
+ * `definePromptSpec` rejects: an unknown tier (`INVALID_TIER`) or mode
+ * (`INVALID_MODE`), thinking extras (`INVALID_THINKING`), an over-cap
+ * `maxTokens` (`MAX_TOKENS_OVER_CAP`), and the rest.
  */
 export function routeSpec(spec: RoutableSpec): PromptRoute {
-  const tier: unknown = spec.tier;
-  if (!isTier(tier)) {
-    throw new PromptSpecError("INVALID_TIER", `${String(spec.id)}: unknown tier ${JSON.stringify(tier)}`);
-  }
-  const mode: unknown = spec.mode;
-  if (!isMode(mode)) {
-    throw new PromptSpecError("INVALID_MODE", `${String(spec.id)}: unknown mode ${JSON.stringify(mode)}`);
-  }
+  const safe = validatedSpec(spec);
   return Object.freeze({
     provider: "anthropic",
-    model: TIER_MODELS[tier],
-    effort: spec.effort,
-    thinking: Object.freeze({ ...spec.thinking }),
-    maxTokens: spec.maxTokens,
-    maxInputTokens: maxInputTokensForSpec({ tier, mode }),
-    mode,
+    model: TIER_MODELS[safe.tier],
+    effort: safe.effort,
+    thinking: safe.thinking,
+    maxTokens: safe.maxTokens,
+    maxInputTokens: maxInputTokensForSpec(safe),
+    mode: safe.mode,
   });
 }

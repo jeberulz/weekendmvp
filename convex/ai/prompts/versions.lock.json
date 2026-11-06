@@ -9,6 +9,17 @@
         "task": "sha256:5cf181474ba3561779f116d0057fe260188c998353da2dd71c22a2f912b52aba",
         "outputSchema": "sha256:aa102704aaa34d5cf90846f0cd46f66dff7901ea5106e21b4531807aa0975258",
         "run": "sha256:52c9b8d3ce0e5b97f35db628fcc4d5baeea554de7b2ddfa295f55a26c728288d"
+      },
+      "retired": "hash format v2"
+    },
+    "internal-registry-probe@2": {
+      "hash": "sha256:dc006a368f6cfbe9c464854ad50020e2f07e5f7313cb0fb6479771c66cd086a3",
+      "parts": {
+        "system": "sha256:37046c6f520eceaa3b1955793a19a0b19cf0ca3950942e5ac97d28fa3ffeae53",
+        "task": "sha256:5cf181474ba3561779f116d0057fe260188c998353da2dd71c22a2f912b52aba",
+        "outputSchema": "sha256:aa102704aaa34d5cf90846f0cd46f66dff7901ea5106e21b4531807aa0975258",
+        "run": "sha256:31183aeddf0608b92b0259bd3450a42de5716faef6d3f3eb002034152d062824",
+        "module": "sha256:4e634491c06eb5553e7e84d9766b790e81a9509ee37a76e27c96da7cc23afc3d"
       }
     }
   }
