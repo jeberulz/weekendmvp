@@ -46,6 +46,12 @@ Standing rules:
     - A settle above the reservation is recorded at the true cost and flagged as an overrun (for example
       gpt-image-2 output tokens above the table price), so a rate-card drift is visible.
   - Verification: a fixture-mode end-to-end test, reserve → settle and reserve → fail
+  - Follow-up 2026-11-06 (G1 blocker): the `"use node"` `internalAction`
+    `convex/ai/gatewayActions.ts` `runPrompt` binds the gateway to the real WP70 meter, takes a
+    `promptRef` only (registry → router), and classifies the meter's bare gate codes as
+    `meter_refused`. A fixture-mode run now writes a settled `ai_usage` row through Codex's metering,
+    and the kill switch blocks every live call (`tests/platform/ai-gateway-action.test.ts`). S2 stays
+    ticked: the WP71 gateway acceptance is met.
 
 - [x] `WP71-S3` - Router, registry, prompt-version CI, import boundary
   - Scope: `convex/ai/{router,registry}.ts`, `convex/ai/prompts/**`, `scripts/check-prompt-versions.mjs`,

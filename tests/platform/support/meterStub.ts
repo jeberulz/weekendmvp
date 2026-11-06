@@ -24,7 +24,19 @@
  * - `creditDebitId` is credit-funding only when `creditDebits` lists it for
  *   the same owner and task.
  *
- * Refusals throw `ConvexError<MeterErrorData>`, as the real mutation will.
+ * Refusals throw `ConvexError` with the real meter's data shapes:
+ * - the gate (C-OPS `assertFeatureEnabledForOwner` / `settingsForCall` in
+ *   `convex/ai/metering.ts`) runs first in `reserve` (before the attempt-key
+ *   lookup) and again in `markSent`. For an owner call it throws
+ *   `{ code: "AI_DISABLED" }` alone, with no `scope` and no `message`; for
+ *   ownerless work `{ code: "WORKSPACE_DISABLED" }` or
+ *   `{ code: "AI_DISABLED", scope }`;
+ * - budget refusals throw `firstReserveFailure`'s `MeterErrorData`.
+ *
+ * A known attempt key replays (`existing: true`) only for the same call. For a
+ * different call (any reserve field differs, e.g. a retry that lands on a
+ * re-ask row) it throws the real meter's plain
+ * `Error("attemptKey reused for a different call")` (`sameAttempt`).
  */
 
 import { ConvexError } from "convex/values";
@@ -52,11 +64,13 @@ import {
   type FailArgs,
   type FinalizeResult,
   type GlobalPool,
+  type ReserveArgs,
+  type MeterFeature,
   type MeterPlan,
   type SettleArgs,
   type SpendDeltas,
 } from "@/lib/workspace/contracts/metering";
-import type { MeterPort } from "@/convex/ai/gateway";
+import { METER_ATTEMPT_KEY_REUSED, type MeterPort } from "@/convex/ai/gateway";
 
 export type { MeterPort };
 
@@ -69,6 +83,8 @@ export type MeterStubOwner = {
 export type MeterStubOptions = {
   readonly now?: () => number;
   readonly killSwitches?: { readonly ai?: boolean; readonly studioVideo?: boolean };
+  /** `ops_settings.workspaceEnabled` (default on). Off refuses like the real gate. */
+  readonly workspaceEnabled?: boolean;
   readonly globalBudgetsMicroUsd?: Partial<Record<GlobalPool, number>>;
   readonly owners?: Readonly<Record<string, MeterStubOwner>>;
   /** Ledger debits the stub accepts as credit funding: `debitId → { ownerId, taskId }`. */
@@ -88,6 +104,7 @@ export type MeterStub = MeterPort & {
   /** The WP70 sweep: finalises expired `reserved` rows. Returns the ids it swept. */
   sweep(nowMs: number): readonly string[];
   setKillSwitch(name: "ai" | "studioVideo", on: boolean): void;
+  setWorkspaceEnabled(on: boolean): void;
 };
 
 export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
@@ -99,9 +116,25 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
   };
   const owners = options.owners ?? {};
   const creditDebits = options.creditDebits ?? {};
+  let workspaceEnabled = options.workspaceEnabled ?? true;
+
+  /** The real meter's `settingsForCall`, with its exact error data. */
+  const gate = (feature: MeterFeature, ownerId: string | undefined): void => {
+    const aiUnavailable = killSwitches.ai || (globalBudgets.free <= 0 && globalBudgets.paid <= 0);
+    const videoOff = feature === "studioVideo" && killSwitches.studioVideo;
+    if (ownerId !== undefined) {
+      // C-OPS `assertSwitchOpen`: `{ code }` alone.
+      if (!workspaceEnabled || aiUnavailable || videoOff) throw new ConvexError({ code: "AI_DISABLED" });
+      return;
+    }
+    if (!workspaceEnabled) throw new ConvexError({ code: "WORKSPACE_DISABLED" });
+    if (aiUnavailable || videoOff) throw new ConvexError({ code: "AI_DISABLED", scope: aiUnavailable ? "ai" : "studioVideo" });
+  };
 
   const rows = new Map<string, AiUsageRow>();
   const byAttemptKey = new Map<string, string>();
+  /** What the real meter's `sameAttempt` compares, per attempt key. */
+  const callByAttemptKey = new Map<string, string>();
   const finalizeCount = new Map<string, number>();
   const budgets = new Map<string, AiBudgetsRow>();
   for (const [ownerId, owner] of Object.entries(owners)) {
@@ -177,8 +210,13 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
   return {
     async reserve(args) {
       assertReserveArgs(args);
+      gate(args.feature, args.ownerId);
+      const call = sameCallKey(args);
       const existing = byAttemptKey.get(args.attemptKey);
-      if (existing !== undefined) return { usageId: existing, existing: true };
+      if (existing !== undefined) {
+        if (callByAttemptKey.get(args.attemptKey) !== call) throw new Error(METER_ATTEMPT_KEY_REUSED);
+        return { usageId: existing, existing: true };
+      }
 
       const createdAt = now();
       const dayKey = utcDayKey(createdAt);
@@ -246,6 +284,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       };
       rows.set(usageId, row);
       byAttemptKey.set(args.attemptKey, usageId);
+      callByAttemptKey.set(args.attemptKey, call);
 
       const deltas = reserveDeltas(row);
       const shard = counter(deltas.global.pool, deltas.global.dayKey);
@@ -267,6 +306,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       if (row.status !== "reserved" || row.sentAt !== undefined) {
         return { usageId, changed: false, ...(row.sentAt === undefined ? {} : { sentAt: row.sentAt }) };
       }
+      gate(row.feature, row.ownerId);
       const sentAt = now();
       rows.set(usageId, { ...row, sentAt });
       return { usageId, changed: true, sentAt };
@@ -357,7 +397,20 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
     setKillSwitch(name, on) {
       killSwitches[name] = on;
     },
+
+    setWorkspaceEnabled(on) {
+      workspaceEnabled = on;
+    },
   };
+}
+
+/** The fields the real `sameAttempt` compares, as one string. */
+function sameCallKey(args: ReserveArgs): string {
+  return JSON.stringify([
+    args.ownerId ?? null, args.projectId ?? null, args.taskId ?? null, args.promptRef, args.provider,
+    args.model, args.tier, args.feature, args.reservedMicroUsd, args.creditDebitId ?? null,
+    args.batch === true, args.escalation === true, args.reask === true,
+  ]);
 }
 
 function assertInteger(name: string, value: unknown): void {

@@ -59,36 +59,50 @@
  * - **Meter and gateway failures come back as results.** A throw from
  *   `reserve`, `settle` or `fail` ends the run `internal` with the attempts so
  *   far, never an escaped error that loses them.
+ * - **A reused attempt key is a duplicate, not an internal error.** The
+ *   meter's "attemptKey reused for a different call" (`METER_ATTEMPT_KEY_REUSED`)
+ *   ends the run `duplicate_attempt` with no `usageId`, `reason:
+ *   "key_reused_for_different_call"` and the meter's message, and nothing is
+ *   sent. A text run returns `nextAttempt` so a retry never lands
+ *   on its own re-ask row.
+ * - **A gate refusal is a meter refusal.** The real meter throws C-OPS /
+ *   C-AUTHZ gate codes (`AI_DISABLED`, `WORKSPACE_DISABLED`,
+ *   `RESOURCE_NOT_FOUND`) from `reserve` and `markSent`, often as bare
+ *   `{ code }` with no `message`. Both `MeterErrorData` and
+ *   `WorkspaceGateErrorData` (`isGatewayErrorData`) end the run
+ *   `meter_refused`. From `reserve`, nothing was created; from `markSent`, the
+ *   row is failed `billed: "none"` (charged 0) and nothing is sent.
+ * - **The router decides the call.** `resolveText` takes the model, effort,
+ *   thinking, max tokens, mode and input ceiling from `routeSpec`, which
+ *   re-validates the spec; a spec the router rejects is a `config` failure.
  *
  * Shape: a pure, injectable core (`runTextGateway`, `runImageGateway`) that
  * takes a meter port, an adapter port and a clock, so it runs without Convex.
- * No Convex function is registered here yet: an `internalAction` needs the
- * real C-METER mutations (WP70) and the S3 registry, and a deployed action on
- * an in-memory meter would enforce no budget at all. The wrapper lands with
- * WP70; it will be `"use node"` and only bind these ports to `ctx.runMutation`.
- * The in-memory meter used by tests lives in `tests/platform/support/`.
+ * The Convex binding is `convex/ai/gatewayActions.ts` (WP71-S2 follow-up): a
+ * `"use node"` `internalAction` that resolves a `promptRef` through the
+ * registry and binds `MeterPort` to `internal.ai.metering.*` through
+ * `ctx.runMutation`. This file registers no Convex function. The in-memory
+ * meter used by the unit tests lives in `tests/platform/support/`.
  */
 
 import { z } from "zod";
 
 import {
-  isMeterErrorData,
+  isGatewayErrorData,
   MAX_RESERVATION_MICRO_USD,
   type BilledState,
   type FailArgs,
   type FinalizeResult,
+  type GatewayErrorData,
   type MarkSentArgs,
   type MarkSentResult,
   type MeterErrorClass,
-  type MeterErrorData,
   type MeterProvider,
   type ReserveArgs,
   type ReserveResult,
   type SettleArgs,
 } from "../../lib/workspace/contracts/metering";
 import {
-  maxInputTokensForSpec,
-  modelForSpec,
   promptRef as promptRefFor,
   type PromptModel,
   type PromptSpec,
@@ -112,17 +126,19 @@ import {
   type TextSystemBlock,
   type TextUsage,
 } from "./providers/types";
+import { routeSpec } from "./router";
 
 // ---------------------------------------------------------------------------
 // Ports
 // ---------------------------------------------------------------------------
 
 /**
- * The four C-METER calls, with the contract's exact signatures. Codex's
- * `convex/ai/metering.ts` (WP70) binds to it through `ctx.runMutation`; until
- * then the tests' in-memory stub (`tests/platform/support/meterStub.ts`)
- * implements it. Refusals arrive as a thrown
- * `ConvexError` whose `data` is `MeterErrorData`.
+ * The four C-METER calls, with the contract's exact signatures.
+ * `convex/ai/gatewayActions.ts` binds them to Codex's `convex/ai/metering.ts`
+ * (WP70) through `ctx.runMutation`; the unit tests use the in-memory stub
+ * (`tests/platform/support/meterStub.ts`). Refusals arrive as a thrown
+ * `ConvexError` whose `data` is `MeterErrorData` or a gate error
+ * (`WorkspaceGateErrorData`, often `{ code }` alone).
  */
 export type MeterPort = {
   reserve(args: ReserveArgs): Promise<ReserveResult>;
@@ -248,13 +264,30 @@ export type GatewayAttempt = {
 export type GatewayFailure =
   /** A request no caller should send. Nothing was reserved. */
   | { readonly kind: "config"; readonly message: string }
-  /** C-METER refused the reservation (kill switch, budget). Nothing was sent. */
-  | { readonly kind: "meter_refused"; readonly error: MeterErrorData }
   /**
-   * The attempt key already had a row (a replayed run). Nothing was sent and
-   * the existing row was left alone: the caller must use a new attempt number.
+   * C-METER refused (kill switch, workspace switch, cohort, budget, a task or
+   * debit no longer valid). Nothing was sent. From `reserve` no row exists;
+   * from `markSent` the row is in `attempts`, failed with `billed: "none"`.
+   * `error` is the meter's data: `message` and `scope` may be absent.
    */
-  | { readonly kind: "duplicate_attempt"; readonly attemptKey: string; readonly usageId: string }
+  | { readonly kind: "meter_refused"; readonly error: GatewayErrorData }
+  /**
+   * The attempt key already had a row. Nothing was sent and the existing row
+   * was left alone: the caller must use a new attempt number (a text run's
+   * `nextAttempt` from the run that made the row). `usageId` names the row
+   * when the meter returned it (the same call replayed); it is absent when the
+   * meter refused the key as "attemptKey reused for a different call" (e.g. a
+   * job retry that landed on an earlier run's re-ask row, or two tasks sharing
+   * one `jobKey`). Then `reason` is `"key_reused_for_different_call"` and
+   * `message` is the meter's error text, so a key bug stays visible.
+   */
+  | {
+      readonly kind: "duplicate_attempt";
+      readonly attemptKey: string;
+      readonly usageId?: string;
+      readonly reason?: "key_reused_for_different_call";
+      readonly message?: string;
+    }
   | {
       readonly kind: "refusal";
       readonly provider: MeterProvider;
@@ -285,6 +318,19 @@ export type GatewayOutcome<TValue> = (
   readonly promptRef: string;
   readonly attempts: readonly GatewayAttempt[];
 };
+
+/**
+ * A text run's outcome. `nextAttempt` is one past the highest attempt number
+ * this run reserved a row for or found occupied: it counts a row left
+ * unfinalised for the sweep, a row the meter refused at `markSent`, and an
+ * attempt key that already had a row (`duplicate_attempt`, on the first
+ * attempt or the re-ask), so a retry with it never lands on that key again.
+ * When the run reserved nothing and hit no duplicate (a `config` failure, a
+ * `reserve` refusal) it is the run's first attempt number. A caller's retry
+ * uses it, never `firstAttempt + attempts.length` (`attempts` leaves out an
+ * unfinalised row).
+ */
+export type TextGatewayOutcome<TValue> = GatewayOutcome<TValue> & { readonly nextAttempt: number };
 
 export type TextRunValue<TOutput> = {
   readonly output: TOutput;
@@ -325,8 +371,12 @@ type AttemptPlan<TResult, TValue> = {
 };
 
 type AttemptOutcome<TValue> =
-  /** Nothing was reserved, or the row was not ours to finalise. Nothing was sent. */
-  | { readonly kind: "not_sent"; readonly failure: GatewayFailure }
+  /**
+   * Nothing was sent. `reserved` is true when this attempt did create a row
+   * (it was no longer ours to finalise by `markSent`), false when nothing was
+   * reserved.
+   */
+  | { readonly kind: "not_sent"; readonly failure: GatewayFailure; readonly reserved: boolean }
   /** The finalise call threw twice: the row is left for the sweep. */
   | { readonly kind: "unfinalized"; readonly failure: GatewayFailure }
   | { readonly kind: "settled"; readonly record: GatewayAttempt; readonly value: TValue }
@@ -337,17 +387,35 @@ type AttemptOutcome<TValue> =
       readonly reaskable: boolean;
     };
 
-function meterErrorDataOf(error: unknown): MeterErrorData | null {
-  if (isMeterErrorData(error)) return error;
-  if (typeof error === "object" && error !== null && "data" in error) {
-    const data: unknown = (error as { readonly data: unknown }).data;
-    if (isMeterErrorData(data)) return data;
+/**
+ * The meter's refusal data, from a thrown `ConvexError` (or the bare data).
+ * Accepts meter codes and gate codes (`isGatewayErrorData`): the real meter
+ * throws C-OPS `{ code: "AI_DISABLED" }` with no `message`, which
+ * `isMeterErrorData` alone would reject.
+ */
+export function gatewayErrorDataOf(error: unknown): GatewayErrorData | null {
+  let data: unknown = error;
+  if (!isGatewayErrorData(data) && typeof error === "object" && error !== null && "data" in error) {
+    data = (error as { readonly data: unknown }).data;
   }
-  return null;
+  return isGatewayErrorData(data) ? data : null;
 }
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * The real meter's text when `reserve` finds the attempt key on a row made by
+ * a different call (`sameAttempt` in `convex/ai/metering.ts`). It throws a
+ * plain `Error`, not a `ConvexError`; through `ctx.runMutation` the message
+ * can arrive wrapped (function name, request id, "Uncaught Error:"), so it is
+ * matched as a substring, and only this exact phrase.
+ */
+export const METER_ATTEMPT_KEY_REUSED = "attemptKey reused for a different call";
+
+function isAttemptKeyReused(error: unknown): boolean {
+  return error instanceof Error && error.message.includes(METER_ATTEMPT_KEY_REUSED);
 }
 
 /** Calls a finalise mutation, retrying the same call once (C-METER makes it idempotent by `usageId`). */
@@ -377,15 +445,29 @@ async function runAttempt<TResult, TValue>(
   try {
     reserved = await meter.reserve(args);
   } catch (error) {
-    const data = meterErrorDataOf(error);
+    const data = gatewayErrorDataOf(error);
+    if (data === null && isAttemptKeyReused(error)) {
+      return {
+        kind: "not_sent",
+        reserved: false,
+        failure: {
+          kind: "duplicate_attempt",
+          attemptKey: args.attemptKey,
+          reason: "key_reused_for_different_call",
+          message: messageOf(error),
+        },
+      };
+    }
     return {
       kind: "not_sent",
+      reserved: false,
       failure: data ? { kind: "meter_refused", error: data } : { kind: "internal", message: `reserve failed: ${messageOf(error)}` },
     };
   }
   if (reserved.existing) {
     return {
       kind: "not_sent",
+      reserved: false,
       failure: { kind: "duplicate_attempt", attemptKey: args.attemptKey, usageId: reserved.usageId },
     };
   }
@@ -409,6 +491,7 @@ async function runAttempt<TResult, TValue>(
     // longer ours (already final, e.g. swept). Send nothing, finalise nothing.
     return {
       kind: "not_sent",
+      reserved: true,
       failure: {
         kind: "provider",
         provider: args.provider,
@@ -421,7 +504,18 @@ async function runAttempt<TResult, TValue>(
     };
   }
 
-  if (markSentFailed) {
+  const markSentRefusal = markSentFailed ? gatewayErrorDataOf(markSentError) : null;
+  if (markSentRefusal !== null) {
+    // The meter's gate refused the send (kill switch flipped, task cancelled,
+    // debit refunded). Nothing left: fail the row unbilled and stop.
+    decision = {
+      kind: "fail",
+      billed: "none",
+      errorClass: "permanent",
+      failure: { kind: "meter_refused", error: markSentRefusal },
+      reaskable: false,
+    };
+  } else if (markSentFailed) {
     decision = {
       kind: "fail",
       billed: "none",
@@ -818,10 +912,16 @@ type ResolvedText = {
   readonly request: TextRequest;
 };
 
+/**
+ * The request for a spec. The call settings (model, effort, thinking, max
+ * tokens, mode, input ceiling) come from `routeSpec`, which re-validates the
+ * spec first, so a hand-built spec cannot carry settings C-PROMPT rejects.
+ */
 function resolveText<TInput, TOutput>(input: TextGatewayInput<TInput, TOutput>): ResolvedText {
   const { spec } = input;
   const ref = promptRefFor(spec);
-  if (spec.mode !== "realtime") {
+  const route = routeSpec(spec);
+  if (route.mode !== "realtime") {
     throw new Error(`${ref}: batch specs run through the Message Batches path (S5), not the realtime gateway`);
   }
   const timeoutMs = input.timeoutMs ?? DEFAULT_GATEWAY_TIMEOUT_MS;
@@ -831,17 +931,17 @@ function resolveText<TInput, TOutput>(input: TextGatewayInput<TInput, TOutput>):
   const user = spec.buildUser(input.inputs);
   if (typeof user !== "string" || user.trim().length === 0) throw new Error(`${ref}: buildUser returned an empty task block`);
   const request: TextRequest = {
-    model: modelForSpec(spec),
-    effort: spec.effort,
-    thinking: spec.thinking,
-    maxTokens: spec.maxTokens,
+    model: route.model,
+    effort: route.effort,
+    thinking: route.thinking,
+    maxTokens: route.maxTokens,
     system: systemBlocksFor(spec, input.businessContext),
     user,
     outputSchema: outputJsonSchema(spec.outputSchema),
     timeoutMs,
     ...(input.signal === undefined ? {} : { signal: input.signal }),
   };
-  return { ref, model: request.model, maxInputTokens: maxInputTokensForSpec(spec), request };
+  return { ref, model: request.model, maxInputTokens: route.maxInputTokens, request };
 }
 
 /** The worst case for one text attempt. Throws when the input bound is over the lane ceiling. */
@@ -889,27 +989,30 @@ export function crossCheckedTextCost(
 export async function runTextGateway<TInput, TOutput>(
   deps: TextGatewayDeps,
   input: TextGatewayInput<TInput, TOutput>,
-): Promise<GatewayOutcome<TextRunValue<TOutput>>> {
+): Promise<TextGatewayOutcome<TextRunValue<TOutput>>> {
   const runStartedAt = deps.clock.now();
   const deadlineAt = runStartedAt + GATEWAY_RUN_BUDGET_MS;
+  const firstAttempt = input.caller.attempt ?? 1;
 
   // 1. Resolve the spec. Nothing is reserved if this fails.
   let resolved: ResolvedText;
   try {
     resolved = resolveText(input);
   } catch (error) {
-    return configFailure(safeRef(input.spec), messageOf(error));
+    return { ...configFailure(safeRef(input.spec), messageOf(error)), nextAttempt: firstAttempt };
   }
   const { ref, model } = resolved;
   const { spec, caller } = input;
   const schemaNode = resolved.request.outputSchema ?? {};
-  const firstAttempt = caller.attempt ?? 1;
   const attempts: GatewayAttempt[] = [];
-  const end = (failure: GatewayFailure): GatewayOutcome<TextRunValue<TOutput>> => ({
+  // The highest attempt number this run reserved a row for or found occupied.
+  let lastReserved = firstAttempt - 1;
+  const end = (failure: GatewayFailure): TextGatewayOutcome<TextRunValue<TOutput>> => ({
     ok: false,
     failure,
     promptRef: ref,
     attempts,
+    nextAttempt: lastReserved + 1,
   });
 
   let request = resolved.request;
@@ -980,9 +1083,15 @@ export async function runTextGateway<TInput, TOutput>(
       },
     });
 
+    // A duplicate key is occupied: the next retry must start past it.
+    if (outcome.kind !== "not_sent" || outcome.reserved || outcome.failure.kind === "duplicate_attempt") {
+      lastReserved = attempt;
+    }
     if (outcome.kind === "not_sent" || outcome.kind === "unfinalized") return end(outcome.failure);
     attempts.push(outcome.record);
-    if (outcome.kind === "settled") return { ok: true, value: outcome.value, promptRef: ref, attempts };
+    if (outcome.kind === "settled") {
+      return { ok: true, value: outcome.value, promptRef: ref, attempts, nextAttempt: lastReserved + 1 };
+    }
     if (!outcome.reaskable || reasks >= MAX_REASKS) return end(outcome.failure);
 
     // D23's one re-ask, only if the run can still afford it in time.

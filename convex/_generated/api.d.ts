@@ -11,6 +11,7 @@
 import type * as accountBeehiiv from "../accountBeehiiv.js";
 import type * as admin_superAdmin from "../admin/superAdmin.js";
 import type * as ai_budgets from "../ai/budgets.js";
+import type * as ai_gatewayActions from "../ai/gatewayActions.js";
 import type * as ai_metering from "../ai/metering.js";
 import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
@@ -131,6 +132,7 @@ declare const fullApi: ApiFromModules<{
   accountBeehiiv: typeof accountBeehiiv;
   "admin/superAdmin": typeof admin_superAdmin;
   "ai/budgets": typeof ai_budgets;
+  "ai/gatewayActions": typeof ai_gatewayActions;
   "ai/metering": typeof ai_metering;
   articles: typeof articles;
   auth: typeof auth;

@@ -40,7 +40,7 @@
  * without changing the request or cost code.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic, { type Middleware } from "@anthropic-ai/sdk";
 
 import type { PromptModel, PromptThinking } from "../../../lib/workspace/contracts/prompts";
 import { ANTHROPIC_RATE_CARDS, anthropicCostMicroUsd, anthropicRateCard } from "../pricing";
@@ -90,8 +90,71 @@ export type AnthropicClientFactory = (apiKey: string) => AnthropicMessagesClient
 /** The only host live Claude traffic may reach. Explicit, so a stray `ANTHROPIC_BASE_URL` cannot redirect it. */
 export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 
+/**
+ * The request headers the live client may send: the SDK's own (`accept`,
+ * `content-type`, `user-agent`, `anthropic-version`, the `x-stainless-*`
+ * platform headers) and the key (`x-api-key`, or `authorization` as SDK 1.5.0
+ * sends it). Everything else is dropped by `stripUnlistedHeaders`. The adapter
+ * never sends a beta header, so `anthropic-beta` is not listed either.
+ */
+const LIVE_HEADER_ALLOWLIST: ReadonlySet<string> = new Set([
+  "accept",
+  "content-type",
+  "user-agent",
+  "anthropic-version",
+  "x-api-key",
+  "authorization",
+]);
+const LIVE_HEADER_PREFIX = "x-stainless-";
+
+/**
+ * Drops every request header outside `LIVE_HEADER_ALLOWLIST` (and the
+ * `x-stainless-` prefix). The SDK constructor always merges
+ * `ANTHROPIC_CUSTOM_HEADERS` from the environment into its default headers,
+ * and no constructor option turns that off, so the filter runs per request,
+ * after the SDK has built the headers.
+ */
+export const stripUnlistedHeaders: Middleware = async (request, next) => {
+  const headers = new Headers(request.headers);
+  for (const name of [...headers.keys()]) {
+    if (!LIVE_HEADER_ALLOWLIST.has(name) && !name.startsWith(LIVE_HEADER_PREFIX)) headers.delete(name);
+  }
+  return next({ ...request, headers });
+};
+
+const silentLogger = {
+  error: () => undefined,
+  warn: () => undefined,
+  info: () => undefined,
+  debug: () => undefined,
+};
+
+/**
+ * The live client. Every option the SDK would otherwise default from
+ * `process.env` is set here, so the key passed in is the only env value that
+ * reaches it:
+ * - `apiKey` given: the SDK reads no `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`,
+ *   profile or federation variables;
+ * - `baseURL` given: `ANTHROPIC_BASE_URL` is ignored;
+ * - `webhookKey: null`: `ANTHROPIC_WEBHOOK_SIGNING_KEY` is not read;
+ * - `logLevel: "off"` and a silent logger: `ANTHROPIC_LOG` is not read and
+ *   nothing is written to `console`;
+ * - `openTelemetry` given: the `ANTHROPIC_OPEN_TELEMETRY*` variables are not
+ *   read, and no spans or trace headers are produced;
+ * - `ANTHROPIC_CUSTOM_HEADERS` is still read by the constructor (SDK 1.5.0 has
+ *   no option for it); `stripUnlistedHeaders` removes what it adds.
+ */
 export const defaultAnthropicClientFactory: AnthropicClientFactory = (apiKey) =>
-  new Anthropic({ apiKey, baseURL: ANTHROPIC_BASE_URL, maxRetries: 0 });
+  new Anthropic({
+    apiKey,
+    baseURL: ANTHROPIC_BASE_URL,
+    maxRetries: 0,
+    webhookKey: null,
+    logLevel: "off",
+    logger: silentLogger,
+    openTelemetry: { propagation: false, traces: false },
+    middleware: [stripUnlistedHeaders],
+  });
 
 /** The API's limit on `cache_control` breakpoints per request. */
 export const MAX_CACHE_BREAKPOINTS = 4;
