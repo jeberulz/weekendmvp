@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, Check, PencilLine, SkipForward } from "lucide-react";
-import { useId, useState, type FormEvent, type ReactNode, type Ref } from "react";
+import { useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type Ref } from "react";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import {
   GOAL_KINDS,
@@ -64,7 +64,7 @@ export type WizardStepPanelProps = {
 const RADIO_ROW =
   "flex cursor-pointer items-start gap-3 rounded-lg border border-home-rule bg-home-card px-3 py-2.5 text-sm has-[:checked]:border-home-ink has-[:checked]:bg-home-sunk";
 const RADIO = `mt-0.5 size-4 shrink-0 accent-home-ink ${FOCUS}`;
-const INPUT = `w-full rounded-lg border border-home-d3 bg-home-card px-3 py-2 text-sm text-home-ink placeholder:text-home-ink-3 ${FOCUS}`;
+const INPUT = `w-full rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink placeholder:text-home-ink-3 ${FOCUS}`;
 const LEGEND = "mb-2 text-sm font-medium text-home-ink";
 
 const ACCEPT_LABELS = {
@@ -97,6 +97,7 @@ function Guarded({
   ariaExpanded,
   ariaControls,
   ariaDescribedBy,
+  buttonRef,
 }: {
   pending: boolean;
   onClick: () => void;
@@ -105,9 +106,11 @@ function Guarded({
   ariaExpanded?: boolean;
   ariaControls?: string;
   ariaDescribedBy?: string;
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   return (
     <button
+      ref={buttonRef}
       type="button"
       className={className}
       aria-disabled={pending || undefined}
@@ -599,6 +602,7 @@ export function WizardStepPanel({
   const noteId = `${base}-not-validated`;
   const describeAccept = step === "blueprint" && !blueprint.validated ? noteId : undefined;
   const [editing, setEditing] = useState(false);
+  const rewriteButton = useRef<HTMLButtonElement>(null);
   const index = WIZARD_STEPS.indexOf(step);
   const current = stepAnswerOf(step, answers);
   const suggested = stepAnswerOf(step, defaults);
@@ -642,7 +646,16 @@ export function WizardStepPanel({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-4">
+      {/* Escape (from the button or from inside the editor) closes it and puts focus on the button that opened it. */}
+      <div
+        className="flex flex-col gap-4"
+        onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key !== "Escape" || !editing) return;
+          event.stopPropagation();
+          setEditing(false);
+          rewriteButton.current?.focus();
+        }}
+      >
         <div>
           <Guarded
             pending={false}
@@ -650,12 +663,17 @@ export function WizardStepPanel({
             className={BTN_SECONDARY}
             ariaExpanded={editing}
             ariaControls={editorId}
+            buttonRef={rewriteButton}
           >
             <PencilLine aria-hidden="true" className="size-4" />
             {REWRITE_LABELS[step]}
           </Guarded>
         </div>
-        <div id={editorId} hidden={!editing} className={cn(CARD, "p-5")}>
+        <div
+          id={editorId}
+          hidden={!editing}
+          className={cn(CARD, "p-5")}
+        >
           {editing ? (
             <Editor
               step={step}
@@ -669,6 +687,10 @@ export function WizardStepPanel({
           ) : null}
         </div>
       </div>
+
+      <p role="status" aria-live="polite" className="sr-only">
+        {pending ? "Saving…" : ""}
+      </p>
 
       {error ? (
         <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">

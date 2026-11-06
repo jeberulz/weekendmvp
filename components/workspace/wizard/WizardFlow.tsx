@@ -98,7 +98,7 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
 }
 
 const HEADING = "font-editorial text-[34px] leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[40px]";
-const INPUT = `w-full rounded-lg border border-home-d3 bg-home-card px-3 py-2 text-sm text-home-ink ${FOCUS}`;
+const INPUT = `w-full rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink ${FOCUS}`;
 
 function OwnIdeaStart({ pending, error, onStart }: { pending: boolean; error: string | null; onStart: (text: string) => void }) {
   const base = useId();

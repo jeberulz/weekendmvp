@@ -470,3 +470,62 @@
   raw target before `new URL()` (which would normalise `/start/../start/x` to `/start/x`) in `safePlatformReturn`,
   `safeAuthRedirect`, the OAuth nested `returnTo` and the magic-link mailer. A dot segment in any return target now falls
   to `/dashboard`.
+
+## S6: accessibility pass (WCAG 2.1 AA)
+
+Not ticked: the live-browser keyboard and VoiceOver pass is still open (jsdom here cannot paint or read speech).
+
+### a11y-check checklist (every wizard screen)
+Screens: the eight steps (idea, blueprint with the "Not yet validated" note, platform, commercial model, goal, name,
+partner personality, partner name), the Rewrite/Rework editors (including the custom-platform and custom-partner-name
+fields and the empty-field alert), the own-idea start, the progress indicator, Create my business (every refusal), Meet
+your co-founder, and `app/start/error.tsx`. There is no SMS or phone step (D10).
+
+- [x] Icon-only buttons have `aria-label`: none exist; every icon button has visible text.
+- [x] Decorative icons have `aria-hidden` (Check, PencilLine, SkipForward, ArrowLeft).
+- [x] CSS logos: none on these screens.
+- [x] Form inputs have labels: every input has a `<label for>` or a fieldset legend plus hints via `aria-describedby`.
+- [x] Images: none.
+- [x] External links: none (the one link, "Open your business", is internal).
+- [x] Focus rings: `FOCUS` is a 2px `home-orange-ink` outline, 5.67:1 on cards and 5.21:1 on paper (above the 3:1 UI minimum).
+- [x] No colour-only indicators: progress is text ("Step N of 8", "(done)", "(current step)"); errors are text in alerts;
+  the checked radio row is the radio itself plus a border.
+- [x] Heading hierarchy: one h1 per page (flow or error boundary), h2 per step, h3 for the card titles, h4 only under h3.
+- [x] Keyboard: no modal or trap anywhere. Tab order follows reading order (Accept, Rewrite, editor, Back, Skip).
+
+### Violations found and fixed
+1. Text-field border `home-d3` on the card was 2.99:1 (needs 3:1, WCAG 1.4.11). Now `home-ink-3`, 5.76:1
+   (`WizardFlow.tsx` and `WizardStepPanel.tsx`).
+2. Escape did nothing in the Rewrite editor. Escape, from the button or from inside the editor, now closes it and puts
+   focus on the button that opened it.
+3. A pending save was silent for screen readers. The step panel now has a polite status ("Saving…").
+
+### Contrast (computed from `app/globals.css`, WCAG relative luminance)
+| Pair | Ratio | Need |
+|---|---|---|
+| ink on paper / card | 16.03 / 17.45 | 4.5 |
+| ink-2 on paper / card / sunk | 8.60 / 9.36 / 7.81 | 4.5 |
+| ink-3 (eyebrow labels, 11px) on paper / card / sunk | 5.30 / 5.76 / 4.81 | 4.5 |
+| ochre-ink on ochre ("Not yet validated" label) | 5.76 | 4.5 |
+| clay-ink on clay (alert box) / on paper / on card | 6.08 / 7.40 / 8.06 | 4.5 |
+| orange-ink on paper / card / sunk | 5.21 / 5.67 / 4.73 | 4.5 / 3 |
+| sage-ink on paper (done tick) | 7.53 | 3 |
+| card on ink (primary button) | 17.45 | 4.5 |
+| ink-3 dashed border on sunk (pending button) | 4.81 | 3 |
+| input border: home-d3 on card (before) / home-ink-3 (after) | 2.99 / 5.76 | 3 |
+
+No text pair is under 4.5:1. The radio-row and secondary-button borders (`home-rule`, 1.45:1) are decoration: the radio
+and the button label carry the control, so 1.4.11 does not apply.
+
+### Tests
+`tests/platform/wp74-keyboard.test.tsx` (8 tests, user-event, keyboard only, axe on every rendered step): walks all eight
+steps to Meet your co-founder; asserts heading focus and the live announcement after each move; Back (Shift+Tab then
+Enter), Skip (Space), Accept and Rewrite; editors open with Enter or Space, close with Escape, focus returns to the
+opener; arrow keys on radios; empty-field alerts; every Create-my-business refusal as an alert tied to the button; the
+own-idea start; a failed save; the "Not yet validated" note; the pending status; the error boundary. axe's colour-contrast
+rule cannot run in jsdom, hence the table above.
+
+### Outside my files (for Codex or the shell owner)
+- `EYEBROW` in `components/workspace/kit/styles.ts` is `home-ink-3` at 11px: passes (4.81 to 5.76) but only just on
+  `sunk`. No change needed.
+- Not checked in a browser: real focus-ring rendering, zoom/reflow at 320px, VoiceOver reading order. Do one manual pass.
