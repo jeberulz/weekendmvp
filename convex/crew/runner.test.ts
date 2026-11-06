@@ -21,13 +21,14 @@
  * `_scheduled_functions` and re-run by hand; timers are faked so a scheduled
  * function never fires on its own.
  */
+import { HOUR, RateLimiter } from "@convex-dev/rate-limiter";
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import shardedCounterTest from "@convex-dev/sharded-counter/test";
 import { convexTest, type TestConvex } from "convex-test";
 import { getFunctionName, type FunctionReference } from "convex/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { api, internal } from "../_generated/api";
+import { api, components, internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import schema from "../schema";
@@ -49,6 +50,8 @@ import {
 } from "../../lib/workspace/crew/retry";
 import { RUN_LEASE_MS, type RunCrewStepArgs } from "./jobs";
 import { runCrewStepWith, type CrewRunPrompt, type CrewRunnerCtx } from "./runner";
+
+const crewJobLimiter = new RateLimiter(components.rateLimiter, { crewJob: { kind: "fixed window", rate: 10, period: HOUR } });
 
 const modules = import.meta.glob("/convex/**/*.ts");
 
@@ -320,24 +323,20 @@ describe("crew task insert (first drafts only)", () => {
     await expect(createTask(t, business)).rejects.toThrow("WORKSPACE_DISABLED");
   });
 
-  test("each inserted task spends one crewJob limit token (10 an hour); a returned task spends none", async () => {
+  test("S2b: inserting a task spends no crewJob token (the founder-facing action spends it); past 10 inserts an hour still insert", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "limit");
-    const first = await createTask(t, business);
-    for (let i = 0; i < 20; i += 1) expect((await createTask(t, business)).created).toBe(false);
+    let previous = (await createTask(t, business)).taskId;
+    for (let i = 0; i < 5; i += 1) expect((await createTask(t, business)).created).toBe(false);
     let inserted = 1;
-    let previous = first.taskId;
-    for (;;) {
+    while (inserted < 12) {
       await t.run(async (ctx) => await ctx.db.patch("tasks", previous, { status: "cancelled" }));
-      try {
-        previous = (await createTask(t, business)).taskId;
-        inserted += 1;
-      } catch {
-        break;
-      }
-      if (inserted > 20) throw new Error("the limiter never refused");
+      previous = (await createTask(t, business)).taskId;
+      inserted += 1;
     }
-    expect(inserted).toBe(10);
+    expect(inserted).toBe(12);
+    const spent = await t.run(async (ctx) => await crewJobLimiter.getValue(ctx, "crewJob", { key: business.ownerId }));
+    expect(spent.value).toBe(10);
   });
 });
 

@@ -296,7 +296,8 @@ describe("WP74-S6 keyboard-only run-through", () => {
     expect(document.activeElement?.textContent).toMatch(/^Meet .+, your co-founder$/);
     expect(container.querySelector('[role="status"]')?.textContent).toBe("Business created. Meet your co-founder.");
     await axeClean(container);
-  });
+    // The whole wizard by keyboard takes about 2 s alone; under the full parallel suite it can pass 5 s.
+  }, 20_000);
 
   test("Create my business: the back button works by keyboard and other refusals are alerts", async () => {
     store.view = viewAt(7, true);

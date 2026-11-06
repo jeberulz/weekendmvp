@@ -981,3 +981,15 @@ Checks (exit codes): `npm run typecheck` 0, `npm run lint` 0 (existing warnings 
 - Tests: the "Try again" guard test now also asserts focus stays on the button (the `inFlight` check alone no longer passes it); the "Wren is writing…" test mounts empty and then streams, so it can fail; the file header is corrected.
 - Checks: workspace-wren-a11y, workspace-wren-panel, workspace-wren-panel-stale, workspace-change-rounds and workspace-kit, typecheck, eslint on changed files and `npm run test:platform` all pass (see the report for counts).
 - **PR #217 review (Codex), flaky card-outcome test**: `workspace-wren-a11y.test.tsx` now waits for each decision to settle under fake timers (a `settle` helper that advances timers inside `act`) before it asserts. The second card must show the exact error copy, not just any non-empty text. The test passed 15 runs alone and 18 runs under 6× parallel load; this was likely the one-off `test:platform` failure noted above.
+
+## 2026-11-06 - Open item from WP75-S2b (no WP77 code change)
+
+- **Brand kit re-run after a blueprint change round.** In a launch, the brand kit now briefs from the blueprint's
+  first draft while its card is pending (RULINGS 2026-11-06, "WP75-S2b brand-kit brief in a launch"). If the
+  founder then asks for changes on the blueprint, the kit stays built on the earlier draft. WP77 (with WP75-S6b)
+  needs a policy: re-run the kit, or flag it as built on an earlier blueprint.
+- **`crewJob` token on free rounds.** WP75-S2b added one `checkLimit(ctx, "crewJob", owner)` to the free-round
+  branches of `requestArtifactChanges` and `reaskChangeRound` (`convex/workspace/approvals.ts`), before the card
+  moves. With AI off it refuses `AI_DISABLED` and the card is unchanged. With no token left the card stays
+  `pending`. A paid round's token is spent where its task starts, at the debit (WP75 Needs from Codex 12).
+  `changeRounds.test.ts` now seeds AI on with a budget and registers the rate limiter.

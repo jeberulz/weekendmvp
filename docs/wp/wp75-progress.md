@@ -6,7 +6,7 @@
 - Stories: `docs/wp/wp75-stories.md` (S1, S2a–b, S3a–d, S4a–b, S5a–c, S6a–d).
 - WP76 dependency: WP76 starts after **S2b** merges (job runner + launch DAG with WP76 step slots). WP76 can also
   reuse S4a's checks.
-- Needs from Codex: items 1–17 below (S3a added 16 and 17); items 1, 3 and 4 block stories.
+- Needs from Codex: items 1–18 below (S3a added 16 and 17, S2b added 18); items 1, 3 and 4 block stories.
 
 ## 2026-11-06 - WP75-S2a built (job runner, one step)
 
@@ -220,7 +220,7 @@ each of those probes asserted the old buggy behaviour. The other 9 pass.
 |---|---|---|---|---|
 | S1 roster | **Built, not reviewed** (uncommitted on `claude/wp75-s1-roster`); story ticked | **Yes** | Codex 13 (recovery cron) before it ships | Opus (Sonnet UI) / Opus |
 | S2a job runner | **Done**: review + re-check approved, fixes in `464931e7`, `b8c665e5` | **Yes** | Codex 13 (recovery cron) before S1 ships | Opus / Opus |
-| S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
+| S2b launch DAG | **Built, reviewed, fixes in** (uncommitted on `claude/wp75-s2b-dag`); story ticked | **Yes** | Codex 13 (recovery cron) and 18 (launch sweep) before it ships | Opus / Opus |
 | S3a blueprint + brand text | **Built, not reviewed** (uncommitted on `claude/wp75-s3a-blueprint`); story ticked, repair waits for S4b | **Yes** | S4b repair through the `repairArtifact` seam (Owner Q6, Q7); seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
 | S3b logo marks | Not started | Yes (fixture image adapter) | Stop-and-ask 11, 12, 14; Owner Q2, Q3 | Opus / Opus |
 | S3c landing spec | Not started | Document only | Codex 1 for the site version write | Opus / Opus |
@@ -433,6 +433,15 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
     were rewritten with plain `--write`; no existing entry moved.
 16. Optional `documents.qualityIssues` (array of issue codes) so S3a's soft issues can be stored with the draft.
     Until then they are returned as `softIssueCodes` and dropped.
+17. **`idea_crew_seeds.seedVersion` sorts as text in its index** (S3a; see § S3a review fixes). The newest-100
+    read picks the highest version numerically, so this only bites past 100 rows for one slug. Fix: a numeric or
+    zero-padded sort field in the index.
+18. **A launch sweep, riding on 13's cron** (S2b review minor 4). It would re-advance every owner with a launch
+    in progress (`advanceOwner`). It would also re-enqueue a running `task_steps` marker whose workpool work is
+    gone. Today a throw inside `stepDone` strands that marker until the founder acts. Storing the workpool
+    `workId` on the marker would make "work is gone" exact, but `task_steps` lives in Codex's `convex/schema.ts`,
+    so S2b stores none. Without the `workId`, the sweep can treat a running marker with no open run for longer
+    than `RUN_LEASE_MS` as gone.
 
 ## Owner questions
 
@@ -446,7 +455,8 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 8. Light build pack: may it mention checkout, against v1's no-billing rule?
 9. Standard v1 for eight prompts: per-prompt rules on all, setup rules on Phase 1 (planned), or a v2?
 10. D24 (no eyebrow) and D25 (CSS-only motion): rule them, so S5a builds against accepted decisions.
-11. `crewJob` limit: per launch or per step (Stop-and-ask 10)?
+11. ~~`crewJob` limit: per launch or per step (Stop-and-ask 10)?~~ Answered 2026-11-06: one token per founder
+    action; built in S2b.
 12. Free-ceiling accounting: $1.50 lifetime covers about two launches at the measured $0.57 median, one at p90
     $1.20. Is a launch's first draft charged to the free ceiling, or to a platform budget?
 13. ~~Does the roster get an `artifact_review` card, or does the team just appear?~~ Answered 2026-11-06: the team
@@ -1198,3 +1208,227 @@ Checks after the last code edit (all exit 0):
 - `npm run test:convex` (81 files, 1,145 tests);
 - `npm run test:platform` (79 files, 2,152 tests);
 - `npm run build`.
+
+## 2026-11-06 - WP75-S2b built (launch DAG on `crewWorkpool`)
+
+Branch `claude/wp75-s2b-dag`, cut from `origin/main` `40aa7ce4`. Uncommitted, awaiting review. Story ticked.
+
+### Files
+
+- `convex/crew/steps.ts` (new): the step registry and the DAG rule as pure functions (`evaluateLaunch`,
+  `readySteps`, `stepDoneDecision`).
+- `convex/crew/workpool.ts` (new): the `crewWorkpool` client.
+- `convex/crew/launch.ts` (new): `stepDone`, `advanceOwner`, `resumeLaunch`, `launchProgress`.
+- `convex/crew/jobs.ts`: no `crewJob` token at insert; `ensureLaunchStepTasks`; `resumeParkedTask`;
+  `abandonCrewTask`; the launch-brief rule.
+- `convex/crew/generators.ts`: the brand kit briefs from the launch's draft blueprint (ruling below).
+- `convex/crew/roster.ts`: `startLaunch` and `retryLaunch` spend their one token and advance through the pool.
+- `convex/workspace/approvals.ts`: free change rounds spend one `crewJob` token.
+- `convex/_generated/api.d.ts`: the three new modules, added by hand.
+- Tests: `launch.test.ts` (13, new), `steps.test.ts` (15, new), `generators.test.ts` (+10),
+  `roster.test.ts`, `runner.test.ts` and `changeRounds.test.ts` (+3).
+
+### Design
+
+- **The blueprint moves onto the workpool.** It is the DAG's first pool step. This gives one re-invoker for
+  every step, puts a burst of sign-ups behind the global throttle, and retries a dead action instead of leaving
+  it for the cron. S1's behaviour is unchanged: tokens, states, retry rules and the `launchStatus` shape.
+  - Only S1's mechanism assertions changed. They used to read `_scheduled_functions`; they now read the enqueue
+    markers (`task_steps`). S1's `world()` registers the workpool.
+  - Three S1 tests now also see the brand kit enqueued once the team exists: a heal, a free re-plan and a replay.
+    That is the DAG continuing. No blueprint runs again.
+- **The enqueue marker.** A step handed to the pool gets one `task_steps` row on its task:
+  - it is created `running`, with `position` set to its registry index and `type` to its job type;
+  - it settles `succeeded` or `failed` together with the task;
+  - a parked task keeps its marker, and a resume reuses it.
+- **The pending-step rule.** These steps are slots: logo marks and the landing spec (`pending_story`, S3b and
+  S3c), the build pack (`pending_story`, S3d), and WP76's five steps (`pending_wp76`).
+  - A slot has no task row. It reads as `skipped`, with a plain reason taken from the registry; nothing is stored.
+  - A child runs only when every parent has succeeded or is a slot whose own parents are done. A parent that is
+    failed, running, queued or paused blocks it.
+  - Step tasks are inserted when the roster is written (in the blueprint's finish, and healed by
+    `advanceOwner`), only for hired employees, and only while nothing holds the step's revision-0 key.
+  - A step whose employee the roster skipped finishes `skipped` with the roster's reason, and so does every
+    step below it.
+- **`maxParallelism` is 10, global** (`convex/crew/workpool.ts`):
+  - each step is one `draft`-tier call that can take most of an action's 10 minutes, so a sign-up burst queues
+    instead of spiking spend;
+  - with the per-owner cap of 3, it still runs three or four launches side by side;
+  - it leaves action concurrency for Wren and the wizard, well under the README's suggested 20 (free) or
+    100 (Pro).
+- **The per-owner cap is 3, and nothing is stranded.**
+  - An owner's in-flight count is their running crew tasks plus queued tasks with a running marker, across all
+    their businesses.
+  - `advanceOwner` is the only thing that enqueues a fresh step. It fills slots oldest launch first, and it
+    skips a launch that has a paused step.
+  - A ready step waits only while 3 are in flight. Every in-flight step ends in a `stepDone`, because the
+    workpool always calls `onComplete`.
+  - Every `stepDone` that settles, parks or abandons a step calls `advanceOwner` again.
+  - `startLaunch` advances too, on every page mount, which covers a switch that was off and the deploy itself.
+- **`stepDone`** (`stepDoneDecision`):
+  - `retry`: re-enqueue after the runner's `delayMs`;
+  - `skipped: in_flight`: re-enqueue after `RUN_LEASE_MS`;
+  - action failure: re-enqueue after `RUN_LEASE_MS`. After 3 in a row, the task fails as interrupted
+    (`abandonCrewTask`).
+  - Otherwise the task's own status decides:
+    - terminal settles (`skipped: terminal`, `failed`, `rejected`, `closed` and the rest);
+    - blocked parks.
+  - A task that `recoverStaleCrewRuns` has already failed is terminal, so the step settles failed and its
+    children stay queued.
+  - Refinement: a late or duplicate delivery that finds its task already succeeded settles as succeeded.
+- **The `crewJob` move.** The charge is gone from `insertCrewTask`. Each founder action is charged exactly once:
+  - `startLaunch`'s first call;
+  - `retryLaunch`'s new draft, or its resume;
+  - `resumeLaunch`, only when it resumes something;
+  - each free change round, and each retried free round (`checkLimit` runs before the card moves, so with AI off
+    or no token left the card stays `pending`).
+
+  The DAG's own steps spend none. A paid round's token is spent at its task's start, the `debitJob` site
+  (Codex 12). There is no hire path yet; a future hire spends one token.
+- **The resume edge.** `resumeLaunch` resumes parked steps in registry order, as many as the owner's free slots
+  allow. A step that does not fit stays parked. With no free slot it spends no token.
+- **The launch brief** (ruling below). In a launch, the brand kit briefs from that launch's own first-draft
+  blueprint when all of these hold:
+  - the draft's card is `pending` (inside its TTL) or `approved`;
+  - the document is unchanged since the card was created;
+  - the card is not `changes_requested`, `expired` or `cancelled`.
+
+  `prepareCrewStep` and `finishCrewStep` both check this. Outside a launch, S3a's approved-only rule is
+  unchanged.
+- **`launchProgress`** is a new, additive, read-only query: each step's key, title, state and skip reason. It has
+  no ids. `launchStatus` is unchanged.
+
+### Plan vs reality
+
+- The story's acceptance line "runs every WP75 step in order" holds only for the built steps (blueprint, roster
+  and brand kit text). The others are slots, as described above.
+- The check that "the landing spec is ready in the fixture timeline before 5 minutes" moves to S3c.
+- The story's `enqueueAction(internal.crew.runner.runCrewStep, …)` is now `runCrewGeneratorStep`, so the server
+  builds every step's inputs (the S3a hand-off).
+- `stepDone` is an internal mutation that the workpool calls. The WP68 scanner accepts both new public
+  functions, `resumeLaunch` and `launchProgress`.
+- `convex-test` caveat: draining the pool moves the fake clock hours ahead. After a drain, the token tests
+  compare the stored limiter state, or reset the window before counting a new action.
+
+### Open items
+
+- **Brand kit re-run policy (S6b, WP77).** If the founder later asks for changes on the blueprint, the kit stays
+  built on the earlier draft. A policy is needed for re-running the kit, or flagging it, after a blueprint
+  revision.
+- A change round (WP77) runs off the pool, through the scheduler. It counts toward the owner's in-flight total
+  but is not throttled by the cap. Since the review fixes, its finish frees the slot (minor 3 below).
+- **A throw in `stepDone` strands the marker** (review minor 4). The running marker stays, so the step counts as
+  in flight and is never enqueued again. The fix is a sweep on Codex 13's cron (Codex 18). No `workId` is stored,
+  because `task_steps` is Codex's schema.
+
+### Needs from Codex (S2b)
+
+Codex 12 (the paid round's token at the debit) and Codex 13 (the recovery cron) still apply. Codex 18 (the
+launch sweep on 13's cron) was added by the review fixes.
+
+### Checks (after the last edit)
+
+- `git diff --check`: 0.
+- `npm run typecheck`: 0.
+- `npx tsc -p convex --noEmit`: 0.
+- `npm run lint`: 0 (0 errors, warnings only in untouched files).
+- `npm run check:prompt-versions`: 0.
+- `npm run test:security`: 0 (node 220 pass; vitest 121).
+- `npm run test:convex`: 0 (84 files, 1,197 tests).
+- `npm run test:platform`: 0 on the re-run (80 files, 2,160 tests). The first run timed out once in
+  `wp74-keyboard.test.tsx`, a UI test this story does not touch. That file passes alone, and the full re-run
+  passed.
+- `npm run build`: 0.
+
+### S2b review fixes (independent Opus review: 0 blockers, 1 major, 5 minors, nits)
+
+**M1: a step that failed after the roster can be tried again.**
+- Once the team exists, `retryLaunch` calls `retryFailedLaunchSteps` in `launch.ts`.
+- It inserts a new first draft for each failed or cancelled pool step whose parents are all done. The draft uses
+  the same job key with a `:retry:n` idempotency key.
+- It spends one `crewJob` token per click, however many steps it retries, then advances under the cap.
+- A brand kit is retried only when a brief exists for it now (`approvedBlueprint`, or the S2b launch rule).
+  Otherwise it is not retryable, its reason is "The blueprint changed. Approve it, or finish its changes, before
+  the brand kit can try again.", and the click spends nothing.
+- A step that is queued, running or paused is left alone. A paused step is resumed by `resumeLaunch`.
+- `launchProgress` now returns a top-level `retryable`. Each failed step also gets `retryable` and a plain reason,
+  so the UI can offer Try again.
+- The `ensureLaunchStepTasks` comment in `jobs.ts` now points at this path.
+
+**Minors**
+1. New integration test: the action dies before it opens a run, three times. The kit task and its marker are
+   `failed`, no run is opened, the brand workstream shows the "interrupted" note, and no ledger rows are written
+   (the step is unpaid). Mutation-checked: raising `MAX_ACTION_FAILURES` to 4, or dropping the
+   `abandonCrewTask` call, each fails it.
+2. New tests for the hired filter in `ensureLaunchStepTasks` (lead only → 0, with brand → 1, again → 0) and for
+   the paused-launch skip in `advanceOwner`. A paused kit holds a built `build_pack` with no marker, and the pack
+   is enqueued once the kit is no longer paused.
+3. **Revisions free their slot.** `setTaskStatus` in `jobs.ts` is the one place a task's status changes. When a
+   revision (`revisionOfTaskId`) leaves `running`, it schedules `internal.crew.launch.advanceAfterRevision`.
+   That covers finish, fail, park and cancel. The call is scheduled, not imported, which avoids an import cycle.
+   Test: three running revisions fill the cap; one is abandoned; the waiting launch runs. Mutation-checked:
+   with the hook disabled, it fails.
+4. **A throw in `stepDone` strands its marker.** This is documented as an open item and as Needs from Codex 18,
+   a sweep on Codex 13's cron. No `workId` is stored, because `task_steps` is Codex's schema.
+5. **A full cap.** `resumeLaunch` returns `waitingForSlot`. With no free slot it returns
+   `{ resumed: 0, paused: n, waitingForSlot: true }`, spends nothing, and the step reads `paused`.
+   - A retry while the cap is full inserts the step and spends one token. `launchProgress` shows the step as
+     `queued`, with "Waiting for a free slot: your team is busy with other work.", and not as failed. It runs
+     once a slot frees.
+   - Both cases are tested.
+
+**Nits**
+- `ownerInFlight` now ignores archived tasks.
+- `stepDone` settles an archived task's marker as `failed`. Tested: an archived kit's marker settles, and the
+  next launch runs.
+- Tested: `resumeLaunch` and `launchProgress` refuse an archived business.
+- A slot under a parent that is not done reads `waiting`, with the reason "Waiting on the brand kit." (the roster
+  reads as "the team"). It no longer reads "skipped". The `steps.test` and `launch.test` expectations were
+  updated.
+- The S3c story now notes the capacity maths for `maxParallelism` 10 against the 5-minute target.
+
+**Files:** `convex/crew/launch.ts`, `convex/crew/roster.ts`, `convex/crew/jobs.ts`, `convex/crew/steps.ts`,
+`convex/crew/launch.test.ts`, `convex/crew/steps.test.ts`, `docs/wp/wp75-progress.md` (this section, Status row,
+open items, Needs 18), `docs/wp/wp75-stories.md` (the S3c note). The coordinator's `wp74-keyboard.test.tsx`
+timeout edit is left in place.
+
+**Checks (after the last code edit):** every check exited 0.
+
+| Check | Result |
+|---|---|
+| `git diff --check` | 0 |
+| `npm run typecheck` | 0 |
+| `npx tsc -p convex --noEmit` | 0 |
+| `npm run lint` | 0 (0 errors, 43 warnings in untouched files) |
+| `npm run check:prompt-versions` | 0 |
+| `npm run test:security` | 0 (node 220 pass; vitest 121) |
+| `npm run test:convex` | 0 (84 files, 1,209 tests) |
+| `npm run test:platform` | 0 (80 files, 2,160 tests) |
+| `npm run build` | 0 |
+
+### S2b re-check (narrow Opus re-check: ready to commit; 0 blockers, 0 majors)
+
+Every finding from the review was confirmed fixed by mutation. Open follow-ups, none blocking:
+- `launchProgress` calls `failedLaunchSteps` without `now`, so a blueprint card past its 7-day TTL (before the
+  expiry cron is wired) shows the kit as retryable while Try again spends and does nothing. Fix: pass the clock
+  the same way the mutation does, or wire the expiry cron.
+- No test covers the `archivedAt` filter in `ownerInFlight` (`launch.ts:182`, `:190`). No code archives tasks today.
+- A built step that is `waiting` (for example the kit before its task is inserted) has no reason; slots say
+  "Waiting on the …". A cosmetic gap for S6a's Team HQ.
+- If the founder asks for changes on the blueprint between a retry's mutation and its preflight, the retry spends
+  its token and fails at preflight. Accepted.
+
+### S2b PR #239 review fix (Codex P2: launchProgress missed the pre-roster retry)
+
+Before the team existed, `launchProgress` read only `failedLaunchSteps`, which leaves out the blueprint, so a failed
+first blueprint showed `retryable: false` while `launchStatus` (and `retryLaunch`) said a retry would help. One rule
+now serves both: `openLaunchRetry` in `convex/crew/launch.ts` (moved there with `planFromSucceededBlueprint`, since
+`roster.ts` imports `launch.ts`).
+- A failed, cancelled or missing blueprint is retryable only while the wizard answers are usable. A succeeded
+  blueprint with no stored team is retryable only while the team still plans. A paused one is retryable (resumed).
+- In `launchProgress`, the failure sits on the blueprint step, or on the roster step when the blueprint succeeded
+  (that step reads `failed`, not `waiting`). A retryable one gives `STEP_FAILED_REASON`, a stuck one
+  `LAUNCH_STUCK_REASON`, and the top-level `retryable` includes it.
+- Tests (`launch.test.ts`): a failed blueprint (usable, then unusable answers); a succeeded blueprint with no team
+  (plans, then cannot); the paused blueprint agrees with `launchStatus`. Mutation probe: with the new read removed,
+  all three fail.
