@@ -203,7 +203,7 @@ describe("WP78-S4e2b2 account closure", () => {
     expect(otherJobs).toHaveLength(0);
   });
 
-  test("a late project is seen after the first page; corrupt cursor safely replays", async () => {
+  test("a late project is seen by the continuing cursor after the first page", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t, 2);
     await asUser(t, ids.ownerId, ids.sessionId).mutation(request, {});
@@ -213,7 +213,6 @@ describe("WP78-S4e2b2 account closure", () => {
       ownerId: ids.ownerId, source: "own_idea", title: "Late business", status: "draft",
       idempotencyKey: "closure:late", createdAt: Date.now(), updatedAt: Date.now(),
     }));
-    await t.run((ctx) => ctx.db.patch(closure._id, { cursor: "invalid-cursor" }));
     let result;
     do { result = await t.mutation(next, { jobId: closure._id }); } while (result.more);
     expect((await t.run((ctx) => ctx.db.get(lateId)))?.deletionRequestedAt)
@@ -224,12 +223,31 @@ describe("WP78-S4e2b2 account closure", () => {
     expect(jobs).toHaveLength(1);
   });
 
-  test("inconsistent per-project job refuses without advancing the cursor or archiving", async () => {
+  test("a corrupt cursor restarts once, then records a second failure without looping", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t, 2);
+    await asUser(t, ids.ownerId, ids.sessionId).mutation(request, {});
+    const closure = (await jobFor(t, ids.ownerId))!;
+    await t.mutation(next, { jobId: closure._id });
+    await t.run((ctx) => ctx.db.patch(closure._id, { cursor: "invalid-cursor" }));
+    expect(await t.mutation(next, { jobId: closure._id }))
+      .toEqual({ processed: 0, more: true });
+    expect((await jobFor(t, ids.ownerId))?.cursor).toBeUndefined();
+    expect((await jobFor(t, ids.ownerId))?.cursorResetAt).toBeDefined();
+    await t.mutation(next, { jobId: closure._id });
+    await t.run((ctx) => ctx.db.patch(closure._id, { cursor: "invalid-again" }));
+    expect(await t.mutation(next, { jobId: closure._id }))
+      .toEqual({ processed: 0, more: true });
+    expect((await jobFor(t, ids.ownerId))?.lastErrorCode)
+      .toBe("ACCOUNT_CLOSURE_CURSOR_INVALID");
+  });
+
+  test("inconsistent per-project job records a bounded retry without advancing the cursor or archiving", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t, 1);
     await asUser(t, ids.ownerId, ids.sessionId).mutation(request, {});
     const closure = (await jobFor(t, ids.ownerId))!;
-    await t.run((ctx) => ctx.db.insert("lead_retention_jobs", {
+    const badJobId = await t.run((ctx) => ctx.db.insert("lead_retention_jobs", {
       ownerId: ids.ownerId, projectId: ids.projectIds[0],
       deletionRequestedAt: Date.now() - DAY,
       deleteDueAt: Date.now() + 29 * DAY,
@@ -237,10 +255,19 @@ describe("WP78-S4e2b2 account closure", () => {
       state: "scheduled", attempts: 0, processedCount: 0,
       createdAt: Date.now(), updatedAt: Date.now(),
     }));
-    await expect(t.mutation(next, { jobId: closure._id }))
-      .rejects.toThrow("LEAD_RETENTION_JOB_INCONSISTENT");
+    expect(await t.mutation(next, { jobId: closure._id }))
+      .toEqual({ processed: 0, more: true });
     expect((await jobFor(t, ids.ownerId))?.cursor).toBeUndefined();
+    expect((await jobFor(t, ids.ownerId))?.lastErrorCode)
+      .toBe("ACCOUNT_CLOSURE_PROJECT_RETRY");
+    expect((await jobFor(t, ids.ownerId))?.nextAttemptAt).toBe(Date.now() + 60_000);
     expect((await t.run((ctx) => ctx.db.get(ids.projectIds[0])))?.archivedAt)
       .toBeUndefined();
+    await t.run((ctx) => ctx.db.delete(badJobId));
+    vi.setSystemTime(Date.now() + 60_000);
+    expect(await t.mutation(next, { jobId: closure._id }))
+      .toEqual({ processed: 1, more: true });
+    expect((await t.run((ctx) => ctx.db.get(ids.projectIds[0])))?.deletionRequestedAt)
+      .toBe(closure.requestedAt);
   });
 });

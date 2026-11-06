@@ -60,6 +60,8 @@ export const growthTables = {
     ownerId: v.id("users"),
     requestedAt: v.number(),
     cursor: v.optional(v.string()),
+    // A corrupt cursor may restart the scan once; a second failure needs repair.
+    cursorResetAt: v.optional(v.number()),
     nextAttemptAt: v.number(),
     state: v.union(v.literal("scheduled"), v.literal("complete")),
     attempts: v.number(),

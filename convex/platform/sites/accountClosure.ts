@@ -7,6 +7,9 @@ import { requireCurrentPlatformUserForMutation } from "../authz";
 import { LEAD_RETENTION_WINDOW_MS } from "./retention";
 
 const PAGE_SIZE = 1;
+const RETRY_BASE_MS = 60 * 1000;
+const RETRY_MAX_MS = 60 * RETRY_BASE_MS;
+const REPLAY_WAKE_AFTER_MS = 5 * RETRY_BASE_MS;
 
 function fail(code: string): never {
   throw new ConvexError({ code });
@@ -23,6 +26,13 @@ async function matchingClosureJob(ctx: MutationCtx, ownerId: Id<"users">) {
 function validEpoch(epoch: number): boolean {
   return Number.isSafeInteger(epoch) && epoch > 0 &&
     Number.isSafeInteger(epoch + LEAD_RETENTION_WINDOW_MS);
+}
+
+function retryDelayMs(job: Doc<"account_closure_jobs">): number {
+  if (job.lastErrorCode !== "ACCOUNT_CLOSURE_PROJECT_RETRY" ||
+      job.lastAttemptAt === undefined) return RETRY_BASE_MS;
+  return Math.min(RETRY_MAX_MS,
+    Math.max(RETRY_BASE_MS, job.nextAttemptAt - job.lastAttemptAt) * 2);
 }
 
 /**
@@ -47,7 +57,7 @@ export const requestAccountClosure = mutation({
           (job.state === "complete" && job.completedAt === undefined)) {
         fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
       }
-      if (job.state === "scheduled") {
+      if (job.state === "scheduled" && Date.now() - job.updatedAt >= REPLAY_WAKE_AFTER_MS) {
         await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, {
           jobId: job._id,
         });
@@ -130,12 +140,32 @@ async function scheduleProject(ctx: MutationCtx, job: Doc<"account_closure_jobs"
   }
   await ctx.db.insert("audit_events", {
     ownerId: job.ownerId, projectId: project._id,
-    actorType: "user", actorUserId: job.ownerId,
+    actorType: "system",
     action: "business.deletion_requested_by_account_closure",
     subjectType: "project", subjectId: project._id,
     createdAt: now,
   });
 }
+
+/** Isolated project write: a failure rolls back before the cursor records a retry. */
+export const processProject = internalMutation({
+  args: { jobId: v.id("account_closure_jobs"), projectId: v.id("projects") },
+  returns: v.null(),
+  handler: async (ctx, { jobId, projectId }) => {
+    const job = await ctx.db.get("account_closure_jobs", jobId);
+    const project = await ctx.db.get("projects", projectId);
+    if (job === null || project === null || job.state !== "scheduled" ||
+        !validEpoch(job.requestedAt) ||
+        (await ctx.db.get("users", job.ownerId))?.accountClosureRequestedAt !== job.requestedAt) {
+      fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
+    }
+    if ((await matchingClosureJob(ctx, job.ownerId))?._id !== jobId) {
+      fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
+    }
+    await scheduleProject(ctx, job, project, Date.now());
+    return null;
+  },
+});
 
 /** One project per transaction. This is privacy cleanup, including while off. */
 export const processNext = internalMutation({
@@ -161,7 +191,11 @@ export const processNext = internalMutation({
     }
     if (job.completedAt !== undefined) fail("ACCOUNT_CLOSURE_JOB_INCONSISTENT");
     const now = Date.now();
-    if (job.nextAttemptAt > now) return { processed: 0, more: true };
+    if (job.nextAttemptAt > now) {
+      await ctx.scheduler.runAfter(job.nextAttemptAt - now,
+        internal.platform.sites.accountClosure.processNext, { jobId });
+      return { processed: 0, more: true };
+    }
 
     const query = () => ctx.db.query("projects")
       .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId));
@@ -171,12 +205,20 @@ export const processNext = internalMutation({
         maximumRowsRead: PAGE_SIZE });
     } catch (error) {
       if (job.cursor === undefined) throw error;
+      if (job.cursorResetAt !== undefined) {
+        await ctx.db.patch("account_closure_jobs", jobId, {
+          attempts: job.attempts + 1, lastAttemptAt: now,
+          lastErrorCode: "ACCOUNT_CLOSURE_CURSOR_INVALID",
+          nextAttemptAt: now + RETRY_MAX_MS, updatedAt: now,
+        });
+        return { processed: 0, more: true };
+      }
       // A cursor can become invalid after an index repair. Replaying from the
       // start is safe because each per-project scheduling decision is idempotent.
       // Convex permits only one paginated query per function execution, so the
       // actual restart must happen in a new scheduled transaction.
       await ctx.db.patch("account_closure_jobs", jobId, {
-        cursor: undefined, attempts: job.attempts + 1,
+        cursor: undefined, cursorResetAt: now, attempts: job.attempts + 1,
         lastAttemptAt: now, lastErrorCode: "ACCOUNT_CLOSURE_CURSOR_RESET",
         nextAttemptAt: now, updatedAt: now,
       });
@@ -187,7 +229,27 @@ export const processNext = internalMutation({
       fail("ACCOUNT_CLOSURE_PAGE_INVALID");
     }
     const project = page.page[0];
-    if (project !== undefined) await scheduleProject(ctx, job, project, now);
+    if (project !== undefined) {
+      try {
+        const result: null = await ctx.runMutation(
+          internal.platform.sites.accountClosure.processProject,
+          { jobId, projectId: project._id },
+        );
+        void result;
+      } catch {
+        // The nested write rolled back. Persist no exception text: it may hold
+        // lead or project data. An hourly S4e3 cron will also recover stale jobs.
+        const delay = retryDelayMs(job);
+        await ctx.db.patch("account_closure_jobs", jobId, {
+          attempts: job.attempts + 1, lastAttemptAt: now,
+          lastErrorCode: "ACCOUNT_CLOSURE_PROJECT_RETRY",
+          nextAttemptAt: now + delay, updatedAt: now,
+        });
+        await ctx.scheduler.runAfter(delay,
+          internal.platform.sites.accountClosure.processNext, { jobId });
+        return { processed: 0, more: true };
+      }
+    }
     const complete = page.isDone;
     await ctx.db.patch("account_closure_jobs", jobId, {
       cursor: complete ? undefined : page.continueCursor,
