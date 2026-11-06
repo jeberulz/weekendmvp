@@ -10,8 +10,11 @@
  * | Class                | Gateway failure                                             | What happens            |
  * |----------------------|-------------------------------------------------------------|-------------------------|
  * | `retryable_unbilled` | `provider` with `retryable` and `billed: none`;             | up to 2 retries         |
- * |                      | `duplicate_attempt` (the retry moves to `nextAttempt`)      | with backoff            |
- * | `indeterminate`      | `provider` with `billed: possible`, or a timeout            | one retry               |
+ * |                      | `duplicate_attempt` with `key_reused_for_different_call`    | with backoff            |
+ * |                      | (the retry moves to `nextAttempt`)                          |                         |
+ * | `indeterminate`      | `provider` with `billed: possible`, or a timeout; a         | one retry               |
+ * |                      | same-call `duplicate_attempt` (an earlier execution's row,  |                         |
+ * |                      | outcome unknown here)                                       |                         |
  * | `permanent`          | `config`, `refusal`, `schema_invalid` (after the gateway's   | task `failed`; refund   |
  * |                      | one re-ask), `internal`, any other `provider` failure,      | only when a debit       |
  * |                      | `UNAUTHENTICATED`, `RESOURCE_NOT_FOUND` on a live task       | exists                  |
@@ -45,6 +48,13 @@ export const MAX_RETRYABLE_RETRIES = 2;
 
 /** Runner retries after an `indeterminate` execution: the meter already charged its worst case. */
 export const MAX_INDETERMINATE_RETRIES = 1;
+
+/** Classes whose runs spend a task's retry budget. Parked, closed and permanent runs never do. */
+export const BUDGET_SPENDING_CLASSES = ["retryable_unbilled", "indeterminate"] as const satisfies readonly RetryClass[];
+
+export function spendsRetryBudget(code: string | undefined): boolean {
+  return code !== undefined && (BUDGET_SPENDING_CLASSES as readonly string[]).includes(code);
+}
 
 /** Backoff before retry n (0-based) of a `retryable_unbilled` execution: 5 s, then 20 s. */
 export const RETRYABLE_BACKOFF_MS = [5_000, 20_000] as const;
@@ -112,8 +122,13 @@ export function classifyGatewayFailure(failure: CrewGatewayFailure, context: Cla
       return "permanent";
     }
     case "duplicate_attempt":
-      // Nothing was sent. The retry starts at the run's `nextAttempt`, past the occupied key.
-      return "retryable_unbilled";
+      // `key_reused_for_different_call`: the key belonged to another call (a
+      // retry that landed on an earlier re-ask row). Nothing was sent; the retry
+      // moves past it. Without that reason the meter found THIS call's own row
+      // (C-METER returns its `usageId`): an earlier execution of the same call
+      // whose outcome this run does not know, which may have billed. That is
+      // indeterminate: one retry at `nextAttempt`, never an open-ended loop.
+      return failure.reason === "key_reused_for_different_call" ? "retryable_unbilled" : "indeterminate";
     case "provider": {
       if (failure.billed === "actual") return "permanent";
       if (failure.billed === "possible" || failure.errorClass === "timeout" || failure.errorClass === "indeterminate") {
@@ -179,7 +194,8 @@ export function parkedReason(code: ParkingMeterCode): string {
     case "WORKSPACE_DISABLED":
       return "Paused for now: the workspace is offline for a moment. Your team picks this up again when it is back.";
     case "BUDGET_EXHAUSTED":
-      return "Paused: today's AI allowance is used up. Resume this step when you are ready, or tomorrow.";
+      // The meter's budget may be a daily cap or a lifetime ceiling: promise no date.
+      return "Paused: the AI allowance available to you is used up for now. Resume this step when more is available.";
   }
 }
 
@@ -187,6 +203,14 @@ export function parkedReason(code: ParkingMeterCode): string {
 export const FAILED_STEP_REASON =
   "This step could not finish. It used none of your credits; you can ask your team to try again.";
 
-/** The founder-facing note when a failed step's credits were returned. */
+/**
+ * The founder-facing note when a paid step failed in an archived business. The
+ * refund cannot run there (the ledger refuses archived tasks and businesses),
+ * so the credits stay spent; nothing is promised.
+ */
+export const FAILED_STEP_ARCHIVED_REASON =
+  "This step could not finish. This business is archived, so its credits could not be returned automatically.";
+
+/** The founder-facing note when a failed step's credits are being returned (the refund is scheduled). */
 export const FAILED_STEP_REFUNDED_REASON =
-  "This step could not finish, so its credits were returned. You can ask your team to try again.";
+  "This step could not finish, so its credits are being returned. You can ask your team to try again.";

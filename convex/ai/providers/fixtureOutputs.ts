@@ -126,44 +126,43 @@ export type FixtureOutputRegistryOptions = {
   readonly getEntry?: (ref: string) => PromptEntry;
 };
 
-/** Builds a registry. Fingerprints are computed once, on the first lookup. */
+/**
+ * Builds a registry. Both indexes are built here, eagerly. A registered ref
+ * with no spec (a registration bug) makes EVERY lookup throw, so a fixture run
+ * can never quietly fall back to the generic reply for it.
+ */
 export function createFixtureOutputRegistry(options: FixtureOutputRegistryOptions = {}): FixtureOutputRegistry {
   const byRef = options.byRef ?? FIXTURE_OUTPUTS_BY_REF;
   const artifacts = options.artifacts ?? ARTIFACT_FIXTURES;
   const resolve = options.getEntry ?? getEntry;
-  let refIndex: Map<string, FixtureOutput> | null = null;
-  let schemaIndex: Map<string, FixtureOutput> | null = null;
 
   const refFingerprint = (system: string, schema: unknown): string | null => {
     const key = schemaKey(schema);
     return key === null ? null : `${canonicalJson(system)}\u0000${key}`;
   };
 
-  const indexes = (): { refs: Map<string, FixtureOutput>; schemas: Map<string, FixtureOutput> } => {
-    if (refIndex === null) {
-      refIndex = new Map();
-      for (const [ref, output] of Object.entries(byRef)) {
-        // A ref with no registered spec is a registration bug: fail loudly in fixture runs.
-        const { spec } = resolve(ref);
-        const fingerprint = refFingerprint(spec.system, sentSchema(spec.outputSchema));
-        if (fingerprint !== null) refIndex.set(fingerprint, output);
-      }
+  const refs = new Map<string, FixtureOutput>();
+  let registrationError: Error | null = null;
+  try {
+    for (const [ref, output] of Object.entries(byRef)) {
+      const { spec } = resolve(ref);
+      const fingerprint = refFingerprint(spec.system, sentSchema(spec.outputSchema));
+      if (fingerprint !== null) refs.set(fingerprint, output);
     }
-    if (schemaIndex === null) {
-      schemaIndex = new Map();
-      for (const fixture of artifacts) {
-        const key = schemaKey(sentSchema(fixture.schema));
-        if (key !== null && !schemaIndex.has(key)) schemaIndex.set(key, fixture.output);
-      }
-    }
-    return { refs: refIndex, schemas: schemaIndex };
-  };
+  } catch (error) {
+    registrationError = error instanceof Error ? error : new Error(String(error));
+  }
+  const schemas = new Map<string, FixtureOutput>();
+  for (const fixture of artifacts) {
+    const key = schemaKey(sentSchema(fixture.schema));
+    if (key !== null && !schemas.has(key)) schemas.set(key, fixture.output);
+  }
 
   return {
     outputFor(params) {
+      if (registrationError !== null) throw registrationError;
       const schema = params.output_config?.format?.schema;
       if (schema === undefined) return undefined;
-      const { refs, schemas } = indexes();
       const system = firstSystemText(params);
       if (system !== null) {
         const fingerprint = refFingerprint(system, schema);

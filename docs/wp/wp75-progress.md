@@ -98,6 +98,69 @@ Uncommitted in the worktree; the orchestrator reviews and commits. Fixture mode 
 - `test:convex` 0 (915), `test:platform` 0 (1,291), `test:prompts` 0 (24), `test:engine` 0 (1,076).
 - `npm run build` 0. `git diff --check` clean.
 
+## 2026-11-06 - S2a review fixes
+
+The independent review asked for changes. Everything is uncommitted in the worktree, and the run is fixture only.
+Where an item below disagrees with the S2a section above, this section wins: revisions, resume, the note and the
+debit changed.
+
+| Finding | What changed |
+|---|---|
+| M1: parked and closed runs spent the run cap | Only runs whose `errorCode` spends the retry budget count: `retryable_unbilled` and `indeterminate` (`spendsRetryBudget`, `lib/workspace/crew/retry.ts:55`). The cap is `MAX_RETRY_BUDGET_RUNS` = 2 + 1 + 1 (`convex/crew/jobs.ts:88`, checked at `:605`). Past `RUN_SCAN_MAX` rows, the task fails closed. Test: park and resume ×5, then success. |
+| M2: a task could stay `running` for ever | Runner (`convex/crew/runner.ts:164-178`): a throw from `finishCrewStep` or `settleCrewRun` settles the run as indeterminate at the gateway's `nextAttempt`. New `internal.crew.jobs.recoverStaleCrewRuns` (`jobs.ts:853`). It pages `workflow_runs.by_status_and_createdAt` for `running` rows past the 11-minute lease, at most 50 a page, then schedules the next page with the same cutoff. Each stale run closes as indeterminate (attempt + 2). The task fails when the retry decision says so; otherwise it stays `running` for its re-invoker. Tests: finish throws once and the retry finishes; two orphans (the first recovered, the second fails the task); paging. |
+| M3: a second revision inserter | `insertCrewTask` / `createCrewTask` insert first drafts only (`planFirstDraft`, `lib/workspace/crew/tasks.ts:74`). Revisions come only from WP77 (`decideApproval` → `insertRevisionTask`, or a paid round's debit site); S2a runs them. `startCrewRun` reads the note with WP77's `revisionNoteFor` (`jobs.ts:627`). `revisionNote` is gone from the args. The mirror rule and its comment are deleted. The lineage type and status sets come from `lib/workspace/changeRounds.ts`. Test: a WP77 revision runs end to end. The old card is `changes_requested` in the transaction that queued the round, so only the new card is pending. |
+| m1: unchecked status writes | Every task status write goes through `setTaskStatus` → `assertTaskTransition` (`jobs.ts:462`). Resume is blocked → running at start. An exhausted task fails from running, after the start transition. Recovery fails a running task. No forbidden transition is written, so Codex needs to add none. |
+| m2: raw `previousArtifact` | `previousDraftBlock` (`tasks.ts:146`) escapes the draft into a `<previous_draft>` data block and never truncates it. The draft may use at most half the spec's input bound (`maxInputTokensForSpec` × 4 bytes × 0.5, which is 80,000 characters at the fast tier). A larger draft fails the step as `config` (permanent) before any provider call. Tests: a body with `</founder_note>`, and a 100k draft with 0 provider calls. |
+| m3: every `duplicate_attempt` treated as retryable | Only `key_reused_for_different_call` is `retryable_unbilled`. A same-call replay (`usageId`) or a bare one is `indeterminate`. Both are tested in `retry.test.ts`. |
+| m4: caller-supplied `creditDebitId` | Removed from the args. `startCrewRun` reads `task-debit:{taskId}` (`debitOf`, `jobs.ts:359`) and returns it to the runner. Tested on a debited task and on the paid round. |
+| m5: "credits were returned" on an archived business | `failTask` (`jobs.ts:474`) schedules `refundFailedTask` only when a debit exists and neither the task nor the project is archived. The blocker matches what happens: refunded, `FAILED_STEP_ARCHIVED_REASON` (credits not returned automatically), or the plain reason. Today an archived business's credits stay spent, because `refundFailedTask` throws `RESOURCE_NOT_FOUND` there. Policy is a Need below. |
+| m6: rebill on resume | Documented: a step parked at finish (workspace switched off, or a budget code) is re-run on resume. Credits are never debited twice: the debit is per task, and the task keeps its one `task-debit:{taskId}`. Provider cost does repeat, because the earlier output is not kept. Each execution is a new attempt with its own `ai_usage` row. |
+| m7: wrong comment at the insert | `insertCrewTask` now checks `assertFeatureEnabledForOwner(ctx, "workspace", owner)` first (`jobs.ts:402`). Tested (`WORKSPACE_DISABLED`). |
+| Nit: fixture registry | Indexes are built eagerly. A registration error is kept and rethrown on every `outputFor` call (`convex/ai/providers/fixtureOutputs.ts:145-163`). Tested on repeated lookups. |
+| Nit: founder note | Drops C0/C1 controls, bidi marks, embeddings, isolates and U+2028/9. Uses a well-formed slice that never ends on a lone surrogate (`tasks.ts:97-127`; a local helper, because `lib/workspace/plainText.ts` is not on main). |
+| Nit: attempts | `attemptSuffix` parses `^[1-9][0-9]{0,15}$` as a safe integer (`jobs.ts:257`). `nextAttemptForJobKey` fails closed with `CREW_ATTEMPTS_EXHAUSTED` past the scan caps or attempt 1,000,000 (`jobs.ts:274`). |
+| Nit: `retryClass` validator | A union of the five literals (`jobs.ts:147`). |
+| Nit: BUDGET_EXHAUSTED copy | "Paused: the AI allowance available to you is used up for now. Resume this step when more is available." It no longer says "tomorrow". |
+| Test gaps | Added tests: a paid round end to end (two free rounds via `decideApproval`, the spend card approved, then `assertPaidRevisionApproved` + `insertRevisionTask` + `debitTask`; the run passes the server-read debit, with no refund); finish with the workspace off (parks); finish with the business archived (fails, no refund, archived copy); and a retry after a cancel (skipped, no second call). |
+
+**Resume.** `resumeCrewTask` is removed. A resume is `runCrewStep` with `resume: true`: a blocked task starts again
+only then, and the flag is dropped from any retry that execution schedules.
+
+**Declined or changed from the ask.**
+
+- `nextChangeRound` is not imported. S2a no longer computes a revision round, so it has no call to make; it imports
+  `LineageTask` and the round status sets instead.
+- Titles: S2a keeps `CREW_STEP_ARTIFACTS` ("SEO pack", "Landing page"). WP77's `revisionTitle` in
+  `convex/workspace/changeRounds.ts` builds the task title from the job type ("Seo pack, change round N",
+  "Landing, change round N"). That is WP77's lane, so it is reported to the orchestrator rather than edited.
+  Suggested fix: use `crewDocumentTitle` from `lib/workspace/crew/tasks.ts`. Document titles come from S2a, so
+  they are already right.
+
+**Re-invoker until the cron lands.** Nothing calls `recoverStaleCrewRuns` on a schedule yet, and crons are Codex's
+file. Until they are, the next `startCrewRun` closes a stale run after the lease, and S2b's workpool `onComplete`
+is the documented re-invoker for a task left `running`.
+
+### Needs from Codex (S2a review fixes)
+
+- 13 below: a cron calling `internal.crew.jobs.recoverStaleCrewRuns` (no args; for example every 5 minutes).
+- 14 below: a refund policy for a failed, debited step on an archived business.
+
+### Checks (review fixes)
+
+| Check | Exit | Notes |
+|---|---|---|
+| `npm run typecheck` | 0 | |
+| `npx tsc --noEmit -p convex` | 0 | |
+| `npm run lint` | 0 | 0 errors; no warnings in S2a files |
+| `npm run check:prompt-versions` | 0 | 3 match the lock at `origin/main` |
+| `test:security`, node half | 0 | 215 pass, 1 skipped |
+| `test:security`, vitest half | 0 | 121 tests |
+| `test:convex` | 0 | 1,041 tests; `convex/crew` has 82 |
+| `test:platform` | 0 | 1,406 tests |
+| `test:prompts` | 0 | 24 tests |
+| `npm run build` | 0 | |
+| `git diff --check` | clean | |
+
 ## Status
 
 | Story | State | Runs in fixture mode now? | Waits on | Author / reviewer |
@@ -303,7 +366,13 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 10. A CommonMark renderer dependency for `productMd` (optional; S6d shows plain text otherwise).
 11. Acknowledge the policy prompt contract (input: landing spec + brand kit text; output: `{ verdict: allow | review |
     block, categories[], reasons[] }`) and the key form for a publish-time call (Stop-and-ask 2), for WP78-S1.
-12. `debitJob` for paid change rounds (WP77-S2's need, noted so S2a's `creditDebitId` pass-through matches).
+12. `debitJob` for paid change rounds (WP77-S2's need). S2a now reads `task-debit:{taskId}` on the server, so any
+    debit helper must keep that key.
+13. **A cron for `internal.crew.jobs.recoverStaleCrewRuns`** (S2a review M2): no args, every few minutes. Until then
+    the next start after the lease, and S2b's workpool `onComplete`, are the re-invokers.
+14. **Archived-business refunds** (S2a review m5): `refundFailedTask` throws `RESOURCE_NOT_FOUND` on an archived
+    task or project, so a failed, debited step's credits stay spent. Rule it: refund anyway, refund on unarchive,
+    or keep them spent. S2a schedules no refund there and says so on the workstream.
 
 ## Owner questions
 

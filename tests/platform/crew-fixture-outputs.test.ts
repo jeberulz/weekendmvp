@@ -110,14 +110,16 @@ describe("fixture-output registry", () => {
     expect(parseModelOutput("brand_kit", registry.outputFor(params(schema, "Another system."))).success).toBe(true);
   });
 
-  test("a ref with no registered spec fails loudly in a fixture run", () => {
-    const registry = createFixtureOutputRegistry({
-      byRef: { "missing@1": () => ({}) },
-      getEntry: () => {
-        throw new Error("unknown prompt ref");
-      },
+  test("a ref with no registered spec fails loudly on every lookup, not only the first", () => {
+    const getEntry = vi.fn(() => {
+      throw new Error("unknown prompt ref");
     });
+    const registry = createFixtureOutputRegistry({ byRef: { "missing@1": () => ({}) }, getEntry });
+    // The index is built once, when the registry is made.
+    expect(getEntry).toHaveBeenCalledTimes(1);
     expect(() => registry.outputFor(params(artifactOutputSchemas.brand_kit))).toThrow("unknown prompt ref");
+    expect(() => registry.outputFor(params(artifactOutputSchemas.seo_pack))).toThrow("unknown prompt ref");
+    expect(getEntry).toHaveBeenCalledTimes(1);
   });
 
   test("end to end: the fixture client answers an artifact request with a valid artifact", async () => {
