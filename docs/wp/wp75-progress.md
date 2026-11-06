@@ -107,10 +107,10 @@ debit changed.
 | Finding | What changed |
 |---|---|
 | M1: parked and closed runs spent the run cap | Only runs whose `errorCode` spends the retry budget count: `retryable_unbilled` and `indeterminate` (`spendsRetryBudget`, `lib/workspace/crew/retry.ts:55`). The cap is `MAX_RETRY_BUDGET_RUNS` = 2 + 1 + 1 (`convex/crew/jobs.ts:88`, checked at `:605`). Past `RUN_SCAN_MAX` rows, the task fails closed. Test: park and resume ×5, then success. |
-| M2: a task could stay `running` for ever | Runner (`convex/crew/runner.ts:164-178`): a throw from `finishCrewStep` or `settleCrewRun` settles the run as indeterminate at the gateway's `nextAttempt`. New `internal.crew.jobs.recoverStaleCrewRuns` (`jobs.ts:853`). It pages `workflow_runs.by_status_and_createdAt` for `running` rows past the 11-minute lease, at most 50 a page, then schedules the next page with the same cutoff. Each stale run closes as indeterminate (attempt + 2). The task fails when the retry decision says so; otherwise it stays `running` for its re-invoker. Tests: finish throws once and the retry finishes; two orphans (the first recovered, the second fails the task); paging. |
+| M2: a task could stay `running` for ever | Runner (`convex/crew/runner.ts:164-178`): a throw from `finishCrewStep` or `settleCrewRun` settles the run as indeterminate at the gateway's `nextAttempt`. New `internal.crew.jobs.recoverStaleCrewRuns` (`jobs.ts:853`). It pages `workflow_runs.by_status_and_createdAt` for `running` rows past the 11-minute lease, at most 50 a page, then schedules the next page with the same cutoff. Each stale run closes as indeterminate (attempt + 2). The task fails when the retry decision says so; otherwise it stays `running` for its re-invoker (superseded by round 2, N1: recovery always fails the task). Tests: finish throws once and the retry finishes; two orphans (the first recovered, the second fails the task); paging. |
 | M3: a second revision inserter | `insertCrewTask` / `createCrewTask` insert first drafts only (`planFirstDraft`, `lib/workspace/crew/tasks.ts:74`). Revisions come only from WP77 (`decideApproval` → `insertRevisionTask`, or a paid round's debit site); S2a runs them. `startCrewRun` reads the note with WP77's `revisionNoteFor` (`jobs.ts:627`). `revisionNote` is gone from the args. The mirror rule and its comment are deleted. The lineage type and status sets come from `lib/workspace/changeRounds.ts`. Test: a WP77 revision runs end to end. The old card is `changes_requested` in the transaction that queued the round, so only the new card is pending. |
 | m1: unchecked status writes | Every task status write goes through `setTaskStatus` → `assertTaskTransition` (`jobs.ts:462`). Resume is blocked → running at start. An exhausted task fails from running, after the start transition. Recovery fails a running task. No forbidden transition is written, so Codex needs to add none. |
-| m2: raw `previousArtifact` | `previousDraftBlock` (`tasks.ts:146`) escapes the draft into a `<previous_draft>` data block and never truncates it. The draft may use at most half the spec's input bound (`maxInputTokensForSpec` × 4 bytes × 0.5, which is 80,000 characters at the fast tier). A larger draft fails the step as `config` (permanent) before any provider call. Tests: a body with `</founder_note>`, and a 100k draft with 0 provider calls. |
+| m2: raw `previousArtifact` | `previousDraftBlock` (`tasks.ts:146`) escapes the draft into a `<previous_draft>` data block and never truncates it. The draft may use at most half the spec's input bound (superseded by round 2, N3: half the lane's tokens in UTF-8 bytes, 20,000 at the fast tier). A larger draft fails the step as `config` (permanent) before any provider call. Tests: a body with `</founder_note>`, and a 100k draft with 0 provider calls. |
 | m3: every `duplicate_attempt` treated as retryable | Only `key_reused_for_different_call` is `retryable_unbilled`. A same-call replay (`usageId`) or a bare one is `indeterminate`. Both are tested in `retry.test.ts`. |
 | m4: caller-supplied `creditDebitId` | Removed from the args. `startCrewRun` reads `task-debit:{taskId}` (`debitOf`, `jobs.ts:359`) and returns it to the runner. Tested on a debited task and on the paid round. |
 | m5: "credits were returned" on an archived business | `failTask` (`jobs.ts:474`) schedules `refundFailedTask` only when a debit exists and neither the task nor the project is archived. The blocker matches what happens: refunded, `FAILED_STEP_ARCHIVED_REASON` (credits not returned automatically), or the plain reason. Today an archived business's credits stay spent, because `refundFailedTask` throws `RESOURCE_NOT_FOUND` there. Policy is a Need below. |
@@ -138,7 +138,8 @@ only then, and the flag is dropped from any retry that execution schedules.
 
 **Re-invoker until the cron lands.** Nothing calls `recoverStaleCrewRuns` on a schedule yet, and crons are Codex's
 file. Until they are, the next `startCrewRun` closes a stale run after the lease, and S2b's workpool `onComplete`
-is the documented re-invoker for a task left `running`.
+is the documented re-invoker for a task left `running` (round 2: in schedule mode only the cron reaches an
+orphan, so Need 13 is required before S1 ships).
 
 ### Needs from Codex (S2a review fixes)
 
@@ -158,6 +159,58 @@ is the documented re-invoker for a task left `running`.
 | `test:convex` | 0 | 1,041 tests; `convex/crew` has 82 |
 | `test:platform` | 0 | 1,406 tests |
 | `test:prompts` | 0 | 24 tests |
+| `npm run build` | 0 | |
+| `git diff --check` | clean | |
+
+### Round 2 (re-check: approved with should-fix)
+
+This round is uncommitted, on top of `464931e7`. The re-check confirmed M1, M3 and every minor; this round covers its four
+findings.
+
+| Finding | What changed |
+|---|---|
+| N1 (should-fix): recovery left the task `running` with no open run | `recoverStaleCrewRuns` (`convex/crew/jobs.ts:909`) now fails every recovered task with the calm "interrupted" note (`FAILED_STEP_INTERRUPTED_REASON` / `..._REFUNDED_REASON`, `lib/workspace/crew/retry.ts:223`). It does this whether or not the budget would allow a retry, because recovery cannot run one: the step inputs are not stored. A debit is refunded by the usual rule (`failTask`, `jobs.ts:492`). Failing frees the round. One exception: a task with another execution still inside its lease is left to that execution. |
+| N3: the previous-draft bound counted UTF-16 units | `previousDraftBlock` (`lib/workspace/crew/tasks.ts:154`) measures the whole block in UTF-8 bytes (`utf8ByteLength`, `:143`), the gateway's unit. The bound is half the lane's input tokens, read as bytes (`convex/crew/runner.ts:85`): 20,000 at the fast tier. The old 4-bytes-per-token factor was 4× too generous, because the gateway counts one token per byte. |
+| N2: a paid task with no debit ran on the free budget | `startCrewRun` (`jobs.ts:652`) fails a task with `creditCost > 0` and no `task-debit:{taskId}` before any run row or provider call. It skips as `unpaid` and shows `FAILED_STEP_UNPAID_REASON` ("Nothing was charged"). It fails rather than parks, because no later event would record the debit; the round is freed, so the founder can ask again. |
+| N4: start and recovery disagreed on abandoned runs | Both use `mayRetryAfterAbandoned` (`jobs.ts:561`), the `indeterminate` decision over the task's other runs. Start now collects closed runs' codes first (`jobs.ts:625`): `runsOf` is newest first, so it is not history order. The first version of this fix missed that; probe R3 caught it. When the budget says no, start fails the task with the same "interrupted" note and opens no run. |
+
+**Recording the retry mode: declined.** `workflow_runs` has no field for it. The only free-form fields are
+`idempotencyKey`, an identity key that dedupes executions, and `errorCode`, which is overwritten on close and read
+as a retry class. Hiding the mode in either would be fragile, so every recovered run is treated the same way.
+S2b's `stepDone` re-enqueues after `RUN_LEASE_MS` on an action failure. Whichever of that and recovery comes first
+settles the run, and the other finds nothing to do. Both stories in `docs/wp/wp75-stories.md` now say this: S1
+uses schedule mode, S2a re-invokes its own retries and the recovery cron catches dead actions; S2b uses
+`retryMode: "return"` with `stepDone` as the re-invoker.
+
+**Tests added** (`convex/crew/runner.test.ts`, `convex/crew/retry.test.ts`):
+
+- An orphan in schedule mode: recovery fails it with the interrupted note and schedules nothing. A second pass finds
+  nothing; a re-invoke finds the task `terminal`. The round is free, so a new first draft runs under the same key at
+  the next unused attempt. With a debit, the refund is scheduled.
+- Recovery leaves a task alone while a sibling run is inside its lease.
+- Three abandoned runs:
+  - seeded, then closed by start: the task fails, 0 provider calls, no new run;
+  - the same history through recovery: the same runs, the same failed task, the same note;
+  - three sequential starts with each run abandoned: `run`, `run`, `exhausted`, and only 2 runs.
+- A paid task with no debit: `unpaid`, 0 provider calls, no run, no usage row, no refund.
+- A CJK previous draft: 8,000 characters (about 24,000 bytes) is refused by bytes, with 0 provider calls. A pure
+  test checks the byte count.
+
+**Reviewer probes** (`scratchpad/s2areview`, run with `vitest.probe.config.ts`). R2, R3, R6 and R7 now fail, and
+each of those probes asserted the old buggy behaviour. The other 9 pass.
+
+### Checks (round 2)
+
+| Check | Exit | Notes |
+|---|---|---|
+| `npm run typecheck` | 0 | |
+| `npx tsc --noEmit -p convex` | 0 | |
+| `npm run lint` | 0 | 0 errors; no warnings in S2a files |
+| `npm run check:prompt-versions` | 1 | Drift only. `origin/main` moved to `2318762d`, past this branch's merge base (`2d324f3f`), with newer `wren-chat` / `wren-plan-turn` lock entries. No lock or prompt file changed here. `--base HEAD` exits 0 (3 match). Clears when main is merged. |
+| `npm run test:security` | 0 | node half: 215 pass, 1 skipped; vitest half: 121 tests |
+| `npm run test:convex` | 0 | 1,045 tests; `convex/crew` has 86 |
+| `npm run test:platform` | 0 | 1,406 tests |
+| `npm run test:prompts` | 0 | 24 tests |
 | `npm run build` | 0 | |
 | `git diff --check` | clean | |
 

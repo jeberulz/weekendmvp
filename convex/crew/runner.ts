@@ -30,8 +30,8 @@ import {
  *   on the server by `startCrewRun`: the task's debit and, for a revision, the
  *   revised draft and the founder's note from the card.
  * - The revised draft and the note go into the prompt as escaped data blocks.
- *   A draft too long for half the spec's input bound fails the step before any
- *   provider call (`config`, permanent).
+ *   A draft over half the spec's input bound (UTF-8 bytes, the gateway's
+ *   unit) fails the step before any provider call (`config`, permanent).
  * - Retries are separate executions, never a loop in this action: one gateway
  *   run (first try plus one re-ask) can take most of an action's 10 minutes.
  *   `settleCrewRun` schedules the retry with backoff in its own transaction,
@@ -70,14 +70,18 @@ export const crewStepOutcomeValidator = v.union(
       v.literal("blocked"),
       v.literal("in_flight"),
       v.literal("exhausted"),
+      v.literal("unpaid"),
     ),
   }),
   ...finishCrewStepResult.members,
   ...settleCrewRunResult.members,
 );
 
-/** Bytes per token in the gateway's input estimate; the previous draft may use half the spec's input bound. */
-const BYTES_PER_TOKEN = 4;
+/**
+ * The previous draft may use half the spec's input bound. The gateway
+ * estimates input as one token per UTF-8 byte (`convex/ai/gateway.ts`), so
+ * the bound is in bytes: half the lane's tokens.
+ */
 const PREVIOUS_DRAFT_SHARE = 0.5;
 
 type Started = Extract<StartCrewRunResult, { kind: "run" }>;
@@ -88,19 +92,19 @@ type Inputs = { ok: true; inputs: RunPromptArgs["inputs"] } | { ok: false; failu
 function stepInputs(args: RunCrewStepArgs, start: Started): Inputs {
   const inputs: RunPromptArgs["inputs"] = { ...args.inputs };
   if (start.previousArtifactJson !== undefined) {
-    let maxLength: number;
+    let maxBytes: number;
     try {
-      maxLength = Math.floor(maxInputTokensForSpec(getEntry(args.promptRef).spec) * BYTES_PER_TOKEN * PREVIOUS_DRAFT_SHARE);
+      maxBytes = Math.floor(maxInputTokensForSpec(getEntry(args.promptRef).spec) * PREVIOUS_DRAFT_SHARE);
     } catch (error) {
       return { ok: false, failure: { kind: "config", message: error instanceof Error ? error.message : String(error) } };
     }
-    const draft = previousDraftBlock(start.previousArtifactJson, maxLength);
+    const draft = previousDraftBlock(start.previousArtifactJson, maxBytes);
     if (!draft.ok) {
       return {
         ok: false,
         failure: {
           kind: "config",
-          message: `the previous draft is too large for ${args.promptRef}: ${draft.length} characters, at most ${draft.maxLength}`,
+          message: `the previous draft is too large for ${args.promptRef}: ${draft.bytes} UTF-8 bytes, at most ${draft.maxBytes}`,
         },
       };
     }

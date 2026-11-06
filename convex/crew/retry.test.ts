@@ -27,6 +27,7 @@ import {
   planFirstDraft,
   previousDraftBlock,
   sliceWellFormed,
+  utf8ByteLength,
 } from "../../lib/workspace/crew/tasks";
 
 const live = { taskTerminal: false };
@@ -156,7 +157,19 @@ describe("crew task helpers", () => {
     expect(fitted.block.match(/<\/previous_draft>/g)).toHaveLength(1);
     expect(fitted.block).not.toContain("</founder_note>");
     expect(fitted.block).toContain("&lt;/founder_note&gt;");
-    expect(previousDraftBlock(json, 10)).toEqual({ ok: false, length: expect.any(Number), maxLength: 10 });
+    expect(previousDraftBlock(json, 10)).toEqual({ ok: false, bytes: expect.any(Number), maxBytes: 10 });
+  });
+
+  test("the previous draft's bound is UTF-8 bytes, the gateway's unit: a CJK draft is three bytes a character", () => {
+    const json = JSON.stringify({ name: "水".repeat(1_000) });
+    const fitted = previousDraftBlock(json, 10_000);
+    if (!fitted.ok) throw new Error("expected a block");
+    expect(fitted.bytes).toBe(utf8ByteLength(fitted.block));
+    expect(fitted.bytes).toBeGreaterThan(3_000);
+    // Under 3,000 characters but over 3,000 bytes: refused.
+    expect(fitted.block.length).toBeLessThan(3_000 + 300);
+    expect(previousDraftBlock(json, 3_000)).toMatchObject({ ok: false, maxBytes: 3_000 });
+    expect(previousDraftBlock(JSON.stringify({ name: "a".repeat(1_000) }), 3_000).ok).toBe(true);
   });
 
   test("the founder's note is a quoted data block that cannot close itself", () => {

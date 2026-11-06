@@ -60,6 +60,11 @@ Standing rules:
     and returns; the roster is planned in the blueprint step's finish, from the stored blueprint's `profile`. Until
     then Meet your co-founder shows "putting your team together"; a failed blueprint shows a retry and writes no
     roster. S1 therefore lands after S2a and S3a's blueprint half.
+  - Runner mode (S2a review N1): `startLaunch` schedules the blueprint step as `runCrewStep` in schedule mode (the
+    default, no `retryMode`). Retries are re-invoked by S2a itself: `settleCrewRun` schedules them in the transaction
+    that closes the run. If the action dies, nothing re-invokes it: `recoverStaleCrewRuns` (cron, Codex Need 13)
+    fails the task after the 11-minute lease with "interrupted, try again", refunding a debit by the usual rule. Meet
+    your co-founder then shows the failed-blueprint retry; retrying inserts a new first draft (`createCrewTask`).
   - Writes, in one transaction: a `crew_roster` task (status `succeeded`, no gateway call, job key revision 0),
     `roster_plans` (`rulesVersion`, `hired` role keys, `skipped[{roleKey, reason}]`), one `crew_members` row per hired
     role (`status: queued`, `hiredBy: rule`, `autopilot: false`) and per skipped role (`status: skipped`), a
@@ -123,6 +128,17 @@ Standing rules:
     `enqueueAction(internal.crew.runner.runCrewStep, …, { retry: false, onComplete: internal.crew.launch.stepDone })`.
     `stepDone` advances the DAG in a mutation. `@convex-dev/workflow` is not used: 0.4.4 runs its own internal pool
     and cannot use `crewWorkpool` (progress Stop-and-ask 4).
+  - Runner mode and re-invoker (S2a review N1): every step is enqueued with `retryMode: "return"`; the workpool's
+    own retries stay off. `stepDone` is the re-invoker:
+    - `retry` outcome: re-enqueue the same step after the returned `delayMs`.
+    - `skipped: in_flight`: re-enqueue after `RUN_LEASE_MS`.
+    - Action failure (it died or timed out, so the run may still be open): re-enqueue after `RUN_LEASE_MS`. The
+      next `startCrewRun` closes the abandoned run and applies the same indeterminate decision recovery uses.
+    - `skipped: terminal` or `failed`: treat the step as failed.
+    - `parked`: wait for `resumeLaunch`, which re-enqueues with `resume: true`.
+    `recoverStaleCrewRuns` runs too. Whichever of it and the delayed re-enqueue comes first settles an abandoned
+    run, and the other finds nothing to do. Recovery fails the task, because it has no step inputs to retry with.
+    `workflow_runs` cannot record the mode without a schema change, so recovery never leaves a run for `stepDone`.
   - DAG (`02` §6.2, reordered by the 2026-11-06 roster ruling): blueprint → roster (S1) → {brand kit text → logo marks ×3 → landing spec; build pack; WP76 slots:
     launch plan, SEO pack, email sequence, social pack, ads drafts}. The registry lists every step with its job type,
     employee, inputs and parents; WP76 steps are present as `pending_wp76` and finish as `skipped` with a reason until

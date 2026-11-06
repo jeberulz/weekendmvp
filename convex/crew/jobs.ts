@@ -16,6 +16,9 @@ import { JOB_SUBJECT_MAIN, jobKey, parseJobKey } from "../../lib/workspace/contr
 import { parsePromptRef } from "../../lib/workspace/contracts/prompts";
 import {
   FAILED_STEP_ARCHIVED_REASON,
+  FAILED_STEP_INTERRUPTED_REASON,
+  FAILED_STEP_INTERRUPTED_REFUNDED_REASON,
+  FAILED_STEP_UNPAID_REASON,
   FAILED_STEP_REASON,
   FAILED_STEP_REFUNDED_REASON,
   MAX_INDETERMINATE_RETRIES,
@@ -471,7 +474,27 @@ async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskSta
  * archived task or business (`RESOURCE_NOT_FOUND`), so there the credits stay
  * spent and the note says so instead of promising a refund.
  */
-async function failTask(ctx: MutationCtx, task: Doc<"tasks">, now: number): Promise<{ refundScheduled: boolean }> {
+/** Why a task failed, for the founder-facing note: an ordinary failure, an interrupted action, or a missing payment. */
+type FailCause = "failed" | "interrupted" | "unpaid";
+
+function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: boolean): string {
+  if (hasDebit && !refundScheduled) return FAILED_STEP_ARCHIVED_REASON;
+  switch (cause) {
+    case "failed":
+      return refundScheduled ? FAILED_STEP_REFUNDED_REASON : FAILED_STEP_REASON;
+    case "interrupted":
+      return refundScheduled ? FAILED_STEP_INTERRUPTED_REFUNDED_REASON : FAILED_STEP_INTERRUPTED_REASON;
+    case "unpaid":
+      return FAILED_STEP_UNPAID_REASON;
+  }
+}
+
+async function failTask(
+  ctx: MutationCtx,
+  task: Doc<"tasks">,
+  now: number,
+  cause: FailCause = "failed",
+): Promise<{ refundScheduled: boolean }> {
   const failed = await setTaskStatus(ctx, task, "failed", now);
   const debit = await debitOf(ctx, failed);
   const project = await ctx.db.get("projects", failed.projectId);
@@ -486,7 +509,7 @@ async function failTask(ctx: MutationCtx, task: Doc<"tasks">, now: number): Prom
   await setCrewStatus(ctx, failed, {
     member: "needs_you",
     workstream: "failed",
-    blocker: refundScheduled ? FAILED_STEP_REFUNDED_REASON : debit !== null ? FAILED_STEP_ARCHIVED_REASON : FAILED_STEP_REASON,
+    blocker: failedReason(cause, refundScheduled, debit !== null),
   }, now);
   return { refundScheduled };
 }
@@ -530,6 +553,15 @@ async function closeAbandonedRun(ctx: MutationCtx, run: Doc<"workflow_runs">, no
   await closeRun(ctx, run, "failed", "indeterminate", Number(run.attempt) + UNKNOWN_OUTCOME_ATTEMPT_STRIDE, now);
 }
 
+/**
+ * Whether a task may run again after an abandoned run: the `indeterminate`
+ * decision over the task's other runs. `startCrewRun` and
+ * `recoverStaleCrewRuns` both use it, so the same history gets the same answer.
+ */
+function mayRetryAfterAbandoned(earlierErrorCodes: readonly (string | undefined)[]): boolean {
+  return retryDecision("indeterminate", earlierErrorCodes).action === "retry";
+}
+
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
@@ -541,6 +573,7 @@ const startSkipReason = v.union(
   v.literal("blocked"),
   v.literal("in_flight"),
   v.literal("exhausted"),
+  v.literal("unpaid"),
 );
 
 const startCrewRunResult = v.union(
@@ -589,22 +622,34 @@ export const startCrewRun = internalMutation({
 
     const now = Date.now();
     const runs = await runsOf(ctx, found._id);
-    const errorCodes: (string | undefined)[] = [];
-    for (const run of runs) {
-      if (run.status === "running") {
-        if (!isStale(run, now)) return { kind: "skip", reason: "in_flight" };
-        await closeAbandonedRun(ctx, run, now);
-        errorCodes.push("indeterminate");
-      } else {
-        errorCodes.push(run.errorCode);
-      }
+    const open = runs.filter((run) => run.status === "running");
+    if (open.some((run) => !isStale(run, now))) return { kind: "skip", reason: "in_flight" };
+    // Closed runs' codes first (`runsOf` is newest first, so order is not
+    // history): each abandoned run counts as one indeterminate execution.
+    const errorCodes: (string | undefined)[] = runs.filter((run) => run.status !== "running").map((run) => run.errorCode);
+    let interrupted = false;
+    for (const run of open) {
+      // The same decision recovery makes on the same history (N4).
+      if (!mayRetryAfterAbandoned(errorCodes)) interrupted = true;
+      await closeAbandonedRun(ctx, run, now);
+      errorCodes.push("indeterminate");
     }
 
     // queued → running, or blocked → running on a resume.
     const task = found.status === "running" ? found : await setTaskStatus(ctx, found, "running", now);
+    if (interrupted) {
+      await failTask(ctx, task, now, "interrupted");
+      return { kind: "skip", reason: "exhausted" };
+    }
     if (runs.length > RUN_SCAN_MAX || errorCodes.filter(spendsRetryBudget).length >= MAX_RETRY_BUDGET_RUNS) {
       await failTask(ctx, task, now);
       return { kind: "skip", reason: "exhausted" };
+    }
+    // A paid task runs only on its debit, never on the free allowance (N2).
+    const debit = await debitOf(ctx, task);
+    if ((task.creditCost ?? 0n) > 0n && debit === null) {
+      await failTask(ctx, task, now, "unpaid");
+      return { kind: "skip", reason: "unpaid" };
     }
 
     const attempt = await nextAttemptForJobKey(ctx, task.ownerId, taskJobKey);
@@ -625,7 +670,6 @@ export const startCrewRun = internalMutation({
 
     const previous = await revisedDocument(ctx, task, CREW_STEP_ARTIFACTS[jobType].kind);
     const note = task.revisionOfTaskId === undefined ? null : await revisionNoteFor(ctx, task._id);
-    const debit = await debitOf(ctx, task);
     return {
       kind: "run",
       runId,
@@ -841,14 +885,26 @@ const recoverStaleCrewRunsResult = v.object({
 });
 
 /**
- * Settles crew runs left `running` past the lease as indeterminate, the same
- * way `startCrewRun` closes one, then applies the retry budget: a task out of
- * indeterminate retries fails (refund rules as above); otherwise it stays
- * `running` with no open run, for its re-invoker (S2b's workpool `onComplete`)
- * to start again. One page per call (`RECOVERY_PAGE_MAX`); the next page is
- * scheduled with the same cutoff until the index range is done.
+ * Settles crew runs left `running` past the lease (their action died), so no
+ * task is ever left `running` with no open run. Each stale run closes as
+ * indeterminate, exactly as `startCrewRun` closes one. The task then fails
+ * with a calm "interrupted, try again" note, refunded by the usual rule:
  *
- * Needs a cron (Codex's `convex/crons.ts`; progress Needs from Codex).
+ * - out of indeterminate retries (`mayRetryAfterAbandoned` says no; the same
+ *   history makes `startCrewRun` fail it with the same note);
+ * - or a retry is allowed but recovery cannot run it: the step's inputs are
+ *   not stored, and `workflow_runs` has no field for the caller's retry mode
+ *   (the schema is Codex's). So every recovered run is treated the same way.
+ *   Failing frees the change round, so the founder (or S2b's DAG) can start
+ *   the step again.
+ *
+ * A caller that re-invokes on its own (S2b's workpool `onComplete`) waits
+ * `RUN_LEASE_MS` first; whichever of it and recovery comes first settles the
+ * run, and the other finds nothing to do (`terminal` or no stale run).
+ * One page per call (`RECOVERY_PAGE_MAX`); the next page is scheduled with
+ * the same cutoff until the index range is done.
+ *
+ * Needs a cron (Codex's `convex/crons.ts`; progress Needs from Codex 13).
  */
 export const recoverStaleCrewRuns = internalMutation({
   args: {
@@ -873,11 +929,12 @@ export const recoverStaleCrewRuns = internalMutation({
       recovered += 1;
       const task = await ctx.db.get("tasks", run.taskId);
       if (task === null || task.status !== "running") continue;
-      const earlier = (await runsOf(ctx, task._id)).filter((row) => row._id !== run._id).map((row) => row.errorCode);
-      if (retryDecision("indeterminate", earlier).action === "fail") {
-        await failTask(ctx, task, now);
-        failedTasks += 1;
-      }
+      const others = (await runsOf(ctx, task._id)).filter((row) => row._id !== run._id);
+      // Another execution still inside its lease owns the task; it settles it.
+      if (others.some((row) => row.status === "running" && !isStale(row, now))) continue;
+      // Whether or not the budget allows a retry, recovery cannot run one: fail calmly, never orphan.
+      await failTask(ctx, task, now, "interrupted");
+      failedTasks += 1;
     }
     if (!page.isDone) {
       await ctx.scheduler.runAfter(0, internal.crew.jobs.recoverStaleCrewRuns, { cutoff, cursor: page.continueCursor, limit });

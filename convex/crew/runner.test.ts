@@ -41,7 +41,10 @@ import { parseArtifact } from "../../lib/workspace/contracts/artifacts";
 import { jobKey } from "../../lib/workspace/contracts/jobs";
 import {
   FAILED_STEP_ARCHIVED_REASON,
+  FAILED_STEP_INTERRUPTED_REASON,
+  FAILED_STEP_INTERRUPTED_REFUNDED_REASON,
   FAILED_STEP_REASON,
+  FAILED_STEP_UNPAID_REASON,
   parkedReason,
 } from "../../lib/workspace/crew/retry";
 import { RUN_LEASE_MS, type RunCrewStepArgs } from "./jobs";
@@ -436,7 +439,7 @@ describe("crew step runner", () => {
     ]);
   });
 
-  test("the previous draft is an escaped data block; one too large fails before any provider call", async () => {
+  test("the previous draft is an escaped data block; one too large in UTF-8 bytes (a CJK draft) fails before any provider call", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "previous");
     const draft = await finishedDraft(t, business);
@@ -455,7 +458,8 @@ describe("crew step runner", () => {
     const big = await seedBusiness(t2, "previous-big");
     const bigDraft = await finishedDraft(t2, big);
     await t2.run(async (ctx) => await ctx.db.patch("documents", bigDraft.documentId, {
-      body: JSON.stringify({ name: "x".repeat(100_000) }),
+      // 8,000 characters, about 24,000 UTF-8 bytes: under the fast lane's 20,000-byte share by characters, over it by bytes.
+      body: JSON.stringify({ name: "水".repeat(8_000) }),
     }));
     const bigRevision = await askForChanges(big, bigDraft.approvalId, "Anything");
     const gwBig = gateway(t2);
@@ -581,28 +585,135 @@ describe("crew step runner", () => {
     expect(gw.seen.map((args) => args.attempt)).toEqual([1, 2]);
   });
 
-  test("recovery settles an orphaned run past the lease; a second orphan fails the task", async () => {
+  test("schedule mode: recovery never leaves an orphan; the task fails calmly, the round is freed, a debit is refunded", async () => {
     const t = crewTest();
     const business = await seedBusiness(t, "orphan");
+    const { taskId, jobKey: key } = await createTask(t, business);
+    // A run in schedule mode (the default) whose action died: open, then past the lease.
+    const start = await t.mutation(internal.crew.jobs.startCrewRun, { taskId });
+    if (start.kind !== "run") throw new Error(`run did not start: ${JSON.stringify(start)}`);
+    const old = Date.now() - RUN_LEASE_MS - 1_000;
+    await t.run(async (ctx) => await ctx.db.patch("workflow_runs", start.runId, { startedAt: old, createdAt: old }));
+
+    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 1, failedTasks: 1, isDone: true });
+    expect((await runs(t, taskId))[0]).toMatchObject({ status: "failed", errorCode: "indeterminate", attempt: BigInt(start.attempt + 2) });
+    expect(await task(t, taskId)).toMatchObject({ status: "failed" });
+    const { member, workstream } = await crew(t, business);
+    expect(member?.status).toBe("needs_you");
+    expect(workstream).toMatchObject({ status: "failed", blocker: FAILED_STEP_INTERRUPTED_REASON });
+    expect(await scheduled(t)).toEqual([]);
+    // Nothing is left: a second pass finds no stale run, and a re-invoke finds the task terminal.
+    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 0, failedTasks: 0, isDone: true });
+    expect(await t.mutation(internal.crew.jobs.startCrewRun, { taskId })).toEqual({ kind: "skip", reason: "terminal" });
+    // The round is free: asking again inserts a new first draft under the same key, and it runs.
+    const again = await createTask(t, business);
+    expect(again).toMatchObject({ created: true, jobKey: key });
+    const gw = gateway(t);
+    expect((await runCrewStepWith(runnerCtx(t), stepArgs(again.taskId), { runPrompt: gw.runPrompt })).kind).toBe("finished");
+    expect(gw.seen[0]?.attempt).toBe(start.attempt + 2);
+
+    // With a debit, the refund is scheduled with the failure.
+    const t2 = crewTest();
+    const paid = await seedBusiness(t2, "orphan-paid");
+    const paidTask = await createTask(t2, paid);
+    await t2.mutation(internal.platform.billing.grants.grantStarter, { ownerId: paid.ownerId, projectId: paid.projectId });
+    await t2.mutation(internal.platform.billing.ledger.debitTask, { taskId: paidTask.taskId, projectId: paid.projectId, credits: 1n });
+    const paidStart = await t2.mutation(internal.crew.jobs.startCrewRun, { taskId: paidTask.taskId });
+    if (paidStart.kind !== "run") throw new Error("run did not start");
+    await t2.run(async (ctx) => await ctx.db.patch("workflow_runs", paidStart.runId, { startedAt: old, createdAt: old }));
+    expect(await t2.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toMatchObject({ recovered: 1, failedTasks: 1 });
+    expect((await crew(t2, paid)).workstream?.blocker).toBe(FAILED_STEP_INTERRUPTED_REFUNDED_REASON);
+    const refunds = (await scheduled(t2)).filter((row) => row.name.includes("refundFailedTask"));
+    expect(refunds.map((row) => row.args[0])).toEqual([{ taskId: paidTask.taskId, projectId: paid.projectId }]);
+  });
+
+  test("recovery leaves a task alone while another of its executions is inside the lease", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "orphan-sibling");
     const { taskId } = await createTask(t, business);
-    const orphan = async () => {
-      const start = await t.mutation(internal.crew.jobs.startCrewRun, { taskId });
-      if (start.kind !== "run") throw new Error(`run did not start: ${JSON.stringify(start)}`);
-      const old = Date.now() - RUN_LEASE_MS - 1_000;
-      await t.run(async (ctx) => await ctx.db.patch("workflow_runs", start.runId, { startedAt: old, createdAt: old }));
-      return start;
+    const start = await t.mutation(internal.crew.jobs.startCrewRun, { taskId });
+    if (start.kind !== "run") throw new Error("run did not start");
+    const old = Date.now() - RUN_LEASE_MS - 1_000;
+    await t.run(async (ctx) => {
+      await ctx.db.insert("workflow_runs", {
+        ownerId: business.ownerId, projectId: business.projectId, taskId, type: "crew_brand_kit", status: "running",
+        idempotencyKey: `run:${taskId}:0`, attempt: 1n, createdAt: old, updatedAt: old, startedAt: old,
+      });
+    });
+    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 1, failedTasks: 0, isDone: true });
+    expect(await task(t, taskId)).toMatchObject({ status: "running" });
+  });
+
+  test("three abandoned runs: start and recovery give the same answer on the same history", async () => {
+    const old = Date.now() - RUN_LEASE_MS - 1_000;
+    const seedAbandoned = async (t: T, business: Business, count: number) => {
+      const { taskId } = await createTask(t, business);
+      await t.run(async (ctx) => {
+        await ctx.db.patch("tasks", taskId, { status: "running" });
+        for (let n = 1; n <= count; n += 1) {
+          await ctx.db.insert("workflow_runs", {
+            ownerId: business.ownerId, projectId: business.projectId, taskId, type: "crew_brand_kit", status: "running",
+            idempotencyKey: `run:${taskId}:${n}`, attempt: BigInt(n * 2 - 1), createdAt: old + n, updatedAt: old + n, startedAt: old + n,
+          });
+        }
+      });
+      return taskId;
     };
 
-    const first = await orphan();
-    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 1, failedTasks: 0, isDone: true });
-    expect((await runs(t, taskId))[0]).toMatchObject({ status: "failed", errorCode: "indeterminate", attempt: BigInt(first.attempt + 2) });
-    expect(await task(t, taskId)).toMatchObject({ status: "running" });
-    // Nothing else is open: a fresh run does not touch a recovered one.
-    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 0, failedTasks: 0, isDone: true });
+    // Start: closes all three, and the budget (one indeterminate retry) says no: fail, no new run, no provider call.
+    const t = crewTest();
+    const business = await seedBusiness(t, "abandoned-start");
+    const viaStart = await seedAbandoned(t, business, 3);
+    const gw = gateway(t);
+    expect(await runCrewStepWith(runnerCtx(t), stepArgs(viaStart), { runPrompt: gw.runPrompt }))
+      .toEqual({ kind: "skipped", reason: "exhausted" });
+    expect(gw.calls()).toBe(0);
+    expect((await runs(t, viaStart)).map((run) => [run.status, run.errorCode])).toEqual(Array(3).fill(["failed", "indeterminate"]));
+    expect(await task(t, viaStart)).toMatchObject({ status: "failed" });
+    expect((await crew(t, business)).workstream?.blocker).toBe(FAILED_STEP_INTERRUPTED_REASON);
 
-    await orphan();
-    expect(await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toEqual({ recovered: 1, failedTasks: 1, isDone: true });
+    // Recovery on the same history: the same runs, the same failed task, the same note.
+    const t2 = crewTest();
+    const other = await seedBusiness(t2, "abandoned-recovery");
+    const viaRecovery = await seedAbandoned(t2, other, 3);
+    expect(await t2.mutation(internal.crew.jobs.recoverStaleCrewRuns, {})).toMatchObject({ recovered: 3, failedTasks: 1 });
+    expect((await runs(t2, viaRecovery)).map((run) => [run.status, run.errorCode])).toEqual(Array(3).fill(["failed", "indeterminate"]));
+    expect(await task(t2, viaRecovery)).toMatchObject({ status: "failed" });
+    expect((await crew(t2, other)).workstream?.blocker).toBe(FAILED_STEP_INTERRUPTED_REASON);
+
+    // Three starts in a row, each run abandoned (same `createdAt`, so the newest-first scan order is not history):
+    // the first abandoned run gets the one indeterminate retry; the second ends the task. No third run opens.
+    const t3 = crewTest();
+    const third = await seedBusiness(t3, "abandoned-seq");
+    const { taskId: seq } = await createTask(t3, third);
+    const kinds: string[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const started = await t3.mutation(internal.crew.jobs.startCrewRun, { taskId: seq });
+      kinds.push(started.kind === "run" ? "run" : started.reason);
+      if (started.kind === "run") {
+        await t3.run(async (ctx) => await ctx.db.patch("workflow_runs", started.runId, { startedAt: old, createdAt: old }));
+      }
+    }
+    expect(kinds).toEqual(["run", "run", "exhausted"]);
+    expect(await runs(t3, seq)).toHaveLength(2);
+    expect(await task(t3, seq)).toMatchObject({ status: "failed" });
+    expect((await crew(t3, third)).workstream?.blocker).toBe(FAILED_STEP_INTERRUPTED_REASON);
+  });
+
+  test("a paid task with no recorded debit never reaches the provider: it fails before any run", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "unpaid");
+    const { taskId } = await createTask(t, business);
+    await t.run(async (ctx) => await ctx.db.patch("tasks", taskId, { creditCost: 3n }));
+    const gw = gateway(t);
+    const outcome = await runCrewStepWith(runnerCtx(t), stepArgs(taskId), { runPrompt: gw.runPrompt });
+    expect(outcome).toEqual({ kind: "skipped", reason: "unpaid" });
+    expect(gw.calls()).toBe(0);
+    expect(await runs(t, taskId)).toEqual([]);
+    expect(await usageKeys(t)).toEqual([]);
     expect(await task(t, taskId)).toMatchObject({ status: "failed" });
+    expect((await crew(t, business)).workstream).toMatchObject({ status: "failed", blocker: FAILED_STEP_UNPAID_REASON });
+    expect(await scheduled(t)).toEqual([]);
   });
 
   test("recovery pages through the index and schedules the next page with the same cutoff", async () => {
@@ -624,7 +735,7 @@ describe("crew step runner", () => {
       });
     }
     const page = await t.mutation(internal.crew.jobs.recoverStaleCrewRuns, { limit: 2 });
-    expect(page).toEqual({ recovered: 2, failedTasks: 0, isDone: false });
+    expect(page).toEqual({ recovered: 2, failedTasks: 2, isDone: false });
     const next = (await scheduled(t)).filter((row) => row.name.includes("recoverStaleCrewRuns"));
     expect(next).toHaveLength(1);
     expect(next[0]?.args[0]).toMatchObject({ limit: 2, cutoff: expect.any(Number), cursor: expect.any(String) });

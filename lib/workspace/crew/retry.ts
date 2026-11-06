@@ -214,3 +214,22 @@ export const FAILED_STEP_ARCHIVED_REASON =
 /** The founder-facing note when a failed step's credits are being returned (the refund is scheduled). */
 export const FAILED_STEP_REFUNDED_REASON =
   "This step could not finish, so its credits are being returned. You can ask your team to try again.";
+
+/**
+ * The founder-facing note when a step was interrupted (its action died and
+ * nothing can re-run it) and no credits were taken. Failing frees the change
+ * round, so trying again is always possible.
+ */
+export const FAILED_STEP_INTERRUPTED_REASON =
+  "This step was interrupted before it finished. It used none of your credits; you can ask your team to try again.";
+
+/** The same, when the interrupted step's credits are being returned (the refund is scheduled). */
+export const FAILED_STEP_INTERRUPTED_REFUNDED_REASON =
+  "This step was interrupted before it finished, so its credits are being returned. You can ask your team to try again.";
+
+/**
+ * The founder-facing note when a paid step had no recorded payment: it never
+ * starts (it must not run on the free allowance), and nothing was charged.
+ */
+export const FAILED_STEP_UNPAID_REASON =
+  "This step could not start because its payment was not recorded. Nothing was charged; you can ask your team to try again.";
