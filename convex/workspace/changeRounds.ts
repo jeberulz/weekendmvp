@@ -6,6 +6,7 @@ import { requireBusinessAccess } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
 import { jobKey, parseJobKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import {
+  JOB_TYPE_TITLES,
   ROUND_RELEASING_TASK_STATUSES,
   decideChangeRound,
   isRevisableJobType,
@@ -191,9 +192,8 @@ export type RevisionTaskInput = {
   readonly now: number;
 };
 
-function revisionTitle(jobType: JobType, changeRound: number): string {
-  const name = jobType.replace(/^crew_/, "").replace(/_/g, " ");
-  return `${name.charAt(0).toUpperCase()}${name.slice(1)}, change round ${changeRound}`;
+export function revisionTitle(jobType: JobType, changeRound: number): string {
+  return `${JOB_TYPE_TITLES[jobType]}, change round ${changeRound}`;
 }
 
 /**

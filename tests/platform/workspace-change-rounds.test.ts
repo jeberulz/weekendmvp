@@ -5,6 +5,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  JOB_TYPE_TITLES,
   REVISABLE_JOB_TYPES,
   decideChangeRound,
   nextChangeRound,
@@ -13,6 +14,7 @@ import {
 } from "../../lib/workspace/changeRounds";
 import {
   CREDIT_ACTIONS,
+  JOB_TYPES,
   PRICE_TBD_JOB_TYPES,
   REGENERATE_ACTION_BY_JOB_TYPE,
   WORKSPACE_PLAN_IDS,
@@ -91,5 +93,22 @@ describe("decideChangeRound", () => {
     const decision = decideChangeRound({ jobType: "crew_landing", changeRound: 3, plan: "free" });
     if (decision.decision !== "spend") throw new Error("expected spend");
     expect(spendTermsFor(decision)).toEqual({ expectedCostCredits: 5n, expectedChangeRound: 3n });
+  });
+});
+
+describe("JOB_TYPE_TITLES", () => {
+  test("every C-JOBS job type has a plain, capitalised name", () => {
+    expect(Object.keys(JOB_TYPE_TITLES).sort()).toEqual([...JOB_TYPES].sort());
+    for (const title of Object.values(JOB_TYPE_TITLES)) {
+      expect(title).toMatch(/^[A-Z]/u);
+      expect(title).not.toContain("_");
+    }
+  });
+
+  test("the artifacts that read badly when derived mechanically", () => {
+    expect(JOB_TYPE_TITLES.crew_seo_pack).toBe("SEO pack");
+    expect(JOB_TYPE_TITLES.crew_landing).toBe("Landing page");
+    expect(JOB_TYPE_TITLES.crew_brand_kit).toBe("Brand kit");
+    expect(JOB_TYPE_TITLES.crew_ads_drafts).toBe("Ad drafts");
   });
 });

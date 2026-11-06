@@ -926,3 +926,58 @@ Docs: progress updated. No story, plan or ruling changes.
 
 Last round (after `a81a49bc`): Wren's notes now refuse any word that mixes Latin letters with another script, or that uses a phonetic Latin look-alike such as "ɑ" (`looks_encoded`). Repo-wide M5 now treats a row from the writer's row readers (`readWrenMemory`, found from its return type) or from destructuring as a `wren_memory` row. "no", "not" and "nor" count as content words. `WREN_FACT_MAX_UNSOURCED` is now 1. An ending is stripped only when 4 or more letters remain (3 for a plain "-s"), so "rated" no longer matches "rat" and "caring" no longer matches "car".
 Honest paraphrase set: Wren still accepts 24 of the 25 founder-said facts (the miss is "Co-founder's role: marketing", from "My co-founder does the marketing"). Checks: typecheck, convex tsc, lint, check:prompt-versions, test:security (219/0 node, 121 vitest), test:convex (1023), test:platform (1464), test:prompts (24) and build all exit 0.
+
+## S6 - Accessibility
+
+Changed: `components/workspace/chat/WrenChatPanel.tsx`, `components/workspace/chat/WrenChatCards.tsx` (comment only), `components/workspace/kit/WrenThread.tsx` (`liveUpdates` prop on `WrenThread`; composer focus), `lib/workspace/changeRounds.ts` (`JOB_TYPE_TITLES`), `convex/workspace/changeRounds.ts` (`revisionTitle` now exported and uses the map; no query or mutation signature changed).
+
+What changed:
+- The thread's `role="log"` is `aria-live="off"` in the chat, so streamed drafts are never read out. The one polite status line under the thread announces Wren's reply once per state change: "Wren is writing…", then "Wren replied: <text, up to 600 characters> [N cards …]", or the failed or stopped line. Send outcomes (busy, paused, error) use the same line and win. Nothing on the page at first load is announced. Stale handling is unchanged (`WREN_STREAM_STALE_MS` still flips a stuck reply to stopped).
+- After an accepted send, focus returns to the composer even when Send was pressed (`keepFocusInComposer`). "Try again" hands focus to the composer before the button leaves the page, so focus never lands on `<body>`. The card decision focus (status line) is unchanged and re-tested through a rerender.
+- Titles: `JOB_TYPE_TITLES: Record<JobType, string>` covers all 13 C-JOBS types, so a new type is a compile error. Revision jobs are now "SEO pack, change round 1" and "Landing page, change round 1". No change-round UI exists in the chat yet (S2 is server side), so there was nothing to audit there.
+- No skip link: the thread is one column with the composer directly below.
+
+Tests: `tests/platform/workspace-wren-a11y.test.tsx` (16: axe in the six states, announcements, keyboard), `tests/platform/workspace-change-rounds.test.ts` (+2), `convex/workspace/changeRounds.test.ts` (+1). It uses axe-core like the other `workspace-wren-*` tests (colour contrast is not checkable in jsdom).
+
+a11y-check:
+- [x] Icon-only button has `aria-label`, icon `aria-hidden`: Send, `WrenThread.tsx` composer.
+- [x] Input labelled (sr-only label, hint via `aria-describedby`): `WrenThread.tsx` composer.
+- [x] No images; decorative marks are `aria-hidden`.
+- [x] No external links; internal links carry sr-only context: `WrenChatCards.tsx`.
+- [x] Visible focus on every control and the status line (kit `FOCUS`): `WrenChatPanel.tsx`, `WrenChatCards.tsx`, `WrenThread.tsx`.
+- [x] Nothing by colour alone: status is text; in-flight uses `aria-disabled` plus text.
+- [x] Heading order: one `h2` "Chat with Wren"; no other headings in the chat.
+- [x] Keyboard: native buttons, links and textarea only; no overlay, so no focus trap or Escape handling is needed.
+- [x] axe clean (wcag2a/aa, 2.1) in empty, streaming, stopped, done with cards, decision pending, decided.
+
+Keyboard run-through (tested in `workspace-wren-a11y.test.tsx`):
+- [x] Tab order: each card's review link, Approve, Not now; navigate links; then the composer; then Send. Explain cards are not focusable. The thread is not a tab stop.
+- [x] Enter sends; Shift+Enter inserts a newline; Enter during IME composition does not send (existing `shouldSendOnKeyDown`).
+- [x] After Enter or Send, the composer keeps focus and is cleared on accept.
+- [x] Approve or Not now by keyboard: focus moves to the card's status line and stays there when the buttons unmount and later messages arrive.
+- [x] Try again: focus moves to the composer.
+- [x] Escape does nothing (no overlay).
+- [x] Buttons stay focusable while a send or decision is in flight (`aria-disabled`).
+
+Not verifiable without a browser or screen reader: real VoiceOver, NVDA and JAWS output (that `aria-live="off"` on the log plus the status line reads once, and that a 600-character reply is comfortable); colour contrast of the `home-*` tokens in situ; focus ring appearance; mobile zoom and reflow.
+
+Needs from Codex: none.
+
+Checks (exit codes): `npm run typecheck` 0, `npm run lint` 0 (existing warnings only), `npm run test:platform` 0 (69 files, 1482 tests), `npm run test:convex` 0 (76 files, 1027 tests), `npm run test:security` 0 (121 vitest), `npm run build` 0.
+
+### S6 review fixes (commit `cbdcd630`)
+
+- M1/M3: the panel now has two lines. A visible polite line shows send and retry notices only. A separate sr-only polite region (`WrenChatPanel.tsx`) announces Wren's reply, and is cleared after 4 s. A new reply state also clears an old notice, so a stuck "Wren is still answering…" can no longer hide later announcements. The reply text is no longer shown a second time, and "Wren is writing…" shows once.
+- M2: each approval card's outcome text is a polite `role="status"` region that is always mounted inside the focusable status line (`WrenChatCards.tsx`), so the outcome is read even though focus moves before the text renders. Tested: approve, then an error, each in its own live region.
+- m1: `keepFocusInComposer` refocuses only when focus is on the page body or inside the composer form. m2: the 600-character cap cuts by code point. m3: the count uses the shared `visibleWrenCards` filter. m4: `WrenThread` passes `liveUpdates` as the `InsideLogContext` value and the comment is fixed (tested in `workspace-kit.test.tsx`: a `BrandKitCard` in `liveUpdates={false}` keeps `role="status"`). m5: the vacuous MutationObserver assertion is replaced by a real check of the distinct announcements.
+- Nits: removed `aria-busy` from the streaming wrapper (and its tests); "Try again" does nothing while `sending`; "Ads drafts" is now "Ad drafts"; the stale-at-load comment is reworded (a reply already stuck at load is announced once as stopped when the timer flips it).
+- Known limit: Convex may coalesce updates, so a fast reply can skip the "Wren is writing…" announcement and go straight to the finished reply. That is harmless and not handled.
+- Checks: typecheck 0; eslint on the changed files clean; `npm run test:platform` 0 (1490 tests; one earlier run showed a single failure that did not repeat in two later runs, cause not identified); `convex/workspace/changeRounds.test.ts` 30 pass; the reviewer's probes pass (10).
+
+### S6 re-check follow-ups
+
+- The same announcement twice in a row is now read again: the sr-only text gets a trailing no-break space on alternate announcements, so the text node changes (`WrenChatPanel.tsx`). Tested with two identical replies in a row.
+- A capped send no longer repeats "Wren needs a break": the card shows it, the visible notice line stays empty, and the sr-only region says it.
+- Tests: the "Try again" guard test now also asserts focus stays on the button (the `inFlight` check alone no longer passes it); the "Wren is writing…" test mounts empty and then streams, so it can fail; the file header is corrected.
+- Checks: workspace-wren-a11y, workspace-wren-panel, workspace-wren-panel-stale, workspace-change-rounds and workspace-kit, typecheck, eslint on changed files and `npm run test:platform` all pass (see the report for counts).
+- **PR #217 review (Codex), flaky card-outcome test**: `workspace-wren-a11y.test.tsx` now waits for each decision to settle under fake timers (a `settle` helper that advances timers inside `act`) before it asserts. The second card must show the exact error copy, not just any non-empty text. The test passed 15 runs alone and 18 runs under 6× parallel load; this was likely the one-off `test:platform` failure noted above.

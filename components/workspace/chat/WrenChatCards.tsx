@@ -42,8 +42,10 @@ import {
  * decision returns, or the card leaves `pending` while focus was on its
  * buttons, focus moves to the card's status line (`tabIndex={-1}`), so it is
  * never dropped on `<body>` when the buttons go away, and the screen reader
- * reads the outcome there. There is no per-card live region: the thread's
- * `role="log"` already announces new content. Ids come from `useId`, so the
+ * reads the outcome there. The decision outcome sits in a polite live
+ * region that is always mounted (so focus moving to the status line before the
+ * text renders still gets the outcome read). The thread's log is
+ * `aria-live="off"`; the panel announces Wren's replies in its own region. Ids come from `useId`, so the
  * same approval shown in two replies never duplicates an id.
  */
 
@@ -166,7 +168,7 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
         className={cn("flex flex-col gap-1 rounded text-[13px] text-home-ink-2", FOCUS)}
       >
         <p>Status: {STATUS_LABEL[card.status]}</p>
-        {pending || message !== "" ? <p>{pending ? "Sending your decision…" : message}</p> : null}
+        <p role="status" aria-live="polite">{pending ? "Sending your decision…" : message}</p>
       </div>
       {card.status === "pending" ? (
         <div
@@ -225,11 +227,16 @@ function NavigateChatCard({ projectId, route }: { projectId: Id<"projects">; rou
   );
 }
 
-export function WrenChatCards({ projectId, cards }: { projectId: Id<"projects">; cards: readonly WrenCardView[] }) {
-  const shown = cards.filter((card) =>
+/** The cards that render: approvals, and explain or navigate cards whose key this client knows. */
+export function visibleWrenCards(cards: readonly WrenCardView[]): WrenCardView[] {
+  return cards.filter((card) =>
     card.kind === "approval" ||
     (card.kind === "explain" && isExplainTopic(card.topic)) ||
     (card.kind === "navigate" && isNavigateRoute(card.route)));
+}
+
+export function WrenChatCards({ projectId, cards }: { projectId: Id<"projects">; cards: readonly WrenCardView[] }) {
+  const shown = visibleWrenCards(cards);
   if (shown.length === 0) return null;
   return (
     <ul aria-label="Cards from Wren" className="flex flex-col gap-2">
