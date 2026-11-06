@@ -21,11 +21,11 @@ Updated 2026-11-06. **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194)
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 merged (#184)**, lock follow-up (#185), **gateway action bound to the real meter (#192)**. S4 cache helper, S5 seed precompute and S6 evals open | — | S4 and S6 in fixture mode on the owner's go; the S4 live cache test and S5 seed precompute need OK |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)**; Codex's middleware hard 404 merged (#186, #190) | `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
-| WP74 | 2 | Claude | `claude/wp74-wizard` | **In progress**: S1–S2 (steps, signals) | — | S3 own-idea blueprint, S4 business creation, S5 CTAs, S6 a11y |
+| WP74 | 2 | Claude | `claude/wp74-wizard` | **In progress**: S1–S2 (steps, signals) | PR cannot go green until Codex adds `requireOwnedWizardSession` and the `PRE_BUSINESS_CONTROLS` scanner allowlist | S3 own-idea blueprint, S4 business creation, S5 CTAs, S6 a11y |
 | WP75 | 2 | Claude | `claude/wp75-crew-engine` | Waiting | WP74 | — |
 | WP76 | 2 | Claude | `claude/wp76-growth-drafts` | Waiting | WP75 S2 | — |
 | WP77 | 2 | Claude | `claude/wp77-wren-approvals` | **In progress**: S1 approvals and C-APPROVAL first (Codex's WP78/WP79 call `assertApproved`) | — | S2–S6 |
-| WP78–WP79 | 2 | Codex | see registry | Ready (G1 passed) | C-APPROVAL from WP77-S1 (stub until merged); D5, D6 | — |
+| WP78–WP79 | 2 | Codex | see registry | Ready (G1 passed): WP78 and the WP79 sending engine can start now | C-APPROVAL from WP77-S1 (stub until merged); D5, D6; WP79 also needs WP76 S1 email drafts (WP76 waits on WP75 S2) | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
 | WP83–WP84 | 5 | Both | see registry | Waiting | G4; Meta review | — |
