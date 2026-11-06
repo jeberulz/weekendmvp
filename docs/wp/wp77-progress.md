@@ -133,3 +133,74 @@ Needs from Codex (complete set):
 6. WP78/WP79/WP83 call `assertApproved` in the side-effect mutation, before patching the subject, with the subject
    shape (plus `expectedCostCredits`/`expectedChangeRound` for `spend`). From actions they use
    `internal.workspace.approvals.checkApproved` and re-check in the recording mutation.
+
+## 2026-11-06 - S2 (change rounds, not ticked: awaiting review and Codex's debit)
+
+What: D17 on the approvals loop. "Ask for changes" on an `artifact_review` card decides the round in the same
+mutation as the card decision. Rounds 1 and 2 close the card (`changes_requested`, the founder's note kept as data)
+and queue a free revision task. Round 3+ closes the card and raises one `spend` card on the revised document with
+the C-JOBS price and the round. A round that is not available changes nothing and says why. S2 debits nothing.
+
+Files:
+- `lib/workspace/changeRounds.ts` (new, pure, for WP75/WP76 reuse): `nextChangeRound(tasks, reviewedTaskId)`,
+  `decideChangeRound({ jobType, changeRound, plan })`, `spendTermsFor`, `REVISABLE_JOB_TYPES`.
+- `convex/workspace/changeRounds.ts` (new): `resolveChangeRound` (read-only), `insertRevisionTask`,
+  `previewChangeRound` (public query, owner-only, dormant: the card and Wren can say which round it is and its cost),
+  `changeRoundOutcomeValidator`.
+- `convex/workspace/approvals.ts`: `decideApproval` runs the round for `request_changes` on `artifact_review` and
+  returns an optional `changeRound` outcome; new `assertPaidRevisionApproved` (the debit site's check).
+- `convex/_generated/api.d.ts`: registered `workspace/changeRounds` (the lines codegen writes; nothing deployed).
+- Tests: `convex/workspace/changeRounds.test.ts` (13), `tests/platform/workspace-change-rounds.test.ts` (10).
+
+Decisions:
+- Rounds are counted, never stored. The reviewed document's `taskId` gives the task, and its C-JOBS `jobKey` names
+  the artifact (projectId, jobType, subject). A range read on `tasks.by_ownerId_and_jobKey` over the key prefix
+  `crew:{projectId}:{type}:{subject}:` returns exactly that artifact's tasks. The next round is the number of
+  non-failed, non-cancelled ones (the C-JOBS rule; archived tasks still count). Cards carry no weight, so
+  re-raising, superseding or cancelling cards cannot reset it. No Codex change was needed for the count or price.
+- A round starts only when the reviewed draft is the newest finished one and revisions are exactly 0..n-1.
+  Otherwise the result is `busy` (a draft is queued, running or blocked), `stale` (an older draft), `conflict`
+  (duplicate or missing revisions, or more than 200 lineage tasks), or `untracked` (no task or job key). All of
+  these fail closed: no transition, no task, no card.
+- Price: `creditCostFor` with no action. `PRICE_NOT_SET` (blueprint, roster, SEO pack, launch plan, ads drafts at
+  round 3+) and `PLAN_GATED` return `not_available` and leave the card pending, never a free revision.
+- Exactly once: the card leaves `pending` in the transaction that starts the round, so a repeated click is S1's
+  no-op (`changed: false`; it does not repeat the outcome). Two cards of one artifact (the document and its site
+  version) conflict on the lineage read; the second sees the queued round and gets `busy`. A live `spend` card
+  with the same document, round and price (pending or approved) is reused, not superseded, so a repeat neither
+  raises a second card nor revokes an approved one. Raising a spend card writes `approval.spend_raised`.
+- The free revision task: `queued`, `creditCost: 0n`, `changeRound`, `revisionOfTaskId`, `approvalId` = the review
+  card (which holds the note), `jobKey` revision = round. The note is never copied; the generator reads it from the
+  `changes_requested` card as quoted founder data, never as instructions.
+- Paid round, the later debit site, all in ONE mutation: `assertPaidRevisionApproved(ctx, spendApprovalId,
+  { projectId, documentId })` recomputes the round and price from the tasks and calls `assertApproved` with them
+  as `expectedCostCredits` / `expectedChangeRound`; then `insertRevisionTask` (with `creditCost` and the spend
+  card); then the debit for that task. Once the paid task exists the artifact is `busy`, then on the next round, so
+  one card cannot pay twice. A failed, refunded job gives the round back, so a retry may debit again under the same
+  approved card (net one charge).
+- Requirement on WP75/WP76: every artifact document sets `taskId`; that task carries `jobKey` and
+  `changeRound` = the key's revision; each new draft's `artifact_review` card is raised with that round.
+
+Tests (all green): free rounds 1 and 2 with note and task; round 3 spend card with the exact price (11 for the
+brand kit) and round, no task; `PRICE_NOT_SET` (SEO pack) refused twice with no card, no task, card pending;
+untracked document refused; double click on a free round and on round 3; a race between the document card and
+the site version card; a stale older draft; re-raise, supersede, pending reuse, approved reuse, revoke, and still
+round 3; a failed round given back and archiving not; non-owner, wrong business and signed-out callers; workspace
+off for preview, decide and the paid check; `assertApproved` on the spend card passing only with the exact terms
+(missing, either one alone, off-by-one cost, round 2 or 4 all `APPROVAL_TERMS_MISMATCH`), other document/project
+refused, and the card unusable after the paid task. Pure helpers: every revisable type and plan, every priced type
+at rounds 3, 4 and 9, every unpriced type, non-revisable types, bad rounds. A mutation test (dropping the busy
+check, and dropping spend-card reuse) turned 2 cases red; both restored.
+
+Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings,
+none in new files); change-round tests 0 (13 convex + 10 pure; `convex/workspace/` 46/46 with S1's approvals);
+`npm run test:security` 0 (204 node + 121 vitest); `npm test` 0 (first run); `npm run build` 0.
+
+Needs from Codex (S2, additions to the S1 list):
+7. A debit for crew jobs that takes the revision task: `debitJob` / `refundJob` (or a C-LEDGER amendment letting
+   `debitTask` / `refundFailedTask` take crew task types behind the `workspace` gate). The paid-round debit
+   mutation must call `assertPaidRevisionApproved`, then `insertRevisionTask`, then the debit, in that order and
+   in the same mutation. S2 debits nothing until then; approved spend cards just wait.
+8. When `approvals.consumedAt` lands (S1 item 2), the paid-round debit mutation also sets it on the spend card.
+
+Docs: progress updated; stories not ticked (S2 waits on review and item 7). No plan or ruling changes.

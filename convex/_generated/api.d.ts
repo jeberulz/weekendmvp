@@ -122,6 +122,7 @@ import type * as siteUrl from "../siteUrl.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as workspace_access from "../workspace/access.js";
 import type * as workspace_approvals from "../workspace/approvals.js";
+import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 
 import type {
   ApiFromModules,
@@ -244,6 +245,7 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   "workspace/access": typeof workspace_access;
   "workspace/approvals": typeof workspace_approvals;
+  "workspace/changeRounds": typeof workspace_changeRounds;
 }>;
 
 /**
