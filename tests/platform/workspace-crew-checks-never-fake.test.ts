@@ -80,11 +80,12 @@ describe("never fake it: invented proof is found (hard)", () => {
     // credentials
     ["fake_credential", "Award-winning trail planner"],
     ["fake_credential", "Rated #1 by hikers"],
-    ["fake_credential", "The #1 app for hikers"],
     ["fake_credential", "#1 rated planner"],
-    ["fake_credential", "No. 1 app for long trails"],
-    ["fake_credential", "The #1 hydration pack for hikers."],
     ["fake_credential", "#1 on Product Hunt this week."],
+    ["fake_credential", "Voted #1 hydration brand"],
+    ["fake_credential", "Ranked No. 1 in its category"],
+    ["fake_credential", "The UK's #1 sourdough bakery"],
+    ["fake_credential", "Our #1-selling pack"],
     ["fake_credential", "The best-selling hiking app"],
     ["fake_credential", "Clinically proven hydration plans"],
     ["fake_credential", "Doctor-recommended pacing"],
@@ -98,14 +99,16 @@ describe("never fake it: invented proof is found (hard)", () => {
     ["fake_stat", "9 in 10 hikers misjudge their water"],
     ["fake_stat", "4 out of 5 users plan better"],
     ["fake_stat", "Nine out of ten hikers prefer HydroTrail."],
-    // a comparison with people as the subject, or a baseline of before / they did / other people
+    // a comparison whose baseline is people or a past self
     ["fake_stat", "Hikers drink 40% more water than before they used HydroTrail."],
     ["fake_stat", "Teams ship 3x faster than they did with spreadsheets."],
     ["fake_stat", "Users finish 50% more trails than other hikers."],
     ["fake_stat", "You'll drink 30% more water than before."],
-    // an outcome claimed for customers
+    ["fake_stat", "Hikers carry 30% less weight than before."],
+    ["fake_stat", "Plans finish 3x faster than without HydroTrail."],
+    ["fake_stat", "Get 50% more done than the average freelancer."],
+    // an explicit average saving claimed for customers
     ["fake_stat", "Our customers save an average of 6 hours a week."],
-    ["fake_stat", "Students double their freelance income after the course."],
   ];
 
   it.each(hard)("%s: %s", (code, text) => {
@@ -129,6 +132,14 @@ describe("never fake it: uncertain patterns are soft", () => {
     ["unverified_comparison", "50% less plastic than our first prototype."],
     ["unverified_comparison", "Holds 30% more water than a 1 L bottle."],
     ["unverified_comparison", "Refills 2x faster than unscrewing a bottle cap."],
+    ["unverified_comparison", "Teams get 2x more seats than on the Starter plan."],
+    ["unverified_comparison", "Customers pay 20% less than the in-store price."],
+    ["unverified_comparison", "It refills 3x faster than most bottles."],
+    ["possible_ranking", "The #1 app for hikers"],
+    ["possible_ranking", "No. 1 app for long trails"],
+    ["possible_ranking", "The #1 tool you need is a good map."],
+    ["unverified_outcome", "Students double their freelance income after the course."],
+    ["unverified_outcome", "Students halve their reading list with our summaries."],
   ];
 
   it.each(soft)("%s: %s", (code, text) => {
@@ -225,6 +236,16 @@ describe("never fake it: normal copy is not flagged", () => {
     "Find us at No. 1 Market Street.",
     "No. 1 tip: drink early.",
     "Our no. 1 rule: never skip water.",
+    "Our #1 pick for beginners is the 2 L pack.",
+    "Tip: #1 gear mistake is too little water.",
+    "Your #1 favourite loaf is back.",
+    "Our No. 1 recommended stretch before a run.",
+    "Bakery No. 1 is on High Street; bakery No. 2 opens in May.",
+    // customer outcomes tied to a plan, price or course, or physiology
+    "Students who finish make an average of three projects in the course.",
+    "Readers who subscribe save on average 10% with the annual plan.",
+    "Runners lose on average 500 ml of sweat per hour.",
+    "It is 40% lighter than other packs we tested.",
     "Students get 20% off with a school email.",
   ];
   it.each(good)("%s", (text) => {

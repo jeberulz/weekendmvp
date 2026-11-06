@@ -23,9 +23,22 @@
  *   owner of another named business is a customer testimonial and stays hard;
  * - `possible_social_count`: "Join 50 hikers" (a count under 100 after
  *   "join" may be true, or a goal);
- * - `unverified_comparison`: "30% more water than a 1 L bottle" (a product
- *   baseline the founder can measure). People as the subject ("Hikers drink
- *   40% more") or a baseline of before, without or other people stays hard.
+ * - `unverified_comparison`: "30% more water than a 1 L bottle", "2x more
+ *   seats than on the Starter plan" (a product, plan or price baseline the
+ *   founder can check). A baseline of people or a past self ("than before",
+ *   "than they did", "than other hikers", "than the average freelancer")
+ *   stays hard;
+ * - `possible_ranking`: a bare "#1 {noun}" ("The #1 app for hikers"), often
+ *   editorial ("The #1 tool you need is a map"). "Rated #1", "#1-selling",
+ *   "#1 rated", "#1 on Product Hunt" and "the UK's #1" stay hard;
+ * - `unverified_outcome`: an outcome claimed for customers ("Students double
+ *   their income"). Only an explicit money or time saving on average with no
+ *   plan, price or course tie ("Our customers save an average of 6 hours") is
+ *   hard.
+ *
+ * Precision first (S4a final review): a hard flag costs a paid repair, so a
+ * heuristic that cannot be made precise is soft, and semantic fakes are the
+ * S4b quality prompt's job.
  *
  * Known trade-offs: "5-star" (outside a hygiene, safety or energy rating) and
  * "trusted by hikers" always fail. A founder who has real proof adds it after
@@ -69,10 +82,13 @@ const NOT_PROMO = String.raw`(?!\s*(?:off\b|discount|(?:with|using)\s+(?:the\s+|
 /** "100% of profits go to charity" is a pledge, not a statistic. */
 const NOT_PLEDGE = String.raw`(?!(?:all\s+|the\s+|our\s+|its\s+|their\s+|every\s+|each\s+)?(?:profits?|proceeds|revenue|takings|sales|fees?|donations?|tips|price)\b)`;
 
-/** What a "#1" ranks: "the #1 hydration pack", "our #1 pick", "#1 rated". */
-const RANK_NOUNS = String.raw`(?:apps?|tools?|choice|pick|packs?|brands?|planners?|products?|sellers?|best[\s-]?sellers?|rated|ranked|selling|platforms?|solutions?|software|services?|courses?|bottles?|gear|bakery|bakeries|cafes?|shops?|stores?|recommended|trusted|favou?rite)`;
+/** What a bare "#1" may rank ("the #1 hydration pack"): soft, since "the #1 tool you need is a map" is editorial. */
+const RANK_NOUNS = String.raw`(?:apps?|tools?|choice|packs?|brands?|planners?|products?|sellers?|best[\s-]?sellers?|platforms?|solutions?|software|services?|courses?|bottles?|bakery|bakeries|cafes?|shops?|stores?)`;
 /** Where a "#1" is ranked: "#1 on Product Hunt", "#1 in its category". */
 const RANK_CHARTS = String.raw`(?:Product\s+Hunt|(?:the\s+)?App\s+Store|Google\s+Play|Amazon|Etsy|Hacker\s+News|(?:its|the|our)\s+category)`;
+const RANK_MARK = String.raw`(?:#|No\.\s?)1`;
+/** Places a "#1" claims to lead: "the UK's #1 sourdough bakery". */
+const RANK_PLACES = String.raw`(?:UK|U\.K\.|US|U\.S\.|USA|America|Britain|England|Scotland|Wales|Ireland|Europe|Australia|Canada|world|country|nation|city|town|internet|web)`;
 
 const FOUNDER_ROLE = /^,?\s*(?:the\s+|our\s+|its\s+)?(?:co-?)?(?:founder|owner|maker|creator|head\s+baker)\b/iu;
 /** The business named after a role: "owner of Bloom Florist", "founder at TrailCo", "founder, TrailCo". */
@@ -106,26 +122,47 @@ const softIfFounder: Refine = (text, match, context) =>
     ? { code: "founder_quote", severity: "soft", what: "a quote attributed to the founder" }
     : undefined;
 
-/** People as the subject of an outcome ("Hikers drink 40% more"): an outcome claim, whatever the baseline. */
-const PEOPLE_SUBJECT =
-  /\b(?:users?|customers?|clients?|members?|people|hikers?|runners?|teams?|students?|learners|owners|founders|families|parents|subscribers|readers|shoppers|buyers|companies|businesses|graduates)\b/iu;
+/** People a baseline can name: "than other hikers", "than most runners", "than the average freelancer". */
+const BASELINE_PEOPLE = String.raw`(?:users?|customers?|clients?|members?|people|persons?|hikers?|runners?|cyclists?|campers?|climbers?|swimmers?|walkers?|founders?|builders?|makers?|creators?|sellers?|buyers?|shoppers?|teams?|companies|businesses|bakeries|shops|students?|learners?|teachers?|parents?|families|athletes?|travell?ers?|bakers?|freelancers?|developers?|designers?|owners?|readers?|professionals?|beginners?|subscribers?|marketers?|writers?)`;
 /** A baseline that is a past self or other people ("than before", "than they did", "than other hikers"). */
-const PEOPLE_BASELINE =
-  /^\s*(?:before|without|they\s+(?:did|used\s+to|were|do)|you\s+(?:did|used\s+to)|we\s+did|other\s|others\b|most\s|everyone|everybody|anyone|the\s+average|average\b|usual|normal|last\s+(?:year|season|month|week))/iu;
+const PEOPLE_BASELINE = new RegExp(
+  String.raw`^\s*(?:before|without|they\s+(?:did|used\s+to|were|do)|you\s+(?:did|used\s+to|do)|we\s+did|(?:other|most|the\s+average|an?\s+average|average|typical|the\s+typical)\s+(?:[\p{L}-]+\s+)?${BASELINE_PEOPLE}\b|others\b|everyone|everybody|anyone\s+else|usual\b|last\s+(?:year|season|month|week))`,
+  "iu",
+);
 
 /**
- * A comparison with a product as its baseline ("than a 1 L bottle", "than our
- * first prototype") is a fact the founder can measure: soft. People as the
- * subject, or a baseline of before / without / other people, is an invented
- * outcome: it stays hard.
+ * A comparison is hard only when its baseline is people or a past self
+ * ("than before", "than they did", "than other hikers", "than the average
+ * freelancer"): an invented outcome. A product, plan or price baseline ("than
+ * a 1 L bottle", "than on the Starter plan", "than the in-store price", "than
+ * most bottles") is a fact the founder can check: soft.
  */
 const softIfCompared: Refine = (text, match) => {
   const rest = SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "";
   const than = /\bthan\b/iu.exec(rest);
   if (than === null) return undefined;
-  const subject = SENTENCE_START.exec(text.slice(0, match.index))?.[0] ?? "";
-  if (PEOPLE_SUBJECT.test(subject) || PEOPLE_BASELINE.test(rest.slice(than.index + than[0].length))) return undefined;
+  if (PEOPLE_BASELINE.test(rest.slice(than.index + than[0].length))) return undefined;
   return { code: "unverified_comparison", severity: "soft", what: "a measured comparison" };
+};
+
+/** An outcome tied to a plan, price or course ("save 10% with the annual plan", "three projects in the course") is a product fact. */
+const OUTCOME_TIE = /\b(?:plans?|price|prices|pricing|courses?|subscription|subscribe|subscribes|membership|annual|yearly|code|coupon|discount|bundle|launch)\b/iu;
+/** An explicit money or time saving on average: "save an average of 6 hours", "save on average $40". */
+const AVERAGE_SAVING =
+  /\b(?:save|saves|saved)\s+(?:an\s+average\s+of|on\s+average)\s+(?:[$€£¥₹]\s?\d|\d[\d,.]*\s*(?:%|[$€£¥₹]|hours?|hrs?|minutes?|mins?|days?|weeks?|months?)(?![\p{L}]))/iu;
+
+/**
+ * "Our customers save an average of 6 hours" (no plan or price tie) is an
+ * invented outcome: hard. Other customer outcomes ("Students double their
+ * income", "earn an average of ...") are soft, and one tied to a plan, price
+ * or course is skipped. The rest is S4b's quality prompt.
+ */
+const gradeOutcome: Refine = (text, match) => {
+  const sentence = (SENTENCE_START.exec(text.slice(0, match.index))?.[0] ?? "") + match[0] + (SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "");
+  const averaged = /\baverage\b/iu.test(match[0]);
+  if (averaged && OUTCOME_TIE.test(sentence)) return "skip";
+  if (averaged && AVERAGE_SAVING.test(sentence)) return undefined;
+  return { code: "unverified_outcome", severity: "soft", what: "an outcome claimed for customers" };
 };
 
 /** "Join 50 hikers" may be a true count or a goal; "Join 2,000 hikers" or "Join 50 hikers already" is a claim. */
@@ -350,10 +387,19 @@ export const PATTERNS: Pattern[] = [
     code: "fake_credential",
     severity: "hard",
     what: "a ranking",
-    // "#1" counts only before a ranking noun or a chart: "our #1 priority", "No. 1 Market Street",
-    // "Tip #1:" and "our no. 1 rule" are not rankings.
+    // "rated #1", "ranked No. 1", "#1-selling", "#1 rated", "#1 on Product Hunt", "the UK's #1 bakery".
     re: new RegExp(
-      String.raw`\brated\s+(?:#|No\.\s?)1\b|(?<![\p{L}\p{N}#])(?<!\b(?:tip|tips|step|reason|rule|day|week|part|module|lesson|chapter|episode|issue|item|mistake|question|trail|route|track|room|size|model|gate|bus|stop|lot|batch|table|plot|unit|hole|level|no|number|priority)\s)(?:#|No\.\s?)1(?![\d.,:)])\s+(?:(?:[\p{L}-]+\s+){0,2}?${RANK_NOUNS}\b|(?:on|in)\s+${RANK_CHARTS}\b)|\bnumber[\s-]one\s+(?:rated|app|tool|choice|platform|brand)\b|\bbest[\s-]selling\b|\b(?:top|highest)[\s-]rated\b`,
+      String.raw`\b(?:rated|ranked|voted|named)\s+(?:the\s+)?(?:${RANK_MARK}|number\s+one)\b|(?<![\p{L}\p{N}#])${RANK_MARK}[\s-](?:selling|rated|ranked|best[\s-]?sell(?:er|ing))\b|(?<![\p{L}\p{N}#])${RANK_MARK}\s+(?:on|in)\s+${RANK_CHARTS}\b|\b${RANK_PLACES}['’]s\s+${RANK_MARK}\s+\p{L}|\bnumber[\s-]one\s+(?:rated|selling)\b|\bbest[\s-]selling\b|\b(?:top|highest)[\s-]rated\b`,
+      "iu",
+    ),
+  },
+  {
+    code: "possible_ranking",
+    severity: "soft",
+    what: "a \"#1\" ranking",
+    // A bare "#1 {noun}" is often editorial ("The #1 tool you need is a good map"); "Tip #1:", "our #1 priority" are numbering.
+    re: new RegExp(
+      String.raw`(?<![\p{L}\p{N}#])(?<!\b(?:tip|tips|step|reason|rule|day|week|part|module|lesson|chapter|episode|issue|item|mistake|question|trail|route|track|room|size|model|gate|bus|stop|lot|batch|table|plot|unit|hole|level|no|number|priority|shop|bakery|store)\s)${RANK_MARK}(?![\d.,:)-])\s+(?:(?!(?:rated|ranked|selling)\b)[\p{L}-]+\s+)?${RANK_NOUNS}\b(?!\s+(?:mistake|tip|rule|question|step|lesson|error)s?\b)|\bnumber[\s-]one\s+(?:app|tool|choice|platform|brand)\b`,
       "iu",
     ),
   },
@@ -393,8 +439,9 @@ export const PATTERNS: Pattern[] = [
     code: "fake_stat",
     severity: "hard",
     what: "an outcome claimed for customers",
-    // "Students double their income", "Our customers save an average of 6 hours".
-    re: /\b(?:customers|users|clients|members|students|learners|hikers|runners|teams|subscribers|readers|owners|families|parents|graduates|alumni|founders)\s+(?:who\s+[^.!?\n]{1,40}?\s+)?(?:(?:double|doubles|doubled|triple|triples|tripled|halve|halves|halved)\s+their\b|(?:save|saves|saved|earn|earns|earned|cut|cuts|lose|loses|lost|gain|gains|gained|make|makes|made|sell|sells|sold)\s+(?:an\s+average\s+of|on\s+average)\b)/iu,
+    // Hard only for "Our customers save an average of 6 hours" (gradeOutcome); "Students double their income" is soft.
+    re: /\b(?:customers|users|clients|members|students|learners|hikers|runners|teams|subscribers|readers|owners|families|parents|graduates|alumni|founders)\s+(?:who\s+[^.!?\n]{1,40}?\s+)?(?:(?:double|doubles|doubled|triple|triples|tripled|halve|halves|halved)\s+their\b|(?:save|saves|saved|earn|earns|earned|cut|cuts|gain|gains|gained|make|makes|made)\s+(?:an\s+average\s+of|on\s+average)\b)/iu,
+    refine: gradeOutcome,
   },
   {
     code: "unsupported_evidence",

@@ -444,3 +444,55 @@ Left as is: "Join 99 happy customers" stays soft (a count under 100 after "join"
 | 50 KB adversarial timing (`redos*.ts` plus new-pattern probe) | 36 ms worst | 50 ms worst |
 
 - Docs updated: this file. Stories unchanged.
+
+### Final-review fixes (on `8931c27b`): precision first
+
+The final check confirmed N1-N7 and the test gap, and found that the new rules brought their own false positives
+and one dodge. This round changes the principle: **a hard flag costs a paid repair, so a heuristic that cannot be
+made precise in one line is soft**, and semantic fakes are the S4b `quality@1` prompt's job. Where this part
+disagrees with the lines above, this part wins.
+
+- **F1, "our/we" no longer hides market data.** The own-idea sentence fallback has two tiers. Data words (industry,
+  sector, survey, study, research, report forms, statistics, according to, census, "the average {person}") are never
+  skipped, so "According to our survey, hikers pay £60" and "Our research shows the average hiker pays $120" are
+  hard. Rival and market words (competitors, rivals, elsewhere, market, average) are skipped only when the money
+  belongs to an "our/your" noun or "we charge" ("On average our loaves cost £4", "Our average order is $25"). One
+  deliberate change from the brief: competitor(s), rival(s) and elsewhere sit in the second tier, so "Unlike
+  competitors, our pack costs $79" stays clean. All six dodge lines are hard either way.
+- **F2, named competitor price**: "[Name] sells / charges / costs ... money" (either case) is hard only with an explicit
+  contrast with our side in the same or the next sentence (ours, we charge/sell, our price, vs, cheaper than, for
+  less), never for the brand name. Product names with a price ("Trail Pack costs $79 and we ship it free", "Rye Loaf
+  costs £5 and our croissants cost £2") are clean. Without a contrast it is not flagged (S4b's job).
+- **F3, comparisons**: hard only when the baseline is people or a past self (before, without, they did, other /
+  most / the average {people}, last year). The subject no longer matters. "Than on the Starter plan", "than the
+  in-store price" and "than most bottles" are soft `unverified_comparison`.
+- **F4, rankings**: hard for "rated / ranked / voted / named #1", "#1-selling", "#1 rated", "#1 on {chart}" and
+  "the UK's #1". A bare "#1 {noun}" ("The #1 app for hikers") is soft `possible_ranking`: it cannot be told apart from
+  "The #1 tool you need is a good map". Pick, favourite, recommended and gear are dropped; at most one word sits
+  between "#1" and the noun.
+- **F5, customer outcomes**: soft `unverified_outcome`, except an explicit money or time saving on average with no
+  plan, price, course or launch tie ("Our customers save an average of 6 hours": hard). Tied outcomes ("save on
+  average 10% with the annual plan", "three projects in the course") are not flagged. "Lose" is dropped
+  (physiology: "Runners lose on average 500 ml").
+- **Soft gap, S4b item**: a quote attributed "— Jane, founder" with no business named stays soft `founder_quote`. The
+  S4b quality prompt should judge whether it is the founder's own words or a customer's.
+
+Now soft, so `fn.ts` counts them as missed: "The #1 hydration pack for ultrarunners" (`possible_ranking`) and
+"Students double their freelance income" (`unverified_outcome`).
+
+| Probe (reviewer's scripts, run as is) | Before (`8931c27b`) | After |
+|---|---|---|
+| `fp.ts` hard flags (library / own idea) | 2/46 / 2/46 | 2/46 / 2/46 (the two declines) |
+| `fp2.ts` hard flags | 0/30 | 0/30 |
+| `final.ts` honest lines with a hard flag (F2-F5) | 16 | 0 |
+| `final.ts` rank honest lines with a hard flag | 5/9 | 0/9 (1 soft) |
+| `final.ts` F1 dodge lines hard | 0/6 | 6/6 |
+| `final.ts` named-competitor fakes hard | 4/5 | 5/5 |
+| `final.ts` comparison fakes hard | 4/4 | 4/4 |
+| `new.ts` must-flag list hard | 12/12 | 12/12 |
+| `fn.ts` faked proof missed (hard) | 4/28 | 6/28 (2 scarcity, 4 soft) |
+| Mutation (`mutate4.ts`): patterns removable or flippable | 0 | 0 |
+| Timing: `final.ts` SLOW lines (over 30 ms) | 0 | 0 |
+| Timing: extra 50-57 KB probes, worst single check | 50 ms | 44-46 ms |
+
+- Docs updated: this file. Stories unchanged.

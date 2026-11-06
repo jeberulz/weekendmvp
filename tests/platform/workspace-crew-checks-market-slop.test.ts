@@ -29,7 +29,17 @@ describe("market numbers in own ideas (D15 and the S4a review ruling)", () => {
     "Industry reports put trail spend at $2,000 per hiker",
     "Industry surveys put pack returns at 12%.",
     "Camelbak sells it for $120; ours is $79.",
+    "camelbak sells it for $120; ours is $79.",
     "We charge $79, while Osprey Packs charges $150.",
+    "Osprey charges $150. We charge $79.",
+    "Camelbak costs $120, so we priced ours lower.",
+    // "our/we" does not hide market data (S4a final review)
+    "According to our survey, hikers pay £60 for a pack.",
+    "Our research shows the average hiker pays $120 for gear.",
+    "We read an industry report: packs sell for $90 on average.",
+    "On average, we see hikers pay $150 elsewhere.",
+    "Our industry charges an average of $150 per pack.",
+    "Most of our competitors' customers pay $200 a year.",
   ];
   it.each(claims)("flags: %s", (text) => {
     expect(carriesMarketNumber(text)).toBe(true);
@@ -76,6 +86,12 @@ describe("market numbers in own ideas (D15 and the S4a review ruling)", () => {
     "Save $200 a year compared to buying bottled water.",
     "Pro costs $9 a month; we bill yearly.",
     "It costs $79 and we ship in spring.",
+    // the business's own product names with a price and no contrast with a rival
+    "Trail Pack costs $79 and we ship it free.",
+    "Sourdough costs £4 at our bakery.",
+    "Monday Club costs $10 a week and we meet at 6.",
+    "Rye Loaf costs £5 and our croissants cost £2.",
+    "HydroTrail costs $79; we ship free.",
   ];
   it.each(ownFacts)("does not flag: %s", (text) => {
     expect(carriesMarketNumber(text)).toBe(false);
@@ -88,7 +104,7 @@ describe("market numbers in own ideas (D15 and the S4a review ruling)", () => {
   });
 
   it("a named price is the business's own when it is the brand name", () => {
-    const text = "HydroTrail sells it for $79; we ship free.";
+    const text = "HydroTrail sells it for $79; ours is the same pack.";
     expect(carriesMarketNumber(text)).toBe(true);
     expect(carriesMarketNumber(text, { brandName: "HydroTrail" })).toBe(false);
     expect(checkMarketNumbers({ copy: text }, { brandName: "HydroTrail" })).toEqual([]);

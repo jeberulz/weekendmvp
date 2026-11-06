@@ -18,12 +18,14 @@
  * - counts of people who need it ("10k dentists need this");
  * - spending data ("hikers spend $49 a year");
  * - competitor prices ("competitors charge $50", "vs $150 for a Camelbak",
- *   "30% cheaper than rivals", "Camelbak sells it for $120; ours is $79");
+ *   "30% cheaper than rivals"; a named business's price only with an explicit
+ *   contrast with ours: "Camelbak sells it for $120; ours is $79");
  * - any number the WP74 detector (`hasMarketClaim`) sees in a sentence that
- *   is about an industry, a survey or an average, unless the sentence is
- *   about the business itself ("On average our loaves cost £4", "Our average
- *   order is $25"). "Study guide", "reported issues" and "at the market"
- *   are not market context.
+ *   is about an industry, a survey, research or "the average hiker" (always,
+ *   even "According to our survey"), or about rivals, the market or an
+ *   average when the money is not the business's own ("On average our loaves
+ *   cost £4" and "Our average order is $25" stay). "Study guide", "reported
+ *   issues" and "at the market" are not market context.
  *
  * Fake proof (user counts, ratings, outcome statistics) is "never fake it"'s
  * job, not this check's; both run on own ideas.
@@ -67,10 +69,23 @@ type Rule = {
 };
 
 const nameKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-/** The business set against the named one: "...; ours is $79", "we charge $79". */
-const OWN_SIDE = /\b(?:ours|our|we|us|theirs)\b/iu;
-/** Capitalised words that start a sentence or name a plan, not a rival business. */
-const NOT_A_RIVAL = String.raw`(?:It|This|That|These|Those|Ours|Each|Every|One|Our|Your|The|A|An|Shipping|Delivery|Postage|Entry|Admission|Access|Membership|Everything|Pricing|Plans?|Tickets?|Classes?|Lessons?|Pro|Plus|Basic|Premium|Team|Starter|Standard|Family|Annual|Monthly)`;
+/** An explicit contrast with the business's own side: "ours is $79", "We charge $79", "our price", "vs", "cheaper than". */
+const OWN_CONTRAST =
+  /\bours\b|\bwe\s+(?:charge|sell|ask|price)\b|\bour\s+(?:price|prices|pricing|version)\b|\bvs\.?(?![\p{L}])|\bversus\b|\b(?:cheaper|less|lower|pricier)\s+than\b|\bfor\s+less\b|\bhalf\s+the\s+price\b/iu;
+/** Words that start a sentence or name a plan or fee, not a rival business (either case). */
+const NOT_A_RIVAL_WORDS = [
+  "It", "This", "That", "These", "Those", "Ours", "Each", "Every", "One", "Our", "Your", "The", "A", "An", "So", "And", "But",
+  "Shipping", "Delivery", "Postage", "Entry", "Admission", "Access", "Membership", "Everything", "Pricing", "Plan", "Plans",
+  "Ticket", "Tickets", "Class", "Classes", "Lesson", "Lessons", "Pro", "Plus", "Basic", "Premium", "Team", "Starter",
+  "Standard", "Family", "Annual", "Monthly", "London",
+];
+const NOT_A_RIVAL = `(?:${NOT_A_RIVAL_WORDS.flatMap((word) => [word, word.toLowerCase()]).join("|")})`;
+/** The sentence a match sits in, and the next one ("Osprey charges $150. We charge $79."). */
+function sentenceAndNext(text: string, index: number): string {
+  const before = /[^.!?\n]*$/u.exec(text.slice(0, index))?.[0] ?? "";
+  const after = /^[^.!?\n]*[.!?\n]*[^.!?\n]*/u.exec(text.slice(index))?.[0] ?? "";
+  return before + after;
+}
 
 const RULES: readonly Rule[] = [
   { what: "a market-sizing term", re: /\b(?:TAM|SAM|SOM|CAGR|CPC|CPM)\b/u },
@@ -136,25 +151,37 @@ const RULES: readonly Rule[] = [
   },
   {
     what: "a competitor price",
-    // "Camelbak sells it for $120; ours is $79": a named business's price set against ours.
-    // Only with "ours/our/we" in the text, and never the business's own name, so "Pro costs $9" stays clean.
+    // "Camelbak sells it for $120; ours is $79", "Osprey charges $150. We charge $79.": a named business's
+    // price, hard only with an explicit contrast with our side in the same or the next sentence, and never
+    // the business's own name. "Trail Pack costs $79 and we ship it free" (a product name) stays clean.
     re: new RegExp(
-      String.raw`(?<![\p{L}\p{N}])(?<!\b(?:our|the|this|my|your)\s)(?!${NOT_A_RIVAL}\b)([\p{Lu}][\p{L}\p{N}&'’-]+(?:[^\S\n]+[\p{Lu}][\p{L}\p{N}&'’-]+){0,2})\s+(?:sells|charges|costs|prices|retails|asks)\b[^.!?\n;]{0,30}?${MONEY}`,
+      String.raw`(?<![\p{L}\p{N}])(?<!\b(?:our|Our|this|This|my|My|your|Your)\s)(?!${NOT_A_RIVAL}\b)([\p{L}][\p{L}\p{N}&'’-]+(?:[^\S\n]+[\p{Lu}][\p{L}\p{N}&'’-]+){0,2})\s+(?:sells|charges|costs|prices|retails|asks)\b[^.!?\n;]{0,30}?${MONEY}`,
       "u",
     ),
-    accept: (match, text, options) =>
-      OWN_SIDE.test(text) && (options.brandName === undefined || nameKey(match[1] ?? "") !== nameKey(options.brandName)),
+    accept: (match, text, options) => {
+      const index = match.index ?? 0;
+      const brand = options.brandName === undefined ? "" : nameKey(options.brandName);
+      if (brand !== "" && nameKey(match[1] ?? "").endsWith(brand)) return false;
+      return OWN_CONTRAST.test(sentenceAndNext(text, index).slice(0, 400));
+    },
   },
 ];
 
-/** Words that make any number in the sentence about the market rather than the business. */
-const MARKET_CONTEXT =
-  /\b(?:industry|industries|sector|markets?|nationwide|worldwide|globally|(?:the\s+)?average|on\s+average|surveys?|stud(?:y|ies)|reports?(?=\s+(?:shows?|says?|found|finds|suggests?|puts?|estimates?))|(?:a|the|one|recent|new|latest|annual|industry)\s+report|(?:is|are|was|were|as|has|have|been)\s+reported|reportedly|statistics?|according\s+to|census)\b/iu;
+/** People "the average" can describe: "the average hiker pays $120". */
+const AVERAGE_PERSON = String.raw`(?:users?|customers?|clients?|people|persons?|hikers?|runners?|campers?|cyclists?|households?|families|famil(?:y|ies)|parents?|students?|shoppers?|buyers?|consumers?|bakers?|freelancers?|owners?|businesses|business|companies|company|teams?|founders?|travell?ers?|readers?|members?|subscribers?|americans?|brits?|adults?|workers?|employees?)`;
+/** Words that make a number about the market's data, whoever says it ("According to our survey"): never skipped. */
+const DATA_CONTEXT = new RegExp(
+  String.raw`\b(?:industry|industries|sector|nationwide|worldwide|globally|surveys?|stud(?:y|ies)|research|reports?(?=\s+(?:shows?|says?|found|finds|suggests?|puts?|estimates?))|(?:a|the|one|recent|new|latest|annual|industry)\s+report|(?:is|are|was|were|as|has|have|been)\s+reported|reportedly|statistics?|according\s+to|census|(?:the|an?)\s+average\s+(?:[\p{L}-]+\s+)?${AVERAGE_PERSON})\b`,
+  "iu",
+);
+/** Rivals and the market at large: skipped only when the money is the business's own price. */
+const RIVAL_CONTEXT = /\b(?:competitors?['’]?|competition|rivals?['’]?|elsewhere|markets?|average|on\s+average)\b/iu;
 /** "Market" that is a place or a launch step, and "study" that is a product ("study guide"): not market context. */
 const NOT_A_MARKET =
   /\b(?:farmers['’]?\s+markets?|markets?\s+(?:stall|stalls|day|days|square|hall|town)|(?:christmas|flea|street|night|food|craft|local|weekend|saturday|sunday)\s+markets?|at\s+the\s+markets?|the\s+markets?\s+(?:on|this|every|next)\b|go[\s-]to[\s-]market|to\s+market|on\s+the\s+market|marketplace|stud(?:y|ies)\s+(?:guides?|groups?|plans?|sessions?|notes|rooms?|buddy|buddies|kits?|cards|packs?|halls?|spaces?|tools?|skills|time|breaks?|materials?|schedules?|timetables?|aids?))\b/giu;
-/** A sentence about the business or its customer ("On average our loaves cost £4"): its own facts, not the market's. */
-const ABOUT_US = /\b(?:we|our|ours|us|your|yours)\b/iu;
+/** The money belongs to an "our/your" noun ("On average our loaves cost £4", "Our average order is $25", "we charge $79"). */
+const OWN_PRICE =
+  /\b(?:our|your)\s+(?:[\p{L}-]+\s+){0,2}?(?:costs?|is|are|was|were|starts?|sells?|runs?|comes?|priced)\b|\bwe\s+(?:charge|sell|price|ask)\b|\bours\s+(?:is|costs?)\b/iu;
 
 /** Product measures the WP74 detector reads as counted nouns or magnitudes ("250 ml", "600 m climb"). */
 const MEASURES = new RegExp(
@@ -185,9 +212,10 @@ export function marketClaim(raw: string, options: MarketOptions = {}): { what: s
     }
   }
   for (const sentence of text.split(SENTENCES)) {
-    if (ABOUT_US.test(sentence)) continue;
-    const context = MARKET_CONTEXT.exec(sentence.replace(NOT_A_MARKET, " "));
-    if (context !== null && hasMarketClaim(sentence)) return { what: "an industry statistic", match: sentence };
+    if (!hasMarketClaim(sentence)) continue;
+    const context = sentence.replace(NOT_A_MARKET, " ");
+    if (DATA_CONTEXT.test(context)) return { what: "an industry statistic", match: sentence };
+    if (RIVAL_CONTEXT.test(context) && !OWN_PRICE.test(sentence)) return { what: "an industry statistic", match: sentence };
   }
   return null;
 }
