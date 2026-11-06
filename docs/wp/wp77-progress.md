@@ -923,3 +923,6 @@ a11y-check (`WrenMemoryPanel.tsx`; the only UI change is the Save button's "Savi
 Every other item passes as before. axe is clean in the in-flight state (20 DOM tests).
 
 Docs: progress updated. No story, plan or ruling changes.
+
+Last round (after `a81a49bc`): Wren's notes now refuse any word that mixes Latin letters with another script, or that uses a phonetic Latin look-alike such as "ɑ" (`looks_encoded`). Repo-wide M5 now treats a row from the writer's row readers (`readWrenMemory`, found from its return type) or from destructuring as a `wren_memory` row. "no", "not" and "nor" count as content words. `WREN_FACT_MAX_UNSOURCED` is now 1. An ending is stripped only when 4 or more letters remain (3 for a plain "-s"), so "rated" no longer matches "rat" and "caring" no longer matches "car".
+Honest paraphrase set: Wren still accepts 24 of the 25 founder-said facts (the miss is "Co-founder's role: marketing", from "My co-founder does the marketing"). Checks: typecheck, convex tsc, lint, check:prompt-versions, test:security (219/0 node, 121 vitest), test:convex (1023), test:platform (1464), test:prompts (24) and build all exit 0.

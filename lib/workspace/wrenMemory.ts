@@ -31,7 +31,9 @@
  *
  * Wren's notes (model output) are held to more, conservatively. Cyrillic and
  * Greek look-alike letters are folded to Latin first (`foldConfusables`), so
- * "Wr\u0435n" reads as "Wren". Then:
+ * "Wr\u0435n" reads as "Wren", and any word that mixes Latin letters with
+ * letters of another script, or uses phonetic Latin look-alikes ("\u0251"), is
+ * refused (`hasMixedScriptWord`). A word wholly in one other script is fine. Then:
  * - no link of any kind: bare domains, "dot com" spellings, emails;
  * - no other markup: any `<` before a letter, backticks, template braces,
  *   markdown links, entities;
@@ -44,12 +46,13 @@
  *   (base64). A founder's plain preference ("wants to skip TikTok", "the
  *   priority is the email list") passes;
  * - provenance. Content words are letters or digits, 3 or more long, not a
- *   stop word, NFKC and lower case, counted once each, and compared as whole
- *   words with one plural or verb ending allowed ("runners" matches
- *   "runner", "pricing" matches "price"; "international" never matches
- *   "internal"). A fact needs at least `WREN_NOTE_MIN_OVERLAP` (60%) of its
- *   content words from this turn's founder message, and at most
- *   `WREN_FACT_MAX_UNSOURCED` (2) from elsewhere. A summary may keep the old
+ *   stop word, plus the negations "no", "not" and "nor"; NFKC and lower case,
+ *   counted once each, and compared as whole words with one plural or verb
+ *   ending allowed ("runners" matches "runner", "pricing" matches "price";
+ *   "international" never matches "internal", "rated" never matches "rat").
+ *   A fact needs at least `WREN_NOTE_MIN_OVERLAP` (60%) of its content words
+ *   from this turn's founder message, and at most `WREN_FACT_MAX_UNSOURCED`
+ *   (1) from elsewhere. A summary may keep the old
  *   summary's words; every new word must come from this turn's founder
  *   message or the founder's idea text and business name
  *   (`WREN_SUMMARY_MAX_UNSOURCED` is 0). Wren's earlier notes never vouch for
@@ -104,7 +107,7 @@ export type MemoryTextRefusal = (typeof WREN_MEMORY_TEXT_REFUSALS)[number];
 export const WREN_NOTE_REFUSALS = [
   /** Reads like an instruction to the assistant, or is about approvals, cards, rules or Wren itself. */
   "looks_like_instruction",
-  /** Spelled-out letters or an encoded blob (base64). */
+  /** Spelled-out letters, an encoded blob (base64), or a word mixing Latin with look-alike letters of another script. */
   "looks_encoded",
   /** Its words do not come from this turn's founder message (and, for a summary's new words, the idea text). */
   "not_from_founder",
@@ -295,6 +298,19 @@ const LATIN_CONFUSABLES: ReadonlyMap<string, string> = new Map([
   ["\u03a4", "t"], ["\u03a5", "y"], ["\u03a7", "x"],
 ]);
 
+/**
+ * A word (a run of letters and marks) that mixes Latin letters with letters
+ * of another script ("appr\u0585ve" with an Armenian o, "wre\u03b7" with a Greek
+ * eta, "\u13b3ren" with a Cherokee letter), or uses Latin look-alike letters from
+ * the phonetic blocks ("\u0251lways" with a Latin alpha). Wren's notes only: a
+ * word written wholly in one other script ("\u041c\u043e\u0441\u043a\u0432\u0430") is fine.
+ */
+export function hasMixedScriptWord(text: string): boolean {
+  if (/[\u0250-\u02af\u1d00-\u1dbf\ua720-\ua7ff\uab30-\uab6f]/u.test(text)) return true;
+  return (text.match(/[\p{L}\p{M}]+/gu) ?? []).some((word) =>
+    /\p{Script=Latin}/u.test(word) && /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(word));
+}
+
 /** Folds `LATIN_CONFUSABLES` (Wren's notes only, before the patterns run). */
 export function foldConfusables(text: string): string {
   let out = "";
@@ -326,7 +342,7 @@ function refusalFor(text: string, raw: string, author: MemoryAuthor): WrenNoteRe
   if ((strict ? WREN_MARKUP_PATTERNS : TAG_PATTERNS).some((pattern) => pattern.test(lower))) return "has_markup";
   if (ROLE_TAG_PATTERNS.some((pattern) => pattern.test(lower)) || rawLineHasRoleLabel(raw, strict)) return "has_role_tag";
   if (!strict) return null;
-  if (ENCODED_PATTERNS.some((pattern) => pattern.test(cased))) return "looks_encoded";
+  if (hasMixedScriptWord(text) || ENCODED_PATTERNS.some((pattern) => pattern.test(cased))) return "looks_encoded";
   if (INSTRUCTION_PATTERNS.some((pattern) => pattern.test(lower))) return "looks_like_instruction";
   return null;
 }
@@ -343,43 +359,51 @@ const STOP_WORDS = new Set([
   "said", "says", "say", "told", "is", "it", "be", "we", "us", "me", "my", "mine",
 ]);
 
-/** Content words: letters or digits, 3 or more long, not a stop word; NFKC, lower case. Unique, in first-seen order. */
+/**
+ * Negations carry meaning ("refunds need no review"), so they count as content
+ * words however short, and need a source like any other. ("never", "without",
+ * "un-" and "non-" forms already count: "unreviewed" is its own word and
+ * "reviewed" does not vouch for it.)
+ */
+const NEGATIONS = new Set(["no", "not", "nor"]);
+
+/**
+ * Content words: letters or digits, 3 or more long, not a stop word, plus the
+ * negations; NFKC, lower case. Unique, in first-seen order.
+ */
 export function contentWords(text: string): string[] {
   const words = cleanMemoryText(text).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
-  return [...new Set(words.filter((word) => memoryTextLength(word) >= 3 && !STOP_WORDS.has(word)))];
+  return [...new Set(words.filter((word) =>
+    NEGATIONS.has(word) || (memoryTextLength(word) >= 3 && !STOP_WORDS.has(word))))];
 }
 
 /**
  * The forms a word is compared by: the whole word, plus the word with one
- * plural or verb ending taken off ("runners" / "runner", "launches" /
- * "launch", "priced" / "price", "pricing" / "price") when 3 or more letters
- * remain. Whole words, not prefixes, so "international" never matches
- * "internal".
+ * plural or verb ending taken off. "runners" matches "runner", "launches"
+ * matches "launch", "pricing" and "priced" match "price", "fees" matches
+ * "fee". A plain "-s" may leave 3 letters; "-ed", "-es" and "-ing" must leave
+ * 4 or more, so "rated" never matches "rat" and "caring" never matches "car".
+ * Whole words, not prefixes, so "international" never matches "internal".
  */
 function wordForms(word: string): string[] {
   const forms = [word];
-  const base = (cut: number) => {
-    const kept = Array.from(word).slice(0, -cut).join("");
-    return memoryTextLength(kept) >= 3 ? kept : null;
-  };
-  const add = (form: string | null) => {
-    if (form !== null) forms.push(form);
+  const cut = (count: number, min: number, suffix = "") => {
+    const kept = `${Array.from(word).slice(0, -count).join("")}${suffix}`;
+    if (memoryTextLength(kept) >= min) forms.push(kept);
   };
   if (word.endsWith("ing")) {
-    const kept = base(3);
-    add(kept);
-    if (kept !== null) add(`${kept}e`);
+    cut(3, 4);
+    cut(3, 4, "e");
   } else if (word.endsWith("ies")) {
-    const kept = base(3);
-    if (kept !== null) add(`${kept}y`);
+    cut(3, 4, "y");
   } else if (word.endsWith("ed")) {
-    add(base(2));
-    add(base(1));
+    cut(2, 4);
+    cut(1, 4);
   } else if (word.endsWith("es")) {
-    add(base(2));
-    add(base(1));
+    cut(2, 4);
+    cut(1, 3);
   } else if (word.endsWith("s") && !word.endsWith("ss")) {
-    add(base(1));
+    cut(1, 3);
   }
   return forms;
 }
@@ -397,7 +421,7 @@ function isKnown(word: string, known: ReadonlySet<string>): boolean {
 export const WREN_NOTE_MIN_OVERLAP = 0.6;
 
 /** The most content words in a Wren fact that may come from nowhere in its sources. */
-export const WREN_FACT_MAX_UNSOURCED = 2;
+export const WREN_FACT_MAX_UNSOURCED = 1;
 
 /**
  * The most new content words (not in the old summary) in a Wren summary that

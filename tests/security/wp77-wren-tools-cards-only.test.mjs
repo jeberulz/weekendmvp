@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
@@ -95,7 +95,10 @@ import { WREN_APPROVAL_SUBJECTS } from "../../lib/workspace/contracts/wrenTools.
 //     ties the id to the table: a name declared `Id<"wren_memory">` or
 //     `Doc<"wren_memory">`, a row or id read by `.query("wren_memory")` or
 //     `.get("wren_memory", ...)` in the same file (`row._id`, `const id =
-//     row._id`, `for (const row of ...)`), or such a read inline.
+//     row._id`, `for (const row of ...)`, destructuring), a row returned by an
+//     export of the writer that returns one (`readWrenMemory`, found from its
+//     declared return type, imported by name or namespace), or such a read
+//     inline.
 //     Limits (not caught): an id-only write whose id arrives untyped from a
 //     parameter, another module or `any` (`delete(id)` with a bare `id`); the
 //     table name passed through a helper's parameter, a spread
@@ -819,24 +822,87 @@ function rootName(node) {
   return null;
 }
 
+let memoryRowReadersCache = null;
+
+/**
+ * The exports of the writer that return a `wren_memory` row (`readWrenMemory`):
+ * exported functions whose declared return type names `MemoryRow` or
+ * `Doc<"wren_memory">`. Read from the writer's source, so a new reader is
+ * covered without editing this list.
+ */
+export function memoryRowReaders() {
+  if (memoryRowReadersCache !== null) return memoryRowReadersCache;
+  const sourceFile = parse(MEMORY_WRITER, readFileSync(path.join(root, MEMORY_WRITER), "utf8"));
+  const readers = new Set();
+  for (const statement of sourceFile.statements) {
+    const exported = statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) === true;
+    if (exported && ts.isFunctionDeclaration(statement) && statement.name !== undefined && statement.type !== undefined &&
+      /\bMemoryRow\b|\bDoc\s*<\s*["'`]wren_memory["'`]\s*>/u.test(statement.type.getText(sourceFile))) {
+      readers.add(statement.name.text);
+    }
+  }
+  memoryRowReadersCache = readers;
+  return readers;
+}
+
+/** Local names (and namespace names) through which this file calls a writer export that returns a memory row. */
+function memoryReaderCalls(sourceFile) {
+  const readers = memoryRowReaders();
+  const direct = new Set();
+  const namespaces = new Set();
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    if (resolveLocal(sourceFile.fileName, statement.moduleSpecifier.text) !== MEMORY_WRITER) continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings !== undefined && ts.isNamedImports(bindings)) {
+      for (const element of bindings.elements) {
+        if (readers.has((element.propertyName ?? element.name).text)) direct.add(element.name.text);
+      }
+    }
+    if (bindings !== undefined && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
+  }
+  return (node) => {
+    const inner = unwrap(node);
+    const call = ts.isAwaitExpression(inner) ? unwrap(inner.expression) : inner;
+    if (!ts.isCallExpression(call)) return false;
+    const callee = unwrap(call.expression);
+    if (ts.isIdentifier(callee)) return direct.has(callee.text);
+    return ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) &&
+      namespaces.has(callee.expression.text) && readers.has(callee.name.text);
+  };
+}
+
+/** Every identifier bound by a declaration name, destructuring included (`const { _id } = row`). */
+function boundNames(name) {
+  if (ts.isIdentifier(name)) return [name.text];
+  if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+    return name.elements.flatMap((element) => (ts.isBindingElement(element) ? boundNames(element.name) : []));
+  }
+  return [];
+}
+
 /**
  * Names in this file that hold a `wren_memory` row or id, where the AST can
- * tell: declared with `Id<"wren_memory">` / `Doc<"wren_memory">`, initialised
- * from a query or get on "wren_memory" (also `for (const row of ...)`), or
- * initialised from such a name (`const id = row._id`). By name, per file:
- * a deliberately shadowed name can fool it (see the header).
+ * tell: declared with `Id<"wren_memory">` / `Doc<"wren_memory">`; initialised
+ * from a query or get on "wren_memory" (also `for (const row of ...)` and
+ * destructuring), or from a call to a writer export that returns a row
+ * (`readWrenMemory`, imported by name or namespace); or initialised from such
+ * a name (`const id = row._id`). By name, per file: a deliberately shadowed
+ * name can fool it (see the header).
  */
 function memoryNames(sourceFile) {
   const names = new Set();
   const pending = [];
+  const readsRow = memoryReaderCalls(sourceFile);
   walk(sourceFile, (node) => {
-    if ((ts.isParameter(node) || ts.isVariableDeclaration(node)) && ts.isIdentifier(node.name)) {
-      if (node.type !== undefined && MEMORY_TYPE.test(node.type.getText(sourceFile))) names.add(node.name.text);
-      else if (node.initializer !== undefined) pending.push({ name: node.name.text, init: node.initializer });
+    if (ts.isParameter(node) || ts.isVariableDeclaration(node)) {
+      const bound = boundNames(node.name);
+      if (node.type !== undefined && MEMORY_TYPE.test(node.type.getText(sourceFile))) for (const name of bound) names.add(name);
+      else if (node.initializer !== undefined) for (const name of bound) pending.push({ name, init: node.initializer });
     }
     if (ts.isForOfStatement(node) && ts.isVariableDeclarationList(node.initializer)) {
       for (const declaration of node.initializer.declarations) {
-        if (ts.isIdentifier(declaration.name)) pending.push({ name: declaration.name.text, init: node.expression });
+        for (const name of boundNames(declaration.name)) pending.push({ name, init: node.expression });
       }
     }
   });
@@ -846,19 +912,23 @@ function memoryNames(sourceFile) {
     for (const { name, init } of pending) {
       if (names.has(name)) continue;
       const root = rootName(init);
-      if (MEMORY_READ.test(init.getText(sourceFile)) || (root !== null && names.has(root))) {
+      if (MEMORY_READ.test(init.getText(sourceFile)) || readsRow(init) || (root !== null && names.has(root))) {
         names.add(name);
         grew = true;
       }
     }
   }
-  return names;
+  return { names, readsRow };
 }
 
 /** Whether a write's first argument is an id the AST ties to `wren_memory` (the id-only `patch(id, v)` form). */
-function isMemoryId(node, names, sourceFile) {
+function isMemoryId(node, { names, readsRow }, sourceFile) {
   const root = rootName(node);
-  return (root !== null && names.has(root)) || MEMORY_READ.test(node.getText(sourceFile));
+  if ((root !== null && names.has(root)) || MEMORY_READ.test(node.getText(sourceFile))) return true;
+  // Inline: `(await readWrenMemory(ctx, b))._id`.
+  let base = unwrap(node);
+  while (ts.isPropertyAccessExpression(base) || ts.isElementAccessExpression(base)) base = unwrap(base.expression);
+  return readsRow(base);
 }
 
 /** Rule M5 for one file: a `wren_memory` write outside `MEMORY_WRITER`. */
@@ -985,6 +1055,12 @@ test("fixtures: the repo-wide memory-writer scan catches a write elsewhere (M5)"
     legacyGet: "export async function f(ctx, id){ const row = await ctx.db.get(\"wren_memory\", id); await ctx.db.patch(row._id, {}); }",
     legacyInline: "export async function f(ctx){ await ctx.db.delete((await ctx.db.query(\"wren_memory\").first())._id); }",
     legacyViaCall: "export async function f(ctx, id: Id<\"wren_memory\">){ await ctx.db.delete.call(ctx.db, id); }",
+    // Last round: a row from the writer's exported reader, and destructuring.
+    importedReader: "import { readWrenMemory } from \"./wrenMemory\"; export async function f(ctx, b){ const row = await readWrenMemory(ctx, b); if (row) await ctx.db.patch(row._id, { facts: [] }); }",
+    importedReaderAlias: "import { readWrenMemory as load } from \"./wrenMemory\"; export async function f(ctx, b){ const row = await load(ctx, b); await ctx.db.delete(row!._id); }",
+    importedReaderNamespace: "import * as memory from \"./wrenMemory\"; export async function f(ctx, b){ const row = await memory.readWrenMemory(ctx, b); await ctx.db.replace(row._id, {}); }",
+    importedReaderInline: "import { readWrenMemory } from \"./wrenMemory\"; export async function f(ctx, b){ await ctx.db.delete((await readWrenMemory(ctx, b))!._id); }",
+    destructured: "export async function f(ctx){ const { _id } = await ctx.db.query(\"wren_memory\").first(); await ctx.db.delete(_id); }",
   };
   for (const [label, source] of Object.entries(offenders)) {
     assert.notDeepEqual(scanMemoryWriters(`convex/workspace/other-${label}.ts`, source), [], label);
@@ -995,6 +1071,12 @@ test("fixtures: the repo-wide memory-writer scan catches a write elsewhere (M5)"
     "async function w(ctx, table, id, v){ await ctx.db.patch(table, id, v); } export async function f(ctx, id){ await w(ctx, \"wren_memory\", id, {}); }",
     "const A = [\"wren_memory\", 1, {}]; export async function f(ctx){ await ctx.db.patch(...A); }",
   ]) assert.deepEqual(scanMemoryWriters("convex/workspace/other-limit.ts", source), [], source);
+  // The writer's row readers are found from its source.
+  assert.ok(memoryRowReaders().has("readWrenMemory"));
+  assert.ok(!memoryRowReaders().has("pairedFounderMessage"));
+  // A chat row from the writer's pair matcher is not a memory row.
+  assert.deepEqual(scanMemoryWriters("convex/workspace/other-pair.ts",
+    "import { pairedFounderMessage } from \"./wrenMemory\"; export async function f(ctx, r){ const founder = await pairedFounderMessage(ctx, r); await ctx.db.patch(founder._id, {}); }"), []);
   // Id-only writes to other tables are fine, even next to a memory read.
   assert.deepEqual(scanMemoryWriters("convex/workspace/other-ok.ts",
     "export async function f(ctx, msg: Id<\"chat_messages\">){ const m = await ctx.db.query(\"wren_memory\").first(); const row = await ctx.db.get(\"chat_messages\", msg); await ctx.db.patch(row._id, {}); return m; }"), []);
