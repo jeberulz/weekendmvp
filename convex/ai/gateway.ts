@@ -72,6 +72,9 @@
  *   `WorkspaceGateErrorData` (`isGatewayErrorData`) end the run
  *   `meter_refused`. From `reserve`, nothing was created; from `markSent`, the
  *   row is failed `billed: "none"` (charged 0) and nothing is sent.
+ * - **Streaming is display only (WP77-S3).** `onTextDelta` makes the adapter
+ *   stream and tags each delta with its attempt; the settle, the schema check
+ *   and the re-ask use the final message exactly as an unstreamed call does.
  * - **The router decides the call.** `resolveText` takes the model, effort,
  *   thinking, max tokens, mode and input ceiling from `routeSpec`, which
  *   re-validates the spec; a spec the router rejects is a `config` failure.
@@ -121,6 +124,7 @@ import {
   isProviderError,
   type ImageResult,
   type ProviderErrorKind,
+  type TextCallHooks,
   type TextRequest,
   type TextResult,
   type TextSystemBlock,
@@ -147,9 +151,12 @@ export type MeterPort = {
   fail(args: FailArgs): Promise<FinalizeResult>;
 };
 
-/** The Claude adapter's one method (`createAnthropicAdapter` satisfies it). */
+/**
+ * The Claude adapter's one method (`createAnthropicAdapter` satisfies it).
+ * `hooks` is passed only when the caller asked for text deltas (WP77-S3).
+ */
 export type TextAdapterPort = {
-  complete(request: TextRequest): Promise<TextResult>;
+  complete(request: TextRequest, hooks?: TextCallHooks): Promise<TextResult>;
 };
 
 /** An image adapter's one method (`createOpenAiImagesAdapter`, `createRecraftAdapter`). */
@@ -235,7 +242,38 @@ export type TextGatewayInput<TInput, TOutput> = {
   readonly businessContext?: string;
   readonly timeoutMs?: number;
   readonly signal?: AbortSignal;
+  /**
+   * WP77-S3. Text deltas as they stream, tagged with the attempt number, so a
+   * caller can show a reply while it is written and start over on the re-ask.
+   * Display only: it never changes what is reserved, sent, validated or
+   * charged, and a throwing sink is ignored (`streamHooksFor`).
+   */
+  readonly onTextDelta?: (event: TextDeltaEvent) => void;
 };
+
+/** One streamed text delta and the attempt it belongs to. */
+export type TextDeltaEvent = { readonly attempt: number; readonly delta: string };
+
+/**
+ * The adapter hooks for one attempt, or undefined when the caller wants no
+ * deltas (the adapter then makes its unstreamed call, unchanged). A sink that
+ * throws is swallowed here, so it cannot fail a call that was already billed.
+ */
+export function streamHooksFor(
+  sink: ((event: TextDeltaEvent) => void) | undefined,
+  attempt: number,
+): TextCallHooks | undefined {
+  if (sink === undefined) return undefined;
+  return {
+    onTextDelta: (delta) => {
+      try {
+        sink({ attempt, delta });
+      } catch {
+        // Display only: the final message is the record.
+      }
+    },
+  };
+}
 
 /** One `ai_usage` row this run created and finalised, as C-METER reported it. */
 export type GatewayAttempt = {
@@ -1046,10 +1084,11 @@ export async function runTextGateway<TInput, TOutput>(
     }
 
     const sent = request;
+    const hooks = streamHooksFor(input.onTextDelta, attempt);
     const outcome = await runAttempt<TextResult, TextRunValue<TOutput>>(deps, {
       attempt,
       reserve,
-      call: () => deps.adapter.complete(sent),
+      call: () => (hooks === undefined ? deps.adapter.complete(sent) : deps.adapter.complete(sent, hooks)),
       knownCost: (result) => crossCheckedTextCost(model, result),
       classify: (error) => classifyError(error, "anthropic", (usage) => repriceTextUsage(model, usage)),
       read: (result) => {

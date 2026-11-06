@@ -206,14 +206,48 @@ function abortError(signal: AbortSignal): Error {
   return signal.reason instanceof Error ? signal.reason : new Error("aborted");
 }
 
-/** A Messages client that answers from fixtures. Honours an already-aborted signal. */
+/** WP77-S3: fixture text deltas are cut into pieces of this many characters. */
+export const FIXTURE_STREAM_CHUNK_CHARS = 16;
+
+/** A reply's text in fixed-size pieces, as a stream would deliver it. */
+export function fixtureTextChunks(text: string, size = FIXTURE_STREAM_CHUNK_CHARS): string[] {
+  const chunks: string[] = [];
+  for (let i = 0; i < text.length; i += size) chunks.push(text.slice(i, i + size));
+  return chunks;
+}
+
+/**
+ * A Messages client that answers from fixtures. Honours an already-aborted
+ * signal. `stream` (WP77-S3) builds the same message as `create` and emits its
+ * text in `FIXTURE_STREAM_CHUNK_CHARS` pieces before `finalMessage` resolves,
+ * so the streaming path is exercised offline with the same reply.
+ */
 export function createFixtureAnthropicClient(responder?: AnthropicFixtureResponder): AnthropicMessagesClient {
+  const reply = async (params: Anthropic.MessageCreateParamsNonStreaming, options?: AnthropicRequestOptions) => {
+    if (options?.signal?.aborted) throw abortError(options.signal);
+    return buildMessage(params, (await responder?.(params)) ?? {});
+  };
   return {
     messages: {
-      async create(params, options?: AnthropicRequestOptions) {
-        if (options?.signal?.aborted) throw abortError(options.signal);
-        const reply = (await responder?.(params)) ?? {};
-        return buildMessage(params, reply);
+      create: reply,
+      stream(params, options?: AnthropicRequestOptions) {
+        const listeners: ((textDelta: string) => void)[] = [];
+        return {
+          on(_event: "text", listener: (textDelta: string) => void) {
+            listeners.push(listener);
+            return undefined;
+          },
+          async finalMessage() {
+            const message = await reply(params, options);
+            for (const block of message.content) {
+              if (block.type !== "text") continue;
+              for (const chunk of fixtureTextChunks(block.text)) {
+                for (const listener of listeners) listener(chunk);
+              }
+            }
+            return message;
+          },
+        };
       },
     },
   };

@@ -36,6 +36,16 @@ import {
   type ApprovalSubject,
   type ApprovalSubjectTable,
 } from "../../lib/workspace/contracts/approvals";
+import { jobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
+import { spendTermsFor, type ChangeRoundDecision } from "../../lib/workspace/changeRounds";
+import {
+  cardRoundWasReleased,
+  changeRoundOutcomeValidator,
+  insertRevisionTask,
+  resolveChangeRound,
+  type ArtifactLineage,
+  type ChangeRoundOutcome,
+} from "./changeRounds";
 
 /**
  * WP77-S1 — C-APPROVAL. The only gate for side effects (`02` §4.2, §14).
@@ -45,7 +55,8 @@ import {
  * Internal: `createApproval` (generators, Codex flows), `expireStaleApprovals`
  * (cron target, an action looping `expireStaleApprovalsBatch`), `checkApproved`
  * (the action-side wrapper of `assertApproved`).
- * Helpers for other Convex code: `createApprovalRecord`, `assertApproved`.
+ * Helpers for other Convex code: `createApprovalRecord`, `assertApproved`, and
+ * (read only, WP77-S4) `readSubjectState` / `subjectRefusal`.
  *
  * `assertApproved(ctx, approvalId, subject)` — call it inside the mutation that
  * records the side effect, BEFORE patching the subject in that mutation:
@@ -77,6 +88,19 @@ import {
  * consumed by the side-effect mutation; until `approvals.consumedAt` exists the
  * caller's own idempotency is the only consumption. `spend` subjects must carry
  * `expectedCostCredits` and `expectedChangeRound`, matched against the card.
+ *
+ * WP77-S2 change rounds (D17): "Ask for changes" on an `artifact_review` card
+ * runs `resolveChangeRound` in the same mutation. Rounds 1 and 2 close the card
+ * (`changes_requested`, the founder's note kept as data) and queue a free
+ * revision task. Round 3+ closes the card and raises (or reuses) one `spend`
+ * card on the revised document with the C-JOBS price and the round; nothing is
+ * debited here; the spend card carries the founder's note. Asking again on a
+ * `changes_requested` review card raises a fresh spend card only when the round
+ * is still paid and no live, unchanged one exists (after a decline, an expiry
+ * or a document change). A round that is not available (`PRICE_NOT_SET`, plan gated, a
+ * draft still in progress, a stale draft, no task lineage) changes nothing and
+ * returns `not_available`. The paid round's debit site calls
+ * `assertPaidRevisionApproved` (below) in the debit mutation.
  */
 
 // ---------------------------------------------------------------------------
@@ -123,6 +147,8 @@ const decisionResultValidator = v.object({
   approvalId: v.id("approvals"),
   status: approvalStatusValidator,
   changed: v.boolean(),
+  /** WP77-S2: set when "Ask for changes" on an `artifact_review` card ran the round logic. */
+  changeRound: v.optional(changeRoundOutcomeValidator),
 });
 
 const approvedSummaryValidator = v.object({
@@ -159,7 +185,7 @@ const KIND_FEATURE: Record<ApprovalKind, WorkspaceFeature> = {
 // Subject state (existence, business chain, version timestamps)
 // ---------------------------------------------------------------------------
 
-type SubjectState =
+export type SubjectState =
   | { readonly found: false; readonly reason: "invalid_id" | "missing" | "unsupported" }
   | {
     readonly found: true;
@@ -207,7 +233,8 @@ async function optionalDocumentTimes(
   return time === null ? null : [time];
 }
 
-async function readSubjectState(
+/** WP77-S4: exported so Wren's card handler checks a subject with S1's own rules before reusing a card. */
+export async function readSubjectState(
   ctx: ReadCtx,
   ownerId: Id<"users">,
   projectId: Id<"projects">,
@@ -326,7 +353,7 @@ async function readSubjectState(
  * `approvedAt` is the approval's `createdAt` for the version check; pass the
  * approval id to also refuse a subject row that links to a different approval.
  */
-function subjectRefusal(
+export function subjectRefusal(
   state: SubjectState,
   kind: ApprovalKind,
   approvedAt: number,
@@ -453,6 +480,12 @@ export type CreateApprovalInput = {
   readonly changeRound?: bigint;
   /** Required (positive) for `spend`, refused on every other kind: the C-JOBS price. */
   readonly costCredits?: bigint;
+  /**
+   * WP77-S2: `spend` only. The founder's "Ask for changes" note copied from the
+   * review card, so the paid revision task's card holds its note (data, never
+   * instructions). Normalised like a decision note; refused on other kinds.
+   */
+  readonly note?: string;
 };
 
 /**
@@ -469,6 +502,9 @@ export async function createApprovalRecord(
 ): Promise<{ approvalId: Id<"approvals">; created: boolean }> {
   const changeRound = input.changeRound ?? 0n;
   if (changeRound < 0n || !approvalCostFitsKind(input.kind, input.costCredits)) return refuse("APPROVAL_INVALID_INPUT");
+  const note = normalizeApprovalNote(input.note);
+  if (note === null) return refuse("APPROVAL_INVALID_NOTE");
+  if (note !== undefined && input.kind !== "spend") return refuse("APPROVAL_INVALID_INPUT");
   await requireBusinessForOwner(ctx, input.projectId, input.ownerId);
   await assertFeatureEnabledForOwner(ctx, "workspace", input.ownerId);
   if (!isSubjectTableAllowed(input.kind, input.subjectTable)) return refuse("APPROVAL_INVALID_SUBJECT");
@@ -523,6 +559,7 @@ export async function createApprovalRecord(
     status: "pending",
     changeRound,
     ...(input.costCredits === undefined ? {} : { costCredits: input.costCredits }),
+    ...(note === undefined ? {} : { note }),
     createdAt: now,
     updatedAt: now,
   });
@@ -574,6 +611,263 @@ export const listPendingApprovals = query({
   },
 });
 
+// ---------------------------------------------------------------------------
+// WP77-S2: change rounds
+// ---------------------------------------------------------------------------
+
+type DecisionResult = {
+  approvalId: Id<"approvals">;
+  status: Doc<"approvals">["status"];
+  changed: boolean;
+  changeRound?: ChangeRoundOutcome;
+};
+
+/** Most approval rows one revised document's history may hold before a paid round fails closed. */
+export const SPEND_CARD_HISTORY_MAX = 100;
+
+/**
+ * The live `spend` card for this exact paid round, if one exists: same revised
+ * document, round and price, still pending (fresh) or approved, and the
+ * document unchanged since the card was raised. Reusing it (instead of
+ * `createApprovalRecord`, which would supersede an approved card) keeps a
+ * repeated request from raising a second card or revoking an approved one. A
+ * card whose document changed is not reused; `createApprovalRecord` then
+ * supersedes it. The read is capped at `SPEND_CARD_HISTORY_MAX` rows of the
+ * document's approval history and fails closed past it
+ * (`CHANGE_ROUND_HISTORY_LIMIT`) until Codex's `by_subjectId_and_kind` index lets
+ * it read spend cards only.
+ */
+async function liveSpendCard(
+  ctx: MutationCtx,
+  lineage: ArtifactLineage,
+  changeRound: bigint,
+  costCredits: bigint,
+  now: number,
+): Promise<Doc<"approvals"> | null> {
+  const history = await ctx.db.query("approvals")
+    .withIndex("by_subjectId", (q) => q.eq("subjectId", lineage.revisedDocumentId))
+    .take(SPEND_CARD_HISTORY_MAX + 1);
+  if (history.length > SPEND_CARD_HISTORY_MAX) throw new ConvexError({ code: "CHANGE_ROUND_HISTORY_LIMIT" });
+  const state = await readSubjectState(ctx, lineage.ownerId, lineage.projectId, "documents", lineage.revisedDocumentId);
+  if (!state.found) return null;
+  return history.find((card) =>
+    card.kind === "spend" &&
+    card.subjectTable === "documents" &&
+    card.projectId === lineage.projectId &&
+    card.ownerId === lineage.ownerId &&
+    card.changeRound === changeRound &&
+    card.costCredits === costCredits &&
+    (card.status === "approved" || (card.status === "pending" && !isPendingApprovalStale(card.createdAt, now))) &&
+    isSubjectUnchangedSince(state.writeTimes, card.createdAt)) ?? null;
+}
+
+/**
+ * Raises (or reuses) the `spend` card for a paid round. `changed` is true when
+ * a new card was written. The founder's note is copied onto a new card.
+ */
+async function raiseSpendCard(
+  ctx: MutationCtx,
+  lineage: ArtifactLineage,
+  decision: Extract<ChangeRoundDecision, { decision: "spend" }>,
+  note: string | undefined,
+  founder: { type: "user"; userId: Id<"users"> },
+  now: number,
+): Promise<{ spendApprovalId: Id<"approvals">; created: boolean }> {
+  const terms = spendTermsFor(decision);
+  const existing = await liveSpendCard(ctx, lineage, terms.expectedChangeRound, terms.expectedCostCredits, now);
+  if (existing !== null) return { spendApprovalId: existing._id, created: false };
+  const { approvalId, created } = await createApprovalRecord(ctx, {
+    ownerId: lineage.ownerId,
+    projectId: lineage.projectId,
+    kind: "spend",
+    subjectTable: "documents",
+    subjectId: lineage.revisedDocumentId,
+    changeRound: terms.expectedChangeRound,
+    costCredits: terms.expectedCostCredits,
+    ...(note === undefined ? {} : { note }),
+  });
+  if (created) {
+    const spendCard = await ctx.db.get("approvals", approvalId);
+    if (spendCard !== null) await auditApproval(ctx, spendCard, "approval.spend_raised", founder, now);
+  }
+  return { spendApprovalId: approvalId, created };
+}
+
+/**
+ * "Ask for changes" on a pending, fresh `artifact_review` card. Exactly once:
+ * the card moves out of `pending` in the same transaction as the round starts.
+ * Two requests on different cards of the same artifact conflict on the lineage
+ * read, and the second finds the first round queued (`busy`).
+ */
+async function requestArtifactChanges(
+  ctx: MutationCtx,
+  approval: Doc<"approvals">,
+  note: string | undefined,
+  founder: { type: "user"; userId: Id<"users"> },
+  now: number,
+): Promise<DecisionResult> {
+  const resolution = await resolveChangeRound(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
+  if (!resolution.ok) {
+    return { approvalId: approval._id, status: approval.status, changed: false, changeRound: { outcome: "not_available", reason: resolution.reason } };
+  }
+  const { lineage, decision } = resolution;
+  if (decision.decision === "not_available") {
+    return {
+      approvalId: approval._id,
+      status: approval.status,
+      changed: false,
+      changeRound: { outcome: "not_available", reason: decision.reason, changeRound: decision.changeRound },
+    };
+  }
+
+  await ctx.db.patch("approvals", approval._id, {
+    status: "changes_requested",
+    decidedAt: now,
+    updatedAt: now,
+    ...(note === undefined ? {} : { note }),
+  });
+
+  if (decision.decision === "free") {
+    const taskId = await insertRevisionTask(ctx, {
+      lineage, changeRound: decision.changeRound, creditCost: 0n, approvalId: approval._id, now,
+    });
+    return {
+      approvalId: approval._id,
+      status: "changes_requested",
+      changed: true,
+      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId },
+    };
+  }
+
+  const { spendApprovalId } = await raiseSpendCard(ctx, lineage, decision, note, founder, now);
+  return {
+    approvalId: approval._id,
+    status: "changes_requested",
+    changed: true,
+    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId },
+  };
+}
+
+/**
+ * "Ask for changes" again on a `changes_requested` review card. It does one of
+ * two things, and nothing else:
+ * - Paid round: gives the round its spend card back after the founder declined
+ *   it, it expired, or the document changed. When the round is still paid and
+ *   no live, unchanged spend card exists, it raises a fresh one (the new note,
+ *   else the review card's note). With a live card it returns that card and
+ *   writes nothing.
+ * - Free round retry: when this card's own free revision failed or was
+ *   cancelled (C-JOBS gives the round back), it starts that same round again
+ *   with a new zero-cost revision task, as the first ask did. A new note
+ *   replaces the card's note (the task reads the note from this card).
+ * Every other case (a draft queued or running, a newer draft, a free round this
+ * card never started or that finished, not available) is S1's plain no-op, so
+ * a double click never starts a second round: once the retry is queued the
+ * artifact is `busy`.
+ */
+async function reaskChangeRound(
+  ctx: MutationCtx,
+  approval: Doc<"approvals">,
+  note: string | undefined,
+  founder: { type: "user"; userId: Id<"users"> },
+  now: number,
+): Promise<DecisionResult> {
+  const noop: DecisionResult = { approvalId: approval._id, status: approval.status, changed: false };
+  const resolution = await resolveChangeRound(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
+  if (!resolution.ok) return noop;
+  const { lineage, decision } = resolution;
+  if (decision.decision === "free") {
+    if (!(await cardRoundWasReleased(ctx, lineage, decision.changeRound, approval._id))) return noop;
+    if (note !== undefined && note !== approval.note) {
+      await ctx.db.patch("approvals", approval._id, { note, updatedAt: now });
+    }
+    const taskId = await insertRevisionTask(ctx, {
+      lineage, changeRound: decision.changeRound, creditCost: 0n, approvalId: approval._id, now,
+    });
+    return {
+      approvalId: approval._id,
+      status: approval.status,
+      changed: true,
+      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId },
+    };
+  }
+  if (decision.decision !== "spend") return noop;
+  const { spendApprovalId, created } = await raiseSpendCard(ctx, lineage, decision, note ?? approval.note, founder, now);
+  return {
+    approvalId: approval._id,
+    status: approval.status,
+    changed: created,
+    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId },
+  };
+}
+
+export type PaidRevisionTerms = {
+  readonly approval: Doc<"approvals">;
+  readonly lineage: ArtifactLineage;
+  readonly jobType: JobType;
+  readonly changeRound: number;
+  readonly costCredits: number;
+  readonly action: CreditActionKey;
+  /** The C-JOBS key the paid revision task must use. */
+  readonly jobKey: string;
+};
+
+/**
+ * The check a paid change round's debit site runs, in the SAME mutation that
+ * inserts the revision task and debits it (C-JOBS: debit at job start):
+ *
+ *   const paid = await assertPaidRevisionApproved(ctx, spendApprovalId, { projectId, documentId });
+ *   const taskId = await insertRevisionTask(ctx, {
+ *     lineage: paid.lineage, changeRound: paid.changeRound, creditCost: BigInt(paid.costCredits),
+ *     approvalId: paid.approval._id, now,
+ *   });
+ *   // then Codex's debit for taskId (`task-debit:{taskId}`), same mutation.
+ *
+ * It recomputes the round and the C-JOBS price from the artifact's tasks (never
+ * from the card) and passes them to `assertApproved` as the spend terms, so the
+ * card must be an approved `spend` card for exactly this document, round and
+ * price. Once the paid task is inserted the artifact is `busy` and then on the
+ * next round, so the same card can never pay twice; if the job fails and is
+ * refunded, the round is given back and a retry may debit again under it.
+ * Throws `APPROVAL_TERMS_MISMATCH` when the round is no longer a paid round
+ * with these terms, and every `assertApproved` refusal otherwise.
+ */
+export async function assertPaidRevisionApproved(
+  ctx: QueryCtx,
+  spendApprovalId: Id<"approvals">,
+  target: { readonly projectId: Id<"projects">; readonly documentId: Id<"documents"> },
+): Promise<PaidRevisionTerms> {
+  const normalized = ctx.db.normalizeId("approvals", spendApprovalId);
+  const card = normalized === null ? null : await ctx.db.get("approvals", normalized);
+  if (card === null) return refuse("APPROVAL_NOT_FOUND");
+  await assertFeatureEnabledForOwner(ctx, "workspace", card.ownerId);
+  if (card.projectId !== target.projectId) return refuse("APPROVAL_PROJECT_MISMATCH");
+
+  const resolution = await resolveChangeRound(ctx, card.ownerId, target.projectId, "documents", target.documentId);
+  if (!resolution.ok || resolution.decision.decision !== "spend" || resolution.lineage.revisedDocumentId !== target.documentId) {
+    return refuse("APPROVAL_TERMS_MISMATCH");
+  }
+  const decision = resolution.decision;
+  const approval = await assertApproved(ctx, card._id, {
+    projectId: target.projectId,
+    kind: "spend",
+    subjectTable: "documents",
+    subjectId: target.documentId,
+    ownerId: card.ownerId,
+    ...spendTermsFor(decision),
+  });
+  const { lineage } = resolution;
+  return {
+    approval,
+    lineage,
+    jobType: lineage.jobType,
+    changeRound: decision.changeRound,
+    costCredits: decision.costCredits,
+    action: decision.action,
+    jobKey: jobKey(lineage.projectId, lineage.jobType, lineage.subject, decision.changeRound),
+  };
+}
+
 /** Kinds whose decisions go to the security log (`02` §4.1: approvals that send or spend). */
 const AUDITED_KINDS: ReadonlySet<ApprovalKind> = new Set(["send", "post", "publish", "spend", "ad_launch", "upgrade"]);
 
@@ -611,6 +905,9 @@ export const decideApproval = mutation({
     const target = APPROVAL_DECISION_STATUS[args.decision];
     const now = Date.now();
     if (approval.status !== "pending") {
+      if (approval.status === "changes_requested" && approval.kind === "artifact_review" && args.decision === "request_changes") {
+        return await reaskChangeRound(ctx, approval, note, founder, now);
+      }
       if (approval.status === target) return { approvalId: approval._id, status: approval.status, changed: false };
       if (approval.status === "approved" && args.decision === "cancel") {
         // Revocation: blocks every later side effect; one already performed stays done.
@@ -625,6 +922,10 @@ export const decideApproval = mutation({
     if (isPendingApprovalStale(approval.createdAt, now)) {
       await ctx.db.patch("approvals", approval._id, { status: "expired", decidedAt: now, updatedAt: now });
       return { approvalId: approval._id, status: "expired" as const, changed: true };
+    }
+
+    if (args.decision === "request_changes" && approval.kind === "artifact_review") {
+      return await requestArtifactChanges(ctx, approval, note, founder, now);
     }
 
     if (args.decision === "approve") {

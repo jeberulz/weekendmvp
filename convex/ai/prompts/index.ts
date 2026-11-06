@@ -23,6 +23,13 @@
 
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
+import { wrenChatSpec } from "./wrenChat.ts";
+import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
+
+const WREN_SAMPLE = {
+  message: "Can we move the launch email to Sunday morning?",
+  history: ["founder: The brand kit looks good.", "wren: Great. The landing page is next."],
+} as const;
 
 export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
   promptEntry(registryProbeSpec, {
@@ -30,4 +37,6 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     sampleInputs: { label: "registry probe sample" },
     internal: true,
   }),
+  promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),
+  promptEntry(wrenPlanTurnSpec, { module: "convex/ai/prompts/wrenPlanTurn.ts", sampleInputs: WREN_SAMPLE }),
 ]);
