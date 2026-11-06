@@ -37,3 +37,25 @@ Append-only progress log. Claims must cite checks or code evidence.
 
 - Added a pure Web Crypto capability helper: 256-bit URL-safe token, strict input shape and SHA-256 digest with purpose separation. Only digests may be written to `lead_email_tokens`; the raw value exists only for the confirmation/unsubscribe URL.
 - This is the independent portion of S4. Issuing, consuming and purging token rows waits for PR #195's merged C-DATA; the `/u/{token}` page needs a founder-facing wireframe before UI implementation per `AGENTS.md` preferences. The opt-in email flow also waits for WP78's real-lead capture interface.
+
+## 2026-11-06 — WP79-S3 cap decision primitive
+
+- Reads the merged C-JOBS `tenantEmailSends` reference: Free 50 lifetime hard, Builder's Hub 5,000/month soft, Growth 20,000/month soft. All tenant enqueues, including double opt-in confirmation, count. Lifetime history includes prior paid use, so downgrading cannot reset the Free ceiling.
+- The pure cap helper and UTC month key are ready. The sender mutation must read exact ShardedCounter totals, reject Free at 50 before enqueue, increment lifetime and month keys in the same top-level transaction as the component enqueue, and write a warning at a paid soft threshold. Installed component docs say an exact `count()` in a mutation reads all shards and creates an OCC dependency; concurrent 49→50 attempts must be tested, along with rollback on component failure.
+- Owner ruled that token-validated, rate-limited unsubscribe, valid opt-in confirmation, and verified bounce/complaint callback may record state while workspace/email is off. These exceptions never enqueue or activate; sender and confirmation enqueue remain gated. Claude orchestrator must append both shutdown rulings to `docs/wp/RULINGS.md` before the runtime slice merges.
+
+## 2026-11-06 — WP79-S3 review follow-up
+
+- Added a paid monthly-reset test: lifetime sends can exceed the paid monthly threshold while the current UTC month's count is zero or below the threshold, without warning. The threshold warns only when the current month's count reaches it.
+- The earlier line treating all prior paid sends as part of Free's 50 after downgrade is a conservative implementation assumption, **pending an owner ruling**. PR #199 remains draft and must not merge on that assumption until the owner decides. Confirmation messages count toward the plan's send cap under D6's unqualified 50-send limit.
+
+## 2026-11-06 — C-APPROVAL integration blocker
+
+- WP77-S1's current `assertApproved` checks `sequences.updatedAt`. `activateSequence` must patch sequence status/updatedAt, so the same approved sequence appears stale on a later sender tick. PR #195 adds optional `approvals.subjectVersion` to C-DATA but does not implement capture or comparison. WP77 must supply a content fingerprint over the sequence's steps/documents that remains stable across status-only patches and changes on any content edit, then merge that C-APPROVAL implementation before WP79-S2/S3 runtime uses it. WP79 will not infer ongoing permission from a status field or skip the recheck.
+
+## 2026-11-06 — Owner decisions on cap and contact deletion
+
+- The owner confirmed that **every prior tenant send**, including sends made during a paid period, counts toward Free's 50 lifetime sends after downgrade. This resolves the pending interpretation in the S3 review follow-up; the pure cap helper in draft PR #199 matches the ruling. Every tenant Resend enqueue, including opt-in confirmation, consumes the applicable allowance. Runtime counter/enqueue integration and concurrency tests are still required.
+- The owner accepted D5 deletion with immediate lead/contact erasure, token invalidation, enrollment revocation and queued-send cancellation, followed by scheduled cleanup of finalized Convex Resend component records after seven days. Resend's provider-side sent-email content and logs may remain for 30 days in the US; this limit must be disclosed in the contact deletion flow and retention policy. Already-sent email cannot be recalled. This is an accepted retention limit, not a claim of immediate erasure from the provider.
+- Non-sending component cleanup may run while workspace/email is off. Only expiry and retention cron work has this narrow shutdown exception; no sender, activation, or confirmation enqueue gains it. Add periodic `cleanupOldEmails` and abandoned-email cleanup after the component contract and cron dependencies land, with tests that these paths cannot enqueue.
+- Claude orchestrator must append these cap, D5 retention, and cleanup-shutdown rulings to Claude-owned `docs/wp/RULINGS.md` and acknowledge the WP79 handoff before the affected runtime slices merge. WP79 does not edit that file. The C-APPROVAL content-fingerprint blocker above remains open.
