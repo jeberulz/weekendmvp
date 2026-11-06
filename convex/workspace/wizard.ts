@@ -5,7 +5,11 @@ import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/
 import { assertFeatureEnabled } from "../ops/settings";
 import { checkLimit } from "../platform/limits";
 import { isEngineDraftSlug } from "../platform/catalogPolicy";
-import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../platform/authz";
+import {
+  requireCurrentPlatformUser,
+  requireCurrentPlatformUserForMutation,
+  requireOwnedWizardSession,
+} from "../platform/authz";
 import schema from "../schema";
 import {
   WIZARD_STEPS,
@@ -35,8 +39,12 @@ import { mirrorSignal, recordFounderSignal } from "./signals";
  * Rules:
  * - Every public function checks the C-OPS `workspace` feature and cohort
  *   (`assertFeatureEnabled`) and the signed-in user (C-AUTHZ
- *   `requireCurrentPlatformUser*`). A session is owner-only: a missing session
- *   and someone else's session answer the same `RESOURCE_NOT_FOUND`.
+ *   `requireCurrentPlatformUser*`). A call on an existing session goes
+ *   through C-AUTHZ `requireOwnedWizardSession`: owner-only, never abandoned,
+ *   and a session that already made its business only where `allowLinked`
+ *   says so (`getSession`, and the `createBusiness` replay). A missing
+ *   session, someone else's, and a linked one whose business is missing,
+ *   archived or not linked back all answer the same `RESOURCE_NOT_FOUND`.
  * - Writers store only `wizardAnswersProgressSchema.parse()` output, and
  *   completion stores `wizardAnswersSchema.parse()` output, so the blueprint
  *   must be accepted (`looks_good`). `step` is the C-WIZARD step key.
@@ -167,10 +175,6 @@ function sessionStep(session: Doc<"wizard_sessions">): WizardStep {
   return isWizardStep(session.step) ? session.step : "idea";
 }
 
-function isActive(session: Doc<"wizard_sessions">): boolean {
-  return session.abandonedAt === undefined && session.projectId === undefined;
-}
-
 /**
  * The library idea's public row, or null when unknown, removed or an engine
  * draft (`engine-draft-*`: never an entry point, WP54-S5), so neither the
@@ -204,34 +208,6 @@ function storedAnswers(session: Doc<"wizard_sessions">): WizardAnswersProgress {
 function sessionIdea(answers: WizardAnswersProgress): WizardIdea {
   if (!answers.idea) throw new ConvexError({ code: "INVALID_ANSWER", message: "idea: missing" });
   return answers.idea;
-}
-
-/**
- * C-AUTHZ for an existing session: the signed-in user (expiry-aware in
- * mutations, clock-free in queries) must own it, and it must still be active.
- * A missing session and someone else's look the same.
- *
- * `allowLinked` also accepts a session that already created its business
- * (`projectId` set, WP74-S4): `getSession` shows it and `createBusiness`
- * returns that business again. Abandoned sessions are always refused.
- *
- * Same shape as the planned `requireOwnedWizardSession(ctx, sessionId)` in
- * `convex/platform/authz.ts` (Codex): swapping is the import plus this name at
- * each call site.
- */
-export async function ownedWizardSession(
-  ctx: Pick<QueryCtx, "auth" | "db"> | MutationCtx,
-  sessionId: Id<"wizard_sessions">,
-  options: { readonly allowLinked?: boolean } = {},
-): Promise<Doc<"wizard_sessions">> {
-  const user = "scheduler" in ctx
-    ? await requireCurrentPlatformUserForMutation(ctx)
-    : await requireCurrentPlatformUser(ctx);
-  const session = await ctx.db.get("wizard_sessions", sessionId);
-  if (session === null || session.ownerId !== user._id) return deny("RESOURCE_NOT_FOUND");
-  const usable = options.allowLinked === true ? session.abandonedAt === undefined : isActive(session);
-  if (!usable) return deny("RESOURCE_NOT_FOUND");
-  return session;
 }
 
 /**
@@ -479,7 +455,7 @@ export const getSession = query({
   returns: sessionViewValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId, { allowLinked: true });
+    const session = await requireOwnedWizardSession(ctx, args.sessionId, { allowLinked: true });
     const answers = storedAnswers(session);
     const { seed, title } = await seedFor(ctx, sessionIdea(answers));
     const step = sessionStep(session);
@@ -510,7 +486,7 @@ export const saveStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId);
+    const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
     return await commitStep(ctx, session, args.step, args.answer, null);
@@ -523,7 +499,7 @@ export const skipStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId);
+    const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
     const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
@@ -541,7 +517,7 @@ export const rewriteStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId);
+    const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
     const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
@@ -561,7 +537,7 @@ export const goBack = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId);
+    const session = await requireOwnedWizardSession(ctx, args.sessionId);
     const step = sessionStep(session);
     if (args.step !== step) return unchanged(session);
     const now = Date.now();

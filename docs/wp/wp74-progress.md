@@ -529,3 +529,81 @@ rule cannot run in jsdom, hence the table above.
 - `EYEBROW` in `components/workspace/kit/styles.ts` is `home-ink-3` at 11px: passes (4.81 to 5.76) but only just on
   `sunk`. No change needed.
 - Not checked in a browser: real focus-ring rendering, zoom/reflow at 320px, VoiceOver reading order. Do one manual pass.
+
+## 2026-11-06 - Session guard moved to C-AUTHZ `requireOwnedWizardSession` (security follow-up)
+
+Branch `claude/wp74-owned-session` (from `origin/main` 2e1ecf4a), uncommitted.
+
+- What changed:
+  - `convex/workspace/wizard.ts`: the local `ownedWizardSession` stand-in and its only helper `isActive` are deleted.
+    `getSession` (with `allowLinked`), `saveStep`, `skipStep`, `rewriteStep` and `goBack` call
+    `requireOwnedWizardSession` from `convex/platform/authz.ts` (#209). The header rule names the shared guard.
+  - `convex/workspace/business.ts`: `createBusiness` calls `requireOwnedWizardSession(..., { allowLinked: true })`;
+    the import from `./wizard` is gone. `existingResult` also refuses an archived project. Six call sites in all (five in `wizard.ts`, one in `business.ts`), not seven.
+  - `tests/security/wp74-wizard-guards.test.mjs`: the session guard is now only `requireOwnedWizardSession`; only
+    `getSession` and `createBusiness` may pass `allowLinked`; neither file may define its own `*WizardSession` guard,
+    and both must import the shared one from `../platform/authz`. Checked by hand that adding `allowLinked` to
+    `saveStep` fails the scanner.
+  - `convex/workspace/business.test.ts`: new block "WP74 C-AUTHZ requireOwnedWizardSession on every session call"
+    (6 tests) covering a stranger, an abandoned session (unlinked and linked), a linked session refused by the four
+    edit calls and accepted by `getSession` and the `createBusiness` replay, a linked session whose business is
+    archived or deleted, a forged link (`workspace.wizardSessionId` names another session), and an archived keyed
+    project with the session link cleared (refused; the session stays unlinked and no project is made). Run against
+    the old helper, exactly the archived/deleted and forged-link tests fail; without the `existingResult` check, only
+    the keyed-archive test fails. All pass with both changes.
+- Behaviour differences and how each was decided:
+  1. Without `allowLinked`: the same set is refused. Old: owner mismatch, missing, or `!isActive` (abandoned or
+     `projectId` set). New: missing, owner mismatch, abandoned, or `projectId` set without `allowLinked`. Same user
+     resolution (expiry-aware in mutations, clock-free in queries) and the same `{ code: "RESOURCE_NOT_FOUND" }` error.
+     No change.
+  2. With `allowLinked`: stricter. A linked session now also needs its project to exist, belong to the same owner,
+     not be archived, and have `workspace.wizardSessionId` pointing back at the session. Accepted for both callers:
+     - `getSession`: before, an archived business still rendered "Business created. Meet your co-founder" for a
+       business no other workspace call will open (`requireBusinessAccess` refuses archived). Now the query throws and
+       `app/start/error.tsx` shows "We could not open this build" with "Start a new build", the same screen a stale
+       `?session=` link gets. A missing or mismatched project used to show the "Create my business" screen again
+       (`business: null`), whose button could only fail; it now shows the same error screen. `startOrResume` never
+       resumes linked sessions, so only a pinned `?session=` URL or an open tab reaches this.
+     - `createBusiness` replay: a missing project or another owner's already answered `RESOURCE_NOT_FOUND`
+       (`existingResult`). Two cases change. An archived business used to come back with `created: false`, which the
+       UI could not open. A forged link (the session points at the owner's business made by another session) used to
+       return that other session's business; now refused. The UI offers the button only when `getSession` shows no
+       business, so a founder reaches either only by a race or a hand-made link. Refusing matches every other
+       business call. `getSession` on a forged link likewise used to show the other session's business.
+     - No caller needs the old behaviour.
+     - Gap closed (coordinator's request, same change): the `idempotencyKey` fallback in `createBusiness` (session
+       link missing) used to return and relink a keyed project without checking `archivedAt`. `existingResult` now
+       also refuses `RESOURCE_NOT_FOUND` when `project.archivedAt !== undefined`, so neither path returns or relinks
+       an archived business. Nothing in production clears a session link, so this was unreachable, but the two paths
+       now agree.
+  3. Types: the shared helper takes `PlatformReadCtx | MutationCtx` (`PlatformReadCtx = Pick<QueryCtx, "auth" | "db">`),
+     the same type the local one took. Every call site passes a `QueryCtx` or `MutationCtx`; no casts, no `any`. Both
+     typechecks pass.
+- Review minors fixed (independent review: no blockers, no majors):
+  - Scanner: for each session function it now requires exactly one `requireOwnedWizardSession` call, as the
+    unconditional top-level `const session = await requireOwnedWizardSession(ctx, args.sessionId[, { allowLinked: true }])`,
+    with no `ctx.db` read before it. The third argument must be absent or an inline object whose only property is
+    `allowLinked: true`. Proved by hand on a copy of `wizard.ts`, then restored byte for byte. Each of these now fails
+    with its own message: shorthand `{ allowLinked }`, a module-level `LINKED` object, a guard inside
+    `if (args.step === "__never__")` followed by a raw `ctx.db.get`, and a spread in `getSession`.
+  - `existingResult` also refuses when `project.workspace.wizardSessionId !== session._id`, so the key fallback never
+    writes a link that `requireOwnedWizardSession` would refuse. New test: a keyed project that links back to another
+    session is refused, the session stays unlinked and no project is made. It fails without the check.
+  - The "stranger ... exactly like a missing session" test now also runs every call on the owner's own deleted
+    session and asserts the same `RESOURCE_NOT_FOUND`.
+  - Re-run after these fixes: `git diff --check`, both typechecks, lint, related Vitest, the wp74 guard scanner,
+    `test:convex` and `test:security`, all 0 (counts in the report).
+- Needs from Codex:
+  - (l) Optional tightening in `tests/security/wp68-workspace-boundaries.test.mjs`: the six session functions can drop
+    `"ownedWizardSession"` from their allowed guards (lines 82-91), since the local helper no longer exists.
+- Checks (the worktree had no `node_modules` of its own, so the first typecheck resolved packages from the main checkout
+  and failed on missing `@testing-library/react`, `vitest-axe` and `@vercel/global-config`; after `npm ci` in the
+  worktree):
+  - `git diff --check` 0; `npm run typecheck` 0; `npx tsc -p convex --noEmit` 0; `npm run lint` 0 (0 errors, 37
+    existing warnings).
+  - Related Vitest (business, wizard, platform/authz, and the six `tests/platform` wizard and business files): 0
+    (9 files, 224 tests after the gap fix).
+  - `npm run test:convex` 0 (78 files, 1081 tests after the gap fix); `npm run test:security` 0 (node 219 pass, 1 skipped CI-only;
+    Vitest 121/121); `npm run test:platform` 0 (75 files, 1997 tests).
+  - After the gap fix, every check above was re-run, `test:platform` included: all 0.
+- Docs: this entry. `wp74-stories.md` not needed (no story scope changed).

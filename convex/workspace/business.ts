@@ -2,21 +2,23 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
+import { requireOwnedWizardSession } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
 import { WORKSPACE_PLAN_LIMITS } from "../platform/plans";
 import { tenantHostForSlug, isValidTenantSlug } from "../../lib/tenant-host";
 import { emailAddressDomain, isDisposableEmailDomain } from "../../lib/workspace/disposable-domains";
 import { partnerNameFromWizard, wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { pickTenantSlug } from "../../lib/workspace/wizard/tenant-slug";
-import { ownedWizardSession } from "./wizard";
 
 /**
  * WP74-S4: "Create my business" at the end of the wizard. A business is a
  * `projects` row (D19) owned by the founder (`ownerId`, D12).
  *
  * `createBusiness` runs in one transaction:
- * 1. the signed-in owner's session (C-OPS `workspace` gate, then the session
- *    guard); a session that already made its business returns that business;
+ * 1. the signed-in owner's session (C-OPS `workspace` gate, then C-AUTHZ
+ *    `requireOwnedWizardSession` with `allowLinked`); a session that already
+ *    made its business returns that business while it is live and links back
+ *    to the session (an archived one is `RESOURCE_NOT_FOUND`);
  * 2. the session must be complete: every step answered, blueprint `looks_good`
  *    (`wizardAnswersSchema`);
  * 3. a verified email whose domain parses (`EMAIL_INVALID` otherwise) and is
@@ -130,7 +132,16 @@ async function existingResult(
   project: Doc<"projects"> | null,
   session: Doc<"wizard_sessions">,
 ) {
-  if (project === null || project.ownerId !== session.ownerId || project.workspace === undefined) {
+  // By the link or the idempotency key, only a live business that links back to
+  // this session is returned or relinked: the same chain `requireOwnedWizardSession`
+  // checks, so this never writes a link that guard would later refuse.
+  if (
+    project === null ||
+    project.ownerId !== session.ownerId ||
+    project.archivedAt !== undefined ||
+    project.workspace === undefined ||
+    project.workspace.wizardSessionId !== session._id
+  ) {
     return refuse("RESOURCE_NOT_FOUND");
   }
   if (session.projectId !== project._id) {
@@ -165,7 +176,7 @@ export const createBusiness = mutation({
   returns: businessResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId, { allowLinked: true });
+    const session = await requireOwnedWizardSession(ctx, args.sessionId, { allowLinked: true });
 
     // Replays: the session already points at its business.
     if (session.projectId !== undefined) {
