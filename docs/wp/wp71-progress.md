@@ -217,7 +217,8 @@
   - When the ref is not present and `CI` is set (anything except empty, `0` or `false`), the script runs
     one `git fetch --depth=1 --no-tags origin <branch-or-sha>` and reads `FETCH_HEAD`. The checkout
     persists credentials, so no secret is needed. A ref starting with `-` is refused.
-  - Outcomes:
+  - Outcomes (superseded 2026-11-06 for the no-lock row: it now fails in CI as `base_missing`; see the
+    S3 follow-up entry below):
 
     | Outcome | Locally | With `CI` set |
     |---|---|---|
