@@ -20,6 +20,8 @@ export const growthTables = {
     leadId: v.id("leads"),
     purpose: v.union(v.literal("opt_in"), v.literal("unsubscribe")),
     tokenHash: v.string(),
+    // Opt-in confirmation queued in the same transaction as this digest.
+    componentEmailId: v.optional(v.string()),
     // Opt-in tokens expire; unsubscribe tokens remain usable until lead purge.
     expiresAt: v.optional(v.number()),
     usedAt: v.optional(v.number()),

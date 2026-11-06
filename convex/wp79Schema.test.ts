@@ -15,6 +15,7 @@ describe("WP79 additive C-DATA amendment", () => {
     }
     const fields = schema.tables.lead_email_tokens.validator.fields;
     expect(fields.tokenHash.isOptional).toBe("required");
+    expect(fields.componentEmailId.isOptional).toBe("optional");
     expect("token" in fields).toBe(false);
     expect(indexNames(schema.tables.lead_email_tokens)).toContain("by_tokenHash");
   });
