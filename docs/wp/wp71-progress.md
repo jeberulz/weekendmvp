@@ -217,7 +217,8 @@
   - When the ref is not present and `CI` is set (anything except empty, `0` or `false`), the script runs
     one `git fetch --depth=1 --no-tags origin <branch-or-sha>` and reads `FETCH_HEAD`. The checkout
     persists credentials, so no secret is needed. A ref starting with `-` is refused.
-  - Outcomes:
+  - Outcomes (superseded 2026-11-06 for the no-lock row: it now fails in CI as `base_missing`; see the
+    S3 follow-up entry below):
 
     | Outcome | Locally | With `CI` set |
     |---|---|---|
@@ -332,3 +333,14 @@
     `origin/main` has no lock yet.
   - The lock is unchanged in round 3, and no spec module changed.
   - Docs updated: this entry. `wp71-stories.md` already had S3 ticked.
+
+## 2026-11-06 - S3 follow-up: a missing base lock fails in CI
+
+- #184 merged (`ac7bb914`), so `main` now carries `convex/ai/prompts/versions.lock.json`.
+- `scripts/check-prompt-versions.mjs`: a base with no lock is now a `base_missing` failure in CI. Locally it is
+  a notice and the base check is skipped, because a stale local `origin/main` may predate the lock.
+- Why this is safe: CI runs only on pull requests to `main` and pushes to `main`. Every `main` commit from
+  `ac7bb914` on has the lock, so a CI base without one means the lock was deleted or moved.
+- Tests: the "no lock file" test now expects a notice locally and `[base_missing]` in CI, including the
+  fetched path. The CI-only test accepts only "compared with the base lock"; the bootstrap branch is gone.
+- Docs updated: this entry. Stories unchanged (S3 already ticked).

@@ -52,11 +52,13 @@
  * `git show <ref>:convex/ai/prompts/versions.lock.json`. When the ref is not
  * present and `CI` is set, the script runs one
  * `git fetch --depth=1 --no-tags origin <branch-or-sha>` and reads FETCH_HEAD.
- * - The base has no lock file at that path: a notice, and a pass. This is the
- *   bootstrap case (`main` has no lock until WP71-S3 merges). Once `main` has
- *   a lock, "missing" must become a failure in CI. The lock path
- *   (`LOCK_RELATIVE_PATH`) is fixed: moving it is a contract change, because
- *   the base check would read "missing" at the old path and pass.
+ * - The base has no lock file at that path: with `CI` set, a failure
+ *   (`base_missing`); locally, a notice and the base check is skipped (a
+ *   stale local `origin/main` may predate the lock). `main` has carried the
+ *   lock since WP71-S3 merged (#184), and CI runs only on pull requests to
+ *   `main` and pushes to `main`, so a CI base without a lock means the lock
+ *   was deleted or moved. The lock path (`LOCK_RELATIVE_PATH`) is fixed:
+ *   moving it is a contract change.
  * - The base cannot be read, or its lock does not parse: with `CI` set, a
  *   failure (`base_unavailable` / `base_unreadable`); locally, a notice and the
  *   base check is skipped.
@@ -660,7 +662,11 @@ export async function main(
         stdout.write(`check-prompt-versions: notice: base check skipped: ${read.reason}\n`);
       }
     } else if (read.status === "missing") {
-      stdout.write(`check-prompt-versions: notice: ${label} has no prompt lock yet; nothing to compare\n`);
+      if (ci) {
+        blocking.push({ kind: "base_missing", ref: base.ref, message: `the base at ${label} has no prompt lock at ${LOCK_RELATIVE_PATH}` });
+      } else {
+        stdout.write(`check-prompt-versions: notice: base check skipped: ${label} has no prompt lock at ${LOCK_RELATIVE_PATH}\n`);
+      }
     } else {
       let baseLock = null;
       try {

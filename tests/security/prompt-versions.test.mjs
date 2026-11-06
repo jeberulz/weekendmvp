@@ -598,14 +598,18 @@ test("a base lock that does not parse: a notice locally, a failure in CI", async
   assert.match(ci.stderr, /\[base_unreadable\] the base lock at origin\/main \(default\) does not parse/);
 });
 
-test("a base with no lock file passes with a notice, locally and in CI", async () => {
-  for (const env of [LOCAL, CI]) {
-    const run = await runMain([], { env, git: fakeGit({ refs: { "origin/main": null } }).git });
-    assert.equal(run.code, 0, run.stderr);
-    assert.match(run.stdout, /origin\/main \(default\) has no prompt lock yet; nothing to compare/);
-  }
+test("a base with no lock file: a notice locally, a failure in CI", async () => {
+  const local = await runMain([], { env: LOCAL, git: fakeGit({ refs: { "origin/main": null } }).git });
+  assert.equal(local.code, 0, local.stderr);
+  assert.match(local.stdout, /notice: base check skipped: origin\/main \(default\) has no prompt lock at convex\/ai\/prompts\/versions\.lock\.json/);
+
+  const ci = await runMain([], { env: CI, git: fakeGit({ refs: { "origin/main": null } }).git });
+  assert.equal(ci.code, 1);
+  assert.match(ci.stderr, /\[base_missing\] the base at origin\/main \(default\) has no prompt lock at convex\/ai\/prompts\/versions\.lock\.json/);
+
   const fetched = await runMain([], { env: CI, git: fakeGit({ fetchable: { main: null } }).git });
-  assert.equal(fetched.code, 0, fetched.stderr);
+  assert.equal(fetched.code, 1);
+  assert.match(fetched.stderr, /\[base_missing\]/);
 });
 
 test("a matching base passes in check mode", async () => {
@@ -720,13 +724,11 @@ test("the CLI needs a lock file in check mode", async () => {
  * default branch), fetches it if the shallow checkout lacks it, and compares.
  * No `--write`, so the run is read-only; the lock bytes are checked unchanged.
  *
- * Accepted outputs: "compared with the base lock" or, until `main` has a lock,
- * the exact bootstrap notice. Anything else fails (a skipped base check, an
- * extra notice, stderr output). Once `main` has a lock, "missing" must fail in
- * CI and the bootstrap branch here goes away.
+ * Accepted output: "compared with the base lock" and the match line, nothing
+ * else (a skipped base check, any notice, or stderr output fails). `main` has
+ * carried the lock since #184, so a base without one fails in CI.
  */
 const COMPARED_LINE = /^check-prompt-versions: compared with the base lock at .+$/u;
-const BOOTSTRAP_LINE = /^check-prompt-versions: notice: .+ has no prompt lock yet; nothing to compare$/u;
 const MATCH_LINE = /^check-prompt-versions: [1-9][0-9]* prompt version\(s\) match the lock$/u;
 
 test(
@@ -748,7 +750,7 @@ test(
     assert.equal(run.stderr, "", "no stderr output");
     const lines = run.stdout.trimEnd().split("\n");
     assert.equal(lines.length, 2, run.stdout);
-    assert.ok(COMPARED_LINE.test(lines[0]) || BOOTSTRAP_LINE.test(lines[0]), `unexpected base result: ${lines[0]}`);
+    assert.match(lines[0], COMPARED_LINE, `unexpected base result: ${lines[0]}`);
     assert.match(lines[1], MATCH_LINE);
     assert.equal(await realLockText(), before);
   },
