@@ -27,5 +27,6 @@ describe("WP79 additive C-DATA amendment", () => {
       "by_ownerId_and_createdAt",
     ]));
     expect(schema.tables.approvals.validator.fields.subjectVersion.isOptional).toBe("optional");
+    expect(indexNames(schema.tables.approvals)).toContain("by_status_and_createdAt");
   });
 });

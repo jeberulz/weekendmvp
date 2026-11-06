@@ -155,7 +155,8 @@ export const workspaceTables = {
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
     .index("by_projectId_and_status", ["projectId", "status"])
-    .index("by_subjectId", ["subjectId"]),
+    .index("by_subjectId", ["subjectId"])
+    .index("by_status_and_createdAt", ["status", "createdAt"]),
 
   chat_messages: defineTable({
     ownerId: v.id("users"),
