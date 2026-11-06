@@ -11,6 +11,7 @@ Definition of done: the approved landing can publish on a test tenant host, take
 - [ ] `WP78-S2` — Super-admin takedown with reason and immutable audit. Middleware reads a durable Global Config denylist before the fail-open publish check; test taken-down slug with Convex unreachable and measure propagation.
 - [ ] `WP78-S3` — Write wildcard DNS, Vercel domain/certificate, and test-slug activation/rollback runbook. Owner executes live DNS/provider changes.
 - [ ] `WP78-S4` — D5 real lead capture with consent notice and version, opt-in hook for WP79, founder CSV export and per-contact delete, and purge 30 days after business/account deletion. Keep real lead capture off until all D5 controls work together.
+  - [x] `WP78-S4a` — In the owner-authorized `deleteContact` transaction, revoke WP79 tokens, active enrollment and queued component mail before erasing lead contact fields. A revocation failure leaves the lead unchanged; retry is idempotent. Keep real capture and real-lead purge off.
 - [ ] `WP78-S5` — Security and integration gate: unapproved publish rejected; taken-down slug never served when Convex is down; tenant isolation, rate limit, kill switch and retention verified. Record checks and independent review.
 
 ## File boundary

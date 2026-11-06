@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { RateLimiter, MINUTE, HOUR } from "@convex-dev/rate-limiter";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
-import { components } from "../../_generated/api";
+import { components, internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, query, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../authz";
@@ -226,6 +226,11 @@ export const deleteContact = mutation({
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
     }
     if (lead.deletedAt !== undefined) return { deleted: false };
+    // The WP79 mutation cancels queued component mail and invalidates contact
+    // tokens within this transaction. Let any error abort before PII erasure.
+    await ctx.runMutation(internal.growth.email.contacts.revokeLeadContact, {
+      leadId: lead._id,
+    });
     const now = Date.now();
     await ctx.db.patch(lead._id, {
       email: undefined,
