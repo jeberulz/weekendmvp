@@ -378,6 +378,12 @@ describe("gateway action: what runs where", () => {
       { adapter: forbidden.adapter },
     );
     expect(neither).toMatchObject({ ok: false, failure: { kind: "config" }, attempts: [] });
+    const ownerlessChat = await runJob(
+      t,
+      { ...runArgs(business, undefined), ownerId: undefined, taskId: undefined, attemptKey: { kind: "chat", chatMessageId: "msg_1" } },
+      { adapter: forbidden.adapter },
+    );
+    expect(ownerlessChat).toMatchObject({ ok: false, failure: { kind: "config", message: expect.stringContaining("ownerId") }, attempts: [] });
     const badAttempt = await runJob(t, runArgs(business, undefined, 0), { adapter: forbidden.adapter });
     expect(badAttempt).toMatchObject({ ok: false, failure: { kind: "config" }, attempts: [] });
     expect(forbidden.calls()).toBe(0);
@@ -406,6 +412,9 @@ describe("gateway action: what runs where", () => {
     });
     if (collided.ok || collided.failure.kind !== "duplicate_attempt") throw new Error("expected a duplicate");
     expect(collided.failure.usageId).toBeUndefined();
+    expect(collided.failure.reason).toBe("key_reused_for_different_call");
+    expect(collided.failure.message).toContain("attemptKey reused for a different call");
+    expect(collided.nextAttempt).toBe(3);
     expect(forbidden.calls()).toBe(0);
     expect(await usageRows(t)).toEqual(rowsAfterFirst);
 
@@ -419,6 +428,32 @@ describe("gateway action: what runs where", () => {
     });
     expect(good.calls()).toBe(1);
     expect(await usageRows(t)).toHaveLength(3);
+  });
+
+  test("two tasks sharing one jobKey: the second is a duplicate that names the reuse, and nothing is sent", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const business = await seedBusiness(t, "shared-key");
+    const otherTaskId = await t.run(async (ctx) => await ctx.db.insert("tasks", {
+      ownerId: business.ownerId, projectId: business.projectId, type: "crew_brand_kit", status: "queued",
+      title: "shared-key other task", idempotencyKey: "task-shared-key-other", createdAt: 3, updatedAt: 3,
+    }));
+    const first = await runJob(t, runArgs(business, undefined));
+    expect(first).toMatchObject({ ok: true });
+    const forbidden = forbiddenAdapter();
+    const second = await runJob(t, { ...runArgs(business, undefined), taskId: otherTaskId }, { adapter: forbidden.adapter });
+    expect(second).toMatchObject({
+      ok: false,
+      failure: {
+        kind: "duplicate_attempt",
+        attemptKey: `crew:${business.projectId}:probe:1`,
+        reason: "key_reused_for_different_call",
+        message: expect.stringContaining("attemptKey reused for a different call"),
+      },
+      attempts: [],
+    });
+    expect(forbidden.calls()).toBe(0);
+    expect(await usageRows(t)).toHaveLength(1);
   });
 
   test("a replay after the task has finished is refused by the meter, not deduped, and nothing is sent", async () => {

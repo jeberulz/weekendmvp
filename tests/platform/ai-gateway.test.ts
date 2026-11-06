@@ -701,15 +701,45 @@ describe("runTextGateway: settle or fail at most once per row", () => {
       ok: false,
       failure: { kind: "duplicate_attempt", attemptKey: `${JOB_KEY}:2` },
       attempts: [],
-      nextAttempt: 2,
+      // Past the occupied key, so a caller following nextAttempt cannot loop.
+      nextAttempt: 3,
     });
     if (retry.ok || retry.failure.kind !== "duplicate_attempt") throw new Error("expected a duplicate");
     expect(retry.failure.usageId).toBeUndefined();
+    expect(retry.failure.reason).toBe("key_reused_for_different_call");
+    expect(retry.failure.message).toContain("attemptKey reused for a different call");
     expect(h1.params).toHaveLength(2);
     expect(h1.meter.rows()).toHaveLength(2);
 
     const next = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: first.nextAttempt } });
     expect(next).toMatchObject({ ok: true, attempts: [{ attemptKey: `${JOB_KEY}:3` }], nextAttempt: 4 });
+  });
+
+  it("a same-call replay is a duplicate with its usageId, no reason, and nextAttempt past it", async () => {
+    const h1 = harness();
+    const first = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller });
+    const replay = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller });
+    expect(replay).toMatchObject({ ok: false, failure: { kind: "duplicate_attempt", usageId: first.attempts[0].usageId }, nextAttempt: 2 });
+    if (replay.ok || replay.failure.kind !== "duplicate_attempt") throw new Error("expected a duplicate");
+    expect(replay.failure.reason).toBeUndefined();
+  });
+
+  it("a re-ask whose key is occupied ends duplicate_attempt with nextAttempt past it", async () => {
+    const h1 = harness((call) => (call === 2 ? { json: { headline: "" } } : undefined));
+    // An earlier run already used attempt 2 (it settled on its first call).
+    const earlier = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 2 } });
+    expect(earlier).toMatchObject({ ok: true, nextAttempt: 3 });
+
+    // This run starts on 1, fails the schema, and its re-ask needs key 2.
+    const outcome = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 1 } });
+    expect(outcome).toMatchObject({
+      ok: false,
+      failure: { kind: "duplicate_attempt", attemptKey: `${JOB_KEY}:2`, reason: "key_reused_for_different_call" },
+      attempts: [{ attempt: 1, reask: false, status: "failed", errorClass: "schema_invalid" }],
+      nextAttempt: 3,
+    });
+    expect(h1.params).toHaveLength(2);
+    expect(h1.meter.rows()).toHaveLength(2);
   });
 
   it("still ends internal for any other plain reserve error", async () => {

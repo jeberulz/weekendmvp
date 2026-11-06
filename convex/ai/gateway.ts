@@ -61,8 +61,9 @@
  *   far, never an escaped error that loses them.
  * - **A reused attempt key is a duplicate, not an internal error.** The
  *   meter's "attemptKey reused for a different call" (`METER_ATTEMPT_KEY_REUSED`)
- *   ends the run `duplicate_attempt` with no `usageId`, like a replay, and
- *   nothing is sent. A text run returns `nextAttempt` so a retry never lands
+ *   ends the run `duplicate_attempt` with no `usageId`, `reason:
+ *   "key_reused_for_different_call"` and the meter's message, and nothing is
+ *   sent. A text run returns `nextAttempt` so a retry never lands
  *   on its own re-ask row.
  * - **A gate refusal is a meter refusal.** The real meter throws C-OPS /
  *   C-AUTHZ gate codes (`AI_DISABLED`, `WORKSPACE_DISABLED`,
@@ -276,9 +277,17 @@ export type GatewayFailure =
    * `nextAttempt` from the run that made the row). `usageId` names the row
    * when the meter returned it (the same call replayed); it is absent when the
    * meter refused the key as "attemptKey reused for a different call" (e.g. a
-   * job retry that landed on an earlier run's re-ask row).
+   * job retry that landed on an earlier run's re-ask row, or two tasks sharing
+   * one `jobKey`). Then `reason` is `"key_reused_for_different_call"` and
+   * `message` is the meter's error text, so a key bug stays visible.
    */
-  | { readonly kind: "duplicate_attempt"; readonly attemptKey: string; readonly usageId?: string }
+  | {
+      readonly kind: "duplicate_attempt";
+      readonly attemptKey: string;
+      readonly usageId?: string;
+      readonly reason?: "key_reused_for_different_call";
+      readonly message?: string;
+    }
   | {
       readonly kind: "refusal";
       readonly provider: MeterProvider;
@@ -311,12 +320,15 @@ export type GatewayOutcome<TValue> = (
 };
 
 /**
- * A text run's outcome. `nextAttempt` is the highest attempt number this run
- * reserved a row for, plus one, counting a row left unfinalised for the sweep
- * and a row the meter refused at `markSent`. When the run reserved nothing
- * (a `config` failure, a `reserve` refusal, a duplicate key) it is the run's
- * first attempt number. A caller's retry uses it, never
- * `firstAttempt + attempts.length` (`attempts` leaves out an unfinalised row).
+ * A text run's outcome. `nextAttempt` is one past the highest attempt number
+ * this run reserved a row for or found occupied: it counts a row left
+ * unfinalised for the sweep, a row the meter refused at `markSent`, and an
+ * attempt key that already had a row (`duplicate_attempt`, on the first
+ * attempt or the re-ask), so a retry with it never lands on that key again.
+ * When the run reserved nothing and hit no duplicate (a `config` failure, a
+ * `reserve` refusal) it is the run's first attempt number. A caller's retry
+ * uses it, never `firstAttempt + attempts.length` (`attempts` leaves out an
+ * unfinalised row).
  */
 export type TextGatewayOutcome<TValue> = GatewayOutcome<TValue> & { readonly nextAttempt: number };
 
@@ -435,7 +447,16 @@ async function runAttempt<TResult, TValue>(
   } catch (error) {
     const data = gatewayErrorDataOf(error);
     if (data === null && isAttemptKeyReused(error)) {
-      return { kind: "not_sent", reserved: false, failure: { kind: "duplicate_attempt", attemptKey: args.attemptKey } };
+      return {
+        kind: "not_sent",
+        reserved: false,
+        failure: {
+          kind: "duplicate_attempt",
+          attemptKey: args.attemptKey,
+          reason: "key_reused_for_different_call",
+          message: messageOf(error),
+        },
+      };
     }
     return {
       kind: "not_sent",
@@ -984,7 +1005,7 @@ export async function runTextGateway<TInput, TOutput>(
   const { spec, caller } = input;
   const schemaNode = resolved.request.outputSchema ?? {};
   const attempts: GatewayAttempt[] = [];
-  // The highest attempt number this run reserved a row for.
+  // The highest attempt number this run reserved a row for or found occupied.
   let lastReserved = firstAttempt - 1;
   const end = (failure: GatewayFailure): TextGatewayOutcome<TextRunValue<TOutput>> => ({
     ok: false,
@@ -1062,7 +1083,10 @@ export async function runTextGateway<TInput, TOutput>(
       },
     });
 
-    if (outcome.kind !== "not_sent" || outcome.reserved) lastReserved = attempt;
+    // A duplicate key is occupied: the next retry must start past it.
+    if (outcome.kind !== "not_sent" || outcome.reserved || outcome.failure.kind === "duplicate_attempt") {
+      lastReserved = attempt;
+    }
     if (outcome.kind === "not_sent" || outcome.kind === "unfinalized") return end(outcome.failure);
     attempts.push(outcome.record);
     if (outcome.kind === "settled") {

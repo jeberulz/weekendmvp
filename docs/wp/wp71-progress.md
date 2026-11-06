@@ -488,8 +488,26 @@
   - Still open:
     - WP70-S4: the `sweepStale` cron (Codex), for rows left unfinalised.
     - Codex: send a `message` (and `scope`) with the gate errors (item 1 above).
+    - G1 evidence, honestly scoped: the job (credit-funded) path is proven through
+      `runPromptWithMeter` with the test-only `allowInternal`. Until the first non-internal crew spec
+      exists, the registered action can settle only eval runs.
     - Real codegen of `convex/_generated/api.d.ts`. An isolated anonymous local Convex deploy (ports
       3340/3341) succeeded on `fd3d1205`, with all functions ready. The checked-in file is still the
       hand edit.
-    - A `chat` key with no `ownerId` is not refused yet. The reviewer did not raise it.
+  - Second review (after `bec82b34`):
+    - P2, `nextAttempt` looping on a duplicate. A duplicate key is now counted as occupied, so
+      `nextAttempt` is at least the colliding attempt + 1. That covers a collision on the first
+      attempt and on the re-ask. A retry on 2 after a re-ask run now returns `nextAttempt: 3`, not 2.
+    - P3, key reuse hidden as a duplicate. It still maps to `duplicate_attempt`, but now carries
+      `reason: "key_reused_for_different_call"` and the meter's `message` (both additive and
+      optional, in `GatewayFailure` and the validator). Two tasks sharing one `jobKey` stay visible.
+    - P3, ownerless chat. `keyFormMismatch` now refuses a `chat` key without an `ownerId`. Otherwise it
+      would reserve in the free pool under a `projectId` the meter never checks.
+    - Tests added:
+      - core: the re-ask collision; a same-call replay (keeps its `usageId`, has no `reason`, and
+        `nextAttempt` is past it); `reason` and `message` on a reuse;
+      - action: two tasks sharing a `jobKey`; ownerless chat refused; `nextAttempt: 3` after the
+        collision.
+    - Checks: see the final report for exit codes. All are 0, and the three vitest files have 97
+      passed.
 

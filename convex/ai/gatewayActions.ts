@@ -31,14 +31,17 @@
  *   they cannot run on a task, a debit or an owner's budget;
  * - a key form that does not match the run's ownership: `eval` with an
  *   `ownerId`, `projectId`, `taskId` or `creditDebitId`; `job` without both
- *   `ownerId` and `taskId`; `chat` without a `projectId`;
+ *   `ownerId` and `taskId`; `chat` without an `ownerId` and a `projectId`;
  * - an `attempt` that is not a positive integer.
  *
  * Notes for C-JOBS (the caller):
  * - **Retry with `nextAttempt`.** A run that re-asked used two attempt numbers
  *   (D23), and a row left unfinalised for the sweep is not in `attempts`, so
  *   `attempt + attempts.length` can land on an existing row. Such a retry
- *   comes back `duplicate_attempt` (no `usageId`) with nothing sent.
+ *   comes back `duplicate_attempt` (no `usageId`, `reason:
+ *   "key_reused_for_different_call"`) with nothing sent, and its own
+ *   `nextAttempt` is past the occupied key. The same `reason` on a first try
+ *   means two calls share a key (e.g. two tasks with one `jobKey`): a bug.
  * - **A replay after the task is terminal is refused, not deduped.** The meter
  *   checks the task and the debit before it looks up the attempt key, so a
  *   replayed key on a `succeeded` / `failed` / `cancelled` task (or a refunded
@@ -158,8 +161,17 @@ const failureValidator = v.union(
     kind: v.literal("meter_refused"),
     error: v.object({ code: gateCodeValidator, scope: v.optional(v.string()), message: v.optional(v.string()) }),
   }),
-  /** `usageId` is absent when the key was used by a different call (see `GatewayFailure`). */
-  v.object({ kind: v.literal("duplicate_attempt"), attemptKey: v.string(), usageId: v.optional(v.string()) }),
+  /**
+   * `usageId` is absent, and `reason` / `message` are set, when the key was
+   * used by a different call (see `GatewayFailure`).
+   */
+  v.object({
+    kind: v.literal("duplicate_attempt"),
+    attemptKey: v.string(),
+    usageId: v.optional(v.string()),
+    reason: v.optional(v.literal("key_reused_for_different_call")),
+    message: v.optional(v.string()),
+  }),
   v.object({
     kind: v.literal("refusal"),
     provider: providerValidator,
@@ -389,7 +401,8 @@ function isAttemptNumber(value: number): boolean {
  * Why a run's key form does not fit its ids, or null when it does. `eval` is
  * the ownerless path (CI graders): no owner, business, task or debit. `job`
  * is credit-funded crew work: it needs the owner and the task the meter
- * checks. `chat` needs the run's `projectId` (checked by `attemptKeyBuilder`).
+ * checks. `chat` needs the owner (the meter checks the project against it)
+ * and the run's `projectId` (checked by `attemptKeyBuilder`).
  */
 export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId">): string | null {
   switch (args.attemptKey.kind) {
@@ -401,6 +414,8 @@ export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerI
       if (args.ownerId === undefined || args.taskId === undefined) return "a job attempt key needs the run's ownerId and taskId";
       return null;
     case "chat":
+      // Ownerless chat would reserve in the free pool under a projectId the meter never checks.
+      if (args.ownerId === undefined) return "a chat attempt key needs the run's ownerId";
       return null;
   }
 }
@@ -455,6 +470,8 @@ function failureRecord(failure: GatewayFailure): Extract<GatewayRunResult, { ok:
         kind: "duplicate_attempt",
         attemptKey: failure.attemptKey,
         ...(failure.usageId === undefined ? {} : { usageId: failure.usageId }),
+        ...(failure.reason === undefined ? {} : { reason: failure.reason }),
+        ...(failure.message === undefined ? {} : { message: failure.message }),
       };
     case "refusal":
       return {
