@@ -19,6 +19,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { WREN_STREAM_STALE_MS } from "@/lib/workspace/wren";
+import { approvalDecisionErrorCopy } from "@/lib/workspace/wrenCards";
 
 type Thread = FunctionReturnType<typeof api.workspace.chat.listWrenThread>;
 type Row = Thread[number];
@@ -352,6 +353,22 @@ describe("one announcement per reply", () => {
   });
 });
 
+/** Lets the decision promise and its React update settle under fake timers, then checks. */
+async function settle(check: () => void): Promise<void> {
+  for (let i = 0; i < 20; i += 1) {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    try {
+      check();
+      return;
+    } catch {
+      // not settled yet
+    }
+  }
+  check();
+}
+
 describe("card decision outcomes are announced", () => {
   test("approve, then an error: each outcome lands in the card's live region", async () => {
     const second: Row["cards"][number] = { ...pendingCard, approvalId: "a2" as Id<"approvals">, title: "Post the second one" };
@@ -365,10 +382,10 @@ describe("card decision outcomes are announced", () => {
     expect(regions().every((region) => region.getAttribute("aria-live") === "polite")).toBe(true);
     const [firstRegion, secondRegion] = regions();
     await user.click(screen.getAllByRole("button", { name: /^Approve/u })[0]);
-    expect(firstRegion.textContent).toContain("Approved.");
+    await settle(() => expect(firstRegion.textContent).toContain("Approved."));
     await user.click(screen.getAllByRole("button", { name: /^Approve/u })[1]);
-    expect(secondRegion.textContent).not.toBe("");
-    expect(secondRegion.textContent).not.toContain("Approved.");
+    await settle(() => expect(secondRegion.textContent).toBe(approvalDecisionErrorCopy(null)));
+    expect(firstRegion.textContent).toContain("Approved.");
     // The same region elements stayed mounted: text changed inside a live region.
     expect(regions()[0]).toBe(firstRegion);
     expect(regions()[1]).toBe(secondRegion);
