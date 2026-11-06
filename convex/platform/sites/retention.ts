@@ -32,6 +32,11 @@ export const purgeArchivedProjectLeads = internalMutation({
     if (batch.some((lead) => lead.ownerId !== project.ownerId)) {
       throw new ConvexError({ code: "LEAD_OWNER_MISMATCH" });
     }
+    // Real leads can have WP79 tokens, enrollments and queued mail. A later
+    // per-lead cleanup transaction must revoke those before hard deletion.
+    if (batch.some((lead) => !lead.synthetic)) {
+      throw new ConvexError({ code: "LEAD_REVOKE_REQUIRED" });
+    }
     for (const lead of batch) await ctx.db.delete(lead._id);
     return { deleted: batch.length, more: rows.length > BATCH_SIZE };
   },

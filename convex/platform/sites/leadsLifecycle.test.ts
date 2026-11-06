@@ -159,6 +159,14 @@ describe("WP78 lead lifecycle", () => {
       const settings = await ctx.db.query("ops_settings").first();
       if (!settings) throw new Error("missing settings fixture");
       await ctx.db.patch(settings._id, { workspaceEnabled: false, cohortMode: "allowlist" });
+      const existing = await ctx.db.query("leads")
+        .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId))
+        .collect();
+      for (const lead of existing) {
+        await ctx.db.patch(lead._id, {
+          synthetic: true, email: undefined, consentText: undefined,
+        });
+      }
       const site = await ctx.db.query("site_configs").first();
       if (!site) throw new Error("missing site fixture");
       for (let i = 0; i < 118; i += 1) {
@@ -191,5 +199,33 @@ describe("WP78 lead lifecycle", () => {
     await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
       { projectId: ids.projectId })).rejects.toThrow("LEAD_OWNER_MISMATCH");
     expect(await t.run(async (ctx) => ctx.db.get(ids.leadId))).not.toBeNull();
+  });
+
+  test("purge refuses a real lead until WP79 revocation can run", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t);
+    const enrollmentId = await t.run(async (ctx) => {
+      await ctx.db.patch(ids.projectId, {
+        archivedAt: Date.now() - 31 * 24 * 60 * 60 * 1000,
+      });
+      const now = Date.now();
+      const sequenceId = await ctx.db.insert("sequences", {
+        ownerId: ids.ownerId, projectId: ids.projectId, status: "active",
+        title: "Waitlist", createdAt: now, updatedAt: now,
+      });
+      return await ctx.db.insert("enrollments", {
+        ownerId: ids.ownerId, projectId: ids.projectId,
+        leadId: ids.leadId, sequenceId, nextStepAt: now,
+        state: "active", createdAt: now, updatedAt: now,
+      });
+    });
+    await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
+      { projectId: ids.projectId })).rejects.toThrow("LEAD_REVOKE_REQUIRED");
+    const lead = await t.run(async (ctx) => ctx.db.get(ids.leadId));
+    expect(lead?.email).toBe("lead@example.test");
+    expect((await t.run(async (ctx) => ctx.db.get(enrollmentId)))?.state).toBe("active");
+    const remaining = await t.run(async (ctx) => ctx.db.query("leads")
+      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).collect());
+    expect(remaining).toHaveLength(3);
   });
 });
