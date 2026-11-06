@@ -306,6 +306,45 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_idea", ["userId", "ideaId"]),
 
+  /**
+   * Idea 4 — visitor idea requests & voting. Purely additive: nothing else
+   * reads these tables yet. `submitterKey` is `user:<subject>` for a signed-in
+   * visitor or `anon:<random-id>` for an anonymous one — never a raw IP or
+   * email. `voteCount` is denormalised by `convex/ideaRequests.toggleVote`
+   * so the public list never counts votes per row. `status` is the handoff
+   * point for the engine's Stage-0 Suggest step (see
+   * `convex/ideaRequests.listForSuggest`); the engine does not write here.
+   */
+  idea_requests: defineTable({
+    title: v.string(),
+    /** Lowercased, whitespace-collapsed title — the dedupe key. */
+    normalizedTitle: v.string(),
+    /** One line: who it is for and what problem it solves. */
+    problem: v.string(),
+    category: v.optional(v.string()),
+    submitterKey: v.string(),
+    voteCount: v.number(),
+    status: v.union(
+      v.literal("open"),
+      v.literal("in_research"),
+      v.literal("published"),
+      v.literal("declined"),
+    ),
+  })
+    .index("by_voteCount", ["voteCount"])
+    .index("by_normalizedTitle", ["normalizedTitle"])
+    .index("by_status_voteCount", ["status", "voteCount"])
+    .index("by_submitterKey", ["submitterKey"]),
+
+  /** One row per (request, voter). `voterKey` mirrors `submitterKey`. */
+  idea_request_votes: defineTable({
+    requestId: v.id("idea_requests"),
+    voterKey: v.string(),
+  })
+    .index("by_requestId_and_voterKey", ["requestId", "voterKey"])
+    .index("by_requestId", ["requestId"])
+    .index("by_voterKey", ["voterKey"]),
+
   projects: defineTable({
     ownerId: v.id("users"),
     workspace: v.optional(v.object({

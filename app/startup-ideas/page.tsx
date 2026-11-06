@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 
@@ -545,7 +546,12 @@ async function StartupIdeasContent({ publications }: { publications: PublicOverl
               </div>
               <p className="max-w-[620px] text-pretty text-base leading-[1.55] text-home-ink-2 md:text-[19px]">
                 Research-backed ideas you can build this weekend. Click any
-                idea to see the full breakdown.
+                idea to see the full breakdown. Can&apos;t find the one
+                you&apos;re after?{" "}
+                <Link href="/ideas/requests" className="font-medium underline underline-offset-4 hover:text-black">
+                  Request an idea
+                </Link>{" "}
+                and vote for what we research next.
               </p>
             </div>
             <NavExternalLink

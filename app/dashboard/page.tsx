@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { DashboardHome } from "@/components/platform/home/DashboardHome";
+import { IdeaRequestWidget } from "@/components/idea-requests/IdeaRequestWidget";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
 import { getDashboardEditorial } from "@/lib/dashboard/editorial";
@@ -22,6 +23,10 @@ export default async function DashboardPage() {
         <PreviewClaimRunner />
       </WhenConvexReady>
       <DashboardHome editorial={editorial} nowMs={nowMs} />
+      {/* Idea 4: same floating request/vote widget as the marketing page. */}
+      <WhenConvexReady>
+        <IdeaRequestWidget />
+      </WhenConvexReady>
     </>
   );
 }

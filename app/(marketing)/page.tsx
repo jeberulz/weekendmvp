@@ -17,6 +17,8 @@ import { WeekendTest } from "@/components/home/sections/WeekendTest";
 import { WhatIs } from "@/components/home/sections/WhatIs";
 import { YourWeekend } from "@/components/home/sections/YourWeekend";
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { IdeaRequestWidget } from "@/components/idea-requests/IdeaRequestWidget";
+import { WhenConvexReady } from "@/components/platform/client-gates";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { getHomeData } from "@/lib/home/data";
 import { buildCtaVisible } from "@/lib/workspace/build-cta-access";
@@ -127,6 +129,10 @@ export default async function HomePage() {
       <FounderNote />
       <FinalCall total={data.totals.ideas} strip={data.strip} />
       <HomeMotion />
+      {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
+      <WhenConvexReady>
+        <IdeaRequestWidget />
+      </WhenConvexReady>
     </main>
   );
 }

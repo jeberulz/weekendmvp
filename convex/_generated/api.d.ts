@@ -69,6 +69,7 @@ import type * as growth_email_provider from "../growth/email/provider.js";
 import type * as growth_email_tokens from "../growth/email/tokens.js";
 import type * as http from "../http.js";
 import type * as ideaFacets from "../ideaFacets.js";
+import type * as ideaRequests from "../ideaRequests.js";
 import type * as ideas from "../ideas.js";
 import type * as live_signupSrc from "../live/signupSrc.js";
 import type * as live_workshopBridge from "../live/workshopBridge.js";
@@ -233,6 +234,7 @@ declare const fullApi: ApiFromModules<{
   "growth/email/tokens": typeof growth_email_tokens;
   http: typeof http;
   ideaFacets: typeof ideaFacets;
+  ideaRequests: typeof ideaRequests;
   ideas: typeof ideas;
   "live/signupSrc": typeof live_signupSrc;
   "live/workshopBridge": typeof live_workshopBridge;
