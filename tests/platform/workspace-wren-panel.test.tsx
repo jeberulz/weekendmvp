@@ -31,7 +31,7 @@ const { WrenChatPanel } = await import("@/components/workspace/chat/WrenChatPane
 
 const projectId = "p1" as Id<"projects">;
 const row = (id: string, author: "founder" | "wren", body: string, status: Thread[number]["status"]): Thread[number] => ({
-  _id: id as Id<"chat_messages">, author, body, status, createdAt: Date.UTC(2026, 10, 6, 12, 0, 0),
+  _id: id as Id<"chat_messages">, author, body, status, createdAt: Date.UTC(2026, 10, 6, 12, 0, 0), cards: [],
 });
 
 function render(thread: Thread | undefined): string {
@@ -90,6 +90,52 @@ describe("WrenChatPanel", () => {
     expect(markup).toContain("Wren couldn&#x27;t finish this reply.");
     expect(markup).toContain("Try again");
     expect(markup).not.toContain('aria-busy="true"');
+    expect(await violations()).toEqual([]);
+  });
+
+  test("WP77-S4 cards: approval, explain and navigate render accessibly from server keys only", async () => {
+    const reply: Thread[number] = {
+      ...row("w2", "wren", "Here is your publish card.", "done"),
+      cards: [
+        {
+          kind: "approval", approvalId: "a1" as Id<"approvals">, approvalKind: "publish", status: "pending",
+          title: "Publish this landing page version",
+        },
+        { kind: "explain", topic: "approvals" },
+        { kind: "navigate", route: "brand" },
+        { kind: "navigate", route: "https://evil.example/login" },
+        { kind: "explain", topic: "<img src=x onerror=alert(1)>" },
+      ],
+    };
+    const markup = render([row("f2", "founder", "Can I publish?", "done"), reply]);
+    expect(markup).toContain('aria-label="Cards from Wren"');
+    expect(markup).toContain("Publish this landing page version");
+    expect(markup).toContain("Status: Waiting for you");
+    expect(markup).toContain("Approve<span class=\"sr-only\"> · Publish this landing page version</span>");
+    expect(markup).toContain("Not now");
+    expect(markup).toContain("How approval cards work");
+    expect(markup).toContain('href="/dashboard/b/p1/brand"');
+    expect(markup).toContain("Open the brand kit");
+    expect(markup).not.toContain("evil.example");
+    expect(markup).not.toContain("onerror");
+    expect(await violations()).toEqual([]);
+  });
+
+  test("WP77-S4 cards: a decided approval card shows its status without buttons; streaming replies show no cards", async () => {
+    const decided: Thread[number] = {
+      ...row("w3", "wren", "Done.", "done"),
+      cards: [{
+        kind: "approval", approvalId: "a2" as Id<"approvals">, approvalKind: "post", status: "approved", title: "Post this social post",
+      }],
+    };
+    const streaming: Thread[number] = {
+      ...row("w4", "wren", "Writing", "streaming"),
+      cards: [{ kind: "explain", topic: "credits" }],
+    };
+    const markup = render([row("f3", "founder", "Post it", "done"), decided, row("f4", "founder", "And?", "done"), streaming]);
+    expect(markup).toContain("Status: Approved");
+    expect(markup).not.toContain(">Approve<");
+    expect(markup).not.toContain("Credits");
     expect(await violations()).toEqual([]);
   });
 });

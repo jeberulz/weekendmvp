@@ -14,8 +14,11 @@ import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
  * chat attempt key `chat:{projectId}:{wrenMessageId}:{attempt}` and a
  * `wren_reply` stream into the same row, so the reply appears as it is
  * written. The prompt is `WREN_PROMPT_REFS[route]` (the router takes the model
- * from that spec's tier). No tools: the reply is text and nothing else
- * happens (D13, D23).
+ * from that spec's tier). No tool loop (D23): the reply is text plus, from
+ * S4, an optional `cards` array of proposals in the same structured output.
+ * One gateway call per turn (plus its one re-ask), so every card a turn
+ * proposes was metered with it. `finishWrenTurn` decides what the proposals
+ * become (cards only, D13).
  *
  * Endings:
  * - settled: the output is re-parsed with the Wren schema; `done` with it;
@@ -31,6 +34,12 @@ import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
  */
 
 type FailedRun = Extract<GatewayRunResult, { ok: false }>;
+
+/**
+ * Proposals passed on to `finishWrenTurn`. The server considers only the first
+ * `WREN_CARDS_PER_TURN` and refuses the rest; this just bounds the argument.
+ */
+const CARD_PROPOSALS_PASSED = 16;
 type FinishOutcome = Infer<typeof finishOutcomeValidator>;
 
 export const runWrenTurnArgs = {
@@ -113,7 +122,13 @@ export async function runWrenTurnWith(
       parsed = wrenReplyOutput.safeParse(null);
     }
     await finish(parsed.success
-      ? { status: "done", body: parsed.data.reply, ...lastUsageId(result) }
+      ? {
+        status: "done",
+        body: parsed.data.reply,
+        // Proposals only; the server checks and caps them (`resolveWrenCards`).
+        ...(parsed.data.cards === undefined ? {} : { cards: parsed.data.cards.slice(0, CARD_PROPOSALS_PASSED) }),
+        ...lastUsageId(result),
+      }
       : { status: "failed", cause: "invalid", ...lastUsageId(result) }, lastAttempt(result, args.attempt));
     return null;
   }

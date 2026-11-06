@@ -7,6 +7,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
 import { CARD_SHELL, WrenMessage } from "@/components/workspace/kit/WrenCards";
 import { UserMessage, WrenComposer, WrenThread } from "@/components/workspace/kit/WrenThread";
+import { WrenChatCards } from "@/components/workspace/chat/WrenChatCards";
 import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ import { resetsInLabel, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
  * WP77-S3. The minimal Wren chat: the thread (`listWrenThread`), the composer
  * (`sendWrenMessage`) and Retry on a failed reply (`retryWrenReply`). The
  * reply streams in as the gateway writes it to the row. Full polish is S6.
+ * WP77-S4: a finished reply shows its cards (`WrenChatCards`) under the text.
  *
  * Accessibility: the thread is the kit's `role="log"`. A reply still being
  * written is `aria-busy`, so screen readers announce it once it is complete,
@@ -105,7 +107,7 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
     <div className="flex flex-col gap-4">
       {messages.length === 0 ? (
         <EmptyState title="Ask Wren anything about your launch">
-          Wren answers here. Nothing is sent, posted or spent from this chat.
+          Wren answers here and can put cards in front of you. Nothing is sent, posted or spent unless you approve a card.
         </EmptyState>
       ) : (
         <WrenThread>
@@ -122,6 +124,7 @@ function LiveWrenChat({ projectId }: { projectId: Id<"projects"> }) {
                   ) : (
                     <p className="whitespace-pre-wrap">{message.body}</p>
                   )}
+                  {message.status === "done" ? <WrenChatCards projectId={projectId} cards={message.cards} /> : null}
                   {message.status === "failed" && message._id === last?._id ? (
                     <p>
                       <button

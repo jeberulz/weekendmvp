@@ -125,6 +125,7 @@ import type * as workspace_approvals from "../workspace/approvals.js";
 import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 import type * as workspace_chat from "../workspace/chat.js";
 import type * as workspace_chatActions from "../workspace/chatActions.js";
+import type * as workspace_wrenCards from "../workspace/wrenCards.js";
 
 import type {
   ApiFromModules,
@@ -250,6 +251,7 @@ declare const fullApi: ApiFromModules<{
   "workspace/changeRounds": typeof workspace_changeRounds;
   "workspace/chat": typeof workspace_chat;
   "workspace/chatActions": typeof workspace_chatActions;
+  "workspace/wrenCards": typeof workspace_wrenCards;
 }>;
 
 /**

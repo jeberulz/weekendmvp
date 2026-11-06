@@ -16,7 +16,14 @@ import { checkLimit } from "../platform/limits";
 import { wrenChatSpec } from "../ai/prompts/wrenChat";
 import { wrenPlanTurnSpec } from "../ai/prompts/wrenPlanTurn";
 import { quotedData, WREN_REPLY_MAX_CHARS } from "../ai/prompts/wrenShared";
+import {
+  approvalCardViews,
+  resolveWrenCards,
+  wrenCardProposalValidator,
+  wrenCardViewValidator,
+} from "./wrenCards";
 import { parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts";
+import { WREN_CARDS_PER_TURN } from "../../lib/workspace/contracts/wrenTools";
 import {
   decideWrenRoute,
   historyLine,
@@ -76,6 +83,16 @@ import {
  *
  * Founder text is data: it reaches the model only inside the prompt's
  * quoted data blocks and the business context block built here.
+ *
+ * WP77-S4 cards: a finished reply may carry proposed cards (the model's
+ * `cards` field). `finishWrenTurn` hands them to `resolveWrenCards`
+ * (`./wrenCards.ts`) in the same transaction as the `done` write, and the
+ * approval cards it returns go on the reply row's `cardApprovalIds`. No extra
+ * chat rows are inserted, so the founder/Wren `createdAt` pairing holds.
+ * Explain and navigate cards pass the allowlist but have no column to live in
+ * until `chat_messages.cards` lands (Needs from Codex #13); until then they
+ * are checked and dropped. A failed reply attaches no card. The thread
+ * returns each row's cards as server-built views.
  */
 
 export const WREN_PROMPT_REFS: Readonly<Record<WrenRoute, string>> = Object.freeze({
@@ -113,6 +130,8 @@ export const wrenThreadMessageValidator = v.object({
   body: v.string(),
   status: v.union(v.literal("streaming"), v.literal("done"), v.literal("failed")),
   createdAt: v.number(),
+  /** WP77-S4: the reply's cards, built by the server (approval cards: this business's only). */
+  cards: v.array(wrenCardViewValidator),
 });
 
 const failureCauseValidator = v.union(
@@ -297,10 +316,18 @@ export const listWrenThread = query({
     await assertFeatureEnabled(ctx, "workspace");
     const project = await requireBusinessAccess(ctx, args.projectId, "owner");
     const rows = await newestMessages(ctx, project._id, WREN_THREAD_PAGE);
-    return rows
-      .filter((row) => row.ownerId === project.ownerId)
-      .reverse()
-      .map((row) => ({ _id: row._id, author: row.author, body: row.body, status: row.status, createdAt: row.createdAt }));
+    const business = { ownerId: project.ownerId, projectId: project._id };
+    const own = rows.filter((row) => row.ownerId === project.ownerId).reverse();
+    return await Promise.all(own.map(async (row) => ({
+      _id: row._id,
+      author: row.author,
+      body: row.body,
+      status: row.status,
+      createdAt: row.createdAt,
+      cards: row.author === "wren" && row.status === "done"
+        ? await approvalCardViews(ctx, business, row.cardApprovalIds.slice(0, WREN_CARDS_PER_TURN))
+        : [],
+    })));
   },
 });
 
@@ -325,12 +352,60 @@ export const loadedTurnValidator = v.union(
   v.object({ status: v.literal("skip") }),
 );
 
+/** One thing in this business Wren may put an approval card in front of (WP77-S4). */
+export type ApprovableSubject = {
+  readonly kind: "publish" | "send" | "post";
+  readonly subjectTable: "site_versions" | "sequences" | "social_posts";
+  readonly subjectId: string;
+  readonly label: string;
+};
+
+const APPROVABLE_PER_TABLE = 3;
+
 /**
- * The business context block (`02` §5.4) for Wren: the business, the partner
- * and Wren's memory. Founder-written fields are data, quoted as JSON with
+ * What Wren can raise an approval card for, so the model can name a real id:
+ * the newest `ready` site versions, draft sequences and `copy_ready` social
+ * posts of this business, a few of each. Server-read and bounded. The model
+ * may still name any id; `resolveWrenCards` checks it against the business.
+ */
+export async function approvableSubjects(ctx: QueryCtx, project: Project): Promise<ApprovableSubject[]> {
+  const versions = await ctx.db.query("site_versions")
+    .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", "ready"))
+    .order("desc")
+    .take(APPROVABLE_PER_TABLE);
+  const sequences = await ctx.db.query("sequences")
+    .withIndex("by_projectId", (q) => q.eq("projectId", project._id))
+    .order("desc")
+    .take(20);
+  const posts = await ctx.db.query("social_posts")
+    .withIndex("by_projectId_and_status", (q) => q.eq("projectId", project._id).eq("status", "copy_ready"))
+    .order("desc")
+    .take(APPROVABLE_PER_TABLE);
+  const own = <R extends { ownerId: Id<"users"> }>(row: R) => row.ownerId === project.ownerId;
+  return [
+    ...versions.filter(own).map((row) => ({
+      kind: "publish" as const, subjectTable: "site_versions" as const, subjectId: row._id,
+      label: `Landing page version ${row.version.toString()}`,
+    })),
+    ...sequences.filter((row) => own(row) && row.status === "draft").slice(0, APPROVABLE_PER_TABLE).map((row) => ({
+      kind: "send" as const, subjectTable: "sequences" as const, subjectId: row._id, label: `Email sequence: ${row.title}`,
+    })),
+    ...posts.filter(own).map((row) => ({
+      kind: "post" as const, subjectTable: "social_posts" as const, subjectId: row._id, label: "Social post ready to schedule",
+    })),
+  ];
+}
+
+/**
+ * The business context block (`02` §5.4) for Wren: the business, the partner,
+ * Wren's memory and (S4) what Wren may raise an approval card for. Founder-written fields are data, quoted as JSON with
  * `<` / `>` escaped so they cannot close the block.
  */
-export function wrenBusinessContext(project: Project, memory: Doc<"wren_memory"> | null): string {
+export function wrenBusinessContext(
+  project: Project,
+  memory: Doc<"wren_memory"> | null,
+  approvable: readonly ApprovableSubject[] = [],
+): string {
   const workspace = project.workspace;
   const data = {
     business: {
@@ -343,6 +418,7 @@ export function wrenBusinessContext(project: Project, memory: Doc<"wren_memory">
     },
     ...(workspace === undefined ? {} : { partner: { name: workspace.partner.name, personality: workspace.partner.personality } }),
     memory: memory === null ? { summary: "", facts: [] } : { summary: memory.summary, facts: memory.facts },
+    approvable,
   };
   return [
     "<business_context>",
@@ -383,7 +459,11 @@ export const loadWrenTurn = internalQuery({
       status: "ready" as const,
       message: founder.body,
       history,
-      businessContext: wrenBusinessContext(project, memory !== null && memory.ownerId === project.ownerId ? memory : null),
+      businessContext: wrenBusinessContext(
+        project,
+        memory !== null && memory.ownerId === project.ownerId ? memory : null,
+        await approvableSubjects(ctx, project),
+      ),
     };
   },
 });
@@ -414,7 +494,13 @@ export const writeWrenDraft = internalMutation({
 });
 
 export const finishOutcomeValidator = v.union(
-  v.object({ status: v.literal("done"), body: v.string(), usageId: v.optional(v.string()) }),
+  v.object({
+    status: v.literal("done"),
+    body: v.string(),
+    usageId: v.optional(v.string()),
+    /** WP77-S4: the model's proposed cards, untrusted; `resolveWrenCards` decides. */
+    cards: v.optional(v.array(wrenCardProposalValidator)),
+  }),
   v.object({ status: v.literal("failed"), cause: failureCauseValidator, usageId: v.optional(v.string()) }),
 );
 
@@ -443,10 +529,15 @@ export const finishWrenTurn = internalMutation({
     const body = args.outcome.status === "done"
       ? args.outcome.body.slice(0, WREN_REPLY_MAX_CHARS)
       : WREN_FAILURE_COPY[args.outcome.cause satisfies WrenFailureCause];
+    // Cards only on a finished reply, in this transaction, from this row's own business.
+    const cards = args.outcome.status === "done" && args.outcome.cards !== undefined && args.outcome.cards.length > 0
+      ? await resolveWrenCards(ctx, { ownerId: row.ownerId, projectId: row.projectId }, args.outcome.cards)
+      : null;
     await ctx.db.patch("chat_messages", row._id, {
       status: args.outcome.status,
       body,
       updatedAt: Date.now(),
+      cardApprovalIds: cards === null ? [] : [...cards.approvalIds],
       ...(usageId === null ? {} : { usageId }),
     });
     return true;
