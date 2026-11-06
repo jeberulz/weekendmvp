@@ -290,6 +290,8 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     stripeCustomerId: v.optional(v.string()),
     createdAt: v.optional(v.number()),
+    // D5: authoritative, irreversible epoch for future account-closure fan-out.
+    accountClosureRequestedAt: v.optional(v.number()),
     /** Optional signup attribution (e.g. live-buildalong). Set once, never overwritten. */
     signupSrc: v.optional(v.string()),
   })
@@ -371,6 +373,7 @@ export default defineSchema({
     // D5: set only by explicit Delete business or account closure, never archive.
     deletionRequestedAt: v.optional(v.number()),
   })
+    .index("by_ownerId", ["ownerId"])
     .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
     .index("by_ownerId_and_status_and_updatedAt", [
       "ownerId",
