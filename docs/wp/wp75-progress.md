@@ -227,7 +227,7 @@ each of those probes asserted the old buggy behaviour. The other 9 pass.
 | S3d build pack | Not started | Yes for HydroTrail fixture | Owner Q8, Q9; WP71-S5 seeds | Opus / Opus |
 | S4a deterministic checks | **Done**: three review rounds, precision-first final (`486e6516`), merged into `claude/wp75-crew` | **Yes** | — | Opus logic, Sonnet tests / Opus |
 | S4b quality + repair + policy | Not started | Yes, after S2a + S4a | Owner Q6, Q7; Codex 11 | Opus / Opus |
-| S5a renderer sections | Not started | **Yes** (fixture brand kits) | D24/D25 rulings (Owner Q10) | Sonnet / Opus + a11y-check |
+| S5a renderer sections | **Built** (uncommitted, awaiting review) | **Yes** (fixture brand kits) | D24/D25 ruled 2026-11-06 (PR #222) | Sonnet / Opus + a11y-check |
 | S5b tenant route + waitlist | Not started | No | Codex 1, 2; Owner Q5 | Opus / Opus |
 | S5c CI render matrix | Not started | No | Codex 3 | Sonnet, Haiku / Sonnet |
 | S6a Team HQ | Not started | After S1–S2 | S1, S2a | Sonnet / Opus |
@@ -714,3 +714,50 @@ Now soft, so `fn.ts` counts them as missed: "The #1 hydration pack for ultrarunn
 - **PR #216 review (CodeRabbit), missing revised draft**: `startCrewRun` now fails a revision task before opening a run when the draft it revises is gone (archived or bodiless). A paid round's refund is scheduled as for any failure, and the task is skipped as `missing`, with no model call (new test in `convex/crew/runner.test.ts`).
 - **PR #216 review (CodeRabbit), story drift**: the ticked S2a story in `wp75-stories.md` now describes the code as built: first drafts only, no caller-passed debit id, and revisions only through WP77's `insertRevisionTask`.
 - **PR #216 review (CodeRabbit), first match only in `neverFake.ts`**: already fixed by b6b2d25a (the comment was on 9106ed4a).
+
+## 2026-11-06 - WP75-S5a built (tenant renderer: sections and art directions)
+
+Uncommitted in `.worktrees/wp75-renderer` (branch `claude/wp75-s5a-renderer`, from `origin/main` `2e1ecf4a`). D24 and D25 ruled 2026-11-06 by the owner (recorded in PR #222, pending merge).
+
+### Files (about 1,280 lines)
+
+- `components/tenant-site/`: `TenantSite.tsx` (root), `sections.tsx` (nav, hero, promises, how it works, app preview, waitlist shell, footer), `theme.ts` (colours, AA), `styles.ts` (generated stylesheet), `fonts.ts` (loaders), `icons.tsx`, `platform-text.ts`, `tenant-site.module.css`, `index.ts`.
+- Tests: `tests/platform/wp75-tenant-renderer.test.tsx` (jsdom + axe, 79 direction x section x layout cases + structure), `tests/platform/wp75-tenant-theme.test.ts` (contrast, fallbacks, 400 seeded random kits, font loaders vs `TYPE_PAIRS`), `tests/security/wp75-tenant-renderer.test.tsx` (hostile text, links, colours; proof slots; platform text), `tests/platform/tenant-site-helpers.tsx`.
+
+### Design choices
+
+- **Colours.** `deriveTheme(kit)` re-grades every `BRAND_TEXT_PAIRS` pair with `contrastRatio`. A pair under 4.5:1 is drawn as ink on ground; if ink on ground fails, black or white on ground, and `degraded` is set. Text is only ink, primary (links) and ground (buttons, dark band); the accent draws underlines, marks, icons and focus, never text. No muted text colour (it would need its own pair): hierarchy is size and weight. The tinted `surface` backs off until ink and the link colour stay AA on it. Focus ring (light zones, dark band), control borders, button border and icons are computed to 3:1 against every zone they sit on. Selection uses the button pair, or system `Highlight` when that pair fell back to ground on ground.
+- **Applying colours.** One generated `<style>` with one rule scoped to `.tsr-{hash of the values}` (custom properties plus `color-scheme`), and optional `html:has(.tsr-x)` for the document scrollbar when `themeDocument` is set. Chosen over `style={{"--x": v}}` because `::selection`, scrollbar and `color-scheme` of the page cannot be reached from an element's custom property, and it keeps every `style=` attribute out of the DOM. Safety: each value must match a strict allow-list (lowercase `#rrggbb`, system keyword, weight, our font stacks) and the finished sheet a character allow-list with no quote, angle bracket or ampersand; a miss throws. Hex comes through `safeHex`, enum fields through closed lists. A hostile kit renders neutral colours and the default direction. No CSP exists today; a future `style-src` with nonces would need this `<style>` to take one.
+- **Fonts.** `next/font` cannot choose a family at render time and its loaders must be literal module-scope calls, so `fonts.ts` holds one literal loader per family (27) and a `TENANT_FONTS` map from pair id to classes and variables. `preload: false`, `subsets: ["latin"]`; only the chosen pair's classes go on the root. A test checks each family's weights against `TYPE_PAIRS` and each variable against its loader. No italic faces are loaded (several heading faces have none): emphasis is an accent underline, `font-synthesis: none`.
+- **Directions.** Six worlds in `tenant-site.module.css` via `data-direction` (measure, heading scale, tracking, border weight, plate art, one motion moment each: editorial underline draw, warm utility card rise, bold headline wipe, quiet technical grid fade, handmade plate settle, dense product frame rise). All motion is inside `prefers-reduced-motion: no-preference` and nothing starts hidden without it. Sections size from the container (`container: tsr / inline-size`, `cqi`, `@container`).
+- **Images.** The contract has no image URL (`ImageSpec` is a description and alt), so image slots draw a brand-coloured plate in `role="img"` with the alt as label; the description is never shown. Hero product-moment text sits beside the `role="img"` node so it stays readable.
+- **Platform text** lives in `platform-text.ts`: skip link, "Highlights" (the screen-reader h2 for promises, which has no heading field), the privacy line and link, "Made with Weekend MVP", the new-tab hint, the preview-form note. The footer year is a required `platform.year` prop, so the component reads no clock.
+- **Waitlist.** `waitlistSlot` takes S5b's form. Default is a disabled shell (`data-waitlist-slot="placeholder"`, no `<form>`, nothing posts). `waitlistClasses` exports the themed class names for S5b's client form.
+- **Fail closed.** CTA targets must be a present in-page anchor or `isSafeHttpsUrl`, else the label renders as plain text; a layout the direction does not allow renders as the direction's first allowed one.
+
+### Plan vs reality
+
+- `LANDING_SECTION_ORDER` has no nav; the nav is always first, with its one layout, as `SECTION_LAYOUTS` implies.
+- `package.json` `test:security` lists vitest files by name, so `tests/security/wp75-tenant-renderer.test.tsx` does not run under `npm run test:security` yet (run directly: 26 pass). Codex request below.
+- Not viewed in a browser: no route exists until S5b. A throwaway probe route (removed) proved `next build` compiles the loaders and prerenders the page with no font preload links.
+
+### Open items
+
+1. **Codex:** add `tests/security/wp75-tenant-renderer.test.tsx` to `test:security`.
+2. **Font CSS weight.** All 27 loaders' `@font-face` rules ship with any page that imports the renderer: about 100 KB of CSS (275 faces) in the probe build. Only the chosen pair's files download, but the CSS does not shrink. Fix in S5b/S5c: one module per pair, loaded on demand.
+3. **Duplicate ids** (`#top`, `#main`, `tsr-*`) if S6c shows the desktop and 390px frames on one page, and nested `<main>` inside the workspace `<main>`. S6c should render one frame or add an embedded mode.
+4. **Live a11y pass** (real contrast, focus visibility, 200% zoom, reduced motion) belongs to S5c with Playwright; jsdom checks structure only.
+5. Italic emphasis for the faces that have italics is a possible later polish.
+
+### Checks
+
+`git diff --check` 0; `npm run typecheck` 0; `npm run lint` 0 (no warnings in new files); new vitest files 116 pass; `npm run test:security` 0; `npm run test:platform` 0 (2,087 tests); `npm run build` 0.
+
+### S5a review fixes (Opus review: 0 blockers, 1 major, 4 minors, nits)
+
+- **Major, button border.** `buttonBorder` now uses `firstPassing([button background, body text], light zones, 3)`; the dark band is left out because `.inverse .btn` sets its own border. Repro kit (ground `#f2eee6`, ink `#111111`, primary `#a9c4ce`) is a named test; the 400-kit loop also asserts btn-border, icon, icon-inverse, focus-inverse, control-inverse (3:1) and link on surface (4.5:1). Reverting the fix makes the loop fail.
+- **Stylesheet.** `tenantStyle` checks `mode` against `THEME_MODES` and the heading weight (integer 100 to 900), and a `DENIED` pattern (`url`, `@`, `!`, backslash, import, expression) runs next to the character allow-list. Direct tests with forged vars, names, mode, weight and font stack all throw.
+- **Icons.** Lookup checks `LANDING_ICONS` first, so prototype keys render no icon; tested.
+- **Unparsed input.** Security test comment corrected; `TenantSite` doc says callers pass schema-parsed values; S5b acceptance line added to the stories.
+- **Render-level contrast.** A low-contrast kit renders `--t-link` equal to `--t-ink` in the generated `<style>` (tested).
+- **Nits.** Duplicate width/height and dead `type_led .plate` rule removed; unsafe CTA is a bare `<span>`; `--t-hw` default dropped from `.root`; disabled shell button is dashed with a 3:1 border and surface fill; D24/D25 wording fixed; S5a story unticked (the coordinator ticks it on commit).

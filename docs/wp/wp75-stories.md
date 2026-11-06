@@ -246,7 +246,7 @@ Standing rules:
     schema re-ask and the quality repair are counted separately and both use fresh attempt numbers; worst case per
     artifact is 4 calls; policy spec registered and locked.
 
-- [ ] `WP75-S5a` - Tenant renderer: fixed sections and art directions
+- [x] `WP75-S5a` - Tenant renderer: fixed sections and art directions
   - Scope: `components/tenant-site/**` (server components; no client JS except the waitlist form), tests.
   - `LandingSpec` → fixed section components in `LANDING_SECTION_ORDER` (nav, hero, promises, how it works, app
     preview, waitlist, footer), each with the `SECTION_LAYOUTS` variants each `ART_DIRECTIONS` entry allows; proof slots
@@ -269,6 +269,9 @@ Standing rules:
     `LandingSpec` document with S5a and keeps the WP27 `PreviewTemplateRenderer` for legacy specs. Discrimination
     needs `resolvePublishedSite` to return the document kind (Codex), or a parse-first fallback (progress
     Stop-and-ask 6).
+  - Acceptance (review of S5a): the route runs `landingSpecSchema.safeParse` and `brandKitSchema.safeParse` on the stored
+    documents before rendering and fails closed (404 or the legacy renderer) on a parse failure and when a render throws;
+    `TenantSite` assumes parsed input.
   - Waitlist form posts to `/__lead` on the tenant host. Until D5's three controls ship (WP78-S4), it runs in preview
     mode: `/__lead` accepts synthetic leads only and refuses an email (`convex/platform/sites/leads.ts:83`), so the UX
     of preview mode is an owner question (progress Owner questions 5). `captureMode: "preview" | "real"` prop; real
