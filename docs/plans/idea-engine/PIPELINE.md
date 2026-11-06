@@ -108,7 +108,7 @@ npm run editorial:submit-engine -- --slug={slug} --source-review=engine/records/
 | Synthesis | `lib/engine/providers/openai.ts` | `OPENAI_API_KEY` |
 | Search (citations only) | `lib/engine/providers/perplexity.ts` | `PERPLEXITY_API_KEY` |
 | Keywords | `lib/engine/providers/keywordData.ts` | DataForSEO login + password env vars |
-| Page text | `lib/engine/providers/sourceText.ts` | optional `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` |
+| Page text | `lib/engine/providers/sourceText.ts` | optional `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET`; on fake-IP DNS hosts (`198.18.0.0/15`) also `HTTPS_PROXY` or `ENGINE_HTTPS_PROXY` (validated egress proxy; SSRF stays on) |
 
 ## Hermetic checks
 

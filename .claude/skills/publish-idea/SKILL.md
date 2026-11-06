@@ -53,7 +53,10 @@ Examples:
 | Research stops, compile refuses, or the page fails the auditor | **STOP** — surface the failure and the run report. Do not invent thin WebSearch filler to paper over it. Do not call Ideabrowser MCP. |
 
 **Runtime:** Idea Engine needs **Node >= 22.6** (`package.json` engines, `.nvmrc`
-pins `22`, CI uses `22.x`). Node 20 fails with exit 9
+pins `22`, CI uses `22.x`). On hosts whose DNS rewrites public names to
+`198.18.0.0/15` (clash/mihomo fake-IP), also set `HTTPS_PROXY` /
+`ENGINE_HTTPS_PROXY` to that host's HTTP(S) egress proxy — see source-reading
+notes. Node 20 fails with exit 9
 (`bad option: --experimental-strip-types`) — unsupported, not polyfilled.
 Use `bash scripts/engine-replay.sh --work-root …` or `npm run engine:*` (they
 resolve a valid binary or exit 3 with install steps). Override with
@@ -218,6 +221,7 @@ Fixture briefs live in `engine/briefs/fixtures/` and all describe one idea, slug
 
 Source-reading notes:
 - **Reddit needs app credentials on most networks.** Reddit answers the public `.json` endpoint with HTTP 403 from cloud machines. Create a free "script" app at reddit.com/prefs/apps and set `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET`; the engine then uses Reddit's OAuth API. `ENGINE_QUOTE_FETCH_UA` alone does not get past the block. Hacker News item URLs (read through the Algolia items API) and public forum threads usually read without credentials.
+- **Fake-IP / clash-style DNS needs an egress proxy.** If `dns.lookup` for public hosts (e.g. `clockify.me`, `printavo.com`, `hn.algolia.com`) returns `198.18.0.1`, the SSRF guard correctly refuses the direct socket (`blocked_address`). Do **not** allowlist `198.18.0.0/15`. Set `HTTPS_PROXY` or `ENGINE_HTTPS_PROXY` to the local HTTP(S) proxy that owns that DNS (often `http://127.0.0.1:7890`); the engine then CONNECT-proxies fetches and skips destination DNS public checks while still refusing localhost/metadata IP literals. Without a working proxy on that host, live `source_acquisition` will stay at 0 readable sources.
 - **DataForSEO balance:** an account without balance fails `keywords_demand`; the error carries DataForSEO's status code (`40200`, Payment Required). Top up before a batch.
 
 ### Step 3.0 — Source Critic PASS (required before compile)

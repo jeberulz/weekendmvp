@@ -13,11 +13,17 @@
  * Citation URLs come from search results, so every byte, hop and second a
  * source can cost is bounded, and every failure is typed:
  *
- * - Addresses: the original URL and every redirect target must resolve only
- *   to public addresses (`assertPublicUrl`), and the default transport
- *   re-checks the address the socket connects to (`publicOnlyLookup`), plus
- *   IP-literal hosts, which Node connects to without calling `lookup`.
- *   Loopback, private, link-local and metadata-service targets are refused.
+ * - Addresses: by default the original URL and every redirect target must
+ *   resolve only to public addresses (`assertPublicUrl`), and the default
+ *   transport re-checks the address the socket connects to
+ *   (`publicOnlyLookup`), plus IP-literal hosts, which Node connects to
+ *   without calling `lookup`. Loopback, private, link-local, benchmarking
+ *   (`198.18.0.0/15`) and metadata-service targets are refused. Hosts whose
+ *   DNS is rewritten to that benchmarking/fake-IP range (common with local
+ *   clash/mihomo-style proxies) must set `HTTPS_PROXY` /
+ *   `ENGINE_HTTPS_PROXY` so the default transport uses a validated proxy
+ *   CONNECT path and skips destination DNS public checks — never a blanket
+ *   private/benchmark allow on the direct socket.
  * - Size and time (`SOURCE_LIMITS`): body bytes are copied into one buffer
  *   that never grows past the body cap, every byte read off the connection
  *   (status lines, headers, chunk framing) counts against a socket cap, and
@@ -45,6 +51,7 @@ import http from "node:http";
 import https from "node:https";
 import type { LookupFunction, Socket } from "node:net";
 import { isIP } from "node:net";
+import { ProxyAgent, fetch as undiciFetch } from "undici";
 
 export type SourceTextProvider = {
   fetchText(url: string): Promise<string>;
@@ -52,8 +59,30 @@ export type SourceTextProvider = {
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
+/**
+ * How destination hosts are vetted before each hop.
+ * - `direct` (default): every hop must resolve only to public IPs.
+ * - `via_proxy`: skip destination DNS public checks (fake-IP DNS); still
+ *   refuse localhost and blocked IP-literal destinations. Used only when a
+ *   validated egress proxy is configured — never a blanket private allow.
+ */
+export type DestinationMode = "direct" | "via_proxy";
+
 export type CreateSourceTextOptions = {
   fetchImpl?: FetchLike;
+  /**
+   * Destination SSRF mode. Defaults to `via_proxy` when the default transport
+   * is the configured HTTPS proxy, otherwise `direct`. Injected `fetchImpl`
+   * keeps `direct` unless this is set explicitly.
+   */
+  destinationMode?: DestinationMode;
+  /**
+   * Explicit proxy URL for the default transport. When omitted, the first
+   * non-empty of `ENGINE_HTTPS_PROXY`, `HTTPS_PROXY`, `HTTP_PROXY`,
+   * `ALL_PROXY` (and lowercase variants) is used. Ignored when `fetchImpl`
+   * is injected.
+   */
+  proxyUrl?: string;
   /** Deadline for one whole `fetchText` call (default `SOURCE_LIMITS.deadlineMs`). */
   timeoutMs?: number;
   userAgent?: string;
@@ -599,6 +628,24 @@ export function isBlockedAddress(ip: string): boolean {
   );
 }
 
+/**
+ * RFC 2544 benchmarking range (`198.18.0.0/15`). Local clash/mihomo-style
+ * fake-IP DNS often returns `198.18.0.1` for public hostnames; that must stay
+ * blocked on the direct path and is the signal to use a configured proxy.
+ */
+export function isBenchmarkFakeIp(ip: string): boolean {
+  if (isIP(ip) !== 4) return false;
+  const [a = 0, b = 0] = ip.split(".").map(Number);
+  return a === 198 && (b === 18 || b === 19);
+}
+
+/** Link-local / cloud-metadata IPv4 that must never be a proxy or destination. */
+function isMetadataOrLinkLocalIpv4(ip: string): boolean {
+  if (isIP(ip) !== 4) return false;
+  const [a = 0, b = 0] = ip.split(".").map(Number);
+  return (a === 169 && b === 254) || a === 0 || a >= 224;
+}
+
 async function defaultResolveHost(hostname: string): Promise<string[]> {
   const found = await lookup(hostname, { all: true, verbatim: true });
   return found.map((a) => a.address);
@@ -623,6 +670,81 @@ function parseSourceUrl(url: string): URL {
   return parsed;
 }
 
+const PROXY_ENV_KEYS = [
+  "ENGINE_HTTPS_PROXY",
+  "HTTPS_PROXY",
+  "https_proxy",
+  "HTTP_PROXY",
+  "http_proxy",
+  "ALL_PROXY",
+  "all_proxy",
+] as const;
+
+/**
+ * First configured egress proxy URL from the environment, or null. Does not
+ * validate the URL; call `assertSafeProxyUrl` before connecting.
+ */
+export function configuredProxyUrl(
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env,
+): string | null {
+  for (const key of PROXY_ENV_KEYS) {
+    const value = env[key]?.trim();
+    if (value) return value;
+  }
+  return null;
+}
+
+/**
+ * Validate an HTTP(S) egress proxy endpoint. Private/loopback proxy hosts are
+ * allowed (local clash/mitm proxies); link-local/metadata and non-http(s)
+ * schemes are refused. Does not open a blanket private allow for destinations.
+ */
+export function assertSafeProxyUrl(proxyUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(proxyUrl);
+  } catch {
+    throw new SourceFetchError("invalid_url", "Invalid HTTPS_PROXY / ENGINE_HTTPS_PROXY URL");
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new SourceFetchError(
+      "invalid_url",
+      `Refusing non-http proxy URL scheme "${parsed.protocol.replace(/:$/, "")}"`,
+    );
+  }
+  const host = bareHost(parsed.hostname);
+  if (host === "metadata.google.internal" || host.endsWith(".metadata.google.internal")) {
+    throw new SourceFetchError("blocked_address", "Refusing metadata host as HTTPS_PROXY");
+  }
+  if (isIP(host) !== 0 && isMetadataOrLinkLocalIpv4(host)) {
+    throw new SourceFetchError(
+      "blocked_address",
+      `Refusing link-local/metadata proxy address ${host}`,
+    );
+  }
+  return parsed;
+}
+
+function blockedSourceUrlError(url: string, addresses?: ReadonlyArray<string>): SourceFetchError {
+  const fakeIp = addresses?.some(isBenchmarkFakeIp) === true;
+  const hint = fakeIp
+    ? " (DNS returned 198.18.0.0/15 fake-IP/benchmark range; set HTTPS_PROXY or ENGINE_HTTPS_PROXY to the egress proxy that owns this DNS — do not disable the SSRF guard)"
+    : "";
+  return new SourceFetchError(
+    "blocked_address",
+    `Refusing non-public source URL: ${redactUrl(url)}${hint}`,
+  );
+}
+
+function assertBlockedHostnameOrLiteral(url: string, host: string): void {
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw blockedSourceUrlError(url);
+  }
+  if (isIP(host) !== 0 && isBlockedAddress(host)) {
+    throw blockedSourceUrlError(url, [host]);
+  }
+}
+
 /**
  * Throw unless the URL is http(s) and its host resolves only to public IPs.
  * With `signal`, the resolution is raced against it: dns.lookup cannot be
@@ -643,10 +765,23 @@ export async function assertPublicUrl(
   resolveHost: (hostname: string) => Promise<string[]> = defaultResolveHost,
   signal?: AbortSignal,
 ): Promise<void> {
+  await assertDestinationUrl(url, resolveHost, signal, "direct");
+}
+
+/**
+ * Destination SSRF check for one hop. `direct` requires public DNS results;
+ * `via_proxy` refuses only localhost and blocked IP literals (fake-IP DNS for
+ * public hostnames is expected when a validated egress proxy is in use).
+ */
+export async function assertDestinationUrl(
+  url: string,
+  resolveHost: (hostname: string) => Promise<string[]> = defaultResolveHost,
+  signal?: AbortSignal,
+  mode: DestinationMode = "direct",
+): Promise<void> {
   const host = bareHost(parseSourceUrl(url).hostname);
-  if (host === "localhost" || host.endsWith(".localhost")) {
-    throw new SourceFetchError("blocked_address", `Refusing non-public source URL: ${redactUrl(url)}`);
-  }
+  assertBlockedHostnameOrLiteral(url, host);
+  if (mode === "via_proxy") return;
   let addresses: string[];
   if (isIP(host)) {
     addresses = [host];
@@ -660,7 +795,7 @@ export async function assertPublicUrl(
     }
   }
   if (addresses.length === 0 || addresses.some(isBlockedAddress)) {
-    throw new SourceFetchError("blocked_address", `Refusing non-public source URL: ${redactUrl(url)}`);
+    throw blockedSourceUrlError(url, addresses);
   }
 }
 
@@ -1149,6 +1284,63 @@ export function createPublicOnlyFetch(options: PublicOnlyFetchOptions = {}): Fet
 
 export const publicOnlyFetch: FetchLike = createPublicOnlyFetch();
 
+/**
+ * Fetch through a validated HTTP(S) egress proxy (CONNECT for HTTPS). Used
+ * when destination DNS is fake-IP/benchmark (`198.18.0.0/15`). Destination
+ * IP-literal SSRF still runs before the request; body size is capped by
+ * `readBounded` after the hop. Does not allow private destinations on the
+ * direct socket path.
+ */
+export function createProxiedFetch(proxyUrl: string): FetchLike {
+  const proxy = assertSafeProxyUrl(proxyUrl);
+  const agent = new ProxyAgent(proxy.href);
+  return async (input, init = {}) => {
+    const label = redactUrl(input);
+    try {
+      transportTarget(input);
+    } catch (error) {
+      throw transportError(error, label);
+    }
+    try {
+      const response = await undiciFetch(input, {
+        method: init.method,
+        headers: outgoingHeaders(init.headers),
+        body: requestBody(init.body),
+        signal: init.signal ?? undefined,
+        redirect: "manual",
+        dispatcher: agent,
+      });
+      return response as unknown as Response;
+    } catch (error) {
+      throw transportError(error, label);
+    }
+  };
+}
+
+/**
+ * Default source transport: public-only direct sockets, or a validated proxy
+ * when `proxyUrl` / the HTTPS_PROXY family is set. Never disables destination
+ * IP-literal / localhost SSRF.
+ */
+export function createDefaultSourceFetch(options: {
+  proxyUrl?: string | null;
+  env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+} = {}): { fetchImpl: FetchLike; destinationMode: DestinationMode; proxyUrl: string | null } {
+  const raw =
+    options.proxyUrl === undefined
+      ? configuredProxyUrl(options.env ?? process.env)
+      : options.proxyUrl?.trim() || null;
+  if (!raw) {
+    return { fetchImpl: publicOnlyFetch, destinationMode: "direct", proxyUrl: null };
+  }
+  const proxy = assertSafeProxyUrl(raw);
+  return {
+    fetchImpl: createProxiedFetch(proxy.href),
+    destinationMode: "via_proxy",
+    proxyUrl: proxy.href,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Redirects and credentials
 // ---------------------------------------------------------------------------
@@ -1159,6 +1351,11 @@ export type SendOptions = {
   /** The operation deadline shared by every hop. */
   signal: AbortSignal;
   maxRedirects?: number;
+  /**
+   * Destination SSRF mode per hop. Defaults to `direct` (public DNS only).
+   * Use `via_proxy` only with a validated egress proxy transport.
+   */
+  destinationMode?: DestinationMode;
 };
 
 /** Free an unread body (an in-memory buffer here; a socket for other fetches). */
@@ -1209,12 +1406,13 @@ function headerRecord(headers: Headers): Record<string, string> {
 }
 
 /**
- * Send a request and follow its redirects. Every hop's host must be public.
- * Only GET and HEAD follow redirects. Once a hop changes origin, every header
- * but User-Agent, Accept and Accept-Language is dropped for good (a later hop
- * back to the first origin does not restore them), and a request that started
- * with credentials is refused an HTTPS→HTTP hop outright. URL userinfo is
- * never sent.
+ * Send a request and follow its redirects. Every hop's host is checked under
+ * `destinationMode` (`direct` = public DNS only; `via_proxy` = refuse
+ * localhost/blocked IP literals only). Only GET and HEAD follow redirects.
+ * Once a hop changes origin, every header but User-Agent, Accept and
+ * Accept-Language is dropped for good (a later hop back to the first origin
+ * does not restore them), and a request that started with credentials is
+ * refused an HTTPS→HTTP hop outright. URL userinfo is never sent.
  */
 export async function sendWithRedirects(
   url: string,
@@ -1222,6 +1420,7 @@ export async function sendWithRedirects(
   options: SendOptions,
 ): Promise<Response> {
   const { signal } = options;
+  const destinationMode = options.destinationMode ?? "direct";
   const maxRedirects = options.maxRedirects ?? SOURCE_LIMITS.maxRedirects;
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
@@ -1229,7 +1428,7 @@ export async function sendWithRedirects(
   const authenticated = CREDENTIAL_HEADERS.some((name) => headers.has(name));
   let current = withoutUserinfo(url);
   for (let redirects = 0; ; redirects += 1) {
-    await assertPublicUrl(current, options.resolveHost, signal);
+    await assertDestinationUrl(current, options.resolveHost, signal, destinationMode);
     const response = await untilAborted(
       options.fetchImpl(current, {
         method,
@@ -1388,7 +1587,16 @@ const REDDIT_BLOCKED_HINT =
 export function createSourceTextProvider(
   options: CreateSourceTextOptions = {},
 ): SourceTextProvider {
-  const fetchImpl: FetchLike = options.fetchImpl ?? publicOnlyFetch;
+  const defaults =
+    options.fetchImpl === undefined
+      ? createDefaultSourceFetch({ proxyUrl: options.proxyUrl })
+      : {
+          fetchImpl: options.fetchImpl,
+          destinationMode: "direct" as const,
+          proxyUrl: null as string | null,
+        };
+  const fetchImpl = defaults.fetchImpl;
+  const destinationMode = options.destinationMode ?? defaults.destinationMode;
   const deadlineMs = positiveInteger(options.timeoutMs, SOURCE_LIMITS.deadlineMs, "timeoutMs");
   // An empty value (e.g. copied from .env.example) means "unset".
   const userAgent =
@@ -1402,7 +1610,7 @@ export function createSourceTextProvider(
   let redditToken: Promise<string> | null = null;
 
   const send = (url: string, init: RequestInit, signal: AbortSignal): Promise<Response> =>
-    sendWithRedirects(url, init, { fetchImpl, resolveHost, signal });
+    sendWithRedirects(url, init, { fetchImpl, resolveHost, signal, destinationMode });
 
   const requestRedditToken = async (signal: AbortSignal): Promise<string> => {
     const basic = Buffer.from(`${redditId}:${redditSecret}`).toString("base64");
