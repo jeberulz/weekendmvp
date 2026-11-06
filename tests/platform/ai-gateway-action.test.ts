@@ -38,6 +38,36 @@ import { TIER_MODELS } from "@/lib/workspace/contracts/prompts";
 const modules = import.meta.glob("/convex/**/*.ts");
 
 const PROBE = "internal-registry-probe@2";
+
+/**
+ * A test-only, NON-internal spec: the probe's prompt under its own ref. Only
+ * this file's mocked registry knows it; the real registry, the lock and
+ * `check-prompt-versions` never see it. It lets the wizard key tests reach the
+ * key checks on the registered action, which refuses the internal probe first.
+ */
+const WIZARD_FIXTURE = "test-wizard-key-fixture@1";
+
+vi.mock("@/convex/ai/registry", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/convex/ai/registry")>();
+  const { promptEntry } = await import("@/convex/ai/prompts/entry");
+  const { registryProbeSpec } = await import("@/convex/ai/prompts/registryProbe");
+  const { definePromptSpec } = await import("@/lib/workspace/contracts/prompts");
+  const spec = definePromptSpec({
+    ...registryProbeSpec,
+    id: "test-wizard-key-fixture",
+    version: 1,
+    evalSuite: "test-wizard-key-fixture",
+  });
+  const entry = promptEntry(spec, {
+    module: "tests/platform/ai-gateway-action.test.ts",
+    sampleInputs: { label: "sample" },
+    internal: false,
+  });
+  return {
+    ...actual,
+    getEntry: (ref: string) => (ref === WIZARD_FIXTURE ? entry : actual.getEntry(ref)),
+  };
+});
 const FIXED_NOW = Date.UTC(2026, 10, 6, 12, 0, 0);
 
 type T = TestConvex<typeof schema>;
@@ -710,5 +740,286 @@ describe("live Claude client: SDK env", () => {
     expect(headers.get("x-api-key") ?? headers.get("authorization")).toContain("test-key-not-a-real-key");
     for (const spy of consoleSpies) expect(spy).not.toHaveBeenCalled();
     for (const spy of consoleSpies) spy.mockRestore();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// f. The wizard key form: owner spend before the business exists (2026-11-06)
+//
+// These tests use `WIZARD_FIXTURE`, a NON-internal copy of the probe that the
+// mocked registry adds (top of file). The internal probe would be refused by
+// the internal-spec rule before any key check runs, so it could not show that
+// the wizard checks themselves refuse.
+// ---------------------------------------------------------------------------
+
+type WizardOwner = {
+  readonly ownerId: Id<"users">;
+  readonly wizardSessionId: Id<"wizard_sessions">;
+  readonly opsId: Id<"ops_settings">;
+};
+
+/**
+ * An owner with a wizard session and no business. Reuses the `ops_settings`
+ * singleton when one exists; otherwise creates it (`allowlist` leaves the
+ * owner out of the cohort).
+ */
+async function seedWizardOwner(
+  t: T,
+  label: string,
+  options: { cohort?: "open" | "allowlist"; budget?: { lifetime: bigint; day: bigint } } = {},
+): Promise<WizardOwner> {
+  return await t.run(async (ctx) => {
+    const adminId = await ctx.db.insert("users", { email: `${label}-admin@example.test` });
+    const ownerId = await ctx.db.insert("users", { email: `${label}-owner@example.test` });
+    const existing = await ctx.db.query("ops_settings").first();
+    const opsId = existing !== null ? existing._id : await ctx.db.insert("ops_settings", {
+      ownerId: adminId,
+      singletonKey: "workspace",
+      workspaceEnabled: true,
+      cohortMode: options.cohort ?? "open",
+      freeSignupsOpen: false,
+      globalDailyBudgetMicroUsd: 50_000_000n,
+      paidGlobalDailyBudgetMicroUsd: 50_000_000n,
+      killSwitches: { ai: false, studioVideo: true, publish: true, email: true, social: true, ads: true },
+      updatedAt: 1,
+    });
+    const wizardSessionId = await ctx.db.insert("wizard_sessions", {
+      ownerId, step: "blueprint", answers: {}, startedAt: 1, updatedAt: 1,
+    });
+    if (options.budget !== undefined) {
+      await ctx.db.insert("ai_budgets", {
+        ownerId,
+        freeLifetimeSpentMicroUsd: options.budget.lifetime,
+        reservedMicroUsd: 0n,
+        freeReservedMicroUsd: 0n,
+        dayKey: utcDayKey(Date.now()),
+        daySpentMicroUsd: options.budget.day,
+        dayEscalations: 0n,
+        updatedAt: 1,
+      });
+    }
+    return { ownerId, wizardSessionId, opsId };
+  });
+}
+
+function wizardArgs(owner: WizardOwner, attempt?: number): RunPromptArgs {
+  return {
+    promptRef: WIZARD_FIXTURE,
+    inputs: { label: "A packing list that adapts to the forecast" },
+    ownerId: owner.ownerId,
+    attemptKey: { kind: "wizard", wizardSessionId: owner.wizardSessionId, step: "blueprint" },
+    ...(attempt === undefined ? {} : { attempt }),
+  };
+}
+
+/** The action's body exactly as the registered action runs it (no `allowInternal`), with an injected adapter. */
+async function runBody(t: T, args: RunPromptArgs, deps: RunPromptDeps = {}) {
+  return await runPromptWithMeter(meterCtx(t), args, deps);
+}
+
+/** The registered `runPrompt` action, in fixture mode. */
+async function runRegistered(t: T, args: RunPromptArgs) {
+  return await t.action(internal.ai.gatewayActions.runPrompt, args);
+}
+
+describe("gateway action: the wizard key form (pre-business owner spend)", () => {
+  test("end to end: the registered action settles a non-internal spec on a wizard key, inside the owner's Free budget", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const owner = await seedWizardOwner(t, "wizard-ok");
+    const result = await runRegistered(t, wizardArgs(owner));
+    expect(result).toMatchObject({ ok: true, promptRef: WIZARD_FIXTURE, nextAttempt: 2 });
+    if (!result.ok) throw new Error("expected a settled run");
+    expect(JSON.parse(result.outputJson)).toEqual({ echo: "fixture" });
+    const [attempt] = result.attempts;
+    expect(attempt).toMatchObject({ attemptKey: `wizard:${owner.wizardSessionId}:blueprint:1`, status: "settled" });
+
+    const rows = await usageRows(t);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      attemptKey: `wizard:${owner.wizardSessionId}:blueprint:1`,
+      promptRef: WIZARD_FIXTURE,
+      ownerId: owner.ownerId,
+      plan: "free",
+      globalPool: "free",
+      creditFunded: false,
+      status: "settled",
+    });
+    expect(rows[0].projectId).toBeUndefined();
+    expect(rows[0].taskId).toBeUndefined();
+    // Counted against the owner like any other Free spend.
+    expect(await ownerBudget(t, owner.ownerId)).toMatchObject({
+      freeLifetimeSpentMicroUsd: BigInt(attempt.chargedMicroUsd),
+      daySpentMicroUsd: BigInt(attempt.chargedMicroUsd),
+      reservedMicroUsd: 0n,
+    });
+    expect(await globalPool(t, "free")).toEqual({ spentTodayMicroUsd: attempt.chargedMicroUsd, inFlightMicroUsd: 0 });
+  });
+
+  test("a project, task, credit debit or business context is refused by the wizard check, before any reserve", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    // The business seeds the ops singleton; the wizard owner reuses it.
+    const business = await seedBusiness(t, "wizard-forbidden-business");
+    const owner = await seedWizardOwner(t, "wizard-forbidden");
+    const debitId = await debit(t, business);
+    const forbidden = forbiddenAdapter();
+    for (const [name, extra] of [
+      ["projectId", { projectId: business.projectId }],
+      ["taskId", { taskId: business.taskId }],
+      ["creditDebitId", { creditDebitId: debitId }],
+      ["businessContext", { businessContext: "Another business's context" }],
+    ] as const) {
+      const expected = {
+        ok: false,
+        failure: { kind: "config", message: `a wizard attempt key is pre-business; got ${name}` },
+        attempts: [],
+        nextAttempt: 1,
+      };
+      expect(await runBody(t, { ...wizardArgs(owner), ...extra }, { adapter: forbidden.adapter })).toMatchObject(expected);
+      expect(await runRegistered(t, { ...wizardArgs(owner), ...extra })).toMatchObject(expected);
+    }
+    expect(forbidden.calls()).toBe(0);
+    expect(await usageRows(t)).toHaveLength(0);
+  });
+
+  test("no owner is refused by the wizard check: a wizard key never reserves ownerless", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const owner = await seedWizardOwner(t, "wizard-ownerless");
+    const forbidden = forbiddenAdapter();
+    const expected = {
+      ok: false,
+      failure: { kind: "config", message: "a wizard attempt key needs the run's ownerId" },
+      attempts: [],
+    };
+    expect(await runBody(t, { ...wizardArgs(owner), ownerId: undefined }, { adapter: forbidden.adapter })).toMatchObject(expected);
+    expect(await runRegistered(t, { ...wizardArgs(owner), ownerId: undefined })).toMatchObject(expected);
+    expect(forbidden.calls()).toBe(0);
+    expect(await usageRows(t)).toHaveLength(0);
+  });
+
+  test("a malformed session id or a step outside C-WIZARD is refused by the key builder, before any reserve", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const owner = await seedWizardOwner(t, "wizard-malformed");
+    const forbidden = forbiddenAdapter();
+    const badId = { ok: false, failure: { kind: "config", message: "wizardSessionId must be a wizard_sessions id" }, attempts: [] };
+    for (const wizardSessionId of ["not:an:id", "", "UPPER_case_id_000000", "short"]) {
+      const key = { kind: "wizard" as const, wizardSessionId: wizardSessionId as Id<"wizard_sessions">, step: "blueprint" };
+      expect(await runBody(t, { ...wizardArgs(owner), attemptKey: key }, { adapter: forbidden.adapter })).toMatchObject(badId);
+    }
+    // The registered action's validator also refuses an id that is not a wizard_sessions id.
+    await expect(runRegistered(t, {
+      ...wizardArgs(owner),
+      attemptKey: { kind: "wizard", wizardSessionId: "not:an:id" as Id<"wizard_sessions">, step: "blueprint" },
+    })).rejects.toThrow();
+
+    const badStep = { ok: false, failure: { kind: "config", message: "step must be a C-WIZARD step" }, attempts: [] };
+    for (const step of ["checkout", "", "blueprint:1", "Blueprint", "phone"]) {
+      const key = { kind: "wizard" as const, wizardSessionId: owner.wizardSessionId, step };
+      expect(await runBody(t, { ...wizardArgs(owner), attemptKey: key }, { adapter: forbidden.adapter })).toMatchObject(badStep);
+      expect(await runRegistered(t, { ...wizardArgs(owner), attemptKey: key })).toMatchObject(badStep);
+    }
+    expect(forbidden.calls()).toBe(0);
+    expect(await usageRows(t)).toHaveLength(0);
+  });
+
+  test("the owner gates apply with no project: Free ceiling, daily cap, cohort and the AI switch", async () => {
+    stubFixtureEnv();
+    // One convex-test instance per gate: `ops_settings` is a singleton.
+    const instances: T[] = [];
+    const fresh = () => {
+      const instance = gatewayTest();
+      instances.push(instance);
+      return instance;
+    };
+
+    let t = fresh();
+    const atCeiling = await seedWizardOwner(t, "wizard-ceiling", { budget: { lifetime: 1_499_999n, day: 0n } });
+    expect(await runRegistered(t, wizardArgs(atCeiling))).toMatchObject({
+      ok: false,
+      failure: { kind: "meter_refused", error: { code: "BUDGET_EXHAUSTED", scope: "owner_free_lifetime" } },
+      attempts: [],
+    });
+
+    t = fresh();
+    const atDailyCap = await seedWizardOwner(t, "wizard-daily", { budget: { lifetime: 0n, day: 999_999n } });
+    expect(await runRegistered(t, wizardArgs(atDailyCap))).toMatchObject({
+      ok: false,
+      failure: { kind: "meter_refused", error: { code: "BUDGET_EXHAUSTED", scope: "owner_daily" } },
+      attempts: [],
+    });
+
+    t = fresh();
+    const outsideCohort = await seedWizardOwner(t, "wizard-cohort", { cohort: "allowlist" });
+    expect(await runRegistered(t, wizardArgs(outsideCohort))).toMatchObject({
+      ok: false,
+      failure: { kind: "meter_refused", error: { code: "RESOURCE_NOT_FOUND" } },
+      attempts: [],
+    });
+
+    t = fresh();
+    const switchedOff = await seedWizardOwner(t, "wizard-ai-off");
+    await t.run(async (ctx) => {
+      const ops = await ctx.db.get("ops_settings", switchedOff.opsId);
+      if (ops === null) throw new Error("ops_settings missing");
+      await ctx.db.patch("ops_settings", switchedOff.opsId, { killSwitches: { ...ops.killSwitches, ai: true } });
+    });
+    expect(await runRegistered(t, wizardArgs(switchedOff))).toMatchObject({
+      ok: false,
+      failure: { kind: "meter_refused", error: { code: "AI_DISABLED" } },
+      attempts: [],
+    });
+
+    for (const instance of instances) expect(await usageRows(instance)).toHaveLength(0);
+  });
+
+  test("the same key again is a duplicate with nothing sent; nextAttempt moves past it", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const owner = await seedWizardOwner(t, "wizard-duplicate");
+    const first = await runRegistered(t, wizardArgs(owner));
+    expect(first).toMatchObject({ ok: true, nextAttempt: 2 });
+    if (!first.ok) throw new Error("expected a settled run");
+    const charged = first.attempts[0].chargedMicroUsd;
+
+    // A redraft that starts again at attempt 1 is the duplicate the wizard must avoid.
+    const forbidden = forbiddenAdapter();
+    const replay = await runBody(t, wizardArgs(owner), { adapter: forbidden.adapter });
+    expect(replay).toMatchObject({
+      ok: false,
+      failure: {
+        kind: "duplicate_attempt",
+        attemptKey: `wizard:${owner.wizardSessionId}:blueprint:1`,
+        usageId: first.attempts[0].usageId,
+      },
+      attempts: [],
+      nextAttempt: 2,
+    });
+    expect(forbidden.calls()).toBe(0);
+    expect(await usageRows(t)).toHaveLength(1);
+    expect(await ownerBudget(t, owner.ownerId)).toMatchObject({ freeLifetimeSpentMicroUsd: BigInt(charged) });
+
+    const retried = await runRegistered(t, wizardArgs(owner, replay.nextAttempt));
+    expect(retried).toMatchObject({
+      ok: true,
+      nextAttempt: 3,
+      attempts: [{ attemptKey: `wizard:${owner.wizardSessionId}:blueprint:2`, status: "settled" }],
+    });
+  });
+
+  test("a wizard key never takes the ownerless eval path: the registered action refuses an internal spec", async () => {
+    stubFixtureEnv();
+    const t = gatewayTest();
+    const owner = await seedWizardOwner(t, "wizard-internal");
+    const registered = await runRegistered(t, { ...wizardArgs(owner), promptRef: PROBE });
+    expect(registered).toMatchObject({
+      ok: false,
+      failure: { kind: "config", message: expect.stringContaining("ownerless eval path") },
+      attempts: [],
+    });
+    expect(await usageRows(t)).toHaveLength(0);
+    expect(await t.run(async (ctx) => await ctx.db.query("ai_budgets").collect())).toHaveLength(0);
   });
 });

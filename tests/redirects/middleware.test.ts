@@ -235,15 +235,14 @@ describe("WP28-S2 host isolation", () => {
     ["multi-label", "a.b.weekendmvp.app"],
   ];
 
-  it("rewrites the tenant root to the internal site route", async () => {
+  it("refuses the tenant root while Global Config is unconfigured", async () => {
     const response = await runMiddleware(
       request("https://acme.weekendmvp.app/", "acme.weekendmvp.app"),
     );
 
-    // A rewrite, not a redirect: the visitor's URL stays on the customer host.
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(404);
     expect(response.headers.get("location")).toBeNull();
-    expect(response.headers.get("x-middleware-rewrite")).toContain("/site/acme");
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
   });
 
   it.each([

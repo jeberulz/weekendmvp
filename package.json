@@ -94,6 +94,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@phosphor-icons/react": "^2.1.10",
     "@resvg/resvg-js": "^2.6.2",
+    "@vercel/global-config": "^1.5.1",
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
