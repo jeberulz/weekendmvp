@@ -6,7 +6,7 @@
  *
  * `runPrompt` is an `internalAction` (never public). It:
  * 1. takes a `promptRef` (`id@version`) and the run's inputs, never a spec or
- *    a model. The spec comes from the registry (`getSpec`), and the gateway
+ *    a model. The spec comes from the registry (`getEntry`), and the gateway
  *    re-validates and routes it (`routeSpec`) before anything is reserved;
  * 2. builds the attempt key from a C-METER form (`jobAttemptKey`,
  *    `chatAttemptKey`, or `eval:{runId}:{caseId}:{attempt}`), never a raw key;
@@ -23,7 +23,29 @@
  *    `reserve` and `markSent` have both passed;
  * 5. returns a plain summary (`gatewayRunResult`): the structured output as a
  *    JSON string (callers re-parse it with the spec's schema), the failure,
- *    and every `ai_usage` attempt as the meter reported it.
+ *    every `ai_usage` attempt as the meter reported it, and `nextAttempt`.
+ *
+ * Refused before anything is reserved (`config`):
+ * - an internal spec (`PromptEntry.internal`: registry probes, fixtures) off
+ *   the ownerless eval path. Internal specs are never a crew job's prompt, so
+ *   they cannot run on a task, a debit or an owner's budget;
+ * - a key form that does not match the run's ownership: `eval` with an
+ *   `ownerId`, `projectId`, `taskId` or `creditDebitId`; `job` without both
+ *   `ownerId` and `taskId`; `chat` without a `projectId`;
+ * - an `attempt` that is not a positive integer.
+ *
+ * Notes for C-JOBS (the caller):
+ * - **Retry with `nextAttempt`.** A run that re-asked used two attempt numbers
+ *   (D23), and a row left unfinalised for the sweep is not in `attempts`, so
+ *   `attempt + attempts.length` can land on an existing row. Such a retry
+ *   comes back `duplicate_attempt` (no `usageId`) with nothing sent.
+ * - **A replay after the task is terminal is refused, not deduped.** The meter
+ *   checks the task and the debit before it looks up the attempt key, so a
+ *   replayed key on a `succeeded` / `failed` / `cancelled` task (or a refunded
+ *   debit) returns `meter_refused` (`RESOURCE_NOT_FOUND`), not
+ *   `duplicate_attempt`. Nothing is sent or charged. That refusal says the
+ *   task was already closed, not that the work failed: it must not trigger a
+ *   refund on its own.
  *
  * `"use node"`: the Anthropic SDK's credential chain imports Node built-ins
  * (`node:fs`, `node:os`). This file exports only the action and plain helpers;
@@ -32,7 +54,7 @@
  * `runPromptWithMeter` is the action's body with its adapter, clock and env
  * injectable, so the integration tests can drive the real meter mutations
  * with a scripted fixture adapter. The registered action always uses the
- * defaults.
+ * defaults (and never `allowInternal`).
  */
 
 import { v, type Infer, type ObjectType } from "convex/values";
@@ -56,14 +78,14 @@ import {
   type GatewayAttempt,
   type GatewayClock,
   type GatewayFailure,
-  type GatewayOutcome,
   type MeterPort,
   type TextAdapterPort,
+  type TextGatewayOutcome,
   type TextRunValue,
 } from "./gateway";
 import { createAnthropicAdapter } from "./providers/anthropic";
 import { AI_PROVIDER_MODE_ENV, PROVIDER_KEY_ENV, type ProviderEnv } from "./providers/mode";
-import { getSpec, type RegisteredSpec } from "./registry";
+import { getEntry, type RegisteredSpec } from "./registry";
 
 // ---------------------------------------------------------------------------
 // Validators
@@ -136,7 +158,8 @@ const failureValidator = v.union(
     kind: v.literal("meter_refused"),
     error: v.object({ code: gateCodeValidator, scope: v.optional(v.string()), message: v.optional(v.string()) }),
   }),
-  v.object({ kind: v.literal("duplicate_attempt"), attemptKey: v.string(), usageId: v.string() }),
+  /** `usageId` is absent when the key was used by a different call (see `GatewayFailure`). */
+  v.object({ kind: v.literal("duplicate_attempt"), attemptKey: v.string(), usageId: v.optional(v.string()) }),
   v.object({
     kind: v.literal("refusal"),
     provider: providerValidator,
@@ -165,12 +188,16 @@ export const gatewayRunResultValidator = v.union(
     messageId: v.string(),
     stopReason: v.string(),
     attempts: v.array(attemptValidator),
+    /** The attempt number a retry must use (`TextGatewayOutcome.nextAttempt`). */
+    nextAttempt: v.number(),
   }),
   v.object({
     ok: v.literal(false),
     promptRef: v.string(),
     failure: failureValidator,
     attempts: v.array(attemptValidator),
+    /** The attempt number a retry must use (`TextGatewayOutcome.nextAttempt`). */
+    nextAttempt: v.number(),
   }),
 );
 
@@ -181,8 +208,16 @@ export type GatewayRunResult = Infer<typeof gatewayRunResultValidator>;
 // ---------------------------------------------------------------------------
 
 /**
- * The only env the gateway reads: the provider mode switch and the Claude
- * key. Nothing else from `process.env` reaches the adapter.
+ * The only env the gateway passes on: the provider mode switch and the Claude
+ * key. Nothing else from `process.env` reaches the adapter's own code.
+ *
+ * The Anthropic SDK constructor reads `process.env` itself in live mode. The
+ * live client (`defaultAnthropicClientFactory`) sets every option that would
+ * otherwise default from it (key, base URL, webhook key, log level and logger,
+ * OpenTelemetry), so those variables are not read. SDK 1.5.0 still reads
+ * `ANTHROPIC_CUSTOM_HEADERS` in the constructor with no option to stop it;
+ * `stripUnlistedHeaders` drops every header it adds before a request leaves.
+ * Fixture mode constructs no SDK client.
  */
 export function gatewayEnv(source: ProviderEnv): ProviderEnv {
   return {
@@ -331,13 +366,49 @@ export type RunPromptDeps = {
   readonly clock?: GatewayClock;
   /** Read for `AI_PROVIDER_MODE` and `ANTHROPIC_API_KEY` only. Defaults to `process.env`. */
   readonly env?: ProviderEnv;
+  /**
+   * Tests only: lets an internal spec (the registry probe) run on the job and
+   * chat paths, so the integration tests can drive the real meter with a
+   * locked spec. The registered `runPrompt` never sets it.
+   */
+  readonly allowInternal?: boolean;
 };
 
 /** Prompt inputs as the registry's specs see them: their input type is erased (`RegisteredSpec`). */
 type PromptInputs = RunPromptArgs["inputs"];
 
-function configResult(promptRef: string, message: string): GatewayRunResult {
-  return { ok: false, promptRef, failure: { kind: "config", message }, attempts: [] };
+function configResult(promptRef: string, message: string, nextAttempt: number): GatewayRunResult {
+  return { ok: false, promptRef, failure: { kind: "config", message }, attempts: [], nextAttempt };
+}
+
+function isAttemptNumber(value: number): boolean {
+  return Number.isSafeInteger(value) && value >= 1;
+}
+
+/**
+ * Why a run's key form does not fit its ids, or null when it does. `eval` is
+ * the ownerless path (CI graders): no owner, business, task or debit. `job`
+ * is credit-funded crew work: it needs the owner and the task the meter
+ * checks. `chat` needs the run's `projectId` (checked by `attemptKeyBuilder`).
+ */
+export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId">): string | null {
+  switch (args.attemptKey.kind) {
+    case "eval": {
+      const given = (["ownerId", "projectId", "taskId", "creditDebitId"] as const).filter((name) => args[name] !== undefined);
+      return given.length === 0 ? null : `an eval attempt key is ownerless; got ${given.join(", ")}`;
+    }
+    case "job":
+      if (args.ownerId === undefined || args.taskId === undefined) return "a job attempt key needs the run's ownerId and taskId";
+      return null;
+    case "chat":
+      return null;
+  }
+}
+
+/** True for the ownerless eval path, the only one an internal spec may run on. */
+function isOwnerlessEval(args: RunPromptArgs): boolean {
+  return args.attemptKey.kind === "eval" &&
+    args.ownerId === undefined && args.taskId === undefined && args.creditDebitId === undefined;
 }
 
 function attemptRecord(attempt: GatewayAttempt): GatewayRunResult["attempts"][number] {
@@ -380,7 +451,11 @@ function failureRecord(failure: GatewayFailure): Extract<GatewayRunResult, { ok:
     case "config":
       return { kind: "config", message: failure.message };
     case "duplicate_attempt":
-      return { kind: "duplicate_attempt", attemptKey: failure.attemptKey, usageId: failure.usageId };
+      return {
+        kind: "duplicate_attempt",
+        attemptKey: failure.attemptKey,
+        ...(failure.usageId === undefined ? {} : { usageId: failure.usageId }),
+      };
     case "refusal":
       return {
         kind: "refusal",
@@ -406,9 +481,12 @@ function failureRecord(failure: GatewayFailure): Extract<GatewayRunResult, { ok:
 }
 
 /** The gateway's outcome as the action's plain return value. */
-export function gatewayRunResult(outcome: GatewayOutcome<TextRunValue<unknown>>): GatewayRunResult {
+export function gatewayRunResult(outcome: TextGatewayOutcome<TextRunValue<unknown>>): GatewayRunResult {
   const attempts = outcome.attempts.map(attemptRecord);
-  if (!outcome.ok) return { ok: false, promptRef: outcome.promptRef, failure: failureRecord(outcome.failure), attempts };
+  const { nextAttempt } = outcome;
+  if (!outcome.ok) {
+    return { ok: false, promptRef: outcome.promptRef, failure: failureRecord(outcome.failure), attempts, nextAttempt };
+  }
   return {
     ok: true,
     promptRef: outcome.promptRef,
@@ -416,25 +494,37 @@ export function gatewayRunResult(outcome: GatewayOutcome<TextRunValue<unknown>>)
     messageId: outcome.value.messageId,
     stopReason: outcome.value.stopReason,
     attempts,
+    nextAttempt,
   };
 }
 
 /**
  * The action's body. Resolves `promptRef` through the registry (never a spec
- * or model from the caller), binds the real meter, and runs the gateway.
+ * or model from the caller), checks the key form and the spec's `internal`
+ * flag against the run's ids, binds the real meter, and runs the gateway.
  */
 export async function runPromptWithMeter(
   ctx: MeterCtx,
   args: RunPromptArgs,
   deps: RunPromptDeps = {},
 ): Promise<GatewayRunResult> {
+  const firstAttempt = args.attempt ?? 1;
+  if (!isAttemptNumber(firstAttempt)) {
+    return configResult(args.promptRef, `attempt must be a positive integer, got ${firstAttempt}`, 1);
+  }
   let spec: RegisteredSpec;
   let attemptKey: (attempt: number) => string;
   try {
-    spec = getSpec(args.promptRef);
+    const entry = getEntry(args.promptRef);
+    if (entry.internal && deps.allowInternal !== true && !isOwnerlessEval(args)) {
+      return configResult(args.promptRef, `${args.promptRef} is an internal spec: it runs only on the ownerless eval path`, firstAttempt);
+    }
+    const mismatch = keyFormMismatch(args);
+    if (mismatch !== null) return configResult(args.promptRef, mismatch, firstAttempt);
+    spec = entry.spec;
     attemptKey = attemptKeyBuilder(args.attemptKey, args.projectId);
   } catch (error) {
-    return configResult(args.promptRef, error instanceof Error ? error.message : String(error));
+    return configResult(args.promptRef, error instanceof Error ? error.message : String(error), firstAttempt);
   }
 
   const ids: RunIds = {

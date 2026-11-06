@@ -32,6 +32,11 @@
  *   ownerless work `{ code: "WORKSPACE_DISABLED" }` or
  *   `{ code: "AI_DISABLED", scope }`;
  * - budget refusals throw `firstReserveFailure`'s `MeterErrorData`.
+ *
+ * A known attempt key replays (`existing: true`) only for the same call. For a
+ * different call (any reserve field differs, e.g. a retry that lands on a
+ * re-ask row) it throws the real meter's plain
+ * `Error("attemptKey reused for a different call")` (`sameAttempt`).
  */
 
 import { ConvexError } from "convex/values";
@@ -59,12 +64,13 @@ import {
   type FailArgs,
   type FinalizeResult,
   type GlobalPool,
+  type ReserveArgs,
   type MeterFeature,
   type MeterPlan,
   type SettleArgs,
   type SpendDeltas,
 } from "@/lib/workspace/contracts/metering";
-import type { MeterPort } from "@/convex/ai/gateway";
+import { METER_ATTEMPT_KEY_REUSED, type MeterPort } from "@/convex/ai/gateway";
 
 export type { MeterPort };
 
@@ -127,6 +133,8 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
 
   const rows = new Map<string, AiUsageRow>();
   const byAttemptKey = new Map<string, string>();
+  /** What the real meter's `sameAttempt` compares, per attempt key. */
+  const callByAttemptKey = new Map<string, string>();
   const finalizeCount = new Map<string, number>();
   const budgets = new Map<string, AiBudgetsRow>();
   for (const [ownerId, owner] of Object.entries(owners)) {
@@ -203,8 +211,12 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
     async reserve(args) {
       assertReserveArgs(args);
       gate(args.feature, args.ownerId);
+      const call = sameCallKey(args);
       const existing = byAttemptKey.get(args.attemptKey);
-      if (existing !== undefined) return { usageId: existing, existing: true };
+      if (existing !== undefined) {
+        if (callByAttemptKey.get(args.attemptKey) !== call) throw new Error(METER_ATTEMPT_KEY_REUSED);
+        return { usageId: existing, existing: true };
+      }
 
       const createdAt = now();
       const dayKey = utcDayKey(createdAt);
@@ -272,6 +284,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       };
       rows.set(usageId, row);
       byAttemptKey.set(args.attemptKey, usageId);
+      callByAttemptKey.set(args.attemptKey, call);
 
       const deltas = reserveDeltas(row);
       const shard = counter(deltas.global.pool, deltas.global.dayKey);
@@ -389,6 +402,15 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       workspaceEnabled = on;
     },
   };
+}
+
+/** The fields the real `sameAttempt` compares, as one string. */
+function sameCallKey(args: ReserveArgs): string {
+  return JSON.stringify([
+    args.ownerId ?? null, args.projectId ?? null, args.taskId ?? null, args.promptRef, args.provider,
+    args.model, args.tier, args.feature, args.reservedMicroUsd, args.creditDebitId ?? null,
+    args.batch === true, args.escalation === true, args.reask === true,
+  ]);
 }
 
 function assertInteger(name: string, value: unknown): void {

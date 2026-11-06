@@ -426,3 +426,70 @@
      when `settle` or `fail` throws twice, and only the sweep finalises it.
   4. Optional: a `npx convex codegen` run on a dev deployment, to regenerate `convex/_generated/api.d.ts`
      properly. The hand edit adds only `ai/gatewayActions`.
+- Review fixes (independent review of `fd3d1205`):
+  - Fixed:
+    - P2-1, internal specs on the credit-funded path. The registered `runPrompt` now reads the
+      registry entry (`getEntry`, which already exposes `internal`, so the registry needed no change).
+      It refuses an internal ref with `config`, before any reserve, unless the key form is `eval` with
+      no `ownerId`, `taskId` or `creditDebitId`. `runPromptWithMeter` takes a test-only
+      `allowInternal` dependency, which the registered action never sets. No spec was added to the
+      registry or the lock.
+    - P2-2, re-ask key collision. Text runs return `nextAttempt`: the highest attempt this run reserved
+      a row for, plus one. It counts a row left unfinalised and a row taken back at `markSent`. When
+      nothing was reserved it is the first attempt. `gatewayRunResultValidator` has the new field. The
+      meter's "attemptKey reused for a different call" (`METER_ATTEMPT_KEY_REUSED`, matched as a
+      substring because `runMutation` can wrap it) now maps to `duplicate_attempt` with no `usageId`
+      (now optional), not `internal`. The meter stub throws the same `Error` for a known key reached
+      by a different call.
+    - P3-1, replay after a terminal task. The action header tells C-JOBS that such a replay is
+      `meter_refused` (`RESOURCE_NOT_FOUND`), not deduped, and must not trigger a refund on its own.
+    - P3-3, SDK env in live mode. `defaultAnthropicClientFactory` sets `webhookKey: null`,
+      `logLevel: "off"`, a silent logger and `openTelemetry: { propagation: false, traces: false }`.
+      SDK 1.5.0 then reads none of `ANTHROPIC_WEBHOOK_SIGNING_KEY`, `ANTHROPIC_LOG` or
+      `ANTHROPIC_OPEN_TELEMETRY*`. It still reads `ANTHROPIC_CUSTOM_HEADERS`, and no option turns that
+      off: `defaultHeaders` is merged over it, so env-only names survive. A `stripUnlistedHeaders`
+      middleware drops every header outside the SDK's own set and the key. `gatewayEnv`'s doc now
+      says this.
+    - P3-4, key forms tied to ownership. `eval` with an `ownerId`, `projectId`, `taskId` or
+      `creditDebitId` is refused with `config`. `projectId` was added to the reviewer's list, because
+      `eval` is ownerless. `job` without both `ownerId` and `taskId` is refused, as is an `attempt`
+      that is not a positive integer.
+  - Tests added:
+    - `ai-gateway-action.test.ts`, now 16 tests. The job-path tests now call `runPromptWithMeter`
+      with `allowInternal`. New tests:
+      - the registered action refuses the probe on the job and chat paths, with zero reserves and
+        untouched budgets;
+      - the registered action runs the probe on the ownerless eval path;
+      - an eval key with each of the four ids is refused;
+      - a job key without its task or owner, and attempt 0, are refused;
+      - a run on attempt 1 that re-asks returns `nextAttempt: 3`. A retry on 2 is `duplicate_attempt`
+        with no `usageId` and no provider call. A retry on 3 settles;
+      - a replay after the task `succeeded` is `meter_refused`, with no send, no new row and no refund;
+      - the live SDK client, with the env set, ignores `ANTHROPIC_LOG`, `ANTHROPIC_BASE_URL` and the
+        OpenTelemetry vars. It strips the custom headers (`x-injected`, `anthropic-beta`,
+        `traceparent`) and never writes to `console`. Fetch is stubbed, so nothing reaches the network.
+    - `ai-gateway.test.ts`, 5 new tests:
+      - a reused key is a duplicate without a `usageId`, and the retry on `nextAttempt` runs;
+      - any other plain reserve error still ends `internal`;
+      - an unfinalised re-ask row counts in `nextAttempt`;
+      - a row taken back at `markSent` counts too;
+      - `nextAttempt` is the first attempt when nothing was reserved.
+  - Checks:
+    - `npm run typecheck`: exit 0.
+    - `npx tsc --noEmit -p convex`: exit 0.
+    - `npm run lint`: exit 0, 0 errors, and the same 37 warnings that predate this change. None are in
+      the touched files.
+    - `npx vitest run tests/platform/ai-gateway-action.test.ts tests/platform/ai-gateway.test.ts convex/ai/metering.test.ts`:
+      exit 0, 94 passed in 3 files.
+    - `npm run test:security`: exit 0. Node: 203 tests, 202 passed, 1 skipped. Vitest: 121 passed.
+    - `npm test`: exit 0, with no timeouts.
+    - `node --no-warnings --experimental-strip-types scripts/check-prompt-versions.mjs`: exit 0.
+      1 version matches the lock.
+  - Still open:
+    - WP70-S4: the `sweepStale` cron (Codex), for rows left unfinalised.
+    - Codex: send a `message` (and `scope`) with the gate errors (item 1 above).
+    - Real codegen of `convex/_generated/api.d.ts`. An isolated anonymous local Convex deploy (ports
+      3340/3341) succeeded on `fd3d1205`, with all functions ready. The checked-in file is still the
+      hand edit.
+    - A `chat` key with no `ownerId` is not refused yet. The reviewer did not raise it.
+

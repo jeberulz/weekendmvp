@@ -59,6 +59,11 @@
  * - **Meter and gateway failures come back as results.** A throw from
  *   `reserve`, `settle` or `fail` ends the run `internal` with the attempts so
  *   far, never an escaped error that loses them.
+ * - **A reused attempt key is a duplicate, not an internal error.** The
+ *   meter's "attemptKey reused for a different call" (`METER_ATTEMPT_KEY_REUSED`)
+ *   ends the run `duplicate_attempt` with no `usageId`, like a replay, and
+ *   nothing is sent. A text run returns `nextAttempt` so a retry never lands
+ *   on its own re-ask row.
  * - **A gate refusal is a meter refusal.** The real meter throws C-OPS /
  *   C-AUTHZ gate codes (`AI_DISABLED`, `WORKSPACE_DISABLED`,
  *   `RESOURCE_NOT_FOUND`) from `reserve` and `markSent`, often as bare
@@ -266,10 +271,14 @@ export type GatewayFailure =
    */
   | { readonly kind: "meter_refused"; readonly error: GatewayErrorData }
   /**
-   * The attempt key already had a row (a replayed run). Nothing was sent and
-   * the existing row was left alone: the caller must use a new attempt number.
+   * The attempt key already had a row. Nothing was sent and the existing row
+   * was left alone: the caller must use a new attempt number (a text run's
+   * `nextAttempt` from the run that made the row). `usageId` names the row
+   * when the meter returned it (the same call replayed); it is absent when the
+   * meter refused the key as "attemptKey reused for a different call" (e.g. a
+   * job retry that landed on an earlier run's re-ask row).
    */
-  | { readonly kind: "duplicate_attempt"; readonly attemptKey: string; readonly usageId: string }
+  | { readonly kind: "duplicate_attempt"; readonly attemptKey: string; readonly usageId?: string }
   | {
       readonly kind: "refusal";
       readonly provider: MeterProvider;
@@ -300,6 +309,16 @@ export type GatewayOutcome<TValue> = (
   readonly promptRef: string;
   readonly attempts: readonly GatewayAttempt[];
 };
+
+/**
+ * A text run's outcome. `nextAttempt` is the highest attempt number this run
+ * reserved a row for, plus one, counting a row left unfinalised for the sweep
+ * and a row the meter refused at `markSent`. When the run reserved nothing
+ * (a `config` failure, a `reserve` refusal, a duplicate key) it is the run's
+ * first attempt number. A caller's retry uses it, never
+ * `firstAttempt + attempts.length` (`attempts` leaves out an unfinalised row).
+ */
+export type TextGatewayOutcome<TValue> = GatewayOutcome<TValue> & { readonly nextAttempt: number };
 
 export type TextRunValue<TOutput> = {
   readonly output: TOutput;
@@ -340,8 +359,12 @@ type AttemptPlan<TResult, TValue> = {
 };
 
 type AttemptOutcome<TValue> =
-  /** Nothing was reserved, or the row was not ours to finalise. Nothing was sent. */
-  | { readonly kind: "not_sent"; readonly failure: GatewayFailure }
+  /**
+   * Nothing was sent. `reserved` is true when this attempt did create a row
+   * (it was no longer ours to finalise by `markSent`), false when nothing was
+   * reserved.
+   */
+  | { readonly kind: "not_sent"; readonly failure: GatewayFailure; readonly reserved: boolean }
   /** The finalise call threw twice: the row is left for the sweep. */
   | { readonly kind: "unfinalized"; readonly failure: GatewayFailure }
   | { readonly kind: "settled"; readonly record: GatewayAttempt; readonly value: TValue }
@@ -368,6 +391,19 @@ export function gatewayErrorDataOf(error: unknown): GatewayErrorData | null {
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * The real meter's text when `reserve` finds the attempt key on a row made by
+ * a different call (`sameAttempt` in `convex/ai/metering.ts`). It throws a
+ * plain `Error`, not a `ConvexError`; through `ctx.runMutation` the message
+ * can arrive wrapped (function name, request id, "Uncaught Error:"), so it is
+ * matched as a substring, and only this exact phrase.
+ */
+export const METER_ATTEMPT_KEY_REUSED = "attemptKey reused for a different call";
+
+function isAttemptKeyReused(error: unknown): boolean {
+  return error instanceof Error && error.message.includes(METER_ATTEMPT_KEY_REUSED);
 }
 
 /** Calls a finalise mutation, retrying the same call once (C-METER makes it idempotent by `usageId`). */
@@ -398,14 +434,19 @@ async function runAttempt<TResult, TValue>(
     reserved = await meter.reserve(args);
   } catch (error) {
     const data = gatewayErrorDataOf(error);
+    if (data === null && isAttemptKeyReused(error)) {
+      return { kind: "not_sent", reserved: false, failure: { kind: "duplicate_attempt", attemptKey: args.attemptKey } };
+    }
     return {
       kind: "not_sent",
+      reserved: false,
       failure: data ? { kind: "meter_refused", error: data } : { kind: "internal", message: `reserve failed: ${messageOf(error)}` },
     };
   }
   if (reserved.existing) {
     return {
       kind: "not_sent",
+      reserved: false,
       failure: { kind: "duplicate_attempt", attemptKey: args.attemptKey, usageId: reserved.usageId },
     };
   }
@@ -429,6 +470,7 @@ async function runAttempt<TResult, TValue>(
     // longer ours (already final, e.g. swept). Send nothing, finalise nothing.
     return {
       kind: "not_sent",
+      reserved: true,
       failure: {
         kind: "provider",
         provider: args.provider,
@@ -926,27 +968,30 @@ export function crossCheckedTextCost(
 export async function runTextGateway<TInput, TOutput>(
   deps: TextGatewayDeps,
   input: TextGatewayInput<TInput, TOutput>,
-): Promise<GatewayOutcome<TextRunValue<TOutput>>> {
+): Promise<TextGatewayOutcome<TextRunValue<TOutput>>> {
   const runStartedAt = deps.clock.now();
   const deadlineAt = runStartedAt + GATEWAY_RUN_BUDGET_MS;
+  const firstAttempt = input.caller.attempt ?? 1;
 
   // 1. Resolve the spec. Nothing is reserved if this fails.
   let resolved: ResolvedText;
   try {
     resolved = resolveText(input);
   } catch (error) {
-    return configFailure(safeRef(input.spec), messageOf(error));
+    return { ...configFailure(safeRef(input.spec), messageOf(error)), nextAttempt: firstAttempt };
   }
   const { ref, model } = resolved;
   const { spec, caller } = input;
   const schemaNode = resolved.request.outputSchema ?? {};
-  const firstAttempt = caller.attempt ?? 1;
   const attempts: GatewayAttempt[] = [];
-  const end = (failure: GatewayFailure): GatewayOutcome<TextRunValue<TOutput>> => ({
+  // The highest attempt number this run reserved a row for.
+  let lastReserved = firstAttempt - 1;
+  const end = (failure: GatewayFailure): TextGatewayOutcome<TextRunValue<TOutput>> => ({
     ok: false,
     failure,
     promptRef: ref,
     attempts,
+    nextAttempt: lastReserved + 1,
   });
 
   let request = resolved.request;
@@ -1017,9 +1062,12 @@ export async function runTextGateway<TInput, TOutput>(
       },
     });
 
+    if (outcome.kind !== "not_sent" || outcome.reserved) lastReserved = attempt;
     if (outcome.kind === "not_sent" || outcome.kind === "unfinalized") return end(outcome.failure);
     attempts.push(outcome.record);
-    if (outcome.kind === "settled") return { ok: true, value: outcome.value, promptRef: ref, attempts };
+    if (outcome.kind === "settled") {
+      return { ok: true, value: outcome.value, promptRef: ref, attempts, nextAttempt: lastReserved + 1 };
+    }
     if (!outcome.reaskable || reasks >= MAX_REASKS) return end(outcome.failure);
 
     // D23's one re-ask, only if the run can still afford it in time.

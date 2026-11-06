@@ -689,6 +689,93 @@ describe("runTextGateway: settle or fail at most once per row", () => {
     expect(h1.meter.finalizeCalls(first.attempts[0].usageId)).toBe(1);
   });
 
+  it("reports a key reused by a different call as a duplicate without a usageId, and sends nothing", async () => {
+    const h1 = harness((call) => (call === 1 ? { json: { headline: "" } } : undefined));
+    const first = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller });
+    expect(first).toMatchObject({ ok: true, nextAttempt: 3 });
+    expect(first.attempts.map((a) => a.attempt)).toEqual([1, 2]);
+
+    // Attempt 2 is the re-ask row: a retry on it is a different call.
+    const retry = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 2 } });
+    expect(retry).toMatchObject({
+      ok: false,
+      failure: { kind: "duplicate_attempt", attemptKey: `${JOB_KEY}:2` },
+      attempts: [],
+      nextAttempt: 2,
+    });
+    if (retry.ok || retry.failure.kind !== "duplicate_attempt") throw new Error("expected a duplicate");
+    expect(retry.failure.usageId).toBeUndefined();
+    expect(h1.params).toHaveLength(2);
+    expect(h1.meter.rows()).toHaveLength(2);
+
+    const next = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: first.nextAttempt } });
+    expect(next).toMatchObject({ ok: true, attempts: [{ attemptKey: `${JOB_KEY}:3` }], nextAttempt: 4 });
+  });
+
+  it("still ends internal for any other plain reserve error", async () => {
+    const meter = stubMeter();
+    const outcome = await runTextGateway(
+      { ...harness().deps, meter: { ...meter, reserve: async () => { throw new Error("reserve mutation lost"); } } },
+      { spec: spec(), inputs: INPUTS, caller },
+    );
+    expect(outcome).toMatchObject({ ok: false, failure: { kind: "internal", message: "reserve failed: reserve mutation lost" }, nextAttempt: 1 });
+  });
+
+  it("counts an unfinalised re-ask row in nextAttempt, though it is not in attempts", async () => {
+    const meter = stubMeter();
+    const events: Event[] = [];
+    const base = recordingMeter(meter, events);
+    let fails = 0;
+    const h1 = harness((call) => (call === 1 ? { json: { headline: "" } } : { json: { headline: "" } }));
+    const outcome = await runTextGateway(
+      {
+        ...h1.deps,
+        meter: {
+          ...base,
+          fail: async (args) => {
+            fails += 1;
+            // The first attempt's fail lands; both tries on the re-ask row throw.
+            if (fails > 1) throw new Error("fail mutation lost");
+            return base.fail(args);
+          },
+        },
+      },
+      { spec: spec(), inputs: INPUTS, caller },
+    );
+    expect(outcome).toMatchObject({ ok: false, failure: { kind: "internal", usageId: expect.any(String) }, nextAttempt: 3 });
+    expect(outcome.attempts).toHaveLength(1);
+    expect(meter.rows().map((row) => [row.attemptKey, row.status])).toEqual([
+      [`${JOB_KEY}:1`, "failed"],
+      [`${JOB_KEY}:2`, "reserved"],
+    ]);
+  });
+
+  it("counts a row the meter took back at markSent in nextAttempt", async () => {
+    const meter = stubMeter();
+    const outcome = await runTextGateway(
+      {
+        ...harness().deps,
+        meter: {
+          ...meter,
+          markSent: async ({ usageId }) => ({ usageId, changed: false }),
+        },
+      },
+      { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 4 } },
+    );
+    expect(outcome).toMatchObject({ ok: false, failure: { kind: "provider", billed: "none" }, attempts: [], nextAttempt: 5 });
+  });
+
+  it("returns the first attempt as nextAttempt when nothing was reserved", async () => {
+    const h1 = harness(() => undefined, { killSwitches: { ai: true } });
+    const refused = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 5 } });
+    expect(refused).toMatchObject({ ok: false, failure: { kind: "meter_refused" }, nextAttempt: 5 });
+    // A business context on a spec whose cache layout has none is refused before any reserve.
+    const config = await runTextGateway(h1.deps, {
+      spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 5 }, businessContext: "HydroTrail context",
+    });
+    expect(config).toMatchObject({ ok: false, failure: { kind: "config" }, nextAttempt: 5 });
+  });
+
   it("starts at the caller's attempt number", async () => {
     const h1 = harness();
     const outcome = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller: { ...caller, attempt: 3 } });
