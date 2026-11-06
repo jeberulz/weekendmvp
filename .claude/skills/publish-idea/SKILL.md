@@ -89,7 +89,7 @@ Runs only for `/publish-idea --suggest {category|thinnest}` or when the operator
 **0.1 Coverage and backlog.**
 - Count `ideas/manifest.json` rows per `category`; `thinnest` means the lowest count.
 - List slug and description of every existing idea in that category and its two nearest neighbours. This is the duplicate corpus.
-- Read the project's idea-publish backlog memory (`project_idea-publish-backlog.md`, "Engine-era shortlist"). Candidates already there are re-verified in 0.3 to 0.6, not re-brainstormed, and are never suggested twice.
+- Read the checked-in idea-publish backlog (`ideas/idea-publish-backlog.md`, "Engine-era shortlist"). Candidates already there are re-verified in 0.3 to 0.6, not re-brainstormed, and are never suggested twice.
 
 **0.2 Raw candidates.** Draft 6 to 8 one-line candidates beyond what the backlog holds: a named buyer, what that buyer uses today, and the wedge the incumbents skip. These come from model knowledge, so label the list "unverified" until 0.5 and 0.6 have run.
 
@@ -117,7 +117,7 @@ Runs only for `/publish-idea --suggest {category|thinnest}` or when the operator
 **0.7 Present.** A table of at most 4 candidates, best first. Columns: idea, category, buyer, wedge, community evidence (links, readable Y/N), competitors verified (n of 3), market stat found (Y/N), Reddit status, engine risk (low / medium / high), unverified claims. Recommend one and say why, then wait for the operator's pick.
 
 **0.8 Persist and hand off.**
-- Update the backlog memory in place: edit the existing "Engine-era shortlist" paragraph, never append a second one. One entry per candidate: title, category, buyer, engine risk, evidence links, date checked, status (`unverified`, `verified`, `published` or `dropped`). Keep at most 15 entries. Remove an entry that now collides with the manifest or whose evidence stopped being readable, and mark an idea `published` with its slug once it is live.
+- Update `ideas/idea-publish-backlog.md` in place: edit the existing "Engine-era shortlist" paragraph, never append a second one. One entry per candidate: title, category, buyer, engine risk, evidence links, date checked, status (`unverified`, `verified`, `published` or `dropped`). Keep at most 15 entries. Remove an entry that now collides with the manifest or whose evidence stopped being readable, and mark an idea `published` with its slug once it is live.
 - Re-run 0.3 against the current manifest before reusing any stored entry; the manifest may have moved since it was saved.
 - On the operator's pick, continue at Step 1, and put only URLs verified in 0.5 and 0.6 into `sourceHints`.
 
@@ -559,12 +559,12 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 ## Checklist
 
 ### Suggest path (`--suggest` only)
-- [ ] Category counted; existing ideas in it and its neighbours listed; backlog memory read
+- [ ] Category counted; existing ideas in it and its neighbours listed; `ideas/idea-publish-backlog.md` read
 - [ ] Every candidate duplicate-checked against the manifest, `content/ideas/`, `engine/records/` and `ideas/drafts/`
 - [ ] Evidence URLs fetched and the quoted sentences confirmed; Reddit marked "not checked" when credentials are missing
 - [ ] Competitor pricing pages and market-stat pages fetched; everything else labelled "from memory"
 - [ ] No paid provider and no `engine:research` run during the step
-- [ ] Backlog memory updated in place (statuses, at most 15 entries)
+- [ ] `ideas/idea-publish-backlog.md` updated in place (statuses, at most 15 entries)
 
 ### Engine path
 - [ ] Idea gate passed (paying buyer, public pain, wedge) and no existing idea covers it; slug free in the manifest, `content/ideas/` and `engine/records/`
