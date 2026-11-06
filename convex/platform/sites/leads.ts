@@ -58,7 +58,7 @@ async function publishedSiteForHostname(
     .take(2);
   if (matches.length !== 1) return null;
   const site = matches[0];
-  if (site.archivedAt !== undefined) return null;
+  if (site.archivedAt !== undefined || site.takedownAt !== undefined) return null;
   if (site.status !== "published" || site.currentVersionId === undefined) {
     return null;
   }

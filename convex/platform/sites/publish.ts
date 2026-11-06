@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
-import { mutation, type MutationCtx } from "../../_generated/server";
+import { internalMutation, mutation, type MutationCtx } from "../../_generated/server";
+import { assertFeatureEnabled } from "../../ops/settings";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
 import { assertSiteTransition, assertSiteVersionTransition } from "../transitions";
 import type { SiteStatus } from "../validators";
@@ -31,6 +32,7 @@ import { isValidTenantSlug, tenantHostForSlug } from "../../../lib/tenant-host";
 const PUBLISH_ERROR = {
   slugUnavailable: "SITE_SLUG_UNAVAILABLE",
   notPublishable: "SITE_NOT_PUBLISHABLE",
+  approvalRequired: "PUBLISH_APPROVAL_REQUIRED",
 } as const;
 
 const publishResultValidator = v.object({
@@ -76,7 +78,7 @@ async function ownedSite(
     )
     .take(2);
   const site = sites.length === 1 ? sites[0] : null;
-  if (site === null || site.archivedAt !== undefined) {
+  if (site === null || site.archivedAt !== undefined || site.takedownAt !== undefined) {
     denyNotFound();
   }
   return site;
@@ -185,10 +187,23 @@ async function audit(
  * cannot create a second version because the content is unchanged, no matter
  * what key it carries.
  */
+/** The old public API cannot bypass WP78's approval and policy checks. */
 export const publish = mutation({
   args: { projectId: v.id("projects"), slug: v.string() },
   returns: publishResultValidator,
+  handler: async (ctx): Promise<PublishResult> => {
+    await assertFeatureEnabled(ctx, "publish");
+    throw new ConvexError({ code: PUBLISH_ERROR.approvalRequired });
+  },
+});
+
+/** Only WP78's approved publishing action may call this core mutation. */
+/** Legacy publish core. Only a future S1 wrapper may call this after policy and approval checks. */
+export const publishCore = internalMutation({
+  args: { projectId: v.id("projects"), slug: v.string() },
+  returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {
+    await assertFeatureEnabled(ctx, "publish");
     const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
 
@@ -259,10 +274,22 @@ export const publish = mutation({
  * expressible — and even if it were, mutating a historical row in place would
  * destroy the audit trail of what was live when.
  */
+/** A rollback republishes content and therefore also requires approval. */
 export const rollback = mutation({
   args: { projectId: v.id("projects"), toVersion: v.int64() },
   returns: publishResultValidator,
+  handler: async (ctx): Promise<PublishResult> => {
+    await assertFeatureEnabled(ctx, "publish");
+    throw new ConvexError({ code: PUBLISH_ERROR.approvalRequired });
+  },
+});
+
+/** Legacy rollback core. Only a future S1 wrapper may call this after policy and approval checks. */
+export const rollbackCore = internalMutation({
+  args: { projectId: v.id("projects"), toVersion: v.int64() },
+  returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {
+    await assertFeatureEnabled(ctx, "publish");
     const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
 
@@ -325,6 +352,7 @@ export const unpublish = mutation({
   args: { projectId: v.id("projects") },
   returns: v.object({ changed: v.boolean() }),
   handler: async (ctx, args): Promise<{ changed: boolean }> => {
+    await assertFeatureEnabled(ctx, "publish");
     const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
     const site = await ownedSite(ctx, user._id, args.projectId);

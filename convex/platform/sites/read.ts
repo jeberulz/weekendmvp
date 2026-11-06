@@ -82,7 +82,7 @@ async function resolvePublished(
 ): Promise<PublishedSite | null> {
   const site = await siteForHostname(ctx, hostname);
   if (site === null) return null;
-  if (site.archivedAt !== undefined) return null;
+  if (site.archivedAt !== undefined || site.takedownAt !== undefined) return null;
   if (site.status !== "published") return null;
 
   // A published site with no current version is the shape a takedown or a

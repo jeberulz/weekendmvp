@@ -1,7 +1,7 @@
 import { convexTest, type TestConvex } from "convex-test";
 import { describe, expect, test } from "vitest";
 import schema from "../../schema";
-import { api } from "../../_generated/api";
+import { api, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import { serializeSiteRenderSpec } from "../preview/renderSpec";
 
@@ -55,6 +55,22 @@ async function seedProject(
 ) {
   return await t.run(async (ctx) => {
     const now = Date.now();
+    const settings = await ctx.db.query("ops_settings")
+      .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
+      .unique();
+    if (settings === null) {
+      await ctx.db.insert("ops_settings", {
+        ownerId,
+        singletonKey: "workspace",
+        workspaceEnabled: true,
+        cohortMode: "open",
+        freeSignupsOpen: false,
+        globalDailyBudgetMicroUsd: 0n,
+        paidGlobalDailyBudgetMicroUsd: 0n,
+        killSwitches: { ai: true, studioVideo: true, publish: false, email: true, social: true, ads: true },
+        updatedAt: now,
+      });
+    }
     const projectId = await ctx.db.insert("projects", {
       ownerId,
       title: "Collectible verification",
@@ -105,6 +121,61 @@ const versionsOf = (t: TestConvex<typeof schema>, siteConfigId: Id<"site_configs
 const siteOf = (t: TestConvex<typeof schema>, siteConfigId: Id<"site_configs">) =>
   t.run(async (ctx) => await ctx.db.get(siteConfigId));
 
+describe("WP78 legacy public publish boundary", () => {
+  test("public publish and rollback refuse even when the publish flag is on", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "owner@example.com");
+    const { projectId, siteConfigId } = await seedProject(t, owner.userId);
+    const member = asUser(t, owner.userId, owner.sessionId);
+
+    await expect(member.mutation(api.platform.sites.publish.publish, {
+      projectId, slug: "acme",
+    })).rejects.toThrow("PUBLISH_APPROVAL_REQUIRED");
+    await expect(member.mutation(api.platform.sites.publish.rollback, {
+      projectId, toVersion: 1n,
+    })).rejects.toThrow("PUBLISH_APPROVAL_REQUIRED");
+    expect((await siteOf(t, siteConfigId))?.hostname).toBeUndefined();
+    expect(await versionsOf(t, siteConfigId)).toHaveLength(1);
+  });
+
+  test("all legacy public side effects obey the off switch", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "owner@example.com");
+    const { projectId } = await seedProject(t, owner.userId);
+    await t.run(async (ctx) => {
+      const settings = await ctx.db.query("ops_settings")
+        .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
+        .unique();
+      await ctx.db.patch(settings!._id, {
+        killSwitches: { ...settings!.killSwitches, publish: true },
+      });
+    });
+    const member = asUser(t, owner.userId, owner.sessionId);
+    await expect(member.mutation(api.platform.sites.publish.publish, {
+      projectId, slug: "acme",
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+    await expect(member.mutation(api.platform.sites.publish.rollback, {
+      projectId, toVersion: 1n,
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+    await expect(member.mutation(api.platform.sites.publish.unpublish, {
+      projectId,
+    })).rejects.toThrow("WORKSPACE_DISABLED");
+  });
+
+  test("a takedown flag blocks internal publish replay", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "owner@example.com");
+    const { projectId, siteConfigId } = await seedProject(t, owner.userId);
+    await t.run(async (ctx) => await ctx.db.patch(siteConfigId, {
+      takedownAt: Date.now(), takedownReason: "Security takedown",
+    }));
+    await expect(asUser(t, owner.userId, owner.sessionId).mutation(
+      internal.platform.sites.publish.publishCore,
+      { projectId, slug: "acme" },
+    )).rejects.toThrow("RESOURCE_NOT_FOUND");
+  });
+});
+
 describe("publish", () => {
   test("publishes at the tenant hostname and makes the site resolvable", async () => {
     const t = convexTest(schema, modules);
@@ -112,7 +183,7 @@ describe("publish", () => {
     const { projectId, siteConfigId } = await seedProject(t, owner.userId);
 
     const result = await asUser(t, owner.userId, owner.sessionId).mutation(
-      api.platform.sites.publish.publish,
+      internal.platform.sites.publish.publishCore,
       { projectId, slug: "acme" },
     );
 
@@ -136,7 +207,7 @@ describe("publish", () => {
 
     // Anonymous callers cannot publish at all.
     await expect(
-      t.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
+      t.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" }),
     ).rejects.toThrow(/UNAUTHENTICATED|RESOURCE_NOT_FOUND/);
   });
 
@@ -147,7 +218,7 @@ describe("publish", () => {
     const { projectId } = await seedProject(t, a.userId);
 
     await expect(
-      asUser(t, b.userId, b.sessionId).mutation(api.platform.sites.publish.publish, {
+      asUser(t, b.userId, b.sessionId).mutation(internal.platform.sites.publish.publishCore, {
         projectId,
         slug: "acme",
       }),
@@ -163,7 +234,7 @@ describe("publish", () => {
 
       await expect(
         asUser(t, owner.userId, owner.sessionId).mutation(
-          api.platform.sites.publish.publish,
+          internal.platform.sites.publish.publishCore,
           { projectId, slug },
         ),
       ).rejects.toThrow(/SITE_SLUG_UNAVAILABLE/);
@@ -179,7 +250,7 @@ describe("publish", () => {
 
       await expect(
         asUser(t, owner.userId, owner.sessionId).mutation(
-          api.platform.sites.publish.publish,
+          internal.platform.sites.publish.publishCore,
           { projectId, slug },
         ),
       ).rejects.toThrow(/SITE_SLUG_UNAVAILABLE/);
@@ -193,13 +264,13 @@ describe("publish", () => {
     const first = await seedProject(t, a.userId);
     const second = await seedProject(t, b.userId);
 
-    await asUser(t, a.userId, a.sessionId).mutation(api.platform.sites.publish.publish, {
+    await asUser(t, a.userId, a.sessionId).mutation(internal.platform.sites.publish.publishCore, {
       projectId: first.projectId,
       slug: "acme",
     });
 
     await expect(
-      asUser(t, b.userId, b.sessionId).mutation(api.platform.sites.publish.publish, {
+      asUser(t, b.userId, b.sessionId).mutation(internal.platform.sites.publish.publishCore, {
         projectId: second.projectId,
         slug: "acme",
       }),
@@ -208,7 +279,7 @@ describe("publish", () => {
     // A taken slug and a reserved slug raise the same error, so this mutation
     // is not an oracle for which subdomains other customers hold.
     await expect(
-      asUser(t, b.userId, b.sessionId).mutation(api.platform.sites.publish.publish, {
+      asUser(t, b.userId, b.sessionId).mutation(internal.platform.sites.publish.publishCore, {
         projectId: second.projectId,
         slug: "admin",
       }),
@@ -221,11 +292,11 @@ describe("publish", () => {
     const { projectId, siteConfigId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
 
-    const first = await as.mutation(api.platform.sites.publish.publish, {
+    const first = await as.mutation(internal.platform.sites.publish.publishCore, {
       projectId,
       slug: "acme",
     });
-    const second = await as.mutation(api.platform.sites.publish.publish, {
+    const second = await as.mutation(internal.platform.sites.publish.publishCore, {
       projectId,
       slug: "acme",
     });
@@ -254,8 +325,8 @@ describe("publish", () => {
     // platform guarantee, not application logic — testing it here would be
     // testing Convex. See `docs/wp/RULINGS.md`.
     await Promise.all([
-      as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
-      as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
+      as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" }),
+      as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" }),
     ]);
 
     const versions = await versionsOf(t, siteConfigId);
@@ -274,11 +345,11 @@ describe("publish", () => {
     const second = await seedProject(t, b.userId);
 
     const results = await Promise.allSettled([
-      asUser(t, a.userId, a.sessionId).mutation(api.platform.sites.publish.publish, {
+      asUser(t, a.userId, a.sessionId).mutation(internal.platform.sites.publish.publishCore, {
         projectId: first.projectId,
         slug: "contested",
       }),
-      asUser(t, b.userId, b.sessionId).mutation(api.platform.sites.publish.publish, {
+      asUser(t, b.userId, b.sessionId).mutation(internal.platform.sites.publish.publishCore, {
         projectId: second.projectId,
         slug: "contested",
       }),
@@ -300,6 +371,17 @@ describe("publish", () => {
     const owner = await seedUser(t, "owner@example.com");
     const projectId = await t.run(async (ctx) => {
       const now = Date.now();
+      await ctx.db.insert("ops_settings", {
+        ownerId: owner.userId,
+        singletonKey: "workspace",
+        workspaceEnabled: true,
+        cohortMode: "open",
+        freeSignupsOpen: false,
+        globalDailyBudgetMicroUsd: 0n,
+        paidGlobalDailyBudgetMicroUsd: 0n,
+        killSwitches: { ai: true, studioVideo: true, publish: false, email: true, social: true, ads: true },
+        updatedAt: now,
+      });
       const id = await ctx.db.insert("projects", {
         ownerId: owner.userId,
         title: "Empty",
@@ -321,7 +403,7 @@ describe("publish", () => {
 
     await expect(
       asUser(t, owner.userId, owner.sessionId).mutation(
-        api.platform.sites.publish.publish,
+        internal.platform.sites.publish.publishCore,
         { projectId, slug: "empty" },
       ),
     ).rejects.toThrow(/SITE_NOT_PUBLISHABLE/);
@@ -332,7 +414,7 @@ describe("publish", () => {
     const owner = await seedUser(t, "owner@example.com");
     const { projectId } = await seedProject(t, owner.userId);
     await asUser(t, owner.userId, owner.sessionId).mutation(
-      api.platform.sites.publish.publish,
+      internal.platform.sites.publish.publishCore,
       { projectId, slug: "acme" },
     );
 
@@ -352,7 +434,7 @@ describe("rollback", () => {
     const { projectId, siteConfigId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
 
-    await as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" });
+    await as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" });
 
     // New content, then publish again — the second publish must supersede.
     await t.run(async (ctx) => {
@@ -388,7 +470,7 @@ describe("rollback", () => {
       });
     });
 
-    await as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" });
+    await as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" });
     return { owner, projectId, siteConfigId, as };
   }
 
@@ -397,7 +479,7 @@ describe("rollback", () => {
     const { projectId, siteConfigId, as } = await publishTwice(t);
 
     const before = await versionsOf(t, siteConfigId);
-    const result = await as.mutation(api.platform.sites.publish.rollback, {
+    const result = await as.mutation(internal.platform.sites.publish.rollbackCore, {
       projectId,
       toVersion: 2n,
     });
@@ -426,7 +508,7 @@ describe("rollback", () => {
     const site = await siteOf(t, siteConfigId);
     const current = await t.run(async (ctx) => await ctx.db.get(site!.currentVersionId!));
 
-    const result = await as.mutation(api.platform.sites.publish.rollback, {
+    const result = await as.mutation(internal.platform.sites.publish.rollbackCore, {
       projectId,
       toVersion: current!.version,
     });
@@ -437,7 +519,7 @@ describe("rollback", () => {
     const t = convexTest(schema, modules);
     const { projectId, as } = await publishTwice(t);
     await expect(
-      as.mutation(api.platform.sites.publish.rollback, { projectId, toVersion: 99n }),
+      as.mutation(internal.platform.sites.publish.rollbackCore, { projectId, toVersion: 99n }),
     ).rejects.toThrow(/RESOURCE_NOT_FOUND/);
   });
 
@@ -446,7 +528,7 @@ describe("rollback", () => {
     const { projectId } = await publishTwice(t);
     const b = await seedUser(t, "b@example.com");
     await expect(
-      asUser(t, b.userId, b.sessionId).mutation(api.platform.sites.publish.rollback, {
+      asUser(t, b.userId, b.sessionId).mutation(internal.platform.sites.publish.rollbackCore, {
         projectId,
         toVersion: 2n,
       }),
@@ -460,7 +542,7 @@ describe("unpublish", () => {
     const owner = await seedUser(t, "owner@example.com");
     const { projectId, siteConfigId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
-    await as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" });
+    await as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" });
 
     const result = await as.mutation(api.platform.sites.publish.unpublish, { projectId });
     expect(result.changed).toBe(true);
@@ -484,7 +566,7 @@ describe("unpublish", () => {
     const b = await seedUser(t, "b@example.com");
     const { projectId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
-    await as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" });
+    await as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" });
 
     await as.mutation(api.platform.sites.publish.unpublish, { projectId });
     expect(await as.mutation(api.platform.sites.publish.unpublish, { projectId })).toEqual({
@@ -504,9 +586,9 @@ describe("unpublish", () => {
     const { projectId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
 
-    await as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" });
+    await as.mutation(internal.platform.sites.publish.publishCore, { projectId, slug: "acme" });
     await as.mutation(api.platform.sites.publish.unpublish, { projectId });
-    const again = await as.mutation(api.platform.sites.publish.publish, {
+    const again = await as.mutation(internal.platform.sites.publish.publishCore, {
       projectId,
       slug: "acme",
     });
