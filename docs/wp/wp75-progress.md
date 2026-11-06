@@ -461,3 +461,250 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 - Docs updated: `docs/wp/wp75-stories.md`, `docs/wp/wp75-progress.md` (new); S2a: story ticked, S2a section added.
 - Not changed: plan docs, RULINGS, WP67 board (branch-name fix is the orchestrator's).
 - Checks: docs only; `git diff --check` run.
+
+## 2026-11-06 - S4a deterministic quality checks (branch `claude/wp75-checks`)
+
+Done: `WP75-S4a` (pure TypeScript, no Convex, no model call, no I/O). Code in `lib/workspace/crew/checks/`, tests in
+`tests/platform/workspace-crew-checks-*.test.ts` (so `npm run test:platform` runs them).
+
+### API (S4b and WP76 call this)
+
+- `checkArtifact(kind, artifact, { ownIdea?, brandKit?, buildPackStandard? })` returns `{ hard, soft }`, each a list of
+  `{ code, path, message, severity }`. `hasHardIssues`, `isClean`, `mergeResults`.
+- `toRepairIssues(result, max = 40)` is the repair call's data block: hard first, paths redacted by `formatIssuePath`
+  (index as `[n]`, identifier keys as `.key`, any other key as `.*`), messages quote at most 48 single-line characters.
+  The story names a `safeIssuePath`; none exists in the repo, so `formatIssuePath` is the redaction.
+- Policy: hard issues trigger the one repair; soft issues ride along when a repair happens and otherwise only show.
+- Individual checks are exported for reuse (`checkNeverFake`, `checkMarketNumbers`, `checkSlop`, `checkLandingSpec`,
+  `checkLandingLayouts`, `checkBrandKit`, `checkBuildPackStandard`, `checkBuildPrompt`).
+
+### Checks
+
+| Check | Codes | Severity | Applies to |
+|---|---|---|---|
+| Never fake it | `fake_testimonial`, `fake_rating`, `fake_review`, `fake_social_count`, `fake_trusted_by`, `fake_logo_wall`, `fake_press`, `fake_credential`, `fake_stat` | hard | every kind (copy strings) |
+| Unsourced evidence ("studies show") | `unsupported_evidence` | soft | every kind |
+| Market numbers in own ideas (wraps the WP74 `hasMarketClaim`; strips placeholders and product measures first) | `own_idea_market_number` | hard | own-idea blueprint, brand kit, landing, email, social, SEO (not roster, launch plan, ads, build pack) |
+| Slop lexicon, banned phrases | `slop_phrase` | hard | every kind except build pack and roster |
+| Slop, weak words, "not just X but Y", triads as a whole line, 2+ em dashes in one string | `slop_weak_phrase`, `slop_triad`, `slop_em_dash_stack` | soft | same |
+| Heading and title length vs `LIMITS` | `heading_too_long` | hard | landing |
+| Heading and title length vs display targets (`DISPLAY_TARGETS`: headline 70 chars/12 words, heading 50/9, item title 40/7) | `heading_long_for_display` | soft | landing |
+| No eyebrow, kicker, overline field; no section number or "Step 1" heading (D24) | `eyebrow_field`, `section_number` | hard | landing |
+| All-caps heading | `all_caps_heading` | soft | landing |
+| No emoji | `emoji_in_copy` | hard | landing |
+| Proof slots are placeholders, bracketed | `proof_not_placeholder`, `proof_not_bracketed` | hard | landing |
+| Waitlist present | `waitlist_missing` | hard | landing |
+| Layout allowed by the kit's direction (wraps `checkLandingAgainstBrandKit`) | `layout_not_allowed` | hard | landing, when `brandKit` given |
+| Alt text opens with "image of" | `alt_redundant` | soft | landing, brand kit |
+| AA contrast via `failingTextPairs`; malformed hex guarded | `low_contrast`, `invalid_hex` | hard | brand kit |
+| Type pair suits the direction; theme mode matches palette | `type_pair_direction`, `theme_mode_mismatch` | hard | brand kit |
+| Prompt standard v1, per prompt (TypeScript port of `scripts/lib/prompt-standard.mjs`) | `done_when`, `do_not_build`, `next_pin`, `code_fence`, `setup_billing`, `setup_services`, `setup_auth`, `setup_auth_rls`, `setup_tables`, `setup_structure`, `billing`, `stack_services` | hard (billing: see below) | build pack |
+| Body repeats the labels | `duplicate_label` | soft | build pack |
+
+Not walked as copy: `proofSlots`, `voice.dontSay` and `voice.dontSayWhy` (deliberately bad copy), any `doNotBuild`
+line (it names what is left out), and enum or colour fields (`hex`, `layout`, `kind`, ...).
+
+### Prompt standard v1 and the open owner questions (8, 9)
+
+`checkBuildPrompt(prompt, { role, billing })` and `checkBuildPackStandard(pack, { setupPromptNumbers, billing })` take
+both rulings as options, so S3d does not change code when the owner rules:
+
+- Default ruling (planned option A): per-prompt rules (Done when, Do not build, no Next major pin, no code fence) on all
+  eight prompts; the Project Setup rules (no billing, one login, 3 services, 3+ tables, 8+ lines) on prompt 3
+  (scaffold, first), which is the prompt the schema names as Project Setup. Billing is hard in that prompt and soft
+  elsewhere. A light pack has no setup prompt and billing is off, so a checkout prompt passes.
+- A v2 or "checkout allowed in light only" ruling is `setupPromptNumbers` and `billing`. Nothing else to change.
+- The port has parity tests against `lintPrompts` on shared fixtures and on every enforced idea's real prompts. The
+  title rule (four titles) and the Branding Package rule do not apply to a build pack and are not ported.
+
+### Tests
+
+242 tests in 5 files: positive and negative tables for every pattern (including no false positive on product units,
+years, bracketed placeholders, "5k" race names, "first 50 on the waitlist", "Product Hunt launch"), HydroTrail
+fixtures clean across all ten kinds plus the own-idea blueprint and the light pack, realistic bad artifacts failing,
+and `lintPrompts` parity for each shared rule.
+
+### Plan vs reality
+
+- No slop lexicon exists in the repo (only the phrase list in `07` §2B). S4a wrote it (`slop.ts`); the lists are the
+  owner's to tune.
+- No `safeIssuePath` exists (see above). No Convex file needed it.
+- `LEADING_SECTION_NUMBER` and the emoji regex in `artifacts.ts` are not exported, so `landing.ts` repeats them
+  (two lines each). Codex could export them; then the copies go.
+- S3d's story puts the standard port at `lib/workspace/crew/promptStandard.ts`. It lives in
+  `lib/workspace/crew/checks/promptStandard.ts` (exported from the checks index); S3d can re-export it from the story's
+  path or import it directly.
+- The never-fake patterns are strict by design ("5-star", "Join 50 hikers" and "trusted by" always fail). A founder who
+  has real proof adds it after review.
+
+### Docs
+
+- Docs updated: `docs/wp/wp75-stories.md` (S4a ticked), this file.
+
+## 2026-11-06 - S4a review fixes (branch `claude/wp75-checks`, on `319d0c07`)
+
+An independent review found 2 Blockers, 8 Majors, 9 Minors and nits. All are fixed except the two declined below.
+Where this section and the S4a section above disagree, this section wins.
+
+### Ruling: the own-idea market check (orchestrator, Claude lane)
+
+D15 bans market numbers, competitor prices and keyword data for own ideas. It does not ban the founder's own price or
+product facts. So in own-idea mode `own_idea_market_number` does **not** flag the business's own price ("$79
+pre-order", "$29/month"), product facts ("100% recycled nylon"), promotions ("20% off the launch price", "free shipping
+over $50") or waitlist caps ("join the first 100 hikers"). It still flags market size and magnitudes, TAM/SAM/SOM, CAGR,
+CPC, growth rates, search volume and keyword data, revenue metrics (MRR/ARR/GMV), shares and ratios of a population,
+spending data, competitor prices, and any number in a sentence about an industry, a survey or an average.
+`marketNumbers.ts` now has its own rules for this; it still calls the WP74 `hasMarketClaim` for the industry/survey
+sentences. `launch_plan` and `ads_drafts` are now market-checked (their copy is public; budgets are integers and are
+not walked).
+
+### Decisions
+
+- **Hard patterns aim at precision; uncertain ones are soft.** New soft codes, shown but never repaired on their own:
+  `possible_testimonial` (a signed line without quote marks, "Sarah from Denver: ...", a sentence signed
+  "— @handle"), `founder_quote` (a quote attributed to the founder), `possible_social_count` ("Join 50 hikers": under
+  100, no "already"), `unverified_comparison` ("30% more water than a 1 L bottle": a comparison with a stated
+  baseline). Bare "next-level" is soft; "take X to the next level" stays hard. "Tapestry" is hard only as the metaphor.
+- **Never fake it skips** the build pack (its prompts are instructions: "rate each trail 1 to 5 stars") and a library
+  blueprint's whole `market` subtree (it describes other businesses, which D15 allows). The review asked for
+  `fake_stat` and `fake_social_count` only; the whole subtree is skipped because "trusted by" or a rating there is
+  about a competitor too.
+- **Malformed input** returns hard `invalid_shape` (new `shape.ts`) instead of throwing. The walk is capped at 64 levels
+  and 20,000 nodes and stops on a cycle; an artifact past a cap is `invalid_shape`.
+- **Context**: `checkArtifact(kind, artifact, { ownIdea, ... })` now requires `ownIdea`. A blueprint still reads its
+  own `source`, which wins over the context.
+- **Prompt standard**: billing severity is per prompt kind (`billing: { setup?, standard? }`); the defaults live in
+  `DEFAULT_SETUP_PROMPT_NUMBERS` and `DEFAULT_BILLING` (owner Q8 and Q9 stay open). A setup prompt number no pack of
+  that weight can have throws a `RangeError` (a caller bug). `setup_structure` counts lines as `lintPrompts` does
+  (Do not build and Done when included); an 8-line boundary parity test was added. Messages name prompts by number
+  ("Prompt 3"), never by the model's title.
+- **Repair data**: `snippet()` also strips `<`, `>`, `{`, `}` and invisible format characters; the market message
+  quotes the matched words, not the start of the field. Results keep one issue per code and path.
+- **Text is normalised before matching** (NFKC, invisible characters removed, Cyrillic/Greek lookalikes mapped inside
+  mixed-script words, I/l/O inside numbers). Only for matching; the artifact is never rewritten.
+- **Regex cost**: number starts and lookbehinds are bounded; every 50 KB adversarial input in the review probes and in
+  extra probes runs in under 50 ms (worst 35 ms, was 2.7 s).
+- **Scarcity** ("Only 3 left", "only 12 spots remain") is not proof and stays out of S4a. Candidate for the S4b
+  `quality@1` prompt.
+
+### Declined or left as known trade-offs
+
+- "Get 2x more done ..." stays hard: a bare multiplier outcome reads as a claim even when hedged later.
+- "Our 5-Star Pack" (a product name) stays hard: telling it from "5-star support" needs the business's own product
+  names, which the checks do not get. A 5-star hygiene, safety or energy rating is no longer flagged.
+- Still missed (not on the review's cheap list): "Our customers save an average of 6 hours a week", "Students double
+  their freelance income", and a quote-less "... — @trailmike" (soft only). Left to S4b.
+
+### Probes (reviewer's scripts, re-run unchanged)
+
+| Probe | Before | After |
+|---|---|---|
+| Honest copy, hard flags (`fp.ts`, library / own idea) | 9/46 / 19/46 | 2/46 / 2/46 |
+| Honest copy, hard flags (`fp2.ts`) | 23/30 | 0/30 |
+| Faked proof missed (`fn.ts`) | 19/28 | 6/28 (2 scarcity, left to S4b; 2 flagged soft only; 2 not on the cheap list) |
+| 50 KB adversarial timing (`redos.ts`) | 2.7 s worst | under 50 ms |
+| Malformed, deep, cyclic input (`redos.ts`) | 9 throws | 0 throws (`invalid_shape`) |
+
+### Docs
+
+- Docs updated: this file. Stories unchanged (S4a stays ticked).
+
+### Re-review fixes (on `542db70b`)
+
+The re-review confirmed the Blockers and Majors above were fixed and found four new Majors the fixes introduced
+(N1-N4), three Minors (N5-N7) and a test gap. All are fixed. Where this part disagrees with the lines above, this
+part wins (the two "still missed" outcome claims above are now hard).
+
+- **N1, "#1" is a ranking only before a ranking noun or a chart** ("the #1 hydration pack", "#1 rated", "our #1
+  pick", "#1 on Product Hunt"). "Our #1 priority", "No. 1 Market Street", "No. 1 tip" and "our no. 1 rule" pass.
+- **N2, own-idea market fallback**: the "industry / average / study / report" sentence fallback skips any sentence
+  about the business or its customer (we, our, us, your). "Study guide" and similar, "reported issues" and "at the
+  market (on Saturday)" are not market context. "Industry surveys put pack returns at 12%" stays hard.
+- **N3, founder quotes**: soft only when the attribution names no business ("Ana, the founder") or names this brand.
+  `CheckContext` takes an optional `brandName`. A founder or owner of another named business ("Jane, owner of Bloom
+  Florist") is a hard testimonial, and with no `brandName`, any named business stays hard (a signed line stays soft).
+  The S3 and S4b callers should pass the brand name.
+- **N4, comparisons**: soft only when the baseline is a product ("than a 1 L bottle", "than our first prototype").
+  People as the subject ("Hikers drink 40% more") or a baseline of before, without, they did or other people stays
+  hard.
+- **N5**: a landing spec's hero and footer must be objects, and its waitlist and optional sections must be objects when
+  present (`invalid_shape`). A brand kit passed as context with no known direction returns `invalid_shape` at
+  `brandKit` instead of throwing. A missing waitlist with a brand kit reports `waitlist_missing`.
+- **N6**: in own ideas, "[Name] sells / charges / costs ... money" is a competitor price when the text also sets the
+  business against it (ours, our, we). "Pro costs $9" and the brand's own name (`brandName`) stay clean.
+- **N7**: the index header now says callers go through `checkArtifact` (shape and bounded-walk guards). The single
+  checks are exported for tests and composing, and look only at the part of an over-limit input they reach.
+- **Test gap**: rows that only the "rating out of 5" and "as seen in" patterns catch. A marker-based copy of the
+  mutation probe finds no pattern that can be removed or flipped without a test failing.
+- **Cheap misses fixed**: an outcome claimed for customers ("Students double their income", "Our customers save an
+  average of 6 hours") is hard. Promotions such as "Students get 20% off" are not matched.
+
+Left as is: "Join 99 happy customers" stays soft (a count under 100 after "join" may be true). The library blueprint's
+`market` subtree stays unwalked (D15 allows researched market data). The number normaliser maps "Intel I5" to
+"Intel 15" for matching only; no hard flag follows from it.
+
+| Probe | Before (`542db70b`) | After |
+|---|---|---|
+| Ordinary copy hard-flagged as a ranking (`new.ts`) | 4/4 | 0/4 |
+| Own-idea allowed lines hard-flagged (`new.ts`) | 5/5 | 0/5 |
+| Own-idea must-flag lines missed (`new.ts`) | 1/12 (Camelbak price) | 0/12 |
+| Soft downgrades that hid fakes (`new.ts`, B2B quotes and outcome comparisons) | 5/5 soft | 5/5 hard |
+| Malformed landing spec (`new.ts`) | 2 throws | 0 (`invalid_shape`) |
+| Honest copy, hard flags (`fp.ts`, `fp2.ts`) | 2/46, 0/30 | 2/46, 0/30 (declined lines) |
+| Faked proof missed (`fn.ts`) | 6/28 | 4/28 (2 scarcity, 2 soft only) |
+| Mutation: patterns removable or flippable | 2 (`mutate3.ts`) | 0 (`mutate4.ts`, marker-based copy) |
+| 50 KB adversarial timing (`redos*.ts` plus new-pattern probe) | 36 ms worst | 50 ms worst |
+
+- Docs updated: this file. Stories unchanged.
+
+### Final-review fixes (on `8931c27b`): precision first
+
+The final check confirmed N1-N7 and the test gap, and found that the new rules brought their own false positives
+and one dodge. This round changes the principle: **a hard flag costs a paid repair, so a heuristic that cannot be
+made precise in one line is soft**, and semantic fakes are the S4b `quality@1` prompt's job. Where this part
+disagrees with the lines above, this part wins.
+
+- **F1, "our/we" no longer hides market data.** The own-idea sentence fallback has two tiers. Data words (industry,
+  sector, survey, study, research, report forms, statistics, according to, census, "the average {person}") are never
+  skipped, so "According to our survey, hikers pay £60" and "Our research shows the average hiker pays $120" are
+  hard. Rival and market words (competitors, rivals, elsewhere, market, average) are skipped only when the money
+  belongs to an "our/your" noun or "we charge" ("On average our loaves cost £4", "Our average order is $25"). One
+  deliberate change from the brief: competitor(s), rival(s) and elsewhere sit in the second tier, so "Unlike
+  competitors, our pack costs $79" stays clean. All six dodge lines are hard either way.
+- **F2, named competitor price**: "[Name] sells / charges / costs ... money" (either case) is hard only with an explicit
+  contrast with our side in the same or the next sentence (ours, we charge/sell, our price, vs, cheaper than, for
+  less), never for the brand name. Product names with a price ("Trail Pack costs $79 and we ship it free", "Rye Loaf
+  costs £5 and our croissants cost £2") are clean. Without a contrast it is not flagged (S4b's job).
+- **F3, comparisons**: hard only when the baseline is people or a past self (before, without, they did, other /
+  most / the average {people}, last year). The subject no longer matters. "Than on the Starter plan", "than the
+  in-store price" and "than most bottles" are soft `unverified_comparison`.
+- **F4, rankings**: hard for "rated / ranked / voted / named #1", "#1-selling", "#1 rated", "#1 on {chart}" and
+  "the UK's #1". A bare "#1 {noun}" ("The #1 app for hikers") is soft `possible_ranking`: it cannot be told apart from
+  "The #1 tool you need is a good map". Pick, favourite, recommended and gear are dropped; at most one word sits
+  between "#1" and the noun.
+- **F5, customer outcomes**: soft `unverified_outcome`, except an explicit money or time saving on average with no
+  plan, price, course or launch tie ("Our customers save an average of 6 hours": hard). Tied outcomes ("save on
+  average 10% with the annual plan", "three projects in the course") are not flagged. "Lose" is dropped
+  (physiology: "Runners lose on average 500 ml").
+- **Soft gap, S4b item**: a quote attributed "— Jane, founder" with no business named stays soft `founder_quote`. The
+  S4b quality prompt should judge whether it is the founder's own words or a customer's.
+
+Now soft, so `fn.ts` counts them as missed: "The #1 hydration pack for ultrarunners" (`possible_ranking`) and
+"Students double their freelance income" (`unverified_outcome`).
+
+| Probe (reviewer's scripts, run as is) | Before (`8931c27b`) | After |
+|---|---|---|
+| `fp.ts` hard flags (library / own idea) | 2/46 / 2/46 | 2/46 / 2/46 (the two declines) |
+| `fp2.ts` hard flags | 0/30 | 0/30 |
+| `final.ts` honest lines with a hard flag (F2-F5) | 16 | 0 |
+| `final.ts` rank honest lines with a hard flag | 5/9 | 0/9 (1 soft) |
+| `final.ts` F1 dodge lines hard | 0/6 | 6/6 |
+| `final.ts` named-competitor fakes hard | 4/5 | 5/5 |
+| `final.ts` comparison fakes hard | 4/4 | 4/4 |
+| `new.ts` must-flag list hard | 12/12 | 12/12 |
+| `fn.ts` faked proof missed (hard) | 4/28 | 6/28 (2 scarcity, 4 soft) |
+| Mutation (`mutate4.ts`): patterns removable or flippable | 0 | 0 |
+| Timing: `final.ts` SLOW lines (over 30 ms) | 0 | 0 |
+| Timing: extra 50-57 KB probes, worst single check | 50 ms | 44-46 ms |
+
+- Docs updated: this file. Stories unchanged.
