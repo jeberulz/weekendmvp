@@ -211,7 +211,7 @@ async function setAi(w: World, on: boolean): Promise<void> {
 // ---------------------------------------------------------------------------
 
 describe("WP75-S2b HydroTrail launch through the pool", () => {
-  test("blueprint → roster → brand kit text, in order; pending steps skipped with a reason; one token", async () => {
+  test("blueprint → roster → brand kit text → email sequence, in order; pending steps skipped with a reason; one token", async () => {
     const w = await world();
     expect(await start(w)).toEqual({ state: "assembling" });
     const atStart = await limiterState(w);
@@ -223,22 +223,28 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
     const r = await rows(w);
     const [blueprint] = ofType(r, "crew_blueprint");
     const [kit] = ofType(r, "crew_brand_kit");
+    const [email] = ofType(r, "crew_email_sequence");
     expect(blueprint).toMatchObject({ status: "succeeded" });
     expect(ofType(r, "crew_roster")[0]).toMatchObject({ status: "succeeded" });
     expect(kit).toMatchObject({ status: "succeeded", employeeKey: "brand", changeRound: 0n, creditCost: 0n });
-    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit"]);
-    // In order: the kit's run opened after the blueprint (and with it the roster) was stored.
+    expect(email).toMatchObject({ status: "succeeded", employeeKey: "email", changeRound: 0n, creditCost: 0n });
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit", "crew_email_sequence"]);
+    // In order: the kit's run opened after the blueprint (and with it the roster) was stored; the email's after the kit.
     const blueprintDoc = r.documents.find((doc) => doc.kind === "blueprint");
+    const kitDoc = r.documents.find((doc) => doc.kind === "brand_kit");
     const kitRun = r.runs.find((run) => run.taskId === kit?._id);
+    const emailRun = r.runs.find((run) => run.taskId === email?._id);
     expect(kitRun?.startedAt).toBeGreaterThanOrEqual(blueprintDoc?.createdAt ?? Infinity);
-    expect(r.documents.map((doc) => doc.kind).sort()).toEqual(["blueprint", "brand_kit", "roster_plan"]);
+    expect(emailRun?.startedAt).toBeGreaterThanOrEqual(kitDoc?.createdAt ?? Infinity);
+    expect(r.documents.map((doc) => doc.kind).sort()).toEqual(["blueprint", "brand_kit", "email_sequence", "roster_plan"]);
     // Every marker settled with its task.
     expect(r.steps.map((row) => [row.type, row.status, row.position])).toEqual([
       ["crew_blueprint", "succeeded", 0n],
       ["crew_brand_kit", "succeeded", 2n],
+      ["crew_email_sequence", "succeeded", 8n],
     ]);
     // Only hired employees' built steps get a task: no slot, no skipped role, ever has one.
-    expect(r.tasks.map((row) => row.type).sort()).toEqual(["crew_blueprint", "crew_brand_kit", "crew_roster"]);
+    expect(r.tasks.map((row) => row.type).sort()).toEqual(["crew_blueprint", "crew_brand_kit", "crew_email_sequence", "crew_roster"]);
     expect(await tokensSpent(w)).toBe(1);
 
     const view = await progress(w);
@@ -252,7 +258,7 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
       ["build_pack", "skipped"],
       ["launch_plan", "skipped"],
       ["seo_pack", "skipped"],
-      ["email_sequence", "skipped"],
+      ["email_sequence", "succeeded"],
       ["social_pack", "skipped"],
       ["ads_drafts", "skipped"],
     ]);
@@ -349,6 +355,7 @@ describe("WP75-S2b a parked step", () => {
       ["crew_blueprint", false],
       ["crew_blueprint", true],
       ["crew_brand_kit", false],
+      ["crew_email_sequence", false],
     ]);
     // One marker for the blueprint across the park: the resume reused it.
     expect(r.steps.filter((row) => row.type === "crew_blueprint")).toEqual([expect.objectContaining({ status: "succeeded" })]);
@@ -378,7 +385,7 @@ describe("WP75-S2b idempotency and tokens", () => {
     expect(after.tasks).toEqual(done.tasks);
     expect(after.steps).toEqual(done.steps);
     expect(after.documents).toEqual(done.documents);
-    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit"]);
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit", "crew_email_sequence"]);
     expect(await tokensSpent(w)).toBe(1);
   });
 
@@ -412,7 +419,7 @@ describe("WP75-S2b stepDone re-enqueues", () => {
     const r = await rows(w);
     const [blueprint] = ofType(r, "crew_blueprint");
     expect(blueprint).toMatchObject({ status: "succeeded" });
-    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_blueprint", "crew_brand_kit"]);
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_blueprint", "crew_brand_kit", "crew_email_sequence"]);
     expect(r.runs.filter((run) => run.taskId === blueprint?._id).map((run) => run.status).sort()).toEqual(["failed", "succeeded"]);
     // Again after the runner's own backoff (not the lease): the gap is the delay the runner handed back.
     const retry = hooks.outcomes[0];
@@ -567,7 +574,8 @@ describe("WP75-S2b review M1: Try again after the roster", () => {
     await drain(w);
     r = await rows(w);
     expect(ofType(r, "crew_brand_kit").map((row) => row.status).sort()).toEqual(["failed", "succeeded"]);
-    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit", "crew_brand_kit"]);
+    // The email sequence waits under the failed kit and runs once the retried kit succeeds.
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", "crew_brand_kit", "crew_brand_kit", "crew_email_sequence"]);
     // A new first draft on the same key, with its own marker.
     const kits = ofType(r, "crew_brand_kit");
     expect(new Set(kits.map((row) => row.jobKey)).size).toBe(1);

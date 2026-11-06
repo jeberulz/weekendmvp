@@ -3,19 +3,29 @@ import { v, type Infer, type ObjectType } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction, internalQuery, type ActionCtx } from "../_generated/server";
 import { memoryForPrompt } from "../workspace/wrenMemory";
-import { blueprintSchema } from "../../lib/workspace/contracts/artifacts";
+import { emailDraftTarget } from "../growth/drafts/emailSequence";
+import { blueprintSchema, brandKitSchema } from "../../lib/workspace/contracts/artifacts";
 import { wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { crewBusinessContext, type CrewBusinessFacts } from "../../lib/workspace/crew/context";
 import {
   BLUEPRINT_LIBRARY_PROMPT_REF,
   BLUEPRINT_OWN_IDEA_PROMPT_REF,
   BRAND_KIT_PROMPT_REF,
+  EMAIL_SEQUENCE_PROMPT_REF,
   blueprintStepPlan,
   brandKitStepPlan,
   crewSeedFor,
+  emailSequenceStepPlan,
   type CrewPromptInputs,
 } from "../../lib/workspace/crew/inputs";
-import { approvedBlueprint, isLaunchBrandKitTask, launchDraftBlueprint, platformSeedRow } from "./jobs";
+import {
+  approvedBlueprint,
+  approvedBrandKit,
+  isLaunchFirstDraftTask,
+  launchDraftBlueprint,
+  launchDraftBrandKit,
+  platformSeedRow,
+} from "./jobs";
 import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type CrewRunnerDeps, type CrewStepOutcome } from "./runner";
 
 /**
@@ -44,6 +54,12 @@ import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type Cre
  *   the launch's first-draft blueprint while its card is pending or approved
  *   and the document is unchanged (`isLaunchDraftBrief`). Outside a launch,
  *   S3a's approved-only rule is unchanged.
+ * - WP76-S1a: the email sequence briefs from the same blueprint rule, plus the
+ *   brand kit under the same rule (approved, else the launch's own first-draft
+ *   kit for the launch's own email first draft). It reads the kit's name,
+ *   tagline and voice. Both documents travel to `finishCrewStep`
+ *   (`briefDocumentId`, `brandKitDocumentId`), which re-checks them. A
+ *   revision briefs only from approved documents, like a brand kit revision.
  *
  * Internal: S1's `startLaunch` and S2b's DAG call it after their own
  * authorisation and task insert.
@@ -61,6 +77,8 @@ const preparedCrewStep = v.union(
     seedId: v.optional(v.id("idea_crew_seeds")),
     /** The approved blueprint document a brand kit is briefed from; `finishCrewStep` re-checks it. */
     briefDocumentId: v.optional(v.id("documents")),
+    /** WP76-S1a: the brand kit document an email sequence reads its voice from; `finishCrewStep` re-checks it. */
+    brandKitDocumentId: v.optional(v.id("documents")),
   }),
   v.object({ ok: v.literal(false), promptRef: v.string(), message: v.string() }),
 );
@@ -88,9 +106,11 @@ export const prepareCrewStep = internalQuery({
   returns: preparedCrewStep,
   handler: async (ctx, args): Promise<PreparedCrewStep> => {
     const task = await ctx.db.get("tasks", args.taskId);
-    const fallbackRef = task?.type === "crew_brand_kit" ? BRAND_KIT_PROMPT_REF : BLUEPRINT_LIBRARY_PROMPT_REF;
-    if (task === null || (task.type !== "crew_blueprint" && task.type !== "crew_brand_kit")) {
-      return refuse(fallbackRef, "this task is not a blueprint or brand kit step");
+    const fallbackRef = task?.type === "crew_brand_kit"
+      ? BRAND_KIT_PROMPT_REF
+      : task?.type === "crew_email_sequence" ? EMAIL_SEQUENCE_PROMPT_REF : BLUEPRINT_LIBRARY_PROMPT_REF;
+    if (task === null || (task.type !== "crew_blueprint" && task.type !== "crew_brand_kit" && task.type !== "crew_email_sequence")) {
+      return refuse(fallbackRef, "this task is not a blueprint, brand kit or email sequence step");
     }
     const project = await ctx.db.get("projects", task.projectId);
     const workspace = project?.workspace;
@@ -99,7 +119,7 @@ export const prepareCrewStep = internalQuery({
     }
     const ownIdea = project.source === "own_idea";
     const blueprintRef = ownIdea ? BLUEPRINT_OWN_IDEA_PROMPT_REF : BLUEPRINT_LIBRARY_PROMPT_REF;
-    const promptRef = task.type === "crew_blueprint" ? blueprintRef : BRAND_KIT_PROMPT_REF;
+    const promptRef = task.type === "crew_blueprint" ? blueprintRef : fallbackRef;
 
     const session = await ctx.db.get("wizard_sessions", workspace.wizardSessionId);
     const parsedAnswers = session === null || session.ownerId !== project.ownerId ? null : wizardAnswersSchema.safeParse(session.answers);
@@ -150,11 +170,33 @@ export const prepareCrewStep = internalQuery({
         return { ok: true, promptRef, inputs, businessContext: crewBusinessContext(facts), ...(seedId === undefined ? {} : { seedId }) };
       }
     } else {
-      // S2b: a launch's own kit may brief from the launch's first draft while no blueprint is approved.
+      // S2b: a launch's own kit (and, WP76-S1a, its own email sequence) may brief from the launch's first draft
+      // while no blueprint is approved.
+      const inLaunch = await isLaunchFirstDraftTask(ctx, task);
       const stored = (await approvedBlueprint(ctx, project)) ??
-        ((await isLaunchBrandKitTask(ctx, task)) ? await launchDraftBlueprint(ctx, project, args.now) : null);
+        (inLaunch ? await launchDraftBlueprint(ctx, project, args.now) : null);
       const blueprint = stored?.body === undefined ? null : blueprintSchema.safeParse(parseJson(stored.body));
-      if (blueprint === null || !blueprint.success) return refuse(promptRef, "the brand kit needs the business's approved blueprint first");
+      if (blueprint === null || !blueprint.success) {
+        const step = task.type === "crew_email_sequence" ? "email sequence" : "brand kit";
+        return refuse(promptRef, `the ${step} needs the business's approved blueprint first`);
+      }
+      if (task.type === "crew_email_sequence") {
+        const kitRow = (await approvedBrandKit(ctx, project)) ?? (inLaunch ? await launchDraftBrandKit(ctx, project, args.now) : null);
+        const kit = kitRow?.body === undefined ? null : brandKitSchema.safeParse(parseJson(kitRow.body));
+        if (kitRow === null || kit === null || !kit.success) return refuse(promptRef, "the email sequence needs the business's brand kit first");
+        // Review m4: the finish's draft-conflict check, run first so a conflict costs no model call.
+        if (!(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
+          return refuse(promptRef, "the business's email sequence drafts conflict, so none can be rewritten");
+        }
+        return {
+          ok: true,
+          promptRef,
+          inputs: emailSequenceStepPlan({ answers, blueprint: blueprint.data, brandKit: kit.data }).inputs,
+          businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
+          ...(stored === null ? {} : { briefDocumentId: stored._id }),
+          brandKitDocumentId: kitRow._id,
+        };
+      }
       inputs = brandKitStepPlan({ answers, blueprint: blueprint.data }).inputs;
       return {
         ok: true,
@@ -202,6 +244,7 @@ export async function runCrewGeneratorStepWith(
       businessContext: plan.businessContext,
       ...(plan.seedId === undefined ? {} : { seedId: plan.seedId }),
       ...(plan.briefDocumentId === undefined ? {} : { briefDocumentId: plan.briefDocumentId }),
+      ...(plan.brandKitDocumentId === undefined ? {} : { brandKitDocumentId: plan.brandKitDocumentId }),
       ...rest,
     },
     deps,

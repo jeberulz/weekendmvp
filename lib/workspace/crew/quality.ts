@@ -19,17 +19,20 @@
  * - Hard issues fail the step closed (S4b's one repair is not built: Owner
  *   Q6/Q7 are open). Soft issues never block.
  *
- * Gated kinds are the S3a steps (blueprint, brand kit). Later generators add
- * their kind here with the context their checks need (a landing spec needs
- * the brand kit).
+ * Gated kinds are the S3a steps (blueprint, brand kit) and WP76-S1a's email
+ * sequence, which adds a HARD no-links check over every field a reader sees
+ * (`checks/emailLinks.ts`; C-ART refuses URLs only in bodies). Later
+ * generators add their kind here with the context their checks need (a
+ * landing spec needs the brand kit).
  */
 
 import type { z } from "zod";
 
 import { blueprintMarketSchema, parseArtifact, type ArtifactByKind, type ArtifactKind } from "../contracts/artifacts";
-import { checkArtifact, issue, toResult, type CheckResult } from "./checks";
+import { checkArtifact, issue, mergeResults, toResult, type CheckResult } from "./checks";
+import { checkEmailSequenceLinks } from "./checks/emailLinks";
 
-export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit"] as const satisfies readonly ArtifactKind[];
+export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit", "email_sequence"] as const satisfies readonly ArtifactKind[];
 export type QualityGatedKind = (typeof QUALITY_GATED_KINDS)[number];
 
 export function isQualityGatedKind(kind: string): kind is QualityGatedKind {
@@ -117,7 +120,10 @@ export function gateCrewArtifact<K extends ArtifactKind>(
   // The exemption for "{brandName} costs $79" or "founder of {brandName}" uses
   // the server's name, so a model-written name can never widen it.
   const brandName = context.businessName;
-  const result = checkArtifact(kind, subject, { ownIdea: context.ownIdea, ...(brandName === undefined ? {} : { brandName }) });
+  const checked = checkArtifact(kind, subject, { ownIdea: context.ownIdea, ...(brandName === undefined ? {} : { brandName }) });
+  const result = kind === "email_sequence"
+    ? mergeResults(checked, toResult(checkEmailSequenceLinks(subject as ArtifactByKind["email_sequence"])))
+    : checked;
   return { artifact: result.hard.length > 0 ? null : subject, result };
 }
 

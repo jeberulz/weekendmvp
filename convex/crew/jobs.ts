@@ -44,13 +44,14 @@ import {
 import { crewSeedFor, newestPlatformSeed } from "../../lib/workspace/crew/inputs";
 import { gateCrewArtifact, issueCodes, type QualityContext } from "../../lib/workspace/crew/quality";
 import {
-  isBlueprintFirstDraft,
+  isFirstDraftOf,
   launchRosterPlan,
   launchRosterTask,
-  newestBlueprintFirstDraft,
+  newestFirstDraft,
   openLaunchRosterTask,
   writeLaunchRoster,
 } from "./launchRoster";
+import { planEmailSequenceDraft, writeEmailSequenceDraft } from "../growth/drafts/emailSequence";
 import { LAUNCH_STEPS, isPoolStep } from "./steps";
 
 /**
@@ -161,6 +162,12 @@ export const runCrewStepArgs = {
    * inputs (S2a's direct runs), which brief no blueprint.
    */
   briefDocumentId: v.optional(v.id("documents")),
+  /**
+   * WP76-S1a: the brand kit document an email sequence's prompt read its name
+   * and voice from (approved, or the launch's own first draft under the same
+   * rule as the blueprint brief). `finishCrewStep` re-checks it like the brief.
+   */
+  brandKitDocumentId: v.optional(v.id("documents")),
 };
 
 export type RunCrewStepArgs = ObjectType<typeof runCrewStepArgs>;
@@ -471,22 +478,31 @@ export async function qualityContextFor(
   };
 }
 
-/** Blueprint documents looked at for an approved one, newest first. */
+/** Blueprint (or brand kit) documents looked at for an approved one, newest first. */
 const APPROVED_BLUEPRINT_SCAN_MAX = 20;
 /** Cards read per blueprint document. */
 const APPROVALS_PER_DOCUMENT_MAX = 20;
 
 /**
- * A blueprint document of the project whose `artifact_review` card is
- * approved and still valid for it (`assertApproved`: same business and owner,
- * unchanged since the card).
+ * The artifacts a later step briefs from, and the job type whose first draft
+ * writes each. WP76-S1a: the email sequence reads the brand kit's name and
+ * voice under the same rules as the blueprint brief.
+ */
+const BRIEF_WRITERS = { blueprint: "crew_blueprint", brand_kit: "crew_brand_kit" } as const satisfies Record<string, CrewStepJobType>;
+type BriefKind = keyof typeof BRIEF_WRITERS;
+
+/**
+ * A blueprint (or brand kit) document of the project whose `artifact_review`
+ * card is approved and still valid for it (`assertApproved`: same business and
+ * owner, unchanged since the card).
  */
 async function isApprovedBlueprint(
   ctx: Pick<QueryCtx, "db">,
   project: Pick<Doc<"projects">, "_id" | "ownerId">,
   row: Doc<"documents">,
+  kind: BriefKind = "blueprint",
 ): Promise<boolean> {
-  if (row.projectId !== project._id || row.kind !== "blueprint") return false;
+  if (row.projectId !== project._id || row.kind !== kind) return false;
   if (row.ownerId !== project.ownerId || row.archivedAt !== undefined || row.body === undefined) return false;
   const cards = await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", row._id)).take(APPROVALS_PER_DOCUMENT_MAX);
   for (const card of cards) {
@@ -514,27 +530,36 @@ async function isApprovedBlueprint(
 export async function approvedBlueprint(
   ctx: Pick<QueryCtx, "db">,
   project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  kind: BriefKind = "blueprint",
 ): Promise<Doc<"documents"> | null> {
   const rows = await ctx.db
     .query("documents")
-    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", "blueprint"))
+    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", kind))
     .order("desc")
     .take(APPROVED_BLUEPRINT_SCAN_MAX);
   for (const row of rows) {
-    if (await isApprovedBlueprint(ctx, project, row)) return row;
+    if (await isApprovedBlueprint(ctx, project, row, kind)) return row;
   }
   return null;
 }
 
+/** WP76-S1a: the newest brand kit the founder approved (`approvedBlueprint` for the brand kit kind). */
+export async function approvedBrandKit(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+): Promise<Doc<"documents"> | null> {
+  return await approvedBlueprint(ctx, project, "brand_kit");
+}
+
 /**
- * WP75-S2b: whether a brand kit task is a launch's own first draft: round 0
- * under the revision-0 key, not a revision, in a business that has a launch
- * (its `crew_roster` task). Brand kit revisions (WP77 change rounds) and kits
- * outside a launch are not.
+ * WP75-S2b (generalised in WP76-S1a): whether a crew step's task is a launch's
+ * own first draft: round 0 under the revision-0 key, not a revision, in a
+ * business that has a launch (its `crew_roster` task). Revisions (WP77 change
+ * rounds) and steps outside a launch are not. The brand kit and the email
+ * sequence brief under the S2b launch rule only when this holds.
  */
-export async function isLaunchBrandKitTask(ctx: Pick<QueryCtx, "db">, task: Doc<"tasks">): Promise<boolean> {
-  if (task.type !== "crew_brand_kit" || task.revisionOfTaskId !== undefined || (task.changeRound ?? 0n) !== 0n) return false;
-  if (task.jobKey !== jobKey(task.projectId, "crew_brand_kit", JOB_SUBJECT_MAIN, 0)) return false;
+export async function isLaunchFirstDraftTask(ctx: Pick<QueryCtx, "db">, task: Doc<"tasks">): Promise<boolean> {
+  if (!isCrewStepJobType(task.type) || !isFirstDraftOf(task, task.type)) return false;
   return (await launchRosterTask(ctx, task.ownerId, task.projectId)) !== null;
 }
 
@@ -557,11 +582,14 @@ export async function isLaunchDraftBrief(
   project: Pick<Doc<"projects">, "_id" | "ownerId">,
   row: Doc<"documents">,
   now?: number,
+  kind: BriefKind = "blueprint",
 ): Promise<boolean> {
-  if (row.projectId !== project._id || row.ownerId !== project.ownerId || row.kind !== "blueprint") return false;
+  if (row.projectId !== project._id || row.ownerId !== project.ownerId || row.kind !== kind) return false;
   if (row.archivedAt !== undefined || row.body === undefined || row.taskId === undefined) return false;
   const writer = await ctx.db.get("tasks", row.taskId);
-  if (writer === null || writer.ownerId !== project.ownerId || writer.status !== "succeeded" || !isBlueprintFirstDraft(writer)) return false;
+  if (writer === null || writer.ownerId !== project.ownerId || writer.status !== "succeeded" || !isFirstDraftOf(writer, BRIEF_WRITERS[kind])) {
+    return false;
+  }
   const cards = (await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", row._id)).take(APPROVALS_PER_DOCUMENT_MAX))
     .filter((card) => card.kind === "artifact_review" && card.subjectTable === "documents" &&
       card.projectId === project._id && card.ownerId === project.ownerId);
@@ -580,20 +608,35 @@ export async function launchDraftBlueprint(
   ctx: Pick<QueryCtx, "db">,
   project: Pick<Doc<"projects">, "_id" | "ownerId">,
   now?: number,
+  kind: BriefKind = "blueprint",
 ): Promise<Doc<"documents"> | null> {
-  const firstDraft = await newestBlueprintFirstDraft(ctx, project.ownerId, project._id);
+  const firstDraft = await newestFirstDraft(ctx, project.ownerId, project._id, BRIEF_WRITERS[kind]);
   if (firstDraft === null || firstDraft.status !== "succeeded") return null;
   const document = await ctx.db.query("documents")
     .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", firstDraft._id))
     .order("desc")
     .first();
-  return document !== null && (await isLaunchDraftBrief(ctx, project, document, now)) ? document : null;
+  return document !== null && (await isLaunchDraftBrief(ctx, project, document, now, kind)) ? document : null;
 }
 
 /**
- * The brief a brand kit was built from may still brief it (round 2, minor 3):
- * an approved blueprint, or for a launch's own kit the launch's first draft
- * under the S2b ruling (`isLaunchDraftBrief`).
+ * WP76-S1a: the launch's own first-draft brand kit, when it may brief the
+ * launch's email sequence: the same rule as `launchDraftBlueprint` (card
+ * pending inside its TTL or approved, document unchanged since the card).
+ */
+export async function launchDraftBrandKit(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  now?: number,
+): Promise<Doc<"documents"> | null> {
+  return await launchDraftBlueprint(ctx, project, now, "brand_kit");
+}
+
+/**
+ * The brief a step was built from may still brief it (round 2, minor 3): an
+ * approved blueprint (or brand kit), or for a launch's own first draft the
+ * launch's first draft under the S2b ruling (`isLaunchDraftBrief`). WP76-S1a
+ * applies it to the email sequence's blueprint and brand kit too.
  */
 async function briefStillValid(
   ctx: Pick<QueryCtx, "db">,
@@ -601,11 +644,12 @@ async function briefStillValid(
   task: Doc<"tasks">,
   briefDocumentId: Id<"documents">,
   now: number,
+  kind: BriefKind = "blueprint",
 ): Promise<boolean> {
   const row = await ctx.db.get("documents", briefDocumentId);
   if (row === null) return false;
-  if (await isApprovedBlueprint(ctx, project, row)) return true;
-  return (await isLaunchBrandKitTask(ctx, task)) && (await isLaunchDraftBrief(ctx, project, row, now));
+  if (await isApprovedBlueprint(ctx, project, row, kind)) return true;
+  return (await isLaunchFirstDraftTask(ctx, task)) && (await isLaunchDraftBrief(ctx, project, row, now, kind));
 }
 
 const qualityContextValidator = v.object({
@@ -1091,6 +1135,8 @@ export const finishCrewStep = internalMutation({
     seedId: v.optional(v.id("idea_crew_seeds")),
     /** The approved blueprint a brand kit was briefed from (`runCrewStepArgs.briefDocumentId`). */
     briefDocumentId: v.optional(v.id("documents")),
+    /** WP76-S1a: the brand kit an email sequence read its voice from (`runCrewStepArgs.brandKitDocumentId`). */
+    brandKitDocumentId: v.optional(v.id("documents")),
   },
   returns: finishCrewStepResult,
   handler: async (ctx, args): Promise<FinishCrewStepResult> => {
@@ -1126,8 +1172,17 @@ export const finishCrewStep = internalMutation({
     // (S2b ruling) the launch's own first draft with a live, unchanged card. A blueprint edited or un-approved
     // since the step was prepared fails the step like a config failure would have at preflight: permanent, no
     // document, the usual calm note, a debit refunded.
-    if (kind === "brand_kit" && args.briefDocumentId !== undefined &&
-      !(await briefStillValid(ctx, project, task, args.briefDocumentId, now))) {
+    // WP76-S1a: the email sequence needs both of its briefs (the blueprint and the brand kit) and re-checks each
+    // the same way; an email finish without either one fails as permanent (review m1).
+    let briefsValid = true;
+    if (kind === "brand_kit" && args.briefDocumentId !== undefined) {
+      briefsValid = await briefStillValid(ctx, project, task, args.briefDocumentId, now);
+    } else if (kind === "email_sequence") {
+      briefsValid = args.briefDocumentId !== undefined && args.brandKitDocumentId !== undefined &&
+        (await briefStillValid(ctx, project, task, args.briefDocumentId, now)) &&
+        (await briefStillValid(ctx, project, task, args.brandKitDocumentId, now, "brand_kit"));
+    }
+    if (!briefsValid) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
     }
@@ -1167,6 +1222,16 @@ export const finishCrewStep = internalMutation({
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
     }
+    // WP76-S1a: an email sequence also writes its draft `sequences` row and four `sequence_steps` rows in this
+    // transaction (`convex/growth/drafts/emailSequence.ts`). A business with more than one draft sequence, or a
+    // draft whose steps this contract did not write, fails closed before anything is stored.
+    const emailDraft = kind === "email_sequence"
+      ? await planEmailSequenceDraft(ctx, { ownerId: task.ownerId, projectId: task.projectId }, body)
+      : null;
+    if (emailDraft !== null && !emailDraft.ok) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now)) };
+    }
 
     const documentId = await ctx.db.insert("documents", {
       ownerId: task.ownerId,
@@ -1200,6 +1265,9 @@ export const finishCrewStep = internalMutation({
       addDocumentId: documentId,
       askApprovalId: approvalId,
     }, now);
+    if (emailDraft?.ok === true) {
+      await writeEmailSequenceDraft(ctx, emailDraft, { ownerId: task.ownerId, projectId: task.projectId, documentId, now });
+    }
     if (rosterTask !== null && rosterPlan !== null) {
       await writeLaunchRoster(ctx, rosterTask, rosterPlan, now);
       // S2b: the hired employees' step tasks, queued; the DAG enqueues them as their parents finish.
