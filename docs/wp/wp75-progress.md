@@ -218,7 +218,7 @@ each of those probes asserted the old buggy behaviour. The other 9 pass.
 
 | Story | State | Runs in fixture mode now? | Waits on | Author / reviewer |
 |---|---|---|---|---|
-| S1 roster | Not started | Yes, after S2a + S3a blueprint | S2a, S3a (ruled: blueprint first) | Opus (Sonnet UI) / Opus |
+| S1 roster | **Built, not reviewed** (uncommitted on `claude/wp75-s1-roster`); story ticked | **Yes** | Codex 13 (recovery cron) before it ships | Opus (Sonnet UI) / Opus |
 | S2a job runner | **Done**: review + re-check approved, fixes in `464931e7`, `b8c665e5` | **Yes** | Codex 13 (recovery cron) before S1 ships | Opus / Opus |
 | S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
 | S3a blueprint + brand text | **Built, not reviewed** (uncommitted on `claude/wp75-s3a-blueprint`); story ticked, repair waits for S4b | **Yes** | S4b repair through the `repairArtifact` seam (Owner Q6, Q7); seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
@@ -449,7 +449,8 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 11. `crewJob` limit: per launch or per step (Stop-and-ask 10)?
 12. Free-ceiling accounting: $1.50 lifetime covers about two launches at the measured $0.57 median, one at p90
     $1.20. Is a launch's first draft charged to the free ceiling, or to a platform budget?
-13. Does the roster get an `artifact_review` card, or does the team just appear?
+13. ~~Does the roster get an `artifact_review` card, or does the team just appear?~~ Answered 2026-11-06: the team
+    just appears, no card (`docs/wp/RULINGS.md`, "WP75-S1 roster review card (Q13)").
 
 ## Live spend G2 needs (each needs an owner OK first)
 
@@ -993,3 +994,207 @@ Uncommitted in `.worktrees/wp75-renderer` (branch `claude/wp75-s5a-renderer`, fr
 - **Unparsed input.** Security test comment corrected; `TenantSite` doc says callers pass schema-parsed values; S5b acceptance line added to the stories.
 - **Render-level contrast.** A low-contrast kit renders `--t-link` equal to `--t-ink` in the generated `<style>` (tested).
 - **Nits.** Duplicate width/height and dead `type_led .plate` rule removed; unsafe CTA is a bare `<span>`; `--t-hw` default dropped from `.root`; disabled shell button is dashed with a 3:1 border and surface fill; D24/D25 wording fixed; S5a story unticked (the coordinator ticks it on commit).
+
+## 2026-11-06 - WP75-S1 built (roster at Meet your co-founder)
+
+Branch `claude/wp75-s1-roster` (worktree `.worktrees/wp75-roster`, cut from `origin/main` `3a592f6e`). Uncommitted; the
+orchestrator reviews and commits. Fixture mode only; no live call was made. Owner Q13 ruled today: no roster card, the
+team just appears (`docs/wp/RULINGS.md`).
+
+### Files (about 830 source lines, 640 test lines)
+
+| File | What |
+|---|---|
+| `convex/crew/roster.ts` (new, 208) | Public `startLaunch`, `retryLaunch` (mutations) and `launchStatus` (query); each checks `workspace`, then `ai`, then `requireBusinessAccess(owner)` |
+| `convex/crew/launchRoster.ts` (new, 240) | Helpers, no registered functions: the launch's roster task, `planLaunchRoster`, `writeLaunchRoster`, reads |
+| `convex/crew/jobs.ts` (+16) | `finishCrewStep`: a launch's first-draft blueprint plans and writes the roster in the same transaction |
+| `lib/workspace/crew/launch.ts` (new, 138) | Pure: workstream titles, `rosterMemberRows`, the `LaunchView` states, `readyLaunchView`, `pendingLaunchView` |
+| `components/workspace/wizard/MeetCofounder.tsx` (+202) | `CofounderTeam` (the four states), `LiveCofounderTeam` (calls `startLaunch`, reads `launchStatus`, inside `QuietErrorBoundary`), `launchErrorMessage` |
+| `components/workspace/wizard/WizardFlow.tsx` (+10) | Passes the live team to Meet your co-founder with the business's `projectId` |
+| `convex/_generated/api.d.ts` (+4) | `crew/launchRoster` and `crew/roster`, hand-added in codegen's form and order |
+| `convex/crew/roster.test.ts` (new, 17 tests) | convex-test, real registry, meter, ledger, approvals and limiter; signed-in callers |
+| `tests/platform/wp75-meet-cofounder-team.test.tsx` (new, 10 tests) | jsdom + axe on every state |
+
+### Design
+
+- **Where the roster hook lives: inside `finishCrewStep`**, so the blueprint and the team commit in one transaction.
+  The roster is planned before any write. If it cannot be planned (the session's answers are unusable or do not match
+  the blueprint), the blueprint step fails closed (permanent): no blueprint document, no card, no roster, and Meet
+  your co-founder shows the retry. So a succeeded launch blueprint always has its team. A scheduled follow-up
+  mutation was rejected: it would leave a window, and a failure state, in which the blueprint exists but the team
+  does not.
+- **How the launch's blueprint is identified, with no schema change.** `startLaunch` inserts the business's
+  `crew_roster` task (`crew:{projectId}:crew_roster:main:0`, `queued`, `creditCost: 0`) next to the blueprint's first
+  draft. That task is the launch. `finishCrewStep` writes the roster only for a first-draft blueprint (round 0, not a
+  revision, the revision-0 key) whose business has that roster task still open. A blueprint that no launch started
+  (S3a's tests, direct S2a runs) and every blueprint revision plan nothing.
+- **Idempotency.** A roster task that is already `succeeded`, or an existing `roster_plans` row, writes nothing. A
+  replayed finish is `stale` (the run is closed) and a re-delivered step is `skipped: terminal`. A role that already
+  has a member row keeps it, and a member with a workstream keeps it. Both are tested.
+- **One token per founder action.** Only `insertCrewTask` checks `crewJob`, once per inserted task. A launch inserts
+  one such task (the blueprint's first draft). The roster task is inserted directly, and the roster is written by the
+  blueprint's finish, so neither spends a token. If the first draft already exists (so the insert returns it and
+  spends nothing), `startLaunch` calls `checkLimit` itself, once. `limits.ts` is unchanged, and S2b still moves the
+  check. Tested with the limiter's `getValue`: twice `startLaunch` = 1; reload after failure = 1; retry = 2.
+- **Retry: a separate `retryLaunch`.** `startLaunch` runs on mount, so if it also retried, a page reload after a
+  failure would spend a token without the founder asking. `startLaunch` therefore only ever starts or reports.
+  `retryLaunch` is the Retry button:
+  - after a failed (or cancelled) blueprint, it inserts a new first draft through `insertCrewTask` (one token, the
+    `:retry:{n}` idempotency key), then schedules it;
+  - on a paused (`blocked`) blueprint, it resumes it with `resume: true` (one token, via `checkLimit`);
+  - while the blueprint is queued or running, or once the team exists, it writes and spends nothing;
+  - before any launch, it refuses `LAUNCH_NOT_STARTED`.
+- **Runner mode.** The step is scheduled as `internal.crew.generators.runCrewGeneratorStep({ taskId })`, which is
+  S3a's generator path with no `retryMode`, so it runs in schedule mode. S2a's `settleCrewRun` re-invokes its own
+  retries; the recovery cron (Codex 13) catches dead actions.
+- **Roster writes.**
+  - The roster task goes queued → running → succeeded through `assertTaskTransition`.
+  - `roster_plans` stores `ROSTER_RULES_VERSION`, the hired keys and the skipped `{roleKey, reason}`.
+  - There are 13 `crew_members` rows: hired roles are `queued` and named by employee, skipped roles are `skipped` and
+    named by role; every row is `hiredBy: rule` with `autopilot: false`.
+  - There is one `workstreams` row per hired specialist (8 for HydroTrail; Wren, the Crew Lead, owns none). The titles
+    are in `WORKSTREAM_TITLES`.
+  - The `roster_plan` document is `json`, schema version 1, and holds the full `RosterPlan`.
+  - The Crew Lead is named for the founder's partner (`partnerNameFromWizard`).
+  - No approval (Q13).
+- **`launchStatus`** returns only `not_started`, `assembling`, `failed {paused}` or `ready {hired[{roleKey,
+  employeeName, roleLabel, reason}], skipped[{roleKey, roleLabel, reason}]}`. It returns no ids and no prompt or model
+  text. `roleKey` is the list key.
+- **UI.**
+  - An always-mounted `role="status"` polite region announces each state (the WP77-S6 pattern).
+  - The Retry button reads "Try again", with the accessible name "Try again: put your team together", and is described
+    by the failure text. While it works it is `aria-disabled` and keeps focus.
+  - The hired and skipped roles are `ul` lists under h4 headings (h2, then h3 "Your team", then h4), and skipped roles
+    say "Skipped" in text.
+  - A failed read (AI switched off, say) falls back to a calm line inside `QuietErrorBoundary`, never a crashed page.
+
+### Plan vs reality
+
+- The story lists the `crew_roster` task among the roster transaction's writes. As built, `startLaunch` inserts it as
+  `queued`, and the blueprint's finish moves it to `succeeded` in the roster transaction, with no gateway call and
+  revision 0. The end state is the same. The early insert is what identifies the launch without a schema field.
+- The story says "a second call returns the existing roster and launch". It does, and a second call never retries a
+  failed blueprint: that is `retryLaunch`'s job, as explained above.
+- A paused (parked) blueprint is shown as the failed state with `paused: true`, and Retry resumes it. S2b's
+  `resumeLaunch` covers the rest of the DAG.
+- Edge case: when `startLaunch` finds a first-draft blueprint that already succeeded outside a launch, it plans the team
+  from that stored blueprint at once (tested).
+- Not viewed in a browser: the screen needs a Convex backend, and this session is fixture-only with no `convex dev`.
+  jsdom + axe covers its structure. Contrast uses existing `home-*` pairs (ink-2 on card, clay-ink on clay).
+
+### a11y-check (changed UI: the Meet your co-founder team section)
+
+| Item | Result |
+|---|---|
+| Icon-only buttons have `aria-label` | Pass: none. Retry has visible text and a fuller accessible name |
+| Decorative icons have `aria-hidden` | Pass: the spinner is `aria-hidden`, and `motion-reduce:animate-none` |
+| CSS/mask logos | N/A |
+| Form inputs have labels | N/A |
+| Images have `alt` | N/A |
+| External links | N/A |
+| Focus rings visible | Pass: `BTN_SECONDARY` carries the kit's `FOCUS` outline (`home-orange-ink`) |
+| No colour-only indicators | Pass: "Skipped" is in text under its own heading; the dashed border only reinforces it |
+| Heading hierarchy | Pass: h1 (wizard), h2, h3 "Your team", h4 Hired / Skipped for now |
+| Keyboard | Pass: one native button, still focusable while `aria-disabled`; no overlays |
+| State changes announced | Pass: an always-mounted polite `role="status"`; refusals in `role="alert"` |
+| axe (jsdom, contrast rule off as in WP74's tests) | 0 violations in every state |
+
+### Needs from Codex (S1)
+
+- None new. The scanner (`tests/security/wp68-workspace-boundaries.test.mjs`) accepts `startLaunch`, `retryLaunch`
+  and `launchStatus` as they are (6/6 pass).
+- 13 (the `recoverStaleCrewRuns` cron) is still required before S1 ships. In schedule mode only the cron reaches a
+  blueprint whose action died; until it runs, that launch stays "putting your team together".
+- `npx convex codegen` should reproduce the two hand-added `api.d.ts` lines.
+
+### Checks (after the last code edit)
+
+| Check | Exit | Notes |
+|---|---|---|
+| `git diff --check` | 0 | Re-run after this doc edit: 0 |
+| `npm run typecheck` | 0 | |
+| `npx tsc -p convex --noEmit` | 0 | |
+| `npm run lint` | 0 | 0 errors, 37 warnings, none in S1 files |
+| `npm run check:prompt-versions` | 0 | 6 match the lock at `origin/main` |
+| `npm run test:security` | 0 | node 219 pass, 1 skipped; vitest 121 |
+| `npm run test:convex` | 0 | 81 files, 1,125 tests (`roster.test.ts` 17) |
+| `npm run test:platform` | 0 | 79 files, 2,144 tests (`wp75-meet-cofounder-team` 10) |
+| `npm run build` | 0 | |
+
+- Docs updated: this section; the Status row; Owner Q13 answered; `wp75-stories.md` S1 ticked; the `RULINGS.md` Q13 row.
+
+### S1 review fixes (Opus review: 0 blockers, 1 major, 7 minors, nits)
+
+Still uncommitted on `claude/wp75-s1-roster`. Fixture mode only.
+
+**Dormant until switched on.** `startLaunch`, `retryLaunch` and `launchStatus` each check
+`assertFeatureEnabled("workspace")`, then `assertFeatureEnabled("ai")`, before `requireBusinessAccess`. Nothing runs
+until both features are on. **Ship gate** (now in `wp75-stories.md` S1): do not switch S1 on in production until Codex
+Need 13 (the `recoverStaleCrewRuns` cron) is registered.
+
+| Finding | Fix |
+|---|---|
+| MAJOR: no test of `retryLaunch` authorization once a launch exists | Five new cases (non-owner, signed out, archived, workspace off, AI off), each after a launch whose blueprint failed. `retryLaunch`, `startLaunch` and `launchStatus` all refuse; tasks, scheduled functions and tokens are unchanged |
+| Minor 1: `retryLaunch` while running | Tested: it returns `assembling` and writes, schedules and spends nothing |
+| Minor 2: `writeLaunchRoster` idempotency | Direct test: a succeeded roster task with its plan row returns `"exists"`, and every row is unchanged |
+| Minor 3: a revision must never plan a roster | Tested: a stored first draft, an open roster task, then a round-1 revision (`revisionOfTaskId`) that finishes. No `roster_plans` row and no members; the roster task stays `queued` |
+| Minor 4: repeat failures burning tokens | Route below. Tests: a terminal case (three retries, no token, no rows, no schedule), a free retry once the answers are fixed, and a free heal |
+| Minor 5: no way out when `startLaunch` is refused | Not started plus a refusal hides the spinner and "putting your team together" and shows "Try again". Try again calls `startLaunch` again (new `onStart` prop). The refusal is tied to the launch state it happened in, so it clears once the launch moves on |
+| Minor 6: focus lost after Try again (WCAG 2.4.3) | The h3 "Your team" has `tabIndex={-1}`. When the clicked button unmounts it gets focus, but only if focus was left on `body`, so it never takes focus the founder moved. Tested both ways |
+| Minor 7: plan from the approved blueprint | `launchBlueprintBody` prefers S3a's `approvedBlueprint` (the newest approved one) and falls back to the first draft's document. Tested: an approved course revision gives the course team; with no approval, the first draft's team |
+| Nit: `planLaunchRoster` session checks | Now `launchWizardAnswers`: the session must be the owner's, linked to this project (`projectId`) and not abandoned, with valid answers |
+| Nit: ship gate | Added to the ticked S1 story |
+
+**Minor 4, the route taken: a free re-plan, plus an honest terminal state.** `LaunchView.failed` gains `retryable`.
+- A succeeded blueprint with an open roster task is re-planned at no cost: no token and no gateway call, because the plan is deterministic. This applies to both `retryLaunch` and a later `startLaunch`, and the plan comes from the approved blueprint, else the first draft.
+  - If the team plans, it is written.
+  - If it does not, nothing is written, and `launchStatus` says `retryable: false`. The page then shows "trying again will not change it" with no button.
+- When the business's wizard answers are unusable, no new or resumed blueprint could plan a team. `retryLaunch` therefore spends and writes nothing, and `launchStatus` says `retryable: false`.
+  - Before this fix, each click spent a token and made a model call that would fail closed again.
+- A plan row beside an open roster task heals:
+  - `writeLaunchRoster` now returns `"written" | "healed" | "exists"`;
+  - it keeps the existing row and finishes the task;
+  - it adds only the missing members, workstreams and document.
+- A succeeded roster task with no document reads `failed`, `retryable: false`, never an empty team.
+- A first `startLaunch` that finds a succeeded first draft still spends its one token, because the launch is the founder's action.
+
+**One existing test changed.** `tests/platform/wp74-business-ui.test.tsx` ("a reload with ?session=…") expected no
+calls at all. Before this round, the team section crashed quietly inside `QuietErrorBoundary` against that test's
+mocked query, so its `startLaunch` never ran. It now renders, and it makes the one idempotent `startLaunch` the design
+calls for. The test still asserts no wizard call, and now asserts exactly one `crew/roster:startLaunch`.
+
+**Files changed this round:**
+- `convex/crew/roster.ts`, `convex/crew/launchRoster.ts`, `lib/workspace/crew/launch.ts`;
+- `components/workspace/wizard/MeetCofounder.tsx`;
+- `convex/crew/roster.test.ts` (17 → 29 tests), `tests/platform/wp75-meet-cofounder-team.test.tsx` (10 → 17, including 3 `LiveCofounderTeam` tests with a mocked `convex/react`), and `tests/platform/wp74-business-ui.test.tsx`;
+- this note and `wp75-stories.md`.
+
+a11y-check, re-run on the changed section:
+- the new terminal state is text only;
+- the not-started refusal reuses the same labelled button with `aria-describedby`;
+- the heading focus target is `focus:outline-none`, like the h2 above it, and is reached only programmatically;
+- axe shows 0 violations in every state, the two new ones included.
+
+**Re-check round (narrow Opus re-check: ready to commit; 1 minor, 4 test gaps).**
+- Minor: a heal now writes only the team the stored row already holds.
+  - `rosterPlanMatchesRow` compares the rules version, the hired keys in order, and the skipped keys and reasons in order.
+  - `launchRosterPlan` (used by `finishCrewStep` and the stored-blueprint path) returns null when a fresh plan does not match an existing `roster_plans` row.
+  - `writeLaunchRoster` refuses such a plan as `"conflict"`: no writes, and the task stays open. `launchStatus` then reads `retryable: false`.
+  - Tested: a HydroTrail row with an approved course revision is a conflict, and the founder's retry writes nothing. Once the course approval is withdrawn, the row's own plan heals it, and the members, workstreams and `launchStatus` all match the row.
+- Test gaps, now covered. I removed each guard in turn and confirmed that exactly one test fails, then restored the code:
+  - the `launchWizardAnswers` checks (a session owned by someone else, one linked to another project, an abandoned session);
+  - the first-draft fallback's owner, project and kind checks;
+  - the focus check (focus the founder moved elsewhere after Try again stays there);
+  - the roster document dedupe (a heal with the document present adds no second one).
+- Files: `convex/crew/launchRoster.ts`, `convex/crew/roster.ts`, `convex/crew/jobs.ts` (now calls `launchRosterPlan`), `convex/crew/roster.test.ts` (29 → 37 tests) and `tests/platform/wp75-meet-cofounder-team.test.tsx` (17 → 18).
+
+Checks after the last code edit (all exit 0):
+- `git diff --check`;
+- `npm run typecheck`;
+- `npx tsc -p convex --noEmit`;
+- `npm run lint` (0 errors, 37 warnings, none in S1 files);
+- `npm run check:prompt-versions` (6 match);
+- `npm run test:security` (node 219 pass, 1 skipped; vitest 121);
+- `npm run test:convex` (81 files, 1,145 tests);
+- `npm run test:platform` (79 files, 2,152 tests);
+- `npm run build`.

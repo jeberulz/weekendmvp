@@ -239,6 +239,9 @@ describe("WP74-S4 WizardFlow handoff", () => {
     state.view = finished({ projectId: "project1" as never, name: "HydroTrail", slug: "hydrotrail" });
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId="session123" />);
     expect(screen.getByRole("heading", { level: 2, name: "Meet Wren, your co-founder" })).toBeTruthy();
-    expect(state.calls).toEqual([]);
+    // No wizard call: the session is reopened, never restarted.
+    expect(state.calls.filter((call) => !call.name.startsWith("crew/roster:"))).toEqual([]);
+    // WP75-S1: the team section asks for the launch once; `startLaunch` is idempotent, so a reload starts nothing new.
+    expect(state.calls.map((call) => call.name).filter((name) => name.startsWith("crew/roster:"))).toEqual(["crew/roster:startLaunch"]);
   });
 });
