@@ -12,8 +12,11 @@ const WORD_STEP = 0.045;
  * 01 · Prompt to product. The intro plays on CSS at first paint (globals.css,
  * WP43): headline word by word, then the copy and buttons, then the build
  * window with its prompt pasting in, and the stamp pressing on last.
+ *
+ * `buildCta` (WP74-S5) is true only behind the launch-workspace flag. Off, the
+ * markup is exactly what it was before.
  */
-export function Hero({ idea, total }: { idea: HeroIdea | null; total: number }) {
+export function Hero({ idea, total, buildCta = false }: { idea: HeroIdea | null; total: number; buildCta?: boolean }) {
   return (
     <section aria-labelledby="home-hero-title" className="relative overflow-hidden bg-home-paper">
       <div aria-hidden className="home-dots absolute inset-0 opacity-60" />
@@ -46,7 +49,7 @@ export function Hero({ idea, total }: { idea: HeroIdea | null; total: number }) 
         {/* The stamp inherits this --d; the window sets its own. */}
         <div className="relative lg:mx-10" style={introDelay(1.15)}>
           <div className="home-intro [--home-rise:36px]" style={introDelay(0.58)}>
-            <HeroBuildWindow idea={idea} total={total} pasteFrom={0.95} />
+            <HeroBuildWindow idea={idea} total={total} pasteFrom={0.95} buildCta={buildCta} />
           </div>
           <Stamp
             id="home-hero-stamp"

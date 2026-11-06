@@ -17,6 +17,7 @@ import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
+import type * as buildCta from "../buildCta.js";
 import type * as crew_roles from "../crew/roles.js";
 import type * as crons from "../crons.js";
 import type * as currentUser from "../currentUser.js";
@@ -141,6 +142,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authEmail: typeof authEmail;
   authUser: typeof authUser;
+  buildCta: typeof buildCta;
   "crew/roles": typeof crew_roles;
   crons: typeof crons;
   currentUser: typeof currentUser;

@@ -397,3 +397,76 @@
   - Every other suite exits 0: og, links, redirects, auth, sitemap, convex, engine, editorial, home, prompts,
     platform, live.
   - `npm run build` 0.
+
+## 2026-11-06 - S5: CTAs behind the flag (built, S5 not ticked)
+
+- What:
+  - "Build this idea, free" links to `/start/{slug}` in three places: the hero build window (beside the research
+    link), Idea of the week (above "Read the research", which moves to the ghost tone), and the build-first account card
+    on `/ideas/{slug}`. They are real `<a>` links with the shared focus ring. The accessible name is "Build this idea, free for
+    {title}".
+  - The card keeps its H2 ("Read the full research, free"). With the flag on it gains one line ("Then we'll take you
+    straight to building this idea."), the button reads "Create free account and build", and sign-in returns to
+    `/start/{slug}`. Placement follows WP63 (EmailGate layout untouched).
+  - Analytics: one existing event, `cta_button_clicked`, with `button_location: build-cta-{surface}`, `button_text`
+    and `idea_slug`, through `trackEvent` (a no-op before consent). No new GA config.
+- How the flag is read:
+  - Runtime only, the same C-OPS settings the wizard gate uses (`ops_settings.workspaceEnabled` + cohort). There is
+    still no `NEXT_PUBLIC_LAUNCH_WORKSPACE`.
+  - New public query `convex/buildCta.ts:buildCtaVisible` returns one boolean: workspace on and cohort `open`, or on
+    and the signed-in caller is on the allowlist. An anonymous visitor in `allowlist` mode sees no CTA.
+  - `lib/workspace/build-cta-access.ts` calls it with the visitor's session if any, per request, with a 1.5 s cap.
+    Any error, timeout or missing backend reads as off. The homepage and idea page were already dynamic
+    (`connection()`), so no caching changed. See the review-fixes entry below for latency.
+  - It lives outside `convex/workspace|ops|...` so the WP68 scanner does not demand a business capability from an
+    anonymous read. See Needs from Codex (j).
+  - Showing a CTA grants nothing: `/start` re-runs `getWizardAccess`.
+- Engine drafts: `isBuildCtaSlug` refuses `engine-draft-*` and any non-idea-shaped slug before any CTA renders;
+  the idea page also asks only after `resolveIdea` found a real idea (drafts resolve to nothing).
+- `returnTo` rule: `lib/private-paths.ts` gains `isWizardReturnPath` (`/start/{idea-slug}` exactly, lowercase
+  hyphen slug, nothing after it) and `isBareReturnPath` (idea or wizard path: a query or fragment collapses to
+  `/dashboard`). It is part of `isAllowedAuthReturnPath`, which `lib/auth-return.ts`, `convex/auth.ts` (redirect
+  callback, including the nested OAuth `returnTo`) and `convex/resendMagicLink.ts` all share. Foreign origins, `//`,
+  backslashes, `..`, encoded dots, trailing or extra segments, and `?`/`#` tails all fall to `/dashboard`.
+  `/start/own` is a valid path but nothing links sign-in to it.
+- Flag-off proof: `tests/platform/wp74-cta-flag-off.test.tsx` compares the rendered HTML of Hero, Idea of the week
+  and the gate card, and the EmailGate element tree, to golden files in `tests/platform/__snapshots__/wp74-cta-flag-off/`.
+  The goldens were written from the code before any S5 edit, and still pass. Off is "no CTA prop", and the pages
+  only pass true after the query says so. The full-page `scripts/seo-snapshot.mjs capture/diff` needs a running
+  server with a Convex deployment (no `.env` here), so it was NOT run: run it against a preview before release.
+- Files: `lib/private-paths.ts`, `lib/auth-return.ts`, `convex/auth.ts`, `convex/resendMagicLink.ts`,
+  `convex/buildCta.ts`, `convex/_generated/api.d.ts` (module added by hand),
+  `lib/workspace/build-cta.ts`, `lib/workspace/build-cta-access.ts`, `components/workspace/BuildIdeaCta.tsx`,
+  `components/home/sections/{Hero,IdeaOfTheWeek}.tsx`, `components/home/client/HeroBuildWindow.tsx`,
+  `components/auth/AuthCard.tsx`, `components/ideas/EmailGate.tsx`, `app/(marketing)/page.tsx`,
+  `app/ideas/[slug]/page.tsx`. Tests: `convex/buildCta.test.ts`, `tests/auth/wp74-start-return.test.ts`,
+  `tests/platform/wp74-cta-{flag-off,flag-on,access,wiring}.test.ts(x)`.
+- Needs from Codex:
+  - (j) Recommended: move `convex/buildCta.ts` to `convex/ops/publicFlags.ts` and add a `PUBLIC_FLAG_READS`
+    allowlist in the WP68 scanner. The scanner asserts, for each listed key, `args: {}`, `returns: v.boolean()` and a
+    `getOpsSettings` call, and no other function in the workspace dirs may skip the capability guard. The current file
+    already has exactly that shape. Until then it stays at `convex/buildCta.ts`, outside the scanned dirs.
+  - (k) Middleware: `/start/*` should be `noindex` and never cached, as the earlier (b) asks.
+  - (a)-(i) from the entries above still stand.
+- Not done: seo-snapshot against a live server; live keyboard and contrast pass (S6); a Playwright check that the
+  CTA does not shift layout (it is server-rendered and sized in the existing slots, unverified in a browser).
+- Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings);
+  new WP74-S5 tests 0 (`wp74-cta-*`, `wp74-start-return`, `convex/buildCta`: 54); `npm run test:security` 1, only
+  the known WP68 scanner gap (the eight pre-business functions; first stop `createBusiness`), Vitest half 121/121;
+  og, links, redirects, auth, sitemap, convex (848), engine, editorial, home, prompts, platform (1266), live all 0;
+  `npm run build` 0.
+
+### S5 review fixes
+- Latency: `buildCtaVisible` is started before the page's own data (`getHomeData` via `Promise.all`; on the idea page
+  before `resolveIdea`, and only for non-draft slugs). Anonymous requests use a `use cache` read with
+  `cacheLife({ stale: 60, revalidate: 60, expire: 300 })`, so most loads never wait on Convex. Signed-in requests ask
+  live with their session (cohort is per owner). Timeout is now 300 ms and fails to off. A failed read throws inside the
+  cached function so it is not cached.
+- Removed the signed-in member CTA from the idea page (outside the story).
+- Funnel: with the flag on, the gate's "Sign in" (the toggle, and the non-embedded cross link) keeps the idea page as its
+  return (`signInReturnTo`); only "Create free account and build" returns to `/start/{slug}`. The build-first note shows
+  only in the create mode. Tested for email and Google.
+- `isWizardReturnPath` refuses `/start/own` and any dot segment, raw or percent-encoded. `hasDotSegmentInTarget` checks the
+  raw target before `new URL()` (which would normalise `/start/../start/x` to `/start/x`) in `safePlatformReturn`,
+  `safeAuthRedirect`, the OAuth nested `returnTo` and the magic-link mailer. A dot segment in any return target now falls
+  to `/dashboard`.

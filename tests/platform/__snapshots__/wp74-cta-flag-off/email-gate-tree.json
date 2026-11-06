@@ -1,0 +1,46 @@
+{
+  "type": "main",
+  "props": {
+    "className": "mx-auto grid max-w-6xl gap-y-8 px-6 pb-20 pt-24 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-x-12 lg:gap-y-0 lg:px-8 lg:pt-36"
+  },
+  "children": [
+    {
+      "type": "p",
+      "props": {},
+      "children": "intro"
+    },
+    {
+      "type": "aside",
+      "props": {
+        "className": "lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start"
+      },
+      "children": {
+        "type": "AuthPlatformProvider",
+        "props": {
+          "fallbackClassName": "bg-[#fcfaf7]"
+        },
+        "children": {
+          "type": "AuthCard",
+          "props": {
+            "embedded": true,
+            "gate": true,
+            "mode": "signup",
+            "returnTo": "/ideas/example-idea"
+          },
+          "children": null
+        }
+      }
+    },
+    {
+      "type": "div",
+      "props": {
+        "className": "min-w-0 lg:col-start-1 lg:row-start-2"
+      },
+      "children": {
+        "type": "p",
+        "props": {},
+        "children": "body"
+      }
+    }
+  ]
+}
