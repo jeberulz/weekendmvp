@@ -624,3 +624,115 @@ describe("WP77-S2 review fixes", () => {
     expect((await t.run(async (ctx) => ctx.db.get("tasks", free.taskId)))?.jobKey).toBe(jobKey(ids.projectId, "crew_social_pack", "r1", 1));
   });
 });
+
+describe("WP77 PR #210: retrying a free round from its changes_requested card", () => {
+  /** Round 1 asked on a fresh card; returns the card and its revision task. */
+  async function firstFreeRound(seeded: Seeded, note = "Bolder logo") {
+    const { t, ids } = seeded;
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const cardId = await reviewCard(t, ids, first.docId);
+    const result = await askForChanges(seeded, cardId, note);
+    if (result.changeRound?.outcome !== "free") throw new Error("expected free");
+    return { first, cardId, taskId: result.changeRound.taskId };
+  }
+
+  async function endTask(t: T, taskId: Id<"tasks">, status: "failed" | "cancelled") {
+    await t.run(async (ctx) => ctx.db.patch("tasks", taskId, { status, updatedAt: 3 }));
+  }
+
+  for (const status of ["failed", "cancelled"] as const) {
+    test(`a ${status} free revision: asking again starts the same round with a new zero-cost task`, async () => {
+      const seeded = await seed();
+      const { t, ids } = seeded;
+      const { first, cardId, taskId } = await firstFreeRound(seeded);
+      await endTask(t, taskId, status);
+
+      const again = await askForChanges(seeded, cardId);
+      expect(again).toMatchObject({
+        approvalId: cardId, status: "changes_requested", changed: true,
+        changeRound: { outcome: "free", changeRound: 1, freeRoundsLeft: 1 },
+      });
+      if (again.changeRound?.outcome !== "free") throw new Error("expected free");
+      const retryId = again.changeRound.taskId;
+      expect(retryId).not.toBe(taskId);
+      const [oldTask, retry] = await t.run(async (ctx) => [await ctx.db.get("tasks", taskId), await ctx.db.get("tasks", retryId)]);
+      expect(retry).toMatchObject({
+        status: "queued", creditCost: 0n, changeRound: 1n, revisionOfTaskId: first.taskId, approvalId: cardId,
+        jobKey: jobKey(ids.projectId, "crew_brand_kit", "main", 1),
+      });
+      expect(retry?.idempotencyKey).not.toBe(oldTask?.idempotencyKey);
+      // The card keeps its note when none is given; the retry reads it.
+      expect(await t.run(async (ctx) => revisionNoteFor(ctx, retryId))).toBe("Bolder logo");
+      expect(await spendCards(t, ids.projectId)).toHaveLength(0);
+    });
+  }
+
+  test("a new note on the retry replaces the card's note", async () => {
+    const seeded = await seed();
+    const { t } = seeded;
+    const { cardId, taskId } = await firstFreeRound(seeded);
+    await endTask(t, taskId, "failed");
+    const again = await askForChanges(seeded, cardId, "Softer colours instead");
+    if (again.changeRound?.outcome !== "free") throw new Error("expected free");
+    const retryId = again.changeRound.taskId;
+    expect(await t.run(async (ctx) => revisionNoteFor(ctx, retryId))).toBe("Softer colours instead");
+  });
+
+  test("asking again while the revision is still queued is a no-op", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { cardId } = await firstFreeRound(seeded);
+    await expect(askForChanges(seeded, cardId, "again")).resolves.toEqual({ approvalId: cardId, status: "changes_requested", changed: false });
+    const revisions = (await tasksOf(t, ids.projectId)).filter((task) => task.revisionOfTaskId !== undefined);
+    expect(revisions).toHaveLength(1);
+    expect((await t.run(async (ctx) => ctx.db.get("approvals", cardId)))?.note).toBe("Bolder logo");
+  });
+
+  test("a double ask after a failure creates only one task", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { cardId, taskId } = await firstFreeRound(seeded);
+    await endTask(t, taskId, "failed");
+    const results = await Promise.all([askForChanges(seeded, cardId), askForChanges(seeded, cardId)]);
+    expect(results.filter((r) => r.changed)).toHaveLength(1);
+    expect(results.filter((r) => !r.changed)[0]).toEqual({ approvalId: cardId, status: "changes_requested", changed: false });
+    const live = (await tasksOf(t, ids.projectId)).filter((task) => task.revisionOfTaskId !== undefined && task.status === "queued");
+    expect(live).toHaveLength(1);
+  });
+
+  test("an old card whose round finished does not start the next round", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { cardId, taskId } = await firstFreeRound(seeded);
+    await finishRound(t, ids, taskId, "brand_kit", 1);
+    await expect(askForChanges(seeded, cardId)).resolves.toEqual({ approvalId: cardId, status: "changes_requested", changed: false });
+  });
+
+  test("a card that never started the released round cannot retry it", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { first, taskId } = await firstFreeRound(seeded);
+    await endTask(t, taskId, "failed");
+    // Another card on the same draft, already moved to changes_requested without starting a round.
+    const otherCard = await t.run(async (ctx) => ctx.db.insert("approvals", {
+      ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents", subjectId: first.docId,
+      status: "changes_requested", changeRound: 0n, createdAt: Date.now(), updatedAt: Date.now(),
+    }));
+    await expect(askForChanges(seeded, otherCard)).resolves.toEqual({ approvalId: otherCard, status: "changes_requested", changed: false });
+  });
+
+  test("a paid round re-ask still raises the spend card, not a task", async () => {
+    const seeded = await seed();
+    const { t, owner, ids } = seeded;
+    const { cardId } = await throughTwoFreeRounds(seeded);
+    const first = await askForChanges(seeded, cardId, "Warmer");
+    if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
+    await owner.mutation(api.workspace.approvals.decideApproval, {
+      projectId: ids.projectId, approvalId: first.changeRound.spendApprovalId, decision: "cancel",
+    });
+    const before = (await tasksOf(t, ids.projectId)).length;
+    const again = await askForChanges(seeded, cardId);
+    expect(again).toMatchObject({ changed: true, changeRound: { outcome: "spend_required", changeRound: 3 } });
+    expect((await tasksOf(t, ids.projectId)).length).toBe(before);
+  });
+});

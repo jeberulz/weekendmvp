@@ -35,7 +35,7 @@ export const wrenPlanTurnSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>
       inputs,
       "The founder wants to change their weekend plan. Work out what they are asking for, then propose the change " +
         "as a short, concrete suggestion: what moves, what it affects, and what stays the same. You cannot change " +
-        "the plan yourself; say they can make the change in the launch plan, and add a navigate card to it if that helps.",
+        "the plan yourself; say they can make the change in the launch plan.",
     ),
   outputSchema: wrenReplyOutput,
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },

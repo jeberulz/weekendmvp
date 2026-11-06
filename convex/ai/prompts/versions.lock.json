@@ -34,13 +34,13 @@
       "retired": "WP77-S4: replaced by version 2 (cards in the reply schema)"
     },
     "wren-chat@2": {
-      "hash": "sha256:47654f1d62ae9629379f2731fb7143b8e34c93badd4ff9a5ae4fb734ad2f474f",
+      "hash": "sha256:02b347a5255795adb3df6c8399293c2e06931094869ace4e6bf3d373fd3fffe8",
       "parts": {
-        "system": "sha256:5a989f824dc1100e1be12d93ce4ea83e2b3d8f3894fd4dd538ed7cfdca1d5f7d",
+        "system": "sha256:b0d9f53581cd1d0980f156d96a4083de3e29ba506f57ea9d27a40d8e4ae50a39",
         "task": "sha256:5dc78d3cdf60af80735e2f1f4f593a296dce5d93501728be060c7e04986ebad6",
         "outputSchema": "sha256:dc96e6b7f45982c6559e2ac03be0022f21d46a00c030d799ad2df452e0d2334a",
         "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
-        "module": "sha256:70a8c7235bc3351f5990660a88e57548235f33361a19c6e5aa801bcc8d319749"
+        "module": "sha256:a4908eae03b4c2e26bab54fb902fd9e2073b344333c75a02ad9ff464c5c1fb01"
       }
     },
     "wren-plan-turn@1": {
@@ -55,13 +55,13 @@
       "retired": "WP77-S4: replaced by version 2 (cards in the reply schema)"
     },
     "wren-plan-turn@2": {
-      "hash": "sha256:7a5e1c3366826ef4778a5c5b043e4196828698391dba10256ddd1581de3d75d1",
+      "hash": "sha256:a5c5bfda2654131f527d2c694ab0dfd759b66cc10a3eb61801cad6ef8d6c8591",
       "parts": {
-        "system": "sha256:5a989f824dc1100e1be12d93ce4ea83e2b3d8f3894fd4dd538ed7cfdca1d5f7d",
-        "task": "sha256:c9128aec918bb902922d700fefd1ce447c05c7cf6e66a7ba617e7434613ee977",
+        "system": "sha256:b0d9f53581cd1d0980f156d96a4083de3e29ba506f57ea9d27a40d8e4ae50a39",
+        "task": "sha256:21d323894b8ce327f801a77a5d368cf8618bbd2e126689dba40d52d51d389a84",
         "outputSchema": "sha256:dc96e6b7f45982c6559e2ac03be0022f21d46a00c030d799ad2df452e0d2334a",
         "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
-        "module": "sha256:f37d8c75bb7ba1dec8ae7270bd07aacd7785c104959f517b9619c14d5dd159cf"
+        "module": "sha256:b1721d6bee1fae35e693faf3d6db42d6f7997e5f222eb4ec237648be43677b05"
       }
     }
   }

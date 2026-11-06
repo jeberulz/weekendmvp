@@ -222,6 +222,11 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
   ) {
     throw new ConvexError({ code: "CHANGE_ROUND_JOB_KEY_LIVE" });
   }
+  // A retry after failed or cancelled attempts gets its own idempotency key, so
+  // no two tasks share one (`by_ownerId_and_idempotencyKey`).
+  const idempotencyKey = holders.length === 0
+    ? `change-round:${approvalId}:${key}`
+    : `change-round:${approvalId}:${key}:retry:${holders.length}`;
   return await ctx.db.insert("tasks", {
     ownerId: lineage.ownerId,
     projectId: lineage.projectId,
@@ -234,10 +239,32 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
     revisionOfTaskId: lineage.reviewedTask._id,
     approvalId,
     jobKey: key,
-    idempotencyKey: `change-round:${approvalId}:${key}`,
+    idempotencyKey,
     createdAt: now,
     updatedAt: now,
   });
+}
+
+/**
+ * True when this card already started `changeRound` of this artifact and every
+ * attempt it started ended failed or cancelled: the task(s) under the round's
+ * key name this card and none is live. Lets a re-ask on a `changes_requested`
+ * review card retry its own free round, and nothing else: a card whose round
+ * finished, or that never started this round, gets false.
+ */
+export async function cardRoundWasReleased(
+  ctx: Pick<QueryCtx, "db">,
+  lineage: ArtifactLineage,
+  changeRound: number,
+  approvalId: Id<"approvals">,
+): Promise<boolean> {
+  const key = jobKey(lineage.projectId, lineage.jobType, lineage.subject, changeRound);
+  const holders = await ctx.db.query("tasks")
+    .withIndex("by_ownerId_and_jobKey", (q) => q.eq("ownerId", lineage.ownerId).eq("jobKey", key))
+    .take(CHANGE_ROUND_LINEAGE_MAX + 1);
+  if (holders.length > CHANGE_ROUND_LINEAGE_MAX) return false;
+  const released = (status: string) => (ROUND_RELEASING_TASK_STATUSES as readonly string[]).includes(status);
+  return holders.some((task) => task.approvalId === approvalId) && holders.every((task) => released(task.status));
 }
 
 /**

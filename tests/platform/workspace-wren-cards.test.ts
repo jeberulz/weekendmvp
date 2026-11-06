@@ -76,6 +76,12 @@ describe("WP77-S4 allowlist shape", () => {
     expect(WREN_SYSTEM_RULES).toContain(text);
   });
 
+  test("the prompt says explain and navigate cards may not be shown, so the reply never points at one", () => {
+    const text = wrenToolsInstruction();
+    expect(text).toContain("Explain and navigate cards may not be shown yet");
+    expect(text).toContain("never refer to one in your reply");
+  });
+
   test("approval card titles are static copy by kind and table", () => {
     expect(approvalCardTitle("publish", "site_versions")).toBe("Publish this landing page version");
     expect(approvalCardTitle("send", "sequences")).toBe("Start sending this email sequence");
