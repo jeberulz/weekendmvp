@@ -35,7 +35,7 @@ Definition of done: Additive schema and WP22 unions; owner-only business authori
   - Scope: new files in `tests/security/`.
   - Acceptance criteria: Every new table has an owner index; every new public function enforces business or super-admin access; provider import restrictions are pinned.
   - Verification: `npm run test:security`, then standard checks.
-- [ ] `WP68-S8` - Reconcile pre-business wizard authorization with the security scanner
+- [x] `WP68-S8` - Reconcile pre-business wizard authorization with the security scanner
   - Scope: `convex/platform/authz.ts`, `tests/security/wp68-workspace-boundaries.test.mjs`, focused authz tests, this progress log.
   - Acceptance criteria: Export an expiry-aware owner-only wizard-session guard for mutation callers and a clock-free read path. An exact allowlist recognizes only WP74's eight pre-business public functions with their existing current-user or owned-session guards; all still require `assertFeatureEnabled`, and every other public workspace function still needs business or super-admin access. No Claude-owned wizard file changes in this slice.
   - Verification: focused authorization and scanner tests, standard checks, isolated local Convex if a backend check is needed.
