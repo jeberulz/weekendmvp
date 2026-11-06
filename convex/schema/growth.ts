@@ -69,6 +69,7 @@ export const growthTables = {
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
     .index("by_leadId", ["leadId"])
+    .index("by_leadId_and_state", ["leadId", "state"])
     .index("by_state_and_nextStepAt", ["state", "nextStepAt"]),
 
   email_sends: defineTable({

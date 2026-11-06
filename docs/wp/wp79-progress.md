@@ -32,3 +32,8 @@ Append-only progress log. Claims must cite checks or code evidence.
 - Auth-mail variables and delivery code are untouched. Provider account/domain creation and test-inbox delivery remain owner actions after later stories and contract gates.
 - Relevant docs: `.env.example` explains the separate project and activation values. No Next.js code changed.
 - Independent S1 review found that an explicit live setting alone could turn component test mode off with no tenant sender. Tightened the option builder: live mode requires the exact live setting plus tenant key, valid non-demo sender and webhook secret. The sender still must enforce the ops feature gate and address before enqueue.
+
+## 2026-11-06 — Bounded revocation index proposed
+
+- Contact deletion cannot scan all historical enrollments for a lead in one Convex transaction as customer history grows. A separate schema-only C-DATA follow-up adds `enrollments.by_leadId_and_state`, allowing the deletion hook to find only sendable enrollments and revoke them before WP78 erases lead contact fields. Sender will enforce one active enrollment per lead and recheck lead deletion before any enqueue; historical pseudonymous enrollment/send rows follow bounded retention. Queued opt-in confirmation is linked through the prior `lead_email_tokens.componentEmailId` field.
+- This index alone does not implement cancellation or authorize sends. Claude orchestrator must log and acknowledge this contract change under `05-lanes-codex-claude.md` §5 before the revocation runtime merges.
