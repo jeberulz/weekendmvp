@@ -189,6 +189,16 @@ describe("WP74-S1 Meet your co-founder", () => {
   });
 });
 
+describe("WP74-S1 Meet your co-founder errors", () => {
+  test("a failed Back is announced as an alert", async () => {
+    const { container } = render(
+      <MeetCofounder answers={hydro.defaults} pending={false} error="Something went wrong. Try again." onBack={vi.fn()} />,
+    );
+    expect(screen.getByRole("alert").textContent).toBe("Something went wrong. Try again.");
+    await expectNoAxeViolations(container);
+  });
+});
+
 describe("WP74-S1 wizard error copy", () => {
   test("maps guard codes to plain messages and never leaks raw errors", () => {
     expect(wizardErrorMessage(new ConvexError({ code: "RATE_LIMITED" }))).toMatch(/Try again tomorrow/);

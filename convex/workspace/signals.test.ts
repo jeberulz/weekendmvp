@@ -9,7 +9,7 @@ import { mirrorSignal, recordFounderSignal } from "./signals";
 const modules = import.meta.glob("/convex/**/*.ts");
 
 describe("WP74-S2 recordFounderSignal", () => {
-  test("bounds before/after, links the session, and writes once per (session, step, action)", async () => {
+  test("bounds before/after, links the session, and skips only a repeat of the step's latest signal", async () => {
     const t = convexTest(schema, modules);
     const rows = await t.run(async (ctx) => {
       const ownerId = await ctx.db.insert("users", { email: "owner@example.test" });
@@ -27,11 +27,13 @@ describe("WP74-S2 recordFounderSignal", () => {
       const input = { ownerId, session, step: "platform" as const, action: "changed" as const, before: long, after: "Web", now: 5 };
       const first = await recordFounderSignal(ctx, input);
       const second = await recordFounderSignal(ctx, input);
-      const otherAction = await recordFounderSignal(ctx, { ...input, action: "kept" });
-      expect([first, second, otherAction]).toEqual([true, false, true]);
+      const otherAction = await recordFounderSignal(ctx, { ...input, action: "kept", now: 6 });
+      const otherAfter = await recordFounderSignal(ctx, { ...input, action: "kept", after: "Native", now: 7 });
+      const backToFirst = await recordFounderSignal(ctx, { ...input, now: 8 });
+      expect([first, second, otherAction, otherAfter, backToFirst]).toEqual([true, false, true, true, true]);
       return await ctx.db.query("founder_signals").collect();
     });
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(4);
     expect(rows[0]?.wizardSessionId).toBeDefined();
     expect(rows[0]?.before?.length).toBeLessThanOrEqual(160);
     expect(rows[0]?.before?.endsWith("…")).toBe(true);

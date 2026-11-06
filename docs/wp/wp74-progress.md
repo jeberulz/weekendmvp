@@ -61,18 +61,49 @@
   redirects, auth, sitemap, convex 804, engine, editorial on re-run, after one 5 s timeout while the build ran
   alongside, home, prompts, platform 1084, live). `npm run build` 0 (`/start/[ideaSlug]` ◐, `/start/own` ƒ).
 - Docs: this entry; the stories are not ticked yet (see below).
-- Needs from Codex:
-  1. `tests/security/wp68-workspace-boundaries.test.mjs` requires `requireBusinessAccess` or
-     `requireSuperAdmin` in every public `convex/workspace` function. The wizard runs before a business exists,
-     so its capability guard is `requireCurrentPlatformUser*` plus a session-ownership check. Please allow that
-     guard for `convex/workspace/wizard.ts`, for example with a named pre-business allowlist. Alternatively add a
-     C-AUTHZ helper such as `requireOwnedWizardSession` (or `wizard_sessions` in `OWNER_RECORD_TABLE_NAMES`)
-     and accept it in the scanner.
-  2. Middleware hard 404 for `/start` and `/start/*` (matcher + gate), the same as `/dashboard/b`. It can call
-     `api.workspace.wizard.getWizardAccess` with `{ ideaSlug }` taken from the first segment (omit it for
-     `own`).
-  3. Optional: index `founder_signals.by_wizardSessionId_and_step` for exact dedupe instead of the bounded
-     owner scan.
-  4. Optional: `NEXT_PUBLIC_LAUNCH_WORKSPACE` in `.env.example`, so the build flag can be added to the gate.
+- Needs from Codex: superseded by the review-fixes entry below.
 - Not done: S3–S6. The a11y-check skill and live keyboard pass are S6, and contrast is unchecked in jsdom.
   S1/S2 are met in code but stay unticked until item 1 lands and the full gate is green.
+
+## 2026-11-06 - S1/S2 review fixes (after 82036f77)
+
+- C-LIMITS: the local 20-a-day counter is gone. `startOrResume` calls `checkLimit(ctx, "wizardStart", user._id)`
+  (3 a day) only on the insert path, after the resume lookup. A resume costs nothing. A refusal throws before the
+  insert in the same transaction. `checkLimit` also needs the `ai` feature, which is kept because the blueprint
+  and roster spend AI right after start. With AI off a new start is refused (`AI_DISABLED`) but a resume still
+  works.
+- Resume is exact at any number of sessions. The lookup reads the owner's sessions with no `projectId`
+  (`by_ownerId_and_projectId`, `projectId` unset) and matches the idea exactly, instead of scanning the latest 50.
+- Engine drafts: `libraryIdea` returns null for `isEngineDraftSlug` (re-exported in `catalogPolicy.ts`). Neither
+  the route gate nor `startOrResume` accepts a draft, and neither reveals its title.
+- Signals: a signal is skipped only when it repeats the latest one for the same (session, step), with the same
+  action and the same `after`. Kept → changed → rewrote → kept now records four rows. Double clicks were already
+  no-ops through the step-key check.
+- UI: a library session rewritten as an own idea now replaces the URL with `/start/own?session=…`, so a reload
+  resumes it. `MeetCofounder` shows a failed Back as `role="alert"`.
+- Session guard: the five session functions now call `ownedWizardSession(ctx, sessionId)`. It does the C-AUTHZ
+  user check (expiry-aware in mutations) and the ownership check, with the same signature as the planned
+  `requireOwnedWizardSession`. The swap is the import plus the name at each call site.
+  `tests/security/wp74-wizard-guards.test.mjs` pins the exact guard per function.
+- Decision for the orchestrator to record (Rewrite on fixed-choice steps): C-WIZARD has no free-text field for
+  commercial model, goal or partner personality. On those steps Rewrite opens the choice editor (saved through
+  `saveStep`, logged `changed` or `kept`), and `rewriteStep` refuses them with `INVALID_STEP`. Rewrite takes the
+  founder's own words on idea, blueprint (rework notes), platform (custom), name and partner name.
+- Tests: wizard 27 and signals 3 (convex-test), plus the UI, flow and access files. New cases: the 4th start
+  refused while resumes work, AI off, resume past 60 sessions, the engine-draft refusal, the four-decision
+  sequence, the own-idea URL move, and the Meet alert.
+- Needs from Codex:
+  - (a) `requireOwnedWizardSession(ctx, sessionId)` in `convex/platform/authz.ts`. Plus an exact
+    `PRE_BUSINESS_CONTROLS` allowlist in `tests/security/wp68-workspace-boundaries.test.mjs`:
+    `getWizardAccess` and `startOrResume` require `requireCurrentPlatformUser*`; `getSession`, `saveStep`,
+    `skipStep`, `rewriteStep` and `goBack` require `requireOwnedWizardSession`; all still require
+    `assertFeatureEnabled`.
+  - (b) A middleware hard 404 for `/start` and `/start/*`.
+  - (c) Optional: index `founder_signals.by_wizardSessionId_and_step`.
+- Checks: typecheck 0; `npx tsc --noEmit -p convex` 0; lint 0 (0 errors, 37 existing warnings); the five wizard
+  test files 0 (54 tests); `npm run test:security` 1, failing only on the known WP68 scanner test
+  (`not ok 200 - workspace public Convex functions check both the feature and the capability`,
+  `convex/workspace/wizard.ts:getWizardAccess missing capability guard`). The other 204 Node security tests pass
+  (1 skipped, as before), and so do 121/121 Vitest security tests. Every other `npm test` suite exits 0 (og,
+  links, redirects, auth, sitemap, convex 809, engine, editorial, home, prompts, platform 1087, live).
+  `npm run build` 0.

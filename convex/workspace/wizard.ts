@@ -3,6 +3,8 @@ import type { ZodType } from "zod";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
+import { checkLimit } from "../platform/limits";
+import { isEngineDraftSlug } from "../platform/catalogPolicy";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../platform/authz";
 import schema from "../schema";
 import {
@@ -47,11 +49,6 @@ import { mirrorSignal, recordFounderSignal } from "./signals";
 
 const DENIAL_CODES: ReadonlySet<string> = new Set(["UNAUTHENTICATED", "RESOURCE_NOT_FOUND", "WORKSPACE_DISABLED"]);
 
-/** How many of the owner's latest sessions the resume lookup reads. */
-const RESUME_WINDOW = 50;
-/** New sessions an owner may start in a rolling day. */
-const MAX_NEW_SESSIONS_PER_DAY = 20;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const answersValidator = schema.tables.wizard_sessions.validator.fields.answers;
 
@@ -166,14 +163,13 @@ function isActive(session: Doc<"wizard_sessions">): boolean {
   return session.abandonedAt === undefined && session.projectId === undefined;
 }
 
-function sameIdea(session: Doc<"wizard_sessions">, idea: WizardIdea): boolean {
-  return idea.source === "library"
-    ? session.ideaSlug === idea.ideaSlug && session.ownIdeaText === undefined
-    : session.ownIdeaText === idea.text && session.ideaSlug === undefined;
-}
-
-/** The library idea's public row, or null when unknown or removed. */
+/**
+ * The library idea's public row, or null when unknown, removed or an engine
+ * draft (`engine-draft-*`: never an entry point, WP54-S5), so neither the
+ * route gate nor `startOrResume` accepts it or reveals its title.
+ */
 async function libraryIdea(ctx: Pick<QueryCtx, "db">, slug: string): Promise<Doc<"ideas"> | null> {
+  if (isEngineDraftSlug(slug)) return null;
   const idea = await ctx.db
     .query("ideas")
     .withIndex("by_slug", (q) => q.eq("slug", slug))
@@ -197,14 +193,49 @@ function sessionIdea(answers: WizardAnswersProgress): WizardIdea {
   return answers.idea;
 }
 
-async function ownedSession(
-  ctx: Pick<QueryCtx, "db">,
-  ownerId: Id<"users">,
+/**
+ * C-AUTHZ for an existing session: the signed-in user (expiry-aware in
+ * mutations, clock-free in queries) must own it, and it must still be active.
+ * A missing session and someone else's look the same.
+ *
+ * Same signature as the planned `requireOwnedWizardSession(ctx, sessionId)` in
+ * `convex/platform/authz.ts` (Codex): swapping is the import plus this name at
+ * each call site.
+ */
+async function ownedWizardSession(
+  ctx: Pick<QueryCtx, "auth" | "db"> | MutationCtx,
   sessionId: Id<"wizard_sessions">,
 ): Promise<Doc<"wizard_sessions">> {
+  const user = "scheduler" in ctx
+    ? await requireCurrentPlatformUserForMutation(ctx)
+    : await requireCurrentPlatformUser(ctx);
   const session = await ctx.db.get("wizard_sessions", sessionId);
-  if (session === null || session.ownerId !== ownerId || !isActive(session)) return deny("RESOURCE_NOT_FOUND");
+  if (session === null || session.ownerId !== user._id || !isActive(session)) return deny("RESOURCE_NOT_FOUND");
   return session;
+}
+
+/**
+ * The owner's active session for this idea, however many sessions they have.
+ * Active sessions have no `projectId` yet, so the owner + unset-project index
+ * range holds exactly the candidates; the idea match is exact.
+ */
+async function activeSessionFor(
+  ctx: Pick<QueryCtx, "db">,
+  ownerId: Id<"users">,
+  idea: WizardIdea,
+): Promise<Doc<"wizard_sessions"> | null> {
+  return await ctx.db
+    .query("wizard_sessions")
+    .withIndex("by_ownerId_and_projectId", (q) => q.eq("ownerId", ownerId).eq("projectId", undefined))
+    .filter((q) =>
+      q.and(
+        q.eq(q.field("abandonedAt"), undefined),
+        idea.source === "library"
+          ? q.and(q.eq(q.field("ideaSlug"), idea.ideaSlug), q.eq(q.field("ownIdeaText"), undefined))
+          : q.and(q.eq(q.field("ownIdeaText"), idea.text), q.eq(q.field("ideaSlug"), undefined)),
+      ),
+    )
+    .first();
 }
 
 function unchanged(session: Doc<"wizard_sessions">): StepResult {
@@ -223,7 +254,6 @@ function nextStep(step: WizardStep): WizardStep | null {
  */
 async function commitStep(
   ctx: MutationCtx,
-  user: Doc<"users">,
   session: Doc<"wizard_sessions">,
   step: WizardStep,
   stepAnswer: unknown,
@@ -253,7 +283,7 @@ async function commitStep(
   const after = summarizeStep(step, merged);
   const now = Date.now();
 
-  await recordFounderSignal(ctx, { ownerId: user._id, session, step, action, before, after, now });
+  await recordFounderSignal(ctx, { ownerId: session.ownerId, session, step, action, before, after, now });
   const withSignals = parseOrThrow(wizardAnswersProgressSchema, {
     ...merged,
     signals: mirrorSignal(merged.signals, step, action, before, after),
@@ -361,19 +391,16 @@ export const startOrResume = mutation({
       return deny("RESOURCE_NOT_FOUND");
     }
 
-    const now = Date.now();
-    const recent = await ctx.db
-      .query("wizard_sessions")
-      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
-      .order("desc")
-      .take(RESUME_WINDOW);
     // Completed but not yet a business still counts: S4 creates the business from it.
-    const existing = recent.find((session) => isActive(session) && sameIdea(session, idea));
+    const existing = await activeSessionFor(ctx, user._id, idea);
     if (existing) return existing._id;
-    if (recent.filter((session) => session.startedAt > now - DAY_MS).length >= MAX_NEW_SESSIONS_PER_DAY) {
-      throw new ConvexError({ code: "RATE_LIMITED" });
-    }
 
+    // C-LIMITS: only a new session spends the daily wizard-start allowance. A
+    // refusal throws here, so nothing below is written. It also needs the
+    // `ai` feature, because the blueprint and roster spend AI right after start.
+    await checkLimit(ctx, "wizardStart", user._id);
+
+    const now = Date.now();
     const answers = parseOrThrow(wizardAnswersProgressSchema, { idea });
     const sessionId = await ctx.db.insert("wizard_sessions", {
       ownerId: user._id,
@@ -387,7 +414,7 @@ export const startOrResume = mutation({
       const session = await ctx.db.get("wizard_sessions", sessionId);
       if (session === null) return deny("RESOURCE_NOT_FOUND");
       // No suggestion preceded an own idea, so the signal has no `before`.
-      await commitStep(ctx, user, session, "idea", idea, "rewrote", { hadSuggestion: false });
+      await commitStep(ctx, session, "idea", idea, "rewrote", { hadSuggestion: false });
     }
     return sessionId;
   },
@@ -399,8 +426,7 @@ export const getSession = query({
   returns: sessionViewValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const user = await requireCurrentPlatformUser(ctx);
-    const session = await ownedSession(ctx, user._id, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId);
     const answers = storedAnswers(session);
     const { seed, title } = await seedFor(ctx, sessionIdea(answers));
     const step = sessionStep(session);
@@ -426,11 +452,10 @@ export const saveStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const user = await requireCurrentPlatformUserForMutation(ctx);
-    const session = await ownedSession(ctx, user._id, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
-    return await commitStep(ctx, user, session, args.step, args.answer, null);
+    return await commitStep(ctx, session, args.step, args.answer, null);
   },
 });
 
@@ -440,12 +465,11 @@ export const skipStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const user = await requireCurrentPlatformUserForMutation(ctx);
-    const session = await ownedSession(ctx, user._id, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
     const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
-    return await commitStep(ctx, user, session, args.step, seed.defaults[stepKey(args.step)], "skipped");
+    return await commitStep(ctx, session, args.step, seed.defaults[stepKey(args.step)], "skipped");
   },
 });
 
@@ -459,12 +483,11 @@ export const rewriteStep = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const user = await requireCurrentPlatformUserForMutation(ctx);
-    const session = await ownedSession(ctx, user._id, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
     const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
-    return await commitStep(ctx, user, session, args.step, rewriteAnswer(args.step, args.text, seed), "rewrote");
+    return await commitStep(ctx, session, args.step, rewriteAnswer(args.step, args.text, seed), "rewrote");
   },
 });
 
@@ -477,8 +500,7 @@ export const goBack = mutation({
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const user = await requireCurrentPlatformUserForMutation(ctx);
-    const session = await ownedSession(ctx, user._id, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId);
     const step = sessionStep(session);
     if (args.step !== step) return unchanged(session);
     const now = Date.now();

@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 
+import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
@@ -9,18 +10,24 @@ import { wizardAnswersProgressSchema, wizardAnswersSchema } from "../../lib/work
 
 const modules = import.meta.glob("/convex/**/*.ts");
 
-type Setup = { workspaceEnabled?: boolean; ownerInCohort?: boolean };
+type Setup = { workspaceEnabled?: boolean; ownerInCohort?: boolean; aiEnabled?: boolean };
 
 async function seed(setup: Setup = {}) {
-  const { workspaceEnabled = true, ownerInCohort = true } = setup;
+  const { workspaceEnabled = true, ownerInCohort = true, aiEnabled = true } = setup;
   const t = convexTest(schema, modules);
+  registerRateLimiter(t);
   const ids = await t.run(async (ctx) => {
     const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
     const ownerId = await ctx.db.insert("users", { email: "owner@example.test" });
     const otherId = await ctx.db.insert("users", { email: "other@example.test" });
     const ownerSessionId = await ctx.db.insert("authSessions", { userId: ownerId, expirationTime: 9_999_999_999_999 });
     const otherSessionId = await ctx.db.insert("authSessions", { userId: otherId, expirationTime: 9_999_999_999_999 });
-    for (const [slug, title] of [["hydrotrail", "HydroTrail"], ["meal-planner", "Meal Planner: dinners for busy parents"]]) {
+    for (const [slug, title] of [
+      ["hydrotrail", "HydroTrail"],
+      ["meal-planner", "Meal Planner: dinners for busy parents"],
+      ["trail-cafe", "Trail Cafe"],
+      ["engine-draft-secret", "Secret draft"],
+    ]) {
       await ctx.db.insert("ideas", {
         slug,
         title,
@@ -55,9 +62,10 @@ async function seed(setup: Setup = {}) {
       workspaceEnabled,
       cohortMode: "allowlist",
       freeSignupsOpen: false,
-      globalDailyBudgetMicroUsd: 0n,
+      // checkLimit("wizardStart") needs the `ai` feature: switch on and a budget.
+      globalDailyBudgetMicroUsd: aiEnabled ? 1_000_000n : 0n,
       paidGlobalDailyBudgetMicroUsd: 0n,
-      killSwitches: { ai: true, studioVideo: true, publish: true, email: true, social: true, ads: true },
+      killSwitches: { ai: !aiEnabled, studioVideo: true, publish: true, email: true, social: true, ads: true },
       updatedAt: 1,
     });
     if (ownerInCohort) {
@@ -125,6 +133,65 @@ describe("WP74-S1 guards", () => {
     await expect(other.mutation(api.workspace.wizard.saveStep, { sessionId, step: "idea", answer: HYDRO }))
       .rejects.toThrow(/RESOURCE_NOT_FOUND/);
     await expect(other.mutation(api.workspace.wizard.goBack, { sessionId, step: "idea" })).rejects.toThrow(/RESOURCE_NOT_FOUND/);
+  });
+});
+
+describe("WP74-S1 C-LIMITS and catalogue policy", () => {
+  test("a 4th new start in a day is refused, while resuming the first three still works", async () => {
+    const { t, owner } = await seed();
+    const ideas = [HYDRO, { source: "library" as const, ideaSlug: "meal-planner" }, { source: "own_idea" as const, text: "Trail snack box" }];
+    const ids = [];
+    for (const idea of ideas) ids.push(await owner.mutation(api.workspace.wizard.startOrResume, { idea }));
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "library", ideaSlug: "trail-cafe" },
+    })).rejects.toThrow(/RateLimited/);
+    for (const [index, idea] of ideas.entries()) {
+      await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea })).resolves.toBe(ids[index]);
+    }
+    const sessions = await t.run(async (ctx) => await ctx.db.query("wizard_sessions").collect());
+    expect(sessions).toHaveLength(3);
+  });
+
+  test("with AI off a new start is refused, but an existing session still resumes", async () => {
+    const { t, owner, ids } = await seed({ aiEnabled: false });
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).rejects.toThrow(/AI_DISABLED/);
+    const sessionId = await t.run(async (ctx) => await ctx.db.insert("wizard_sessions", {
+      ownerId: ids.ownerId,
+      ideaSlug: "hydrotrail",
+      step: "platform",
+      answers: { idea: HYDRO },
+      startedAt: 1,
+      updatedAt: 1,
+    }));
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(sessionId);
+  });
+
+  test("resume finds the session for the idea however many other sessions the owner has", async () => {
+    const { t, owner, ids } = await seed();
+    const first = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 60; i += 1) {
+        await ctx.db.insert("wizard_sessions", {
+          ownerId: ids.ownerId,
+          ownIdeaText: `Idea ${i}`,
+          step: "idea",
+          answers: { idea: { source: "own_idea", text: `Idea ${i}` } },
+          startedAt: 1,
+          updatedAt: 9_000_000_000_000 + i,
+        });
+      }
+    });
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(first);
+  });
+
+  test("engine-draft slugs are refused and never leak a title", async () => {
+    const { t, owner } = await seed();
+    await expect(owner.query(api.workspace.wizard.getWizardAccess, { ideaSlug: "engine-draft-secret" }))
+      .resolves.toEqual({ allowed: false });
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "library", ideaSlug: "engine-draft-secret" },
+    })).rejects.toThrow(/RESOURCE_NOT_FOUND/);
+    expect(await t.run(async (ctx) => await ctx.db.query("wizard_sessions").collect())).toEqual([]);
   });
 });
 
@@ -431,6 +498,28 @@ describe("WP74-S2 founder signals", () => {
     expect(signals.map((s) => [s.step, s.action])).toEqual([
       ["idea", "kept"],
       ["idea", "skipped"],
+    ]);
+  });
+
+  test("real later decisions on one step are all recorded: kept, changed, rewrote, kept", async () => {
+    const { t, owner } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    await owner.mutation(api.workspace.wizard.skipStep, { sessionId, step: "idea" });
+    await owner.mutation(api.workspace.wizard.skipStep, { sessionId, step: "blueprint" });
+    const back = () => owner.mutation(api.workspace.wizard.goBack, { sessionId, step: "commercial_model" });
+    await owner.mutation(api.workspace.wizard.saveStep, { sessionId, step: "platform", answer: { kind: "web" } });
+    await back();
+    await owner.mutation(api.workspace.wizard.saveStep, { sessionId, step: "platform", answer: { kind: "native" } });
+    await back();
+    await owner.mutation(api.workspace.wizard.rewriteStep, { sessionId, step: "platform", text: "Chrome extension" });
+    await back();
+    await owner.mutation(api.workspace.wizard.saveStep, { sessionId, step: "platform", answer: { kind: "web" } });
+    const platform = (await signalsFor(t, sessionId)).filter((s) => s.step === "platform");
+    expect(platform.map((s) => [s.action, s.after])).toEqual([
+      ["kept", "Mobile web, installable"],
+      ["changed", "iOS and Android app"],
+      ["rewrote", "Custom: Chrome extension"],
+      ["kept", "Mobile web, installable"],
     ]);
   });
 

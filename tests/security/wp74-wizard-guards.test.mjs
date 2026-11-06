@@ -46,19 +46,45 @@ function publicRegistrations(file) {
   return out;
 }
 
-test("every public wizard function has a feature gate, a user guard and a returns validator", async () => {
-  let count = 0;
+// Exact map: entry points take the signed-in user; every function on an
+// existing session takes the session-ownership guard (`ownedWizardSession`,
+// swapped for C-AUTHZ `requireOwnedWizardSession` once Codex adds it).
+const SESSION_GUARDS = ["ownedWizardSession", "requireOwnedWizardSession"];
+const EXPECTED = new Map([
+  ["convex/workspace/wizard.ts:getWizardAccess", USER_GUARDS],
+  ["convex/workspace/wizard.ts:startOrResume", USER_GUARDS],
+  ["convex/workspace/wizard.ts:getSession", SESSION_GUARDS],
+  ["convex/workspace/wizard.ts:saveStep", SESSION_GUARDS],
+  ["convex/workspace/wizard.ts:skipStep", SESSION_GUARDS],
+  ["convex/workspace/wizard.ts:rewriteStep", SESSION_GUARDS],
+  ["convex/workspace/wizard.ts:goBack", SESSION_GUARDS],
+]);
+
+test("every public wizard function has the feature gate, its exact guard and a returns validator", async () => {
+  const seen = [];
   for (const relative of WIZARD_FILES) {
     const file = await parse(relative);
     for (const registration of publicRegistrations(file)) {
-      count += 1;
       const key = `${relative}:${registration.name}`;
+      seen.push(key);
+      const guards = EXPECTED.get(key);
+      assert.ok(guards, `${key} is a public wizard function missing from the guard map`);
       assert.ok(registration.calls.has("assertFeatureEnabled"), `${key} missing assertFeatureEnabled`);
-      assert.ok(USER_GUARDS.some((guard) => registration.calls.has(guard)), `${key} missing a C-AUTHZ user guard`);
+      assert.ok(guards.some((guard) => registration.calls.has(guard)), `${key} missing ${guards.join(" or ")}`);
       assert.ok(registration.hasReturns, `${key} missing a returns validator`);
     }
   }
-  assert.ok(count >= 7, "the wizard's public functions were scanned");
+  assert.deepEqual(seen.sort(), [...EXPECTED.keys()].sort());
+});
+
+test("the local session guard authenticates the user and checks ownership", async () => {
+  const file = await parse("convex/workspace/wizard.ts");
+  const fn = file.statements.find((s) => ts.isFunctionDeclaration(s) && s.name?.text === "ownedWizardSession");
+  if (!fn) return; // Replaced by the C-AUTHZ helper: authz.ts owns this guarantee then.
+  const text = fn.getText(file);
+  assert.match(text, /requireCurrentPlatformUserForMutation\(ctx\)/);
+  assert.match(text, /requireCurrentPlatformUser\(ctx\)/);
+  assert.match(text, /session\.ownerId !== user\._id/);
 });
 
 test("no phone number field appears in the wizard code or the /start UI (D10)", async () => {

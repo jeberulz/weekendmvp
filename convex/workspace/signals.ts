@@ -37,13 +37,16 @@ function bounded(value: string | undefined): string | undefined {
 }
 
 /**
- * Inserts the signal unless the same (session, step, action) is already
- * logged, so a repeated decision (a double click, or Back then the same
- * choice) is recorded once. Returns whether a row was written.
+ * Inserts the signal unless it repeats the latest one logged for this
+ * (session, step): same action and same `after`. So going Back and making the
+ * same choice again is recorded once, while a real later decision (kept, then
+ * changed, then rewrote, then kept again) is recorded every time. Double
+ * clicks never get here: the wizard's step-key check makes them no-ops.
+ * Returns whether a row was written.
  *
  * The owner-first index is the only one that reaches a session's rows, so the
- * check reads the owner's latest `DEDUPE_WINDOW` signals (a wizard writes at
- * most a handful per session).
+ * check reads the owner's latest `DEDUPE_WINDOW` signals (a wizard writes a
+ * handful per session; index request in the WP74 progress notes).
  */
 export async function recordFounderSignal(ctx: MutationCtx, input: FounderSignalInput): Promise<boolean> {
   const recent = await ctx.db
@@ -51,11 +54,9 @@ export async function recordFounderSignal(ctx: MutationCtx, input: FounderSignal
     .withIndex("by_ownerId_and_createdAt", (q) => q.eq("ownerId", input.ownerId))
     .order("desc")
     .take(DEDUPE_WINDOW);
-  const duplicate = recent.some(
-    (row) =>
-      row.wizardSessionId === input.session._id && row.step === input.step && row.action === input.action,
-  );
-  if (duplicate) return false;
+  const after = bounded(input.after);
+  const latest = recent.find((row) => row.wizardSessionId === input.session._id && row.step === input.step);
+  if (latest !== undefined && latest.action === input.action && latest.after === after) return false;
   await ctx.db.insert("founder_signals", {
     ownerId: input.ownerId,
     wizardSessionId: input.session._id,
@@ -63,7 +64,7 @@ export async function recordFounderSignal(ctx: MutationCtx, input: FounderSignal
     step: input.step,
     action: input.action,
     ...(input.before === undefined ? {} : { before: bounded(input.before) }),
-    ...(input.after === undefined ? {} : { after: bounded(input.after) }),
+    ...(after === undefined ? {} : { after }),
     createdAt: input.now,
   });
   return true;

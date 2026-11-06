@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 export type MeetCofounderProps = {
   readonly answers: WizardAnswersProgress;
   readonly pending: boolean;
+  /** A failed Back (or other call) from this screen, announced as an alert. */
+  readonly error?: string | null;
   readonly headingRef?: Ref<HTMLHeadingElement>;
   readonly onBack: () => void;
 };
@@ -18,7 +20,7 @@ export type MeetCofounderProps = {
  * The wizard's end screen. A placeholder until WP75 brings the roster and
  * WP74-S4 creates the business: nothing is created here.
  */
-export function MeetCofounder({ answers, pending, headingRef, onBack }: MeetCofounderProps) {
+export function MeetCofounder({ answers, pending, error = null, headingRef, onBack }: MeetCofounderProps) {
   const name = partnerNameFromWizard(answers);
   const personality = answers.partnerPersonality ? PARTNER_PERSONALITY_OPTIONS[answers.partnerPersonality] : null;
   return (
@@ -47,6 +49,11 @@ export function MeetCofounder({ answers, pending, headingRef, onBack }: MeetCofo
         ) : null}
         <p>Your answers are saved. {name} puts your team together in the next step.</p>
       </div>
+      {error ? (
+        <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+          {error}
+        </p>
+      ) : null}
       <div className="border-t border-home-rule pt-4">
         <button
           type="button"

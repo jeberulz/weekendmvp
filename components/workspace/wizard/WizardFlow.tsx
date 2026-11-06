@@ -50,6 +50,11 @@ export function wizardErrorMessage(error: unknown): string {
   return "Something went wrong. Try again.";
 }
 
+/** The own-idea route for a session; `?session=` makes a reload resume it. */
+export function ownIdeaUrl(sessionId: string): string {
+  return `/start/own?session=${encodeURIComponent(sessionId)}`;
+}
+
 const HEADING = "font-editorial text-[34px] leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[40px]";
 const INPUT = `w-full rounded-lg border border-home-d3 bg-home-card px-3 py-2 text-sm text-home-ink ${FOCUS}`;
 
@@ -127,6 +132,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const [announcement, setAnnouncement] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const started = useRef(false);
+  const movedToOwnUrl = useRef(false);
   const lastPosition = useRef<string | null>(null);
 
   const startOrResume = useMutation(api.workspace.wizard.startOrResume);
@@ -157,6 +163,17 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       .catch((caught: unknown) => setError(wizardErrorMessage(caught)));
   }, [idea, sessionId, startOrResume]);
 
+  // A library session rewritten as an own idea now belongs to `/start/own`:
+  // move the URL there, carrying the session, so a reload resumes it instead
+  // of starting a fresh library session for the old slug.
+  const viewSource = view?.answers.idea?.source;
+  const viewSessionId = view?.sessionId;
+  useEffect(() => {
+    if (idea === null || viewSource !== "own_idea" || viewSessionId === undefined || movedToOwnUrl.current) return;
+    movedToOwnUrl.current = true;
+    router.replace(ownIdeaUrl(viewSessionId), { scroll: false });
+  }, [idea, viewSource, viewSessionId, router]);
+
   // Announce each step change and move focus to its heading.
   const position = view === undefined ? null : view.completed ? "done" : view.step;
   useEffect(() => {
@@ -186,7 +203,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     await run(async () => {
       const id = await startOrResume({ idea: { source: "own_idea", text } });
       setSessionId(id);
-      router.replace(`/start/own?session=${encodeURIComponent(id)}`, { scroll: false });
+      router.replace(ownIdeaUrl(id), { scroll: false });
     });
   }
 
@@ -210,6 +227,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       <MeetCofounder
         answers={parsed.answers}
         pending={pending}
+        error={error}
         headingRef={headingRef}
         onBack={() => void run(() => goBack({ sessionId: view.sessionId, step: view.step }))}
       />
