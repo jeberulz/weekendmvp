@@ -31,17 +31,31 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SLUG = "engine-draft-replay-rfp";
 /**
  * The npm scripts' flags for the CLIs: they import TypeScript modules, and the
  * typeless-package warning (which prints an absolute path) is silenced.
+ * Children must use a Node >= 22.6 binary (not necessarily process.execPath —
+ * Grok/system hosts often ship Node 20 as /usr/bin/node).
  */
 const NODE_FLAGS = ["--experimental-strip-types", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON"];
 const STEP_TIMEOUT_MS = 120_000;
 const TAIL_LINES = 15;
+
+/** @type {string | null} */
+let engineNodeBin = null;
+
+async function engineNode() {
+  if (engineNodeBin) return engineNodeBin;
+  const mod = await import(pathToFileURL(path.join(root, "scripts/lib/resolve-engine-node.mjs")).href);
+  const resolved = mod.resolveEngineNode();
+  engineNodeBin = resolved.bin;
+  console.log(`engine:replay: using Node v${resolved.version} at ${resolved.bin}`);
+  return engineNodeBin;
+}
 
 const HELP = `Usage:
   npm run engine:replay [-- --work-root <dir>]
@@ -75,9 +89,10 @@ function parseArgs(argv) {
 }
 
 /** One CLI as a child process with an empty environment; resolves with its exit code and output. */
-function runStep(script, args) {
+function runStep(script, args, nodeBin) {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [...NODE_FLAGS, path.join(root, "scripts", script), ...args], {
+    // Keep PATH empty of secrets but pass the resolved engine binary explicitly.
+    const child = spawn(nodeBin, [...NODE_FLAGS, path.join(root, "scripts", script), ...args], {
       cwd: root,
       env: {},
       stdio: ["ignore", "pipe", "pipe"],
@@ -143,30 +158,34 @@ function acceptedSummary(report) {
 
 const pad = (name) => name.padEnd(9);
 
-async function replay(dir) {
+async function replay(dir, nodeBin) {
   const recordPath = path.join(dir, "r.json");
   const ideasDir = path.join(dir, "ideas");
   const siblings = path.join(dir, "siblings");
   const mdxPath = path.join(ideasDir, `${SLUG}.mdx`);
   fs.mkdirSync(siblings);
 
-  const research = await runStep("engine-research.mjs", ["--fixture", "rfp-assistant", "--out", recordPath]);
+  const research = await runStep("engine-research.mjs", ["--fixture", "rfp-assistant", "--out", recordPath], nodeBin);
   console.log(`  ${pad("research")} exit ${research.code}  (${acceptedSummary(readReport(`${recordPath}.report.json`))})`);
   if (research.code !== 0) {
     console.log(tail(research, dir));
     return "research";
   }
 
-  const compile = await runStep("engine-compile.mjs", [
-    "--record",
-    recordPath,
-    "--slug",
-    SLUG,
-    "--ideas-dir",
-    ideasDir,
-    "--no-manifest",
-    "--json",
-  ]);
+  const compile = await runStep(
+    "engine-compile.mjs",
+    [
+      "--record",
+      recordPath,
+      "--slug",
+      SLUG,
+      "--ideas-dir",
+      ideasDir,
+      "--no-manifest",
+      "--json",
+    ],
+    nodeBin,
+  );
   const compiled = lastJson(compile.stdout);
   console.log(`  ${pad("compile")} exit ${compile.code}  (${compiled?.ok ? `${compiled.wordCount} words` : "refused"})`);
   if (compile.code !== 0) {
@@ -176,7 +195,11 @@ async function replay(dir) {
     return "compile";
   }
 
-  const audit = await runStep("audit-idea-mdx.mjs", ["--file", mdxPath, "--record", recordPath, "--siblings", siblings, "--json"]);
+  const audit = await runStep(
+    "audit-idea-mdx.mjs",
+    ["--file", mdxPath, "--record", recordPath, "--siblings", siblings, "--json"],
+    nodeBin,
+  );
   const result = lastJson(audit.stdout);
   const verdict = audit.code === 0 && result?.ok === true ? "PASS" : "FAIL";
   const metrics = result?.metrics;
@@ -195,11 +218,19 @@ async function replay(dir) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  let nodeBin;
+  try {
+    nodeBin = await engineNode();
+  } catch (error) {
+    const code = typeof error?.code === "number" ? error.code : 3;
+    console.error(`engine:replay: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(code);
+  }
   const dir = fs.mkdtempSync(path.join(args.workRoot ?? os.tmpdir(), "engine-replay-"));
   console.log("engine:replay: fixture rfp-assistant → compile → deep audit (no provider keys; temp dir removed afterwards)");
   let failedAt;
   try {
-    failedAt = await replay(dir);
+    failedAt = await replay(dir, nodeBin);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -208,6 +239,7 @@ async function main() {
 }
 
 main().catch((error) => {
+  const code = typeof error?.code === "number" ? error.code : 1;
   console.error(`engine:replay: ${error instanceof Error ? error.message : String(error)}`);
-  process.exit(1);
+  process.exit(code);
 });

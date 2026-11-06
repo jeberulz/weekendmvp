@@ -424,6 +424,53 @@ export function assertSourceReviewPass(
   return review;
 }
 
+function requiredReviewItems(record: ResearchRecordV2): AcceptedEvidence[] {
+  const byId = new Map(record.evidence.accepted.map((item) => [item.id, item]));
+  const ids = [
+    ...requiredClaimReviewIds(record),
+    ...usedQuoteReviewIds(record).slice(0, requiredQuoteReviewCount(record)),
+  ];
+  const items: AcceptedEvidence[] = [];
+  for (const id of ids) {
+    const accepted = byId.get(id);
+    if (!accepted) {
+      throw new Error(`required review coverage: missing accepted evidence ${id}`);
+    }
+    items.push(accepted);
+  }
+  return items;
+}
+
+/**
+ * Scaffold a sealed FAIL review covering every required evidence id with all
+ * checks still false. Operators / Source Critic agents fill checks then seal
+ * a PASS. Never auto-passes live research.
+ */
+export function buildDraftSourceReview(
+  record: ResearchRecordV2,
+  options: { reviewer?: string; reviewedAt?: string } = {},
+): SourceReviewDocument {
+  const items: SourceReviewItem[] = requiredReviewItems(record).map((accepted) => ({
+    evidenceId: accepted.id,
+    kind: accepted.kind,
+    sourceUrl: accepted.sourceUrl,
+    checks: emptyChecksFor(accepted.kind),
+    notes: "draft: open the source and set every applicable check before PASS",
+  }));
+  return sealSourceReview({
+    contractVersion: SOURCE_REVIEW_CONTRACT_VERSION,
+    slug: record.brief.slug,
+    recordHash: researchRecordHash(record),
+    verdict: "FAIL",
+    reviewedAt: options.reviewedAt ?? new Date().toISOString(),
+    reviewer: options.reviewer ?? "draft:source-critic",
+    items,
+    failures: [
+      "draft: Source Critic checks are not complete; compile and submit stay refused",
+    ],
+  });
+}
+
 /**
  * Build a sealed PASS review for hermetic tests. Marks every required check
  * true — not for live publication.
@@ -432,29 +479,19 @@ export function buildPassingSourceReview(
   record: ResearchRecordV2,
   options: { reviewer?: string; reviewedAt?: string } = {},
 ): SourceReviewDocument {
-  const byId = new Map(record.evidence.accepted.map((item) => [item.id, item]));
-  const ids = [
-    ...requiredClaimReviewIds(record),
-    ...usedQuoteReviewIds(record).slice(0, requiredQuoteReviewCount(record)),
-  ];
-  const items: SourceReviewItem[] = [];
-  for (const id of ids) {
-    const accepted = byId.get(id);
-    if (!accepted) {
-      throw new Error(`buildPassingSourceReview: missing accepted evidence ${id}`);
-    }
+  const items: SourceReviewItem[] = requiredReviewItems(record).map((accepted) => {
     const checks = emptyChecksFor(accepted.kind);
     for (const key of applicableCheckKeys(accepted.kind)) {
       checks[key] = true;
     }
-    items.push({
+    return {
       evidenceId: accepted.id,
       kind: accepted.kind,
       sourceUrl: accepted.sourceUrl,
       checks,
       notes: "hermetic passing review",
-    });
-  }
+    };
+  });
   return sealSourceReview({
     contractVersion: SOURCE_REVIEW_CONTRACT_VERSION,
     slug: record.brief.slug,

@@ -55,6 +55,12 @@ Live research → sealed Source Critic PASS (`*.source-review.json`) →
 `engine:compile` / `editorial:submit-engine`. Fixture mode skips the source
 gate for hermetic replay only.
 
+Runtime: Node **>= 22.6** (`.nvmrc` → 22; CI `22.x`). Node 20 is unsupported
+(`--experimental-strip-types` missing → exit 9). Use
+`bash scripts/engine-replay.sh` / `npm run engine:*` (resolve or exit 3).
+Scout + Corpus Guardian semantic-dedupe (customer/JTBD/workflow/mechanism)
+before any live spend. Public release remains WP46-E7 **NO-GO**.
+
 <!-- END:idea-engine -->
 
 <!-- BEGIN:nextjs-agent-rules -->
