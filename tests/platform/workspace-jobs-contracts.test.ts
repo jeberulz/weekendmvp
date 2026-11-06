@@ -73,6 +73,7 @@ import {
   isMeterErrorData,
   isWorkspaceGateErrorData,
   jobAttemptKey,
+  wizardAttemptKey,
   lateSettleAdjustment,
   mediaReservation,
   meterMaxInputTokens,
@@ -761,6 +762,16 @@ describe("C-METER", () => {
     expect(() => jobAttemptKey(key, 0)).toThrow();
     expect(() => jobAttemptKey("landing", 1)).toThrow();
     expect(() => chatAttemptKey("p:1", "m9", 1)).toThrow();
+    const session = "jd7c4p0x2v9k3m8q1r5t6w0y4z2a3b6c";
+    expect(wizardAttemptKey(session, "blueprint", 1)).toBe(`wizard:${session}:blueprint:1`);
+    expect(wizardAttemptKey(session, "partner_name", 3)).toBe(`wizard:${session}:partner_name:3`);
+    expect(() => wizardAttemptKey("j:d7c4p0x2v9k3m8q1", "blueprint", 1)).toThrow();
+    expect(() => wizardAttemptKey("short", "blueprint", 1)).toThrow();
+    expect(() => wizardAttemptKey(session, "blue:print", 1)).toThrow();
+    // Only C-WIZARD steps: a direct caller cannot mint `wizard:<id>:checkout:1`.
+    expect(() => wizardAttemptKey(session, "checkout", 1)).toThrow();
+    expect(() => wizardAttemptKey(session, "", 1)).toThrow();
+    expect(() => wizardAttemptKey(session, "blueprint", 0)).toThrow();
   });
 
   describe("assertReserveArgs", () => {

@@ -522,3 +522,87 @@
         collision.
     - Checks: see the final report for exit codes. All are 0, and the three vitest files have 97
       passed.
+
+## 2026-11-06 - C-METER wizard attempt-key form (for WP74-S3)
+
+- Branch and worktree: `claude/wp71-wizard-key-form` at `.worktrees/wp71-wizard-key`, from `origin/main`
+  `d8055b98`.
+- Why: WP74-S3's light blueprint is one drafting call before the business exists. No key form fitted:
+  `job` needs a task (so a project), `chat` needs a project, and `eval` is ownerless. With an ownerless key the
+  call would skip the owner's Free ceiling and daily cap.
+- The owner approved a fourth form ("Yes, add the form"). They did not rule on the ceiling, so the default
+  applies: the draft counts inside the Free $1.50 lifetime ceiling and the $1.00 daily cap, like other owner
+  spend. Recorded in `docs/wp/RULINGS.md` and `docs/plans/launch-workspace/contract-changes.md`.
+- What:
+  - C-METER (`lib/workspace/contracts/metering.ts`, Claude lane under `05` §2):
+    - the documented form `wizard:{wizardSessionId}:{step}:{attempt}`;
+    - `wizardAttemptKey`, which checks the id shape (lowercase letters, digits and `_`, 16–64 characters,
+      never `:`), the step and the attempt.
+  - `convex/ai/gatewayActions.ts`:
+    - `attemptKeyFormValidator` gains
+      `{ kind: "wizard", wizardSessionId: v.id("wizard_sessions"), step }`.
+    - `attemptKeyBuilder` also requires the step to be in C-WIZARD `WIZARD_STEPS`.
+    - `keyFormMismatch` needs an `ownerId` and refuses a `projectId`, `taskId`, `creditDebitId` or
+      `businessContext`. The business context is refused because no business exists yet, so the call can't
+      carry another business's context block.
+    - A doc comment says the action does not check session ownership. The calling wizard action must, with
+      `requireOwnedWizardSession`.
+  - The internal-spec rule is unchanged. Internal specs run only on the ownerless `eval` path, so a wizard key
+    can never reach it.
+- The meter (`convex/ai/metering.ts`, Codex, read and not edited) accepts this as is.
+  - `reserve` validates with `assertReserveArgs`. That only refuses a project or task without an owner, and the
+    key's length.
+  - `verifiedProject` returns no project when there is no task or project, after checking the owner exists.
+  - `settingsForCall` runs `assertFeatureEnabledForOwner(ctx, "ai", ownerId)`: the workspace and AI switches
+    plus the cohort.
+  - The plan comes from `readMembershipState`, and `firstReserveFailure` applies the Free lifetime ceiling and
+    the daily cap.
+  - The attempt key is matched exactly through `by_attemptKey`.
+- Tests:
+  - `tests/platform/ai-gateway-action.test.ts`, +7 cases against the real meter:
+    - the accepted form settles owner-scoped (no project or task, free pool, Free plan), with the spend in the
+      owner's lifetime and day totals;
+    - each forbidden field (project, task, debit, business context) is refused, on the body and the registered
+      action;
+    - no owner is refused;
+    - malformed session ids and non-C-WIZARD steps are refused (and the registered validator refuses a bad id);
+    - the owner gates refuse: the Free ceiling (`owner_free_lifetime`), the daily cap (`owner_daily`), outside
+      the cohort (`RESOURCE_NOT_FOUND`) and the AI switch (`AI_DISABLED`), with nothing sent and no rows;
+    - a duplicate gives `duplicate_attempt` with `nextAttempt: 2`, and the retry on 2 settles;
+    - the registered action refuses an internal spec on a wizard key (no eval path).
+  - `tests/platform/workspace-jobs-contracts.test.ts`: `wizardAttemptKey` shapes.
+- Not done: the S3 gateway call itself. It waits for Codex's `wizard_sessions` draft slot and the WP68 scanner
+  entry (WP74 progress, items (d) and (e)).
+- Checks:
+  - `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, the 37 existing
+    warnings).
+  - The gateway and contract tests (`tests/platform/ai-gateway-action.test.ts`,
+    `tests/platform/ai-gateway.test.ts`, `convex/ai/metering.test.ts`,
+    `tests/platform/workspace-jobs-contracts.test.ts`) 0, 165 passed.
+  - `npm run check:prompt-versions` 0 (1 version matches the lock).
+  - `npm run test:security` 0 (Node 202 passed, 1 skipped; Vitest 121 passed).
+  - `npm test` 1 on the first run. One timing test failed: `lib/engine/evidence/accept.test.ts`, "well under two
+    seconds", took 2615 ms under load, which is unrelated. `npm test` 0 on the re-run.
+  - `npm run build` 0.
+- Docs: this entry, `docs/wp/RULINGS.md`, `docs/plans/launch-workspace/contract-changes.md`.
+- Review fixes (independent review approved with P3 items):
+  - Tests now reach the wizard checks. The probe is internal, so the registered action refused it before any
+    key check ran. A mocked registry in `tests/platform/ai-gateway-action.test.ts` adds a test-only,
+    non-internal copy of the probe (`test-wizard-key-fixture@1`). The real registry, the lock and the
+    version check never see it. Every refusal test runs on both the body (no `allowInternal`) and the
+    registered action, and asserts the wizard check's exact message.
+  - New end-to-end case: the registered action settles the non-internal spec on a wizard key.
+  - Mutation check: I removed each check in turn (the owner check; the projectId, taskId, creditDebitId
+    and businessContext refusals one at a time; the session-id shape; the step). Each made a wizard test fail.
+    All checks are restored, confirmed with `cmp` against the backups.
+  - The `WIZARD_STEPS` check moved into `wizardAttemptKey` (C-METER now imports C-WIZARD's step list; no
+    cycle), so a direct caller cannot mint `wizard:<id>:checkout:1`. The builder's duplicate check and the
+    step-shape regex are gone.
+  - Caller duties are written on the validator and in `contract-changes.md`:
+    - require an owned session that is in progress (not completed, no `projectId`);
+    - pass only the wizard's own prompt refs;
+    - store and reuse `nextAttempt`, because a redraft at attempt 1 is `duplicate_attempt`.
+  - `ATTEMPT_KEY_KINDS` was unused and listed `precompute`, which has no builder. Removed.
+  - Checks: typecheck 0; `npx tsc --noEmit -p convex` 0; lint 0 (0 errors, 37 existing warnings); the
+    gateway and contract tests 0 (165 passed); `check:prompt-versions` 0; `npm run test:security` 0;
+    `npm test` 0; `npm run build` 0.
