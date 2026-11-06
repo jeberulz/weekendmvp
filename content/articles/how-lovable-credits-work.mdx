@@ -1,0 +1,153 @@
+---
+slug: "how-lovable-credits-work"
+title: "How Lovable Credits Work (and How to Stop Burning Them)"
+description: "How do Lovable credits work in 2026? Daily build credits vs monthly rollover, Plan mode costs, what pauses at zero, and 6 rules to stop burning credits."
+category: "Tutorial"
+publishedAt: "2026-11-06"
+wordCount: 1892
+readMinutes: 9
+heroAlt: "A neat stack of paper receipts held by a brass clip on a near-black desk, top edge lit by a single lime beam"
+faq:
+  - question: "How do Lovable credits work?"
+    answer: "Lovable uses a workspace-wide credit balance that covers building your app, chatting, hosting/backend (Cloud), deployed AI features, and connectors. Lovable always spends your included usage-specific grants first (like your 5 daily build credits, daily chat allowance, and 20 monthly Cloud credits) before touching your general monthly or top-up credits."
+  - question: "How many free credits does Lovable give you?"
+    answer: "On the Free plan, you get 5 daily build credits (resetting at 00:00 UTC) capped at 30 build credits per calendar month, plus a daily chat allowance, 20 monthly Cloud credits, 4 monthly AI credits, and 1 monthly connector credit. Once you use 30 build credits on Free (for example, 5 per day for 6 days), daily build credits pause until the 1st of the next month."
+  - question: "Do Lovable credits roll over or expire?"
+    answer: "Daily build credits and usage-specific grants never roll over; they reset on their daily or monthly schedule. Unused monthly plan credits on Pro and Business automatically roll over while your subscription stays active, and expire 2 months after their issue date (or 1 month after an annual billing period ends). Purchased top-up credits last 12 months."
+  - question: "How much does a single prompt cost in Lovable?"
+    answer: "Build mode is priced dynamically based on the complexity of your request and the work completed—a small copy or CSS tweak costs a fraction of a credit, while scaffolding multiple pages and database tables costs more. A Plan mode message costs 1 credit plus any research Lovable runs, and Chat mode uses your daily chat allowance first."
+  - question: "What happens when you run out of Lovable credits?"
+    answer: "If a build message hits zero mid-run, Lovable pauses the work instead of discarding it and lets you add credits or click 'Finish up'. Your published frontend pages stay live on the web, but runtime AI features and backend/database access pause (your data is kept safe, just locked from queries/exports until credits refresh or you top up)."
+  - question: "How do I stop burning Lovable credits on a weekend build?"
+    answer: "Use Chat/Plan mode to lock down scope before running Build mode, batch related UI adjustments into one clear prompt, revert to the previous version instead of arguing when a bug loops twice, and edit simple text or colors directly in Code Mode (Pro+) or via two-way GitHub sync."
+---
+
+## Quick Answer
+
+**Lovable spends your free daily and monthly usage grants first, then draws from your general plan credits (oldest expiry first).** Every plan—including Free—gets **5 daily build credits** at 00:00 UTC (capped at **30/month on Free**, uncapped on **Pro from $25/month**). Because Build mode bills by task complexity rather than a flat 1-prompt-1-credit fee, vague mega-prompts and back-and-forth bug loops are what drain your balance on Saturday afternoon.
+
+<AffiliateDisclosure />
+
+If you want a weekend idea with pre-scoped prompts that won't waste your balance, start in the [startup ideas library](/startup-ideas).
+
+## How do Lovable credits work?
+
+Lovable uses a workspace-wide credit balance that covers building your app, chatting, hosting/backend (Cloud), deployed AI features, and connectors. Lovable always spends your included usage-specific grants first (like your 5 daily build credits, daily chat allowance, and 20 monthly Cloud credits) before touching your general monthly or top-up credits.
+
+Per <LovableLink>Lovable's official credits and usage documentation</LovableLink> (checked November 2026), your workspace has two layers of credits that work together seamlessly:
+
+1. **Usage-specific grants (spent first, never roll over):**
+   - **Daily chat allowance:** Covers messages in Chats and Chat mode. Resets daily at 00:00 UTC.
+   - **Daily build credits:** 5 credits per day for Build mode (and Chat mode once your daily chat allowance is used). Resets daily at 00:00 UTC.
+   - **Monthly Cloud grant:** 20 credits/month for built-in backend and hosting usage.
+   - **Monthly AI grant:** 4 credits/month for runtime AI gateway calls inside your deployed app.
+   - **Monthly connector grant:** 1 credit/month for connector usage.
+2. **General credits (spent second, closest-to-expiry first):**
+   - **Monthly subscription credits:** Starting at 100/month on Pro ($25/mo, or $250/yr) and Business ($50/mo).
+   - **Top-up & bonus credits:** On-demand credit packs or auto top-ups available on Pro and Business.
+
+When a specific grant runs out mid-session—say you finish your 5 daily build credits on Saturday morning—Lovable automatically switches to your general credits without interrupting your build.
+
+## How many free credits does Lovable give you?
+
+On the Free plan, you get 5 daily build credits (resetting at 00:00 UTC) capped at 30 build credits per calendar month, plus a daily chat allowance, 20 monthly Cloud credits, 4 monthly AI credits, and 1 monthly connector credit. Once you use 30 build credits on Free (for example, 5 per day for 6 days), daily build credits pause until the 1st of the next month.
+
+Here is the exact breakdown across plans as of November 2026:
+
+| Credit Type | Free ($0) | Pro (from $25/mo) | Business (from $50/mo) | Expiry / Rollover |
+| --- | --- | --- | --- | --- |
+| **Daily chat allowance** | Included | Included (larger than Free) | Included (larger than Free) | Resets 00:00 UTC daily; no rollover |
+| **Daily build credits** | 5/day, **30/mo cap** | **5/day, no monthly cap** (~150/mo) | **5/day, no monthly cap** (~150/mo) | Resets 00:00 UTC daily; no rollover |
+| **Monthly Cloud / AI / Connector** | 20 / 4 / 1 credits | 20 / 4 / 1 credits | 20 / 4 / 1 credits | Resets monthly; no rollover |
+| **General plan credits** | — | **From 100 / month** | **From 100 / month** | Rolls over; expires **2 mos after issue** (monthly) or **1 mo after annual term** |
+| **Top-up credits** | — | Available (manual or auto) | Available (manual or auto) | Expires **12 months** from purchase |
+
+Notice the hidden gem on **Pro**: because Pro removes the 30/month cap on daily build credits, logging in across the month gives you up to ~150 daily build credits on top of your 100 general monthly credits.
+
+For how Lovable's pricing stacks up against Bolt, Replit, and Cursor, read [Lovable vs Bolt vs Replit](/articles/lovable-vs-bolt-vs-replit-2026) and [How Much Does Vibe Coding Cost?](/articles/how-much-does-vibe-coding-cost).
+
+## Do Lovable credits roll over or expire?
+
+Daily build credits and usage-specific grants never roll over; they reset on their daily or monthly schedule. Unused monthly plan credits on Pro and Business automatically roll over while your subscription stays active, and expire 2 months after their issue date (or 1 month after an annual billing period ends). Purchased top-up credits last 12 months.
+
+Because Lovable always spends the general credits **closest to expiry first**, your rolled-over credits from last month get used before your fresh billing-cycle credits.
+
+## How much does a single prompt cost in Lovable?
+
+Build mode is priced dynamically based on the complexity of your request and the work completed—a small copy or CSS tweak costs a fraction of a credit, while scaffolding multiple pages and database tables costs more. A Plan mode message costs 1 credit plus any research Lovable runs, and Chat mode uses your daily chat allowance first.
+
+Understanding this pricing model is the key to stretching a 100-credit Pro plan across an entire weekend MVP:
+
+- **Chat mode** is your cheapest thinking tool—it draws from your daily chat allowance before touching build or general credits.
+- **Plan mode** costs **1 credit** (plus any research steps) to generate a structured implementation plan before files are touched.
+- **Build mode** scales with how many files, components, and backend migrations Lovable has to read and rewrite.
+
+## What happens when you run out of Lovable credits?
+
+If a build message hits zero mid-run, Lovable pauses the work instead of discarding it and lets you add credits or click "Finish up". Your published frontend pages stay live on the web, but runtime AI features and backend/database access pause (your data is kept safe, just locked from queries/exports until credits refresh or you top up).
+
+That last detail catches founders off guard: if your workspace hits 0 general credits **and** your 20-credit Monthly Cloud grant is exhausted, your live landing page still loads, but your database pauses until the next grant reset or top-up. Keep a small credit buffer or set usage alerts in your workspace settings if real users are testing your MVP.
+
+## How do I stop burning Lovable credits on a weekend build?
+
+Use Chat/Plan mode to lock down scope before running Build mode, batch related UI adjustments into one clear prompt, revert to the previous version instead of arguing when a bug loops twice, and edit simple text or colors directly in Code Mode (Pro+) or via two-way GitHub sync.
+
+Follow these six rules on your next [Lovable hub](/build-with/lovable) build:
+
+### 1. Freeze a 3-screen scope before you open Lovable
+
+Do not ask Lovable to "build a full CRM for realtors" and then spend 40 credits deleting tabs you didn't want. Write your one-input, one-output brief using the [3-screen MVP framework](/articles/the-3-screen-mvp-framework).
+
+### 2. Batch UI tweaks into one structured message
+
+Sending five separate Build prompts—*"make the button orange"*, *"change the headline"*, *"increase card padding"*, *"fix the mobile nav"*, *"hide the footer link"*—triggers five separate agent passes. Group visual adjustments for a single screen into one numbered list.
+
+### 3. Use two-way GitHub sync for free copy and CSS edits
+
+Even on Lovable Free, you can connect your project to GitHub. Clone the repo locally (or edit a file directly on github.com) to fix typos, swap hex codes in `globals.css`, or update pricing copy for **zero Lovable credits**. When you push to GitHub, Lovable syncs the commit automatically.
+
+### 4. Never argue with a broken loop more than twice
+
+The #1 credit furnace is the Saturday-night doom loop: *"Auth is still broken, fix it"* → *"Still getting an RLS error"* → *"Try again."* After two failed fixes on the same bug:
+1. Click **Restore** to roll back to the last working version (reverting does not refund credits, so stop the bleeding early).
+2. Switch to **Chat mode** (uses your daily chat allowance) and ask Lovable *why* the error is happening before running Build mode again.
+
+### 5. Wire Supabase and secrets cleanly once
+
+Half of wasted credits come from authentication and environment variable confusion. Scope one login method and one primary table for Saturday. When you are ready to graduate the app to your own local setup, follow [How to Move Your Lovable or Bolt App Into a Real Codebase](/articles/move-off-lovable-bolt-to-real-code).
+
+### 6. Start from a prompt that already has `Do not build:` fences
+
+Every idea in the [startup ideas library](/startup-ideas) ships with four weekend prompts (Project Setup, Core Feature, Landing Page, Branding Package) that explicitly tell <LovableLink>Lovable</LovableLink> what **not** to build—saving you dozens of credits on unwanted settings pages and billing scaffolding. Also check [Lovable Examples: 9 Apps Worth Building This Weekend](/articles/lovable-examples-what-to-build).
+
+## FAQ
+
+### How do Lovable credits work?
+
+Lovable uses a workspace-wide credit balance that covers building your app, chatting, hosting/backend (Cloud), deployed AI features, and connectors. Lovable always spends your included usage-specific grants first (like your 5 daily build credits, daily chat allowance, and 20 monthly Cloud credits) before touching your general monthly or top-up credits.
+
+### How many free credits does Lovable give you?
+
+On the Free plan, you get 5 daily build credits (resetting at 00:00 UTC) capped at 30 build credits per calendar month, plus a daily chat allowance, 20 monthly Cloud credits, 4 monthly AI credits, and 1 monthly connector credit. Once you use 30 build credits on Free (for example, 5 per day for 6 days), daily build credits pause until the 1st of the next month.
+
+### Do Lovable credits roll over or expire?
+
+Daily build credits and usage-specific grants never roll over; they reset on their daily or monthly schedule. Unused monthly plan credits on Pro and Business automatically roll over while your subscription stays active, and expire 2 months after their issue date (or 1 month after an annual billing period ends). Purchased top-up credits last 12 months.
+
+### How much does a single prompt cost in Lovable?
+
+Build mode is priced dynamically based on the complexity of your request and the work completed—a small copy or CSS tweak costs a fraction of a credit, while scaffolding multiple pages and database tables costs more. A Plan mode message costs 1 credit plus any research Lovable runs, and Chat mode uses your daily chat allowance first.
+
+### What happens when you run out of Lovable credits?
+
+If a build message hits zero mid-run, Lovable pauses the work instead of discarding it and lets you add credits or click "Finish up". Your published frontend pages stay live on the web, but runtime AI features and backend/database access pause (your data is kept safe, just locked from queries/exports until credits refresh or you top up).
+
+### How do I stop burning Lovable credits on a weekend build?
+
+Use Chat/Plan mode to lock down scope before running Build mode, batch related UI adjustments into one clear prompt, revert to the previous version instead of arguing when a bug loops twice, and edit simple text or colors directly in Code Mode (Pro+) or via two-way GitHub sync.
+
+## TL;DR
+
+Lovable spends your free daily chat and 5 daily build credits first, then uses your general monthly credits (which roll over for 2 months on Pro). Stop burning credits by debugging in Chat mode, batching UI edits, using two-way GitHub sync for text/CSS changes, and reverting after two failed bug fixes. Grab a pre-scoped brief from the [startup ideas library](/startup-ideas) and ship your MVP within a single month's credit pool.
+
+Sources: <LovableLink>Lovable Credits and Usage Docs</LovableLink>, <LovableLink>Lovable Subscription Plans</LovableLink>, <LovableLink>Lovable Out-of-Credits Recovery</LovableLink>, <LovableLink>Lovable Pricing</LovableLink>

@@ -1,0 +1,139 @@
+---
+slug: "figma-make-vs-lovable"
+title: "Figma Make vs Lovable: Which Should Designers Use?"
+description: "Figma Make vs Lovable in 2026: compare Figma seat AI credits vs Lovable build credits, design library fidelity, Supabase backends, and when to switch."
+category: "Guide"
+publishedAt: "2026-11-06"
+wordCount: 1700
+readMinutes: 9
+heroAlt: "Two notebooks resting side by side on a dark desk, a lavender ribbon bookmark emerging from the left notebook under a single side lamp"
+faq:
+  - question: "Figma Make vs Lovable: which should designers use?"
+    answer: "Use Figma Make when your goal is turning existing Figma frames and design libraries into interactive, testable prototypes without leaving Figma. Use Lovable when your goal is shipping a standalone, full-stack web app with user login, a production database, two-way GitHub sync, and a custom domain."
+  - question: "What is Figma Make and how does it work?"
+    answer: "Figma Make is Figma's prompt-to-app and interactive prototyping tool built into the Figma workspace. You attach existing Figma Design frames, components, and Make kits, describe interactions or data in plain English, and refine the result using either conversational prompts, visual properties panels, or direct code edits."
+  - question: "Can Figma Make build a real app with a database?"
+    answer: "Yes—Figma Make supports connecting Supabase and Payload backends, environment variables, MCP connectors, and publishing to a public URL or custom domain on paid Full seats. However, its workflow is centered around design exploration, stakeholder previews, and Figma libraries rather than standalone repo ownership."
+  - question: "How much does Figma Make cost vs Lovable in 2026?"
+    answer: "Figma Make comes bundled with a Figma seat: Starter ($0) includes 500 shared AI credits/month (up to 150/day), while a Professional Full seat ($20/month, or $16/month billed annually) includes 3,000 AI credits/month and full publishing. Lovable has a Free tier (5 daily build credits, up to 30/month) and Pro starts at $25/month ($21/month annually) with 100 monthly credits plus 5 daily build credits."
+  - question: "Which tool keeps your Figma design system more accurately?"
+    answer: "Figma Make wins inside the Figma ecosystem because it reads your attached Figma frames, team libraries, and Make kits natively and lets you copy previews back as editable design layers. Lovable is stronger once you want clean React/Tailwind source synced to a GitHub repo that you can take to Vercel or Cursor."
+  - question: "Can you use Figma Make and Lovable together?"
+    answer: "Yes. Many designers use Figma Design and Figma Make on Friday to explore interaction states and validate the flow with stakeholders, then move the finalized 3-screen spec into Lovable (or Claude Code via the Figma MCP server) on Saturday to wire production auth, Stripe Checkout, and a GitHub repo."
+---
+
+## Quick Answer
+
+**Pick by what needs to exist on Sunday night:**
+
+- **An interactive prototype anchored to your Figma frames and team libraries** → **Figma Make**
+- **A standalone SaaS web app with login, database, and a GitHub repo you own** → **<LovableLink>Lovable</LovableLink>**
+
+<AffiliateDisclosure />
+
+If you need a researched product idea before opening either tool, start in the [startup ideas library](/startup-ideas) or browse [startup ideas for designers](/ideas-for/designers).
+
+## Figma Make vs Lovable: which should designers use?
+
+Use Figma Make when your goal is turning existing Figma frames and design libraries into interactive, testable prototypes without leaving Figma. Use Lovable when your goal is shipping a standalone, full-stack web app with user login, a production database, two-way GitHub sync, and a custom domain.
+
+Both tools say "prompt to app" on their marketing pages, which is why designers get confused. In practice, they were built from opposite ends of the product spectrum:
+
+- **Figma Make** started from the canvas and added AI code generation so designers could stop wiring spaghetti prototype noodles.
+- **<LovableLink>Lovable</LovableLink>** ([/build-with/lovable](/build-with/lovable)) started from a full-stack React + Supabase codebase and gave non-developers a conversational UI to build and deploy real software.
+
+For the broader landscape of designer-friendly builders, see [Vibe Coding for Designers](/articles/vibe-coding-for-designers) and [Best AI App Builder for Non-Technical Founders](/articles/best-ai-app-builder-non-technical-founders).
+
+## Side-by-side comparison (2026)
+
+| Dimension | Figma Make | Lovable |
+| --- | --- | --- |
+| **Primary job** | Interactive prototypes, design-to-app exploration, stakeholder alignment | Shipping standalone full-stack web apps and MVPs |
+| **Starting point** | Attached Figma frames, components, Make kits, or a blank prompt | Plain-English prompt, pasted screenshots, or GitHub template |
+| **Design system tie-in** | Native access to Figma team libraries, Make kits, and copy-back to design layers (Full seat) | Tailwind/shadcn tokens; requires explicit prompt rules to avoid default AI look |
+| **Backend & Auth** | Supports Supabase, Payload, env vars, and MCP connectors | Built-in Lovable Cloud / first-class Supabase auth, DB, and edge functions |
+| **Code & Git ownership** | Editable code inside Make; local codebase beta rolling out | Full two-way GitHub sync (even on Free) + downloadable React/Vite repo |
+| **Entry paid price (Nov 2026)** | **$20/mo** ($16/mo annual) via Figma Professional **Full seat** (3,000 AI credits/mo) | **Pro from $25/mo** ($21/mo annual) (100 monthly credits + 5 daily build credits) |
+| **Free tier limits** | Starter $0: 500 shared AI credits/mo (150/day cap); public web publish requires Figma Community | Free $0: 5 daily build credits (30/mo cap) + daily chat allowance |
+
+## What is Figma Make and how does it work?
+
+Figma Make is Figma's prompt-to-app and interactive prototyping tool built into the Figma workspace. You attach existing Figma Design frames, components, and Make kits, describe interactions or data in plain English, and refine the result using either conversational prompts, visual properties panels, or direct code edits.
+
+Where Figma Make genuinely shines for a UX or product designer:
+
+1. **Zero context-switching.** Your frames are already in Figma. Clicking `+ → Add context` and attaching three frames from your file takes five seconds.
+2. **Annotations and point-and-edit.** You can select specific elements on the canvas, draw annotations, and send batched visual adjustments to the model without trying to describe CSS selectors in chat.
+3. **Round-trip to Figma Design.** On a paid Full seat, you can copy a Figma Make preview back into Figma Design as editable layers—something browser builders like Lovable and Bolt don't natively do.
+
+## Can Figma Make build a real app with a database?
+
+Yes—Figma Make supports connecting Supabase and Payload backends, environment variables, MCP connectors, and publishing to a public URL or custom domain on paid Full seats. However, its workflow is centered around design exploration, stakeholder previews, and Figma libraries rather than standalone repo ownership.
+
+Watch out for two practical constraints if you try to run a customer-facing SaaS inside Figma Make:
+
+- **On Figma's Free (Starter) plan**, publishing your Make app to the public web requires simultaneously publishing it to the public Figma Community. Password-protected sharing and custom domains (up to 10, shared with Figma Sites) require a paid Professional Full seat.
+- **Dev and Collab seats don't get full Make publishing.** If you are on a $12/mo Dev seat or $3/mo Collab seat, you get 500 AI credits and can only use Figma Make in drafts.
+
+If your goal on Sunday is a standalone commercial web app with your own GitHub repo, Stripe webhook handling ([How to Add Stripe Payments to Your Weekend MVP](/articles/add-stripe-to-weekend-mvp)), and an easy graduation path to Cursor or Vercel, **<LovableLink>Lovable</LovableLink>** is purpose-built for that job.
+
+## How much does Figma Make cost vs Lovable in 2026?
+
+Figma Make comes bundled with a Figma seat: Starter ($0) includes 500 shared AI credits/month (up to 150/day), while a Professional Full seat ($20/month, or $16/month billed annually) includes 3,000 AI credits/month and full publishing. Lovable has a Free tier (5 daily build credits, up to 30/month) and Pro starts at $25/month ($21/month annually) with 100 monthly credits plus 5 daily build credits.
+
+Keep in mind that **1 Figma AI credit does not equal 1 Lovable credit**:
+
+- **In Figma Make**, a single from-scratch app generation uses roughly **100+ AI credits**, making an attached design interactive uses roughly **75+ credits**, and changing a font uses around **30+ credits** (per Figma's published credit examples). And those 3,000 monthly credits on a Professional Full seat are shared across all Figma AI features and do not roll over.
+- **In Lovable**, a Plan mode message costs **1 credit** and Build mode scales with task complexity, with 100 monthly Pro credits rolling over for up to 2 months plus 5 free daily build credits (see [How Lovable Credits Work](/articles/how-lovable-credits-work)).
+
+## Which tool keeps your Figma design system more accurately?
+
+Figma Make wins inside the Figma ecosystem because it reads your attached Figma frames, team libraries, and Make kits natively and lets you copy previews back as editable design layers. Lovable is stronger once you want clean React/Tailwind source synced to a GitHub repo that you can take to Vercel or Cursor.
+
+If you choose <LovableLink>Lovable</LovableLink> as a designer, do not just type *"make a clean app"*—otherwise Lovable will hand you default `shadcn/ui` chrome. Paste your exact color hexes, font pairings, and anti-slop rules on prompt one (copy the template in [Why AI-Built Apps All Look the Same](/articles/why-ai-built-apps-look-the-same)).
+
+And if you want **both** native Figma variable/node fidelity **and** a real local Next.js repo, read [Claude Code for Designers: From Figma Frame to Live App](/articles/claude-code-for-designers)—where the official Figma MCP server pipes your Figma frames straight into Claude Code.
+
+## Can you use Figma Make and Lovable together?
+
+Yes. Many designers use Figma Design and Figma Make on Friday to explore interaction states and validate the flow with stakeholders, then move the finalized 3-screen spec into Lovable (or Claude Code via the Figma MCP server) on Saturday to wire production auth, Stripe Checkout, and a GitHub repo.
+
+Here is the decision rule for this weekend:
+
+1. **You already pay for a Figma Full seat and want to test an interactive concept with 5 users** → Stay in **Figma Make**.
+2. **You want to launch a real micro-SaaS with login, database, and GitHub ownership by Sunday** → Build in **<LovableLink>Lovable</LovableLink>** (see [Lovable Examples: 9 Apps Worth Building](/articles/lovable-examples-what-to-build)).
+3. **You outgrow either tool after getting paying users** → Export to GitHub and follow [How to Move Your Lovable or Bolt App Into a Real Codebase](/articles/move-off-lovable-bolt-to-real-code).
+
+Need a validated micro-SaaS idea to test this workflow on? Pick one from the [startup ideas library](/startup-ideas).
+
+## FAQ
+
+### Figma Make vs Lovable: which should designers use?
+
+Use Figma Make when your goal is turning existing Figma frames and design libraries into interactive, testable prototypes without leaving Figma. Use Lovable when your goal is shipping a standalone, full-stack web app with user login, a production database, two-way GitHub sync, and a custom domain.
+
+### What is Figma Make and how does it work?
+
+Figma Make is Figma's prompt-to-app and interactive prototyping tool built into the Figma workspace. You attach existing Figma Design frames, components, and Make kits, describe interactions or data in plain English, and refine the result using either conversational prompts, visual properties panels, or direct code edits.
+
+### Can Figma Make build a real app with a database?
+
+Yes—Figma Make supports connecting Supabase and Payload backends, environment variables, MCP connectors, and publishing to a public URL or custom domain on paid Full seats. However, its workflow is centered around design exploration, stakeholder previews, and Figma libraries rather than standalone repo ownership.
+
+### How much does Figma Make cost vs Lovable in 2026?
+
+Figma Make comes bundled with a Figma seat: Starter ($0) includes 500 shared AI credits/month (up to 150/day), while a Professional Full seat ($20/month, or $16/month billed annually) includes 3,000 AI credits/month and full publishing. Lovable has a Free tier (5 daily build credits, up to 30/month) and Pro starts at $25/month ($21/month annually) with 100 monthly credits plus 5 daily build credits.
+
+### Which tool keeps your Figma design system more accurately?
+
+Figma Make wins inside the Figma ecosystem because it reads your attached Figma frames, team libraries, and Make kits natively and lets you copy previews back as editable design layers. Lovable is stronger once you want clean React/Tailwind source synced to a GitHub repo that you can take to Vercel or Cursor.
+
+### Can you use Figma Make and Lovable together?
+
+Yes. Many designers use Figma Design and Figma Make on Friday to explore interaction states and validate the flow with stakeholders, then move the finalized 3-screen spec into Lovable (or Claude Code via the Figma MCP server) on Saturday to wire production auth, Stripe Checkout, and a GitHub repo.
+
+## TL;DR
+
+Use **Figma Make** when you want your Figma frames to come alive for user testing and stakeholder sign-off without leaving your design tool. Use **Lovable** when you want to ship a standalone SaaS product with auth, Supabase, and two-way GitHub sync. Grab a scoped weekend idea from the [startup ideas library](/startup-ideas) and put your design eye to work.
+
+Sources: [Figma Learn: Explore Figma Make](https://help.figma.com/hc/en-us/articles/31304412302231-Explore-Figma-Make), [Figma Pricing](https://www.figma.com/pricing/), <LovableLink>Lovable Docs & Pricing</LovableLink>

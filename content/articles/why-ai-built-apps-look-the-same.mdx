@@ -1,0 +1,141 @@
+---
+slug: "why-ai-built-apps-look-the-same"
+title: "Why AI-Built Apps All Look the Same (and How to Fix It)"
+description: "Why do AI websites look the same? Why Lovable, Bolt, v0, and Cursor default to purple gradients, Inter, and 3-card grids—plus the token and prompt fixes."
+category: "Guide"
+publishedAt: "2026-11-06"
+wordCount: 1808
+readMinutes: 9
+heroAlt: "A row of four identical white paper cubes on a dark desk beside one sharp ink-black fountain pen lit by an emerald side beam"
+faq:
+  - question: "Why do AI-generated websites and apps all look the same?"
+    answer: "LLMs predict the most statistically probable tokens from their training data, which is dominated by Tailwind CSS tutorials, shadcn/ui starter templates, and SaaS boilerplates. When a prompt leaves typography, palette, spacing, and layout unspecified, every AI builder converges on the same statistical average: Inter font, violet-to-indigo gradients, centered heroes, and three equal feature cards."
+  - question: "What are the biggest tells that a website was built by AI?"
+    answer: "The seven classic tells are: a purple-to-indigo gradient wash or glowing background orb, a pill badge with a sparkle emoji above a centered H1, Inter used for both display and body type, three identical rounded-2xl cards with Lucide rocket/zap/shield icons, glassmorphic dark cards with faint white borders, fake 'Trusted by 10,000+ teams' bars, and vague verbs like 'Unlock', 'Supercharge', and 'Seamless'."
+  - question: "Why do AI builders love purple and indigo gradients?"
+    answer: "Tailwind CSS documentation and early SaaS UI kits heavily used indigo-500, indigo-600, and violet-600 as primary action colors, while shadcn/ui examples popularized subtle glowing gradients on dark slate backgrounds. Because those classes appear millions of times in public GitHub repos, models treat indigo and violet as the default color for 'modern software'."
+  - question: "How do I make a Lovable, Bolt, or v0 app not look AI-generated?"
+    answer: "Change the CSS variables and design tokens in globals.css rather than fighting individual components. Define a specific paper or dark ground, one non-purple brand accent, a two-font pairing (such as an editorial serif or geometric display font paired with a clean sans and monospace for metadata), a consistent border radius, and an explicit ban list in your system prompt."
+  - question: "Does changing shadcn/ui components break v0 or Lovable?"
+    answer: "Rewriting the internal JSX of shadcn/ui primitives can cause v0 or Lovable to fight your changes on later prompts because they are trained on standard shadcn APIs. Instead, keep the component signatures intact and override the CSS custom properties (--background, --foreground, --primary, --radius) and font variables they read from."
+  - question: "What should I put in my prompt or AGENTS.md to prevent generic AI UI?"
+    answer: "Include a short Design System and Anti-Slop block that names exact hex/HSL tokens, two Google Fonts, asymmetric layout rules (such as left-aligned 7/5 grids instead of centered stacks), and an explicit ban list forbidding purple/indigo gradients, pill badges above headlines, 3-equal-card icon rows, emoji in UI chrome, and placeholder social proof."
+---
+
+## Quick Answer
+
+AI-built apps all look the same because **an unconstrained language model outputs the statistical average of its training data**—and public frontend repos are saturated with default Tailwind CSS (`indigo-600`, `slate-900`) and stock `shadcn/ui` templates (`Inter`, `--radius: 0.625rem`, centered hero + three cards). To fix it, stop asking for "modern, clean UI" and instead pin **CSS variables, a real font pairing, asymmetric grid rules, and an explicit ban list** before generating screen one.
+
+<AffiliateDisclosure />
+
+If you need a concrete, niche problem to design around (because vague ideas produce vague UI), start in the [startup ideas library](/startup-ideas).
+
+## Why do AI-generated websites and apps all look the same?
+
+LLMs predict the most statistically probable tokens from their training data, which is dominated by Tailwind CSS tutorials, shadcn/ui starter templates, and SaaS boilerplates. When a prompt leaves typography, palette, spacing, and layout unspecified, every AI builder converges on the same statistical average: Inter font, violet-to-indigo gradients, centered heroes, and three equal feature cards.
+
+Whether you open <LovableLink>Lovable</LovableLink>, [Bolt.new](/build-with/bolt), [v0](/build-with/v0), or [Cursor](/build-with/cursor) and type *"Build a modern landing page and dashboard for my AI tool,"* you get the exact same page back.
+
+Three forces create that convergence:
+
+1. **Distributional averaging in the model.** An LLM is not making an art-direction choice; it is sampling the highest-probability next token. In React/Tailwind codebases, the highest-probability classes are `bg-slate-950`, `text-indigo-400`, `rounded-2xl`, and `max-w-7xl mx-auto text-center`.
+2. **Tooling amplifiers.** Builders like v0 and Lovable ship `shadcn/ui` on top of Tailwind CSS out of the box. `shadcn/ui` is an exceptional accessibility layer, but a fresh `shadcn init` writes the exact same neutral grayscale variables and `0.625rem` radius into `globals.css`. When 100,000 founders ship without touching `globals.css`, 100,000 apps look identical.
+3. **Adjectives resolve to clichés.** Prompting *"make it look premium, sleek, and futuristic"* does not make the output original. To a model, *"futuristic"* means a glowing purple radial gradient behind the H1 and `backdrop-blur-md` glass cards.
+
+## What are the biggest tells that a website was built by AI?
+
+The seven classic tells are: a purple-to-indigo gradient wash or glowing background orb, a pill badge with a sparkle emoji above a centered H1, Inter used for both display and body type, three identical rounded-2xl cards with Lucide rocket/zap/shield icons, glassmorphic dark cards with faint white borders, fake "Trusted by 10,000+ teams" bars, and vague verbs like "Unlock", "Supercharge", and "Seamless".
+
+Use this diagnostic table on your own MVP before you share the link:
+
+| The AI Tell | What the model writes by default | What to replace it with |
+| --- | --- | --- |
+| **1. The purple/indigo wash** | `bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500` | A flat, high-contrast ground (warm paper `#FAF7F2` or ink `#111110`) + **one** solid functional accent |
+| **2. Pill badge above H1** | `✨ Introducing AI Workflow 2.0` inside a rounded-full border | A plain monospace category/date eyebrow or start directly with the H1 |
+| **3. Single-font Inter monotony** | `font-sans` (Inter) at default tracking for H1, H2, body, and labels | Pair a distinctive display/serif (e.g., Newsreader, Instrument Serif, Fraunces) with Geist/Plus Jakarta Sans + Geist Mono for numbers |
+| **4. Three equal icon cards** | 3-column grid of `rounded-2xl` boxes with `Zap`, `Shield`, `Rocket` icons | An asymmetric 2-column split, a numbered ruled list, or a real interactive preview of the tool |
+| **5. Floating glass orbs** | `blur-3xl opacity-20 bg-purple-600` decorative divs | Hairline `1px` structural borders (`border-stone-200`) and typographic hierarchy |
+| **6. Fake social proof** | `"Trusted by 10,000+ innovators"` + 5 greyed-out placeholder logos | One specific benchmark, your own founder note, or the exact problem workflow |
+| **7. Median AI copy** | *"Supercharge your workflow with seamless AI insights"* | The one-input, one-output sentence: *"Paste a contractor PDF; get a priced material takeoff in 40 seconds."* |
+
+## Why do AI builders love purple and indigo gradients?
+
+Tailwind CSS documentation and early SaaS UI kits heavily used `indigo-500`, `indigo-600`, and `violet-600` as primary action colors, while `shadcn/ui` examples popularized subtle glowing gradients on dark slate backgrounds. Because those classes appear millions of times in public GitHub repos, models treat indigo and violet as the default color for "modern software".
+
+Once you know that `indigo-600` is just a statistical artifact of Tailwind's documentation, you stop letting it anywhere near your brand unless your company actually sells violets.
+
+## How do I make a Lovable, Bolt, or v0 app not look AI-generated?
+
+Change the CSS variables and design tokens in `globals.css` rather than fighting individual components. Define a specific paper or dark ground, one non-purple brand accent, a two-font pairing (such as an editorial serif or geometric display font paired with a clean sans and monospace for metadata), a consistent border radius, and an explicit ban list in your system prompt.
+
+### Fix 1: Override `globals.css` tokens on prompt one
+
+Do not ask the builder to restyle 15 screens on Sunday night. On Friday night, give the builder your exact token values first:
+
+- **Warm editorial desk palette:** Paper `#F7F4EE`, Elevated card `#FFFFFF`, Ink `#141413`, Muted ink `#57534E`, Rule `#E5E0D5`, Accent burnt-orange `#D94E1F` or forest `#1F5E4B`.
+- **High-craft technical dark palette:** Ground `#0C0C0B`, Panel `#141413`, Hairline rule `#262624`, Primary text `#F5F4F0`, Muted text `#9A9890`, Accent lime `#D4FF5B` or signal amber `#F59E0B`.
+
+## Does changing shadcn/ui components break v0 or Lovable?
+
+Rewriting the internal JSX of `shadcn/ui` primitives can cause [v0](/build-with/v0) or [Lovable](/build-with/lovable) to fight your changes on later prompts because they are trained on standard shadcn APIs. Instead, keep the component signatures intact and override the CSS custom properties (`--background`, `--foreground`, `--primary`, `--radius`) and font variables they read from.
+
+When you change `--radius: 0.25rem` (crisp 4px corners) or `--radius: 0rem` (brutalist Swiss grids) in `globals.css`, every shadcn `Button`, `Card`, and `Input` updates across the app automatically—and future AI prompts keep working cleanly.
+
+### Put the actual tool in the hero
+
+Generic AI landing pages hide the product behind three screens of marketing adjectives because the prompt never explained what the product does. Put a working sample input, a real output preview, or a live calculator inside the first viewport (see [How to Write a Landing Page That Converts Before You've Built Anything](/articles/landing-page-that-converts-before-you-build)).
+
+Need an idea where the core input and output are already crystal clear? Browse the [startup ideas library](/startup-ideas).
+
+## What should I put in my prompt or AGENTS.md to prevent generic AI UI?
+
+Include a short Design System and Anti-Slop block that names exact hex/HSL tokens, two Google Fonts, asymmetric layout rules (such as left-aligned 7/5 grids instead of centered stacks), and an explicit ban list forbidding purple/indigo gradients, pill badges above headlines, 3-equal-card icon rows, emoji in UI chrome, and placeholder social proof.
+
+Copy and paste this block into your `AGENTS.md` / `CLAUDE.md` ([guide here](/articles/agents-md-ai-coding-instructions)), your Lovable custom knowledge, or the top of your first Bolt/v0 prompt:
+
+```markdown
+## UI & Visual Direction (Strict — No Default AI Slop)
+- Palette: Background #F7F4EE, Card #FFFFFF, Primary Ink #141413, Muted Ink #57534E, Border #E5E0D5, Accent #D94E1F.
+- Typography: Display headings in 'Newsreader' or 'Instrument Serif' (tracking -0.025em, line-height 1.08); body in 'Plus Jakarta Sans' or 'Geist'; metadata/numbers in 'Geist Mono' (tabular-nums).
+- Layout: Left-aligned editorial hierarchy. Use 12-column asymmetric splits (7/5 or 5/7) and 1px hairline rules instead of floating shadow cards.
+- BANNED PATTERNS:
+  1. No purple, violet, or indigo gradients, and no blurred background glow orbs.
+  2. No pill badge with a sparkle icon/emoji above the H1.
+  3. No rows of 3 equal rounded-2xl feature cards with generic Lucide icons (Rocket, Zap, Shield, Sparkles).
+  4. No fake social proof ("Trusted by 10,000+ users") or stock avatar stacks.
+  5. No filler AI copy ("Supercharge", "Unlock", "Seamless", "Next-Gen"). Write concrete buyer nouns and verbs.
+```
+
+For more on directing AI tools with a designer's eye, read [Vibe Coding for Designers](/articles/vibe-coding-for-designers) and [Claude Code for Designers](/articles/claude-code-for-designers).
+
+## FAQ
+
+### Why do AI-generated websites and apps all look the same?
+
+LLMs predict the most statistically probable tokens from their training data, which is dominated by Tailwind CSS tutorials, shadcn/ui starter templates, and SaaS boilerplates. When a prompt leaves typography, palette, spacing, and layout unspecified, every AI builder converges on the same statistical average: Inter font, violet-to-indigo gradients, centered heroes, and three equal feature cards.
+
+### What are the biggest tells that a website was built by AI?
+
+The seven classic tells are: a purple-to-indigo gradient wash or glowing background orb, a pill badge with a sparkle emoji above a centered H1, Inter used for both display and body type, three identical rounded-2xl cards with Lucide rocket/zap/shield icons, glassmorphic dark cards with faint white borders, fake "Trusted by 10,000+ teams" bars, and vague verbs like "Unlock", "Supercharge", and "Seamless".
+
+### Why do AI builders love purple and indigo gradients?
+
+Tailwind CSS documentation and early SaaS UI kits heavily used `indigo-500`, `indigo-600`, and `violet-600` as primary action colors, while `shadcn/ui` examples popularized subtle glowing gradients on dark slate backgrounds. Because those classes appear millions of times in public GitHub repos, models treat indigo and violet as the default color for "modern software".
+
+### How do I make a Lovable, Bolt, or v0 app not look AI-generated?
+
+Change the CSS variables and design tokens in `globals.css` rather than fighting individual components. Define a specific paper or dark ground, one non-purple brand accent, a two-font pairing (such as an editorial serif or geometric display font paired with a clean sans and monospace for metadata), a consistent border radius, and an explicit ban list in your system prompt.
+
+### Does changing shadcn/ui components break v0 or Lovable?
+
+Rewriting the internal JSX of `shadcn/ui` primitives can cause v0 or Lovable to fight your changes on later prompts because they are trained on standard shadcn APIs. Instead, keep the component signatures intact and override the CSS custom properties (`--background`, `--foreground`, `--primary`, `--radius`) and font variables they read from.
+
+### What should I put in my prompt or AGENTS.md to prevent generic AI UI?
+
+Include a short Design System and Anti-Slop block that names exact hex/HSL tokens, two Google Fonts, asymmetric layout rules (such as left-aligned 7/5 grids instead of centered stacks), and an explicit ban list forbidding purple/indigo gradients, pill badges above headlines, 3-equal-card icon rows, emoji in UI chrome, and placeholder social proof.
+
+## TL;DR
+
+AI apps look identical when you leave tokens, fonts, and layout up to the model's training-data average. Override `globals.css` variables on prompt one, pair a real display font with a monospace metadata font, ban purple gradients and 3-card icon rows, and write concrete buyer copy. Then apply those rules to a validated brief from the [startup ideas library](/startup-ideas) — every idea includes a dedicated Branding Package prompt built to avoid generic defaults.
+
+Sources: [v0 Custom Registries & shadcn/ui Docs](https://v0.app/docs), <LovableLink>Lovable documentation</LovableLink>, [Joshua Snoddy: Why AI Websites Look the Same](https://www.joshuasnoddy.com/blog/why-ai-websites-look-the-same/), [qodesign: Make v0 UI Not Look AI-Generated](https://qodesign.dev/blog/make-v0-app-not-look-ai-generated)

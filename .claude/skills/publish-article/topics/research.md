@@ -69,33 +69,41 @@
 ## Remaining queue
 
 #### Topic 6
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** MVP Agency vs Freelancer vs AI Tools: What to Pick in 2026
 - **Slug:** mvp-agency-vs-freelancer-vs-ai-tools
 - **Framework:** Comparison / decision table
+- **Published:** 2026-11-06
+- **File:** content/articles/mvp-agency-vs-freelancer-vs-ai-tools.mdx
 - **Primary query:** mvp development agency for non-technical founders
 - **Evidence:** hire-help cluster ≈ 212 impr / 0 clicks, rising
 
 #### Topic 7
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Lovable vs Bolt vs Replit: Which to Use This Weekend
 - **Slug:** lovable-vs-bolt-vs-replit-2026
 - **Framework:** Comparison
+- **Published:** 2026-11-06
+- **File:** content/articles/lovable-vs-bolt-vs-replit-2026.mdx
 - **Primary query:** lovable vs bolt
 - **Note:** Affiliate disclosure for Lovable
 
 #### Topic 8
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Claude Code for Designers: From Figma Frame to Live App
 - **Slug:** claude-code-for-designers
 - **Framework:** How-To
+- **Published:** 2026-11-06
+- **File:** content/articles/claude-code-for-designers.mdx
 - **Primary query:** claude code for designers
 
 #### Topic 9
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Why AI-Built Apps All Look the Same (and How to Fix It)
 - **Slug:** why-ai-built-apps-look-the-same
 - **Framework:** Problem → fix
+- **Published:** 2026-11-06
+- **File:** content/articles/why-ai-built-apps-look-the-same.mdx
 - **Primary query:** why do ai websites look the same
 
 #### Topic 10
@@ -107,18 +115,22 @@
 - **Note:** Affiliate disclosure
 
 #### Topic 11
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** How Lovable Credits Work (and How to Stop Burning Them)
 - **Slug:** how-lovable-credits-work
 - **Framework:** How-To
+- **Published:** 2026-11-06
+- **File:** content/articles/how-lovable-credits-work.mdx
 - **Primary query:** how do lovable credits work
 - **Note:** Date-stamp pricing; affiliate disclosure
 
 #### Topic 12
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** How Much Does Vibe Coding Cost? Real 2026 Tool Prices
 - **Slug:** how-much-does-vibe-coding-cost
 - **Framework:** How-To / table
+- **Published:** 2026-11-06
+- **File:** content/articles/how-much-does-vibe-coding-cost.mdx
 - **Primary query:** how much does vibe coding cost
 - **Note:** Cursor pricing — keep strictly factual (related-company sensitivity)
 
@@ -131,18 +143,22 @@
 - **Evidence:** 251 impr, 0.8% CTR on hub — feature vs ideas mismatch
 
 #### Topic 14
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Figma Make vs Lovable: Which Should Designers Use?
 - **Slug:** figma-make-vs-lovable
 - **Framework:** Comparison
+- **Published:** 2026-11-06
+- **File:** content/articles/figma-make-vs-lovable.mdx
 - **Primary query:** figma make vs lovable
 - **Note:** Affiliate disclosure
 
 #### Topic 15
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Vibe Coding vs No-Code vs Low-Code: What's the Difference?
 - **Slug:** vibe-coding-vs-no-code
 - **Framework:** Definitional comparison
+- **Published:** 2026-11-06
+- **File:** content/articles/vibe-coding-vs-no-code.mdx
 - **Primary query:** vibe coding vs no code
 - **Depends on:** topic 1 published; get vibe-coding-101 indexed
 
@@ -163,10 +179,12 @@
 - **Note:** Affiliate disclosure
 
 #### Topic 18
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** How to Automate Meeting Notes With AI (Build It Yourself)
 - **Slug:** automate-meeting-notes-with-ai
 - **Framework:** How-To
+- **Published:** 2026-11-06
+- **File:** content/articles/automate-meeting-notes-with-ai.mdx
 - **Primary query:** automate meeting notes
 - **Evidence:** meeting-notes cluster ≈ 98 impr / 0 clicks on `/solve/meeting-notes`
 
@@ -179,10 +197,12 @@
 - **Alt:** refresh `/articles/cursor-vs-claude-code-vs-lovable-2026` instead
 
 #### Topic 20
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** How to Collect User Feedback on Your MVP (No-Code Friendly)
 - **Slug:** collect-user-feedback-on-your-mvp
 - **Framework:** How-To
+- **Published:** 2026-11-06
+- **File:** content/articles/collect-user-feedback-on-your-mvp.mdx
 - **Primary query:** how to collect user feedback on an mvp
 - **Evidence:** conversational GSC query lands on `/articles` index (pos ~91)
 
