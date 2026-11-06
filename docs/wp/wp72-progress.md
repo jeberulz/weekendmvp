@@ -1,5 +1,20 @@
 # WP72 Progress - Workspace shell and component kit
 
+## 2026-11-06 - S5 hard HTTP 404 (Codex follow-up)
+
+- Branch `codex/wp72-hard-404` is stacked on WP72 PR #183; no production deployment.
+- Middleware now reads `workspace.access.getWorkspaceAccess` with the Convex Auth token before serving
+  `/dashboard/b/*`. It answers a bare HTTP 404 on a missing token/id, denied access, backend fault or timeout.
+  WP72's layout and pages still perform their own access check. Workspace responses have `no-store`,
+  `noindex` and `Referrer-Policy: no-referrer` headers.
+- Path tests cover normal, nested, encoded, RSC and segment requests; the matcher includes the transport paths.
+  Typecheck, lint (0 errors, 37 existing warnings), the full test suite and a Next 16 production build passed.
+  Signed-out HTTP probes
+  of `/dashboard/b`, an id, a nested page, an encoded id and an `.rsc` path each returned 404 with
+  `Referrer-Policy: no-referrer`.
+- The authorized path needs an isolated Convex integration check after WP72 and its setup dependencies land.
+  GA/Meta workspace URL redaction remains the optional privacy follow-up from S1.
+
 ## 2026-11-05 - Setup
 
 - Branch/worktree: `claude/wp72-workspace-shell` in `.worktrees/wp72-workspace-shell`, from `main` at `d67dc8e2`.
