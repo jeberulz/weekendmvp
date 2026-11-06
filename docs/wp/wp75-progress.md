@@ -8,12 +8,102 @@
   reuse S4a's checks.
 - Needs from Codex: 12 items below; items 1, 3 and 4 block stories.
 
+## 2026-11-06 - WP75-S2a built (job runner, one step)
+
+Uncommitted in the worktree; the orchestrator reviews and commits. Fixture mode only, no live spend.
+
+### Files
+
+- `convex/crew/jobs.ts` (new, internal only): `insertCrewTask` / `createCrewTask`, `startCrewRun`,
+  `finishCrewStep`, `settleCrewRun`, `resumeCrewTask`, plus the shared `runCrewStepArgs` and gateway-failure
+  validators.
+- `convex/crew/runner.ts` (new): `runCrewStepWith` (the body, with an injectable `runPrompt`) and the
+  `runCrewStep` internal action.
+- `lib/workspace/crew/retry.ts` (new, pure): retry classes, decisions, backoff, calm founder-facing reasons.
+- `lib/workspace/crew/tasks.ts` (new, pure): job type to C-ART kind, `planCrewTask` (the C-JOBS round),
+  `founderNoteBlock`.
+- `convex/ai/providers/fixtureOutputs.ts` (new) and `convex/ai/providers/fixtures.ts` (the default fixture client
+  falls back to it; a test responder still wins).
+- `convex/_generated/api.d.ts`: the `crew/jobs` and `crew/runner` module entries, hand-added in codegen's form.
+- Tests: `convex/crew/runner.test.ts` (convex-test, real meter, ledger, approvals and limiter),
+  `convex/crew/retry.test.ts` (pure), `tests/platform/crew-fixture-outputs.test.ts`.
+
+### Design
+
+- **Round and key.** `planCrewTask` counts the lineage's non-failed, non-cancelled tasks (first draft included)
+  read over the job-key prefix range. First draft = round 0; a revision must name the newest succeeded draft
+  (else `CREW_TASK_STALE`); a busy draft returns the same live task for the same revision and refuses another
+  (`CREW_TASK_BUSY`); round 3+ is `CREW_TASK_PAID_ROUND` (WP77-S2 inserts paid rounds); a broken lineage fails
+  closed (`CREW_TASK_CONFLICT`). A released round reuses the key with `crew-task:{key}:retry:{n}`. Every inserted
+  task is `creditCost: 0n`, no debit, and spends one `checkLimit(ctx, "crewJob", owner)`; a returned task spends
+  none. The rule mirrors WP77's `nextChangeRound`, which is only on PR 210's branch (`convex/workspace/changeRounds.ts`
+  is not on main); consolidate after it merges.
+- **Attempts.** One `workflow_runs` row per execution (`run:{taskId}:{n}`, `type` = the job type). `attempt` starts
+  as one past every number used by any task holding the key (the holders' runs, plus `ai_usage` rows under
+  `{jobKey}:`), and the gateway's `nextAttempt` is stored back on settle or finish, never moving backwards. A run
+  whose outcome is unknown (the gateway call threw, or a run is still `running` past an 11-minute lease) counts as
+  start + 2 and settles as `indeterminate`. Tested: a re-ask, a retry and a later holder of the released key use
+  attempts 1, 2, 3, 4 with no reuse.
+- **Retries are executions, not a loop.** One gateway run can take most of an action's 10 minutes, so
+  `settleCrewRun` schedules the retry (`runAfter(backoff, runCrewStep, args)`) in the same transaction that closes
+  the run. `retryMode: "return"` hands the delay back instead, for S2b's workpool (`retry: false`). At most 4
+  executions per task. Classes: `retryable_unbilled` 2 retries (5 s, 20 s); `indeterminate` 1 retry (30 s);
+  `permanent` fails, refunds only when a `task-debit:{taskId}` row exists (refund scheduled in the same
+  transaction); `parked` blocks the task, no retry; `closed` (meter `RESOURCE_NOT_FOUND` on a task that became
+  terminal) marks the run `cancelled` and changes nothing else. `duplicate_attempt` is retried past the key.
+  A `billed: actual` provider failure is permanent.
+- **Finish, one mutation.** Guards: run and task still `running`; workspace on and business live (a parking code
+  parks, anything else fails). Re-parses the output with `parseModelOutput` (a revision passes the stored draft, so a
+  landing spec keeps its proof slots); a C-ART failure or an oversized body fails the task with no document or card.
+  Then the `documents` row (`format: json`, `schemaVersion: "1"`, `promptRef`, `contentSha256`,
+  `supersedesDocumentId` for a revision), task `succeeded`, run `succeeded`, `createApprovalRecord`
+  (`artifact_review`, subject `documents`, `changeRound` = the task's round), employee `needs_you`, workstream
+  `needs_review` with `documentIds` and `askApprovalId`.
+- **Revision inputs.** The runner adds `previousArtifact` (the revised draft's stored JSON) and `revisionNote`
+  (`founderNoteBlock`: control characters dropped, `& < >` escaped, capped at 2,000, wrapped as data) to the prompt
+  inputs. Specs read only the keys they use.
+- **Crew statuses.** `crew_members` has no failed or blocked status, so a failed or parked step sets the employee
+  `needs_you` and puts the reason on the workstream (`status` `failed` / `blocked`, calm `blocker` text). Resume
+  sets both back to `queued`.
+- **Fixture outputs.** The fixture client never sees the prompt ref, so the registry recognises a registered spec
+  by its system block plus output schema, then falls back by C-ART schema (object kinds, the landing draft, blueprint
+  and build-pack variants and unions), else the old smallest-instance reply. `FIXTURE_OUTPUTS_BY_REF` is empty
+  until S3/S4b register non-artifact specs. Only `fixtures.ts` imports the module (tested); live mode builds the SDK
+  client and never calls it (tested with a fake client).
+- **Generic step.** Nothing assumes step order or that the first step is the roster: `crew_blueprint` is a step
+  type like the others (owner ruling, blueprint first).
+- **Proof spec.** The runner is proved end to end with a test-only, non-internal spec in the test's mocked registry
+  (`test-crew-brand-kit@1`, output = the C-ART brand kit schema, `per_business` cache layout). No production prompt
+  was added; the lock is unchanged.
+
+### Needs from Codex (S2a)
+
+- Item 9 (`crewJob` semantics) stays open: S2a spends one token per inserted task, so a launch of about ten steps
+  hits the 10-an-hour limit by itself (Stop-and-ask 10, Owner Q11). S2b must not ship until this is ruled.
+- Item 8 (`crew_members` `failed` / `blocked`): S2a uses `needs_you` plus the workstream blocker; adding the statuses
+  later is a small change in `setCrewStatus`.
+- Item 7 is not needed: `workflow_runs` holds attempt, errorCode and idempotencyKey.
+- `convex/_generated/api.d.ts` was edited by hand for the two new modules; a `npx convex codegen` run should
+  produce the same lines.
+
+### Checks
+
+- `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors; no warnings in S2a files).
+- `npm run check:prompt-versions` 1 against the default base `origin/main` (`2d324f3f`): four `wren-*` entries are
+  in main's lock but not this branch's, because main moved past this branch's base `d0f6e572`. No lock or prompt
+  file changed in S2a; `--base HEAD` exits 0 (1 prompt version matches). Clears on a rebase.
+- `node --experimental-strip-types --test tests/security/*.test.mjs` 1: 207 pass, 1 fail, the known
+  `convex/workspace/business.ts:createBusiness missing capability guard` (WP74 item (a)).
+- Vitest half of `test:security` 0 (121 tests).
+- `test:convex` 0 (915), `test:platform` 0 (1,291), `test:prompts` 0 (24), `test:engine` 0 (1,076).
+- `npm run build` 0. `git diff --check` clean.
+
 ## Status
 
 | Story | State | Runs in fixture mode now? | Waits on | Author / reviewer |
 |---|---|---|---|---|
 | S1 roster | Not started | Yes, after S2a + S3a blueprint | S2a, S3a (ruled: blueprint first) | Opus (Sonnet UI) / Opus |
-| S2a job runner | Not started | **Yes** | — | Opus / Opus |
+| S2a job runner | Built, awaiting review and commit | **Yes** | — | Opus / Opus |
 | S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
 | S3a blueprint + brand text | Not started | Yes, after S2a | Seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
 | S3b logo marks | Not started | Yes (fixture image adapter) | Stop-and-ask 11, 12, 14; Owner Q2, Q3 | Opus / Opus |
@@ -49,7 +139,7 @@ Options are listed; none is resolved here.
    (`convex/ai/gatewayActions.ts:107-133`); `job` needs `ownerId` and `taskId` (:448-450) and no task exists at
    publish. Options: (A) add a `policy:` form (contract change, Codex); (B) run the check inside the landing job
    and store the verdict on the document, re-run only on new versions; (C) WP78 inserts a `crew_*` task for the check.
-3. **A fixture launch cannot produce valid artifacts.** The registered fixture client replies with the smallest
+3. **Resolved in S2a (fixture-output registry).** **A fixture launch cannot produce valid artifacts.** The registered fixture client replies with the smallest
    schema instance (`convex/ai/providers/fixtures.ts:119`, `sampleFromJsonSchema`), which fails C-ART refinements.
    Plan: a fixture-output registry keyed by `promptRef` (S2a). It touches `convex/ai/providers/`, which WP71 created;
    confirm Claude lane may edit it.
@@ -58,7 +148,7 @@ Options are listed; none is resolved here.
    per-key parallelism, so "3 concurrent jobs per owner" (`02` §6.2) must be app-level. Options: (A) DAG on
    `crewWorkpool` with `onComplete` (planned in S2b); (B) use workflow and leave `crewWorkpool` unused; (C) both
    (workflow steps enqueue onto the pool).
-5. **`tasks` has no attempt, error or start fields.** `convex/schema.ts:480-504` has `jobKey` and
+5. **Resolved in S2a (`workflow_runs`, no schema change).** **`tasks` has no attempt, error or start fields.** `convex/schema.ts:480-504` has `jobKey` and
    `by_ownerId_and_jobKey` only. Plan: one `workflow_runs` row per execution (`attempt` int64, `errorCode`,
    `idempotencyKey`, `by_taskId_and_createdAt`; `convex/schema.ts:695-716`). Alternative: Codex adds optional task
    fields (Codex 7).
@@ -246,6 +336,6 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
 
 ## Docs
 
-- Docs updated: `docs/wp/wp75-stories.md`, `docs/wp/wp75-progress.md` (new).
+- Docs updated: `docs/wp/wp75-stories.md`, `docs/wp/wp75-progress.md` (new); S2a: story ticked, S2a section added.
 - Not changed: plan docs, RULINGS, WP67 board (branch-name fix is the orchestrator's).
 - Checks: docs only; `git diff --check` run.

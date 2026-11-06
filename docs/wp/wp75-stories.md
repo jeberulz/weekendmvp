@@ -71,7 +71,7 @@ Standing rules:
     the new function. The roster list on Meet your co-founder renders hired and skipped roles with reasons and passes
     axe.
 
-- [ ] `WP75-S2a` - Crew job runner (one step)
+- [x] `WP75-S2a` - Crew job runner (one step). Built 2026-11-06; design, Needs and checks in `wp75-progress.md` § S2a.
   - Scope: `convex/crew/jobs.ts` (task lifecycle mutations), `convex/crew/runner.ts` (internal action),
     `lib/workspace/crew/retry.ts` (pure classification), `convex/ai/providers/fixtureOutputs.ts` (new; see below),
     tests.

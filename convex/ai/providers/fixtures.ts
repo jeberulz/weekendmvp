@@ -15,11 +15,16 @@
  * - Images: a 1×1 transparent PNG, as `b64_json`.
  * Callers (S2 gateway tests, S6 eval cases) replace any reply through the
  * `*FixtureResponder` options, e.g. to return a spec-valid artifact or a refusal.
+ * - Crew artifacts (WP75-S2a): when no responder replies, a request whose
+ *   output schema is a registered crew prompt or a C-ART artifact schema gets
+ *   a valid artifact from `fixtureOutputs.ts` instead of the smallest schema
+ *   instance. Only this fixture client reads it; live mode never builds it.
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
 
 import type { AnthropicMessagesClient, AnthropicRequestOptions } from "./anthropic";
+import { fixtureOutputFor } from "./fixtureOutputs";
 import { isRecord, OPENAI_IMAGES_ENDPOINT, RECRAFT_ENDPOINT } from "./transport";
 import type { Fetcher, TextStopReason } from "./types";
 
@@ -206,13 +211,19 @@ function abortError(signal: AbortSignal): Error {
   return signal.reason instanceof Error ? signal.reason : new Error("aborted");
 }
 
+/** The crew fixture-output registry's reply for a request, or the deterministic default. */
+function registryReply(params: Anthropic.MessageCreateParamsNonStreaming): AnthropicFixtureReply {
+  const json = fixtureOutputFor(params);
+  return json === undefined ? {} : { json };
+}
+
 /** A Messages client that answers from fixtures. Honours an already-aborted signal. */
 export function createFixtureAnthropicClient(responder?: AnthropicFixtureResponder): AnthropicMessagesClient {
   return {
     messages: {
       async create(params, options?: AnthropicRequestOptions) {
         if (options?.signal?.aborted) throw abortError(options.signal);
-        const reply = (await responder?.(params)) ?? {};
+        const reply = (await responder?.(params)) ?? registryReply(params);
         return buildMessage(params, reply);
       },
     },
