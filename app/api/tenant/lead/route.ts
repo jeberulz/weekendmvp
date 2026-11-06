@@ -3,6 +3,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { classifyHost, tenantHostForSlug } from "@/lib/tenant-host";
 import { clientRateLimitKey } from "../../platform/preview/_server";
+import { signTenantLeadPayload, tenantLeadBridgeSecret } from "./_bridge";
 import { validateLeadBody } from "./_server";
 
 /**
@@ -15,7 +16,7 @@ import { validateLeadBody } from "./_server";
  * the rewrite were ever reachable another way.
  *
  * This layer exists because Convex mutations cannot observe a client IP. It
- * derives the rate-limit key from request headers and passes it through.
+ * signs a pseudonymous rate-limit key derived from trusted request headers.
  *
  * WP28 stores no real lead (owner ruling 2026-08-07), so the body is
  * validated for personal data and **refused** rather than stripped.
@@ -78,13 +79,17 @@ export async function POST(request: Request) {
   if (!convexUrl) {
     return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
   }
+  let signed: ReturnType<typeof signTenantLeadPayload>;
+  try {
+    const secret = tenantLeadBridgeSecret(process.env);
+    signed = signTenantLeadPayload(hostname, clientRateLimitKey(request.headers), secret);
+  } catch {
+    return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
+  }
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    await client.mutation(api.platform.sites.leads.recordSynthetic, {
-      hostname,
-      rateLimitKey: clientRateLimitKey(request.headers),
-    });
+    await client.mutation(api.platform.sites.leads.recordSynthetic, signed);
   } catch (error) {
     if (isRateLimitError(error)) {
       return jsonError(429, "RATE_LIMITED");

@@ -28,6 +28,9 @@ const app = defineApp({
     // local and CI deployments keep booting; generation fails closed when it
     // is unset rather than running unprotected.
     PLATFORM_PREVIEW_BRIDGE_SECRET: v.optional(v.string()),
+    // WP78-S4c. Authenticates the tenant lead hand-off from Next; optional
+    // so existing deployments boot, while lead writes fail closed if unset.
+    TENANT_LEAD_BRIDGE_SECRET: v.optional(v.string()),
     // WP46-E4a. The owner's sign-in email, read only by the internal
     // `admin/superAdmin:bootstrapOwner` mutation to bind the super-admin
     // capability to that verified account's user ID. Deployment configuration

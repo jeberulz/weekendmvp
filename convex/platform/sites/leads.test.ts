@@ -1,10 +1,11 @@
 import { convexTest, type TestConvex } from "convex-test";
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import schema from "../../schema";
 import { api } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import { serializeSiteRenderSpec } from "../preview/renderSpec";
+import { signTenantLeadPayload } from "../../../app/api/tenant/lead/_bridge";
 
 const modules = import.meta.glob("/convex/**/*.ts");
 
@@ -21,6 +22,10 @@ function testConvex() {
 }
 
 const HOSTNAME = "acme.weekendmvp.app";
+const SECRET = "tenant-lead-bridge-test-secret-32-bytes";
+
+beforeEach(() => { process.env.TENANT_LEAD_BRIDGE_SECRET = SECRET; });
+afterEach(() => { delete process.env.TENANT_LEAD_BRIDGE_SECRET; });
 
 function asUser(
   t: TestConvex<typeof schema>,
@@ -111,10 +116,8 @@ async function seedSite(
 }
 
 const record = (t: TestConvex<typeof schema>, hostname: string, key = "ip:1.2.3.4") =>
-  t.mutation(api.platform.sites.leads.recordSynthetic, {
-    hostname,
-    rateLimitKey: key,
-  });
+  t.mutation(api.platform.sites.leads.recordSynthetic,
+    signTenantLeadPayload(hostname, key, SECRET));
 
 describe("recordSynthetic", () => {
   test("attaches the lead to the owner the hostname resolves to", async () => {
@@ -206,6 +209,39 @@ describe("recordSynthetic", () => {
 
     await record(t, HOSTNAME, "ip:1.1.1.1");
     expect(await record(t, HOSTNAME, "ip:2.2.2.2")).toEqual({ recorded: true });
+  });
+
+  test("forged and rotated client keys cannot create limiter buckets", async () => {
+    const t = testConvex();
+    const owner = await seedUser(t, "owner@example.com");
+    await seedSite(t, owner.userId);
+    const signed = signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET);
+    expect(signed.payload).not.toContain("9.9.9.9");
+    for (let index = 0; index < 12; index += 1) {
+      const forged = {
+        payload: signed.payload.replace(/client:[A-Za-z0-9_-]{43}/,
+          `client:${String(index).padStart(43, "a")}`),
+        signature: signed.signature,
+      };
+      await expect(t.mutation(api.platform.sites.leads.recordSynthetic, forged))
+        .rejects.toThrow(/INVALID_TENANT_LEAD_BRIDGE_SIGNATURE/);
+    }
+    expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
+  });
+
+  test("expired and unconfigured bridges write nothing", async () => {
+    const t = testConvex();
+    const owner = await seedUser(t, "owner@example.com");
+    await seedSite(t, owner.userId);
+    const expired = signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET,
+      Date.now() - 2 * 60 * 1000 - 1);
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic, expired))
+      .rejects.toThrow(/TENANT_LEAD_BRIDGE_EXPIRED/);
+    delete process.env.TENANT_LEAD_BRIDGE_SECRET;
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
+      signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET)))
+      .rejects.toThrow(/TENANT_LEAD_BRIDGE_NOT_CONFIGURED/);
+    expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
   });
 });
 
