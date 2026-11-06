@@ -9,7 +9,7 @@
  * (which the schema's refinement also rejects) still reaches the contrast
  * check and gets its own issue. Pure.
  */
-import { BUILD_PHASES, PALETTE_ROLES, TYPE_PAIRS, type ArtifactKind } from "../../contracts/artifacts";
+import { ART_DIRECTIONS, BUILD_PHASES, PALETTE_ROLES, TYPE_PAIRS, type ArtifactKind } from "../../contracts/artifacts";
 import { issue, type CheckIssue, type IssuePath } from "./types";
 import { isWalkable, valueAt } from "./walk";
 
@@ -62,6 +62,27 @@ function brandKitIssues(kit: Record<string, unknown>): CheckIssue[] {
   return issues;
 }
 
+/** Sections every landing spec has (`waitlist` may be missing in a draft: `checkLandingSpec` reports that). */
+const LANDING_REQUIRED = ["hero", "footer"] as const;
+const LANDING_OPTIONAL = ["promises", "how_it_works", "app_preview", "waitlist"] as const;
+
+function landingSpecIssues(spec: Record<string, unknown>): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  for (const key of LANDING_REQUIRED) {
+    if (!isRecord(spec[key])) issues.push(invalid("landing_spec", [key], `the ${key} section is not an object`));
+  }
+  for (const key of LANDING_OPTIONAL) {
+    if (spec[key] !== undefined && !isRecord(spec[key])) issues.push(invalid("landing_spec", [key], `the ${key} section is not an object`));
+  }
+  return issues;
+}
+
+/** True when a brand kit given as context can be read for layouts (a known art direction). */
+export function isReadableBrandKit(kit: unknown): boolean {
+  const direction = valueAt(kit, ["visualSystem", "direction"]);
+  return isString(direction) && (ART_DIRECTIONS as readonly string[]).includes(direction);
+}
+
 /** Empty when the artifact has the shape every check for `kind` needs; otherwise hard `invalid_shape` issues. */
 export function checkShape(kind: ArtifactKind, artifact: unknown): CheckIssue[] {
   if (!isRecord(artifact)) return [invalid(kind, [], "it is not an object")];
@@ -73,6 +94,8 @@ export function checkShape(kind: ArtifactKind, artifact: unknown): CheckIssue[] 
       return brandKitIssues(artifact);
     case "build_pack":
       return buildPackIssues(artifact);
+    case "landing_spec":
+      return landingSpecIssues(artifact);
     default:
       return [];
   }

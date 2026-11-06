@@ -396,3 +396,51 @@ not walked).
 ### Docs
 
 - Docs updated: this file. Stories unchanged (S4a stays ticked).
+
+### Re-review fixes (on `542db70b`)
+
+The re-review confirmed the Blockers and Majors above were fixed and found four new Majors the fixes introduced
+(N1-N4), three Minors (N5-N7) and a test gap. All are fixed. Where this part disagrees with the lines above, this
+part wins (the two "still missed" outcome claims above are now hard).
+
+- **N1, "#1" is a ranking only before a ranking noun or a chart** ("the #1 hydration pack", "#1 rated", "our #1
+  pick", "#1 on Product Hunt"). "Our #1 priority", "No. 1 Market Street", "No. 1 tip" and "our no. 1 rule" pass.
+- **N2, own-idea market fallback**: the "industry / average / study / report" sentence fallback skips any sentence
+  about the business or its customer (we, our, us, your). "Study guide" and similar, "reported issues" and "at the
+  market (on Saturday)" are not market context. "Industry surveys put pack returns at 12%" stays hard.
+- **N3, founder quotes**: soft only when the attribution names no business ("Ana, the founder") or names this brand.
+  `CheckContext` takes an optional `brandName`. A founder or owner of another named business ("Jane, owner of Bloom
+  Florist") is a hard testimonial, and with no `brandName`, any named business stays hard (a signed line stays soft).
+  The S3 and S4b callers should pass the brand name.
+- **N4, comparisons**: soft only when the baseline is a product ("than a 1 L bottle", "than our first prototype").
+  People as the subject ("Hikers drink 40% more") or a baseline of before, without, they did or other people stays
+  hard.
+- **N5**: a landing spec's hero and footer must be objects, and its waitlist and optional sections must be objects when
+  present (`invalid_shape`). A brand kit passed as context with no known direction returns `invalid_shape` at
+  `brandKit` instead of throwing. A missing waitlist with a brand kit reports `waitlist_missing`.
+- **N6**: in own ideas, "[Name] sells / charges / costs ... money" is a competitor price when the text also sets the
+  business against it (ours, our, we). "Pro costs $9" and the brand's own name (`brandName`) stay clean.
+- **N7**: the index header now says callers go through `checkArtifact` (shape and bounded-walk guards). The single
+  checks are exported for tests and composing, and look only at the part of an over-limit input they reach.
+- **Test gap**: rows that only the "rating out of 5" and "as seen in" patterns catch. A marker-based copy of the
+  mutation probe finds no pattern that can be removed or flipped without a test failing.
+- **Cheap misses fixed**: an outcome claimed for customers ("Students double their income", "Our customers save an
+  average of 6 hours") is hard. Promotions such as "Students get 20% off" are not matched.
+
+Left as is: "Join 99 happy customers" stays soft (a count under 100 after "join" may be true). The library blueprint's
+`market` subtree stays unwalked (D15 allows researched market data). The number normaliser maps "Intel I5" to
+"Intel 15" for matching only; no hard flag follows from it.
+
+| Probe | Before (`542db70b`) | After |
+|---|---|---|
+| Ordinary copy hard-flagged as a ranking (`new.ts`) | 4/4 | 0/4 |
+| Own-idea allowed lines hard-flagged (`new.ts`) | 5/5 | 0/5 |
+| Own-idea must-flag lines missed (`new.ts`) | 1/12 (Camelbak price) | 0/12 |
+| Soft downgrades that hid fakes (`new.ts`, B2B quotes and outcome comparisons) | 5/5 soft | 5/5 hard |
+| Malformed landing spec (`new.ts`) | 2 throws | 0 (`invalid_shape`) |
+| Honest copy, hard flags (`fp.ts`, `fp2.ts`) | 2/46, 0/30 | 2/46, 0/30 (declined lines) |
+| Faked proof missed (`fn.ts`) | 6/28 | 4/28 (2 scarcity, 2 soft only) |
+| Mutation: patterns removable or flippable | 2 (`mutate3.ts`) | 0 (`mutate4.ts`, marker-based copy) |
+| 50 KB adversarial timing (`redos*.ts` plus new-pattern probe) | 36 ms worst | 50 ms worst |
+
+- Docs updated: this file. Stories unchanged.

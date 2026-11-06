@@ -11,6 +11,15 @@
  *
  * `{ hard, soft }`: hard issues trigger the repair; soft ones ride along when
  * a repair happens and are otherwise shown, never blocking.
+ *
+ * Callers (the S3 generators, S4b and WP76) go through `checkArtifact`. It
+ * runs the shape guard and the bounded-walk guard first, so malformed,
+ * cyclic, too-deep or too-wide input returns a hard `invalid_shape` issue.
+ * The single checks exported below assume input that already passed
+ * `checkArtifact`'s guards (or its C-ART schema): run on their own over input
+ * past `WALK_MAX_DEPTH` / `WALK_MAX_NODES`, they look only at the part they
+ * reach and say nothing about the rest. They are exported for tests and for
+ * composing, not as a cheaper entry point.
  */
 import type { ArtifactByKind, ArtifactKind, BrandKit } from "../../contracts/artifacts";
 import { checkBrandKit } from "./brandKit";
@@ -19,14 +28,14 @@ import { MARKET_CHECKED_KINDS, checkMarketNumbers } from "./marketNumbers";
 import { checkNeverFake } from "./neverFake";
 import { checkBuildPackStandard, type BuildPackStandardOptions } from "./promptStandard";
 import { checkSlop } from "./slop";
-import { checkShape } from "./shape";
-import { toResult, type CheckIssue, type CheckResult, type IssuePath } from "./types";
+import { checkShape, isReadableBrandKit } from "./shape";
+import { issue, toResult, type CheckIssue, type CheckResult, type IssuePath } from "./types";
 
 export * from "./types";
 export { WALK_MAX_DEPTH, WALK_MAX_NODES, normalizeText, stringLeaves, stripPlaceholders } from "./walk";
 export { checkNeverFake, neverFakeMatches, type NeverFakeHit, type NeverFakeOptions } from "./neverFake";
-export { checkMarketNumbers, carriesMarketNumber, marketClaim, MARKET_CHECKED_KINDS } from "./marketNumbers";
-export { checkShape } from "./shape";
+export { checkMarketNumbers, carriesMarketNumber, marketClaim, MARKET_CHECKED_KINDS, type MarketOptions } from "./marketNumbers";
+export { checkShape, isReadableBrandKit } from "./shape";
 export { checkSlop, isTriad } from "./slop";
 export {
   DISPLAY_TARGETS,
@@ -61,6 +70,13 @@ export type CheckContext = {
   readonly ownIdea: boolean;
   /** The brand kit a landing spec is judged against (layouts per direction). */
   readonly brandKit?: BrandKit;
+  /**
+   * The business's own name. A quote from "the founder of {brandName}" is
+   * soft (the founder's words); without it, a quote from the founder or owner
+   * of any named business stays a hard testimonial. In an own idea,
+   * "{brandName} costs $79" is the business's price, not a competitor's.
+   */
+  readonly brandName?: string;
   /** How standard v1 applies to a build pack (open owner rulings, see `promptStandard.ts`). */
   readonly buildPackStandard?: BuildPackStandardOptions;
 };
@@ -94,12 +110,14 @@ export function checkArtifact<K extends ArtifactKind>(kind: K, artifact: Artifac
 
   const source = kind === "blueprint" ? (artifact as ArtifactByKind["blueprint"]).source : undefined;
   // Read defensively: plain-JavaScript callers may leave the context out.
-  const own = source !== undefined ? source === "own_idea" : (context as CheckContext | undefined)?.ownIdea === true;
+  const given = context as CheckContext | undefined;
+  const own = source !== undefined ? source === "own_idea" : given?.ownIdea === true;
+  const brandName = typeof given?.brandName === "string" && given.brandName.trim() !== "" ? given.brandName : undefined;
   const issues: CheckIssue[] = [];
   if (kind !== "build_pack") {
-    issues.push(...checkNeverFake(artifact, source === "library" ? { skip: isResearchedMarketPath } : {}));
+    issues.push(...checkNeverFake(artifact, source === "library" ? { skip: isResearchedMarketPath, brandName } : { brandName }));
   }
-  if (own && isMarketChecked(kind)) issues.push(...checkMarketNumbers(artifact));
+  if (own && isMarketChecked(kind)) issues.push(...checkMarketNumbers(artifact, { brandName }));
 
   switch (kind) {
     case "brand_kit": {
@@ -110,12 +128,16 @@ export function checkArtifact<K extends ArtifactKind>(kind: K, artifact: Artifac
     case "landing_spec": {
       const spec = artifact as ArtifactByKind["landing_spec"];
       issues.push(...checkSlop(spec), ...checkLandingSpec(spec));
-      const kit = (context as CheckContext | undefined)?.brandKit;
-      if (kit !== undefined) issues.push(...checkLandingLayouts(spec, kit));
+      const kit = given?.brandKit;
+      if (kit !== undefined && !isReadableBrandKit(kit)) {
+        issues.push(issue("hard", "invalid_shape", ["brandKit"], "The brand kit given for the layout check has no known art direction. Pass a parsed brand kit."));
+      } else if (kit !== undefined && spec.waitlist !== undefined) {
+        issues.push(...checkLandingLayouts(spec, kit));
+      }
       break;
     }
     case "build_pack":
-      issues.push(...checkBuildPackStandard(artifact as ArtifactByKind["build_pack"], (context as CheckContext | undefined)?.buildPackStandard));
+      issues.push(...checkBuildPackStandard(artifact as ArtifactByKind["build_pack"], given?.buildPackStandard));
       break;
     case "roster_plan":
       break;

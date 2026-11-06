@@ -18,11 +18,14 @@
  * - `unsupported_evidence`: "studies show" with no source;
  * - `possible_testimonial`: a signed line with no quote marks, "Sarah from
  *   Denver: ..." or a sentence signed "— @handle";
- * - `founder_quote`: a quote attributed to the founder;
+ * - `founder_quote`: a quote attributed to this business's founder ("Ana,
+ *   the founder"; with `brandName`, "founder of {brandName}"). A founder or
+ *   owner of another named business is a customer testimonial and stays hard;
  * - `possible_social_count`: "Join 50 hikers" (a count under 100 after
  *   "join" may be true, or a goal);
- * - `unverified_comparison`: "30% more water than a 1 L bottle" (a measured
- *   product comparison the founder can check).
+ * - `unverified_comparison`: "30% more water than a 1 L bottle" (a product
+ *   baseline the founder can measure). People as the subject ("Hikers drink
+ *   40% more") or a baseline of before, without or other people stays hard.
  *
  * Known trade-offs: "5-star" (outside a hygiene, safety or energy rating) and
  * "trusted by hikers" always fail. A founder who has real proof adds it after
@@ -33,7 +36,12 @@ import { issue, snippet, type CheckIssue, type IssuePath, type IssueSeverity } f
 import { isCopyPath, matchableText, stringLeaves } from "./walk";
 
 type Hit = { readonly code: string; readonly severity: IssueSeverity; readonly what: string };
-type Refine = (text: string, match: RegExpExecArray) => Hit | "skip" | undefined;
+/** What a pattern may know about the business beyond the text. */
+type MatchContext = {
+  /** The business's own name: a quote from its founder may be the founder's words; one from another business is a testimonial. */
+  readonly brandName?: string;
+};
+type Refine = (text: string, match: RegExpExecArray, context: MatchContext) => Hit | "skip" | undefined;
 
 type Pattern = Hit & {
   readonly re: RegExp;
@@ -61,20 +69,64 @@ const NOT_PROMO = String.raw`(?!\s*(?:off\b|discount|(?:with|using)\s+(?:the\s+|
 /** "100% of profits go to charity" is a pledge, not a statistic. */
 const NOT_PLEDGE = String.raw`(?!(?:all\s+|the\s+|our\s+|its\s+|their\s+|every\s+|each\s+)?(?:profits?|proceeds|revenue|takings|sales|fees?|donations?|tips|price)\b)`;
 
-const FOUNDER_ROLE = /^,?\s*(?:the\s+|our\s+|its\s+)?(?:co-?)?(?:founder|owner|maker|creator|head\s+baker)\b/iu;
-const SENTENCE_REST = /^[^.!?\n]*/u;
+/** What a "#1" ranks: "the #1 hydration pack", "our #1 pick", "#1 rated". */
+const RANK_NOUNS = String.raw`(?:apps?|tools?|choice|pick|packs?|brands?|planners?|products?|sellers?|best[\s-]?sellers?|rated|ranked|selling|platforms?|solutions?|software|services?|courses?|bottles?|gear|bakery|bakeries|cafes?|shops?|stores?|recommended|trusted|favou?rite)`;
+/** Where a "#1" is ranked: "#1 on Product Hunt", "#1 in its category". */
+const RANK_CHARTS = String.raw`(?:Product\s+Hunt|(?:the\s+)?App\s+Store|Google\s+Play|Amazon|Etsy|Hacker\s+News|(?:its|the|our)\s+category)`;
 
-/** A quote attributed to the founder is softer: it may be the founder's own words. */
-const softIfFounder: Refine = (text, match) =>
-  FOUNDER_ROLE.test(text.slice(match.index + match[0].length, match.index + match[0].length + 40))
+const FOUNDER_ROLE = /^,?\s*(?:the\s+|our\s+|its\s+)?(?:co-?)?(?:founder|owner|maker|creator|head\s+baker)\b/iu;
+/** The business named after a role: "owner of Bloom Florist", "founder at TrailCo", "founder, TrailCo". */
+const ROLE_BUSINESS =
+  /^\s*(?:(?:of|at)\s+(?:the\s+)?|,\s*)([\p{Lu}\p{N}][\p{L}\p{N}&'’.-]*(?:[^\S\n]+(?:&[^\S\n]+)?[\p{Lu}\p{N}][\p{L}\p{N}&'’.-]*){0,4})/u;
+const SENTENCE_REST = /^[^.!?\n]*/u;
+const SENTENCE_START = /[^.!?\n]*$/u;
+
+const nameKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+/**
+ * The attribution after a quote is the founder of this business: a founder
+ * role that names no business ("Ana, the founder") or names this brand. A
+ * founder or owner of another named business ("Jane, owner of Bloom Florist")
+ * is a customer testimonial, and with no brand name known it stays one.
+ */
+function founderOfThisBusiness(after: string, context: MatchContext): boolean {
+  const role = FOUNDER_ROLE.exec(after);
+  if (role === null) return false;
+  const business = ROLE_BUSINESS.exec(after.slice(role[0].length));
+  if (business === null) return true;
+  const brand = context.brandName === undefined ? "" : nameKey(context.brandName);
+  return brand !== "" && nameKey(business[1] ?? "") === brand;
+}
+
+const ATTRIBUTION_WINDOW = 90;
+
+/** A quote attributed to this business's founder is softer: it may be the founder's own words. */
+const softIfFounder: Refine = (text, match, context) =>
+  founderOfThisBusiness(text.slice(match.index + match[0].length, match.index + match[0].length + ATTRIBUTION_WINDOW), context)
     ? { code: "founder_quote", severity: "soft", what: "a quote attributed to the founder" }
     : undefined;
 
-/** A comparison with a stated baseline ("than a 1 L bottle") is a product fact the founder can check. */
-const softIfCompared: Refine = (text, match) =>
-  /\bthan\b/iu.test(SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "")
-    ? { code: "unverified_comparison", severity: "soft", what: "a measured comparison" }
-    : undefined;
+/** People as the subject of an outcome ("Hikers drink 40% more"): an outcome claim, whatever the baseline. */
+const PEOPLE_SUBJECT =
+  /\b(?:users?|customers?|clients?|members?|people|hikers?|runners?|teams?|students?|learners|owners|founders|families|parents|subscribers|readers|shoppers|buyers|companies|businesses|graduates)\b/iu;
+/** A baseline that is a past self or other people ("than before", "than they did", "than other hikers"). */
+const PEOPLE_BASELINE =
+  /^\s*(?:before|without|they\s+(?:did|used\s+to|were|do)|you\s+(?:did|used\s+to)|we\s+did|other\s|others\b|most\s|everyone|everybody|anyone|the\s+average|average\b|usual|normal|last\s+(?:year|season|month|week))/iu;
+
+/**
+ * A comparison with a product as its baseline ("than a 1 L bottle", "than our
+ * first prototype") is a fact the founder can measure: soft. People as the
+ * subject, or a baseline of before / without / other people, is an invented
+ * outcome: it stays hard.
+ */
+const softIfCompared: Refine = (text, match) => {
+  const rest = SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "";
+  const than = /\bthan\b/iu.exec(rest);
+  if (than === null) return undefined;
+  const subject = SENTENCE_START.exec(text.slice(0, match.index))?.[0] ?? "";
+  if (PEOPLE_SUBJECT.test(subject) || PEOPLE_BASELINE.test(rest.slice(than.index + than[0].length))) return undefined;
+  return { code: "unverified_comparison", severity: "soft", what: "a measured comparison" };
+};
 
 /** "Join 50 hikers" may be a true count or a goal; "Join 2,000 hikers" or "Join 50 hikers already" is a claim. */
 const softIfSmallJoin: Refine = (text, match) => {
@@ -106,7 +158,11 @@ export const PATTERNS: Pattern[] = [
     what: "a signed line",
     re: /(?:^|\n)[^\S\n]*[—–][^\S\n]*[A-Z][\p{L}.'-]+(?:\s+[A-Z][\p{L}.'-]*)?,\s+\p{L}/u,
     // An email signed by the founder ("— Ana, founder of HydroTrail") is a sign-off.
-    refine: (text, match) => (FOUNDER_ROLE.test(text.slice(match.index + match[0].lastIndexOf(","))) ? "skip" : undefined),
+    // Another business's owner signing ("— Jane, owner of Bloom Florist") stays a possible testimonial.
+    refine: (text, match, context) =>
+      founderOfThisBusiness(text.slice(match.index + match[0].lastIndexOf(","), match.index + match[0].length + ATTRIBUTION_WINDOW), context)
+        ? "skip"
+        : undefined,
   },
   { code: "possible_testimonial", severity: "soft", what: "a line signed with a handle", re: /[.!?]\s*[—–-]\s*@[A-Za-z0-9_]{2,}\s*$/u },
   { code: "possible_testimonial", severity: "soft", what: "a named customer speaking", re: /^\s*[A-Z][\p{Ll}]+(?:\s+[A-Z]\.?)?\s+from\s+[A-Z][\p{L}]+:\s/u },
@@ -294,8 +350,12 @@ export const PATTERNS: Pattern[] = [
     code: "fake_credential",
     severity: "hard",
     what: "a ranking",
-    // "Tip #1:", "Trail No. 1 starts here" and "Step #1" are numbering, not a ranking.
-    re: /\brated\s+(?:#|No\.\s?)1\b|(?<![\p{L}\p{N}#])(?<!\b(?:tip|tips|step|reason|rule|day|week|part|module|lesson|chapter|episode|issue|item|mistake|question|trail|route|track|room|size|model|gate|bus|stop|lot|batch|table|plot|unit|hole|level|no|number|pick|priority)\s)(?:#|No\.\s?)1(?![\d.,:)])\s+\p{L}|\bnumber[\s-]one\s+(?:rated|app|tool|choice|platform|brand)\b|\bbest[\s-]selling\b|\b(?:top|highest)[\s-]rated\b/iu,
+    // "#1" counts only before a ranking noun or a chart: "our #1 priority", "No. 1 Market Street",
+    // "Tip #1:" and "our no. 1 rule" are not rankings.
+    re: new RegExp(
+      String.raw`\brated\s+(?:#|No\.\s?)1\b|(?<![\p{L}\p{N}#])(?<!\b(?:tip|tips|step|reason|rule|day|week|part|module|lesson|chapter|episode|issue|item|mistake|question|trail|route|track|room|size|model|gate|bus|stop|lot|batch|table|plot|unit|hole|level|no|number|priority)\s)(?:#|No\.\s?)1(?![\d.,:)])\s+(?:(?:[\p{L}-]+\s+){0,2}?${RANK_NOUNS}\b|(?:on|in)\s+${RANK_CHARTS}\b)|\bnumber[\s-]one\s+(?:rated|app|tool|choice|platform|brand)\b|\bbest[\s-]selling\b|\b(?:top|highest)[\s-]rated\b`,
+      "iu",
+    ),
   },
   { code: "fake_credential", severity: "hard", what: "a proof claim", re: /\b(?:clinically|scientifically|medically)\s+proven\b|\bdoctor[\s-]recommended\b/iu },
   // Invented statistics.
@@ -330,6 +390,13 @@ export const PATTERNS: Pattern[] = [
     re: new RegExp(String.raw`\b${NUMBER_WORD}\s+(?:out\s+of|in)\s+(?:${NUMBER_WORD}|a\s+hundred)\s+${WORDS}${PEOPLE}\b`, "iu"),
   },
   {
+    code: "fake_stat",
+    severity: "hard",
+    what: "an outcome claimed for customers",
+    // "Students double their income", "Our customers save an average of 6 hours".
+    re: /\b(?:customers|users|clients|members|students|learners|hikers|runners|teams|subscribers|readers|owners|families|parents|graduates|alumni|founders)\s+(?:who\s+[^.!?\n]{1,40}?\s+)?(?:(?:double|doubles|doubled|triple|triples|tripled|halve|halves|halved)\s+their\b|(?:save|saves|saved|earn|earns|earned|cut|cuts|lose|loses|lost|gain|gains|gained|make|makes|made|sell|sells|sold)\s+(?:an\s+average\s+of|on\s+average)\b)/iu,
+  },
+  {
     code: "unsupported_evidence",
     severity: "soft",
     what: "an appeal to studies with no source",
@@ -340,13 +407,13 @@ export const PATTERNS: Pattern[] = [
 export type NeverFakeHit = Hit & { readonly match: string };
 
 /** Run every pattern over one string. The text is normalised and its placeholders removed first. */
-export function neverFakeMatches(raw: string): NeverFakeHit[] {
+export function neverFakeMatches(raw: string, context: MatchContext = {}): NeverFakeHit[] {
   const text = matchableText(raw);
   const found: NeverFakeHit[] = [];
   for (const pattern of PATTERNS) {
     const match = pattern.re.exec(text);
     if (match === null) continue;
-    const refined = pattern.refine?.(text, match);
+    const refined = pattern.refine?.(text, match, context);
     if (refined === "skip") continue;
     const hit: Hit = refined ?? pattern;
     found.push({ code: hit.code, severity: hit.severity, what: hit.what, match: match[0] });
@@ -354,7 +421,7 @@ export function neverFakeMatches(raw: string): NeverFakeHit[] {
   return found;
 }
 
-export type NeverFakeOptions = {
+export type NeverFakeOptions = MatchContext & {
   /** Prunes a subtree that is not the business's own claims (a library blueprint's researched `market`). */
   readonly skip?: (path: IssuePath) => boolean;
 };
@@ -374,7 +441,7 @@ export function checkNeverFake(artifact: unknown, options: NeverFakeOptions = {}
   const issues: CheckIssue[] = [];
   const skip = (path: IssuePath): boolean => !isCopyPath(path) || options.skip?.(path) === true;
   for (const { value, path } of stringLeaves(artifact, skip)) {
-    for (const hit of neverFakeMatches(value)) issues.push(issue(hit.severity, hit.code, path, message(hit)));
+    for (const hit of neverFakeMatches(value, { brandName: options.brandName })) issues.push(issue(hit.severity, hit.code, path, message(hit)));
   }
   return issues;
 }

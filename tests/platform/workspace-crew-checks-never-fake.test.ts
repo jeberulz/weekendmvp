@@ -25,10 +25,14 @@ describe("never fake it: invented proof is found (hard)", () => {
     ["fake_testimonial", "Our beta users say it saves them every trip"],
     ["fake_testimonial", "Hikers love it"],
     ["fake_testimonial", "Read the customer stories"],
+    // the founder or owner of another named business is a customer, not the founder
+    ["fake_testimonial", "“Saved our shop hours every week.” — Jane, owner of Bloom Florist"],
+    ["fake_testimonial", "“Best pack I've owned.” — Mark, founder of TrailCo"],
     // ratings and reviews
     ["fake_rating", "★★★★★ on the App Store"],
     ["fake_rating", "Rated 4.9/5 by hikers"],
     ["fake_rating", "4.8 out of 5 stars"],
+    ["fake_rating", "Hikers give it 4.8 out of 5."],
     ["fake_rating", "Rated by our users: 5/5"],
     ["fake_rating", "A five-star experience"],
     ["fake_rating", "5-star support"],
@@ -69,6 +73,7 @@ describe("never fake it: invented proof is found (hard)", () => {
     // press
     ["fake_press", "As seen in TechCrunch"],
     ["fake_press", "As featured on Forbes"],
+    ["fake_press", "As seen on trail blogs everywhere."],
     ["fake_press", "Featured in Outside Magazine"],
     ["fake_press", "Covered by the New York Times"],
     ["fake_press", "Wired calls it the best hiking tool"],
@@ -78,6 +83,8 @@ describe("never fake it: invented proof is found (hard)", () => {
     ["fake_credential", "The #1 app for hikers"],
     ["fake_credential", "#1 rated planner"],
     ["fake_credential", "No. 1 app for long trails"],
+    ["fake_credential", "The #1 hydration pack for hikers."],
+    ["fake_credential", "#1 on Product Hunt this week."],
     ["fake_credential", "The best-selling hiking app"],
     ["fake_credential", "Clinically proven hydration plans"],
     ["fake_credential", "Doctor-recommended pacing"],
@@ -91,6 +98,14 @@ describe("never fake it: invented proof is found (hard)", () => {
     ["fake_stat", "9 in 10 hikers misjudge their water"],
     ["fake_stat", "4 out of 5 users plan better"],
     ["fake_stat", "Nine out of ten hikers prefer HydroTrail."],
+    // a comparison with people as the subject, or a baseline of before / they did / other people
+    ["fake_stat", "Hikers drink 40% more water than before they used HydroTrail."],
+    ["fake_stat", "Teams ship 3x faster than they did with spreadsheets."],
+    ["fake_stat", "Users finish 50% more trails than other hikers."],
+    ["fake_stat", "You'll drink 30% more water than before."],
+    // an outcome claimed for customers
+    ["fake_stat", "Our customers save an average of 6 hours a week."],
+    ["fake_stat", "Students double their freelance income after the course."],
   ];
 
   it.each(hard)("%s: %s", (code, text) => {
@@ -160,7 +175,7 @@ describe("never fake it: normal copy is not flagged", () => {
     "He said 'drink' and I did",
     "Add a testimonial section once you have real quotes",
     // sign-offs and bullets (B1)
-    "Thanks for joining the list.\n— Ana, founder of HydroTrail",
+    "Thanks for joining the list.\n— Ana, the founder",
     "Talk soon,\n- Ana, HydroTrail",
     "Cheers,\nThe team at HydroTrail",
     "What you get:\n- Light, at 340 g empty\n- Quick, refills in 30 seconds",
@@ -205,6 +220,12 @@ describe("never fake it: normal copy is not flagged", () => {
     "Pre-order for $79. Ships in spring 2027.",
     "Plans start at $12 per user per month.",
     "Free shipping on orders over $50.",
+    // "#1" that is not a ranking
+    "Your safety is our #1 priority.",
+    "Find us at No. 1 Market Street.",
+    "No. 1 tip: drink early.",
+    "Our no. 1 rule: never skip water.",
+    "Students get 20% off with a school email.",
   ];
   it.each(good)("%s", (text) => {
     expect(neverFakeMatches(text)).toEqual([]);
@@ -232,6 +253,32 @@ describe("never fake it: lookalike characters do not slip past", () => {
   it("normalises only for matching", () => {
     expect(normalizeText("Ｔrusted​ Тrail Ⅰ0")).toBe("Trusted Trail 10");
     expect(normalizeText("Привет, мир")).toBe("Привет, мир");
+  });
+});
+
+describe("never fake it: a founder quote is soft only for this business", () => {
+  const ownQuote = "“We test every pack on a 20 km loop.” — Ana, founder of HydroTrail";
+  const signOff = "Thanks for joining the list.\n— Ana, founder of HydroTrail";
+
+  it("with the brand name, the founder of this brand is the founder speaking", () => {
+    expect(neverFakeMatches(ownQuote, { brandName: "HydroTrail" })).toEqual([expect.objectContaining({ code: "founder_quote", severity: "soft" })]);
+    expect(neverFakeMatches(signOff, { brandName: "HydroTrail" })).toEqual([]);
+  });
+
+  it("with no brand name, a named business stays a testimonial (hard for a quote, soft for a sign-off)", () => {
+    expectHit(ownQuote, "fake_testimonial", "hard");
+    expectHit(signOff, "possible_testimonial", "soft");
+  });
+
+  it("another business stays a testimonial even when a brand name is known", () => {
+    const hits = neverFakeMatches("“Saved our shop hours.” — Jane, owner of Bloom Florist", { brandName: "HydroTrail" });
+    expect(hits).toContainEqual(expect.objectContaining({ code: "fake_testimonial", severity: "hard" }));
+  });
+
+  it("checkNeverFake passes the brand name through", () => {
+    expect(checkNeverFake({ copy: ownQuote }, { brandName: "HydroTrail" })).toEqual([
+      expect.objectContaining({ code: "founder_quote", severity: "soft" }),
+    ]);
   });
 });
 

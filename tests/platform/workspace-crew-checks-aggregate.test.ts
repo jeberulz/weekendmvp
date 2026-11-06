@@ -202,6 +202,8 @@ describe("malformed input returns invalid_shape instead of throwing", () => {
     ["blueprint", null],
     ["blueprint", { source: "other" }],
     ["landing_spec", null],
+    ["landing_spec", {}],
+    ["landing_spec", { hero: "x", waitlist: 3, footer: {} }],
     ["social_pack", 42],
   ];
   it.each(cases)("%s %j", (kind, value) => {
@@ -223,6 +225,35 @@ describe("malformed input returns invalid_shape instead of throwing", () => {
         soft: [],
       });
     }
+  });
+
+  it("a malformed landing spec with a brand kit returns invalid_shape for each broken section", () => {
+    const result = checkArtifact("landing_spec", {} as never, { ...LIBRARY, brandKit: hydrotrailBrandKit });
+    expect(result.hard).toEqual([
+      expect.objectContaining({ code: "invalid_shape", severity: "hard", path: ["hero"] }),
+      expect.objectContaining({ code: "invalid_shape", severity: "hard", path: ["footer"] }),
+    ]);
+  });
+
+  it("a landing spec with no waitlist and a brand kit reports the missing waitlist, not a crash", () => {
+    const rest: Record<string, unknown> = { ...hydrotrailLandingSpec };
+    delete rest.waitlist;
+    const result = checkArtifact("landing_spec", rest as never, { ...LIBRARY, brandKit: hydrotrailBrandKit });
+    expect(result.hard).toEqual([expect.objectContaining({ code: "waitlist_missing", severity: "hard" })]);
+  });
+
+  it("a brand kit context with no known direction is reported, not dereferenced", () => {
+    const broken = { ...hydrotrailBrandKit, visualSystem: { ...hydrotrailBrandKit.visualSystem, direction: "nope" } } as unknown as BrandKit;
+    const result = checkArtifact("landing_spec", hydrotrailLandingSpec, { ...LIBRARY, brandKit: broken });
+    expect(result.hard).toEqual([expect.objectContaining({ code: "invalid_shape", severity: "hard", path: ["brandKit"] })]);
+  });
+
+  it("passes the brand name to the founder-quote and own-price rules", () => {
+    const spec = { ...hydrotrailLandingSpec, hero: { ...hydrotrailLandingSpec.hero, reassurance: "“We test every pack on a 20 km loop.” — Ana, founder of HydroTrail" } };
+    expect(codes(checkArtifact("landing_spec", spec, OWN).hard)).toContain("fake_testimonial");
+    const withBrand = checkArtifact("landing_spec", spec, { ...OWN, brandName: "HydroTrail" });
+    expect(withBrand.hard).toEqual([]);
+    expect(withBrand.soft).toContainEqual(expect.objectContaining({ code: "founder_quote", severity: "soft" }));
   });
 
   it("a low-contrast kit is not an invalid shape: it gets its own issue", () => {

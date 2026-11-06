@@ -18,9 +18,12 @@
  * - counts of people who need it ("10k dentists need this");
  * - spending data ("hikers spend $49 a year");
  * - competitor prices ("competitors charge $50", "vs $150 for a Camelbak",
- *   "30% cheaper than rivals");
+ *   "30% cheaper than rivals", "Camelbak sells it for $120; ours is $79");
  * - any number the WP74 detector (`hasMarketClaim`) sees in a sentence that
- *   is about an industry, a survey or an average.
+ *   is about an industry, a survey or an average, unless the sentence is
+ *   about the business itself ("On average our loaves cost £4", "Our average
+ *   order is $25"). "Study guide", "reported issues" and "at the market"
+ *   are not market context.
  *
  * Fake proof (user counts, ratings, outcome statistics) is "never fake it"'s
  * job, not this check's; both run on own ideas.
@@ -51,7 +54,23 @@ const NUMBER_WORD = String.raw`(?:\d+|one|two|three|four|five|six|seven|eight|ni
 const TIME_UNITS = String.raw`(?:seconds?|minutes?|mins?|hours?|days?|weeks?|months?|years?|steps?|stages?|levels?|tries)`;
 const RIVALS = String.raw`(?:competitors?|competition|rivals?|incumbents?|alternatives?|other\s+(?:brands|apps|tools|packs|products|services|companies|courses|bakeries|shops|options|plans|platforms))`;
 
-type Rule = { readonly what: string; readonly re: RegExp };
+export type MarketOptions = {
+  /** The business's own name: "{brandName} costs $79" is its own price, not a competitor's. */
+  readonly brandName?: string;
+};
+
+type Rule = {
+  readonly what: string;
+  readonly re: RegExp;
+  /** Keeps a match only when this holds (the whole text and the options are given). */
+  readonly accept?: (match: RegExpMatchArray, text: string, options: MarketOptions) => boolean;
+};
+
+const nameKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+/** The business set against the named one: "...; ours is $79", "we charge $79". */
+const OWN_SIDE = /\b(?:ours|our|we|us|theirs)\b/iu;
+/** Capitalised words that start a sentence or name a plan, not a rival business. */
+const NOT_A_RIVAL = String.raw`(?:It|This|That|These|Those|Ours|Each|Every|One|Our|Your|The|A|An|Shipping|Delivery|Postage|Entry|Admission|Access|Membership|Everything|Pricing|Plans?|Tickets?|Classes?|Lessons?|Pro|Plus|Basic|Premium|Team|Starter|Standard|Family|Annual|Monthly)`;
 
 const RULES: readonly Rule[] = [
   { what: "a market-sizing term", re: /\b(?:TAM|SAM|SOM|CAGR|CPC|CPM)\b/u },
@@ -115,14 +134,27 @@ const RULES: readonly Rule[] = [
     // "30% less than Camelbak": a named rival (case-sensitive capital).
     re: new RegExp(String.raw`${PCT}\s+(?:cheaper|less|lower|more\s+affordable)\s+than\s+[A-Z]`, "u"),
   },
+  {
+    what: "a competitor price",
+    // "Camelbak sells it for $120; ours is $79": a named business's price set against ours.
+    // Only with "ours/our/we" in the text, and never the business's own name, so "Pro costs $9" stays clean.
+    re: new RegExp(
+      String.raw`(?<![\p{L}\p{N}])(?<!\b(?:our|the|this|my|your)\s)(?!${NOT_A_RIVAL}\b)([\p{Lu}][\p{L}\p{N}&'’-]+(?:[^\S\n]+[\p{Lu}][\p{L}\p{N}&'’-]+){0,2})\s+(?:sells|charges|costs|prices|retails|asks)\b[^.!?\n;]{0,30}?${MONEY}`,
+      "u",
+    ),
+    accept: (match, text, options) =>
+      OWN_SIDE.test(text) && (options.brandName === undefined || nameKey(match[1] ?? "") !== nameKey(options.brandName)),
+  },
 ];
 
 /** Words that make any number in the sentence about the market rather than the business. */
 const MARKET_CONTEXT =
-  /\b(?:industry|industries|sector|markets?|nationwide|worldwide|globally|(?:the\s+)?average|on\s+average|surveys?|stud(?:y|ies)|report(?:s|ed)?|statistics?|according\s+to|census)\b/iu;
-/** "Market" that is a place or a launch step, not a market. */
+  /\b(?:industry|industries|sector|markets?|nationwide|worldwide|globally|(?:the\s+)?average|on\s+average|surveys?|stud(?:y|ies)|reports?(?=\s+(?:shows?|says?|found|finds|suggests?|puts?|estimates?))|(?:a|the|one|recent|new|latest|annual|industry)\s+report|(?:is|are|was|were|as|has|have|been)\s+reported|reportedly|statistics?|according\s+to|census)\b/iu;
+/** "Market" that is a place or a launch step, and "study" that is a product ("study guide"): not market context. */
 const NOT_A_MARKET =
-  /\b(?:farmers['’]?\s+markets?|markets?\s+(?:stall|stalls|day|days|square|hall|town)|(?:christmas|flea|street|night|food|craft|local|weekend|saturday|sunday)\s+markets?|go[\s-]to[\s-]market|to\s+market|on\s+the\s+market|marketplace)\b/giu;
+  /\b(?:farmers['’]?\s+markets?|markets?\s+(?:stall|stalls|day|days|square|hall|town)|(?:christmas|flea|street|night|food|craft|local|weekend|saturday|sunday)\s+markets?|at\s+the\s+markets?|the\s+markets?\s+(?:on|this|every|next)\b|go[\s-]to[\s-]market|to\s+market|on\s+the\s+market|marketplace|stud(?:y|ies)\s+(?:guides?|groups?|plans?|sessions?|notes|rooms?|buddy|buddies|kits?|cards|packs?|halls?|spaces?|tools?|skills|time|breaks?|materials?|schedules?|timetables?|aids?))\b/giu;
+/** A sentence about the business or its customer ("On average our loaves cost £4"): its own facts, not the market's. */
+const ABOUT_US = /\b(?:we|our|ours|us|your|yours)\b/iu;
 
 /** Product measures the WP74 detector reads as counted nouns or magnitudes ("250 ml", "600 m climb"). */
 const MEASURES = new RegExp(
@@ -140,13 +172,20 @@ export const withoutNonClaims = (text: string): string => matchableText(text).re
 const SENTENCES = /(?<=[.!?])\s+|\n+/u;
 
 /** The first market claim in a text: what it reads as, and the matched words. */
-export function marketClaim(raw: string): { what: string; match: string } | null {
+export function marketClaim(raw: string, options: MarketOptions = {}): { what: string; match: string } | null {
   const text = withoutNonClaims(raw);
   for (const rule of RULES) {
-    const match = rule.re.exec(text);
-    if (match !== null) return { what: rule.what, match: match[0] };
+    if (rule.accept === undefined) {
+      const match = rule.re.exec(text);
+      if (match !== null) return { what: rule.what, match: match[0] };
+      continue;
+    }
+    for (const match of text.matchAll(new RegExp(rule.re.source, `${rule.re.flags}g`))) {
+      if (rule.accept(match, text, options)) return { what: rule.what, match: match[0] };
+    }
   }
   for (const sentence of text.split(SENTENCES)) {
+    if (ABOUT_US.test(sentence)) continue;
     const context = MARKET_CONTEXT.exec(sentence.replace(NOT_A_MARKET, " "));
     if (context !== null && hasMarketClaim(sentence)) return { what: "an industry statistic", match: sentence };
   }
@@ -154,13 +193,13 @@ export function marketClaim(raw: string): { what: string; match: string } | null
 }
 
 /** True when the text carries a market number (D15), once non-claims are removed. */
-export const carriesMarketNumber = (text: string): boolean => marketClaim(text) !== null;
+export const carriesMarketNumber = (text: string, options: MarketOptions = {}): boolean => marketClaim(text, options) !== null;
 
 /** One hard issue per string in an own idea's artifact that carries a market number. */
-export function checkMarketNumbers(artifact: unknown): CheckIssue[] {
+export function checkMarketNumbers(artifact: unknown, options: MarketOptions = {}): CheckIssue[] {
   const issues: CheckIssue[] = [];
   for (const { value, path } of stringLeaves(artifact, (p) => !isCopyPath(p))) {
-    const claim = marketClaim(value);
+    const claim = marketClaim(value, options);
     if (claim === null) continue;
     issues.push(
       issue(
