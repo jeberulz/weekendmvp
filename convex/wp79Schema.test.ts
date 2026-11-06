@@ -21,8 +21,10 @@ describe("WP79 additive C-DATA amendment", () => {
 
   test("due-send and provider lookup indexes support bounded recovery", () => {
     expect(indexNames(schema.tables.enrollments)).toContain("by_state_and_nextStepAt");
+    expect(indexNames(schema.tables.enrollments)).toContain("by_leadId");
     expect(indexNames(schema.tables.email_sends)).toEqual(expect.arrayContaining([
       "by_idempotencyKey",
+      "by_enrollmentId",
       "by_componentEmailId",
       "by_ownerId_and_createdAt",
     ]));

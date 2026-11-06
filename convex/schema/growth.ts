@@ -66,6 +66,7 @@ export const growthTables = {
     updatedAt: v.number(),
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
+    .index("by_leadId", ["leadId"])
     .index("by_state_and_nextStepAt", ["state", "nextStepAt"]),
 
   email_sends: defineTable({
@@ -85,6 +86,7 @@ export const growthTables = {
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
     .index("by_idempotencyKey", ["idempotencyKey"])
+    .index("by_enrollmentId", ["enrollmentId"])
     .index("by_componentEmailId", ["componentEmailId"])
     .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"])
     .index("by_projectId_and_createdAt", ["projectId", "createdAt"]),
