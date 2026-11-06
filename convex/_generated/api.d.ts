@@ -151,9 +151,11 @@ import type * as workspace_business from "../workspace/business.js";
 import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 import type * as workspace_chat from "../workspace/chat.js";
 import type * as workspace_chatActions from "../workspace/chatActions.js";
+import type * as workspace_memory from "../workspace/memory.js";
 import type * as workspace_signals from "../workspace/signals.js";
 import type * as workspace_wizard from "../workspace/wizard.js";
 import type * as workspace_wrenCards from "../workspace/wrenCards.js";
+import type * as workspace_wrenMemory from "../workspace/wrenMemory.js";
 
 import type {
   ApiFromModules,
@@ -305,9 +307,11 @@ declare const fullApi: ApiFromModules<{
   "workspace/changeRounds": typeof workspace_changeRounds;
   "workspace/chat": typeof workspace_chat;
   "workspace/chatActions": typeof workspace_chatActions;
+  "workspace/memory": typeof workspace_memory;
   "workspace/signals": typeof workspace_signals;
   "workspace/wizard": typeof workspace_wizard;
   "workspace/wrenCards": typeof workspace_wrenCards;
+  "workspace/wrenMemory": typeof workspace_wrenMemory;
 }>;
 
 /**

@@ -35,6 +35,7 @@ import {
   type WrenExplainTopic,
   type WrenNavigateRoute,
 } from "./contracts/wrenTools";
+import { isControlChar, isInvisibleChar } from "./plainText";
 
 /** One `cards` entry as the model wrote it: every field optional, every value untrusted. */
 export type WrenCardProposal = {
@@ -299,22 +300,6 @@ export function subjectExcerpt(text: string | undefined, max: number = APPROVAL_
   return "";
 }
 
-/** Control characters: read as a space in a subject line. */
-function isControl(code: number): boolean {
-  return code < 0x20 || (code >= 0x7f && code <= 0x9f);
-}
-
-/**
- * Zero-width format characters: the soft hyphen, zero-width spaces and
- * joiners, the word joiner and invisible operators, bidi controls, the BOM
- * and Unicode tag characters. Dropped from a subject line without a space.
- */
-function isZeroWidth(code: number): boolean {
-  return code === 0xad || (code >= 0x200b && code <= 0x200f) || (code >= 0x202a && code <= 0x202e) ||
-    (code >= 0x2060 && code <= 0x2064) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff ||
-    (code >= 0xe0000 && code <= 0xe007f);
-}
-
 const LEADING_MARKERS = "#>*-+";
 
 /** One line folded to single spaces, invisible characters and leading markdown markers dropped. */
@@ -323,8 +308,8 @@ function cleanLine(raw: string): string {
   let gap = false;
   for (const char of raw) {
     const code = char.codePointAt(0) ?? 0;
-    if (isZeroWidth(code)) continue;
-    if (isControl(code) || char.trim() === "") {
+    if (isInvisibleChar(code)) continue;
+    if (isControlChar(code) || char.trim() === "") {
       gap = out.length > 0;
       continue;
     }
