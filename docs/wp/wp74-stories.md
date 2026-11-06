@@ -28,6 +28,8 @@ Standing rules:
 - [ ] `WP74-S1` - Eight steps with defaults; progress in `wizard_sessions`
   - Back, skip and rewrite on every step; suggested defaults from seeds (fixture until WP71-S5 seeds exist).
 - [ ] `WP74-S2` - Founder signals per step (`kept` / `changed` / `skipped` / `rewrote`) in `founder_signals`.
+  - 2026-11-06: S1 and S2 are built and tested (see progress). They stay unticked until Codex lets the WP68
+    workspace guard scanner accept the pre-business wizard guard and `npm run test:security` passes.
 - [ ] `WP74-S3` - Own idea: light blueprint (D15), one drafting call through the gateway, labelled
   "Not yet validated", no market numbers.
 - [ ] `WP74-S4` - Creating the business: one free business per verified account (C-LIMITS, entitlements),
