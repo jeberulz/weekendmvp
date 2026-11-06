@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation } from "../../_generated/server";
 
+export const LEAD_RETENTION_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
 /**
  * Legacy archive-based entry point. Ordinary archive preserves leads under D5.
  * Keep this name fail-closed until an explicit deletion-request or account-
@@ -27,14 +29,20 @@ export const purgeDueProjectLeads = internalMutation({
   args: { jobId: v.id("lead_retention_jobs") },
   returns: v.object({ deleted: v.number(), more: v.boolean() }),
   handler: async (ctx, { jobId }) => {
-    const job = await ctx.db.get(jobId);
+    const job = await ctx.db.get("lead_retention_jobs", jobId);
     if (job === null) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
-    const project = await ctx.db.get(job.projectId);
+    const project = await ctx.db.get("projects", job.projectId);
     if (project === null || project.ownerId !== job.ownerId ||
         project.deletionRequestedAt === undefined ||
         job.deletionRequestedAt !== project.deletionRequestedAt ||
-        job.deleteDueAt !== job.deletionRequestedAt + 30 * 24 * 60 * 60 * 1000) {
+        job.deleteDueAt !== job.deletionRequestedAt + LEAD_RETENTION_WINDOW_MS) {
       throw new ConvexError({ code: "LEAD_DELETE_REQUEST_REQUIRED" });
+    }
+    if (job.state !== "scheduled") {
+      throw new ConvexError({ code: "LEAD_RETENTION_NOT_SCHEDULED" });
+    }
+    if (job.deleteDueAt > Date.now() || job.nextAttemptAt > Date.now()) {
+      throw new ConvexError({ code: "LEAD_RETENTION_NOT_DUE" });
     }
     throw new ConvexError({ code: "LEAD_RETENTION_NOT_ACTIVE" });
   },
