@@ -44,7 +44,8 @@ import { mirrorSignal, recordFounderSignal } from "./signals";
  *   (a double click, a stale tab) changes nothing and returns the current
  *   state, so a decision is applied and logged once.
  * - One active session per owner per idea: starting again resumes it.
- * - No business or project is created here (that is WP74-S4).
+ * - No business or project is created here: `business.ts:createBusiness` does
+ *   that from a completed session (WP74-S4).
  */
 
 const DENIAL_CODES: ReadonlySet<string> = new Set(["UNAUTHENTICATED", "RESOURCE_NOT_FOUND", "WORKSPACE_DISABLED"]);
@@ -121,6 +122,11 @@ const sessionViewValidator = v.object({
   suggestedNames: v.array(v.string()),
   blueprint: blueprintPreviewValidator,
   seedSource: v.union(v.literal("fixture_hydrotrail"), v.literal("fixture_generic"), v.literal("fixture_own_idea")),
+  /** The business this session created (WP74-S4), or null before "Create my business". */
+  business: v.union(
+    v.null(),
+    v.object({ projectId: v.id("projects"), name: v.string(), slug: v.string() }),
+  ),
 });
 export type WizardSessionView = Infer<typeof sessionViewValidator>;
 
@@ -205,19 +211,26 @@ function sessionIdea(answers: WizardAnswersProgress): WizardIdea {
  * mutations, clock-free in queries) must own it, and it must still be active.
  * A missing session and someone else's look the same.
  *
- * Same signature as the planned `requireOwnedWizardSession(ctx, sessionId)` in
+ * `allowLinked` also accepts a session that already created its business
+ * (`projectId` set, WP74-S4): `getSession` shows it and `createBusiness`
+ * returns that business again. Abandoned sessions are always refused.
+ *
+ * Same shape as the planned `requireOwnedWizardSession(ctx, sessionId)` in
  * `convex/platform/authz.ts` (Codex): swapping is the import plus this name at
  * each call site.
  */
-async function ownedWizardSession(
+export async function ownedWizardSession(
   ctx: Pick<QueryCtx, "auth" | "db"> | MutationCtx,
   sessionId: Id<"wizard_sessions">,
+  options: { readonly allowLinked?: boolean } = {},
 ): Promise<Doc<"wizard_sessions">> {
   const user = "scheduler" in ctx
     ? await requireCurrentPlatformUserForMutation(ctx)
     : await requireCurrentPlatformUser(ctx);
   const session = await ctx.db.get("wizard_sessions", sessionId);
-  if (session === null || session.ownerId !== user._id || !isActive(session)) return deny("RESOURCE_NOT_FOUND");
+  if (session === null || session.ownerId !== user._id) return deny("RESOURCE_NOT_FOUND");
+  const usable = options.allowLinked === true ? session.abandonedAt === undefined : isActive(session);
+  if (!usable) return deny("RESOURCE_NOT_FOUND");
   return session;
 }
 
@@ -466,10 +479,14 @@ export const getSession = query({
   returns: sessionViewValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    const session = await ownedWizardSession(ctx, args.sessionId);
+    const session = await ownedWizardSession(ctx, args.sessionId, { allowLinked: true });
     const answers = storedAnswers(session);
     const { seed, title } = await seedFor(ctx, sessionIdea(answers));
     const step = sessionStep(session);
+    const project = session.projectId === undefined ? null : await ctx.db.get("projects", session.projectId);
+    const business = project !== null && project.ownerId === session.ownerId && project.workspace !== undefined
+      ? { projectId: project._id, name: project.workspace.name, slug: project.workspace.slug }
+      : null;
     return {
       sessionId: session._id,
       step,
@@ -482,6 +499,7 @@ export const getSession = query({
       suggestedNames: [...seed.suggestedNames],
       blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
       seedSource: seed.source,
+      business,
     };
   },
 });

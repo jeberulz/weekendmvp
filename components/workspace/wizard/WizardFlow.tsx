@@ -17,6 +17,7 @@ import {
 } from "@/lib/workspace/contracts/wizard";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { cn } from "@/lib/utils";
+import { CreateBusiness } from "./CreateBusiness";
 import { MeetCofounder } from "./MeetCofounder";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
@@ -36,6 +37,12 @@ const ERROR_COPY: Record<string, string> = {
   RESOURCE_NOT_FOUND: "We could not find this build. Start again from the idea page.",
   WORKSPACE_DISABLED: "Building is switched off right now. Try again later.",
   UNAUTHENTICATED: "Your session ended. Sign in again to carry on.",
+  // WP74-S4 "Create my business" refusals.
+  SESSION_INCOMPLETE: "Finish every step and accept the blueprint before you create your business.",
+  EMAIL_NOT_VERIFIED: "Verify your email address first, then create your business.",
+  DISPOSABLE_EMAIL:
+    "We cannot create a business for a temporary email address. Sign in with an address you keep, then try again.",
+  SLUG_UNAVAILABLE: "We could not find a free web address for this name. Go back and choose another name.",
 };
 
 /** A short, human message for a failed wizard call. */
@@ -45,6 +52,12 @@ export function wizardErrorMessage(error: unknown): string {
     if (data.code === "INVALID_ANSWER") {
       return typeof data.message === "string" ? `That answer cannot be saved (${data.message}).` : "That answer cannot be saved.";
     }
+    if (data.code === "BUSINESS_LIMIT_REACHED") {
+      const limit = "limit" in error.data && typeof error.data.limit === "number" ? error.data.limit : 1;
+      return limit === 1
+        ? "Your plan includes one business, and you already have it."
+        : `Your plan includes ${limit} businesses, and you have used them all.`;
+    }
     if (typeof data.code === "string" && ERROR_COPY[data.code]) return ERROR_COPY[data.code];
   }
   return "Something went wrong. Try again.";
@@ -53,6 +66,11 @@ export function wizardErrorMessage(error: unknown): string {
 /** The own-idea route for a session; `?session=` makes a reload resume it. */
 export function ownIdeaUrl(sessionId: string): string {
   return `/start/own?session=${encodeURIComponent(sessionId)}`;
+}
+
+/** The library route pinned to a session, so a reload after "Create my business" shows that business. */
+export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
+  return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
 const HEADING = "font-editorial text-[34px] leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[40px]";
@@ -140,6 +158,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const skipStep = useMutation(api.workspace.wizard.skipStep);
   const rewriteStep = useMutation(api.workspace.wizard.rewriteStep);
   const goBack = useMutation(api.workspace.wizard.goBack);
+  const createBusiness = useMutation(api.workspace.business.createBusiness);
   const view = useQuery(api.workspace.wizard.getSession, sessionId === null ? "skip" : { sessionId });
   // The server stores only C-WIZARD-parsed answers; parsing again narrows the
   // storage type (which allows a null paid push) to the contract type.
@@ -175,10 +194,14 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   }, [idea, viewSource, viewSessionId, router]);
 
   // Announce each step change and move focus to its heading.
-  const position = view === undefined ? null : view.completed ? "done" : view.step;
+  const position = view === undefined ? null : view.business !== null ? "business" : view.completed ? "done" : view.step;
   useEffect(() => {
     if (view === undefined || position === null) return;
-    const label = view.completed ? "Finished. Meet your co-founder." : progressLabel(view.stepIndex);
+    const label = view.business !== null
+      ? "Business created. Meet your co-founder."
+      : view.completed
+        ? "All steps done. Create your business."
+        : progressLabel(view.stepIndex);
     if (lastPosition.current !== null && lastPosition.current !== position) {
       setAnnouncement(label);
       headingRef.current?.focus();
@@ -209,7 +232,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
 
   const title = view?.ideaTitle ?? ideaTitle;
   const heading = idea === null && view?.answers.idea?.source !== "library" ? "Build your own idea" : `Build ${title ?? "this idea"}`;
-  const currentIndex = view === undefined ? 0 : view.completed ? WIZARD_STEPS.length : view.stepIndex;
+  const currentIndex = view === undefined ? 0 : view.completed || view.business !== null ? WIZARD_STEPS.length : view.stepIndex;
 
   let body;
   if (sessionId === null && idea === null) {
@@ -222,13 +245,26 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     ) : (
       <LoadingState label="Opening your build…" />
     );
+  } else if (view.business !== null) {
+    body = <MeetCofounder answers={parsed.answers} business={view.business} headingRef={headingRef} />;
   } else if (view.completed) {
     body = (
-      <MeetCofounder
+      <CreateBusiness
         answers={parsed.answers}
         pending={pending}
         error={error}
         headingRef={headingRef}
+        onCreate={() =>
+          void run(async () => {
+            await createBusiness({ sessionId: view.sessionId });
+            // Pin the URL to this session so a reload shows the business
+            // instead of starting a new session for the idea.
+            const pinned = idea === null || view.answers.idea?.source !== "library"
+              ? ownIdeaUrl(view.sessionId)
+              : libraryIdeaUrl(idea.ideaSlug, view.sessionId);
+            router.replace(pinned, { scroll: false });
+          })
+        }
         onBack={() => void run(() => goBack({ sessionId: view.sessionId, step: view.step }))}
       />
     );

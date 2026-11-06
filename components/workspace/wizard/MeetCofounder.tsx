@@ -1,26 +1,23 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
 import type { Ref } from "react";
-import { BTN_SECONDARY, CARD, EYEBROW } from "@/components/workspace/kit/styles";
+import { CARD, EYEBROW } from "@/components/workspace/kit/styles";
 import { partnerNameFromWizard, type WizardAnswersProgress } from "@/lib/workspace/contracts/wizard";
 import { PARTNER_PERSONALITY_OPTIONS } from "@/lib/workspace/wizard/labels";
 import { cn } from "@/lib/utils";
 
 export type MeetCofounderProps = {
   readonly answers: WizardAnswersProgress;
-  readonly pending: boolean;
-  /** A failed Back (or other call) from this screen, announced as an alert. */
-  readonly error?: string | null;
+  /** The business `createBusiness` made (WP74-S4). */
+  readonly business: { readonly name: string; readonly slug: string };
   readonly headingRef?: Ref<HTMLHeadingElement>;
-  readonly onBack: () => void;
 };
 
 /**
- * The wizard's end screen. A placeholder until WP75 brings the roster and
- * WP74-S4 creates the business: nothing is created here.
+ * The wizard's end screen, after the business exists. The roster comes with
+ * WP75; until then this names the partner and the business.
  */
-export function MeetCofounder({ answers, pending, error = null, headingRef, onBack }: MeetCofounderProps) {
+export function MeetCofounder({ answers, business, headingRef }: MeetCofounderProps) {
   const name = partnerNameFromWizard(answers);
   const personality = answers.partnerPersonality ? PARTNER_PERSONALITY_OPTIONS[answers.partnerPersonality] : null;
   return (
@@ -42,30 +39,14 @@ export function MeetCofounder({ answers, pending, error = null, headingRef, onBa
             <span className="font-medium text-home-ink">{personality.label}.</span> {personality.hint}
           </p>
         ) : null}
-        {answers.name ? (
-          <p>
-            Building <span className="font-medium text-home-ink">{answers.name.chosen}</span> with you.
-          </p>
-        ) : null}
-        <p>Your answers are saved. {name} puts your team together in the next step.</p>
-      </div>
-      {error ? (
-        <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
-          {error}
+        <p>
+          <span className="font-medium text-home-ink">{business.name}</span> is created. {name} is building it with you.
         </p>
-      ) : null}
-      <div className="border-t border-home-rule pt-4">
-        <button
-          type="button"
-          className={BTN_SECONDARY}
-          aria-disabled={pending || undefined}
-          onClick={() => {
-            if (!pending) onBack();
-          }}
-        >
-          <ArrowLeft aria-hidden="true" className="size-4" />
-          Back
-        </button>
+        <p>
+          Suggested web address: <span className="font-mono text-home-ink">{business.slug}.weekendmvp.app</span>. It is
+          confirmed when you publish.
+        </p>
+        <p>{name} puts your team together in the next step.</p>
       </div>
     </section>
   );

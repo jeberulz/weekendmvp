@@ -34,6 +34,9 @@ Standing rules:
   "Not yet validated", no market numbers.
 - [ ] `WP74-S4` - Creating the business: one free business per verified account (C-LIMITS, entitlements),
   disposable-domain refusal, tenant slug from the name checked against reserved names and existing slugs.
+  - 2026-11-06: built and tested (see progress). **Blocked on Needs from Codex (g)**, `projects.by_workspaceSlug`:
+    until it lands, cross-owner collisions with unpublished businesses go undetected. Also waits on (h), the
+    `business_members` owner row, and on the (a) scanner allowlist.
 - [ ] `WP74-S5` - CTAs behind the flag: hero, Idea of the week, and the build-first account card on
   `/ideas/{slug}` returning to the wizard after sign-in.
 - [ ] `WP74-S6` - a11y-check on every step; keyboard-only run-through.

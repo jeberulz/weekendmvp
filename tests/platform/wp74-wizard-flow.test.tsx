@@ -50,6 +50,7 @@ function view(step: WizardSessionView["step"], stepIndex: number, completed = fa
     suggestedNames: [...seed.suggestedNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
+    business: null,
   };
 }
 
@@ -118,10 +119,11 @@ describe("WP74-S1 WizardFlow", () => {
     expect(state.replace).not.toHaveBeenCalled();
   });
 
-  test("the finished session shows Meet your co-founder and creates nothing", () => {
+  test("the finished session offers Create my business and creates nothing until clicked", () => {
     state.view = { ...view("partner_name", 7, true), answers: seed.defaults };
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
-    expect(screen.getByRole("heading", { level: 2, name: "Meet Wren, your co-founder" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Create HydroTrail" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Create my business" })).toBeTruthy();
     expect(screen.getByText("All 8 steps done")).toBeTruthy();
     expect(state.calls.map((call) => call.name).filter((name) => !name.endsWith(":startOrResume"))).toEqual([]);
   });

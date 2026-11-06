@@ -121,6 +121,7 @@ import type * as seed from "../seed.js";
 import type * as siteUrl from "../siteUrl.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as workspace_access from "../workspace/access.js";
+import type * as workspace_business from "../workspace/business.js";
 import type * as workspace_signals from "../workspace/signals.js";
 import type * as workspace_wizard from "../workspace/wizard.js";
 
@@ -244,6 +245,7 @@ declare const fullApi: ApiFromModules<{
   siteUrl: typeof siteUrl;
   subscriptions: typeof subscriptions;
   "workspace/access": typeof workspace_access;
+  "workspace/business": typeof workspace_business;
   "workspace/signals": typeof workspace_signals;
   "workspace/wizard": typeof workspace_wizard;
 }>;

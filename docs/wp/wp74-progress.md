@@ -231,3 +231,132 @@
     change does not touch, then exited 0 when re-run alone.
   - `npm run build` 0.
 - Docs: this entry.
+
+## 2026-11-06 - S4: stopped before building, two pieces are missing
+
+- Stopped as briefed: the repo has no disposable-domain list and no global slug lookup. No code was written.
+- Already there, and S4 will reuse it:
+  - Reserved names: `RESERVED_SUBDOMAINS` and `isValidTenantSlug` in `lib/tenant-host.ts` (frozen by the owner
+    on 2026-08-07). Labels are 3 to 63 characters.
+  - Normalisation: C-WIZARD `nameSubdomainSlug`.
+  - The business limit: `WORKSPACE_PLAN_LIMITS[resolvePlan()].limits.businesses` (Free 1, Builder's Hub 1,
+    Growth 3, which is dormant). C-LIMITS has no business limiter; it rate-limits and does not count.
+  - The owner's businesses: exact count through `projects.by_ownerId_and_workspaceSlug` (a `workspace.slug`
+    range).
+  - Verified means `email` and `emailVerificationTime`, as `membership/checkout.ts` does.
+  - Live hostnames: `site_configs.by_hostname`. Audit: `audit_events`.
+- Gap 1, the disposable-domain list (`02` §13 says "static list in the repo"; none exists).
+  - A (recommended): a pure `lib/workspace/disposable-domains.ts` with `isDisposableEmailDomain`. It needs an
+    approval to add a file outside S4's owned set. The list would come from the CC0 `disposable-email-domains`
+    project, with the source and date pinned in the file. It matches the domain exactly and also its parent
+    domains.
+  - B: Codex owns the list under `convex/platform/`, next to C-LIMITS.
+  - C: a short curated list of the top providers. Weaker.
+  - Rejected: a lookup API. It is an outside service, it costs money and it sends emails out.
+- Gap 2, global slug uniqueness. The only `projects` slug index is per owner. A Free owner has one business, so
+  collisions happen across owners (every HydroTrail founder gets "HydroTrail").
+  - A (recommended): Codex adds `projects.by_workspaceSlug` (`["workspace.slug"]`).
+    - `createBusiness` checks the reserved names, then that index and `site_configs.by_hostname`.
+    - Collisions get `-2`, `-3` and so on, in order. The base is cut to leave room for the suffix.
+    - Two concurrent claims read the same index range, so Convex OCC retries one of them.
+  - B: a `tenant_slugs` claim table (unique slug, owner, project). It also covers renames and released slugs later.
+  - C: per-owner only, with collisions found at publish (WP78). Not recommended, because the deterministic suffix
+    would then mean nothing.
+- Gap 3: D12 wants an `owner` row in `business_members`, and `02` §4.2 makes Codex its writer. Codex either
+  provides a helper (for example `insertBusinessOwner(ctx, project)`) or rules that S4 may write the row.
+- Gap 4: `createBusiness` is a pre-business function. It needs the WP68 scanner allowlist from item (a), guarded by
+  `assertFeatureEnabled` and `requireOwnedWizardSession`.
+- Planned once these are answered:
+  - Archived businesses count toward the limit.
+  - Idempotency: if the session already has a `projectId`, return that business. A race is caught by
+    `idempotencyKey = wizard:{sessionId}` through `by_ownerId_and_idempotencyKey`.
+  - The project gets `source` `repository_idea` or `own_idea`, `status` `draft`, and a `workspace` object mapped
+    from `wizardAnswersSchema.parse()` output only.
+- Needs from Codex: (a)–(f) still stand. New: (g) Gap 2 option A or B; (h) Gap 3; (i) Gap 1 if B.
+- Checks: none run. Only this file changed.
+- Docs: this entry.
+
+## 2026-11-06 - S4 built under the orchestrator's decisions (blocked on g)
+
+- The orchestrator's decisions on the four gaps above: a curated disposable list in `lib/workspace/disposable-domains.ts`;
+  global uniqueness behind one helper until (g); no `business_members` write (h); the local session guard plus the (a)
+  allowlist ask.
+- What:
+  - `convex/workspace/business.ts` `createBusiness(sessionId)` is one mutation, in this order:
+    1. `assertFeatureEnabled`, then `ownedWizardSession(..., { allowLinked: true })`;
+    2. a session that already has a project returns it (`created: false`);
+    3. the session must be finished (`completedAt` set and `wizardAnswersSchema.safeParse` passes, so `looks_good`),
+       else `SESSION_INCOMPLETE`;
+    4. a verified email (`email`, `emailVerificationTime`, not anonymous), else `EMAIL_NOT_VERIFIED`;
+    5. not a disposable domain, else `DISPOSABLE_EMAIL`;
+    6. `WORKSPACE_PLAN_LIMITS[resolvePlan()].limits.businesses`, else `BUSINESS_LIMIT_REACHED { plan, limit }`;
+    7. the slug, else `SLUG_UNAVAILABLE`;
+    8. insert the project, link `projectId` and `completedAt`, and write one `audit_events` row
+       (`business.created`, no email in the metadata).
+  - `wizard.ts`:
+    - `ownedWizardSession` is exported and takes `allowLinked`. Abandoned sessions are always refused, and edits on a
+      linked session are refused.
+    - `getSession` returns `business`.
+  - UI:
+    - `CreateBusiness.tsx` is the finished-wizard handoff: "Create my business", Back, and an alert tied to the button
+      by `aria-describedby`.
+    - `MeetCofounder` now shows only after the business exists, names the business and its suggested address, and has
+      no Back.
+    - `WizardFlow` maps each refusal to plain copy. After creating, it pins the URL to `?session=` (library pages now
+      read it), so a reload shows the same business.
+- Decisions:
+  - Archived businesses count toward the limit. Legacy projects without `workspace` do not. The count is exact
+    through a `workspace.slug` range on `by_ownerId_and_workspaceSlug`.
+  - Idempotency: the session link, then `idempotencyKey = wizard:{sessionId}` (it relinks a session whose link is
+    missing). Convex serialises concurrent calls; tested with `Promise.all`.
+  - Stored fields come from parsed answers only:
+    - `name`, `slug`, `ideaSlug`/`ownIdeaText`;
+    - `platform` (the kind; a custom description stays in the session), `commercialModel`, and `goal` (the kind);
+    - `partner { personality, name }`;
+    - `source` is `repository_idea` or `own_idea`, `status` is `draft`, and `sourceIdeaId` is not set.
+  - Slug (`lib/workspace/wizard/tenant-slug.ts`):
+    - normalised with `nameSubdomainSlug`, the base cut to 48 characters;
+    - fewer than 3 characters gets `-business` appended, and a name with no Latin letters becomes `business`;
+    - reserved names (`isValidTenantSlug`) and taken slugs move on to `-2`, `-3` … up to 50 attempts.
+  - `isTenantSlugTaken(ctx, slug, ownerId)` checks reserved names, the owner's own businesses and
+    `site_configs.by_hostname` (any status). Its doc comment says another owner's unpublished business can't be
+    detected until (g); then the owner lookup becomes one global lookup. A test pins the gap.
+  - Disposable list: 125 hand-written domains. Matching is case-insensitive (NFKC), trims, drops one trailing dot,
+    and checks parent domains above the top level.
+  - `requireBusinessAccess` works for the owner without a `business_members` row (`getWorkspaceAccess` is tested
+    both ways).
+- Open item (owner OK needed, not a blocker): import the full CC0 `disposable-email-domains` list, with its source
+  and date pinned.
+- Tests:
+  - `convex/workspace/business.test.ts` (21):
+    - success, own idea, and an end-to-end wizard run;
+    - a double click, concurrency, and the keyed relink;
+    - a linked session can't be edited;
+    - a second business is refused, an archived one still counts, a legacy project does not;
+    - unverified and disposable accounts, including a capitalised subdomain;
+    - slug normalisation, reserved names, an ordered live-host collision, and the (g) gap;
+    - signed out, flag off, another owner, unfinished, reworked, unparseable and abandoned sessions.
+  - `tests/platform/wp74-business-rules.test.ts`: disposable domains, including IDN, full-width, uppercase and
+    malformed input, and the slug rules.
+  - `tests/platform/wp74-business-ui.test.tsx` (axe): the refusal copy, CreateBusiness with keyboard and pending
+    state, every refusal as an alert, and the flow handoff: one call, URL pinned, then Meet with focus moved and the
+    change announced, a refusal kept on screen, and a reload with `?session=`.
+  - `tests/security/wp74-wizard-guards.test.mjs` now maps `createBusiness` to the session guard. It also checks that
+    the account checks come before the insert and that nothing writes `business_members`.
+- a11y-check on CreateBusiness, MeetCofounder and WizardFlow: no violations. Contrast and the live keyboard pass are S6.
+- Needs from Codex (a)–(f) still stand.
+  - (a) gains `convex/workspace/business.ts:createBusiness`: `assertFeatureEnabled` + `requireOwnedWizardSession`.
+  - (g) `projects.by_workspaceSlug` (`["workspace.slug"]`). S4 is blocked on it.
+  - (h) `addOwnerMembership(ctx, project)` for the D12 owner row, or a ruling that S4 may write it.
+- Checks:
+  - `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings).
+  - WP74 tests, 10 files: 0 (204 tests).
+  - `npm run test:security` 1. Only the WP68 scanner fails (`not ok 200`, which stops at
+    `convex/workspace/business.ts:createBusiness missing capability guard`). The scanner gap is exactly the eight
+    pre-business functions: `wizard.ts` `getWizardAccess`, `startOrResume`, `getSession`, `saveStep`, `skipStep`,
+    `rewriteStep`, `goBack`, and `business.ts` `createBusiness`. 205 pass, 1 skipped. The Vitest half, run on its
+    own, passes 121/121.
+  - Every other suite exits 0: og, links, redirects, auth, sitemap, convex (837), engine (1076), editorial (295),
+    home, prompts, platform (1209), live.
+  - `npm run build` 0.
+- S4 stays unticked (blocked on g, h and a).

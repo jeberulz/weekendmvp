@@ -5,13 +5,13 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-// WP74-S1/S2: the wizard runs before a business exists, so its capability
+// WP74-S1/S2/S4: the wizard (and creating the business) runs before a business exists, so its capability
 // guard is the signed-in owner (C-AUTHZ `requireCurrentPlatformUser*`) plus a
 // session ownership check, not `requireBusinessAccess`. Every public function
 // must still call the C-OPS feature gate directly.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const WIZARD_FILES = ["convex/workspace/wizard.ts", "convex/workspace/signals.ts"];
+const WIZARD_FILES = ["convex/workspace/wizard.ts", "convex/workspace/signals.ts", "convex/workspace/business.ts"];
 const PUBLIC = new Set(["query", "mutation", "action", "httpAction"]);
 const USER_GUARDS = ["requireCurrentPlatformUser", "requireCurrentPlatformUserForMutation"];
 
@@ -58,6 +58,8 @@ const EXPECTED = new Map([
   ["convex/workspace/wizard.ts:skipStep", SESSION_GUARDS],
   ["convex/workspace/wizard.ts:rewriteStep", SESSION_GUARDS],
   ["convex/workspace/wizard.ts:goBack", SESSION_GUARDS],
+  // WP74-S4: creating the business is the last pre-business call.
+  ["convex/workspace/business.ts:createBusiness", SESSION_GUARDS],
 ]);
 
 test("every public wizard function has the feature gate, its exact guard and a returns validator", async () => {
@@ -85,6 +87,18 @@ test("the local session guard authenticates the user and checks ownership", asyn
   assert.match(text, /requireCurrentPlatformUserForMutation\(ctx\)/);
   assert.match(text, /requireCurrentPlatformUser\(ctx\)/);
   assert.match(text, /session\.ownerId !== user\._id/);
+  // Even the linked-session path (WP74-S4) refuses an abandoned session.
+  assert.match(text, /session\.abandonedAt === undefined/);
+});
+
+test("createBusiness checks the account before writing and never writes business_members (Codex item h)", async () => {
+  const source = await readFile(path.join(root, "convex/workspace/business.ts"), "utf8");
+  const insert = source.indexOf('ctx.db.insert("projects"');
+  for (const guard of ["isVerified(user)", "isDisposableEmailDomain(", "BUSINESS_LIMIT_REACHED", "pickTenantSlug(", "wizardAnswersSchema.safeParse("]) {
+    const at = source.indexOf(guard);
+    assert.ok(at !== -1 && at < insert, `${guard} must run before the project insert`);
+  }
+  assert.doesNotMatch(source, /insert\("business_members"/);
 });
 
 test("no phone number field appears in the wizard code or the /start UI (D10)", async () => {

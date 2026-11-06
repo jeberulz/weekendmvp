@@ -172,29 +172,17 @@ describe("WP74-S1 WizardProgress", () => {
   });
 });
 
-describe("WP74-S1 Meet your co-founder", () => {
-  test("is a placeholder that names the partner and offers Back", async () => {
-    const onBack = vi.fn();
+describe("WP74-S1/S4 Meet your co-founder", () => {
+  test("names the partner and the created business, with no Back once the business exists", async () => {
     const { container } = render(
       <MeetCofounder
         answers={{ ...hydro.defaults, partnerName: { kind: "custom", name: "Captain" } }}
-        pending={false}
-        onBack={onBack}
+        business={{ name: "HydroTrail", slug: "hydrotrail" }}
       />,
     );
     expect(screen.getByRole("heading", { level: 2, name: "Meet Captain, your co-founder" })).toBeTruthy();
-    await userEvent.setup().click(screen.getByRole("button", { name: "Back" }));
-    expect(onBack).toHaveBeenCalledTimes(1);
-    await expectNoAxeViolations(container);
-  });
-});
-
-describe("WP74-S1 Meet your co-founder errors", () => {
-  test("a failed Back is announced as an alert", async () => {
-    const { container } = render(
-      <MeetCofounder answers={hydro.defaults} pending={false} error="Something went wrong. Try again." onBack={vi.fn()} />,
-    );
-    expect(screen.getByRole("alert").textContent).toBe("Something went wrong. Try again.");
+    expect(screen.getByText("hydrotrail.weekendmvp.app")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
     await expectNoAxeViolations(container);
   });
 });
