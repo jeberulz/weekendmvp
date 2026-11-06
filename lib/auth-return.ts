@@ -51,12 +51,22 @@ export function authCallbackTarget(returnTo: unknown) {
   return `/auth/callback?returnTo=${encodeURIComponent(safeReturnTo)}`;
 }
 
+/**
+ * Idea 4 — the full requests list. Only for users who have created an
+ * account or are currently signed in; anonymous visitors are sent to
+ * signup (see authRouteDecision below). The page itself is a static
+ * route, so the middleware idea-slug gate must also exempt it (see
+ * middleware.ts publicIdeaSlug) — otherwise it 404s before auth runs.
+ */
+export const IDEA_REQUESTS_PATH = "/ideas/requests";
+
 export function isAuthManagedPath(pathname: string) {
   return (
     AUTH_ENTRY_PATHS.has(pathname) ||
     pathname === "/auth/callback" ||
     pathname === "/dashboard" ||
-    pathname.startsWith("/dashboard/")
+    pathname.startsWith("/dashboard/") ||
+    pathname === IDEA_REQUESTS_PATH
   );
 }
 
@@ -82,6 +92,20 @@ export function authRouteDecision(
     return {
       kind: "redirect",
       target: `/login?returnTo=${encodeURIComponent(returnTo)}`,
+    };
+  }
+
+  // Idea 4 — /ideas/requests is for account holders only. Unlike the
+  // dashboard (which sends anonymous visitors to /login), this page
+  // sends them to create an account, and returns them here afterwards:
+  // safePlatformReturn already admits /ideas/requests (see
+  // lib/private-paths.ts isIdeaReturnPath), so the returnTo survives
+  // signup instead of silently collapsing to /dashboard.
+  if (url.pathname === IDEA_REQUESTS_PATH && !authenticated) {
+    const returnTo = safePlatformReturn(IDEA_REQUESTS_PATH);
+    return {
+      kind: "redirect",
+      target: `/signup?returnTo=${encodeURIComponent(returnTo)}`,
     };
   }
 

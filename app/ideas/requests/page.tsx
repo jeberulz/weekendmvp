@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: { absolute: "Request a Startup Idea | Weekend MVP" },
   description:
     "Request the startup idea you want researched next, and vote for the requests you want us to build. The most-voted requests feed the Weekend MVP research queue.",
+  // Signed-in-only page (Idea 4): gated behind signup in middleware, so
+  // it is never indexed. Middleware also sends no-store / noindex headers.
+  robots: { index: false, follow: false },
   alternates: { canonical: "/ideas/requests" },
   openGraph: {
     type: "website",
