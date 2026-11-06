@@ -87,13 +87,31 @@ export type WrenCardCheck = {
   readonly refused: readonly { readonly index: number; readonly code: WrenCardRefusal }[];
 };
 
-const FIELDS: Readonly<Record<WrenCardTool, readonly (keyof WrenCardProposal)[]>> = {
+const FIELDS: Readonly<Record<WrenCardTool, readonly CardField[]>> = {
   approval_card: ["kind", "subjectTable", "subjectId"],
   explain_card: ["topic"],
   navigate_card: ["route"],
 };
 
-const CARD_FIELDS: readonly (keyof WrenCardProposal)[] = ["kind", "subjectTable", "subjectId", "topic", "route"];
+type CardField = Exclude<keyof WrenCardProposal, "tool">;
+
+const CARD_FIELDS: readonly CardField[] = ["kind", "subjectTable", "subjectId", "topic", "route"];
+
+/** One field's value, read by name without dynamic property access (the static scan bans it here). */
+function fieldValue(proposal: WrenCardProposal, field: CardField): string | undefined {
+  switch (field) {
+    case "kind":
+      return proposal.kind;
+    case "subjectTable":
+      return proposal.subjectTable;
+    case "subjectId":
+      return proposal.subjectId;
+    case "topic":
+      return proposal.topic;
+    case "route":
+      return proposal.route;
+  }
+}
 
 /**
  * Convex document ids are lower-case base32 text (convex-test's ids add the
@@ -114,7 +132,7 @@ function checkOne(proposal: WrenCardProposal): CheckedWrenCard | WrenCardRefusal
   if (!isTool(proposal.tool)) return "unknown_tool";
   const allowed = FIELDS[proposal.tool];
   for (const field of CARD_FIELDS) {
-    const value = proposal[field];
+    const value = fieldValue(proposal, field);
     const wanted = allowed.includes(field);
     if (wanted !== (value !== undefined)) return "bad_fields";
     if (value !== undefined && value.length > WREN_CARD_FIELD_MAX_CHARS) return "too_long";
@@ -281,10 +299,20 @@ export function subjectExcerpt(text: string | undefined, max: number = APPROVAL_
   return "";
 }
 
-/** Control, zero-width and bidi-override characters: dropped from a subject line. */
-function isInvisible(code: number): boolean {
-  return code < 0x20 || (code >= 0x7f && code <= 0x9f) || (code >= 0x200b && code <= 0x200f) ||
-    (code >= 0x202a && code <= 0x202e) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff;
+/** Control characters: read as a space in a subject line. */
+function isControl(code: number): boolean {
+  return code < 0x20 || (code >= 0x7f && code <= 0x9f);
+}
+
+/**
+ * Zero-width format characters: the soft hyphen, zero-width spaces and
+ * joiners, the word joiner and invisible operators, bidi controls, the BOM
+ * and Unicode tag characters. Dropped from a subject line without a space.
+ */
+function isZeroWidth(code: number): boolean {
+  return code === 0xad || (code >= 0x200b && code <= 0x200f) || (code >= 0x202a && code <= 0x202e) ||
+    (code >= 0x2060 && code <= 0x2064) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff ||
+    (code >= 0xe0000 && code <= 0xe007f);
 }
 
 const LEADING_MARKERS = "#>*-+";
@@ -294,7 +322,9 @@ function cleanLine(raw: string): string {
   let out = "";
   let gap = false;
   for (const char of raw) {
-    if (isInvisible(char.codePointAt(0) ?? 0) || char.trim() === "") {
+    const code = char.codePointAt(0) ?? 0;
+    if (isZeroWidth(code)) continue;
+    if (isControl(code) || char.trim() === "") {
       gap = out.length > 0;
       continue;
     }

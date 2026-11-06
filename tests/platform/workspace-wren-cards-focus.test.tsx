@@ -4,7 +4,8 @@
  * through the real DOM (Testing Library + user-event):
  * - after a decision, focus lands on the card's status line, never `<body>`;
  * - a card that leaves `pending` while focus is on its buttons moves focus
- *   to the status line too;
+ *   to the status line too, but focus that already left the buttons (blur to
+ *   the page or to another control) is never taken back;
  * - `decideApproval` refusals read as plain, accurate copy;
  * - the same approval shown in two replies never duplicates a DOM id.
  */
@@ -104,6 +105,44 @@ describe("Wren approval card focus", () => {
       </div>,
     );
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Elsewhere" }));
+  });
+
+  test("focus that left the buttons (blur to the page) is not taken back by a remote status change", async () => {
+    const user = userEvent.setup();
+    const view = render(<WrenChatCards projectId={projectId} cards={[card("pending")]} />);
+    await user.tab();
+    await user.tab();
+    const approve = screen.getByRole("button", { name: /^Approve/u });
+    expect(document.activeElement).toBe(approve);
+    // Focus leaves for nowhere in particular (a click on empty page), the button still in the page.
+    act(() => approve.blur());
+    expect(document.activeElement).toBe(document.body);
+    view.rerender(<WrenChatCards projectId={projectId} cards={[card("approved")]} />);
+    expect(document.activeElement).toBe(document.body);
+    expect(document.activeElement).not.toBe(statusLine());
+  });
+
+  test("tabbing out of the buttons to the next control is not taken back either", async () => {
+    const user = userEvent.setup();
+    const view = render(
+      <div>
+        <WrenChatCards projectId={projectId} cards={[card("pending")]} />
+        <button type="button">Next control</button>
+      </div>,
+    );
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    const next = screen.getByRole("button", { name: "Next control" });
+    expect(document.activeElement).toBe(next);
+    view.rerender(
+      <div>
+        <WrenChatCards projectId={projectId} cards={[card("approved")]} />
+        <button type="button">Next control</button>
+      </div>,
+    );
+    expect(document.activeElement).toBe(next);
   });
 
   test("a changed subject reads as changed, not as try again", async () => {

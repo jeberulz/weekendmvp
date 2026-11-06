@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type FocusEvent } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { WrenCardView } from "@/convex/workspace/wrenCards";
@@ -76,20 +76,40 @@ function isFocusIn(element: HTMLElement | null): boolean {
   return active !== null && element !== null && element.contains(active);
 }
 
+type FocusFlags = {
+  /** Focus is on this card's buttons now (kept by focus / blur on the button group). */
+  onButtons: boolean;
+  /** Focus was on the buttons when the founder's decision started (kept until that decision settles). */
+  decision: boolean;
+};
+
 /**
  * Moves focus to the card's status line when focus was on the card's buttons
- * (`returnFocus`) and is still there or was dropped on the page body. Focus
- * the founder moved elsewhere is left alone.
+ * (either flag) and is still there or was dropped on the page body by the
+ * buttons going away. Focus the founder moved elsewhere is left alone.
  */
 function returnFocusToStatus(
-  returnFocus: { current: boolean },
+  flags: { readonly current: FocusFlags },
   buttons: { readonly current: HTMLElement | null },
   status: { readonly current: HTMLElement | null },
 ) {
-  if (!returnFocus.current) return;
-  returnFocus.current = false;
+  if (!flags.current.onButtons && !flags.current.decision) return;
+  flags.current.onButtons = false;
+  flags.current.decision = false;
   const active = document.activeElement;
   if (active === null || active === document.body || isFocusIn(buttons.current)) status.current?.focus();
+}
+
+/**
+ * Focus left the button group for somewhere else. A blur with no new target
+ * from a button that is still in the page (a click on empty page, the window
+ * losing focus) counts too; a blur caused by the button being removed does
+ * not, so a status change can still return focus from a removed button.
+ */
+function focusLeftGroup(event: FocusEvent<HTMLElement>): boolean {
+  const next = event.relatedTarget;
+  if (next instanceof Node && event.currentTarget.contains(next)) return false;
+  return next !== null || event.target.isConnected;
 }
 
 function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card: ApprovalView }) {
@@ -99,20 +119,20 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
   const inFlight = useRef(false);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
-  /** Focus was on this card's buttons when a decision started or the status changed: return it to the status line. */
-  const returnFocus = useRef(false);
+  /** Where focus was, so it can be returned to the status line when the buttons go (see `returnFocusToStatus`). */
+  const focusFlags = useRef<FocusFlags>({ onButtons: false, decision: false });
   const id = useId();
   const titleId = `${id}-title`;
   const context = card.subject === "" ? card.title : `${card.title}, ${card.subject}`;
 
   useEffect(() => {
-    if (card.status !== "pending") returnFocusToStatus(returnFocus, buttonsRef, statusRef);
+    if (card.status !== "pending") returnFocusToStatus(focusFlags, buttonsRef, statusRef);
   }, [card.status]);
 
   function choose(decision: "approve" | "cancel") {
     if (inFlight.current) return;
     inFlight.current = true;
-    returnFocus.current = isFocusIn(buttonsRef.current);
+    focusFlags.current.decision = isFocusIn(buttonsRef.current);
     setPending(true);
     void decide({ projectId, approvalId: card.approvalId, decision })
       .then((result) => setMessage(approvalDecisionCopy(result.status)))
@@ -120,7 +140,7 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
       .finally(() => {
         inFlight.current = false;
         setPending(false);
-        returnFocusToStatus(returnFocus, buttonsRef, statusRef);
+        returnFocusToStatus(focusFlags, buttonsRef, statusRef);
       });
   }
 
@@ -153,7 +173,10 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
           ref={buttonsRef}
           className="flex flex-wrap gap-2"
           onFocus={() => {
-            returnFocus.current = true;
+            focusFlags.current.onButtons = true;
+          }}
+          onBlur={(event) => {
+            if (focusLeftGroup(event)) focusFlags.current.onButtons = false;
           }}
         >
           <button

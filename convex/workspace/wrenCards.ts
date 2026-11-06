@@ -13,6 +13,7 @@ import {
   type WrenCardRefusal,
 } from "../../lib/workspace/wrenCards";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
+import { WREN_APPROVAL_SUBJECTS, type WrenApprovalKind } from "../../lib/workspace/contracts/wrenTools";
 import {
   approvalKindValidator,
   approvalStatusValidator,
@@ -45,7 +46,10 @@ import {
  *   4. a subject row that links to an approval other than the reused card
  *      (`approvalId`, S1's `linkedApprovalId`) is refused: a fresh card on it
  *      could never pass `decideApproval`;
- *   5. only when no usable card exists is S1's `createApprovalRecord` called.
+ *   5. only when no usable card exists, and the card's kind and table are
+ *      still a `WREN_APPROVAL_SUBJECTS` pair (`isWrenApprovalSubject`, checked
+ *      again at runtime right before the call, whatever the caller passed),
+ *      is S1's `createApprovalRecord` called.
  *      Its supersede pass then closes only cards step 3 found dead (stale,
  *      changed subject), so a founder's still-valid approval is never
  *      cancelled from chat. The new card is always `pending`.
@@ -123,6 +127,18 @@ type FoundSubject = Extract<SubjectState, { found: true }>;
 /** Approval rows of one subject read before reusing or raising a card. Past it, the card is refused. */
 export const APPROVAL_HISTORY_MAX = 50;
 
+/**
+ * The runtime control on what Wren may raise: `kind` is an own key of
+ * `WREN_APPROVAL_SUBJECTS` and `subjectTable` is in that kind's list. The
+ * static scan's `card.*` rule only guards against regressions; this is the
+ * check that holds even for a forged card object.
+ */
+export function isWrenApprovalSubject(kind: string, subjectTable: string): boolean {
+  if (!Object.hasOwn(WREN_APPROVAL_SUBJECTS, kind)) return false;
+  const tables: readonly string[] = WREN_APPROVAL_SUBJECTS[kind as WrenApprovalKind];
+  return tables.includes(subjectTable);
+}
+
 /** The subject's workflow status allows a card of this kind (`post`: copy ready; `send`: draft). */
 async function subjectStatusAllows(ctx: QueryCtx, card: ApprovalCard): Promise<boolean> {
   switch (card.subjectTable) {
@@ -139,6 +155,8 @@ async function subjectStatusAllows(ctx: QueryCtx, card: ApprovalCard): Promise<b
       const row = id === null ? null : await ctx.db.get("social_posts", id);
       return row !== null && row.status === "copy_ready";
     }
+    default:
+      return false;
   }
 }
 
@@ -178,11 +196,14 @@ async function liveCardFor(
   return newest;
 }
 
-async function raiseApprovalCard(
+/** Raises or reuses one approval card (see the file header); null when refused, with nothing written. Exported for tests. */
+export async function raiseApprovalCard(
   ctx: MutationCtx,
   business: Business,
   card: ApprovalCard,
 ): Promise<{ approvalId: Id<"approvals">; created: boolean } | null> {
+  // Early, so a forged kind cannot even reuse (attach) an existing card of that kind.
+  if (!isWrenApprovalSubject(card.kind, card.subjectTable)) return null;
   const state = await readSubjectState(ctx, business.ownerId, business.projectId, card.subjectTable, card.subjectId);
   if (!state.found) return null;
   if (!(await subjectStatusAllows(ctx, card))) return null;
@@ -191,6 +212,8 @@ async function raiseApprovalCard(
   if (live === "limit") return null;
   if (state.linkedApprovalId !== undefined && state.linkedApprovalId !== live?._id) return null;
   if (live !== null) return { approvalId: live._id, created: false };
+  // Again right before the write: the control that matters, whatever happened above.
+  if (!isWrenApprovalSubject(card.kind, card.subjectTable)) return null;
   try {
     // Every pending or approved card of this subject is dead (stale or on a
     // changed subject), so `createApprovalRecord`'s supersede pass closes
@@ -273,8 +296,10 @@ export async function resolveWrenCards(
 
 /** Server-read facts for an approval card's subject line; null fields when the row is not this business's. */
 async function subjectFacts(ctx: QueryCtx, business: Business, approval: Doc<"approvals">): Promise<ApprovalSubjectFacts> {
-  const ours = (row: { ownerId: Id<"users">; projectId: Id<"projects"> } | null) =>
-    row !== null && row.ownerId === business.ownerId && row.projectId === business.projectId;
+  // Same chain as S1's `inBusiness`: this business, and not archived (for any table that has the column).
+  const ours = (row: { ownerId: Id<"users">; projectId: Id<"projects">; archivedAt?: number } | null) =>
+    row !== null && row.ownerId === business.ownerId && row.projectId === business.projectId &&
+    row.archivedAt === undefined;
   switch (approval.subjectTable) {
     case "site_versions": {
       const id = ctx.db.normalizeId("site_versions", approval.subjectId);
@@ -291,7 +316,7 @@ async function subjectFacts(ctx: QueryCtx, business: Business, approval: Doc<"ap
       const row = id === null ? null : await ctx.db.get("social_posts", id);
       if (row === null || !ours(row) || row.documentId === undefined) return { table: "social_posts", text: null };
       const document = await ctx.db.get("documents", row.documentId);
-      const readable = document !== null && ours(document) && document.archivedAt === undefined &&
+      const readable = document !== null && ours(document) &&
         (document.format === "markdown" || document.format === "text");
       return { table: "social_posts", text: readable ? document.body ?? null : null };
     }

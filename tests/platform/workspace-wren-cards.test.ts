@@ -183,6 +183,8 @@ describe("WP77-S4 approval card subject line and review link", () => {
     expect(Array.from(long).length).toBeLessThanOrEqual(80);
     expect(long.endsWith("…")).toBe(true);
     expect(subjectExcerpt("<b>bold</b>")).toBe("<b>bold</b>");
+    // Unicode tags, word joiner / invisible operators and the soft hyphen are dropped too.
+    expect(subjectExcerpt("ta\u{E0041}\u{E007F}g\u2060\u2061\u2064 soft\u00adhyphen")).toBe("tag softhyphen");
   });
 
   test("approvalSubjectLine names the version, the sequence or the post", () => {

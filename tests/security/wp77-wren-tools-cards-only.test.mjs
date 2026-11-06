@@ -53,9 +53,30 @@ import { WREN_APPROVAL_SUBJECTS } from "../../lib/workspace/contracts/wrenTools.
 //     ctx.db`), no aliasing of `ctx` or `ctx.db`, and no `Reflect`, `eval`,
 //     `Function` or `globalThis`.
 //
+// A2 (strict and chat files): no call through element access
+//     (`c[k][w](...)`), no element access except a numeric index or a key
+//     into one of the module's own static maps (`STATIC_MAPS`, never
+//     redeclared as a local or parameter), no `Object.values / entries /
+//     assign / getOwnPropertyDescriptor(s) / getPrototypeOf / setPrototypeOf
+//     / defineProperty / defineProperties` (except `Object.entries` /
+//     `values` / `keys` of a static map), no `Reflect.*`, and no
+//     `.constructor`, `.__proto__`, `.eval`, `.Function` or `.require` as a
+//     property name (`global.eval`, `(async () => {}).constructor`).
+// S4 also requires `card` to be a parameter typed `ApprovalCard` of the
+//     calling function, never reassigned (`card = ...`, `card.kind = ...`)
+//     and never shadowed by another declaration in that function. The real
+//     control is runtime: `isWrenApprovalSubject` in
+//     `convex/workspace/wrenCards.ts`, right before the call.
+// Re-exports (`export * from`, `export { x } from`) go through the same
+// import allowlist as imports.
+//
 // Pure helpers (`PURE_HELPERS`): no `ctx`, `db`, scheduler, run function,
 // `internal`, `api` or `fetch` at all; local imports only to other pure
 // helpers; packages only `zod`.
+//
+// This scan guards against regressions, not deliberate obfuscation: the
+// runtime checks (the allowlist, `isWrenApprovalSubject`, S1's rules) are
+// the controls.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -68,6 +89,7 @@ const STRICT_FILES = {
     ["../_generated/server", ["MutationCtx", "QueryCtx"]],
     ["../../lib/workspace/wrenCards", null],
     ["../../lib/workspace/contracts/approvals", ["isPendingApprovalStale"]],
+    ["../../lib/workspace/contracts/wrenTools", ["WREN_APPROVAL_SUBJECTS", "WrenApprovalKind"]],
     ["./approvals", [
       "approvalKindValidator", "approvalStatusValidator", "createApprovalRecord", "readSubjectState", "subjectRefusal",
       "SubjectState",
@@ -141,10 +163,8 @@ const PURE_HELPERS = [
   "convex/ai/prompts/wrenChat.ts",
   "convex/ai/prompts/wrenPlanTurn.ts",
   "convex/ai/prompts/wrenShared.ts",
+  "lib/workspace/contracts/approvals.ts",
 ];
-
-/** Read-only S1 contract helpers the strict handler may import (pure lib). */
-const STRICT_LIB_HELPERS = new Set(["lib/workspace/contracts/approvals.ts"]);
 
 /** The only tables `chat.ts` / `chatActions.ts` may insert, patch or replace (C-LIMITS rows go through `checkLimit`). */
 const CHAT_WRITE_TABLES = new Set(["chat_messages"]);
@@ -175,6 +195,20 @@ const NO_DESTRUCTURE = new Set([
   "db", "insert", "patch", "replace", "delete", "scheduler", "runMutation", "runQuery", "runAction", "runAfter", "runAt",
 ]);
 const BANNED_GLOBALS = new Set(["Reflect", "eval", "Function", "globalThis"]);
+/** Property names never allowed (code from strings, prototype tricks, module loading). */
+const BANNED_PROPERTIES = new Set(["eval", "Function", "constructor", "__proto__", "require"]);
+
+/** Module-level constant maps the strict and chat files may index with a computed key. */
+const STATIC_MAPS = new Set([
+  "FIELDS", "WREN_APPROVAL_SUBJECTS", "WREN_EXPLAIN_TOPICS", "WREN_NAVIGATE_ROUTES", "WREN_FAILURE_COPY", "WREN_PROMPT_REFS",
+]);
+/** `Object.*` members that expose or rewire an object's properties. */
+const BANNED_OBJECT_MEMBERS = new Set([
+  "values", "entries", "assign", "getOwnPropertyDescriptor", "getOwnPropertyDescriptors", "getPrototypeOf",
+  "setPrototypeOf", "defineProperty", "defineProperties",
+]);
+/** The ones allowed on a static map (prompt text built from the allowlist). */
+const STATIC_MAP_OBJECT_MEMBERS = new Set(["values", "entries", "keys"]);
 
 const CARD_FIELDS = ["ownerId", "projectId", "kind", "subjectTable", "subjectId"];
 
@@ -218,6 +252,15 @@ function imports(sourceFile) {
   for (const statement of sourceFile.statements) {
     if (ts.isImportEqualsDeclaration(statement)) {
       out.push({ from: statement.moduleReference.getText(sourceFile), bindings: ["*"], typeOnly: false, node: statement });
+      continue;
+    }
+    if (ts.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined &&
+      ts.isStringLiteral(statement.moduleSpecifier)) {
+      const bindings = [];
+      const clause = statement.exportClause;
+      if (clause === undefined || ts.isNamespaceExport(clause)) bindings.push("*");
+      else for (const element of clause.elements) bindings.push((element.propertyName ?? element.name).text);
+      out.push({ from: statement.moduleSpecifier.text, bindings, typeOnly: statement.isTypeOnly, node: statement });
       continue;
     }
     if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
@@ -279,7 +322,10 @@ function chainText(node) {
 
 /** `x.db` (any object), `db`, `ctx`, `internal`: element access on these is never allowed. */
 function isGuardedObject(node) {
-  if (ts.isIdentifier(node)) return node.text === "db" || node.text === "ctx" || node.text === "internal";
+  if (ts.isIdentifier(node)) {
+    return node.text === "db" || node.text === "ctx" || node.text === "internal" || node.text === "Object" ||
+      node.text === "Reflect";
+  }
   return ts.isPropertyAccessExpression(node) && (node.name.text === "db" || node.name.text === "ctx");
 }
 
@@ -320,8 +366,12 @@ function scanAliasing(fileName, sourceFile, problems) {
     if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && isGuardedObject(node.right)) {
       problems.push(`${fileName}:${line(sourceFile, node)} aliases ${node.right.getText(sourceFile)}`);
     }
-    if (ts.isIdentifier(node) && BANNED_GLOBALS.has(node.text) && !ts.isPropertyAccessExpression(node.parent)) {
+    if (ts.isIdentifier(node) && BANNED_GLOBALS.has(node.text) &&
+      !(ts.isPropertyAccessExpression(node.parent) && node.parent.name === node)) {
       problems.push(`${fileName}:${line(sourceFile, node)} references ${node.text}`);
+    }
+    if (ts.isPropertyAccessExpression(node) && BANNED_PROPERTIES.has(node.name.text)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} uses .${node.name.text}`);
     }
   });
 }
@@ -409,10 +459,120 @@ function scanCreateApprovalRecord(fileName, sourceFile, problems) {
     if (!fromCard && !literalPair) {
       problems.push(`${fileName}:${line(sourceFile, call)} createApprovalRecord kind ${kind.getText(sourceFile)} is not a Wren kind`);
     }
+    if (fromCard) problems.push(...cardParameterProblems(fileName, sourceFile, call));
   });
 }
 
-/** Violations of rules S1-S4 and A1 for one tool registry / handler file. */
+/** Top-level (module scope) declarations are the only place a static map name may be declared. */
+function isModuleScope(node) {
+  let current = node.parent;
+  while (current !== undefined && !ts.isSourceFile(current)) {
+    if (ts.isFunctionLike(current) || ts.isBlock(current) || ts.isClassLike(current)) return false;
+    current = current.parent;
+  }
+  return true;
+}
+
+/** Rule A2 (strict and chat files): no computed-key reads or calls, no property-reflection helpers. */
+function scanDynamic(fileName, sourceFile, problems) {
+  walk(sourceFile, (node) => {
+    if (ts.isCallExpression(node) && ts.isElementAccessExpression(node.expression)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} calls through element access ${node.expression.getText(sourceFile)}`);
+    }
+    if (ts.isElementAccessExpression(node)) {
+      const argument = node.argumentExpression;
+      const numeric = ts.isNumericLiteral(argument);
+      const staticMap = ts.isIdentifier(node.expression) && STATIC_MAPS.has(node.expression.text);
+      if (!numeric && !staticMap) {
+        problems.push(`${fileName}:${line(sourceFile, node)} element access ${node.getText(sourceFile)}`);
+      }
+    }
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "Object" &&
+      BANNED_OBJECT_MEMBERS.has(node.name.text)) {
+      const call = node.parent;
+      const target = ts.isCallExpression(call) && call.expression === node ? call.arguments[0] : undefined;
+      const onStaticMap = STATIC_MAP_OBJECT_MEMBERS.has(node.name.text) && target !== undefined &&
+        ts.isIdentifier(target) && STATIC_MAPS.has(target.text);
+      if (!onStaticMap) problems.push(`${fileName}:${line(sourceFile, node)} uses Object.${node.name.text}`);
+    }
+    // A static map name declared anywhere but module scope (a parameter, a local) could alias anything.
+    if ((ts.isVariableDeclaration(node) || ts.isParameter(node) || ts.isBindingElement(node)) &&
+      ts.isIdentifier(node.name) && STATIC_MAPS.has(node.name.text) &&
+      (ts.isParameter(node) || ts.isBindingElement(node) || !isModuleScope(node))) {
+      problems.push(`${fileName}:${line(sourceFile, node)} redeclares ${node.name.text}`);
+    }
+  });
+}
+
+function enclosingFunction(node) {
+  let current = node.parent;
+  while (current !== undefined && !ts.isFunctionLike(current)) current = current.parent;
+  return current;
+}
+
+/** `card` is written to: `card = x`, `card.kind = x`, `card[k] = x`, `card++`, `delete card.kind`. */
+function isWriteTarget(identifier) {
+  let target = identifier;
+  while ((ts.isPropertyAccessExpression(target.parent) || ts.isElementAccessExpression(target.parent) ||
+    ts.isParenthesizedExpression(target.parent)) && target.parent.expression === target) target = target.parent;
+  const parent = target.parent;
+  if (ts.isBinaryExpression(parent) && parent.left === target &&
+    parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
+    return true;
+  }
+  if ((ts.isPrefixUnaryExpression(parent) || ts.isPostfixUnaryExpression(parent)) &&
+    (parent.operator === ts.SyntaxKind.PlusPlusToken || parent.operator === ts.SyntaxKind.MinusMinusToken)) return true;
+  if (ts.isDeleteExpression(parent)) return true;
+  // Destructuring assignment targets: `({ x: card.kind } = y)`, `[card] = y`, `for ([card] of y)`.
+  const inPattern = ts.isShorthandPropertyAssignment(parent) || ts.isArrayLiteralExpression(parent) ||
+    ts.isSpreadElement(parent) || ts.isSpreadAssignment(parent) ||
+    (ts.isPropertyAssignment(parent) && parent.initializer === target);
+  return inPattern && isAssignmentPattern(parent);
+}
+
+/** The object / array literal containing `node` is the left side of an assignment or a for-in/of head. */
+function isAssignmentPattern(node) {
+  let literal = node;
+  while (!ts.isObjectLiteralExpression(literal) && !ts.isArrayLiteralExpression(literal)) literal = literal.parent;
+  while (ts.isObjectLiteralExpression(literal.parent) || ts.isArrayLiteralExpression(literal.parent) ||
+    ts.isPropertyAssignment(literal.parent) || ts.isSpreadElement(literal.parent) ||
+    ts.isParenthesizedExpression(literal.parent)) literal = literal.parent;
+  const holder = literal.parent;
+  if (ts.isBinaryExpression(holder) && holder.left === literal && holder.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+    return true;
+  }
+  return (ts.isForOfStatement(holder) || ts.isForInStatement(holder)) && holder.initializer === literal;
+}
+
+/**
+ * Rule S4 for `card.*` inputs: `card` is a parameter of the calling function
+ * typed `ApprovalCard`, never written to and never shadowed in that function.
+ */
+function cardParameterProblems(fileName, sourceFile, call) {
+  const fn = enclosingFunction(call);
+  const where = `${fileName}:${line(sourceFile, call)}`;
+  if (fn === undefined) return [`${where} createApprovalRecord outside a function`];
+  const parameter = fn.parameters.find((item) => ts.isIdentifier(item.name) && item.name.text === "card");
+  if (parameter === undefined) return [`${where} card is not a parameter of the calling function`];
+  if (parameter.type === undefined || parameter.type.getText(sourceFile) !== "ApprovalCard") {
+    return [`${where} card is not typed ApprovalCard`];
+  }
+  const problems = [];
+  walk(fn, (node) => {
+    if (!ts.isIdentifier(node) || node.text !== "card" || node === parameter.name) return;
+    const parent = node.parent;
+    const declares = (ts.isVariableDeclaration(parent) || ts.isParameter(parent) || ts.isBindingElement(parent) ||
+      ts.isFunctionDeclaration(parent) || ts.isClassDeclaration(parent)) && parent.name === node;
+    if (declares || (ts.isBindingElement(parent) && parent.propertyName === undefined)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} shadows card`);
+    } else if (!(ts.isPropertyAccessExpression(parent) && parent.name === node) && isWriteTarget(node)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} writes to card`);
+    }
+  });
+  return problems;
+}
+
+/** Violations of rules S1-S4, A1 and A2 for one tool registry / handler file. */
 export function scanStrict(fileName, source, allowedImports) {
   const sourceFile = parse(fileName, source);
   const problems = [];
@@ -423,6 +583,7 @@ export function scanStrict(fileName, source, allowedImports) {
   scanDb(fileName, sourceFile, STRICT_DB_METHODS, new Set(["audit_events"]), problems);
   scanCreateApprovalRecord(fileName, sourceFile, problems);
   scanAliasing(fileName, sourceFile, problems);
+  scanDynamic(fileName, sourceFile, problems);
   return [...new Set(problems)];
 }
 
@@ -462,7 +623,7 @@ function scanTargets(fileName, sourceFile, problems) {
   });
 }
 
-/** Violations of rules C1-C4 and A1 for one chat module (fixtures default to `chat.ts`'s import allowlist). */
+/** Violations of rules C1-C4, A1 and A2 for one chat module (fixtures default to `chat.ts`'s import allowlist). */
 export function scanChat(fileName, source, allowedImports = CHAT_IMPORTS[fileName] ?? CHAT_IMPORTS["convex/workspace/chat.ts"]) {
   const sourceFile = parse(fileName, source);
   const problems = [];
@@ -478,6 +639,7 @@ export function scanChat(fileName, source, allowedImports = CHAT_IMPORTS[fileNam
   scanDb(fileName, sourceFile, CHAT_DB_METHODS, CHAT_WRITE_TABLES, problems);
   scanTargets(fileName, sourceFile, problems);
   scanAliasing(fileName, sourceFile, problems);
+  scanDynamic(fileName, sourceFile, problems);
   return [...new Set(problems)];
 }
 
@@ -516,7 +678,7 @@ test("the chat modules call only the gateway, their own mutations and the turn",
 });
 
 test("every local module the chat and handler modules import is scanned, a named gate, or type-only", async () => {
-  const scanned = new Set([...Object.keys(STRICT_FILES), ...CHAT_FILES, ...PURE_HELPERS, ...STRICT_LIB_HELPERS]);
+  const scanned = new Set([...Object.keys(STRICT_FILES), ...CHAT_FILES, ...PURE_HELPERS]);
   const allowlists = [...Object.entries(CHAT_IMPORTS), ...Object.entries(STRICT_FILES)];
   for (const [fileName, allowed] of allowlists) {
     const source = await readFile(path.join(root, fileName), "utf8");
@@ -576,6 +738,25 @@ test("fixtures: the strict scan catches each side-effect shape", () => {
     createWrongTable: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b){ await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: \"send\", subjectTable: \"outbound_messages\", subjectId: b.s }); }",
     reflect: "export async function f(ctx){ await Reflect.get(ctx, \"db\").insert(\"approvals\", {}); }",
     dynamicImport: "export async function f(){ await import(\"./approvals\"); }",
+    // Re-review probes (M-A, M-B, minors 1-2).
+    dynKeysParam: "async function g(c){ const k = \"d\"+\"b\"; const w = \"ins\"+\"ert\"; await c[k][w](\"approvals\", {status:\"approved\"}); } export async function f(ctx){ await g(ctx); }",
+    objectValues: "export async function f(ctx){ const d = Object.values(ctx).find((x) => x !== null && typeof x === \"object\" && \"insert\" in x); const w = [\"ins\",\"ert\"].join(\"\"); await d[w](\"approvals\", {status:\"approved\"}); }",
+    objectValuesPatch: "export async function f(ctx, id){ const d = Object.values(ctx).find((x) => typeof x === \"object\"); await d[[\"pat\",\"ch\"].join(\"\")](\"approvals\", id, {status:\"approved\"}); }",
+    shadowCard: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b){ const card = { kind: \"upgrade\", subjectTable: \"projects\", subjectId: b.p }; await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); }",
+    shadowCardArtifact: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b, card){ card = { kind: \"ad_launch\", subjectTable: \"ad_campaigns\", subjectId: b.s }; await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); }",
+    typedReassign: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b, card: ApprovalCard){ card = { kind: \"upgrade\" }; await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); }",
+    typedFieldWrite: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b, card: ApprovalCard){ card.kind = \"spend\"; await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); }",
+    typedShadowBlock: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b, card: ApprovalCard){ { const card = { kind: \"upgrade\" }; await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); } }",
+    typedDestructureWrite: "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, b, card: ApprovalCard){ ({ k: card.kind } = { k: \"spend\" }); await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); }",
+    fnCtor: "export async function f(ctx){ const F = (async () => {}).constructor; await F(\"c\", \"return c.db.patch(\\\"approvals\\\", c.id, {status:\\\"approved\\\"})\")(ctx); }",
+    globalEval: "export async function f(ctx){ await global.eval(\"1\"); }",
+    selfFunction: "export async function f(ctx){ new self.Function(\"c\",\"return c\")(ctx); }",
+    reexport: "export { createApproval } from \"./approvals\"; export * from \"../ops/settings\";",
+    moduleRequire: "export async function f(){ module.require(\"x\"); }",
+    stringKey: "export async function f(x){ const g = x[\"insert\"]; await g(\"approvals\", {}); }",
+    staticMapShadow: "async function g(FIELDS, k){ await FIELDS[k][k](\"approvals\", {}); } export async function f(ctx){ await g(ctx, \"db\"); }",
+    objectAssign: "export async function f(ctx){ const o = Object.assign({}, ctx); return o; }",
+    protoAccess: "export async function f(ctx){ return ctx.__proto__; }",
   };
   for (const [label, source] of Object.entries(offenders)) {
     assert.notDeepEqual(scanStrict(`fixture-${label}.ts`, source, allowed), [], label);
@@ -583,7 +764,7 @@ test("fixtures: the strict scan catches each side-effect shape", () => {
   assert.deepEqual(scanStrict("fixture-ok.ts", "import { v } from \"convex/values\"; export const x = v.string(); const y = { publish: 1, send: 2 };", allowed), []);
   assert.deepEqual(scanStrict(
     "fixture-ok-create.ts",
-    "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, card, b){ await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); await ctx.db.insert(\"audit_events\", {}); }",
+    "import { createApprovalRecord } from \"./approvals\"; export async function f(ctx, card: ApprovalCard, b){ await createApprovalRecord(ctx, { ownerId: b.o, projectId: b.p, kind: card.kind, subjectTable: card.subjectTable, subjectId: card.subjectId }); await ctx.db.insert(\"audit_events\", { metadata: JSON.stringify({ kind: card.kind }) }); }",
     allowed,
   ), []);
 });
@@ -617,6 +798,17 @@ test("fixtures: the chat scan catches each side-effect shape", () => {
     patchOnOther: "export async function f(ctx, store){ await store.patch(\"approvals\", {}); }",
     namespaceImport: "import * as approvals from \"./approvals\"; export const x = approvals;",
     gatewayValue: "import { runPromptWithMeter } from \"../ai/gatewayActions\";",
+    // Re-review probes (M-A, minors 1-2).
+    dynKeysParam: "async function g(c){ const k = \"d\"+\"b\"; await c[k][[\"pat\",\"ch\"].join(\"\")](\"approvals\", c.id, {status:\"approved\"}); } export async function f(ctx){ await g(ctx); }",
+    objectValues: "export async function f(ctx, id){ const d = Object.values(ctx).find((x) => typeof x === \"object\"); await d[[\"pat\",\"ch\"].join(\"\")](\"approvals\", id, {status:\"approved\"}); }",
+    runViaValues: "import { internal } from \"../_generated/api\"; export async function f(ctx){ const r = Object.values(ctx).find((x) => typeof x === \"function\"); await r(internal.workspace.chat.finishWrenTurn, {}); }",
+    elementInternalChain: "import { internal } from \"../_generated/api\"; export async function f(ctx){ const k=\"approvals\"; await ctx.runMutation(internal.workspace.chat.finishWrenTurn, {}); const y = (internal.workspace)[k]; }",
+    globalEval: "export async function f(ctx){ await global.eval(\"ctx.db.patch('approvals')\"); }",
+    reexport: "export * from \"../growth/email/sender\";",
+    reexportNamed: "export { decideApproval as choose } from \"./approvals\";",
+    entriesOfCtx: "export async function f(ctx){ for (const [k, v] of Object.entries(ctx)) void k; }",
+    descriptor: "export async function f(ctx){ return Object.getOwnPropertyDescriptor(ctx, \"db\"); }",
+    reflectApply: "export async function f(ctx){ return Reflect.apply(ctx.runMutation, ctx, []); }",
   };
   for (const [label, source] of Object.entries(chatOffenders)) {
     assert.notDeepEqual(scanChat(`chat-${label}.ts`, source), [], label);

@@ -528,3 +528,40 @@ Needs from Codex (S4 review):
     sequences only. It replaces the `SEQUENCE_SCAN_MAX` (50 newest) scan in `convex/workspace/chat.ts`.
 
 Docs: progress updated; stories not ticked. No plan or ruling changes.
+
+### S4 review fixes: re-review (after `02500b48`)
+
+The re-review confirmed that M1, M3 and the minor findings are fixed, and that M3 is safe. It found more gaps in the scan, listed below. The scan guards against regressions, not deliberate obfuscation; the runtime checks are the controls.
+
+- **M-A, dynamic-key writes.** New rule A2 for the strict and chat files:
+  - no call whose callee is an element access (`c[k][w](...)`);
+  - no element access except a numeric index or a key into a module static map (`FIELDS`, `WREN_APPROVAL_SUBJECTS`, `WREN_EXPLAIN_TOPICS`, `WREN_NAVIGATE_ROUTES`, `WREN_FAILURE_COPY`, `WREN_PROMPT_REFS`). These are what the code uses today. A static map name is never redeclared as a parameter or local;
+  - no `Object.values / entries / assign / getOwnPropertyDescriptor(s) / getPrototypeOf / setPrototypeOf / defineProperty / defineProperties`. `entries`, `values` and `keys` are still allowed on a static map, because `wrenToolsInstruction` builds the prompt text that way;
+  - no `Reflect.*`. The old check skipped `Reflect.get` because `Reflect` was the object of a property access;
+  - `Object` and `Reflect` cannot be indexed, aliased or destructured;
+  - `.constructor` and `.__proto__` are banned.
+
+  To meet this rule, `proposal[field]` in `lib/workspace/wrenCards.ts` now goes through a `fieldValue` switch. The reviewer's dynamic-key, `Object.values` and `runViaValues` probes are planted fixtures in both scans.
+- **M-B, kind matched by text.**
+  - Runtime control: `isWrenApprovalSubject(kind, table)` in `convex/workspace/wrenCards.ts`. It uses `Object.hasOwn(WREN_APPROVAL_SUBJECTS, kind)`, and the table must be in that kind's list. `raiseApprovalCard` checks it right before `createApprovalRecord`. It also checks it first, so a forged kind cannot even reuse and attach an existing card of that kind.
+  - Runtime test: `raiseApprovalCard` (now exported for tests) is called directly with five forged pairs and returns null, and no table changes. The pairs are `artifact_review`/`site_versions`, which S1 allows on a ready version, so only this guard stops it; `upgrade`/`projects`; `send`/`outbound_messages`; `send`/`sequence_steps`; and `constructor`.
+  - Mutation check: with both guards disabled, that test fails.
+  - Scan: `card` must be a parameter typed `ApprovalCard` of the calling function, never written to (`card = …`, `card.kind = …`, `++`, `delete`, destructuring assignment) and never shadowed in that function. The reviewer's two shadow probes are fixtures, plus four variants with a typed parameter.
+- **Minor 1, `eval` / `Function` by another route.** `eval`, `Function` and `require` are banned as property names too (`global.eval`, `new self.Function`, `module.require`). The async-function constructor is covered by the `.constructor` ban.
+- **Minor 2, re-exports.** `export * from` and `export { x } from` go through the same import allowlist, by exported-from name. Fixtures cover strict and chat.
+- **Minor 3.** `lib/workspace/contracts/approvals.ts` moved into `PURE_HELPERS` and is now actually scanned (it passes). `STRICT_LIB_HELPERS` is gone.
+- **Minor 4.** New test: 51 approval rows for one subject (50 cancelled, 1 stale pending). The card is refused with `subject_refused`, no new approval is written, and every existing card keeps its status.
+- **Nits.**
+  - `subjectFacts` applies S1's `inBusiness` rule, which refuses any row with `archivedAt`. Note that `social_posts` has no `archivedAt` column, so the post check is future-proof only; the linked document's `archivedAt` is enforced and tested.
+  - `subjectExcerpt` drops Unicode tag characters (U+E0000–E007F), U+2060–2064 and the soft hyphen U+00AD. Zero-width characters are now dropped without leaving a space, while control characters still read as a space. Tested.
+  - `WrenChatCards`: focus on the button group is tracked with focus and blur events. A blur to another control, or to the page while the button is still connected, clears the flag. A blur caused by the button being removed does not. The founder's own decision keeps a separate flag until it settles. Two new focus tests check that a blur to the page and a tab to the next control are not taken back by a remote status change; the focus suite now has 8 tests.
+- **Probes from `bypass2.mjs` that still pass, by design:**
+  - `templateAudit`: a template-literal `audit_events` insert, which is the allowed table;
+  - `passCtxToSubjectState`: S1's read-only `readSubjectState`;
+  - `storage`: `ctx.storage.getUrl`, a read. `storage.delete` would fail the write-method rule;
+  - `runMutationFn`: inert strings;
+  - `internalTemplate`: the exact allowed `finishWrenTurn` reference.
+- **Prompt lock.** No hashed module changed in this round (`wrenTools.ts` and `wrenShared.ts` are untouched), so the lock is unchanged.
+
+Checks (re-review): `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors);
+`npm run check:prompt-versions` 0; `npm run test:security` 0; `npm test` 0; `npm run build` 0.

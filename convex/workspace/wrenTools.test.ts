@@ -37,6 +37,7 @@ import { createAnthropicAdapter } from "../ai/providers/anthropic";
 import type { AnthropicFixtureReply, AnthropicFixtureResponder } from "../ai/providers/fixtures";
 import { checkLimit } from "../platform/limits";
 import { runWrenTurnWith } from "./chatActions";
+import { APPROVAL_HISTORY_MAX, isWrenApprovalSubject, raiseApprovalCard } from "./wrenCards";
 
 const modules = import.meta.glob("/convex/**/*.ts");
 type T = TestConvex<typeof schema>;
@@ -790,3 +791,79 @@ describe("WP77-S4 review fixes: one bad card never costs the reply", () => {
     expect((await auditRows(t)).filter((audit) => audit.action === "approval.wren_card_refused")).toEqual([]);
   });
 });
+
+describe("WP77-S4 re-review fixes", () => {
+  test("past APPROVAL_HISTORY_MAX rows for one subject the card is refused: nothing new, nothing superseded", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const history = await t.run(async (ctx) => {
+      const rows: Id<"approvals">[] = [];
+      for (let i = 0; i <= APPROVAL_HISTORY_MAX; i += 1) {
+        rows.push(await ctx.db.insert("approvals", {
+          ownerId: ids.ownerId, projectId: ids.own.projectId, kind: "post", subjectTable: "social_posts",
+          subjectId: ids.own.postId, status: i === APPROVAL_HISTORY_MAX ? "pending" : "cancelled", changeRound: 0n,
+          createdAt: STALE, updatedAt: STALE,
+        }));
+      }
+      return rows;
+    });
+    expect(history).toHaveLength(APPROVAL_HISTORY_MAX + 1);
+    // `attack` asserts no new approval and that every existing card kept its status (the stale pending one included).
+    const { reply } = await attack(seeded, "Can I post it?", [
+      { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: ids.own.postId },
+    ]);
+    expect(reply.cardApprovalIds).toEqual([]);
+    expect((await refusalAudit(t, reply._id)).refused).toEqual([{ index: 0, code: "subject_refused" }]);
+  });
+
+  test("the runtime guard refuses a forged kind and table even when called directly, and writes nothing", async () => {
+    const { t, ids } = await seed();
+    const business = { ownerId: ids.ownerId, projectId: ids.own.projectId };
+    const forged = [
+      // S1 allows artifact_review on site_versions, and the version is ready: only the Wren guard stops this one.
+      { kind: "artifact_review", subjectTable: "site_versions", subjectId: ids.own.readyVersionId },
+      { kind: "upgrade", subjectTable: "projects", subjectId: ids.own.projectId },
+      { kind: "send", subjectTable: "outbound_messages", subjectId: ids.own.sequenceId },
+      { kind: "send", subjectTable: "sequence_steps", subjectId: ids.own.sequenceId },
+      { kind: "constructor", subjectTable: "site_versions", subjectId: ids.own.readyVersionId },
+    ];
+    const before = await snapshot(t);
+    for (const card of forged) {
+      expect(isWrenApprovalSubject(card.kind, card.subjectTable)).toBe(false);
+      const result = await t.run(async (ctx) => await raiseApprovalCard(ctx, business, {
+        tool: "approval_card",
+        ...card,
+      } as Parameters<typeof raiseApprovalCard>[2]));
+      expect(result).toBeNull();
+    }
+    expect(changedTables(before, await snapshot(t))).toEqual([]);
+    expect(isWrenApprovalSubject("publish", "site_versions")).toBe(true);
+    expect(isWrenApprovalSubject("send", "sequences")).toBe(true);
+    expect(isWrenApprovalSubject("post", "social_posts")).toBe(true);
+  });
+
+  test("an archived post document gives no subject text", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const postId = await t.run(async (ctx) => {
+      const documentId = await ctx.db.insert("documents", {
+        ownerId: ids.ownerId, projectId: ids.own.projectId, kind: "social_pack", format: "markdown", title: "Post",
+        body: "Archived words", createdAt: 2, updatedAt: 2,
+      });
+      return await ctx.db.insert("social_posts", {
+        ownerId: ids.ownerId, projectId: ids.own.projectId, documentId, status: "copy_ready", createdAt: 2, updatedAt: 2,
+      });
+    });
+    const { reply } = await attack(seeded, "Can I post it?", [
+      { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: postId },
+    ], true);
+    await t.run(async (ctx) => {
+      const post = await ctx.db.get("social_posts", postId);
+      if (post?.documentId !== undefined) await ctx.db.patch("documents", post.documentId, { archivedAt: FIXED_NOW });
+    });
+    const thread = await seeded.owner.query(api.workspace.chat.listWrenThread, { projectId: ids.own.projectId });
+    const cards = thread.find((row) => row._id === reply._id)?.cards ?? [];
+    expect(cards.map((card) => (card.kind === "approval" ? card.subject : ""))).toEqual(["Social post"]);
+  });
+});
+
