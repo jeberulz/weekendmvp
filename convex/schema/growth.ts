@@ -34,8 +34,10 @@ export const growthTables = {
   lead_retention_jobs: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),
-    // Set when the project is archived; retry backoff never changes this deadline.
-    archivedAt: v.number(),
+    // Deprecated archive epoch. Existing rows may have it; it never authorizes purge.
+    archivedAt: v.optional(v.number()),
+    // D5 explicit Delete business/account closure epoch. Optional during widening.
+    deletionRequestedAt: v.optional(v.number()),
     deleteDueAt: v.number(),
     nextAttemptAt: v.number(),
     state: v.union(v.literal("scheduled"), v.literal("complete"), v.literal("cancelled")),
