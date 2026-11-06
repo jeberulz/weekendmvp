@@ -10,22 +10,22 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-06. **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 started** on the owner's go ("Merged, go Phase 2"): Claude runs WP74 and WP77 first (lane limit two); WP75 follows WP74, WP76 follows WP75 S2. Codex: WP78, WP79. Next gate: G2.
+Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); WP77 S1–S4 merged (#210); Claude now runs WP75 and WP77 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-phase2` (board PR) | G0, G1 passed | — | Run G2 when WP74–WP79 merge; G2 needs live spend (20 test launches) and an owner OK |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board-p2` (board PR) | G0, G1 passed | — | Run G2 when WP74–WP79 merge; G2 needs live spend (20 test launches) and an owner OK |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | **Done**: S1–S3 (#180), S4–S6 (#191, sweep and alarm crons, limits, ops summary); G1 reviews pass with should-fix | — | Alarm delivery and the P2s below before the AI switch goes on |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 merged (#184)**, lock follow-up (#185), **gateway action bound to the real meter (#192)**. S4 cache helper, S5 seed precompute and S6 evals open | — | S4 and S6 in fixture mode on the owner's go; the S4 live cache test and S5 seed precompute need OK |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)**; Codex's middleware hard 404 merged (#186, #190) | `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
-| WP74 | 2 | Claude | `claude/wp74-wizard` | **In progress**: S1–S2 (steps, signals) | PR cannot go green until Codex adds `requireOwnedWizardSession` and the `PRE_BUSINESS_CONTROLS` scanner allowlist | S3 own-idea blueprint, S4 business creation, S5 CTAs, S6 a11y |
-| WP75 | 2 | Claude | `claude/wp75-crew-engine` | Waiting | WP74 | — |
+| WP74 | 2 | Claude | `claude/wp74-wizard` | **Merged (#208)**; Codex's scanner reconcile and `requireOwnedWizardSession` merged (#209) | — | Follow-up: move the wizard from its local `ownedWizardSession` to C-AUTHZ `requireOwnedWizardSession` |
+| WP75 | 2 | Claude | `claude/wp75-crew` | **In progress**: plan committed; S2a job runner and S4a deterministic checks being built; roster ruled "blueprint first" | 12 owner questions in `wp75-progress.md`; Needs from Codex 1–12 | S2a and S4a reviews, then S3a blueprint, S1 roster, S2b DAG |
 | WP76 | 2 | Claude | `claude/wp76-growth-drafts` | Waiting | WP75 S2 | — |
-| WP77 | 2 | Claude | `claude/wp77-wren-approvals` | **In progress**: S1 approvals and C-APPROVAL first (Codex's WP78/WP79 call `assertApproved`) | — | S2–S6 |
-| WP78–WP79 | 2 | Codex | see registry | Ready (G1 passed): WP78 and the WP79 sending engine can start now | C-APPROVAL from WP77-S1 (stub until merged); D5, D6; WP79 also needs WP76 S1 email drafts (WP76 waits on WP75 S2) | — |
+| WP77 | 2 | Claude | `claude/wp77-wren-approvals` | **S1 merged; S2–S4 merged (#210)**; S5 memory and Files in review fixes | Explain and navigate cards wait on Codex's `chat_messages.cards` | S5 PR, then S6 accessibility |
+| WP78–WP79 | 2 | Codex | see registry | **Dormant primitives merged**: WP78 lead privacy (#211), WP79 tenant email and retention (#212). Nothing live | D5, D6; WP79 also needs WP76 S1 email drafts | Claude's independent privacy and publishing review of #211/#212 is owed before D5 real capture |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
 | WP83–WP84 | 5 | Both | see registry | Waiting | G4; Meta review | — |
@@ -389,3 +389,19 @@ Updated 2026-11-06. **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194)
      (the current plan, since the crew spends AI right after start), or should Codex add a limit-only check?
   2. Approval expiry while the workspace is switched off: may the expiry cron keep running then? It only takes
      permission away, never grants it.
+
+## 2026-11-06 - Phase 2 progress: WP74 and WP77 S2–S4 merged
+
+- Merged to `main`: WP74 wizard and business creation (#208, `d0f6e572`); WP68-S8 scanner reconcile with C-AUTHZ
+  `requireOwnedWizardSession` (#209, Codex); WP77 S2–S4 change rounds, Wren chat and card-only tools (#210,
+  `687a14db`); WP78 lead privacy primitives (#211) and WP79 tenant email primitives (#212), both dormant (Codex).
+- Contract changes recorded in `docs/plans/launch-workspace/contract-changes.md`: C-AUTHZ
+  `requireOwnedWizardSession` (#209) and the C-DATA additions in #212.
+- WP75 started on `claude/wp75-crew` (the board said `claude/wp75-crew-engine`; corrected). Plan: 17 stories,
+  20 stop-and-ask items, 13 owner questions (`docs/wp/wp75-{stories,progress}.md`). The owner answered the roster
+  question: **blueprint first** (`docs/wp/RULINGS.md`, 2026-11-06). The launch DAG becomes blueprint → roster →
+  the rest. 12 owner questions remain.
+- WP77-S5 (Wren memory, Files page) is written and in review fixes; S6 (accessibility) follows.
+- Owed by the Claude lane: an independent privacy and publishing review of #211/#212 before D5 real capture, and
+  the WP74 move to `requireOwnedWizardSession`.
+- G2 still needs live spend (20 test launches) and owner steps; nothing live has run.
