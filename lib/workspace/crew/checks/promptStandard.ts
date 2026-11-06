@@ -17,14 +17,20 @@
  *
  * How v1 maps onto eight prompts, and whether a light pack may mention
  * checkout, are open owner questions (WP75 progress, Owner questions 8 and
- * 9). Both rulings run on the same rules through `PromptStandardOptions`:
+ * 9). Both rulings run on the same rules through `BuildPackStandardOptions`:
  *
  * - `setupPromptNumbers`: which prompts (1-based, `buildPackPrompts` order)
- *   get the Project Setup rules. Default: prompt 3 for a full pack (the
- *   scaffold phase's first prompt, which the schema names as Project Setup)
- *   and none for a light pack.
- * - `billing`: severity of a billing mention per prompt kind. Default:
- *   hard in a setup prompt, soft elsewhere, off in a light pack.
+ *   get the Project Setup rules. Default `DEFAULT_SETUP_PROMPT_NUMBERS`:
+ *   prompt 3 for a full pack (the scaffold phase's first prompt, which the
+ *   schema names as Project Setup) and none for a light pack. A number no
+ *   pack of that weight can have (0, 9, 2.5) is a caller bug and throws.
+ * - `billing`: severity of a billing mention, per prompt kind
+ *   (`{ setup, standard }`; either may be left out). Default
+ *   `DEFAULT_BILLING`: hard in a setup prompt and soft elsewhere for a full
+ *   pack; off for both in a light pack (a light pack sets up checkout).
+ *
+ * Messages name a prompt by its number ("Prompt 3"), never by its title: the
+ * title is model text and the messages go to the repair call.
  *
  * Pure; no imports beyond contracts.
  */
@@ -115,31 +121,34 @@ export type PromptStandardOptions = {
   readonly role?: PromptRole;
   /** Severity of a billing mention. Default: hard for `setup`, soft for `standard`. */
   readonly billing?: BillingSeverity;
+  /** How messages name the prompt, e.g. "Prompt 3". Default "This prompt". Never the model's title. */
+  readonly label?: string;
 };
 
 /** One prompt against the per-prompt rules of v1. `base` is the prompt's path in the artifact. */
 export function checkBuildPrompt(prompt: BuildPrompt, options: PromptStandardOptions = {}, base: IssuePath = []): CheckIssue[] {
   const role = options.role ?? "standard";
   const billing = options.billing ?? (role === "setup" ? "hard" : "soft");
+  const name = options.label ?? "This prompt";
   const issues: CheckIssue[] = [];
   const at = (field: string): IssuePath => [...base, field];
   const text = promptCopyText(prompt);
   const built = withoutProductNames(withoutFence(text));
 
   if (prompt.doneWhen.trim() === "" || !DONE_WHEN.test(text)) {
-    issues.push(issue("hard", "done_when", at("doneWhen"), `${prompt.title} needs a Done when: line that names something checkable.`));
+    issues.push(issue("hard", "done_when", at("doneWhen"), `${name} needs a Done when: line that names something checkable.`));
   }
   if (prompt.doNotBuild.trim() === "" || !DO_NOT_BUILD.test(text)) {
-    issues.push(issue("hard", "do_not_build", at("doNotBuild"), `${prompt.title} needs a Do not build: line naming what is left out.`));
+    issues.push(issue("hard", "do_not_build", at("doNotBuild"), `${name} needs a Do not build: line naming what is left out.`));
   }
   if (DONE_WHEN.test(prompt.body) || DO_NOT_BUILD.test(prompt.body)) {
-    issues.push(issue("soft", "duplicate_label", at("body"), `${prompt.title} repeats a Done when: or Do not build: label inside its body; the pack adds them.`));
+    issues.push(issue("soft", "duplicate_label", at("body"), `${name} repeats a Done when: or Do not build: label inside its body; the pack adds them.`));
   }
   if (NEXT_PIN.test(text)) {
-    issues.push(issue("hard", "next_pin", at("body"), `${prompt.title} pins a Next.js major version; say "Next.js".`));
+    issues.push(issue("hard", "next_pin", at("body"), `${name} pins a Next.js major version; say "Next.js".`));
   }
   if (text.includes("```")) {
-    issues.push(issue("hard", "code_fence", at("body"), `${prompt.title} contains a code fence, which ends the copied block early.`));
+    issues.push(issue("hard", "code_fence", at("body"), `${name} contains a code fence, which ends the copied block early.`));
   }
   if (billing !== "off" && BILLING.test(built)) {
     issues.push(
@@ -148,48 +157,63 @@ export function checkBuildPrompt(prompt: BuildPrompt, options: PromptStandardOpt
         role === "setup" ? "setup_billing" : "billing",
         at("body"),
         role === "setup"
-          ? `${prompt.title} mentions billing; the setup prompt has none (a Do not build: line may name it).`
-          : `${prompt.title} mentions billing or checkout; fine only where taking payment is the product's own function.`,
+          ? `${name} mentions billing; the setup prompt has none (a Do not build: line may name it).`
+          : `${name} mentions billing or checkout; fine only where taking payment is the product's own function.`,
       ),
     );
   }
 
   if (role === "setup") {
-    const lines = nonEmptyLines(prompt.body).length;
+    // As `lintPrompts` counts: the copied text, Do not build and Done when lines included.
+    const lines = nonEmptyLines(text).length;
     if (lines < SETUP_MIN_LINES) {
-      issues.push(issue("hard", "setup_structure", at("body"), `Project Setup has ${lines} lines; it needs ${SETUP_MIN_LINES}+, one idea per line.`));
+      issues.push(issue("hard", "setup_structure", at("body"), `${name} (Project Setup) has ${lines} lines; it needs ${SETUP_MIN_LINES}+, one idea per line.`));
     }
     const services = servicesIn(built);
     if (services.length > SETUP_MAX_SERVICES) {
       issues.push(
-        issue("hard", "setup_services", at("body"), `Project Setup names ${services.length} outside services (${services.join(", ")}); the most is ${SETUP_MAX_SERVICES}.`),
+        issue("hard", "setup_services", at("body"), `${name} (Project Setup) names ${services.length} outside services (${services.join(", ")}); the most is ${SETUP_MAX_SERVICES}.`),
       );
     }
     const auth = AUTH_PROVIDERS.filter(([, re]) => re.test(built)).map(([name]) => name);
     if (auth.length > 1) {
-      issues.push(issue("hard", "setup_auth", at("body"), `Project Setup names ${auth.length} login providers (${auth.join(", ")}); use one.`));
+      issues.push(issue("hard", "setup_auth", at("body"), `${name} (Project Setup) names ${auth.length} login providers (${auth.join(", ")}); use one.`));
     }
     if (/\bclerk\b/i.test(built) && /\bsupabase\b/i.test(built)) {
-      issues.push(issue("hard", "setup_auth_rls", at("body"), "Project Setup pairs Clerk with Supabase; row rules need the database to trust the login. Use Supabase Auth."));
+      issues.push(issue("hard", "setup_auth_rls", at("body"), `${name} (Project Setup) pairs Clerk with Supabase; row rules need the database to trust the login. Use Supabase Auth.`));
     }
     const tables = tableNames(prompt.body).filter((name) => !GENERIC_TABLES.has(name));
     if (tables.length < SETUP_MIN_TABLES) {
-      issues.push(issue("hard", "setup_tables", at("body"), `Project Setup declares ${tables.length} table(s) as "- name(columns)" lines; it needs ${SETUP_MIN_TABLES}+.`));
+      issues.push(issue("hard", "setup_tables", at("body"), `${name} (Project Setup) declares ${tables.length} table(s) as "- name(columns)" lines; it needs ${SETUP_MIN_TABLES}+.`));
     }
   }
   return issues;
 }
 
+export type BillingByKind = { readonly setup: BillingSeverity; readonly standard: BillingSeverity };
+
 export type BuildPackStandardOptions = {
   /** 1-based prompt numbers (`buildPackPrompts` order) that get the Project Setup rules. */
   readonly setupPromptNumbers?: readonly number[];
-  /** Overrides the per-prompt billing severity for every prompt. */
-  readonly billing?: BillingSeverity;
+  /** Billing severity per prompt kind; a kind left out keeps the default for the pack's weight. */
+  readonly billing?: Partial<BillingByKind>;
 };
 
-/** Default ruling: a full pack's Project Setup is prompt 3 (scaffold, first); a light pack has none and allows checkout. */
-export function defaultBuildPackStandard(weight: BuildPack["weight"]): Required<BuildPackStandardOptions> {
-  return weight === "full" ? { setupPromptNumbers: [3], billing: "soft" } : { setupPromptNumbers: [], billing: "off" };
+/** Owner question 9's default ruling, in one place: which prompts are Project Setup prompts. */
+export const DEFAULT_SETUP_PROMPT_NUMBERS: Readonly<Record<BuildPack["weight"], readonly number[]>> = Object.freeze({
+  full: Object.freeze([3]),
+  light: Object.freeze([]),
+});
+
+/** Owner question 8's default ruling: billing severity per prompt kind and pack weight. */
+export const DEFAULT_BILLING: Readonly<Record<BuildPack["weight"], BillingByKind>> = Object.freeze({
+  full: Object.freeze({ setup: "hard", standard: "soft" }),
+  light: Object.freeze({ setup: "off", standard: "off" }),
+});
+
+/** The default ruling for a pack's weight. */
+export function defaultBuildPackStandard(weight: BuildPack["weight"]): { setupPromptNumbers: readonly number[]; billing: BillingByKind } {
+  return { setupPromptNumbers: DEFAULT_SETUP_PROMPT_NUMBERS[weight], billing: DEFAULT_BILLING[weight] };
 }
 
 const PROMPT_SLOTS = ["first", "second"] as const;
@@ -211,17 +235,29 @@ function packPrompts(pack: BuildPack): { prompt: BuildPrompt; path: IssuePath; n
 /**
  * A whole build pack against standard v1: each prompt's rules, the stack's
  * outside-service cap, and no Next.js major pin in the stack or PRODUCT.md.
- * Billing severity in the default ruling: hard in a setup prompt, soft
- * elsewhere, off in a light pack; `options.billing` overrides all of them.
+ * Billing severity per prompt kind comes from `options.billing`, then
+ * `DEFAULT_BILLING` for the pack's weight. Throws a RangeError for a setup
+ * prompt number no pack of that weight can have (a caller bug, not model output).
  */
 export function checkBuildPackStandard(pack: BuildPack, options: BuildPackStandardOptions = {}): CheckIssue[] {
   const defaults = defaultBuildPackStandard(pack.weight);
+  const prompts = packPrompts(pack);
   const setupNumbers = options.setupPromptNumbers ?? defaults.setupPromptNumbers;
+  // Validated against what the weight allows, not this pack's length: a light pack's prompt count varies.
+  const most = pack.weight === "full" ? BUILD_PHASES.length * PROMPT_SLOTS.length : LIMITS.buildPack.lightPromptsMax;
+  for (const n of setupNumbers) {
+    if (!Number.isInteger(n) || n < 1 || n > most) {
+      throw new RangeError(`setupPromptNumbers: ${String(n)} is not a prompt number a ${pack.weight} pack can have (1 to ${most}).`);
+    }
+  }
+  const billing: BillingByKind = {
+    setup: options.billing?.setup ?? defaults.billing.setup,
+    standard: options.billing?.standard ?? defaults.billing.standard,
+  };
   const issues: CheckIssue[] = [];
-  for (const { prompt, path, n } of packPrompts(pack)) {
+  for (const { prompt, path, n } of prompts) {
     const role: PromptRole = setupNumbers.includes(n) ? "setup" : "standard";
-    const billing = options.billing ?? (pack.weight === "light" ? "off" : role === "setup" ? "hard" : "soft");
-    issues.push(...checkBuildPrompt(prompt, { role, billing }, path));
+    issues.push(...checkBuildPrompt(prompt, { role, billing: billing[role], label: `Prompt ${n}` }, path));
   }
   const outside = pack.stack.filter((item) => item.outsideService).length;
   if (outside > LIMITS.buildPack.outsideServicesMax) {

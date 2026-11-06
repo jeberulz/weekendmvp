@@ -40,13 +40,16 @@ export function issue(severity: IssueSeverity, code: string, path: IssuePath, me
   return { code, path: [...path], message, severity };
 }
 
-/** Splits a flat list into `{ hard, soft }`, de-duplicated by severity, code, path and message. */
+/**
+ * Splits a flat list into `{ hard, soft }`, keeping the first issue for each
+ * code and path (three star ratings in one string are one issue).
+ */
 export function toResult(issues: readonly CheckIssue[]): CheckResult {
   const seen = new Set<string>();
   const hard: CheckIssue[] = [];
   const soft: CheckIssue[] = [];
   for (const found of issues) {
-    const key = `${found.severity}|${found.code}|${JSON.stringify(found.path)}|${found.message}`;
+    const key = `${found.code}|${JSON.stringify(found.path)}`;
     if (seen.has(key)) continue;
     seen.add(key);
     (found.severity === "hard" ? hard : soft).push(found);
@@ -97,8 +100,17 @@ export function toRepairIssues(result: CheckResult, max = 40): RepairIssue[] {
   }));
 }
 
-/** A short, single-line, quote-free excerpt of matched text for a message. */
+/**
+ * A short, single-line excerpt of matched text for a message, safe to show a
+ * model as data: no control or invisible format characters (bidi overrides,
+ * zero-width), no quotes or backticks, and no `<`, `>`, `{` or `}` (so it
+ * cannot close or open a tag or a JSON object in the repair prompt).
+ */
 export function snippet(text: string, max = 48): string {
-  const clean = text.replace(/[\u0000-\u001F\u007F-\u009F"`]/gu, " ").replace(/\s+/gu, " ").trim();
+  const clean = text
+    .replace(/\p{Cf}/gu, "")
+    .replace(/[\u0000-\u001F\u007F-\u009F"`<>{}]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
   return clean.length <= max ? clean : `${clean.slice(0, max - 1).trimEnd()}…`;
 }

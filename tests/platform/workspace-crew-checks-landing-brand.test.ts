@@ -15,6 +15,8 @@ import {
 } from "@/lib/workspace/crew/checks";
 
 const codes = (issues: readonly { code: string }[]): string[] => issues.map((found) => found.code);
+/** Matches an issue by code and severity (every assertion names both). */
+const hit = (code: string, severity: "hard" | "soft") => expect.objectContaining({ code, severity });
 
 const withHero = (patch: Partial<LandingSpec["hero"]>): LandingSpec => ({
   ...hydrotrailLandingSpec,
@@ -52,9 +54,9 @@ describe("heading lengths", () => {
         ] as typeof hydrotrailLandingSpec.how_it_works.steps,
       },
     };
-    const paths = checkHeadingLengths(spec).map((found) => found.path);
-    expect(paths).toContainEqual(["waitlist", "heading"]);
-    expect(paths).toContainEqual(["how_it_works", "steps", 0, "title"]);
+    const issues = checkHeadingLengths(spec);
+    expect(issues).toContainEqual(expect.objectContaining({ code: "heading_long_for_display", severity: "soft", path: ["waitlist", "heading"] }));
+    expect(issues).toContainEqual(expect.objectContaining({ code: "heading_long_for_display", severity: "soft", path: ["how_it_works", "steps", 0, "title"] }));
   });
 
   it("counts characters, not UTF-16 units", () => {
@@ -76,7 +78,30 @@ describe("no eyebrow, section number or emoji (D24)", () => {
 
   it.each(["01 Plan the route", "02. Pack", "3 / Sip", "1) Go", "Step 2: pack"])("flags a numbered heading: %s", (heading) => {
     const spec: LandingSpec = { ...hydrotrailLandingSpec, waitlist: { ...hydrotrailLandingSpec.waitlist, heading } };
-    expect(codes(checkNoEyebrow(spec))).toContain("section_number");
+    expect(checkNoEyebrow(spec)).toContainEqual(hit("section_number", "hard"));
+  });
+
+  it.each(["1. Fill the pack", "Step 1: fill the pack", "01 Fill", "3 / 5 trails"])(
+    "allows a numbered how-it-works step title (07 §4): %s",
+    (title) => {
+      const steps = hydrotrailLandingSpec.how_it_works?.steps ?? [];
+      const spec = {
+        ...hydrotrailLandingSpec,
+        how_it_works: hydrotrailLandingSpec.how_it_works && {
+          ...hydrotrailLandingSpec.how_it_works,
+          steps: [{ ...steps[0], title }, ...steps.slice(1)] as typeof steps,
+        },
+      } as LandingSpec;
+      expect(checkNoEyebrow(spec)).toEqual([]);
+    },
+  );
+
+  it("still flags a numbered how-it-works section heading", () => {
+    const spec = {
+      ...hydrotrailLandingSpec,
+      how_it_works: hydrotrailLandingSpec.how_it_works && { ...hydrotrailLandingSpec.how_it_works, heading: "02. How it works" },
+    } as LandingSpec;
+    expect(checkNoEyebrow(spec)).toEqual([expect.objectContaining({ code: "section_number", severity: "hard", path: ["how_it_works", "heading"] })]);
   });
 
   it.each(["3 steps before you leave the car park", "2 minutes to plan", "5k plans that fit your week"])(
@@ -99,7 +124,7 @@ describe("no eyebrow, section number or emoji (D24)", () => {
 
   it("flags emoji but not © or ™", () => {
     const spec = withHero({ subhead: "Plan your water 💧 before you go" });
-    expect(checkNoEmoji(spec)).toEqual([expect.objectContaining({ code: "emoji_in_copy", path: ["hero", "subhead"] })]);
+    expect(checkNoEmoji(spec)).toEqual([expect.objectContaining({ code: "emoji_in_copy", severity: "hard", path: ["hero", "subhead"] })]);
     expect(checkNoEmoji(withHero({ subhead: "HydroTrail™ plans your water © 2026" }))).toEqual([]);
   });
 });
@@ -123,11 +148,11 @@ describe("proof slots stay placeholders", () => {
         { kind: "press", placeholder: true, outlet: "[Outlet]", quote: "Best app" },
       ],
     });
-    expect(issues.map((found) => [found.code, found.path])).toEqual([
-      ["proof_not_bracketed", ["proofSlots", 0, "quote"]],
-      ["proof_not_placeholder", ["proofSlots", 1, "placeholder"]],
-      ["proof_not_bracketed", ["proofSlots", 2, "value"]],
-      ["proof_not_bracketed", ["proofSlots", 3, "quote"]],
+    expect(issues.map((found) => [found.code, found.severity, found.path])).toEqual([
+      ["proof_not_bracketed", "hard", ["proofSlots", 0, "quote"]],
+      ["proof_not_placeholder", "hard", ["proofSlots", 1, "placeholder"]],
+      ["proof_not_bracketed", "hard", ["proofSlots", 2, "value"]],
+      ["proof_not_bracketed", "hard", ["proofSlots", 3, "quote"]],
     ]);
   });
 });
@@ -136,6 +161,9 @@ describe("alt text", () => {
   it("flags alt text that opens with 'image of'", () => {
     const issues = checkAltText({ image: { description: "d", alt: "Image of a hiker on a ridge" } });
     expect(issues).toEqual([expect.objectContaining({ code: "alt_redundant", severity: "soft", path: ["image", "alt"] })]);
+    expect(checkAltText({ post: { imageAlt: "Picture of a refill" } })).toEqual([
+      expect.objectContaining({ code: "alt_redundant", severity: "soft", path: ["post", "imageAlt"] }),
+    ]);
     expect(checkAltText(hydrotrailLandingSpec)).toEqual([]);
     expect(checkAltText(hydrotrailBrandKit)).toEqual([]);
   });
@@ -149,7 +177,7 @@ describe("checkLandingSpec", () => {
   it("flags a missing waitlist", () => {
     const rest: Record<string, unknown> = { ...hydrotrailLandingSpec };
     delete rest.waitlist;
-    expect(codes(checkLandingSpec(rest as unknown as LandingSpec))).toContain("waitlist_missing");
+    expect(checkLandingSpec(rest as unknown as LandingSpec)).toContainEqual(hit("waitlist_missing", "hard"));
   });
 });
 
@@ -166,9 +194,9 @@ describe("layouts against the brand kit's direction", () => {
 
   it("follows the kit's direction", () => {
     const editorial: BrandKit = { ...hydrotrailBrandKit, visualSystem: { ...hydrotrailBrandKit.visualSystem, direction: "editorial" } };
-    expect(checkLandingLayouts(hydrotrailLandingSpec, editorial).map((found) => found.path)).toEqual(
-      expect.arrayContaining([["app_preview", "layout"], ["waitlist", "layout"]]),
-    );
+    const issues = checkLandingLayouts(hydrotrailLandingSpec, editorial);
+    expect(issues.map((found) => found.path)).toEqual(expect.arrayContaining([["app_preview", "layout"], ["waitlist", "layout"]]));
+    expect(issues.every((found) => found.code === "layout_not_allowed" && found.severity === "hard")).toBe(true);
   });
 });
 
@@ -182,7 +210,7 @@ describe("brand kit", () => {
   it("flags every failing text pair with its ratio", () => {
     const kit = withPalette({ ink: { ...hydrotrailBrandKit.palette.ink, hex: "#B8B3A8" } });
     const issues = checkBrandKit(kit);
-    expect(codes(issues)).toContain("low_contrast");
+    expect(issues).toContainEqual(hit("low_contrast", "hard"));
     const first = issues.find((found) => found.code === "low_contrast");
     expect(first).toMatchObject({ severity: "hard", path: ["palette", "ink", "hex"] });
     expect(first?.message).toMatch(/ink text on ground is \d\.\d\d:1; WCAG AA needs 4\.5:1/);
@@ -190,18 +218,18 @@ describe("brand kit", () => {
 
   it("flags a primary that fails on ground", () => {
     const kit = withPalette({ primary: { ...hydrotrailBrandKit.palette.primary, hex: "#9AD0E0" } });
-    expect(checkBrandKit(kit).map((found) => found.path)).toContainEqual(["palette", "primary", "hex"]);
+    expect(checkBrandKit(kit)).toContainEqual(expect.objectContaining({ code: "low_contrast", severity: "hard", path: ["palette", "primary", "hex"] }));
   });
 
   it("does not throw on a malformed hex", () => {
     const kit = withPalette({ ground: { ...hydrotrailBrandKit.palette.ground, hex: "cream" } });
     const issues = checkBrandKit(kit);
-    expect(issues).toEqual([expect.objectContaining({ code: "invalid_hex", path: ["palette", "ground", "hex"] })]);
+    expect(issues).toEqual([expect.objectContaining({ code: "invalid_hex", severity: "hard", path: ["palette", "ground", "hex"] })]);
   });
 
   it("flags a type pair the direction does not allow", () => {
     const kit: BrandKit = { ...hydrotrailBrandKit, visualSystem: { ...hydrotrailBrandKit.visualSystem, direction: "editorial" } };
-    expect(codes(checkBrandKit(kit))).toContain("type_pair_direction");
+    expect(checkBrandKit(kit)).toContainEqual(hit("type_pair_direction", "hard"));
   });
 
   it("flags a theme mode that contradicts the palette", () => {
@@ -209,6 +237,6 @@ describe("brand kit", () => {
       ...hydrotrailBrandKit,
       visualSystem: { ...hydrotrailBrandKit.visualSystem, theme: { ...hydrotrailBrandKit.visualSystem.theme, mode: "dark" } },
     };
-    expect(codes(checkBrandKit(kit))).toContain("theme_mode_mismatch");
+    expect(checkBrandKit(kit)).toContainEqual(hit("theme_mode_mismatch", "hard"));
   });
 });

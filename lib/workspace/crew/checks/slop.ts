@@ -14,7 +14,7 @@
  * the triad rule only fires on a short line made of three single words.
  */
 import { issue, snippet, type CheckIssue } from "./types";
-import { isCopyPath, stringLeaves } from "./walk";
+import { isCopyPath, normalizeText, stringLeaves } from "./walk";
 
 type Phrase = { readonly code: string; readonly severity: "hard" | "soft"; readonly re: RegExp };
 
@@ -23,15 +23,15 @@ const HARD_PHRASES: readonly RegExp[] = [
   /\bunleash(?:es|ed|ing)?\b/iu,
   /\brevolutioni[sz](?:e|es|ed|ing)\b/iu,
   /\bgame[\s-]?chang(?:er|ers|ing)\b/iu,
-  /\btake\s+(?:your\s+)?[\p{L}\s]{1,30}?\s+to\s+the\s+next\s+level\b/iu,
-  /\bnext[\s-]level\b/iu,
+  /\b(?:take|takes|taking|bring|brings|bringing)\s+(?:your\s+)?[\p{L}\s]{1,30}?\s+to\s+the\s+next\s+level\b/iu,
   /\bsupercharg(?:e|es|ed|ing)\b/iu,
   /\bharness(?:es|ed|ing)?\s+the\s+power\b/iu,
   /\bin\s+today['’]s\s+(?:fast[\s-]paced|digital|modern)\s+(?:world|age|landscape)\b/iu,
   /\bever[\s-]evolving\b/iu,
   /\bdigital\s+landscape\b/iu,
   /\b(?:delve|delves|delving)\b/iu,
-  /\btapestry\b/iu,
+  // The metaphor, not the craft: "a rich tapestry of", never "hand-woven tapestry kits".
+  /\b(?:rich|vibrant|intricate|colou?rful)\s+tapestry\b|\btapestry\s+of\b/iu,
   /\bsay\s+goodbye\s+to\b/iu,
   /\blook\s+no\s+further\b/iu,
   /\bone[\s-]stop[\s-]shop\b/iu,
@@ -43,6 +43,8 @@ const HARD_PHRASES: readonly RegExp[] = [
 ];
 
 const SOFT_PHRASES: readonly RegExp[] = [
+  // "next-level comfort" is hype; "the next level of the course" is literal and not flagged.
+  /\bnext-level\b/iu,
   /\bseamless(?:ly)?\b/iu,
   /\brobust\b/iu,
   /\bleverag(?:e|es|ed|ing)\b/iu,
@@ -85,10 +87,11 @@ export function isTriad(text: string): boolean {
   return TRIADS.some((re) => re.test(line));
 }
 
-/** Slop findings for every copy string in an artifact. */
+/** Slop findings for every copy string in an artifact (text normalised first, as in never-fake). */
 export function checkSlop(artifact: unknown): CheckIssue[] {
   const issues: CheckIssue[] = [];
-  for (const { value, path } of stringLeaves(artifact, (p) => !isCopyPath(p))) {
+  for (const { value: raw, path } of stringLeaves(artifact, (p) => !isCopyPath(p))) {
+    const value = normalizeText(raw);
     for (const phrase of PHRASES) {
       const match = phrase.re.exec(value);
       if (match === null) continue;

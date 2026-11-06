@@ -6,7 +6,8 @@
  *   own caps, re-checked because a draft may arrive unparsed), soft against
  *   tighter display targets so a headline fits one to three lines;
  * - no eyebrow, kicker or section number (D24, 07 §4): any such field name,
- *   a heading that leads with a number or "Step 1", or an all-caps label;
+ *   a heading that leads with a number or "Step 1" (how-it-works step titles
+ *   may be numbered), or an all-caps label;
  * - no emoji in copy;
  * - proof slots are placeholders only ("never fake it" for the workspace-only
  *   slots: `placeholder: true` and bracketed text);
@@ -33,16 +34,22 @@ export const DISPLAY_TARGETS = Object.freeze({
 } as const);
 
 type HeadingKind = keyof typeof DISPLAY_TARGETS;
-type HeadingSpot = { readonly path: IssuePath; readonly kind: HeadingKind; readonly hardMax: number };
+type HeadingSpot = {
+  readonly path: IssuePath;
+  readonly kind: HeadingKind;
+  readonly hardMax: number;
+  /** How-it-works step titles may be numbered ("1. Fill the pack"; 07 §4). */
+  readonly numbered: boolean;
+};
 
 const wordCount = (text: string): number => text.trim().split(/\s+/u).filter((word) => word !== "").length;
 
 function headingSpots(spec: unknown): HeadingSpot[] {
   const spots: HeadingSpot[] = [
-    { path: ["hero", "headline", "text"], kind: "headline", hardMax: LIMITS.landingSpec.headline },
-    { path: ["how_it_works", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading },
-    { path: ["app_preview", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading },
-    { path: ["waitlist", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading },
+    { path: ["hero", "headline", "text"], kind: "headline", hardMax: LIMITS.landingSpec.headline, numbered: false },
+    { path: ["how_it_works", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading, numbered: false },
+    { path: ["app_preview", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading, numbered: false },
+    { path: ["waitlist", "heading"], kind: "heading", hardMax: LIMITS.landingSpec.heading, numbered: false },
   ];
   for (const [section, field] of [
     ["promises", "items"],
@@ -51,7 +58,12 @@ function headingSpots(spec: unknown): HeadingSpot[] {
     const items = valueAt(spec, [section, field]);
     if (Array.isArray(items)) {
       items.forEach((_, index) =>
-        spots.push({ path: [section, field, index, "title"], kind: "itemTitle", hardMax: LIMITS.landingSpec.itemTitle }),
+        spots.push({
+          path: [section, field, index, "title"],
+          kind: "itemTitle",
+          hardMax: LIMITS.landingSpec.itemTitle,
+          numbered: section === "how_it_works",
+        }),
       );
     }
   }
@@ -91,7 +103,10 @@ const LEADING_SECTION_NUMBER = /^(0\d|\d{1,2}\s*[./:)|·–—-])(\s|$)/u;
 const STEP_LABEL = /^step\s*\d+\b/iu;
 const ALL_CAPS_LABEL = /^[^\p{Ll}]*\p{Lu}{3,}[^\p{Ll}]*$/u;
 
-/** No eyebrow, kicker or section numbering on a founder page (D24). */
+/**
+ * No eyebrow, kicker or section numbering on a founder page (D24). How-it-works
+ * step titles are exempt from the numbering rule: steps may be numbered.
+ */
 export function checkNoEyebrow(spec: unknown): CheckIssue[] {
   const issues: CheckIssue[] = [];
   for (const path of keyPaths(spec)) {
@@ -100,10 +115,10 @@ export function checkNoEyebrow(spec: unknown): CheckIssue[] {
       issues.push(issue("hard", "eyebrow_field", path, "Founder pages carry no eyebrow or kicker above a heading. Remove this field."));
     }
   }
-  for (const { path } of headingSpots(spec)) {
+  for (const { path, numbered } of headingSpots(spec)) {
     const text = valueAt(spec, path);
     if (typeof text !== "string") continue;
-    if (LEADING_SECTION_NUMBER.test(text) || STEP_LABEL.test(text)) {
+    if (!numbered && (LEADING_SECTION_NUMBER.test(text) || STEP_LABEL.test(text))) {
       issues.push(issue("hard", "section_number", path, "Headings never lead with a section number or a step label."));
     } else if (ALL_CAPS_LABEL.test(text.trim())) {
       issues.push(issue("soft", "all_caps_heading", path, "An all-caps heading reads as an eyebrow label. Use sentence case."));
@@ -113,7 +128,7 @@ export function checkNoEyebrow(spec: unknown): CheckIssue[] {
 }
 
 /** Emoji shown as pictures (and the variation selector); © and ™ stay allowed. */
-const EMOJI = /[\p{Emoji_Presentation}️]/u;
+const EMOJI = /[\p{Emoji_Presentation}\u{FE0F}]/u;
 
 export function checkNoEmoji(spec: unknown): CheckIssue[] {
   return stringLeaves(spec)
@@ -157,11 +172,12 @@ export function checkProofSlots(spec: unknown): CheckIssue[] {
 }
 
 const REDUNDANT_ALT = /^(?:an?\s+)?(?:image|picture|photo|graphic|icon)\s+of\b/iu;
+const ALT_KEYS = new Set<string | number | undefined>(["alt", "imageAlt"]);
 
-/** Alt text that opens with "image of" wastes a screen reader's first words. */
+/** Alt text (`alt` or `imageAlt`) that opens with "image of" wastes a screen reader's first words. */
 export function checkAltText(artifact: unknown): CheckIssue[] {
   return stringLeaves(artifact)
-    .filter(({ path, value }) => path[path.length - 1] === "alt" && REDUNDANT_ALT.test(value.trim()))
+    .filter(({ path, value }) => ALT_KEYS.has(path[path.length - 1]) && REDUNDANT_ALT.test(value.trim()))
     .map(({ path }) => issue("soft", "alt_redundant", path, 'Alt text should not start with "image of" or "picture of"; describe the content.'));
 }
 

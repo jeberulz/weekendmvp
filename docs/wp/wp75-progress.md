@@ -328,3 +328,71 @@ and `lintPrompts` parity for each shared rule.
 ### Docs
 
 - Docs updated: `docs/wp/wp75-stories.md` (S4a ticked), this file.
+
+## 2026-11-06 - S4a review fixes (branch `claude/wp75-checks`, on `319d0c07`)
+
+An independent review found 2 Blockers, 8 Majors, 9 Minors and nits. All are fixed except the two declined below.
+Where this section and the S4a section above disagree, this section wins.
+
+### Ruling: the own-idea market check (orchestrator, Claude lane)
+
+D15 bans market numbers, competitor prices and keyword data for own ideas. It does not ban the founder's own price or
+product facts. So in own-idea mode `own_idea_market_number` does **not** flag the business's own price ("$79
+pre-order", "$29/month"), product facts ("100% recycled nylon"), promotions ("20% off the launch price", "free shipping
+over $50") or waitlist caps ("join the first 100 hikers"). It still flags market size and magnitudes, TAM/SAM/SOM, CAGR,
+CPC, growth rates, search volume and keyword data, revenue metrics (MRR/ARR/GMV), shares and ratios of a population,
+spending data, competitor prices, and any number in a sentence about an industry, a survey or an average.
+`marketNumbers.ts` now has its own rules for this; it still calls the WP74 `hasMarketClaim` for the industry/survey
+sentences. `launch_plan` and `ads_drafts` are now market-checked (their copy is public; budgets are integers and are
+not walked).
+
+### Decisions
+
+- **Hard patterns aim at precision; uncertain ones are soft.** New soft codes, shown but never repaired on their own:
+  `possible_testimonial` (a signed line without quote marks, "Sarah from Denver: ...", a sentence signed
+  "— @handle"), `founder_quote` (a quote attributed to the founder), `possible_social_count` ("Join 50 hikers": under
+  100, no "already"), `unverified_comparison` ("30% more water than a 1 L bottle": a comparison with a stated
+  baseline). Bare "next-level" is soft; "take X to the next level" stays hard. "Tapestry" is hard only as the metaphor.
+- **Never fake it skips** the build pack (its prompts are instructions: "rate each trail 1 to 5 stars") and a library
+  blueprint's whole `market` subtree (it describes other businesses, which D15 allows). The review asked for
+  `fake_stat` and `fake_social_count` only; the whole subtree is skipped because "trusted by" or a rating there is
+  about a competitor too.
+- **Malformed input** returns hard `invalid_shape` (new `shape.ts`) instead of throwing. The walk is capped at 64 levels
+  and 20,000 nodes and stops on a cycle; an artifact past a cap is `invalid_shape`.
+- **Context**: `checkArtifact(kind, artifact, { ownIdea, ... })` now requires `ownIdea`. A blueprint still reads its
+  own `source`, which wins over the context.
+- **Prompt standard**: billing severity is per prompt kind (`billing: { setup?, standard? }`); the defaults live in
+  `DEFAULT_SETUP_PROMPT_NUMBERS` and `DEFAULT_BILLING` (owner Q8 and Q9 stay open). A setup prompt number no pack of
+  that weight can have throws a `RangeError` (a caller bug). `setup_structure` counts lines as `lintPrompts` does
+  (Do not build and Done when included); an 8-line boundary parity test was added. Messages name prompts by number
+  ("Prompt 3"), never by the model's title.
+- **Repair data**: `snippet()` also strips `<`, `>`, `{`, `}` and invisible format characters; the market message
+  quotes the matched words, not the start of the field. Results keep one issue per code and path.
+- **Text is normalised before matching** (NFKC, invisible characters removed, Cyrillic/Greek lookalikes mapped inside
+  mixed-script words, I/l/O inside numbers). Only for matching; the artifact is never rewritten.
+- **Regex cost**: number starts and lookbehinds are bounded; every 50 KB adversarial input in the review probes and in
+  extra probes runs in under 50 ms (worst 35 ms, was 2.7 s).
+- **Scarcity** ("Only 3 left", "only 12 spots remain") is not proof and stays out of S4a. Candidate for the S4b
+  `quality@1` prompt.
+
+### Declined or left as known trade-offs
+
+- "Get 2x more done ..." stays hard: a bare multiplier outcome reads as a claim even when hedged later.
+- "Our 5-Star Pack" (a product name) stays hard: telling it from "5-star support" needs the business's own product
+  names, which the checks do not get. A 5-star hygiene, safety or energy rating is no longer flagged.
+- Still missed (not on the review's cheap list): "Our customers save an average of 6 hours a week", "Students double
+  their freelance income", and a quote-less "... — @trailmike" (soft only). Left to S4b.
+
+### Probes (reviewer's scripts, re-run unchanged)
+
+| Probe | Before | After |
+|---|---|---|
+| Honest copy, hard flags (`fp.ts`, library / own idea) | 9/46 / 19/46 | 2/46 / 2/46 |
+| Honest copy, hard flags (`fp2.ts`) | 23/30 | 0/30 |
+| Faked proof missed (`fn.ts`) | 19/28 | 6/28 (2 scarcity, left to S4b; 2 flagged soft only; 2 not on the cheap list) |
+| 50 KB adversarial timing (`redos.ts`) | 2.7 s worst | under 50 ms |
+| Malformed, deep, cyclic input (`redos.ts`) | 9 throws | 0 throws (`invalid_shape`) |
+
+### Docs
+
+- Docs updated: this file. Stories unchanged (S4a stays ticked).

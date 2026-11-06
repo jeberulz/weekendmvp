@@ -6,7 +6,7 @@
  * (S4b). WP76 reuses the same checks for its generators through
  * `checkArtifact`.
  *
- *   const result = checkArtifact("landing_spec", spec, { brandKit });
+ *   const result = checkArtifact("landing_spec", spec, { ownIdea, brandKit });
  *   if (hasHardIssues(result)) repairInput = toRepairIssues(result);
  *
  * `{ hard, soft }`: hard issues trigger the repair; soft ones ride along when
@@ -19,12 +19,14 @@ import { MARKET_CHECKED_KINDS, checkMarketNumbers } from "./marketNumbers";
 import { checkNeverFake } from "./neverFake";
 import { checkBuildPackStandard, type BuildPackStandardOptions } from "./promptStandard";
 import { checkSlop } from "./slop";
-import { toResult, type CheckIssue, type CheckResult } from "./types";
+import { checkShape } from "./shape";
+import { toResult, type CheckIssue, type CheckResult, type IssuePath } from "./types";
 
 export * from "./types";
-export { stringLeaves, stripPlaceholders } from "./walk";
-export { checkNeverFake, neverFakeMatches } from "./neverFake";
-export { checkMarketNumbers, carriesMarketNumber, MARKET_CHECKED_KINDS } from "./marketNumbers";
+export { WALK_MAX_DEPTH, WALK_MAX_NODES, normalizeText, stringLeaves, stripPlaceholders } from "./walk";
+export { checkNeverFake, neverFakeMatches, type NeverFakeHit, type NeverFakeOptions } from "./neverFake";
+export { checkMarketNumbers, carriesMarketNumber, marketClaim, MARKET_CHECKED_KINDS } from "./marketNumbers";
+export { checkShape } from "./shape";
 export { checkSlop, isTriad } from "./slop";
 export {
   DISPLAY_TARGETS,
@@ -38,18 +40,25 @@ export {
 } from "./landing";
 export { checkBrandContrast, checkBrandKit, checkThemeMode, checkTypePairDirection } from "./brandKit";
 export {
+  DEFAULT_BILLING,
+  DEFAULT_SETUP_PROMPT_NUMBERS,
   PROMPT_STANDARD_VERSION,
   checkBuildPackStandard,
   checkBuildPrompt,
   defaultBuildPackStandard,
+  type BillingByKind,
+  type BillingSeverity,
   type BuildPackStandardOptions,
   type PromptRole,
   type PromptStandardOptions,
 } from "./promptStandard";
 
 export type CheckContext = {
-  /** The idea is the founder's own (no market data). A blueprint reads this from its `source`. */
-  readonly ownIdea?: boolean;
+  /**
+   * The idea is the founder's own (D15: no market data). Required, so a caller
+   * cannot forget it. A blueprint reads its own `source` instead.
+   */
+  readonly ownIdea: boolean;
   /** The brand kit a landing spec is judged against (layouts per direction). */
   readonly brandKit?: BrandKit;
   /** How standard v1 applies to a build pack (open owner rulings, see `promptStandard.ts`). */
@@ -58,21 +67,38 @@ export type CheckContext = {
 
 const isMarketChecked = (kind: ArtifactKind): boolean => (MARKET_CHECKED_KINDS as readonly string[]).includes(kind);
 
+/** A library blueprint's researched `market` describes other businesses (D15 allows it); it is not the founder's claim. */
+const isResearchedMarketPath = (path: IssuePath): boolean => path[0] === "market";
+
 /**
- * Every deterministic check that applies to one artifact kind. Input is
- * already parsed with its C-ART schema (the schema owns shape and caps).
+ * Every deterministic check that applies to one artifact kind. Input should
+ * already be parsed with its C-ART schema (the schema owns shape and caps);
+ * input that lacks the shape a check needs returns one hard `invalid_shape`
+ * issue per missing part instead of throwing (`checkShape`).
  *
- * - all kinds: never fake it (proof, counts, press, stats);
+ * - every kind but the build pack: never fake it (proof, counts, press,
+ *   stats); a library blueprint's `market` subtree is not walked;
  * - own ideas: no market numbers in the kinds in `MARKET_CHECKED_KINDS`;
  * - brand_kit: slop, contrast, type pair, theme, alt text;
  * - landing_spec: slop, headings, no eyebrow/emoji, proof slots, layouts
  *   (when `brandKit` is given), alt text;
- * - build_pack: prompt standard v1 (no slop: prompts are instructions);
- * - every other kind: slop.
+ * - build_pack: prompt standard v1 only (its prompts are instructions to a
+ *   coding tool, so neither slop nor never fake it applies: "rate each trail
+ *   1 to 5 stars" is a feature, not a claim);
+ * - roster_plan: nothing beyond never fake it (no copy);
+ * - every other kind: slop and alt text.
  */
-export function checkArtifact<K extends ArtifactKind>(kind: K, artifact: ArtifactByKind[K], context: CheckContext = {}): CheckResult {
-  const issues: CheckIssue[] = [...checkNeverFake(artifact)];
-  const own = kind === "blueprint" ? (artifact as ArtifactByKind["blueprint"]).source === "own_idea" : context.ownIdea === true;
+export function checkArtifact<K extends ArtifactKind>(kind: K, artifact: ArtifactByKind[K], context: CheckContext): CheckResult {
+  const shape = checkShape(kind, artifact);
+  if (shape.length > 0) return toResult(shape);
+
+  const source = kind === "blueprint" ? (artifact as ArtifactByKind["blueprint"]).source : undefined;
+  // Read defensively: plain-JavaScript callers may leave the context out.
+  const own = source !== undefined ? source === "own_idea" : (context as CheckContext | undefined)?.ownIdea === true;
+  const issues: CheckIssue[] = [];
+  if (kind !== "build_pack") {
+    issues.push(...checkNeverFake(artifact, source === "library" ? { skip: isResearchedMarketPath } : {}));
+  }
   if (own && isMarketChecked(kind)) issues.push(...checkMarketNumbers(artifact));
 
   switch (kind) {
@@ -84,16 +110,17 @@ export function checkArtifact<K extends ArtifactKind>(kind: K, artifact: Artifac
     case "landing_spec": {
       const spec = artifact as ArtifactByKind["landing_spec"];
       issues.push(...checkSlop(spec), ...checkLandingSpec(spec));
-      if (context.brandKit !== undefined) issues.push(...checkLandingLayouts(spec, context.brandKit));
+      const kit = (context as CheckContext | undefined)?.brandKit;
+      if (kit !== undefined) issues.push(...checkLandingLayouts(spec, kit));
       break;
     }
     case "build_pack":
-      issues.push(...checkBuildPackStandard(artifact as ArtifactByKind["build_pack"], context.buildPackStandard));
+      issues.push(...checkBuildPackStandard(artifact as ArtifactByKind["build_pack"], (context as CheckContext | undefined)?.buildPackStandard));
       break;
     case "roster_plan":
       break;
     default:
-      issues.push(...checkSlop(artifact));
+      issues.push(...checkSlop(artifact), ...checkAltText(artifact));
   }
   return toResult(issues);
 }
