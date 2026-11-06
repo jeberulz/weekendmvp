@@ -2,6 +2,7 @@
 
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { convexTest } from "convex-test";
+import { ConvexError } from "convex/values";
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
@@ -29,6 +30,10 @@ async function seed(setup: Setup = {}) {
       ["unverified", { email: "new@example.test" }],
       ["disposable", { email: "burner@mailinator.com", emailVerificationTime: VERIFIED }],
       ["disposableSub", { email: "Burner@Inbox.YOPMAIL.com.", emailVerificationTime: VERIFIED }],
+      ["disposableDot", { email: "a@x.yopmail\u3002com", emailVerificationTime: VERIFIED }],
+      ["badTrailing", { email: "a@example.com..", emailVerificationTime: VERIFIED }],
+      ["badLeading", { email: "a@.example.com", emailVerificationTime: VERIFIED }],
+      ["badNoAt", { email: "example.com", emailVerificationTime: VERIFIED }],
     ];
     for (const [key, fields] of people) {
       const userId = await ctx.db.insert("users", fields);
@@ -111,6 +116,17 @@ async function businessFor(t: T, ownerId: Id<"users">, slug: string, withSite = 
       });
     }
   });
+}
+
+/** The ConvexError data a refused call carries. */
+async function refusalOf(call: Promise<unknown>): Promise<unknown> {
+  try {
+    await call;
+  } catch (error) {
+    if (error instanceof ConvexError) return error.data;
+    throw error;
+  }
+  throw new Error("expected a refusal");
 }
 
 describe("WP74-S4 createBusiness: success", () => {
@@ -255,9 +271,10 @@ describe("WP74-S4 createBusiness: one free business", () => {
       idea: { source: "library", ideaSlug: "trail-cafe" },
       name: { chosen: "Trail Cafe", alternatives: [] },
     });
-    await as("owner").mutation(api.workspace.business.createBusiness, { sessionId: first });
-    await expect(as("owner").mutation(api.workspace.business.createBusiness, { sessionId: second }))
-      .rejects.toThrow(/BUSINESS_LIMIT_REACHED/);
+    const created = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId: first });
+    const refusal = await refusalOf(as("owner").mutation(api.workspace.business.createBusiness, { sessionId: second }));
+    // The refusal links to the owner's own business, and to nothing else.
+    expect(refusal).toEqual({ code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1, projectId: created.projectId });
     expect(await projectsOf(t, owner)).toHaveLength(1);
     const session = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", second));
     expect(session?.projectId).toBeUndefined();
@@ -273,8 +290,9 @@ describe("WP74-S4 createBusiness: one free business", () => {
     });
     const created = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId: first });
     await t.run(async (ctx) => ctx.db.patch("projects", created.projectId, { archivedAt: 5 }));
-    await expect(as("owner").mutation(api.workspace.business.createBusiness, { sessionId: second }))
-      .rejects.toThrow(/BUSINESS_LIMIT_REACHED/);
+    // Still refused, and an archived business is not linked (its workspace would 404).
+    await expect(refusalOf(as("owner").mutation(api.workspace.business.createBusiness, { sessionId: second })))
+      .resolves.toEqual({ code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1 });
   });
 
   test("legacy projects without a workspace do not count", async () => {
@@ -298,9 +316,18 @@ describe("WP74-S4 createBusiness: account checks", () => {
     expect(await projectsOf(t, ids.users.unverified.userId)).toEqual([]);
   });
 
-  test("a disposable email domain is refused, including a subdomain written in capitals", async () => {
+  test("an email whose domain cannot be parsed is refused", async () => {
     const { t, as, ids } = await seed();
-    for (const key of ["disposable", "disposableSub"]) {
+    for (const key of ["badTrailing", "badLeading", "badNoAt"]) {
+      const sessionId = await finishedSession(t, ids.users[key].userId);
+      await expect(as(key).mutation(api.workspace.business.createBusiness, { sessionId })).rejects.toThrow(/EMAIL_INVALID/);
+      expect(await projectsOf(t, ids.users[key].userId)).toEqual([]);
+    }
+  });
+
+  test("a disposable email domain is refused, including a subdomain written in capitals and an ideographic full stop", async () => {
+    const { t, as, ids } = await seed();
+    for (const key of ["disposable", "disposableSub", "disposableDot"]) {
       const sessionId = await finishedSession(t, ids.users[key].userId);
       await expect(as(key).mutation(api.workspace.business.createBusiness, { sessionId })).rejects.toThrow(/DISPOSABLE_EMAIL/);
       expect(await projectsOf(t, ids.users[key].userId)).toEqual([]);
@@ -313,13 +340,45 @@ describe("WP74-S4 createBusiness: tenant slug", () => {
     ["Café Ünïcode!!", "cafe-unicode"],
     ["AI", "ai-business"],
     ["水の道", "business"],
-    ["Support", "support-2"],
     ["The Very Long Weekend Trail Water Club!!", "the-very-long-weekend-trail-water-club"],
   ])("%s becomes %s", async (name, slug) => {
     const { t, as, ids } = await seed();
     const sessionId = await finishedSession(t, ids.users.owner.userId, { name: { chosen: name, alternatives: [] } });
     await expect(as("owner").mutation(api.workspace.business.createBusiness, { sessionId }))
       .resolves.toMatchObject({ slug });
+  });
+
+  test.each(["Support", "Billing", "Login", "Weekend MVP", "WeekendMVP Studio"])(
+    "the reserved name %s is refused, and Choose a different name reopens the name step",
+    async (name) => {
+      const { t, as, ids } = await seed();
+      const owner = ids.users.owner.userId;
+      const sessionId = await finishedSession(t, owner, { name: { chosen: name, alternatives: [] } });
+      await expect(refusalOf(as("owner").mutation(api.workspace.business.createBusiness, { sessionId })))
+        .resolves.toEqual({ code: "NAME_RESERVED" });
+      expect(await projectsOf(t, owner)).toEqual([]);
+
+      const back = await as("owner").mutation(api.workspace.wizard.goBack, { sessionId, step: "partner_name", to: "name" });
+      expect(back).toEqual({ applied: true, step: "name", completed: false, action: null });
+      const session = await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId));
+      expect(session?.step).toBe("name");
+      expect(session?.completedAt).toBeUndefined();
+      expect(wizardAnswersSchema.parse(session?.answers).name.chosen).toBe(name);
+    },
+  );
+
+  test("goBack to a later step, or to the current step mid-wizard, changes nothing", async () => {
+    const { t, as } = await seed();
+    const owner = as("owner");
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: { source: "library", ideaSlug: "hydrotrail" } });
+    await owner.mutation(api.workspace.wizard.skipStep, { sessionId, step: "idea" });
+    await expect(owner.mutation(api.workspace.wizard.goBack, { sessionId, step: "blueprint", to: "goal" }))
+      .resolves.toMatchObject({ applied: false, step: "blueprint" });
+    await expect(owner.mutation(api.workspace.wizard.goBack, { sessionId, step: "blueprint", to: "blueprint" }))
+      .resolves.toMatchObject({ applied: false, step: "blueprint" });
+    await expect(owner.mutation(api.workspace.wizard.goBack, { sessionId, step: "blueprint", to: "idea" }))
+      .resolves.toMatchObject({ applied: true, step: "idea" });
+    expect((await t.run(async (ctx) => await ctx.db.get("wizard_sessions", sessionId)))?.step).toBe("idea");
   });
 
   test("a live hostname collision is suffixed in order", async () => {

@@ -5,7 +5,7 @@ import { assertFeatureEnabled } from "../ops/settings";
 import { resolvePlan } from "../platform/planResolver";
 import { WORKSPACE_PLAN_LIMITS } from "../platform/plans";
 import { tenantHostForSlug, isValidTenantSlug } from "../../lib/tenant-host";
-import { isDisposableEmailDomain } from "../../lib/workspace/disposable-domains";
+import { emailAddressDomain, isDisposableEmailDomain } from "../../lib/workspace/disposable-domains";
 import { partnerNameFromWizard, wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { pickTenantSlug } from "../../lib/workspace/wizard/tenant-slug";
 import { ownedWizardSession } from "./wizard";
@@ -19,12 +19,14 @@ import { ownedWizardSession } from "./wizard";
  *    guard); a session that already made its business returns that business;
  * 2. the session must be complete: every step answered, blueprint `looks_good`
  *    (`wizardAnswersSchema`);
- * 3. a verified email that is not on the disposable list (D3);
+ * 3. a verified email whose domain parses (`EMAIL_INVALID` otherwise) and is
+ *    not on the disposable list (D3);
  * 4. the plan's business allowance from the entitlements
  *    (`WORKSPACE_PLAN_LIMITS[resolvePlan()].limits.businesses`: Free 1).
  *    Archived businesses still count;
  * 5. the tenant slug from the chosen name (`pickTenantSlug` +
- *    `isTenantSlugTaken`);
+ *    `isTenantSlugTaken`). A reserved name is refused (`NAME_RESERVED`) and
+ *    the founder picks another one;
  * 6. insert the project, link `wizard_sessions.projectId` and `completedAt`,
  *    and write one `audit_events` row.
  *
@@ -41,9 +43,11 @@ import { ownedWizardSession } from "./wizard";
 type Refusal =
   | "SESSION_INCOMPLETE"
   | "EMAIL_NOT_VERIFIED"
+  | "EMAIL_INVALID"
   | "DISPOSABLE_EMAIL"
   | "BUSINESS_LIMIT_REACHED"
   | "SLUG_UNAVAILABLE"
+  | "NAME_RESERVED"
   | "RESOURCE_NOT_FOUND";
 
 function refuse(code: Refusal, detail: Record<string, string | number> = {}): never {
@@ -87,13 +91,26 @@ export async function isTenantSlugTaken(
   return site !== null;
 }
 
-/** The owner's wizard businesses, up to `cap`. Archived ones are included. */
-async function businessesOf(ctx: Pick<QueryCtx, "db">, ownerId: Id<"users">, cap: number): Promise<number> {
+/**
+ * How many wizard businesses the owner has (archived ones included; at least
+ * `cap` means the allowance is used), and the
+ * first live one, which the limit refusal links to. Owner-scoped by the index,
+ * so it can never name another owner's business.
+ */
+const LINK_LOOKAHEAD = 5;
+
+async function businessesOf(
+  ctx: Pick<QueryCtx, "db">,
+  ownerId: Id<"users">,
+  cap: number,
+): Promise<{ count: number; live: Id<"projects"> | null }> {
   const rows = await ctx.db
     .query("projects")
     .withIndex("by_ownerId_and_workspaceSlug", (q) => q.eq("ownerId", ownerId).gt("workspace.slug", ""))
-    .take(cap);
-  return rows.length;
+    // A few rows past the allowance, so an archived first row does not hide a live one.
+    .take(cap + LINK_LOOKAHEAD);
+  const live = rows.find((row) => row.archivedAt === undefined);
+  return { count: rows.length, live: live?._id ?? null };
 }
 
 function isVerified(user: Doc<"users"> | null): user is Doc<"users"> & { email: string } {
@@ -169,16 +186,25 @@ export const createBusiness = mutation({
 
     const user = await ctx.db.get("users", session.ownerId);
     if (!isVerified(user)) return refuse("EMAIL_NOT_VERIFIED");
-    if (isDisposableEmailDomain(user.email)) return refuse("DISPOSABLE_EMAIL");
+    const domain = emailAddressDomain(user.email);
+    if (domain === null) return refuse("EMAIL_INVALID");
+    if (isDisposableEmailDomain(domain)) return refuse("DISPOSABLE_EMAIL");
 
     const plan = await resolvePlan(ctx, user._id);
     const allowance = WORKSPACE_PLAN_LIMITS[plan].limits.businesses;
-    if ((await businessesOf(ctx, user._id, allowance)) >= allowance) {
-      return refuse("BUSINESS_LIMIT_REACHED", { plan, limit: allowance });
+    const existing = await businessesOf(ctx, user._id, allowance);
+    if (existing.count >= allowance) {
+      return refuse("BUSINESS_LIMIT_REACHED", {
+        plan,
+        limit: allowance,
+        ...(existing.live === null ? {} : { projectId: existing.live }),
+      });
     }
 
-    const slug = await pickTenantSlug(answers.name.chosen, (candidate) => isTenantSlugTaken(ctx, candidate, user._id));
-    if (slug === null) return refuse("SLUG_UNAVAILABLE");
+    const pick = await pickTenantSlug(answers.name.chosen, (candidate) => isTenantSlugTaken(ctx, candidate, user._id));
+    if (pick.kind === "reserved") return refuse("NAME_RESERVED");
+    if (pick.kind === "exhausted") return refuse("SLUG_UNAVAILABLE");
+    const slug = pick.slug;
 
     const now = Date.now();
     const projectId = await ctx.db.insert("projects", {

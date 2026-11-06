@@ -94,7 +94,16 @@ test("the local session guard authenticates the user and checks ownership", asyn
 test("createBusiness checks the account before writing and never writes business_members (Codex item h)", async () => {
   const source = await readFile(path.join(root, "convex/workspace/business.ts"), "utf8");
   const insert = source.indexOf('ctx.db.insert("projects"');
-  for (const guard of ["isVerified(user)", "isDisposableEmailDomain(", "BUSINESS_LIMIT_REACHED", "pickTenantSlug(", "wizardAnswersSchema.safeParse("]) {
+  for (const guard of [
+    "isVerified(user)",
+    "emailAddressDomain(",
+    "EMAIL_INVALID",
+    "isDisposableEmailDomain(",
+    "BUSINESS_LIMIT_REACHED",
+    "pickTenantSlug(",
+    "NAME_RESERVED",
+    "wizardAnswersSchema.safeParse(",
+  ]) {
     const at = source.indexOf(guard);
     assert.ok(at !== -1 && at < insert, `${guard} must run before the project insert`);
   }

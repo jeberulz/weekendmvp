@@ -360,3 +360,40 @@
     home, prompts, platform (1209), live.
   - `npm run build` 0.
 - S4 stays unticked (blocked on g, h and a).
+
+## 2026-11-06 - S4 review fixes (P3, after 1be5e860)
+
+- Email domains (`lib/workspace/disposable-domains.ts`):
+  - The look-alike full stops U+3002, U+FF0E and U+FF61 become `.` before parsing, so `a@x.yopmail。com` is
+    disposable.
+  - `emailDomain` returns null when there are fewer than two labels or any label is empty: a leading dot, `..`, or a
+    second trailing dot. New `emailAddressDomain` also requires an `@`.
+  - `createBusiness` refuses a null domain with `EMAIL_INVALID` before the disposable check.
+- Reserved names (`lib/workspace/wizard/tenant-slug.ts`):
+  - A reserved base is refused and never suffixed (`billing-2` would still look like ours). It is reserved when it is
+    a `RESERVED_SUBDOMAINS` name, or when it spells `weekendmvp` once hyphens are dropped (`weekend-mvp`,
+    `weekendmvp-tools`).
+  - `pickTenantSlug` returns `ok` / `reserved` / `exhausted`. `createBusiness` refuses `NAME_RESERVED`; the UI shows
+    it as an alert with "Choose a different name". C-WIZARD Back allows this.
+  - `goBack` takes an optional earlier `to` step (no new public function). From the finished screen, `to: "name"`
+    reopens the name step with the answers kept. A later `to`, or the current step mid-wizard, changes nothing.
+  - `SLUG_UNAVAILABLE` offers the same button.
+  - "Support Bot Co", "Trail Help" and "Billingsgate" stay allowed.
+- `CreateBusiness`: a polite `role="status"` region announces "Creating your business…", and the section is
+  `aria-busy` while pending. Axe passes.
+- `BUSINESS_LIMIT_REACHED` now carries `projectId` for the owner's first live (unarchived) business, read from the
+  owner-scoped index. The UI links "Open your business" to `/dashboard/b/{id}`, but only for a well-formed id. An
+  archived-only owner gets no link.
+- **Owner question (not implemented):** Gmail `+tag` and dot aliases (`a.b+x@gmail.com`) are separate verified
+  accounts today, so each gets a free business. Should the one-free-business allowance canonicalise addresses
+  (lowercase, strip `+tag`, strip dots for gmail.com and googlemail.com)? It would need a stored canonical email, or a
+  lookup on one. That is likely a Codex schema item.
+- Checks:
+  - typecheck 0; `npx tsc --noEmit -p convex` 0; lint 0 (0 errors, 37 existing warnings).
+  - WP74 tests, 10 files: 0 (241 tests).
+  - `npm run test:security` 1. Only the WP68 scanner fails, on the same eight pre-business functions: `wizard.ts`
+    `getWizardAccess`, `startOrResume`, `getSession`, `saveStep`, `skipStep`, `rewriteStep`, `goBack`, and
+    `business.ts` `createBusiness`. 205 pass, 1 skipped. The Vitest half, run on its own, passes 121/121.
+  - Every other suite exits 0: og, links, redirects, auth, sitemap, convex, engine, editorial, home, prompts,
+    platform, live.
+  - `npm run build` 0.

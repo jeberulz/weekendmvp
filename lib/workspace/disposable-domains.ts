@@ -7,10 +7,11 @@
  * with its source and date pinned here, needs the owner's OK (open item in
  * `docs/wp/wp74-progress.md`).
  *
- * Matching: the part after the last `@`, trimmed, lowercased (NFKC), with one
- * trailing dot removed. A domain matches when it, or any parent domain above
- * the top level, is on the list, so `a.mailinator.com` matches
- * `mailinator.com` and `gmail.tm` does not match `mail.tm`.
+ * Matching: the part after the last `@`, look-alike full stops mapped to `.`,
+ * trimmed, lowercased (NFKC), with one trailing dot removed. A domain matches
+ * when it, or any parent domain above the top level, is on the list, so
+ * `a.mailinator.com` matches `mailinator.com` and `gmail.tm` does not match
+ * `mail.tm`.
  *
  * Pure: no Convex imports, no I/O.
  */
@@ -139,19 +140,40 @@ export const DISPOSABLE_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
   "yopmail.net",
 ]);
 
+/** Full stops other scripts use for `.`: ideographic (U+3002), full-width (U+FF0E) and half-width ideographic (U+FF61). */
+const DOT_LOOKALIKES = /[\u3002\uFF0E\uFF61]/g;
+
 /**
- * The normalised domain of an email address or bare domain, or null when there
- * is none. Lowercased with NFKC, trimmed, one trailing dot removed.
+ * The normalised domain of an email address or bare domain, or null when it
+ * cannot be parsed. Look-alike full stops become `.`, then the domain is
+ * trimmed, NFKC-normalised and lowercased, and one trailing dot is removed.
+ * Null when there are fewer than two labels, any label is empty (a leading dot,
+ * `..`, or a second trailing dot) or there is whitespace.
  */
 export function emailDomain(emailOrDomain: string): string | null {
   const at = emailOrDomain.lastIndexOf("@");
-  const raw = (at === -1 ? emailOrDomain : emailOrDomain.slice(at + 1)).trim().normalize("NFKC").toLowerCase();
+  const raw = (at === -1 ? emailOrDomain : emailOrDomain.slice(at + 1))
+    .replace(DOT_LOOKALIKES, ".")
+    .trim()
+    .normalize("NFKC")
+    .toLowerCase();
   const domain = raw.endsWith(".") ? raw.slice(0, -1) : raw;
-  if (domain.length === 0 || domain.startsWith(".") || domain.includes("..") || /\s/.test(domain)) return null;
+  if (/\s/.test(domain)) return null;
+  const labels = domain.split(".");
+  if (labels.length < 2 || labels.some((label) => label.length === 0)) return null;
   return domain;
 }
 
-/** True when the address's domain, or a parent domain above the top level, is a known disposable provider. */
+/** The domain of an email address (an `@` is required), or null when there is none or it cannot be parsed. */
+export function emailAddressDomain(email: string): string | null {
+  return email.includes("@") ? emailDomain(email) : null;
+}
+
+/**
+ * True when the domain, or a parent domain above the top level, is a known
+ * disposable provider. An unparseable domain is not "disposable": callers that
+ * gate on the address must refuse a null `emailAddressDomain` themselves.
+ */
 export function isDisposableEmailDomain(emailOrDomain: string): boolean {
   const domain = emailDomain(emailOrDomain);
   if (domain === null) return false;

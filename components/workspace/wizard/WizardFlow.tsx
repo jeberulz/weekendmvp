@@ -16,6 +16,7 @@ import {
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
 import { MeetCofounder } from "./MeetCofounder";
@@ -42,8 +43,31 @@ const ERROR_COPY: Record<string, string> = {
   EMAIL_NOT_VERIFIED: "Verify your email address first, then create your business.",
   DISPOSABLE_EMAIL:
     "We cannot create a business for a temporary email address. Sign in with an address you keep, then try again.",
-  SLUG_UNAVAILABLE: "We could not find a free web address for this name. Go back and choose another name.",
+  SLUG_UNAVAILABLE: "We could not find a free web address for this name. Choose a different name.",
+  EMAIL_INVALID: "We could not read the domain of your email address. Sign in with a standard address, then try again.",
+  NAME_RESERVED: "That name is kept for Weekend MVP's own addresses. Choose a different name.",
 };
+
+/** What the "Create my business" screen offers after a refusal, beyond the message. */
+export type BusinessRefusal = { readonly chooseName: boolean; readonly existingBusinessHref: string | null };
+
+/**
+ * The follow-up for a `createBusiness` refusal: reopen the name step for a
+ * reserved or unavailable name, or link to the founder's own business (the
+ * server only ever sends the caller's own project id).
+ */
+export function businessRefusal(error: unknown): BusinessRefusal {
+  const none: BusinessRefusal = { chooseName: false, existingBusinessHref: null };
+  if (!(error instanceof ConvexError) || typeof error.data !== "object" || error.data === null || !("code" in error.data)) {
+    return none;
+  }
+  const data: { code?: unknown; projectId?: unknown } = error.data;
+  if (data.code === "NAME_RESERVED" || data.code === "SLUG_UNAVAILABLE") return { ...none, chooseName: true };
+  if (data.code === "BUSINESS_LIMIT_REACHED" && typeof data.projectId === "string" && /^[a-z0-9]{1,64}$/.test(data.projectId)) {
+    return { ...none, existingBusinessHref: workspacePath(data.projectId) };
+  }
+  return none;
+}
 
 /** A short, human message for a failed wizard call. */
 export function wizardErrorMessage(error: unknown): string {
@@ -147,6 +171,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refusal, setRefusal] = useState<BusinessRefusal | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const started = useRef(false);
@@ -213,6 +238,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     if (pending) return;
     setPending(true);
     setError(null);
+    setRefusal(null);
     try {
       await action();
     } catch (caught) {
@@ -254,9 +280,20 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         pending={pending}
         error={error}
         headingRef={headingRef}
+        existingBusinessHref={refusal?.existingBusinessHref ?? null}
+        onChooseName={
+          refusal?.chooseName
+            ? () => void run(() => goBack({ sessionId: view.sessionId, step: view.step, to: "name" }))
+            : null
+        }
         onCreate={() =>
           void run(async () => {
-            await createBusiness({ sessionId: view.sessionId });
+            try {
+              await createBusiness({ sessionId: view.sessionId });
+            } catch (caught) {
+              setRefusal(businessRefusal(caught));
+              throw caught;
+            }
             // Pin the URL to this session so a reload shows the business
             // instead of starting a new session for the idea.
             const pinned = idea === null || view.answers.idea?.source !== "library"

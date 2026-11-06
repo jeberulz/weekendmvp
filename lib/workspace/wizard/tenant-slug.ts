@@ -7,13 +7,17 @@
  *   fits the 63-character DNS label.
  * - A base shorter than the 3-character minimum gets `-business` appended; a
  *   name with no Latin letters or digits becomes `business`.
- * - Collisions and reserved names are suffixed in order: `base`, `base-2`,
- *   `base-3` … up to `TENANT_SLUG_MAX_ATTEMPTS`. The same inputs always give
- *   the same slug.
+ * - A reserved base is refused, never suffixed: `billing-2.weekendmvp.app`
+ *   would still look like ours. Reserved means an owner-frozen
+ *   `RESERVED_SUBDOMAINS` name, or any base that spells `weekendmvp` once its
+ *   hyphens are dropped (`weekend-mvp`, `weekendmvp-tools`).
+ *   The founder picks another name (the wizard reopens the name step).
+ * - Collisions are suffixed in order: `base`, `base-2`, `base-3` … up to
+ *   `TENANT_SLUG_MAX_ATTEMPTS`. The same inputs always give the same slug.
  *
  * Pure apart from the injected `isTaken` check.
  */
-import { TENANT_SLUG_MIN_LENGTH, isValidTenantSlug } from "../../tenant-host";
+import { RESERVED_SUBDOMAINS, TENANT_SLUG_MIN_LENGTH, isValidTenantSlug } from "../../tenant-host";
 import { nameSubdomainSlug } from "../contracts/wizard";
 
 export const TENANT_SLUG_BASE_MAX = 48;
@@ -32,19 +36,30 @@ export function tenantSlugCandidate(base: string, attempt: number): string {
   return attempt <= 1 ? base : `${base}-${attempt}`;
 }
 
+/** True when a base must not become a tenant slug in any suffixed form. */
+export function isReservedTenantBase(base: string): boolean {
+  return RESERVED_SUBDOMAINS.has(base) || base.replace(/-/g, "").includes("weekendmvp");
+}
+
+export type TenantSlugPick =
+  | { readonly kind: "ok"; readonly slug: string }
+  | { readonly kind: "reserved" }
+  | { readonly kind: "exhausted" };
+
 /**
- * The first candidate that is a valid, unreserved label and not taken, or
- * null when every attempt is used up.
+ * The first free candidate for a name: `reserved` when the base is reserved,
+ * `exhausted` when every attempt is taken.
  */
 export async function pickTenantSlug(
   name: string,
   isTaken: (slug: string) => Promise<boolean>,
-): Promise<string | null> {
+): Promise<TenantSlugPick> {
   const base = tenantSlugBase(name);
+  if (isReservedTenantBase(base)) return { kind: "reserved" };
   for (let attempt = 1; attempt <= TENANT_SLUG_MAX_ATTEMPTS; attempt += 1) {
     const candidate = tenantSlugCandidate(base, attempt);
     if (!isValidTenantSlug(candidate)) continue;
-    if (!(await isTaken(candidate))) return candidate;
+    if (!(await isTaken(candidate))) return { kind: "ok", slug: candidate };
   }
-  return null;
+  return { kind: "exhausted" };
 }

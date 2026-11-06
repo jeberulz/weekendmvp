@@ -550,11 +550,14 @@ export const rewriteStep = mutation({
 });
 
 /**
- * Goes back one step from `step`. From the finished screen (`completed`), Back
- * reopens the last step. Answers are kept; nothing is logged.
+ * Goes back one step from `step`, or straight to the earlier step `to` (the
+ * "Choose a different name" link after a `NAME_RESERVED` refusal, WP74-S4).
+ * From the finished screen (`completed`), Back reopens the last step, or `to`.
+ * Answers are kept; nothing is logged. A `to` that is not earlier changes
+ * nothing.
  */
 export const goBack = mutation({
-  args: { sessionId: v.id("wizard_sessions"), step: stepValidator },
+  args: { sessionId: v.id("wizard_sessions"), step: stepValidator, to: v.optional(stepValidator) },
   returns: stepResultValidator,
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
@@ -562,11 +565,18 @@ export const goBack = mutation({
     const step = sessionStep(session);
     if (args.step !== step) return unchanged(session);
     const now = Date.now();
-    if (session.completedAt !== undefined) {
+    const index = WIZARD_STEPS.indexOf(step);
+    const completed = session.completedAt !== undefined;
+    if (args.to !== undefined) {
+      const target = WIZARD_STEPS.indexOf(args.to);
+      if (target > index || (target === index && !completed)) return unchanged(session);
+      await ctx.db.patch("wizard_sessions", session._id, { step: args.to, completedAt: undefined, updatedAt: now });
+      return { applied: true, step: args.to, completed: false, action: null };
+    }
+    if (completed) {
       await ctx.db.patch("wizard_sessions", session._id, { completedAt: undefined, updatedAt: now });
       return { applied: true, step, completed: false, action: null };
     }
-    const index = WIZARD_STEPS.indexOf(step);
     if (index <= 0) return unchanged(session);
     const previous = WIZARD_STEPS[index - 1];
     await ctx.db.patch("wizard_sessions", session._id, { step: previous, updatedAt: now });

@@ -37,7 +37,7 @@ vi.mock("convex/react", async () => {
 });
 
 import { CreateBusiness } from "@/components/workspace/wizard/CreateBusiness";
-import { WizardFlow, libraryIdeaUrl, wizardErrorMessage } from "@/components/workspace/wizard/WizardFlow";
+import { WizardFlow, businessRefusal, libraryIdeaUrl, wizardErrorMessage } from "@/components/workspace/wizard/WizardFlow";
 import { api } from "@/convex/_generated/api";
 
 afterEach(cleanup);
@@ -74,6 +74,8 @@ const REFUSALS: [string, Record<string, unknown>, RegExp][] = [
   ["BUSINESS_LIMIT_REACHED", { limit: 1 }, /Your plan includes one business, and you already have it\./],
   ["BUSINESS_LIMIT_REACHED", { limit: 3 }, /Your plan includes 3 businesses/],
   ["SLUG_UNAVAILABLE", {}, /free web address/],
+  ["NAME_RESERVED", {}, /kept for Weekend MVP's own addresses\. Choose a different name\./],
+  ["EMAIL_INVALID", {}, /could not read the domain of your email address/],
   ["WORKSPACE_DISABLED", {}, /switched off/],
   ["RESOURCE_NOT_FOUND", {}, /could not find this build/],
   ["UNAUTHENTICATED", {}, /Sign in again/],
@@ -104,13 +106,63 @@ describe("WP74-S4 CreateBusiness", () => {
     await expectNoAxeViolations(container);
   });
 
-  test("while pending, the button says so and a second click does nothing", async () => {
+  test("while pending, the button and a polite live region say so, the section is busy and a second click does nothing", async () => {
     const onCreate = vi.fn();
-    render(<CreateBusiness answers={seed.defaults} pending onCreate={onCreate} onBack={vi.fn()} />);
+    const { container, rerender } = render(<CreateBusiness answers={seed.defaults} pending={false} onCreate={onCreate} onBack={vi.fn()} />);
+    const status = screen.getByRole("status");
+    expect(status.getAttribute("aria-live")).toBe("polite");
+    expect(status.textContent).toBe("");
+    rerender(<CreateBusiness answers={seed.defaults} pending onCreate={onCreate} onBack={vi.fn()} />);
+    expect(screen.getByRole("status").textContent).toBe("Creating your business…");
+    expect(container.querySelector("section")?.getAttribute("aria-busy")).toBe("true");
     const button = screen.getByRole("button", { name: "Creating your business…" });
     expect(button.getAttribute("aria-disabled")).toBe("true");
     await userEvent.setup().click(button);
     expect(onCreate).not.toHaveBeenCalled();
+    await expectNoAxeViolations(container);
+  });
+
+  test("a reserved name offers Choose a different name; a used allowance links to the founder's business", async () => {
+    const onChooseName = vi.fn();
+    const { container, rerender } = render(
+      <CreateBusiness
+        answers={seed.defaults}
+        pending={false}
+        error={wizardErrorMessage(new ConvexError({ code: "NAME_RESERVED" }))}
+        onChooseName={onChooseName}
+        onCreate={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+    await userEvent.setup().click(screen.getByRole("button", { name: "Choose a different name" }));
+    expect(onChooseName).toHaveBeenCalledTimes(1);
+    await expectNoAxeViolations(container);
+
+    rerender(
+      <CreateBusiness
+        answers={seed.defaults}
+        pending={false}
+        error={wizardErrorMessage(new ConvexError({ code: "BUSINESS_LIMIT_REACHED", limit: 1, projectId: "project1" }))}
+        existingBusinessHref="/dashboard/b/project1"
+        onCreate={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Open your business" }).getAttribute("href")).toBe("/dashboard/b/project1");
+    expect(screen.queryByRole("button", { name: "Choose a different name" })).toBeNull();
+    await expectNoAxeViolations(container);
+  });
+
+  test("businessRefusal only links a well-formed project id from the limit refusal", () => {
+    expect(businessRefusal(new ConvexError({ code: "BUSINESS_LIMIT_REACHED", limit: 1, projectId: "abc123" })))
+      .toEqual({ chooseName: false, existingBusinessHref: "/dashboard/b/abc123" });
+    expect(businessRefusal(new ConvexError({ code: "BUSINESS_LIMIT_REACHED", limit: 1 })))
+      .toEqual({ chooseName: false, existingBusinessHref: null });
+    expect(businessRefusal(new ConvexError({ code: "BUSINESS_LIMIT_REACHED", projectId: "../admin" })))
+      .toEqual({ chooseName: false, existingBusinessHref: null });
+    expect(businessRefusal(new ConvexError({ code: "NAME_RESERVED" }))).toEqual({ chooseName: true, existingBusinessHref: null });
+    expect(businessRefusal(new ConvexError({ code: "SLUG_UNAVAILABLE" }))).toEqual({ chooseName: true, existingBusinessHref: null });
+    expect(businessRefusal(new Error("x"))).toEqual({ chooseName: false, existingBusinessHref: null });
   });
 
   test.each(REFUSALS)("the %s refusal is an alert tied to the Create button, with no axe violations", async (code, detail) => {
@@ -160,6 +212,27 @@ describe("WP74-S4 WizardFlow handoff", () => {
     expect((await screen.findByRole("alert")).textContent).toBe("Your plan includes one business, and you already have it.");
     expect(state.replace).not.toHaveBeenCalled();
     await expectNoAxeViolations(container);
+  });
+
+  test("NAME_RESERVED in the flow: Choose a different name goes back to the name step", async () => {
+    state.view = finished();
+    state.createError = new ConvexError({ code: "NAME_RESERVED" });
+    const { container } = render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Create my business" }));
+    expect((await screen.findByRole("alert")).textContent).toMatch(/Choose a different name/);
+    await user.click(screen.getByRole("button", { name: "Choose a different name" }));
+    const back = state.calls.find((call) => call.name === getFunctionName(api.workspace.wizard.goBack));
+    expect(back?.args).toEqual({ sessionId: "session123", step: "partner_name", to: "name" });
+    await expectNoAxeViolations(container);
+  });
+
+  test("BUSINESS_LIMIT_REACHED in the flow links to the founder's own business", async () => {
+    state.view = finished();
+    state.createError = new ConvexError({ code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1, projectId: "project9" });
+    render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Create my business" }));
+    expect((await screen.findByRole("link", { name: "Open your business" })).getAttribute("href")).toBe("/dashboard/b/project9");
   });
 
   test("a reload with ?session= reopens the session instead of starting a new one", () => {
