@@ -92,6 +92,7 @@ export function wrenToolsInstruction(): string {
     `- approval_card: put an approval card in front of the founder for a thing in this business, by its id from the business context. Fields: kind, subjectTable, subjectId. Kinds: ${kinds}. The founder decides on the card; you never approve.`,
     `- explain_card: show a short built-in explanation. Field: topic. Topics: ${topics}.`,
     `- navigate_card: link to a page of this business in the workspace. Field: route. Routes: ${routes}. No other links exist.`,
+    "The founder sees approval cards. Explain and navigate cards may not be shown yet, so never refer to one in your reply: no \"below\", no \"the link\", no \"this card\". Write the reply so it stands on its own without them.",
     "Only add a card when it helps the founder with what they asked. Leave cards out otherwise.",
   ].join("\n");
 }

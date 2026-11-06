@@ -31,7 +31,7 @@ const { WrenChatPanel } = await import("@/components/workspace/chat/WrenChatPane
 
 const projectId = "p1" as Id<"projects">;
 const row = (id: string, author: "founder" | "wren", body: string, status: Thread[number]["status"]): Thread[number] => ({
-  _id: id as Id<"chat_messages">, author, body, status, createdAt: Date.UTC(2026, 10, 6, 12, 0, 0), cards: [],
+  _id: id as Id<"chat_messages">, author, body, status, createdAt: Date.UTC(2026, 10, 6, 12, 0, 0), updatedAt: Date.now(), cards: [],
 });
 
 function render(thread: Thread | undefined): string {

@@ -213,7 +213,7 @@ Docs: progress updated; stories not ticked (S2 waits on review and item 7). No p
   a paid one), whatever the review's subject (`documents` or `site_versions`). `revisionNoteFor(ctx, taskId)` reads
   it for the generator, which quotes it as founder data and never treats it as instructions.
 - P2 dead end after decline or expiry: option (b). The review card keeps its single transition to
-  `changes_requested`. Asking again on that card (`reaskPaidRound`) raises a fresh spend card only when the round is
+  `changes_requested`. Asking again on that card (`reaskPaidRound`, now `reaskChangeRound`; see the PR #210 CodeRabbit fixes) raises a fresh spend card only when the round is
   still paid and no live, unchanged spend card exists, using the new note or else the review card's note. With a live
   card it returns that card (`changed: false`). In every other case (free round, busy, stale, not available) it is
   S1's plain no-op, so a double click never starts a second round. It is simpler than holding the review card
@@ -691,3 +691,40 @@ the focus request in a ref); `npm run check:prompt-versions` 0 (3 versions match
 fix). The WP77 scan alone: 8/8.
 
 Docs: progress updated; stories S2, S3, S4 and S5 ticked (S6 open). No plan or ruling changes.
+
+## 2026-11-06 - PR #210 CodeRabbit fixes (after `babb2c02`)
+
+- **A (minor), Wren promised a link it cannot show.** Explain and navigate cards are checked and then dropped until
+  `chat_messages.cards` lands (Codex #13), so a reply that says "use the link below" pointed at nothing.
+  `wren-plan-turn` no longer asks for a navigate card to the launch plan. `wrenToolsInstruction`
+  (`lib/workspace/contracts/wrenTools.ts`, shared by both Wren prompts) now says the founder sees approval cards, while
+  explain and navigate cards may not be shown yet, so the reply must never refer to one ("below", "the link", "this
+  card"). Approval cards are unchanged. New assertion in `tests/platform/workspace-wren-cards.test.ts`.
+  - Prompt lock: `wren-chat@2` and `wren-plan-turn@2` exist only on this unmerged branch (not in `origin/main`'s lock),
+    so their two entries were deleted and re-locked with `scripts/check-prompt-versions.mjs --write`; no bump to @3.
+    The base check against `origin/main` passes.
+- **B (major), no way to retry a failed free round.** Verified: the round is the count of non-failed, non-cancelled
+  tasks of the artifact (`nextChangeRound`), so a failed or cancelled free revision gives its round back and
+  `resolveChangeRound` returns `free` with the same round number. While a revision is queued, running or blocked it
+  returns `busy`, and for a newer draft `stale`, never `free`. But `reaskPaidRound` handled only `spend`, so "Ask for
+  changes" again on the `changes_requested` review card did nothing.
+  - Fix: renamed to `reaskChangeRound`. On a `free` decision it starts that same round again with a zero-cost
+    `insertRevisionTask` on the same card, as the first ask did, and a new note replaces the card's note. It returns
+    `changed: true` and the free outcome. Guard: `cardRoundWasReleased` (`convex/workspace/changeRounds.ts`) lets it
+    retry only when this card started that round and every task under the round's key ended failed or cancelled. A
+    card whose round finished, or that never started the round, stays a no-op. A repeat while the retry is queued is
+    `busy`, so it is a no-op too. Paid re-asks behave as before.
+  - `insertRevisionTask` now gives a retry its own idempotency key (`...:retry:{n}`), so a retried round (free, or
+    paid under a reused spend card) never shares a task idempotency key with its failed attempt.
+  - Tests (`convex/workspace/changeRounds.test.ts`, 8 new): failed retry and cancelled retry each start the same round
+    with a new zero-cost task; a new note replaces the card's note; a re-ask while queued is a no-op; a double re-ask
+    after a failure makes one task; an old card whose round finished does not start the next round; a card that never
+    started the released round cannot retry it; a paid re-ask still raises a spend card and no task. A mutation check
+    (guard removed) turned the "never started" case red.
+  - Founder UI: none lists `changes_requested` review cards today. `listPendingApprovals` returns pending cards only,
+    `WrenChatCards` offers approve or "Not now" only, Wren cannot raise `artifact_review`, and the kit preview is
+    local state. So no UI was built. The retry is server-ready for the future review UI (WP75 S6 landing review and
+    the other artifact pages): calling `decideApproval` with `request_changes` again on the `changes_requested` card
+    retries a failed or cancelled free round.
+
+Docs: progress updated. No plan, story or ruling changes.

@@ -138,6 +138,8 @@ export const wrenThreadMessageValidator = v.object({
   body: v.string(),
   status: v.union(v.literal("streaming"), v.literal("done"), v.literal("failed")),
   createdAt: v.number(),
+  /** Last write to the row. The panel uses it to treat a stuck `streaming` reply as stopped. */
+  updatedAt: v.number(),
   /** WP77-S4: the reply's cards, built by the server (approval cards: this business's only). */
   cards: v.array(wrenCardViewValidator),
 });
@@ -332,6 +334,7 @@ export const listWrenThread = query({
       body: row.body,
       status: row.status,
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
       cards: row.author === "wren" && row.status === "done"
         ? await approvalCardViews(ctx, business, row.cardApprovalIds.slice(0, WREN_CARDS_PER_TURN))
         : [],

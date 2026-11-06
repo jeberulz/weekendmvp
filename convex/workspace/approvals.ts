@@ -39,6 +39,7 @@ import {
 import { jobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import { spendTermsFor, type ChangeRoundDecision } from "../../lib/workspace/changeRounds";
 import {
+  cardRoundWasReleased,
   changeRoundOutcomeValidator,
   insertRevisionTask,
   resolveChangeRound,
@@ -748,16 +749,23 @@ async function requestArtifactChanges(
 }
 
 /**
- * "Ask for changes" again on a `changes_requested` review card. The only thing
- * it can do is give a paid round its spend card back after the founder declined
- * it, it expired, or the document changed: when the round is still paid and no
- * live, unchanged spend card exists, it raises a fresh one (the new note, else
- * the review card's note). With a live card it returns that card and writes
- * nothing. Every other case (a free round, a draft in progress, a newer draft,
- * not available) is S1's plain no-op, so a double click never starts a second
- * round.
+ * "Ask for changes" again on a `changes_requested` review card. It does one of
+ * two things, and nothing else:
+ * - Paid round: gives the round its spend card back after the founder declined
+ *   it, it expired, or the document changed. When the round is still paid and
+ *   no live, unchanged spend card exists, it raises a fresh one (the new note,
+ *   else the review card's note). With a live card it returns that card and
+ *   writes nothing.
+ * - Free round retry: when this card's own free revision failed or was
+ *   cancelled (C-JOBS gives the round back), it starts that same round again
+ *   with a new zero-cost revision task, as the first ask did. A new note
+ *   replaces the card's note (the task reads the note from this card).
+ * Every other case (a draft queued or running, a newer draft, a free round this
+ * card never started or that finished, not available) is S1's plain no-op, so
+ * a double click never starts a second round: once the retry is queued the
+ * artifact is `busy`.
  */
-async function reaskPaidRound(
+async function reaskChangeRound(
   ctx: MutationCtx,
   approval: Doc<"approvals">,
   note: string | undefined,
@@ -766,9 +774,25 @@ async function reaskPaidRound(
 ): Promise<DecisionResult> {
   const noop: DecisionResult = { approvalId: approval._id, status: approval.status, changed: false };
   const resolution = await resolveChangeRound(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
-  if (!resolution.ok || resolution.decision.decision !== "spend") return noop;
-  const decision = resolution.decision;
-  const { spendApprovalId, created } = await raiseSpendCard(ctx, resolution.lineage, decision, note ?? approval.note, founder, now);
+  if (!resolution.ok) return noop;
+  const { lineage, decision } = resolution;
+  if (decision.decision === "free") {
+    if (!(await cardRoundWasReleased(ctx, lineage, decision.changeRound, approval._id))) return noop;
+    if (note !== undefined && note !== approval.note) {
+      await ctx.db.patch("approvals", approval._id, { note, updatedAt: now });
+    }
+    const taskId = await insertRevisionTask(ctx, {
+      lineage, changeRound: decision.changeRound, creditCost: 0n, approvalId: approval._id, now,
+    });
+    return {
+      approvalId: approval._id,
+      status: approval.status,
+      changed: true,
+      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId },
+    };
+  }
+  if (decision.decision !== "spend") return noop;
+  const { spendApprovalId, created } = await raiseSpendCard(ctx, lineage, decision, note ?? approval.note, founder, now);
   return {
     approvalId: approval._id,
     status: approval.status,
@@ -882,7 +906,7 @@ export const decideApproval = mutation({
     const now = Date.now();
     if (approval.status !== "pending") {
       if (approval.status === "changes_requested" && approval.kind === "artifact_review" && args.decision === "request_changes") {
-        return await reaskPaidRound(ctx, approval, note, founder, now);
+        return await reaskChangeRound(ctx, approval, note, founder, now);
       }
       if (approval.status === target) return { approvalId: approval._id, status: approval.status, changed: false };
       if (approval.status === "approved" && args.decision === "cancel") {

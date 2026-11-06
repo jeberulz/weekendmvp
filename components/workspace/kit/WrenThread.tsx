@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useId, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useContext, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DefaultLink } from "./DefaultLink";
@@ -189,7 +189,12 @@ export function shouldSendOnKeyDown(input: {
 }
 
 export type WrenComposerProps = {
-  onSend: (text: string) => void;
+  /**
+   * Return `true` (or a promise of it) once the message was accepted: only then
+   * is the draft cleared. `false` keeps the text for another try. `void` clears
+   * straight away.
+   */
+  onSend: (text: string) => boolean | Promise<boolean> | void;
   /** A send is in flight: Send stays focusable (`aria-disabled`) and ignores activation. */
   sending?: boolean;
 };
@@ -199,11 +204,31 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
   const inputId = useId();
   const hintId = `${inputId}-hint`;
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pending = useRef(false);
+
   function submit() {
     const text = prepareMessage(draft);
-    if (!text || sending) return;
-    onSend(text);
-    setDraft("");
+    if (!text || sending || pending.current) return;
+    const result = onSend(text);
+    if (result === undefined) {
+      setDraft("");
+      return;
+    }
+    if (typeof result === "boolean") {
+      if (result) setDraft("");
+      else textareaRef.current?.focus();
+      return;
+    }
+    pending.current = true;
+    void result
+      .then((accepted) => accepted, () => false)
+      .then((accepted) => {
+        pending.current = false;
+        // Keep anything the founder typed while the send was pending.
+        if (accepted) setDraft((current) => (prepareMessage(current) === text ? "" : current));
+        else textareaRef.current?.focus();
+      });
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -231,6 +256,7 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
         Message Wren
       </label>
       <textarea
+        ref={textareaRef}
         id={inputId}
         rows={1}
         value={draft}
