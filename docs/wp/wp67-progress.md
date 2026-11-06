@@ -366,3 +366,26 @@ Updated 2026-11-06. **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194)
   merges (stub until then, per `05` §2.3).
 - G2 will need live spend (20 live test launches, median ≤ $0.75) and owner steps (kill switches on production,
   the allowlist cohort). Nothing live runs without an OK.
+
+### Phase 2 status - Needs from Codex and owner questions
+
+- WP77-S1 (C-APPROVAL, `assertApproved`) is committed (`c402c967`). The independent review approved it with
+  should-fix items, which are being fixed before the PR opens.
+- WP74-S1/S2 (wizard steps, founder signals) is committed (`82036f77`). The independent review approved it with
+  should-fix items, which are being fixed. **The WP74 PR cannot go green until Codex lands the scanner change
+  below**: the WP68 boundaries scanner requires `requireBusinessAccess` in every public `convex/workspace`
+  function, and a wizard runs before any business exists.
+- Needs from Codex (added):
+  - C-AUTHZ `requireOwnedWizardSession(ctx, sessionId)` in `convex/platform/authz.ts`, and a `PRE_BUSINESS_CONTROLS`
+    exact allowlist in `tests/security/wp68-workspace-boundaries.test.mjs` (`getWizardAccess` and `startOrResume`
+    need the current-user guard; the other five wizard functions need `requireOwnedWizardSession`;
+    `assertFeatureEnabled` stays required for all).
+  - Middleware hard 404 for `/start` and `/start/*` (via `getWizardAccess`).
+  - Optional: `founder_signals` index `by_wizardSessionId_and_step`; `NEXT_PUBLIC_LAUNCH_WORKSPACE` in `.env.example`.
+  - For C-APPROVAL: an `approvals.subjectVersion` fingerprint over every content field (fail closed when missing),
+    `approvals.consumedAt`, index `by_status_and_createdAt`, and an hourly approval-expiry cron that cannot overlap.
+- Owner questions:
+  1. `checkLimit("wizardStart")` also requires the `ai` feature. Should a wizard start be refused when AI is off
+     (the current plan, since the crew spends AI right after start), or should Codex add a limit-only check?
+  2. Approval expiry while the workspace is switched off: may the expiry cron keep running then? It only takes
+     permission away, never grants it.
