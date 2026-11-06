@@ -14,11 +14,11 @@ Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 merge
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-g1` (board PR) | G0 passed (#174, #175); **G1 running** | WP71 gateway action | Close G1 when the gateway-action PR merges |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-g1` (board PR #187) | G0 passed (#174, #175); **G1 running** | #192 merge | Close G1 when #192 merges |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | **S1–S3 merged (#180)**; G1 review: pass with should-fix | — | S4 sweep cron + alarms, S5 limits, S6 spend queries; review P2s below |
-| WP71 | 1 | Claude | `claude/wp71-gateway-action` | **S1–S3 merged (#184)**; lock follow-up PR #185; **S2 gateway action bound to the real meter in progress** (G1 blocker, fixture mode) | — | Then S4 cache helper and S6 evals (fixture); S4 live cache test and S5 seed precompute need OK |
+| WP71 | 1 | Claude | `claude/wp71-gateway-action` | **S1–S3 merged (#184)**; lock follow-up PR #185; **gateway action bound to the real meter in PR #192** (G1 blocker; reviewed, checks green) | Owner merge of #192 | Then S4 cache helper and S6 evals (fixture); S4 live cache test and S5 seed precompute need OK |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)** | Middleware hard 404 from Codex; `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
@@ -296,3 +296,19 @@ Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 merge
   middleware hard 404, `check:prompt-versions` script and CI step, the C-METER `FailArgs` token fields and
   overrun marker.
 - Next: review and merge the WP71 gateway-action PR, re-run the G1 checks on that tree, then mark G1 passed and stop.
+
+### Update: gateway action ready (PR #192)
+
+- `convex/ai/gatewayActions.ts` binds the gateway to `internal.ai.metering.*` (internal action `runPrompt`, fixture
+  unless `AI_PROVIDER_MODE` is exactly `live`). Integration tests against the real meter and ledger cover the G1
+  path: business, task, debit, gateway call reserved → sent → settled, replay as a duplicate; a failed run with one
+  re-ask, then a refund exactly once and no further provider call; the kill switch with live mode and a fake key
+  makes zero fetch calls.
+- Honest limit: the credit-funded job path is proven through the injectable `runPromptWithMeter` with a test-only
+  `allowInternal`, because the only registered spec is the internal probe. The registered action settles only
+  eval runs until the first non-internal crew spec lands (WP74+).
+- Reviews: independent Opus review "approve with should-fix", no P1; fixes re-reviewed twice.
+- Checks on `e1b08882`: typecheck, Convex typecheck, lint (0 errors), `npm test`, `npm run test:security`, the
+  prompt-lock CLI and `npm run build` all exit 0. An isolated anonymous local Convex deploy (3340/3341, dummy
+  local-only billing bridge value) reported functions ready with every component installed. No cloud touched.
+- G1 closes when #192 merges and the checks rerun on that `main`.
