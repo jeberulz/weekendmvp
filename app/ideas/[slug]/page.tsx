@@ -38,6 +38,8 @@ import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
 import { SaveIdeaButton } from "@/components/ideas/SaveIdeaButton";
+import { IdeaRequestWidget } from "@/components/idea-requests/IdeaRequestWidget";
+import { WhenConvexReady } from "@/components/platform/client-gates";
 import { SafeEditorialBody } from "@/components/ideas/SafeEditorialBody";
 import { ideaMdxComponents } from "@/components/ideas/mdx-light";
 import {
@@ -423,6 +425,10 @@ export default async function IdeaPage({
         >
           <IdeaPublicSummary preview={preview} />
         </EmailGate>
+        {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
+        <WhenConvexReady>
+          <IdeaRequestWidget />
+        </WhenConvexReady>
       </>
     );
   }
@@ -715,6 +721,11 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                   className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-black"
                 />
               </div>
+
+              {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
+              <WhenConvexReady>
+                <IdeaRequestWidget />
+              </WhenConvexReady>
             </main>
           </div>
         </div>
