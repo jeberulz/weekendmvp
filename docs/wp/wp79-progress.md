@@ -33,6 +33,11 @@ Append-only progress log. Claims must cite checks or code evidence.
 - Relevant docs: `.env.example` explains the separate project and activation values. No Next.js code changed.
 - Independent S1 review found that an explicit live setting alone could turn component test mode off with no tenant sender. Tightened the option builder: live mode requires the exact live setting plus tenant key, valid non-demo sender and webhook secret. The sender still must enforce the ops feature gate and address before enqueue.
 
+## 2026-11-06 — WP79-S4 token primitive
+
+- Added a pure Web Crypto capability helper: 256-bit URL-safe token, strict input shape and SHA-256 digest with purpose separation. Only digests may be written to `lead_email_tokens`; the raw value exists only for the confirmation/unsubscribe URL.
+- This is the independent portion of S4. Issuing, consuming and purging token rows waits for PR #195's merged C-DATA; the `/u/{token}` page needs a founder-facing wireframe before UI implementation per `AGENTS.md` preferences. The opt-in email flow also waits for WP78's real-lead capture interface.
+
 ## 2026-11-06 — WP79-S3 cap decision primitive
 
 - Reads the merged C-JOBS `tenantEmailSends` reference: Free 50 lifetime hard, Builder's Hub 5,000/month soft, Growth 20,000/month soft. All tenant enqueues, including double opt-in confirmation, count. Lifetime history includes prior paid use, so downgrading cannot reset the Free ceiling.
