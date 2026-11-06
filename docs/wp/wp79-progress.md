@@ -43,3 +43,7 @@ Append-only progress log. Claims must cite checks or code evidence.
 
 - Added a paid monthly-reset test: lifetime sends can exceed the paid monthly threshold while the current UTC month's count is zero or below the threshold, without warning. The threshold warns only when the current month's count reaches it.
 - The earlier line treating all prior paid sends as part of Free's 50 after downgrade is a conservative implementation assumption, **pending an owner ruling**. PR #199 remains draft and must not merge on that assumption until the owner decides. Confirmation messages count toward the plan's send cap under D6's unqualified 50-send limit.
+
+## 2026-11-06 — C-APPROVAL integration blocker
+
+- WP77-S1's current `assertApproved` checks `sequences.updatedAt`. `activateSequence` must patch sequence status/updatedAt, so the same approved sequence appears stale on a later sender tick. PR #195 adds optional `approvals.subjectVersion` to C-DATA but does not implement capture or comparison. WP77 must supply a content fingerprint over the sequence's steps/documents that remains stable across status-only patches and changes on any content edit, then merge that C-APPROVAL implementation before WP79-S2/S3 runtime uses it. WP79 will not infer ongoing permission from a status field or skip the recheck.
