@@ -708,3 +708,6 @@ Now soft, so `fn.ts` counts them as missed: "The #1 hydration pack for ultrarunn
 | Timing: extra 50-57 KB probes, worst single check | 50 ms | 44-46 ms |
 
 - Docs updated: this file. Stories unchanged.
+
+- **PR #216 review (Codex), every match**: a pattern with a refinement is now tried at every match in a string, keeping the most severe finding per code, so a softened or skipped first match ("Join 50 hikers. Join 2,000 hikers.", a founder quote before a customer's) no longer hides a later hard one; refinements look at most 240 characters around a match (worst 50 KB probe 36 ms).
+- **PR #216 review (Codex), plan discounts**: a percentage followed by a plan or pricing tie ("Save 20% with the annual plan", "15% on yearly billing", "20% per seat on Team") is a promotion and not flagged, using the same `PLAN_TIE` recogniser as the customer-outcome rule; `fp`, `fp2`, `final`, `new` and `fn` probe results are unchanged (2/46, 0/30, 12/12 must-flag, 6/28).

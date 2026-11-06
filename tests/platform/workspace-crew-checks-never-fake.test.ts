@@ -28,6 +28,8 @@ describe("never fake it: invented proof is found (hard)", () => {
     // the founder or owner of another named business is a customer, not the founder
     ["fake_testimonial", "“Saved our shop hours every week.” — Jane, owner of Bloom Florist"],
     ["fake_testimonial", "“Best pack I've owned.” — Mark, founder of TrailCo"],
+    // a founder quote first never hides a customer testimonial after it
+    ["fake_testimonial", "“We test every pack on a 20 km loop.” — Ana, the founder. “It saved my summer hike.” — Sarah K."],
     // ratings and reviews
     ["fake_rating", "★★★★★ on the App Store"],
     ["fake_rating", "Rated 4.9/5 by hikers"],
@@ -42,6 +44,8 @@ describe("never fake it: invented proof is found (hard)", () => {
     ["fake_review", "Rave reviews from every trail"],
     // counts
     ["fake_social_count", "Join 500 hikers already on the list"],
+    // a small first count never hides a large second one
+    ["fake_social_count", "Join 50 hikers. Join 2,000 hikers."],
     ["fake_social_count", "Join 2,000 others on the waitlist"],
     ["fake_social_count", "Join 40 hikers who already pre-ordered"],
     ["fake_social_count", "Join 1,200+ designers who already took the course."],
@@ -236,6 +240,12 @@ describe("never fake it: normal copy is not flagged", () => {
     "Find us at No. 1 Market Street.",
     "No. 1 tip: drink early.",
     "Our no. 1 rule: never skip water.",
+    // plan and pricing discounts are promotions, not outcomes
+    "Save 20% with the annual plan.",
+    "Save 20% on the annual plan.",
+    "Save 15% on yearly billing.",
+    "Save 10% when you pay annually.",
+    "Save 20% per seat on Team.",
     "Our #1 pick for beginners is the 2 L pack.",
     "Tip: #1 gear mistake is too little water.",
     "Your #1 favourite loaf is back.",

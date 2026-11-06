@@ -96,6 +96,16 @@ const ROLE_BUSINESS =
   /^\s*(?:(?:of|at)\s+(?:the\s+)?|,\s*)([\p{Lu}\p{N}][\p{L}\p{N}&'’.-]*(?:[^\S\n]+(?:&[^\S\n]+)?[\p{Lu}\p{N}][\p{L}\p{N}&'’.-]*){0,4})/u;
 const SENTENCE_REST = /^[^.!?\n]*/u;
 const SENTENCE_START = /[^.!?\n]*$/u;
+/** How far a refinement looks around a match: refinements run at every match, so each look stays bounded. */
+const SENTENCE_WINDOW = 240;
+/** The rest of the match's sentence (at most `SENTENCE_WINDOW` characters). */
+const sentenceAfter = (text: string, match: RegExpExecArray): string => {
+  const end = match.index + match[0].length;
+  return SENTENCE_REST.exec(text.slice(end, end + SENTENCE_WINDOW))?.[0] ?? "";
+};
+/** The start of the match's sentence (at most `SENTENCE_WINDOW` characters). */
+const sentenceBefore = (text: string, match: RegExpExecArray): string =>
+  SENTENCE_START.exec(text.slice(Math.max(0, match.index - SENTENCE_WINDOW), match.index))?.[0] ?? "";
 
 const nameKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
@@ -138,15 +148,28 @@ const PEOPLE_BASELINE = new RegExp(
  * most bottles") is a fact the founder can check: soft.
  */
 const softIfCompared: Refine = (text, match) => {
-  const rest = SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "";
+  const rest = sentenceAfter(text, match);
   const than = /\bthan\b/iu.exec(rest);
   if (than === null) return undefined;
   if (PEOPLE_BASELINE.test(rest.slice(than.index + than[0].length))) return undefined;
   return { code: "unverified_comparison", severity: "soft", what: "a measured comparison" };
 };
 
-/** An outcome tied to a plan, price or course ("save 10% with the annual plan", "three projects in the course") is a product fact. */
-const OUTCOME_TIE = /\b(?:plans?|price|prices|pricing|courses?|subscription|subscribe|subscribes|membership|annual|yearly|code|coupon|discount|bundle|launch)\b/iu;
+/**
+ * A plan, price or course tie ("with the annual plan", "on yearly billing", "per seat on Team", "in the course"):
+ * the number is a product or pricing fact, not an outcome. Shared by the customer-outcome and percentage rules.
+ */
+const PLAN_TIE =
+  /\b(?:plans?|price|prices|pricing|billing|billed|courses?|subscription|subscribe|subscribes|membership|annual|annually|yearly|seats?|code|coupon|discount|bundle|launch)\b/iu;
+/** What follows a percentage in a promotion: "20% with the annual plan", "15% on yearly billing", "20% per seat on Team". */
+const PROMO_CONNECTOR = /^\s*(?:off\s+)?(?:with|on|for|when|if|per|by|at)\b/iu;
+
+/** "Save 20% with the annual plan" is a promotion; anything else goes on to the comparison rule. */
+const promoOrCompared: Refine = (text, match, context) => {
+  const rest = sentenceAfter(text, match);
+  if (PROMO_CONNECTOR.test(rest) && PLAN_TIE.test(rest.slice(0, 80))) return "skip";
+  return softIfCompared(text, match, context);
+};
 /** An explicit money or time saving on average: "save an average of 6 hours", "save on average $40". */
 const AVERAGE_SAVING =
   /\b(?:save|saves|saved)\s+(?:an\s+average\s+of|on\s+average)\s+(?:[$€£¥₹]\s?\d|\d[\d,.]*\s*(?:%|[$€£¥₹]|hours?|hrs?|minutes?|mins?|days?|weeks?|months?)(?![\p{L}]))/iu;
@@ -158,9 +181,9 @@ const AVERAGE_SAVING =
  * or course is skipped. The rest is S4b's quality prompt.
  */
 const gradeOutcome: Refine = (text, match) => {
-  const sentence = (SENTENCE_START.exec(text.slice(0, match.index))?.[0] ?? "") + match[0] + (SENTENCE_REST.exec(text.slice(match.index + match[0].length))?.[0] ?? "");
+  const sentence = sentenceBefore(text, match) + match[0] + sentenceAfter(text, match);
   const averaged = /\baverage\b/iu.test(match[0]);
-  if (averaged && OUTCOME_TIE.test(sentence)) return "skip";
+  if (averaged && PLAN_TIE.test(sentence)) return "skip";
   if (averaged && AVERAGE_SAVING.test(sentence)) return undefined;
   return { code: "unverified_outcome", severity: "soft", what: "an outcome claimed for customers" };
 };
@@ -169,7 +192,7 @@ const gradeOutcome: Refine = (text, match) => {
 const softIfSmallJoin: Refine = (text, match) => {
   const found = match[0];
   const big = new RegExp(BIG, "iu").test(found) || /\+|\b(?:over|more\s+than|nearly|almost|others)\b/iu.test(found);
-  const already = /^\s+(?:who\s+)?already\b/iu.test(text.slice(match.index + found.length));
+  const already = /^\s+(?:who\s+)?already\b/iu.test(text.slice(match.index + found.length, match.index + found.length + 40));
   return big || already ? undefined : { code: "possible_social_count", severity: "soft", what: "a small count of people who joined" };
 };
 
@@ -413,21 +436,21 @@ export const PATTERNS: Pattern[] = [
       String.raw`${D}\b\d+(?:\.\d+)?\s?%${NOT_PROMO}\s+(?:of\s+${NOT_PLEDGE}\p{L}+|more|less|fewer|faster|slower|better|higher|lower|cheaper|quicker|increase|decrease|reduction|improvement|growth|drop|boost|savings?)\b`,
       "iu",
     ),
-    refine: softIfCompared,
+    refine: promoOrCompared,
   },
   {
     code: "fake_stat",
     severity: "hard",
     what: "a percentage change",
     re: new RegExp(String.raw`\b${GROWTH_VERBS}\s+(?:(?:up\s+to|over|more\s+than|nearly|almost|about|around)\s+)?${D}\d+(?:\.\d+)?\s?%${NOT_PROMO}`, "iu"),
-    refine: softIfCompared,
+    refine: promoOrCompared,
   },
   {
     code: "fake_stat",
     severity: "hard",
     what: "a multiplier outcome",
     re: new RegExp(String.raw`${D}\b\d+(?:\.\d+)?(?:x|×|\s+times)\s+(?:faster|more|fewer|less|better|quicker|higher|lower|cheaper|as|the)\b`, "iu"),
-    refine: softIfCompared,
+    refine: promoOrCompared,
   },
   {
     code: "fake_stat",
@@ -454,16 +477,48 @@ export const PATTERNS: Pattern[] = [
 export type NeverFakeHit = Hit & { readonly match: string };
 
 /** Run every pattern over one string. The text is normalised and its placeholders removed first. */
+const GLOBAL_PATTERNS = new WeakMap<RegExp, RegExp>();
+
+/** The pattern's regex with the global flag, compiled once. */
+function globalOf(re: RegExp): RegExp {
+  let global = GLOBAL_PATTERNS.get(re);
+  if (global === undefined) {
+    global = re.global ? re : new RegExp(re.source, `${re.flags}g`);
+    GLOBAL_PATTERNS.set(re, global);
+  }
+  return global;
+}
+
+/**
+ * Run every pattern over one string. The text is normalised and its
+ * placeholders removed first. A pattern with a refinement is tried at every
+ * match, keeping the most severe finding per code, so a first match that is
+ * softened or skipped ("Join 50 hikers. Join 2,000 hikers.", a founder quote
+ * before a customer's) never hides a later hard one. Refinements only soften
+ * or skip, so the search stops at the first match that keeps the pattern's
+ * own severity.
+ */
 export function neverFakeMatches(raw: string, context: MatchContext = {}): NeverFakeHit[] {
   const text = matchableText(raw);
   const found: NeverFakeHit[] = [];
   for (const pattern of PATTERNS) {
-    const match = pattern.re.exec(text);
-    if (match === null) continue;
-    const refined = pattern.refine?.(text, match, context);
-    if (refined === "skip") continue;
-    const hit: Hit = refined ?? pattern;
-    found.push({ code: hit.code, severity: hit.severity, what: hit.what, match: match[0] });
+    if (pattern.refine === undefined) {
+      const match = pattern.re.exec(text);
+      if (match !== null) found.push({ code: pattern.code, severity: pattern.severity, what: pattern.what, match: match[0] });
+      continue;
+    }
+    const best = new Map<string, NeverFakeHit>();
+    for (const match of text.matchAll(globalOf(pattern.re))) {
+      const refined = pattern.refine(text, match, context);
+      if (refined === "skip") continue;
+      const hit: Hit = refined ?? pattern;
+      const prior = best.get(hit.code);
+      if (prior === undefined || (prior.severity === "soft" && hit.severity === "hard")) {
+        best.set(hit.code, { code: hit.code, severity: hit.severity, what: hit.what, match: match[0] });
+      }
+      if (hit.code === pattern.code && hit.severity === pattern.severity) break;
+    }
+    found.push(...best.values());
   }
   return found;
 }
