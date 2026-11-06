@@ -10,6 +10,7 @@ import {
   requireCurrentPlatformUser,
   requireOwnedProject,
   requireOwnedProjectChild,
+  requireOwnedWizardSession,
 } from "./authz";
 
 const modules = import.meta.glob("../**/*.ts");
@@ -103,6 +104,187 @@ function asUser(
 }
 
 describe("platform owner-only authorization", () => {
+  test("pre-business wizard guard hides other-owner, missing, abandoned and linked sessions", async () => {
+    const t = convexTest(schema, modules);
+    const fixture = await seedFixture(t);
+    const ids = await t.run(async (ctx) => {
+      const workspaceFor = (wizardSessionId: Id<"wizard_sessions">, slug: string) => ({
+        version: 1 as const,
+        name: slug,
+        slug,
+        platform: "web",
+        commercialModel: "free",
+        goal: "waitlist",
+        partner: { personality: "strategist", name: "Wren" },
+        wizardSessionId,
+        createdVia: "wizard" as const,
+      });
+      const active = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Test idea" } },
+        startedAt: 1,
+        updatedAt: 1,
+      });
+      const otherOwner = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.strangerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Other idea" } },
+        startedAt: 1,
+        updatedAt: 1,
+      });
+      const abandoned = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Abandoned idea" } },
+        startedAt: 1,
+        updatedAt: 1,
+        abandonedAt: 2,
+      });
+      const linked = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Linked idea" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: fixture.ownerProjectId,
+      });
+      await ctx.db.patch("projects", fixture.ownerProjectId, {
+        workspace: workspaceFor(linked, "linked-business"),
+      });
+      const forgedLink = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Forged link" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: fixture.strangerProjectId,
+      });
+      const wrongProjectId = await ctx.db.insert("projects", {
+        ownerId: fixture.ownerId,
+        workspace: workspaceFor(active, "wrong-business"),
+        source: "own_idea",
+        title: "Wrong project",
+        status: "draft",
+        idempotencyKey: "wrong-project",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      const wrongLink = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Wrong link" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: wrongProjectId,
+      });
+      const legacyProjectId = await ctx.db.insert("projects", {
+        ownerId: fixture.ownerId,
+        source: "own_idea",
+        title: "Legacy project",
+        status: "draft",
+        idempotencyKey: "legacy-project",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      const legacyLink = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Legacy link" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: legacyProjectId,
+      });
+      const archivedProjectId = await ctx.db.insert("projects", {
+        ownerId: fixture.ownerId,
+        workspace: workspaceFor(active, "archived-business"),
+        source: "own_idea",
+        title: "Archived project",
+        status: "draft",
+        idempotencyKey: "archived-project",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      const archivedLink = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Archived link" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: archivedProjectId,
+      });
+      await ctx.db.patch("projects", archivedProjectId, {
+        workspace: workspaceFor(archivedLink, "archived-business"),
+        archivedAt: 2,
+      });
+      const missingProjectId = await ctx.db.insert("projects", {
+        ownerId: fixture.ownerId,
+        source: "own_idea",
+        title: "Deleted project",
+        status: "draft",
+        idempotencyKey: "deleted-project",
+        createdAt: 1,
+        updatedAt: 1,
+      });
+      const missingLink = await ctx.db.insert("wizard_sessions", {
+        ownerId: fixture.ownerId,
+        step: "idea",
+        answers: { idea: { source: "own_idea", text: "Missing link" } },
+        startedAt: 1,
+        updatedAt: 1,
+        projectId: missingProjectId,
+      });
+      await ctx.db.delete("projects", missingProjectId);
+      return { active, otherOwner, abandoned, linked, forgedLink, wrongLink, legacyLink, archivedLink, missingLink };
+    });
+    const owner = asUser(t, fixture.ownerId, fixture.ownerSessionId);
+    const stranger = asUser(t, fixture.strangerId, fixture.strangerSessionId);
+
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.active)))
+      .resolves.toMatchObject({ _id: ids.active, ownerId: fixture.ownerId });
+    await expect(stranger.run((ctx) => requireOwnedWizardSession(ctx, ids.active)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.otherOwner)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.abandoned)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.linked)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.linked, { allowLinked: true })))
+      .resolves.toMatchObject({ _id: ids.linked, projectId: fixture.ownerProjectId });
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.forgedLink, { allowLinked: true })))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.wrongLink, { allowLinked: true })))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.legacyLink, { allowLinked: true })))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.archivedLink, { allowLinked: true })))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.missingLink, { allowLinked: true })))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+    await t.run(async (ctx) => { await ctx.db.delete("wizard_sessions", ids.active); });
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, ids.active)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.notFound);
+  });
+
+  test("wizard mutations enforce stored expiry while reactive reads stay clock-free", async () => {
+    const t = convexTest(schema, modules);
+    const fixture = await seedFixture(t);
+    const sessionId = await t.run(async (ctx) => await ctx.db.insert("wizard_sessions", {
+      ownerId: fixture.ownerId,
+      step: "idea",
+      answers: { idea: { source: "own_idea", text: "Test idea" } },
+      startedAt: 1,
+      updatedAt: 1,
+    }));
+    await t.run(async (ctx) => { await ctx.db.patch("authSessions", fixture.ownerSessionId, { expirationTime: 1 }); });
+    const owner = asUser(t, fixture.ownerId, fixture.ownerSessionId);
+    await expect(owner.run((ctx) => requireOwnedWizardSession(ctx, sessionId)))
+      .rejects.toThrow(PLATFORM_AUTH_ERROR.unauthenticated);
+    await expect(owner.run((ctx) => requireOwnedWizardSession({ auth: ctx.auth, db: ctx.db }, sessionId)))
+      .resolves.toMatchObject({ _id: sessionId });
+  });
+
   test("C-AUTHZ grants only the owner and hides missing, archived and other-owner businesses", async () => {
     const t = convexTest(schema, modules);
     const fixture = await seedFixture(t);

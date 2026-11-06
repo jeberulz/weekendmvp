@@ -124,6 +124,7 @@ import type * as platform_setupValidators from "../platform/setupValidators.js";
 import type * as platform_sites_leads from "../platform/sites/leads.js";
 import type * as platform_sites_publish from "../platform/sites/publish.js";
 import type * as platform_sites_read from "../platform/sites/read.js";
+import type * as platform_sites_retention from "../platform/sites/retention.js";
 import type * as platform_sites_takedown from "../platform/sites/takedown.js";
 import type * as platform_sites_takedownState from "../platform/sites/takedownState.js";
 import type * as platform_transitions from "../platform/transitions.js";
@@ -142,8 +143,12 @@ import type * as subscriptions from "../subscriptions.js";
 import type * as workspace_access from "../workspace/access.js";
 import type * as workspace_approvals from "../workspace/approvals.js";
 import type * as workspace_business from "../workspace/business.js";
+import type * as workspace_changeRounds from "../workspace/changeRounds.js";
+import type * as workspace_chat from "../workspace/chat.js";
+import type * as workspace_chatActions from "../workspace/chatActions.js";
 import type * as workspace_signals from "../workspace/signals.js";
 import type * as workspace_wizard from "../workspace/wizard.js";
+import type * as workspace_wrenCards from "../workspace/wrenCards.js";
 
 import type {
   ApiFromModules,
@@ -268,6 +273,7 @@ declare const fullApi: ApiFromModules<{
   "platform/sites/leads": typeof platform_sites_leads;
   "platform/sites/publish": typeof platform_sites_publish;
   "platform/sites/read": typeof platform_sites_read;
+  "platform/sites/retention": typeof platform_sites_retention;
   "platform/sites/takedown": typeof platform_sites_takedown;
   "platform/sites/takedownState": typeof platform_sites_takedownState;
   "platform/transitions": typeof platform_transitions;
@@ -286,8 +292,12 @@ declare const fullApi: ApiFromModules<{
   "workspace/access": typeof workspace_access;
   "workspace/approvals": typeof workspace_approvals;
   "workspace/business": typeof workspace_business;
+  "workspace/changeRounds": typeof workspace_changeRounds;
+  "workspace/chat": typeof workspace_chat;
+  "workspace/chatActions": typeof workspace_chatActions;
   "workspace/signals": typeof workspace_signals;
   "workspace/wizard": typeof workspace_wizard;
+  "workspace/wrenCards": typeof workspace_wrenCards;
 }>;
 
 /**

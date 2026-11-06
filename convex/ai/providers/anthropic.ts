@@ -34,6 +34,15 @@
  * - Fixture results carry `billedAs` ending in ` (fixture)`.
  * - HTTP and transport failures throw the kinds in `transport.ts`.
  *
+ * Streaming (WP77-S3): when the caller passes `onTextDelta`, the request goes
+ * through `messages.stream` with the same params and options, each text delta
+ * is handed to the hook, and the final message is read by `readMessage`
+ * unchanged, so cost, usage, stop reason, refusal and JSON checks are the
+ * same as a `create` reply. An error while streaming is mapped by the same
+ * `errorForThrown`; a failure after the request left (an SSE `error` event,
+ * a dropped connection) has no HTTP status, so it is `network`, billed
+ * `possible`, and C-METER charges the worst case.
+ *
  * Batch (S5): `buildMessageParams` is the `params` of a Message Batches
  * request and `readMessage(message, request, { batch: true })` reads one
  * succeeded result at the batch rate, so submit and poll can be added here
@@ -58,6 +67,7 @@ import {
   FIXTURE_BILLED_AS_SUFFIX,
   ProviderError,
   type ProviderCost,
+  type TextCallHooks,
   type TextRequest,
   type TextResult,
   type TextStopReason,
@@ -74,6 +84,16 @@ export type AnthropicRequestOptions = {
   readonly maxRetries?: number;
 };
 
+/**
+ * WP77-S3. The part of the SDK's `MessageStream` the adapter uses: text
+ * deltas for display, then the final message, which is read exactly like a
+ * `create` reply.
+ */
+export type AnthropicTextStream = {
+  on(event: "text", listener: (textDelta: string) => void): unknown;
+  finalMessage(): Promise<Anthropic.Message>;
+};
+
 /** The part of the SDK client the adapter uses. A real `Anthropic` instance satisfies it. */
 export type AnthropicMessagesClient = {
   readonly messages: {
@@ -81,6 +101,15 @@ export type AnthropicMessagesClient = {
       params: Anthropic.MessageCreateParamsNonStreaming,
       options?: AnthropicRequestOptions,
     ): Promise<Anthropic.Message>;
+    /**
+     * WP77-S3: `messages.stream`, used only when the caller asks for text
+     * deltas. Optional so a test client with `create` alone still works; the
+     * adapter then makes the same call unstreamed.
+     */
+    stream?(
+      params: Anthropic.MessageCreateParamsNonStreaming,
+      options?: AnthropicRequestOptions,
+    ): AnthropicTextStream;
   };
 };
 
@@ -422,7 +451,7 @@ function errorForThrown(error: unknown, deadline: ReturnType<typeof startDeadlin
 
 export type AnthropicAdapter = {
   readonly provider: "anthropic";
-  complete(request: TextRequest): Promise<TextResult>;
+  complete(request: TextRequest, hooks?: TextCallHooks): Promise<TextResult>;
 };
 
 export type AnthropicAdapterOptions = {
@@ -437,7 +466,7 @@ export type AnthropicAdapterOptions = {
 export function createAnthropicAdapter(options: AnthropicAdapterOptions): AnthropicAdapter {
   return {
     provider: "anthropic",
-    async complete(request: TextRequest): Promise<TextResult> {
+    async complete(request: TextRequest, hooks?: TextCallHooks): Promise<TextResult> {
       // Build first: a bad request, mode or key fails before any client exists.
       const params = buildMessageParams(request);
       const access = resolveProviderAccess("anthropic", options.env);
@@ -456,12 +485,20 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions): Anthro
 
       const deadline = startDeadline("anthropic", request.timeoutMs, request.signal);
       let message: Anthropic.Message;
+      const requestOptions: AnthropicRequestOptions = {
+        signal: deadline.signal,
+        timeout: request.timeoutMs,
+        maxRetries: 0,
+      };
+      const onTextDelta = hooks?.onTextDelta;
       try {
-        message = await client.messages.create(params, {
-          signal: deadline.signal,
-          timeout: request.timeoutMs,
-          maxRetries: 0,
-        });
+        if (onTextDelta !== undefined && client.messages.stream !== undefined) {
+          const stream = client.messages.stream(params, requestOptions);
+          stream.on("text", (textDelta) => onTextDelta(textDelta));
+          message = await stream.finalMessage();
+        } else {
+          message = await client.messages.create(params, requestOptions);
+        }
       } catch (error) {
         throw errorForThrown(error, deadline);
       } finally {

@@ -60,6 +60,22 @@ async function realLock() {
   return parseLock(await realLockText());
 }
 
+const isProbeRef = (ref) => ref.startsWith("internal-registry-probe@");
+
+/**
+ * WP77-S3: the lock now holds real specs too (Wren). The probe-mutation tests
+ * compare the probe alone, so they read only the probe's lock entries and
+ * registry entries; the committed-lock tests still read everything.
+ */
+async function probeLock() {
+  const lock = await realLock();
+  return { ...lock, prompts: Object.fromEntries(Object.entries(lock.prompts).filter(([ref]) => isProbeRef(ref))) };
+}
+
+function probeEntries() {
+  return listEntries().filter((entry) => isProbeRef(`${entry.spec.id}@${entry.spec.version}`));
+}
+
 function probeWith(overrides, options = SAMPLE) {
   return promptEntry(definePromptSpec({ ...registryProbeSpec, ...overrides }), options);
 }
@@ -184,12 +200,12 @@ test("the hash is stable and ignores key order in the spec", () => {
     }),
     SAMPLE,
   );
-  assert.deepEqual(currentHashes([reordered]), currentHashes(listEntries()));
+  assert.deepEqual(currentHashes([reordered]), currentHashes(probeEntries()));
 });
 
 test("a system text change without a version bump fails and names the part", async () => {
   const entries = [probeWith({ system: `${registryProbeSpec.system} Be brief.` })];
-  const { problems } = checkPromptVersions(currentHashes(entries), await realLock());
+  const { problems } = checkPromptVersions(currentHashes(entries), await probeLock());
   assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
   assert.match(problems[0].message, /system changed without a version bump/);
   assert.match(problems[0].message, /internal-registry-probe@3/);
@@ -197,28 +213,28 @@ test("a system text change without a version bump fails and names the part", asy
 
 test("a task template change without a version bump fails", async () => {
   const entries = [probeWith({ buildUser: (inputs) => `Echo this label: ${inputs.label}` })];
-  const { problems } = checkPromptVersions(currentHashes(entries), await realLock());
+  const { problems } = checkPromptVersions(currentHashes(entries), await probeLock());
   assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
   assert.match(problems[0].message, /^internal-registry-probe@2: task changed/);
 });
 
 test("the task part includes the sample render (different sample inputs change it)", async () => {
   const entry = promptEntry(registryProbeSpec, { ...SAMPLE, sampleInputs: { label: "a different sample" } });
-  const { problems } = checkPromptVersions(currentHashes([entry]), await realLock());
+  const { problems } = checkPromptVersions(currentHashes([entry]), await probeLock());
   assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
   assert.match(problems[0].message, /: task changed/);
 });
 
 test("an output schema change without a version bump fails", async () => {
   const entries = [probeWith({ outputSchema: z.object({ echo: z.string().min(1).max(100) }) })];
-  const { problems } = checkPromptVersions(currentHashes(entries), await realLock());
+  const { problems } = checkPromptVersions(currentHashes(entries), await probeLock());
   assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
   assert.match(problems[0].message, /outputSchema changed/);
 });
 
 test("a run setting change without a version bump fails", async () => {
   const entries = [probeWith({ maxTokens: 512 })];
-  const { problems } = checkPromptVersions(currentHashes(entries), await realLock());
+  const { problems } = checkPromptVersions(currentHashes(entries), await probeLock());
   assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
   assert.match(problems[0].message, /run changed/);
 });
@@ -227,8 +243,8 @@ test("a module source change without a version bump fails and names the module p
   await withTempDir(async (dir) => {
     const source = await readFile(path.join(root, PROBE_MODULE), "utf8");
     await writeTree(dir, { [PROBE_MODULE]: source.replace("version: 2,", "version: 2, // edited") });
-    const lock = await realLock();
-    const { problems } = checkPromptVersions({ [PROBE_REF]: hashEntry(listEntries()[0], { root: dir }) }, lock);
+    const lock = await probeLock();
+    const { problems } = checkPromptVersions({ [PROBE_REF]: hashEntry(probeEntries()[0], { root: dir }) }, lock);
     assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
     assert.match(problems[0].message, /: module changed without a version bump/);
   });
@@ -372,12 +388,12 @@ ${TREE["p/helper.ts"]}export const m = TIER_MODELS;
 });
 
 test("a TIER_MODELS or input-ceiling change fails the locked @2 on the run part", async () => {
-  const lock = await realLock();
+  const lock = await probeLock();
   const lane = inputLaneFor(registryProbeSpec.tier, registryProbeSpec.mode);
   const model = TIER_MODELS.fast;
   const ceiling = TIER_MAX_INPUT_TOKENS[lane];
   const runOnly = () => {
-    const { problems } = checkPromptVersions(currentHashes(), lock);
+    const { problems } = checkPromptVersions(currentHashes(probeEntries()), lock);
     assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
     assert.match(problems[0].message, new RegExp(`^${PROBE_REF}: run changed without a version bump`));
   };
@@ -391,7 +407,7 @@ test("a TIER_MODELS or input-ceiling change fails the locked @2 on the run part"
     TIER_MODELS.fast = model;
     TIER_MAX_INPUT_TOKENS[lane] = ceiling;
   }
-  assert.deepEqual(checkPromptVersions(currentHashes(), lock).problems, [], "restored tables match the lock again");
+  assert.deepEqual(checkPromptVersions(currentHashes(probeEntries()), lock).problems, [], "restored tables match the lock again");
 });
 
 test("the run part carries the router's resolved model and input ceiling", () => {
@@ -464,13 +480,13 @@ test("a new version at or below a locked version fails", async () => {
 });
 
 test("a removed spec fails without a retired note and passes with one", async () => {
-  const lock = await realLock();
+  const lock = await probeLock();
   assert.deepEqual(kinds(checkPromptVersions({}, lock).problems), [`removed_without_note ${PROBE_REF}`]);
 
   const retired = structuredClone(lock);
   retired.prompts[PROBE_REF].retired = "test: retired";
   assert.deepEqual(checkPromptVersions({}, retired).problems, []);
-  assert.deepEqual(kinds(checkPromptVersions(currentHashes(), retired).problems), [`retired_ref_reused ${PROBE_REF}`]);
+  assert.deepEqual(kinds(checkPromptVersions(currentHashes(probeEntries()), retired).problems), [`retired_ref_reused ${PROBE_REF}`]);
 });
 
 test("a malformed lock is refused with a clear message", () => {
@@ -488,7 +504,7 @@ test("a malformed lock is refused with a clear message", () => {
 // ---------------------------------------------------------------------------
 
 test("compareWithBase allows new entries and adding retired, nothing else", async () => {
-  const base = await realLock();
+  const base = await probeLock();
   assert.deepEqual(compareWithBase(base, base), []);
 
   const added = withAdditions(base, { "other-prompt@1": { hash: ZERO, parts: {} } });

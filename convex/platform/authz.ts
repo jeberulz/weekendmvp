@@ -430,6 +430,40 @@ export async function requireBusinessAccess(
     : await requireOwnedProject(ctx, projectId);
 }
 
+/** C-AUTHZ for a wizard before a business exists. Mutations check the stored
+ * session expiry; reactive reads stay clock-free. Linked sessions are accepted
+ * only by callers that explicitly need to show or replay the created business. */
+export async function requireOwnedWizardSession(
+  ctx: PlatformReadCtx | MutationCtx,
+  sessionId: Id<"wizard_sessions">,
+  options: { readonly allowLinked?: boolean } = {},
+): Promise<Doc<"wizard_sessions">> {
+  const user = "scheduler" in ctx
+    ? await requireCurrentPlatformUserForMutation(ctx)
+    : await requireCurrentPlatformUser(ctx);
+  const session = await ctx.db.get("wizard_sessions", sessionId);
+  if (
+    session === null ||
+    session.ownerId !== user._id ||
+    session.abandonedAt !== undefined ||
+    (session.projectId !== undefined && options.allowLinked !== true)
+  ) {
+    return denyNotFound();
+  }
+  if (session.projectId !== undefined) {
+    const project = await ctx.db.get("projects", session.projectId);
+    if (
+      project === null ||
+      project.ownerId !== user._id ||
+      project.archivedAt !== undefined ||
+      project.workspace?.wizardSessionId !== session._id
+    ) {
+      return denyNotFound();
+    }
+  }
+  return session;
+}
+
 /** Internal jobs use a trusted owner ID and still verify the project chain. */
 export async function requireBusinessForOwner(
   ctx: Pick<QueryCtx, "db">,
