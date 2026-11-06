@@ -62,11 +62,12 @@ test("every workspace table has a flat validator, D22 ownership and owner-first 
       }
     }
   }
-  assert.equal(count, 29, "Phase 0 inventory plus WP79's three additive tenant-email tables");
+  assert.equal(count, 30, "Phase 0 inventory plus additive WP79 and WP78 tables");
   assert.equal(tableNames.size, count, "workspace table names must not be duplicated across schema modules");
   assert.ok(tableNames.has("business_email_settings"));
   assert.ok(tableNames.has("lead_email_tokens"));
   assert.ok(tableNames.has("lead_retention_jobs"));
+  assert.ok(tableNames.has("account_closure_jobs"));
 });
 
 const WORKSPACE_RUNTIME_DIRS = ["workspace", "crew", "studio", "ai", "growth", "ops"];
