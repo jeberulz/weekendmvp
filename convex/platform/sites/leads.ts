@@ -1,9 +1,10 @@
 import { ConvexError, v } from "convex/values";
 import { RateLimiter, MINUTE, HOUR } from "@convex-dev/rate-limiter";
+import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { components } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, query, type MutationCtx } from "../../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "../authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../authz";
 
 /**
  * WP28-S5. Lead capture on a published tenant site.
@@ -160,5 +161,80 @@ export const listForProject = query({
         createdAt: lead.createdAt,
         synthetic: lead.synthetic,
       }));
+  },
+});
+
+/**
+ * Owner-scoped, paginated real-lead export. The Next route streams pages into
+ * CSV, so no fixed cap silently truncates the founder's data. Deleted and
+ * synthetic rows never leave this query.
+ */
+const exportLeadValidator = v.object({
+  id: v.id("leads"),
+  email: v.string(),
+  createdAt: v.number(),
+  consentText: v.optional(v.string()),
+  consentVersion: v.optional(v.string()),
+  doubleOptInAt: v.optional(v.number()),
+  source: v.optional(v.string()),
+});
+
+export const exportPage = query({
+  args: { projectId: v.id("projects"), paginationOpts: paginationOptsValidator },
+  returns: paginationResultValidator(exportLeadValidator),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const project = await ctx.db.get(args.projectId);
+    if (project === null || project.ownerId !== user._id) {
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    }
+    const page = await ctx.db.query("leads")
+      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", args.projectId))
+      .order("asc")
+      .paginate(args.paginationOpts);
+    return {
+      ...page,
+      page: page.page
+        .filter((lead) => lead.ownerId === user._id && !lead.synthetic &&
+          lead.deletedAt === undefined && lead.archivedAt === undefined &&
+          typeof lead.email === "string")
+        .map((lead) => ({
+          id: lead._id,
+          email: lead.email!,
+          createdAt: lead.createdAt,
+          consentText: lead.consentText,
+          consentVersion: lead.consentVersion,
+          doubleOptInAt: lead.doubleOptInAt,
+          source: lead.source,
+        })),
+    };
+  },
+});
+
+/** Erase contact PII immediately; the tombstone blocks WP79 sender retries. */
+export const deleteContact = mutation({
+  args: { leadId: v.id("leads") },
+  returns: v.object({ deleted: v.boolean() }),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUserForMutation(ctx);
+    const lead = await ctx.db.get(args.leadId);
+    if (lead === null || lead.ownerId !== user._id) {
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    }
+    const project = await ctx.db.get(lead.projectId);
+    if (project === null || project.ownerId !== user._id) {
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    }
+    if (lead.deletedAt !== undefined) return { deleted: false };
+    const now = Date.now();
+    await ctx.db.patch(lead._id, {
+      email: undefined,
+      payload: undefined,
+      source: undefined,
+      consentText: undefined,
+      deletedAt: now,
+      unsubscribedAt: now,
+    });
+    return { deleted: true };
   },
 });
