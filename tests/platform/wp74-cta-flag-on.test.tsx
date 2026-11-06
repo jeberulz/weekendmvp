@@ -25,7 +25,7 @@ import { Hero } from "../../components/home/sections/Hero";
 import { IdeaOfTheWeek } from "../../components/home/sections/IdeaOfTheWeek";
 import { BuildIdeaCta } from "../../components/workspace/BuildIdeaCta";
 import type { HeroIdea, SpotlightIdea } from "../../lib/home/types";
-import { BUILD_CTA_LABEL } from "../../lib/workspace/build-cta";
+import { BUILD_CTA_LABEL, buildHref } from "../../lib/workspace/build-cta";
 
 afterEach(() => {
   cleanup();
@@ -74,25 +74,25 @@ describe("flag on: hero", () => {
 
   test("has a real link to the wizard, and keeps the research link", () => {
     const all = links(html);
-    const build = all.filter((l) => l.href === "/start/example-idea");
+    const build = all.filter((l) => l.href === buildHref("example-idea"));
     expect(build).toHaveLength(1);
     expect(build[0].text).toContain(BUILD_CTA_LABEL);
     expect(all.some((l) => l.href === "/ideas/example-idea")).toBe(true);
   });
 
   test("the link is an anchor, so it is in the tab order, and names the idea", () => {
-    expect(html).toMatch(/<a [^>]*href="\/start\/example-idea"/);
+    expect(html).toMatch(/<a [^>]*href="\/signup\?returnTo=%2Fstart%2Fexample-idea"/);
     expect(html).toContain(`${BUILD_CTA_LABEL}<span class="sr-only"> for Example Idea</span>`);
-    expect(html).not.toMatch(/<a [^>]*tabindex="-1"[^>]*href="\/start/);
+    expect(html).not.toMatch(/<a [^>]*tabindex="-1"[^>]*href="\/signup\?returnTo=%2Fstart/);
   });
 
   test("an engine draft gets no CTA even with the flag on", () => {
-    expect(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />)).not.toContain("/start/");
+    expect(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
   });
 
   test("flag off, or no hero idea: no wizard link", () => {
-    expect(renderToStaticMarkup(<Hero idea={hero} total={225} />)).not.toContain("/start/");
-    expect(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />)).not.toContain("/start/");
+    expect(renderToStaticMarkup(<Hero idea={hero} total={225} />)).not.toContain("returnTo=%2Fstart%2F");
+    expect(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
   });
 });
 
@@ -100,14 +100,14 @@ describe("flag on: idea of the week", () => {
   test("links to the wizard and still offers the research", () => {
     const html = renderToStaticMarkup(<IdeaOfTheWeek idea={spotlight} weekLabel="Nov 2" total={225} buildCta />);
     const all = links(html);
-    expect(all.filter((l) => l.href === "/start/example-idea")).toHaveLength(1);
-    expect(all.find((l) => l.href === "/start/example-idea")?.text).toContain(BUILD_CTA_LABEL);
+    expect(all.filter((l) => l.href === buildHref("example-idea"))).toHaveLength(1);
+    expect(all.find((l) => l.href === buildHref("example-idea"))?.text).toContain(BUILD_CTA_LABEL);
     expect(all.some((l) => l.href === "/ideas/example-idea" && l.text.includes("Read the research"))).toBe(true);
   });
 
   test("an engine draft gets none, and off gets none", () => {
-    expect(renderToStaticMarkup(<IdeaOfTheWeek idea={draftSpotlight} weekLabel="Nov 2" total={225} buildCta />)).not.toContain("/start/");
-    expect(renderToStaticMarkup(<IdeaOfTheWeek idea={spotlight} weekLabel="Nov 2" total={225} />)).not.toContain("/start/");
+    expect(renderToStaticMarkup(<IdeaOfTheWeek idea={draftSpotlight} weekLabel="Nov 2" total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
+    expect(renderToStaticMarkup(<IdeaOfTheWeek idea={spotlight} weekLabel="Nov 2" total={225} />)).not.toContain("returnTo=%2Fstart%2F");
   });
 });
 
@@ -171,7 +171,7 @@ describe("BuildIdeaCta", () => {
       </main>,
     );
     const link = screen.getByRole("link", { name: `${BUILD_CTA_LABEL} for Example Idea` });
-    expect(link.getAttribute("href")).toBe("/start/example-idea");
+    expect(link.getAttribute("href")).toBe("/signup?returnTo=%2Fstart%2Fexample-idea");
     link.addEventListener("click", (event) => event.preventDefault());
     fireEvent.click(link);
     expect(track).toHaveBeenCalledTimes(1);

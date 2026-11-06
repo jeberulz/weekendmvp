@@ -16,6 +16,9 @@ export type WizardAccess = { readonly ideaTitle: string | null };
  * workspace gate. Calls `workspace/wizard:getWizardAccess` with the caller's
  * session and answers `notFound()` unless it says allowed.
  *
+ * The public "Build this idea" CTA therefore links to `/signup?returnTo=`
+ * (`buildHref`), never to `/start/*` directly.
+ *
  * Every refusal is the same 404: no backend, signed out, a token read that
  * fails, the workspace switched off (C-OPS), a closed cohort, an unknown or
  * removed library idea, or a backend error. Next.js control-flow errors pass

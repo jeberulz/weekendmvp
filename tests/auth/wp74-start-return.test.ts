@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { safeAuthRedirect } from "../../convex/auth";
 import { DEFAULT_AUTH_RETURN, authCallbackTarget, authRouteDecision, safePlatformReturn } from "../../lib/auth-return";
 import { hasDotSegmentInTarget, isAllowedAuthReturnPath, isBareReturnPath, isWizardReturnPath } from "../../lib/private-paths";
-import { buildHref, isBuildCtaSlug } from "../../lib/workspace/build-cta";
+import { buildHref, isBuildCtaSlug, wizardPath } from "../../lib/workspace/build-cta";
 
 /**
  * WP74-S5: a sign-in may return to `/start/{slug}` and nowhere else outside the
@@ -46,7 +46,7 @@ const ATTACKS = [
 describe("returnTo for the wizard", () => {
   test("accepts a canonical wizard path and keeps it exactly", () => {
     expect(safePlatformReturn("/start/hydrotrail")).toBe("/start/hydrotrail");
-    expect(safePlatformReturn(buildHref("meal-planner-2"))).toBe("/start/meal-planner-2");
+    expect(safePlatformReturn(wizardPath("meal-planner-2"))).toBe("/start/meal-planner-2");
     expect(authCallbackTarget("/start/hydrotrail")).toBe("/auth/callback?returnTo=%2Fstart%2Fhydrotrail");
     expect(safeAuthRedirect("/start/hydrotrail")).toBe("/start/hydrotrail");
     expect(safeAuthRedirect("/auth/callback?returnTo=%2Fstart%2Fhydrotrail")).toBe("/auth/callback?returnTo=%2Fstart%2Fhydrotrail");
@@ -92,6 +92,26 @@ describe("returnTo for the wizard", () => {
     expect(safePlatformReturn("/ideas/hydrotrail")).toBe("/ideas/hydrotrail");
     expect(safePlatformReturn("/ideas/hydrotrail?e=a@b.test")).toBe(DEFAULT_AUTH_RETURN);
     expect(safePlatformReturn("/dashboard/b/abc?tab=x")).toBe("/dashboard/b/abc?tab=x");
+  });
+});
+
+describe("the CTA href goes through sign-up", () => {
+  const base = "https://x.test";
+
+  test("buildHref carries the wizard as returnTo, and safePlatformReturn accepts it exactly", () => {
+    const href = buildHref("hydrotrail");
+    expect(href).toBe("/signup?returnTo=%2Fstart%2Fhydrotrail");
+    const url = new URL(href, base);
+    expect(url.pathname).toBe("/signup");
+    expect(safePlatformReturn(url.searchParams.get("returnTo"))).toBe("/start/hydrotrail");
+  });
+
+  test("signed in: middleware redirects to the wizard; signed out: the sign-up page renders", () => {
+    expect(authRouteDecision(new URL(buildHref("hydrotrail"), base), true)).toEqual({
+      kind: "redirect",
+      target: "/start/hydrotrail",
+    });
+    expect(authRouteDecision(new URL(buildHref("hydrotrail"), base), false)).toEqual({ kind: "next" });
   });
 });
 

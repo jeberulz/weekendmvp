@@ -24,6 +24,17 @@ export function isBuildCtaSlug(slug: unknown): slug is string {
 }
 
 /** The wizard route for a library idea. Same-origin, no query. */
-export function buildHref(slug: string): string {
+export function wizardPath(slug: string): string {
   return `/start/${slug}`;
+}
+
+/**
+ * Where the CTA links. `/start/*` answers 404 to a signed-out visitor, and the
+ * CTA sits on cached anonymous pages that cannot know the auth state. So it
+ * goes through sign-up with the wizard as the return target: middleware sends
+ * a signed-in visitor on `/signup` straight to `returnTo`, and a signed-out
+ * one signs up and then lands on the wizard.
+ */
+export function buildHref(slug: string): string {
+  return `/signup?returnTo=${encodeURIComponent(wizardPath(slug))}`;
 }

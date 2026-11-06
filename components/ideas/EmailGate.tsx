@@ -1,6 +1,6 @@
 import { AuthPlatformProvider } from "@/app/AuthPlatformProvider";
 import { AuthCard } from "@/components/auth/AuthCard";
-import { buildHref } from "@/lib/workspace/build-cta";
+import { wizardPath } from "@/lib/workspace/build-cta";
 
 /**
  * Anonymous account surface after the short introduction on mobile and beside
@@ -32,7 +32,7 @@ export function EmailGate({
           {buildFirst ? (
             <AuthCard
               mode="signup"
-              returnTo={buildHref(slug)}
+              returnTo={wizardPath(slug)}
               signInReturnTo={`/ideas/${slug}`}
               embedded
               gate

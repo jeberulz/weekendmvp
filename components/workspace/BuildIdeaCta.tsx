@@ -11,8 +11,10 @@ import { cn } from "@/lib/utils";
 type Tone = "primary" | "secondary" | "dark" | "ghost-dark" | "white";
 
 /**
- * "Build this idea, free" (WP74-S5): a real link to `/start/{slug}`. It is
- * server-rendered like any link, so nothing shifts when the page hydrates.
+ * "Build this idea, free" (WP74-S5): a real link to
+ * `/signup?returnTo=/start/{slug}` (`buildHref`). `/start/*` is a 404 for a
+ * signed-out visitor, so the link goes through sign-up; middleware forwards a
+ * signed-in visitor straight to the wizard. It is server-rendered like any link, so nothing shifts when the page hydrates.
  * The click event goes through `trackEvent`, which does nothing before
  * analytics consent. The visible name stays first in the accessible name
  * and the idea title follows it.
