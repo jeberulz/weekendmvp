@@ -32,3 +32,9 @@ Append-only progress log. Claims must cite checks or code evidence.
 - Auth-mail variables and delivery code are untouched. Provider account/domain creation and test-inbox delivery remain owner actions after later stories and contract gates.
 - Relevant docs: `.env.example` explains the separate project and activation values. No Next.js code changed.
 - Independent S1 review found that an explicit live setting alone could turn component test mode off with no tenant sender. Tightened the option builder: live mode requires the exact live setting plus tenant key, valid non-demo sender and webhook secret. The sender still must enforce the ops feature gate and address before enqueue.
+
+## 2026-11-06 — WP79-S3 cap decision primitive
+
+- Reads the merged C-JOBS `tenantEmailSends` reference: Free 50 lifetime hard, Builder's Hub 5,000/month soft, Growth 20,000/month soft. All tenant enqueues, including double opt-in confirmation, count. Lifetime history includes prior paid use, so downgrading cannot reset the Free ceiling.
+- The pure cap helper and UTC month key are ready. The sender mutation must read exact ShardedCounter totals, reject Free at 50 before enqueue, increment lifetime and month keys in the same top-level transaction as the component enqueue, and write a warning at a paid soft threshold. Installed component docs say an exact `count()` in a mutation reads all shards and creates an OCC dependency; concurrent 49→50 attempts must be tested, along with rollback on component failure.
+- Owner ruled that token-validated, rate-limited unsubscribe, valid opt-in confirmation, and verified bounce/complaint callback may record state while workspace/email is off. These exceptions never enqueue or activate; sender and confirmation enqueue remain gated. Claude orchestrator must append both shutdown rulings to `docs/wp/RULINGS.md` before the runtime slice merges.
