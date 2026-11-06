@@ -9,8 +9,8 @@ crons.interval("workspace AI stale reservation sweep", { minutes: 10 }, internal
 crons.interval("workspace AI spend alarms", { minutes: 15 }, internal.ops.spend.checkDailyAlarms, {});
 // Retention cleanup cannot enqueue mail and continues after the workspace or
 // tenant email switch is turned off. Component defaults are pinned here.
-crons.daily("tenant email finalized cleanup", { hourUTC: 2, minuteUTC: 15 },
+crons.cron("tenant email finalized cleanup", "15 2 * * *",
   internal.growth.email.cleanup.finalized, { olderThan: 7 * DAY_MS });
-crons.daily("tenant email abandoned cleanup", { hourUTC: 2, minuteUTC: 45 },
+crons.cron("tenant email abandoned cleanup", "45 2 * * *",
   internal.growth.email.cleanup.abandoned, { olderThan: 30 * DAY_MS });
 export default crons;
