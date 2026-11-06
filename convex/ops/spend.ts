@@ -9,6 +9,11 @@ const MAX_DAILY_ROWS_PER_STATUS = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
 type AlarmKey = "free80" | "free100" | "paid80" | "paid100";
+type AlarmState = NonNullable<Doc<"ops_settings">["spendAlarmState"]>;
+
+function emptyAlarmState(dayKey: string): AlarmState {
+  return { dayKey, free80: false, free100: false, paid80: false, paid100: false };
+}
 
 function dateRange(dayKey: string): { start: number; end: number } {
   if (!DAY_KEY.test(dayKey)) throw new ConvexError({ code: "INVALID_DAY" });
@@ -80,44 +85,56 @@ export const checkDailyAlarms = internalMutation({
   handler: async (ctx) => {
     const now = Date.now();
     const dayKey = utcDayKey(now);
+    const priorDayKey = utcDayKey(now - DAY_MS);
     const settings = await ctx.db.query("ops_settings")
       .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
       .unique();
     // Cleanup can charge spend after shutdown, so monitoring remains active.
-    if (settings === null) return { dayKey, raised: [] as AlarmKey[] };
-    const [free, paid] = await Promise.all([
-      readGlobalBudget(ctx, "free", dayKey), readGlobalBudget(ctx, "paid", dayKey),
-    ]);
-    const previous = settings.spendAlarmState?.dayKey === dayKey
-      ? settings.spendAlarmState
-      : { dayKey, free80: false, free100: false, paid80: false, paid100: false };
-    const usage = {
-      free: free.spentTodayMicroUsd + free.inFlightMicroUsd,
-      paid: paid.spentTodayMicroUsd + paid.inFlightMicroUsd,
-    };
-    const due: AlarmKey[] = [];
-    for (const pool of ["free", "paid"] as const) {
-      const budget = pool === "free" ? settings.globalDailyBudgetMicroUsd : settings.paidGlobalDailyBudgetMicroUsd;
-      for (const threshold of [80, 100] as const) {
-        const key: AlarmKey = `${pool}${threshold}`;
-        if (!previous[key] && crossed(usage[pool], budget, threshold)) due.push(key);
+    if (settings === null) return { dayKey, raised: [] as AlarmKey[], priorDayRaised: [] as AlarmKey[] };
+    const states = [settings.spendAlarmState, settings.spendAlarmPreviousDayState];
+    const results = await Promise.all([dayKey, priorDayKey].map(async (checkedDayKey) => {
+      const [free, paid] = await Promise.all([
+        readGlobalBudget(ctx, "free", checkedDayKey), readGlobalBudget(ctx, "paid", checkedDayKey),
+      ]);
+      const previous = states.find((state) => state?.dayKey === checkedDayKey) ?? emptyAlarmState(checkedDayKey);
+      const usage = {
+        free: free.spentTodayMicroUsd + free.inFlightMicroUsd,
+        paid: paid.spentTodayMicroUsd + paid.inFlightMicroUsd,
+      };
+      const due: AlarmKey[] = [];
+      for (const pool of ["free", "paid"] as const) {
+        const budget = pool === "free" ? settings.globalDailyBudgetMicroUsd : settings.paidGlobalDailyBudgetMicroUsd;
+        for (const threshold of [80, 100] as const) {
+          const key: AlarmKey = `${pool}${threshold}`;
+          if (!previous[key] && crossed(usage[pool], budget, threshold)) due.push(key);
+        }
       }
-    }
-    if (due.length === 0) return { dayKey, raised: due };
-    const next = { ...previous };
-    for (const key of due) next[key] = true;
-    await ctx.db.patch("ops_settings", settings._id, { spendAlarmState: next });
-    for (const key of due) {
-      await ctx.db.insert("audit_events", {
-        ownerId: settings.ownerId,
-        actorType: "system",
-        action: "ops.spend.threshold",
-        subjectType: "ops_settings",
-        subjectId: settings._id,
-        metadata: JSON.stringify({ dayKey, threshold: key, usedMicroUsd: usage[key.startsWith("free") ? "free" : "paid"] }),
-        createdAt: now,
+      const next = { ...previous };
+      for (const key of due) next[key] = true;
+      return { dayKey: checkedDayKey, state: next, due, usage };
+    }));
+    const [today, yesterday] = results;
+    if (settings.spendAlarmState?.dayKey !== dayKey ||
+        settings.spendAlarmPreviousDayState?.dayKey !== priorDayKey ||
+        today.due.length > 0 || yesterday.due.length > 0) {
+      await ctx.db.patch("ops_settings", settings._id, {
+        spendAlarmState: today.state,
+        spendAlarmPreviousDayState: yesterday.state,
       });
     }
-    return { dayKey, raised: due };
+    for (const result of results) {
+      for (const key of result.due) {
+        await ctx.db.insert("audit_events", {
+          ownerId: settings.ownerId,
+          actorType: "system",
+          action: "ops.spend.threshold",
+          subjectType: "ops_settings",
+          subjectId: settings._id,
+          metadata: JSON.stringify({ dayKey: result.dayKey, threshold: key, usedMicroUsd: result.usage[key.startsWith("free") ? "free" : "paid"] }),
+          createdAt: now,
+        });
+      }
+    }
+    return { dayKey, raised: today.due, priorDayRaised: yesterday.due };
   },
 });

@@ -5,7 +5,8 @@ import shardedCounterTest from "@convex-dev/sharded-counter/test";
 import { describe, expect, test } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { addGlobalReservation } from "../ai/budgets";
+import { addGlobalReservation, addGlobalSpend } from "../ai/budgets";
+import { utcDayKey } from "../../lib/workspace/contracts/metering";
 import schema from "../schema";
 
 const modules = import.meta.glob("/convex/**/*.ts");
@@ -17,6 +18,40 @@ function setup() {
 }
 
 describe("WP70 spend alarms and console", () => {
+  test("reconciles yesterday's late spend once after UTC rollover", async () => {
+    const t = setup();
+    const yesterday = utcDayKey(Date.now() - 24 * 60 * 60 * 1000);
+    const today = utcDayKey(Date.now());
+    const adminId = await t.run(async (ctx) => {
+      const adminId = await ctx.db.insert("users", { email: "alarm-admin@example.test" });
+      await ctx.db.insert("ops_settings", {
+        ownerId: adminId, singletonKey: "workspace", workspaceEnabled: false,
+        cohortMode: "open", freeSignupsOpen: false,
+        globalDailyBudgetMicroUsd: 1_000_000n, paidGlobalDailyBudgetMicroUsd: 0n,
+        killSwitches: { ai: true, studioVideo: true, publish: true, email: true, social: true, ads: true },
+        spendAlarmState: { dayKey: yesterday, free80: true, free100: false, paid80: false, paid100: false },
+        updatedAt: Date.now(),
+      });
+      await addGlobalSpend(ctx, "free", yesterday, 1_000_000, 0);
+      return adminId;
+    });
+
+    const first = await t.mutation(internal.ops.spend.checkDailyAlarms, {});
+    expect(first).toEqual({ dayKey: today, raised: [], priorDayRaised: ["free100"] });
+    expect(await t.mutation(internal.ops.spend.checkDailyAlarms, {})).toEqual({
+      dayKey: today, raised: [], priorDayRaised: [],
+    });
+    const { settings, events } = await t.run(async (ctx) => ({
+      settings: await ctx.db.query("ops_settings").unique(),
+      events: await ctx.db.query("audit_events")
+        .withIndex("by_ownerId_and_createdAt", (q) => q.eq("ownerId", adminId)).collect(),
+    }));
+    expect(settings?.spendAlarmState?.dayKey).toBe(today);
+    expect(settings?.spendAlarmPreviousDayState).toMatchObject({ dayKey: yesterday, free80: true, free100: true });
+    expect(events).toHaveLength(1);
+    expect(JSON.parse(events[0].metadata ?? "{}")).toMatchObject({ dayKey: yesterday, threshold: "free100" });
+  });
+
   test("spend after shutdown raises the remaining alarms once", async () => {
     const t = setup();
     const adminId = await t.run(async (ctx) => {
