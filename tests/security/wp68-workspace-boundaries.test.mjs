@@ -43,12 +43,12 @@ function schemaCallChain(initializer, file) {
   return { fields: call.arguments[0].properties, indexes };
 }
 
-test("every Phase 0 table has a flat validator, D22 ownership and owner-first index", async () => {
-  let count = 0;
+test("every workspace table has a flat validator, D22 ownership and owner-first index", async () => {
+  const tableNames = new Set();
   for (const domain of schemaModules) {
     const file = await parse(`convex/schema/${domain}.ts`);
     for (const table of tableDefinitions(file)) {
-      count += 1;
+      tableNames.add(table.name);
       const { fields, indexes } = schemaCallChain(table.initializer, file);
       const ownerField = fields.find((field) => field.name?.getText(file) === "ownerId");
       assert.ok(ownerField, `${table.name} missing ownerId`);
@@ -60,7 +60,9 @@ test("every Phase 0 table has a flat validator, D22 ownership and owner-first in
       }
     }
   }
-  assert.equal(count, 26, "the complete architecture §4.2 table inventory must be present");
+  assert.equal(tableNames.size, 28, "Phase 0 inventory plus WP79's two additive tenant-email tables");
+  assert.ok(tableNames.has("business_email_settings"));
+  assert.ok(tableNames.has("lead_email_tokens"));
 });
 
 const WORKSPACE_RUNTIME_DIRS = ["workspace", "crew", "studio", "ai", "growth", "ops"];
