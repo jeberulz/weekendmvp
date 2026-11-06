@@ -182,3 +182,52 @@
     `npm run build` ran alongside, as in S1.
   - `npm run build` 0.
 - Docs: this entry.
+
+## 2026-11-06 - S1–S3 review fixes, round 3 (after 05d8f2e5 and bcea91a0)
+
+- Market-claim stripper (`lib/workspace/wizard/light-blueprint.ts`). The rule is in the doc comment above
+  `MARKET_CLAIM_PATTERNS`.
+  - Now caught:
+    - bare magnitudes after a number ("2.3B market", "reach 1M");
+    - revenue metrics with a number ("5k MRR", "ARR of 2m");
+    - ratios ("1 in 5 people", "4 out of 5");
+    - currency codes before a number ("USD 49");
+    - currency symbols after a number ("49€", "49 €/month").
+  - The closed audience list is gone. A count of 100 or more, or any k-count, followed by any noun is now a
+    traction claim ("50000 dentists", "10k dentists", "500 waitlist sign ups").
+  - Kept:
+    - counts under 100 ("3 steps", "2 founders", "1 app", "Top 10 tips");
+    - glued numbers ("B2B", "B2C", "v2"), "Web 3", "step 2", "24/7";
+    - years, and time or measure units ("100 days");
+    - a k-distance before a function word ("Couch to 5k for beginners").
+  - Known trade-off: "100 m sprint" reads as a magnitude and is stripped.
+  - Every example is a `test.each` case.
+- Strip before truncating: the fixture pitch strips the whole idea, then cuts to 160. Before this, a 240-character
+  idea was cut first, so "10,000 users" became "10,0…" and got through. Tested. The removed count now includes
+  those clauses.
+- Bounded resume lookup (`convex/workspace/wizard.ts`):
+  - `activeSessionsFor` reads the owner's newest `RESUME_WINDOW` (100) sessions with no project, using the
+    `by_ownerId_and_projectId` range in descending creation order, then matches the idea in code.
+  - A match older than the window is not found, so the founder gets a new session. Tested.
+  - The wrong "exactly the candidates" comment is corrected.
+- One active session per (owner, idea): when the idea step moves a session onto own-idea text that another active
+  session holds, that other session is abandoned in the same mutation. Tested.
+- Decision: the idea title shows the founder's own text, unstripped. D15 governs what we assert, and the founder's
+  own words are theirs. Only the drafted pitch is stripped.
+- Deferred: the signal repeat check (`recordFounderSignal`) only looks at the owner's latest 200 signals until the
+  `founder_signals` index (item c) lands.
+- Needs from Codex: (a)–(e) from the entries above still stand. New:
+  - (f) An index that makes the resume lookup exact. Either `wizard_sessions.by_ownerId_and_ideaSlug` plus
+    `by_ownerId_and_ownIdeaText`, or a normalised `ideaKey` field (`library:<slug>` / `own:<text>`) with
+    `by_ownerId_and_ideaKey`. With it, `activeSessionsFor` becomes a single index range and `RESUME_WINDOW` goes.
+- Checks:
+  - `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings).
+  - The seven WP74 test files 0 (125 tests).
+  - `npm run test:security` 1, only the known WP68 scanner failure (`not ok 200`, `getWizardAccess missing
+    capability guard`). 204 pass, 1 skipped. The Vitest half, run on its own, passes 121/121.
+  - Every other suite exits 0: og, links, redirects, auth, sitemap, convex (816), home, prompts, platform (1151),
+    live.
+  - The first pass ran at load average 30. Editorial (295) and engine (1076) hit 5–10 s timeouts in files this
+    change does not touch, then exited 0 when re-run alone.
+  - `npm run build` 0.
+- Docs: this entry.

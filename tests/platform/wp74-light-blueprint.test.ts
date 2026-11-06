@@ -36,6 +36,19 @@ describe("WP74-S3 market claims", () => {
     "Search volume is rising",
     "TAM is large",
     "CPC is low",
+    // Round 3 review: bare magnitudes, revenue terms, ratios, any-noun counts, currency forms.
+    "A 2.3B market",
+    "We can reach 1M",
+    "Already at 5k MRR",
+    "ARR of 2m",
+    "1 in 5 people forget to drink water",
+    "4 out of 5 dentists agree",
+    "Built for 50000 dentists",
+    "10k dentists use paper charts",
+    "500 waitlist sign ups",
+    "USD 49",
+    "Just 49€",
+    "Costs 49 €/month",
   ])("flags %j", (text) => {
     expect(hasMarketClaim(text)).toBe(true);
   });
@@ -48,6 +61,17 @@ describe("WP74-S3 market claims", () => {
     "Couch to 5k for beginners",
     "Runs 24/7",
     "Version 2 of the planner",
+    // Round 3 review: small counts under 100 with a noun stay, as do glued numbers.
+    "Web 3",
+    "Finish step 2 first",
+    "A B2C app",
+    "Done in 3 steps",
+    "2 founders",
+    "1 app",
+    "v2",
+    "Top 10 tips",
+    "Launch in 2026 with 3 steps",
+    "A 100 days challenge",
   ])("does not flag %j", (text) => {
     expect(hasMarketClaim(text)).toBe(false);
   });
@@ -63,6 +87,22 @@ describe("WP74-S3 market claims", () => {
     });
     expect(stripMarketClaims("No numbers here.")).toEqual({ text: "No numbers here.", removed: 0 });
     expect(stripMarketClaims("$5B TAM")).toEqual({ text: "", removed: 1 });
+  });
+});
+
+describe("WP74-S3 strip before truncating", () => {
+  test("a long idea loses its claim before the pitch is cut to length", () => {
+    const lead = "A hydration planner for trail runners who forget to drink on long weekend loops";
+    const idea = `${lead.padEnd(150, " x").slice(0, 150)}, already 10,000 users waiting.${" More detail".repeat(8)}`;
+    expect(idea.length).toBeGreaterThan(200);
+    // Cutting first would leave "already 10,0…" in the pitch.
+    expect(hasMarketClaim(idea.slice(0, LIMITS.blueprint.pitch))).toBe(false);
+    const preview = ownIdeaBlueprintPreview(idea);
+    expect(preview.origin).toBe("own_fixture");
+    expect(preview.blueprint.pitch).not.toMatch(/10,0|users waiting/u);
+    expect(preview.blueprint.pitch.length).toBeLessThanOrEqual(LIMITS.blueprint.pitch);
+    expect(preview.removedClaims).toBe(1);
+    expect(fixtureOwnIdeaOutline(idea).pitch).not.toMatch(/10,0/u);
   });
 });
 

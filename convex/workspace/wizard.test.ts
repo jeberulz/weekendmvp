@@ -4,6 +4,7 @@ import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
+import { RESUME_WINDOW } from "./wizard";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { wizardAnswersProgressSchema, wizardAnswersSchema } from "../../lib/workspace/contracts/wizard";
@@ -166,7 +167,7 @@ describe("WP74-S1 C-LIMITS and catalogue policy", () => {
     await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(sessionId);
   });
 
-  test("resume finds the session for the idea however many other sessions the owner has", async () => {
+  test("resume finds the session among the owner's newest RESUME_WINDOW sessions", async () => {
     const { t, owner, ids } = await seed();
     const first = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
     await t.run(async (ctx) => {
@@ -182,6 +183,26 @@ describe("WP74-S1 C-LIMITS and catalogue policy", () => {
       }
     });
     await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(first);
+  });
+
+  test("a match older than the resume window gets a new session", async () => {
+    const { t, owner, ids } = await seed();
+    const first = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < RESUME_WINDOW; i += 1) {
+        await ctx.db.insert("wizard_sessions", {
+          ownerId: ids.ownerId,
+          ownIdeaText: `Idea ${i}`,
+          step: "idea",
+          answers: { idea: { source: "own_idea", text: `Idea ${i}` } },
+          startedAt: 1,
+          updatedAt: 1,
+        });
+      }
+    });
+    const second = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    expect(second).not.toBe(first);
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(second);
   });
 
   test("engine-draft slugs are refused and never leak a title", async () => {
@@ -378,6 +399,26 @@ describe("WP74-S1 transitions", () => {
     expect(doc.ideaSlug).toBeUndefined();
     expect(doc.ownIdeaText).toBe("Trail water refill map");
     expect(doc.answers.idea).toEqual({ source: "own_idea", text: "Trail water refill map" });
+  });
+
+  test("rewriting into own-idea text another active session holds abandons that one", async () => {
+    const { t, owner } = await seed();
+    const own = await owner.mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "own_idea", text: "Trail water refill map" },
+    });
+    const moved = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    await owner.mutation(api.workspace.wizard.rewriteStep, { sessionId: moved, step: "idea", text: "Trail water refill map" });
+    expect((await row(t, own)).abandonedAt).toEqual(expect.any(Number));
+    expect((await row(t, moved)).abandonedAt).toBeUndefined();
+    await expect(owner.query(api.workspace.wizard.getSession, { sessionId: own })).rejects.toThrow(/RESOURCE_NOT_FOUND/);
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "own_idea", text: "Trail water refill map" },
+    })).resolves.toBe(moved);
+    const active = await t.run(async (ctx) =>
+      (await ctx.db.query("wizard_sessions").collect()).filter(
+        (session) => session.abandonedAt === undefined && session.ownIdeaText === "Trail water refill map",
+      ));
+    expect(active.map((session) => session._id)).toEqual([moved]);
   });
 });
 

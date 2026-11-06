@@ -222,27 +222,47 @@ async function ownedWizardSession(
 }
 
 /**
- * The owner's active session for this idea, however many sessions they have.
- * Active sessions have no `projectId` yet, so the owner + unset-project index
- * range holds exactly the candidates; the idea match is exact.
+ * How many of the owner's newest unfinished sessions a resume looks at.
+ * Abandoned and completed-but-unlaunched sessions count toward the window.
  */
+export const RESUME_WINDOW = 100;
+
+function sameIdea(session: Doc<"wizard_sessions">, idea: WizardIdea): boolean {
+  return idea.source === "library"
+    ? session.ideaSlug === idea.ideaSlug && session.ownIdeaText === undefined
+    : session.ownIdeaText === idea.text && session.ideaSlug === undefined;
+}
+
+/**
+ * The owner's active sessions for this idea, newest first, among the owner's
+ * newest `RESUME_WINDOW` sessions without a project. Bounded, not exact: a
+ * match older than the window is not found, so that founder gets a new
+ * session (and the old one stays as it was). An index on the idea (see
+ * Needs from Codex in wp74-progress.md) makes this exact.
+ */
+async function activeSessionsFor(
+  ctx: Pick<QueryCtx, "db">,
+  ownerId: Id<"users">,
+  idea: WizardIdea,
+): Promise<Doc<"wizard_sessions">[]> {
+  // Within one equal index range rows are ordered by creation time, so a
+  // descending read takes the newest sessions.
+  const recent = await ctx.db
+    .query("wizard_sessions")
+    .withIndex("by_ownerId_and_projectId", (q) => q.eq("ownerId", ownerId).eq("projectId", undefined))
+    .order("desc")
+    .take(RESUME_WINDOW);
+  return recent.filter((session) => session.abandonedAt === undefined && sameIdea(session, idea));
+}
+
+/** The owner's newest active session for this idea, within the resume window. */
 async function activeSessionFor(
   ctx: Pick<QueryCtx, "db">,
   ownerId: Id<"users">,
   idea: WizardIdea,
 ): Promise<Doc<"wizard_sessions"> | null> {
-  return await ctx.db
-    .query("wizard_sessions")
-    .withIndex("by_ownerId_and_projectId", (q) => q.eq("ownerId", ownerId).eq("projectId", undefined))
-    .filter((q) =>
-      q.and(
-        q.eq(q.field("abandonedAt"), undefined),
-        idea.source === "library"
-          ? q.and(q.eq(q.field("ideaSlug"), idea.ideaSlug), q.eq(q.field("ownIdeaText"), undefined))
-          : q.and(q.eq(q.field("ownIdeaText"), idea.text), q.eq(q.field("ideaSlug"), undefined)),
-      ),
-    )
-    .first();
+  const [newest] = await activeSessionsFor(ctx, ownerId, idea);
+  return newest ?? null;
 }
 
 function unchanged(session: Doc<"wizard_sessions">): StepResult {
@@ -303,6 +323,19 @@ async function commitStep(
     idea.source === "library"
       ? { ideaSlug: idea.ideaSlug, ownIdeaText: undefined }
       : { ideaSlug: undefined, ownIdeaText: idea.text };
+
+  // One active session per (owner, idea): moving this session onto own-idea
+  // text that another active session already holds abandons the other one.
+  if (step === "idea" && idea.source === "own_idea") {
+    const previous = sessionIdea(current);
+    if (previous.source !== "own_idea" || previous.text !== idea.text) {
+      const duplicates = await activeSessionsFor(ctx, session.ownerId, idea);
+      for (const duplicate of duplicates) {
+        if (duplicate._id === session._id) continue;
+        await ctx.db.patch("wizard_sessions", duplicate._id, { abandonedAt: now, updatedAt: now });
+      }
+    }
+  }
 
   if (following === null) {
     const completed = parseOrThrow(wizardAnswersSchema, withSignals);
