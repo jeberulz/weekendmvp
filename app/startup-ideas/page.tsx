@@ -42,6 +42,8 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 import { StartupIdeasTeaser } from "./StartupIdeasGate";
+import { IdeaRequestWidget } from "@/components/idea-requests/IdeaRequestWidget";
+import { WhenConvexReady } from "@/components/platform/client-gates";
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import {
   IdeasExplorer,
@@ -596,6 +598,11 @@ async function StartupIdeasContent({ publications }: { publications: PublicOverl
             </NavExternalLink>
           </div>
         </InkBand>
+
+        {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
+        <WhenConvexReady>
+          <IdeaRequestWidget />
+        </WhenConvexReady>
       </>
     </>
   );

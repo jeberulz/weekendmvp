@@ -48,6 +48,7 @@ import {
   type WorkspaceNavId,
 } from "./workspace-current";
 import { WorkspaceSearch } from "./WorkspaceSearch";
+import { IdeaRequestWidget } from "@/components/idea-requests/IdeaRequestWidget";
 
 const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
   home: House,
@@ -364,6 +365,13 @@ export function WorkspaceShell({
           <div className="pb-24 lg:pb-0">{children}</div>
         </main>
       </div>
+
+      {/* Idea 4: floating request/vote widget, shell-level so it appears on
+          every workspace page. Outside the Wren panel and crew UI; on phones
+          it sits above the bottom tab bar. */}
+      <WhenConvexReady>
+        <IdeaRequestWidget className="bottom-20 lg:bottom-4" />
+      </WhenConvexReady>
     </div>
   );
 }

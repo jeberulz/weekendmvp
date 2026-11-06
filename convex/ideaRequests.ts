@@ -50,6 +50,12 @@ const publicRequestDoc = v.object({
   voteCount: v.number(),
   hasVoted: v.boolean(),
   createdAt: v.number(),
+  status: v.union(
+    v.literal("open"),
+    v.literal("in_research"),
+    v.literal("published"),
+    v.literal("declined"),
+  ),
 });
 
 function listLimit(limit: number | undefined): number {
@@ -100,6 +106,7 @@ function toPublicRequest(
   voteCount: number;
   hasVoted: boolean;
   createdAt: number;
+  status: Doc<"idea_requests">["status"];
 } {
   return {
     id: row._id,
@@ -109,6 +116,7 @@ function toPublicRequest(
     voteCount: row.voteCount,
     hasVoted,
     createdAt: row._creationTime,
+    status: row.status,
   };
 }
 
@@ -151,6 +159,38 @@ export const listTop = query({
       ),
     );
     return top.map((row, i) => toPublicRequest(row, voted[i] !== null));
+  },
+});
+
+/**
+ * The signed-in visitor's own requests, newest first. Returns [] when
+ * there is no signed-in identity — it is a UI read, not an auth probe,
+ * so it never throws for an anonymous visitor. The panel shows this as
+ * "My requests" only when the session-hint cookie says signed in.
+ */
+export const mine = query({
+  args: {},
+  returns: v.array(publicRequestDoc),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const voterKey = signedInVoterKey(identity.subject);
+    const rows = await ctx.db
+      .query("idea_requests")
+      .withIndex("by_submitterKey", (q) => q.eq("submitterKey", voterKey))
+      .order("desc")
+      .take(20);
+    const voted = await Promise.all(
+      rows.map((row) =>
+        ctx.db
+          .query("idea_request_votes")
+          .withIndex("by_requestId_and_voterKey", (q) =>
+            q.eq("requestId", row._id).eq("voterKey", voterKey),
+          )
+          .unique(),
+      ),
+    );
+    return rows.map((row, i) => toPublicRequest(row, voted[i] !== null));
   },
 });
 

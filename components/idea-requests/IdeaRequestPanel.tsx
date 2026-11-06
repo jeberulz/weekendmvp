@@ -14,10 +14,24 @@ import {
   validateIdeaRequest,
 } from "@/lib/idea-requests";
 import { CATEGORY_META } from "@/components/ideas/idea-meta";
+import { useSessionHint } from "@/lib/use-session-hint";
 import { cn } from "@/lib/utils";
 
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
+
+export type IdeaRequestMoodEvent =
+  | "vote-success"
+  | "submit-start"
+  | "submit-success"
+  | "submit-error";
+
+const STATUS_LABELS: Record<string, string> = {
+  open: "Open",
+  in_research: "In research",
+  published: "Published",
+  declined: "Declined",
+};
 
 /**
  * Idea 4 — the shared request list + submit form. Used by the floating
@@ -25,7 +39,14 @@ const FOCUS =
  * Server-rendered nothing: the parent gates this behind `WhenConvexReady`
  * so `useQuery` never runs before a Convex client exists.
  */
-export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
+export function IdeaRequestPanel({
+  limit = 5,
+  onMood,
+}: {
+  limit?: number;
+  /** Lets the widget character react (celebrate a vote, think while submitting). */
+  onMood?: (event: IdeaRequestMoodEvent) => void;
+}) {
   // Lazy initializer: this panel only ever renders in the browser (its
   // parents gate it behind `WhenConvexReady`), so localStorage is available.
   const [anonymousId] = useState<string>(() => getOrCreateAnonymousId());
@@ -41,6 +62,8 @@ export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
     limit,
     anonymousId,
   });
+  const signedIn = useSessionHint();
+  const myRequests = useQuery(api.ideaRequests.mine);
   const submitRequest = useMutation(api.ideaRequests.submit);
   const toggleVote = useMutation(api.ideaRequests.toggleVote);
 
@@ -58,6 +81,7 @@ export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
       return;
     }
     setSubmitting(true);
+    onMood?.("submit-start");
     try {
       const result = await submitRequest({
         title: validated.title,
@@ -68,12 +92,14 @@ export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
       setTitle("");
       setProblem("");
       setCategory("");
+      onMood?.("submit-success");
       setStatus(
         result.deduped
           ? "That idea is already on the list — vote for it below instead."
           : "Thanks — your idea request is on the list.",
       );
     } catch (error) {
+      onMood?.("submit-error");
       setFormErrors([
         error instanceof Error
           ? error.message.replace(/^(VALIDATION|RATE_LIMITED|UNAUTHENTICATED):\s*/, "")
@@ -89,7 +115,8 @@ export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
     setVotingId(requestId);
     setStatus("");
     try {
-      await toggleVote({ requestId, anonymousId });
+      const result = await toggleVote({ requestId, anonymousId });
+      if (result.voted) onMood?.("vote-success");
     } catch {
       setStatus("Could not record your vote. Please try again.");
     } finally {
@@ -244,6 +271,43 @@ export function IdeaRequestPanel({ limit = 5 }: { limit?: number }) {
           </Link>
         </p>
       </div>
+
+      {signedIn && (
+        <div className="flex flex-col gap-2 border-t border-neutral-100 pt-4">
+          <h3 className="text-sm font-medium text-neutral-800">My requests</h3>
+          {myRequests === undefined && (
+            <p className="text-sm text-neutral-500">Loading your requests…</p>
+          )}
+          {myRequests !== undefined && myRequests.length === 0 && (
+            <p className="text-sm text-neutral-500">
+              You haven&apos;t requested anything yet — your requests will show up here, on any device.
+            </p>
+          )}
+          {myRequests !== undefined && myRequests.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {myRequests.map((request) => (
+                <li
+                  key={request.id}
+                  className="flex items-start justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-neutral-900">{request.title}</p>
+                    <p className="text-xs text-neutral-500">
+                      {STATUS_LABELS[request.status] ?? request.status} · {request.voteCount}{" "}
+                      {request.voteCount === 1 ? "vote" : "votes"}
+                    </p>
+                  </div>
+                  {request.hasVoted && (
+                    <span className="shrink-0 rounded-full bg-black px-2 py-0.5 text-xs font-medium text-white">
+                      Voted
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

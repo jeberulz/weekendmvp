@@ -159,6 +159,36 @@ describe("ideaRequests.toggleVote", () => {
   });
 });
 
+describe("ideaRequests.mine", () => {
+  test("returns only the signed-in visitor's requests, newest first", async () => {
+    const t = convexTest(schema, modules);
+    const alice = t.withIdentity({ subject: "user-alice" });
+    const bob = t.withIdentity({ subject: "user-bob" });
+
+    await alice.mutation(api.ideaRequests.submit, {
+      title: "Alice idea one",
+      problem: "Alice problem one",
+    });
+    await alice.mutation(api.ideaRequests.submit, {
+      title: "Alice idea two",
+      problem: "Alice problem two",
+    });
+    await bob.mutation(api.ideaRequests.submit, {
+      title: "Bob idea",
+      problem: "Bob problem",
+    });
+    await submit(t, { title: "Anonymous idea" });
+
+    const mine = await alice.query(api.ideaRequests.mine, {});
+    expect(mine.map((row) => row.title)).toEqual(["Alice idea two", "Alice idea one"]);
+    expect(await bob.query(api.ideaRequests.mine, {})).toEqual([
+      expect.objectContaining({ title: "Bob idea" }),
+    ]);
+    // Anonymous visitors get an empty list, never an error.
+    expect(await t.query(api.ideaRequests.mine, {})).toEqual([]);
+  });
+});
+
 describe("ideaRequests.listTop / listForSuggest", () => {
   test("sorts by votes then newest, and honours the limit", async () => {
     const t = convexTest(schema, modules);
