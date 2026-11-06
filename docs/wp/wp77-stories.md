@@ -22,7 +22,7 @@ Standing rules:
 
 ## Stories
 
-- [ ] `WP77-S1` - Approvals and C-APPROVAL
+- [x] `WP77-S1` - Approvals and C-APPROVAL
   - Scope: `convex/workspace/approvals.ts`, tests.
   - `createApproval`, `decideApproval` (approve / request changes / cancel), expiry, and
     `assertApproved(ctx, approvalId, subject)` for Codex's publisher, sender and connectors. `assertApproved`
