@@ -19,7 +19,11 @@ import ts from "typescript";
 // 2. Untyped `db.patch(id, ...)` / `db.replace(id, ...)` (the table is not
 //    visible statically) are refused when the value is not a plain object
 //    literal, spreads, or sets a site-version content key, unless allowlisted.
-// Limit: a write through a wrapper that hides `db.patch` is not seen.
+// Receivers: `<expr>.db`, a bare `db`, any name typed as a database writer
+// (`DatabaseWriter`, `GenericDatabaseWriter`, `MutationCtx["db"]`), a renamed
+// destructure of `db` and an alias of `<expr>.db`. Computed keys count as
+// non-literal. Limit: a generic wrapper taking (table, id, value) and calling
+// patch on an untyped receiver is not seen.
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -42,14 +46,49 @@ function enclosingName(node, file) {
   return "<module>";
 }
 
+/** Literal keys of a plain object literal, or null (spread, computed key, method, non-literal). */
 function objectKeys(value, file) {
   if (!value || !ts.isObjectLiteralExpression(value)) return null;
   const keys = [];
   for (const property of value.properties) {
-    if (ts.isSpreadAssignment(property) || !property.name) return null;
+    if (!ts.isPropertyAssignment(property) && !ts.isShorthandPropertyAssignment(property)) return null;
+    if (!property.name || ts.isComputedPropertyName(property.name)) return null;
     keys.push(property.name.getText(file).replace(/^["']|["']$/g, ""));
   }
   return keys;
+}
+
+const WRITER_TYPE = /\b(?:Generic)?DatabaseWriter\b|\[\s*["']db["']\s*\]/;
+
+/**
+ * Names in this file that may hold a database writer: `db`, anything typed as a
+ * writer (`DatabaseWriter`, `GenericDatabaseWriter`, `MutationCtx["db"]`), a
+ * renamed destructure of `db` (`const { db: w } = ctx`) and an alias of
+ * `<expr>.db`. Scope-insensitive on purpose: a false positive is reviewed, a
+ * miss is a hole.
+ */
+function writerNames(file) {
+  const names = new Set(["db"]);
+  function visit(node) {
+    if ((ts.isParameter(node) || ts.isVariableDeclaration(node) || ts.isPropertyDeclaration(node)) &&
+      ts.isIdentifier(node.name)) {
+      if (node.type && WRITER_TYPE.test(node.type.getText(file))) names.add(node.name.text);
+      if (ts.isVariableDeclaration(node) && node.initializer &&
+        ts.isPropertyAccessExpression(node.initializer) && node.initializer.name.text === "db") names.add(node.name.text);
+    }
+    if (ts.isBindingElement(node) && ts.isIdentifier(node.name)) {
+      const source = node.propertyName && ts.isIdentifier(node.propertyName) ? node.propertyName.text : node.name.text;
+      if (source === "db") names.add(node.name.text);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(file);
+  return names;
+}
+
+function isWriterReceiver(expression, names) {
+  if (ts.isPropertyAccessExpression(expression)) return expression.name.text === "db";
+  return ts.isIdentifier(expression) && names.has(expression.text);
 }
 
 /** Violations in one source file, each `file:function:line reason`. */
@@ -57,13 +96,13 @@ function scanSource(relativePath, source) {
   const file = ts.createSourceFile(relativePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const violations = [];
   const allowedHits = new Set();
+  const names = writerNames(file);
   function visit(node) {
     if (
       ts.isCallExpression(node) &&
       ts.isPropertyAccessExpression(node.expression) &&
       (node.expression.name.text === "patch" || node.expression.name.text === "replace") &&
-      ts.isPropertyAccessExpression(node.expression.expression) &&
-      node.expression.expression.name.text === "db"
+      isWriterReceiver(node.expression.expression, names)
     ) {
       const method = node.expression.name.text;
       const [first] = node.arguments;
@@ -131,9 +170,20 @@ test("the scan catches content rewrites and allows status transitions", () => {
     async function retire(ctx, version) { await ctx.db.patch(version._id, { status: "retired", retiredAt: 1 }); }
     async function retireTyped(ctx, id) { await ctx.db.patch("site_versions", id, { status: "published", publishedAt: 1 }); }
     async function otherTable(ctx, id) { await ctx.db.patch("social_posts", id, { documentId: "doc" }); }
+    async function helperWriter(writer: GenericDatabaseWriter<DataModel>, id) { await writer.patch(id, { documentId: "old" }); }
+    async function helperCtxDb(store: MutationCtx["db"], id) { await store.patch("site_versions", id, { landingSpec: "{}" }); }
+    async function helperDb(db: DatabaseWriter, id, row) { await db.replace(id, row); }
+    async function destructured(ctx, id) { const { db } = ctx; await db.patch(id, { storageId: "s" }); }
+    async function renamed(ctx, id) { const { db: tx } = ctx; await tx.patch(id, { version: 9n }); }
+    async function aliased(ctx, id) { const w = ctx.db; await w.patch(id, { siteConfigId: "c" }); }
+    async function computedKey(ctx, id, field) { await ctx.db.patch(id, { [field]: "old" }); }
+    async function computedTyped(ctx, id, field) { await ctx.db.patch("site_versions", id, { [field]: "old" }); }
+    async function helperStatus(writer: GenericDatabaseWriter<DataModel>, id) { await writer.patch(id, { status: "retired" }); }
+    async function notAWriter(map, id) { map.patch(id, { documentId: "x" }); }
   `);
   const offenders = violations.map((violation) => violation.split(":")[1]);
   assert.deepEqual(offenders, [
     "rewriteTyped", "replaceTyped", "spreadTyped", "rewriteUntyped", "variableUntyped", "replaceUntyped",
+    "helperWriter", "helperCtxDb", "helperDb", "destructured", "renamed", "aliased", "computedKey", "computedTyped",
   ]);
 });

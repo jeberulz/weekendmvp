@@ -614,7 +614,8 @@ export const decideApproval = mutation({
       if (approval.status === target) return { approvalId: approval._id, status: approval.status, changed: false };
       if (approval.status === "approved" && args.decision === "cancel") {
         // Revocation: blocks every later side effect; one already performed stays done.
-        await ctx.db.patch("approvals", approval._id, { status: "cancelled", decidedAt: now, updatedAt: now });
+        // `decidedAt` keeps the approve time; the audit row carries the revoke time.
+        await ctx.db.patch("approvals", approval._id, { status: "cancelled", updatedAt: now });
         await auditApproval(ctx, approval, "approval.revoked", founder, now);
         return { approvalId: approval._id, status: "cancelled" as const, changed: true };
       }
@@ -627,12 +628,9 @@ export const decideApproval = mutation({
     }
 
     if (args.decision === "approve") {
-      if (
-        !isSubjectTableAllowed(approval.kind, approval.subjectTable) ||
-        !approvalCostFitsKind(approval.kind, approval.costCredits)
-      ) {
-        return refuse("APPROVAL_SUBJECT_MISMATCH");
-      }
+      if (!isSubjectTableAllowed(approval.kind, approval.subjectTable)) return refuse("APPROVAL_SUBJECT_MISMATCH");
+      // Same code as assertApproved: a cost that does not fit the kind is a terms fault.
+      if (!approvalCostFitsKind(approval.kind, approval.costCredits)) return refuse("APPROVAL_TERMS_MISMATCH");
       const state = await readSubjectState(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
       const refusal = subjectRefusal(state, approval.kind, approval.createdAt, approval._id);
       if (refusal !== null) return refuse(refusal);
@@ -670,8 +668,9 @@ function expiryBatchSize(requested: number | undefined): number {
 /**
  * One bounded page of expiry: pending cards past `APPROVAL_PENDING_TTL_MS`
  * become `expired`. Idempotent (touches only rows still pending and stale) and
- * never schedules anything. Without a status index it pages the whole table;
- * Codex is asked for `by_status_and_createdAt`.
+ * never schedules anything. Newest first: until Codex's `by_status_and_createdAt`
+ * index lands it pages the whole table, so each run reaches the recent cards
+ * (where pending ones live) before older, already-decided history.
  */
 export const expireStaleApprovalsBatch = internalMutation({
   args: {
@@ -682,6 +681,7 @@ export const expireStaleApprovalsBatch = internalMutation({
   handler: async (ctx, args): Promise<ExpiryBatchResult> => {
     const now = Date.now();
     const page = await ctx.db.query("approvals")
+      .order("desc")
       .paginate({ numItems: expiryBatchSize(args.batchSize), cursor: args.cursor ?? null });
     let expired = 0;
     for (const row of page.page) {

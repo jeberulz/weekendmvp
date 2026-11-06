@@ -425,11 +425,12 @@ describe("WP77-S1 expiry", () => {
     const freshId = await insert("pending", now);
     const approvedId = await insert("approved", stale);
 
+    // Newest first: the first page is the two most recent rows (approved, fresh), neither expirable.
     const first = await t.mutation(internal.workspace.approvals.expireStaleApprovalsBatch, { batchSize: 2 });
-    expect(first).toMatchObject({ scanned: 2, expired: 2, isDone: false });
+    expect(first).toMatchObject({ scanned: 2, expired: 0, isDone: false });
 
     await expect(t.action(internal.workspace.approvals.expireStaleApprovals, { batchSize: 2 }))
-      .resolves.toEqual({ scanned: 7, expired: 3, batches: 4, isDone: true });
+      .resolves.toEqual({ scanned: 7, expired: 5, batches: 4, isDone: true });
     const rows = await t.run(async (ctx) => await Promise.all(
       [...staleIds, freshId, approvedId].map((id) => ctx.db.get("approvals", id)),
     ));
@@ -439,6 +440,24 @@ describe("WP77-S1 expiry", () => {
 
     await expect(t.action(internal.workspace.approvals.expireStaleApprovals, {}))
       .resolves.toEqual({ scanned: 7, expired: 0, batches: 1, isDone: true });
+  });
+
+  test("a bounded batch reaches the newest stale card first", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-06T12:00:00.000Z"));
+    const { t, ids } = await seed();
+    const stale = Date.now() - APPROVAL_PENDING_TTL_MS - 1;
+    const insert = () => t.run(async (ctx) => await ctx.db.insert("approvals", {
+      ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
+      subjectId: ids.docId, status: "pending", changeRound: 0n, createdAt: stale, updatedAt: stale,
+    }));
+    const olderId = await insert();
+    const newerId = await insert();
+    await expect(t.mutation(internal.workspace.approvals.expireStaleApprovalsBatch, { batchSize: 1 }))
+      .resolves.toMatchObject({ scanned: 1, expired: 1, isDone: false });
+    const [older, newer] = await t.run(async (ctx) => [await ctx.db.get("approvals", olderId), await ctx.db.get("approvals", newerId)]);
+    expect(newer?.status).toBe("expired");
+    expect(older?.status).toBe("pending");
   });
 
   test("expiry still runs with the workspace off (it only removes permission)", async () => {
@@ -511,17 +530,26 @@ describe("WP77-S1 review fixes", () => {
     const args = { projectId: ids.projectId, approvalId };
     await expect(other.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
       .rejects.toThrow("RESOURCE_NOT_FOUND");
+    const approvedRow = await t.run(async (ctx) => await ctx.db.get("approvals", approvalId));
+    vi.useFakeTimers();
+    vi.setSystemTime((approvedRow?.decidedAt ?? 0) + 60_000);
     await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
       .resolves.toEqual({ approvalId, status: "cancelled", changed: true });
+    vi.useRealTimers();
     await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
       .resolves.toEqual({ approvalId, status: "cancelled", changed: false });
+    const revokedRow = await t.run(async (ctx) => await ctx.db.get("approvals", approvalId));
+    // The approve time is kept; only status and updatedAt move.
+    expect(revokedRow?.decidedAt).toBe(approvedRow?.decidedAt);
+    expect(revokedRow?.updatedAt).toBe((approvedRow?.decidedAt ?? 0) + 60_000);
     await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "approve" }))
       .rejects.toThrow("APPROVAL_ALREADY_DECIDED");
     await expect(check(t, approvalId, subject)).rejects.toThrow("APPROVAL_NOT_APPROVED");
     const audits = await t.run(async (ctx) => await ctx.db.query("audit_events")
       .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).take(20));
-    expect(audits.filter((event) => event.subjectId === approvalId).map((event) => event.action))
-      .toEqual(["approval.approved", "approval.revoked"]);
+    const trail = audits.filter((event) => event.subjectId === approvalId);
+    expect(trail.map((event) => event.action)).toEqual(["approval.approved", "approval.revoked"]);
+    expect(trail[1].createdAt).toBe(revokedRow?.updatedAt);
   });
 
   test("spend cards are bound to their price and round", async () => {
@@ -542,5 +570,13 @@ describe("WP77-S1 review fixes", () => {
       .rejects.toThrow("APPROVAL_TERMS_MISMATCH");
     await expect(check(t, approvalId, { ...spend, expectedCostCredits: 10n, expectedChangeRound: 3n }))
       .resolves.toMatchObject({ approvalId, costCredits: 10n, changeRound: 3n });
+
+    // A forged pending spend card without a price cannot be approved: same code as assertApproved.
+    const forged = await t.run(async (ctx) => await ctx.db.insert("approvals", {
+      ownerId: ids.ownerId, projectId: ids.projectId, kind: "spend", subjectTable: "documents",
+      subjectId: ids.docId, status: "pending", changeRound: 3n, createdAt: Date.now(), updatedAt: Date.now(),
+    }));
+    await expect(seeded.owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: forged, decision: "approve" }))
+      .rejects.toThrow("APPROVAL_TERMS_MISMATCH");
   });
 });

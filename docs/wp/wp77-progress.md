@@ -88,12 +88,33 @@ Review fixes (independent security review, should-fix items, after `c402c967`):
 - P3 The supersede scan now reads the subject's whole history through the exact `by_subjectId` index; the old scan
   stopped at 50. A test pads the history with 60 rows. A comment marks the founder's note as data for S2. Expiry no
   longer schedules itself: `expireStaleApprovalsBatch` (one bounded page) is driven by the `expireStaleApprovals`
-  action, at most 200 batches per run, inside one cron run. Runs cannot overlap. A table past 20,000 rows stalls
-  until the index lands.
+  action, at most 200 batches per run, inside one cron run. Runs cannot overlap. Past 20,000 rows a run stops
+  before the oldest history until the index lands (pages run newest first since the re-review).
 - Tests: 20 passed in `convex/workspace/approvals.test.ts` (4 new: publishable/takedown, supersede approved past 50
   rows, revoke, spend terms; expiry tests rewritten for batch + action). 2 passed in the new security scan.
 - Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing
   warnings, none in changed files); `npm run test:security` 0 (204 node + 121 vitest); approvals tests 20/20; `npm test` 0 on the first run (no rerun needed).
+
+Re-review fixes (after `5a492c0c`):
+- P2 scan gap: the site-versions scan now also matches a bare `db`, any name typed `DatabaseWriter`,
+  `GenericDatabaseWriter` or `MutationCtx["db"]`, a renamed destructure (`const { db: tx } = ctx`) and an alias of
+  `<expr>.db`. Computed keys count as non-literal. New fixtures cover the helper, destructured, renamed, aliased
+  and computed-key forms, plus two negatives (a status-only helper patch and a non-writer `map.patch`). Current code
+  shows no false positives.
+- P3 expiry pages newest first (`.order("desc")`), so each run reaches the recent cards, where pending ones live.
+  New test: a one-row batch expires the newest stale card first.
+- P3 approving a card whose cost does not fit its kind now refuses with `APPROVAL_TERMS_MISMATCH`, the same as
+  `assertApproved`. Tested with a forged unpriced `spend` card.
+- P3 revoke keeps the original `decidedAt` (the approve time) and moves only `status` and `updatedAt`. The
+  `approval.revoked` audit row carries the revoke time. Tested.
+- Tests: approvals 21/21; scan 2/2 (14 fixture offenders, 2 negatives).
+- Checks: typecheck 0; `tsc -p convex` 0; lint 0 (0 errors); approvals 0; scan 0; `test:security` 0; `npm test` 0
+  (first run); `npm run build` 0.
+
+Open question for the orchestrator (WP30 publishing): nothing writes `site_configs.takedownAt` today, and `unpublish`
+retires only the current version. So a never-published `ready` version on an unpublished site stays approvable for
+`publish`. Is that intended, or should `publish` also require the site not to have been unpublished (or should
+unpublish retire every `ready` version)?
 
 Needs from Codex (complete set):
 1. `approvals.subjectVersion: v.optional(v.string())`: a content fingerprint written at creation. It covers every
@@ -106,6 +127,9 @@ Needs from Codex (complete set):
 4. A non-overlapping hourly expiry cron in `convex/crons.ts`: `crons.interval("expire stale approvals",
    { hours: 1 }, internal.workspace.approvals.expireStaleApprovals, {})`. The target is an action that loops
    batches itself and schedules nothing.
-5. WP78/WP79/WP83 call `assertApproved` in the side-effect mutation, before patching the subject, with the subject
+5. An index that bounds the supersede history read, e.g. `by_subjectId_and_kind` (or one that adds `projectId`).
+   `upgrade` cards use the project id as their subject, so that history grows with the business. Until then the
+   read covers the whole history and fails closed (the transaction errors) if it ever exceeds Convex limits.
+6. WP78/WP79/WP83 call `assertApproved` in the side-effect mutation, before patching the subject, with the subject
    shape (plus `expectedCostCredits`/`expectedChangeRound` for `spend`). From actions they use
    `internal.workspace.approvals.checkApproved` and re-check in the recording mutation.
