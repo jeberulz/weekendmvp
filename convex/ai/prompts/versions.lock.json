@@ -21,6 +21,26 @@
         "run": "sha256:31183aeddf0608b92b0259bd3450a42de5716faef6d3f3eb002034152d062824",
         "module": "sha256:4e634491c06eb5553e7e84d9766b790e81a9509ee37a76e27c96da7cc23afc3d"
       }
+    },
+    "wren-chat@1": {
+      "hash": "sha256:fe68e594a7cb48914dc9435e3edb02b7618c3aa3b0e5f217818bd888690bfe8d",
+      "parts": {
+        "system": "sha256:ccfb21d1f5801fefa97844d2f7d2884433f0a3d148953c0e19edc0bf43bb32fa",
+        "task": "sha256:5dc78d3cdf60af80735e2f1f4f593a296dce5d93501728be060c7e04986ebad6",
+        "outputSchema": "sha256:825a83dd24bc412d29e5158f8907754ee2a59ab4585b591057164f0c319d37a4",
+        "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
+        "module": "sha256:1de0cf8719933ad00b066966fb08c064aa132f7780a263e00ac7c5b62c295b0c"
+      }
+    },
+    "wren-plan-turn@1": {
+      "hash": "sha256:635e23fc0a26dd93fbdcf950ee97d434966a807abdd906623695ef7db98a0e46",
+      "parts": {
+        "system": "sha256:ccfb21d1f5801fefa97844d2f7d2884433f0a3d148953c0e19edc0bf43bb32fa",
+        "task": "sha256:c9c05667afa7e042f485525155b1381c8e07e3e61cd1feea8007fec17abae145",
+        "outputSchema": "sha256:825a83dd24bc412d29e5158f8907754ee2a59ab4585b591057164f0c319d37a4",
+        "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
+        "module": "sha256:c747c07276e7f10d50e73fb814f7e3e13fad696f103548f299f1175051e9418d"
+      }
     }
   }
 }

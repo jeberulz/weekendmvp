@@ -54,6 +54,17 @@
  * (`node:fs`, `node:os`). This file exports only the action and plain helpers;
  * nothing in the default runtime may import it.
  *
+ * Streaming (WP77-S3): with `stream`, the run asks the adapter for text
+ * deltas and writes the reply so far into that Wren row through
+ * `internal.workspace.chat.writeWrenDraft`, in bounded, throttled writes
+ * (`createReplyDraftWriter`: the whole text so far, at least 250 ms apart, at
+ * most one in flight, at most 120 per reply). It is display only: the run's
+ * result is the same as without it, and the caller writes the final,
+ * schema-checked reply. `stream` needs the chat key, the key's
+ * `chatMessageId` must be the row, and the run needs its `ownerId` and
+ * `projectId`; otherwise the run is refused as `config`. All draft writes
+ * finish before the action returns.
+ *
  * `runPromptWithMeter` is the action's body with its adapter, clock and env
  * injectable, so the integration tests can drive the real meter mutations
  * with a scripted fixture adapter. The registered action always uses the
@@ -86,7 +97,9 @@ import {
   type TextGatewayOutcome,
   type TextRunValue,
 } from "./gateway";
+import { createReplyDraftWriter, type ReplyDraftWriter } from "../../lib/workspace/wren";
 import { createAnthropicAdapter } from "./providers/anthropic";
+import { WREN_REPLY_MAX_CHARS } from "./prompts/wrenShared";
 import { AI_PROVIDER_MODE_ENV, PROVIDER_KEY_ENV, type ProviderEnv } from "./providers/mode";
 import { getEntry, type RegisteredSpec } from "./registry";
 
@@ -121,6 +134,12 @@ export const runPromptArgs = {
   /** The first attempt number of this run (default 1); the re-ask uses the next. */
   attempt: v.optional(v.number()),
   timeoutMs: v.optional(v.number()),
+  /**
+   * WP77-S3. Stream the reply into this Wren row as it is written. Only on
+   * the chat key, and only for the row the key names; the draft mutation
+   * re-checks the row's owner, business and `streaming` status.
+   */
+  stream: v.optional(v.object({ kind: v.literal("wren_reply"), messageId: v.id("chat_messages") })),
 };
 
 export type RunPromptArgs = ObjectType<typeof runPromptArgs>;
@@ -420,6 +439,15 @@ export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerI
   }
 }
 
+/** Why a run's `stream` does not fit it, or null when it does (or there is none). */
+export function streamMismatch(args: Pick<RunPromptArgs, "stream" | "attemptKey" | "ownerId" | "projectId">): string | null {
+  if (args.stream === undefined) return null;
+  if (args.attemptKey.kind !== "chat") return "a wren_reply stream needs a chat attempt key";
+  if (args.attemptKey.chatMessageId !== args.stream.messageId) return "a wren_reply stream must target the chat key's message";
+  if (args.ownerId === undefined || args.projectId === undefined) return "a wren_reply stream needs the run's ownerId and projectId";
+  return null;
+}
+
 /** True for the ownerless eval path, the only one an internal spec may run on. */
 function isOwnerlessEval(args: RunPromptArgs): boolean {
   return args.attemptKey.kind === "eval" &&
@@ -536,7 +564,7 @@ export async function runPromptWithMeter(
     if (entry.internal && deps.allowInternal !== true && !isOwnerlessEval(args)) {
       return configResult(args.promptRef, `${args.promptRef} is an internal spec: it runs only on the ownerless eval path`, firstAttempt);
     }
-    const mismatch = keyFormMismatch(args);
+    const mismatch = keyFormMismatch(args) ?? streamMismatch(args);
     if (mismatch !== null) return configResult(args.promptRef, mismatch, firstAttempt);
     spec = entry.spec;
     attemptKey = attemptKeyBuilder(args.attemptKey, args.projectId);
@@ -554,9 +582,11 @@ export async function runPromptWithMeter(
   // The registry erases each spec's input type; `buildUser` receives the
   // validated record and a spec that cannot use it fails as `config`.
   const typed = spec as Readonly<PromptSpec<PromptInputs, unknown>>;
+  const clock = deps.clock ?? { now: () => Date.now() };
+  const writer = replyWriterFor(ctx, args, clock);
 
   const outcome = await runTextGateway(
-    { meter: meterPortFor(ctx, ids), adapter, clock: deps.clock ?? { now: () => Date.now() } },
+    { meter: meterPortFor(ctx, ids), adapter, clock },
     {
       spec: typed,
       inputs: args.inputs,
@@ -567,9 +597,23 @@ export async function runPromptWithMeter(
       },
       ...(args.businessContext === undefined ? {} : { businessContext: args.businessContext }),
       ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),
+      ...(writer === null ? {} : { onTextDelta: (event: { attempt: number; delta: string }) => writer.push(event.attempt, event.delta) }),
     },
   );
+  await writer?.drain();
   return gatewayRunResult(outcome);
+}
+
+/** The draft writer for a `wren_reply` stream (checked by `streamMismatch`), or null. */
+function replyWriterFor(ctx: MeterCtx, args: RunPromptArgs, clock: GatewayClock): ReplyDraftWriter | null {
+  const { stream, ownerId, projectId } = args;
+  if (stream === undefined || ownerId === undefined || projectId === undefined) return null;
+  return createReplyDraftWriter({
+    now: clock.now,
+    maxChars: WREN_REPLY_MAX_CHARS,
+    write: async (body) =>
+      await ctx.runMutation(internal.workspace.chat.writeWrenDraft, { ownerId, projectId, messageId: stream.messageId, body }),
+  });
 }
 
 /** Runs one registered prompt through the metered gateway. Internal only. */

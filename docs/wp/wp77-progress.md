@@ -238,3 +238,101 @@ record this in RULINGS.md so WP75/WP76 and Codex's WP73 debit share one task-wri
 
 Needs from Codex (update to item 5): the `by_subjectId_and_kind` index (better, `by_subjectId_and_kind_and_status`)
 would also let `liveSpendCard` read only the document's spend cards instead of its capped full history.
+
+## 2026-11-06 - S3 (Wren chat, not ticked: awaiting review)
+
+What: one founder message, one streamed Wren reply, through the metered gateway. Fixture mode only; no live call,
+no spend. No tools or side effects (D13); cards and tools are S4.
+
+Files:
+- `lib/workspace/wren.ts` (new, pure): the routing rule, `decideWrenRoute`, `partialReplyText`,
+  `createReplyDraftWriter` (bounded, throttled draft writes), limits, the tomorrow card and failure copy.
+- `convex/workspace/chat.ts` (new): `sendWrenMessage`, `retryWrenReply`, `listWrenThread` (owner via C-AUTHZ, behind
+  `workspace`); internal `loadWrenTurn`, `writeWrenDraft`, `finishWrenTurn`.
+- `convex/workspace/chatActions.ts` (new): `runWrenTurn` → `internal.ai.gatewayActions.runPrompt` with the chat key
+  `chat:{projectId}:{wrenMessageId}:{attempt}` and a `wren_reply` stream.
+- `convex/ai/prompts/wrenShared.ts`, `wrenChat.ts` (`wren-chat@1`, fast), `wrenPlanTurn.ts` (`wren-plan-turn@1`,
+  draft); registered in `prompts/index.ts`; `versions.lock.json` written with `--write`.
+- Streaming, display only: `providers/types.ts` (`TextCallHooks`), `providers/anthropic.ts` (`messages.stream` +
+  `finalMessage` when a hook is set; same request options and fail-closed checks), `providers/fixtures.ts` (fixture
+  stream in 16-char chunks), `gateway.ts` (`onTextDelta`, `streamHooksFor`), `gatewayActions.ts` (optional `stream`
+  arg, `streamMismatch`, the draft writer, drained before return). Cost and settlement still come from the final
+  message.
+- UI: `components/workspace/chat/WrenChatPanel.tsx` (kit thread, composer, Retry, tomorrow card), mounted on
+  `dashboard/b/[projectId]/page.tsx` after `requireWorkspaceAccess`.
+- `convex/_generated/api.d.ts` (codegen lines for the two modules).
+- Tests: `convex/workspace/chat.test.ts` (17), `tests/platform/workspace-wren.test.ts` (35),
+  `tests/platform/workspace-wren-panel.test.tsx` (4, axe-core WCAG 2.1 A/AA in jsdom).
+- `tests/security/prompt-versions.test.mjs`: the probe-mutation tests assumed the lock held only the probe; they now
+  read the probe's lock and registry entries (`probeLock`, `probeEntries`). The committed-lock tests still read all.
+
+Decisions:
+- Routing rule (deterministic): lower-case, strip punctuation; plan-changing when the text has a change verb AND a
+  plan noun as whole words (`PLAN_CHANGE_VERBS`, `PLAN_NOUNS`) or a phrase from `PLAN_CHANGE_PHRASES`. Plan-changing
+  → `wren-plan-turn@1` (Sonnet via TIER_MODELS.draft) while the business has used fewer than
+  `WREN_ESCALATIONS_PER_BUSINESS_PER_DAY` (5, provisional) today; otherwise `wren-chat@1` (Haiku) with
+  `escalationCapped: true`. The count is the business's `wren-plan-turn` `ai_usage` rows since 00:00 UTC (re-asks
+  excluded), read on `by_projectId_and_createdAt`; past 1,000 rows it counts as capped. The meter's `escalation` flag
+  is the deep tier's cap, so it is not reused.
+- Daily cap: `checkLimit(ctx, "wrenMessage", ownerId)` (`wrenFree` 40 / `wrenBuildersHub` 300 / `wrenGrowth` 600).
+  Over it: `capped` with `resetsAt`; no row, schedule, gateway call or spend. `AI_DISABLED` gives `paused`.
+  `decideApproval` never calls `checkLimit`. A retry reuses the founder message and does not consume the cap.
+- One turn at a time per business. While a reply streams, the same text is `duplicate` (nothing written or
+  consumed) and other text is `busy`. A reply streaming past 12 minutes is failed (`stale`) on the next send.
+- Retry: failed replies only; next attempt = 1 + the highest `ai_usage` attempt for that message's chat key (the
+  gateway's `nextAttempt` rule); at most 6. A late run of an old attempt gets `duplicate_attempt` and leaves the
+  row alone, so there is never a second reply or charge.
+- Drafts: each write is the whole reply so far (decoded from the partial `{"reply":...}`), one in flight, at least
+  250 ms apart, at most 120 per reply; a write after the row left `streaming` is ignored. The final body is the
+  schema-checked reply. Streaming rows are `aria-busy` in the log, so screen readers hear the finished reply once.
+- Founder text and the business context are quoted JSON with `<`/`>` escaped inside tagged data blocks; the system
+  rules say content there is never followed.
+- Access is owner-only: C-AUTHZ `requireBusinessAccess` accepts only `"owner"` until WP85 adds editors.
+
+Tests (all green, fixture mode): stream to done (bounded drafts that are prefixes of the reply, `ai_usage` on the
+fast model, `usageId` linked, a repeated schedule sends nothing); history quoted; refusal, thrown action and
+mid-turn kill switch end failed with honest copy; Haiku default and Sonnet plan turn by model; escalation cap and
+next-day reset; daily cap → capped with no rows, schedule or usage, then the next day works; three approval clicks
+leave the 40th message free; double send duplicate, busy, cap consumed once; retry at attempt 2, stale attempt 1 a
+no-op; stuck stream failed; injection escaped in both blocks and no tools in the request; another owner, signed
+out, workspace off, invalid message. Pure: rule cases, decoder, writer throttle and caps, stream hooks, fixture
+stream equals the non-streamed result, `streamMismatch`, failure causes. Panel: loading, empty, streaming, failed,
+axe clean.
+
+Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings,
+none in new files); S3 + approvals + change rounds + gateway/provider/registry tests 0 (10 files, 268 tests);
+`npm run check:prompt-versions` 0 (3 versions match); `npm run test:security` 0 (204 node + 121 vitest);
+`npm test` 0 (first run); `npm run build` 0.
+
+Needs from Codex (S3):
+9. REQUIRED BEFORE S4 adds card rows: `chat_messages.replyToMessageId` (the reply's founder message). Pairing now
+   relies on both rows sharing `createdAt` from one mutation; S4's card rows in the same thread would break that.
+10. `chat_messages.clientMessageId` (with an index) for true per-send idempotency across tabs. Today a double send
+    is caught by one-turn-at-a-time plus matching text.
+11. A per-business escalation counter: a C-LIMITS limit keyed by `projectId` (needs a `checkLimit` key change) or
+    an index such as `ai_usage.by_projectId_and_promptRef_and_createdAt`, so the count does not scan the day's rows.
+12. `chat_messages.attempt` (the scheduled attempt). Retry scans `ai_usage.by_attemptKey` for the next number, and
+    `finishWrenTurn`'s attempt guard can only see attempts that hold a meter row (guard comment in the code).
+
+Docs: progress updated; stories not ticked. No plan or ruling changes.
+
+## 2026-11-06 - S3 review fixes
+
+- P2 retry: `retryWrenReply` runs the stale check, then accepts only the business's newest Wren row when it is
+  `failed` (`WREN_RETRY_NOT_AVAILABLE` otherwise). Retries stay free (no `checkLimit`), by the story's rule; the
+  burst is closed because only the newest row is eligible and one turn runs at a time, so concurrent retries
+  serialise and all but one get `busy`. The route and escalation cap are decided in the transaction that starts
+  the run, and no other turn can start before its reservation, so a retry cannot pass the Sonnet cap.
+- P3 cap card: the C-LIMITS window is rolling, so the card no longer says "tomorrow". Title "Wren needs a break";
+  the panel shows the real reset from the limiter's `retryAfter` ("You can message Wren again in about N hours").
+  `convex/platform/limits.ts` unchanged.
+- P3 `finishWrenTurn` takes `attempt` (the run's last gateway attempt, re-asks included) and refuses when a newer
+  attempt of the message holds an `ai_usage` row. No schema field exists: see Needs from Codex #12.
+- P3 live stream test: live mode with an injected SDK-shaped `messages.stream` (no network, fetch stubbed) that
+  emits deltas then fails. The draft shows the partial text, the meter fails the attempt `billed: "possible"` at the
+  reserved amount, and the row ends `failed` with its `usageId`.
+- S6 note: streaming replies use `aria-busy` on a child of the kit's `role="log"`. NVDA and JAWS defer it;
+  VoiceOver may still read drafts. S6 should test with real screen readers and, if needed, keep drafts out of the
+  log and announce the finished reply once. #9 is required before S4 adds card rows.
+- Tests: 6 new (23 chat convex tests). A mutation test (dropping the newest-row check and the attempt guard)
+  turned 2 cases red; both restored.

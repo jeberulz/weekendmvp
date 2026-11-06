@@ -245,6 +245,17 @@ export type TextResult = {
   readonly cost: ProviderCost;
 };
 
+/**
+ * WP77-S3. Optional per-call hooks. `onTextDelta` asks the adapter to stream
+ * and receives each text delta as it arrives (Wren chat). It is display only:
+ * the result, its cost and every fail-closed check still come from the final
+ * message, exactly as without it. A throwing hook is ignored by the caller's
+ * wrapper (`gateway.ts`), never by the adapter.
+ */
+export type TextCallHooks = {
+  readonly onTextDelta?: (delta: string) => void;
+};
+
 // ---------------------------------------------------------------------------
 // Images (OpenAI Images, Recraft)
 // ---------------------------------------------------------------------------
