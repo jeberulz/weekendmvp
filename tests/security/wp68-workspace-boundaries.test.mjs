@@ -76,6 +76,19 @@ const ADMIN_CONTROLS = new Set([
   // Owner ruling: read-only spend monitoring stays available after shutdown.
   "convex/ops/spend.ts:readDaily",
 ]);
+// These exact WP74 entry points run before a business exists. Each still needs
+// the workspace gate and the indicated owner/session guard. The Claude lane
+// can replace its local ownedWizardSession with C-AUTHZ's equivalent helper.
+const PRE_BUSINESS_CONTROLS = new Map([
+  ["convex/workspace/wizard.ts:getWizardAccess", ["requireCurrentPlatformUser"]],
+  ["convex/workspace/wizard.ts:startOrResume", ["requireCurrentPlatformUserForMutation"]],
+  ["convex/workspace/wizard.ts:getSession", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  ["convex/workspace/wizard.ts:saveStep", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  ["convex/workspace/wizard.ts:skipStep", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  ["convex/workspace/wizard.ts:rewriteStep", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  ["convex/workspace/wizard.ts:goBack", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  ["convex/workspace/business.ts:createBusiness", ["ownedWizardSession", "requireOwnedWizardSession"]],
+]);
 const PUBLIC_REGISTRATIONS = new Set(["query", "mutation", "action", "httpAction"]);
 
 function publicRegistrations(file) {
@@ -98,6 +111,20 @@ function publicRegistrations(file) {
   return registrations;
 }
 
+function assertRegistrationGuard(key, registration) {
+  if (ADMIN_CONTROLS.has(key)) {
+    assert.ok(registration.calls.has("requireSuperAdmin"), `${key} missing super-admin guard`);
+    return;
+  }
+  assert.ok(registration.calls.has("assertFeatureEnabled"), `${key} missing feature gate`);
+  const preBusinessGuards = PRE_BUSINESS_CONTROLS.get(key);
+  if (preBusinessGuards !== undefined) {
+    assert.ok(preBusinessGuards.some((guard) => registration.calls.has(guard)), `${key} missing pre-business capability guard`);
+    return;
+  }
+  assert.ok(registration.calls.has("requireBusinessAccess") || registration.calls.has("requireSuperAdmin"), `${key} missing capability guard`);
+}
+
 test("workspace public Convex functions check both the feature and the capability", async () => {
   const seen = [];
   for (const domain of WORKSPACE_RUNTIME_DIRS) {
@@ -106,16 +133,24 @@ test("workspace public Convex functions check both the feature and the capabilit
       for (const registration of publicRegistrations(file)) {
         const key = `${relative}:${registration.name}`;
         seen.push(key);
-        if (ADMIN_CONTROLS.has(key)) {
-          assert.ok(registration.calls.has("requireSuperAdmin"), `${key} missing super-admin guard`);
-          continue;
-        }
-        assert.ok(registration.calls.has("assertFeatureEnabled"), `${key} missing feature gate`);
-        assert.ok(registration.calls.has("requireBusinessAccess") || registration.calls.has("requireSuperAdmin"), `${key} missing capability guard`);
+        assertRegistrationGuard(key, registration);
       }
     }
   }
   for (const control of ADMIN_CONTROLS) assert.ok(seen.includes(control), `${control} was not scanned`);
+  for (const control of PRE_BUSINESS_CONTROLS.keys()) assert.ok(seen.includes(control), `${control} was not scanned`);
+});
+
+test("pre-business scanner exception stays exact and requires the right guard", () => {
+  const calls = (...names) => ({ calls: new Set(names) });
+  const getSession = "convex/workspace/wizard.ts:getSession";
+  assert.doesNotThrow(() => assertRegistrationGuard(getSession, calls("assertFeatureEnabled", "ownedWizardSession")));
+  assert.doesNotThrow(() => assertRegistrationGuard(getSession, calls("assertFeatureEnabled", "requireOwnedWizardSession")));
+  assert.throws(() => assertRegistrationGuard(getSession, calls("assertFeatureEnabled", "requireCurrentPlatformUser")), /missing pre-business capability guard/);
+  assert.throws(() => assertRegistrationGuard(getSession, calls("ownedWizardSession")), /missing feature gate/);
+  assert.throws(() => assertRegistrationGuard("convex/workspace/wizard.ts:futureFunction", calls("assertFeatureEnabled", "ownedWizardSession")), /missing capability guard/);
+  assert.throws(() => assertRegistrationGuard("convex/workspace/business.ts:futureFunction", calls("assertFeatureEnabled", "requireOwnedWizardSession")), /missing capability guard/);
+  assert.throws(() => assertRegistrationGuard("convex/workspace/wizard.ts:startOrResume", calls("assertFeatureEnabled", "ownedWizardSession")), /missing pre-business capability guard/);
 });
 
 test("workspace guard scanner ignores comments and rejects unguarded functions", () => {
