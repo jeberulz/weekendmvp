@@ -24,6 +24,7 @@ import { isIdeaCollectionSlug } from "./lib/idea-collection-slugs";
 import { isEngineDraftSlug } from "./lib/engine-drafts";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
 import { checkTenantSitePublished } from "./lib/tenant-publish-check";
+import { tenantTakedownState } from "./lib/tenant-takedown";
 
 /**
  * One-hop host + path canonicalization.
@@ -436,6 +437,10 @@ export async function middleware(
     return hostRejectedResponse();
   }
   if (host.kind === "tenant") {
+    // Global Config is the emergency denylist. It must be read before the
+    // best-effort Convex check: a backend outage must never revive a takedown.
+    const takedown = await tenantTakedownState(host.slug);
+    if (takedown !== "clear") return hostRejectedResponse();
     // A published site is a single landing page, so exactly one path is
     // served and everything else answers identically. Keeping the tenant
     // surface to one path means no platform route can be probed for
