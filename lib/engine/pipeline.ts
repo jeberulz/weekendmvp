@@ -57,12 +57,14 @@ import {
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
   formatControlIn,
+  REPORT_DIAGNOSTIC_LIMITS,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
   withoutFormatControls,
   type AcceptedEvidence,
   type CodeRevision,
   type EvidenceKind,
   type ExtractionCandidates,
+  type ExtractionReadinessDiag,
   type RejectedEvidence,
   type ResearchMode,
   type ResearchProvenanceV2,
@@ -337,6 +339,12 @@ type RunState = {
   sources: SourceAcquisition[];
   accepted: AcceptedEvidence[];
   rejected: RejectedEvidence[];
+  /** Shape-valid candidates proposed across extraction attempts, before accept/reject. */
+  preacceptCounts: Record<EvidenceKind, number>;
+  /** kind\0url → count of preaccept candidates for that pair. */
+  preacceptBySource: Map<string, number>;
+  /** Latest extraction feed readiness (overwritten each extraction attempt; last attempt wins). */
+  extractionReadiness: ExtractionReadinessDiag[];
   /** Ruling R15: citations refused before any read (the ledger's live list once it exists). */
   refusedCitations: ReadonlyArray<RefusedCitation>;
 };
@@ -431,6 +439,41 @@ function countByKind(accepted: ReadonlyArray<AcceptedEvidence>): Record<Evidence
   return counts;
 }
 
+function emptyKindCounts(): Record<EvidenceKind, number> {
+  return { community_quote: 0, market_stat: 0, competitor_price: 0, competitor_availability: 0 };
+}
+
+/** Accumulate shape-valid extraction candidates into report preaccept diagnostics. */
+function recordPreaccept(state: RunState, candidates: ExtractionCandidates): void {
+  const add = (kind: EvidenceKind, sourceUrl: string) => {
+    state.preacceptCounts[kind] += 1;
+    const url = canonicalSourceUrl(sourceUrl) ?? sourceUrl.trim();
+    if (!url) return;
+    const key = `${kind}\0${url}`;
+    state.preacceptBySource.set(key, (state.preacceptBySource.get(key) ?? 0) + 1);
+  };
+  for (const quote of candidates.quotes) add("community_quote", quote.sourceUrl);
+  for (const stat of candidates.marketStats) add("market_stat", stat.sourceUrl);
+  for (const price of candidates.competitorPrices) add("competitor_price", price.sourceUrl);
+  for (const row of candidates.competitorAvailability ?? []) add("competitor_availability", row.sourceUrl);
+}
+
+function boundPreacceptBySource(
+  map: ReadonlyMap<string, number>,
+): Array<{ kind: EvidenceKind; sourceUrl: string; count: number }> {
+  const rows: Array<{ kind: EvidenceKind; sourceUrl: string; count: number }> = [];
+  for (const [key, count] of map) {
+    const sep = key.indexOf("\0");
+    if (sep <= 0) continue;
+    const kind = key.slice(0, sep) as EvidenceKind;
+    const sourceUrl = key.slice(sep + 1);
+    if (!sourceUrl) continue;
+    rows.push({ kind, sourceUrl: redactUrl(sourceUrl), count });
+  }
+  rows.sort((a, b) => b.count - a.count || a.kind.localeCompare(b.kind) || a.sourceUrl.localeCompare(b.sourceUrl));
+  return rows.slice(0, REPORT_DIAGNOSTIC_LIMITS.maxPreacceptBySource);
+}
+
 function buildReport(state: RunState, failure: PipelineError | null): ResearchRunReport {
   return {
     ok: failure === null,
@@ -455,8 +498,21 @@ function buildReport(state: RunState, failure: PipelineError | null): ResearchRu
         kind: r.kind,
         reason: r.reason,
         ...(r.sourceUrl !== undefined ? { sourceUrl: redactUrl(r.sourceUrl) } : {}),
+        ...(r.candidate !== undefined ? { candidate: redactText(r.candidate, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
         ...(r.detail !== undefined ? { detail: redactText(r.detail, RESEARCH_RECORD_V2_LIMITS.detailChars) } : {}),
       })),
+      preaccept: {
+        counts: { ...state.preacceptCounts },
+        bySource: boundPreacceptBySource(state.preacceptBySource),
+      },
+      extractionReadiness: state.extractionReadiness
+        .slice(0, REPORT_DIAGNOSTIC_LIMITS.maxExtractionReadiness)
+        .map((row) => ({
+          url: redactUrl(row.url),
+          roles: [...row.roles],
+          included: row.included,
+          amountSentences: row.amountSentences,
+        })),
     },
   };
 }
@@ -814,6 +870,13 @@ async function stepExtraction(
     utf8Bytes(`\n\n${EXTRACTION_REASK}`) -
     utf8Bytes(focus ? `\n\n${focus}` : "");
   const block = buildExtractionSources(sources, available, brief.title);
+  // Last extraction attempt's feed wins in the report (retry overwrites).
+  state.extractionReadiness = block.diagnostics.map((row) => ({
+    url: row.url,
+    roles: [...row.roles],
+    included: row.included,
+    amountSentences: row.amountSentences,
+  }));
   if (block.included === 0) {
     throw new PipelineError(step.id, "no readable source fits the extraction budget");
   }
@@ -839,7 +902,11 @@ async function stepExtraction(
     const parsed = parseJsonObject(text);
     // Shape checks only; nothing in the reply is trusted until acceptance
     // re-derives it from the page.
-    if (parsed) return parseExtractionCandidates(parsed);
+    if (parsed) {
+      const extracted = parseExtractionCandidates(parsed);
+      recordPreaccept(state, extracted.candidates);
+      return extracted;
+    }
     if (!attemptsLeft(state, step)) {
       throw new PipelineError(step.id, `the extraction reply was not a JSON object (${step.maxAttempts} attempts)`);
     }
@@ -1426,11 +1493,14 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   const marketHosts = () => new Set(state.accepted
     .filter((item) => item.kind === "market_stat")
     .map((item) => sourceHostLabel(item.sourceUrl)));
-  const marketCountIsOnlyShortfall = minimums.shortfalls.length === 1 &&
-    minimums.shortfalls[0]?.startsWith("market stats:");
-  const marketHostsAreOnlyShortfall = minimums.ok && marketHosts().size < 2;
+  // Prefer the market-focused retry whenever market figures are short — even
+  // when competitors/quotes are also short. Live batches often fail all three;
+  // the old "market-only shortfall" gate skipped the market retry entirely and
+  // left EMPTY market_stat proposals undiagnosed (report preaccept counts).
+  const marketCountIsShort = minimums.shortfalls.some((shortfall) => shortfall.startsWith("market stats:"));
+  const marketHostsNeedRetry = minimums.ok && marketHosts().size < 2;
   if (
-    (marketCountIsOnlyShortfall || marketHostsAreOnlyShortfall) &&
+    (marketCountIsShort || marketHostsNeedRetry) &&
     attemptsLeft(state, stepById("evidence_extraction"))
   ) {
     const existingHosts = marketHosts();
@@ -1562,6 +1632,9 @@ export async function runResearch(options: RunResearchOptions): Promise<RunResea
     sources: [],
     accepted: [],
     rejected: [],
+    preacceptCounts: emptyKindCounts(),
+    preacceptBySource: new Map(),
+    extractionReadiness: [],
     refusedCitations: [],
   };
   try {

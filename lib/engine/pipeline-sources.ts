@@ -328,9 +328,11 @@ function figureExcerpt(text: string, maxBytes: number): string {
 
 /**
  * A long report can put the questionnaire figures well after its opening
- * pages. Give amount-bearing sentences that name the idea's job first; every
- * selected passage remains an exact substring of the fetched source. When
- * the brief supplies no useful match, retain the ordinary figure excerpt.
+ * pages. Prefer amount-bearing sentences that name the idea's job, then fill
+ * remaining budget with the ordinary figure excerpt so a weak title match
+ * (e.g. "approval" on a pricing page) cannot starve market-size figures that
+ * omit the brief's keywords. Every selected passage remains an exact
+ * substring of the fetched source.
  */
 function focusedFigureExcerpt(text: string, maxBytes: number, focus: string): string {
   const words = [...new Set((focus.toLowerCase().match(/[a-z]{4,}/g) ?? []).map((word) => word.replace(/s$/, "")))];
@@ -344,13 +346,27 @@ function focusedFigureExcerpt(text: string, maxBytes: number, focus: string): st
     }))
     .filter((row) => row.score > 0 && scanAmounts(row.sentence).length > 0)
     .sort((a, b) => b.score - a.score || a.index - b.index);
-  let out = "";
+  let focused = "";
   for (const row of ranked) {
-    const piece = out ? `${EXCERPT_GAP}${row.sentence}` : row.sentence;
-    if (utf8Bytes(out) + utf8Bytes(piece) > maxBytes) continue;
+    const piece = focused ? `${EXCERPT_GAP}${row.sentence}` : row.sentence;
+    if (utf8Bytes(focused) + utf8Bytes(piece) > maxBytes) continue;
+    focused += piece;
+  }
+  if (!focused) return figureExcerpt(text, maxBytes);
+  const general = figureExcerpt(text, maxBytes);
+  if (!general) return focused;
+  let out = focused;
+  for (const run of general.split(EXCERPT_GAP)) {
+    if (!run || focused.includes(run) || out.includes(run)) continue;
+    // Skip a general run that is only the focused sentence(s) restated.
+    if ([...focused.split(EXCERPT_GAP)].some((passage) => run.includes(passage) && utf8Bytes(run) <= utf8Bytes(passage) + 8)) {
+      continue;
+    }
+    const piece = `${EXCERPT_GAP}${run}`;
+    if (utf8Bytes(out) + utf8Bytes(piece) > maxBytes) break;
     out += piece;
   }
-  return out || figureExcerpt(text, maxBytes);
+  return out;
 }
 
 /** One explicit pricing-status sentence, even when a long page has no prices. */
@@ -448,21 +464,38 @@ function sourceLabel(source: ExtractionSource, n: number): string {
   );
 }
 
+/** Amount-bearing sentences in an excerpt (operator readiness only; no body stored). */
+export function countAmountSentences(excerpt: string): number {
+  if (!excerpt) return 0;
+  return splitSentences(excerpt).filter((sentence) => scanAmounts(sentence.text).length > 0).length;
+}
+
+/** Per-URL extraction feed row for the run report (URL + roles + figure density). */
+export type ExtractionSourceDiag = {
+  url: string;
+  roles: SourceRole[];
+  included: boolean;
+  amountSentences: number;
+};
+
 /**
  * The extraction step's "Sources" section, at most `availableBytes` UTF-8
  * bytes in total (labels, separators and excerpts all count). Each page is
  * capped (3,000 bytes for figure pages, 4,000 for community pages); room
  * left by short pages goes to longer ones; when even the 400-byte minimum
  * cannot be met, the lowest-priority page (last in role round-robin order)
- * is dropped. Returns "" with included 0 when nothing fits.
+ * is dropped. Returns "" with included 0 when nothing fits. `diagnostics`
+ * lists every requested URL (included or dropped) with amount-sentence
+ * density of the excerpt that would have been / was shown — never page bodies.
  */
 export function buildExtractionSources(
   sources: ReadonlyArray<ExtractionSource>,
   availableBytes: number,
   focus = "",
-): { text: string; included: number } {
+): { text: string; included: number; diagnostics: ExtractionSourceDiag[] } {
   const header = `${EXTRACTION_SOURCES_HEADING}\n`;
-  let pages = interleaveByRole(sources);
+  const ordered = interleaveByRole(sources);
+  let pages = ordered;
   const natural = new Map(pages.map((page) => [page, extractionExcerpt(page, excerptCap(page), focus)] as const));
   while (pages.length > 0) {
     const labels = pages.map((page, i) => sourceLabel(page, i + 1));
@@ -475,15 +508,40 @@ export function buildExtractionSources(
     const alloc = waterFill(needs, room);
     const fits = room >= 0 && alloc.every((bytes, i) => bytes >= Math.min(needs[i] ?? 0, EXTRACTION_EXCERPT_BYTES.min));
     if (fits) {
+      const includedSet = new Set(pages);
+      const excerpts = new Map<ExtractionSource, string>();
       const blocks = pages.map((page, i) => {
         const full = natural.get(page) ?? "";
         const bytes = alloc[i] ?? 0;
         const excerpt = bytes >= utf8Bytes(full) ? full : extractionExcerpt(page, bytes, focus);
+        excerpts.set(page, excerpt);
         return `${labels[i] ?? ""}${excerpt}`;
       });
-      return { text: `${header}${blocks.join(BLOCK_SEPARATOR)}`, included: pages.length };
+      return {
+        text: `${header}${blocks.join(BLOCK_SEPARATOR)}`,
+        included: pages.length,
+        diagnostics: ordered.map((page) => ({
+          url: page.url,
+          roles: [...page.roles],
+          included: includedSet.has(page),
+          // Included: density of the excerpt shown. Dropped: density of the
+          // natural excerpt that would have been shown (still no body stored).
+          amountSentences: countAmountSentences(
+            includedSet.has(page) ? (excerpts.get(page) ?? "") : (natural.get(page) ?? ""),
+          ),
+        })),
+      };
     }
     pages = pages.slice(0, -1);
   }
-  return { text: "", included: 0 };
+  return {
+    text: "",
+    included: 0,
+    diagnostics: ordered.map((page) => ({
+      url: page.url,
+      roles: [...page.roles],
+      included: false,
+      amountSentences: countAmountSentences(natural.get(page) ?? ""),
+    })),
+  };
 }
