@@ -16,31 +16,49 @@
  * - bounded: `WREN_MEMORY_FACT_MAX_CHARS` per fact, `WREN_MEMORY_SUMMARY_MAX_CHARS`
  *   for the summary (counted in characters after cleaning; refused, never
  *   cut), `WREN_MEMORY_FACTS_MAX` facts;
- * - refused when it holds a scheme URL (`https://`, `javascript:`), a markup
- *   tag (`<` then a letter, `/` or `!`, so "<500 words" passes) or a chat role
- *   tag (`system:`, `assistant:`, a leading `user:`).
+ * - refused when it holds a link with a real scheme (`https://`, `//host`,
+ *   `javascript:`, `data:text/html`, `mailto:` an address; "Data: 40% of
+ *   signups" is prose), a tag-shaped piece of markup (`<b>`, `</p>`,
+ *   `<img src=x>`; "a<b" and "<500 words" pass) or a chat transcript shape
+ *   (a line or sentence opening with `system:`, `assistant:`, `user:`,
+ *   `human:` or `developer:`, or a template token like `<|im_start|>`;
+ *   "Model: subscription" and "Dev tool: Cursor" pass).
  *
  * The founder's own edits stop there: they are the founder's words, as trusted
  * as their chat messages, so bare domains and emails ("peakpace.co",
- * "sam@peakpace.co") and imperative phrasing are allowed.
+ * "sam@peakpace.co"), imperative phrasing and any script are allowed. Text the
+ * founder pastes (into chat or an edit) is trusted the same way, by design.
  *
- * Wren's notes (model output) are held to more, conservatively:
+ * Wren's notes (model output) are held to more, conservatively. Cyrillic and
+ * Greek look-alike letters are folded to Latin first (`foldConfusables`), so
+ * "Wr\u0435n" reads as "Wren". Then:
  * - no link of any kind: bare domains, "dot com" spellings, emails;
- * - no other markup: backticks, template braces, markdown links, entities;
+ * - no other markup: any `<` before a letter, backticks, template braces,
+ *   markdown links, entities;
  * - no text that reads like an instruction or is about Wren's own powers:
  *   ignore / override phrasing, "always approve", "you must", anything about
- *   approvals or cards, rules, priority, policy or guidance, earlier
- *   messages, skipping, pre-approval or the founder having approved, Wren
- *   itself, "when asked", "going forward", spelled-out letters
- *   ("I-g-n-o-r-e") and encoded blobs (base64);
- * - provenance (`WREN_NOTE_MIN_OVERLAP`): a fact must come from this turn's
- *   founder message, a summary from that message plus the business's own
- *   notes. At least 60% of the note's content words (letters or digits, 3 or
- *   more long, not a stop word, NFKC and lower case) must appear in the
- *   sources, compared on their first 5 characters so "launching" matches
- *   "launch". A note with no content word fails. This stops an injected
- *   instruction that the founder never wrote from being stored, whatever its
- *   wording.
+ *   approvals or cards, rules, policy or guidance, a priority aimed at Wren
+ *   ("highest priority"), skipping a review or check, earlier messages,
+ *   pre-approval or the founder having approved, Wren itself, "when asked",
+ *   "going forward", spelled-out letters ("I-g-n-o-r-e") and encoded blobs
+ *   (base64). A founder's plain preference ("wants to skip TikTok", "the
+ *   priority is the email list") passes;
+ * - provenance. Content words are letters or digits, 3 or more long, not a
+ *   stop word, NFKC and lower case, counted once each, and compared as whole
+ *   words with one plural or verb ending allowed ("runners" matches
+ *   "runner", "pricing" matches "price"; "international" never matches
+ *   "internal"). A fact needs at least `WREN_NOTE_MIN_OVERLAP` (60%) of its
+ *   content words from this turn's founder message, and at most
+ *   `WREN_FACT_MAX_UNSOURCED` (2) from elsewhere. A summary may keep the old
+ *   summary's words; every new word must come from this turn's founder
+ *   message or the founder's idea text and business name
+ *   (`WREN_SUMMARY_MAX_UNSOURCED` is 0). Wren's earlier notes never vouch for
+ *   a new word, so memory cannot drift over turns the founder only said
+ *   "thanks" in. A note with no content word fails.
+ *
+ * Provenance limits what a note can say, not how it says it: a note built
+ * from the founder's own words in a new order, or from words the founder
+ * pasted, passes. That is the point of the next paragraph.
  *
  * These filters are a first line, not the control. The controls are that
  * memory reaches the model only as quoted JSON inside `<business_context>`
@@ -73,11 +91,11 @@ export const WREN_MEMORY_TEXT_REFUSALS = [
   "too_short",
   /** Longer than the fact or summary limit. */
   "too_long",
-  /** A link. Founder: a scheme URL only. Wren: any URL, bare domain or email. */
+  /** A link. Founder: a URL with a real scheme only. Wren: also bare domains and emails. */
   "has_link",
   /** Founder: a markup tag. Wren: also backticks, template braces, markdown links, HTML entities. */
   "has_markup",
-  /** A chat role tag (`system:`, `assistant:`, `developer:`, a leading `user:`). */
+  /** A chat transcript shape: a line or sentence opening with `system:`, `user:` and the like, or `<|im_start|>`. */
   "has_role_tag",
 ] as const;
 export type MemoryTextRefusal = (typeof WREN_MEMORY_TEXT_REFUSALS)[number];
@@ -88,7 +106,7 @@ export const WREN_NOTE_REFUSALS = [
   "looks_like_instruction",
   /** Spelled-out letters or an encoded blob (base64). */
   "looks_encoded",
-  /** Too few of its words come from the founder's message (and, for a summary, the business's notes). */
+  /** Its words do not come from this turn's founder message (and, for a summary's new words, the idea text). */
   "not_from_founder",
 ] as const;
 export type WrenNoteRefusal = MemoryTextRefusal | (typeof WREN_NOTE_REFUSALS)[number];
@@ -151,10 +169,18 @@ export function cleanedMemoryLength(raw: string): number {
  */
 const PRECLEAN_FACTOR = 32;
 
-/** Links anyone's note may not hold: a scheme URL or a script / data scheme. */
+/**
+ * Links anyone's note may not hold: a real scheme with `//` (`https://`,
+ * `ftp://`, `file://`), a protocol-relative `//host`, a script scheme, a
+ * `data:` URL with a mime type, or `mailto:` an address. "Data: 40% of
+ * signups" and "File: the pitch deck" are prose, not links.
+ */
 const SCHEME_LINK_PATTERNS: readonly RegExp[] = [
   /\b[a-z][a-z0-9+.-]*:\/\//u,
-  /\b(?:mailto|javascript|vbscript|data|file|tel):/u,
+  /(?:^|[\s(<"'])\/\/[a-z0-9]/u,
+  /\b(?:javascript|vbscript)\s*:/u,
+  /\bdata:\s*[a-z]+\/[a-z0-9.+-]+/u,
+  /\bmailto:\s*[^\s@]+@/u,
 ];
 
 const TLD = "com|net|org|io|ai|co|app|dev|xyz|me|info|biz|ly|gg|sh|link|site|online|store|shop|so|to|tv|us|uk|ru|cn|page|live|click|top|de|fr|es|it|nl|eu|ca|au|in|example";
@@ -162,6 +188,7 @@ const TLD = "com|net|org|io|ai|co|app|dev|xyz|me|info|biz|ly|gg|sh|link|site|onl
 /** Links Wren's notes also may not hold: bare domains, "dot com" spellings, emails. */
 const WREN_LINK_PATTERNS: readonly RegExp[] = [
   ...SCHEME_LINK_PATTERNS,
+  /\b(?:mailto|tel|sms):/u,
   /\bwww\./u,
   /[^\s@]+\s*@\s*[^\s@]+\s*\.\s*[a-z]{2,}/u,
   new RegExp(`\\b[a-z0-9-]+\\s*[.\\u3002\\u2024]\\s*(?:${TLD})\\b`, "u"),
@@ -169,11 +196,23 @@ const WREN_LINK_PATTERNS: readonly RegExp[] = [
   /\b[a-z0-9-]+\.[a-z]{2,}\/\S/u,
 ];
 
-/** A markup tag: `<` then a letter, `/` or `!`. "<500 words" is not one. */
-const TAG_PATTERNS: readonly RegExp[] = [/<[a-z/!]/u, /\[\/?inst\]|<<\/?sys>>/u];
+/**
+ * Markup that is shaped like a tag: a whole tag (`<b>`, `<img src=x>`), a
+ * closing tag, `<!`, a tag name followed by an attribute, or a known
+ * dangerous tag name. A bare `<` in prose ("a<b", "<500 words") is not one.
+ */
+const TAG_PATTERNS: readonly RegExp[] = [
+  /<[a-z][a-z0-9:-]*(?:\s[^<>]*)?\/?>/u,
+  /<\/\s*[a-z]/u,
+  /<!/u,
+  /<[a-z][a-z0-9:-]*\s+[a-z-]+\s*=/u,
+  /<(?:script|iframe|img|svg|style|object|embed|meta|link|base|form|input|math)\b/u,
+  /\[\/?inst\]|<<\/?sys>>/u,
+];
 
 const WREN_MARKUP_PATTERNS: readonly RegExp[] = [
   ...TAG_PATTERNS,
+  /<[a-z/!]/u,
   /\b(?:business_context|founder_message)\b/u,
   /`/u,
   /\{\{|\}\}|\{%|%\}/u,
@@ -181,11 +220,16 @@ const WREN_MARKUP_PATTERNS: readonly RegExp[] = [
   /&(?:#\d+|#x[0-9a-f]+|[a-z]+);/u,
 ];
 
+/** The speakers of a chat transcript. "Model: subscription", "Dev tool: Cursor" and "Our assistant: Sam" are not. */
+const ROLE_NAMES = "(?:system|sys\\s*tem|assistant|user|human|developer)";
+
+/** A role label that opens a line of the raw text, checked line by line before cleaning folds the newlines. */
+const ROLE_LINE_START = new RegExp(`^${ROLE_NAMES}\\s*:`, "u");
+
+/** Transcript shapes in the cleaned text: a role label opening a sentence, or a chat-template token. */
 const ROLE_TAG_PATTERNS: readonly RegExp[] = [
-  /\b(?:system|assistant|developer|tool)\s*:/u,
-  /\bsys\s*tem\s*:/u,
-  /^(?:user|human|ai|model)\s*:/u,
-  /[—–-]\s*(?:user|human)\s*:/u,
+  new RegExp(`(?:^|[.!?;]\\s+|[\u2014\u2013]\\s*|\\s-\\s*)${ROLE_NAMES}\\s*:`, "u"),
+  /<\|[a-z_]+\|>/u,
 ];
 
 /** Phrasing that addresses the assistant, or is about what it may do. Wren's notes only. */
@@ -203,11 +247,15 @@ const INSTRUCTION_PATTERNS: readonly RegExp[] = [
   /\b(?:admin|developer|god|debug|sudo|root)\s+(?:mode|access)\b|\byou\s+are\s+root\b/u,
   /\breveal\b.{0,30}\b(?:rules|prompt|instructions)\b/u,
   /\bdo\s+not\s+(?:tell|ask|show|mention|warn)\b|\bdon't\s+(?:tell|ask|show|mention|warn)\b/u,
-  // About Wren's powers: approvals and cards, consent given in advance, skipping steps.
+  // About Wren's powers: approvals and cards, consent given in advance.
   /\b(?:approv\w*|pre-?approv\w*|cards?|authori[sz]\w*|consent\w*|permissions?|sign(?:ed)?[\s-]off|okayed|permitted|granted)\b/u,
-  /\b(?:skip|skips|skipped|skipping|circumvent\w*)\b/u,
-  // About rules, priority and earlier guidance.
-  /\b(?:instructions?|rules?|polic(?:y|ies)|priority|priorities|precedence|directives?|guidance|guidelines?|prompts?|commands?)\b/u,
+  // Skipping a check (not "skip TikTok"): skip or bypass aimed at a review, step or safeguard.
+  /\b(?:skip\w*|bypass\w*|circumvent\w*|waive\w*)\b.{0,30}\b(?:reviews?|checks?|checking|confirm\w*|steps?|safeguards?|limits?|verif\w*|questions?|asking)\b/u,
+  /\bcircumvent\w*\b/u,
+  // About rules and earlier guidance, or a priority aimed at Wren (not "the founder's priority is the email list").
+  /\b(?:instructions?|rules?|polic(?:y|ies)|precedence|directives?|guidance|guidelines?|prompts?|commands?)\b/u,
+  /\b(?:priority|priorities)\s+(?:rules?|instructions?|notes?|orders?|overrides?)\b|\b(?:highest|top|absolute|overriding)[\s-]+priority\b|\b(?:takes?|has|gets?)\s+priority\s+over\s+(?:you|wren|everything|anything|all)\b/u,
+  /\b(?:this|these)\s+notes?\b|\bnote\s+to\s+(?:self|you)\b/u,
   /\bno\s+attention\b|\bpay\s+no\b|\bnever\s*mind\b/u,
   /\b(?:earlier|previous|prior|above|preceding)\s+(?:messages?|notes?|text|context|turns?)\b/u,
   /\btreat\b.{0,40}\bas\b/u,
@@ -224,18 +272,61 @@ const ENCODED_PATTERNS: readonly RegExp[] = [
   /(?=[A-Za-z0-9+/]*\d)(?=[A-Za-z0-9+/]*[A-Z])(?=[A-Za-z0-9+/]*[a-z])[A-Za-z0-9+/]{16,}={0,2}/u,
 ];
 
+/**
+ * Cyrillic and Greek letters that look like Latin ones, folded to the Latin
+ * letter before Wren's notes are matched ("Wr\u0435n must \u0430pprove" reads as
+ * "Wren must approve"). Wren's notes only: the founder's own text is trusted
+ * as written. NFKC (in cleaning) already folds full-width and styled letters.
+ */
+const LATIN_CONFUSABLES: ReadonlyMap<string, string> = new Map([
+  // Cyrillic lower case
+  ["\u0430", "a"], ["\u0432", "b"], ["\u0435", "e"], ["\u0451", "e"], ["\u043a", "k"], ["\u043c", "m"], ["\u043d", "h"],
+  ["\u043e", "o"], ["\u0440", "p"], ["\u0441", "c"], ["\u0442", "t"], ["\u0443", "y"], ["\u0445", "x"], ["\u0456", "i"],
+  ["\u0457", "i"], ["\u0458", "j"], ["\u0455", "s"], ["\u04bb", "h"], ["\u0501", "d"], ["\u051b", "q"], ["\u051d", "w"],
+  ["\u0261", "g"], ["\u0269", "i"], ["\u0131", "i"],
+  // Cyrillic upper case
+  ["\u0410", "a"], ["\u0412", "b"], ["\u0415", "e"], ["\u0401", "e"], ["\u041a", "k"], ["\u041c", "m"], ["\u041d", "h"],
+  ["\u041e", "o"], ["\u0420", "p"], ["\u0421", "c"], ["\u0422", "t"], ["\u0423", "y"], ["\u0425", "x"], ["\u0406", "i"],
+  ["\u0407", "i"], ["\u0408", "j"], ["\u0405", "s"], ["\u04ae", "y"],
+  // Greek
+  ["\u03b1", "a"], ["\u03b5", "e"], ["\u03b9", "i"], ["\u03ba", "k"], ["\u03bd", "v"], ["\u03bf", "o"], ["\u03c1", "p"],
+  ["\u03c4", "t"], ["\u03c5", "u"], ["\u03c7", "x"], ["\u0391", "a"], ["\u0392", "b"], ["\u0395", "e"], ["\u0396", "z"],
+  ["\u0397", "h"], ["\u0399", "i"], ["\u039a", "k"], ["\u039c", "m"], ["\u039d", "n"], ["\u039f", "o"], ["\u03a1", "p"],
+  ["\u03a4", "t"], ["\u03a5", "y"], ["\u03a7", "x"],
+]);
+
+/** Folds `LATIN_CONFUSABLES` (Wren's notes only, before the patterns run). */
+export function foldConfusables(text: string): string {
+  let out = "";
+  for (const char of text) out += LATIN_CONFUSABLES.get(char) ?? char;
+  return out;
+}
+
 /** Who wrote the note: the founder's own edit, or Wren (model output). */
 export type MemoryAuthor = "founder" | "wren";
 
-/** The first refusal for already-cleaned text, or null. Matched on a lower-case copy. */
-function refusalFor(text: string, author: MemoryAuthor): WrenNoteRefusal | null {
-  const lower = text.toLowerCase();
+/** True when a line of the raw text (before cleaning folds the newlines) opens with a chat role label. */
+function rawLineHasRoleLabel(raw: string, strict: boolean): boolean {
+  return raw.split(/[\n\r\u0085\u2028\u2029]+/u).some((line) => {
+    const cleaned = cleanMemoryText(line).toLowerCase();
+    return ROLE_LINE_START.test(strict ? foldConfusables(cleaned) : cleaned);
+  });
+}
+
+/**
+ * The first refusal for already-cleaned `text` (`raw` is the text before
+ * cleaning, for the line-start role check), or null. Matched on a lower-case
+ * copy; Wren's notes are also folded for look-alike letters first.
+ */
+function refusalFor(text: string, raw: string, author: MemoryAuthor): WrenNoteRefusal | null {
   const strict = author === "wren";
+  const cased = strict ? foldConfusables(text) : text;
+  const lower = cased.toLowerCase();
   if ((strict ? WREN_LINK_PATTERNS : SCHEME_LINK_PATTERNS).some((pattern) => pattern.test(lower))) return "has_link";
   if ((strict ? WREN_MARKUP_PATTERNS : TAG_PATTERNS).some((pattern) => pattern.test(lower))) return "has_markup";
-  if (ROLE_TAG_PATTERNS.some((pattern) => pattern.test(lower))) return "has_role_tag";
+  if (ROLE_TAG_PATTERNS.some((pattern) => pattern.test(lower)) || rawLineHasRoleLabel(raw, strict)) return "has_role_tag";
   if (!strict) return null;
-  if (ENCODED_PATTERNS.some((pattern) => pattern.test(text))) return "looks_encoded";
+  if (ENCODED_PATTERNS.some((pattern) => pattern.test(cased))) return "looks_encoded";
   if (INSTRUCTION_PATTERNS.some((pattern) => pattern.test(lower))) return "looks_like_instruction";
   return null;
 }
@@ -252,26 +343,82 @@ const STOP_WORDS = new Set([
   "said", "says", "say", "told", "is", "it", "be", "we", "us", "me", "my", "mine",
 ]);
 
-/** Content words: letters or digits, 3 or more long, not a stop word; NFKC, lower case. */
+/** Content words: letters or digits, 3 or more long, not a stop word; NFKC, lower case. Unique, in first-seen order. */
 export function contentWords(text: string): string[] {
   const words = cleanMemoryText(text).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
-  return words.filter((word) => memoryTextLength(word) >= 3 && !STOP_WORDS.has(word));
+  return [...new Set(words.filter((word) => memoryTextLength(word) >= 3 && !STOP_WORDS.has(word)))];
 }
 
-/** A word compared on its first 5 characters ("launching" and "launch" match). */
-function stem(word: string): string {
-  return Array.from(word).slice(0, 5).join("");
+/**
+ * The forms a word is compared by: the whole word, plus the word with one
+ * plural or verb ending taken off ("runners" / "runner", "launches" /
+ * "launch", "priced" / "price", "pricing" / "price") when 3 or more letters
+ * remain. Whole words, not prefixes, so "international" never matches
+ * "internal".
+ */
+function wordForms(word: string): string[] {
+  const forms = [word];
+  const base = (cut: number) => {
+    const kept = Array.from(word).slice(0, -cut).join("");
+    return memoryTextLength(kept) >= 3 ? kept : null;
+  };
+  const add = (form: string | null) => {
+    if (form !== null) forms.push(form);
+  };
+  if (word.endsWith("ing")) {
+    const kept = base(3);
+    add(kept);
+    if (kept !== null) add(`${kept}e`);
+  } else if (word.endsWith("ies")) {
+    const kept = base(3);
+    if (kept !== null) add(`${kept}y`);
+  } else if (word.endsWith("ed")) {
+    add(base(2));
+    add(base(1));
+  } else if (word.endsWith("es")) {
+    add(base(2));
+    add(base(1));
+  } else if (word.endsWith("s") && !word.endsWith("ss")) {
+    add(base(1));
+  }
+  return forms;
 }
 
-/** The least share of a Wren note's content words that must come from its sources. */
+/** Every comparison form of every content word in `texts`. */
+function knownForms(texts: readonly string[]): Set<string> {
+  return new Set(texts.flatMap(contentWords).flatMap(wordForms));
+}
+
+function isKnown(word: string, known: ReadonlySet<string>): boolean {
+  return wordForms(word).some((form) => known.has(form));
+}
+
+/** The least share of a Wren note's (unique) content words that must come from its sources. */
 export const WREN_NOTE_MIN_OVERLAP = 0.6;
 
-/** The share (0 to 1) of `note`'s content words found in `sources`; 0 when it has none. */
+/** The most content words in a Wren fact that may come from nowhere in its sources. */
+export const WREN_FACT_MAX_UNSOURCED = 2;
+
+/**
+ * The most new content words (not in the old summary) in a Wren summary that
+ * may come from nowhere in this turn's founder message or the business text.
+ * Zero: earlier memory never vouches for a new word, so the summary cannot
+ * drift across turns the founder only said "thanks" in.
+ */
+export const WREN_SUMMARY_MAX_UNSOURCED = 0;
+
+/** The share (0 to 1) of `note`'s unique content words found in `sources`; 0 when it has none. */
 export function sourceOverlap(note: string, sources: readonly string[]): number {
   const words = contentWords(note);
   if (words.length === 0) return 0;
-  const known = new Set(sources.flatMap(contentWords).map(stem));
-  return words.filter((word) => known.has(stem(word))).length / words.length;
+  const known = knownForms(sources);
+  return words.filter((word) => isKnown(word, known)).length / words.length;
+}
+
+/** `note`'s unique content words not found in `sources`. */
+export function unsourcedWords(note: string, sources: readonly string[]): string[] {
+  const known = knownForms(sources);
+  return contentWords(note).filter((word) => !isKnown(word, known));
 }
 
 export type MemoryTextCheck =
@@ -295,26 +442,42 @@ export function checkFounderSummary(raw: string): MemoryTextCheck {
   return checkText(raw, 1, WREN_MEMORY_SUMMARY_MAX_CHARS, "founder") as MemoryTextCheck;
 }
 
-/** Cleans and checks one fact Wren proposed: the strict rules, then provenance against the founder's message. */
+/**
+ * Cleans and checks one fact Wren proposed: the strict rules, then provenance
+ * against this turn's founder message (at least `WREN_NOTE_MIN_OVERLAP` of its
+ * unique content words, and at most `WREN_FACT_MAX_UNSOURCED` words from
+ * elsewhere).
+ */
 export function checkWrenFact(raw: string, founderMessage: string): WrenNoteCheck {
   const checked = checkText(raw, WREN_MEMORY_FACT_MIN_CHARS, WREN_MEMORY_FACT_MAX_CHARS, "wren");
   if (!checked.ok) return checked;
-  return sourceOverlap(checked.text, [founderMessage]) >= WREN_NOTE_MIN_OVERLAP
-    ? checked
-    : { ok: false, code: "not_from_founder" };
+  const sourced = sourceOverlap(checked.text, [founderMessage]) >= WREN_NOTE_MIN_OVERLAP &&
+    unsourcedWords(checked.text, [founderMessage]).length <= WREN_FACT_MAX_UNSOURCED;
+  return sourced ? checked : { ok: false, code: "not_from_founder" };
 }
 
 /**
- * Cleans and checks a summary Wren proposed: the strict rules, then provenance
- * against the founder's message plus the business's own notes (`sources`:
- * the current summary, the facts, the founder's idea text).
+ * Cleans and checks a summary Wren proposed: the strict rules, then
+ * provenance. Words already in the old summary may stay. Every other content
+ * word must come from this turn's founder message or `businessText` (the
+ * founder's idea text and business name), at most `WREN_SUMMARY_MAX_UNSOURCED`
+ * excepted. Wren's earlier notes (the old summary, the facts) never vouch for
+ * a new word.
  */
-export function checkWrenSummary(raw: string, founderMessage: string, sources: readonly string[]): WrenNoteCheck {
+export function checkWrenSummary(
+  raw: string,
+  oldSummary: string,
+  founderMessage: string,
+  businessText: readonly string[],
+): WrenNoteCheck {
   const checked = checkText(raw, 1, WREN_MEMORY_SUMMARY_MAX_CHARS, "wren");
   if (!checked.ok) return checked;
-  return sourceOverlap(checked.text, [founderMessage, ...sources]) >= WREN_NOTE_MIN_OVERLAP
-    ? checked
-    : { ok: false, code: "not_from_founder" };
+  if (contentWords(checked.text).length === 0) return { ok: false, code: "not_from_founder" };
+  const kept = knownForms([oldSummary]);
+  const fresh = contentWords(checked.text).filter((word) => !isKnown(word, kept));
+  const known = knownForms([founderMessage, ...businessText]);
+  const unsourced = fresh.filter((word) => !isKnown(word, known));
+  return unsourced.length <= WREN_SUMMARY_MAX_UNSOURCED ? checked : { ok: false, code: "not_from_founder" };
 }
 
 function checkText(raw: string, min: number, max: number, author: MemoryAuthor): WrenNoteCheck {
@@ -325,7 +488,7 @@ function checkText(raw: string, min: number, max: number, author: MemoryAuthor):
   if (length === 0) return { ok: false, code: "empty" };
   if (length < min) return { ok: false, code: "too_short" };
   if (length > max) return { ok: false, code: "too_long" };
-  const refusal = refusalFor(text, author);
+  const refusal = refusalFor(text, raw, author);
   return refusal === null ? { ok: true, text } : { ok: false, code: refusal };
 }
 
@@ -362,7 +525,7 @@ export type WrenMemoryProposal = { readonly remember?: readonly string[]; readon
 export type WrenNoteSources = {
   /** This turn's founder message (read by the writer from the paired row). */
   readonly founderMessage: string;
-  /** Extra sources for the summary only: the founder's idea text and business name. */
+  /** Extra sources for the summary's new words only: the founder's idea text and business name. */
   readonly businessText: readonly string[];
   /** Whether memory still matches what the turn loaded; false skips the summary (`stale`). */
   readonly memoryUnchanged: boolean;
@@ -432,10 +595,8 @@ export function planWrenMemoryUpdate(
     if (!sources.memoryUnchanged) {
       summaryRefused = "stale";
     } else {
-      // Sources: what the founder said this turn, the notes already kept (before this turn's facts), the idea text.
-      const checked = checkWrenSummary(proposal.summary, sources.founderMessage, [
-        current.summary, ...current.facts, ...sources.businessText,
-      ]);
+      // New words come only from what the founder said this turn or the idea text; old summary words may stay.
+      const checked = checkWrenSummary(proposal.summary, current.summary, sources.founderMessage, sources.businessText);
       if (checked.ok) summary = checked.text;
       else summaryRefused = checked.code;
     }
@@ -504,7 +665,7 @@ export function memoryRefusalCopy(code: FounderMemoryRefusal, what: "fact" | "su
         ? `Keep a fact to ${WREN_MEMORY_FACT_MAX_CHARS.toString()} characters or fewer.`
         : `Keep the summary to ${WREN_MEMORY_SUMMARY_MAX_CHARS.toString()} characters or fewer.`;
     case "has_link":
-      return "Wren keeps notes as plain text. Write the address without https:// (for example peakpace.co).";
+      return "Wren keeps notes as plain text, so links are not saved. Write a site as its name alone, like peakpace.co, with no https:// or other prefix.";
     case "has_markup":
       return "Wren keeps notes as plain text. Remove tags like <b> or <script>.";
     case "has_role_tag":

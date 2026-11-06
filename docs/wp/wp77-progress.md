@@ -832,3 +832,94 @@ form sends focus to the Facts heading (or the empty state), never `<body>`. axe 
 and last-delete states (19 DOM tests).
 
 Docs: progress updated. No story, plan or ruling changes.
+
+## 2026-11-06 - S5 re-review fixes (after `14251616`)
+
+The re-review came back "changes required". Everything below is fixed in the Claude lane, with nothing committed.
+
+1. **M1, summary drift.** Wren's own summary and facts no longer back up the new words in a rewrite.
+   - `checkWrenSummary(raw, oldSummary, founderMessage, businessText)` lets the summary keep its old words.
+   - Every other content word must come from this turn's founder message or the idea text and business name.
+   - `WREN_SUMMARY_MAX_UNSOURCED` is 0. Facts never back up a new word.
+   - In probe 2 the founder says only "thanks", "ok", "cool" and "great": the summary stays put and every rewrite is
+     refused `not_from_founder`.
+2. **M2, provenance.**
+   - Words are counted once each, so repeating "Peakpace" five times no longer pads the share.
+   - A fact may hold at most `WREN_FACT_MAX_UNSOURCED` (2) unsourced words, on top of the 60% share. "Peakpace trail
+     shoes Leeds York fell runners ultra spring: refunds need zero review" is refused.
+   - Words are compared whole, with one plural or verb ending allowed ("runners" matches "runner", "pricing" matches
+     "price"). The old 5-character prefix is gone, so "international" no longer matches "internal".
+   - The header no longer promises "whatever its wording". It now says provenance limits what a note can say, not how
+     it says it.
+   - The probe strings are tests.
+3. **Minor 1, scan.**
+   - M5 now resolves `"wren_" + "memory"` and literal-only templates.
+   - It flags an object property bound to the table name.
+   - It catches the id-only `patch(id, v)`, `replace(id, v)` and `delete(id)` writes when the AST ties the id to the
+     table. That means a name declared `Id<"wren_memory">` or `Doc<"wren_memory">`, or a row or id read by
+     `.query("wren_memory")` or `.get("wren_memory", …)` in the same file (directly, through `const id = row._id`, or a
+     `for…of`), or that read inline.
+   - Documented limits, with fixtures that still pass: an untyped id from a parameter, another module or `any`; the
+     table name passed through a helper's parameter; a spread; a shadowed name.
+   - M3 in the memory modules already refuses the id-only `patch(id, v)`. The header now says so, and there are new
+     `idOnly*` fixtures.
+4. **Minor 2, honest founder edits.**
+   - Role tags match only transcript shapes:
+     - `system`, `assistant`, `user`, `human` or `developer` plus a colon, opening a raw line, opening a sentence or
+       after a dash;
+     - `<|im_start|>`-style tokens.
+   - These now pass: "Model:", "AI:", "Hiring a developer:", "Dev tool:", "Our assistant:" and "Notes from the tool:".
+     "system: we use Stripe" is still refused.
+   - A link needs a real scheme: `https://`, `//host`, `javascript:`, `data:` plus a mime type, or `mailto:` plus an
+     address. "Data:" and "File:" pass.
+   - Markup must be shaped like a tag, so "a<b" passes. Wren's notes stay strict: any `<` before a letter is refused.
+   - The `has_link` copy no longer says to "write the address without https://".
+5. **Minor 4.** Skipping counts as an instruction only when it is aimed at a review, check, step or safeguard.
+   Priority counts only when it is aimed at Wren ("highest priority", "priority rule", "takes priority over you"), plus
+   "this note". "The founder wants to skip TikTok" and "The founder's priority is the email list" are stored. All 43
+   bypass strings and the named paraphrases are still refused.
+6. **Minor 5.** If writing a `done` reply fails, the action first retries `done` with no memory and no cards, so the
+   paid reply survives. Only if that also fails does it write `failed`. Two tests: refuse only when memory is present
+   (the row is `done` with the reply), and refuse every `done` (outcomes tried: done, done, failed).
+7. **Minor 3.** Cyrillic and Greek look-alike letters are folded to Latin (`foldConfusables`) before Wren's link,
+   markup, role and instruction patterns run. Wren's notes only. Text the founder writes or pastes (chat or edits)
+   stays trusted as written, by design. A pasted supplier email made of the founder's message passes provenance; the
+   controls for that are quoting and cards-only (unchanged).
+8. **Nits.**
+   - There is one matcher for the founder/reply pair: `pairedFounderMessage` in `convex/workspace/wrenMemory.ts`, used
+     by `chat.ts` and the writer.
+   - The prompt's facts are capped at `WREN_MEMORY_FACTS_READ_MAX` (40) through `memoryForPrompt`, the same cap the
+     reader uses.
+   - The draft writer in `lib/workspace/wren.ts` uses `sliceWellFormed`.
+   - The Save button reads "Saving…" while a save is in flight, with `aria-disabled` (DOM test plus axe).
+
+Files:
+- `lib/workspace/{wrenMemory,wren}.ts`;
+- `convex/workspace/{wrenMemory,memory,chat,chatActions}.ts`;
+- `components/workspace/files/WrenMemoryPanel.tsx`;
+- the WP77 scan;
+- tests: `tests/platform/workspace-wren-memory.test.ts` (42), `convex/workspace/memory.test.ts` (26) and
+  `tests/platform/workspace-wren-memory-panel.test.tsx` (20).
+
+No prompt module changed, so the lock is unchanged (@3).
+
+Needs from Codex: none new (#15 stands).
+
+Checks (exit codes):
+- `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0.
+- `npm run lint` 0: 0 errors and 37 existing warnings, none in changed files.
+- `npm run check:prompt-versions` 0: 3 versions match, against `origin/main`.
+- `npm run test:security` 0, fully green: node half 219 pass / 0 fail, vitest half 121.
+- `test:convex` 0 (76 files, 1023 tests); `test:platform` 0 (68 files, 1460 tests); `test:prompts` 0 (24).
+- `npm run build` 0.
+
+a11y-check (`WrenMemoryPanel.tsx`; the only UI change is the Save button's "Saving…" text):
+- the button has visible text and no icon;
+- it keeps the kit focus outline and stays focused, because the same element changes its text;
+- the in-flight state is not shown by colour alone: there is text, and `aria-disabled`;
+- a second press does nothing;
+- no heading, label or keyboard change.
+
+Every other item passes as before. axe is clean in the in-flight state (20 DOM tests).
+
+Docs: progress updated. No story, plan or ruling changes.

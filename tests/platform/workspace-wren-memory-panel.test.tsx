@@ -173,6 +173,32 @@ describe("What Wren knows: keyboard edit", () => {
     expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
   });
 
+  test("while a save is in flight the button reads Saving… and is aria-disabled; a second press does nothing", async () => {
+    const user = userEvent.setup();
+    let release: (result: MemoryEditResult) => void = () => undefined;
+    const calls: string[] = [];
+    const held = async (_index: number, _expected: string, text: string): Promise<MemoryEditResult> => {
+      calls.push(text);
+      return await new Promise<MemoryEditResult>((resolve) => {
+        release = resolve;
+      });
+    };
+    const noop = async (): Promise<MemoryEditResult> => ({ kind: "unchanged" });
+    render(<main><WrenMemoryView memory={view(["Launch is Sunday."])} actions={{ editFact: held, deleteFact: noop, editSummary: noop }} /></main>);
+    await user.click(screen.getByRole("button", { name: "Edit fact 1" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit fact 1" }), " Really.");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    const saving = screen.getByRole("button", { name: "Saving…" });
+    expect(saving.getAttribute("aria-disabled")).toBe("true");
+    await user.click(saving);
+    expect(calls).toHaveLength(1);
+    expect(await violations()).toEqual([]);
+    await act(async () => {
+      release({ kind: "unchanged" });
+    });
+    expect(screen.queryByRole("button", { name: "Saving…" })).toBeNull();
+  });
+
   test("a failed mutation says nothing changed and keeps the form open", async () => {
     const user = userEvent.setup();
     const fail = async (): Promise<MemoryEditResult> => {

@@ -142,7 +142,7 @@ function MemoryEditForm({
       )}
       <div className="flex flex-wrap gap-2">
         <button type="submit" className={BTN_PRIMARY} aria-disabled={pending || undefined}>
-          Save
+          {pending ? "Saving…" : "Save"}
         </button>
         <button type="button" className={BTN_SECONDARY} onClick={onCancel}>
           Cancel

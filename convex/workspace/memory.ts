@@ -8,7 +8,7 @@ import {
   WREN_MEMORY_SUMMARY_MAX_CHARS,
 } from "../../lib/workspace/contracts/wrenMemory";
 import type { FounderMemoryEdit } from "../../lib/workspace/wrenMemory";
-import { applyFounderMemoryEdit, readWrenMemory } from "./wrenMemory";
+import { applyFounderMemoryEdit, readWrenMemory, WREN_MEMORY_FACTS_READ_MAX } from "./wrenMemory";
 
 /**
  * WP77-S5 — "What Wren knows" on the Files page: read Wren's memory, and let
@@ -27,9 +27,6 @@ import { applyFounderMemoryEdit, readWrenMemory } from "./wrenMemory";
  * Wren or another tab changed it in between, the result is `stale`, nothing
  * is written, and the page shows the latest list (the query is live).
  */
-
-/** Facts returned at most (the cap, with room for rows written before it). */
-const FACTS_RETURNED_MAX = WREN_MEMORY_FACTS_MAX * 2;
 
 export const wrenMemoryViewValidator = v.object({
   summary: v.string(),
@@ -82,7 +79,7 @@ export const getWrenMemory = query({
     const row = await readWrenMemory(ctx, { ownerId: project.ownerId, projectId: project._id });
     return {
       summary: row?.summary ?? "",
-      facts: row === null ? [] : row.facts.slice(0, FACTS_RETURNED_MAX),
+      facts: row === null ? [] : row.facts.slice(0, WREN_MEMORY_FACTS_READ_MAX),
       updatedAt: row?.updatedAt ?? null,
       limits: {
         factsMax: WREN_MEMORY_FACTS_MAX,

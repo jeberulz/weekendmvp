@@ -80,18 +80,30 @@ import { WREN_APPROVAL_SUBJECTS } from "../../lib/workspace/contracts/wrenTools.
 //     replaces or deletes a row, or reads `internal` / `api`.
 // M3. `ctx.db` only as a direct method call: `get`, `query`, `normalizeId`;
 //     `insert` only with the string literal `wren_memory` or `audit_events`,
-//     `patch` only with `wren_memory` (audit rows are append-only); never
-//     `replace` or `delete`.
+//     `patch` only with `wren_memory` (audit rows are append-only), so the
+//     id-only `patch(id, v)` form is refused too; never `replace` or `delete`.
 // M4. A1 and A2 as above.
 // The chat modules still may not write `wren_memory` themselves (C3): memory
 // is written only through `applyWrenMemoryProposal`.
-// M5 (repo-wide). Across `convex/**` (not `_generated`, not tests), a write
-//     call (`insert` / `patch` / `replace` / `delete`, also through `.call`
-//     or `.apply`) whose arguments hold the literal `wren_memory`, or a
-//     variable bound to that literal, appears only in
-//     `convex/workspace/wrenMemory.ts`. Generic code that writes child tables
-//     by a table name held in a list (account and business deletion) uses no
-//     literal and is outside this rule.
+// M5 (repo-wide). Across `convex/**` (not `_generated`, not tests), only
+//     `convex/workspace/wrenMemory.ts` may hold a write call (`insert` /
+//     `patch` / `replace` / `delete`, also through `.call` or `.apply`) that
+//     names the table: the string `wren_memory`, also built from static parts
+//     (`"wren_" + "memory"`, a template of literals), or a variable or object
+//     property bound to it. It also catches the id-only forms Convex still
+//     supports (`patch(id, v)`, `replace(id, v)`, `delete(id)`) when the AST
+//     ties the id to the table: a name declared `Id<"wren_memory">` or
+//     `Doc<"wren_memory">`, a row or id read by `.query("wren_memory")` or
+//     `.get("wren_memory", ...)` in the same file (`row._id`, `const id =
+//     row._id`, `for (const row of ...)`), or such a read inline.
+//     Limits (not caught): an id-only write whose id arrives untyped from a
+//     parameter, another module or `any` (`delete(id)` with a bare `id`); the
+//     table name passed through a helper's parameter, a spread
+//     (`patch(...args)`), a computed property or a value built at runtime;
+//     a deliberately shadowed name. Generic code that writes child tables by
+//     a table name held in a list (account and business deletion) is outside
+//     this rule by design. The runtime and schema are the real controls; this
+//     catches regressions in ordinary code.
 //
 // Pure helpers (`PURE_HELPERS`): no `ctx`, `db`, scheduler, run function,
 // `internal`, `api` or `fetch` at all; local imports only to other pure
@@ -140,7 +152,10 @@ const CHAT_IMPORTS = {
     ["../ai/prompts/wrenPlanTurn", ["wrenPlanTurnSpec"]],
     ["../ai/prompts/wrenShared", ["quotedData", "WREN_REPLY_MAX_CHARS"]],
     ["./wrenCards", ["approvalCardViews", "resolveWrenCards", "wrenCardProposalValidator", "wrenCardViewValidator"]],
-    ["./wrenMemory", ["applyWrenMemoryProposal", "memoryVersionOf", "readWrenMemory", "wrenMemoryProposalValidator"]],
+    ["./wrenMemory", [
+      "applyWrenMemoryProposal", "memoryForPrompt", "memoryVersionOf", "pairedFounderMessage", "readWrenMemory",
+      "wrenMemoryProposalValidator",
+    ]],
     ["./approvals", APPROVAL_VALIDATORS],
     ["../../lib/workspace/plainText", ["sliceWellFormed"]],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
@@ -177,6 +192,7 @@ const MEMORY_IMPORTS = {
     ["convex/values", ["v"]],
     ["../_generated/dataModel", ["Doc", "Id"]],
     ["../_generated/server", ["MutationCtx", "QueryCtx"]],
+    ["../../lib/workspace/contracts/wrenMemory", ["WREN_MEMORY_FACTS_MAX"]],
     ["../../lib/workspace/wrenMemory", [
       "deleteFact", "editFact", "editSummary", "EMPTY_WREN_MEMORY", "planWrenMemoryUpdate", "wrenMemoryVersion",
       "FounderMemoryEdit", "WrenMemoryProposal", "WrenMemoryState",
@@ -191,7 +207,7 @@ const MEMORY_IMPORTS = {
       "WREN_MEMORY_FACT_MAX_CHARS", "WREN_MEMORY_FACTS_MAX", "WREN_MEMORY_SUMMARY_MAX_CHARS",
     ]],
     ["../../lib/workspace/wrenMemory", ["FounderMemoryEdit"]],
-    ["./wrenMemory", ["applyFounderMemoryEdit", "readWrenMemory"]],
+    ["./wrenMemory", ["applyFounderMemoryEdit", "readWrenMemory", "WREN_MEMORY_FACTS_READ_MAX"]],
   ]),
 };
 
@@ -744,37 +760,136 @@ export function scanMemory(
 /** The one module that may write `wren_memory` (rule M5). */
 const MEMORY_WRITER = "convex/workspace/wrenMemory.ts";
 
-/** Whether `node` is, or holds (an array for `.apply`), the string literal `wren_memory`. */
-function holdsMemoryTable(node) {
-  if (ts.isStringLiteralLike(node)) return node.text === "wren_memory";
-  if (ts.isArrayLiteralExpression(node)) return node.elements.some(holdsMemoryTable);
-  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) {
-    return holdsMemoryTable(node.expression);
+/** Unwraps parentheses, `as`, `satisfies` and non-null `!`. */
+function unwrap(node) {
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node) ||
+    ts.isNonNullExpression(node) || ts.isTypeAssertionExpression(node)) {
+    return unwrap(node.expression);
   }
-  return false;
+  return node;
+}
+
+/**
+ * The string `node` always evaluates to, when the AST alone can tell: a
+ * string literal, a `+` of static strings (`"wren_" + "memory"`), or a
+ * template whose parts are all static (`` `wren_${"memory"}` ``). Else null.
+ */
+function staticString(node) {
+  const inner = unwrap(node);
+  if (ts.isStringLiteralLike(inner)) return inner.text;
+  if (ts.isBinaryExpression(inner) && inner.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    const left = staticString(inner.left);
+    const right = staticString(inner.right);
+    return left === null || right === null ? null : left + right;
+  }
+  if (ts.isTemplateExpression(inner)) {
+    let text = inner.head.text;
+    for (const span of inner.templateSpans) {
+      const part = staticString(span.expression);
+      if (part === null) return null;
+      text += part + span.literal.text;
+    }
+    return text;
+  }
+  return null;
+}
+
+/** Whether `node` is, or holds (an array for `.apply`), the static string `wren_memory`. */
+function holdsMemoryTable(node) {
+  const inner = unwrap(node);
+  if (ts.isArrayLiteralExpression(inner)) return inner.elements.some(holdsMemoryTable);
+  return staticString(inner) === "wren_memory";
 }
 
 function isBareMemoryTable(node) {
-  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) {
-    return isBareMemoryTable(node.expression);
+  return staticString(node) === "wren_memory";
+}
+
+/** A type annotation that names the table: `Id<"wren_memory">` or `Doc<"wren_memory">`. */
+const MEMORY_TYPE = /\b(?:Id|Doc)\s*<\s*["'`]wren_memory["'`]\s*>/u;
+/** An expression that reads the table: `.query("wren_memory")` or `.get("wren_memory", ...)`. */
+const MEMORY_READ = /\.(?:query|get)\s*\(\s*["'`]wren_memory["'`]/u;
+
+/** The identifier an expression is rooted at (`row` for `row._id`, `rows[0]._id`, `row!._id`), or null. */
+function rootName(node) {
+  const inner = unwrap(node);
+  if (ts.isIdentifier(inner)) return inner.text;
+  if (ts.isPropertyAccessExpression(inner) || ts.isElementAccessExpression(inner)) return rootName(inner.expression);
+  if (ts.isAwaitExpression(inner)) return rootName(inner.expression);
+  return null;
+}
+
+/**
+ * Names in this file that hold a `wren_memory` row or id, where the AST can
+ * tell: declared with `Id<"wren_memory">` / `Doc<"wren_memory">`, initialised
+ * from a query or get on "wren_memory" (also `for (const row of ...)`), or
+ * initialised from such a name (`const id = row._id`). By name, per file:
+ * a deliberately shadowed name can fool it (see the header).
+ */
+function memoryNames(sourceFile) {
+  const names = new Set();
+  const pending = [];
+  walk(sourceFile, (node) => {
+    if ((ts.isParameter(node) || ts.isVariableDeclaration(node)) && ts.isIdentifier(node.name)) {
+      if (node.type !== undefined && MEMORY_TYPE.test(node.type.getText(sourceFile))) names.add(node.name.text);
+      else if (node.initializer !== undefined) pending.push({ name: node.name.text, init: node.initializer });
+    }
+    if (ts.isForOfStatement(node) && ts.isVariableDeclarationList(node.initializer)) {
+      for (const declaration of node.initializer.declarations) {
+        if (ts.isIdentifier(declaration.name)) pending.push({ name: declaration.name.text, init: node.expression });
+      }
+    }
+  });
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const { name, init } of pending) {
+      if (names.has(name)) continue;
+      const root = rootName(init);
+      if (MEMORY_READ.test(init.getText(sourceFile)) || (root !== null && names.has(root))) {
+        names.add(name);
+        grew = true;
+      }
+    }
   }
-  return ts.isStringLiteralLike(node) && node.text === "wren_memory";
+  return names;
+}
+
+/** Whether a write's first argument is an id the AST ties to `wren_memory` (the id-only `patch(id, v)` form). */
+function isMemoryId(node, names, sourceFile) {
+  const root = rootName(node);
+  return (root !== null && names.has(root)) || MEMORY_READ.test(node.getText(sourceFile));
 }
 
 /** Rule M5 for one file: a `wren_memory` write outside `MEMORY_WRITER`. */
 export function scanMemoryWriters(fileName, source) {
   if (fileName === MEMORY_WRITER) return [];
   const sourceFile = parse(fileName, source);
+  const names = memoryNames(sourceFile);
   const problems = [];
   walk(sourceFile, (node) => {
     if (ts.isCallExpression(node)) {
       const callee = node.expression.getText(sourceFile);
-      if (/\b(?:insert|patch|replace|delete)\b/u.test(callee) && node.arguments.some(holdsMemoryTable)) {
-        problems.push(`${fileName}:${line(sourceFile, node)} writes wren_memory outside ${MEMORY_WRITER}`);
+      if (/\b(?:insert|patch|replace|delete)\b/u.test(callee)) {
+        // `.call(db, ...)` / `.apply(db, [...])`: the table or id follows the `this` argument.
+        const viaCall = /\.(?:call|apply)$/u.test(callee);
+        const args = viaCall ? node.arguments.slice(1) : node.arguments;
+        const first = args[0];
+        const firstHolds = first !== undefined && (ts.isArrayLiteralExpression(unwrap(first))
+          ? unwrap(first).elements.length > 0 && isMemoryId(unwrap(first).elements[0], names, sourceFile)
+          : isMemoryId(first, names, sourceFile));
+        if (node.arguments.some(holdsMemoryTable)) {
+          problems.push(`${fileName}:${line(sourceFile, node)} writes wren_memory outside ${MEMORY_WRITER}`);
+        } else if (firstHolds) {
+          problems.push(`${fileName}:${line(sourceFile, node)} writes a wren_memory id outside ${MEMORY_WRITER}`);
+        }
       }
     }
-    // A name bound to the bare literal (not a list of table names, like authz's child-table list).
+    // A name bound to the table name (not a list of table names, like authz's child-table list).
     if (ts.isVariableDeclaration(node) && node.initializer !== undefined && isBareMemoryTable(node.initializer)) {
+      problems.push(`${fileName}:${line(sourceFile, node)} binds the wren_memory table name outside ${MEMORY_WRITER}`);
+    }
+    if (ts.isPropertyAssignment(node) && isBareMemoryTable(node.initializer)) {
       problems.push(`${fileName}:${line(sourceFile, node)} binds the wren_memory table name outside ${MEMORY_WRITER}`);
     }
   });
@@ -857,10 +972,32 @@ test("fixtures: the repo-wide memory-writer scan catches a write elsewhere (M5)"
     viaApply: "export async function f(ctx){ await ctx.db.insert.apply(ctx.db, [\"wren_memory\", {}]); }",
     constTable: "const T = \"wren_memory\"; export async function f(ctx, id){ await ctx.db.patch(T, id, {}); }",
     cast: "export async function f(ctx){ await ctx.db.insert((\"wren_memory\" as const), {}); }",
+    // Re-review: concatenation, object properties and the id-only forms.
+    concat: "export async function f(ctx){ await ctx.db.insert(\"wren_\" + \"memory\", {}); }",
+    templateParts: "export async function f(ctx){ await ctx.db.insert(`wren_${\"memory\"}`, {}); }",
+    objectProp: "const T = { t: \"wren_memory\" }; export async function f(ctx, id){ await ctx.db.patch(T.t, id, {}); }",
+    legacyPatch: "export async function f(ctx, b){ const row = await ctx.db.query(\"wren_memory\").withIndex(\"by_projectId\", (q) => q.eq(\"projectId\", b)).first(); if (row) await ctx.db.patch(row._id, { facts: [\"injected\"] }); }",
+    legacyReplace: "export async function f(ctx){ const row = await ctx.db.query(\"wren_memory\").first(); await ctx.db.replace(row._id, { ...row, summary: \"x\" }); }",
+    legacyDeleteTyped: "export async function f(ctx: Ctx, id: Id<\"wren_memory\">){ await ctx.db.delete(id); }",
+    legacyDocTyped: "export async function f(ctx: Ctx, row: Doc<\"wren_memory\">){ await ctx.db.patch(row._id, { summary: \"\" }); }",
+    legacyIdVar: "export async function f(ctx){ const row = await ctx.db.query(\"wren_memory\").first(); const id = row!._id; await ctx.db.delete(id); }",
+    legacyLoop: "export async function f(ctx){ for (const row of await ctx.db.query(\"wren_memory\").take(5)) await ctx.db.delete(row._id); }",
+    legacyGet: "export async function f(ctx, id){ const row = await ctx.db.get(\"wren_memory\", id); await ctx.db.patch(row._id, {}); }",
+    legacyInline: "export async function f(ctx){ await ctx.db.delete((await ctx.db.query(\"wren_memory\").first())._id); }",
+    legacyViaCall: "export async function f(ctx, id: Id<\"wren_memory\">){ await ctx.db.delete.call(ctx.db, id); }",
   };
   for (const [label, source] of Object.entries(offenders)) {
     assert.notDeepEqual(scanMemoryWriters(`convex/workspace/other-${label}.ts`, source), [], label);
   }
+  // Documented limits (see the header): an untyped id, a helper's parameter, a spread.
+  for (const source of [
+    "export async function f(ctx, id){ await ctx.db.delete(id); }",
+    "async function w(ctx, table, id, v){ await ctx.db.patch(table, id, v); } export async function f(ctx, id){ await w(ctx, \"wren_memory\", id, {}); }",
+    "const A = [\"wren_memory\", 1, {}]; export async function f(ctx){ await ctx.db.patch(...A); }",
+  ]) assert.deepEqual(scanMemoryWriters("convex/workspace/other-limit.ts", source), [], source);
+  // Id-only writes to other tables are fine, even next to a memory read.
+  assert.deepEqual(scanMemoryWriters("convex/workspace/other-ok.ts",
+    "export async function f(ctx, msg: Id<\"chat_messages\">){ const m = await ctx.db.query(\"wren_memory\").first(); const row = await ctx.db.get(\"chat_messages\", msg); await ctx.db.patch(row._id, {}); return m; }"), []);
   // Reads elsewhere are fine; the writer itself is exempt.
   assert.deepEqual(scanMemoryWriters("convex/workspace/chat.ts",
     "export async function f(ctx){ return await ctx.db.query(\"wren_memory\").first(); }"), []);
@@ -1024,6 +1161,9 @@ test("fixtures: the memory scan catches each side-effect shape", () => {
     auditPatch: "export async function f(ctx, id){ await ctx.db.patch(\"audit_events\", id, { metadata: \"x\" }); }",
     auditReplace: "export async function f(ctx, id){ await ctx.db.replace(\"audit_events\", id, {}); }",
     auditDelete: "export async function f(ctx, id){ await ctx.db.delete(\"audit_events\", id); }",
+    idOnlyPatch: "export async function f(ctx, id){ await ctx.db.patch(id, { metadata: \"x\" }); }",
+    idOnlyRowPatch: "export async function f(ctx, row){ await ctx.db.patch(row._id, { facts: [] }); }",
+    idOnlyDelete: "export async function f(ctx, id){ await ctx.db.delete(id); }",
     storageUpload: "export async function f(ctx){ return await ctx.storage.generateUploadUrl(); }",
     deleteMemory: "export async function f(ctx, id){ await ctx.db.delete(\"wren_memory\", id); }",
     dynamicTable: "export async function f(ctx, t){ await ctx.db.insert(t, {}); }",

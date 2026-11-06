@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { WREN_MEMORY_FACTS_MAX } from "../../lib/workspace/contracts/wrenMemory";
 import {
   deleteFact,
   editFact,
@@ -70,13 +71,24 @@ export function memoryVersionOf(row: MemoryRow | null): string {
   return wrenMemoryVersion(row === null ? null : stateOf(row));
 }
 
-/** The founder message this reply answers: same business, same owner, same `createdAt`. Empty when missing. */
-async function founderMessageFor(ctx: QueryCtx, business: Business, reply: ChatRow): Promise<string> {
-  const pair = await ctx.db.query("chat_messages")
-    .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", business.projectId).eq("createdAt", reply.createdAt))
-    .take(4);
-  const founder = pair.find((row) => row.author === "founder" && row.ownerId === business.ownerId);
-  return founder === undefined ? "" : founder.body;
+/**
+ * The founder message a Wren reply answers: the same business and owner, and
+ * the same `createdAt` (both rows are written in one mutation). The one
+ * matcher for the pair: `convex/workspace/chat.ts` uses it too.
+ */
+export async function pairedFounderMessage(ctx: QueryCtx, reply: ChatRow): Promise<ChatRow | null> {
+  const rows = await ctx.db.query("chat_messages")
+    .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", reply.projectId).eq("createdAt", reply.createdAt))
+    .take(8);
+  return rows.find((row) => row.author === "founder" && row.ownerId === reply.ownerId) ?? null;
+}
+
+/** How many facts any reader returns or puts in a prompt: twice the cap, so a list over it still shows as full. */
+export const WREN_MEMORY_FACTS_READ_MAX = WREN_MEMORY_FACTS_MAX * 2;
+
+/** Memory as the prompt's business context carries it: the summary and at most `WREN_MEMORY_FACTS_READ_MAX` facts. */
+export function memoryForPrompt(row: MemoryRow | null): { summary: string; facts: string[] } {
+  return row === null ? { summary: "", facts: [] } : { summary: row.summary, facts: row.facts.slice(0, WREN_MEMORY_FACTS_READ_MAX) };
 }
 
 /** The founder's own words about the business (summary sources): the idea text and the business name. */
@@ -116,7 +128,9 @@ export async function applyWrenMemoryProposal(
   if (!proposed) return false;
   const row = await readWrenMemory(ctx, business);
   const plan = planWrenMemoryUpdate(stateOf(row), proposal, {
-    founderMessage: await founderMessageFor(ctx, business, reply),
+    founderMessage: reply.projectId === business.projectId && reply.ownerId === business.ownerId
+      ? (await pairedFounderMessage(ctx, reply))?.body ?? ""
+      : "",
     businessText: proposal.summary === undefined ? [] : await businessTextFor(ctx, business),
     memoryUnchanged: proposal.baseVersion !== undefined && proposal.baseVersion === memoryVersionOf(row),
   });

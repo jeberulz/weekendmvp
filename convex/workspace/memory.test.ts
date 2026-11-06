@@ -616,27 +616,48 @@ describe("WP77-S5 review fixes", () => {
     expect((await memoryRow(seeded))?.facts).toEqual([fact, "Mascots are mountains."]);
   });
 
-  test("a done finish the server refuses still ends the row failed, never stuck streaming", async () => {
+  /** Runs one turn whose `finishWrenTurn` calls go through `refuse` first; returns the row and every outcome tried. */
+  async function turnWithRefusingFinish(refuse: (outcome: Record<string, unknown>) => boolean) {
     const seeded = await seed();
-    const sent = await seeded.owner.mutation(api.workspace.chat.sendWrenMessage, { projectId: seeded.ids.own.projectId, body: "Hi" });
+    const sent = await seeded.owner.mutation(api.workspace.chat.sendWrenMessage, { projectId: seeded.ids.own.projectId, body: "Hi there" });
     if (sent.kind !== "sent") throw new Error("expected sent");
     const scheduled = await seeded.t.run(async (ctx) => await ctx.db.system.query("_scheduled_functions").collect());
     const args = scheduled.map((r) => r.args[0] as TurnArgs).find((a) => a.wrenMessageId === sent.wrenMessageId);
     if (args === undefined) throw new Error("turn not scheduled");
     const base = turnCtx(seeded.t);
+    const tried: Record<string, unknown>[] = [];
     const refusing: Pick<ActionCtx, "runQuery" | "runMutation"> = {
       runQuery: base.runQuery,
       runMutation: (async (ref: FunctionReference<"mutation", "internal">, mutationArgs: Record<string, unknown>) => {
-        const outcome = mutationArgs.outcome as { status?: string } | undefined;
-        if (outcome?.status === "done") throw new Error("write refused");
+        const outcome = mutationArgs.outcome as Record<string, unknown> | undefined;
+        if (outcome !== undefined) {
+          tried.push(outcome);
+          if (refuse(outcome)) throw new Error("write refused");
+        }
         return await base.runMutation(ref, mutationArgs);
       }) as ActionCtx["runMutation"],
     };
-    const scripted = scriptedAdapter({ json: { reply: REPLY, remember: ["Hi there."] } });
+    const scripted = scriptedAdapter({ json: { reply: REPLY, remember: ["Hi there."], memorySummary: "Hi there." } });
     await runWrenTurnWith(refusing, args, async (prompt: RunPromptArgs) =>
       await runPromptWithMeter(refusing, prompt, { adapter: scripted.adapter as TextAdapterPort }));
     const row = await seeded.t.run(async (ctx) => await ctx.db.get("chat_messages", sent.wrenMessageId));
+    return { seeded, row, tried };
+  }
+
+  test("a done finish the server refuses for its notes keeps the paid reply: retried with no memory and no cards", async () => {
+    const { seeded, row, tried } = await turnWithRefusingFinish((outcome) => outcome.memory !== undefined);
+    expect(row?.status).toBe("done");
+    expect(row?.body).toBe(REPLY);
+    expect(tried.map((outcome) => [outcome.status, "memory" in outcome, "cards" in outcome])).toEqual([
+      ["done", true, false], ["done", false, false],
+    ]);
+    expect(await memoryRow(seeded)).toBeNull();
+  });
+
+  test("a done finish the server refuses even without notes still ends the row failed, never stuck streaming", async () => {
+    const { seeded, row, tried } = await turnWithRefusingFinish((outcome) => outcome.status === "done");
     expect(row?.status).toBe("failed");
+    expect(tried.map((outcome) => outcome.status)).toEqual(["done", "done", "failed"]);
     expect(await memoryRow(seeded)).toBeNull();
   });
 

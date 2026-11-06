@@ -22,7 +22,14 @@ import {
   wrenCardProposalValidator,
   wrenCardViewValidator,
 } from "./wrenCards";
-import { applyWrenMemoryProposal, memoryVersionOf, readWrenMemory, wrenMemoryProposalValidator } from "./wrenMemory";
+import {
+  applyWrenMemoryProposal,
+  memoryForPrompt,
+  memoryVersionOf,
+  pairedFounderMessage,
+  readWrenMemory,
+  wrenMemoryProposalValidator,
+} from "./wrenMemory";
 import { sliceWellFormed } from "../../lib/workspace/plainText";
 import { parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts";
 import { WREN_CARDS_PER_TURN } from "../../lib/workspace/contracts/wrenTools";
@@ -171,14 +178,6 @@ async function newestMessages(ctx: QueryCtx, projectId: Id<"projects">, count: n
     .take(count);
 }
 
-/** The founder message a Wren reply answers: written in the same mutation, so it has the same `createdAt`. */
-async function founderMessageFor(ctx: QueryCtx, wren: ChatRow): Promise<ChatRow | null> {
-  const rows = await ctx.db.query("chat_messages")
-    .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", wren.projectId).eq("createdAt", wren.createdAt))
-    .take(8);
-  return rows.find((row) => row.author === "founder" && row.ownerId === wren.ownerId) ?? null;
-}
-
 /** The business's newest Wren reply, or null. Only this row can stream, and only this row can be retried. */
 async function newestWrenRow(ctx: QueryCtx, projectId: Id<"projects">): Promise<ChatRow | null> {
   return (await newestMessages(ctx, projectId, 8)).find((row) => row.author === "wren") ?? null;
@@ -258,7 +257,7 @@ export const sendWrenMessage = mutation({
 
     const inFlight = await replyInFlight(ctx, project._id, now);
     if (inFlight !== null) {
-      const founder = await founderMessageFor(ctx, inFlight);
+      const founder = await pairedFounderMessage(ctx, inFlight);
       if (founder !== null && founder.body === body) {
         return { kind: "duplicate", founderMessageId: founder._id, wrenMessageId: inFlight._id };
       }
@@ -308,7 +307,7 @@ export const retryWrenReply = mutation({
     // below cannot be raced by another retry or send.
     const current = await newestWrenRow(ctx, project._id);
     if (current === null || current._id !== row._id || current.status !== "failed") refuse("WREN_RETRY_NOT_AVAILABLE");
-    const founder = await founderMessageFor(ctx, current);
+    const founder = await pairedFounderMessage(ctx, current);
     if (founder === null) refuse("WREN_RETRY_NOT_AVAILABLE");
 
     const attempt = await nextChatAttempt(ctx, project._id, current._id);
@@ -441,7 +440,7 @@ export function wrenBusinessContext(
         : { platform: workspace.platform, commercialModel: workspace.commercialModel, goal: workspace.goal }),
     },
     ...(workspace === undefined ? {} : { partner: { name: workspace.partner.name, personality: workspace.partner.personality } }),
-    memory: memory === null ? { summary: "", facts: [] } : { summary: memory.summary, facts: memory.facts },
+    memory: memoryForPrompt(memory),
     approvable,
   };
   return [

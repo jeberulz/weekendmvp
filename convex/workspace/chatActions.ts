@@ -171,7 +171,11 @@ export async function runWrenTurnWith(
       ownerId: args.ownerId, projectId: args.projectId, messageId: args.wrenMessageId, attempt, outcome,
     });
   };
-  // A `done` the server refuses to write must still end the row: fall back to `failed` once.
+  /**
+   * A `done` the server refuses to write must still end the row. First retry
+   * the same reply with no memory and no cards, so the paid reply survives a
+   * bad note or card; only if that throws too, write `failed`.
+   */
   const finish = async (outcome: FinishOutcome, attempt: number = args.attempt) => {
     if (outcome.status === "failed") {
       await finishOnce(outcome, attempt);
@@ -179,11 +183,23 @@ export async function runWrenTurnWith(
     }
     try {
       await finishOnce(outcome, attempt);
+      return;
     } catch {
-      await finishOnce({
-        status: "failed", cause: "failed", ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
-      }, attempt);
+      // Fall through to the reply alone.
     }
+    if (outcome.memory !== undefined || outcome.cards !== undefined) {
+      try {
+        await finishOnce({
+          status: "done", body: outcome.body, ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
+        }, attempt);
+        return;
+      } catch {
+        // Fall through to `failed`.
+      }
+    }
+    await finishOnce({
+      status: "failed", cause: "failed", ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
+    }, attempt);
   };
   const turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
     ownerId: args.ownerId,
