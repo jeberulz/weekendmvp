@@ -18,6 +18,7 @@ export function signTenantLeadPayload(
   issuedAt = Date.now(),
 ) {
   const rateLimitKey = `client:${createHmac("sha256", secret)
+    .update("tenant-lead-bucket\0")
     .update(clientKey)
     .digest("base64url")}`;
   const payload = JSON.stringify({ hostname, rateLimitKey, issuedAt });

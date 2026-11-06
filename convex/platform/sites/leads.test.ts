@@ -1,4 +1,5 @@
 import { convexTest, type TestConvex } from "convex-test";
+import { createHmac } from "node:crypto";
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import schema from "../../schema";
@@ -119,6 +120,10 @@ const record = (t: TestConvex<typeof schema>, hostname: string, key = "ip:1.2.3.
   t.mutation(api.platform.sites.leads.recordSynthetic,
     signTenantLeadPayload(hostname, key, SECRET));
 
+function signRaw(payload: string) {
+  return { payload, signature: createHmac("sha256", SECRET).update(payload).digest("base64url") };
+}
+
 describe("recordSynthetic", () => {
   test("attaches the lead to the owner the hostname resolves to", async () => {
     const t = testConvex();
@@ -195,11 +200,12 @@ describe("recordSynthetic", () => {
       Array.from({ length: 9 }, () => record(t, HOSTNAME, "ip:9.9.9.9")),
     );
     const rejected = results.filter((r) => r.status === "rejected");
-    expect(rejected.length).toBeGreaterThan(0);
+    expect(rejected.length).toBeGreaterThanOrEqual(4);
 
     const leads = await t.run(async (ctx) => await ctx.db.query("leads").collect());
     // Never more rows than requests that succeeded.
     expect(leads.length).toBe(results.length - rejected.length);
+    expect(leads.length).toBeLessThanOrEqual(5);
   });
 
   test("a separate key has its own budget", async () => {
@@ -241,6 +247,31 @@ describe("recordSynthetic", () => {
     await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
       signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET)))
       .rejects.toThrow(/TENANT_LEAD_BRIDGE_NOT_CONFIGURED/);
+    expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
+  });
+
+  test("wrong secret, future time, and malformed signed payloads write nothing", async () => {
+    const t = testConvex();
+    const owner = await seedUser(t, "owner@example.com");
+    await seedSite(t, owner.userId);
+
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
+      signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", `${SECRET}-different`)))
+      .rejects.toThrow(/INVALID_TENANT_LEAD_BRIDGE_SIGNATURE/);
+
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
+      signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET, Date.now() + 30_001)))
+      .rejects.toThrow(/TENANT_LEAD_BRIDGE_EXPIRED/);
+
+    const uppercase = signTenantLeadPayload("ACME.weekendmvp.app", "ip:9.9.9.9", SECRET);
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic, uppercase))
+      .rejects.toThrow(/INVALID_TENANT_LEAD_BRIDGE_PAYLOAD/);
+
+    const valid = JSON.parse(signTenantLeadPayload(HOSTNAME, "ip:9.9.9.9", SECRET).payload);
+    await expect(t.mutation(api.platform.sites.leads.recordSynthetic,
+      signRaw(JSON.stringify({ ...valid, extra: "field" }))))
+      .rejects.toThrow(/INVALID_TENANT_LEAD_BRIDGE_PAYLOAD/);
+
     expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
   });
 });

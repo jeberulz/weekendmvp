@@ -1,5 +1,6 @@
 import { isRateLimitError } from "@convex-dev/rate-limiter";
 import { ConvexHttpClient } from "convex/browser";
+import { ConvexError } from "convex/values";
 import { api } from "@/convex/_generated/api";
 import { classifyHost, tenantHostForSlug } from "@/lib/tenant-host";
 import { clientRateLimitKey } from "../../platform/preview/_server";
@@ -93,6 +94,15 @@ export async function POST(request: Request) {
   } catch (error) {
     if (isRateLimitError(error)) {
       return jsonError(429, "RATE_LIMITED");
+    }
+    const code = error instanceof ConvexError
+      ? (error.data as { code?: string } | null)?.code
+      : undefined;
+    if (code === "TENANT_LEAD_BRIDGE_NOT_CONFIGURED"
+      || code === "INVALID_TENANT_LEAD_BRIDGE_SIGNATURE"
+      || code === "INVALID_TENANT_LEAD_BRIDGE_PAYLOAD"
+      || code === "TENANT_LEAD_BRIDGE_EXPIRED") {
+      return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
     }
     // An unpublished or unknown site arrives here as the same generic
     // refusal the public resolver gives, so this endpoint cannot be used to
