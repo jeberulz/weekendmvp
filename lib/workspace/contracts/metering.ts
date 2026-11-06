@@ -58,6 +58,8 @@
  * credits like any other pre-call failure (`REFUNDS_CREDITS`).
  */
 
+import { WIZARD_STEPS } from "./wizard";
+
 // ---------------------------------------------------------------------------
 // Money
 // ---------------------------------------------------------------------------
@@ -120,7 +122,8 @@ function assertCount(name: string, value: unknown): asserts value is number {
 }
 
 // ---------------------------------------------------------------------------
-// Unions (defined locally so this file stays independent of C-PROMPT / C-JOBS)
+// Unions (defined locally so this file stays independent of C-PROMPT / C-JOBS;
+// the only contract import is C-WIZARD's step list, for `wizardAttemptKey`)
 // ---------------------------------------------------------------------------
 
 export const METER_PLANS = ["free", "builders_hub", "growth"] as const;
@@ -288,6 +291,12 @@ export function globalOvershootBoundMicroUsd(args: {
  * failure is a new attempt (`attempt + 1`, `reask: true`). Forms:
  * - crew and Studio jobs: `{jobKey}:{attempt}` (`jobAttemptKey`);
  * - Wren chat: `chat:{projectId}:{chatMessageId}:{attempt}` (`chatAttemptKey`);
+ * - wizard drafts before the business exists:
+ *   `wizard:{wizardSessionId}:{step}:{attempt}` (`wizardAttemptKey`). Owner-scoped
+ *   with no project, task or credit debit, so every owner check applies (the
+ *   feature switches and cohort, the Free lifetime ceiling, the daily cap). The
+ *   meter cannot see the session: the caller checks that the owner owns it
+ *   (2026-11-06, owner-approved; see `contract-changes.md`);
  * - ownerless work: `precompute:{ideaSlug}:{seedVersion}:{promptRef}:{attempt}`
  *   and `eval:{runId}:{caseId}:{attempt}`.
  * `attempt` starts at 1 and counts across every task that has held the job key.
@@ -306,6 +315,29 @@ export function chatAttemptKey(projectId: string, chatMessageId: string, attempt
     }
   }
   return `chat:${projectId}:${chatMessageId}:${positiveAttempt(attempt)}`;
+}
+
+/**
+ * A Convex document id as it appears in a key: lowercase letters, digits and
+ * `_` (convex-test ids carry the table name after `_`), never ':' or a space.
+ */
+const WIZARD_SESSION_ID = /^[0-9a-z_]{16,64}$/u;
+
+/**
+ * A wizard draft's key, before the business exists:
+ * `wizard:{wizardSessionId}:{step}:{attempt}`. `step` must be one of
+ * C-WIZARD `WIZARD_STEPS`. The reserve that uses it MUST carry the session
+ * owner's `ownerId` and no `projectId`, `taskId` or `creditDebitId`, and the
+ * caller MUST have checked that the owner owns the session (the meter cannot).
+ */
+export function wizardAttemptKey(wizardSessionId: string, step: string, attempt: number): string {
+  if (typeof wizardSessionId !== "string" || !WIZARD_SESSION_ID.test(wizardSessionId)) {
+    throw new RangeError("wizardSessionId must be a wizard_sessions id");
+  }
+  if (typeof step !== "string" || !(WIZARD_STEPS as readonly string[]).includes(step)) {
+    throw new RangeError("step must be a C-WIZARD step");
+  }
+  return `wizard:${wizardSessionId}:${step}:${positiveAttempt(attempt)}`;
 }
 
 function positiveAttempt(attempt: number): number {
@@ -343,7 +375,7 @@ export type ReserveArgs = {
   readonly ownerId?: string;
   readonly projectId?: string;
   readonly taskId?: string;
-  /** Idempotency key for this attempt (see `jobAttemptKey`, `chatAttemptKey`). */
+  /** Idempotency key for this attempt (see `jobAttemptKey`, `chatAttemptKey`, `wizardAttemptKey`). */
   readonly attemptKey: string;
   /** `id@version` from C-PROMPT `promptRef`; media calls use their own refs. */
   readonly promptRef: string;

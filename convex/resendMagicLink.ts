@@ -1,4 +1,4 @@
-import { isAllowedAuthReturnPath, isIdeaReturnPath } from "../lib/private-paths";
+import { hasDotSegmentInTarget, isAllowedAuthReturnPath, isBareReturnPath } from "../lib/private-paths";
 import { normalizeEmail } from "./authEmail";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { validatedSiteOrigin } from "./siteUrl";
@@ -37,14 +37,14 @@ export function normalizeMagicLinkEmail(identifier: string) {
 }
 
 function safeDashboardReturn(value: string) {
-  if (value.includes("\\")) return "/dashboard";
+  if (value.includes("\\") || hasDotSegmentInTarget(value)) return "/dashboard";
   try {
     const target = new URL(value, "https://platform.weekendmvp.invalid");
     if (
       target.origin === "https://platform.weekendmvp.invalid" &&
       isAllowedAuthReturnPath(target.pathname)
     ) {
-      if (isIdeaReturnPath(target.pathname)) return target.search || target.hash ? "/dashboard" : target.pathname;
+      if (isBareReturnPath(target.pathname)) return target.search || target.hash ? "/dashboard" : target.pathname;
       return `${target.pathname}${target.search}${target.hash}`;
     }
   } catch {

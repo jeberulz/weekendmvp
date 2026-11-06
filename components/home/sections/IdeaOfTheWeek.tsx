@@ -1,12 +1,27 @@
+import { BuildIdeaCta } from "@/components/workspace/BuildIdeaCta";
 import { GOAL_LABEL } from "@/lib/home/labels";
 import type { SpotlightIdea } from "@/lib/home/types";
 import { clamp } from "@/lib/home/text";
+import { isBuildCtaSlug } from "@/lib/workspace/build-cta";
 import { cn } from "@/lib/utils";
 import { IdeaArt } from "../IdeaArt";
 import { ButtonLink, CategoryTag, Container, Label, ScoreCell, StepList, TextLink, WeekendMeter } from "../ui";
 
-/** 03 · Idea of the week, a new pick every Monday. */
-export function IdeaOfTheWeek({ idea, weekLabel, total }: { idea: SpotlightIdea; weekLabel: string; total: number }) {
+/**
+ * 03 · Idea of the week, a new pick every Monday. `buildCta` (WP74-S5) is true
+ * only behind the launch-workspace flag; off, the markup is unchanged.
+ */
+export function IdeaOfTheWeek({
+  idea,
+  weekLabel,
+  total,
+  buildCta = false,
+}: {
+  idea: SpotlightIdea;
+  weekLabel: string;
+  total: number;
+  buildCta?: boolean;
+}) {
   const titleSize = idea.title.length <= 45 ? "lg:text-[72px]" : idea.title.length <= 62 ? "lg:text-[64px]" : "lg:text-[56px]";
   return (
     <section aria-labelledby="home-iotw-title" data-scene="spotlight" className="bg-home-ink pb-16 lg:pb-[120px]">
@@ -40,9 +55,18 @@ export function IdeaOfTheWeek({ idea, weekLabel, total }: { idea: SpotlightIdea;
       <Container m="cols" className="grid grid-cols-1 gap-6 pt-6 lg:grid-cols-[1.1fr_1fr_1fr] lg:gap-14 lg:pt-12">
         <div className="flex flex-col gap-5 lg:gap-6">
           <p className="max-w-[400px] text-base leading-[1.55] text-home-d2 lg:text-lg">{clamp(idea.description, 200)}</p>
-          <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="w-full lg:w-fit">
-            Read the research
-          </ButtonLink>
+          {buildCta && isBuildCtaSlug(idea.slug) ? (
+            <>
+              <BuildIdeaCta slug={idea.slug} title={idea.title} location="home-idea-of-the-week" tone="dark" className="w-full lg:w-fit" />
+              <ButtonLink href={`/ideas/${idea.slug}`} tone="ghost-dark" className="w-full lg:w-fit">
+                Read the research
+              </ButtonLink>
+            </>
+          ) : (
+            <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="w-full lg:w-fit">
+              Read the research
+            </ButtonLink>
+          )}
           <TextLink href="/startup-ideas" dark className="self-center lg:self-start">
             Browse all {total} ideas
           </TextLink>

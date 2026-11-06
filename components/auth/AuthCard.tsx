@@ -56,6 +56,8 @@ export function AuthCard({
   src = null,
   embedded = false,
   gate = false,
+  buildFirst = false,
+  signInReturnTo,
 }: {
   mode: AuthCardMode;
   returnTo: string;
@@ -64,6 +66,16 @@ export function AuthCard({
   embedded?: boolean;
   /** Idea-page unlock gate: one primary create CTA + Sign in secondary. */
   gate?: boolean;
+  /**
+   * WP74-S5 (launch-workspace flag on): a gate card whose sign-in returns to
+   * the build wizard. Same heading; the button and one note say what happens.
+   */
+  buildFirst?: boolean;
+  /**
+   * With `buildFirst`: where an existing member who chooses "Sign in" returns
+   * (the idea page). Only "Create free account and build" goes to `returnTo`.
+   */
+  signInReturnTo?: string;
 }) {
   const [currentMode, setCurrentMode] = useState(mode);
   const baseCopy = COPY[currentMode];
@@ -72,7 +84,7 @@ export function AuthCard({
       ? {
           ...baseCopy,
           title: "Read the full research, free",
-          emailCta: "Create free account",
+          emailCta: buildFirst ? "Create free account and build" : "Create free account",
           crossPrompt: "Already have one?",
           crossLabel: "Sign in",
         }
@@ -84,6 +96,7 @@ export function AuthCard({
             crossLabel: "Create free account",
           }
         : baseCopy;
+  const activeReturnTo = currentMode === "login" && signInReturnTo ? signInReturnTo : returnTo;
   const { signIn } = useAuthActions();
   const emailFieldId = useId();
   const statusId = useId();
@@ -109,7 +122,7 @@ export function AuthCard({
     setGoogleFailed(false);
     try {
       await signIn("google", {
-        redirectTo: authCallbackTarget(safePlatformReturn(returnTo)),
+        redirectTo: authCallbackTarget(safePlatformReturn(activeReturnTo)),
       });
     } catch {
       setGoogleFailed(true);
@@ -122,7 +135,7 @@ export function AuthCard({
     try {
       await signIn("email", {
         email: targetEmail,
-        redirectTo: safePlatformReturn(returnTo),
+        redirectTo: safePlatformReturn(activeReturnTo),
       });
       setEmail(targetEmail);
       setSentEmail(targetEmail);
@@ -238,6 +251,11 @@ export function AuthCard({
         <p className="mt-3 text-center text-[15px] leading-[1.55] text-home-ink-2">
           {copy.subtitle}
         </p>
+        {buildFirst && currentMode === "signup" ? (
+          <p className="mt-3 text-center text-[15px] font-medium leading-[1.55] text-home-ink">
+            Then we&apos;ll take you straight to building this idea.
+          </p>
+        ) : null}
 
         <button
           type="button"
@@ -318,7 +336,7 @@ export function AuthCard({
             </button>
           ) : (
             <Link
-              href={withReturnTo(copy.crossHref, returnTo, src)}
+              href={withReturnTo(copy.crossHref, currentMode === "signup" && signInReturnTo ? signInReturnTo : returnTo, src)}
               className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
             >
               {copy.crossLabel}

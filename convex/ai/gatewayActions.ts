@@ -9,7 +9,8 @@
  *    a model. The spec comes from the registry (`getEntry`), and the gateway
  *    re-validates and routes it (`routeSpec`) before anything is reserved;
  * 2. builds the attempt key from a C-METER form (`jobAttemptKey`,
- *    `chatAttemptKey`, or `eval:{runId}:{caseId}:{attempt}`), never a raw key;
+ *    `chatAttemptKey`, `wizardAttemptKey`, or `eval:{runId}:{caseId}:{attempt}`),
+ *    never a raw key;
  * 3. binds `MeterPort` to `internal.ai.metering.{reserve,markSent,settle,fail}`
  *    through `ctx.runMutation` (`meterPortFor`), so every gate and budget is
  *    the meter's: the kill switch, workspace switch, cohort, task and debit
@@ -32,6 +33,10 @@
  * - a key form that does not match the run's ownership: `eval` with an
  *   `ownerId`, `projectId`, `taskId` or `creditDebitId`; `job` without both
  *   `ownerId` and `taskId`; `chat` without an `ownerId` and a `projectId`;
+ *   `wizard` without an `ownerId`, or with a `projectId`, `taskId`,
+ *   `creditDebitId` or `businessContext`;
+ * - a `wizard` key whose session id is not a `wizard_sessions` id or whose
+ *   step is not a C-WIZARD step;
  * - an `attempt` that is not a positive integer.
  *
  * Notes for C-JOBS (the caller):
@@ -79,6 +84,7 @@ import { internalAction, type ActionCtx } from "../_generated/server";
 import {
   chatAttemptKey,
   jobAttemptKey,
+  wizardAttemptKey,
   type FailArgs,
   type FinalizeResult,
   type MarkSentResult,
@@ -118,6 +124,25 @@ export const attemptKeyFormValidator = v.union(
   v.object({ kind: v.literal("chat"), chatMessageId: v.string() }),
   /** Ownerless eval runs (CI graders): `eval:{runId}:{caseId}:{attempt}`. */
   v.object({ kind: v.literal("eval"), runId: v.string(), caseId: v.string() }),
+  /**
+   * A wizard draft before the business exists:
+   * `wizard:{wizardSessionId}:{step}:{attempt}`. Owner-scoped (the run's
+   * `ownerId`, no business, task or debit), so the meter applies every owner
+   * gate: the feature switches, the cohort, the Free lifetime ceiling and the
+   * daily cap.
+   *
+   * **This action does not check the session.** The calling wizard action
+   * must, before it calls `runPrompt`:
+   * - require an owned session that is still in progress: owned by `ownerId`
+   *   (C-AUTHZ `requireOwnedWizardSession`), not completed, and with no
+   *   `projectId`;
+   * - pass only the wizard's own prompt refs (an allowlist), never a ref
+   *   taken from the client;
+   * - store `nextAttempt` on the session and send it as `attempt` on the next
+   *   draft. A redraft (after rework, say) that starts again at attempt 1
+   *   reuses `wizard:{id}:{step}:1` and comes back `duplicate_attempt`.
+   */
+  v.object({ kind: v.literal("wizard"), wizardSessionId: v.id("wizard_sessions"), step: v.string() }),
 );
 
 export const runPromptArgs = {
@@ -375,6 +400,11 @@ export function attemptKeyBuilder(
       chatAttemptKey(projectId, form.chatMessageId, 1);
       return (attempt) => chatAttemptKey(projectId, form.chatMessageId, attempt);
     }
+    case "wizard": {
+      // `wizardAttemptKey` checks the id shape and that the step is a C-WIZARD step.
+      wizardAttemptKey(form.wizardSessionId, form.step, 1);
+      return (attempt) => wizardAttemptKey(form.wizardSessionId, form.step, attempt);
+    }
     case "eval": {
       if (!KEY_PART.test(form.runId) || !KEY_PART.test(form.caseId)) {
         throw new RangeError("eval runId and caseId must be 1-96 characters without ':' or spaces");
@@ -421,9 +451,14 @@ function isAttemptNumber(value: number): boolean {
  * the ownerless path (CI graders): no owner, business, task or debit. `job`
  * is credit-funded crew work: it needs the owner and the task the meter
  * checks. `chat` needs the owner (the meter checks the project against it)
- * and the run's `projectId` (checked by `attemptKeyBuilder`).
+ * and the run's `projectId` (checked by `attemptKeyBuilder`). `wizard` is
+ * owner spend before the business exists: it needs the owner and refuses a
+ * business, task, debit or business context, so the meter's owner checks run
+ * with no project (the session's ownership is the caller's check).
  */
-export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId">): string | null {
+export function keyFormMismatch(
+  args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId" | "businessContext">,
+): string | null {
   switch (args.attemptKey.kind) {
     case "eval": {
       const given = (["ownerId", "projectId", "taskId", "creditDebitId"] as const).filter((name) => args[name] !== undefined);
@@ -436,6 +471,12 @@ export function keyFormMismatch(args: Pick<RunPromptArgs, "attemptKey" | "ownerI
       // Ownerless chat would reserve in the free pool under a projectId the meter never checks.
       if (args.ownerId === undefined) return "a chat attempt key needs the run's ownerId";
       return null;
+    case "wizard": {
+      // Ownerless, it would skip the owner's Free ceiling and daily cap.
+      if (args.ownerId === undefined) return "a wizard attempt key needs the run's ownerId";
+      const given = (["projectId", "taskId", "creditDebitId", "businessContext"] as const).filter((name) => args[name] !== undefined);
+      return given.length === 0 ? null : `a wizard attempt key is pre-business; got ${given.join(", ")}`;
+    }
   }
 }
 
