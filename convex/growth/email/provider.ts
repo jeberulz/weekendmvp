@@ -11,10 +11,18 @@ type TenantMailEnv = {
 
 /** Explicit keys avoid the component's generic RESEND_* fallback. */
 export function tenantResendOptions(source: TenantMailEnv): ResendOptions {
+  let configuredSender = false;
+  try {
+    tenantFromAddress(source);
+    configuredSender = true;
+  } catch {
+    // Missing tenant settings may still boot an isolated deployment in test mode.
+  }
   return {
     apiKey: source.TENANT_RESEND_API_KEY?.trim() ?? "",
     webhookSecret: source.TENANT_RESEND_WEBHOOK_SECRET?.trim() ?? "",
-    testMode: source.TENANT_EMAIL_LIVE_ENABLED !== "true",
+    testMode: source.TENANT_EMAIL_LIVE_ENABLED !== "true" ||
+      !configuredSender || !source.TENANT_RESEND_WEBHOOK_SECRET?.trim(),
   };
 }
 

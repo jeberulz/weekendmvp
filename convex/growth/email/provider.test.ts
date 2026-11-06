@@ -12,7 +12,18 @@ describe("tenant Resend isolation", () => {
 
   it("needs an explicit live setting and a tenant sender", () => {
     expect(tenantResendOptions({ TENANT_EMAIL_LIVE_ENABLED: "TRUE" }).testMode).toBe(true);
-    expect(tenantResendOptions({ TENANT_EMAIL_LIVE_ENABLED: "true" }).testMode).toBe(false);
+    expect(tenantResendOptions({ TENANT_EMAIL_LIVE_ENABLED: "true" }).testMode).toBe(true);
+    expect(tenantResendOptions({
+      TENANT_EMAIL_LIVE_ENABLED: "true",
+      TENANT_RESEND_API_KEY: "key",
+      TENANT_RESEND_FROM: "hi@send.weekendmvp.app",
+    }).testMode).toBe(true);
+    expect(tenantResendOptions({
+      TENANT_EMAIL_LIVE_ENABLED: "true",
+      TENANT_RESEND_API_KEY: "key",
+      TENANT_RESEND_FROM: "hi@send.weekendmvp.app",
+      TENANT_RESEND_WEBHOOK_SECRET: "hook",
+    }).testMode).toBe(false);
     expect(() => tenantFromAddress({ TENANT_RESEND_API_KEY: "key" })).toThrow("TENANT_EMAIL_NOT_CONFIGURED");
     expect(() => tenantFromAddress({ TENANT_RESEND_API_KEY: "key", TENANT_RESEND_FROM: "onboarding@resend.dev" }))
       .toThrow("TENANT_EMAIL_NOT_CONFIGURED");
