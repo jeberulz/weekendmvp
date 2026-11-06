@@ -33,4 +33,15 @@ describe("WP79 additive C-DATA amendment", () => {
     expect(schema.tables.approvals.validator.fields.subjectVersion.isOptional).toBe("optional");
     expect(indexNames(schema.tables.approvals)).toContain("by_status_and_createdAt");
   });
+
+  test("retention jobs keep the deletion deadline distinct from bounded retry scheduling", () => {
+    const table = schema.tables.lead_retention_jobs;
+    const fields = table.validator.fields;
+    for (const name of ["ownerId", "projectId", "archivedAt", "deleteDueAt", "nextAttemptAt", "state"] as const) {
+      expect(fields[name].isOptional).toBe("required");
+    }
+    expect(indexNames(table)).toEqual(expect.arrayContaining([
+      "by_projectId", "by_ownerId_and_projectId", "by_state_and_nextAttemptAt",
+    ]));
+  });
 });

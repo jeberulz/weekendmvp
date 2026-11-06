@@ -31,6 +31,27 @@ export const growthTables = {
     .index("by_leadId_and_purpose", ["leadId", "purpose"])
     .index("by_tokenHash", ["tokenHash"]),
 
+  lead_retention_jobs: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    // Set when the project is archived; retry backoff never changes this deadline.
+    archivedAt: v.number(),
+    deleteDueAt: v.number(),
+    nextAttemptAt: v.number(),
+    state: v.union(v.literal("scheduled"), v.literal("complete"), v.literal("cancelled")),
+    attempts: v.number(),
+    processedCount: v.number(),
+    lastErrorCode: v.optional(v.string()),
+    lastAttemptAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    cancelledAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_projectId", ["projectId"])
+    .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
+    .index("by_state_and_nextAttemptAt", ["state", "nextAttemptAt"]),
+
   sequences: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),
