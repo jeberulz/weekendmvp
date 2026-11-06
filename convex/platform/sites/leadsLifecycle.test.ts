@@ -292,72 +292,16 @@ describe("WP78 lead lifecycle", () => {
     expect(row.endsWith("\r\n")).toBe(true);
   });
 
-  test("archived project purge waits 30 days and drains bounded batches", async () => {
-    const t = convexTest(schema, modules);
-    const ids = await seed(t);
-    expect(await t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
-      { projectId: ids.projectId })).toEqual({ deleted: 0, more: false });
-    await t.run(async (ctx) => ctx.db.patch(ids.projectId, {
-      archivedAt: Date.now() - 29 * 24 * 60 * 60 * 1000,
-    }));
-    expect(await t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
-      { projectId: ids.projectId })).toEqual({ deleted: 0, more: false });
-    await t.run(async (ctx) => {
-      await ctx.db.patch(ids.projectId, {
-        archivedAt: Date.now() - 31 * 24 * 60 * 60 * 1000,
-      });
-      const settings = await ctx.db.query("ops_settings").first();
-      if (!settings) throw new Error("missing settings fixture");
-      await ctx.db.patch(settings._id, { workspaceEnabled: false, cohortMode: "allowlist" });
-      const existing = await ctx.db.query("leads")
-        .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId))
-        .collect();
-      for (const lead of existing) {
-        await ctx.db.patch(lead._id, {
-          synthetic: true, email: undefined, consentText: undefined,
-        });
-      }
-      const site = await ctx.db.query("site_configs").first();
-      if (!site) throw new Error("missing site fixture");
-      for (let i = 0; i < 118; i += 1) {
-        await ctx.db.insert("leads", {
-          ownerId: ids.ownerId, projectId: ids.projectId, siteConfigId: site._id,
-          synthetic: true, createdAt: 100 + i,
-        });
-      }
-    });
-    const purge = (projectId: Id<"projects">) =>
-      t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads, { projectId });
-    expect(await purge(ids.projectId)).toEqual({ deleted: 50, more: true });
-    expect(await purge(ids.projectId)).toEqual({ deleted: 50, more: true });
-    expect(await purge(ids.projectId)).toEqual({ deleted: 21, more: false });
-    expect(await purge(ids.projectId)).toEqual({ deleted: 0, more: false });
-    const remaining = await t.run(async (ctx) => ctx.db.query("leads")
-      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).collect());
-    expect(remaining).toHaveLength(0);
-  });
-
-  test("purge refuses cross-owner lead data and leaves the batch untouched", async () => {
-    const t = convexTest(schema, modules);
-    const ids = await seed(t);
-    await t.run(async (ctx) => {
-      await ctx.db.patch(ids.projectId, {
-        archivedAt: Date.now() - 31 * 24 * 60 * 60 * 1000,
-      });
-      await ctx.db.patch(ids.leadId, { ownerId: ids.otherId });
-    });
-    await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
-      { projectId: ids.projectId })).rejects.toThrow("LEAD_OWNER_MISMATCH");
-    expect(await t.run(async (ctx) => ctx.db.get(ids.leadId))).not.toBeNull();
-  });
-
-  test("purge refuses a real lead until WP79 revocation can run", async () => {
+  test("ordinary archive never authorizes lead purge, even after 30 days and workspace shutdown", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t);
     const enrollmentId = await t.run(async (ctx) => {
       await ctx.db.patch(ids.projectId, {
         archivedAt: Date.now() - 31 * 24 * 60 * 60 * 1000,
       });
+      const settings = await ctx.db.query("ops_settings").first();
+      if (!settings) throw new Error("missing settings fixture");
+      await ctx.db.patch(settings._id, { workspaceEnabled: false, cohortMode: "allowlist" });
       const now = Date.now();
       const sequenceId = await ctx.db.insert("sequences", {
         ownerId: ids.ownerId, projectId: ids.projectId, status: "active",
@@ -369,13 +313,31 @@ describe("WP78 lead lifecycle", () => {
         state: "active", createdAt: now, updatedAt: now,
       });
     });
+    const leads = () => t.run(async (ctx) => ctx.db.query("leads")
+      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId))
+      .collect());
+    const before = await leads();
+    expect(before).toHaveLength(3);
+    expect(before.some((lead) => lead.synthetic)).toBe(true);
+    expect(before.some((lead) => !lead.synthetic)).toBe(true);
+
     await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
-      { projectId: ids.projectId })).rejects.toThrow("LEAD_REVOKE_REQUIRED");
-    const lead = await t.run(async (ctx) => ctx.db.get(ids.leadId));
-    expect(lead?.email).toBe("lead@example.test");
+      { projectId: ids.projectId })).rejects.toThrow("LEAD_DELETE_REQUEST_REQUIRED");
+    expect(await leads()).toEqual(before);
     expect((await t.run(async (ctx) => ctx.db.get(enrollmentId)))?.state).toBe("active");
-    const remaining = await t.run(async (ctx) => ctx.db.query("leads")
-      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).collect());
-    expect(remaining).toHaveLength(3);
+
+    await t.run(async (ctx) => ctx.db.patch(ids.projectId, { archivedAt: undefined }));
+    await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
+      { projectId: ids.projectId })).rejects.toThrow("LEAD_DELETE_REQUEST_REQUIRED");
+    expect(await leads()).toEqual(before);
+  });
+
+  test("legacy purge rejects a missing project without touching orphaned leads", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t);
+    await t.run(async (ctx) => ctx.db.delete(ids.projectId));
+    await expect(t.mutation(internal.platform.sites.retention.purgeArchivedProjectLeads,
+      { projectId: ids.projectId })).rejects.toThrow("RESOURCE_NOT_FOUND");
+    expect((await t.run(async (ctx) => ctx.db.get(ids.leadId)))?.email).toBe("lead@example.test");
   });
 });
