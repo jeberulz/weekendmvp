@@ -605,6 +605,52 @@ describe("extraction attempts", () => {
     expect(h.keywordLookups).toBe(0);
   });
 
+  it("spends the remaining extraction attempt on market even when quotes and competitors are also short", async () => {
+    // Live batch signature: market 0 + competitors short + quotes 0. The old
+    // gate required market to be the *only* shortfall, so attempt 2 never ran.
+    let calls = 0;
+    const h = harness({
+      synthesis: {
+        extraction: () =>
+          calls++ === 0
+            ? { quotes: [], marketStats: [], competitorPrices: [], competitorAvailability: [] }
+            : FIXTURE_EXTRACTION,
+      },
+    });
+    const error = await failureOf(run(h));
+    const requests = extractionRequests(h);
+    expect(requests).toHaveLength(2);
+    expect(requests[1]?.input).toContain("too few verified market statistics");
+    // Market retry merges only market_stat; quotes/competitors stay short and fail closed.
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.report?.evidence.accepted.market_stat).toBeGreaterThanOrEqual(2);
+    expect(error.report?.evidence.preaccept.counts.market_stat).toBeGreaterThanOrEqual(2);
+    expect(error.report?.evidence.preaccept.bySource.some((row) => row.kind === "market_stat")).toBe(true);
+    expect(error.report?.evidence.extractionReadiness.some((row) => row.roles.includes("market") && row.included)).toBe(true);
+    expect(error.message).toMatch(/community quotes:|competitors:/);
+  });
+
+  it("records empty preaccept market proposals when the model returns none", async () => {
+    const h = harness({
+      synthesis: {
+        extraction: () => ({
+          quotes: FIXTURE_EXTRACTION.quotes,
+          marketStats: [],
+          competitorPrices: FIXTURE_EXTRACTION.competitorPrices,
+          competitorAvailability: FIXTURE_EXTRACTION.competitorAvailability ?? [],
+        }),
+      },
+    });
+    const error = await failureOf(run(h));
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.report?.evidence.preaccept.counts.market_stat).toBe(0);
+    expect(error.report?.evidence.preaccept.bySource.filter((row) => row.kind === "market_stat")).toEqual([]);
+    expect(error.report?.evidence.preaccept.counts.community_quote).toBeGreaterThan(0);
+    expect(error.report?.evidence.extractionReadiness.some((row) => row.roles.includes("market"))).toBe(true);
+    // Rejection trace keeps the bounded candidate claim when acceptance rejects one.
+    expect(error.report?.evidence.accepted.market_stat).toBe(0);
+  });
+
   it("re-asks once after a reply that is not JSON, under the same rules", async () => {
     let calls = 0;
     const h = harness({
@@ -767,10 +813,13 @@ describe("run report on failure", () => {
     expect(report?.providerCalls.length).toBe(Object.values(report?.attempts ?? {}).reduce((a, b) => a + b, 0));
     expect(report?.sources.filter((s) => s.roles.includes("community")).every((s) => s.status === "unreadable")).toBe(true);
     expect(report?.evidence.rejected.length).toBeGreaterThan(0);
+    // Rejection trace includes the bounded candidate claim (not page bodies).
+    expect(report?.evidence.rejected.some((row) => typeof row.candidate === "string" && row.candidate.length > 0)).toBe(true);
+    expect(report?.evidence.preaccept.counts.community_quote).toBeGreaterThan(0);
+    expect(report?.evidence.extractionReadiness.some((row) => row.roles.includes("market") && row.included)).toBe(true);
     const json = JSON.stringify(report);
     expect(json).not.toContain("Mid-market vendors account");
     expect(json).not.toMatch(/\/Users\/|\/home\/|\/private\//);
-    expect(json).not.toMatch(/"candidate"/);
   });
 });
 
@@ -892,6 +941,43 @@ describe("input budgets", () => {
     for (const passage of block.text.split("Text:\n")[1]!.split(EXCERPT_GAP)) {
       expect(text.includes(passage)).toBe(true);
     }
+  });
+
+  it("still surfaces a market-size figure when a weak title match would otherwise starve it", () => {
+    // Brief keyword "approval" hits a small measured rate; the market-size
+    // sentence names none of the brief words. Remaining budget must still carry it.
+    const vanity = "Shop approval completion hit 47% last year.";
+    const market = "The niche category was valued at $1.4 billion in 2024.";
+    const text = `${vanity} ${"Padding without figures here. ".repeat(40)}${market}`;
+    const source: ExtractionSource = {
+      url: "https://research.example/report/niche-category",
+      title: "Niche category",
+      roles: ["market"],
+      text,
+    };
+    const excerpt = extractionExcerpt(source, 900, "Apparel Print Spec Approval Gate");
+    expect(excerpt).toContain(vanity);
+    expect(excerpt).toContain(market);
+    expect(excerpt).toContain(EXCERPT_GAP);
+  });
+
+  it("records amount-sentence readiness without storing page bodies", () => {
+    const source: ExtractionSource = {
+      url: "https://research.example/report/market",
+      title: "Market",
+      roles: ["market"],
+      text: "The niche was valued at $2.1 billion in 2024. Teams grew 12% year over year. No figure here.",
+    };
+    const block = buildExtractionSources([source], 2_000);
+    expect(block.diagnostics).toEqual([
+      {
+        url: "https://research.example/report/market",
+        roles: ["market"],
+        included: true,
+        amountSentences: 2,
+      },
+    ]);
+    expect(JSON.stringify(block.diagnostics)).not.toMatch(/\$2\.1 billion/);
   });
 
   it("preserves an explicit pricing status behind a long competitor price table", () => {

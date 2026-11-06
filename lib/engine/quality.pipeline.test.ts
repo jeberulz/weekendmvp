@@ -429,7 +429,9 @@ describe("CodeRabbit regressions", () => {
     expect(utf8Bytes(section.text)).toBeLessThanOrEqual(available);
     expect(section.text.match(/^### Source /gm)?.length).toBe(6);
     // No room at all → no section, never an oversized one.
-    expect(buildExtractionSources(pages, 500)).toEqual({ text: "", included: 0 });
+    expect(buildExtractionSources(pages, 500)).toMatchObject({ text: "", included: 0 });
+    expect(buildExtractionSources(pages, 500).diagnostics).toHaveLength(6);
+    expect(buildExtractionSources(pages, 500).diagnostics.every((row) => row.included === false)).toBe(true);
   });
 
   it("runs extraction within its budget when pages are huge", async () => {

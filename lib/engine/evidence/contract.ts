@@ -466,6 +466,31 @@ export type ResearchRecordV2 = {
 // Run report (written by engine:research on success and failure)
 // ---------------------------------------------------------------------------
 
+/**
+ * Operator report diagnostics (no page bodies, secrets or PII). Bounds keep
+ * the normal report path small when extraction proposes many candidates.
+ */
+export const REPORT_DIAGNOSTIC_LIMITS = {
+  maxPreacceptBySource: 48,
+  maxExtractionReadiness: 64,
+} as const;
+
+/** Shape-valid candidates handed to acceptEvidence, before accept/reject. */
+export type PreacceptCandidateDiag = {
+  counts: Record<EvidenceKind, number>;
+  /** Distinct source URLs per kind with how many candidates cited them. */
+  bySource: Array<{ kind: EvidenceKind; sourceUrl: string; count: number }>;
+};
+
+/** Per-URL extraction feed readiness: roles, inclusion, figure density. */
+export type ExtractionReadinessDiag = {
+  url: string;
+  roles: SourceRole[];
+  included: boolean;
+  /** Amount-bearing sentences in the excerpt the model was shown (0 when dropped). */
+  amountSentences: number;
+};
+
 export type ResearchRunReport = {
   ok: boolean;
   pipelineVersion: number;
@@ -489,6 +514,11 @@ export type ResearchRunReport = {
   refusedCitations: Array<{ host: string; reason: string }>;
   evidence: {
     accepted: Record<EvidenceKind, number>;
-    rejected: Array<Pick<RejectedEvidence, "kind" | "reason" | "sourceUrl" | "detail">>;
+    /** Candidate rejection trace: kind, reason, source, bounded claim, detail. */
+    rejected: Array<Pick<RejectedEvidence, "kind" | "reason" | "sourceUrl" | "candidate" | "detail">>;
+    /** Pre-accept proposal scarcity: counts by class and by source URL. */
+    preaccept: PreacceptCandidateDiag;
+    /** Which readable URLs reached extraction and how many figure sentences each carried. */
+    extractionReadiness: ExtractionReadinessDiag[];
   };
 };
