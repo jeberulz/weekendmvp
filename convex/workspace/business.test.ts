@@ -130,6 +130,17 @@ async function refusalOf(call: Promise<unknown>): Promise<unknown> {
 }
 
 describe("WP74-S4 createBusiness: success", () => {
+  test("a closure marker blocks a new wizard business in the same transaction", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const sessionId = await finishedSession(t, owner);
+    await t.run((ctx) => ctx.db.patch(owner, { accountClosureRequestedAt: Date.now() }));
+    await expect(as("owner").mutation(api.workspace.business.createBusiness, { sessionId }))
+      .rejects.toThrow("ACCOUNT_CLOSURE_ALREADY_REQUESTED");
+    expect(await projectsOf(t, owner)).toHaveLength(0);
+    expect((await t.run((ctx) => ctx.db.get(sessionId)))?.projectId).toBeUndefined();
+  });
+
   test("creates the project, links the session, writes one audit row and opens the workspace", async () => {
     const { t, as, ids } = await seed();
     const owner = ids.users.owner.userId;

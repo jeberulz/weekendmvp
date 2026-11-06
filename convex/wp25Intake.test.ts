@@ -71,6 +71,21 @@ async function seedIdea(t: TestConvex<typeof schema>) {
 }
 
 describe("WP25 project creation", () => {
+  test("a closure marker blocks both new intake entry paths", async () => {
+    const t = convexTest(schema, modules);
+    const fixture = await seedUser(t, "owner@example.test");
+    const owner = asUser(t, fixture);
+    await seedIdea(t);
+    await t.run((ctx) => ctx.db.patch(fixture.userId, { accountClosureRequestedAt: Date.now() }));
+    await expect(owner.mutation(api.platform.intake.startOwnIdea, {
+      idempotencyKey: "after-closure-own", input: ownIdea,
+    })).rejects.toThrow("ACCOUNT_CLOSURE_ALREADY_REQUESTED");
+    await expect(owner.mutation(api.platform.intake.startRepositoryIdea, {
+      idempotencyKey: "after-closure-library", slug: "customer-interview-planner",
+    })).rejects.toThrow("ACCOUNT_CLOSURE_ALREADY_REQUESTED");
+    expect(await t.run((ctx) => ctx.db.query("projects").collect())).toHaveLength(0);
+  });
+
   test("denies anonymous creation", async () => {
     const t = convexTest(schema, modules);
     await expect(

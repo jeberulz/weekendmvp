@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
+import { assertAccountOpenForProjectCreation } from "../accountClosureGuard";
 import { resolveCapability, sourceIsEngineDraft } from "./capabilities";
 import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
@@ -243,6 +244,7 @@ export const claim = mutation({
       return denyNotFound();
     }
 
+    assertAccountOpenForProjectCreation(user);
     return await createGraph(ctx, user._id, capability, idempotencyKey, now);
   },
 });

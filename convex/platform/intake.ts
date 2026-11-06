@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation, requireOwnedProjectForMutation } from "./authz";
+import { assertAccountOpenForProjectCreation } from "./accountClosureGuard";
 import { isEngineDraftSlug } from "./catalogPolicy";
 import {
   assertBriefPayloadSource,
@@ -156,6 +157,9 @@ async function createInitialGraph(
   payload: BriefPayload,
   sourceIdeaId?: Id<"ideas">,
 ) {
+  const user = await ctx.db.get("users", ownerId);
+  if (user === null) throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+  assertAccountOpenForProjectCreation(user);
   const now = Date.now();
   const body = serializeBriefPayload(payload);
   const projectId = await ctx.db.insert("projects", {

@@ -56,6 +56,16 @@ async function jobs(t: TestConvex<typeof schema>) {
 }
 
 describe("requestBusinessDeletion", () => {
+  test("a started account closure prevents a later per-business deadline", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t);
+    await t.run((ctx) => ctx.db.patch(ids.ownerId, { accountClosureRequestedAt: Date.now() }));
+    await expect(asUser(t, ids.ownerId, ids.ownerSession).mutation(
+      api.platform.sites.retention.requestBusinessDeletion, { projectId: ids.projectId },
+    )).rejects.toThrow("ACCOUNT_CLOSURE_ALREADY_REQUESTED");
+    expect(await jobs(t)).toHaveLength(0);
+  });
+
   test("is dormant by default and cannot create a job", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t);
