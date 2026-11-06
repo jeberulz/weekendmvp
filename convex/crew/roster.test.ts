@@ -10,6 +10,7 @@
 import { HOUR, RateLimiter } from "@convex-dev/rate-limiter";
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import shardedCounterTest from "@convex-dev/sharded-counter/test";
+import { register as registerWorkpool } from "@convex-dev/workpool/test";
 import { convexTest, type TestConvex } from "convex-test";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -62,6 +63,7 @@ async function world(options: { ideaSlug?: string; answers?: WizardAnswers } = {
   const t = convexTest(schema, modules);
   registerRateLimiter(t);
   shardedCounterTest.register(t);
+  registerWorkpool(t, "crewWorkpool");
   const ids = await t.run(async (ctx) => {
     const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
     const person = async (email: string): Promise<Person> => {
@@ -128,7 +130,7 @@ function gateway(t: T, reply?: () => AnthropicFixtureReply | undefined): { runPr
   return { runPrompt: async (args) => await runPromptWithMeter(meter, args, { adapter }), calls: () => calls };
 }
 
-/** Runs a blueprint step the way the scheduled `runCrewGeneratorStep` would, with the fixture gateway. */
+/** Runs a blueprint step the way the pool's `runCrewGeneratorStep` would, with the fixture gateway (no `stepDone` follows). */
 async function runBlueprint(w: World, taskId: Id<"tasks">, reply?: () => AnthropicFixtureReply | undefined) {
   return await runCrewGeneratorStepWith(ctxFor(w.t), { taskId }, { runPrompt: gateway(w.t, reply).runPrompt });
 }
@@ -140,6 +142,8 @@ type Rows = {
   workstreams: Doc<"workstreams">[];
   documents: Doc<"documents">[];
   approvals: Doc<"approvals">[];
+  /** S2b enqueue markers: a running row is a step handed to `crewWorkpool`. */
+  steps: Doc<"task_steps">[];
   scheduled: { name: string; args: unknown[] }[];
 };
 
@@ -151,12 +155,14 @@ async function rows(w: World): Promise<Rows> {
     workstreams: await ctx.db.query("workstreams").collect(),
     documents: await ctx.db.query("documents").collect(),
     approvals: await ctx.db.query("approvals").collect(),
+    steps: await ctx.db.query("task_steps").collect(),
     scheduled: (await ctx.db.system.query("_scheduled_functions").collect()).map((row) => ({ name: row.name, args: row.args })),
   }));
 }
 
 const blueprintTasks = (r: Rows) => r.tasks.filter((row) => row.type === "crew_blueprint");
-const generatorRuns = (r: Rows) => r.scheduled.filter((row) => row.name.includes("crew/generators") && row.name.includes("runCrewGeneratorStep"));
+/** Steps on `crewWorkpool` (S2b): the blueprint is enqueued there, not scheduled. */
+const enqueued = (r: Rows) => r.steps.filter((row) => row.status === "running");
 
 const crewJobLimiter = new RateLimiter(components.rateLimiter, { crewJob: { kind: "fixed window", rate: 10, period: HOUR } });
 
@@ -192,9 +198,9 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
     expect(roster).toMatchObject({ status: "queued", jobKey: jobKey(w.projectId, "crew_roster", "main", 0), creditCost: 0n });
     expect(blueprintTasks(r)).toHaveLength(1);
     expect(blueprintTasks(r)[0]).toMatchObject({ status: "queued", jobKey: jobKey(w.projectId, "crew_blueprint", "main", 0) });
-    // Schedule mode: the generator step with only the task id (no retryMode), so S2a re-invokes its own retries.
-    expect(generatorRuns(r)).toHaveLength(1);
-    expect(generatorRuns(r)[0]?.args).toEqual([{ taskId: blueprintTasks(r)[0]?._id }]);
+    // S2b: the blueprint step is enqueued on crewWorkpool (its marker); `stepDone` re-invokes its retries.
+    expect(enqueued(r)).toHaveLength(1);
+    expect(enqueued(r)[0]).toMatchObject({ taskId: blueprintTasks(r)[0]?._id, type: "crew_blueprint", position: 0n });
     expect(r.rosterPlans).toHaveLength(0);
     expect(await tokensSpent(w)).toBe(1);
 
@@ -290,7 +296,7 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
 });
 
 describe("WP75-S1 idempotency and tokens", () => {
-  test("startLaunch twice while the blueprint runs: one launch, one scheduled step, one token", async () => {
+  test("startLaunch twice while the blueprint runs: one launch, one enqueued step, one token", async () => {
     const w = await world();
     const first = await as(w, w.owner).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     const before = await rows(w);
@@ -298,7 +304,7 @@ describe("WP75-S1 idempotency and tokens", () => {
     expect(second).toEqual(first);
     const after = await rows(w);
     expect(after.tasks).toEqual(before.tasks);
-    expect(generatorRuns(after)).toHaveLength(1);
+    expect(enqueued(after)).toHaveLength(1);
     expect(await tokensSpent(w)).toBe(1);
   });
 
@@ -383,7 +389,7 @@ describe("WP75-S1 a failed blueprint", () => {
     const fresh = drafts.find((row) => row._id !== blueprint._id);
     expect(fresh).toMatchObject({ status: "queued", jobKey: blueprint.jobKey, changeRound: 0n });
     expect(fresh?.idempotencyKey).not.toBe(blueprint.idempotencyKey);
-    expect(generatorRuns(r).map((row) => row.args)).toContainEqual([{ taskId: fresh?._id }]);
+    expect(enqueued(r).map((row) => row.taskId)).toContain(fresh?._id);
     expect(await tokensSpent(w)).toBe(2);
 
     // A second click while the new draft is queued writes and spends nothing.
@@ -421,6 +427,7 @@ describe("WP75-S1 a failed blueprint", () => {
     const after = await rows(w);
     expect(after.tasks).toEqual(r.tasks);
     expect(after.scheduled).toEqual(r.scheduled);
+    expect(after.steps).toEqual(r.steps);
     expect(await tokensSpent(w)).toBe(1);
   });
 
@@ -434,7 +441,9 @@ describe("WP75-S1 a failed blueprint", () => {
     await as(w, w.owner).mutation(api.crew.roster.retryLaunch, { projectId: w.projectId });
     const r = await rows(w);
     expect(blueprintTasks(r)).toHaveLength(1);
-    expect(generatorRuns(r).map((row) => row.args)).toContainEqual([{ taskId: blueprint._id, resume: true }]);
+    // S2b: resumed on the pool (blocked → running, enqueued with `resume: true`).
+    expect(blueprintTasks(r)[0]).toMatchObject({ status: "running" });
+    expect(enqueued(r).map((row) => row.taskId)).toContain(blueprint._id);
     expect(await tokensSpent(w)).toBe(2);
   });
 });
@@ -477,6 +486,7 @@ describe("WP75-S1 refusals write nothing", () => {
       expect(r.rosterPlans).toHaveLength(0);
       expect(r.members).toHaveLength(0);
       expect(r.scheduled).toHaveLength(0);
+      expect(r.steps).toHaveLength(0);
       expect(await tokensSpent(w)).toBe(0);
     });
   }
@@ -497,6 +507,7 @@ describe("WP75-S1 refusals write nothing", () => {
       const after = await rows(w);
       expect(after.tasks).toEqual(before.tasks);
       expect(after.scheduled).toEqual(before.scheduled);
+      expect(after.steps).toEqual(before.steps);
       expect(after.rosterPlans).toHaveLength(0);
       expect(after.members).toHaveLength(0);
       expect(await tokensSpent(w)).toBe(spent);
@@ -558,6 +569,7 @@ describe("WP75-S1 review fixes", () => {
     const after = await rows(w);
     expect(after.tasks).toEqual(before.tasks);
     expect(after.scheduled).toEqual(before.scheduled);
+    expect(after.steps).toEqual(before.steps);
     expect(await tokensSpent(w)).toBe(1);
   });
 
@@ -605,7 +617,10 @@ describe("WP75-S1 review fixes", () => {
     expect(after.workstreams.filter((row) => row.employeeId === brand._id)).toHaveLength(1);
     expect(after.documents.filter((row) => row.kind === "roster_plan")).toHaveLength(1);
     expect(blueprintTasks(after)).toHaveLength(1);
-    expect(generatorRuns(after)).toEqual(generatorRuns(written));
+    // No second blueprint run; with the team healed, S2b's DAG goes on to the brand kit.
+    const blueprintRuns = (r: Rows) => enqueued(r).filter((row) => row.type === "crew_blueprint");
+    expect(blueprintRuns(after)).toEqual(blueprintRuns(written));
+    expect(enqueued(after).filter((row) => row.type === "crew_brand_kit")).toHaveLength(1);
     expect(await tokensSpent(w)).toBe(1);
   });
 
@@ -629,6 +644,7 @@ describe("WP75-S1 review fixes", () => {
     let after = await rows(w);
     expect(after.tasks).toEqual(before.tasks);
     expect(after.scheduled).toEqual(before.scheduled);
+    expect(after.steps).toEqual(before.steps);
     expect(after.rosterPlans).toHaveLength(0);
     expect(await tokensSpent(w)).toBe(spentBefore + 1);
 
@@ -639,6 +655,9 @@ describe("WP75-S1 review fixes", () => {
     after = await rows(w);
     expect(blueprintTasks(after)).toHaveLength(1);
     expect(after.scheduled).toEqual(before.scheduled);
+    // No blueprint runs again; with the team planned, S2b's DAG enqueues the brand kit (free).
+    expect(after.steps.filter((row) => row.type === "crew_blueprint")).toEqual(before.steps.filter((row) => row.type === "crew_blueprint"));
+    expect(enqueued(after).map((row) => row.type)).toEqual(["crew_brand_kit"]);
     expect(await tokensSpent(w)).toBe(spentBefore + 1);
   });
 

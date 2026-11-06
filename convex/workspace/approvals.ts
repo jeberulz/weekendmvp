@@ -12,6 +12,7 @@ import {
 } from "../_generated/server";
 import { assertFeatureEnabled, assertFeatureEnabledForOwner, type WorkspaceFeature } from "../ops/settings";
 import { requireBusinessAccess, requireBusinessForOwner } from "../platform/authz";
+import { checkLimit } from "../platform/limits";
 import {
   APPROVAL_DECISION_STATUS,
   APPROVAL_DECISIONS,
@@ -719,6 +720,10 @@ async function requestArtifactChanges(
       changeRound: { outcome: "not_available", reason: decision.reason, changeRound: decision.changeRound },
     };
   }
+  // WP75-S2b (C-LIMITS, one token per founder action): a free round is the founder's action and spends one
+  // `crewJob` token here, before any write. With AI off or no token left it throws and the card stays
+  // `pending`. A paid round spends its token where its task starts (the debit site, progress Needs 12).
+  if (decision.decision === "free") await checkLimit(ctx, "crewJob", approval.ownerId);
 
   await ctx.db.patch("approvals", approval._id, {
     status: "changes_requested",
@@ -778,6 +783,8 @@ async function reaskChangeRound(
   const { lineage, decision } = resolution;
   if (decision.decision === "free") {
     if (!(await cardRoundWasReleased(ctx, lineage, decision.changeRound, approval._id))) return noop;
+    // WP75-S2b: the retried free round is a founder action too: one `crewJob` token, before any write.
+    await checkLimit(ctx, "crewJob", approval.ownerId);
     if (note !== undefined && note !== approval.note) {
       await ctx.db.patch("approvals", approval._id, { note, updatedAt: now });
     }

@@ -5,12 +5,12 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireBusinessForOwner } from "../platform/authz";
-import { checkLimit } from "../platform/limits";
 import { assertTaskTransition } from "../platform/transitions";
 import { assertGeneratedDocumentBody } from "../platform/validators";
-import { assertApproved, createApprovalRecord } from "../workspace/approvals";
+import { assertApproved, createApprovalRecord, readSubjectState, subjectRefusal } from "../workspace/approvals";
 import { revisionNoteFor } from "../workspace/changeRounds";
 import type { LineageTask } from "../../lib/workspace/changeRounds";
+import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
 import { parseArtifact, parseModelOutput } from "../../lib/workspace/contracts/artifacts";
 import { JOB_SUBJECT_MAIN, jobKey, parseJobKey } from "../../lib/workspace/contracts/jobs";
 import { parsePromptRef } from "../../lib/workspace/contracts/prompts";
@@ -43,7 +43,15 @@ import {
 } from "../../lib/workspace/crew/tasks";
 import { crewSeedFor, newestPlatformSeed } from "../../lib/workspace/crew/inputs";
 import { gateCrewArtifact, issueCodes, type QualityContext } from "../../lib/workspace/crew/quality";
-import { launchRosterPlan, openLaunchRosterTask, writeLaunchRoster } from "./launchRoster";
+import {
+  isBlueprintFirstDraft,
+  launchRosterPlan,
+  launchRosterTask,
+  newestBlueprintFirstDraft,
+  openLaunchRosterTask,
+  writeLaunchRoster,
+} from "./launchRoster";
+import { LAUNCH_STEPS, isPoolStep } from "./steps";
 
 /**
  * WP75-S2a — crew task lifecycle (C-JOBS), all internal. Callers authorise the
@@ -56,9 +64,11 @@ import { launchRosterPlan, openLaunchRosterTask, writeLaunchRoster } from "./lau
  *   `insertRevisionTask` (after "Ask for changes" moved the reviewed card to
  *   `changes_requested`, or after a paid round's debit), never here. Live work
  *   under the same key is returned, not duplicated. Gates: the owner's
- *   `workspace` feature, the business, then one `checkLimit(ctx, "crewJob",
- *   owner)` per inserted task (which asserts the `ai` feature). The limit's
- *   per-step semantics are still open (progress Stop-and-ask 10, Needs 9).
+ *   `workspace` feature and the business. It spends no `crewJob` token
+ *   (S2b, owner ruling "one token per founder action", `docs/wp/RULINGS.md`):
+ *   the founder-facing start that causes the insert spends the action's one
+ *   token (`startLaunch`, `retryLaunch`, `resumeLaunch`, an "Ask for changes"
+ *   round), and the steps a launch inserts on its own spend none.
  * - `startCrewRun`: one `workflow_runs` row per execution of a task
  *   (`run:{taskId}:{n}`). Reads everything the call needs from the server: the
  *   first attempt number (one past every number used under the job key), the
@@ -72,8 +82,9 @@ import { launchRosterPlan, openLaunchRosterTask, writeLaunchRoster } from "./lau
  *   when the refund can run), parks or closes, per `lib/workspace/crew/retry.ts`.
  * - `recoverStaleCrewRuns`: settles runs left `running` past the lease (an
  *   action that died) as indeterminate, bounded and paginated. It needs a cron
- *   (Codex's file; progress Needs). Until then S2b's workpool `onComplete`
- *   re-invokes the step, and `startCrewRun` closes a stale run itself.
+ *   (Codex's file; progress Needs). S2b's `stepDone` (the workpool
+ *   `onComplete`) re-invokes a launch step whose action died, and
+ *   `startCrewRun` closes a stale run itself.
  *
  * Every task status write goes through `assertTaskTransition`
  * (`convex/platform/transitions.ts`).
@@ -515,14 +526,86 @@ export async function approvedBlueprint(
   return null;
 }
 
-/** The brief a brand kit was built from is still an approved blueprint (round 2, minor 3). */
-async function briefStillApproved(
+/**
+ * WP75-S2b: whether a brand kit task is a launch's own first draft: round 0
+ * under the revision-0 key, not a revision, in a business that has a launch
+ * (its `crew_roster` task). Brand kit revisions (WP77 change rounds) and kits
+ * outside a launch are not.
+ */
+export async function isLaunchBrandKitTask(ctx: Pick<QueryCtx, "db">, task: Doc<"tasks">): Promise<boolean> {
+  if (task.type !== "crew_brand_kit" || task.revisionOfTaskId !== undefined || (task.changeRound ?? 0n) !== 0n) return false;
+  if (task.jobKey !== jobKey(task.projectId, "crew_brand_kit", JOB_SUBJECT_MAIN, 0)) return false;
+  return (await launchRosterTask(ctx, task.ownerId, task.projectId)) !== null;
+}
+
+/**
+ * WP75-S2b owner ruling "brand-kit brief in a launch" (`docs/wp/RULINGS.md`,
+ * 2026-11-06; narrows S3a review minor 1 for launches only): a launch's brand
+ * kit may brief from that launch's own first-draft blueprint while its card is
+ * `pending` (inside its TTL) or `approved`, and only when:
+ * - the document belongs to the business, is a blueprint, is not archived and
+ *   was written by a succeeded blueprint first draft (round 0, revision-0 key);
+ * - the newest `artifact_review` card on it is `pending` or `approved` (never
+ *   `changes_requested`, `expired` or `cancelled`);
+ * - the document is unchanged since that card was created (C-APPROVAL's own
+ *   subject check).
+ * `now` is the caller's clock for the pending card's TTL; a query that cannot
+ * read the clock passes none and `finishCrewStep` applies the TTL.
+ */
+export async function isLaunchDraftBrief(
   ctx: Pick<QueryCtx, "db">,
   project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  row: Doc<"documents">,
+  now?: number,
+): Promise<boolean> {
+  if (row.projectId !== project._id || row.ownerId !== project.ownerId || row.kind !== "blueprint") return false;
+  if (row.archivedAt !== undefined || row.body === undefined || row.taskId === undefined) return false;
+  const writer = await ctx.db.get("tasks", row.taskId);
+  if (writer === null || writer.ownerId !== project.ownerId || writer.status !== "succeeded" || !isBlueprintFirstDraft(writer)) return false;
+  const cards = (await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", row._id)).take(APPROVALS_PER_DOCUMENT_MAX))
+    .filter((card) => card.kind === "artifact_review" && card.subjectTable === "documents" &&
+      card.projectId === project._id && card.ownerId === project.ownerId);
+  const newest = cards.reduce<Doc<"approvals"> | null>((latest, card) =>
+    latest === null || card._creationTime > latest._creationTime ? card : latest, null);
+  if (newest === null) return false;
+  const live = newest.status === "approved" ||
+    (newest.status === "pending" && (now === undefined || !isPendingApprovalStale(newest.createdAt, now)));
+  if (!live) return false;
+  const state = await readSubjectState(ctx, project.ownerId, project._id, "documents", row._id);
+  return subjectRefusal(state, "artifact_review", newest.createdAt, newest._id) === null;
+}
+
+/** The launch's own first-draft blueprint document, when it may brief the launch's brand kit (`isLaunchDraftBrief`). */
+export async function launchDraftBlueprint(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  now?: number,
+): Promise<Doc<"documents"> | null> {
+  const firstDraft = await newestBlueprintFirstDraft(ctx, project.ownerId, project._id);
+  if (firstDraft === null || firstDraft.status !== "succeeded") return null;
+  const document = await ctx.db.query("documents")
+    .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", firstDraft._id))
+    .order("desc")
+    .first();
+  return document !== null && (await isLaunchDraftBrief(ctx, project, document, now)) ? document : null;
+}
+
+/**
+ * The brief a brand kit was built from may still brief it (round 2, minor 3):
+ * an approved blueprint, or for a launch's own kit the launch's first draft
+ * under the S2b ruling (`isLaunchDraftBrief`).
+ */
+async function briefStillValid(
+  ctx: Pick<QueryCtx, "db">,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  task: Doc<"tasks">,
   briefDocumentId: Id<"documents">,
+  now: number,
 ): Promise<boolean> {
   const row = await ctx.db.get("documents", briefDocumentId);
-  return row !== null && (await isApprovedBlueprint(ctx, project, row));
+  if (row === null) return false;
+  if (await isApprovedBlueprint(ctx, project, row)) return true;
+  return (await isLaunchBrandKitTask(ctx, task)) && (await isLaunchDraftBrief(ctx, project, row, now));
 }
 
 const qualityContextValidator = v.object({
@@ -565,8 +648,9 @@ export type CrewTaskInsert = {
 /**
  * Inserts (or returns) the task for an artifact's first draft. Throws
  * `CREW_TASK_CONFLICT` when the lineage already has revisions without a live
- * first draft, and the feature gate's, business guard's or limiter's error
- * when the owner may not start work now.
+ * first draft, and the feature gate's or business guard's error when the
+ * owner may not start work now. No limiter token: the founder-facing caller
+ * spends the action's one `crewJob` token (S2b).
  */
 export async function insertCrewTask(ctx: MutationCtx, input: CrewTaskInput): Promise<CrewTaskInsert> {
   const subject = input.subject ?? JOB_SUBJECT_MAIN;
@@ -581,8 +665,6 @@ export async function insertCrewTask(ctx: MutationCtx, input: CrewTaskInput): Pr
     return { taskId: existing._id, created: false, changeRound: 0, jobKey: existing.jobKey };
   }
 
-  // C-LIMITS: one check per inserted task, in the mutation that starts the work.
-  await checkLimit(ctx, "crewJob", input.ownerId);
   const key = jobKey(input.projectId, input.jobType, subject, 0);
   // A retry after failed or cancelled first drafts gets its own idempotency key.
   const idempotencyKey = plan.priorHolders === 0 ? `crew-task:${key}` : `crew-task:${key}:retry:${plan.priorHolders}`;
@@ -603,6 +685,46 @@ export async function insertCrewTask(ctx: MutationCtx, input: CrewTaskInput): Pr
     updatedAt: now,
   });
   return { taskId, created: true, changeRound: 0, jobKey: key };
+}
+
+/** Rows read per step job key when checking whether a launch step already has its task. */
+const STEP_KEY_HOLDERS_READ_MAX = 20;
+
+/**
+ * WP75-S2b: the launch's step tasks, inserted once its roster is written (in
+ * the blueprint's finish, and again by `./launch.ts` when it advances a
+ * launch, which heals a roster written before S2b). One task per built pool
+ * step after the blueprint whose employee the roster hired, and only while
+ * nothing holds the step's revision-0 key: a failed or cancelled step is
+ * never re-inserted here. The founder's Try again re-inserts it
+ * (`retryLaunch` -> `retryFailedLaunchSteps` in `./launch.ts`: a new first
+ * draft on the same key, one token per click). A step
+ * whose employee was skipped gets no task. No `crewJob` token. Returns the
+ * number inserted.
+ */
+export async function ensureLaunchStepTasks(
+  ctx: MutationCtx,
+  project: Pick<Doc<"projects">, "_id" | "ownerId">,
+  hired: ReadonlySet<string>,
+): Promise<number> {
+  let inserted = 0;
+  for (const step of LAUNCH_STEPS) {
+    if (step.key === "blueprint" || !isPoolStep(step) || step.jobType === "crew_roster") continue;
+    if (step.employee !== "lead" && !hired.has(step.employee)) continue;
+    const key = jobKey(project._id, step.jobType, JOB_SUBJECT_MAIN, 0);
+    const holders = await ctx.db.query("tasks")
+      .withIndex("by_ownerId_and_jobKey", (q) => q.eq("ownerId", project.ownerId).eq("jobKey", key))
+      .take(STEP_KEY_HOLDERS_READ_MAX);
+    if (holders.some((row) => row.projectId === project._id)) continue;
+    await insertCrewTask(ctx, {
+      ownerId: project.ownerId,
+      projectId: project._id,
+      jobType: step.jobType,
+      ...(step.employee === "lead" ? {} : { employeeKey: step.employee }),
+    });
+    inserted += 1;
+  }
+  return inserted;
 }
 
 const crewTaskInsertValidator = v.object({
@@ -633,6 +755,13 @@ export const createCrewTask = internalMutation({
 async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskStatus, now: number): Promise<Doc<"tasks">> {
   assertTaskTransition(task.status, next);
   await ctx.db.patch("tasks", task._id, { status: next, updatedAt: now });
+  // S2b review minor 3: a WP77 revision runs off the pool but holds one of the
+  // owner's crew slots while `running`. When it finishes, fails, parks or is
+  // cancelled, the launch DAG fills that slot (scheduled, so this module needs
+  // no import of `./launch`, which imports it). No token.
+  if (task.status === "running" && next !== "running" && task.revisionOfTaskId !== undefined) {
+    await ctx.scheduler.runAfter(0, internal.crew.launch.advanceAfterRevision, { ownerId: task.ownerId });
+  }
   return { ...task, status: next, updatedAt: now };
 }
 
@@ -691,6 +820,37 @@ async function failTask(
 async function parkTask(ctx: MutationCtx, task: Doc<"tasks">, code: ParkingMeterCode, now: number): Promise<void> {
   const parked = await setTaskStatus(ctx, task, "blocked", now);
   await setCrewStatus(ctx, parked, { member: "needs_you", workstream: "blocked", blocker: parkedReason(code) }, now);
+}
+
+/**
+ * WP75-S2b: the founder resumed a parked (`blocked`) step: blocked → running,
+ * and the employee and workstream back to `queued`, before the step is
+ * enqueued again. Claiming `running` here (not in `startCrewRun`) makes the
+ * resumed step count against the owner's cap from the moment it is enqueued.
+ * `startCrewRun` then starts a `running` task with no open run as usual.
+ */
+export async function resumeParkedTask(ctx: MutationCtx, task: Doc<"tasks">, now: number): Promise<Doc<"tasks">> {
+  const running = await setTaskStatus(ctx, task, "running", now);
+  await setCrewStatus(ctx, running, { member: "queued", workstream: "queued", blocker: null }, now);
+  return running;
+}
+
+/**
+ * WP75-S2b: a launch step whose action keeps dying without settling its task
+ * (`stepDone`, `MAX_ACTION_FAILURES`). Closes any open run as abandoned and
+ * fails the task with the calm "interrupted" note (a debit refunded by the
+ * usual rule). A terminal or parked task is left alone. Returns whether it
+ * failed the task.
+ */
+export async function abandonCrewTask(ctx: MutationCtx, taskId: Id<"tasks">, now: number): Promise<boolean> {
+  const task = await ctx.db.get("tasks", taskId);
+  if (task === null || isTerminal(task.status) || task.status === "blocked") return false;
+  for (const run of await runsOf(ctx, task._id)) {
+    if (run.status === "running") await closeAbandonedRun(ctx, run, now);
+  }
+  const running = task.status === "running" ? task : await setTaskStatus(ctx, task, "running", now);
+  await failTask(ctx, running, now, "interrupted");
+  return true;
 }
 
 async function closeRun(
@@ -962,10 +1122,12 @@ export const finishCrewStep = internalMutation({
     }
 
     const { kind } = CREW_STEP_ARTIFACTS[jobType];
-    // S3a review round 2, minor 3: the kit's brief must still be approved when the kit is stored. A blueprint
-    // edited or un-approved since the step was prepared fails the step like a config failure would have at
-    // preflight: permanent, no document, the usual calm note, a debit refunded.
-    if (kind === "brand_kit" && args.briefDocumentId !== undefined && !(await briefStillApproved(ctx, project, args.briefDocumentId))) {
+    // S3a review round 2, minor 3: the kit's brief must still be valid when the kit is stored: approved, or
+    // (S2b ruling) the launch's own first draft with a live, unchanged card. A blueprint edited or un-approved
+    // since the step was prepared fails the step like a config failure would have at preflight: permanent, no
+    // document, the usual calm note, a debit refunded.
+    if (kind === "brand_kit" && args.briefDocumentId !== undefined &&
+      !(await briefStillValid(ctx, project, task, args.briefDocumentId, now))) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
     }
@@ -1038,7 +1200,11 @@ export const finishCrewStep = internalMutation({
       addDocumentId: documentId,
       askApprovalId: approvalId,
     }, now);
-    if (rosterTask !== null && rosterPlan !== null) await writeLaunchRoster(ctx, rosterTask, rosterPlan, now);
+    if (rosterTask !== null && rosterPlan !== null) {
+      await writeLaunchRoster(ctx, rosterTask, rosterPlan, now);
+      // S2b: the hired employees' step tasks, queued; the DAG enqueues them as their parents finish.
+      await ensureLaunchStepTasks(ctx, project, new Set(rosterPlan.hired.map((entry) => entry.roleKey)));
+    }
     return { kind: "finished", documentId, approvalId, ...(softIssueCodes.length === 0 ? {} : { softIssueCodes }) };
   },
 });

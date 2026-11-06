@@ -131,7 +131,11 @@ Standing rules:
     across a re-ask and a retry; a refusal fails the task with no further provider call; a parked step makes zero
     provider calls; kill switch on with live mode and a fake key makes zero fetch calls.
 
-- [ ] `WP75-S2b` - Launch DAG on `crewWorkpool`
+- [x] `WP75-S2b` - Launch DAG on `crewWorkpool`
+  - Built 2026-11-06 (`docs/wp/wp75-progress.md` § WP75-S2b). As built: only the blueprint, roster and brand kit
+    text run; the other steps are slots that read `skipped` with a reason. The 5-minute landing-spec timing check
+    moves to S3c. Steps run as `runCrewGeneratorStep` (server-built inputs). In a launch the brand kit briefs from
+    the launch's own first-draft blueprint (RULINGS 2026-11-06, "WP75-S2b brand-kit brief in a launch").
   - S3a hand-off: every brand-kit step must be prepared through `convex/crew/generators.ts`, so it carries
     `briefDocumentId` and `seedId`. `finishCrewStep` re-checks the approved blueprint only for a step that carries
     `briefDocumentId`; a step that builds its own inputs skips that check.
@@ -215,6 +219,11 @@ Standing rules:
     Stop-and-ask 6). Until then the `artifact_review` subject is the document.
   - Acceptance (fixture): stored spec parses with `landingSpecSchema`, has a waitlist and only placeholder proof; a
     layout the direction forbids triggers exactly one repair; the approval exists.
+  - Capacity note (S2b review): `crewWorkpool` runs at most `CREW_MAX_PARALLELISM` = 10 actions across all owners,
+    with 3 per owner (`OWNER_CREW_CAP`). The "landing spec ready within 5 minutes" target moved here from S2b, so it
+    needs the maths before S3c ships. Work out the blueprint, kit and landing-spec latencies on the critical path,
+    then how many launches start at once at peak. Above about 3 concurrent launches, 10 slots queue launches
+    behind each other. Raise the parallelism, or state the target as an uncontended one.
 
 - [ ] `WP75-S3d` - Build pack (compile + personalise, standard v1)
   - Scope: `convex/ai/prompts/buildPackFull.v1.ts`, `buildPackLight.v1.ts`, `lib/workspace/crew/promptStandard.ts`
@@ -315,6 +324,9 @@ Standing rules:
   - Palette with contrast ratios shown as text, type pair specimen, voice (say / don't say), logo marks (alt text
     shown), DESIGN.md download.
   - Acceptance: a11y-check; DESIGN.md export is byte-stable for the HydroTrail fixture.
+  - Open item from S2b: a launch's kit can be built on the blueprint's first draft while its card is pending. If
+    the founder later asks for changes on the blueprint, the kit stays built on the earlier draft; S6b (with WP77)
+    needs a re-run or "built on an earlier blueprint" policy.
 
 - [ ] `WP75-S6c` - Landing review (desktop and mobile preview)
   - Scope: a landing review page (proposed route `site`, added to `lib/workspace/routes.ts` and linked from Team HQ

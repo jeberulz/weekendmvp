@@ -5,10 +5,12 @@
  * clicks and races, supersede not resetting the count, owner-only, dormant, and
  * the paid round's spend terms. Nothing is debited. No network, no model.
  */
+import { HOUR, RateLimiter } from "@convex-dev/rate-limiter";
+import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { convexTest, type TestConvex } from "convex-test";
 import { describe, expect, test } from "vitest";
 
-import { api, internal } from "../_generated/api";
+import { api, components, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { assertApproved, assertPaidRevisionApproved, createApprovalRecord } from "./approvals";
@@ -20,8 +22,10 @@ const modules = import.meta.glob("/convex/**/*.ts");
 type T = TestConvex<typeof schema>;
 type DocKind = "brand_kit" | "seo_pack" | "landing_spec" | "social_pack";
 
-async function seed(options: { workspaceEnabled?: boolean } = {}) {
+async function seed(options: { workspaceEnabled?: boolean; aiEnabled?: boolean } = {}) {
   const t = convexTest(schema, modules);
+  // WP75-S2b: a free round spends one `crewJob` token (C-LIMITS), which needs the limiter and the `ai` feature.
+  registerRateLimiter(t);
   const ids = await t.run(async (ctx) => {
     const adminId = await ctx.db.insert("users", { email: "admin@example.test" });
     const ownerId = await ctx.db.insert("users", { email: "owner@example.test" });
@@ -34,9 +38,9 @@ async function seed(options: { workspaceEnabled?: boolean } = {}) {
       workspaceEnabled: options.workspaceEnabled ?? true,
       cohortMode: "open",
       freeSignupsOpen: false,
-      globalDailyBudgetMicroUsd: 0n,
-      paidGlobalDailyBudgetMicroUsd: 0n,
-      killSwitches: { ai: true, studioVideo: true, publish: false, email: false, social: false, ads: false },
+      globalDailyBudgetMicroUsd: 50_000_000n,
+      paidGlobalDailyBudgetMicroUsd: 50_000_000n,
+      killSwitches: { ai: options.aiEnabled === false, studioVideo: true, publish: false, email: false, social: false, ads: false },
       updatedAt: 1,
     });
     const business = async (userId: Id<"users">, label: string) => {
@@ -734,6 +738,64 @@ describe("WP77 PR #210: retrying a free round from its changes_requested card", 
     const again = await askForChanges(seeded, cardId);
     expect(again).toMatchObject({ changed: true, changeRound: { outcome: "spend_required", changeRound: 3 } });
     expect((await tasksOf(t, ids.projectId)).length).toBe(before);
+  });
+});
+
+describe("WP75-S2b crewJob tokens on change rounds (C-LIMITS, one per founder action)", () => {
+  const limiter = new RateLimiter(components.rateLimiter, { crewJob: { kind: "fixed window", rate: 10, period: HOUR } });
+  const spent = async (seeded: Seeded) =>
+    10 - (await seeded.t.run(async (ctx) => await limiter.getValue(ctx, "crewJob", { key: seeded.ids.ownerId }))).value;
+
+  test("each free round spends one token; a retried free round spends one; raising a paid round's spend card spends none", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const round1 = await askForChanges(seeded, await reviewCard(t, ids, first.docId));
+    if (round1.changeRound?.outcome !== "free") throw new Error("expected free");
+    expect(await spent(seeded)).toBe(1);
+
+    // The round-1 revision fails; asking again on its card retries the same round for one token.
+    const card1 = round1.approvalId;
+    await t.run(async (ctx) => await ctx.db.patch("tasks", (round1.changeRound as { taskId: Id<"tasks"> }).taskId, { status: "failed" }));
+    const retried = await askForChanges(seeded, card1);
+    if (retried.changeRound?.outcome !== "free") throw new Error("expected a free retry");
+    expect(await spent(seeded)).toBe(2);
+    // A second click while the retry is queued is a no-op and spends nothing.
+    expect(await askForChanges(seeded, card1)).toMatchObject({ changed: false });
+    expect(await spent(seeded)).toBe(2);
+
+    const { cardId: card2 } = await finishRound(t, ids, retried.changeRound.taskId, "brand_kit", 1);
+    const round2 = await askForChanges(seeded, card2);
+    if (round2.changeRound?.outcome !== "free") throw new Error("expected free");
+    expect(await spent(seeded)).toBe(3);
+
+    // Round 3 is paid: raising its spend card spends no token (the paid task's start spends it, at the debit).
+    const { cardId: card3 } = await finishRound(t, ids, round2.changeRound.taskId, "brand_kit", 2);
+    expect((await askForChanges(seeded, card3)).changeRound).toMatchObject({ outcome: "spend_required" });
+    expect(await spent(seeded)).toBe(3);
+  });
+
+  test("AI off: a free round refuses AI_DISABLED, the card stays pending and no task is queued", async () => {
+    const seeded = await seed({ aiEnabled: false });
+    const { t, ids } = seeded;
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const cardId = await reviewCard(t, ids, first.docId);
+    await expect(askForChanges(seeded, cardId, "Bolder")).rejects.toThrow("AI_DISABLED");
+    expect(await t.run(async (ctx) => await ctx.db.get("approvals", cardId))).toMatchObject({ status: "pending" });
+    expect((await tasksOf(t, ids.projectId)).filter((row) => row.changeRound === 1n)).toHaveLength(0);
+  });
+
+  test("no token left: a free round is refused, the card stays pending and no task is queued", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 10; i += 1) await limiter.limit(ctx, "crewJob", { key: ids.ownerId, throws: true });
+    });
+    const first = await draft(t, ids, "crew_brand_kit", "brand_kit", 0);
+    const cardId = await reviewCard(t, ids, first.docId);
+    await expect(askForChanges(seeded, cardId, "Bolder")).rejects.toThrow();
+    expect(await t.run(async (ctx) => await ctx.db.get("approvals", cardId))).toMatchObject({ status: "pending" });
+    expect((await tasksOf(t, ids.projectId)).filter((row) => row.changeRound === 1n)).toHaveLength(0);
   });
 });
 

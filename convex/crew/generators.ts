@@ -15,7 +15,7 @@ import {
   crewSeedFor,
   type CrewPromptInputs,
 } from "../../lib/workspace/crew/inputs";
-import { approvedBlueprint, platformSeedRow } from "./jobs";
+import { approvedBlueprint, isLaunchBrandKitTask, launchDraftBlueprint, platformSeedRow } from "./jobs";
 import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type CrewRunnerDeps, type CrewStepOutcome } from "./runner";
 
 /**
@@ -39,6 +39,11 @@ import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type Cre
  * - The brand kit's brief (the approved blueprint document, `briefDocumentId`)
  *   is checked again in `finishCrewStep`, so a blueprint changed or
  *   un-approved mid-step never briefs a stored kit.
+ * - WP75-S2b owner ruling ("brand-kit brief in a launch", `docs/wp/RULINGS.md`):
+ *   a launch's own brand kit, when no blueprint is approved yet, briefs from
+ *   the launch's first-draft blueprint while its card is pending or approved
+ *   and the document is unchanged (`isLaunchDraftBrief`). Outside a launch,
+ *   S3a's approved-only rule is unchanged.
  *
  * Internal: S1's `startLaunch` and S2b's DAG call it after their own
  * authorisation and task insert.
@@ -75,7 +80,11 @@ function parseJson(text: string): unknown {
 }
 
 export const prepareCrewStep = internalQuery({
-  args: { taskId: v.id("tasks") },
+  args: {
+    taskId: v.id("tasks"),
+    /** The calling action's clock, for a launch brief's pending-card TTL (queries do not read the clock). */
+    now: v.optional(v.number()),
+  },
   returns: preparedCrewStep,
   handler: async (ctx, args): Promise<PreparedCrewStep> => {
     const task = await ctx.db.get("tasks", args.taskId);
@@ -141,7 +150,9 @@ export const prepareCrewStep = internalQuery({
         return { ok: true, promptRef, inputs, businessContext: crewBusinessContext(facts), ...(seedId === undefined ? {} : { seedId }) };
       }
     } else {
-      const stored = await approvedBlueprint(ctx, project);
+      // S2b: a launch's own kit may brief from the launch's first draft while no blueprint is approved.
+      const stored = (await approvedBlueprint(ctx, project)) ??
+        ((await isLaunchBrandKitTask(ctx, task)) ? await launchDraftBlueprint(ctx, project, args.now) : null);
       const blueprint = stored?.body === undefined ? null : blueprintSchema.safeParse(parseJson(stored.body));
       if (blueprint === null || !blueprint.success) return refuse(promptRef, "the brand kit needs the business's approved blueprint first");
       inputs = brandKitStepPlan({ answers, blueprint: blueprint.data }).inputs;
@@ -175,7 +186,7 @@ export async function runCrewGeneratorStepWith(
   deps: CrewRunnerDeps = {},
 ): Promise<CrewStepOutcome> {
   const { taskId, ...rest } = args;
-  const plan = await ctx.runQuery(internal.crew.generators.prepareCrewStep, { taskId });
+  const plan = await ctx.runQuery(internal.crew.generators.prepareCrewStep, { taskId, now: Date.now() });
   if (!plan.ok) {
     return await runCrewStepWith(ctx, { taskId, promptRef: plan.promptRef, inputs: {}, ...rest }, {
       ...deps,
@@ -197,7 +208,11 @@ export async function runCrewGeneratorStepWith(
   );
 }
 
-/** Runs a blueprint or brand kit step with server-built inputs. Internal (S1, S2b). */
+/**
+ * Runs a blueprint or brand kit step with server-built inputs. Internal: S2b's
+ * launch DAG enqueues it on `crewWorkpool` with `retryMode: "return"`
+ * (`./launch.ts`, `stepDone` re-invokes), and tests call it directly.
+ */
 export const runCrewGeneratorStep = internalAction({
   args: runCrewGeneratorStepArgs,
   returns: crewStepOutcomeValidator,

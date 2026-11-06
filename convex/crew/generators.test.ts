@@ -27,6 +27,7 @@ import { checkArtifact } from "../../lib/workspace/crew/checks";
 import { FAILED_STEP_QUALITY_REASON, FAILED_STEP_QUALITY_REFUNDED_REASON, FAILED_STEP_REASON } from "../../lib/workspace/crew/retry";
 import { NOT_VALIDATED_LABEL } from "../../lib/workspace/wizard/light-blueprint";
 import { runCrewGeneratorStepWith, type CrewGeneratorCtx } from "./generators";
+import { insertLaunchRosterTask } from "./launchRoster";
 import type { CrewArtifactRepair, CrewRunPrompt } from "./runner";
 
 const modules = import.meta.glob("/convex/**/*.ts");
@@ -421,6 +422,96 @@ describe("blueprint step", () => {
     expect(user).toContain(marker);
     expect(user).not.toContain("<system>");
     expect(user.split("</own_idea>")).toHaveLength(2);
+  });
+});
+
+/**
+ * WP75-S2b owner ruling "brand-kit brief in a launch" (2026-11-06): a launch's
+ * kit briefs from the launch's own first-draft blueprint while its card is
+ * pending or approved and the document is unchanged. Outside a launch the
+ * approved-only rule stands (the "brand kit step" tests below stay as they are).
+ */
+describe("WP75-S2b brand kit in a launch", () => {
+  /** A business mid-launch: the blueprint first draft stored with its card still pending, the launch's roster task, a brand kit task. */
+  async function launchKit(t: T, label: string) {
+    const business = await seedBusiness(t, label, "library");
+    const blueprint = await blueprintFirst(t, business, { approved: false });
+    await t.run(async (ctx) => await insertLaunchRosterTask(ctx, business.ownerId, business.projectId, Date.now()));
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    return { business, blueprint, taskId };
+  }
+
+  const refusals: { name: string; apply: (t: T, blueprint: { documentId: Id<"documents">; approvalId: Id<"approvals"> }) => Promise<void> }[] = [
+    {
+      name: "an edited draft",
+      apply: async (t, { documentId, approvalId }) => await t.run(async (ctx) => {
+        const card = await ctx.db.get("approvals", approvalId);
+        const doc = await ctx.db.get("documents", documentId);
+        if (card === null || doc === null) throw new Error("blueprint or card missing");
+        await ctx.db.patch("documents", documentId, { body: doc.body?.replace("HydroTrail", "HydroTrail Edited"), updatedAt: card.createdAt + 60_000 });
+      }),
+    },
+    ...(["changes_requested", "expired", "cancelled"] as const).map((status) => ({
+      name: `a ${status} card`,
+      apply: async (t: T, { approvalId }: { approvalId: Id<"approvals"> }) =>
+        await t.run(async (ctx) => await ctx.db.patch("approvals", approvalId, { status, decidedAt: Date.now() })),
+    })),
+  ];
+
+  test("briefs from the launch's pending first draft: the kit is stored and the blueprint's card stays pending", async () => {
+    const t = crewTest();
+    const { business, blueprint, taskId } = await launchKit(t, "launch-kit");
+    const gw = gateway(t);
+    const outcome = await run(t, taskId, gw);
+    expect(outcome).toMatchObject({ kind: "finished" });
+    expect(gw.calls()).toBe(1);
+    expect(systemText(gw.requests[0])[1]).toContain(JSON.stringify(hydrotrailBlueprint.pitch).slice(1, -1));
+    const { documents, approvals } = await stored(t, business.projectId);
+    expect(documents.map((doc) => doc.kind).sort()).toEqual(["blueprint", "brand_kit"]);
+    expect(approvals.find((row) => row._id === blueprint.approvalId)).toMatchObject({ status: "pending" });
+  });
+
+  test("an approved first draft briefs it too", async () => {
+    const t = crewTest();
+    const { blueprint, taskId } = await launchKit(t, "launch-kit-approved");
+    await approve(t, blueprint.approvalId);
+    expect(await run(t, taskId, gateway(t))).toMatchObject({ kind: "finished" });
+  });
+
+  for (const refusal of refusals) {
+    test(`at prepare, ${refusal.name} is refused: the kit fails preflight, no call`, async () => {
+      const t = crewTest();
+      const { business, blueprint, taskId } = await launchKit(t, `launch-prep-${refusal.name.replace(/\W+/g, "-")}`);
+      await refusal.apply(t, blueprint);
+      const { ctx, settled } = watchingCtx(t);
+      const gw = gateway(t);
+      const outcome = await runCrewGeneratorStepWith(ctx, { taskId }, { runPrompt: gw.runPrompt });
+      expect(outcome).toMatchObject({ kind: "failed", retryClass: "permanent" });
+      expect(gw.invoked()).toBe(0);
+      expect(settled).toEqual([{ kind: "config", message: "the brand kit needs the business's approved blueprint first" }]);
+      expect((await stored(t, business.projectId)).documents.map((doc) => doc.kind)).toEqual(["blueprint"]);
+    });
+
+    test(`at finish, ${refusal.name} is refused: the kit is not stored, the step fails permanent`, async () => {
+      const t = crewTest();
+      const { business, blueprint, taskId } = await launchKit(t, `launch-fin-${refusal.name.replace(/\W+/g, "-")}`);
+      const gw = gateway(t);
+      const outcome = await runWithMidStep(t, taskId, gw, async () => await refusal.apply(t, blueprint));
+      expect(outcome).toEqual({ kind: "failed", refundScheduled: false });
+      expect(gw.calls()).toBe(1);
+      expect((await stored(t, business.projectId)).documents.map((doc) => doc.kind)).toEqual(["blueprint"]);
+      expect(await task(t, taskId)).toMatchObject({ status: "failed" });
+    });
+  }
+
+  test("outside a launch the same pending draft is not a brief: approval is still required", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "no-launch-kit", "library");
+    await blueprintFirst(t, business, { approved: false });
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const gw = gateway(t);
+    expect(await run(t, taskId, gw)).toMatchObject({ kind: "failed", retryClass: "permanent" });
+    expect(gw.invoked()).toBe(0);
   });
 });
 
