@@ -142,6 +142,9 @@ export const workspaceTables = {
     kind: v.union(v.literal("artifact_review"), v.literal("send"), v.literal("post"), v.literal("publish"), v.literal("spend"), v.literal("ad_launch"), v.literal("upgrade")),
     subjectTable: v.string(),
     subjectId: v.string(),
+    // WP77 C-APPROVAL: content fingerprint, stable across status-only changes.
+    // Optional so existing approvals remain valid under their existing rules.
+    subjectVersion: v.optional(v.string()),
     status: v.union(v.literal("pending"), v.literal("approved"), v.literal("changes_requested"), v.literal("expired"), v.literal("cancelled")),
     changeRound: v.int64(),
     costCredits: v.optional(v.int64()),

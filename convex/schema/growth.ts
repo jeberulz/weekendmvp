@@ -2,6 +2,33 @@ import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export const growthTables = {
+  business_email_settings: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    fromName: v.string(),
+    replyTo: v.string(),
+    postalAddress: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
+    .index("by_projectId", ["projectId"]),
+
+  lead_email_tokens: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    leadId: v.id("leads"),
+    purpose: v.union(v.literal("opt_in"), v.literal("unsubscribe")),
+    tokenHash: v.string(),
+    // Opt-in tokens expire; unsubscribe tokens remain usable until lead purge.
+    expiresAt: v.optional(v.number()),
+    usedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
+    .index("by_leadId_and_purpose", ["leadId", "purpose"])
+    .index("by_tokenHash", ["tokenHash"]),
+
   sequences: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),
@@ -48,12 +75,19 @@ export const growthTables = {
     stepId: v.id("sequence_steps"),
     idempotencyKey: v.string(),
     resendId: v.optional(v.string()),
+    componentEmailId: v.optional(v.string()),
+    lastAttemptAt: v.optional(v.number()),
+    deliveredAt: v.optional(v.number()),
+    failureCode: v.optional(v.string()),
     status: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
-    .index("by_idempotencyKey", ["idempotencyKey"]),
+    .index("by_idempotencyKey", ["idempotencyKey"])
+    .index("by_componentEmailId", ["componentEmailId"])
+    .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"])
+    .index("by_projectId_and_createdAt", ["projectId", "createdAt"]),
 
   social_accounts: defineTable({
     ownerId: v.id("users"),
