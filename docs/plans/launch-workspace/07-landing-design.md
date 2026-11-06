@@ -1,7 +1,7 @@
 # 07 — Landing design quality: how Leo avoids generic AI pages
 
 Status: the C-ART change in §5 was approved by the owner on 2026-11-05 and merged as
-WP69-S6 (#172), before G0. D23 is ruled (owner, 2026-11-05); D24 and D25 are still proposed.
+WP69-S6 (#172), before G0. D23 is ruled (owner, 2026-11-05); D24 and D25 are ruled (owner, 2026-11-06).
 Input: John's brief, `briefs/design-skills-crew-brief.md`. Where this doc
 departs from it, §3 says why.
 
@@ -150,14 +150,14 @@ Owners: WP69 amends C-ART. WP72 and WP75 S5 build the directions and the CI
 matrix. WP71 adds the distinctiveness eval. WP75 S3–S4 add the Pro Max lookup,
 the copy lexicon and the DESIGN.md export.
 
-## 6. Rulings proposed (owner)
+## 6. Rulings (owner)
 
 - **D23 (ruled 2026-11-05):** the hosted crew uses no model tool loops in Phase A. Skills reach it as
   vendored data and deterministic checks. Full skills are for build agents and
   the founder's build pack.
-- **D24:** founder pages follow the bans in §4, enforced by C-ART enums and CI.
+- **D24 (ruled 2026-11-06):** founder pages follow the bans in §4, enforced by C-ART enums and CI.
   The Weekend MVP site is exempt.
-- **D25:** tenant-page motion is CSS-only. GSAP is limited to the founder's own
+- **D25 (ruled 2026-11-06):** tenant-page motion is CSS-only. GSAP is limited to the founder's own
   code through the build pack. No user-facing animation builder.
 
 ## 7. Licences (checked 2026-11-05 via the GitHub API)
