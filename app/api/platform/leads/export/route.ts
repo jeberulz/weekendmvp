@@ -43,8 +43,14 @@ export async function GET(request: Request) {
   let page: typeof first | null = first;
   let cursor: string | null = null;
   let headerSent = false;
+  let cancelled = false;
   const body = new ReadableStream<Uint8Array>({
     async pull(controller) {
+      if (cancelled) return;
+      if (request.signal.aborted) {
+        controller.close();
+        return;
+      }
       if (!headerSent) {
         headerSent = true;
         controller.enqueue(encoder.encode(LEAD_CSV_HEADER));
@@ -52,14 +58,22 @@ export async function GET(request: Request) {
       }
       try {
         const current = page ?? await load(cursor);
+        if (cancelled) return;
+        if (request.signal.aborted) {
+          controller.close();
+          return;
+        }
         page = null;
         cursor = current.continueCursor;
         const rows = current.page.map(leadCsvRow).join("");
         if (rows) controller.enqueue(encoder.encode(rows));
         if (current.isDone) controller.close();
       } catch (error) {
-        controller.error(error);
+        if (!cancelled) controller.error(error);
       }
+    },
+    cancel() {
+      cancelled = true;
     },
   });
 
