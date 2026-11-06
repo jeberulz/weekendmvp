@@ -15,6 +15,7 @@ import type * as ai_gateway from "../ai/gateway.js";
 import type * as ai_gatewayActions from "../ai/gatewayActions.js";
 import type * as ai_metering from "../ai/metering.js";
 import type * as ai_pricing from "../ai/pricing.js";
+import type * as ai_prompts_crewShared from "../ai/prompts/crewShared.js";
 import type * as ai_prompts_entry from "../ai/prompts/entry.js";
 import type * as ai_prompts_index from "../ai/prompts/index.js";
 import type * as ai_prompts_registryProbe from "../ai/prompts/registryProbe.js";
@@ -176,6 +177,7 @@ declare const fullApi: ApiFromModules<{
   "ai/gatewayActions": typeof ai_gatewayActions;
   "ai/metering": typeof ai_metering;
   "ai/pricing": typeof ai_pricing;
+  "ai/prompts/crewShared": typeof ai_prompts_crewShared;
   "ai/prompts/entry": typeof ai_prompts_entry;
   "ai/prompts/index": typeof ai_prompts_index;
   "ai/prompts/registryProbe": typeof ai_prompts_registryProbe;
