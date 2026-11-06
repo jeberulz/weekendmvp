@@ -2,7 +2,7 @@ import Google from "@auth/core/providers/google";
 import { convexAuth, type Tokens } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { action, type ActionCtx } from "./_generated/server";
-import { isAllowedAuthReturnPath, isIdeaReturnPath } from "../lib/private-paths";
+import { hasDotSegmentInTarget, isAllowedAuthReturnPath, isBareReturnPath } from "../lib/private-paths";
 import { createOrUpdateAuthUser, googleProfile } from "./authUser";
 import {
   emailMagicLinkProvider,
@@ -19,7 +19,7 @@ const DEFAULT_AUTH_REDIRECT = "/dashboard";
  */
 function safeDashboardTarget(pathname: string, search: string, hash: string) {
   if (isAllowedAuthReturnPath(pathname)) {
-    if (isIdeaReturnPath(pathname)) return search || hash ? null : pathname;
+    if (isBareReturnPath(pathname)) return search || hash ? null : pathname;
     return `${pathname}${search}${hash}`;
   }
   return null;
@@ -30,7 +30,7 @@ function safeDashboardTarget(pathname: string, search: string, hash: string) {
  * Anything else collapses to the bounded default.
  */
 function safeCallbackReturnTo(value: string | null) {
-  if (value === null || value === "") return DEFAULT_AUTH_REDIRECT;
+  if (value === null || value === "" || hasDotSegmentInTarget(value)) return DEFAULT_AUTH_REDIRECT;
   try {
     const nested = new URL(value, AUTH_REDIRECT_ORIGIN);
     if (nested.origin === AUTH_REDIRECT_ORIGIN) {
@@ -56,6 +56,7 @@ function safeCallbackReturnTo(value: string | null) {
  * crafted callback URL cannot smuggle an open redirect.
  */
 export function safeAuthRedirect(redirectTo: string) {
+  if (hasDotSegmentInTarget(redirectTo)) return DEFAULT_AUTH_REDIRECT;
   try {
     const target = new URL(redirectTo, AUTH_REDIRECT_ORIGIN);
     if (target.origin !== AUTH_REDIRECT_ORIGIN) {

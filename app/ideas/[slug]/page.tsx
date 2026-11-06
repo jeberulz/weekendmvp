@@ -29,6 +29,8 @@ import {
   IdeaPublicSummary,
 } from "@/components/ideas/IdeaPublicSummary";
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
+import { isBuildCtaSlug } from "@/lib/workspace/build-cta";
+import { buildCtaVisible } from "@/lib/workspace/build-cta-access";
 import { buildPublicIdeaPreview } from "@/lib/ideas/public-preview";
 import { manifestIdeas } from "@/lib/public/library";
 import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
@@ -382,8 +384,13 @@ export default async function IdeaPage({
 }) {
   const { slug } = await params;
   await connection();
+  // WP74-S5: the flag read starts now and runs beside the idea lookup.
+  const ctaLookup = isBuildCtaSlug(slug) ? buildCtaVisible() : Promise.resolve(false);
   const token = await currentIdeaMemberToken();
   const resolved = await resolveIdea(slug, token);
+  // Only a real, non-draft idea, and only behind the launch-workspace flag.
+  // Off, every branch below renders exactly what it did before.
+  const buildCta = resolved ? await ctaLookup : false;
   if (!resolved) {
     // Not an idea — maybe a collection hub slug (U11 extension point).
     const collection = await renderCollection(slug);
@@ -406,6 +413,7 @@ export default async function IdeaPage({
         <JsonLd schema={buildPublicSchema(slug, resolved)} />
         <EmailGate
           slug={slug}
+          buildFirst={buildCta}
           intro={
             <IdeaPublicHeader
               title={resolved.title}

@@ -1,4 +1,4 @@
-import { isAllowedAuthReturnPath, isIdeaReturnPath } from "./private-paths";
+import { hasDotSegmentInTarget, isAllowedAuthReturnPath, isBareReturnPath } from "./private-paths";
 
 export const DEFAULT_AUTH_RETURN = "/dashboard";
 
@@ -24,7 +24,7 @@ function carriesClaimPreview(url: URL) {
  * dashboard and the editorial workspace (its "confirm it's you" sign-in).
  */
 export function safePlatformReturn(value: unknown) {
-  if (typeof value !== "string" || value.includes("\\")) {
+  if (typeof value !== "string" || value.includes("\\") || hasDotSegmentInTarget(value)) {
     return DEFAULT_AUTH_RETURN;
   }
 
@@ -34,7 +34,7 @@ export function safePlatformReturn(value: unknown) {
       target.origin === "https://platform.weekendmvp.invalid" &&
       isAllowedAuthReturnPath(target.pathname)
     ) {
-      if (isIdeaReturnPath(target.pathname)) {
+      if (isBareReturnPath(target.pathname)) {
         return target.search || target.hash ? DEFAULT_AUTH_RETURN : target.pathname;
       }
       return `${target.pathname}${target.search}${target.hash}`;

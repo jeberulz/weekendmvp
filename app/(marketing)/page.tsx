@@ -19,6 +19,7 @@ import { YourWeekend } from "@/components/home/sections/YourWeekend";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { getHomeData } from "@/lib/home/data";
+import { buildCtaVisible } from "@/lib/workspace/build-cta-access";
 import {
   SITE,
   buildGraph,
@@ -78,7 +79,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   await connection();
-  const data = await getHomeData();
+  // WP74-S5: the flag read runs beside the home data, not after it.
+  const [data, buildCta] = await Promise.all([getHomeData(), buildCtaVisible()]);
   const title = homeTitle(data.totals.ideas);
   const description = homeDescription(data.totals.ideas);
   const pageUrl = `${SITE}/`;
@@ -113,10 +115,10 @@ export default async function HomePage() {
           ),
         )}
       />
-      <Hero idea={data.hero} total={data.totals.ideas} />
+      <Hero idea={data.hero} total={data.totals.ideas} buildCta={buildCta} />
       <WhatIs />
       <IdeaLibrary total={data.totals.ideas} categories={data.totals.categories} rows={data.newest} />
-      {data.spotlight && <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} />}
+      {data.spotlight && <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} buildCta={buildCta} />}
       <WeekendTest averageHours={data.totals.averageHours} />
       <BuildWithAI toolCounts={data.totals.tools} idea={data.spotlight} />
       {data.inside && <InsideEveryIdea idea={data.inside} weekLabel={data.week.label} />}

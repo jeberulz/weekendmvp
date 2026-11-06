@@ -31,6 +31,7 @@ import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
+import type * as buildCta from "../buildCta.js";
 import type * as crew_roles from "../crew/roles.js";
 import type * as crons from "../crons.js";
 import type * as currentUser from "../currentUser.js";
@@ -138,6 +139,9 @@ import type * as siteUrl from "../siteUrl.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as workspace_access from "../workspace/access.js";
 import type * as workspace_approvals from "../workspace/approvals.js";
+import type * as workspace_business from "../workspace/business.js";
+import type * as workspace_signals from "../workspace/signals.js";
+import type * as workspace_wizard from "../workspace/wizard.js";
 
 import type {
   ApiFromModules,
@@ -169,6 +173,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authEmail: typeof authEmail;
   authUser: typeof authUser;
+  buildCta: typeof buildCta;
   "crew/roles": typeof crew_roles;
   crons: typeof crons;
   currentUser: typeof currentUser;
@@ -276,6 +281,9 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   "workspace/access": typeof workspace_access;
   "workspace/approvals": typeof workspace_approvals;
+  "workspace/business": typeof workspace_business;
+  "workspace/signals": typeof workspace_signals;
+  "workspace/wizard": typeof workspace_wizard;
 }>;
 
 /**
