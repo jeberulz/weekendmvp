@@ -1,8 +1,10 @@
 import { isRateLimitError } from "@convex-dev/rate-limiter";
 import { ConvexHttpClient } from "convex/browser";
+import { ConvexError } from "convex/values";
 import { api } from "@/convex/_generated/api";
 import { classifyHost, tenantHostForSlug } from "@/lib/tenant-host";
 import { clientRateLimitKey } from "../../platform/preview/_server";
+import { signTenantLeadPayload, tenantLeadBridgeSecret } from "./_bridge";
 import { validateLeadBody } from "./_server";
 
 /**
@@ -15,7 +17,7 @@ import { validateLeadBody } from "./_server";
  * the rewrite were ever reachable another way.
  *
  * This layer exists because Convex mutations cannot observe a client IP. It
- * derives the rate-limit key from request headers and passes it through.
+ * signs a pseudonymous rate-limit key derived from trusted request headers.
  *
  * WP28 stores no real lead (owner ruling 2026-08-07), so the body is
  * validated for personal data and **refused** rather than stripped.
@@ -78,21 +80,35 @@ export async function POST(request: Request) {
   if (!convexUrl) {
     return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
   }
+  let signed: ReturnType<typeof signTenantLeadPayload>;
+  try {
+    const secret = tenantLeadBridgeSecret(process.env);
+    signed = signTenantLeadPayload(hostname, clientRateLimitKey(request.headers), secret);
+  } catch {
+    return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
+  }
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    await client.mutation(api.platform.sites.leads.recordSynthetic, {
-      hostname,
-      rateLimitKey: clientRateLimitKey(request.headers),
-    });
+    await client.mutation(api.platform.sites.leads.recordSynthetic, signed);
   } catch (error) {
     if (isRateLimitError(error)) {
       return jsonError(429, "RATE_LIMITED");
     }
-    // An unpublished or unknown site arrives here as the same generic
-    // refusal the public resolver gives, so this endpoint cannot be used to
-    // enumerate which tenant sites are live.
-    return jsonError(404, "NOT_FOUND");
+    const code = error instanceof ConvexError
+      ? (error.data as { code?: string } | null)?.code
+      : undefined;
+    if (code === "TENANT_LEAD_BRIDGE_NOT_CONFIGURED"
+      || code === "INVALID_TENANT_LEAD_BRIDGE_SIGNATURE"
+      || code === "INVALID_TENANT_LEAD_BRIDGE_PAYLOAD"
+      || code === "TENANT_LEAD_BRIDGE_EXPIRED") {
+      return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
+    }
+    // An unpublished or unknown site gets the public resolver's refusal.
+    if (code === "TENANT_SITE_NOT_PUBLISHED") {
+      return jsonError(404, "NOT_FOUND");
+    }
+    return jsonError(503, "TENANT_LEAD_UNAVAILABLE");
   }
 
   // Nothing about the lead is echoed back, and nothing is logged. The

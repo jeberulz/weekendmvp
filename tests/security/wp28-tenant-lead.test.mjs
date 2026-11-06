@@ -107,12 +107,20 @@ test("the mutation derives every identifier from the hostname", async () => {
   assert.ok(start !== -1 && end > start, "could not isolate recordSynthetic");
   const write = source.slice(start, end);
 
-  assert.match(write, /args:\s*\{\s*hostname:\s*v\.string\(\),\s*rateLimitKey:\s*v\.string\(\)\s*\}/);
+  assert.match(write, /args:\s*\{\s*payload:\s*v\.string\(\),\s*signature:\s*v\.string\(\)\s*\}/);
+  assert.match(write, /verifiedLeadBridge\(args\.payload, args\.signature\)/);
+  assert.doesNotMatch(write, /args\.rateLimitKey/);
   // A forged body must not be able to attach a lead to another owner.
   assert.doesNotMatch(write, /args\.(ownerId|projectId|siteConfigId|userId)/);
   assert.match(write, /ownerId:\s*site\.ownerId/);
   assert.match(write, /projectId:\s*site\.projectId/);
   assert.match(write, /siteConfigId:\s*site\._id/);
+});
+
+test("tenant route signs the server-derived limiter key before calling Convex", async () => {
+  const source = await readCode("app/api/tenant/lead/route.ts");
+  assert.match(source, /signTenantLeadPayload\(hostname, clientRateLimitKey\(request\.headers\), secret\)/);
+  assert.match(source, /client\.mutation\(api\.platform\.sites\.leads\.recordSynthetic, signed\)/);
 });
 
 test("only a published site accepts a lead", async () => {

@@ -45,6 +45,7 @@ type Env = {
   readonly TENANT_GLOBAL_CONFIG_ID: string | undefined;
   readonly TENANT_GLOBAL_CONFIG_TEAM_ID: string | undefined;
   readonly TENANT_GLOBAL_CONFIG_WRITE_TOKEN: string | undefined;
+  readonly TENANT_LEAD_BRIDGE_SECRET: string | undefined;
   readonly TENANT_RESEND_API_KEY: string | undefined;
   readonly TENANT_RESEND_FROM: string | undefined;
   readonly TENANT_RESEND_WEBHOOK_SECRET: string | undefined;

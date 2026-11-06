@@ -3,7 +3,7 @@ import { RateLimiter, MINUTE, HOUR } from "@convex-dev/rate-limiter";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { components, internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
-import { mutation, query, type MutationCtx } from "../../_generated/server";
+import { env, mutation, query, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../authz";
 
 /**
@@ -38,6 +38,58 @@ const rateLimiter = new RateLimiter(components.rateLimiter, {
   tenantLeadBurst: { kind: "token bucket", rate: 5, period: MINUTE },
   tenantLeadSustained: { kind: "token bucket", rate: 30, period: HOUR },
 });
+
+const MAX_BRIDGE_PAYLOAD_LENGTH = 512;
+const BRIDGE_MAX_AGE_MS = 2 * MINUTE;
+const BRIDGE_FUTURE_SKEW_MS = 30_000;
+
+async function verifiedLeadBridge(payload: string, signature: string) {
+  const secret = env.TENANT_LEAD_BRIDGE_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new ConvexError({ code: "TENANT_LEAD_BRIDGE_NOT_CONFIGURED" });
+  }
+  if (payload.length > MAX_BRIDGE_PAYLOAD_LENGTH ||
+      !/^[A-Za-z0-9_-]{43}$/.test(signature)) {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_SIGNATURE" });
+  }
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"],
+  );
+  let supplied: ArrayBuffer;
+  try {
+    const binary = atob(signature.replace(/-/g, "+").replace(/_/g, "/").padEnd(44, "="));
+    supplied = Uint8Array.from(binary, (char) => char.charCodeAt(0)).buffer;
+  } catch {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_SIGNATURE" });
+  }
+  if (!await crypto.subtle.verify("HMAC", key, supplied, new TextEncoder().encode(payload))) {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_SIGNATURE" });
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(payload);
+  } catch {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_PAYLOAD" });
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_PAYLOAD" });
+  }
+  const row = parsed as Record<string, unknown>;
+  if (Object.keys(row).sort().join(",") !== "hostname,issuedAt,rateLimitKey" ||
+      typeof row.hostname !== "string" || row.hostname.length > 253 ||
+      !/^[a-z0-9.-]+$/.test(row.hostname) ||
+      typeof row.rateLimitKey !== "string" ||
+      !/^client:[A-Za-z0-9_-]{43}$/.test(row.rateLimitKey) ||
+      typeof row.issuedAt !== "number" || !Number.isSafeInteger(row.issuedAt)) {
+    throw new ConvexError({ code: "INVALID_TENANT_LEAD_BRIDGE_PAYLOAD" });
+  }
+  const now = Date.now();
+  if (row.issuedAt < now - BRIDGE_MAX_AGE_MS ||
+      row.issuedAt > now + BRIDGE_FUTURE_SKEW_MS) {
+    throw new ConvexError({ code: "TENANT_LEAD_BRIDGE_EXPIRED" });
+  }
+  return { hostname: row.hostname, rateLimitKey: row.rateLimitKey };
+}
 
 export const LEAD_ERROR = {
   notPublished: "TENANT_SITE_NOT_PUBLISHED",
@@ -77,28 +129,26 @@ async function publishedSiteForHostname(
 /**
  * Records a synthetic lead against the site resolved from `hostname`.
  *
- * Takes no owner, project, or site identifier. The only inputs are the
- * hostname and a rate-limit key the Next layer signed, so there is nothing
- * here for a caller to forge into another tenant's account.
+ * The Next tenant route signs the hostname, pseudonymous client limiter key,
+ * and issue time. Direct callers cannot mint fresh limiter buckets.
  */
 export const recordSynthetic = mutation({
-  args: { hostname: v.string(), rateLimitKey: v.string() },
+  args: { payload: v.string(), signature: v.string() },
   returns: v.object({ recorded: v.boolean() }),
   handler: async (ctx, args): Promise<{ recorded: boolean }> => {
-    // Limited before the write and in its own committed step for the same
-    // reason WP27 split `consumeGenerationQuota`: a limit consumed inside a
-    // mutation that later throws is rolled back, which makes every failing
-    // request free.
+    const { hostname, rateLimitKey } = await verifiedLeadBridge(args.payload, args.signature);
+    // Signed requests consume the existing per-client burst and sustained
+    // budgets before any lead row can be inserted.
     await rateLimiter.limit(ctx, "tenantLeadBurst", {
-      key: args.rateLimitKey,
+      key: rateLimitKey,
       throws: true,
     });
     await rateLimiter.limit(ctx, "tenantLeadSustained", {
-      key: args.rateLimitKey,
+      key: rateLimitKey,
       throws: true,
     });
 
-    const site = await publishedSiteForHostname(ctx, args.hostname);
+    const site = await publishedSiteForHostname(ctx, hostname);
     if (site === null) {
       // Same generic refusal an unpublished host already gets from the public
       // resolver, so this endpoint is not an oracle for which sites are live.
