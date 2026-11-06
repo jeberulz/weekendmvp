@@ -117,6 +117,7 @@ import type * as schema_workspace from "../schema/workspace.js";
 import type * as seed from "../seed.js";
 import type * as siteUrl from "../siteUrl.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as workspace_access from "../workspace/access.js";
 
 import type {
   ApiFromModules,
@@ -234,6 +235,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   siteUrl: typeof siteUrl;
   subscriptions: typeof subscriptions;
+  "workspace/access": typeof workspace_access;
 }>;
 
 /**
