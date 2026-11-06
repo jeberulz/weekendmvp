@@ -219,13 +219,13 @@ each of those probes asserted the old buggy behaviour. The other 9 pass.
 | Story | State | Runs in fixture mode now? | Waits on | Author / reviewer |
 |---|---|---|---|---|
 | S1 roster | Not started | Yes, after S2a + S3a blueprint | S2a, S3a (ruled: blueprint first) | Opus (Sonnet UI) / Opus |
-| S2a job runner | Built, awaiting review and commit | **Yes** | — | Opus / Opus |
+| S2a job runner | **Done**: review + re-check approved, fixes in `464931e7`, `b8c665e5` | **Yes** | Codex 13 (recovery cron) before S1 ships | Opus / Opus |
 | S2b launch DAG | Not started | Yes, after S2a | S2a | Opus / Opus |
 | S3a blueprint + brand text | Not started | Yes, after S2a | Seeds use HydroTrail fixture until WP71-S5 | Opus / Opus |
 | S3b logo marks | Not started | Yes (fixture image adapter) | Stop-and-ask 11, 12, 14; Owner Q2, Q3 | Opus / Opus |
 | S3c landing spec | Not started | Document only | Codex 1 for the site version write | Opus / Opus |
 | S3d build pack | Not started | Yes for HydroTrail fixture | Owner Q8, Q9; WP71-S5 seeds | Opus / Opus |
-| S4a deterministic checks | Not started | **Yes, no dependencies** | — | Opus logic, Sonnet tests / Opus |
+| S4a deterministic checks | **Done**: three review rounds, precision-first final (`486e6516`), merged into `claude/wp75-crew` | **Yes** | — | Opus logic, Sonnet tests / Opus |
 | S4b quality + repair + policy | Not started | Yes, after S2a + S4a | Owner Q6, Q7; Codex 11 | Opus / Opus |
 | S5a renderer sections | Not started | **Yes** (fixture brand kits) | D24/D25 rulings (Owner Q10) | Sonnet / Opus + a11y-check |
 | S5b tenant route + waitlist | Not started | No | Codex 1, 2; Owner Q5 | Opus / Opus |
