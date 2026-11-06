@@ -254,7 +254,7 @@ describe("WP77-S3 a turn streams to done", () => {
     expect(scripted.calls()).toBe(1);
     expect(prompts).toHaveLength(1);
     expect(prompts[0]).toMatchObject({
-      promptRef: "wren-chat@2",
+      promptRef: "wren-chat@3",
       attemptKey: { kind: "chat", chatMessageId: sent.wrenMessageId },
       attempt: 1,
       stream: { kind: "wren_reply", messageId: sent.wrenMessageId },
@@ -271,7 +271,7 @@ describe("WP77-S3 a turn streams to done", () => {
     expect(usage).toHaveLength(1);
     expect(usage[0]).toMatchObject({
       attemptKey: `chat:${ids.projectId}:${sent.wrenMessageId}:1`,
-      promptRef: "wren-chat@2",
+      promptRef: "wren-chat@3",
       model: TIER_MODELS.fast,
       tier: "fast",
       status: "settled",
@@ -413,12 +413,12 @@ describe("WP77-S3 routing: Haiku by default, Sonnet for plan-changing turns, cap
     const change = await sendTurn(seeded, PLAN_MESSAGE);
     expect(change.route).toBe("plan");
     const prompts = await runTurn(seeded.t, change, scriptedAdapter().adapter);
-    expect(prompts[0].promptRef).toBe("wren-plan-turn@2");
+    expect(prompts[0].promptRef).toBe("wren-plan-turn@3");
 
     const usage = await usageRows(seeded.t);
     expect(usage.map((row) => [row.promptRef, row.model])).toEqual([
-      ["wren-chat@2", TIER_MODELS.fast],
-      ["wren-plan-turn@2", TIER_MODELS.draft],
+      ["wren-chat@3", TIER_MODELS.fast],
+      ["wren-plan-turn@3", TIER_MODELS.draft],
     ]);
   });
 
@@ -436,7 +436,7 @@ describe("WP77-S3 routing: Haiku by default, Sonnet for plan-changing turns, cap
     expect(turn?.route).toBe("fast");
     if (turn === undefined) throw new Error("no turn");
     await runTurn(seeded.t, turn, scriptedAdapter().adapter);
-    expect((await usageRows(seeded.t)).filter((row) => row.promptRef === "wren-plan-turn@2"))
+    expect((await usageRows(seeded.t)).filter((row) => row.promptRef === "wren-plan-turn@3"))
       .toHaveLength(WREN_ESCALATIONS_PER_BUSINESS_PER_DAY);
 
     vi.setSystemTime(FIXED_NOW + DAY_MS);
@@ -607,7 +607,7 @@ describe("WP77-S3 idempotency: no second reply, no second charge", () => {
     await retry(seeded, turn.wrenMessageId);
     // Attempt 2 reserves and runs through the gateway (drafts written), but this run has not finished the row yet.
     await runPromptWithMeter(turnCtx(t), {
-      promptRef: "wren-chat@2",
+      promptRef: "wren-chat@3",
       inputs: { message: "Hello", history: [] },
       businessContext: "<business_context>{}</business_context>",
       ownerId: ids.ownerId,

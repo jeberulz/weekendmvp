@@ -30,19 +30,19 @@ Standing rules:
     and still matches the subject's current version.
   - Acceptance: exactly-once decisions; stale or mismatched subject fails closed; owner-only; dormant.
 
-- [ ] `WP77-S2` - Change rounds
+- [x] `WP77-S2` - Change rounds
   - Two free "Ask for changes" rounds per artifact (D17), then a credit card with the C-JOBS price; a `spend`
     approval before any debit; `PRICE_NOT_SET` actions cannot be bought.
 
-- [ ] `WP77-S3` - Wren chat
+- [x] `WP77-S3` - Wren chat
   - Streaming by message deltas written to Convex; Haiku first, Sonnet for plan-changing turns, capped
     escalations; daily caps via C-LIMITS with a calm "tomorrow" card; approval clicks don't count against caps.
 
-- [ ] `WP77-S4` - Wren's tools create cards only
+- [x] `WP77-S4` - Wren's tools create cards only
   - Approval, explain and navigate cards. No tool sends, posts, spends or publishes (D13, D23). Prompt-injection
     corpus tests.
 
-- [ ] `WP77-S5` - Memory and Files
+- [x] `WP77-S5` - Memory and Files
   - Summary and facts in `wren_memory`; the Files page shows them; the founder can edit or delete a fact.
 
 - [ ] `WP77-S6` - Accessibility

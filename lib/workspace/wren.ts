@@ -18,6 +18,8 @@
  * cap bounds what that costs, and past the cap the turn runs on Haiku.
  */
 
+import { sliceWellFormed } from "./plainText";
+
 // ---------------------------------------------------------------------------
 // Limits
 // ---------------------------------------------------------------------------
@@ -240,7 +242,7 @@ export function createReplyDraftWriter(options: ReplyDraftWriterOptions): ReplyD
         raw = "";
       }
       raw += delta;
-      const body = partialReplyText(raw).slice(0, options.maxChars);
+      const body = sliceWellFormed(partialReplyText(raw), options.maxChars);
       if (body === written || inFlight !== null || count >= maxWrites) return;
       if (options.now() - lastWriteAt < minInterval) return;
       start(body);

@@ -18,6 +18,9 @@ import type * as ai_pricing from "../ai/pricing.js";
 import type * as ai_prompts_entry from "../ai/prompts/entry.js";
 import type * as ai_prompts_index from "../ai/prompts/index.js";
 import type * as ai_prompts_registryProbe from "../ai/prompts/registryProbe.js";
+import type * as ai_prompts_wrenChat from "../ai/prompts/wrenChat.js";
+import type * as ai_prompts_wrenPlanTurn from "../ai/prompts/wrenPlanTurn.js";
+import type * as ai_prompts_wrenShared from "../ai/prompts/wrenShared.js";
 import type * as ai_providers_anthropic from "../ai/providers/anthropic.js";
 import type * as ai_providers_fixtures from "../ai/providers/fixtures.js";
 import type * as ai_providers_mode from "../ai/providers/mode.js";
@@ -54,6 +57,10 @@ import type * as editorial_store from "../editorial/store.js";
 import type * as editorial_validators from "../editorial/validators.js";
 import type * as editorial_worker from "../editorial/worker.js";
 import type * as growth_connectors_types from "../growth/connectors/types.js";
+import type * as growth_email_caps from "../growth/email/caps.js";
+import type * as growth_email_contacts from "../growth/email/contacts.js";
+import type * as growth_email_provider from "../growth/email/provider.js";
+import type * as growth_email_tokens from "../growth/email/tokens.js";
 import type * as http from "../http.js";
 import type * as ideaFacets from "../ideaFacets.js";
 import type * as ideas from "../ideas.js";
@@ -146,9 +153,11 @@ import type * as workspace_business from "../workspace/business.js";
 import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 import type * as workspace_chat from "../workspace/chat.js";
 import type * as workspace_chatActions from "../workspace/chatActions.js";
+import type * as workspace_memory from "../workspace/memory.js";
 import type * as workspace_signals from "../workspace/signals.js";
 import type * as workspace_wizard from "../workspace/wizard.js";
 import type * as workspace_wrenCards from "../workspace/wrenCards.js";
+import type * as workspace_wrenMemory from "../workspace/wrenMemory.js";
 
 import type {
   ApiFromModules,
@@ -167,6 +176,9 @@ declare const fullApi: ApiFromModules<{
   "ai/prompts/entry": typeof ai_prompts_entry;
   "ai/prompts/index": typeof ai_prompts_index;
   "ai/prompts/registryProbe": typeof ai_prompts_registryProbe;
+  "ai/prompts/wrenChat": typeof ai_prompts_wrenChat;
+  "ai/prompts/wrenPlanTurn": typeof ai_prompts_wrenPlanTurn;
+  "ai/prompts/wrenShared": typeof ai_prompts_wrenShared;
   "ai/providers/anthropic": typeof ai_providers_anthropic;
   "ai/providers/fixtures": typeof ai_providers_fixtures;
   "ai/providers/mode": typeof ai_providers_mode;
@@ -203,6 +215,10 @@ declare const fullApi: ApiFromModules<{
   "editorial/validators": typeof editorial_validators;
   "editorial/worker": typeof editorial_worker;
   "growth/connectors/types": typeof growth_connectors_types;
+  "growth/email/caps": typeof growth_email_caps;
+  "growth/email/contacts": typeof growth_email_contacts;
+  "growth/email/provider": typeof growth_email_provider;
+  "growth/email/tokens": typeof growth_email_tokens;
   http: typeof http;
   ideaFacets: typeof ideaFacets;
   ideas: typeof ideas;
@@ -295,9 +311,11 @@ declare const fullApi: ApiFromModules<{
   "workspace/changeRounds": typeof workspace_changeRounds;
   "workspace/chat": typeof workspace_chat;
   "workspace/chatActions": typeof workspace_chatActions;
+  "workspace/memory": typeof workspace_memory;
   "workspace/signals": typeof workspace_signals;
   "workspace/wizard": typeof workspace_wizard;
   "workspace/wrenCards": typeof workspace_wrenCards;
+  "workspace/wrenMemory": typeof workspace_wrenMemory;
 }>;
 
 /**

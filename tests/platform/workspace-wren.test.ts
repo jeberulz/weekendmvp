@@ -68,7 +68,7 @@ describe("routing rule", () => {
   });
 
   test("the routes resolve through the registry to the tier models, never a hard-coded id", () => {
-    expect(WREN_PROMPT_REFS).toEqual({ fast: "wren-chat@2", plan: "wren-plan-turn@2" });
+    expect(WREN_PROMPT_REFS).toEqual({ fast: "wren-chat@3", plan: "wren-plan-turn@3" });
     const fast = getEntry(WREN_PROMPT_REFS.fast).spec;
     const plan = getEntry(WREN_PROMPT_REFS.plan).spec;
     expect([fast.tier, TIER_MODELS[fast.tier]]).toEqual(["fast", TIER_MODELS.fast]);
@@ -251,7 +251,7 @@ describe("run checks and failure causes", () => {
   const ownerId = "u1" as Id<"users">;
   const messageId = "m1" as Id<"chat_messages">;
   const base: RunPromptArgs = {
-    promptRef: "wren-chat@2",
+    promptRef: "wren-chat@3",
     inputs: {},
     ownerId,
     projectId,
