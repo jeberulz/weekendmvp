@@ -1,9 +1,14 @@
 /**
  * Idea requests & voting (Idea 4).
  *
- * Public, purely additive backend for "request a research topic, vote for
- * the ones you want". Visitors submit a short title + one-line problem and
- * vote for requests; the public list is sorted by votes, then newest.
+ * Signed-in-only writes: only users who have created an account (or are
+ * currently signed in) may submit a request or vote. The `/ideas/requests`
+ * page is gated behind signup in middleware, the widget shows anonymous
+ * visitors a create-account CTA instead of the form, and these mutations
+ * fail closed for anonymous callers — there is no anonymous voter path
+ * anymore, so the old `anon:<id>` self-asserted ids cannot submit or vote.
+ * Reads (`listTop`, `listForSuggest`) stay public, like the public idea
+ * library; `mine` already returns [] for anonymous callers.
  *
  * What this file deliberately does NOT do:
  * - It does not touch the idea engine. `listForSuggest` only exposes the
@@ -13,12 +18,11 @@
  *   next step. No request here ever becomes a published idea on its own.
  * - It does not touch crew, publishing, leads, tenant email, checkout or
  *   credits, and it does not send email.
- * - It stores no raw IP or email. A signed-in voter is `user:<subject>`
- *   from the Convex Auth identity; an anonymous voter is `anon:<id>` where
- *   `<id>` is a random id generated in the visitor's own browser
- *   (`lib/idea-requests.getOrCreateAnonymousId`). That id is self-asserted,
- *   so the one-vote-per-voter rule is a lightweight anti-stuffing control,
- *   not fraud-proof — the per-hour rate limits below are the other half.
+ * - It stores no raw IP or email. A voter is `user:<subject>` from the
+ *   Convex Auth identity. The per-hour rate limits below cap a stuffing
+ *   script; the one-vote-per-voter rule is enforced by the
+ *   `by_requestId_and_voterKey` lookup plus the denormalised `voteCount`
+ *   update in the same mutation.
  */
 import { ConvexError, v } from "convex/values";
 import { mutation, query, type MutationCtx } from "./_generated/server";
@@ -65,9 +69,10 @@ function listLimit(limit: number | undefined): number {
 }
 
 /**
- * Resolve the caller's voter key. Signed-in identity wins over any
- * client-supplied anonymous id, so a signed-in visitor cannot vote twice
- * by also presenting an anonymous id.
+ * Resolve the caller's voter key for reads. Signed-in identity wins over
+ * any client-supplied anonymous id, so a signed-in visitor cannot vote
+ * twice by also presenting an anonymous id. Reads only: writes use
+ * requireSignedInVoterKey below and never accept an anonymous id.
  */
 async function resolveVoterKey(
   ctx: { auth: { getUserIdentity: () => Promise<{ subject: string } | null> } },
@@ -77,6 +82,24 @@ async function resolveVoterKey(
   if (identity) return signedInVoterKey(identity.subject);
   if (isValidAnonymousId(anonymousId)) return anonymousVoterKey(anonymousId);
   return null;
+}
+
+/**
+ * Writes are signed-in-only. Anonymous callers fail closed here even if
+ * they present an anonymous id — the page is behind signup, the widget
+ * shows anonymous visitors a create-account CTA, and this is the
+ * server-side backstop for both.
+ */
+async function requireSignedInVoterKey(ctx: {
+  auth: { getUserIdentity: () => Promise<{ subject: string } | null> };
+}): Promise<string> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new ConvexError(
+      "UNAUTHENTICATED: create an account or sign in to do that.",
+    );
+  }
+  return signedInVoterKey(identity.subject);
 }
 
 async function recentSubmits(ctx: MutationCtx, voterKey: string, sinceMs: number): Promise<number> {
@@ -243,15 +266,15 @@ export const listForSuggest = query({
 /**
  * Submit a request. An identical open request (same normalised title)
  * dedupes: the existing request is returned instead of a duplicate row.
- * Anonymous visitors must present their stored anonymous id; a missing or
- * malformed id is rejected rather than silently treated as a new voter.
+ * Signed-in only: anonymous callers (with or without an anonymous id)
+ * are rejected — the anonymousId argument was removed entirely, so an
+ * anonymous client cannot even present one.
  */
 export const submit = mutation({
   args: {
     title: v.string(),
     problem: v.string(),
     category: v.optional(v.string()),
-    anonymousId: v.optional(v.string()),
   },
   returns: v.object({
     requestId: v.id("idea_requests"),
@@ -267,10 +290,7 @@ export const submit = mutation({
     if (!validated.ok) {
       throw new ConvexError(`VALIDATION: ${validated.errors.join(" ")}`);
     }
-    const voterKey = await resolveVoterKey(ctx, args.anonymousId);
-    if (!voterKey) {
-      throw new ConvexError("UNAUTHENTICATED: sign in or enable local storage to submit a request.");
-    }
+    const voterKey = await requireSignedInVoterKey(ctx);
     const normalizedTitle = normalizeRequestTitle(validated.title);
     const existing = await ctx.db
       .query("idea_requests")
@@ -304,17 +324,13 @@ export const submit = mutation({
 export const toggleVote = mutation({
   args: {
     requestId: v.id("idea_requests"),
-    anonymousId: v.optional(v.string()),
   },
   returns: v.object({
     voted: v.boolean(),
     voteCount: v.number(),
   }),
-  handler: async (ctx, { requestId, anonymousId }) => {
-    const voterKey = await resolveVoterKey(ctx, anonymousId);
-    if (!voterKey) {
-      throw new ConvexError("UNAUTHENTICATED: sign in or enable local storage to vote.");
-    }
+  handler: async (ctx, { requestId }) => {
+    const voterKey = await requireSignedInVoterKey(ctx);
     const request = await ctx.db.get("idea_requests", requestId);
     if (!request) throw new ConvexError("NOT_FOUND: that request no longer exists.");
     if (request.status !== "open" && request.status !== "in_research") {

@@ -88,9 +88,14 @@ export function buildIdeaSlug(pathname: string): string | null {
   return match?.[1] ?? null;
 }
 
-function publicIdeaSlug(pathname: string): string | null {
-  // A fixed redirect route, not an idea slug. Welcome emails link here.
-  if (pathname === "/ideas/today") return null;
+export function publicIdeaSlug(pathname: string): string | null {
+  // Fixed routes under /ideas/, not idea slugs. Welcome emails link to
+  // /ideas/today; /ideas/requests is the signed-in Idea 4 page, gated by
+  // auth below (see lib/auth-return.ts) — never an idea slug, so the
+  // editorial visibility gate must not 404 it. "requests" used to fall
+  // through here as a slug and die in publicIdeaDecision before Next ever
+  // reached the static page.
+  if (pathname === "/ideas/today" || pathname === "/ideas/requests") return null;
   const route = /^\/ideas\/([a-z0-9-]+)$/.exec(pathname);
   if (route) return route[1];
   const art = /^\/image\/og\/idea\/([a-z0-9-]+)\.png$/.exec(pathname);
@@ -595,6 +600,11 @@ export async function middleware(
   );
   if (ideaSlug !== null || buildSlug !== null) {
     finalResponse.headers.set("Cache-Control", "no-store");
+  }
+  if (request.nextUrl.pathname === "/ideas/requests") {
+    // Signed-in-only page (Idea 4): never cached or indexed.
+    finalResponse.headers.set("Cache-Control", "private, no-store");
+    finalResponse.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return applyWorkspaceResponseHeaders(request.nextUrl.pathname, finalResponse);
 }

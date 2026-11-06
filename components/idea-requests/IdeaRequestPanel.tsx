@@ -10,7 +10,6 @@ import {
   IDEA_REQUEST_CATEGORIES,
   MAX_REQUEST_PROBLEM_LENGTH,
   MAX_REQUEST_TITLE_LENGTH,
-  getOrCreateAnonymousId,
   validateIdeaRequest,
 } from "@/lib/idea-requests";
 import { CATEGORY_META } from "@/components/ideas/idea-meta";
@@ -38,6 +37,14 @@ const STATUS_LABELS: Record<string, string> = {
  * widget (`IdeaRequestWidget`) and by the full page (`/ideas/requests`).
  * Server-rendered nothing: the parent gates this behind `WhenConvexReady`
  * so `useQuery` never runs before a Convex client exists.
+ *
+ * Signed-in only: the full page is gated behind signup in middleware, so
+ * anonymous visitors never reach it there — but the floating widget also
+ * renders this panel on public pages. For anonymous visitors the panel
+ * shows a create-account CTA instead of the form or the list, and the
+ * Convex mutations fail closed for anonymous callers as the backstop.
+ * `useSessionHint` is a cookie hint, used here for wording/links only —
+ * never an access decision (see lib/use-session-hint.ts).
  */
 export function IdeaRequestPanel({
   limit = 5,
@@ -47,9 +54,6 @@ export function IdeaRequestPanel({
   /** Lets the widget character react (celebrate a vote, think while submitting). */
   onMood?: (event: IdeaRequestMoodEvent) => void;
 }) {
-  // Lazy initializer: this panel only ever renders in the browser (its
-  // parents gate it behind `WhenConvexReady`), so localStorage is available.
-  const [anonymousId] = useState<string>(() => getOrCreateAnonymousId());
   const [title, setTitle] = useState("");
   const [problem, setProblem] = useState("");
   const [category, setCategory] = useState("");
@@ -58,12 +62,12 @@ export function IdeaRequestPanel({
   const [submitting, setSubmitting] = useState(false);
   const [votingId, setVotingId] = useState<Id<"idea_requests"> | null>(null);
 
-  const requests = useQuery(api.ideaRequests.listTop, {
-    limit,
-    anonymousId,
-  });
   const signedIn = useSessionHint();
-  const myRequests = useQuery(api.ideaRequests.mine);
+  const requests = useQuery(
+    api.ideaRequests.listTop,
+    signedIn ? { limit } : "skip",
+  );
+  const myRequests = useQuery(api.ideaRequests.mine, signedIn ? {} : "skip");
   const submitRequest = useMutation(api.ideaRequests.submit);
   const toggleVote = useMutation(api.ideaRequests.toggleVote);
 
@@ -76,10 +80,6 @@ export function IdeaRequestPanel({
       setFormErrors(validated.errors);
       return;
     }
-    if (!anonymousId) {
-      setFormErrors(["Your browser could not store an anonymous id — please try again."]);
-      return;
-    }
     setSubmitting(true);
     onMood?.("submit-start");
     try {
@@ -87,7 +87,6 @@ export function IdeaRequestPanel({
         title: validated.title,
         problem: validated.problem,
         ...(validated.category ? { category: validated.category } : {}),
-        anonymousId,
       });
       setTitle("");
       setProblem("");
@@ -111,17 +110,54 @@ export function IdeaRequestPanel({
   }
 
   async function onVote(requestId: Id<"idea_requests">) {
-    if (!anonymousId) return;
     setVotingId(requestId);
     setStatus("");
     try {
-      const result = await toggleVote({ requestId, anonymousId });
+      const result = await toggleVote({ requestId });
       if (result.voted) onMood?.("vote-success");
     } catch {
       setStatus("Could not record your vote. Please try again.");
     } finally {
       setVotingId(null);
     }
+  }
+
+  // Signed-in only (see the header comment): anonymous visitors get the
+  // create-account CTA instead of the form, the list, or any vote button.
+  // The full page is also gated behind signup in middleware, so this is
+  // the widget's public-page behaviour, not the page's only defence.
+  if (!signedIn) {
+    return (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-base font-medium text-neutral-900">
+          Request an idea — for members
+        </h3>
+        <p className="text-sm leading-relaxed text-neutral-600">
+          Idea requests and voting are only for users who have created an
+          account. Create a free account and tell us what to research next —
+          the most-voted requests feed the research queue.
+        </p>
+        <Link
+          href="/signup?returnTo=%2Fideas%2Frequests"
+          className={cn(
+            "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800",
+            FOCUS,
+          )}
+        >
+          <Lightbulb aria-hidden className="size-4" />
+          Create a free account
+        </Link>
+        <p className="text-sm text-neutral-600">
+          Already have one?{" "}
+          <Link
+            href="/login?returnTo=%2Fideas%2Frequests"
+            className={cn("font-medium underline underline-offset-4 hover:text-black", FOCUS)}
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -237,7 +273,7 @@ export function IdeaRequestPanel({
                   type="button"
                   aria-pressed={request.hasVoted}
                   aria-label={`Vote for ${request.title}`}
-                  disabled={votingId === request.id || !anonymousId}
+                  disabled={votingId === request.id}
                   onClick={() => void onVote(request.id)}
                   className={cn(
                     "flex min-h-11 min-w-11 shrink-0 flex-col items-center justify-center rounded-lg border px-2 py-1 text-xs font-medium transition-colors disabled:opacity-60",

@@ -17,7 +17,14 @@ export function isPrivateReturnPath(pathname: string): boolean {
 
 /** Only canonical idea destinations are admitted outside the private app. */
 export function isIdeaReturnPath(pathname: string): boolean {
-  return pathname === "/startup-ideas" || /^\/ideas\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
+  // /ideas/requests is the signed-in Idea 4 page, not an idea slug: name
+  // it explicitly so a future tightening of the slug regex cannot drop
+  // the signup returnTo for it (it also matches the slug shape today).
+  return (
+    pathname === "/startup-ideas" ||
+    pathname === "/ideas/requests" ||
+    /^\/ideas\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)
+  );
 }
 
 /**
