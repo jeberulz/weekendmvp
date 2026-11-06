@@ -115,10 +115,16 @@ async function publishedSiteForHostname(
   if (site.status !== "published" || site.currentVersionId === undefined) {
     return null;
   }
+  const project = await ctx.db.get("projects", site.projectId);
+  if (project === null || project.ownerId !== site.ownerId ||
+      project.archivedAt !== undefined || project.deletionRequestedAt !== undefined) {
+    return null;
+  }
   const version = await ctx.db.get(site.currentVersionId);
   if (
     version === null ||
     version.siteConfigId !== site._id ||
+    version.ownerId !== site.ownerId || version.projectId !== site.projectId ||
     version.status !== "published"
   ) {
     return null;
