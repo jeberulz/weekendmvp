@@ -84,7 +84,7 @@ They do not yet meet D5, for four reasons:
    - `convex/growth/email/caps.ts:29-31`: soft enforcement always allows the send. Ten million a month on Builder's Hub still returns `allowed: true`.
    - **Ruled 2026-11-06** (`RULINGS.md`, "WP79 / D6 paid send ceiling"): a hard monthly ceiling at twice the soft threshold (10,000 / 40,000), a daily limit per business (1,000 / 3,000), and an automatic pause over 0.1% complaints or 4% bounces, with a manual operator override per business.
    - **Fix:**
-     - Enforce the three ruled layers in the sender's enqueue mutation.
+     - Enforce the three ruled layers on every enqueue path, in the same transaction as the enqueue: the sequence sender and the opt-in confirmation enqueue (`requestOptInForLead`), which runs before enrollment. A paused or capped business must not queue a confirmation either.
      - The sender reads exact `ShardedCounter.count()` totals in the enqueue mutation.
      - A test of two sends racing past the cap.
 8. **The opt-in and unsubscribe flow is unbuilt and unproven.** PLAUSIBLE.
