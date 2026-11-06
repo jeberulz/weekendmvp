@@ -50,9 +50,11 @@
  *   counted once each, and compared as whole words with one plural or verb
  *   ending allowed ("runners" matches "runner", "pricing" matches "price";
  *   "international" never matches "internal", "rated" never matches "rat").
- *   A fact needs at least `WREN_NOTE_MIN_OVERLAP` (60%) of its content words
- *   from this turn's founder message, and at most `WREN_FACT_MAX_UNSOURCED`
- *   (1) from elsewhere. A summary may keep the old
+ *   Every number is a content word however short, normalised ("1,200" is
+ *   "1200", "three" is "3") and compared exactly, so "$29" never vouches for
+ *   "$99". A fact needs at least `WREN_NOTE_MIN_OVERLAP` (60%) of its content
+ *   words from this turn's founder message, at most `WREN_FACT_MAX_UNSOURCED`
+ *   (1) word from elsewhere, and no number from elsewhere. A summary may keep the old
  *   summary's words; every new word must come from this turn's founder
  *   message or the founder's idea text and business name
  *   (`WREN_SUMMARY_MAX_UNSOURCED` is 0). Wren's earlier notes never vouch for
@@ -367,14 +369,62 @@ const STOP_WORDS = new Set([
  */
 const NEGATIONS = new Set(["no", "not", "nor"]);
 
+/** Spelled numbers, read as their digits so "three" and "3" are the same number (and "three" to "five" is a change). */
+const NUMBER_WORDS: ReadonlyMap<string, string> = new Map([
+  ["zero", "0"], ["one", "1"], ["two", "2"], ["three", "3"], ["four", "4"], ["five", "5"], ["six", "6"],
+  ["seven", "7"], ["eight", "8"], ["nine", "9"], ["ten", "10"], ["eleven", "11"], ["twelve", "12"],
+]);
+
+/** A number token, before normalising: digit groups joined by `,` `.` or `'` ("1,200", "4.5", "1'000"). */
+const NUMBER_TOKEN = "\\p{Nd}+(?:[.,']\\p{Nd}+)*";
+/** Tokens: a number, a run of letters, or other numerals. Digits never hide inside a word ("Q4", "v2" hold the numbers 4 and 2). */
+const TOKEN = new RegExp(`${NUMBER_TOKEN}|[\\p{L}\\p{M}]+|\\p{N}+`, "gu");
+const NUMBER_ONLY = new RegExp(`^${NUMBER_TOKEN}$`, "u");
+
 /**
- * Content words: letters or digits, 3 or more long, not a stop word, plus the
- * negations; NFKC, lower case. Unique, in first-seen order.
+ * A number in one form: a separator followed by exactly 3 digits groups
+ * thousands and is dropped ("1,200" and "1.200" read "1200"); any other `.`
+ * or `,` is the decimal point ("4.5", "4,5" read "4.5"). Leading zeros stay.
+ */
+function normaliseNumber(token: string): string {
+  const parts = token.split(/([.,'])/u);
+  let out = parts[0] ?? "";
+  let decimal = false;
+  for (let at = 1; at + 1 < parts.length; at += 2) {
+    const separator = parts[at] ?? "";
+    const group = parts[at + 1] ?? "";
+    if (!decimal && separator !== "'" && group.length !== 3) {
+      out += `.${group}`;
+      decimal = true;
+    } else {
+      out += group;
+    }
+  }
+  return out;
+}
+
+/** Whether a content word is a number (always a content word, compared exactly). */
+export function isNumberWord(word: string): boolean {
+  return /^\p{Nd}+(?:\.\p{Nd}+)?$/u.test(word);
+}
+
+/**
+ * Content words, NFKC and lower case, unique, in first-seen order:
+ * - words of 3 or more letters or digits that are not stop words;
+ * - the negations ("no", "not", "nor");
+ * - every number, however short, normalised (`normaliseNumber`), with
+ *   "zero" to "twelve" read as digits. A number must appear exactly in the
+ *   sources: "$29" never vouches for "$99".
  */
 export function contentWords(text: string): string[] {
-  const words = cleanMemoryText(text).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
-  return [...new Set(words.filter((word) =>
-    NEGATIONS.has(word) || (memoryTextLength(word) >= 3 && !STOP_WORDS.has(word))))];
+  const out: string[] = [];
+  for (const token of cleanMemoryText(text).toLowerCase().match(TOKEN) ?? []) {
+    if (NUMBER_ONLY.test(token)) out.push(normaliseNumber(token));
+    else if (NUMBER_WORDS.has(token)) out.push(NUMBER_WORDS.get(token) ?? token);
+    else if (/^\p{N}+$/u.test(token)) out.push(token);
+    else if (NEGATIONS.has(token) || (memoryTextLength(token) >= 3 && !STOP_WORDS.has(token))) out.push(token);
+  }
+  return [...new Set(out)];
 }
 
 /**
@@ -387,6 +437,7 @@ export function contentWords(text: string): string[] {
  */
 function wordForms(word: string): string[] {
   const forms = [word];
+  if (isNumberWord(word)) return forms;
   const cut = (count: number, min: number, suffix = "") => {
     const kept = `${Array.from(word).slice(0, -count).join("")}${suffix}`;
     if (memoryTextLength(kept) >= min) forms.push(kept);
@@ -469,14 +520,16 @@ export function checkFounderSummary(raw: string): MemoryTextCheck {
 /**
  * Cleans and checks one fact Wren proposed: the strict rules, then provenance
  * against this turn's founder message (at least `WREN_NOTE_MIN_OVERLAP` of its
- * unique content words, and at most `WREN_FACT_MAX_UNSOURCED` words from
- * elsewhere).
+ * unique content words, at most `WREN_FACT_MAX_UNSOURCED` words from
+ * elsewhere, and no number from elsewhere at all).
  */
 export function checkWrenFact(raw: string, founderMessage: string): WrenNoteCheck {
   const checked = checkText(raw, WREN_MEMORY_FACT_MIN_CHARS, WREN_MEMORY_FACT_MAX_CHARS, "wren");
   if (!checked.ok) return checked;
+  const unsourced = unsourcedWords(checked.text, [founderMessage]);
+  // A number has no allowance: every one must be in the founder's message, and none uses up the free word.
   const sourced = sourceOverlap(checked.text, [founderMessage]) >= WREN_NOTE_MIN_OVERLAP &&
-    unsourcedWords(checked.text, [founderMessage]).length <= WREN_FACT_MAX_UNSOURCED;
+    !unsourced.some(isNumberWord) && unsourced.length <= WREN_FACT_MAX_UNSOURCED;
   return sourced ? checked : { ok: false, code: "not_from_founder" };
 }
 
@@ -485,8 +538,9 @@ export function checkWrenFact(raw: string, founderMessage: string): WrenNoteChec
  * provenance. Words already in the old summary may stay. Every other content
  * word must come from this turn's founder message or `businessText` (the
  * founder's idea text and business name), at most `WREN_SUMMARY_MAX_UNSOURCED`
- * excepted. Wren's earlier notes (the old summary, the facts) never vouch for
- * a new word.
+ * excepted. Numbers follow the same rule, compared exactly: one already in
+ * the old summary may stay. Wren's earlier notes (the old summary, the facts)
+ * never vouch for a new word.
  */
 export function checkWrenSummary(
   raw: string,
