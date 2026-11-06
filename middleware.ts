@@ -190,6 +190,27 @@ function hostRejectedResponse(): NextResponse {
   });
 }
 
+/** Convex Auth copies headers but can replace a handler's status during token refresh. */
+export const WORKSPACE_REFUSAL_HEADER = "x-weekendmvp-workspace-refused";
+
+function workspaceRejectedResponse(): NextResponse {
+  const response = hostRejectedResponse();
+  response.headers.set(WORKSPACE_REFUSAL_HEADER, "1");
+  return response;
+}
+
+/** Restore the hard refusal after Convex Auth has attached refreshed cookies. */
+export function restoreWorkspaceRefusal(response: Response): Response {
+  if (response.headers.get(WORKSPACE_REFUSAL_HEADER) !== "1") return response;
+  const refused = hostRejectedResponse();
+  if (response instanceof NextResponse) {
+    for (const cookie of response.cookies.getAll()) refused.cookies.set(cookie);
+  } else {
+    for (const cookie of response.headers.getSetCookie()) refused.headers.append("set-cookie", cookie);
+  }
+  return refused;
+}
+
 /** The first URL segment is the business id; Next's RSC transport may add a suffix. */
 export function workspaceProjectId(pathname: string): string | null {
   let decoded: string;
@@ -372,7 +393,7 @@ const platformAuthMiddleware = convexAuthNextjsMiddleware(
       } catch {
         // A token read failure is indistinguishable from every other refusal.
       }
-      return hostRejectedResponse();
+      return workspaceRejectedResponse();
     }
     // WP46-E4e. Pages, RSC and segment requests and server actions anywhere
     // under /admin pass this gate; the pages and actions check again.
@@ -552,12 +573,14 @@ export async function middleware(
     }
   }
 
-  const response = await platformAuthMiddleware(request, event);
+  const response = restoreWorkspaceRefusal(
+    (await platformAuthMiddleware(request, event)) ?? NextResponse.next(),
+  );
   const finalResponse = applyOperatorResponseHeaders(
     request.nextUrl.pathname,
     applySensitiveAuthResponseHeaders(
       request.nextUrl.pathname,
-      syncSessionHintCookie(request, response ?? NextResponse.next()),
+      syncSessionHintCookie(request, response),
     ),
   );
   if (ideaSlug !== null || buildSlug !== null) {
