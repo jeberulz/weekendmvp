@@ -40,6 +40,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Check prompt versions against base
+        run: npm run check:prompt-versions
+
       - name: Validate idea tags
         run: npm run validate:idea-tags
 
