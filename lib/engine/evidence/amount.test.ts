@@ -101,6 +101,25 @@ describe("parseAmount: currencies", () => {
       expect(parseAmount(text), text).toBeNull();
     }
   });
+
+  it("treats optional spaces around a decimal point as the same currency amount (HTML/OCR artifacts)", () => {
+    // Live reject detail from tiny-timesheet timesheet.io pricing (batch 20261106).
+    expect(parseAmount("$ 99 . 99")).toEqual(usd("99.99"));
+    expect(parseAmount("$99 .99")).toEqual(usd("99.99"));
+    expect(parseAmount("$99. 99")).toEqual(usd("99.99"));
+    // Space-grouped thousands are not one number token (still not joined).
+    expect(findAmounts("$1 400").map((a) => a.raw)).toEqual(["$1"]);
+    expect(parsePriceTerms("$1 400/month")).toBeNull();
+    expect(parsePriceTerms("$1,400/month") && true).toBe(true);
+  });
+
+  it("still rejects vendor vanity bounds used as fake market amounts", () => {
+    // Live apparel rejects: Printavo "3,000+" / YoPrint "500+" — must stay unparseable
+    // (do not coerce homepage customer counts into market_stat amounts).
+    for (const text of ["3,000+", "500+", "1M+", "10,000+ customers"]) {
+      expect(parseAmount(text), text).toBeNull();
+    }
+  });
 });
 
 describe("parseAmount: percents, counts and years", () => {
@@ -294,6 +313,12 @@ describe("parsePriceTerms", () => {
     ]) {
       expect(parsePriceTerms(text), text).toBeNull();
     }
+  });
+
+  it("parses a live timesheet.io priceText whose decimal was split by whitespace", () => {
+    // Report detail: `"$ 99 . 99 / year Per user · billed yearly" is not one supported price expression`
+    expect(price("$ 99 . 99 / year Per user · billed yearly")).toBe("$99.99/user/year, billed annually");
+    expect(price("$99.99/year per user, billed yearly")).toBe("$99.99/user/year, billed annually");
   });
 
   it("keeps the currency of the expression", () => {
