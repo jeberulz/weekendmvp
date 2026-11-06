@@ -10,17 +10,17 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is running**: WP71 and WP72 (Claude lane) started on the owner's go; WP70 and WP73 are Codex's. Next gate: G1.
+Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 merged** (WP70 S1–S3 #180, WP71 S1–S3 #184, WP72 #183, WP73 #179, #181). **G1 is running and not yet passed**: checks are green on the merged tree and both cross-lane reviews pass, but the fixture-mode end-to-end path needs the WP71 gateway action (Claude, in progress).
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-gate` (board PR) | G0 passed (#174, #175) | — | Run G1 when WP70–WP73 merge |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-g1` (board PR) | G0 passed (#174, #175); **G1 running** | WP71 gateway action | Close G1 when the gateway-action PR merges |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
-| WP70 | 1 | Codex | `codex/wp70-metering` | Ready to start (G0 passed) | — (C-METER merged) | — |
-| WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 in PR #184** (reviewed, checks green); small S3 follow-ups going onto the same PR. S4 cache helper and S6 evals next, fixture mode | C-METER from WP70 (stub until then) | S4 live cache test and S5 seed precompute (≈ $15) need OK |
-| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, PR #183** (S0–S4 reviewed, a11y-checked, browser-checked; CodeRabbit fixes in `ffd4f9c8`). Waiting on owner merge | `creditsSummary` from WP73 (typed mock until then); middleware 404 from Codex | Merge #183 |
-| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | Ready to start (G0 passed) | — (C-JOBS frozen) | — |
+| WP70 | 1 | Codex | `codex/wp70-metering` | **S1–S3 merged (#180)**; G1 review: pass with should-fix | — | S4 sweep cron + alarms, S5 limits, S6 spend queries; review P2s below |
+| WP71 | 1 | Claude | `claude/wp71-gateway-action` | **S1–S3 merged (#184)**; lock follow-up PR #185; **S2 gateway action bound to the real meter in progress** (G1 blocker, fixture mode) | — | Then S4 cache helper and S6 evals (fixture); S4 live cache test and S5 seed precompute need OK |
+| WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)** | Middleware hard 404 from Codex; `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
+| WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
 | WP74–WP79 | 2 | Both | see registry | Waiting | G1 | — |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
@@ -245,7 +245,7 @@ Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
   - Next on the same PR: SKIP_DIRS matched at the top level only, more loader forms (`eval`, `new Function`,
     `_load`, `npm:` aliases), a model/ceiling regression test, and C-PROMPT value imports limited to
     `definePromptSpec`.
-  - After #184 merges and `main` has a lock, a missing base lock must fail in CI (tracked in the WP71 progress).
+  - After #184 merges and `main` has a lock, a missing base lock must fail in CI (done in #185).
 - Needs from Codex (added):
   - a `check:prompt-versions` package script and a CI step that runs it (a clearer signal; CI coverage no longer
     depends on it);
@@ -254,3 +254,45 @@ Updated 2026-11-06. **G0 passed** when #175 merged (`d67dc8e2`). **Phase 1 is ru
     (`docs/wp/wp71-progress.md`).
 - Owner items: merge #183; review and merge #184 when its follow-up commit lands; live spend for WP71 S4 (cache
   test) and S5 (≈ $15) when we get there.
+
+## 2026-11-06 - G1 (Phase 1 close): running, one blocker in the Claude lane
+
+- Merged to `main`: WP73 (#179), WP70 S1–S3 (#180), Codex's fixture-mode docs and DOM test tools (#181),
+  WP72 (#183) and WP71 S1–S3 (#184). Head `ac7bb914`.
+- G1 criteria (`04-build-plan.md`, Gate G1) and where each stands:
+
+  | Criterion | Status |
+  |---|---|
+  | All checks pass on the merged tree | **Pass.** At `ac7bb914`: `npm run typecheck` 0, `npx tsc --noEmit -p convex` 0, `npm run lint` 0 (0 errors, 37 existing warnings), `npm test` 0 (every suite green; 1 CI-only test skipped locally), `npm run build` 0, `npm audit --omit=dev --audit-level=high` 0 |
+  | Independent review (other lane) of WP70 and WP73 | **Pass with should-fix**, no P1 in either (findings below) |
+  | Shell renders behind the flag | Pass (WP72 a11y- and browser-checked; pages `notFound()` with the flag off). The HTTP status is a soft 404 under PPR until Codex adds the middleware hard 404 |
+  | Nothing user-visible on production | Pass. Every new Convex function is internal, except `creditsSummary`, which is authenticated, owner-scoped and behind `assertFeatureEnabled` |
+  | Fixture-mode end to end: test business → gateway call → metered, settled → a job debits and refunds exactly once | **Not yet.** The gateway core runs only against an in-memory meter; nothing binds it to `internal.ai.metering`. The binding is WP71's (S2 "Gateway action" and WP71's acceptance line); it was wrongly deferred to WP70. Being built now on `claude/wp71-gateway-action`, with a convex-test integration test for exactly this path |
+
+- WP70 review (Opus, given the diff and the contract): sound exactly-once accounting, exact owner caps, gating
+  matches the owner ruling, all functions internal. Should-fix before Phase 2:
+  - Gate refusals from `reserve`/`markSent` (`AI_DISABLED`, `WORKSPACE_DISABLED`, `RESOURCE_NOT_FOUND`) carry no
+    `message`, so the gateway misclassifies them as internal errors. The WP71 gateway-action PR fixes our side.
+  - No sweep cron yet (WP70-S4), so a crashed run leaves budget reserved and can lock an owner out daily.
+  - Nits: the sharded counter reads every shard on each reserve (exact but serialised); "parallel" test names;
+    a late `fail` after a sweep drops extra cost; global caps count by reservation day; ownerless precompute
+    needs `workspaceEnabled` on, so WP71-S5 needs an explicit owner step.
+- WP73 review (Opus, given the diff and the contract): exactly-once debit and refund, grant idempotency, bucket
+  checks, immutability and dormancy all sound. Should-fix before Phase 2 or WP80:
+  - An annual invoice grants one month's credits for the whole year, and monthly top-ups then hit
+    `OVERLAPPING_ALLOWANCE_PERIOD`.
+  - A mid-period upgrade (Builder's Hub → Growth) or a Lifetime buy during a subscription can never grant; the
+    webhook throws on every retry. `EXPIRED_ALLOWANCE_PERIOD` throws for late-paid invoices.
+  - No reversal for a refunded or disputed `plan_grant`.
+  - C-LEDGER promises `debitJob`/`refundJob`; only `debitTask(credits)`/`refundFailedTask` exist, with the price
+    supplied by the caller. `creditsSummary` returns bigints with no `max`/`plan`, unlike the shell's shape.
+  - Nits: `Date.now()` in the `creditsSummary` query and a ±2-minute clock-skew throw; the property test never
+    crosses a period end; `resolvePlan` cannot return `growth`; `debitTask`/`refundFailedTask` are not
+    feature-gated; future-dated grants expire the current allowance early.
+- Orchestrator items Codex asked for, done on this branch: the C-METER shutdown-cleanup ruling in `RULINGS.md`,
+  and `02-architecture.md` now shows the workflow and workpool components as mounted (WP70-S1).
+- Needs from Codex (added): the WP70 and WP73 should-fix items above; throw `{code, scope, message}` for meter gate
+  refusals and say in C-METER that `reserve` may throw gate codes; WP70 S4–S6. Still open from before: the
+  middleware hard 404, `check:prompt-versions` script and CI step, the C-METER `FailArgs` token fields and
+  overrun marker.
+- Next: review and merge the WP71 gateway-action PR, re-run the G1 checks on that tree, then mark G1 passed and stop.
