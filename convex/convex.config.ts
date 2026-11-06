@@ -43,6 +43,12 @@ const app = defineApp({
     // token to a protected, pinned Vercel deployment.
     EDITORIAL_STAGING_BACKEND_URL: v.optional(v.string()),
     EDITORIAL_STAGING_BYPASS_SECRET: v.optional(v.string()),
+    // WP79: tenant mail uses a separate Resend project and verified domain.
+    // Explicit values prevent the component from falling back to auth mail.
+    TENANT_RESEND_API_KEY: v.optional(v.string()),
+    TENANT_RESEND_WEBHOOK_SECRET: v.optional(v.string()),
+    TENANT_RESEND_FROM: v.optional(v.string()),
+    TENANT_EMAIL_LIVE_ENABLED: v.optional(v.string()),
   },
 });
 
