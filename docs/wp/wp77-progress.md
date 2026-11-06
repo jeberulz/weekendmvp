@@ -414,3 +414,117 @@ Needs from Codex (S4):
     `finishWrenTurn` writes `cards.displayCards` and `listWrenThread` returns them (a few lines in Claude's lane).
 
 Docs: progress updated; stories not ticked. No plan or ruling changes.
+
+## 2026-11-06 - S4 review fixes (after `b2c428c6`, not ticked: awaiting re-review and Codex #13, #14)
+
+Independent review found three major, three minor and four nit findings. All are fixed except where noted.
+
+- M1. Approval cards now say what they approve. `approvalCardViews` builds a subject line from the subject row
+  (`approvalSubjectLine` in `lib/workspace/wrenCards.ts`): "Landing page version N", "Email sequence: {title}", or
+  "Social post: {first line}" from the post's linked markdown/text document (the post row has no text field).
+  The text is cut to 80 characters, whitespace is folded, and invisible/bidi characters and leading markdown markers
+  are dropped. It renders as a React text node, never HTML. Each card links to its review page,
+  `workspacePath(projectId, reviewRoute)`: `launch` for site versions, `email` for sequences, `social` for posts
+  (`files` as fallback). The subject is shown under the title, and it is in the sr-only context of both buttons and
+  the link. Tested: two posts give two distinct cards, and site and sequence cards name their subject.
+- M2. The static scan was rebuilt on the TypeScript AST. All nine reviewer probes now fail, and each is a planted
+  fixture: `ctx.db["insert"]`, `const { insert } = ctx.db` and `createApprovalRecord` with `kind: "spend"` (strict);
+  and in the chat modules, an alias import of `decideApproval`, importing `createApprovalRecord`,
+  `db.patch("approvals")`, `db.insert("tasks")`, a new unscanned helper import, and
+  `runMutation(internal.workspace.chat.doAnything)`. There are 26 more variants (12 handler, 14 chat) and 4 pure-helper fixtures (aliasing ctx/db, param
+  destructuring, `Reflect`, dynamic `import()`, `db.delete`, `db.replace`, a dynamic table, `scheduler.runAt`, an
+  aliased scheduler, a stashed `internal` ref, namespace imports, a value import from the gateway, a price, spread or
+  wrong table on `createApprovalRecord`). The rules:
+  - Imports are checked per file by the imported name.
+  - Every allowlisted local module is scanned (strict, chat or pure helper), or is a named platform gate imported by
+    exact binding (C-OPS, C-AUTHZ, C-LIMITS, `_generated`), or is type-only.
+  - Pure helpers (`lib/workspace/wren.ts`, the Wren prompt modules, `contracts/prompts.ts`, `contracts/wrenTools.ts`)
+    get their own scan: no ctx, db, run functions, `internal` or fetch, and imports only from other pure helpers
+    and zod.
+  - `ctx.db` may only appear as a direct call to an allowed method. `chat.ts` may insert, patch or replace only into
+    `chat_messages`; C-LIMITS rows go through `checkLimit`. `db.delete` is banned. Write methods may be called only
+    on `.db`.
+  - `runMutation`, `runQuery`, `runAction` and `scheduler.runAfter` each take one exact reference, and every
+    `internal.*` chain must be one of those four.
+  - `createApprovalRecord` may only be called directly, with exactly
+    `ownerId, projectId, kind, subjectTable, subjectId`, where the kind and table come from the card or are a
+    `WREN_APPROVAL_SUBJECTS` pair.
+- M3. `liveCardFor` reuses a card only if the founder can still use it: a pending card that is not stale, or an
+  approved card, and in both cases S1's `subjectRefusal` must find nothing (subject unchanged, publishable, not
+  linked elsewhere). To allow this, `readSubjectState` / `subjectRefusal` / `SubjectState` are now exported from
+  `approvals.ts`. If every card is dead, `createApprovalRecord` runs, and its supersede pass closes only dead cards.
+  Tested:
+  - a stale pending card expires and a fresh pending card replaces it;
+  - a pending card on a changed post is cancelled and replaced;
+  - a valid approved card is reused and stays approved, while a stale pending card beside it is untouched
+    (createApprovalRecord never ran);
+  - an approved card on a changed sequence is cancelled (superseded) and a new pending card is raised.
+- m1. After a decision, or when the card leaves `pending` while focus is on its buttons, focus moves to the card's
+  status line (`tabIndex={-1}`). Focus the founder moved elsewhere is left alone. The header comment is fixed.
+  Interaction tests (`tests/platform/workspace-wren-cards-focus.test.tsx`, Testing Library + user-event) cover a
+  keyboard approve, an out-of-band status change, and focus elsewhere: focus lands on the status line, never
+  `<body>`. The `wp74-keyboard` test named in the brief is not on this branch; this test uses the same tools.
+- m2. DOM ids come from `useId`, so no id repeats when the same approval or topic appears in two replies (tested).
+- m3. The per-card `role="status"` / `aria-live` is removed; the thread's `role="log"` announces new cards. The
+  decision text stays visible and is read when focus moves to it.
+- m4. `send` now allows `sequences` only: `sequence_steps` was dropped from `WREN_APPROVAL_SUBJECTS` and the
+  `send:sequence_steps` title. The tests and doc comments are updated.
+- m5. A subject row linked to an approval other than the reused card (`approvalId`, S1's `linkedApprovalId`) is
+  refused with `subject_refused` and nothing is written for it. Tested.
+- m6. Not fixed here: older draft sequences can still be missing from the approvable list. Adding an index would be
+  a schema change, so it is requested as Needs #14. The scan bound is raised from 20 to 50 newest sequences
+  (`SEQUENCE_SCAN_MAX`, hard cap), and a comment names the need. A draft older than that is still accepted if the
+  model names it; it just is not listed.
+- m7. Error copy is mapped from `decideApproval`'s ConvexError code (`approvalDecisionErrorCopy`):
+  - changed, mismatch, not publishable or not found: "This changed since Wren raised it. Ask Wren again for a fresh
+    card.";
+  - an expired result: "This card expired.";
+  - already decided, not found and paused each have their own line;
+  - only unknown or transient errors say "Try again in a moment".
+- Nits:
+  - `liveCardFor` checks the subject belongs to this business (S1's `readSubjectState`) before reading any approval.
+    The history read is bounded (`take(51)`) and fails closed past 50 (`APPROVAL_HISTORY_MAX`).
+  - Reply schema: `cards` is `.max(16)` and nullable. Every card field (`tool` included) is an optional, nullable
+    string with no schema length, so the server's 64-character check refuses an over-long card on its own. The
+    action maps null to absent and a missing tool to `""` (refused as `unknown_tool`), and cuts each value to 65
+    characters to keep the argument small. Tested: a reply with one 600-character field lands as `done`, that card
+    is refused (`too_long`) and the good card is still raised. A non-string value still fails the schema; that
+    remains whole-reply.
+  - A `post` card needs a `copy_ready` social post and a `send` card needs a `draft` sequence; otherwise
+    `subject_refused`. Tested.
+  - A turn that refused at least one proposal writes one `audit_events` row (`approval.wren_card_refused`, subject
+    the chat message). The metadata holds sorted `{ index, code }`, the proposal count and the created count, with no
+    model text. This stays within the scan's allowed tables, since the row is written by the strict handler and
+    `audit_events` is its one insert table. The corpus now allows only Wren's own audit actions and checks the
+    metadata holds no model text.
+- Prompt versions: `wrenTools.ts` and `wrenShared.ts` changed. `wren-chat@2` / `wren-plan-turn@2` have never
+  shipped (not on `origin/main`), so their lock entries were regenerated in place with `--write`; there is no @3.
+- Follow-up (S1, not done): check the kind's kill switch (`publish` / `email` / `social`) at card creation in
+  `createApprovalRecord`. Today it is checked at decide time and when the side effect runs.
+
+Files: `lib/workspace/contracts/wrenTools.ts`, `lib/workspace/wrenCards.ts`, `convex/workspace/wrenCards.ts`,
+`convex/workspace/approvals.ts` (exports only), `convex/workspace/chat.ts`, `convex/workspace/chatActions.ts`,
+`convex/ai/prompts/wrenShared.ts`, `convex/ai/prompts/versions.lock.json`,
+`components/workspace/chat/WrenChatCards.tsx`, `tests/security/wp77-wren-tools-cards-only.test.mjs`,
+`convex/workspace/wrenTools.test.ts` (21 → 33), `tests/platform/workspace-wren-cards.test.ts`,
+`tests/platform/workspace-wren-panel.test.tsx`, `tests/platform/workspace-wren-cards-focus.test.tsx` (new, 6).
+
+a11y-check (`WrenChatCards.tsx`):
+- no icon-only buttons, decorative icons, logos, inputs or images;
+- every link is in-app, with no `target=_blank`;
+- buttons, links and the status line use the kit's `FOCUS` outline;
+- status is shown as text, and the pending state as text plus a dashed border;
+- no headings are added;
+- keyboard: native buttons and links, focus is returned to the status line, no modal;
+- no nested live region, and ids are unique;
+- axe is clean in the panel tests.
+
+Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing warnings,
+none in changed files); `npm run check:prompt-versions` 0; `npm run test:security` 0 (210 node + 121 vitest);
+`npm test` 0; `npm run build` 0.
+
+Needs from Codex (S4 review):
+14. `sequences.by_projectId_and_status` (`["projectId", "status"]`), so `approvableSubjects` reads draft
+    sequences only. It replaces the `SEQUENCE_SCAN_MAX` (50 newest) scan in `convex/workspace/chat.ts`.
+
+Docs: progress updated; stories not ticked. No plan or ruling changes.

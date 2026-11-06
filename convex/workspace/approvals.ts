@@ -54,7 +54,8 @@ import {
  * Internal: `createApproval` (generators, Codex flows), `expireStaleApprovals`
  * (cron target, an action looping `expireStaleApprovalsBatch`), `checkApproved`
  * (the action-side wrapper of `assertApproved`).
- * Helpers for other Convex code: `createApprovalRecord`, `assertApproved`.
+ * Helpers for other Convex code: `createApprovalRecord`, `assertApproved`, and
+ * (read only, WP77-S4) `readSubjectState` / `subjectRefusal`.
  *
  * `assertApproved(ctx, approvalId, subject)` — call it inside the mutation that
  * records the side effect, BEFORE patching the subject in that mutation:
@@ -183,7 +184,7 @@ const KIND_FEATURE: Record<ApprovalKind, WorkspaceFeature> = {
 // Subject state (existence, business chain, version timestamps)
 // ---------------------------------------------------------------------------
 
-type SubjectState =
+export type SubjectState =
   | { readonly found: false; readonly reason: "invalid_id" | "missing" | "unsupported" }
   | {
     readonly found: true;
@@ -231,7 +232,8 @@ async function optionalDocumentTimes(
   return time === null ? null : [time];
 }
 
-async function readSubjectState(
+/** WP77-S4: exported so Wren's card handler checks a subject with S1's own rules before reusing a card. */
+export async function readSubjectState(
   ctx: ReadCtx,
   ownerId: Id<"users">,
   projectId: Id<"projects">,
@@ -350,7 +352,7 @@ async function readSubjectState(
  * `approvedAt` is the approval's `createdAt` for the version check; pass the
  * approval id to also refuse a subject row that links to a different approval.
  */
-function subjectRefusal(
+export function subjectRefusal(
   state: SubjectState,
   kind: ApprovalKind,
   approvedAt: number,

@@ -99,7 +99,7 @@ describe("WrenChatPanel", () => {
       cards: [
         {
           kind: "approval", approvalId: "a1" as Id<"approvals">, approvalKind: "publish", status: "pending",
-          title: "Publish this landing page version",
+          title: "Publish this landing page version", subject: "Landing page version 3", reviewRoute: "launch",
         },
         { kind: "explain", topic: "approvals" },
         { kind: "navigate", route: "brand" },
@@ -111,7 +111,16 @@ describe("WrenChatPanel", () => {
     expect(markup).toContain('aria-label="Cards from Wren"');
     expect(markup).toContain("Publish this landing page version");
     expect(markup).toContain("Status: Waiting for you");
-    expect(markup).toContain("Approve<span class=\"sr-only\"> · Publish this landing page version</span>");
+    expect(markup).toContain("Landing page version 3");
+    expect(markup).toContain(
+      "Approve<span class=\"sr-only\"> · Publish this landing page version, Landing page version 3</span>",
+    );
+    expect(markup).toContain('href="/dashboard/b/p1/launch"');
+    expect(markup).toContain("Review it on the launch page");
+    expect(markup).toContain('tabindex="-1"');
+    // No live region nested in the thread's role="log".
+    expect(document.querySelector('[aria-label="Cards from Wren"] [aria-live], [aria-label="Cards from Wren"] [role="status"]'))
+      .toBeNull();
     expect(markup).toContain("Not now");
     expect(markup).toContain("How approval cards work");
     expect(markup).toContain('href="/dashboard/b/p1/brand"');
@@ -126,6 +135,7 @@ describe("WrenChatPanel", () => {
       ...row("w3", "wren", "Done.", "done"),
       cards: [{
         kind: "approval", approvalId: "a2" as Id<"approvals">, approvalKind: "post", status: "approved", title: "Post this social post",
+        subject: "Social post: <b>Launch day</b> is here", reviewRoute: "social",
       }],
     };
     const streaming: Thread[number] = {
@@ -135,6 +145,9 @@ describe("WrenChatPanel", () => {
     const markup = render([row("f3", "founder", "Post it", "done"), decided, row("f4", "founder", "And?", "done"), streaming]);
     expect(markup).toContain("Status: Approved");
     expect(markup).not.toContain(">Approve<");
+    // Founder text in the subject line is a text node, never markup.
+    expect(markup).toContain("Social post: &lt;b&gt;Launch day&lt;/b&gt; is here");
+    expect(markup).not.toContain("<b>Launch day</b>");
     expect(markup).not.toContain("Credits");
     expect(await violations()).toEqual([]);
   });

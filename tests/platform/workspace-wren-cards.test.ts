@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { wrenReplyOutput, WREN_SYSTEM_RULES } from "@/convex/ai/prompts/wrenShared";
+import { WREN_CARD_PROPOSALS_MAX, wrenReplyOutput, WREN_SYSTEM_RULES } from "@/convex/ai/prompts/wrenShared";
 import { APPROVAL_SUBJECT_TABLES } from "@/lib/workspace/contracts/approvals";
 import {
   WREN_APPROVAL_SUBJECTS,
@@ -19,8 +19,15 @@ import {
 } from "@/lib/workspace/contracts/wrenTools";
 import { WORKSPACE_ROUTES } from "@/lib/workspace/routes";
 import {
+  APPROVAL_REVIEW_LABELS,
+  APPROVAL_REVIEW_ROUTES,
   approvalCardTitle,
+  approvalDecisionCopy,
+  approvalDecisionErrorCopy,
+  approvalReviewRoute,
+  approvalSubjectLine,
   checkWrenCardProposals,
+  subjectExcerpt,
   navigateRouteSlug,
   WREN_EXPLAIN_COPY,
   WREN_NAVIGATE_LABELS,
@@ -42,6 +49,7 @@ describe("WP77-S4 allowlist shape", () => {
     }
     expect(Object.keys(WREN_APPROVAL_SUBJECTS).sort()).toEqual(["post", "publish", "send"]);
     expect(WREN_APPROVAL_SUBJECTS.send).not.toContain("outbound_messages");
+    expect(WREN_APPROVAL_SUBJECTS.send).toEqual(["sequences"]);
   });
 
   test("every navigate route is a workspace route of this business, with a label", () => {
@@ -102,6 +110,7 @@ describe("WP77-S4 checkWrenCardProposals", () => {
     ["upgrade", { tool: "approval_card", kind: "upgrade", subjectTable: "projects", subjectId: ID }, "kind_not_allowed"],
     ["artifact_review", { tool: "approval_card", kind: "artifact_review", subjectTable: "documents", subjectId: ID }, "kind_not_allowed"],
     ["send to a list", { tool: "approval_card", kind: "send", subjectTable: "outbound_messages", subjectId: ID }, "kind_not_allowed"],
+    ["send on one sequence step", { tool: "approval_card", kind: "send", subjectTable: "sequence_steps", subjectId: ID }, "kind_not_allowed"],
     ["a table the kind may not name", { tool: "approval_card", kind: "publish", subjectTable: "documents", subjectId: ID }, "kind_not_allowed"],
     ["a prototype key as kind", { tool: "approval_card", kind: "constructor", subjectTable: "site_versions", subjectId: ID }, "kind_not_allowed"],
     ["markup as id", { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: "<b>x</b>" }, "bad_subject_id"],
@@ -135,14 +144,85 @@ describe("WP77-S4 checkWrenCardProposals", () => {
 });
 
 describe("WP77-S4 reply schema", () => {
-  test("cards are optional, bounded strings, and unknown keys are dropped", () => {
+  test("cards are optional, nullable, plain strings, and unknown keys are dropped", () => {
     expect(wrenReplyOutput.safeParse({ reply: "ok" }).success).toBe(true);
+    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: null }).success).toBe(true);
     const parsed = wrenReplyOutput.parse({
       reply: "ok",
       cards: [{ tool: "approval_card", kind: "spend", subjectTable: "documents", subjectId: ID, costCredits: "0" }],
     });
     expect(parsed.cards?.[0]).toEqual({ tool: "approval_card", kind: "spend", subjectTable: "documents", subjectId: ID });
-    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: [{ route: "brand" }] }).success).toBe(false);
-    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: [{ tool: "x".repeat(513) }] }).success).toBe(false);
+  });
+
+  test("one bad card does not fail the reply: missing tool, null fields and a 600-character value all parse", () => {
+    const parsed = wrenReplyOutput.safeParse({
+      reply: "ok",
+      cards: [{ route: "brand" }, { tool: "explain_card", topic: "credits", route: null }, { tool: "x".repeat(600) }],
+    });
+    expect(parsed.success).toBe(true);
+    // The server refuses them per card.
+    expect(codes([{ tool: "navigate_card", route: "x".repeat(600) }]).refused).toEqual(["too_long"]);
+  });
+
+  test("at most WREN_CARD_PROPOSALS_MAX cards; a non-string value still fails the schema", () => {
+    const card = { tool: "explain_card", topic: "credits" };
+    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: Array(WREN_CARD_PROPOSALS_MAX).fill(card) }).success).toBe(true);
+    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: Array(WREN_CARD_PROPOSALS_MAX + 1).fill(card) }).success).toBe(false);
+    expect(wrenReplyOutput.safeParse({ reply: "ok", cards: [{ tool: 7 }] }).success).toBe(false);
+  });
+});
+
+describe("WP77-S4 approval card subject line and review link", () => {
+  test("subjectExcerpt keeps the first real line as plain text, bounded", () => {
+    expect(subjectExcerpt("\n\n# Trail day is Saturday\nBring water.")).toBe("Trail day is Saturday");
+    expect(subjectExcerpt("-   spaced\t out\u200b text")).toBe("spaced out text");
+    expect(subjectExcerpt("\u202eevil\u202c name")).toBe("evil name");
+    expect(subjectExcerpt("")).toBe("");
+    expect(subjectExcerpt(undefined)).toBe("");
+    const long = subjectExcerpt("word ".repeat(50));
+    expect(Array.from(long).length).toBeLessThanOrEqual(80);
+    expect(long.endsWith("…")).toBe(true);
+    expect(subjectExcerpt("<b>bold</b>")).toBe("<b>bold</b>");
+  });
+
+  test("approvalSubjectLine names the version, the sequence or the post", () => {
+    expect(approvalSubjectLine({ table: "site_versions", version: 4n })).toBe("Landing page version 4");
+    expect(approvalSubjectLine({ table: "site_versions", version: null })).toBe("Landing page version");
+    expect(approvalSubjectLine({ table: "sequences", title: "Welcome" })).toBe("Email sequence: Welcome");
+    expect(approvalSubjectLine({ table: "sequences", title: null })).toBe("Email sequence");
+    expect(approvalSubjectLine({ table: "social_posts", text: "Launch day\nmore" })).toBe("Social post: Launch day");
+    expect(approvalSubjectLine({ table: "social_posts", text: "   " })).toBe("Social post");
+    expect(approvalSubjectLine({ table: "other" })).toBe("");
+  });
+
+  test("every review route is a workspace page with a label", () => {
+    const slugs = WORKSPACE_ROUTES.map((route) => route.slug as string);
+    for (const route of APPROVAL_REVIEW_ROUTES) {
+      expect(slugs).toContain(route);
+      expect(APPROVAL_REVIEW_LABELS[route].length).toBeGreaterThan(0);
+    }
+    expect(approvalReviewRoute("site_versions")).toBe("launch");
+    expect(approvalReviewRoute("sequences")).toBe("email");
+    expect(approvalReviewRoute("social_posts")).toBe("social");
+    expect(approvalReviewRoute("<script>")).toBe("files");
+  });
+});
+
+describe("WP77-S4 decision copy", () => {
+  test("a changed, mismatched or unpublishable subject asks for a fresh card; only transient errors say try again", () => {
+    const changed = "This changed since Wren raised it. Ask Wren again for a fresh card.";
+    for (const code of [
+      "APPROVAL_SUBJECT_CHANGED", "APPROVAL_SUBJECT_MISMATCH", "APPROVAL_SUBJECT_NOT_PUBLISHABLE", "APPROVAL_SUBJECT_NOT_FOUND",
+    ]) expect(approvalDecisionErrorCopy(code)).toBe(changed);
+    expect(approvalDecisionErrorCopy("APPROVAL_ALREADY_DECIDED")).toBe("This card was already decided.");
+    expect(approvalDecisionErrorCopy(null)).toContain("Try again in a moment");
+    expect(approvalDecisionErrorCopy("SOMETHING_NEW")).toContain("Try again in a moment");
+    expect(approvalDecisionErrorCopy("APPROVAL_SUBJECT_CHANGED")).not.toContain("Try again");
+  });
+
+  test("an expired card reads as expired", () => {
+    expect(approvalDecisionCopy("expired")).toBe("This card expired.");
+    expect(approvalDecisionCopy("approved")).toBe("Approved.");
+    expect(approvalDecisionCopy("cancelled")).toBe("Okay, not now.");
   });
 });

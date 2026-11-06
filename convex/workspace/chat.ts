@@ -363,6 +363,16 @@ export type ApprovableSubject = {
 const APPROVABLE_PER_TABLE = 3;
 
 /**
+ * Newest sequences read to find draft ones. `sequences` has only a
+ * `by_projectId` index, so drafts older than this many sequences are not
+ * listed (the founder can still ask for them by name, and
+ * `resolveWrenCards` accepts any draft sequence of the business). The
+ * `sequences.by_projectId_and_status` index requested from Codex (WP77
+ * Needs #14) lets this read draft sequences only.
+ */
+const SEQUENCE_SCAN_MAX = 50;
+
+/**
  * What Wren can raise an approval card for, so the model can name a real id:
  * the newest `ready` site versions, draft sequences and `copy_ready` social
  * posts of this business, a few of each. Server-read and bounded. The model
@@ -376,7 +386,7 @@ export async function approvableSubjects(ctx: QueryCtx, project: Project): Promi
   const sequences = await ctx.db.query("sequences")
     .withIndex("by_projectId", (q) => q.eq("projectId", project._id))
     .order("desc")
-    .take(20);
+    .take(SEQUENCE_SCAN_MAX);
   const posts = await ctx.db.query("social_posts")
     .withIndex("by_projectId_and_status", (q) => q.eq("projectId", project._id).eq("status", "copy_ready"))
     .order("desc")
@@ -531,7 +541,7 @@ export const finishWrenTurn = internalMutation({
       : WREN_FAILURE_COPY[args.outcome.cause satisfies WrenFailureCause];
     // Cards only on a finished reply, in this transaction, from this row's own business.
     const cards = args.outcome.status === "done" && args.outcome.cards !== undefined && args.outcome.cards.length > 0
-      ? await resolveWrenCards(ctx, { ownerId: row.ownerId, projectId: row.projectId }, args.outcome.cards)
+      ? await resolveWrenCards(ctx, { ownerId: row.ownerId, projectId: row.projectId }, row._id, args.outcome.cards)
       : null;
     await ctx.db.patch("chat_messages", row._id, {
       status: args.outcome.status,

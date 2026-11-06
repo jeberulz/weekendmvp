@@ -14,9 +14,12 @@
  * structured reply (no tool loop, D23). Each entry only proposes an
  * approval, explain or navigate card from the closed allowlist in
  * `lib/workspace/contracts/wrenTools.ts`; the server checks every field and
- * decides. The schema keeps the fields as bounded plain strings on purpose:
- * an unknown value is refused per card by the server, so one bad card never
- * costs the founder the whole reply.
+ * decides. The schema keeps every card field a plain string with no length
+ * bound, and every field (`tool` included) optional and nullable (null reads
+ * as absent): an unknown, missing or over-long value (the server's limit is
+ * 64 characters) is refused per card by the server, so one bad card never
+ * costs the founder the whole reply. Only the number of cards is bounded
+ * here (`WREN_CARD_PROPOSALS_MAX`); the server considers the first three.
  */
 
 import { z } from "zod";
@@ -32,24 +35,25 @@ export type WrenTurnInput = {
   readonly history: readonly string[];
 };
 
-/** Upper bound on one card field in the schema; the server's allowlist is far tighter. */
-const CARD_FIELD_SCHEMA_MAX = 512;
+/** Most card entries one reply may carry before the whole reply fails its schema. */
+export const WREN_CARD_PROPOSALS_MAX = 16;
 
-const cardField = z.string().max(CARD_FIELD_SCHEMA_MAX);
+/** No length bound on purpose: the server refuses a long value per card (`too_long`). */
+const cardField = z.string().nullable().optional();
 
 /** One proposed card, as the model writes it. Untrusted: the server checks every field. */
 export const wrenCardProposalOutput = z.object({
   tool: cardField,
-  kind: cardField.optional(),
-  subjectTable: cardField.optional(),
-  subjectId: cardField.optional(),
-  topic: cardField.optional(),
-  route: cardField.optional(),
+  kind: cardField,
+  subjectTable: cardField,
+  subjectId: cardField,
+  topic: cardField,
+  route: cardField,
 });
 
 export const wrenReplyOutput = z.object({
   reply: z.string().min(1).max(WREN_REPLY_MAX_CHARS),
-  cards: z.array(wrenCardProposalOutput).optional(),
+  cards: z.array(wrenCardProposalOutput).max(WREN_CARD_PROPOSALS_MAX).nullable().optional(),
 });
 
 export type WrenReplyOutput = z.infer<typeof wrenReplyOutput>;

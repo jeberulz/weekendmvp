@@ -13,9 +13,13 @@
  * What a card shows is built here and in the UI from the allowlisted key:
  * titles, explanations and link labels are static copy, and a navigate link
  * is `/dashboard/b/{projectId}/{route}` built by the app. No model-written
- * text reaches a card. An approval card's subject is still only a proposal:
- * `convex/workspace/wrenCards.ts` checks it belongs to this business (S1's
- * `createApprovalRecord`) and never touches an existing card.
+ * text reaches a card. An approval card also shows a subject line so two
+ * cards of one kind can be told apart; the server builds it from the subject
+ * row (`approvalSubjectLine`): a version number, a sequence title, or the
+ * first line of a post. Those are founder or crew text, rendered as plain
+ * text only. An approval card's subject is still only a proposal:
+ * `convex/workspace/wrenCards.ts` checks it belongs to this business and
+ * reuses a live card instead of superseding it.
  */
 
 import {
@@ -186,8 +190,6 @@ export function approvalCardTitle(kind: string, subjectTable: string): string {
       return "Publish this landing page version";
     case "send:sequences":
       return "Start sending this email sequence";
-    case "send:sequence_steps":
-      return "Send this email";
     case "post:social_posts":
       return "Post this social post";
     case "artifact_review:documents":
@@ -253,4 +255,151 @@ export const WREN_NAVIGATE_LABELS: Readonly<Record<WrenNavigateRoute, string>> =
 /** The workspace route slug for a navigate key (`dashboard` is the index). */
 export function navigateRouteSlug(route: WrenNavigateRoute): string {
   return route === "dashboard" ? "" : route;
+}
+
+// ---------------------------------------------------------------------------
+// Approval cards: subject line, review link, decision copy
+// ---------------------------------------------------------------------------
+
+/** Longest subject line an approval card shows, in characters (an ellipsis included). */
+export const APPROVAL_SUBJECT_LINE_MAX_CHARS = 80;
+
+/**
+ * The first non-empty line of `text`, whitespace folded, leading markdown
+ * markers and control characters removed, cut to
+ * `APPROVAL_SUBJECT_LINE_MAX_CHARS` with an ellipsis. Empty when there is no
+ * text. The result is plain text for a React text node, never HTML.
+ */
+export function subjectExcerpt(text: string | undefined, max: number = APPROVAL_SUBJECT_LINE_MAX_CHARS): string {
+  if (text === undefined) return "";
+  for (const raw of text.split("\n")) {
+    const line = cleanLine(raw);
+    if (line.length === 0) continue;
+    const chars = Array.from(line);
+    return chars.length <= max ? line : `${chars.slice(0, max - 1).join("").trimEnd()}…`;
+  }
+  return "";
+}
+
+/** Control, zero-width and bidi-override characters: dropped from a subject line. */
+function isInvisible(code: number): boolean {
+  return code < 0x20 || (code >= 0x7f && code <= 0x9f) || (code >= 0x200b && code <= 0x200f) ||
+    (code >= 0x202a && code <= 0x202e) || (code >= 0x2066 && code <= 0x2069) || code === 0xfeff;
+}
+
+const LEADING_MARKERS = "#>*-+";
+
+/** One line folded to single spaces, invisible characters and leading markdown markers dropped. */
+function cleanLine(raw: string): string {
+  let out = "";
+  let gap = false;
+  for (const char of raw) {
+    if (isInvisible(char.codePointAt(0) ?? 0) || char.trim() === "") {
+      gap = out.length > 0;
+      continue;
+    }
+    if (out.length === 0 && LEADING_MARKERS.includes(char)) continue;
+    if (gap) out += " ";
+    gap = false;
+    out += char;
+  }
+  return out;
+}
+
+export type ApprovalSubjectFacts =
+  | { readonly table: "site_versions"; readonly version: bigint | null }
+  | { readonly table: "sequences"; readonly title: string | null }
+  | { readonly table: "social_posts"; readonly text: string | null }
+  | { readonly table: "other" };
+
+/**
+ * The approval card's subject line from server-read facts (null when the row
+ * is gone or not this business's). Never model text.
+ */
+export function approvalSubjectLine(facts: ApprovalSubjectFacts): string {
+  switch (facts.table) {
+    case "site_versions":
+      return facts.version === null ? "Landing page version" : `Landing page version ${facts.version.toString()}`;
+    case "sequences": {
+      const title = facts.title === null ? "" : subjectExcerpt(facts.title);
+      return title === "" ? "Email sequence" : `Email sequence: ${title}`;
+    }
+    case "social_posts": {
+      const text = facts.text === null ? "" : subjectExcerpt(facts.text);
+      return text === "" ? "Social post" : `Social post: ${text}`;
+    }
+    case "other":
+      return "";
+  }
+}
+
+/** Where the founder reviews an approval card's subject (a workspace route key). */
+export const APPROVAL_REVIEW_ROUTES = ["launch", "email", "social", "files"] as const;
+export type ApprovalReviewRoute = (typeof APPROVAL_REVIEW_ROUTES)[number];
+
+/** The review page for a subject table: the launch plan for the site, email, social; files otherwise. */
+export function approvalReviewRoute(subjectTable: string): ApprovalReviewRoute {
+  switch (subjectTable) {
+    case "site_versions":
+      return "launch";
+    case "sequences":
+    case "sequence_steps":
+      return "email";
+    case "social_posts":
+      return "social";
+    default:
+      return "files";
+  }
+}
+
+export const APPROVAL_REVIEW_LABELS: Readonly<Record<ApprovalReviewRoute, string>> = {
+  launch: "Review it on the launch page",
+  email: "Review it in email",
+  social: "Review it in social",
+  files: "Review it in files",
+};
+
+/** The card's line after a decision call returns, by the approval's new status. */
+export function approvalDecisionCopy(status: string): string {
+  switch (status) {
+    case "approved":
+      return "Approved.";
+    case "cancelled":
+      return "Okay, not now.";
+    case "expired":
+      return "This card expired.";
+    case "changes_requested":
+      return "Changes requested.";
+    default:
+      return "";
+  }
+}
+
+const CHANGED_CODES: ReadonlySet<string> = new Set([
+  "APPROVAL_SUBJECT_CHANGED",
+  "APPROVAL_SUBJECT_MISMATCH",
+  "APPROVAL_SUBJECT_NOT_PUBLISHABLE",
+  "APPROVAL_SUBJECT_NOT_FOUND",
+  "APPROVAL_TERMS_MISMATCH",
+]);
+
+/**
+ * The card's line when `decideApproval` refuses, by its ConvexError code
+ * (`null` for a non-Convex error such as a dropped connection). Only an
+ * unknown or transient failure asks the founder to try again. (An expired
+ * card is not an error: `decideApproval` returns status `expired`, read by
+ * `approvalDecisionCopy`.)
+ */
+export function approvalDecisionErrorCopy(code: string | null): string {
+  if (code !== null && CHANGED_CODES.has(code)) return "This changed since Wren raised it. Ask Wren again for a fresh card.";
+  switch (code) {
+    case "APPROVAL_ALREADY_DECIDED":
+      return "This card was already decided.";
+    case "RESOURCE_NOT_FOUND":
+      return "This card is no longer available.";
+    case "WORKSPACE_DISABLED":
+      return "Approvals are paused right now. Nothing was changed.";
+    default:
+      return "That didn't go through. Try again in a moment.";
+  }
 }

@@ -3,8 +3,9 @@ import { internal } from "../_generated/api";
 import { internalAction, type ActionCtx } from "../_generated/server";
 // Types only: erased at build, so this default-runtime file never loads the Node action module.
 import type { GatewayRunResult, RunPromptArgs } from "../ai/gatewayActions";
-import { wrenReplyOutput } from "../ai/prompts/wrenShared";
+import { WREN_CARD_PROPOSALS_MAX, wrenReplyOutput, type WrenReplyOutput } from "../ai/prompts/wrenShared";
 import type { WrenFailureCause } from "../../lib/workspace/wren";
+import { WREN_CARD_FIELD_MAX_CHARS } from "../../lib/workspace/contracts/wrenTools";
 import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
 
 /**
@@ -35,12 +36,42 @@ import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
 
 type FailedRun = Extract<GatewayRunResult, { ok: false }>;
 
-/**
- * Proposals passed on to `finishWrenTurn`. The server considers only the first
- * `WREN_CARDS_PER_TURN` and refuses the rest; this just bounds the argument.
- */
-const CARD_PROPOSALS_PASSED = 16;
 type FinishOutcome = Infer<typeof finishOutcomeValidator>;
+type CardProposal = NonNullable<Extract<FinishOutcome, { status: "done" }>["cards"]>[number];
+
+/**
+ * A value cut to one character past the server's limit: still refused there
+ * (`too_long`), but the mutation argument stays small.
+ */
+function boundedField(value: string | null | undefined): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  return value.length > WREN_CARD_FIELD_MAX_CHARS ? value.slice(0, WREN_CARD_FIELD_MAX_CHARS + 1) : value;
+}
+
+/**
+ * The model's cards as proposals for `finishWrenTurn`: null fields read as
+ * absent, a missing tool as `""` (refused as `unknown_tool`), every value
+ * bounded. At most `WREN_CARD_PROPOSALS_MAX` (the schema's bound); the server
+ * considers only the first `WREN_CARDS_PER_TURN` and refuses the rest.
+ */
+export function cardProposals(cards: WrenReplyOutput["cards"]): CardProposal[] | undefined {
+  if (cards === null || cards === undefined) return undefined;
+  return cards.slice(0, WREN_CARD_PROPOSALS_MAX).map((card) => {
+    const kind = boundedField(card.kind);
+    const subjectTable = boundedField(card.subjectTable);
+    const subjectId = boundedField(card.subjectId);
+    const topic = boundedField(card.topic);
+    const route = boundedField(card.route);
+    return {
+      tool: boundedField(card.tool) ?? "",
+      ...(kind === undefined ? {} : { kind }),
+      ...(subjectTable === undefined ? {} : { subjectTable }),
+      ...(subjectId === undefined ? {} : { subjectId }),
+      ...(topic === undefined ? {} : { topic }),
+      ...(route === undefined ? {} : { route }),
+    };
+  });
+}
 
 export const runWrenTurnArgs = {
   ownerId: v.id("users"),
@@ -121,12 +152,13 @@ export async function runWrenTurnWith(
     } catch {
       parsed = wrenReplyOutput.safeParse(null);
     }
+    const cards = parsed.success ? cardProposals(parsed.data.cards) : undefined;
     await finish(parsed.success
       ? {
         status: "done",
         body: parsed.data.reply,
         // Proposals only; the server checks and caps them (`resolveWrenCards`).
-        ...(parsed.data.cards === undefined ? {} : { cards: parsed.data.cards.slice(0, CARD_PROPOSALS_PASSED) }),
+        ...(cards === undefined ? {} : { cards }),
         ...lastUsageId(result),
       }
       : { status: "failed", cause: "invalid", ...lastUsageId(result) }, lastAttempt(result, args.attempt));

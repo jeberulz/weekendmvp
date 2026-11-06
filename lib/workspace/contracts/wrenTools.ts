@@ -29,12 +29,14 @@ export const WREN_CARDS_PER_TURN = 3;
  * strict subset of S1's `APPROVAL_SUBJECT_TABLES` (tested). Left out on
  * purpose: `artifact_review` (generators raise it with the D17 round),
  * `spend` (only change rounds raise it, with the server's price), `ad_launch`
- * (ads start only from the ads flow, D13), `upgrade` (billing), and `send` to
- * an `outbound_messages` list (D13: never a new list from chat).
+ * (ads start only from the ads flow, D13), `upgrade` (billing), `send` to
+ * an `outbound_messages` list (D13: never a new list from chat), and `send`
+ * on a single `sequence_steps` row (a step is sent as part of its approved
+ * sequence, so Wren raises the sequence card only).
  */
 export const WREN_APPROVAL_SUBJECTS = {
   publish: ["site_versions"],
-  send: ["sequences", "sequence_steps"],
+  send: ["sequences"],
   post: ["social_posts"],
 } as const;
 export type WrenApprovalKind = keyof typeof WREN_APPROVAL_SUBJECTS;
