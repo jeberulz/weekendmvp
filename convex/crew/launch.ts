@@ -9,6 +9,8 @@ import { requireBusinessAccess } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
 import { assertStepTransition } from "../platform/transitions";
 import { JOB_SUBJECT_MAIN, jobKey } from "../../lib/workspace/contracts/jobs";
+import type { RosterPlan } from "../../lib/workspace/contracts/roster";
+import { pendingLaunchView } from "../../lib/workspace/crew/launch";
 import { isCrewStepJobType } from "../../lib/workspace/crew/tasks";
 import {
   RUN_LEASE_MS,
@@ -19,7 +21,13 @@ import {
   launchDraftBlueprint,
   resumeParkedTask,
 } from "./jobs";
-import { launchRosterTask, newestBlueprintFirstDraft, rosterPlanRow } from "./launchRoster";
+import {
+  launchRosterPlan,
+  launchRosterTask,
+  launchWizardAnswers,
+  newestBlueprintFirstDraft,
+  rosterPlanRow,
+} from "./launchRoster";
 import { crewStepOutcomeValidator } from "./runner";
 import {
   LAUNCH_STEPS,
@@ -414,6 +422,76 @@ export const resumeLaunch = mutation({
 });
 
 // ---------------------------------------------------------------------------
+// Retry before the roster (one rule for launchStatus and launchProgress)
+// ---------------------------------------------------------------------------
+
+/**
+ * The blueprint a launch plans its team from when the blueprint step has
+ * already succeeded: the newest blueprint the founder approved (S3a's
+ * `approvedBlueprint`, so a newer approved revision wins), else the first
+ * draft's own document.
+ */
+async function launchBlueprintBody(ctx: ReadCtx, project: Doc<"projects">, firstDraft: Doc<"tasks">): Promise<string | null> {
+  const approved = await approvedBlueprint(ctx, project);
+  if (approved?.body !== undefined) return approved.body;
+  const document = await ctx.db.query("documents")
+    .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", firstDraft._id))
+    .order("desc")
+    .first();
+  if (document === null || document.ownerId !== project.ownerId || document.projectId !== project._id ||
+    document.kind !== "blueprint" || document.archivedAt !== undefined || document.body === undefined) {
+    return null;
+  }
+  return document.body;
+}
+
+/**
+ * The team a succeeded blueprint gives, or null when it cannot be planned or
+ * does not match a stored plan row (read-only).
+ */
+export async function planFromSucceededBlueprint(
+  ctx: ReadCtx,
+  project: Doc<"projects">,
+  firstDraft: Doc<"tasks">,
+): Promise<RosterPlan | null> {
+  const body = await launchBlueprintBody(ctx, project, firstDraft);
+  return body === null ? null : await launchRosterPlan(ctx, project, body);
+}
+
+/** Where an open launch stands before its team exists. `blueprintDone`: the blueprint succeeded, the team is unplanned. */
+export type OpenLaunchRetry =
+  | { readonly failed: false }
+  | { readonly failed: true; readonly paused: boolean; readonly retryable: boolean; readonly blueprintDone: boolean };
+
+/**
+ * Whether a launch whose roster task is still open has failed, and whether
+ * the founder's Try again (`retryLaunch`) can help it now. `readLaunch`
+ * (`launchStatus`) and `launchProgress` both read this, so the two never
+ * disagree:
+ * - the blueprint succeeded but the team is not stored: a free re-plan heals
+ *   it only when it plans now;
+ * - the blueprint failed, was cancelled or is missing: a new first draft helps
+ *   only when the wizard answers are usable (otherwise its finish fails closed
+ *   again, so no retry is offered and `retryLaunch` spends nothing);
+ * - a paused blueprint is retryable (resumed);
+ * - queued or running: not failed.
+ */
+export async function openLaunchRetry(ctx: ReadCtx, project: Doc<"projects">): Promise<OpenLaunchRetry> {
+  const blueprint = await newestBlueprintFirstDraft(ctx, project.ownerId, project._id);
+  if (blueprint?.status === "succeeded") {
+    const plan = await planFromSucceededBlueprint(ctx, project, blueprint);
+    return { failed: true, paused: false, retryable: plan !== null, blueprintDone: true };
+  }
+  const pending = pendingLaunchView(blueprint?.status ?? null);
+  if (pending.state !== "failed") return { failed: false };
+  const retryable = pending.retryable && (await launchWizardAnswers(ctx, project)) !== null;
+  return { failed: true, paused: pending.paused, retryable, blueprintDone: false };
+}
+
+/** A failed blueprint, or an unplanned team, that no Try again can help. */
+export const LAUNCH_STUCK_REASON = "This step could not finish, and trying again would not help.";
+
+// ---------------------------------------------------------------------------
 // Retry after the roster (S2b review M1)
 // ---------------------------------------------------------------------------
 
@@ -569,13 +647,28 @@ export const launchProgress = query({
     const read = await readLaunchFacts(ctx, project, rosterTask);
     const evaluated = evaluateLaunch(read.facts);
     const failed = new Map((await failedLaunchSteps(ctx, project, read, evaluated)).map((entry) => [entry.step.key, entry]));
+    // Before the team exists, the blueprint (or the unplanned team) carries the same retry rule as `launchStatus`.
+    const open = rosterTask.status === "succeeded" ? null : await openLaunchRetry(ctx, project);
+    const openKey: LaunchStepKey | null = open?.failed === true ? (open.blueprintDone ? "roster" : "blueprint") : null;
+    if (open?.failed === true && openKey !== null) {
+      const evaluatedOpen = evaluated.find((entry) => entry.key === openKey);
+      failed.set(openKey, {
+        step: launchStep(openKey),
+        retryable: open.retryable,
+        reason: open.paused
+          ? (evaluatedOpen?.reason ?? STEP_FAILED_REASON)
+          : open.retryable ? STEP_FAILED_REASON : LAUNCH_STUCK_REASON,
+      });
+    }
     const steps = evaluated.map((entry): LaunchProgressStep => {
       const failure = failed.get(entry.key);
       const reason = failure?.reason ?? entry.reason ?? (entry.state === "queued" ? WAITING_FOR_SLOT_REASON : undefined);
+      // An unplanned team reads `waiting` from the facts; it has failed, as `launchStatus` says.
+      const state = entry.key === openKey && open?.failed === true && !open.paused ? "failed" : entry.state;
       return {
         key: entry.key,
         title: launchStep(entry.key).title,
-        state: entry.state,
+        state,
         ...(reason === undefined ? {} : { reason }),
         ...(failure === undefined ? {} : { retryable: failure.retryable }),
       };

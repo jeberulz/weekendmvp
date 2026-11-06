@@ -5,14 +5,18 @@ import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/
 import { assertFeatureEnabled } from "../ops/settings";
 import { requireBusinessAccess } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
-import { pendingLaunchView, readyLaunchView, type LaunchView } from "../../lib/workspace/crew/launch";
-import type { RosterPlan } from "../../lib/workspace/contracts/roster";
-import { approvedBlueprint, insertCrewTask } from "./jobs";
-import { advanceOwner, resumeLaunchSteps, retryFailedLaunchSteps } from "./launch";
+import { readyLaunchView, type LaunchView } from "../../lib/workspace/crew/launch";
+import { insertCrewTask } from "./jobs";
+import {
+  advanceOwner,
+  openLaunchRetry,
+  planFromSucceededBlueprint,
+  resumeLaunchSteps,
+  retryFailedLaunchSteps,
+} from "./launch";
 import {
   insertLaunchRosterTask,
   launchRosterTask,
-  launchRosterPlan,
   launchWizardAnswers,
   newestBlueprintFirstDraft,
   storedRosterPlan,
@@ -61,35 +65,6 @@ export const launchViewValidator = v.union(
 
 type Ctx = Pick<QueryCtx, "db">;
 
-/**
- * The blueprint a launch plans its team from when the blueprint step has
- * already succeeded: the newest blueprint the founder approved (S3a's
- * `approvedBlueprint`, so a newer approved revision wins), else the first
- * draft's own document.
- */
-async function launchBlueprintBody(ctx: Ctx, project: Doc<"projects">, firstDraft: Doc<"tasks">): Promise<string | null> {
-  const approved = await approvedBlueprint(ctx, project);
-  if (approved?.body !== undefined) return approved.body;
-  const document = await ctx.db.query("documents")
-    .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", firstDraft._id))
-    .order("desc")
-    .first();
-  if (document === null || document.ownerId !== project.ownerId || document.projectId !== project._id ||
-    document.kind !== "blueprint" || document.archivedAt !== undefined || document.body === undefined) {
-    return null;
-  }
-  return document.body;
-}
-
-/**
- * The team a succeeded blueprint gives, or null when it cannot be planned or
- * does not match a stored plan row (read-only).
- */
-async function planFromSucceededBlueprint(ctx: Ctx, project: Doc<"projects">, firstDraft: Doc<"tasks">): Promise<RosterPlan | null> {
-  const body = await launchBlueprintBody(ctx, project, firstDraft);
-  return body === null ? null : await launchRosterPlan(ctx, project, body);
-}
-
 /** What Meet your co-founder shows for the business now. */
 async function readLaunch(ctx: Ctx, project: Doc<"projects">): Promise<LaunchView> {
   const rosterTask = await launchRosterTask(ctx, project.ownerId, project._id);
@@ -100,16 +75,9 @@ async function readLaunch(ctx: Ctx, project: Doc<"projects">): Promise<LaunchVie
     // as a failure no retry can fix, never as an empty team.
     return plan === null ? { state: "failed", paused: false, retryable: false } : readyLaunchView(plan);
   }
-  const blueprint = await newestBlueprintFirstDraft(ctx, project.ownerId, project._id);
-  if (blueprint?.status === "succeeded") {
-    // The blueprint is stored but the team is not: a free re-plan can heal it only when it plans now.
-    return { state: "failed", paused: false, retryable: (await planFromSucceededBlueprint(ctx, project, blueprint)) !== null };
-  }
-  const pending = pendingLaunchView(blueprint?.status ?? null);
-  // A new or resumed blueprint cannot help a business whose wizard answers are unusable: its finish would fail
-  // closed again, so the page offers no retry (and `retryLaunch` spends nothing).
-  if (pending.state === "failed" && (await launchWizardAnswers(ctx, project)) === null) return { ...pending, retryable: false };
-  return pending;
+  // Before the team exists, `openLaunchRetry` (shared with `launchProgress`) says whether a Try again can help.
+  const open = await openLaunchRetry(ctx, project);
+  return open.failed ? { state: "failed", paused: open.paused, retryable: open.retryable } : { state: "assembling" };
 }
 
 /**

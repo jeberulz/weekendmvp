@@ -25,7 +25,13 @@ import { hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/
 import type { WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { RUN_LEASE_MS, abandonCrewTask, ensureLaunchStepTasks } from "./jobs";
 import { FAILED_STEP_INTERRUPTED_REASON } from "../../lib/workspace/crew/retry";
-import { BRIEF_CHANGED_REASON, OWNER_CREW_CAP, STEP_FAILED_REASON, WAITING_FOR_SLOT_REASON } from "./launch";
+import {
+  BRIEF_CHANGED_REASON,
+  LAUNCH_STUCK_REASON,
+  OWNER_CREW_CAP,
+  STEP_FAILED_REASON,
+  WAITING_FOR_SLOT_REASON,
+} from "./launch";
 import type { CrewStepOutcome } from "./runner";
 import { LAUNCH_STEPS, launchStepPosition, type LaunchStep } from "./steps";
 
@@ -744,6 +750,9 @@ describe("WP75-S2b review minor 5: the cap is full", () => {
     expect(await resume(w, first)).toEqual({ resumed: 0, paused: 1, waitingForSlot: true });
     expect(await tokensSpent(w)).toBe(0);
     expect((await progress(w, first)).steps[0]).toMatchObject({ key: "blueprint", state: "paused" });
+    // Try again resumes a paused blueprint, so progress offers it as launchStatus does.
+    expect((await progress(w, first)).retryable).toBe(true);
+    expect(await as(w).query(api.crew.roster.launchStatus, { projectId: first })).toMatchObject({ paused: true, retryable: true });
   });
 
   test("a retry while the cap is full inserts the step, which reads waiting for a free slot, and runs once a slot frees", async () => {
@@ -795,5 +804,62 @@ describe("WP75-S2b review nits", () => {
     await start(w, second);
     await drain(w);
     expect(ofType(await rows(w), "crew_blueprint", second)).toEqual([expect.objectContaining({ status: "succeeded" })]);
+  });
+});
+
+describe("WP75-S2b review (Codex P2): launchProgress and launchStatus agree before the team exists", () => {
+  const status = async (w: World) =>
+    await as(w).query(api.crew.roster.launchStatus, { projectId: w.projectIds[0] as Id<"projects"> });
+
+  test("a failed first blueprint is retryable in both while the answers are usable, and in neither once they are not", async () => {
+    const w = await world();
+    hooks.plan = ({ type, n }) => (type === "crew_blueprint" && n === 1 ? { reply: () => ({ refusal: { category: "cyber" } }) } : {});
+    await start(w);
+    await drain(w);
+
+    expect(await status(w)).toEqual({ state: "failed", paused: false, retryable: true });
+    const usable = await progress(w);
+    expect(usable.retryable).toBe(true);
+    expect(usable.steps[0]).toMatchObject({ key: "blueprint", state: "failed", retryable: true, reason: STEP_FAILED_REASON });
+
+    const sessionId = await w.t.run(async (ctx) =>
+      (await ctx.db.get("projects", w.projectIds[0] as Id<"projects">))?.workspace?.wizardSessionId);
+    if (sessionId === undefined) throw new Error("no wizard session");
+    await w.t.run(async (ctx) => await ctx.db.patch("wizard_sessions", sessionId, { answers: {} }));
+
+    expect(await status(w)).toEqual({ state: "failed", paused: false, retryable: false });
+    const unusable = await progress(w);
+    expect(unusable.retryable).toBe(false);
+    expect(unusable.steps[0]).toMatchObject({ key: "blueprint", state: "failed", retryable: false, reason: LAUNCH_STUCK_REASON });
+  });
+
+  test("a succeeded blueprint with no team: the roster step reads failed, retryable only while the team plans", async () => {
+    const w = await world();
+    await start(w);
+    await drain(w);
+    const r = await rows(w);
+    const roster = ofType(r, "crew_roster")[0];
+    const blueprintTask = ofType(r, "crew_blueprint")[0];
+    const blueprintDoc = r.documents.find((row) => row.taskId === blueprintTask?._id);
+    const teamDoc = r.documents.find((row) => row.taskId === roster?._id);
+    if (roster === undefined || blueprintDoc === undefined || teamDoc === undefined) throw new Error("launch did not finish");
+    // The team never got stored: the roster task is still open and has no document.
+    await w.t.run(async (ctx) => {
+      await ctx.db.patch("tasks", roster._id, { status: "queued" });
+      await ctx.db.delete("documents", teamDoc._id);
+    });
+
+    expect(await status(w)).toEqual({ state: "failed", paused: false, retryable: true });
+    const plans = await progress(w);
+    expect(plans.retryable).toBe(true);
+    expect(plans.steps.find((step) => step.key === "roster"))
+      .toMatchObject({ state: "failed", retryable: true, reason: STEP_FAILED_REASON });
+
+    await w.t.run(async (ctx) => await ctx.db.patch("documents", blueprintDoc._id, { body: "not a blueprint" }));
+    expect(await status(w)).toEqual({ state: "failed", paused: false, retryable: false });
+    const stuck = await progress(w);
+    expect(stuck.retryable).toBe(false);
+    expect(stuck.steps.find((step) => step.key === "roster"))
+      .toMatchObject({ state: "failed", retryable: false, reason: LAUNCH_STUCK_REASON });
   });
 });

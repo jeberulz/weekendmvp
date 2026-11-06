@@ -1417,3 +1417,18 @@ Every finding from the review was confirmed fixed by mutation. Open follow-ups, 
   "Waiting on the …". A cosmetic gap for S6a's Team HQ.
 - If the founder asks for changes on the blueprint between a retry's mutation and its preflight, the retry spends
   its token and fails at preflight. Accepted.
+
+### S2b PR #239 review fix (Codex P2: launchProgress missed the pre-roster retry)
+
+Before the team existed, `launchProgress` read only `failedLaunchSteps`, which leaves out the blueprint, so a failed
+first blueprint showed `retryable: false` while `launchStatus` (and `retryLaunch`) said a retry would help. One rule
+now serves both: `openLaunchRetry` in `convex/crew/launch.ts` (moved there with `planFromSucceededBlueprint`, since
+`roster.ts` imports `launch.ts`).
+- A failed, cancelled or missing blueprint is retryable only while the wizard answers are usable. A succeeded
+  blueprint with no stored team is retryable only while the team still plans. A paused one is retryable (resumed).
+- In `launchProgress`, the failure sits on the blueprint step, or on the roster step when the blueprint succeeded
+  (that step reads `failed`, not `waiting`). A retryable one gives `STEP_FAILED_REASON`, a stuck one
+  `LAUNCH_STUCK_REASON`, and the top-level `retryable` includes it.
+- Tests (`launch.test.ts`): a failed blueprint (usable, then unusable answers); a succeeded blueprint with no team
+  (plans, then cannot); the paused blueprint agrees with `launchStatus`. Mutation probe: with the new read removed,
+  all three fail.
