@@ -11,6 +11,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import {
   WIZARD_LIMITS,
   WIZARD_STEPS,
+  partnerNameFromWizard,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
   type WizardStep,
@@ -19,7 +20,7 @@ import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
-import { MeetCofounder } from "./MeetCofounder";
+import { LiveCofounderTeam, MeetCofounder } from "./MeetCofounder";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
 
@@ -272,7 +273,14 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       <LoadingState label="Opening your build…" />
     );
   } else if (view.business !== null) {
-    body = <MeetCofounder answers={parsed.answers} business={view.business} headingRef={headingRef} />;
+    body = (
+      <MeetCofounder
+        answers={parsed.answers}
+        business={view.business}
+        headingRef={headingRef}
+        team={<LiveCofounderTeam projectId={view.business.projectId} partnerName={partnerNameFromWizard(parsed.answers)} />}
+      />
+    );
   } else if (view.completed) {
     body = (
       <CreateBusiness

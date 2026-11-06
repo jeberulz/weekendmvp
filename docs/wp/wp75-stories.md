@@ -48,7 +48,11 @@ Standing rules:
 
 ## Stories
 
-- [ ] `WP75-S1` - Roster at "Meet your co-founder"
+- [x] `WP75-S1` - Roster at "Meet your co-founder". Built 2026-11-06; design, plan vs reality and checks in
+  `wp75-progress.md` § WP75-S1. No roster card (owner ruling Q13, `docs/wp/RULINGS.md`).
+  **Ship gate:** do not switch S1 on in production until Codex Need 13 (the cron calling
+  `internal.crew.jobs.recoverStaleCrewRuns`) is registered. Without it, a blueprint action that dies leaves the
+  founder on "putting your team together" with no way out.
   - Scope: `convex/crew/roster.ts` (new), `convex/crew/roster.test.ts`, the roster list in
     `components/workspace/wizard/MeetCofounder.tsx`.
   - `startLaunch({ projectId })` (public mutation; `assertFeatureEnabled("workspace")`, then `"ai"`;

@@ -43,6 +43,7 @@ import {
 } from "../../lib/workspace/crew/tasks";
 import { crewSeedFor, newestPlatformSeed } from "../../lib/workspace/crew/inputs";
 import { gateCrewArtifact, issueCodes, type QualityContext } from "../../lib/workspace/crew/quality";
+import { launchRosterPlan, openLaunchRosterTask, writeLaunchRoster } from "./launchRoster";
 
 /**
  * WP75-S2a — crew task lifecycle (C-JOBS), all internal. Callers authorise the
@@ -915,6 +916,10 @@ export type FinishCrewStepResult = Infer<typeof finishCrewStepResult>;
  * card, the calm quality note, the debit refunded as for any failure); soft
  * issue codes come back with `finished` and never block. This mutation is the
  * authority: the runner's pre-check only feeds S4b's repair seam.
+ *
+ * S1: a launch's first-draft blueprint (its business has an open `crew_roster`
+ * task, `./launchRoster.ts`) also writes the roster here, so the blueprint and
+ * the team commit together. Revisions and blueprints outside a launch never do.
  */
 export const finishCrewStep = internalMutation({
   args: {
@@ -991,6 +996,16 @@ export const finishCrewStep = internalMutation({
     }
     const softIssueCodes = gate === null ? [] : issueCodes(gate.result.soft);
 
+    // WP75-S1: a launch's first-draft blueprint plans the roster in this same transaction, from the blueprint
+    // being stored. A roster that cannot be planned fails the step closed (no document, no card, no roster),
+    // so a succeeded launch blueprint always has its team and a failed one offers the founder's retry.
+    const rosterTask = kind === "blueprint" ? await openLaunchRosterTask(ctx, task) : null;
+    const rosterPlan = rosterTask === null ? null : await launchRosterPlan(ctx, project, body);
+    if (rosterTask !== null && rosterPlan === null) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now)) };
+    }
+
     const documentId = await ctx.db.insert("documents", {
       ownerId: task.ownerId,
       projectId: task.projectId,
@@ -1023,6 +1038,7 @@ export const finishCrewStep = internalMutation({
       addDocumentId: documentId,
       askApprovalId: approvalId,
     }, now);
+    if (rosterTask !== null && rosterPlan !== null) await writeLaunchRoster(ctx, rosterTask, rosterPlan, now);
     return { kind: "finished", documentId, approvalId, ...(softIssueCodes.length === 0 ? {} : { softIssueCodes }) };
   },
 });
