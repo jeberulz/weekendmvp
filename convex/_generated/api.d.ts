@@ -122,6 +122,7 @@ import type * as platform_setupValidators from "../platform/setupValidators.js";
 import type * as platform_sites_leads from "../platform/sites/leads.js";
 import type * as platform_sites_publish from "../platform/sites/publish.js";
 import type * as platform_sites_read from "../platform/sites/read.js";
+import type * as platform_sites_retention from "../platform/sites/retention.js";
 import type * as platform_sites_takedown from "../platform/sites/takedown.js";
 import type * as platform_sites_takedownState from "../platform/sites/takedownState.js";
 import type * as platform_transitions from "../platform/transitions.js";
@@ -268,6 +269,7 @@ declare const fullApi: ApiFromModules<{
   "platform/sites/leads": typeof platform_sites_leads;
   "platform/sites/publish": typeof platform_sites_publish;
   "platform/sites/read": typeof platform_sites_read;
+  "platform/sites/retention": typeof platform_sites_retention;
   "platform/sites/takedown": typeof platform_sites_takedown;
   "platform/sites/takedownState": typeof platform_sites_takedownState;
   "platform/transitions": typeof platform_transitions;
