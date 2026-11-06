@@ -41,7 +41,7 @@ the strip-types probe: `node --experimental-strip-types -e 'console.log("ok")'`.
 |---|---|---|---|---|
 | 0 | Suggest (optional) | Scout + Corpus Guardian | shortlist | $0 spend; **semantic dedupe** (customer / JTBD / workflow / mechanism) vs corpus; then operator pick |
 | 1 | Brief | Operator | `engine/briefs/{slug}.json` | paying buyer + public pain + wedge; slug free; dedupe still holds |
-| 2 | Research | `lib/engine/pipeline.ts` via `npm run engine:research -- --live` | `engine/records/{slug}.json` + `.report.json` | ≥2 stats, ≥3 vendors (≥1 priced), ≥2 quotes; $4 cap |
+| 2 | Research | `lib/engine/pipeline.ts` via `npm run engine:research -- --live` | `engine/records/{slug}.json` + `.report.json` | market stats optional (use when verified; omit TAM/growth/revenue when none); ≥3 vendors (≥1 priced), ≥2 quotes; $4 cap; `provenance.evidencePolicy: buyer-first-v1` |
 | 3 | Source Critic | Operator / agent + `lib/engine/source-review.ts` | `engine/records/{slug}.source-review.json` | sealed **PASS** bound to record hash |
 | 4 | Compile | `npm run engine:compile` | `content/ideas/{slug}.mdx` + `ideas/manifest.json` row | live records require Source Critic PASS; fixture exempt |
 | 5 | Tag + deep audit | Operator + `audit:idea` / `validate:idea-tags` | tagged row | deep bar (≥2200 words for engine) |
@@ -80,8 +80,9 @@ live site (`first-squirrel-244`).
 ## Source Critic contract (P2)
 
 - Schema: `lib/engine/source-review.ts` (`SOURCE_REVIEW_CONTRACT_VERSION = 1`).
-- Required coverage: every used market stat, competitor price, and pricing-
-  availability claim, plus at least two used community quotes.
+- Required coverage: every **used** market stat (none required when
+  `market.statIds` is empty), competitor price, and pricing-availability
+  claim, plus at least two used community quotes.
 - Each item carries kind-specific boolean checks (excerpt match, topicality,
   comparable SaaS price / niche fit / whole-statement context / availability
   status). PASS requires every applicable check `true`.

@@ -2065,11 +2065,11 @@ export function revalidateAcceptedEvidence(
 // ---------------------------------------------------------------------------
 
 /**
- * EVIDENCE_MINIMUMS over accepted items: ≥2 stats, ≥3 distinct vendors (by
- * vendorKey) with a price or first-party availability statement, ≥1 vendor
- * with a numeric price, and ≥2 distinct quotes, where two quotes
- * are distinct only when neither contains the other (ruling R8,
- * distinctQuoteCount).
+ * EVIDENCE_MINIMUMS over accepted items: market stats are optional (0+);
+ * ≥3 distinct vendors (by vendorKey) with a price or first-party
+ * availability statement, ≥1 vendor with a numeric price, and ≥2 distinct
+ * quotes, where two quotes are distinct only when neither contains the
+ * other (ruling R8, distinctQuoteCount). Buyer-first-v1.
  */
 export function checkEvidenceMinimums(accepted: ReadonlyArray<AcceptedEvidence>): {
   ok: boolean;

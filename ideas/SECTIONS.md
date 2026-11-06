@@ -1,21 +1,21 @@
 # Idea page section contract (MDX)
 
 Every idea published via the `publish-idea` skill must ship as
-`content/ideas/{slug}.mdx` with **all seven required `##` sections in this
-order**, plus a required `## Sources` section. Depth targets below are
-editorial; the mechanical gate is `npm run audit:idea`.
+`content/ideas/{slug}.mdx` with the canonical `##` sections below in order,
+plus a required `## Sources` section. Depth targets below are editorial; the
+mechanical gate is `npm run audit:idea`.
 
 Reference implementations: `content/ideas/ai-rfp-response-assistant.mdx`,
 `content/ideas/ai-code-reviewer.mdx`,
 `content/ideas/ai-landing-page-generator-ecommerce.mdx`.
 
-## The seven required sections
+## Canonical sections
 
 | # | H2 title (exact) | Minimum depth |
 |---|------------------|---------------|
 | 1 | The Problem | 250+ words, at least one concrete user pain quote or data point |
 | 2 | The Solution | 250+ words, MVP feature set in specifics; must include `**How it works:**` + a numbered list (feeds HowTo JSON-LD) |
-| 3 | Market Research | 200+ words, TAM/SAM or market-size trend, 2+ external citations |
+| 3 | Market Research | **Optional (buyer-first).** Include only when the research record selects ≥1 verified `market_stat`. Then: cited category figures only (no invented TAM/SAM/growth/revenue). Omit the entire heading when there are zero verified market stats — no placeholder section. |
 | 4 | Competitive Landscape | 3+ named competitors with pricing and positioning |
 | 5 | Business Model | Pricing tiers, unit economics, target MRR path |
 | 6 | Recommended Tech Stack | Named stack (framework, database, hosting) |
@@ -24,6 +24,11 @@ Reference implementations: `content/ideas/ai-rfp-response-assistant.mdx`,
 Required trailer: **`## Sources`** — markdown links to the citations used above
 (≥2 links). Optional extras (`## Explore More`, CTA blocks) are allowed only
 *after* Sources and are not scored by the auditor.
+
+Hand-written (non-engine) ideas still ship all seven body headings. Engine
+pages compiled under `buyer-first-v1` omit `## Market Research` when
+`market.statIds` is empty; Search demand keyword rows then sit under
+Competitive Landscape when present.
 
 ## Weekend prompt standard v1
 
@@ -77,7 +82,7 @@ now applies only when the Setup mentions billing).
 
 A page passes `npm run audit:idea -- --slug {slug}` when:
 
-- All seven required `##` headings appear **in order**, followed by `## Sources`
+- Required `##` headings appear **in order**, followed by `## Sources` (engine buyer-first pages may omit `## Market Research` when the record has zero selected market stats)
 - `## The Solution` contains `**How it works:**` plus a numbered list (≥2 steps)
 - `## Sources` has ≥2 markdown links (`[label](https://…)`)
 - Body word count ≥ 800

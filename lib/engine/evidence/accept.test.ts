@@ -1080,7 +1080,36 @@ describe("checkEvidenceMinimums", () => {
     });
     const withQuote = run([HN], { quotes: [quote("They flag potential issues, but you still have to check all of them.")] });
     expect(checkEvidenceMinimums([...result.accepted, ...withQuote.accepted])).toEqual({ ok: true, shortfalls: [] });
-    expect(checkEvidenceMinimums([]).shortfalls).toHaveLength(4);
+    // Buyer-first: market stats are optional, so an empty bag only shortfalls
+    // priced competitors, competitors, and community quotes (3).
+    expect(checkEvidenceMinimums([]).shortfalls).toHaveLength(3);
+  });
+
+  it("passes with zero market stats when competitors and distinct quotes clear the bar", () => {
+    const forum = { url: "https://forum.example.com/t/a", text: "All these teams need is a sanity check." };
+    const result = run(
+      [CODERABBIT, BLOG, HN, forum],
+      {
+        quotes: [
+          quote("All these teams need is a sanity check."),
+          quote("They flag potential issues, but you still have to check all of them."),
+        ],
+        marketStats: [],
+        competitorPrices: [
+          priceCandidate({ vendor: "Loopio", priceText: "$20,000/year" }),
+          priceCandidate({ vendor: "Qvidian", priceText: "$30/month" }),
+          priceCandidate({
+            vendor: "CodeRabbit",
+            sourceUrl: CODERABBIT.url,
+            supportingText: "Pro $24/user/month, billed annually",
+            priceText: "$24/user/month, billed annually",
+          }),
+        ],
+      },
+    );
+    expect(result.rejected).toEqual([]);
+    expect(result.accepted.filter((item) => item.kind === "market_stat")).toHaveLength(0);
+    expect(checkEvidenceMinimums(result.accepted)).toEqual({ ok: true, shortfalls: [] });
   });
 });
 
@@ -1100,7 +1129,7 @@ describe("first-party pricing availability", () => {
     });
     expect(result.rejected).toEqual([]);
     expect(result.accepted.map((item) => item.kind)).toEqual(["competitor_price", "competitor_availability", "competitor_availability"]);
-    expect(checkEvidenceMinimums(result.accepted).shortfalls).toEqual(["market stats: 0 accepted, need 2", "community quotes: 0 distinct accepted, need 2"]);
+    expect(checkEvidenceMinimums(result.accepted).shortfalls).toEqual(["community quotes: 0 distinct accepted, need 2"]);
     for (const item of result.accepted) {
       const parsed = revalidateAcceptedEvidence(item, acquisitions(pages), { vendors: ["CodeRabbit", "Loopio", "Responsive"] });
       expect(parsed.ok).toBe(true);

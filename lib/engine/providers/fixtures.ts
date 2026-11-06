@@ -439,9 +439,78 @@ export function resolveEditorialTemplate(template: unknown, evidence: ReadonlyAr
   return template;
 }
 
+/**
+ * Drop unresolved market-stat placeholders left when the accepted bundle has
+ * no market_stat items (buyer-first). Leaves competitor/quote tokens alone.
+ */
+function withoutUnresolvedMarketPlaceholders(value: unknown): unknown {
+  if (typeof value === "string") {
+    return value
+      .replace(/\{\{(?:id|tok):stat:\d+\}\}/g, "")
+      .replace(/\[\[ev:s_[0-9a-f]{12}\]\]/g, "")
+      .replace(/  +/g, " ")
+      .trim();
+  }
+  if (Array.isArray(value)) return value.map(withoutUnresolvedMarketPlaceholders);
+  if (isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, withoutUnresolvedMarketPlaceholders(entry)]),
+    );
+  }
+  return value;
+}
+
+/** Pick up to `limit` market stats preferring distinct source hosts. */
+function selectMarketStatIds(
+  stats: ReadonlyArray<EditorialEvidenceItem>,
+  limit = 2,
+): string[] {
+  const picked: EditorialEvidenceItem[] = [];
+  const hosts = new Set<string>();
+  for (const item of stats) {
+    if (picked.length >= limit) break;
+    let host = "";
+    try {
+      host = new URL(item.url).hostname.toLowerCase();
+    } catch {
+      host = item.url;
+    }
+    if (picked.length > 0 && hosts.has(host)) continue;
+    picked.push(item);
+    hosts.add(host);
+  }
+  // One verified figure is enough under buyer-first; if diversity could not
+  // fill the preferred pair, keep the single (or already-diverse) selection.
+  if (picked.length === 0 && stats[0]) picked.push(stats[0]);
+  return picked.map((item) => item.id);
+}
+
 /** The default editorial reply for a bundle. */
 export function fixtureEditorialReply(evidence: ReadonlyArray<EditorialEvidenceItem>): unknown {
-  return resolveEditorialTemplate(FIXTURE_EDITORIAL_TEMPLATE, evidence);
+  const reply = resolveEditorialTemplate(FIXTURE_EDITORIAL_TEMPLATE, evidence);
+  if (!isPlainObject(reply)) return reply;
+  const stats = evidence.filter((item) => item.kind === "market_stat");
+  if (stats.length === 0) {
+    // Buyer-first: empty selection + empty summary when no verified market stats.
+    const cleaned = withoutUnresolvedMarketPlaceholders(reply);
+    if (!isPlainObject(cleaned)) return cleaned;
+    return { ...cleaned, marketStatIds: [], marketSummary: "" };
+  }
+  const cleaned = withoutUnresolvedMarketPlaceholders(reply);
+  if (!isPlainObject(cleaned)) return cleaned;
+  const marketStatIds = selectMarketStatIds(stats);
+  // When only one verified stat exists, trim summary tokens that pointed at a
+  // second figure so the record parser stays clean.
+  if (marketStatIds.length < 2) {
+    return {
+      ...withoutUnresolvedMarketPlaceholders({ ...cleaned, marketStatIds }),
+      marketStatIds,
+      ...(typeof cleaned.marketSummary === "string"
+        ? { marketSummary: String(cleaned.marketSummary).replace(/\s+/g, " ").trim() }
+        : {}),
+    };
+  }
+  return { ...cleaned, marketStatIds };
 }
 
 /** A reply body: an object is sent as JSON text; a string is sent as is (to test non-JSON replies). */

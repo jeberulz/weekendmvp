@@ -617,10 +617,14 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const quotes = record.community.quoteIds.map((id) => quoteItem(ctx, id));
   const problemEvidence = new Set([...evidenceRefs(ed.problemNarrative), ...record.community.quoteIds]);
   const summaryAddsEvidence = evidenceRefs(record.community.summary).some((id) => !problemEvidence.has(id));
+  // Buyer-first: when there are no verified market stats, fold whyNow into
+  // The Problem and omit ## Market Research entirely (no placeholder heading).
+  const includeMarketResearch = record.market.statIds.length > 0;
   const problemBody = joinBlocks([
     prose(ed.problemNarrative, "editorial.problemNarrative"),
     summaryAddsEvidence ? prose(record.community.summary, "community.summary") : "",
     quotes.map(quoteBlock).join("\n\n"),
+    includeMarketResearch ? "" : `Why now: ${prose(record.whyNow, "whyNow")}`,
   ]);
 
   // --- The Solution: narrative, How it works, what not to build -----------
@@ -637,16 +641,20 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   ]);
 
   // --- Market Research: summary, why now, evidence rows, keyword rows -----
+  // Omitted entirely when statIds is empty (buyer-first). Keywords still
+  // publish under Competitive Landscape so search demand is not dropped.
   const stats = record.market.statIds.map((id) => statItem(ctx, id));
   const keywordLines = record.keywords.map(keywordRowMdx).join("\n");
-  const marketBody = joinBlocks([
-    prose(record.market.summary, "market.summary"),
-    `Why now: ${prose(record.whyNow, "whyNow")}`,
-    `**${LABEL.marketSignals}**`,
-    stats.map(marketSignalRow).join("\n"),
-    keywordLines ? `**${LABEL.searchDemand}** ${SEARCH_DEMAND_NOTE}` : null,
-    keywordLines || null,
-  ]);
+  const marketBody = includeMarketResearch
+    ? joinBlocks([
+        prose(record.market.summary, "market.summary"),
+        `Why now: ${prose(record.whyNow, "whyNow")}`,
+        `**${LABEL.marketSignals}**`,
+        stats.map(marketSignalRow).join("\n"),
+        keywordLines ? `**${LABEL.searchDemand}** ${SEARCH_DEMAND_NOTE}` : null,
+        keywordLines || null,
+      ])
+    : "";
 
   // --- Competitive Landscape: narrative, one row per competitor -----------
   const competitorPrices = record.competitors.map((c) => ({
@@ -665,6 +673,8 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     competitorLines,
     `**${LABEL.yourOpportunity}**`,
     prose(record.goToMarket.positioning, "goToMarket.positioning"),
+    !includeMarketResearch && keywordLines ? `**${LABEL.searchDemand}** ${SEARCH_DEMAND_NOTE}` : null,
+    !includeMarketResearch && keywordLines ? keywordLines : null,
   ]);
 
   // --- Business Model: proposals and planning assumptions -----------------
@@ -798,9 +808,13 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     "AI Prompts to Build This": promptsBody,
   };
 
+  const bodyTitles = includeMarketResearch
+    ? SECTION_TITLES
+    : SECTION_TITLES.filter((title) => title !== "Market Research");
+
   const body = collapseDuplicateSentences(
     [
-      ...SECTION_TITLES.map((title) => `## ${title}\n\n${sections[title]}\n`),
+      ...bodyTitles.map((title) => `## ${title}\n\n${sections[title]}\n`),
       `## ${SOURCES_TITLE}\n\n${sourceLinks}\n`,
     ].join("\n"),
   );
