@@ -502,8 +502,13 @@ export function fixtureEditorialReply(evidence: ReadonlyArray<EditorialEvidenceI
   // When only one verified stat exists, trim summary tokens that pointed at a
   // second figure so the record parser stays clean.
   if (marketStatIds.length < 2) {
+    // withoutUnresolvedMarketPlaceholders() returns unknown, so spreading
+    // its result directly is TS2698. Its input here is a plain object, so
+    // the result is one too; guard with isPlainObject (same pattern as the
+    // `cleaned` checks above) instead of changing the helper's return type.
+    const trimmed = withoutUnresolvedMarketPlaceholders({ ...cleaned, marketStatIds });
     return {
-      ...withoutUnresolvedMarketPlaceholders({ ...cleaned, marketStatIds }),
+      ...(isPlainObject(trimmed) ? trimmed : {}),
       marketStatIds,
       ...(typeof cleaned.marketSummary === "string"
         ? { marketSummary: String(cleaned.marketSummary).replace(/\s+/g, " ").trim() }
