@@ -44,8 +44,8 @@ Decisions:
   post → `social`, ad_launch → `ads`. It never consumes the approval. Exactly-once delivery is the caller's
   idempotency key.
 - Expiry runs while the workspace is off, because closing stale cards only removes permission (the same reasoning
-  as the C-METER shutdown-cleanup ruling). Each transaction handles one bounded page (default 50, max 100), and the
-  function schedules the next page itself. It is idempotent.
+  as the C-METER shutdown-cleanup ruling). Each transaction handles one bounded page (default 50, max 100). It is
+  idempotent. (Superseded by the review fix below: the action loops pages; nothing self-schedules.)
 - Decisions on send/post/publish/spend/ad_launch/upgrade write an `audit_events` row (`02` §4.1).
 
 Tests (`npx vitest run convex/workspace/approvals.test.ts`, 16 passed): create → list → approve →
@@ -66,14 +66,46 @@ alone passed 295/295), then 0 on a full rerun.
 
 Docs: progress and stories updated; contract file documents the API. No plan or ruling changes.
 
-Needs from Codex:
-1. `convex/schema/workspace.ts` `approvals`: add `subjectVersion: v.optional(v.string())`, a content fingerprint
-   written at creation, so status-only patches stop invalidating approvals. After it lands, Claude switches
-   `assertApproved` to fingerprint comparison.
-2. `approvals` index `by_status_and_createdAt` (`["status", "createdAt"]`) so expiry reads only pending rows
-   instead of paging the whole table.
-3. `convex/crons.ts`: `crons.interval("expire stale approvals", { hours: 1 },
-   internal.workspace.approvals.expireStaleApprovals, {})`.
-4. WP78/WP79/WP83: call `assertApproved` in the side-effect mutation, before patching the subject, with the
-   subject shape above; from actions, use `internal.workspace.approvals.checkApproved` and re-check in the
-   recording mutation.
+Review fixes (independent security review, should-fix items, after `c402c967`):
+- P2-1 `site_versions` content fields could be re-pointed without a timestamp the check reads. Added the static scan
+  `tests/security/wp77-site-versions-insert-only.test.mjs`. It fails if any Convex code replaces a site version or
+  patches anything beyond `status`/`publishedAt`/`retiredAt`. It also checks untyped `db.patch(id, ...)` calls for
+  content keys or non-literal values; four legacy content upserts are allowlisted and every allowlist entry must
+  still match. Its fixture test proves six rewrite shapes are caught and status transitions pass. `publish` now
+  also refuses a site version that is not `ready`/`published`, or whose site has `takedownAt`, at creation,
+  approval and check (`APPROVAL_SUBJECT_NOT_PUBLISHABLE`). The overstated test is renamed to what it covers. The
+  timestamp check stays as defence in depth. The contract states that `subjectVersion` is the real fix and must
+  fail closed when missing.
+- P2-2 approved cards lived forever. A new card for the same (business, kind, subject) now also cancels older
+  approved cards and writes an `approval.superseded` audit row. The founder can revoke an approved card with
+  `cancel` (approved → cancelled, exactly once, owner only, `approval.revoked` audit row). The contract header
+  states that single-use kinds (publish, send activation, ad_launch, spend, upgrade) must be consumed by the
+  side-effect mutation. Until `consumedAt` exists, the caller's idempotency is the only consumption.
+- P2-3 `spend` cards were not bound to a price. `costCredits` is now required (positive) for `spend` and refused on
+  every other kind (`APPROVAL_INVALID_INPUT`). The subject gains `expectedCostCredits` and `expectedChangeRound`,
+  required for `spend` and checked whenever given; a missing or different value refuses with
+  `APPROVAL_TERMS_MISMATCH`.
+- P3 The supersede scan now reads the subject's whole history through the exact `by_subjectId` index; the old scan
+  stopped at 50. A test pads the history with 60 rows. A comment marks the founder's note as data for S2. Expiry no
+  longer schedules itself: `expireStaleApprovalsBatch` (one bounded page) is driven by the `expireStaleApprovals`
+  action, at most 200 batches per run, inside one cron run. Runs cannot overlap. A table past 20,000 rows stalls
+  until the index lands.
+- Tests: 20 passed in `convex/workspace/approvals.test.ts` (4 new: publishable/takedown, supersede approved past 50
+  rows, revoke, spend terms; expiry tests rewritten for batch + action). 2 passed in the new security scan.
+- Checks: `npm run typecheck` 0; `npx tsc --noEmit -p convex` 0; `npm run lint` 0 (0 errors, 37 existing
+  warnings, none in changed files); `npm run test:security` 0 (204 node + 121 vitest); approvals tests 20/20; `npm test` 0 on the first run (no rerun needed).
+
+Needs from Codex (complete set):
+1. `approvals.subjectVersion: v.optional(v.string())`: a content fingerprint written at creation. It covers every
+   content field: `site_versions` content (`documentId`, `landingSpec`, `storageId`) plus the document's
+   `contentSha256`; a sequence's ordered step ids, `delayHours`, subjects and documents; the outbound list
+   attestation; the social post's account and document; the campaign's budget, objective and platform. Once it
+   lands, `assertApproved` compares fingerprints and fails closed on an approval without one.
+2. `approvals.consumedAt: v.optional(v.number())`, so single-use kinds are consumed in the side-effect mutation.
+3. Index `by_status_and_createdAt` (`["status", "createdAt"]`) on `approvals`, so expiry reads only pending rows.
+4. A non-overlapping hourly expiry cron in `convex/crons.ts`: `crons.interval("expire stale approvals",
+   { hours: 1 }, internal.workspace.approvals.expireStaleApprovals, {})`. The target is an action that loops
+   batches itself and schedules nothing.
+5. WP78/WP79/WP83 call `assertApproved` in the side-effect mutation, before patching the subject, with the subject
+   shape (plus `expectedCostCredits`/`expectedChangeRound` for `spend`). From actions they use
+   `internal.workspace.approvals.checkApproved` and re-check in the recording mutation.

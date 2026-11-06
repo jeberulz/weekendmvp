@@ -77,6 +77,12 @@ async function seed(options: SeedOptions = {}) {
     const siteVersion2Id = await ctx.db.insert("site_versions", {
       ownerId, projectId, siteConfigId, status: "ready", version: 2n, documentId: landingDocId, createdAt: 2,
     });
+    const draftVersionId = await ctx.db.insert("site_versions", {
+      ownerId, projectId, siteConfigId, status: "draft", version: 3n, documentId: landingDocId, createdAt: 2,
+    });
+    const retiredVersionId = await ctx.db.insert("site_versions", {
+      ownerId, projectId, siteConfigId, status: "retired", version: 4n, documentId: landingDocId, createdAt: 2, retiredAt: 2,
+    });
     const sequenceId = await ctx.db.insert("sequences", {
       ownerId, projectId, status: "draft", title: "Welcome", createdAt: 2, updatedAt: 2,
     });
@@ -91,7 +97,7 @@ async function seed(options: SeedOptions = {}) {
     });
     return {
       ownerId, otherId, ownerSessionId, otherSessionId, opsId, projectId, projectBId, otherProjectId,
-      docId, landingDocId, docBId, siteConfigId, siteVersionId, siteVersion2Id, sequenceId, stepDocId, stepId, adId,
+      docId, landingDocId, docBId, siteConfigId, siteVersionId, siteVersion2Id, draftVersionId, retiredVersionId, sequenceId, stepDocId, stepId, adId,
     };
   });
   const owner = t.withIdentity({ subject: `${ids.ownerId}|${ids.ownerSessionId}`, issuer: "https://local.test" });
@@ -201,8 +207,6 @@ describe("WP77-S1 decisions are exactly once", () => {
     const args = { projectId: ids.projectId, approvalId };
     await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "approve" }))
       .resolves.toEqual({ approvalId, status: "approved", changed: false });
-    await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
-      .rejects.toThrow("APPROVAL_ALREADY_DECIDED");
     await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "request_changes", note: "x" }))
       .rejects.toThrow("APPROVAL_ALREADY_DECIDED");
     const { row, audits } = await t.run(async (ctx) => ({
@@ -302,7 +306,7 @@ describe("WP77-S1 assertApproved fails closed", () => {
     await expect(check(t, approvalId, subject)).rejects.toThrow("APPROVAL_PROJECT_MISMATCH");
   });
 
-  test("the subject changed after approval: document, site version content, sequence steps, ad budget", async () => {
+  test("a later write to a timestamped subject fails closed: document, a site version's document, an added sequence step, ad budget", async () => {
     const seeded = await seed();
     const { t, ids } = seeded;
     const later = () => Date.now() + 60_000;
@@ -405,27 +409,27 @@ describe("WP77-S1 owner only and dormant", () => {
 });
 
 describe("WP77-S1 expiry", () => {
-  test("expiry is bounded per transaction, finishes the table and is idempotent", async () => {
+  test("one batch is bounded; a run finishes the table; a second run is a no-op", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-06T12:00:00.000Z"));
     const { t, ids } = await seed();
     const now = Date.now();
     const stale = now - APPROVAL_PENDING_TTL_MS - 1;
-    const insert = (status: "pending" | "approved", createdAt: number, subjectId: string) =>
+    const insert = (status: "pending" | "approved", createdAt: number) =>
       t.run(async (ctx) => await ctx.db.insert("approvals", {
         ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
-        subjectId, status, changeRound: 0n, createdAt, updatedAt: createdAt,
+        subjectId: ids.docId, status, changeRound: 0n, createdAt, updatedAt: createdAt,
       }));
     const staleIds: Id<"approvals">[] = [];
-    for (let index = 0; index < 5; index += 1) staleIds.push(await insert("pending", stale, `${ids.docId}`));
-    const freshId = await insert("pending", now, ids.docId);
-    const approvedId = await insert("approved", stale, ids.docId);
+    for (let index = 0; index < 5; index += 1) staleIds.push(await insert("pending", stale));
+    const freshId = await insert("pending", now);
+    const approvedId = await insert("approved", stale);
 
-    const first = await t.mutation(internal.workspace.approvals.expireStaleApprovals, { batchSize: 2 });
-    expect(first.scanned).toBeLessThanOrEqual(2);
-    expect(first.isDone).toBe(false);
-    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const first = await t.mutation(internal.workspace.approvals.expireStaleApprovalsBatch, { batchSize: 2 });
+    expect(first).toMatchObject({ scanned: 2, expired: 2, isDone: false });
 
+    await expect(t.action(internal.workspace.approvals.expireStaleApprovals, { batchSize: 2 }))
+      .resolves.toEqual({ scanned: 7, expired: 3, batches: 4, isDone: true });
     const rows = await t.run(async (ctx) => await Promise.all(
       [...staleIds, freshId, approvedId].map((id) => ctx.db.get("approvals", id)),
     ));
@@ -433,8 +437,8 @@ describe("WP77-S1 expiry", () => {
     expect(rows[5]?.status).toBe("pending");
     expect(rows[6]?.status).toBe("approved");
 
-    const again = await t.mutation(internal.workspace.approvals.expireStaleApprovals, { batchSize: 100 });
-    expect(again).toEqual({ scanned: 7, expired: 0, isDone: true });
+    await expect(t.action(internal.workspace.approvals.expireStaleApprovals, {}))
+      .resolves.toEqual({ scanned: 7, expired: 0, batches: 1, isDone: true });
   });
 
   test("expiry still runs with the workspace off (it only removes permission)", async () => {
@@ -445,7 +449,98 @@ describe("WP77-S1 expiry", () => {
       ownerId: ids.ownerId, projectId: ids.projectId, kind: "publish", subjectTable: "site_versions",
       subjectId: ids.siteVersionId, status: "pending", changeRound: 0n, createdAt: 1, updatedAt: 1,
     }));
-    await expect(t.mutation(internal.workspace.approvals.expireStaleApprovals, {}))
-      .resolves.toEqual({ scanned: 1, expired: 1, isDone: true });
+    await expect(t.action(internal.workspace.approvals.expireStaleApprovals, {}))
+      .resolves.toEqual({ scanned: 1, expired: 1, batches: 1, isDone: true });
+  });
+});
+
+describe("WP77-S1 review fixes", () => {
+  test("publish refuses a draft or retired version and a taken-down site, at creation, approval and check", async () => {
+    const seeded = await seed();
+    const { t, owner, ids } = seeded;
+    await expect(create(t, ids, publishSubject(ids, { subjectId: ids.draftVersionId })))
+      .rejects.toThrow("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
+    await expect(create(t, ids, publishSubject(ids, { subjectId: ids.retiredVersionId })))
+      .rejects.toThrow("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
+    // A review card for a retired version is fine: only publish needs a publishable version.
+    await expect(create(t, ids, { ...publishSubject(ids, { subjectId: ids.retiredVersionId }), kind: "artifact_review" }))
+      .resolves.toMatchObject({ created: true });
+
+    const subject = publishSubject(ids);
+    const approvalId = await approved(seeded, subject);
+    const { approvalId: pendingId } = await create(t, ids, publishSubject(ids, { subjectId: ids.siteVersion2Id }));
+    await t.run(async (ctx) => ctx.db.patch("site_configs", ids.siteConfigId, { takedownAt: 5, takedownReason: "policy" }));
+    await expect(check(t, approvalId, subject)).rejects.toThrow("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
+    await expect(owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: pendingId, decision: "approve" }))
+      .rejects.toThrow("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
+    await t.run(async (ctx) => ctx.db.patch("site_configs", ids.siteConfigId, { takedownAt: undefined, takedownReason: undefined }));
+    await expect(check(t, approvalId, subject)).resolves.toMatchObject({ approvalId });
+    // A status move to retired (allowed, insert-only content) also stops publishing.
+    await t.run(async (ctx) => ctx.db.patch("site_versions", ids.siteVersionId, { status: "retired", retiredAt: 6 }));
+    await expect(check(t, approvalId, subject)).rejects.toThrow("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
+  });
+
+  test("a new card for the same subject cancels an older approved card, with an audit row", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const subject = publishSubject(ids);
+    const oldId = await approved(seeded, subject);
+    // Pad the subject's history past the old 50-row scan window; the old card is the oldest row.
+    await t.run(async (ctx) => {
+      for (let index = 0; index < 60; index += 1) {
+        await ctx.db.insert("approvals", {
+          ownerId: ids.ownerId, projectId: ids.projectId, kind: "publish", subjectTable: "site_versions",
+          subjectId: ids.siteVersionId, status: "cancelled", changeRound: 0n, createdAt: 3, updatedAt: 3,
+        });
+      }
+    });
+    const fresh = await create(t, ids, subject);
+    expect(fresh.created).toBe(true);
+    await expect(check(t, oldId, subject)).rejects.toThrow("APPROVAL_NOT_APPROVED");
+    const audits = await t.run(async (ctx) => await ctx.db.query("audit_events")
+      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).take(20));
+    expect(audits.filter((event) => event.subjectId === oldId).map((event) => event.action))
+      .toEqual(["approval.approved", "approval.superseded"]);
+  });
+
+  test("the owner can revoke an approved card exactly once; others cannot", async () => {
+    const seeded = await seed();
+    const { t, owner, other, ids } = seeded;
+    const subject = publishSubject(ids);
+    const approvalId = await approved(seeded, subject);
+    const args = { projectId: ids.projectId, approvalId };
+    await expect(other.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
+      .rejects.toThrow("RESOURCE_NOT_FOUND");
+    await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
+      .resolves.toEqual({ approvalId, status: "cancelled", changed: true });
+    await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "cancel" }))
+      .resolves.toEqual({ approvalId, status: "cancelled", changed: false });
+    await expect(owner.mutation(api.workspace.approvals.decideApproval, { ...args, decision: "approve" }))
+      .rejects.toThrow("APPROVAL_ALREADY_DECIDED");
+    await expect(check(t, approvalId, subject)).rejects.toThrow("APPROVAL_NOT_APPROVED");
+    const audits = await t.run(async (ctx) => await ctx.db.query("audit_events")
+      .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", ids.projectId)).take(20));
+    expect(audits.filter((event) => event.subjectId === approvalId).map((event) => event.action))
+      .toEqual(["approval.approved", "approval.revoked"]);
+  });
+
+  test("spend cards are bound to their price and round", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const spend: ApprovalSubjectRef = { projectId: ids.projectId, kind: "spend", subjectTable: "documents", subjectId: ids.docId };
+    await expect(create(t, ids, spend)).rejects.toThrow("APPROVAL_INVALID_INPUT");
+    await expect(create(t, ids, spend, { costCredits: 0n })).rejects.toThrow("APPROVAL_INVALID_INPUT");
+    await expect(create(t, ids, publishSubject(ids), { costCredits: 5n })).rejects.toThrow("APPROVAL_INVALID_INPUT");
+
+    const { approvalId } = await create(t, ids, spend, { changeRound: 3n, costCredits: 10n });
+    await seeded.owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId, decision: "approve" });
+    await expect(check(t, approvalId, spend)).rejects.toThrow("APPROVAL_TERMS_MISMATCH");
+    await expect(check(t, approvalId, { ...spend, expectedCostCredits: 10n })).rejects.toThrow("APPROVAL_TERMS_MISMATCH");
+    await expect(check(t, approvalId, { ...spend, expectedCostCredits: 50n, expectedChangeRound: 3n }))
+      .rejects.toThrow("APPROVAL_TERMS_MISMATCH");
+    await expect(check(t, approvalId, { ...spend, expectedCostCredits: 10n, expectedChangeRound: 4n }))
+      .rejects.toThrow("APPROVAL_TERMS_MISMATCH");
+    await expect(check(t, approvalId, { ...spend, expectedCostCredits: 10n, expectedChangeRound: 3n }))
+      .resolves.toMatchObject({ approvalId, costCredits: 10n, changeRound: 3n });
   });
 });

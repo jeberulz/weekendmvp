@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import {
+  internalAction,
   internalMutation,
   internalQuery,
   mutation,
@@ -16,13 +17,17 @@ import {
   APPROVAL_DECISIONS,
   APPROVAL_EXPIRY_BATCH_DEFAULT,
   APPROVAL_EXPIRY_BATCH_MAX,
+  APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN,
   APPROVAL_KINDS,
   APPROVAL_LIST_LIMIT,
   APPROVAL_STATUSES,
   APPROVAL_SUBJECT_TABLE_NAMES,
   MAX_SEQUENCE_STEPS,
+  approvalCostFitsKind,
   approvalExpiresAt,
   isPendingApprovalStale,
+  isPricedApprovalKind,
+  isPublishableSiteVersion,
   isSubjectTableAllowed,
   isSubjectUnchangedSince,
   normalizeApprovalNote,
@@ -38,7 +43,8 @@ import {
  * Founder-facing (public, dormant behind C-OPS `workspace`, owner-only via
  * C-AUTHZ per D12): `listPendingApprovals`, `decideApproval`.
  * Internal: `createApproval` (generators, Codex flows), `expireStaleApprovals`
- * (cron target), `checkApproved` (the action-side wrapper of `assertApproved`).
+ * (cron target, an action looping `expireStaleApprovalsBatch`), `checkApproved`
+ * (the action-side wrapper of `assertApproved`).
  * Helpers for other Convex code: `createApprovalRecord`, `assertApproved`.
  *
  * `assertApproved(ctx, approvalId, subject)` — call it inside the mutation that
@@ -62,6 +68,15 @@ import {
  * workflow rows a status-only patch after creation also counts as a change and
  * the approval fails closed. A subject row's `approvalId` link must be written
  * in the same mutation as `createApproval` (same timestamp) for the same reason.
+ * `site_versions` carry no write time: their content fields are insert-only,
+ * enforced by `tests/security/wp77-site-versions-insert-only.test.mjs`. The real
+ * fix is `approvals.subjectVersion`; once it exists, an approval without one
+ * must fail closed.
+ *
+ * Single-use kinds (publish, send activation, ad_launch, spend, upgrade) must be
+ * consumed by the side-effect mutation; until `approvals.consumedAt` exists the
+ * caller's own idempotency is the only consumption. `spend` subjects must carry
+ * `expectedCostCredits` and `expectedChangeRound`, matched against the card.
  */
 
 // ---------------------------------------------------------------------------
@@ -89,6 +104,8 @@ export const approvalSubjectValidator = v.object({
   subjectTable: approvalSubjectTableValidator,
   subjectId: v.string(),
   ownerId: v.optional(v.id("users")),
+  expectedCostCredits: v.optional(v.int64()),
+  expectedChangeRound: v.optional(v.int64()),
 });
 
 const pendingApprovalValidator = v.object({
@@ -150,6 +167,8 @@ type SubjectState =
     readonly writeTimes: readonly number[];
     /** The approval the subject row itself links to, when it has that column. */
     readonly linkedApprovalId?: Id<"approvals">;
+    /** Site versions only: publishable status and the site is not taken down. */
+    readonly publishable?: boolean;
   };
 
 type BusinessRow = { ownerId: Id<"users">; projectId: Id<"projects">; archivedAt?: number };
@@ -211,8 +230,13 @@ async function readSubjectState(
       if (!inBusiness(site, ownerId, projectId)) return MISSING;
       const docTimes = await optionalDocumentTimes(ctx, version.documentId, ownerId, projectId);
       if (docTimes === null) return MISSING;
-      // Immutable row: its id is the version; only the linked document can move.
-      return { found: true, writeTimes: [version.createdAt, ...docTimes] };
+      // Insert-only content (static scan): the id is the version; only the
+      // linked document can move. Status transitions do not count as changes.
+      return {
+        found: true,
+        writeTimes: [version.createdAt, ...docTimes],
+        publishable: isPublishableSiteVersion(version.status, site?.takedownAt),
+      };
     }
     case "sequences": {
       const id = ctx.db.normalizeId("sequences", subjectId);
@@ -297,6 +321,46 @@ async function readSubjectState(
   }
 }
 
+/**
+ * Why a subject cannot be (or no longer is) approved for `kind`, or null.
+ * `approvedAt` is the approval's `createdAt` for the version check; pass the
+ * approval id to also refuse a subject row that links to a different approval.
+ */
+function subjectRefusal(
+  state: SubjectState,
+  kind: ApprovalKind,
+  approvedAt: number,
+  approvalId?: Id<"approvals">,
+): ApprovalErrorCode | null {
+  if (!state.found) return state.reason === "missing" ? "APPROVAL_SUBJECT_NOT_FOUND" : "APPROVAL_SUBJECT_MISMATCH";
+  if (kind === "publish" && state.publishable !== true) return "APPROVAL_SUBJECT_NOT_PUBLISHABLE";
+  if (approvalId !== undefined && state.linkedApprovalId !== undefined && state.linkedApprovalId !== approvalId) {
+    return "APPROVAL_SUBJECT_MISMATCH";
+  }
+  if (!isSubjectUnchangedSince(state.writeTimes, approvedAt)) return "APPROVAL_SUBJECT_CHANGED";
+  return null;
+}
+
+async function auditApproval(
+  ctx: MutationCtx,
+  approval: Doc<"approvals">,
+  action: string,
+  actor: { type: "user"; userId: Id<"users"> } | { type: "system" },
+  now: number,
+): Promise<void> {
+  await ctx.db.insert("audit_events", {
+    ownerId: approval.ownerId,
+    projectId: approval.projectId,
+    actorType: actor.type,
+    ...(actor.type === "user" ? { actorUserId: actor.userId } : {}),
+    action,
+    subjectType: "approval",
+    subjectId: approval._id,
+    metadata: JSON.stringify({ kind: approval.kind, subjectTable: approval.subjectTable, subjectId: approval.subjectId }),
+    createdAt: now,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // C-APPROVAL: assertApproved
 // ---------------------------------------------------------------------------
@@ -340,14 +404,20 @@ export async function assertApproved(
 
   if (approval.status !== "approved") return refuse("APPROVAL_NOT_APPROVED", { status: approval.status });
 
+  // Terms: a priced card is bound to the exact price and round the caller debits.
+  if (
+    (isPricedApprovalKind(subject.kind) &&
+      (subject.expectedCostCredits === undefined || subject.expectedChangeRound === undefined)) ||
+    (subject.expectedCostCredits !== undefined && subject.expectedCostCredits !== approval.costCredits) ||
+    (subject.expectedChangeRound !== undefined && subject.expectedChangeRound !== approval.changeRound) ||
+    !approvalCostFitsKind(approval.kind, approval.costCredits)
+  ) {
+    return refuse("APPROVAL_TERMS_MISMATCH");
+  }
+
   const state = await readSubjectState(ctx, approval.ownerId, approval.projectId, subject.subjectTable, subject.subjectId);
-  if (!state.found) {
-    return refuse(state.reason === "unsupported" ? "APPROVAL_SUBJECT_MISMATCH" : "APPROVAL_SUBJECT_NOT_FOUND");
-  }
-  if (state.linkedApprovalId !== undefined && state.linkedApprovalId !== approval._id) {
-    return refuse("APPROVAL_SUBJECT_MISMATCH");
-  }
-  if (!isSubjectUnchangedSince(state.writeTimes, approval.createdAt)) return refuse("APPROVAL_SUBJECT_CHANGED");
+  const refusal = subjectRefusal(state, subject.kind, approval.createdAt, approval._id);
+  if (refusal !== null) return refuse(refusal);
   return approval;
 }
 
@@ -381,28 +451,24 @@ export type CreateApprovalInput = {
   readonly subjectId: string;
   /** D17 round of the artifact this card reviews; default 0 (first draft). */
   readonly changeRound?: bigint;
-  /** Credits the card will debit when approved (`spend`), from C-JOBS. */
+  /** Required (positive) for `spend`, refused on every other kind: the C-JOBS price. */
   readonly costCredits?: bigint;
 };
-
-/** Pending approvals for the same subject that a creation may reuse or supersede. */
-const SUPERSEDE_SCAN_LIMIT = 50;
 
 /**
  * Raises (or reuses) the pending card for one subject. The owner id must come
  * from an already-authorised business or trusted system work, never a client.
- * One live pending card per (business, kind, subject): an identical fresh one
- * is returned (`created: false`); a stale one (subject changed, past its TTL,
- * or a different round or price) is closed first.
+ * One live card per (business, kind, subject): an identical fresh pending card
+ * is returned (`created: false`). Otherwise every older pending card is closed
+ * (expired past its TTL, else cancelled) and every older approved card is
+ * cancelled with an audit row, so an old approval cannot outlive a new card.
  */
 export async function createApprovalRecord(
   ctx: MutationCtx,
   input: CreateApprovalInput,
 ): Promise<{ approvalId: Id<"approvals">; created: boolean }> {
   const changeRound = input.changeRound ?? 0n;
-  if (changeRound < 0n || (input.costCredits !== undefined && input.costCredits < 0n)) {
-    return refuse("APPROVAL_INVALID_INPUT");
-  }
+  if (changeRound < 0n || !approvalCostFitsKind(input.kind, input.costCredits)) return refuse("APPROVAL_INVALID_INPUT");
   await requireBusinessForOwner(ctx, input.projectId, input.ownerId);
   await assertFeatureEnabledForOwner(ctx, "workspace", input.ownerId);
   if (!isSubjectTableAllowed(input.kind, input.subjectTable)) return refuse("APPROVAL_INVALID_SUBJECT");
@@ -411,31 +477,41 @@ export async function createApprovalRecord(
   if (!state.found) {
     return refuse(state.reason === "missing" ? "APPROVAL_SUBJECT_NOT_FOUND" : "APPROVAL_INVALID_SUBJECT");
   }
+  if (input.kind === "publish" && state.publishable !== true) return refuse("APPROVAL_SUBJECT_NOT_PUBLISHABLE");
 
   const now = Date.now();
-  const sameSubject = await ctx.db.query("approvals")
-    .withIndex("by_subjectId", (q) => q.eq("subjectId", input.subjectId))
-    .order("desc")
-    .take(SUPERSEDE_SCAN_LIMIT);
-  for (const existing of sameSubject) {
+  // Read every card for this subject id (the index is exact, so this is the
+  // subject's whole history, not a table scan) before writing anything.
+  const live: Doc<"approvals">[] = [];
+  for await (const existing of ctx.db.query("approvals")
+    .withIndex("by_subjectId", (q) => q.eq("subjectId", input.subjectId))) {
     if (
-      existing.status !== "pending" ||
-      existing.projectId !== input.projectId ||
-      existing.ownerId !== input.ownerId ||
-      existing.kind !== input.kind ||
-      existing.subjectTable !== input.subjectTable
-    ) continue;
-    const stale = isPendingApprovalStale(existing.createdAt, now);
-    const reusable = !stale &&
-      isSubjectUnchangedSince(state.writeTimes, existing.createdAt) &&
-      existing.changeRound === changeRound &&
-      existing.costCredits === input.costCredits;
-    if (reusable) return { approvalId: existing._id, created: false };
-    await ctx.db.patch("approvals", existing._id, {
-      status: stale ? "expired" : "cancelled",
-      decidedAt: now,
-      updatedAt: now,
-    });
+      (existing.status === "pending" || existing.status === "approved") &&
+      existing.projectId === input.projectId &&
+      existing.ownerId === input.ownerId &&
+      existing.kind === input.kind &&
+      existing.subjectTable === input.subjectTable
+    ) live.push(existing);
+  }
+  const reusable = live.find((existing) =>
+    existing.status === "pending" &&
+    !isPendingApprovalStale(existing.createdAt, now) &&
+    isSubjectUnchangedSince(state.writeTimes, existing.createdAt) &&
+    existing.changeRound === changeRound &&
+    existing.costCredits === input.costCredits);
+  if (reusable !== undefined) return { approvalId: reusable._id, created: false };
+
+  for (const existing of live) {
+    if (existing.status === "approved") {
+      await ctx.db.patch("approvals", existing._id, { status: "cancelled", decidedAt: now, updatedAt: now });
+      await auditApproval(ctx, existing, "approval.superseded", { type: "system" }, now);
+    } else {
+      await ctx.db.patch("approvals", existing._id, {
+        status: isPendingApprovalStale(existing.createdAt, now) ? "expired" : "cancelled",
+        decidedAt: now,
+        updatedAt: now,
+      });
+    }
   }
 
   const approvalId = await ctx.db.insert("approvals", {
@@ -502,12 +578,13 @@ export const listPendingApprovals = query({
 const AUDITED_KINDS: ReadonlySet<ApprovalKind> = new Set(["send", "post", "publish", "spend", "ad_launch", "upgrade"]);
 
 /**
- * Approve, ask for changes (optional note) or cancel one pending card.
- * Exactly once: repeating the decision that already happened is a no-op
- * (`changed: false`); any other decision on a decided card throws
- * `APPROVAL_ALREADY_DECIDED`. A card past its TTL becomes `expired` instead.
- * Approving re-checks the subject and refuses (no transition) when it has
- * changed or gone since the card was raised.
+ * Approve, ask for changes (optional note) or cancel one pending card, or revoke
+ * an approved card (`cancel`). Exactly once: repeating the decision that already
+ * happened is a no-op (`changed: false`); approved → cancelled is the only move
+ * out of a decided state; anything else throws `APPROVAL_ALREADY_DECIDED`. A
+ * pending card past its TTL becomes `expired` instead. Approving re-checks the
+ * subject and refuses (no transition) when it has changed, gone, or (publish)
+ * stopped being publishable since the card was raised.
  */
 export const decideApproval = mutation({
   args: {
@@ -524,30 +601,41 @@ export const decideApproval = mutation({
     if (approval === null || approval.projectId !== project._id || approval.ownerId !== project.ownerId) {
       return denyNotFound();
     }
+    const founder = { type: "user" as const, userId: project.ownerId };
 
+    // The note is founder-written data. S2 hands it to the revision job as
+    // quoted user content inside the prompt's data block, never as instructions.
     const note = args.decision === "request_changes" ? normalizeApprovalNote(args.note) : undefined;
     if (note === null) return refuse("APPROVAL_INVALID_NOTE");
 
     const target = APPROVAL_DECISION_STATUS[args.decision];
+    const now = Date.now();
     if (approval.status !== "pending") {
       if (approval.status === target) return { approvalId: approval._id, status: approval.status, changed: false };
+      if (approval.status === "approved" && args.decision === "cancel") {
+        // Revocation: blocks every later side effect; one already performed stays done.
+        await ctx.db.patch("approvals", approval._id, { status: "cancelled", decidedAt: now, updatedAt: now });
+        await auditApproval(ctx, approval, "approval.revoked", founder, now);
+        return { approvalId: approval._id, status: "cancelled" as const, changed: true };
+      }
       return refuse("APPROVAL_ALREADY_DECIDED", { status: approval.status });
     }
 
-    const now = Date.now();
     if (isPendingApprovalStale(approval.createdAt, now)) {
       await ctx.db.patch("approvals", approval._id, { status: "expired", decidedAt: now, updatedAt: now });
       return { approvalId: approval._id, status: "expired" as const, changed: true };
     }
 
     if (args.decision === "approve") {
-      if (!isSubjectTableAllowed(approval.kind, approval.subjectTable)) return refuse("APPROVAL_SUBJECT_MISMATCH");
-      const state = await readSubjectState(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
-      if (!state.found) return refuse("APPROVAL_SUBJECT_NOT_FOUND");
-      if (state.linkedApprovalId !== undefined && state.linkedApprovalId !== approval._id) {
+      if (
+        !isSubjectTableAllowed(approval.kind, approval.subjectTable) ||
+        !approvalCostFitsKind(approval.kind, approval.costCredits)
+      ) {
         return refuse("APPROVAL_SUBJECT_MISMATCH");
       }
-      if (!isSubjectUnchangedSince(state.writeTimes, approval.createdAt)) return refuse("APPROVAL_SUBJECT_CHANGED");
+      const state = await readSubjectState(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
+      const refusal = subjectRefusal(state, approval.kind, approval.createdAt, approval._id);
+      if (refusal !== null) return refuse(refusal);
     }
 
     await ctx.db.patch("approvals", approval._id, {
@@ -556,19 +644,7 @@ export const decideApproval = mutation({
       updatedAt: now,
       ...(note === undefined ? {} : { note }),
     });
-    if (AUDITED_KINDS.has(approval.kind)) {
-      await ctx.db.insert("audit_events", {
-        ownerId: approval.ownerId,
-        projectId: approval.projectId,
-        actorType: "user",
-        actorUserId: project.ownerId,
-        action: `approval.${target}`,
-        subjectType: "approval",
-        subjectId: approval._id,
-        metadata: JSON.stringify({ kind: approval.kind, subjectTable: approval.subjectTable, subjectId: approval.subjectId }),
-        createdAt: now,
-      });
-    }
+    if (AUDITED_KINDS.has(approval.kind)) await auditApproval(ctx, approval, `approval.${target}`, founder, now);
     return { approvalId: approval._id, status: target, changed: true };
   },
 });
@@ -577,40 +653,71 @@ export const decideApproval = mutation({
 // Expiry
 // ---------------------------------------------------------------------------
 
+const expiryBatchResultValidator = v.object({
+  scanned: v.number(),
+  expired: v.number(),
+  isDone: v.boolean(),
+  continueCursor: v.string(),
+});
+
+type ExpiryBatchResult = { scanned: number; expired: number; isDone: boolean; continueCursor: string };
+
+function expiryBatchSize(requested: number | undefined): number {
+  const size = requested !== undefined && Number.isFinite(requested) ? Math.floor(requested) : APPROVAL_EXPIRY_BATCH_DEFAULT;
+  return Math.min(Math.max(size, 1), APPROVAL_EXPIRY_BATCH_MAX);
+}
+
 /**
- * Cron target (Codex wires it in `convex/crons.ts`). Expires pending cards past
- * `APPROVAL_PENDING_TTL_MS`, one bounded page per transaction, and schedules
- * the next page until the table is done. Idempotent: it only touches rows
- * still pending and stale. It runs while the workspace is off, because closing
- * stale cards only removes permission (same reasoning as the 2026-11-06 C-METER
- * shutdown-cleanup ruling). Without a status index it pages the whole table;
+ * One bounded page of expiry: pending cards past `APPROVAL_PENDING_TTL_MS`
+ * become `expired`. Idempotent (touches only rows still pending and stale) and
+ * never schedules anything. Without a status index it pages the whole table;
  * Codex is asked for `by_status_and_createdAt`.
  */
-export const expireStaleApprovals = internalMutation({
+export const expireStaleApprovalsBatch = internalMutation({
   args: {
     cursor: v.optional(v.union(v.string(), v.null())),
     batchSize: v.optional(v.number()),
   },
-  returns: v.object({ scanned: v.number(), expired: v.number(), isDone: v.boolean() }),
-  handler: async (ctx, args) => {
-    const requested = args.batchSize !== undefined && Number.isFinite(args.batchSize)
-      ? Math.floor(args.batchSize)
-      : APPROVAL_EXPIRY_BATCH_DEFAULT;
-    const batchSize = Math.min(Math.max(requested, 1), APPROVAL_EXPIRY_BATCH_MAX);
+  returns: expiryBatchResultValidator,
+  handler: async (ctx, args): Promise<ExpiryBatchResult> => {
     const now = Date.now();
-    const page = await ctx.db.query("approvals").paginate({ numItems: batchSize, cursor: args.cursor ?? null });
+    const page = await ctx.db.query("approvals")
+      .paginate({ numItems: expiryBatchSize(args.batchSize), cursor: args.cursor ?? null });
     let expired = 0;
     for (const row of page.page) {
       if (row.status !== "pending" || !isPendingApprovalStale(row.createdAt, now)) continue;
       await ctx.db.patch("approvals", row._id, { status: "expired", decidedAt: now, updatedAt: now });
       expired += 1;
     }
-    if (!page.isDone) {
-      await ctx.scheduler.runAfter(0, internal.workspace.approvals.expireStaleApprovals, {
-        cursor: page.continueCursor,
-        batchSize,
+    return { scanned: page.page.length, expired, isDone: page.isDone, continueCursor: page.continueCursor };
+  },
+});
+
+/**
+ * Cron target (Codex wires it in `convex/crons.ts`, hourly). Walks the table in
+ * bounded batches, at most `APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN` per run, inside
+ * this one action and schedules nothing, so runs cannot overlap (a cron job runs
+ * one instance at a time). It runs while the workspace is off, because closing
+ * stale cards only removes permission (same reasoning as the 2026-11-06 C-METER
+ * shutdown-cleanup ruling).
+ */
+export const expireStaleApprovals = internalAction({
+  args: { batchSize: v.optional(v.number()) },
+  returns: v.object({ scanned: v.number(), expired: v.number(), batches: v.number(), isDone: v.boolean() }),
+  handler: async (ctx, args) => {
+    let cursor: string | null = null;
+    let scanned = 0;
+    let expired = 0;
+    for (let batches = 1; batches <= APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN; batches += 1) {
+      const result: ExpiryBatchResult = await ctx.runMutation(internal.workspace.approvals.expireStaleApprovalsBatch, {
+        cursor,
+        batchSize: args.batchSize,
       });
+      scanned += result.scanned;
+      expired += result.expired;
+      if (result.isDone) return { scanned, expired, batches, isDone: true };
+      cursor = result.continueCursor;
     }
-    return { scanned: page.page.length, expired, isDone: page.isDone };
+    return { scanned, expired, batches: APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN, isDone: false };
   },
 });

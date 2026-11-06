@@ -19,15 +19,40 @@
  * Which tables a kind may name is closed (`APPROVAL_SUBJECT_TABLES`), so a
  * `send` approval can never authorise a publish.
  *
- * Version. The `approvals` table has no version column yet (see
- * `APPROVAL_VERSION_POLICY` and "Needs from Codex" in `docs/wp/wp77-progress.md`).
- * Until it has one, "the subject's current version" means: the subject row, and
- * every row whose content it carries (the document of a site version, the steps
- * and step documents of a sequence), was last written no later than the moment
- * the approval was created. A write after that, including a status-only patch,
- * makes the approval stale and every check fails closed with
- * `APPROVAL_SUBJECT_CHANGED`. Callers therefore call `assertApproved` before they
- * patch the subject in the same mutation.
+ * Version. The `approvals` table has no version column yet. Until it has one,
+ * "the subject's current version" means: the subject row, and every row whose
+ * content it carries (the document of a site version, the steps and step
+ * documents of a sequence), was last written no later than the moment the
+ * approval was created (`APPROVAL_VERSION_POLICY`). A write after that,
+ * including a status-only patch, makes the approval stale and every check fails
+ * closed with `APPROVAL_SUBJECT_CHANGED`. Callers therefore call `assertApproved`
+ * before they patch the subject in the same mutation. `site_versions` rows have
+ * no write timestamp, so their content fields (`documentId`, `landingSpec`,
+ * `storageId`) are insert-only; a static scan
+ * (`tests/security/wp77-site-versions-insert-only.test.mjs`) fails the build if
+ * any code patches or replaces them.
+ *
+ * The real fix is an additive `approvals.subjectVersion`: a content fingerprint
+ * written at creation over every content field (site version content and its
+ * document's `contentSha256`; the ordered step ids, delays, subjects and
+ * documents of a sequence; the outbound list attestation; the post's account;
+ * the campaign's budget, objective and platform). When it lands, `assertApproved`
+ * compares fingerprints and MUST fail closed on an approval without one. The
+ * timestamp check stays as defence in depth.
+ *
+ * Consumption. Single-use kinds (`SINGLE_USE_APPROVAL_KINDS`: publish, send
+ * activation, ad_launch, spend, upgrade) authorise one side effect. They must be
+ * consumed by the side-effect mutation. Until an `approvals.consumedAt` column
+ * exists, the caller's own idempotency (publish's structural check, the email
+ * idempotency key, the ledger's exactly-once debit) is the only consumption,
+ * and `assertApproved` does not consume. An approved card is also closed when a
+ * newer card is raised for the same subject, and the founder can revoke it
+ * (`cancel` on an approved card).
+ *
+ * Terms. A `spend` card is bound to its price and round: `costCredits` is
+ * required (positive) on `spend` and refused on every other kind, and
+ * `assertApproved` for `spend` requires the caller's `expectedCostCredits` and
+ * `expectedChangeRound` to match the card.
  */
 
 // ---------------------------------------------------------------------------
@@ -126,7 +151,41 @@ export type ApprovalSubject<ProjectId extends string = string, OwnerId extends s
   readonly subjectTable: ApprovalSubjectTable;
   readonly subjectId: string;
   readonly ownerId?: OwnerId;
+  /** Required for `spend`: the credits the caller is about to debit. Checked when given on any kind. */
+  readonly expectedCostCredits?: bigint;
+  /** Required for `spend`: the D17 change round being paid for. Checked when given on any kind. */
+  readonly expectedChangeRound?: bigint;
 };
+
+/** Kinds whose approval authorises one side effect and must be consumed by it (see header). */
+export const SINGLE_USE_APPROVAL_KINDS = ["publish", "send", "ad_launch", "spend", "upgrade"] as const satisfies readonly ApprovalKind[];
+
+/** Kinds whose subject must state the price and round it authorises. */
+export const PRICED_APPROVAL_KINDS = ["spend"] as const satisfies readonly ApprovalKind[];
+
+export function isPricedApprovalKind(kind: ApprovalKind): boolean {
+  return (PRICED_APPROVAL_KINDS as readonly string[]).includes(kind);
+}
+
+/**
+ * True when a card's credit cost fits its kind: a priced kind needs a positive
+ * whole cost, every other kind must carry none.
+ */
+export function approvalCostFitsKind(kind: ApprovalKind, costCredits: bigint | undefined): boolean {
+  return isPricedApprovalKind(kind) ? costCredits !== undefined && costCredits > 0n : costCredits === undefined;
+}
+
+/**
+ * `site_versions` statuses a `publish` approval may name. `draft` is unfinished
+ * and `retired` is history; `published` stays allowed so an idempotent retry of
+ * the same publish is not refused.
+ */
+export const PUBLISHABLE_SITE_VERSION_STATUSES = ["ready", "published"] as const;
+
+/** A site version can be published only from a publishable status and a site that is not taken down. */
+export function isPublishableSiteVersion(status: string, siteTakedownAt: number | undefined): boolean {
+  return siteTakedownAt === undefined && (PUBLISHABLE_SITE_VERSION_STATUSES as readonly string[]).includes(status);
+}
 
 // ---------------------------------------------------------------------------
 // Versions
@@ -136,10 +195,12 @@ export type ApprovalSubject<ProjectId extends string = string, OwnerId extends s
  * How each subject table's version is read while `approvals` has no version
  * column. Each entry lists the write timestamps that must all be at or before
  * the approval's `createdAt`:
- * - `site_versions`: content is immutable per row (WP28 publish and rollback
- *   insert a new row, never patch content), so the row id is the version; its
- *   linked document's `updatedAt` is still checked because documents can be
- *   patched in place.
+ * - `site_versions`: content fields are insert-only (WP28 publish and rollback
+ *   insert a new row; a static scan forbids patching them), so the row id is the
+ *   version; the linked document's `updatedAt` is still checked because
+ *   documents can be patched in place. Status-only transitions are allowed and
+ *   do not count as a change; a `publish` card additionally needs a publishable
+ *   status and a site without a takedown.
  * - `documents`: `updatedAt` (documents carry no workflow status).
  * - `sequences`: the row, every step (at most `MAX_SEQUENCE_STEPS`) and every
  *   step's document.
@@ -152,7 +213,7 @@ export type ApprovalSubject<ProjectId extends string = string, OwnerId extends s
  * Known gap: on mutable workflow rows `updatedAt` also moves on status-only
  * patches, so a status change after creation invalidates the approval (fails
  * closed). The fix is an additive `approvals.subjectVersion` content
- * fingerprint, requested from Codex.
+ * fingerprint, requested from Codex (see the file header).
  */
 export const APPROVAL_VERSION_POLICY = {
   documents: "updated_at",
@@ -197,6 +258,8 @@ export function isPendingApprovalStale(createdAt: number, now: number): boolean 
 /** Most rows one expiry batch touches. */
 export const APPROVAL_EXPIRY_BATCH_MAX = 100;
 export const APPROVAL_EXPIRY_BATCH_DEFAULT = 50;
+/** Most batches one expiry run (one cron tick) processes before it stops. */
+export const APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN = 200;
 
 /** Most pending cards the founder-facing list returns. */
 export const APPROVAL_LIST_LIMIT = 50;
@@ -243,13 +306,17 @@ export const APPROVAL_ERROR_CODES = [
   "APPROVAL_SUBJECT_NOT_FOUND",
   /** The subject (or content it carries) was written after the approval was created. */
   "APPROVAL_SUBJECT_CHANGED",
-  /** A decision on an approval that already left `pending` with a different outcome. */
+  /** A `publish` subject whose site version is not publishable or whose site is taken down. */
+  "APPROVAL_SUBJECT_NOT_PUBLISHABLE",
+  /** The caller's expected cost or change round is missing (`spend`) or differs from the card. */
+  "APPROVAL_TERMS_MISMATCH",
+  /** A decision the card's current status does not allow (only `cancel` may follow `approved`). */
   "APPROVAL_ALREADY_DECIDED",
   /** Creation named a table the kind does not allow, or an id of the wrong table. */
   "APPROVAL_INVALID_SUBJECT",
   /** The note is longer than `APPROVAL_NOTE_MAX_LENGTH`. */
   "APPROVAL_INVALID_NOTE",
-  /** A negative change round or credit cost. */
+  /** A negative change round, or a credit cost that does not fit the kind (`approvalCostFitsKind`). */
   "APPROVAL_INVALID_INPUT",
 ] as const;
 export type ApprovalErrorCode = (typeof APPROVAL_ERROR_CODES)[number];
