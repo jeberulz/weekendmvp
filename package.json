@@ -85,6 +85,7 @@
     "@convex-dev/resend": "^0.2.10",
     "@convex-dev/sharded-counter": "^0.2.3",
     "@convex-dev/workflow": "^0.4.4",
+    "@convex-dev/workpool": "^0.4.15",
     "@hookform/resolvers": "^5.4.0",
     "@resvg/resvg-js": "^2.6.2",
     "cheerio": "^1.2.0",
