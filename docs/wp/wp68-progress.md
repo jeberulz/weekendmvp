@@ -162,3 +162,9 @@ optional; founder usage still requires an owner in the writer.
 - WP70/WP73 remain gated on this follow-up review and Claude's recorded G0 decision. C-JOBS prices remain provisional.
 - Full merged-tree gate passed: `npm run typecheck`, `npm run lint` (0 errors, 37 existing warnings), serial `npm test` (all suites), `npm run build`, and `git diff --check`. The schema and functions deployed to an isolated anonymous local Convex instance on 3310/3311 after setting a dummy local-only billing bridge secret. No cloud or production target was used.
 - Follow-up PR #171 is open for Claude's independent M1-M4/G0 review and John's merge. G0 has not yet been recorded; WP70/WP73 remain paused.
+
+## 2026-11-06 - WP68-S8 pre-business wizard scanner follow-up
+
+- Current `main` at `d0f6e572` includes WP74 #208. Its `createBusiness` and seven wizard entry points are intentionally pre-business and use the workspace feature gate plus current-user or `ownedWizardSession` checks. The older WP68 scanner requires `requireBusinessAccess` or `requireSuperAdmin` for every public function in `convex/workspace/**`, so `npm test` fails at `business.ts:createBusiness missing capability guard`. The same failure appears in both WP78 and WP79 main-integration worktrees; neither integration changed the failing files.
+- This Work Package follow-up will add the Codex-owned C-AUTHZ `requireOwnedWizardSession` helper and an exact scanner allowlist for only those eight WP74 functions. Existing Claude-owned call sites continue using their already-reviewed `ownedWizardSession` helper until the Claude lane adopts C-AUTHZ. The scanner will pin each current guard call and retain the feature-gate requirement. No generic exception for other functions or for workspace shutdown is allowed.
+- This is a security-contract repair and must pass focused negative scanner tests and the standard gate before owner merge. It makes no live call and does not activate the workspace.
