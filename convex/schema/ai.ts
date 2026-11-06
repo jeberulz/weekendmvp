@@ -68,6 +68,14 @@ export const aiTables = {
     freeSignupsOpen: v.boolean(),
     globalDailyBudgetMicroUsd: v.int64(),
     paidGlobalDailyBudgetMicroUsd: v.int64(),
+    // WP70-S4: durable per-day threshold dedupe on the admin-owned singleton.
+    spendAlarmState: v.optional(v.object({
+      dayKey: v.string(),
+      free80: v.boolean(),
+      free100: v.boolean(),
+      paid80: v.boolean(),
+      paid100: v.boolean(),
+    })),
     killSwitches: v.object({
       ai: v.boolean(),
       studioVideo: v.boolean(),

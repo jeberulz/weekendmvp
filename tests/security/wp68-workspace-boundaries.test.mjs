@@ -64,7 +64,13 @@ test("every Phase 0 table has a flat validator, D22 ownership and owner-first in
 });
 
 const WORKSPACE_RUNTIME_DIRS = ["workspace", "crew", "studio", "ai", "growth", "ops"];
-const ADMIN_CONTROLS = new Set(["convex/ops/settings.ts:readForAdmin", "convex/ops/settings.ts:setCohortMember", "convex/ops/settings.ts:updateForAdmin"]);
+const ADMIN_CONTROLS = new Set([
+  "convex/ops/settings.ts:readForAdmin",
+  "convex/ops/settings.ts:setCohortMember",
+  "convex/ops/settings.ts:updateForAdmin",
+  // Owner ruling: read-only spend monitoring stays available after shutdown.
+  "convex/ops/spend.ts:readDaily",
+]);
 const PUBLIC_REGISTRATIONS = new Set(["query", "mutation", "action", "httpAction"]);
 
 function publicRegistrations(file) {

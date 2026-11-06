@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../_generated/server";
 import { requireBusinessForOwner } from "../platform/authz";
@@ -393,10 +394,14 @@ export const fail = internalMutation({
 
 /** Bounded cron worker. It never reserves or sends, and must finish rows after shutdown. */
 export const sweepStale = internalMutation({
-  args: { limit: v.number() },
+  args: { limit: v.number(), remainingBatches: v.optional(v.number()) },
   handler: async (ctx, args): Promise<{ swept: number; hasMore: boolean }> => {
     if (!Number.isSafeInteger(args.limit) || args.limit < 1 || args.limit > 100) {
       throw new RangeError("sweep limit must be 1..100");
+    }
+    const remainingBatches = args.remainingBatches ?? 0;
+    if (!Number.isSafeInteger(remainingBatches) || remainingBatches < 0 || remainingBatches > 19) {
+      throw new RangeError("remainingBatches must be 0..19");
     }
     const now = Date.now();
     const rows = await ctx.db.query("ai_usage")
@@ -411,6 +416,12 @@ export const sweepStale = internalMutation({
         await finalizeFailure(ctx, row, outcome.billed, outcome.errorClass, now - row.createdAt, outcome.chargeMicroUsd, now, true);
       }
     }
-    return { swept: Math.min(rows.length, args.limit), hasMore: rows.length > args.limit };
+    const hasMore = rows.length > args.limit;
+    if (hasMore && remainingBatches > 0) {
+      await ctx.scheduler.runAfter(0, internal.ai.metering.sweepStale, {
+        limit: args.limit, remainingBatches: remainingBatches - 1,
+      });
+    }
+    return { swept: Math.min(rows.length, args.limit), hasMore };
   },
 });
