@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
@@ -61,6 +62,8 @@ type SolvePage = {
   steps: SolveStep[];
   /** Convex idea categories that match this problem space. */
   categoryMatches: string[];
+  /** Optional editorial guide link(s) for this problem space. */
+  articleLinks?: Array<{ href: string; label: string }>;
 };
 
 export const PROBLEM_PAGES: Record<string, SolvePage> = {
@@ -213,6 +216,12 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
       { name: "Share and track", text: "Distribute clean notes to your team and track action item completion." },
     ],
     categoryMatches: ["ai-tools", "productivity", "saas"],
+    articleLinks: [
+      {
+        href: "/articles/automate-meeting-notes-with-ai",
+        label: "How to automate meeting notes with AI (build it yourself) →",
+      },
+    ],
   },
   scheduling: {
     slug: "scheduling",
@@ -435,6 +444,21 @@ async function CachedSolveHub({ slug }: { slug: string }) {
           </div>
         </Container>
       </section>
+
+      {page.articleLinks?.length ? (
+        <Container className="pt-10">
+          {page.articleLinks.map((link) => (
+            <p key={link.href} className="max-w-3xl text-[17px] leading-[1.6] text-home-ink-2">
+              <Link
+                href={link.href}
+                className="font-medium text-home-orange-ink underline underline-offset-4 transition-colors hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink motion-reduce:transition-none"
+              >
+                {link.label}
+              </Link>
+            </p>
+          ))}
+        </Container>
+      ) : null}
 
       {/* Solution Ideas — curated from Convex */}
       {list.length > 0 ? (
