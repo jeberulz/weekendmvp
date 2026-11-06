@@ -128,6 +128,9 @@ Standing rules:
     provider calls; kill switch on with live mode and a fake key makes zero fetch calls.
 
 - [ ] `WP75-S2b` - Launch DAG on `crewWorkpool`
+  - S3a hand-off: every brand-kit step must be prepared through `convex/crew/generators.ts`, so it carries
+    `briefDocumentId` and `seedId`. `finishCrewStep` re-checks the approved blueprint only for a step that carries
+    `briefDocumentId`; a step that builds its own inputs skips that check.
   - Scope: `convex/crew/launch.ts`, `convex/crew/steps.ts` (step registry), `convex/crew/workpool.ts`, tests.
   - Uses the mounted `crewWorkpool` (`convex/convex.config.ts:63`) through `@convex-dev/workpool` `Workpool`:
     `enqueueAction(internal.crew.runner.runCrewStep, …, { retry: false, onComplete: internal.crew.launch.stepDone })`.
@@ -156,7 +159,14 @@ Standing rules:
     a parked step resumes on `resumeLaunch`; replaying `startLaunch` creates nothing new; the landing spec is ready
     in the fixture timeline before the 5-minute target (`02` §6.2).
 
-- [ ] `WP75-S3a` - Blueprint personalisation and brand kit text
+- [x] `WP75-S3a` - Blueprint personalisation and brand kit text
+  - Built 2026-11-06 (`docs/wp/wp75-progress.md` § WP75-S3a). The repair step waits for S4b (Owner Q6/Q7):
+    until then a hard quality issue fails the step closed, and S4b plugs in through the runner's `repairArtifact`
+    seam (`convex/crew/runner.ts`, default `noArtifactRepair`).
+  - S4b note (S3a review): the seam's attempt contract is one gateway run starting at `CrewRepairInput.attempt`
+    (`result.nextAttempt`); a repair that throws is settled one `UNKNOWN_OUTCOME_ATTEMPT_STRIDE` later. If S4b's
+    repair needs more than one gateway run, it must report the highest attempt it used so the runner settles after
+    it (`TODO(S4b)` in `runner.ts`).
   - Scope: `convex/ai/prompts/blueprintPersonalise.v1.ts`, `blueprintOwnIdea.v1.ts`, `brandKit.v1.ts`,
     `lib/workspace/crew/design/proMax.ts` + vendored data (MIT, attribution kept), `lib/workspace/crew/context.ts`
     (business context block), registry and lock entries, tests.

@@ -5,9 +5,12 @@ import { internalAction, type ActionCtx } from "../_generated/server";
 // Types only: `gatewayActions.ts` is a `"use node"` module, called through `ctx.runAction`.
 import type { GatewayRunResult, RunPromptArgs } from "../ai/gatewayActions";
 import { getEntry } from "../ai/registry";
+import { parseModelOutput } from "../../lib/workspace/contracts/artifacts";
 import { maxInputTokensForSpec } from "../../lib/workspace/contracts/prompts";
+import type { CheckResult } from "../../lib/workspace/crew/checks";
+import { gateCrewArtifact, isQualityGatedKind } from "../../lib/workspace/crew/quality";
 import { UNKNOWN_OUTCOME_ATTEMPT_STRIDE } from "../../lib/workspace/crew/retry";
-import { founderNoteBlock, previousDraftBlock } from "../../lib/workspace/crew/tasks";
+import { CREW_STEP_ARTIFACTS, founderNoteBlock, previousDraftBlock } from "../../lib/workspace/crew/tasks";
 import {
   finishCrewStepResult,
   runCrewStepArgs,
@@ -42,15 +45,57 @@ import {
  *   billed. The run settles as a timed-out provider failure (class
  *   `indeterminate`). If even that settle throws, the run stays `running` and
  *   `recoverStaleCrewRuns` (or the next start, after the lease) closes it.
+ * - S3a: a quality-gated kind (blueprint, brand kit) is checked after the
+ *   call. `finishCrewStep` is the authority and fails a hard issue closed;
+ *   the pre-check here exists only to call S4b's repair seam
+ *   (`CrewRunnerDeps.repairArtifact`, default `noArtifactRepair`).
+ * - S3a: a generator that could not build the step's inputs passes
+ *   `preflight`; the step then opens a run and settles it with that failure,
+ *   before any provider call, so the normal guards and the calm note apply.
  */
 
 export type CrewRunPrompt = (args: RunPromptArgs) => Promise<GatewayRunResult>;
 
 export type CrewRunnerCtx = Pick<ActionCtx, "runMutation" | "runAction">;
 
+type Started = Extract<StartCrewRunResult, { kind: "run" }>;
+
+/** What S4b's repair seam is given: the step, the call that produced the draft, and the gate's findings. */
+export type CrewRepairInput = {
+  readonly args: RunCrewStepArgs;
+  readonly start: Started;
+  readonly result: Extract<GatewayRunResult, { ok: true }>;
+  readonly issues: CheckResult;
+  /** The first attempt number the repair's gateway run must use (`result.nextAttempt`), same job key. */
+  readonly attempt: number;
+};
+
+/**
+ * WP75-S4b SEAM: the one repair call for a draft with hard quality issues.
+ * Returns the repaired call's result (its own attempt numbers, same job key),
+ * or null for no repair. Not built: Owner Q6 (store flagged or fail) and Q7
+ * (repair tier) are open. With no repair, `finishCrewStep` fails the step
+ * closed on the hard issues.
+ *
+ * Attempt contract: the repair makes at most ONE gateway run, starting at
+ * `input.attempt`. A returned result carries its own `nextAttempt`; a repair
+ * that throws is settled at `input.attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE`,
+ * which covers one run (first try + one re-ask) and nothing more.
+ * TODO(S4b): if the repair ever needs more than one gateway run, return the
+ * highest attempt it used (or report it before each call) and settle after it.
+ */
+export type CrewArtifactRepair = (input: CrewRepairInput) => Promise<GatewayRunResult | null>;
+
+/** The default repair seam: none (Owner Q6/Q7 open). */
+export const noArtifactRepair: CrewArtifactRepair = async () => null;
+
 export type CrewRunnerDeps = {
   /** Replaces the registered `runPrompt` action (tests: the real meter with a scripted adapter). */
   readonly runPrompt?: CrewRunPrompt;
+  /** S3a: the generator could not build the inputs; settle the opened run with this failure, before any call. */
+  readonly preflight?: CrewGatewayFailureArg;
+  /** S4b seam (see `CrewArtifactRepair`). Defaults to `noArtifactRepair`. */
+  readonly repairArtifact?: CrewArtifactRepair;
 };
 
 export type CrewStepSkipped = {
@@ -83,8 +128,6 @@ export const crewStepOutcomeValidator = v.union(
  * the bound is in bytes: half the lane's tokens.
  */
 const PREVIOUS_DRAFT_SHARE = 0.5;
-
-type Started = Extract<StartCrewRunResult, { kind: "run" }>;
 
 type Inputs = { ok: true; inputs: RunPromptArgs["inputs"] } | { ok: false; failure: CrewGatewayFailureArg };
 
@@ -127,6 +170,32 @@ function unknownOutcome(error: unknown, what: string): CrewGatewayFailureArg {
   };
 }
 
+/**
+ * The runner's quality pre-check for S4b's seam: a gated kind whose draft
+ * parses but has hard issues goes to `repair`; anything else is returned as
+ * is (an unparsable draft fails in `finishCrewStep`, like before S3a).
+ */
+async function withRepair(
+  args: RunCrewStepArgs,
+  start: Started,
+  result: Extract<GatewayRunResult, { ok: true }>,
+  repair: CrewArtifactRepair,
+): Promise<GatewayRunResult> {
+  const { kind } = CREW_STEP_ARTIFACTS[start.jobType];
+  if (!isQualityGatedKind(kind)) return result;
+  let raw: unknown;
+  try {
+    raw = JSON.parse(result.outputJson);
+  } catch {
+    return result;
+  }
+  const parsed = parseModelOutput(kind, raw, null);
+  if (!parsed.success) return result;
+  const { result: issues } = gateCrewArtifact(kind, parsed.data, start.quality);
+  if (issues.hard.length === 0) return result;
+  return (await repair({ args, start, result, issues, attempt: result.nextAttempt })) ?? result;
+}
+
 /** The step's body. `runCrewStep` is this with the registered gateway action. */
 export async function runCrewStepWith(
   ctx: CrewRunnerCtx,
@@ -136,12 +205,14 @@ export async function runCrewStepWith(
   const start = await ctx.runMutation(internal.crew.jobs.startCrewRun, {
     taskId: args.taskId,
     ...(args.resume === true ? { resume: true } : {}),
+    ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
   });
   if (start.kind === "skip") return { kind: "skipped", reason: start.reason };
   const retry = args.retryMode === "return" ? {} : { retry: args };
   const settle = async (failure: CrewGatewayFailureArg, nextAttempt: number) =>
     await ctx.runMutation(internal.crew.jobs.settleCrewRun, { runId: start.runId, failure, nextAttempt, ...retry });
 
+  if (deps.preflight !== undefined) return await settle(deps.preflight, start.attempt);
   const prepared = stepInputs(args, start);
   if (!prepared.ok) return await settle(prepared.failure, start.attempt);
 
@@ -165,6 +236,16 @@ export async function runCrewStepWith(
     return await settle(unknownOutcome(error, "the gateway call did not return"), start.attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
   }
 
+  if (result.ok) {
+    try {
+      result = await withRepair(args, start, result, deps.repairArtifact ?? noArtifactRepair);
+    } catch (error) {
+      // A repair that throws has an unknown outcome, like a gateway call that does not return. It started at
+      // `result.nextAttempt` and makes at most one gateway run (the seam's contract), so one stride covers it.
+      return await settle(unknownOutcome(error, "the repair call did not return"), result.nextAttempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
+    }
+  }
+
   try {
     if (result.ok) {
       return await ctx.runMutation(internal.crew.jobs.finishCrewStep, {
@@ -172,6 +253,8 @@ export async function runCrewStepWith(
         promptRef: result.promptRef,
         outputJson: result.outputJson,
         nextAttempt: result.nextAttempt,
+        ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
+        ...(args.briefDocumentId === undefined ? {} : { briefDocumentId: args.briefDocumentId }),
       });
     }
     return await settle(result.failure, result.nextAttempt);

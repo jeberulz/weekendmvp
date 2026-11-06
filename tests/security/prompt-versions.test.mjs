@@ -411,7 +411,7 @@ test("a TIER_MODELS or input-ceiling change fails the locked @2 on the run part"
 });
 
 test("the run part carries the router's resolved model and input ceiling", () => {
-  const { run } = promptContent(listEntries()[0]);
+  const { run } = promptContent(probeEntries()[0]);
   assert.equal(run.provider, "anthropic");
   assert.equal(run.model, "claude-haiku-5-5");
   assert.equal(run.maxInputTokens, 40_000);

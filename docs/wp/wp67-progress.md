@@ -10,7 +10,7 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); WP77 S1–S4 merged (#210); Claude now runs WP75 and WP77 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
+Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
@@ -22,10 +22,10 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)**; Codex's middleware hard 404 merged (#186, #190) | `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
 | WP74 | 2 | Claude | `claude/wp74-wizard` | **Merged (#208)**; Codex's scanner reconcile and `requireOwnedWizardSession` merged (#209) | — | Follow-up: move the wizard from its local `ownedWizardSession` to C-AUTHZ `requireOwnedWizardSession` |
-| WP75 | 2 | Claude | `claude/wp75-crew` | **In progress**: plan committed; S2a job runner and S4a deterministic checks being built; roster ruled "blueprint first" | 12 owner questions in `wp75-progress.md`; Needs from Codex 1–12 | S2a and S4a reviews, then S3a blueprint, S1 roster, S2b DAG |
+| WP75 | 2 | Claude | `claude/wp75-*` per story | **In progress**: S2a job runner and S4a deterministic checks merged (#216, dormant); S3a blueprint + brand kit text being built (`claude/wp75-s3a-blueprint`) | 12 owner questions in `wp75-progress.md` (Q11 `crewJob` limit before S2b); Needs from Codex 1–14 (13, the stale-run recovery cron, before S1 ships) | S3a review, then S1 roster, S2b DAG |
 | WP76 | 2 | Claude | `claude/wp76-growth-drafts` | Waiting | WP75 S2 | — |
-| WP77 | 2 | Claude | `claude/wp77-wren-approvals` | **S1 merged; S2–S4 merged (#210)**; S5 memory and Files in review fixes | Explain and navigate cards wait on Codex's `chat_messages.cards` | S5 PR, then S6 accessibility |
-| WP78–WP79 | 2 | Codex | see registry | **Dormant primitives merged**: WP78 lead privacy (#211), WP79 tenant email and retention (#212). Nothing live | D5, D6; WP79 also needs WP76 S1 email drafts | Claude's independent privacy and publishing review of #211/#212 is owed before D5 real capture |
+| WP77 | 2 | Claude | `claude/wp77-*` | **Done**: S1 (#203), S2–S4 (#210), S5 memory and Files (#215), S6 accessibility (#217) | Colour contrast of the chat still needs a real-browser check | — |
+| WP78–WP79 | 2 | Codex | see registry | **Dormant primitives merged**: WP78 lead privacy (#211), WP79 tenant email and retention (#212). Nothing live | D5, D6; WP79 also needs WP76 S1 email drafts | Claude's independent privacy and publishing review of #211/#212 is running; findings go to Codex before D5 real capture |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
 | WP83–WP84 | 5 | Both | see registry | Waiting | G4; Meta review | — |
@@ -405,3 +405,18 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Owed by the Claude lane: an independent privacy and publishing review of #211/#212 before D5 real capture, and
   the WP74 move to `requireOwnedWizardSession`.
 - G2 still needs live spend (20 test launches) and owner steps; nothing live has run.
+
+## 2026-11-06 - Phase 2 progress: WP77 done, WP75 S2a + S4a merged
+
+- Merged to `main`: WP77-S5 Wren memory and Files (#215, `2318762d`); WP75 S2a crew job runner and S4a
+  deterministic quality checks, both dormant (#216, `dbabb646`); WP77-S6 Wren chat accessibility (#217, `eaec0abc`).
+  WP77 is complete.
+- Each story passed an independent Opus review and a narrow re-check before its PR; Codex and CodeRabbit review
+  threads on #216 and #217 were addressed and resolved.
+- WP75 now uses one branch per story: S3a (blueprint personalisation and brand kit text) is in progress on
+  `claude/wp75-s3a-blueprint`. In S3a a hard quality-check failure fails the step closed; the repair call waits
+  for S4b and owner questions Q6/Q7.
+- The Claude lane's independent privacy and publishing review of #211/#212 is running.
+- Still open for the owner: 12 WP75 questions (Q11, the `crewJob` limit, must be ruled before S2b), confirming the
+  own-idea market ruling recorded in `wp75-progress.md` § S4a, and Needs from Codex 14 (archived-business refunds).
+- G2 still needs live spend and owner steps; nothing live has run.
