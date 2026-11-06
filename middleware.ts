@@ -472,7 +472,12 @@ export async function middleware(
     // offline on a single Convex blip.
     const hostname = tenantHostForSlug(host.slug);
     if (hostname !== null) {
-      const published = await checkTenantSitePublished(hostname);
+      let published: boolean | null;
+      try {
+        published = await checkTenantSitePublished(hostname);
+      } catch {
+        published = null;
+      }
       if (published === false) {
         return hostRejectedResponse();
       }

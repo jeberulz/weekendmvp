@@ -198,7 +198,8 @@ export const publish = mutation({
 });
 
 /** Only WP78's approved publishing action may call this core mutation. */
-export const publishApproved = internalMutation({
+/** Legacy publish core. Only a future S1 wrapper may call this after policy and approval checks. */
+export const publishCore = internalMutation({
   args: { projectId: v.id("projects"), slug: v.string() },
   returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {
@@ -283,7 +284,8 @@ export const rollback = mutation({
   },
 });
 
-export const rollbackApproved = internalMutation({
+/** Legacy rollback core. Only a future S1 wrapper may call this after policy and approval checks. */
+export const rollbackCore = internalMutation({
   args: { projectId: v.id("projects"), toVersion: v.int64() },
   returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {

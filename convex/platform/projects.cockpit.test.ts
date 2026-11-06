@@ -145,15 +145,21 @@ describe("WP29-S2 getOwned site summary", () => {
     });
   });
 
-  test("exposes hostname and live after a successful publish", async () => {
+  test("exposes hostname and live for a published site row", async () => {
     const t = convexTest(schema, modules);
     const owner = await seedUser(t, "owner@example.com");
-    const { projectId } = await seedProject(t, owner.userId, { withSite: true });
+    const { projectId, siteConfigId } = await seedProject(t, owner.userId, { withSite: true });
     const identity = asUser(t, owner.userId, owner.sessionId);
-
-    await identity.mutation(api.platform.sites.publish.publish, {
-      projectId,
-      slug: "acme",
+    if (!siteConfigId) throw new Error("missing site fixture");
+    await t.run(async (ctx) => {
+      const version = await ctx.db.query("site_versions")
+        .withIndex("by_siteConfigId_and_version", (q) => q.eq("siteConfigId", siteConfigId))
+        .first();
+      if (!version) throw new Error("missing version fixture");
+      await ctx.db.patch(version._id, { status: "published" });
+      await ctx.db.patch(siteConfigId, {
+        status: "published", hostname: "acme.weekendmvp.app", currentVersionId: version._id,
+      });
     });
 
     const result = await identity.query(api.platform.projects.getOwned, {
