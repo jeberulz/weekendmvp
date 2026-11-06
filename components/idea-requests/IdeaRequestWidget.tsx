@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { Lightbulb, X } from "lucide-react";
 import { IdeaRequestPanel, type IdeaRequestMoodEvent } from "./IdeaRequestPanel";
+import { DEFAULT_WIDGET_AVATAR_SRC } from "./mascot-data";
 import {
   avatarForExpression,
   expressionForEvent,
@@ -19,13 +20,14 @@ const FOCUS =
 
 /**
  * Avatar image slots for the widget character ("Naira Marley", Weekend MVP
- * mascot). Every slot is optional and falls back to the idle image; with no
- * image supplied at all, the button is a plain placeholder circle.
+ * mascot). Every slot is optional and falls back to the idle image.
  *
- * The chosen Option 1 image (Pixar-style Naira Marley, teal polo, arms
- * open) is NOT bundled here yet — its file has not been supplied to this
- * build. Pass it as `avatarSrc` (idle) when the file lands, and pass extra
- * expression images as `avatars` when they exist. Do not invent mascot
+ * The default idle image is the chosen Option 1 file (freckles version,
+ * softer smile, teal polo, arms open) — embedded as a base64 data URI in
+ * `./mascot-data.ts` because the GitHub connector's push path accepts
+ * UTF-8 text files only. See that module for the source file, SHA-256,
+ * and how to swap it for a real `public/idea-requests/mascot.webp` later.
+ * The other three avatar options were not used. Do not invent mascot
  * images: a slot with no file simply shows the idle image.
  */
 export type WidgetAvatarSlots = {
@@ -63,12 +65,12 @@ function prefersReducedMotion(): boolean {
  * bottom tab bar (pass a `className` for that offset).
  */
 export function IdeaRequestWidget({
-  avatarSrc,
+  avatarSrc = DEFAULT_WIDGET_AVATAR_SRC,
   avatars = {},
   className,
   characterName = "Naira Marley",
 }: {
-  /** Main character image (idle expression). Swappable; placeholder when omitted. */
+  /** Main character image (idle expression). Defaults to the chosen mascot; swappable. */
   avatarSrc?: string;
   /** Extra expression images; each falls back to `avatarSrc`. */
   avatars?: WidgetAvatarSlots;
