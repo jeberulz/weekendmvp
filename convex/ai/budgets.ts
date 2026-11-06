@@ -1,7 +1,7 @@
 import { ShardedCounter } from "@convex-dev/sharded-counter";
 import { components } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
   int64ToMicroUsd,
   microUsdToInt64,
@@ -24,7 +24,7 @@ function counterKey(pool: GlobalPool, dayKey: string, kind: GlobalCounterKind): 
 }
 
 export async function readGlobalBudget(
-  ctx: MutationCtx,
+  ctx: MutationCtx | QueryCtx,
   pool: GlobalPool,
   dayKey: string,
 ): Promise<{ spentTodayMicroUsd: number; inFlightMicroUsd: number }> {

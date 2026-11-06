@@ -1,6 +1,14 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const spendAlarmDayState = v.object({
+  dayKey: v.string(),
+  free80: v.boolean(),
+  free100: v.boolean(),
+  paid80: v.boolean(),
+  paid100: v.boolean(),
+});
+
 export const aiTables = {
   ai_usage: defineTable({
     ownerId: v.optional(v.id("users")),
@@ -68,6 +76,10 @@ export const aiTables = {
     freeSignupsOpen: v.boolean(),
     globalDailyBudgetMicroUsd: v.int64(),
     paidGlobalDailyBudgetMicroUsd: v.int64(),
+    // WP70-S4: durable per-day threshold dedupe on the admin-owned singleton.
+    spendAlarmState: v.optional(spendAlarmDayState),
+    // Keep yesterday's markers so a settlement after UTC rollover is alarmed once.
+    spendAlarmPreviousDayState: v.optional(spendAlarmDayState),
     killSwitches: v.object({
       ai: v.boolean(),
       studioVideo: v.boolean(),
