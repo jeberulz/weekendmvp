@@ -9,9 +9,10 @@
  *
  * Scanned: every `ts/tsx/mts/cts/js/jsx/mjs/cjs` file `git ls-files` reports
  * (tracked, plus untracked files that are not ignored), with a filesystem walk
- * as the fallback when git is not there. `SKIP_DIRS` (`node_modules`,
- * `_generated`, build output, `.git`, `.worktrees`, `.claude`) is left out.
- * That includes the repo root's config files and `tests/`. Parsed with the
+ * as the fallback when git is not there. Left out: `SKIP_DIRS` as top-level
+ * directories only (`node_modules`, build output, `.git`, `.worktrees`,
+ * `.claude`), so `app/build/[slug]/page.tsx` is still scanned, and exactly
+ * `convex/_generated/`. That includes the repo root's config files and `tests/`. Parsed with the
  * TypeScript compiler, so comments and prose never count.
  *
  * Outside `convex/ai/providers/` it fails on:
@@ -20,9 +21,16 @@
  * - a module loader the scan cannot read, unless allowlisted with a reason: a
  *   non-literal `import()` or `require()` argument; `require.<member>` (e.g.
  *   `require.resolve`); `require` used as a value (`const r = require`);
- *   `createRequire(...)`; `module.require`; any import of `module` /
- *   `node:module` (which covers aliased or destructured `createRequire`); and
- *   `process.getBuiltinModule` in any form;
+ *   `createRequire(...)`; any import of `module` /
+ *   `node:module` (which covers aliased or destructured `createRequire`);
+ *   `process.getBuiltinModule` in any form; `eval` in any form; the `Function`
+ *   constructor (`Function(...)`, `new Function(...)`, `globalThis.Function`);
+ *   a `.require` / `._load` member on any owner, called or not
+ *   (`process.mainModule.require`, `module.parent.require`,
+ *   `module.constructor._load`); and any use of `module.constructor`;
+ * - a `package.json` dependency (nested `overrides` / `resolutions` included)
+ *   whose value is `npm:<provider SDK>`, an alias that would hide the SDK
+ *   behind another import name;
  * - a provider API host in a string or template literal, or a provider domain
  *   fragment (`anthropic.com`, `openai.com`, `recraft.ai`) in a string built by
  *   concatenation or a template with substitutions, unless allowlisted.
@@ -37,9 +45,13 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const SKIP_DIRS = new Set([
+/**
+ * Top-level directories left out. Matched against the first path segment only,
+ * so a source folder named `build` or `dist` deeper in the tree (e.g.
+ * `app/build/[slug]/page.tsx`) is still scanned.
+ */
+export const SKIP_DIRS = new Set([
   "node_modules",
-  "_generated",
   ".next",
   ".turbo",
   ".vercel",
@@ -50,6 +62,8 @@ const SKIP_DIRS = new Set([
   ".worktrees",
   ".claude",
 ]);
+/** Exact directory prefixes left out: Convex's generated client only. */
+export const SKIP_PREFIXES = ["convex/_generated/"];
 /** ts, tsx, mts, cts, js, jsx, mjs, cjs (declaration files included). */
 const SOURCE_EXT = /\.(?:[cm]?[jt]s|[jt]sx)$/u;
 const PROVIDER_DIR = "convex/ai/providers/";
@@ -153,6 +167,18 @@ function builtParts(node) {
 }
 
 const LOADER_MODULES = new Set(["module", "node:module"]);
+/** Member names that load a module whatever the owner: `process.mainModule.require`, `module.constructor._load`. */
+const LOADER_MEMBERS = new Set(["require", "_load"]);
+
+/** True inside a type annotation, where `Function` is a type, not the constructor. */
+function inTypePosition(node) {
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (ts.isTypeNode(parent) && !ts.isExpressionWithTypeArguments(parent)) return true;
+  }
+  return false;
+}
+
+const isModuleIdentifier = (node) => ts.isIdentifier(node) && node.text === "module";
 
 /** Positions where an identifier named `require` is a binding or member name, not a value. */
 function isBindingName(node) {
@@ -182,10 +208,13 @@ function isBindingName(node) {
  * Module specifiers, string literal text, dynamically built strings and
  * loaders the scan cannot follow, in one source file. Loader forms:
  * `import(non-literal)`, `require(non-literal)`, `require.<member>` (e.g.
- * `require.resolve`), `require(as value)` (`const r = require`), `module.require`,
+ * `require.resolve`), `require(as value)` (`const r = require`),
  * `createRequire`, `node:module` (any import of `module` / `node:module`, which
- * covers aliased or destructured `createRequire`), and
- * `process.getBuiltinModule` (any use of that name, or `x["getBuiltinModule"]`).
+ * covers aliased or destructured `createRequire`),
+ * `process.getBuiltinModule` (any use of that name, or `x["getBuiltinModule"]`),
+ * `eval` (any use), `Function` (the constructor, outside type positions),
+ * `.require` / `._load` (that member on any owner, called or not) and
+ * `module.constructor`.
  */
 export function scanSource(fileName, source) {
   const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, scriptKind(fileName));
@@ -213,23 +242,36 @@ export function scanSource(fileName, source) {
         if (text !== null) addSpecifier(text);
         else loaders.push(isRequire ? "require(non-literal)" : "import(non-literal)");
       } else if (ts.isPropertyAccessExpression(callee)) {
-        const owner = ts.isIdentifier(callee.expression) ? callee.expression.text : null;
-        const name = callee.name.text;
-        if (owner === "module" && name === "require") loaders.push("module.require");
-        else if (name === "createRequire") loaders.push("createRequire");
+        if (callee.name.text === "createRequire") loaders.push("createRequire");
       } else if (ts.isIdentifier(callee) && callee.text === "createRequire") {
         loaders.push("createRequire");
       }
     } else if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
       const text = stringValue(node.argument.literal);
       if (text !== null) addSpecifier(text);
-    } else if (ts.isElementAccessExpression(node) && stringValue(node.argumentExpression) === "getBuiltinModule") {
-      loaders.push("process.getBuiltinModule");
+    } else if (ts.isElementAccessExpression(node)) {
+      const key = stringValue(node.argumentExpression);
+      if (key === "getBuiltinModule") loaders.push("process.getBuiltinModule");
+      else if (key === "eval" || key === "Function") loaders.push(key);
+      else if (key !== null && LOADER_MEMBERS.has(key)) loaders.push(`.${key}`);
+      else if (key === "constructor" && isModuleIdentifier(node.expression)) loaders.push("module.constructor");
+    } else if (ts.isPropertyAccessExpression(node)) {
+      const name = node.name.text;
+      if (LOADER_MEMBERS.has(name)) loaders.push(`.${name}`);
+      else if (name === "constructor" && isModuleIdentifier(node.expression)) loaders.push("module.constructor");
     }
 
     if (ts.isIdentifier(node)) {
       if (node.text === "getBuiltinModule") {
         loaders.push("process.getBuiltinModule");
+      } else if (node.text === "eval") {
+        loaders.push("eval");
+      } else if (
+        node.text === "Function" &&
+        !inTypePosition(node) &&
+        !(isBindingName(node) && !ts.isPropertyAccessExpression(node.parent))
+      ) {
+        loaders.push("Function");
       } else if (node.text === "require" && !isBindingName(node)) {
         const parent = node.parent;
         if (ts.isCallExpression(parent) && parent.expression === node) {
@@ -266,7 +308,43 @@ export function hostsIn(strings, built = []) {
   return found;
 }
 
-const keep = (rel) => SOURCE_EXT.test(rel) && !rel.split("/").some((part) => SKIP_DIRS.has(part));
+/** True when a repo-relative path sits in a skipped top-level directory or prefix. */
+export function skipped(rel) {
+  return SKIP_DIRS.has(rel.split("/")[0]) || SKIP_PREFIXES.some((prefix) => rel.startsWith(prefix));
+}
+
+/** True for a source file the scan reads. */
+export function keep(rel) {
+  return SOURCE_EXT.test(rel) && !skipped(rel);
+}
+
+const DEPENDENCY_FIELDS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "overrides", "resolutions"];
+
+/** The package an `npm:<name>@<range>` alias installs, or null for any other value. */
+export function aliasTarget(value) {
+  if (typeof value !== "string" || !value.startsWith("npm:")) return null;
+  const rest = value.slice("npm:".length);
+  return rest.startsWith("@") ? `@${rest.slice(1).split("@")[0]}` : rest.split("@")[0];
+}
+
+/**
+ * Dependencies that alias a provider SDK under another name (`"llm":
+ * "npm:openai@4"`), which `import "llm"` would otherwise hide from the scan.
+ * Walks the dependency fields, nested `overrides` / `resolutions` included.
+ */
+export function providerAliases(pkg) {
+  const found = [];
+  const walk = (value, where) => {
+    if (typeof value === "string") {
+      const target = aliasTarget(value);
+      if (target !== null && isProviderSdk(target)) found.push(`${where} -> ${value}`);
+    } else if (typeof value === "object" && value !== null) {
+      for (const [key, item] of Object.entries(value)) walk(item, `${where}.${key}`);
+    }
+  };
+  for (const field of DEPENDENCY_FIELDS) walk(pkg?.[field], field);
+  return found;
+}
 
 /** Tracked and untracked-but-not-ignored files from git, or null when git is not there. */
 export function gitListFiles() {
@@ -281,7 +359,7 @@ export function walkFiles(dir = "") {
   for (const entry of readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const rel = dir === "" ? entry.name : `${dir}/${entry.name}`;
     if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name)) out.push(...walkFiles(rel));
+      if (!skipped(`${rel}/`)) out.push(...walkFiles(rel));
     } else if (entry.isFile()) {
       out.push(rel);
     }
@@ -364,7 +442,22 @@ test("the scanner flags loaders it cannot follow", () => {
     ['const { createRequire: cr } = require("module"); cr(x)("openai");', ["node:module"]],
     ['const req = (await import("node:module")).createRequire(import.meta.url);', ["createRequire", "node:module"]],
     ['import * as m from "module"; m.default.createRequire;', ["node:module"]],
-    ['const sdk = module.require("openai");', ["module.require"]],
+    ['const sdk = module.require("openai");', [".require"]],
+    ['const sdk = process.mainModule.require("openai");', [".require"]],
+    ['const sdk = module.parent.require("openai");', [".require"]],
+    ['const r = process.mainModule.require; r("openai");', [".require"]],
+    ['const sdk = module["require"]("openai");', [".require"]],
+    ['const sdk = module.constructor._load("openai");', ["._load", "module.constructor"]],
+    ['const M = module.constructor; M._load("openai");', ["module.constructor", "._load"]],
+    ['const M = module["constructor"];', ["module.constructor"]],
+    ['const sdk = eval("require")("openai");', ["eval"]],
+    ['const e = globalThis.eval; e("1");', ["eval"]],
+    ['const e = (0, eval); e("1");', ["eval"]],
+    ['const e = globalThis["eval"];', ["eval"]],
+    ['const f = new Function("return require")();', ["Function"]],
+    ['const f = Function("return 1");', ["Function"]],
+    ['const F = globalThis.Function; F("return 1");', ["Function"]],
+    ['const F = globalThis["Function"];', ["Function"]],
     ['const m = process.getBuiltinModule("node:module");', ["process.getBuiltinModule"]],
     ['const { getBuiltinModule: g } = process; g("module");', ["process.getBuiltinModule"]],
     ['const m = process["getBuiltinModule"]("module");', ["process.getBuiltinModule"]],
@@ -378,8 +471,10 @@ test("the scanner flags loaders it cannot follow", () => {
   }
   const clean = [
     'const a = await import("./x"); const b = require("y");',
-    "const o = { require: 1 }; o.require; function f(require) { return 1; }",
+    "const o = { require: 1 }; function f(require) { return 1; }",
     "type R = typeof require;",
+    "let cb: Function; type F = Function | null; interface I { f: Function }",
+    'const $eval = 1; page.evaluate(() => 1); const c = obj.constructor; const s = "eval and new Function in a string";',
     'const text = "process.getBuiltinModule and createRequire in a string are only data";',
   ];
   for (const source of clean) assert.deepEqual(scanSource("probe.ts", source).loaders, [], source);
@@ -410,10 +505,18 @@ test("the file list comes from git, with a filesystem walk as the fallback", () 
   const fromGit = listSourceFiles();
   const fromWalk = listSourceFiles({ listGit: () => null });
   for (const files of [fromGit, fromWalk]) {
-    for (const rel of ["convex/ai/providers/anthropic.ts", "middleware.ts", "next.config.ts", "vitest.config.ts", "tests/security/ai-imports.test.mjs"]) {
+    for (const rel of [
+      "convex/ai/providers/anthropic.ts",
+      "middleware.ts",
+      "next.config.ts",
+      "vitest.config.ts",
+      "tests/security/ai-imports.test.mjs",
+      "app/build/[slug]/page.tsx",
+    ]) {
       assert.ok(files.includes(rel), `${rel} was not listed`);
     }
-    assert.ok(!files.some((rel) => rel.split("/").some((part) => SKIP_DIRS.has(part))), "SKIP_DIRS must be skipped");
+    assert.ok(!files.some(skipped), "SKIP_DIRS and SKIP_PREFIXES must be skipped");
+    assert.ok(!files.some((rel) => rel.startsWith("convex/_generated/")), "convex/_generated/ must be skipped");
   }
   assert.deepEqual(listSourceFiles({ listGit: () => ["a/b.ts", "node_modules/x/index.js", "README.md", "a/c.mjs"], walk: () => [] }), []);
   assert.deepEqual(
@@ -423,6 +526,47 @@ test("the file list comes from git, with a filesystem walk as the fallback", () 
   );
 });
 
+test("skipped directories match the top level only; _generated is exactly convex/_generated/", () => {
+  for (const rel of [
+    "convex/crew/build/sdk.ts",
+    "app/build/[slug]/page.tsx",
+    "lib/dist/x.ts",
+    "convex/crew/coverage/a.mjs",
+    "lib/_generated/x.ts",
+    "convex/crew/_generated/y.ts",
+    "lib/node_modules/sneaky.ts",
+  ]) {
+    assert.equal(keep(rel), true, `${rel} must be scanned`);
+  }
+  for (const rel of ["build/x.js", "dist/a.js", "coverage/lcov.js", "node_modules/openai/index.js", ".next/server/a.js", "convex/_generated/api.js"]) {
+    assert.equal(keep(rel), false, `${rel} must be skipped`);
+  }
+});
+
+test("a dependency that aliases a provider SDK is flagged", async () => {
+  const pkg = {
+    dependencies: { llm: "npm:openai@^4.0.0", zod: "^4.0.0", other: "npm:left-pad@1" },
+    devDependencies: { claude: "npm:@anthropic-ai/sdk@0.50.0" },
+    optionalDependencies: { gen: "npm:ai" },
+    peerDependencies: { scoped: "npm:@ai-sdk/openai@1" },
+    overrides: { foo: { bar: "npm:@openai/agents@1" } },
+    resolutions: { "x/y": "npm:recraft-client@2" },
+    scripts: { test: "npm:openai" },
+  };
+  assert.deepEqual(providerAliases(pkg), [
+    "dependencies.llm -> npm:openai@^4.0.0",
+    "devDependencies.claude -> npm:@anthropic-ai/sdk@0.50.0",
+    "optionalDependencies.gen -> npm:ai",
+    "peerDependencies.scoped -> npm:@ai-sdk/openai@1",
+    "overrides.foo.bar -> npm:@openai/agents@1",
+    "resolutions.x/y -> npm:recraft-client@2",
+  ]);
+  assert.equal(aliasTarget("npm:@anthropic-ai/sdk"), "@anthropic-ai/sdk");
+  assert.equal(aliasTarget("^1.0.0"), null);
+  const real = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+  assert.deepEqual(providerAliases(real), [], "package.json must not alias a provider SDK under another name");
+});
+
 test("the scan reaches the provider adapters, the root config files and the tests", async () => {
   const files = await scanRepo();
   assert.ok(files.length > 100, `expected a real scan, got ${files.length} files`);
@@ -430,7 +574,7 @@ test("the scan reaches the provider adapters, the root config files and the test
   assert.ok(anthropic, "convex/ai/providers/anthropic.ts was not scanned");
   assert.ok(anthropic.sdks.includes("@anthropic-ai/sdk"));
   assert.ok(anthropic.hosts.includes("api.anthropic.com"));
-  for (const rel of ["middleware.ts", "next.config.ts", "vitest.config.ts", "tests/platform/ai-gateway.test.ts"]) {
+  for (const rel of ["middleware.ts", "next.config.ts", "vitest.config.ts", "tests/platform/ai-gateway.test.ts", "app/build/[slug]/page.tsx"]) {
     assert.ok(files.some((file) => file.rel === rel), `${rel} was not scanned`);
   }
 });

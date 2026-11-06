@@ -20,13 +20,15 @@ import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 
-import { definePromptSpec } from "../../lib/workspace/contracts/prompts.ts";
+import { definePromptSpec, inputLaneFor, TIER_MAX_INPUT_TOKENS, TIER_MODELS } from "../../lib/workspace/contracts/prompts.ts";
 import { promptEntry } from "../../convex/ai/prompts/entry.ts";
 import { registryProbeSpec } from "../../convex/ai/prompts/registryProbe.ts";
 import { listEntries, promptContent } from "../../convex/ai/registry.ts";
 import {
   checkPromptVersions,
+  C_PROMPT_VALUE_IMPORTS,
   compareWithBase,
+  cPromptValueImports,
   currentHashes,
   DEFAULT_LOCK_PATH,
   EXCLUDED_MODULE_FILES,
@@ -329,6 +331,67 @@ test("only C-PROMPT itself is excluded; any other contract a spec imports at run
     await writeTree(dir, { "lib/workspace/contracts/other.ts": "export const LIMIT = 6;\n" });
     assert.notEqual(hashEntry(tempEntry(), { root: dir }).parts.module, before);
   });
+});
+
+test("spec modules may import only definePromptSpec and types from C-PROMPT", async () => {
+  assert.deepEqual([...C_PROMPT_VALUE_IMPORTS], ["definePromptSpec"]);
+  const C = "../lib/workspace/contracts/prompts.ts";
+  const isC = (specifier) => specifier === C;
+  const allowed = [
+    `import { definePromptSpec } from "${C}";`,
+    `import { definePromptSpec as d, type PromptSpec } from "${C}";`,
+    `import type { TIER_MODELS } from "${C}";`,
+    `export type { PromptSpec } from "${C}";`,
+    `import "${C}";`,
+    'import { TIER_MODELS } from "./elsewhere.ts";',
+  ];
+  for (const source of allowed) assert.deepEqual(cPromptValueImports("p/spec.ts", source, isC), [], source);
+  const refused = [
+    [`import { TIER_MODELS } from "${C}";`, ["TIER_MODELS"]],
+    [`import { definePromptSpec, maxInputTokensForSpec as m } from "${C}";`, ["maxInputTokensForSpec"]],
+    [`import contract from "${C}";`, ["default"]],
+    [`import * as contract from "${C}";`, ["* (namespace)"]],
+    [`export * from "${C}";`, ["* (re-export)"]],
+    [`export { TIER_MAX_TOKENS } from "${C}";`, ["TIER_MAX_TOKENS"]],
+    [`import c = require("${C}");`, ["import = require()"]],
+    [`const c = await import("${C}");`, ["import()/require()"]],
+  ];
+  for (const [source, found] of refused) assert.deepEqual(cPromptValueImports("p/spec.ts", source, isC), found, source);
+
+  await withTempDir(async (dir) => {
+    // Through a helper and without the .ts extension: still refused.
+    await writeTree(dir, {
+      ...TREE,
+      "p/helper.ts": `import { TIER_MODELS } from "../lib/workspace/contracts/prompts";
+${TREE["p/helper.ts"]}export const m = TIER_MODELS;
+`,
+    });
+    assert.throws(() => moduleSources(dir, "p/spec.ts"), /p\/helper\.ts: a prompt module may import only definePromptSpec and types.*found TIER_MODELS/);
+    assert.throws(() => hashEntry(tempEntry(), { root: dir }), /found TIER_MODELS/);
+  });
+});
+
+test("a TIER_MODELS or input-ceiling change fails the locked @2 on the run part", async () => {
+  const lock = await realLock();
+  const lane = inputLaneFor(registryProbeSpec.tier, registryProbeSpec.mode);
+  const model = TIER_MODELS.fast;
+  const ceiling = TIER_MAX_INPUT_TOKENS[lane];
+  const runOnly = () => {
+    const { problems } = checkPromptVersions(currentHashes(), lock);
+    assert.deepEqual(kinds(problems), [`changed_without_bump ${PROBE_REF}`]);
+    assert.match(problems[0].message, new RegExp(`^${PROBE_REF}: run changed without a version bump`));
+  };
+  try {
+    TIER_MODELS.fast = "claude-haiku-9-9";
+    runOnly();
+    TIER_MODELS.fast = model;
+    TIER_MAX_INPUT_TOKENS[lane] = ceiling + 1;
+    runOnly();
+  } finally {
+    TIER_MODELS.fast = model;
+    TIER_MAX_INPUT_TOKENS[lane] = ceiling;
+  }
+  assert.deepEqual(checkPromptVersions(currentHashes(), lock).problems, [], "restored tables match the lock again");
 });
 
 test("the run part carries the router's resolved model and input ceiling", () => {
@@ -656,7 +719,16 @@ test("the CLI needs a lock file in check mode", async () => {
  * and no `--no-base`, so it resolves the base (PR base, push `before`, or the
  * default branch), fetches it if the shallow checkout lacks it, and compares.
  * No `--write`, so the run is read-only; the lock bytes are checked unchanged.
+ *
+ * Accepted outputs: "compared with the base lock" or, until `main` has a lock,
+ * the exact bootstrap notice. Anything else fails (a skipped base check, an
+ * extra notice, stderr output). Once `main` has a lock, "missing" must fail in
+ * CI and the bootstrap branch here goes away.
  */
+const COMPARED_LINE = /^check-prompt-versions: compared with the base lock at .+$/u;
+const BOOTSTRAP_LINE = /^check-prompt-versions: notice: .+ has no prompt lock yet; nothing to compare$/u;
+const MATCH_LINE = /^check-prompt-versions: [1-9][0-9]* prompt version\(s\) match the lock$/u;
+
 test(
   "CI: the real base check passes on the committed tree",
   {
@@ -673,7 +745,11 @@ test(
     });
     assert.equal(run.error, undefined, String(run.error));
     assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
-    assert.doesNotMatch(run.stdout + run.stderr, /base check skipped/);
+    assert.equal(run.stderr, "", "no stderr output");
+    const lines = run.stdout.trimEnd().split("\n");
+    assert.equal(lines.length, 2, run.stdout);
+    assert.ok(COMPARED_LINE.test(lines[0]) || BOOTSTRAP_LINE.test(lines[0]), `unexpected base result: ${lines[0]}`);
+    assert.match(lines[1], MATCH_LINE);
     assert.equal(await realLockText(), before);
   },
 );

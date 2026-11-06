@@ -128,8 +128,8 @@
     v2"`) and `@2` (hash format v3).
   - `scripts/check-prompt-versions.mjs`: the version check (`--write`, `--lock <path>`, `--base <ref>`,
     `--no-base`).
-  - `tests/security/prompt-versions.test.mjs`: 39 tests (one runs only in CI).
-  - `tests/security/ai-imports.test.mjs`: 9 tests.
+  - `tests/security/prompt-versions.test.mjs`: 41 tests (one runs only in CI).
+  - `tests/security/ai-imports.test.mjs`: 11 tests.
   - `tests/platform/ai-registry.test.ts`: 30 tests.
 - Snapshot before validating (review fixes, rounds 1 and 2):
   - The registry, `promptEntry` and `routeSpec` validate a plain-data copy, not the caller's object.
@@ -164,7 +164,13 @@
     - A non-literal `import()` / `require()` in a spec module, or an import that leaves the repo or cannot
       be resolved, is refused.
     - Not hashed: data files a module reads at run time (`readFileSync`, `fetch`,
-      `new URL(…, import.meta.url)`). Keep prompt text in source.
+      `new URL(…, import.meta.url)`). Keep prompt text in source. Imports built with `eval` / `Function`
+      are not hashed either; the import scan forbids both (round 3).
+    - C-PROMPT imports (round 3): because C-PROMPT is not hashed, a spec module and every module it
+      imports may take only `definePromptSpec` and types from it. Any other value import from it fails:
+      a named import such as `TIER_MODELS`, a default or namespace import, `export *` or a named
+      re-export, `import = require()`, and `import()` / `require()`. This holds with or without the
+      `.ts` extension and in helpers, so an unhashed contract helper cannot change a locked spec.
   - Dependency bumps count: a zod upgrade that changes `toJSONSchema` output fails every locked prompt it
     touches and forces a version bump of each. That is noted in `prompts/index.ts`.
 - Module identity (round 2): the script checks that the entry's `module` exports this exact spec.
@@ -219,12 +225,19 @@
     | The base cannot be read, even after the fetch | Notice, base check skipped | Fails: `base_unavailable` |
     | The base lock does not parse | Notice, base check skipped | Fails: `base_unreadable` |
 
+  - Bootstrap rule (round 3): "missing passes" is there only because `main` has no lock until this PR
+    merges. Once `main` has a lock, "missing" must fail in CI. That follow-up is noted in the script
+    header. The lock path (`convex/ai/prompts/versions.lock.json`) is fixed: moving it is a contract
+    change, because until "missing" fails, a moved lock would read as "missing" at the old path and pass.
+
   - The tests inject the env, the event file and the git runner, so no test runs real git for the base or
     touches the network. CLI subprocess tests run with `--no-base` and with the CI variables stripped.
     One exception: "CI: the real base check passes on the committed tree" runs only when `CI` is set. It
     runs the CLI with the real env and no `--no-base`, so `npm test` in CI performs the real base check
-    (with its one shallow fetch) without waiting for the Codex CLI step. It fails if the output says the
-    base check was skipped, and it checks that the lock's bytes are unchanged.
+    (with its one shallow fetch) without waiting for the Codex CLI step. Round 3 tightened it so the
+    output must be exactly two lines: "compared with the base lock at …" or the exact bootstrap notice,
+    then "N prompt version(s) match the lock". Stderr must be empty, so a skipped base check or any other
+    notice fails. It also checks that the lock's bytes are unchanged.
 - The proof that it fails, with no real file changed:
   - in-memory mutated entries;
   - temp module trees (a helper constant on an unreached branch, a `.refine()` change, a transitive import,
@@ -232,12 +245,19 @@
   - the `index.ts` override cases;
   - fake git and env for each base outcome (PR, push, new branch, fetch, local skip, CI failure, missing
     lock);
+  - the C-PROMPT import rule, in synthetic sources and in a temp tree where a helper imports `TIER_MODELS`
+    without the `.ts` extension (round 3);
+  - a regression test that mutates `TIER_MODELS.fast`, then the probe's `TIER_MAX_INPUT_TOKENS` lane. Each
+    change gives `changed_without_bump` on `run` for `@2`, and both are restored in `finally` (round 3);
   - CLI runs on temp lock copies.
 - Import boundary (`tests/security/ai-imports.test.mjs`):
   - Files: round 2 replaced the fixed root list. The scan now takes every `ts/tsx/mts/cts/js/jsx/mjs/cjs`
     file from `git ls-files --cached --others --exclude-standard`, falling back to a filesystem walk
-    without git. `SKIP_DIRS` covers `node_modules`, `_generated`, build output, `.git`, `.worktrees` and
-    `.claude`. So `tests/` and the root config files are scanned now.
+    without git. So `tests/` and the root config files are scanned now.
+  - Skipped paths (round 3): `SKIP_DIRS` (`node_modules`, `.next`, `.turbo`, `.vercel`, `dist`, `build`,
+    `coverage`, `.git`, `.worktrees`, `.claude`) matches the first path segment only. `_generated` is
+    exactly `convex/_generated/`. Before this, a match at any depth hid `app/build/[slug]/page.tsx`, and
+    would have hidden a future `convex/crew/build/sdk.ts`. Both are scanned now, and tests cover both.
   - It uses the TypeScript parser, so comments never count.
   - SDK imports in every form count, type-only included. Flagged: `@anthropic-ai/*`, `openai`,
     `@openai/*`, `@ai-sdk/*`, `ai`, and any package with "recraft" in its name.
@@ -246,10 +266,21 @@
     - `require.<member>`;
     - `require` used as a value (round 2);
     - `createRequire(...)` on any owner;
-    - `module.require`;
     - any import of `module` / `node:module` (round 2; covers aliased, destructured and
       `(await import("node:module")).createRequire`);
-    - `process.getBuiltinModule` in any form (round 2).
+    - `process.getBuiltinModule` in any form (round 2);
+    - `eval` in any form (round 3): direct, `(0, eval)`, `globalThis.eval`, `globalThis["eval"]`;
+    - the `Function` constructor (round 3): `Function(...)`, `new Function(...)`, `globalThis.Function`.
+      `Function` as a type is not flagged;
+    - a `.require` / `._load` member on any owner, called or not (round 3): `module.require`,
+      `process.mainModule.require`, `module.parent.require`, `module["require"]`,
+      `module.constructor._load`;
+    - any use of `module.constructor` (round 3).
+    The repo has no uses of the round-3 forms outside comments and strings, so no allowlist entries were
+    added for them.
+  - Package aliases (round 3): the test reads `package.json` (read only). It fails on any dependency,
+    nested `overrides` / `resolutions` included, whose value is `npm:<provider SDK>`, because
+    `import "llm"` would hide an `npm:openai` alias from the scan.
   - Hosts: a full provider host in any literal, plus a provider domain fragment (`anthropic.com`,
     `openai.com`, `recraft.ai`) in a `+` chain or a template with substitutions. Plain docs links do not
     count.
@@ -289,15 +320,15 @@
      runs the real base check, with its self-fetch.
   3. Optional: `fetch-depth: 0` or a `git fetch origin main` step. The script now fetches the base itself
      in CI, so this only saves one shallow fetch and is not needed for correctness.
-- Checks (after round 2):
+- Checks (after round 3):
   - `npm run typecheck`: exit 0.
   - `npx tsc --noEmit -p convex`: exit 0.
   - `npm run lint`: exit 0, with 37 warnings that predate S3. The S3 files are clean.
-  - `npm run test:security`: exit 0. Node: 198 passed. Vitest: 121 passed in 5 files.
+  - `npm run test:security`: exit 0. Node: 203 tests, 202 passed, 1 skipped (the CI-only test). Vitest: 121 passed in 5 files.
+  - `CI=1 GITHUB_BASE_REF=main npm run test:security`: exit 0. Node: 203 passed, 0 skipped. The CI-only test ran
+    and passed on the bootstrap notice.
   - `npx vitest run tests/platform/ai-registry.test.ts`: exit 0, 30 passed.
   - `node --experimental-strip-types scripts/check-prompt-versions.mjs`: exit 0, with a notice that
     `origin/main` has no lock yet.
-  - `CI=1 GITHUB_BASE_REF=main node --experimental-strip-types scripts/check-prompt-versions.mjs`: exit 0.
-    It read `origin/main` (present locally, so no fetch), found no lock there, and passed with the notice.
-  - `--base HEAD` (the lock at 36f0a0ef): exit 0. The one change to `@1` is the added `retired`.
+  - The lock is unchanged in round 3, and no spec module changed.
   - Docs updated: this entry. `wp71-stories.md` already had S3 ticked.

@@ -27,6 +27,11 @@
  *   NOT hashed: data files a module reads at run time through `readFileSync`,
  *   `fetch`, `new URL(..., import.meta.url)` or similar. Keep prompt text in
  *   source, not in data files.
+ *   NOT hashed either: imports built with `eval` / `Function`; the import
+ *   scan (`tests/security/ai-imports.test.mjs`) forbids both in the repo.
+ * - A spec module (and every module it imports) may import only
+ *   `definePromptSpec` and types from C-PROMPT. Any other value import from
+ *   it fails, so an unhashed contract helper cannot change a locked spec.
  *
  * Check mode fails (exit 1) when:
  * - a locked `id@version` has different content (changed without a bump);
@@ -47,7 +52,11 @@
  * `git show <ref>:convex/ai/prompts/versions.lock.json`. When the ref is not
  * present and `CI` is set, the script runs one
  * `git fetch --depth=1 --no-tags origin <branch-or-sha>` and reads FETCH_HEAD.
- * - The base has no lock file at that path: a notice, and a pass.
+ * - The base has no lock file at that path: a notice, and a pass. This is the
+ *   bootstrap case (`main` has no lock until WP71-S3 merges). Once `main` has
+ *   a lock, "missing" must become a failure in CI. The lock path
+ *   (`LOCK_RELATIVE_PATH`) is fixed: moving it is a contract change, because
+ *   the base check would read "missing" at the old path and pass.
  * - The base cannot be read, or its lock does not parse: with `CI` set, a
  *   failure (`base_unavailable` / `base_unreadable`); locally, a notice and the
  *   base check is skipped.
@@ -165,6 +174,69 @@ export function resolveModule(root, fromRel, specifier) {
   throw new Error(`${fromRel}: cannot resolve import ${specifier}`);
 }
 
+/** The one value spec modules may import from C-PROMPT. */
+export const C_PROMPT_VALUE_IMPORTS = new Set(["definePromptSpec"]);
+
+/**
+ * Value imports from C-PROMPT other than `definePromptSpec`, in one file.
+ * Type-only imports and exports, and a bare `import "..."`, pass; a default,
+ * namespace, `import x = require()`, `import()` / `require()`, `export *` or
+ * any other named value import is reported. `isCPrompt(specifier)` says
+ * whether a specifier points at C-PROMPT.
+ */
+export function cPromptValueImports(fileName, source, isCPrompt) {
+  const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, scriptKind(fileName));
+  const found = [];
+  const checkNamed = (elements) => {
+    for (const element of elements) {
+      if (element.isTypeOnly) continue;
+      const name = (element.propertyName ?? element.name).text;
+      if (!C_PROMPT_VALUE_IMPORTS.has(name)) found.push(name);
+    }
+  };
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node) && isCPrompt(literalText(node.moduleSpecifier))) {
+      const clause = node.importClause;
+      if (clause && !clause.isTypeOnly) {
+        if (clause.name) found.push("default");
+        if (clause.namedBindings && ts.isNamespaceImport(clause.namedBindings)) found.push("* (namespace)");
+        else if (clause.namedBindings) checkNamed(clause.namedBindings.elements);
+      }
+    } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && isCPrompt(literalText(node.moduleSpecifier))) {
+      if (!node.isTypeOnly) {
+        if (!node.exportClause || ts.isNamespaceExport(node.exportClause)) found.push("* (re-export)");
+        else checkNamed(node.exportClause.elements);
+      }
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      !node.isTypeOnly &&
+      isCPrompt(literalText(node.moduleReference.expression))
+    ) {
+      found.push("import = require()");
+    } else if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+      const loads = callee.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(callee) && callee.text === "require");
+      if (loads && isCPrompt(literalText(node.arguments[0]))) found.push("import()/require()");
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return found;
+}
+
+/** True when a relative specifier from `fromRel` points at C-PROMPT (with or without extension). */
+function pointsAtCPrompt(root, fromRel, specifier) {
+  if (specifier === null || !(specifier.startsWith("./") || specifier.startsWith("../"))) return false;
+  const joined = joinSpecifier(fromRel, specifier);
+  if (EXCLUDED_MODULE_FILES.has(joined)) return true;
+  try {
+    return EXCLUDED_MODULE_FILES.has(resolveModule(root, fromRel, specifier));
+  } catch {
+    return false;
+  }
+}
+
 function excludedModule(rel) {
   return rel.split("/").includes("node_modules") || EXCLUDED_MODULE_FILES.has(rel);
 }
@@ -183,6 +255,13 @@ export function moduleSources(root, modulePath) {
     if (!existsSync(abs)) throw new Error(`prompt module ${rel} does not exist`);
     const source = readFileSync(abs, "utf8").replace(/^﻿/u, "").replace(/\r\n?/gu, "\n");
     seen.set(rel, source);
+    const contractValues = cPromptValueImports(rel, source, (specifier) => pointsAtCPrompt(root, rel, specifier));
+    if (contractValues.length > 0) {
+      throw new Error(
+        `${rel}: a prompt module may import only definePromptSpec and types from lib/workspace/contracts/prompts.ts ` +
+          `(it is not hashed); found ${contractValues.join(", ")}`,
+      );
+    }
     for (const specifier of relativeRuntimeImports(rel, source)) {
       // Excluded paths (C-PROMPT, node_modules) are skipped before resolution.
       if (excludedModule(joinSpecifier(rel, specifier))) continue;
