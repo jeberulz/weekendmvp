@@ -12,6 +12,12 @@ describe("tenant send caps", () => {
   });
 
   it("warns and continues at paid monthly thresholds", () => {
+    expect(tenantSendAllowance("builders_hub", { lifetime: 6_000, month: 0 })).toMatchObject({
+      allowed: true, warnSoftCap: false, countBeforeSend: 0,
+    });
+    expect(tenantSendAllowance("builders_hub", { lifetime: 9_999, month: 4_999 })).toMatchObject({
+      allowed: true, warnSoftCap: false, countBeforeSend: 4_999,
+    });
     expect(tenantSendAllowance("builders_hub", { lifetime: 5_000, month: 5_000 })).toMatchObject({
       allowed: true, warnSoftCap: true, limit: 5_000,
     });
