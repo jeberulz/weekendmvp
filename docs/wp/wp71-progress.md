@@ -332,3 +332,97 @@
     `origin/main` has no lock yet.
   - The lock is unchanged in round 3, and no spec module changed.
   - Docs updated: this entry. `wp71-stories.md` already had S3 ticked.
+
+## 2026-11-06 - S2 follow-up: gateway action bound to the real meter (G1 blocker)
+
+- Gap (independent G1 review): `gateway.ts` had only the injectable core; nothing bound `MeterPort` to
+  WP70's `internal.ai.metering.*`, so no fixture call could write an `ai_usage` row through the real
+  meter. Its header wrongly said the wrapper lands with WP70.
+- Changed:
+  - `convex/ai/gatewayActions.ts` (new, `"use node"`: the SDK's credential chain imports Node
+    built-ins). `runPrompt` is an `internalAction` with full `args` and `returns` validators.
+    - It takes a `promptRef`, inputs, the owner/project/task/debit ids and an attempt-key form
+      (`job`, `chat`, `eval`). It never takes a spec or a model. `getSpec(promptRef)` resolves the spec;
+      the gateway routes it.
+    - `meterPortFor` binds `reserve`, `markSent`, `settle` and `fail` to `ctx.runMutation`. Each copies
+      only the fields the mutation validates. `reserve` passes only this run's ids. The other three only
+      touch rows this run reserved.
+    - `gatewayEnv` passes only `AI_PROVIDER_MODE` and `ANTHROPIC_API_KEY` from `process.env` to the
+      adapter. Fixture mode stays the default.
+    - The output comes back as `outputJson`. Callers re-parse it with the spec's schema.
+    - `runPromptWithMeter` is the same body with the adapter, clock and env injectable, for tests.
+  - `convex/ai/gateway.ts`:
+    - Review P2-1: the meter's gate codes now classify as `meter_refused`. The meter throws them bare,
+      as `{ code: "AI_DISABLED" }` or `WORKSPACE_DISABLED` / `RESOURCE_NOT_FOUND`, with no `message`.
+      `gatewayErrorDataOf` uses the contract's existing `isGatewayErrorData`, so no contract change was
+      needed. The `meter_refused` failure now carries `GatewayErrorData`.
+    - A gate refusal from `markSent` also ends `meter_refused`. That covers a kill switch flipped after
+      `reserve`, a cancelled task and a refunded debit. The row is failed `billed: "none"`, charged 0,
+      and nothing is sent.
+    - `resolveText` now takes the model, effort, thinking, max tokens, mode and input ceiling from
+      `routeSpec`, which re-validates the spec. It no longer calls `modelForSpec` or
+      `maxInputTokensForSpec`. The stale "lands with WP70" comments are fixed.
+  - `tests/platform/support/meterStub.ts`: the stub now runs the real meter's gate shapes in `reserve`
+    (before the attempt-key lookup) and in `markSent`. Owner calls get `{ code: "AI_DISABLED" }`.
+    Ownerless calls get `WORKSPACE_DISABLED` or `{ code, scope }`. It also has a `workspaceEnabled`
+    option. The old stub refusal carried a `message` the real meter never sends, which hid P2-1.
+  - `convex/_generated/api.d.ts`: registers `ai/gatewayActions`. Added by hand: codegen needs a
+    deployment, so it was not run here.
+- Tests:
+  - `tests/platform/ai-gateway-action.test.ts` (new, 9 tests, convex-test, real meter, real ledger,
+    `internal-registry-probe@2`):
+    - G1 path. A wizard workspace business, a queued task and a credit debit (`grantStarter`, then
+      `debitTask`) go through the registered action. One `ai_usage` row goes reserved → sent → settled,
+      `billed: "actual"`, credit-funded, paid pool. The owner budget and the paid global counter hold
+      the cost, with nothing in flight. A replay of the same attempt key returns `duplicate_attempt`,
+      with no provider call and no second charge.
+    - Ownerless eval path (CI graders): it settles in the free pool with no owner budget.
+    - An unknown ref or a bad key form returns `config` and reserves nothing.
+    - Two schema failures: one re-ask, both rows failed at their actual cost. `refundFailedTask` refunds
+      once, and the second call is a duplicate. A further attempt against the refunded debit is
+      refused (`RESOURCE_NOT_FOUND`) with no provider call. It is still refused with the task set back
+      to running.
+    - A 529 that may have billed charges the reservation, with no re-ask.
+    - A refusal fails at its actual cost.
+    - Kill switch on, with `AI_PROVIDER_MODE=live`, a fake key and a stubbed global `fetch`: refused, no
+      fetch, no `ai_usage` row. The workspace switch off behaves the same.
+    - Positive control: with the switch off, the same live setup reaches the stubbed fetch once, at the
+      Anthropic base URL, and fails `auth` unbilled. No network was reached.
+    - Switch flipped between `reserve` and `markSent`, on the real meter: the row fails unbilled, nothing
+      is sent, and nothing is left reserved.
+  - `tests/platform/ai-gateway.test.ts`: the kill-switch test now expects the real bare shape. New
+    tests cover the workspace switch (`WORKSPACE_DISABLED`) and a gate closing between `reserve` and
+    `markSent`.
+  - A mutation check passed. With `gatewayErrorDataOf` restored to require `message`, 6 of these tests
+    fail.
+- Checks:
+  - `npm run typecheck`: exit 0.
+  - `npx tsc --noEmit -p convex`: exit 0.
+  - `npm run lint`: exit 0, with 37 warnings that predate this change. The touched files are clean.
+  - `npx vitest run tests/platform/ai-gateway-action.test.ts tests/platform/ai-gateway.test.ts convex/ai/metering.test.ts`:
+    exit 0, 82 passed in 3 files.
+  - `npm run test:security`: exit 0. Node: 203 tests, 202 passed, 1 skipped (the CI-only test). Vitest: 121 passed.
+  - `npm test`: exit 0, with no timeouts.
+  - `node --experimental-strip-types scripts/check-prompt-versions.mjs`: exit 0. 1 version matches the
+    lock. No prompt spec was added or changed.
+  - `npm run build`: not run. Nothing outside `convex/`, `tests/` and `docs/` changed.
+- Docs updated: this entry, and the S2 follow-up line in `wp71-stories.md`.
+- Open, not done here:
+  - The registry marks `internal-registry-probe@2` `internal: true`, but the action does not refuse
+    internal specs. The tests need the probe on the job path, and no crew spec exists yet. The crew
+    pipeline (C-JOBS) should pick refs from a non-internal list, or the action should refuse internal
+    refs outside the `eval` form once a crew spec lands.
+  - Images (`runImageGateway`) have no action yet. They land with the media pipeline.
+  - Message Batches (S5) still have no action. The `precompute:` key form is left out until then.
+- Needs from Codex:
+  1. WP70 / C-OPS: throw the meter's gate refusals as `{ code, scope?, message }`, the same shape as
+     `firstReserveFailure`. Today `AI_DISABLED` from `assertSwitchOpen` / `settingsForCall` has no
+     `message`, and for owner calls no `scope`. The gateway now copes, but callers that show the message
+     get nothing.
+  2. C-METER contract text (`05` change rule, additive): say that `reserve` and `markSent` may throw
+     `WorkspaceGateErrorData` (`AI_DISABLED`, `WORKSPACE_DISABLED`, `RESOURCE_NOT_FOUND`), not only
+     `MeterErrorData`. The `reserve` doc says only `ConvexError<MeterErrorData>`.
+  3. WP70-S4: the `sweepStale` cron in `convex/crons.ts`. The gateway leaves a row unfinalised only
+     when `settle` or `fail` throws twice, and only the sweep finalises it.
+  4. Optional: a `npx convex codegen` run on a dev deployment, to regenerate `convex/_generated/api.d.ts`
+     properly. The hand edit adds only `ai/gatewayActions`.

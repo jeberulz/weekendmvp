@@ -540,8 +540,49 @@ describe("runTextGateway: a refused reservation", () => {
   it("never calls the adapter when the AI kill switch is on", async () => {
     const h1 = harness(undefined, { killSwitches: { ai: true } });
     const outcome = await runTextGateway(h1.deps, { spec: spec(), inputs: INPUTS, caller });
-    expect(outcome).toMatchObject({ ok: false, failure: { kind: "meter_refused", error: { code: "AI_DISABLED", scope: "ai" } } });
+    // The real gate throws `{ code: "AI_DISABLED" }` alone: no scope, no message.
+    expect(outcome).toMatchObject({ ok: false, failure: { kind: "meter_refused", error: { code: "AI_DISABLED" } }, attempts: [] });
+    if (!outcome.ok && outcome.failure.kind === "meter_refused") {
+      expect(outcome.failure.error).toEqual({ code: "AI_DISABLED" });
+    }
+    expect(steps(h1.events)).toEqual(["reserve"]);
     expect(h1.params).toHaveLength(0);
+    expect(h1.meter.rows()).toHaveLength(0);
+  });
+
+  it("classifies the workspace switch's bare gate code as a meter refusal", async () => {
+    const h1 = harness(undefined, { workspaceEnabled: false });
+    const ownerless = await runTextGateway(h1.deps, {
+      spec: spec(),
+      inputs: INPUTS,
+      caller: { attemptKey: (n) => `eval:run_1:case_1:${n}` },
+    });
+    expect(ownerless).toMatchObject({ ok: false, failure: { kind: "meter_refused", error: { code: "WORKSPACE_DISABLED" } } });
+    expect(h1.params).toHaveLength(0);
+  });
+
+  it("fails the row unbilled and sends nothing when the gate closes between reserve and markSent", async () => {
+    const h1 = harness();
+    const closing: TextGatewayDeps = {
+      ...h1.deps,
+      meter: {
+        ...h1.deps.meter,
+        reserve: async (args) => {
+          const reserved = await h1.deps.meter.reserve(args);
+          h1.meter.setKillSwitch("ai", true);
+          return reserved;
+        },
+      },
+    };
+    const outcome = await runTextGateway(closing, { spec: spec(), inputs: INPUTS, caller });
+    expect(outcome).toMatchObject({
+      ok: false,
+      failure: { kind: "meter_refused", error: { code: "AI_DISABLED" } },
+      attempts: [{ status: "failed", billed: "none", chargedMicroUsd: 0, errorClass: "permanent" }],
+    });
+    expect(steps(h1.events)).toEqual(["reserve", "markSent", "fail"]);
+    expect(h1.params).toHaveLength(0);
+    expect(h1.meter.rows()).toMatchObject([{ status: "failed", costMicroUsd: 0 }]);
   });
 
   it("refuses before reserving when the input bound is over the lane ceiling", async () => {

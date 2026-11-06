@@ -24,7 +24,14 @@
  * - `creditDebitId` is credit-funding only when `creditDebits` lists it for
  *   the same owner and task.
  *
- * Refusals throw `ConvexError<MeterErrorData>`, as the real mutation will.
+ * Refusals throw `ConvexError` with the real meter's data shapes:
+ * - the gate (C-OPS `assertFeatureEnabledForOwner` / `settingsForCall` in
+ *   `convex/ai/metering.ts`) runs first in `reserve` (before the attempt-key
+ *   lookup) and again in `markSent`. For an owner call it throws
+ *   `{ code: "AI_DISABLED" }` alone, with no `scope` and no `message`; for
+ *   ownerless work `{ code: "WORKSPACE_DISABLED" }` or
+ *   `{ code: "AI_DISABLED", scope }`;
+ * - budget refusals throw `firstReserveFailure`'s `MeterErrorData`.
  */
 
 import { ConvexError } from "convex/values";
@@ -52,6 +59,7 @@ import {
   type FailArgs,
   type FinalizeResult,
   type GlobalPool,
+  type MeterFeature,
   type MeterPlan,
   type SettleArgs,
   type SpendDeltas,
@@ -69,6 +77,8 @@ export type MeterStubOwner = {
 export type MeterStubOptions = {
   readonly now?: () => number;
   readonly killSwitches?: { readonly ai?: boolean; readonly studioVideo?: boolean };
+  /** `ops_settings.workspaceEnabled` (default on). Off refuses like the real gate. */
+  readonly workspaceEnabled?: boolean;
   readonly globalBudgetsMicroUsd?: Partial<Record<GlobalPool, number>>;
   readonly owners?: Readonly<Record<string, MeterStubOwner>>;
   /** Ledger debits the stub accepts as credit funding: `debitId → { ownerId, taskId }`. */
@@ -88,6 +98,7 @@ export type MeterStub = MeterPort & {
   /** The WP70 sweep: finalises expired `reserved` rows. Returns the ids it swept. */
   sweep(nowMs: number): readonly string[];
   setKillSwitch(name: "ai" | "studioVideo", on: boolean): void;
+  setWorkspaceEnabled(on: boolean): void;
 };
 
 export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
@@ -99,6 +110,20 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
   };
   const owners = options.owners ?? {};
   const creditDebits = options.creditDebits ?? {};
+  let workspaceEnabled = options.workspaceEnabled ?? true;
+
+  /** The real meter's `settingsForCall`, with its exact error data. */
+  const gate = (feature: MeterFeature, ownerId: string | undefined): void => {
+    const aiUnavailable = killSwitches.ai || (globalBudgets.free <= 0 && globalBudgets.paid <= 0);
+    const videoOff = feature === "studioVideo" && killSwitches.studioVideo;
+    if (ownerId !== undefined) {
+      // C-OPS `assertSwitchOpen`: `{ code }` alone.
+      if (!workspaceEnabled || aiUnavailable || videoOff) throw new ConvexError({ code: "AI_DISABLED" });
+      return;
+    }
+    if (!workspaceEnabled) throw new ConvexError({ code: "WORKSPACE_DISABLED" });
+    if (aiUnavailable || videoOff) throw new ConvexError({ code: "AI_DISABLED", scope: aiUnavailable ? "ai" : "studioVideo" });
+  };
 
   const rows = new Map<string, AiUsageRow>();
   const byAttemptKey = new Map<string, string>();
@@ -177,6 +202,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
   return {
     async reserve(args) {
       assertReserveArgs(args);
+      gate(args.feature, args.ownerId);
       const existing = byAttemptKey.get(args.attemptKey);
       if (existing !== undefined) return { usageId: existing, existing: true };
 
@@ -267,6 +293,7 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
       if (row.status !== "reserved" || row.sentAt !== undefined) {
         return { usageId, changed: false, ...(row.sentAt === undefined ? {} : { sentAt: row.sentAt }) };
       }
+      gate(row.feature, row.ownerId);
       const sentAt = now();
       rows.set(usageId, { ...row, sentAt });
       return { usageId, changed: true, sentAt };
@@ -356,6 +383,10 @@ export function createMeterStub(options: MeterStubOptions = {}): MeterStub {
 
     setKillSwitch(name, on) {
       killSwitches[name] = on;
+    },
+
+    setWorkspaceEnabled(on) {
+      workspaceEnabled = on;
     },
   };
 }

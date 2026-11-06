@@ -59,36 +59,44 @@
  * - **Meter and gateway failures come back as results.** A throw from
  *   `reserve`, `settle` or `fail` ends the run `internal` with the attempts so
  *   far, never an escaped error that loses them.
+ * - **A gate refusal is a meter refusal.** The real meter throws C-OPS /
+ *   C-AUTHZ gate codes (`AI_DISABLED`, `WORKSPACE_DISABLED`,
+ *   `RESOURCE_NOT_FOUND`) from `reserve` and `markSent`, often as bare
+ *   `{ code }` with no `message`. Both `MeterErrorData` and
+ *   `WorkspaceGateErrorData` (`isGatewayErrorData`) end the run
+ *   `meter_refused`. From `reserve`, nothing was created; from `markSent`, the
+ *   row is failed `billed: "none"` (charged 0) and nothing is sent.
+ * - **The router decides the call.** `resolveText` takes the model, effort,
+ *   thinking, max tokens, mode and input ceiling from `routeSpec`, which
+ *   re-validates the spec; a spec the router rejects is a `config` failure.
  *
  * Shape: a pure, injectable core (`runTextGateway`, `runImageGateway`) that
  * takes a meter port, an adapter port and a clock, so it runs without Convex.
- * No Convex function is registered here yet: an `internalAction` needs the
- * real C-METER mutations (WP70) and the S3 registry, and a deployed action on
- * an in-memory meter would enforce no budget at all. The wrapper lands with
- * WP70; it will be `"use node"` and only bind these ports to `ctx.runMutation`.
- * The in-memory meter used by tests lives in `tests/platform/support/`.
+ * The Convex binding is `convex/ai/gatewayActions.ts` (WP71-S2 follow-up): a
+ * `"use node"` `internalAction` that resolves a `promptRef` through the
+ * registry and binds `MeterPort` to `internal.ai.metering.*` through
+ * `ctx.runMutation`. This file registers no Convex function. The in-memory
+ * meter used by the unit tests lives in `tests/platform/support/`.
  */
 
 import { z } from "zod";
 
 import {
-  isMeterErrorData,
+  isGatewayErrorData,
   MAX_RESERVATION_MICRO_USD,
   type BilledState,
   type FailArgs,
   type FinalizeResult,
+  type GatewayErrorData,
   type MarkSentArgs,
   type MarkSentResult,
   type MeterErrorClass,
-  type MeterErrorData,
   type MeterProvider,
   type ReserveArgs,
   type ReserveResult,
   type SettleArgs,
 } from "../../lib/workspace/contracts/metering";
 import {
-  maxInputTokensForSpec,
-  modelForSpec,
   promptRef as promptRefFor,
   type PromptModel,
   type PromptSpec,
@@ -112,17 +120,19 @@ import {
   type TextSystemBlock,
   type TextUsage,
 } from "./providers/types";
+import { routeSpec } from "./router";
 
 // ---------------------------------------------------------------------------
 // Ports
 // ---------------------------------------------------------------------------
 
 /**
- * The four C-METER calls, with the contract's exact signatures. Codex's
- * `convex/ai/metering.ts` (WP70) binds to it through `ctx.runMutation`; until
- * then the tests' in-memory stub (`tests/platform/support/meterStub.ts`)
- * implements it. Refusals arrive as a thrown
- * `ConvexError` whose `data` is `MeterErrorData`.
+ * The four C-METER calls, with the contract's exact signatures.
+ * `convex/ai/gatewayActions.ts` binds them to Codex's `convex/ai/metering.ts`
+ * (WP70) through `ctx.runMutation`; the unit tests use the in-memory stub
+ * (`tests/platform/support/meterStub.ts`). Refusals arrive as a thrown
+ * `ConvexError` whose `data` is `MeterErrorData` or a gate error
+ * (`WorkspaceGateErrorData`, often `{ code }` alone).
  */
 export type MeterPort = {
   reserve(args: ReserveArgs): Promise<ReserveResult>;
@@ -248,8 +258,13 @@ export type GatewayAttempt = {
 export type GatewayFailure =
   /** A request no caller should send. Nothing was reserved. */
   | { readonly kind: "config"; readonly message: string }
-  /** C-METER refused the reservation (kill switch, budget). Nothing was sent. */
-  | { readonly kind: "meter_refused"; readonly error: MeterErrorData }
+  /**
+   * C-METER refused (kill switch, workspace switch, cohort, budget, a task or
+   * debit no longer valid). Nothing was sent. From `reserve` no row exists;
+   * from `markSent` the row is in `attempts`, failed with `billed: "none"`.
+   * `error` is the meter's data: `message` and `scope` may be absent.
+   */
+  | { readonly kind: "meter_refused"; readonly error: GatewayErrorData }
   /**
    * The attempt key already had a row (a replayed run). Nothing was sent and
    * the existing row was left alone: the caller must use a new attempt number.
@@ -337,13 +352,18 @@ type AttemptOutcome<TValue> =
       readonly reaskable: boolean;
     };
 
-function meterErrorDataOf(error: unknown): MeterErrorData | null {
-  if (isMeterErrorData(error)) return error;
-  if (typeof error === "object" && error !== null && "data" in error) {
-    const data: unknown = (error as { readonly data: unknown }).data;
-    if (isMeterErrorData(data)) return data;
+/**
+ * The meter's refusal data, from a thrown `ConvexError` (or the bare data).
+ * Accepts meter codes and gate codes (`isGatewayErrorData`): the real meter
+ * throws C-OPS `{ code: "AI_DISABLED" }` with no `message`, which
+ * `isMeterErrorData` alone would reject.
+ */
+export function gatewayErrorDataOf(error: unknown): GatewayErrorData | null {
+  let data: unknown = error;
+  if (!isGatewayErrorData(data) && typeof error === "object" && error !== null && "data" in error) {
+    data = (error as { readonly data: unknown }).data;
   }
-  return null;
+  return isGatewayErrorData(data) ? data : null;
 }
 
 function messageOf(error: unknown): string {
@@ -377,7 +397,7 @@ async function runAttempt<TResult, TValue>(
   try {
     reserved = await meter.reserve(args);
   } catch (error) {
-    const data = meterErrorDataOf(error);
+    const data = gatewayErrorDataOf(error);
     return {
       kind: "not_sent",
       failure: data ? { kind: "meter_refused", error: data } : { kind: "internal", message: `reserve failed: ${messageOf(error)}` },
@@ -421,7 +441,18 @@ async function runAttempt<TResult, TValue>(
     };
   }
 
-  if (markSentFailed) {
+  const markSentRefusal = markSentFailed ? gatewayErrorDataOf(markSentError) : null;
+  if (markSentRefusal !== null) {
+    // The meter's gate refused the send (kill switch flipped, task cancelled,
+    // debit refunded). Nothing left: fail the row unbilled and stop.
+    decision = {
+      kind: "fail",
+      billed: "none",
+      errorClass: "permanent",
+      failure: { kind: "meter_refused", error: markSentRefusal },
+      reaskable: false,
+    };
+  } else if (markSentFailed) {
     decision = {
       kind: "fail",
       billed: "none",
@@ -818,10 +849,16 @@ type ResolvedText = {
   readonly request: TextRequest;
 };
 
+/**
+ * The request for a spec. The call settings (model, effort, thinking, max
+ * tokens, mode, input ceiling) come from `routeSpec`, which re-validates the
+ * spec first, so a hand-built spec cannot carry settings C-PROMPT rejects.
+ */
 function resolveText<TInput, TOutput>(input: TextGatewayInput<TInput, TOutput>): ResolvedText {
   const { spec } = input;
   const ref = promptRefFor(spec);
-  if (spec.mode !== "realtime") {
+  const route = routeSpec(spec);
+  if (route.mode !== "realtime") {
     throw new Error(`${ref}: batch specs run through the Message Batches path (S5), not the realtime gateway`);
   }
   const timeoutMs = input.timeoutMs ?? DEFAULT_GATEWAY_TIMEOUT_MS;
@@ -831,17 +868,17 @@ function resolveText<TInput, TOutput>(input: TextGatewayInput<TInput, TOutput>):
   const user = spec.buildUser(input.inputs);
   if (typeof user !== "string" || user.trim().length === 0) throw new Error(`${ref}: buildUser returned an empty task block`);
   const request: TextRequest = {
-    model: modelForSpec(spec),
-    effort: spec.effort,
-    thinking: spec.thinking,
-    maxTokens: spec.maxTokens,
+    model: route.model,
+    effort: route.effort,
+    thinking: route.thinking,
+    maxTokens: route.maxTokens,
     system: systemBlocksFor(spec, input.businessContext),
     user,
     outputSchema: outputJsonSchema(spec.outputSchema),
     timeoutMs,
     ...(input.signal === undefined ? {} : { signal: input.signal }),
   };
-  return { ref, model: request.model, maxInputTokens: maxInputTokensForSpec(spec), request };
+  return { ref, model: request.model, maxInputTokens: route.maxInputTokens, request };
 }
 
 /** The worst case for one text attempt. Throws when the input bound is over the lane ceiling. */
