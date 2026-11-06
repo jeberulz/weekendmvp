@@ -31,6 +31,9 @@ const app = defineApp({
     // WP78-S4c. Authenticates the tenant lead hand-off from Next; optional
     // so existing deployments boot, while lead writes fail closed if unset.
     TENANT_LEAD_BRIDGE_SECRET: v.optional(v.string()),
+    // WP78-S4e1. Explicit business deletion requests remain dormant until
+    // the due worker and founder-facing action are reviewed together.
+    TENANT_LEAD_DELETE_REQUESTS_ENABLED: v.optional(v.string()),
     // WP46-E4a. The owner's sign-in email, read only by the internal
     // `admin/superAdmin:bootstrapOwner` mutation to bind the super-admin
     // capability to that verified account's user ID. Deployment configuration

@@ -1,7 +1,97 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation } from "../../_generated/server";
+import { env, internalMutation, mutation } from "../../_generated/server";
+import { assertFeatureEnabled } from "../../ops/settings";
+import { requireCurrentPlatformUserForMutation } from "../authz";
 
 export const LEAD_RETENTION_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * The only founder-initiated business deletion request. No due worker or cron
+ * is active yet, so the optional activation switch keeps this path dormant.
+ * It accepts archived projects too: ordinary archive did not start a timer.
+ */
+export const requestBusinessDeletion = mutation({
+  args: { projectId: v.id("projects") },
+  returns: v.object({
+    deletionRequestedAt: v.number(),
+    deleteDueAt: v.number(),
+    alreadyRequested: v.boolean(),
+  }),
+  handler: async (ctx, { projectId }) => {
+    await assertFeatureEnabled(ctx, "workspace");
+    const user = await requireCurrentPlatformUserForMutation(ctx);
+    if (env.TENANT_LEAD_DELETE_REQUESTS_ENABLED !== "true") {
+      throw new ConvexError({ code: "LEAD_RETENTION_NOT_ACTIVE" });
+    }
+    const project = await ctx.db.get("projects", projectId);
+    if (project === null || project.ownerId !== user._id) {
+      throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+    }
+
+    const jobs = await ctx.db.query("lead_retention_jobs")
+      .withIndex("by_projectId", (q) => q.eq("projectId", projectId))
+      .take(2);
+    if (jobs.length > 1) {
+      throw new ConvexError({ code: "LEAD_RETENTION_DUPLICATE_JOB" });
+    }
+    const job = jobs[0] ?? null;
+    const prior = project.deletionRequestedAt;
+    if (prior !== undefined) {
+      if (project.archivedAt === undefined || job === null ||
+          job.ownerId !== user._id || job.deletionRequestedAt !== prior ||
+          job.deleteDueAt !== prior + LEAD_RETENTION_WINDOW_MS ||
+          job.state === "cancelled") {
+        throw new ConvexError({ code: "LEAD_RETENTION_JOB_INCONSISTENT" });
+      }
+      return {
+        deletionRequestedAt: prior,
+        deleteDueAt: job.deleteDueAt,
+        alreadyRequested: true,
+      };
+    }
+
+    if (job !== null && (
+      job.ownerId !== user._id || job.deletionRequestedAt !== undefined ||
+      job.archivedAt === undefined || job.state !== "scheduled" ||
+      job.attempts !== 0 || job.processedCount !== 0 ||
+      job.lastAttemptAt !== undefined || job.lastErrorCode !== undefined ||
+      job.completedAt !== undefined || job.cancelledAt !== undefined
+    )) {
+      throw new ConvexError({ code: "LEAD_RETENTION_JOB_INCONSISTENT" });
+    }
+
+    const now = Date.now();
+    const due = now + LEAD_RETENTION_WINDOW_MS;
+    await ctx.db.patch("projects", projectId, {
+      archivedAt: project.archivedAt ?? now,
+      deletionRequestedAt: now,
+      updatedAt: now,
+    });
+    if (job === null) {
+      await ctx.db.insert("lead_retention_jobs", {
+        ownerId: user._id, projectId,
+        deletionRequestedAt: now, deleteDueAt: due, nextAttemptAt: due,
+        state: "scheduled", attempts: 0, processedCount: 0,
+        createdAt: now, updatedAt: now,
+      });
+    } else {
+      await ctx.db.patch("lead_retention_jobs", job._id, {
+        archivedAt: undefined, deletionRequestedAt: now,
+        deleteDueAt: due, nextAttemptAt: due,
+        state: "scheduled", attempts: 0, processedCount: 0,
+        lastErrorCode: undefined, lastAttemptAt: undefined,
+        completedAt: undefined, cancelledAt: undefined, updatedAt: now,
+      });
+    }
+    await ctx.db.insert("audit_events", {
+      ownerId: user._id, projectId,
+      actorType: "user", actorUserId: user._id,
+      action: "business.deletion_requested", subjectType: "project",
+      subjectId: projectId, createdAt: now,
+    });
+    return { deletionRequestedAt: now, deleteDueAt: due, alreadyRequested: false };
+  },
+});
 
 /**
  * Legacy archive-based entry point. Ordinary archive preserves leads under D5.

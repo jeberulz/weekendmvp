@@ -179,6 +179,30 @@ describe("recordSynthetic", () => {
     await expect(record(t, HOSTNAME)).rejects.toThrow(/TENANT_SITE_NOT_PUBLISHED/);
   });
 
+  test.each(["archivedAt", "deletionRequestedAt"] as const)(
+    "refuses capture when the parent business has %s",
+    async (field) => {
+      const t = testConvex();
+      const owner = await seedUser(t, "owner@example.com");
+      const { projectId } = await seedSite(t, owner.userId);
+      await t.run((ctx) => ctx.db.patch(projectId, { [field]: Date.now() }));
+
+      await expect(record(t, HOSTNAME)).rejects.toThrow(/TENANT_SITE_NOT_PUBLISHED/);
+      expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
+    },
+  );
+
+  test("refuses capture if the published version has another owner", async () => {
+    const t = testConvex();
+    const owner = await seedUser(t, "owner@example.com");
+    const other = await seedUser(t, "other@example.com");
+    const { versionId } = await seedSite(t, owner.userId);
+    await t.run((ctx) => ctx.db.patch(versionId, { ownerId: other.userId }));
+
+    await expect(record(t, HOSTNAME)).rejects.toThrow(/TENANT_SITE_NOT_PUBLISHED/);
+    expect(await t.run((ctx) => ctx.db.query("leads").collect())).toHaveLength(0);
+  });
+
   test("refuses when two sites share a hostname", async () => {
     const t = testConvex();
     const a = await seedUser(t, "a@example.com");

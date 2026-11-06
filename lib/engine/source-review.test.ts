@@ -9,6 +9,7 @@ import { buildFixtureRecord } from "./__fixtures__/recordV2.ts";
 import { writeCompiledIdea } from "./compile-write.ts";
 import {
   assertSourceReviewPass,
+  buildDraftSourceReview,
   buildPassingSourceReview,
   parseSourceReviewDocument,
   researchRecordHash,
@@ -110,6 +111,16 @@ describe("source review contract", () => {
     const record = buildFixtureRecord();
     expect(record.mode).toBe("fixture");
     expect(assertSourceReviewPass(record, undefined).reviewer).toBe("fixture-exempt");
+  });
+
+  it("draft scaffold is a sealed FAIL that never clears the live gate", () => {
+    const record = liveRecord();
+    const draft = buildDraftSourceReview(record, { reviewer: "draft:test" });
+    expect(draft.verdict).toBe("FAIL");
+    expect(draft.items.length).toBeGreaterThan(0);
+    expect(draft.items.every((item) => item.checks.excerptMatchesPage === false)).toBe(true);
+    expect(parseSourceReviewDocument(draft).seal).toBe(draft.seal);
+    expect(() => assertSourceReviewPass(record, draft)).toThrow(/verdict: FAIL/);
   });
 });
 
