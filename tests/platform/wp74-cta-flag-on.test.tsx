@@ -25,7 +25,7 @@ import { Hero } from "../../components/home/sections/Hero";
 import { IdeaOfTheWeek } from "../../components/home/sections/IdeaOfTheWeek";
 import { BuildIdeaCta } from "../../components/workspace/BuildIdeaCta";
 import type { HeroIdea, SpotlightIdea } from "../../lib/home/types";
-import { BUILD_CTA_LABEL, buildHref } from "../../lib/workspace/build-cta";
+import { BUILD_CTA_LABEL, buildHref, ownIdeaHref } from "../../lib/workspace/build-cta";
 
 afterEach(() => {
   cleanup();
@@ -69,6 +69,13 @@ function links(html: string) {
   return [...root.querySelectorAll("a")].map((a) => ({ href: a.getAttribute("href"), text: a.textContent ?? "" }));
 }
 
+/** Every link into the wizard (through sign-up), whatever slug it carries. */
+function wizardLinks(html: string) {
+  return links(html)
+    .map((l) => l.href)
+    .filter((href): href is string => href !== null && href.startsWith("/signup?returnTo=%2Fstart%2F"));
+}
+
 describe("flag on: hero", () => {
   const html = renderToStaticMarkup(<Hero idea={hero} total={225} buildCta />);
 
@@ -87,12 +94,13 @@ describe("flag on: hero", () => {
   });
 
   test("an engine draft gets no CTA even with the flag on", () => {
-    expect(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
+    expect(wizardLinks(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />))).toEqual([ownIdeaHref()]);
   });
 
   test("flag off, or no hero idea: no wizard link", () => {
     expect(renderToStaticMarkup(<Hero idea={hero} total={225} />)).not.toContain("returnTo=%2Fstart%2F");
-    expect(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
+    // With no hero idea there is no idea link; only the own-idea side door (L1) remains.
+    expect(wizardLinks(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />))).toEqual([ownIdeaHref()]);
   });
 });
 

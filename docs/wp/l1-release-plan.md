@@ -37,6 +37,7 @@ say "Coming soon" for each, so nothing looks broken.
 | L1-C5 | A way into the workspace | "Meet your co-founder" (`/start/...`) ends with no link or button to `/dashboard/b/{id}`: a dead end (found in the local walkthrough) |
 | L1-C6 | "Waiting on you" list and a blueprint view | The crew's review cards only reach the chat when a Wren reply attaches them, so the blueprint and brand kit cards are never shown. Team HQ lists every pending review card (approve / ask for changes, or a link to its page), and the blueprint gets a read-only view to review |
 | L1-C7 | Wizard name suggestion | The suggested business name is the idea title cut mid-word ("Gamified posture tracking app for phone-") |
+| L1-C8 | Homepage own-idea link | Canvas Main board: "Have your own idea? Start building with it" under the hero buttons and in the final call, through sign-up to `/start/own`. Behind the same flag as "Build this idea, free", so in `allowlist` mode only a signed-in cohort member sees it. `/start/own` joins the sign-in return allowlist as a bare path (a query collapses to `/dashboard`); the allowlist is shared with Convex Auth, so it ships with the Convex deploy |
 | L1-C3 | Local fixture walkthrough | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
 | L1-C4 | Five live test launches | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 

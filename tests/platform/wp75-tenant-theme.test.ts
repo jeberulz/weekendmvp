@@ -1,5 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
+import googleFontData from "next/dist/compiled/@next/font/dist/google/font-data.json";
+
 import { fontMockModule, kitFor } from "./tenant-site-helpers";
 
 const calls = vi.hoisted(() => [] as { family: string; options: Record<string, unknown> }[]);
@@ -126,7 +128,20 @@ describe("type pairs: one loader per family, weights and variables match TYPE_PA
       expect(options, family).toBeDefined();
       expect(options?.preload).toBe(false);
       expect(options?.subsets).toEqual(["latin"]);
-      expect([...(options?.weight as string[])].sort(), family).toEqual([...weights].sort());
+      const wght = (googleFontData as Record<string, { axes?: { tag: string; min: number; max: number }[] }>)[family]?.axes?.find(
+        (axis) => axis.tag === "wght",
+      );
+      if (wght) {
+        // A variable family loads as one variable file: named weights of a variable font make Google build
+        // instances on demand behind `/l/font?kit=…&…` URLs that break the Turbopack build at random.
+        expect(options?.weight, family).toBe("variable");
+        for (const weight of weights) {
+          expect(Number(weight), `${family} ${weight}`).toBeGreaterThanOrEqual(wght.min);
+          expect(Number(weight), `${family} ${weight}`).toBeLessThanOrEqual(wght.max);
+        }
+      } else {
+        expect([...(options?.weight as string[])].sort(), family).toEqual([...weights].sort());
+      }
     }
     expect(byFamily.size).toBe(needed.size);
   });

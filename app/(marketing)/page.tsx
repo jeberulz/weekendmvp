@@ -127,7 +127,7 @@ export default async function HomePage() {
       <YourWeekend total={data.totals.ideas} />
       <StarterKit />
       <FounderNote />
-      <FinalCall total={data.totals.ideas} strip={data.strip} />
+      <FinalCall total={data.totals.ideas} strip={data.strip} buildCta={buildCta} />
       <HomeMotion />
       {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
       <WhenConvexReady>
