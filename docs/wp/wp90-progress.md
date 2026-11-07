@@ -88,3 +88,21 @@ Append-only progress log. Do not rely on chat history for project state.
 - a11y-check: passes. No icon-only controls; headings go h1 → h2 → h3; focus moves on "Change"; the reason is linked to the primary button by `aria-describedby`. jsdom cannot check colour contrast; the tokens are the ones Founder signals already uses.
 - Not run: the browser check of a seeded and an unseeded idea. The worktree has no Convex deployment of its own; the rule is not to run convex dev against the shared local or prod from here, and the preview server runs the main checkout. It belongs in the S6 owner handoff, after a fixture `crew:seeds` run on a local deployment.
 - Docs: stories and progress updated.
+
+## 2026-11-07 - WP90-S5
+
+- The five crew specs move to v2 (`git mv` of the v1 modules, so each file's history continues):
+  - `crew-blueprint-personalise@2` and `crew-blueprint-own-idea@2`: the blueprint schema gained `local_business` and `sellsGoods` (S1). The prompt now says when to use them.
+  - `crew-brand-kit@2`, `crew-email-sequence@2`, `crew-social-pack@2`: an optional `ideaAngles` input, quoted as an `<idea_angles>` data block plus one usage line, only when a seed exists. Without a seed the user block is v1's, and the system blocks are unchanged apart from the comments in the module header, so the cache layout is unchanged.
+- `lib/workspace/crew/inputs.ts`: `ideaAnglesFor` (brand seeds; email or social angles plus buyer words as bare quotes, never their attribution); the three copy-step plans take `seed`.
+- `convex/crew/generators.ts`: a library business's brand kit, email and social steps read the newest platform seed (`platformSeedRow` + `seedFromColumns`). An unreadable seed means no angles, never a refusal.
+- Lock:
+  - the five `@1` entries carry a `retired` note;
+  - `--write` locked the five `@2` refs and `crew-idea-seed@1`;
+  - `check-prompt-versions`: 9 match the lock.
+- Risk noted: a crew task queued with an `@1` ref before deploy would not resolve after it. The crew generators are still dormant (WP75/WP76), so no such task should exist; check before deploying if they have been switched on.
+- Checks:
+  - `npm run typecheck`: green.
+  - eslint on changed files: clean.
+  - `vitest tests/platform convex`: 4,191 pass. New tests: `tests/platform/wp90-crew-angles.test.ts` (7) and a seeded brand-kit generator case in `convex/crew/generators.test.ts`.
+- Docs: stories and progress updated.

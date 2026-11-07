@@ -73,7 +73,7 @@ accepted moving the L1 date if this needs more time.
     - a11y-check passes on every changed step.
   - Verification: wizard unit + convex tests; browser check of a seeded and an unseeded idea.
 
-- [ ] `WP90-S5` - Crew steps read the seed's angles
+- [x] `WP90-S5` - Crew steps read the seed's angles
   - Scope: `lib/workspace/crew/inputs.ts`, `convex/crew/generators.ts`,
     `convex/ai/prompts/{brandKit,emailSequence,socialPack}.v2.ts`, registry, lock.
   - Acceptance criteria:

@@ -6,6 +6,7 @@ import { internalAction, internalQuery, type ActionCtx } from "../_generated/ser
 import { memoryForPrompt } from "../workspace/wrenMemory";
 import { emailDraftTarget } from "../growth/drafts/emailSequence";
 import { blueprintSchema, brandKitSchema } from "../../lib/workspace/contracts/artifacts";
+import { seedFromColumns } from "../../lib/workspace/contracts/seeds";
 import { wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { crewBusinessContext, type CrewBusinessFacts } from "../../lib/workspace/crew/context";
 import {
@@ -194,6 +195,14 @@ export const prepareCrewStep = internalQuery({
         const step = task.type === "crew_email_sequence" ? "email sequence" : task.type === "crew_social_pack" ? "social pack" : "brand kit";
         return refuse(promptRef, `the ${step} needs the business's approved blueprint first`);
       }
+      // WP90-S5: a library business's copy steps also read the idea seed's
+      // angles. A seed that cannot be read (row overflow, pre-WP90 row) means
+      // no angles, never a refusal: the step works as it did before WP90.
+      const seedSlug =
+        answers.idea.source === "library" && workspace.ideaSlug === answers.idea.ideaSlug ? workspace.ideaSlug : undefined;
+      const seedRead = seedSlug === undefined ? null : await platformSeedRow(ctx, seedSlug);
+      const ideaSeed =
+        seedSlug !== undefined && seedRead?.ok === true && seedRead.row !== null ? seedFromColumns(seedSlug, seedRead.row) : null;
       if (task.type === "crew_email_sequence" || task.type === "crew_social_pack") {
         const kitRow = (await approvedBrandKit(ctx, project)) ?? (inLaunch ? await launchDraftBrandKit(ctx, project, args.now) : null);
         const kit = kitRow?.body === undefined ? null : brandKitSchema.safeParse(parseJson(kitRow.body));
@@ -204,7 +213,7 @@ export const prepareCrewStep = internalQuery({
           return {
             ok: true,
             promptRef,
-            inputs: socialPackStepPlan({ blueprint: blueprint.data, brandKit: kit.data }).inputs,
+            inputs: socialPackStepPlan({ blueprint: blueprint.data, brandKit: kit.data, seed: ideaSeed }).inputs,
             businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
             ...briefs,
           };
@@ -216,12 +225,12 @@ export const prepareCrewStep = internalQuery({
         return {
           ok: true,
           promptRef,
-          inputs: emailSequenceStepPlan({ answers, blueprint: blueprint.data, brandKit: kit.data }).inputs,
+          inputs: emailSequenceStepPlan({ answers, blueprint: blueprint.data, brandKit: kit.data, seed: ideaSeed }).inputs,
           businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
           ...briefs,
         };
       }
-      inputs = brandKitStepPlan({ answers, blueprint: blueprint.data }).inputs;
+      inputs = brandKitStepPlan({ answers, blueprint: blueprint.data, seed: ideaSeed }).inputs;
       return {
         ok: true,
         promptRef,
