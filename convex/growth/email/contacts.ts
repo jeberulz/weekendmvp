@@ -1,10 +1,13 @@
 import type { EmailId } from "@convex-dev/resend";
 import { v } from "convex/values";
+import { components } from "../../_generated/api";
+import type { Doc, Id } from "../../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../../_generated/server";
 import { tenantResend } from "./provider";
 
+/** Per-transaction limit, independent of the lead’s lifetime history. */
+const ENROLLMENT_BATCH_SIZE = 16;
 /** Issuance and state transitions must enforce these limits before enqueue. */
-export const MAX_ENROLLMENTS_PER_LEAD = 16;
 export const MAX_SENDS_PER_ENROLLMENT = 4;
 export const MAX_TOKENS_PER_PURPOSE = 1;
 
@@ -26,33 +29,41 @@ async function cancelLinkedEmail(
   return componentStatus.status === "cancelled" ? "already_final" : "submitted";
 }
 
+async function requireLeadGraph(ctx: MutationCtx, leadId: Id<"leads">) {
+  const lead = await ctx.db.get("leads", leadId);
+  if (!lead) throw new Error("LEAD_NOT_FOUND");
+  const [project, site] = await Promise.all([
+    ctx.db.get("projects", lead.projectId),
+    ctx.db.get("site_configs", lead.siteConfigId),
+  ]);
+  if (!project || project.ownerId !== lead.ownerId ||
+      !site || site.ownerId !== lead.ownerId || site.projectId !== lead.projectId) {
+    throw new Error("LEAD_OWNERSHIP_GRAPH_MISMATCH");
+  }
+  return lead;
+}
+
+function sameLeadScope(lead: Doc<"leads">, row: Pick<Doc<"leads">, "ownerId" | "projectId">) {
+  return row.ownerId === lead.ownerId && row.projectId === lead.projectId;
+}
+
 /**
- * WP78 calls this from its owner-authorized deletion mutation before clearing
- * lead contact fields. The nested component cancellation shares that top-level
- * transaction. Already-submitted mail cannot be recalled and follows the
- * owner-approved component/provider retention windows.
+ * Only a completed batch permits erasure. The due worker and operator repair
+ * can commit one partial batch at a time; owner deletion remains atomic.
+ * Future enqueue writers must reject an enrollment carrying the proof.
  */
 export const revokeLeadContact = internalMutation({
-  args: { leadId: v.id("leads") },
+  args: { leadId: v.id("leads"), allowPartial: v.optional(v.boolean()) },
   returns: v.object({
+    complete: v.boolean(),
     tokensDeleted: v.number(),
     enrollmentsRevoked: v.number(),
     sendsChecked: v.number(),
     queuedEmailsCancelled: v.number(),
     submittedEmails: v.number(),
   }),
-  handler: async (ctx, { leadId }) => {
-    const lead = await ctx.db.get(leadId);
-    if (!lead) throw new Error("LEAD_NOT_FOUND");
-    const [project, site] = await Promise.all([
-      ctx.db.get(lead.projectId),
-      ctx.db.get(lead.siteConfigId),
-    ]);
-    if (!project || project.ownerId !== lead.ownerId ||
-        !site || site.ownerId !== lead.ownerId || site.projectId !== lead.projectId) {
-      throw new Error("LEAD_OWNERSHIP_GRAPH_MISMATCH");
-    }
-
+  handler: async (ctx, { leadId, allowPartial }) => {
+    const lead = await requireLeadGraph(ctx, leadId);
     const tokens = [];
     for (const purpose of ["opt_in", "unsubscribe"] as const) {
       const rows = await ctx.db.query("lead_email_tokens")
@@ -62,9 +73,11 @@ export const revokeLeadContact = internalMutation({
       tokens.push(...rows);
     }
     const enrollments = await ctx.db.query("enrollments")
-      .withIndex("by_leadId", (q) => q.eq("leadId", leadId))
-      .take(MAX_ENROLLMENTS_PER_LEAD + 1);
-    if (enrollments.length > MAX_ENROLLMENTS_PER_LEAD) {
+      .withIndex("by_leadId_and_contactRevokedAt", (q) =>
+        q.eq("leadId", leadId).eq("contactRevokedAt", undefined))
+      .take(ENROLLMENT_BATCH_SIZE + 1);
+    const complete = enrollments.length <= ENROLLMENT_BATCH_SIZE;
+    if (!complete && !allowPartial) {
       throw new Error("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
     }
 
@@ -72,8 +85,8 @@ export const revokeLeadContact = internalMutation({
     let sendsChecked = 0;
     let queuedEmailsCancelled = 0;
     let submittedEmails = 0;
-    for (const enrollment of enrollments) {
-      if (enrollment.ownerId !== lead.ownerId || enrollment.projectId !== lead.projectId) {
+    for (const enrollment of enrollments.slice(0, ENROLLMENT_BATCH_SIZE)) {
+      if (!sameLeadScope(lead, enrollment)) {
         throw new Error("LEAD_ENROLLMENT_OWNERSHIP_MISMATCH");
       }
       const sends = await ctx.db.query("email_sends")
@@ -83,7 +96,7 @@ export const revokeLeadContact = internalMutation({
         throw new Error("LEAD_SEND_LIMIT_EXCEEDED");
       }
       for (const send of sends) {
-        if (send.ownerId !== lead.ownerId || send.projectId !== lead.projectId) {
+        if (!sameLeadScope(lead, send)) {
           throw new Error("LEAD_SEND_OWNERSHIP_MISMATCH");
         }
         if (send.componentEmailId) {
@@ -102,14 +115,18 @@ export const revokeLeadContact = internalMutation({
         }
         sendsChecked += 1;
       }
-      if (enrollment.state !== "completed" && enrollment.state !== "revoked") {
-        await ctx.db.patch(enrollment._id, { state: "revoked", updatedAt: Date.now() });
-        enrollmentsRevoked += 1;
-      }
+      const terminal = enrollment.state === "completed" || enrollment.state === "revoked";
+      const now = Date.now();
+      await ctx.db.patch("enrollments", enrollment._id, {
+        state: terminal ? enrollment.state : "revoked",
+        contactRevokedAt: now,
+        updatedAt: now,
+      });
+      if (!terminal) enrollmentsRevoked += 1;
     }
 
     for (const token of tokens) {
-      if (token.ownerId !== lead.ownerId || token.projectId !== lead.projectId) {
+      if (!sameLeadScope(lead, token)) {
         throw new Error("LEAD_TOKEN_OWNERSHIP_MISMATCH");
       }
       if (token.componentEmailId) {
@@ -120,11 +137,59 @@ export const revokeLeadContact = internalMutation({
       await ctx.db.delete(token._id);
     }
     return {
+      complete,
       tokensDeleted: tokens.length,
       enrollmentsRevoked,
       sendsChecked,
       queuedEmailsCancelled,
       submittedEmails,
     };
+  },
+});
+
+/**
+ * Support supplies a candidate ID from the component in the same deployment.
+ * The stored enqueue key must prove it belongs to this exact send. This path
+ * cannot enqueue or accept an operator's unverified assertion of cancellation.
+ */
+export const recoverLeadSendLink = internalMutation({
+  args: { sendId: v.id("email_sends"), componentEmailId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { sendId, componentEmailId }) => {
+    const send = await ctx.db.get("email_sends", sendId);
+    const enrollment = send && await ctx.db.get("enrollments", send.enrollmentId);
+    if (!send || !enrollment) throw new Error("LEAD_SEND_NOT_FOUND");
+    const lead = await requireLeadGraph(ctx, enrollment.leadId);
+    if (!sameLeadScope(lead, enrollment) || !sameLeadScope(lead, send)) {
+      throw new Error("LEAD_SEND_OWNERSHIP_MISMATCH");
+    }
+    if (send.componentEmailId === componentEmailId) return null;
+    if (send.componentEmailId !== undefined || enrollment.contactRevokedAt !== undefined) {
+      throw new Error("LEAD_SEND_LINK_ALREADY_RESOLVED");
+    }
+
+    const key = `send:${enrollment._id}:${send.stepId}`;
+    const [matchingSends, linkedSends] = await Promise.all([
+      ctx.db.query("email_sends")
+        .withIndex("by_idempotencyKey", (q) => q.eq("idempotencyKey", key)).take(2),
+      ctx.db.query("email_sends")
+        .withIndex("by_componentEmailId", (q) => q.eq("componentEmailId", componentEmailId)).take(1),
+    ]);
+    if (matchingSends.length !== 1 || matchingSends[0]._id !== sendId || linkedSends.length !== 0) {
+      throw new Error("LEAD_SEND_LINK_UNVERIFIED");
+    }
+    const emailId = componentEmailId as EmailId;
+    const email = await ctx.runQuery(components.resend.lib.get, { emailId });
+    if (!email || email.idempotencyKey !== key) throw new Error("LEAD_SEND_LINK_UNVERIFIED");
+
+    if (email.status === "waiting" || email.status === "queued") {
+      await tenantResend.cancelEmail(ctx, emailId);
+    }
+    await ctx.db.patch("email_sends", sendId, {
+      componentEmailId,
+      status: ["waiting", "queued", "cancelled"].includes(email.status) ? "cancelled" : send.status,
+      updatedAt: Date.now(),
+    });
+    return null;
   },
 });

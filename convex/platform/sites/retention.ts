@@ -186,11 +186,14 @@ export const purgeDueProjectLeads = internalMutation({
         errorCode = "LEAD_RETENTION_SITE_MISMATCH";
       }
     }
+    let revocationComplete = false;
     if (errorCode === undefined) {
       try {
-        await ctx.runMutation(internal.growth.email.contacts.revokeLeadContact, {
+        const revocation = await ctx.runMutation(internal.growth.email.contacts.revokeLeadContact, {
           leadId: lead._id,
+          allowPartial: true,
         });
+        revocationComplete = revocation.complete;
       } catch {
         // The nested revocation subtransaction rolls back all cancellations.
         // Never persist an exception message: it may contain contact data.
@@ -203,6 +206,14 @@ export const purgeDueProjectLeads = internalMutation({
         nextAttemptAt: now + retryDelayMs(
           job.lastErrorCode, job.lastAttemptAt, job.nextAttemptAt,
         ), updatedAt: now,
+      });
+      return { deleted: 0, more: true };
+    }
+
+    if (!revocationComplete) {
+      await ctx.db.patch(jobId, {
+        attempts, lastAttemptAt: now, lastErrorCode: undefined,
+        nextAttemptAt: now, updatedAt: now,
       });
       return { deleted: 0, more: true };
     }
