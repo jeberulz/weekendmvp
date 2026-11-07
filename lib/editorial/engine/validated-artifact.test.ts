@@ -80,7 +80,7 @@ describe("validateEngineSubmission", () => {
         sourceReviewJson: JSON.stringify(buildPassingSourceReview(input.record)),
       }),
     ).rejects.toThrow(
-      /Publication evidence needs review: Selected market figures need at least two distinct source hosts/,
+      /Invalid ResearchRecord: market\.statIds: need ≥2 independent publisher hosts/,
     );
   });
 

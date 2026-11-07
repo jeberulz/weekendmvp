@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
+import { assertAccountOpenForProjectCreation } from "../platform/accountClosureGuard";
 import { requireOwnedWizardSession } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
 import { WORKSPACE_PLAN_LIMITS } from "../platform/plans";
@@ -197,6 +198,7 @@ export const createBusiness = mutation({
 
     const user = await ctx.db.get("users", session.ownerId);
     if (!isVerified(user)) return refuse("EMAIL_NOT_VERIFIED");
+    assertAccountOpenForProjectCreation(user);
     const domain = emailAddressDomain(user.email);
     if (domain === null) return refuse("EMAIL_INVALID");
     if (isDisposableEmailDomain(domain)) return refuse("DISPOSABLE_EMAIL");

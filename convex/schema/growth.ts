@@ -54,6 +54,27 @@ export const growthTables = {
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
     .index("by_state_and_nextAttemptAt", ["state", "nextAttemptAt"]),
 
+  // One continuation cursor per owner. The users row owns the closure epoch.
+  // No runtime writes this table until the bounded fan-out is reviewed.
+  account_closure_jobs: defineTable({
+    ownerId: v.id("users"),
+    requestedAt: v.number(),
+    cursor: v.optional(v.string()),
+    // A corrupt cursor may restart the scan once; a second failure needs repair.
+    cursorResetAt: v.optional(v.number()),
+    nextAttemptAt: v.number(),
+    state: v.union(v.literal("scheduled"), v.literal("complete")),
+    attempts: v.number(),
+    projectsProcessed: v.number(),
+    lastErrorCode: v.optional(v.string()),
+    lastAttemptAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId", ["ownerId"])
+    .index("by_state_and_nextAttemptAt", ["state", "nextAttemptAt"]),
+
   sequences: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),
