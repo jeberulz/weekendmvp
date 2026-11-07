@@ -450,3 +450,17 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Unverified: no real browser or screen reader pass; colour contrast is not checked by jsdom axe (no canvas), so
   the contrast of the new text rests on the kit tokens already in use; nothing was run against a live Convex
   deployment (queries are mocked); the `#blueprint` jump and focus behaviour was not tried in a browser.
+
+### Team HQ: launch progress and your team (added after the first build)
+
+- Section order on Team HQ: Waiting on you, Launch progress, Your team, Your blueprint.
+- `components/workspace/team/LaunchProgress.tsx` reads `launchProgress`: each step's title, state in words, reason.
+  "Try again" calls `retryLaunch` (it covers the blueprint and team stage and re-runs later failed steps in one
+  token); "Resume" calls `resumeLaunch` for paused steps. A failed step with no retry shows its reason only.
+  Refusals use `launchErrorMessage`. Not started says so, with no link: Meet your co-founder is a wizard end
+  screen on `/start`, not a route tied to a business.
+- `components/workspace/team/YourTeam.tsx` reads `launchStatus` and reuses the wizard's `CofounderTeam` (new
+  optional `level` prop, default 3, so the wizard is unchanged; Team HQ passes 2). Team HQ never starts a launch,
+  so "not started" is its own message. The partner's name is not known there, so copy says "Your co-founder".
+- Tests: `tests/platform/workspace-team-hq-launch.test.tsx`. Unverified: the same browser, screen reader,
+  contrast and live-Convex gaps as above; no per-step retry exists (one click retries every retryable failed step).

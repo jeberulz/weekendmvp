@@ -84,3 +84,39 @@ export const BLUEPRINT_LABELS = {
   market: "The market",
   competitors: "Other options people use",
 } as const;
+
+// ---------------------------------------------------------------------------
+// Team HQ: launch progress and the team
+// ---------------------------------------------------------------------------
+
+/** The partner's name is not known on Team HQ (it lives in the wizard's answers), so the team section says this. */
+export const TEAM_PARTNER_NAME = "Your co-founder";
+export const TEAM_NOT_STARTED_COPY = "Your launch hasn't started, so there is no team yet.";
+export const TEAM_UNAVAILABLE_COPY = "Your team can't be shown right now. Check back in a little while.";
+export const PROGRESS_NOT_STARTED_COPY = "Your launch hasn't started yet, so there are no steps to show.";
+export const PROGRESS_UNAVAILABLE_COPY = "Your launch progress can't be shown right now. Check back in a little while.";
+
+export const STEP_STATE_LABELS = {
+  waiting: "Waiting",
+  queued: "Queued",
+  running: "Running",
+  paused: "Paused",
+  succeeded: "Done",
+  failed: "Failed",
+  skipped: "Skipped",
+} as const;
+
+/** "3 of 6 steps done", counting skipped steps as settled but not as done. */
+export function progressSummary(states: readonly string[]): string {
+  const done = states.filter((state) => state === "succeeded").length;
+  return `${done} of ${states.length} steps done.`;
+}
+
+export function resumeMessage(result: { resumed: number; waitingForSlot: boolean }): string {
+  if (result.resumed > 0) {
+    return `Resumed ${result.resumed} ${result.resumed === 1 ? "step" : "steps"}.${result.waitingForSlot ? " Others are waiting for a free slot." : ""}`;
+  }
+  return result.waitingForSlot
+    ? "Your team is busy with other work. Try resuming again in a little while."
+    : "Nothing was waiting to resume.";
+}
