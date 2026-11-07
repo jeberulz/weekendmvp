@@ -115,6 +115,7 @@ describe("WP78 account-closure C-DATA contract", () => {
       expect(fields[name].isOptional).toBe("required");
     }
     expect(fields.cursor.isOptional).toBe("optional");
+    expect(fields.cursorResetAt.isOptional).toBe("optional");
     expect(indexNames(schema.tables.account_closure_jobs)).toEqual(expect.arrayContaining([
       "by_ownerId", "by_state_and_nextAttemptAt",
     ]));
