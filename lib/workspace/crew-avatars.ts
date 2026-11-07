@@ -51,14 +51,14 @@ export const CREW_PERSONAS: readonly CrewPersona[] = Object.freeze([
     employeeName: "Iris",
     accent: "#a84a00",
     accentName: "deep orange",
-    look: "voluminous dark curly hair tied up with a cream scarf, mustard turtleneck, a pencil tucked behind one ear",
+    look: "dark curly hair in a high bun with a cream scarf, mustard turtleneck, a pencil tucked behind one ear; her head and shoulders fill most of the frame, close-up",
   },
   {
     roleKey: "landing",
     employeeName: "Leo",
     accent: "#2c4a68",
     accentName: "slate blue",
-    look: "tidy short beard, swept-back hair, denim overshirt over a cream tee, a small wireframe sketch card in his breast pocket",
+    look: "tidy short beard, swept-back hair, open friendly eyes with clearly drawn dark pupils, denim overshirt over a cream tee, a small wireframe sketch card in his breast pocket",
   },
   {
     roleKey: "seo",
@@ -86,7 +86,7 @@ export const CREW_PERSONAS: readonly CrewPersona[] = Object.freeze([
     employeeName: "Theo",
     accent: "#3d3570",
     accentName: "indigo",
-    look: "tousled curly hair, small hoop earring, oversized graphic-free sage hoodie, wireless earbuds",
+    look: "tousled curly hair, warm brown skin (the face is skin-coloured, never the background colour), small hoop earring, plain sage hoodie, wireless earbuds",
   },
   {
     roleKey: "engineering",
@@ -107,7 +107,7 @@ export const CREW_PERSONAS: readonly CrewPersona[] = Object.freeze([
     employeeName: "Cora",
     accent: "#2c4a68",
     accentName: "slate blue",
-    look: "silver pixie cut, half-moon reading glasses, knitted ochre vest over a cream shirt, a stack of small index cards",
+    look: "an older woman with a short silver-white pixie cut, clear half-moon reading glasses (not sunglasses), knitted ochre vest over a cream shirt, holding a few index cards",
   },
   {
     roleKey: "community",
@@ -136,9 +136,12 @@ export function crewAvatarSlug(persona: Pick<CrewPersona, "roleKey" | "employeeN
   return `${persona.roleKey}-${persona.employeeName.toLowerCase()}`;
 }
 
-/** Public path for a role's avatar once it exists. */
+/**
+ * Public path for a role's shipped avatar: the generated 1024 px PNG shrunk to
+ * a 192 px WebP (40 px at 3x density with room to spare).
+ */
 export function crewAvatarPublicPath(persona: Pick<CrewPersona, "roleKey" | "employeeName">): string {
-  return `/image/crew/${crewAvatarSlug(persona)}.png`;
+  return `/image/crew/${crewAvatarSlug(persona)}.webp`;
 }
 
 export function crewAvatarPrompt(persona: CrewPersona): string {
@@ -147,7 +150,27 @@ export function crewAvatarPrompt(persona: CrewPersona): string {
 
 /**
  * Roles whose avatar has been generated, approved and committed under
- * `public/image/crew/`. Empty until the owner approves the live run; the UI
- * shows initials for every role not listed here.
+ * `public/image/crew/`. The UI shows the initial for any role not listed.
+ * `crew-avatars-v1` was rendered on 2026-11-07 (13 × recraftv4_1_flash, $0.091).
  */
-export const CREW_AVATAR_SRC: Readonly<Partial<Record<RoleKey, string>>> = Object.freeze({});
+const SHIPPED_ROLES: readonly RoleKey[] = [
+  "lead",
+  "brand",
+  "landing",
+  "seo",
+  "marketing",
+  "email",
+  "social",
+  "engineering",
+  "ads",
+  "curriculum",
+  "community",
+  "merch",
+  "outbound",
+];
+
+export const CREW_AVATAR_SRC: Readonly<Partial<Record<RoleKey, string>>> = Object.freeze(
+  Object.fromEntries(
+    CREW_PERSONAS.filter((p) => SHIPPED_ROLES.includes(p.roleKey)).map((p) => [p.roleKey, crewAvatarPublicPath(p)]),
+  ),
+);

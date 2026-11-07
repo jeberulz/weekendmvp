@@ -41,7 +41,7 @@ describe("crew personas (WP67-S7)", () => {
       expect(persona.accent).toMatch(/^#[0-9a-f]{6}$/);
     }
     expect(CREW_AVATAR_STYLE).toContain("No text");
-    expect(crewAvatarPublicPath(CREW_PERSONAS[0])).toBe("/image/crew/lead-wren.png");
+    expect(crewAvatarPublicPath(CREW_PERSONAS[0])).toBe("/image/crew/lead-wren.webp");
   });
 
   it("only lists shipped avatars that exist under public/", () => {

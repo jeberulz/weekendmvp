@@ -61,7 +61,7 @@ export function EmployeeAvatar({
       )}
     >
       {src ? (
-        // Shipped pre-sized (small square PNGs under public/image/crew/), so the
+        // Shipped pre-sized (192 px WebP under public/image/crew/), so the
         // image optimiser adds nothing; next/image also breaks the kit's SSR tests.
         // eslint-disable-next-line @next/next/no-img-element
         <img
