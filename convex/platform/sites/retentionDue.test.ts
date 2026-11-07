@@ -1,6 +1,6 @@
 import { register as registerResend } from "@convex-dev/resend/test";
 import { convexTest, type TestConvex } from "convex-test";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { components, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import schema from "../../schema";
@@ -126,11 +126,14 @@ describe("WP78 due lead cleanup", () => {
     expect(await t.run((ctx) => ctx.db.get(ids.leadIds[0]))).not.toBeNull();
   });
 
-  test("revokes real-lead mail and token before physical deletion", async () => {
+  test("resumes a long history and revokes the last queued email before physical deletion", async () => {
     const { t, component } = setup();
     const ids = await seed(t, { real: true });
     const queuedId = await t.mutation(component.lib.createManualEmail, {
       from: "sender@example.test", to: "contact0@example.test", subject: "Welcome",
+    });
+    const confirmationId = await t.mutation(component.lib.createManualEmail, {
+      from: "sender@example.test", to: "contact0@example.test", subject: "Confirm",
     });
     const enrollmentId = await t.run(async (ctx) => {
       const now = Date.now();
@@ -148,6 +151,12 @@ describe("WP78 due lead cleanup", () => {
         sequenceId, order: 1n, delayHours: 0, subject: "Welcome", documentId,
         createdAt: now, updatedAt: now,
       });
+      for (let n = 0; n < 16; n += 1) {
+        await ctx.db.insert("enrollments", {
+          ownerId: ids.ownerId, projectId: ids.projectId, leadId: ids.leadIds[0],
+          sequenceId, nextStepAt: now, state: "completed", createdAt: now, updatedAt: now,
+        });
+      }
       const enrollmentId = await ctx.db.insert("enrollments", {
         ownerId: ids.ownerId, projectId: ids.projectId, leadId: ids.leadIds[0],
         sequenceId, nextStepAt: now, state: "active", createdAt: now, updatedAt: now,
@@ -162,8 +171,27 @@ describe("WP78 due lead cleanup", () => {
         leadId: ids.leadIds[0], purpose: "unsubscribe", tokenHash: "sha256:due:test",
         createdAt: now,
       });
+      await ctx.db.insert("lead_email_tokens", {
+        ownerId: ids.ownerId, projectId: ids.projectId,
+        leadId: ids.leadIds[0], purpose: "opt_in", tokenHash: "sha256:due:opt-in",
+        componentEmailId: confirmationId, createdAt: now,
+      });
       return enrollmentId;
     });
+    expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
+      .toEqual({ deleted: 0, more: true });
+    const partial = await t.run((ctx) => ctx.db.get(ids.jobId));
+    expect(partial).toMatchObject({ state: "scheduled", attempts: 0, processedCount: 0 });
+    expect(partial?.nextAttemptAt).toBe(partial?.lastAttemptAt);
+    expect(partial?.lastErrorCode).toBeUndefined();
+    expect((await t.run((ctx) => ctx.db.get(ids.leadIds[0])))?.email)
+      .toBe("contact0@example.test");
+    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status)
+      .toBe("queued");
+    expect((await t.query(component.lib.getStatus, { emailId: confirmationId }))?.status)
+      .toBe("cancelled");
+    const remainingTokens = await t.run((ctx) => ctx.db.query("lead_email_tokens").collect());
+    expect(remainingTokens.map((token) => token.purpose)).toEqual(["unsubscribe"]);
     expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
       .toEqual({ deleted: 1, more: false });
     expect(await t.run((ctx) => ctx.db.get(ids.leadIds[0]))).toBeNull();
@@ -180,7 +208,7 @@ describe("WP78 due lead cleanup", () => {
     const queuedId = await t.mutation(component.lib.createManualEmail, {
       from: "sender@example.test", to: "contact0@example.test", subject: "Welcome",
     });
-    const brokenSendId = await t.run(async (ctx) => {
+    const brokenSend = await t.run(async (ctx) => {
       const now = Date.now();
       const documentId = await ctx.db.insert("documents", {
         ownerId: ids.ownerId, projectId: ids.projectId,
@@ -205,11 +233,12 @@ describe("WP78 due lead cleanup", () => {
         idempotencyKey: "send:due:good", componentEmailId: queuedId,
         status: "queued", createdAt: now, updatedAt: now,
       });
-      return await ctx.db.insert("email_sends", {
+      const key = `send:${enrollmentId}:${stepId}`;
+      const sendId = await ctx.db.insert("email_sends", {
         ownerId: ids.ownerId, projectId: ids.projectId, enrollmentId, stepId,
-        idempotencyKey: "send:due:broken", status: "queued",
-        createdAt: now + 1, updatedAt: now,
+        idempotencyKey: key, status: "queued", createdAt: now + 1, updatedAt: now,
       });
+      return { sendId, key };
     });
     expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
       .toEqual({ deleted: 0, more: true });
@@ -227,18 +256,45 @@ describe("WP78 due lead cleanup", () => {
     await expect(t.mutation(dueWorker, { jobId: ids.jobId }))
       .rejects.toThrow("LEAD_RETENTION_NOT_DUE");
 
-    // Model a reviewed historical-row repair and the passage of retry time.
-    await t.run(async (ctx) => {
-      await ctx.db.patch(brokenSendId, { status: "cancelled" });
-      await ctx.db.patch(ids.jobId, { nextAttemptAt: Date.now() - 1 });
-    });
-    expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
-      .toEqual({ deleted: 1, more: false });
-    expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status)
-      .toBe("cancelled");
-    expect(await t.run((ctx) => ctx.db.get(ids.leadIds[0]))).toBeNull();
-    expect((await t.run((ctx) => ctx.db.get(ids.jobId)))?.lastErrorCode)
-      .toBeUndefined();
+    const repair = internal.growth.email.contacts.recoverLeadSendLink;
+    await expect(t.mutation(repair, { sendId: brokenSend.sendId, componentEmailId: queuedId }))
+      .rejects.toThrow("LEAD_SEND_LINK_UNVERIFIED");
+
+    vi.useFakeTimers();
+    const fetch = vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network disabled"));
+    try {
+      const recoveredId = await t.mutation(component.lib.sendEmail, {
+        options: { initialBackoffMs: 1000, retryAttempts: 0, apiKey: "unused", testMode: false },
+        from: "sender@example.test", to: ["contact0@example.test"],
+        subject: "Welcome", text: "Never send", idempotencyKey: brokenSend.key,
+      });
+      const otherOwnerId = await t.run(async (ctx) => {
+        const ownerId = await ctx.db.insert("users", { email: "other@example.test" });
+        await ctx.db.patch(brokenSend.sendId, { ownerId });
+        return ownerId;
+      });
+      await expect(t.mutation(repair, { sendId: brokenSend.sendId, componentEmailId: recoveredId }))
+        .rejects.toThrow("LEAD_SEND_OWNERSHIP_MISMATCH");
+      expect((await t.run((ctx) => ctx.db.get(brokenSend.sendId)))?.ownerId).toBe(otherOwnerId);
+      expect((await t.query(component.lib.getStatus, { emailId: recoveredId }))?.status)
+        .toBe("waiting");
+      await t.run((ctx) => ctx.db.patch(brokenSend.sendId, { ownerId: ids.ownerId }));
+      await t.mutation(repair, { sendId: brokenSend.sendId, componentEmailId: recoveredId });
+      await t.mutation(repair, { sendId: brokenSend.sendId, componentEmailId: recoveredId });
+      expect((await t.query(component.lib.getStatus, { emailId: recoveredId }))?.status)
+        .toBe("cancelled");
+      vi.setSystemTime(retry!.nextAttemptAt);
+      expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
+        .toEqual({ deleted: 1, more: false });
+      expect(await t.run((ctx) => ctx.db.get(ids.leadIds[0]))).toBeNull();
+      expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status)
+        .toBe("cancelled");
+      await t.finishAllScheduledFunctions(vi.runAllTimers);
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      fetch.mockRestore();
+      vi.useRealTimers();
+    }
   });
 
   test("a cross-owner lead graph cannot be deleted or completed", async () => {
