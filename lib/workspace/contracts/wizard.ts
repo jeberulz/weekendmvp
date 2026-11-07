@@ -32,6 +32,7 @@
  */
 import { z } from "zod";
 
+import { cleanTeamProposal } from "../crew/teamProposal";
 import { LIMITS, blueprintSchema, type Blueprint } from "./artifacts";
 import {
   commercialModelSchema,
@@ -392,7 +393,8 @@ export function partnerNameFromWizard(answers: Pick<WizardAnswersProgress, "part
  *
  * `ideaKind`, buyer, delivery format and audience come from
  * `blueprint.profile`; the commercial model, goal kind and paid push come from
- * the answers; the target comes from `GOAL_TARGETS`. Platform, timeframe,
+ * the answers; the target comes from `GOAL_TARGETS`; the Crew Lead's team
+ * proposal comes from `blueprint.team`, cleaned. Platform, timeframe,
  * name, partner and signals are not roster inputs. Throws when the blueprint
  * was sent back for rework, when the answers are not a completed session, or
  * when the blueprint is not the one the founder picked.
@@ -410,8 +412,12 @@ export function rosterInputFromWizard(answers: WizardAnswers, blueprint: Bluepri
   if (a.idea.source === "library" && b.source === "library" && a.idea.ideaSlug !== b.ideaSlug) {
     throw new Error(`Blueprint idea "${b.ideaSlug}" does not match the wizard idea "${a.idea.ideaSlug}"`);
   }
+  // Roster per idea (WP90): the Crew Lead's proposal, cleaned again here so a
+  // blueprint stored without the quality gate can never break the roster.
+  const proposal = cleanTeamProposal(b.team, { ownIdea: b.source === "own_idea", brandName: a.name.chosen });
   return rosterInputSchema.parse({
     ...b.profile,
+    ...(proposal === undefined ? {} : { proposal }),
     commercialModel: a.commercialModel,
     goal: {
       kind: a.goal.kind,

@@ -10,6 +10,17 @@
         "outputSchema": "sha256:d2f585c0ce5c9d885f38d9cd8a650838cfef1bb94bf15d2c75bc99a656ca7751",
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
         "module": "sha256:7aab983fd43b6ffddeefe834a50688eb88253313dcffdc15cccc43c5a1b81f28"
+      },
+      "retired": "Roster per idea (WP90): replaced by version 2 (the blueprint also proposes the team)"
+    },
+    "crew-blueprint-own-idea@2": {
+      "hash": "sha256:7149646625579e35900699a4b927e749a9d43a44dd67d29006312d3af0a51a13",
+      "parts": {
+        "system": "sha256:1b0b238add0f95304395ccc238950118286d479075769878fb85a556ce634d14",
+        "task": "sha256:77e609bce18d7b5b48fe458cdd0dcf09f3ecb1a52fb0e154661f31ae81ef0991",
+        "outputSchema": "sha256:11a228e4a0e1d8bca3bf8ddd911b0b7ac773639b09f860646506a49717b14beb",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:74ef4ed2916aa42e255eb835f1ba846a629053fec0b2bf5039166417b47229ba"
       }
     },
     "crew-blueprint-personalise@1": {
@@ -20,6 +31,17 @@
         "outputSchema": "sha256:d19b746aaa443a70998886cbe88e91089e4943a66847b03a749749d065810c3c",
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
         "module": "sha256:1448ad38e471839be36157e024c29cf2a11d0b61b1cd99eca88be1e79dc9df80"
+      },
+      "retired": "Roster per idea (WP90): replaced by version 2 (the blueprint also proposes the team)"
+    },
+    "crew-blueprint-personalise@2": {
+      "hash": "sha256:d2dbb2824ca80f2bdc50db047a592902a914492e6ff903ce22bd7acef692e187",
+      "parts": {
+        "system": "sha256:ca65ff8be8b76ec13a72a887e305c0bb0962f1085e9f53c54a59c275b71c33d1",
+        "task": "sha256:4d3730f86d74ad2eeffcf67e03d4768ba5849e8e5b8a44620c8642e407dbe454",
+        "outputSchema": "sha256:265ce99000a1fb9832ce76bf8812beacacb5942396399108f5db84aa04f9f49e",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:00d9e0ab985bfacf849e20d45454cc23b24fc3c8a8bf830cc5690bbb0d6e3848"
       }
     },
     "crew-brand-kit@1": {
@@ -30,6 +52,17 @@
         "outputSchema": "sha256:d32dd28185af67dc6ecb51dc52e0a716ab2a29a1ecd5e40626433e199614b4a6",
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
         "module": "sha256:bf292a7551b42105176653673f53534c3b8be567b29bb56d3fa20b5ad4dff9f2"
+      },
+      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-brand-kit@2": {
+      "hash": "sha256:309e7e79174daa6c7a131ff8651fc45df032fa98d2ed0b8bf0127ed1c5e4f8eb",
+      "parts": {
+        "system": "sha256:55721abaee7741920b42cf6967b2a2c8e2a225043cec551d6540932345f9d2b6",
+        "task": "sha256:8217770fd379a8fa1e213db0109a4ee7a06653f5a2bc7f5c006b2b9b8903ec52",
+        "outputSchema": "sha256:d32dd28185af67dc6ecb51dc52e0a716ab2a29a1ecd5e40626433e199614b4a6",
+        "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
+        "module": "sha256:7e5ffc38524b420abde177492899edf7eb7ef411da1b81ac3b3a8416df21b126"
       }
     },
     "crew-email-sequence@1": {
@@ -40,6 +73,17 @@
         "outputSchema": "sha256:f53704273bca4e709b3e456ef33ae7c2c63ab9934ddd43b52da31f2ccf31d9d7",
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
         "module": "sha256:945bc4feb9b0092d073f6fd3e341d5fc6fc7fae922b9ea47831f1ee4bad250d3"
+      },
+      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-email-sequence@2": {
+      "hash": "sha256:054dec279f9f4740a55bbaf19f0646a3c6c42255cdfb4da412742752c695bdf0",
+      "parts": {
+        "system": "sha256:2fa35de0323ba055cd3cb70912cd5fa365f23c3e79f636f68710fa48ec6bd29a",
+        "task": "sha256:a4c3f87d1d51528850e830a6a0dccbd81db9833d946dc78ea47eb0e053a06527",
+        "outputSchema": "sha256:f53704273bca4e709b3e456ef33ae7c2c63ab9934ddd43b52da31f2ccf31d9d7",
+        "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
+        "module": "sha256:3bc3ec7e066bb765a3dcc2c113d733dc61cf97916b43024a441f4eabd342592a"
       }
     },
     "crew-social-pack@1": {
@@ -50,6 +94,17 @@
         "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
         "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
         "module": "sha256:6a35e1b5c5d66432641f82cb3947c5fc1fd10e3bd70e580f4b9b6298197f311f"
+      },
+      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-social-pack@2": {
+      "hash": "sha256:b645f9157adc756fc329ad950e0f09c3a640e72fbc08c424054f22a5b9104fdb",
+      "parts": {
+        "system": "sha256:c4cd924c2c298759d7181dbe3a1a489016906195c07f4a29d347d7d2d0685a16",
+        "task": "sha256:2f039282143c14d84dece3bc91a4db4bbd753d3505837d04aa700788d750fa32",
+        "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
+        "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
+        "module": "sha256:f0f77089ce2fb019d3758e4d446ab0e6648c2af1ab151d6442cc2d9e108dc17b"
       }
     },
     "internal-registry-probe@1": {

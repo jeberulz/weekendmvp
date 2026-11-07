@@ -18,16 +18,41 @@ export const ROLE_KEYS = [
 export type RoleKey = (typeof ROLE_KEYS)[number];
 export const roleKeySchema = z.enum(ROLE_KEYS);
 
-export const ALWAYS_HIRED_ROLE_KEYS = [
-  "lead",
-  "brand",
+/**
+ * Roster per idea (WP90, owner decision 2026-11-07): the core every business
+ * hires, whatever the idea. These are the roles whose launch steps are built
+ * (blueprint and roster, brand kit, emails, social posts), so the L1 loop
+ * always runs. Every other role is the idea's call: the blueprint proposes
+ * it, and `planRoster` applies guardrails and falls back to rules. Replaces
+ * the WP69 canvas rule "eight always hired".
+ */
+export const CORE_ROLE_KEYS = ["lead", "brand", "email", "social"] as const satisfies readonly RoleKey[];
+export type CoreRoleKey = (typeof CORE_ROLE_KEYS)[number];
+
+/** The roles the idea decides: hired or skipped, each with a reason. */
+export const OPTIONAL_ROLE_KEYS = [
   "landing",
   "seo",
   "marketing",
-  "email",
-  "social",
   "engineering",
+  "ads",
+  "curriculum",
+  "community",
+  "merch",
+  "outbound",
 ] as const satisfies readonly RoleKey[];
+export type OptionalRoleKey = (typeof OPTIONAL_ROLE_KEYS)[number];
+
+export function isCoreRoleKey(key: string): key is CoreRoleKey {
+  return (CORE_ROLE_KEYS as readonly string[]).includes(key);
+}
+
+export function isOptionalRoleKey(key: string): key is OptionalRoleKey {
+  return (OPTIONAL_ROLE_KEYS as readonly string[]).includes(key);
+}
+
+/** Longest reason a team decision may carry (the roster plan's own bound). */
+export const TEAM_REASON_MAX = 160;
 
 export const IDEA_KINDS = [
   "app",
@@ -129,8 +154,27 @@ export const rosterProfileSchema = z
   .strict();
 export type RosterProfile = z.infer<typeof rosterProfileSchema>;
 
+/**
+ * One team decision the blueprint proposed for an optional role, already
+ * cleaned (`lib/workspace/crew/teamProposal.ts`): a known optional role, at
+ * most once, a single-line reason.
+ */
+export const teamDecisionSchema = z
+  .object({
+    roleKey: z.enum(OPTIONAL_ROLE_KEYS),
+    hire: z.boolean(),
+    reason: singleLineText(TEAM_REASON_MAX),
+  })
+  .strict();
+export type TeamDecision = z.infer<typeof teamDecisionSchema>;
+
 export const rosterInputSchema = rosterProfileSchema
   .extend({
+    /**
+     * Roster per idea: the Crew Lead's proposal from the blueprint. Absent
+     * (an older blueprint, or one without a team block) means the rules decide.
+     */
+    proposal: z.array(teamDecisionSchema).max(OPTIONAL_ROLE_KEYS.length).optional(),
     commercialModel: commercialModelSchema,
     goal: z
       .object({
@@ -154,9 +198,16 @@ const hiredEntrySchema = z
     employeeName: singleLineText(40),
     roleLabel: singleLineText(40),
     hiredBy: z.enum(["rule", "founder"]),
+    /** A core role (`CORE_ROLE_KEYS`). The name predates the core and is kept for stored plans. */
     always: z.boolean(),
     weight: engineeringWeightSchema.optional(),
-    reason: z.string().trim().min(1).max(160),
+    reason: z.string().trim().min(1).max(TEAM_REASON_MAX),
+    /**
+     * Roster per idea: "lead" when the Crew Lead's proposal decided this role,
+     * absent when a rule did. `hiredBy` stays "rule" until Codex adds a "lead"
+     * value to `crew_members.hiredBy` (gap G1).
+     */
+    decidedBy: z.literal("lead").optional(),
   })
   .strict();
 
@@ -164,7 +215,8 @@ const skippedEntrySchema = z
   .object({
     roleKey: roleKeySchema,
     roleLabel: singleLineText(40),
-    reason: z.string().trim().min(1).max(160),
+    reason: z.string().trim().min(1).max(TEAM_REASON_MAX),
+    decidedBy: z.literal("lead").optional(),
   })
   .strict();
 
@@ -193,7 +245,7 @@ export const rosterPlanSchema = z
     if (!plan.hired.some((h) => h.roleKey === "lead")) {
       ctx.addIssue({ code: "custom", message: "lead must be hired", path: ["hired"] });
     }
-    const alwaysKeys = new Set<string>(ALWAYS_HIRED_ROLE_KEYS);
+    const alwaysKeys = new Set<string>(CORE_ROLE_KEYS);
     plan.hired.forEach((h, i) => {
       const isAlways = alwaysKeys.has(h.roleKey);
       if (h.always !== isAlways) {
@@ -206,8 +258,15 @@ export const rosterPlanSchema = z
       if (isAlways && h.hiredBy !== "rule") {
         ctx.addIssue({
           code: "custom",
-          message: `Always-on role "${h.roleKey}" must be hired by rule`,
+          message: `Core role "${h.roleKey}" must be hired by rule`,
           path: ["hired", i, "hiredBy"],
+        });
+      }
+      if (isAlways && h.decidedBy !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Core role "${h.roleKey}" is never the lead's call`,
+          path: ["hired", i, "decidedBy"],
         });
       }
       if (h.roleKey === "engineering" && h.weight === undefined) {
@@ -229,7 +288,7 @@ export const rosterPlanSchema = z
       if (alwaysKeys.has(s.roleKey)) {
         ctx.addIssue({
           code: "custom",
-          message: `Always-hired role "${s.roleKey}" cannot be skipped`,
+          message: `Core role "${s.roleKey}" cannot be skipped`,
           path: ["skipped", i, "roleKey"],
         });
       }

@@ -31,6 +31,7 @@
 import type { z } from "zod";
 
 import { blueprintMarketSchema, parseArtifact, type ArtifactByKind, type ArtifactKind } from "../contracts/artifacts";
+import { cleanTeamProposal } from "./teamProposal";
 import { checkArtifact, issue, mergeResults, toResult, type CheckResult } from "./checks";
 import { checkEmailSequenceLinks } from "./checks/emailLinks";
 import { checkSocialPackLinks } from "./checks/socialLinks";
@@ -73,11 +74,24 @@ function normaliseBlueprint(
   if (blueprint.source !== expected) {
     return { result: blocked("blueprint_source_mismatch", ["source"], `This business needs a ${expected} blueprint.`) };
   }
-  if (blueprint.source === "own_idea") return { artifact: blueprint };
+  // Roster per idea (WP90): only clean team decisions are stored; a dropped one leaves its role to the rules.
+  const team = cleanTeamProposal(blueprint.team, {
+    ownIdea: blueprint.source === "own_idea",
+    ...(context.businessName === undefined ? {} : { brandName: context.businessName }),
+  });
+  const withTeam: Record<string, unknown> = { ...blueprint };
+  delete withTeam.team;
+  if (team !== undefined) withTeam.team = team;
+  if (blueprint.source === "own_idea") {
+    const reparsed = parseArtifact("blueprint", withTeam);
+    return reparsed.success
+      ? { artifact: reparsed.data }
+      : { result: blocked("blueprint_team_invalid", ["team"], "The blueprint's team could not be stored.") };
+  }
   if (context.ideaSlug === undefined) {
     return { result: blocked("blueprint_idea_missing", ["ideaSlug"], "The business has no library idea to attach the blueprint to.") };
   }
-  const owned: Record<string, unknown> = { ...blueprint, ideaSlug: context.ideaSlug };
+  const owned: Record<string, unknown> = { ...withTeam, ideaSlug: context.ideaSlug };
   delete owned.market;
   if (context.seedMarket !== undefined) owned.market = context.seedMarket;
   const reparsed = parseArtifact("blueprint", owned);

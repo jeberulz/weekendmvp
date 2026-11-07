@@ -3,7 +3,7 @@ import { ConvexError } from "convex/values";
 import type { TeamCardStatus } from "@/components/workspace/kit/types";
 import { ROLE_CATALOGUE } from "@/convex/crew/roles";
 import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
-import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import { CORE_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
 import type { LaunchHiredRole, LaunchSkippedRole, LaunchView } from "@/lib/workspace/crew/launch";
 import { needsYouTail } from "@/lib/workspace/needsYou";
 import { TEAM_NOT_STARTED_COPY, TEAM_PARTNER_NAME } from "@/lib/workspace/reviewPages";
@@ -427,7 +427,7 @@ export type WhyRow = {
 
 export const DECISION_LABELS = { always: "Hired · always", added: "Hired · added", skipped: "Skipped" } as const;
 
-const ALWAYS: ReadonlySet<RoleKey> = new Set<RoleKey>(ALWAYS_HIRED_ROLE_KEYS);
+const ALWAYS: ReadonlySet<RoleKey> = new Set<RoleKey>(CORE_ROLE_KEYS);
 
 /** Every role the roster decided on, hired or skipped, in catalogue order. */
 export function whyRows(hired: readonly TeamHired[], skipped: readonly TeamSkipped[]): WhyRow[] {

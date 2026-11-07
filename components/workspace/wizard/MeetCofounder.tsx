@@ -11,7 +11,7 @@ import { BTN_SECONDARY, CARD, EYEBROW, EYEBROW_EMBER, FOCUS } from "@/components
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { ROLE_CATALOGUE } from "@/convex/crew/roles";
-import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import { CORE_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
 import { partnerNameFromWizard, type WizardAnswersProgress } from "@/lib/workspace/contracts/wizard";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
 import {
@@ -73,7 +73,7 @@ function asRoleKey(value: string): RoleKey | null {
 const CATALOGUE_BY_KEY = new Map(ROLE_CATALOGUE.map((entry) => [entry.key, entry]));
 
 function isAlways(roleKey: RoleKey | null): boolean {
-  return roleKey !== null && (ALWAYS_HIRED_ROLE_KEYS as readonly string[]).includes(roleKey);
+  return roleKey !== null && (CORE_ROLE_KEYS as readonly string[]).includes(roleKey);
 }
 
 // ---------------------------------------------------------------------------
