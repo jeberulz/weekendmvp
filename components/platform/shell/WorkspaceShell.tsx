@@ -65,16 +65,12 @@ const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-/** Compact brand mark for the collapsed rail and the phone header. */
+/**
+ * Compact brand mark for the collapsed rail and the phone header: the W from
+ * the wordmark (WP67-S6). Decorative — the wrapping link is named "Weekend MVP home".
+ */
 function BrandMark() {
-  return (
-    <span
-      aria-hidden
-      className="flex size-8 items-center justify-center rounded-lg bg-home-ink font-editorial text-lg italic leading-none text-home-card"
-    >
-      W
-    </span>
-  );
+  return <span aria-hidden className="logo-mark h-4 w-8 shrink-0" />;
 }
 
 function SidebarLink({
