@@ -143,3 +143,14 @@ Append-only progress log. Do not rely on chat history for project state.
   - `npm run typecheck`: green.
   - Both test files: 33 pass.
 - This lands on `main` with the WP90 merge. Until then, a deploy from `main` still fails this check.
+
+## 2026-11-07 - Review fixes (PR #278, Codex)
+
+- **Seed chunks too large for Linux (P1).** `scripts/crew-seeds.mjs` passes each chunk to `npx convex run` as one command-line argument, and Linux caps a single argument at 128 KiB. Chunks had a 180 KB budget, so the first library chunk (177,586 bytes) would fail with `E2BIG`. The chunk budget is now 96,000 bytes, and any argument over 120,000 bytes stops the script with a clear error before it spawns. Against the real library: 231 pages in 40 chunks, largest argument 95,833 bytes.
+- **Polling stopped after one passing provider error (P2).** `pollSeedRun` now polls again on the usual schedule when the status check or the results download hits a retryable provider error (a timeout, a rate limit, a 5xx, a dropped connection). Retries count toward the same poll limit. Nothing is recorded until every result is in hand, so a retry repeats nothing. Any other error still throws, and the run stays submitted for `--poll`.
+- Two new tests are in `tests/platform/wp90-seed-batch.test.ts`.
+- Checks:
+  - `npm run typecheck`: green.
+  - Convex tsc: 0 errors.
+  - eslint on the changed files: clean.
+  - `npm test`: exit 0.

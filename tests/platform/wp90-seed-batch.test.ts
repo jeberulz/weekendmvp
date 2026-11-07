@@ -214,6 +214,58 @@ describe("WP90-S3 seed precompute", () => {
     expect((await t2.query(internal.crew.seeds.runSummary, { runId: run2 })).status).toBe("failed");
   });
 
+  test("a passing provider error while polling polls again, and the results are still collected", async () => {
+    const t = await setup();
+    const runId = await preparedRun(t);
+    const { ctx, scheduled } = actionCtx(t);
+    const fixture = createAnthropicBatchAdapter({ env: fixtureEnv });
+    await submitSeedRun(ctx, { runId }, { adapter: fixture });
+    expect(scheduled).toHaveLength(1);
+
+    const statusTimesOut: AnthropicBatchAdapter = {
+      ...fixture,
+      status: async () => {
+        throw new ProviderError("anthropic", "timeout", "Anthropic did not answer in time");
+      },
+    };
+    expect(await pollSeedRun(ctx, { runId }, { adapter: statusTimesOut })).toEqual({
+      status: "retrying", written: 0, auditFailed: 0, failed: 0,
+    });
+    expect(scheduled).toHaveLength(2);
+
+    const downloadFails: AnthropicBatchAdapter = {
+      ...fixture,
+      results: async () => {
+        throw new ProviderError("anthropic", "server", "Anthropic returned 529", { status: 529 });
+      },
+    };
+    expect(await pollSeedRun(ctx, { runId }, { adapter: downloadFails })).toMatchObject({ status: "retrying" });
+    expect(scheduled).toHaveLength(3);
+    expect((await t.query(internal.crew.seeds.runSummary, { runId })).status).toBe("submitted");
+
+    expect(await pollSeedRun(ctx, { runId }, { adapter: fixture })).toEqual({
+      status: "collected", written: 2, auditFailed: 0, failed: 0,
+    });
+    for (const row of await usageRows(t)) expect(row.status).toBe("settled");
+  });
+
+  test("a permanent provider error while polling throws and leaves the run for a manual poll", async () => {
+    const t = await setup();
+    const runId = await preparedRun(t);
+    const { ctx, scheduled } = actionCtx(t);
+    const fixture = createAnthropicBatchAdapter({ env: fixtureEnv });
+    await submitSeedRun(ctx, { runId }, { adapter: fixture });
+    const unauthorised: AnthropicBatchAdapter = {
+      ...fixture,
+      status: async () => {
+        throw new ProviderError("anthropic", "auth", "Anthropic returned 401", { status: 401 });
+      },
+    };
+    await expect(pollSeedRun(ctx, { runId }, { adapter: unauthorised })).rejects.toThrow(/401/u);
+    expect(scheduled).toHaveLength(1);
+    expect((await t.query(internal.crew.seeds.runSummary, { runId })).status).toBe("submitted");
+  });
+
   test("a run needs exactly one active super admin to own the rows", async () => {
     const none = await setup({ superAdmins: 0 });
     await expect(none.mutation(internal.crew.seeds.createRun, { seedVersion: VERSION })).rejects.toThrow(/exactly one/u);

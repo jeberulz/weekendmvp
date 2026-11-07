@@ -57,6 +57,7 @@ const targetLabel = deployment ?? (prod ? "prod" : "dev");
 /** One `npx convex run`; returns the parsed JSON result. */
 function convexRun(fn, args) {
   const json = JSON.stringify(args);
+  if (Buffer.byteLength(json) > MAX_ARG_BYTES) fail(`the ${fn} arguments are ${Buffer.byteLength(json)} bytes, over the ${MAX_ARG_BYTES}-byte limit for one command-line argument`);
   const res = spawnSync("npx", ["convex", "run", fn, json, ...targetFlags], {
     cwd: root,
     encoding: "utf8",
@@ -74,14 +75,24 @@ function convexRun(fn, args) {
   }
 }
 
-/** At most 25 items and about 180 KB per call: under argv and Convex argument limits. */
-function chunks(items) {
+/**
+ * Each call's JSON goes to `npx convex run` as one command-line argument.
+ * Linux caps a single argument at 128 KiB (MAX_ARG_STRLEN), whatever the
+ * total argv limit, so every argument stays under MAX_ARG_BYTES and each
+ * chunk's items under CHUNK_BYTES, leaving room for the enclosing object.
+ */
+const MAX_ARG_BYTES = 120_000;
+const CHUNK_BYTES = 96_000;
+
+/** At most 25 items and CHUNK_BYTES of serialized items per call. */
+function chunks(items, budget = CHUNK_BYTES) {
   const out = [];
   let current = [];
   let size = 0;
   for (const item of items) {
-    const bytes = Buffer.byteLength(JSON.stringify(item));
-    if (current.length > 0 && (current.length >= 25 || size + bytes > 180_000)) {
+    const bytes = Buffer.byteLength(JSON.stringify(item)) + 1;
+    if (bytes > budget) fail(`${item.ideaSlug ?? "an item"} is ${bytes} bytes, over the ${budget}-byte chunk budget`);
+    if (current.length > 0 && (current.length >= 25 || size + bytes > budget)) {
       out.push(current);
       current = [];
       size = 0;

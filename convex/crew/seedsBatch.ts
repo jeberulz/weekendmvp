@@ -64,7 +64,7 @@ export type SeedSubmitResult = {
 };
 
 export type SeedPollResult = {
-  readonly status: "waiting" | "collected" | "gave_up" | "not_submitted";
+  readonly status: "waiting" | "retrying" | "collected" | "gave_up" | "not_submitted";
   readonly written: number;
   readonly auditFailed: number;
   readonly failed: number;
@@ -286,8 +286,7 @@ export async function pollSeedRun(
   const adapter = adapterFor(deps);
   const polls = await ctx.runMutation(internal.crew.seeds.markPolled, { runId: args.runId });
 
-  const status = await adapter.status(run.batchId, { timeoutMs: SEED_BATCH_CALL_TIMEOUT_MS });
-  if (status.processingStatus !== "ended") {
+  const pollAgain = async (status: "waiting" | "retrying"): Promise<SeedPollResult> => {
     if (polls >= SEED_POLL_MAX) {
       await ctx.runMutation(internal.crew.seeds.finishRun, {
         runId: args.runId,
@@ -296,8 +295,23 @@ export async function pollSeedRun(
       return { status: "gave_up", ...counts };
     }
     await ctx.scheduler.runAfter(SEED_POLL_INTERVAL_MS, internal.crew.seedsBatch.pollRun, { runId: args.runId });
-    return { status: "waiting", ...counts };
+    return { status, ...counts };
+  };
+
+  // Scheduled actions run at most once, and the adapter makes no retries of
+  // its own: a passing provider error (a timeout, a rate limit, a 5xx, a
+  // dropped connection) polls again on the usual schedule, inside the same
+  // poll limit, so the paid results are still collected. Both calls are reads,
+  // and nothing is recorded until every result is in hand, so a retry repeats
+  // nothing. Any other error throws: the run stays submitted for `--poll`.
+  let status: Awaited<ReturnType<AnthropicBatchAdapter["status"]>>;
+  try {
+    status = await adapter.status(run.batchId, { timeoutMs: SEED_BATCH_CALL_TIMEOUT_MS });
+  } catch (error) {
+    if (isProviderError(error) && error.retryable) return await pollAgain("retrying");
+    throw error;
   }
+  if (status.processingStatus !== "ended") return await pollAgain("waiting");
 
   const sent = (await allItems(ctx, args.runId, "sent")).filter(
     (item): item is ItemView & { usageId: Id<"ai_usage"> } => item.usageId !== undefined,
@@ -306,7 +320,13 @@ export async function pollSeedRun(
   const requests = new Map<string, TextRequest>(
     sent.map((item) => [item.usageId as string, seedRequestFor(seedSourceFromJson(item.sourceJson)).request]),
   );
-  const results = await adapter.results(run.batchId, requests, { timeoutMs: SEED_BATCH_CALL_TIMEOUT_MS });
+  let results: Awaited<ReturnType<AnthropicBatchAdapter["results"]>>;
+  try {
+    results = await adapter.results(run.batchId, requests, { timeoutMs: SEED_BATCH_CALL_TIMEOUT_MS });
+  } catch (error) {
+    if (isProviderError(error) && error.retryable) return await pollAgain("retrying");
+    throw error;
+  }
   const latencyMs = Math.max(0, now() - (run.submittedAt ?? now()));
   for (const outcome of results.outcomes) {
     const item = byUsageId.get(outcome.customId);
