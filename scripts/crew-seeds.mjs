@@ -64,6 +64,8 @@ function convexRun(fn, args) {
     maxBuffer: 32 * 1024 * 1024,
   });
   if (res.status !== 0) {
+    // A spawn failure (E2BIG, ENOENT) has no exit code or output, only `error`.
+    if (res.error) console.error(`${res.error.code ?? "spawn error"}: ${res.error.message}`);
     console.error((res.stderr || res.stdout || "").trim().split("\n").slice(-6).join("\n"));
     fail(`npx convex run ${fn} failed (exit ${res.status})`);
   }
