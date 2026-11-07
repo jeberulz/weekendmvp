@@ -3,6 +3,7 @@
 import {
   BookOpen,
   Bookmark,
+  Briefcase,
   Compass,
   CreditCard,
   Hammer,
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
 import { BuildsCount } from "./BuildsCount";
+import { BusinessWorkspaceLinks } from "./BusinessWorkspaceLinks";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
 import { PlanCard } from "@/components/platform/plan/PlanCard";
@@ -202,6 +204,19 @@ function AccountSheet() {
               Starter Kit
             </Link>
           </SheetClose>
+          {/* L1-C5b: back into each business workspace (nothing while the workspace is off). */}
+          <BusinessWorkspaceLinks>
+            {(links) =>
+              links.map((link) => (
+                <SheetClose asChild key={link.projectId}>
+                  <Link href={link.href} className={cn(sheetLink, focusRing)}>
+                    <Briefcase className="size-[18px] text-home-ink-2" aria-hidden />
+                    {link.label}
+                  </Link>
+                </SheetClose>
+              ))
+            }
+          </BusinessWorkspaceLinks>
         </div>
         <div className="border-t border-home-rule px-5 pt-4">
           <SignOutButton className="w-full" />
@@ -300,6 +315,24 @@ export function WorkspaceShell({
               />
             ) : null}
           </div>
+
+          {/* L1-C5b: back into each business workspace (nothing while the workspace is off). */}
+          <BusinessWorkspaceLinks>
+            {(links) => (
+              <div className="flex flex-col gap-1">
+                {links.map((link) => (
+                  <SidebarLink
+                    key={link.projectId}
+                    href={link.href}
+                    label={link.label}
+                    icon={Briefcase}
+                    current={false}
+                    collapsed={collapsed}
+                  />
+                ))}
+              </div>
+            )}
+          </BusinessWorkspaceLinks>
 
           <SidebarCollections collapsed={collapsed} pathname={pathname} />
 

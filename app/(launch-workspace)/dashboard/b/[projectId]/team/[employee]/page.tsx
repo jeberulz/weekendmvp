@@ -13,7 +13,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return workspacePageMetadata(employee ? `${employee.employeeName} · ${employee.label}` : "Team HQ");
 }
 
-/** One specialist's workstream (extract §4 WorkstreamPanel). Unknown role keys are a 404. */
+/**
+ * One specialist's workstream (extract §4 WorkstreamPanel). Unknown role keys
+ * are a 404. L1-C2: Team pages beyond the roster are coming soon.
+ */
 export default async function EmployeeWorkstreamPage({ params }: { params: Params }) {
   const { projectId, employee: employeeKey } = await params;
   const project = await requireWorkspaceAccess(projectId);
@@ -23,7 +26,8 @@ export default async function EmployeeWorkstreamPage({ params }: { params: Param
     <PlaceholderBody
       eyebrow={`AI employee · ${project.name} workstream`}
       heading={`${employee.employeeName} · ${employee.label}`}
-      emptyState="Approvals go to Wren, who routes them to the rest of the team."
+      comingSoon
+      emptyState={`This page will show ${employee.employeeName}'s work for your business.`}
     />
   );
 }

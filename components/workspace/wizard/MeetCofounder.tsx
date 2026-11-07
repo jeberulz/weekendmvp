@@ -2,21 +2,23 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ReactNode, type Ref } from "react";
 import { QuietErrorBoundary } from "@/components/platform/client-gates";
-import { BTN_SECONDARY, CARD, EYEBROW } from "@/components/workspace/kit/styles";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW } from "@/components/workspace/kit/styles";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { partnerNameFromWizard, type WizardAnswersProgress } from "@/lib/workspace/contracts/wizard";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
 import { PARTNER_PERSONALITY_OPTIONS } from "@/lib/workspace/wizard/labels";
+import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 
 export type MeetCofounderProps = {
   readonly answers: WizardAnswersProgress;
   /** The business `createBusiness` made (WP74-S4). */
-  readonly business: { readonly name: string; readonly slug: string };
+  readonly business: { readonly projectId: string; readonly name: string; readonly slug: string };
   readonly headingRef?: Ref<HTMLHeadingElement>;
   /** WP75-S1: the team section (`LiveCofounderTeam` in the wizard, `CofounderTeam` in tests). */
   readonly team?: ReactNode;
@@ -24,7 +26,9 @@ export type MeetCofounderProps = {
 
 /**
  * The wizard's end screen, after the business exists: the partner, the
- * business, and (WP75-S1) the team the crew lead puts together.
+ * business, (WP75-S1) the team the crew lead puts together, and (L1-C5) the
+ * way into the business's workspace. The link is always there once the
+ * business exists, so a slow or failed team never leaves a dead end.
  */
 export function MeetCofounder({ answers, business, headingRef, team }: MeetCofounderProps) {
   const name = partnerNameFromWizard(answers);
@@ -58,6 +62,15 @@ export function MeetCofounder({ answers, business, headingRef, team }: MeetCofou
         {team === undefined ? <p>{name} puts your team together in the next step.</p> : null}
       </div>
       {team}
+      <div className="flex flex-col items-start gap-2">
+        <Link href={workspacePath(business.projectId)} className={BTN_PRIMARY}>
+          Go to your workspace
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+        <p className="text-[13px] text-home-ink-2">
+          Your workspace is where you and {name} work on {business.name}.
+        </p>
+      </div>
     </section>
   );
 }

@@ -17,6 +17,8 @@ import {
   wrenToolsInstruction,
   type WrenNavigateRoute,
 } from "@/lib/workspace/contracts/wrenTools";
+import { ARTIFACT_KINDS } from "@/lib/workspace/contracts/artifacts";
+import { REVIEW_TARGETS } from "@/lib/workspace/reviews";
 import { WORKSPACE_ROUTES } from "@/lib/workspace/routes";
 import {
   APPROVAL_REVIEW_LABELS,
@@ -203,16 +205,31 @@ describe("WP77-S4 approval card subject line and review link", () => {
     expect(approvalSubjectLine({ table: "other" })).toBe("");
   });
 
-  test("every review route is a workspace page with a label", () => {
-    const slugs = WORKSPACE_ROUTES.map((route) => route.slug as string);
+  test("every review route is a built workspace page with a label, never a coming-soon one", () => {
+    const built = WORKSPACE_ROUTES.filter((route) => !route.comingSoon).map((route) => route.slug as string);
     for (const route of APPROVAL_REVIEW_ROUTES) {
-      expect(slugs).toContain(route);
+      expect(built).toContain(route);
       expect(APPROVAL_REVIEW_LABELS[route].length).toBeGreaterThan(0);
     }
-    expect(approvalReviewRoute("site_versions")).toBe("launch");
+    expect(approvalReviewRoute("site_versions")).toBe("team");
     expect(approvalReviewRoute("sequences")).toBe("email");
     expect(approvalReviewRoute("social_posts")).toBe("social");
     expect(approvalReviewRoute("<script>")).toBe("files");
+  });
+
+  test("a documents card routes by artifact kind through REVIEW_TARGETS, as pendingReviews does", () => {
+    for (const kind of ARTIFACT_KINDS) {
+      expect(approvalReviewRoute("documents", kind)).toBe(REVIEW_TARGETS[kind].slug);
+    }
+    expect(approvalReviewRoute("documents", "brand_kit")).toBe("brand");
+    expect(approvalReviewRoute("documents", "email_sequence")).toBe("email");
+    expect(approvalReviewRoute("documents", "social_pack")).toBe("social");
+    expect(approvalReviewRoute("documents", "blueprint")).toBe("team");
+    // No kind (row gone or not this business's), or a kind that is not an artifact.
+    expect(approvalReviewRoute("documents")).toBe("files");
+    expect(approvalReviewRoute("documents", null)).toBe("files");
+    expect(approvalReviewRoute("documents", "research_note")).toBe("files");
+    expect(approvalReviewRoute("documents", "__proto__")).toBe("files");
   });
 });
 

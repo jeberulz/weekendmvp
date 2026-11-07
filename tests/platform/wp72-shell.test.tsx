@@ -118,17 +118,21 @@ describe("WorkspaceFrame markup", () => {
       const list = section.slice(section.indexOf("<ul"), section.indexOf("</ul>"));
       const hrefs = [...list.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
       expect(hrefs).toEqual(workspaceRoutesInGroup(group).map((route) => route.path(PROJECT)));
-      for (const route of workspaceRoutesInGroup(group)) expect(list).toContain(`>${route.label}</a>`);
+      for (const route of workspaceRoutesInGroup(group)) {
+        // L1-C2: unbuilt rows say "Coming soon" in visible text inside the link; built rows never do.
+        const tag = route.comingSoon ? '<span class="ml-auto shrink-0 rounded-full border border-home-rule bg-home-card px-2 py-0.5 text-[11px] font-medium text-home-ink-2">Coming soon</span>' : "";
+        expect(list).toContain(`<span>${route.label}</span>${tag}</a>`);
+      }
     }
   });
 
   test("aria-current marks only the active page", () => {
     nav.pathname = `/dashboard/b/${PROJECT}/team/brand`;
     const markup = renderFrame();
-    const current = [...markup.matchAll(/<a [^>]*aria-current="page"[^>]*>([^<]*)<\/a>/g)].map((m) => m[1]);
+    const current = [...markup.matchAll(/<a [^>]*aria-current="page"[^>]*><span>([^<]*)<\/span>/g)].map((m) => m[1]);
     expect(current).toEqual(["Team HQ"]);
     nav.pathname = `/dashboard/b/${PROJECT}`;
-    const index = [...renderFrame().matchAll(/<a [^>]*aria-current="page"[^>]*>([^<]*)<\/a>/g)].map((m) => m[1]);
+    const index = [...renderFrame().matchAll(/<a [^>]*aria-current="page"[^>]*><span>([^<]*)<\/span>/g)].map((m) => m[1]);
     expect(index).toEqual(["Dashboard"]);
   });
 
@@ -174,7 +178,7 @@ describe("WorkspaceFrame markup", () => {
     expect(markup).not.toContain("Account");
     expect(markup).not.toContain(groupHeadingId("Account"));
     const link = markup.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>/);
-    expect(link?.[0]).toContain('aria-label="Credits Free 48 left, open Billing"');
+    expect(link?.[0]).toContain('aria-label="Credits and billing, coming soon"');
     expect(link?.[0]).not.toContain("aria-current");
     // inside the single nav
     const navHtml = markup.slice(markup.indexOf("<nav"), markup.indexOf("</nav>"));
@@ -184,13 +188,11 @@ describe("WorkspaceFrame markup", () => {
     expect(active?.[0]).toContain('aria-current="page"');
   });
 
-  test("the credit meter renders from the mock", () => {
+  test("L1: the credits card shows no balance while billing is coming soon", () => {
     const markup = renderFrame();
-    expect(markup).toContain('role="meter"');
-    expect(markup).toContain('aria-valuenow="48"');
-    expect(markup).toContain('aria-valuemax="50"');
-    expect(markup).toContain("48 left");
-    expect(markup).toContain("Free");
+    expect(markup).not.toContain('role="meter"');
+    expect(markup).not.toContain("48 left");
+    expect(markup).toContain("Credits and billing");
   });
 
   test("the weekend group is dropped when weekendActive is false", () => {

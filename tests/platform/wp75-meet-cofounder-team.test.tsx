@@ -59,7 +59,7 @@ function setup(launch: LaunchView | undefined, overrides: Partial<CofounderTeamP
   const view = render(
     <MeetCofounder
       answers={hydrotrailWizardAnswers}
-      business={{ name: "HydroTrail", slug: "hydrotrail" }}
+      business={{ projectId: "proj1", name: "HydroTrail", slug: "hydrotrail" }}
       team={<CofounderTeam {...props} />}
     />,
   );
@@ -226,7 +226,7 @@ describe("WP75-S1 Meet your co-founder: the team", () => {
   });
 
   test("without a team section the screen keeps its WP74 line", () => {
-    render(<MeetCofounder answers={hydrotrailWizardAnswers} business={{ name: "HydroTrail", slug: "hydrotrail" }} />);
+    render(<MeetCofounder answers={hydrotrailWizardAnswers} business={{ projectId: "proj1", name: "HydroTrail", slug: "hydrotrail" }} />);
     expect(screen.getByText("Wren puts your team together in the next step.")).toBeTruthy();
   });
 });

@@ -47,31 +47,33 @@ describe("label in name (WCAG 2.5.3)", () => {
     return decode(row.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
   }
 
-  test.each(cases)("the Billing link name starts with the rendered meter's first row: %o", (credits) => {
-    const visible = firstRowText(renderToStaticMarkup(<CreditMeter {...credits} />));
-    expect(visible.length).toBeGreaterThan("Credits".length);
-    expect(visible.startsWith("Credits")).toBe(true);
+  test.each(cases)("while billing is coming soon the card shows no balance, and its name starts with the visible text: %o", (credits) => {
     const frame = renderToStaticMarkup(
       <WorkspaceFrame projectId="proj1" businesses={[{ id: "proj1", name: "HydroTrail" }]} credits={credits}>
         <main id="workspace-main" tabIndex={-1} />
       </WorkspaceFrame>,
     );
-    const tag = frame.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>/)?.[0] ?? "";
+    const card = frame.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>([\s\S]*?)<\/a>/);
+    const tag = card?.[0] ?? "";
     const label = decode(tag.match(/aria-label="([^"]*)"/)?.[1] ?? "");
-    expect(label.startsWith(visible)).toBe(true);
-    expect(label).toContain("Billing");
-    // The helpers agree with what was rendered.
+    expect(label).toBe("Credits and billing, coming soon");
     expect(billingLinkLabel(credits)).toBe(label);
+    // The name starts with the card's visible text, read from the rendered card (case and punctuation aside).
+    const visibleLines = [...(card?.[1] ?? "").matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g)]
+      .map((line) => decode(line[1].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim())
+      .filter((line) => line.length > 0);
+    expect(visibleLines.length).toBeGreaterThan(0);
+    expect(label.startsWith(visibleLines[0] ?? "\u0000")).toBe(true);
+    const words = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    const visibleCardText = visibleLines.join(" ");
+    expect(words(label).startsWith(words(visibleCardText))).toBe(true);
+    // No made-up balance: credits are not metered in L1.
+    expect(frame).not.toContain('role="meter"');
+    expect(frame).not.toContain(" left");
+    expect(frame).toContain("Credits and billing</p>");
+    // The meter itself still renders its own first row (used once billing ships).
+    const visible = firstRowText(renderToStaticMarkup(<CreditMeter {...credits} />));
     expect(creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)).toBe(visible);
-  });
-
-  test("the rendered Billing link carries that label", () => {
-    const markup = renderToStaticMarkup(
-      <WorkspaceFrame projectId="proj1" businesses={[{ id: "proj1", name: "HydroTrail" }]} credits={{ balance: 8, max: 50, plan: "free" }}>
-        <main id="workspace-main" tabIndex={-1} />
-      </WorkspaceFrame>,
-    );
-    expect(markup).toContain('aria-label="Credits Free 8 left · low, open Billing"');
   });
 
   test("the switcher name starts with the visible business name", () => {

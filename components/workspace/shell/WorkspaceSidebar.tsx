@@ -8,13 +8,28 @@ import { FOCUS } from "@/components/workspace/kit/styles";
 import { CreditMeter, creditMeterVisibleLabel } from "@/components/workspace/kit";
 import { groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell/nav-utils";
 import type { CreditsSummary } from "@/lib/workspace/credits";
-import { workspaceRoute } from "@/lib/workspace/routes";
+import { COMING_SOON_LABEL, workspaceRoute } from "@/lib/workspace/routes";
 
 export const NAV_PANEL_ID = "workspace-nav-panel";
 const MAIN_ID = "workspace-main";
 
+/**
+ * Starts with the card's visible text (WCAG 2.5.3). While billing is coming soon
+ * the card shows no balance: credits are not metered yet.
+ */
 export function billingLinkLabel(credits: CreditsSummary): string {
+  // L1: credits are not metered yet, so no balance is shown (it would be made up).
+  if (workspaceRoute("billing").comingSoon) return `Credits and billing, ${COMING_SOON_LABEL.toLowerCase()}`;
   return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing`;
+}
+
+/** L1-C2: the visible text tag on an unbuilt nav row (never colour alone). */
+function ComingSoonTag() {
+  return (
+    <span className="ml-auto shrink-0 rounded-full border border-home-rule bg-home-card px-2 py-0.5 text-[11px] font-medium text-home-ink-2">
+      {COMING_SOON_LABEL}
+    </span>
+  );
 }
 
 export function WorkspaceLogo() {
@@ -72,7 +87,7 @@ export function WorkspaceSidebar({
 
   const billing = workspaceRoute("billing");
   const billingActive = isRouteActive(pathname, projectId, billing);
-  // Starts with the visible text ("Credits Free 48 left") so the name contains it (WCAG 2.5.3).
+  // Starts with the card's visible text so the name contains it (WCAG 2.5.3).
   const billingLabel = billingLinkLabel(credits);
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -125,11 +140,12 @@ export function WorkspaceSidebar({
                       <Link
                         href={route.path(projectId)}
                         aria-current={active ? "page" : undefined}
-                        className={`flex min-h-10 items-center rounded-md px-2.5 text-[13px] text-home-ink hover:bg-home-sunk ${FOCUS} ${
+                        className={`flex min-h-10 items-center gap-2 rounded-md px-2.5 text-[13px] text-home-ink hover:bg-home-sunk ${FOCUS} ${
                           active ? "bg-home-sunk font-medium" : "font-normal"
                         }`}
                       >
-                        {route.label}
+                        <span>{route.label}</span>
+                        {route.comingSoon ? <ComingSoonTag /> : null}
                       </Link>
                     </li>
                   );
@@ -145,7 +161,14 @@ export function WorkspaceSidebar({
               billingActive ? "bg-home-sunk" : "bg-home-card"
             }`}
           >
-            <CreditMeter balance={credits.balance} max={credits.max} plan={credits.plan} />
+            {billing.comingSoon ? (
+              <>
+                <p className="text-[13px] font-medium text-home-ink">Credits and billing</p>
+                <p className="mt-1 text-[11px] font-medium text-home-ink-2">{COMING_SOON_LABEL}</p>
+              </>
+            ) : (
+              <CreditMeter balance={credits.balance} max={credits.max} plan={credits.plan} />
+            )}
           </Link>
         </nav>
       </div>

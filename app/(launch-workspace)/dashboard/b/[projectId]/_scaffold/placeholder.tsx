@@ -1,29 +1,42 @@
 import type { Metadata } from "next";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
-import { workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
+import { COMING_SOON_LABEL, workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
 
 /**
- * WP72-S1 placeholder pages. Each workspace page renders its nav label and
- * one empty-state line from the canvas copy deck (extract §4 and §5). The page
- * that owns each screen replaces its placeholder later (extract §9.10).
+ * WP72-S1 placeholder pages, made honest by L1-C2. A page that is not built
+ * for the L1 beta (`comingSoon` in the route manifest) says "Coming soon" in
+ * words and one plain sentence on what it will do. A page that ships but is
+ * still a placeholder says what it will show. Neither ever claims a state the
+ * page does not check (that it is empty, or that no review is waiting). The page that owns
+ * each screen replaces its placeholder later (extract §9.10).
  */
 
-/** Lines from the copy deck that read as a neutral empty state with no fixture facts. */
-const EMPTY_STATES: Partial<Record<WorkspaceRouteSlug, string>> = {
-  team: "Nobody needs you right now. Wren will bring the next decision here.",
-  launch: "Ask Wren to fill gaps.",
-  "build-pack": "Every prompt ends with Do not build and Done when.",
-  email: "No emails yet.",
-  ads: "Nothing sends, posts or spends without your OK.",
-  studio: "Make unlocks once a logo is uploaded.",
-  outbound: "Three touches: Intro, Value, Last note.",
-  social: "No account yet? Personal mode gives you copy-ready posts.",
-  files: "What Wren knows, in plain text you can edit.",
-  settings: "Autopilot off: Wren drafts everything and asks first.",
-  billing: "Credits pay for compute-heavy extras.",
+/** What each unbuilt area will do, in one plain sentence. */
+export const COMING_SOON_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
+  launch: "The launch plan will lay out your launch week, day by day.",
+  "build-pack": "The build pack will give you the prompts to build your product with your own AI coding tool.",
+  tasks: "Tasks will list what you and your team are working on.",
+  ads: "Ads will draft campaigns for your own ad account, and nothing will spend without your OK.",
+  studio: "Studio will make images and short videos in your brand.",
+  outbound: "Outbound will draft emails to a list you upload, and nothing will send without your OK.",
+  settings: "Settings will let you choose what Wren may do without asking first.",
+  billing: "Billing will show your plan and credits, and let you change plan.",
 };
 
-const DEFAULT_EMPTY_STATE = "Nothing here yet.";
+/**
+ * Pages that ship for L1 but still render this placeholder until their story
+ * lands. A built page with no line here never renders the placeholder (Social,
+ * Email, Files and the dashboard have their own pages).
+ */
+export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
+  team: "Team HQ will show your team and every draft waiting for your review.",
+  brand: "Your brand kit will show here: its name, tagline, voice, colours and type, ready for your review.",
+};
+
+/** The coming-soon sentence for a slug. */
+export function comingSoonLine(slug: WorkspaceRouteSlug): string {
+  return COMING_SOON_LINES[slug] ?? `${workspaceRoute(slug).label} is not ready yet.`;
+}
 
 /** Same private policy as the layout, restated so a page never depends on merge order. */
 export const WORKSPACE_ROBOTS: NonNullable<Metadata["robots"]> = {
@@ -46,10 +59,13 @@ export function PlaceholderBody({
   eyebrow,
   heading,
   emptyState,
+  comingSoon = false,
 }: {
   eyebrow: string;
   heading: string;
   emptyState: string;
+  /** Shows "Coming soon" in words above the line. */
+  comingSoon?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -59,14 +75,19 @@ export function PlaceholderBody({
           {heading}
         </h1>
       </header>
-      <p className="rounded-xl border border-dashed border-home-d2 px-6 py-8 text-center text-sm text-home-ink-2">
-        {emptyState}
-      </p>
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-home-d2 px-6 py-8 text-center text-sm text-home-ink-2">
+        {comingSoon ? (
+          <p className="rounded-full border border-home-rule bg-home-card px-3 py-1 text-[13px] font-medium text-home-ink">
+            {COMING_SOON_LABEL}
+          </p>
+        ) : null}
+        <p>{emptyState}</p>
+      </div>
     </div>
   );
 }
 
-/** Gate, then render the nav label and the page's empty state. */
+/** Gate, then render the nav label and the page's coming-soon or pending line. */
 export async function RoutePlaceholder({
   params,
   slug,
@@ -76,11 +97,16 @@ export async function RoutePlaceholder({
 }) {
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
+  const route = workspaceRoute(slug);
+  const pendingLine = route.comingSoon ? undefined : PENDING_PAGE_LINES[slug];
+  // A page with no pending line of its own is not ready: it says so, like a coming-soon page.
+  const comingSoon = pendingLine === undefined;
   return (
     <PlaceholderBody
       eyebrow={project.name}
-      heading={workspaceRoute(slug).label}
-      emptyState={EMPTY_STATES[slug] ?? DEFAULT_EMPTY_STATE}
+      heading={route.label}
+      comingSoon={comingSoon}
+      emptyState={pendingLine ?? comingSoonLine(slug)}
     />
   );
 }
