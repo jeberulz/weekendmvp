@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { WrenChatPanel } from "@/components/workspace/chat/WrenChatPanel";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
 import { workspaceRoute } from "@/lib/workspace/routes";
 import { routeMetadata } from "./_scaffold/placeholder";
@@ -10,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return routeMetadata("");
 }
 
-/** WP77-S3: the dashboard hosts the minimal Wren chat until the S6 dashboard lands. */
+/** The Wren chat now lives in the layout's right-hand column; the dashboard body is rebuilt in wave 2. */
 export default async function DashboardPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
@@ -22,7 +21,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ proj
           {workspaceRoute("").label}
         </h1>
       </header>
-      <WrenChatPanel projectId={project._id} />
     </div>
   );
 }

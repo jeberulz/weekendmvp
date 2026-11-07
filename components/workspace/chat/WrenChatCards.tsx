@@ -6,12 +6,15 @@ import { useEffect, useId, useRef, useState, type FocusEvent } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { WrenCardView } from "@/convex/workspace/wrenCards";
-import { CARD_SHELL } from "@/components/workspace/kit/WrenCards";
-import { BTN_PRIMARY, BTN_SECONDARY, FOCUS } from "@/components/workspace/kit/styles";
+import { ROLE_CATALOGUE } from "@/convex/crew/roles";
+import { StatusPill } from "@/components/workspace/kit/StatusPill";
+import { CARD_SHELL, DEFAULT_PARTNER_NAME, FromAttribution } from "@/components/workspace/kit/WrenCards";
+import { BTN_PRIMARY, BTN_SECONDARY, COMING_SOON_TAG, FOCUS } from "@/components/workspace/kit/styles";
+import type { OutputStatus } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
-import { workspacePath } from "@/lib/workspace/routes";
+import type { RoleKey } from "@/lib/workspace/contracts/roster";
+import { COMING_SOON_LABEL, workspacePath, workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
 import {
-  APPROVAL_REVIEW_LABELS,
   approvalDecisionCopy,
   approvalDecisionErrorCopy,
   errorCode,
@@ -101,7 +104,44 @@ export function focusLeftGroup(event: FocusEvent<HTMLElement>): boolean {
   return next !== null || event.target.isConnected;
 }
 
-function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card: ApprovalView }) {
+/**
+ * Which specialist raised an approval, worked out here from the kind (the
+ * server sends only the kind): send is Email, post is Social, publish is the
+ * Landing specialist. Wren can raise no other kind in L1.
+ */
+export function approvalSpecialist(approvalKind: string): RoleKey | null {
+  switch (approvalKind) {
+    case "send":
+      return "email";
+    case "post":
+      return "social";
+    case "publish":
+      return "landing";
+    default:
+      return null;
+  }
+}
+
+/** The kit status set an approval's status renders in (the visible words come from `STATUS_LABEL`). */
+const PILL_STATUS: Readonly<Record<ApprovalView["status"], OutputStatus>> = {
+  pending: "ready",
+  approved: "approved",
+  changes_requested: "changes_requested",
+  expired: "draft",
+  cancelled: "draft",
+};
+
+function ApprovalChatCard({
+  projectId,
+  card,
+  name,
+  time,
+}: {
+  projectId: Id<"projects">;
+  card: ApprovalView;
+  name: string;
+  time: string;
+}) {
   const decide = useMutation(api.workspace.approvals.decideApproval);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -124,8 +164,9 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
     focusFlags.current.decision = isFocusIn(buttonsRef.current);
     setPending(true);
     void decide({ projectId, approvalId: card.approvalId, decision })
-      .then((result) => setMessage(approvalDecisionCopy(result.status)))
-      .catch((error: unknown) => setMessage(approvalDecisionErrorCopy(errorCode(error))))
+      .then((result) =>
+        setMessage(approvalDecisionCopy(result.status, { approvalKind: card.approvalKind, partnerName: name })))
+      .catch((error: unknown) => setMessage(approvalDecisionErrorCopy(errorCode(error), name)))
       .finally(() => {
         inFlight.current = false;
         setPending(false);
@@ -133,83 +174,111 @@ function ApprovalChatCard({ projectId, card }: { projectId: Id<"projects">; card
       });
   }
 
+  const specialist = approvalSpecialist(card.approvalKind);
+  const reviewHref = workspacePath(projectId, card.reviewRoute);
+  const entry = specialist === null ? undefined : ROLE_CATALOGUE.find((role) => role.key === specialist);
+
   return (
-    <li data-card="wren-approval" data-state={card.status} aria-labelledby={titleId} className={CARD_SHELL}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-home-ink-3">Approval</p>
-      <p id={titleId} className="text-sm font-medium text-home-ink">{card.title}</p>
-      {card.subject === "" ? null : (
-        <p data-card-subject className="text-[13px] text-home-ink">{card.subject}</p>
+    <li data-card="wren-approval" data-state={card.status} aria-labelledby={titleId} className="flex flex-col gap-2">
+      {specialist !== null && entry !== undefined ? (
+        <FromAttribution
+          from={{ name: entry.employeeName, role: specialist }}
+          time={time}
+          workstreamHref={reviewHref}
+          linkLabel="Review"
+          routedBy={name}
+        />
+      ) : (
+        <p>
+          <Link
+            href={reviewHref}
+            className={cn("inline-flex min-h-6 items-center text-[13px] font-medium underline underline-offset-2", FOCUS)}
+          >
+            Review<span className="sr-only"> · {context}</span>
+          </Link>
+        </p>
       )}
-      <p>
-        <Link
-          href={workspacePath(projectId, card.reviewRoute)}
-          className={cn("inline-flex min-h-6 items-center text-[13px] font-medium underline underline-offset-2", FOCUS)}
-        >
-          {APPROVAL_REVIEW_LABELS[card.reviewRoute]}<span className="sr-only"> · {context}</span>
-        </Link>
-      </p>
-      <div
-        ref={statusRef}
-        tabIndex={-1}
-        data-card-status
-        className={cn("flex flex-col gap-1 rounded text-[13px] text-home-ink-2", FOCUS)}
-      >
-        <p>Status: {STATUS_LABEL[card.status]}</p>
-        <p role="status" aria-live="polite">{pending ? "Sending your decision…" : message}</p>
-      </div>
-      {card.status === "pending" ? (
-        <div
-          ref={buttonsRef}
-          className="flex flex-wrap gap-2"
-          onFocus={() => {
-            focusFlags.current.onButtons = true;
-          }}
-          onBlur={(event) => {
-            if (focusLeftGroup(event)) focusFlags.current.onButtons = false;
-          }}
-        >
-          <button
-            type="button"
-            aria-disabled={pending || undefined}
-            className={BTN_PRIMARY}
-            onClick={() => choose("approve")}
-          >
-            Approve<span className="sr-only"> · {context}</span>
-          </button>
-          <button
-            type="button"
-            aria-disabled={pending || undefined}
-            className={BTN_SECONDARY}
-            onClick={() => choose("cancel")}
-          >
-            Not now<span className="sr-only"> · {context}</span>
-          </button>
+      <div className={CARD_SHELL}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col">
+            <p id={titleId} className="text-sm font-medium text-home-ink">{card.title}</p>
+            {card.subject === "" ? null : (
+              <p data-card-subject className="text-[13px] text-home-ink-3">{card.subject}</p>
+            )}
+          </div>
+          <StatusPill set="output" status={PILL_STATUS[card.status]} label={STATUS_LABEL[card.status]} className="shrink-0" />
         </div>
-      ) : null}
+        {card.status === "pending" ? (
+          <div
+            ref={buttonsRef}
+            className="flex flex-wrap items-center gap-2"
+            onFocus={() => {
+              focusFlags.current.onButtons = true;
+            }}
+            onBlur={(event) => {
+              if (focusLeftGroup(event)) focusFlags.current.onButtons = false;
+            }}
+          >
+            <button
+              type="button"
+              aria-disabled={pending || undefined}
+              className={BTN_PRIMARY}
+              onClick={() => choose("approve")}
+            >
+              Approve<span className="sr-only"> · {context}</span>
+            </button>
+            <button
+              type="button"
+              aria-disabled={pending || undefined}
+              className={BTN_SECONDARY}
+              onClick={() => choose("cancel")}
+            >
+              Not now<span className="sr-only"> · {context}</span>
+            </button>
+          </div>
+        ) : null}
+        <div
+          ref={statusRef}
+          tabIndex={-1}
+          data-card-status
+          className={cn("flex flex-col gap-1 rounded text-[13px] text-home-ink-2", FOCUS)}
+        >
+          <p role="status" aria-live="polite">{pending ? "Sending your decision…" : message}</p>
+        </div>
+      </div>
     </li>
   );
 }
 
-function ExplainChatCard({ topic }: { topic: WrenExplainTopic }) {
+/** Static card copy says "Wren"; the founder's co-founder has the name they chose. */
+export function partnerCopy(text: string, name: string): string {
+  return name === DEFAULT_PARTNER_NAME ? text : text.replaceAll(DEFAULT_PARTNER_NAME, name);
+}
+
+function ExplainChatCard({ topic, name }: { topic: WrenExplainTopic; name: string }) {
   const copy = WREN_EXPLAIN_COPY[topic];
   const titleId = `${useId()}-title`;
   return (
     <li data-card="wren-explain" aria-labelledby={titleId} className={CARD_SHELL}>
-      <p id={titleId} className="text-sm font-medium text-home-ink">{copy.title}</p>
-      <p className="text-[13px] text-home-ink-2">{copy.body}</p>
+      <p id={titleId} className="text-sm font-medium text-home-ink">{partnerCopy(copy.title, name)}</p>
+      <p className="text-[13px] text-home-ink-2">{partnerCopy(copy.body, name)}</p>
     </li>
   );
 }
 
 function NavigateChatCard({ projectId, route }: { projectId: Id<"projects">; route: WrenNavigateRoute }) {
+  const slug = navigateRouteSlug(route);
+  // Wren may point at a page that is not built yet (launch plan, build pack, tasks, ads, settings): say so.
+  const comingSoon = workspaceRoute(slug as WorkspaceRouteSlug).comingSoon;
   return (
-    <li data-card="wren-navigate" className={CARD_SHELL}>
+    <li data-card="wren-navigate" className={cn(CARD_SHELL, "flex-row flex-wrap items-center gap-x-3")}>
       <Link
-        href={workspacePath(projectId, navigateRouteSlug(route))}
+        href={workspacePath(projectId, slug)}
         className={cn("inline-flex min-h-6 items-center text-sm font-medium underline underline-offset-2", FOCUS)}
       >
         {WREN_NAVIGATE_LABELS[route]}
       </Link>
+      {comingSoon ? <span className={COMING_SOON_TAG}>{COMING_SOON_LABEL}</span> : null}
     </li>
   );
 }
@@ -222,17 +291,29 @@ export function visibleWrenCards(cards: readonly WrenCardView[]): WrenCardView[]
     (card.kind === "navigate" && isNavigateRoute(card.route)));
 }
 
-export function WrenChatCards({ projectId, cards }: { projectId: Id<"projects">; cards: readonly WrenCardView[] }) {
+export function WrenChatCards({
+  projectId,
+  cards,
+  name = DEFAULT_PARTNER_NAME,
+  time = "",
+}: {
+  projectId: Id<"projects">;
+  cards: readonly WrenCardView[];
+  /** The co-founder's name. Default "Wren" only when the founder's is missing. */
+  name?: string;
+  /** The reply's time, shown on each approval's "From" line. */
+  time?: string;
+}) {
   const shown = visibleWrenCards(cards);
   if (shown.length === 0) return null;
   return (
-    <ul aria-label="Cards from Wren" className="flex flex-col gap-2">
+    <ul aria-label={`Cards from ${name}`} className="flex flex-col gap-2">
       {shown.map((card) => {
         switch (card.kind) {
           case "approval":
-            return <ApprovalChatCard key={card.approvalId} projectId={projectId} card={card} />;
+            return <ApprovalChatCard key={card.approvalId} projectId={projectId} card={card} name={name} time={time} />;
           case "explain":
-            return isExplainTopic(card.topic) ? <ExplainChatCard key={`explain-${card.topic}`} topic={card.topic} /> : null;
+            return isExplainTopic(card.topic) ? <ExplainChatCard key={`explain-${card.topic}`} topic={card.topic} name={name} /> : null;
           case "navigate":
             return isNavigateRoute(card.route)
               ? <NavigateChatCard key={`navigate-${card.route}`} projectId={projectId} route={card.route} />

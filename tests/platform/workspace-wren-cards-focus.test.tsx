@@ -161,7 +161,8 @@ describe("Wren approval card focus", () => {
     render(<WrenChatCards projectId={projectId} cards={[card("pending")]} />);
     expect(screen.getByRole("button", { name: "Approve · Post this social post, Social post: Trail day is Saturday" }))
       .toBeTruthy();
-    expect(screen.getByRole("link", { name: /^Review it in social/u }).getAttribute("href")).toBe("/dashboard/b/p1/social");
+    // The Social specialist raised it: the From line carries the one Review link.
+    expect(screen.getByRole("link", { name: /^Review · Theo, Social/u }).getAttribute("href")).toBe("/dashboard/b/p1/social");
   });
 
   test("the same approval in two replies never duplicates an id", () => {

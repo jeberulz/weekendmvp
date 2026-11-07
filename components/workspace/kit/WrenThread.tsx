@@ -1,12 +1,12 @@
 "use client";
 
 import { createContext, useContext, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
-import { Send } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DefaultLink } from "./DefaultLink";
-import { BTN_APPROVED, BTN_PRIMARY, BTN_SECONDARY, FOCUS, ICON_BTN } from "./styles";
+import { BTN_APPROVED, BTN_PRIMARY, BTN_SECONDARY, FOCUS } from "./styles";
 import { ErrorState, LoadingState } from "./states";
-import { CARD_SHELL } from "./WrenCards";
+import { CARD_SHELL, DEFAULT_PARTNER_NAME } from "./WrenCards";
 import type { LinkComponent } from "./types";
 
 // Interactive Wren pieces (they take handlers or hold state). The hook-free cards
@@ -16,6 +16,8 @@ export type WrenThreadStatus = "ready" | "loading" | "error";
 
 export type WrenThreadProps = {
   status?: WrenThreadStatus;
+  /** The co-founder's name, for the default error line. Default "Wren". */
+  name?: string;
   errorMessage?: string;
   onRetry?: () => void;
   /**
@@ -36,7 +38,8 @@ const InsideLogContext = createContext(false);
  */
 export function WrenThread({
   status = "ready",
-  errorMessage = "Wren's messages didn't load.",
+  name = DEFAULT_PARTNER_NAME,
+  errorMessage = `${name}'s messages didn't load.`,
   onRetry,
   liveUpdates = true,
   children,
@@ -204,9 +207,14 @@ export type WrenComposerProps = {
   onSend: (text: string) => boolean | Promise<boolean> | void;
   /** A send is in flight: Send stays focusable (`aria-disabled`) and ignores activation. */
   sending?: boolean;
+  /** The co-founder's name, for the label and placeholder. Default "Wren". */
+  name?: string;
 };
 
-export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
+/** The board's send button: a 40px ink square with an up arrow. */
+const SEND_BTN = `inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-home-ink text-home-card hover:bg-home-panel ${FOCUS} aria-disabled:cursor-not-allowed aria-disabled:border aria-disabled:border-dashed aria-disabled:border-home-ink-3 aria-disabled:bg-home-sunk aria-disabled:text-home-ink-2 aria-disabled:hover:bg-home-sunk`;
+
+export function WrenComposer({ onSend, sending = false, name = DEFAULT_PARTNER_NAME }: WrenComposerProps) {
   const [draft, setDraft] = useState("");
   const inputId = useId();
   const hintId = `${inputId}-hint`;
@@ -269,16 +277,16 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end gap-2 border-t border-home-rule p-3">
+    <form onSubmit={handleSubmit} className="flex items-end gap-2 border-t border-home-rule px-3.5 py-3">
       <label htmlFor={inputId} className="sr-only">
-        Message Wren
+        {`Message ${name}`}
       </label>
       <textarea
         ref={textareaRef}
         id={inputId}
         rows={1}
         value={draft}
-        placeholder="Message Wren…"
+        placeholder={`Message ${name}…`}
         aria-describedby={hintId}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={handleKeyDown}
@@ -294,9 +302,9 @@ export function WrenComposer({ onSend, sending = false }: WrenComposerProps) {
         type="submit"
         aria-label="Send message"
         aria-disabled={sending || undefined}
-        className={ICON_BTN}
+        className={SEND_BTN}
       >
-        <Send aria-hidden="true" className="size-4" />
+        <ArrowUp aria-hidden="true" strokeWidth={2} className="size-4" />
       </button>
     </form>
   );

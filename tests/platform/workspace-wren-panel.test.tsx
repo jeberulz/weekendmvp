@@ -110,13 +110,14 @@ describe("WrenChatPanel", () => {
     const markup = render([row("f2", "founder", "Can I publish?", "done"), reply]);
     expect(markup).toContain('aria-label="Cards from Wren"');
     expect(markup).toContain("Publish this landing page version");
-    expect(markup).toContain("Status: Waiting for you");
+    expect(markup).toContain("Waiting for you");
+    expect(markup).toContain("From Landing");
     expect(markup).toContain("Landing page version 3");
     expect(markup).toContain(
       "Approve<span class=\"sr-only\"> · Publish this landing page version, Landing page version 3</span>",
     );
     expect(markup).toContain('href="/dashboard/b/p1/team"');
-    expect(markup).toContain("Review it in Team HQ");
+    expect(markup).toContain("Review<span class=\"sr-only\">");
     expect(markup).toContain('tabindex="-1"');
     // The only live region on a card is its decision outcome, inside the focusable status line.
     const live = [...document.querySelectorAll('[aria-label="Cards from Wren"] [aria-live], [aria-label="Cards from Wren"] [role="status"]')];
@@ -144,7 +145,7 @@ describe("WrenChatPanel", () => {
       cards: [{ kind: "explain", topic: "credits" }],
     };
     const markup = render([row("f3", "founder", "Post it", "done"), decided, row("f4", "founder", "And?", "done"), streaming]);
-    expect(markup).toContain("Status: Approved");
+    expect(markup).toContain(">Approved<");
     expect(markup).not.toContain(">Approve<");
     // Founder text in the subject line is a text node, never markup.
     expect(markup).toContain("Social post: &lt;b&gt;Launch day&lt;/b&gt; is here");

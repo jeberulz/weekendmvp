@@ -70,7 +70,7 @@ describe("WP72-S1 getWorkspaceAccess", () => {
   test("the owner in the cohort with the workspace on is allowed", async () => {
     const { owner, ids } = await seed(ON);
     await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
-      .resolves.toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail" } });
+      .resolves.toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail", viewerName: "owner@example.test" } });
   });
 
   test("open cohort mode allows the owner without an allowlist row", async () => {
@@ -168,13 +168,46 @@ describe("WP72-S1 getWorkspaceAccess", () => {
       });
     });
     await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
-      .resolves.toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail Co" } });
+      .resolves.toEqual({
+        allowed: true,
+        project: {
+          _id: ids.projectId,
+          name: "HydroTrail Co",
+          partnerName: "Wren",
+          subline: "Web app · Free for now",
+          viewerName: "owner@example.test",
+        },
+      });
+  });
+
+  test("the founder's chosen co-founder name and display name come back, owner-only", async () => {
+    const { t, owner, other, ids } = await seed(ON);
+    await t.run(async (ctx) => {
+      const wizardSessionId = await ctx.db.insert("wizard_sessions", {
+        ownerId: ids.ownerId, step: "done", answers: {}, startedAt: 1, updatedAt: 1,
+      });
+      await ctx.db.patch("users", ids.ownerId, { displayName: "John", name: "John Doe" });
+      await ctx.db.patch("projects", ids.projectId, {
+        workspace: {
+          version: 1, name: "HydroTrail", slug: "hydrotrail", platform: "native", commercialModel: "free", goal: "waitlist",
+          partner: { personality: "strategist", name: "  Sam " }, wizardSessionId, createdVia: "wizard",
+        },
+      });
+    });
+    await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
+      .resolves.toMatchObject({
+        allowed: true,
+        project: { partnerName: "Sam", subline: "Mobile app · Free for now", viewerName: "John" },
+      });
+    // Someone else learns nothing about the project, not even its co-founder's name.
+    await expect(other.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
+      .resolves.toEqual({ allowed: false });
   });
 
   test("the project title is used when there is no workspace name", async () => {
     const { owner, ids } = await seed(ON);
     const access = await owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId });
-    expect(access).toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail" } });
+    expect(access).toEqual({ allowed: true, project: { _id: ids.projectId, name: "HydroTrail", viewerName: "owner@example.test" } });
   });
 
   test("an unexpected fault is rethrown, not reported as no access", async () => {

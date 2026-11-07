@@ -10,7 +10,16 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { isValidPlatformConvexUrl } from "@/lib/platform-convex-url";
 
-export type WorkspaceProject = { readonly _id: Id<"projects">; readonly name: string };
+export type WorkspaceProject = {
+  readonly _id: Id<"projects">;
+  readonly name: string;
+  /** The co-founder's name from the wizard. Callers default to "Wren" only when this is missing. */
+  readonly partnerName?: string;
+  /** The switcher sub-line, e.g. "Web app · Free for now". */
+  readonly subline?: string;
+  /** The signed-in owner's display name, name or email. */
+  readonly viewerName?: string;
+};
 
 /**
  * Server-side gate for every `/dashboard/b/[projectId]` layout and page
@@ -50,3 +59,25 @@ export const requireWorkspaceAccess = cache(async (projectId: string): Promise<W
   if (!access.allowed) notFound();
   return access.project;
 });
+
+/**
+ * The businesses for the switcher: `myBusinesses` (each row owner-checked on
+ * the server), always including the current one. Any failure falls back to the
+ * current business alone, which the gate above has already authorised, so the
+ * switcher never shows a business the caller cannot open.
+ */
+export const listMyBusinesses = cache(
+  async (current: WorkspaceProject): Promise<readonly { readonly id: string; readonly name: string }[]> => {
+    const fallback = [{ id: current._id, name: current.name }];
+    try {
+      const token = await convexAuthNextjsToken();
+      if (!token) return fallback;
+      const rows = await fetchQuery(api.workspace.access.myBusinesses, {}, { token });
+      const listed = rows.map((row) => ({ id: row.projectId, name: row.name }));
+      return listed.some((row) => row.id === current._id) ? listed : [...fallback, ...listed];
+    } catch (error) {
+      unstable_rethrow(error);
+      return fallback;
+    }
+  },
+);
