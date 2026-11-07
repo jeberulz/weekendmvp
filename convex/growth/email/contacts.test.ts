@@ -274,7 +274,13 @@ describe("WP79 contact revocation", () => {
     const first = await seedEnrollment(t, ids, "paused");
     await seedSend(t, ids, first, queuedId, "queued", "send:overflow:history");
     for (let n = 0; n < 16; n += 1) await seedEnrollment(t, ids, "completed");
-    await expect(t.mutation(revoke, { leadId: ids.leadId }))
+    const sessionId = await t.run((ctx) => ctx.db.insert("authSessions", {
+      userId: ids.ownerId, expirationTime: Date.now() + 60_000,
+    }));
+    const owner = t.withIdentity({
+      subject: `${ids.ownerId}|${sessionId}`, issuer: "https://local.test",
+    });
+    await expect(owner.mutation(api.platform.sites.leads.deleteContact, { leadId: ids.leadId }))
       .rejects.toThrow("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
     expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status).toBe("queued");
     expect((await t.run((ctx) => ctx.db.get(ids.leadId)))?.email).toBe("contact@example.test");
@@ -287,6 +293,7 @@ describe("WP79 contact revocation", () => {
       userId: ids.ownerId, expirationTime: Date.now() + 60_000,
     }));
     const paused = await seedEnrollment(t, ids, "paused");
+    for (let n = 0; n < 15; n += 1) await seedEnrollment(t, ids, "completed");
     const queuedId = await manualEmail(t, component);
     const sendId = await seedSend(t, ids, paused, queuedId, "queued", "send:paused:owner-delete");
     const owner = t.withIdentity({
