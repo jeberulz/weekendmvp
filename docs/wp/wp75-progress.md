@@ -1582,6 +1582,14 @@ re-enqueue or settle never lands. The running marker stays with no work behind i
 - A task with more than `RUN_SCAN_MAX` runs is never judged. That cannot happen while the retry budget holds, and
   `startCrewRun` refuses such a task anyway; the code comments say so.
 - A marker stranded for real holds its slot for up to 2 hours before the sweep acts.
+- The sweep visits only each step's current key holder (`stepTask`). A leftover running marker on a terminal task
+  that a founder retry has replaced, or on an archived task, is never settled. It takes one row of the 50-row
+  running-marker scan in `ownerInFlight`. That is harmless until an owner has 50 of them, which is unreachable at
+  beta scale. Fix with `workId` (below) or a global marker index.
+- A sustained pool backlog longer than 2 hours supersedes a queued step every cycle, so it would never run. It is
+  never failed or charged. The fix is `workId` plus `crewWorkpool.status`.
+- Independent re-review (Opus, after the fixes): 0 Major. Minors 2 and 3 are the two limits above; Minor 1 is
+  the cron entry, which Codex wires in `convex/crons.ts`.
 
 ### Review fixes (adversarial review: 0 blockers, 1 major, 4 minors, nits)
 
