@@ -9,7 +9,10 @@ import { cache } from "react";
 import { api } from "@/convex/_generated/api";
 import { isValidPlatformConvexUrl } from "@/lib/platform-convex-url";
 
-export type WizardAccess = { readonly ideaTitle: string | null };
+/** Set when the founder's plan has no business left: `projectId` is their live business, if any. */
+export type WizardBusinessLimit = { readonly limit: number; readonly projectId: string | null };
+
+export type WizardAccess = { readonly ideaTitle: string | null; readonly businessLimit: WizardBusinessLimit | null };
 
 /**
  * Server-side gate for every `/start/*` page (WP74-S1), mirroring the WP72
@@ -44,5 +47,5 @@ export const requireWizardAccess = cache(async (ideaSlug: string | null): Promis
     notFound();
   }
   if (!access.allowed) notFound();
-  return { ideaTitle: access.ideaTitle };
+  return { ideaTitle: access.ideaTitle, businessLimit: access.businessLimit };
 });

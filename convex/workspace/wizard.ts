@@ -29,6 +29,7 @@ import {
   type WizardSeed,
 } from "../../lib/workspace/wizard/defaults";
 import { summarizeStep, type FounderSignalAction } from "../../lib/workspace/wizard/labels";
+import { businessAllowance } from "./business";
 import { mirrorSignal, recordFounderSignal } from "./signals";
 
 /**
@@ -372,15 +373,27 @@ function rewriteAnswer(step: WizardStep, text: string, seed: WizardSeed): unknow
 // Public functions
 // ---------------------------------------------------------------------------
 
+export const businessLimitValidator = v.union(
+  v.null(),
+  v.object({ limit: v.number(), projectId: v.union(v.id("projects"), v.null()) }),
+);
+
 export const wizardAccessValidator = v.union(
-  v.object({ allowed: v.literal(true), ideaTitle: v.union(v.string(), v.null()) }),
+  v.object({
+    allowed: v.literal(true),
+    ideaTitle: v.union(v.string(), v.null()),
+    /** Set when the plan's businesses are used up: a new wizard would be refused. */
+    businessLimit: businessLimitValidator,
+  }),
   v.object({ allowed: v.literal(false) }),
 );
 
 /**
  * Route gate for `/start/*`. Read-only: `{ allowed: false }` unless the caller
  * is signed in, the workspace is on for their cohort, and (for a library
- * idea) the idea exists. Every denial looks the same.
+ * idea) the idea exists. Every denial looks the same. An allowed answer also
+ * says when the plan's businesses are used up (`businessLimit`), so the start
+ * screen can say so before a new wizard begins.
  */
 export const getWizardAccess = query({
   args: { ideaSlug: v.optional(v.string()) },
@@ -388,11 +401,13 @@ export const getWizardAccess = query({
   handler: async (ctx, args) => {
     try {
       await assertFeatureEnabled(ctx, "workspace");
-      await requireCurrentPlatformUser(ctx);
-      if (args.ideaSlug === undefined) return { allowed: true as const, ideaTitle: null };
+      const user = await requireCurrentPlatformUser(ctx);
+      const allowance = await businessAllowance(ctx, user._id);
+      const businessLimit = allowance.full ? { limit: allowance.limit, projectId: allowance.liveProjectId } : null;
+      if (args.ideaSlug === undefined) return { allowed: true as const, ideaTitle: null, businessLimit };
       const row = await libraryIdea(ctx, args.ideaSlug);
       if (row === null) return { allowed: false as const };
-      return { allowed: true as const, ideaTitle: row.title };
+      return { allowed: true as const, ideaTitle: row.title, businessLimit };
     } catch (error) {
       if (error instanceof ConvexError && typeof error.data === "object" && error.data !== null &&
         "code" in error.data && typeof error.data.code === "string" && DENIAL_CODES.has(error.data.code)) {
@@ -423,6 +438,19 @@ export const startOrResume = mutation({
     // Completed but not yet a business still counts: S4 creates the business from it.
     const existing = await activeSessionFor(ctx, user._id, idea);
     if (existing) return existing._id;
+
+    // A founder whose plan's businesses are used up hears it on the first
+    // screen, before the blueprint spends AI or the start spends the daily
+    // allowance. `createBusiness` keeps its own check at the end.
+    const allowance = await businessAllowance(ctx, user._id);
+    if (allowance.full) {
+      throw new ConvexError({
+        code: "BUSINESS_LIMIT_REACHED",
+        plan: allowance.plan,
+        limit: allowance.limit,
+        ...(allowance.liveProjectId === null ? {} : { projectId: allowance.liveProjectId }),
+      });
+    }
 
     // C-LIMITS: only a new session spends the daily wizard-start allowance. A
     // refusal throws here, so nothing below is written. It also needs the

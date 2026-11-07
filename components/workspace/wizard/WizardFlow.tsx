@@ -19,6 +19,7 @@ import {
 } from "@/lib/workspace/contracts/wizard";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { workspacePath } from "@/lib/workspace/routes";
+import type { WizardBusinessLimit } from "@/lib/workspace/wizard-access";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
 import { FounderSignals } from "./FounderSignals";
@@ -33,6 +34,8 @@ export type WizardFlowProps = {
   readonly ideaTitle: string | null;
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
+  /** From the route gate: the plan's businesses are used up, so a new wizard would be refused. */
+  readonly businessLimit?: WizardBusinessLimit | null;
 };
 
 const ERROR_COPY: Record<string, string> = {
@@ -195,7 +198,46 @@ function OwnIdeaStart({
  * aside. Each screen owns the page's single h1, and focus moves to it when the
  * step changes.
  */
-export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
+/** The start screen for a founder whose plan has no business left: say so before any work starts. */
+export function BusinessLimitStart({
+  limit,
+  projectId,
+  headingRef,
+}: {
+  limit: number;
+  projectId: string | null;
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+}) {
+  const base = useId();
+  const href = projectId !== null && /^[a-z0-9]{1,64}$/.test(projectId) ? workspacePath(projectId) : null;
+  const sub = limit === 1
+    ? "Your plan includes one business, and you already have it. Keep building it with your crew."
+    : `Your plan includes ${limit} businesses, and you have used them all.`;
+  return (
+    <section aria-labelledby={`${base}-heading`} className="flex w-full max-w-[672px] flex-col gap-6">
+      <ScreenHead
+        headingId={`${base}-heading`}
+        headingRef={headingRef}
+        lead="You already have "
+        italic={limit === 1 ? "your business" : "your businesses"}
+        tail="."
+        sub={sub}
+      />
+      <div className="flex flex-wrap items-center gap-3 border-t border-home-rule pt-4">
+        {href !== null ? (
+          <Link href={href} className={cn(BTN_PRIMARY, "min-h-[52px] px-8 text-[15px]")}>
+            Open your business
+          </Link>
+        ) : null}
+        <Link href="/dashboard" className={cn("text-sm font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+          Back to your desk
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+export function WizardFlow({ idea, ideaTitle, initialSessionId, businessLimit = null }: WizardFlowProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<Id<"wizard_sessions"> | null>(
     initialSessionId === null ? null : (initialSessionId as Id<"wizard_sessions">),
@@ -230,12 +272,15 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
 
   // A library idea starts (or resumes) its session as soon as the page opens.
   useEffect(() => {
-    if (idea === null || sessionId !== null || started.current) return;
+    if (idea === null || sessionId !== null || businessLimit !== null || started.current) return;
     started.current = true;
     startOrResume({ idea })
       .then((id) => setSessionId(id))
-      .catch((caught: unknown) => setError(wizardErrorMessage(caught)));
-  }, [idea, sessionId, startOrResume]);
+      .catch((caught: unknown) => {
+        setRefusal(businessRefusal(caught));
+        setError(wizardErrorMessage(caught));
+      });
+  }, [idea, sessionId, businessLimit, startOrResume]);
 
   // A library session rewritten as an own idea now belongs to `/start/own`:
   // move the URL there, carrying the session, so a reload resumes it instead
@@ -308,16 +353,27 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const onStep = view !== undefined && !view.completed && view.business === null;
   const showAside = parsed !== null && view !== undefined && view.business === null;
   let body;
-  if (sessionId === null && idea === null) {
+  if (sessionId === null && businessLimit !== null) {
+    body = <BusinessLimitStart limit={businessLimit.limit} projectId={businessLimit.projectId} headingRef={headingRef} />;
+  } else if (sessionId === null && idea === null) {
     body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
   } else if (view === undefined || parsed === null) {
     body = (
       <>
         <h1 className="sr-only">{title === null ? "Build your idea" : `Build ${title}`}</h1>
         {error ? (
-          <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
-            {error}
-          </p>
+          <div className="flex flex-col gap-3">
+            <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+              {error}
+            </p>
+            {refusal?.existingBusinessHref ? (
+              <p className="text-sm">
+                <Link href={refusal.existingBusinessHref} className={cn("font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+                  Open your business
+                </Link>
+              </p>
+            ) : null}
+          </div>
         ) : (
           <LoadingState label="Opening your build…" />
         )}

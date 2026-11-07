@@ -7,7 +7,7 @@ import { axe } from "vitest-axe";
 
 import { MeetCofounder } from "@/components/workspace/wizard/MeetCofounder";
 import { FounderSignals } from "@/components/workspace/wizard/FounderSignals";
-import { wizardErrorMessage } from "@/components/workspace/wizard/WizardFlow";
+import { BusinessLimitStart, wizardErrorMessage } from "@/components/workspace/wizard/WizardFlow";
 import { WizardProgress, progressCaption, progressLabel } from "@/components/workspace/wizard/WizardProgress";
 import { WizardStepPanel, type WizardStepPanelProps } from "@/components/workspace/wizard/WizardStepPanel";
 import type { WizardStep } from "@/lib/workspace/contracts/wizard";
@@ -398,5 +398,31 @@ describe("WP74-S1 wizard error copy", () => {
     expect(wizardErrorMessage(new ConvexError({ code: "INVALID_ANSWER", message: "name.chosen: Too big" })))
       .toBe("That answer cannot be saved (name.chosen: Too big).");
     expect(wizardErrorMessage(new Error("stack trace"))).toBe("Something went wrong. Try again.");
+  });
+});
+
+describe("L1 business-limit start screen", () => {
+  test("says the free business is used and links to the founder's own business", async () => {
+    const { container } = render(<BusinessLimitStart limit={1} projectId="abc123" />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("You already have your business.");
+    expect(screen.getByText(/Your plan includes one business, and you already have it\./)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open your business" }).getAttribute("href")).toBe("/dashboard/b/abc123");
+    expect(screen.getByRole("link", { name: "Back to your desk" }).getAttribute("href")).toBe("/dashboard");
+    // No idea field: nothing can be started from here.
+    expect(screen.queryByRole("textbox")).toBeNull();
+    const results = await axe(container, { rules: { "color-contrast": { enabled: false } } });
+    expect(results.violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
+  });
+
+  test("an archived-only allowance has no business to open", () => {
+    render(<BusinessLimitStart limit={1} projectId={null} />);
+    expect(screen.queryByRole("link", { name: "Open your business" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Back to your desk" })).toBeTruthy();
+  });
+
+  test("a bigger plan names its count", () => {
+    render(<BusinessLimitStart limit={3} projectId="abc123" />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("You already have your businesses.");
+    expect(screen.getByText("Your plan includes 3 businesses, and you have used them all.")).toBeTruthy();
   });
 });

@@ -27,6 +27,7 @@ export default async function StartIdeaPage({
     <WizardPage
       idea={{ source: "library", ideaSlug }}
       ideaTitle={access.ideaTitle}
+      businessLimit={access.businessLimit}
       initialSessionId={sessionId && /^[a-z0-9]{1,64}$/.test(sessionId) ? sessionId : null}
     />
   );

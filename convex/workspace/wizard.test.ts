@@ -119,8 +119,8 @@ describe("WP74-S1 guards", () => {
   test("the route gate allows a known idea and own ideas, and denies unknown or removed ideas", async () => {
     const { owner } = await seed();
     await expect(owner.query(api.workspace.wizard.getWizardAccess, { ideaSlug: "hydrotrail" }))
-      .resolves.toEqual({ allowed: true, ideaTitle: "HydroTrail" });
-    await expect(owner.query(api.workspace.wizard.getWizardAccess, {})).resolves.toEqual({ allowed: true, ideaTitle: null });
+      .resolves.toEqual({ allowed: true, ideaTitle: "HydroTrail", businessLimit: null });
+    await expect(owner.query(api.workspace.wizard.getWizardAccess, {})).resolves.toEqual({ allowed: true, ideaTitle: null, businessLimit: null });
     await expect(owner.query(api.workspace.wizard.getWizardAccess, { ideaSlug: "nope" })).resolves.toEqual({ allowed: false });
     await expect(owner.query(api.workspace.wizard.getWizardAccess, { ideaSlug: "gone" })).resolves.toEqual({ allowed: false });
     await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: { source: "library", ideaSlug: "gone" } }))
@@ -642,5 +642,72 @@ describe("WP74-S3 own-idea light blueprint (interim, no model call)", () => {
     const view = await owner.query(api.workspace.wizard.getSession, { sessionId });
     expect(view.blueprint).toMatchObject({ validated: true, origin: "library", removedClaims: 0 });
     expect(view.seedSource).toBe("fixture_hydrotrail");
+  });
+});
+
+describe("L1 business allowance at the start of the wizard", () => {
+  async function giveBusiness(t: Awaited<ReturnType<typeof seed>>["t"], ownerId: Id<"users">, archived = false) {
+    return await t.run(async (ctx) => {
+      const sessionId = await ctx.db.insert("wizard_sessions", {
+        ownerId, ideaSlug: "trail-cafe", step: "partner_name", answers: { idea: { source: "library", ideaSlug: "trail-cafe" } },
+        startedAt: 1, updatedAt: 1, completedAt: 1,
+      });
+      const projectId = await ctx.db.insert("projects", {
+        ownerId,
+        workspace: {
+          version: 1, name: "Trail Cafe", slug: "trail-cafe", ideaSlug: "trail-cafe", platform: "web", commercialModel: "free",
+          goal: "waitlist", partner: { personality: "strategist", name: "Wren" }, wizardSessionId: sessionId, createdVia: "wizard",
+        },
+        source: "repository_idea", title: "Trail Cafe", status: "draft", idempotencyKey: `wizard:${sessionId}`,
+        createdAt: 1, updatedAt: 1, ...(archived ? { archivedAt: 2 } : {}),
+      });
+      await ctx.db.patch("wizard_sessions", sessionId, { projectId });
+      return projectId;
+    });
+  }
+
+  test("the route gate says when the free business is used, and links only to the owner's own", async () => {
+    const { t, owner, other, ids } = await seed();
+    const projectId = await giveBusiness(t, ids.ownerId);
+    await expect(owner.query(api.workspace.wizard.getWizardAccess, {}))
+      .resolves.toEqual({ allowed: true, ideaTitle: null, businessLimit: { limit: 1, projectId } });
+    await expect(owner.query(api.workspace.wizard.getWizardAccess, { ideaSlug: "hydrotrail" }))
+      .resolves.toEqual({ allowed: true, ideaTitle: "HydroTrail", businessLimit: { limit: 1, projectId } });
+    await expect(other.query(api.workspace.wizard.getWizardAccess, {}))
+      .resolves.toEqual({ allowed: true, ideaTitle: null, businessLimit: null });
+  });
+
+  test("a new wizard is refused before it starts, spends nothing and writes no session", async () => {
+    const { t, owner, ids } = await seed();
+    const projectId = await giveBusiness(t, ids.ownerId);
+    for (const idea of [HYDRO, { source: "own_idea" as const, text: "A second idea" }]) {
+      await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea })).rejects.toThrow(/BUSINESS_LIMIT_REACHED/);
+    }
+    // Five refusals later the daily wizard-start allowance (3) is untouched: no RateLimited.
+    for (let i = 0; i < 3; i += 1) {
+      await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).rejects.toThrow(/BUSINESS_LIMIT_REACHED/);
+    }
+    const sessions = await t.run(async (ctx) => await ctx.db.query("wizard_sessions").collect());
+    expect(sessions.filter((s) => s.projectId === undefined)).toHaveLength(0);
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).rejects.toMatchObject({
+      data: { code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1, projectId },
+    });
+  });
+
+  test("an archived business still uses the allowance, and the refusal links nowhere", async () => {
+    const { t, owner, ids } = await seed();
+    await giveBusiness(t, ids.ownerId, true);
+    await expect(owner.query(api.workspace.wizard.getWizardAccess, {}))
+      .resolves.toEqual({ allowed: true, ideaTitle: null, businessLimit: { limit: 1, projectId: null } });
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).rejects.toMatchObject({
+      data: { code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1 },
+    });
+  });
+
+  test("a session started before the business was made still resumes", async () => {
+    const { t, owner, ids } = await seed();
+    const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
+    await giveBusiness(t, ids.ownerId);
+    await expect(owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO })).resolves.toBe(sessionId);
   });
 });

@@ -34,8 +34,8 @@ describe("WP74-S1 requireWizardAccess (/start/* gate)", () => {
   afterEach(() => vi.unstubAllEnvs());
 
   test("allowed returns the idea title and passes the session token and slug", async () => {
-    fetchQuery.mockResolvedValue({ allowed: true, ideaTitle: "HydroTrail" });
-    await expect(outcome("hydrotrail")).resolves.toEqual({ ideaTitle: "HydroTrail" });
+    fetchQuery.mockResolvedValue({ allowed: true, ideaTitle: "HydroTrail", businessLimit: null });
+    await expect(outcome("hydrotrail")).resolves.toEqual({ ideaTitle: "HydroTrail", businessLimit: null });
     const [ref, args, options] = fetchQuery.mock.calls[0] ?? [];
     expect(getFunctionName(ref)).toBe(getFunctionName(api.workspace.wizard.getWizardAccess));
     expect(args).toEqual({ ideaSlug: "hydrotrail" });
@@ -43,9 +43,14 @@ describe("WP74-S1 requireWizardAccess (/start/* gate)", () => {
   });
 
   test("the own-idea route asks without a slug", async () => {
-    fetchQuery.mockResolvedValue({ allowed: true, ideaTitle: null });
-    await expect(outcome(null)).resolves.toEqual({ ideaTitle: null });
+    fetchQuery.mockResolvedValue({ allowed: true, ideaTitle: null, businessLimit: null });
+    await expect(outcome(null)).resolves.toEqual({ ideaTitle: null, businessLimit: null });
     expect(fetchQuery.mock.calls[0]?.[1]).toEqual({});
+  });
+
+  test("a used-up business allowance is passed to the page, not turned into a 404", async () => {
+    fetchQuery.mockResolvedValue({ allowed: true, ideaTitle: null, businessLimit: { limit: 1, projectId: "abc123" } });
+    await expect(outcome(null)).resolves.toEqual({ ideaTitle: null, businessLimit: { limit: 1, projectId: "abc123" } });
   });
 
   test("a denial (workspace off, closed cohort, unknown idea) is a 404", async () => {

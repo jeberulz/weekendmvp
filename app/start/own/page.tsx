@@ -12,13 +12,14 @@ export default async function StartOwnPage({
 }: {
   searchParams: Promise<{ session?: string | string[] }>;
 }) {
-  await requireWizardAccess(null);
+  const access = await requireWizardAccess(null);
   const { session } = await searchParams;
   const sessionId = Array.isArray(session) ? session[0] : session;
   return (
     <WizardPage
       idea={null}
       ideaTitle={null}
+      businessLimit={access.businessLimit}
       initialSessionId={sessionId && /^[a-z0-9]{1,64}$/.test(sessionId) ? sessionId : null}
     />
   );

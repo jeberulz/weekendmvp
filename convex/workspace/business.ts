@@ -5,7 +5,7 @@ import { assertFeatureEnabled } from "../ops/settings";
 import { assertAccountOpenForProjectCreation } from "../platform/accountClosureGuard";
 import { requireOwnedWizardSession } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
-import { WORKSPACE_PLAN_LIMITS } from "../platform/plans";
+import { WORKSPACE_PLAN_LIMITS, type PlanId } from "../platform/plans";
 import { tenantHostForSlug, isValidTenantSlug } from "../../lib/tenant-host";
 import { emailAddressDomain, isDisposableEmailDomain } from "../../lib/workspace/disposable-domains";
 import { partnerNameFromWizard, wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
@@ -114,6 +114,23 @@ async function businessesOf(
     .take(cap + LINK_LOOKAHEAD);
   const live = rows.find((row) => row.archivedAt === undefined);
   return { count: rows.length, live: live?._id ?? null };
+}
+
+/**
+ * The owner's business allowance: their plan, its business limit, whether it
+ * is used up (archived businesses included, as in `createBusiness`) and the
+ * first live business a refusal links to. Read before a new wizard starts
+ * (`wizard:startOrResume`, `wizard:getWizardAccess`) so a founder who already
+ * has their business hears it on the first screen, before any AI is spent.
+ */
+export async function businessAllowance(
+  ctx: QueryCtx,
+  ownerId: Id<"users">,
+): Promise<{ plan: PlanId; limit: number; full: boolean; liveProjectId: Id<"projects"> | null }> {
+  const plan = await resolvePlan(ctx, ownerId);
+  const limit = WORKSPACE_PLAN_LIMITS[plan].limits.businesses;
+  const existing = await businessesOf(ctx, ownerId, limit);
+  return { plan, limit, full: existing.count >= limit, liveProjectId: existing.live };
 }
 
 function isVerified(user: Doc<"users"> | null): user is Doc<"users"> & { email: string } {
