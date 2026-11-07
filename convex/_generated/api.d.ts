@@ -66,6 +66,7 @@ import type * as editorial_validators from "../editorial/validators.js";
 import type * as editorial_worker from "../editorial/worker.js";
 import type * as growth_connectors_types from "../growth/connectors/types.js";
 import type * as growth_drafts_emailSequence from "../growth/drafts/emailSequence.js";
+import type * as growth_drafts_socialPack from "../growth/drafts/socialPack.js";
 import type * as growth_email_caps from "../growth/email/caps.js";
 import type * as growth_email_cleanup from "../growth/email/cleanup.js";
 import type * as growth_email_contacts from "../growth/email/contacts.js";
@@ -237,6 +238,7 @@ declare const fullApi: ApiFromModules<{
   "editorial/worker": typeof editorial_worker;
   "growth/connectors/types": typeof growth_connectors_types;
   "growth/drafts/emailSequence": typeof growth_drafts_emailSequence;
+  "growth/drafts/socialPack": typeof growth_drafts_socialPack;
   "growth/email/caps": typeof growth_email_caps;
   "growth/email/cleanup": typeof growth_email_cleanup;
   "growth/email/contacts": typeof growth_email_contacts;

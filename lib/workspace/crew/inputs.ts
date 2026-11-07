@@ -14,6 +14,9 @@
  *   out here before the call (no tool loop, D23).
  * - WP76-S1a: the email sequence reads the blueprint, the brand kit's name,
  *   tagline and voice (never its palette or art), and the founder's answers.
+ * - WP76-S2a: the social pack reads the blueprint and the same brand slice as
+ *   the email sequence. No wizard answers: its registry inputs are the
+ *   blueprint and the brand kit only.
  * - Every value is a string the spec quotes as data (`convex/ai/prompts/crewShared.ts`).
  */
 
@@ -28,6 +31,7 @@ export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@1";
 export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@1";
 export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@1";
 export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@1";
+export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@1";
 
 export type CrewPromptInputs = Record<string, string | null>;
 
@@ -176,13 +180,27 @@ export function emailSequenceStepPlan(input: {
   readonly blueprint: Blueprint;
   readonly brandKit: BrandKit;
 }): EmailSequenceStepPlan {
-  const { brandKit } = input;
   return {
     promptRef: EMAIL_SEQUENCE_PROMPT_REF,
     inputs: {
       blueprint: JSON.stringify(input.blueprint),
-      brand: JSON.stringify({ name: brandKit.name, tagline: brandKit.tagline.text, voice: brandKit.voice }),
+      brand: brandSlice(input.brandKit),
       answers: JSON.stringify(answersForPrompt(input.answers)),
     },
+  };
+}
+
+/** The brand kit's name, tagline and voice as JSON: what the copy steps read (never the palette or art). */
+function brandSlice(brandKit: BrandKit): string {
+  return JSON.stringify({ name: brandKit.name, tagline: brandKit.tagline.text, voice: brandKit.voice });
+}
+
+export type SocialPackStepPlan = { readonly promptRef: string; readonly inputs: CrewPromptInputs };
+
+/** WP76-S2a: the social pack step's inputs: the blueprint and the brand kit's name, tagline and voice. */
+export function socialPackStepPlan(input: { readonly blueprint: Blueprint; readonly brandKit: BrandKit }): SocialPackStepPlan {
+  return {
+    promptRef: SOCIAL_PACK_PROMPT_REF,
+    inputs: { blueprint: JSON.stringify(input.blueprint), brand: brandSlice(input.brandKit) },
   };
 }

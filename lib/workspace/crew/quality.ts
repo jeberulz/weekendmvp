@@ -21,7 +21,9 @@
  *
  * Gated kinds are the S3a steps (blueprint, brand kit) and WP76-S1a's email
  * sequence, which adds a HARD no-links check over every field a reader sees
- * (`checks/emailLinks.ts`; C-ART refuses URLs only in bodies). Later
+ * (`checks/emailLinks.ts`; C-ART refuses URLs only in bodies), and WP76-S2a's
+ * social pack, which adds a HARD no-links, no-@handles check over every post
+ * text field (`checks/socialLinks.ts`). Later
  * generators add their kind here with the context their checks need (a
  * landing spec needs the brand kit).
  */
@@ -31,8 +33,9 @@ import type { z } from "zod";
 import { blueprintMarketSchema, parseArtifact, type ArtifactByKind, type ArtifactKind } from "../contracts/artifacts";
 import { checkArtifact, issue, mergeResults, toResult, type CheckResult } from "./checks";
 import { checkEmailSequenceLinks } from "./checks/emailLinks";
+import { checkSocialPackLinks } from "./checks/socialLinks";
 
-export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit", "email_sequence"] as const satisfies readonly ArtifactKind[];
+export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit", "email_sequence", "social_pack"] as const satisfies readonly ArtifactKind[];
 export type QualityGatedKind = (typeof QUALITY_GATED_KINDS)[number];
 
 export function isQualityGatedKind(kind: string): kind is QualityGatedKind {
@@ -123,7 +126,9 @@ export function gateCrewArtifact<K extends ArtifactKind>(
   const checked = checkArtifact(kind, subject, { ownIdea: context.ownIdea, ...(brandName === undefined ? {} : { brandName }) });
   const result = kind === "email_sequence"
     ? mergeResults(checked, toResult(checkEmailSequenceLinks(subject as ArtifactByKind["email_sequence"])))
-    : checked;
+    : kind === "social_pack"
+      ? mergeResults(checked, toResult(checkSocialPackLinks(subject as ArtifactByKind["social_pack"])))
+      : checked;
   return { artifact: result.hard.length > 0 ? null : subject, result };
 }
 

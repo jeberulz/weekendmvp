@@ -1,6 +1,7 @@
 import { v, type Infer, type ObjectType } from "convex/values";
 
 import { internal } from "../_generated/api";
+import type { Doc } from "../_generated/dataModel";
 import { internalAction, internalQuery, type ActionCtx } from "../_generated/server";
 import { memoryForPrompt } from "../workspace/wrenMemory";
 import { emailDraftTarget } from "../growth/drafts/emailSequence";
@@ -12,10 +13,12 @@ import {
   BLUEPRINT_OWN_IDEA_PROMPT_REF,
   BRAND_KIT_PROMPT_REF,
   EMAIL_SEQUENCE_PROMPT_REF,
+  SOCIAL_PACK_PROMPT_REF,
   blueprintStepPlan,
   brandKitStepPlan,
   crewSeedFor,
   emailSequenceStepPlan,
+  socialPackStepPlan,
   type CrewPromptInputs,
 } from "../../lib/workspace/crew/inputs";
 import {
@@ -29,8 +32,9 @@ import {
 import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type CrewRunnerDeps, type CrewStepOutcome } from "./runner";
 
 /**
- * WP75-S3a — the blueprint and brand kit generators: build the step's prompt
- * inputs on the server, then run it through the S2a runner.
+ * WP75-S3a — the blueprint and brand kit generators (and WP76's email
+ * sequence and social pack): build the step's prompt inputs on the server,
+ * then run it through the S2a runner.
  *
  * - `prepareCrewStep` reads only server rows: the task, its project, the
  *   project's wizard session (answers parsed with C-WIZARD), Wren's memory,
@@ -60,6 +64,10 @@ import { crewStepOutcomeValidator, runCrewStepWith, type CrewRunnerCtx, type Cre
  *   tagline and voice. Both documents travel to `finishCrewStep`
  *   (`briefDocumentId`, `brandKitDocumentId`), which re-checks them. A
  *   revision briefs only from approved documents, like a brand kit revision.
+ * - WP76-S2a: the social pack briefs exactly like the email sequence (both
+ *   documents, both re-checked at the finish) and reads the same brand slice,
+ *   without the wizard answers. It has no draft rows, so no preflight
+ *   conflict check.
  *
  * Internal: S1's `startLaunch` and S2b's DAG call it after their own
  * authorisation and task insert.
@@ -77,7 +85,7 @@ const preparedCrewStep = v.union(
     seedId: v.optional(v.id("idea_crew_seeds")),
     /** The approved blueprint document a brand kit is briefed from; `finishCrewStep` re-checks it. */
     briefDocumentId: v.optional(v.id("documents")),
-    /** WP76-S1a: the brand kit document an email sequence reads its voice from; `finishCrewStep` re-checks it. */
+    /** WP76-S1a: the brand kit an email sequence (WP76-S2a: or a social pack) reads its voice from; `finishCrewStep` re-checks it. */
     brandKitDocumentId: v.optional(v.id("documents")),
   }),
   v.object({ ok: v.literal(false), promptRef: v.string(), message: v.string() }),
@@ -97,6 +105,13 @@ function parseJson(text: string): unknown {
   }
 }
 
+/** The prompt a step's refusal names before the project is read (the blueprint's ref depends on the business). */
+const STEP_PROMPT_REFS: Partial<Record<Doc<"tasks">["type"], string>> = {
+  crew_brand_kit: BRAND_KIT_PROMPT_REF,
+  crew_email_sequence: EMAIL_SEQUENCE_PROMPT_REF,
+  crew_social_pack: SOCIAL_PACK_PROMPT_REF,
+};
+
 export const prepareCrewStep = internalQuery({
   args: {
     taskId: v.id("tasks"),
@@ -106,11 +121,10 @@ export const prepareCrewStep = internalQuery({
   returns: preparedCrewStep,
   handler: async (ctx, args): Promise<PreparedCrewStep> => {
     const task = await ctx.db.get("tasks", args.taskId);
-    const fallbackRef = task?.type === "crew_brand_kit"
-      ? BRAND_KIT_PROMPT_REF
-      : task?.type === "crew_email_sequence" ? EMAIL_SEQUENCE_PROMPT_REF : BLUEPRINT_LIBRARY_PROMPT_REF;
-    if (task === null || (task.type !== "crew_blueprint" && task.type !== "crew_brand_kit" && task.type !== "crew_email_sequence")) {
-      return refuse(fallbackRef, "this task is not a blueprint, brand kit or email sequence step");
+    const fallbackRef = task === null ? BLUEPRINT_LIBRARY_PROMPT_REF : (STEP_PROMPT_REFS[task.type] ?? BLUEPRINT_LIBRARY_PROMPT_REF);
+    if (task === null || (task.type !== "crew_blueprint" && task.type !== "crew_brand_kit" && task.type !== "crew_email_sequence" &&
+      task.type !== "crew_social_pack")) {
+      return refuse(fallbackRef, "this task is not a blueprint, brand kit, email sequence or social pack step");
     }
     const project = await ctx.db.get("projects", task.projectId);
     const workspace = project?.workspace;
@@ -170,20 +184,31 @@ export const prepareCrewStep = internalQuery({
         return { ok: true, promptRef, inputs, businessContext: crewBusinessContext(facts), ...(seedId === undefined ? {} : { seedId }) };
       }
     } else {
-      // S2b: a launch's own kit (and, WP76-S1a, its own email sequence) may brief from the launch's first draft
-      // while no blueprint is approved.
+      // S2b: a launch's own kit (and, WP76-S1a/S2a, its own email sequence and social pack) may brief from the
+      // launch's first draft while no blueprint is approved.
       const inLaunch = await isLaunchFirstDraftTask(ctx, task);
       const stored = (await approvedBlueprint(ctx, project)) ??
         (inLaunch ? await launchDraftBlueprint(ctx, project, args.now) : null);
       const blueprint = stored?.body === undefined ? null : blueprintSchema.safeParse(parseJson(stored.body));
       if (blueprint === null || !blueprint.success) {
-        const step = task.type === "crew_email_sequence" ? "email sequence" : "brand kit";
+        const step = task.type === "crew_email_sequence" ? "email sequence" : task.type === "crew_social_pack" ? "social pack" : "brand kit";
         return refuse(promptRef, `the ${step} needs the business's approved blueprint first`);
       }
-      if (task.type === "crew_email_sequence") {
+      if (task.type === "crew_email_sequence" || task.type === "crew_social_pack") {
         const kitRow = (await approvedBrandKit(ctx, project)) ?? (inLaunch ? await launchDraftBrandKit(ctx, project, args.now) : null);
         const kit = kitRow?.body === undefined ? null : brandKitSchema.safeParse(parseJson(kitRow.body));
-        if (kitRow === null || kit === null || !kit.success) return refuse(promptRef, "the email sequence needs the business's brand kit first");
+        const step = task.type === "crew_email_sequence" ? "email sequence" : "social pack";
+        if (kitRow === null || kit === null || !kit.success) return refuse(promptRef, `the ${step} needs the business's brand kit first`);
+        const briefs = { ...(stored === null ? {} : { briefDocumentId: stored._id }), brandKitDocumentId: kitRow._id };
+        if (task.type === "crew_social_pack") {
+          return {
+            ok: true,
+            promptRef,
+            inputs: socialPackStepPlan({ blueprint: blueprint.data, brandKit: kit.data }).inputs,
+            businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
+            ...briefs,
+          };
+        }
         // Review m4: the finish's draft-conflict check, run first so a conflict costs no model call.
         if (!(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
           return refuse(promptRef, "the business's email sequence drafts conflict, so none can be rewritten");
@@ -193,8 +218,7 @@ export const prepareCrewStep = internalQuery({
           promptRef,
           inputs: emailSequenceStepPlan({ answers, blueprint: blueprint.data, brandKit: kit.data }).inputs,
           businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
-          ...(stored === null ? {} : { briefDocumentId: stored._id }),
-          brandKitDocumentId: kitRow._id,
+          ...briefs,
         };
       }
       inputs = brandKitStepPlan({ answers, blueprint: blueprint.data }).inputs;
@@ -252,7 +276,8 @@ export async function runCrewGeneratorStepWith(
 }
 
 /**
- * Runs a blueprint or brand kit step with server-built inputs. Internal: S2b's
+ * Runs a blueprint, brand kit, email sequence (WP76-S1a) or social pack
+ * (WP76-S2a) step with server-built inputs. Internal: S2b's
  * launch DAG enqueues it on `crewWorkpool` with `retryMode: "return"`
  * (`./launch.ts`, `stepDone` re-invokes), and tests call it directly.
  */

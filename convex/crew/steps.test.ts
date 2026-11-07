@@ -61,10 +61,14 @@ describe("the registry", () => {
     }
   });
 
-  test("the blueprint, the brand kit and (WP76-S1a) the email sequence run on the pool; the roster is written by the blueprint's finish", () => {
-    expect(LAUNCH_STEPS.filter(isPoolStep).map((step) => step.key)).toEqual(["blueprint", "brand_kit", "email_sequence"]);
-    // The email sequence runs under the brand kit, never without its voice.
+  test("the blueprint, the brand kit, (WP76-S1a) the email sequence and (S2a) the social pack run on the pool; the roster is written by the blueprint's finish", () => {
+    expect(LAUNCH_STEPS.filter(isPoolStep).map((step) => step.key)).toEqual(["blueprint", "brand_kit", "email_sequence", "social_pack"]);
+    // The email sequence and the social pack run under the brand kit, never without its voice.
     expect(launchStep("email_sequence")).toMatchObject({ parents: ["brand_kit"], status: "built", runner: "generator" });
+    // S2a: the social pack reads the blueprint and the kit only (no wizard answers).
+    expect(launchStep("social_pack")).toMatchObject({
+      parents: ["brand_kit"], status: "built", runner: "generator", inputs: [{ step: "blueprint" }, { step: "brand_kit" }],
+    });
     expect(LAUNCH_STEPS.find((step) => step.key === "roster")).toMatchObject({ status: "built", runner: "roster" });
     for (const step of LAUNCH_STEPS.filter(isPoolStep)) {
       expect(step.jobType === "crew_roster" ? null : CREW_STEP_ARTIFACTS[step.jobType]).not.toBeNull();

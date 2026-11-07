@@ -77,7 +77,15 @@ vi.mock("../../crew/generators", async (importOriginal) => {
   };
 });
 
-const modules = import.meta.glob("/convex/**/*.ts");
+/** WP76-S2a: each module loads once, so the social pack running beside the email never bypasses the mock (`../../crew/launch.test.ts`). */
+function onceEach(glob: Record<string, () => Promise<unknown>>): Record<string, () => Promise<unknown>> {
+  return Object.fromEntries(Object.entries(glob).map(([key, load]) => {
+    let loaded: Promise<unknown> | null = null;
+    return [key, () => (loaded ??= load())];
+  }));
+}
+
+const modules = onceEach(import.meta.glob("/convex/**/*.ts"));
 
 type T = TestConvex<typeof schema>;
 
