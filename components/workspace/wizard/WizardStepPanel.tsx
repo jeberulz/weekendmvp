@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type Ref } from "react";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { COMMERCIAL_MODELS, GOAL_KINDS, type CommercialModel, type GoalKind } from "@/lib/workspace/contracts/roster";
 import {
@@ -23,7 +23,15 @@ import {
   RENAME_RISK_HEADLINE,
   WEB_ADDRESS_NOTE,
 } from "@/lib/workspace/wizard/copy";
-import type { WizardBlueprintPreview, WizardStepAnswer } from "@/lib/workspace/wizard/defaults";
+import {
+  WIZARD_HINT_STEPS,
+  stepAnswerOf,
+  type WizardBlueprintPreview,
+  type WizardHintStep,
+  type WizardStepAnswer,
+  type WizardStepHint,
+  type WizardStepHints,
+} from "@/lib/workspace/wizard/defaults";
 import {
   COMMERCIAL_MODEL_OPTIONS,
   GOAL_KIND_OPTIONS,
@@ -46,6 +54,8 @@ export type WizardStepPanelProps = {
   readonly defaults: WizardAnswersProgress;
   readonly suggestedNames: readonly string[];
   readonly blueprint: WizardBlueprintPreview;
+  /** WP90-S4: why each suggestion was made; a confident one opens as a quick confirm. */
+  readonly hints?: WizardStepHints;
   /** True while a step mutation is in flight: actions stay focusable but inert. */
   readonly pending: boolean;
   readonly error: string | null;
@@ -68,6 +78,7 @@ type Decision =
   | { readonly kind: "missing"; readonly label: string; readonly message: string };
 
 const USE_SUGGESTED = "Use suggested · Continue";
+const LOOKS_RIGHT = "Looks right";
 const CONTINUE = "Continue";
 const PRIMARY = `${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`;
 const SECONDARY_WIDE = `${BTN_SECONDARY} min-h-12 w-full text-[15px]`;
@@ -80,6 +91,72 @@ function sameAnswer(a: unknown, b: unknown): boolean {
   const right = Object.entries(b).filter(([, value]) => value !== undefined);
   if (left.length !== right.length) return false;
   return left.every(([key, value]) => sameAnswer(value, (b as Record<string, unknown>)[key]));
+}
+
+/** The steps that may open as a quick confirm (one obvious answer, the full choice one click away). */
+const QUICK_STEPS = ["platform", "commercial_model", "goal"] as const satisfies readonly WizardHintStep[];
+type QuickStep = (typeof QUICK_STEPS)[number];
+
+function isQuickStep(step: WizardStep): step is QuickStep {
+  return (QUICK_STEPS as readonly string[]).includes(step);
+}
+
+function isHintStep(step: WizardStep): step is WizardHintStep {
+  return (WIZARD_HINT_STEPS as readonly string[]).includes(step);
+}
+
+/** WP90-S4: the one-line reason a suggestion was made, from the idea's seed. */
+function ReasonLine({ id, reason }: { id: string; reason: string }) {
+  return (
+    <p id={id} className="text-sm text-home-ink-2">
+      <span className="font-medium text-home-ink">Why I suggest it: </span>
+      {reason}
+    </p>
+  );
+}
+
+/** The suggested answer of a quick step, in words: a title and an optional detail line. */
+function quickSummary(step: QuickStep, defaults: WizardAnswersProgress): { title: string; detail?: string } | null {
+  switch (step) {
+    case "platform": {
+      const kind = defaults.platform?.kind;
+      if (kind === undefined || kind === "custom") return null;
+      return { title: PLATFORM_OPTIONS[kind].label, detail: PLATFORM_OPTIONS[kind].hint };
+    }
+    case "commercial_model": {
+      const model = defaults.commercialModel;
+      if (model === undefined) return null;
+      return { title: COMMERCIAL_MODEL_OPTIONS[model].label, detail: COMMERCIAL_MODEL_OPTIONS[model].hint };
+    }
+    case "goal": {
+      const goal = defaults.goal;
+      if (goal === undefined || goal.paidPush !== undefined) return null;
+      return { title: GOAL_KIND_OPTIONS[goal.kind].label, detail: GOAL_TIMEFRAME_OPTIONS[goal.timeframe].label };
+    }
+  }
+}
+
+/** The quick confirm card: the suggested answer, what it means, and why. */
+function QuickConfirm({
+  summary,
+  reasonId,
+  hint,
+}: {
+  summary: { title: string; detail?: string };
+  reasonId: string;
+  hint: WizardStepHint;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className={EYEBROW}>My suggestion</h2>
+        <SuggestedChip>Suggested · from the idea page</SuggestedChip>
+      </div>
+      <p className="font-editorial text-xl leading-[1.45] text-home-ink">{summary.title}</p>
+      {summary.detail ? <p className="text-sm text-home-ink-2">{summary.detail}</p> : null}
+      <ReasonLine id={reasonId} reason={hint.reason} />
+    </div>
+  );
 }
 
 /**
@@ -227,6 +304,7 @@ export function WizardStepPanel({
   defaults,
   suggestedNames,
   blueprint,
+  hints = {},
   pending,
   error,
   headingRef,
@@ -240,7 +318,29 @@ export function WizardStepPanel({
   const noteId = `${base}-not-validated`;
   const errorId = `${base}-error`;
   const textId = `${base}-text`;
+  const reasonId = `${base}-reason`;
+  const choiceId = `${base}-choice`;
   const current = { ...defaults, ...answers };
+
+  // WP90-S4: a confident suggestion the founder has not changed opens as a quick confirm.
+  const hint = isHintStep(step) ? hints[step] : undefined;
+  const savedAnswer = stepAnswerOf(step, answers);
+  const summary = isQuickStep(step) ? quickSummary(step, defaults) : null;
+  const quickEligible =
+    summary !== null &&
+    hint?.confident === true &&
+    (savedAnswer === undefined || sameAnswer(savedAnswer, stepAnswerOf(step, defaults)));
+  const [choosing, setChoosing] = useState(!quickEligible);
+  const quick = quickEligible && !choosing;
+  const choiceRef = useRef<HTMLDivElement>(null);
+  const focusChoice = useRef(false);
+  useEffect(() => {
+    if (!choosing || !focusChoice.current) return;
+    focusChoice.current = false;
+    // "Change" opened the full choice: focus lands on the selected option.
+    const target = choiceRef.current?.querySelector<HTMLInputElement>("input:checked") ?? choiceRef.current?.querySelector<HTMLInputElement>("input");
+    target?.focus();
+  }, [choosing]);
 
   const ideaAnswer = answers.idea ?? defaults.idea;
   const isOwn = ideaAnswer?.source === "own_idea";
@@ -272,6 +372,7 @@ export function WizardStepPanel({
   const customPartner = partnerText.trim();
 
   function decide(): Decision {
+    if (quick) return { kind: "accept", label: LOOKS_RIGHT };
     switch (step) {
       case "idea": {
         if (isOwn) {
@@ -368,7 +469,8 @@ export function WizardStepPanel({
   }
 
   const group = `${base}-group`;
-  const describeAccept = step === "blueprint" && !blueprint.validated ? noteId : undefined;
+  const describeAccept =
+    step === "blueprint" && !blueprint.validated ? noteId : hint !== undefined && step !== "blueprint" ? reasonId : undefined;
   const nameDiffers = customName.length > 0 || (defaultName !== undefined && chosenName !== defaultName);
 
   let body: ReactNode;
@@ -657,6 +759,19 @@ export function WizardStepPanel({
       break;
   }
 
+  if (isHintStep(step) && hint !== undefined) {
+    if (quick && summary !== null) {
+      body = <QuickConfirm summary={summary} reasonId={reasonId} hint={hint} />;
+    } else {
+      body = (
+        <div id={choiceId} ref={choiceRef} className="flex flex-col gap-6">
+          <ReasonLine id={reasonId} reason={hint.reason} />
+          {body}
+        </div>
+      );
+    }
+  }
+
   const primary = (
     <button
       type="submit"
@@ -714,6 +829,21 @@ export function WizardStepPanel({
             }}
           >
             I&rsquo;d change some things
+          </button>
+        </div>
+      ) : quick ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {primary}
+          <button
+            ref={toggleRef}
+            type="button"
+            className={SECONDARY_WIDE}
+            onClick={() => {
+              focusChoice.current = true;
+              setChoosing(true);
+            }}
+          >
+            Change
           </button>
         </div>
       ) : (

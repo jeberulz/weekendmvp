@@ -19,12 +19,12 @@ export function loggedSignals(answers: WizardAnswersProgress): Signal[] {
  * and changed, from `answers.signals`. KEPT is sage, EDIT is ember-soft; the
  * tag is a word, so status is never colour alone.
  */
-export function FounderSignals({ answers }: { answers: WizardAnswersProgress }) {
+export function FounderSignals({ answers, className }: { answers: WizardAnswersProgress; className?: string }) {
   const signals = loggedSignals(answers);
   return (
     <aside
       aria-labelledby="founder-signals-heading"
-      className="max-w-[340px] flex-[1_1_280px] rounded-[10px] border border-home-rule bg-home-card p-[18px]"
+      className={cn(className ?? "max-w-[340px] flex-[1_1_280px]", "rounded-[10px] border border-home-rule bg-home-card p-[18px]")}
     >
       <div className="flex items-baseline justify-between gap-2">
         <h2 id="founder-signals-heading" className="font-editorial text-xl font-normal text-home-ink">
