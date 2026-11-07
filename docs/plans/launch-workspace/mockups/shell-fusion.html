@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mockup · One shell: desk and business workspace</title>
+<!-- Proposal mockup for docs/plans/launch-workspace/08-shell-fusion.md. Static, fixture data only. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* home-* tokens from app/globals.css */
+    --paper: #f7f3ec; --card: #fffdf9; --sunk: #efe8dc;
+    --ink: #1a1814; --ink-2: #4a453c; --ink-3: #6b6457; --rule: #ddd4c4;
+    --orange: #cc5500; --orange-ink: #a84a00; --orange-light: #f08a3e;
+    --panel: #24211c; --panel-rule: #3a362f; --d2: #cfc6b6; --d3: #9c9384;
+    --sage: #dce6d5; --sage-ink: #3a5530; --ochre: #f2e1b8; --ochre-ink: #6e5010;
+    --sky: #d8e3ee; --sky-ink: #2c4a68; --clay: #f1d9d2; --clay-ink: #83382a;
+    --lilac: #e3e0f0; --lilac-ink: #3d3570; /* proposed new token (§3 change 8) */
+    --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, monospace;
+    --serif: "Newsreader", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.5 var(--sans); }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--orange-ink); outline-offset: 2px; }
+  svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Mockup annotation bar (not part of the product) */
+  .note { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 20px; background: var(--panel); color: var(--d2); font-size: 13px; }
+  .note strong { color: var(--card); font-weight: 500; }
+  .note .tabs { display: inline-flex; gap: 4px; margin-left: auto; }
+  .note .tabs button { min-height: 32px; padding: 0 12px; border: 1px solid var(--panel-rule); border-radius: 9px; background: transparent; color: var(--d2); cursor: pointer; }
+  .note .tabs button[aria-pressed="true"] { background: var(--card); color: var(--ink); }
+  .note p { margin: 0; flex-basis: 100%; color: var(--d3); font-size: 12px; }
+
+  /* Shell */
+  .app { display: flex; min-height: 100vh; }
+  .side { position: sticky; top: 0; display: flex; flex-direction: column; gap: 18px; width: 248px; height: 100vh; flex: none; padding: 16px 12px; overflow-y: auto; background: var(--sunk); border-right: 1px solid var(--rule); }
+  .collapsed .side { width: 72px; }
+  .collapsed .side .label, .collapsed .side .group-h, .collapsed .side .count, .collapsed .side .sw-text, .collapsed .side .sw-chev, .collapsed .wordmark, .collapsed .meter-body, .collapsed .acct-text, .collapsed .acct-chev { display: none; }
+  .collapsed .side .row, .collapsed .switch-btn, .collapsed .acct { justify-content: center; padding: 0; }
+  .side-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .collapsed .side-top { flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 8px; border-radius: 8px; }
+  .mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: var(--ink); color: var(--card); font: italic 18px/1 var(--serif); }
+  .wordmark { font: 600 17px/1 var(--sans); letter-spacing: -0.03em; }
+  .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .icon-btn:hover { background: rgba(255,253,249,.7); color: var(--ink); }
+
+  .switch { position: relative; }
+  .switch-btn { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); text-align: left; cursor: pointer; }
+  .switch-btn:hover { border-color: var(--ink-3); }
+  .avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 8px; font: 16px/1 var(--serif); color: var(--card); }
+  .avatar.desk { background: var(--ink); font-style: italic; }
+  .avatar.biz { background: #1f4e5f; }
+  .sw-text { flex: 1; min-width: 0; }
+  .sw-name { display: block; font: 16px/1.2 var(--serif); }
+  .sw-sub { display: block; font: 10.5px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .sw-chev { color: var(--ink-3); }
+  .sw-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); box-shadow: 0 10px 30px rgba(26,24,20,.12); }
+  .collapsed .sw-list { width: 240px; }
+  .sw-list[hidden] { display: none; }
+  .sw-list a, .sw-list button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: 0; border-radius: 8px; background: none; text-align: left; cursor: pointer; }
+  .sw-list a:hover, .sw-list button:hover { background: var(--sunk); }
+  .sw-list .tick { margin-left: auto; color: var(--sage-ink); }
+  .sw-list .divider { height: 1px; margin: 6px 4px; background: var(--rule); }
+  .sw-list .small { width: 24px; height: 24px; font-size: 13px; border-radius: 6px; }
+  .sw-list .plus { display: grid; place-items: center; width: 24px; height: 24px; border: 1px dashed var(--ink-3); border-radius: 6px; color: var(--ink-2); }
+
+  .group { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .group-h { margin: 0 0 4px; padding: 0 12px; font: 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .group-h.ember { color: var(--orange-ink); }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 9px; color: var(--ink-2); }
+  .row:hover { background: rgba(255,253,249,.7); color: var(--ink); }
+  .row[aria-current="page"] { background: var(--card); color: var(--ink); font-weight: 500; box-shadow: 0 0 0 1px var(--rule); }
+  .label { flex: 1; }
+  .count { font: 11px var(--mono); color: var(--ink-3); }
+  .count.attn { padding: 1px 7px; border-radius: 999px; background: #fbf3e8; color: var(--orange-ink); }
+
+  .foot { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+  .meter { display: block; padding: 12px; border: 1px solid var(--rule); border-radius: 14px; background: var(--card); }
+  .collapsed .meter { padding: 10px 6px; }
+  .meter-top { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .meter-top .right { margin-left: auto; font: 12px var(--mono); color: var(--sage-ink); }
+  .track { display: block; height: 6px; margin: 8px 0 6px; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+  .track span { display: block; width: 96%; height: 100%; background: var(--sage-ink); }
+  .meter-note { display: block; font-size: 11px; color: var(--ink-3); }
+  .acct { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 8px; border-radius: 9px; }
+  .acct-av { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--ochre); color: var(--ochre-ink); }
+  .acct-text { flex: 1; font-size: 13px; line-height: 1.3; }
+  .acct-text small { display: block; color: var(--ink-3); font-size: 12px; }
+
+  /* Top bar and page */
+  .page { flex: 1; min-width: 0; }
+  .top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; min-height: 64px; padding: 0 32px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+  .search { display: flex; align-items: center; gap: 10px; width: min(448px, 100%); min-height: 40px; padding: 0 8px 0 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink-3); }
+  .search kbd { margin-left: auto; padding: 1px 7px; border: 1px solid var(--rule); border-radius: 5px; font: 11px var(--mono); }
+  .content { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 32px; max-width: 1160px; margin: 0 auto; padding: 40px 32px 64px; }
+  .content.biz { grid-template-columns: minmax(0, 1fr) 340px; }
+  .stack { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+
+  .dateline { margin: 0; font: 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  h1 { margin: 4px 0 6px; font: 400 44px/1.05 var(--serif); letter-spacing: -0.025em; }
+  .lede { margin: 0; color: var(--ink-2); font-size: 15px; }
+  h2 { margin: 0; font: 400 26px/1.15 var(--serif); letter-spacing: -0.015em; }
+  h2 em, h1 em { font-style: italic; }
+  .eyebrow { margin: 0; font: 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .eyebrow-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .link-ember { color: var(--orange-ink); font-size: 13px; font-weight: 500; }
+  .link-ember:hover { text-decoration: underline; }
+
+  .card { display: flex; flex-direction: column; gap: 16px; padding: 24px; border: 1px solid var(--rule); border-radius: 14px; background: var(--card); }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border: 1px solid transparent; border-radius: 9px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn.primary { background: var(--ink); color: var(--card); }
+  .btn.primary:hover { background: var(--panel); }
+  .btn.secondary { border-color: var(--rule); background: var(--card); color: var(--ink); }
+  .btn.secondary:hover { border-color: var(--ink-3); }
+  .btn.sm { min-height: 34px; padding: 0 12px; font-size: 13px; }
+  .btn.light { background: var(--card); color: var(--ink); }
+  .btn.ghost-dark { border-color: var(--panel-rule); background: transparent; color: var(--card); }
+
+  .days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .days li { display: flex; flex-direction: column; gap: 6px; }
+  .bar { height: 6px; border-radius: 999px; background: var(--sunk); }
+  .bar.done { background: var(--sage-ink); } .bar.now { background: var(--orange); }
+  .day { font: 11px var(--mono); letter-spacing: .08em; }
+  .day-s { font-size: 12px; color: var(--ink-3); } .day-s.now { color: var(--ink); font-weight: 500; }
+  .next { margin: 0; color: var(--ink-2); font-size: 15px; } .next b { color: var(--ink); font-weight: 500; }
+
+  /* Category tag (mono, no dot) vs status pill (sentence case, dot) — §3 change 4 */
+  .tag { display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: 999px; font: 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+  .tag.sky { background: var(--sky); color: var(--sky-ink); } .tag.clay { background: var(--clay); color: var(--clay-ink); }
+  .tag.sage { background: var(--sage); color: var(--sage-ink); } .tag.ochre { background: var(--ochre); color: var(--ochre-ink); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+  .pill.live, .pill.done { background: var(--sage); color: var(--sage-ink); }
+  .pill.ready { background: #fbf3e8; color: var(--orange-ink); }
+  .pill.working { background: var(--sky); color: var(--sky-ink); }
+  .pill.drafting { background: var(--sunk); color: var(--ink-2); }
+  .pill.yours { background: var(--lilac); color: var(--lilac-ink); }
+
+  .art { height: 200px; margin: -24px -24px 0; border-radius: 13px 13px 0 0; background: linear-gradient(100deg, #b9e4a8 0 9%, #c58d7a 9% 28%, #e07a4a 28% 34%, #a8574a 34% 52%, #7b2b2b 52% 70%, #2f1a1a 70%); }
+  .art-cap { margin: -8px 0 0; font: 11px var(--mono); color: var(--ink-3); }
+  .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
+  .score { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ink-2); }
+  .score span:first-child { display: flex; justify-content: space-between; } .score b { color: var(--ink); font-weight: 600; }
+  .score i { display: block; height: 4px; border-radius: 999px; background: var(--sunk); }
+  .score i::after { content: ""; display: block; height: 100%; width: var(--w, 80%); border-radius: inherit; background: var(--ink); }
+  .w90 { --w: 90%; } .w80 { --w: 80%; }
+  .meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--ink-2); }
+  .meta .mono { font-family: var(--mono); font-size: 12px; }
+
+  .rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ink); }
+  .rows li { display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  .rows .n { width: 48px; font: 12px var(--mono); color: var(--ink-3); }
+  .rows .t { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; }
+  .rows .t small { display: block; font: 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 400; }
+  .rows .h { font: 11px var(--mono); letter-spacing: .08em; color: var(--ink-3); }
+  .ini { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 999px; color: var(--card); font: 15px/1 var(--serif); }
+
+  .rail { display: flex; flex-direction: column; gap: 16px; }
+  .rail .card { gap: 0; padding: 18px; }
+  .saved li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 14px; font-weight: 500; }
+  .saved li:last-child { border-bottom: 0; }
+  .saved small { font-size: 12px; font-weight: 400; color: var(--ink-3); }
+
+  /* Business dashboard */
+  .banner { display: flex; flex-direction: column; gap: 14px; padding: 26px; border-radius: 14px; background: var(--panel); color: var(--card); }
+  .banner .eyebrow { color: var(--orange-light); }
+  .banner p.detail { margin: 0; color: var(--d2); font-size: 14px; }
+  .segs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .segs span { height: 6px; border-radius: 999px; background: var(--panel-rule); }
+  .segs .g { background: var(--sage); } .segs .o { background: var(--orange-light); }
+  .team { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .team a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 4px; border: 1px solid var(--rule); border-radius: 999px; background: var(--card); font-size: 13px; }
+  .team a:hover { border-color: var(--ink-3); }
+  .team .ini { width: 30px; height: 30px; font-size: 14px; }
+  .nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--rule); border-radius: 14px; background: var(--rule); }
+  .nums div { padding: 16px; background: var(--card); }
+  .nums div:first-child { background: var(--ochre); }
+  .nums b { display: block; margin-top: 4px; font: 400 26px/1.1 var(--serif); }
+  .nums small { color: var(--ink-3); font-size: 12px; }
+  .site-url { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+  .site-url .mono { font: 12px var(--mono); }
+
+  .wren { position: sticky; top: 88px; display: flex; flex-direction: column; height: calc(100vh - 128px); min-height: 520px; padding: 0 !important; }
+  .wren header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+  .wren header div { flex: 1; } .wren header strong { display: block; font-weight: 500; }
+  .wren .thread { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px; overflow-y: auto; font-size: 14px; }
+  .wren .msg { margin: 0; color: var(--ink-2); } .wren .msg b { color: var(--ink); font-weight: 500; }
+  .wren .from { display: flex; align-items: center; gap: 6px; font: 11px var(--mono); letter-spacing: .04em; color: var(--ink-3); }
+  .wren .from .ini { width: 20px; height: 20px; font-size: 11px; }
+  .wren .acard { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+  .wren .acard strong { font-weight: 500; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 168px; }
+  .tiles span { aspect-ratio: 1; border-radius: 4px; }
+  .wren form { display: flex; align-items: flex-end; gap: 8px; padding: 12px; border-top: 1px solid var(--rule); }
+  .wren textarea { flex: 1; min-height: 40px; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); font: 14px var(--sans); resize: none; }
+
+  [data-context="desk"] .biz-only, [data-context="business"] .desk-only { display: none !important; }
+
+  @media (max-width: 1100px) {
+    .content, .content.biz { grid-template-columns: 1fr; }
+    .wren { position: static; height: 560px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body data-context="desk">
+
+<svg width="0" height="0" class="sr-only" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>
+  <symbol id="i-hammer" viewBox="0 0 24 24"><path d="m14 10-9 9a2 2 0 0 1-3-3l9-9"/><path d="m11 5 3-3 8 8-3 3z"/></symbol>
+  <symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3zM21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 4.5a3.5 3.5 0 0 1 0 7M21 20a6 6 0 0 0-3.5-5.5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="10" r="1"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a3 3 0 0 1 0 6M18 6a7 7 0 0 1 0 12"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-chevrons" viewBox="0 0 24 24"><path d="m8 9 4-4 4 4M8 15l4 4 4-4"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-7z"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m20 11-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7"/></symbol>
+</svg>
+
+<div class="note" role="region" aria-label="About this mockup">
+  <strong>Mockup · One shell (08-shell-fusion.md)</strong>
+  <span>Fixture data. Use the switcher in the sidebar, or:</span>
+  <span class="tabs" role="group" aria-label="Show context">
+    <button type="button" data-go="desk" aria-pressed="true">Desk</button>
+    <button type="button" data-go="business" aria-pressed="false">Business</button>
+  </span>
+  <p class="desk-only">Desk: today's dashboard, unchanged, plus the switcher, the credits card, "Launching now" and "Build this idea, free".</p>
+  <p class="biz-only">Business: same shell and chrome. Nav swaps to the business; Wren takes the right rail; the library stays one click away.</p>
+</div>
+
+<div class="app" id="app">
+  <nav class="side" id="sidebar" aria-label="Workspace">
+    <div class="side-top">
+      <a class="brand" href="#" aria-label="Weekend MVP home">
+        <span class="mark" aria-hidden="true">W</span>
+        <span class="wordmark" aria-hidden="true">Weekendmvp</span>
+      </a>
+      <button type="button" class="icon-btn" id="collapse" aria-expanded="true" aria-controls="sidebar" aria-label="Collapse sidebar" title="Collapse sidebar">
+        <svg class="i"><use href="#i-panel"/></svg>
+      </button>
+    </div>
+
+    <div class="switch" id="switch">
+      <button type="button" class="switch-btn" id="switch-btn" aria-expanded="false" aria-controls="switch-list">
+        <span class="avatar desk desk-only" aria-hidden="true">W</span>
+        <span class="avatar biz biz-only" aria-hidden="true">H</span>
+        <span class="sw-text">
+          <span class="sw-name desk-only">Your desk</span>
+          <span class="sw-sub desk-only">Ideas and builds</span>
+          <span class="sw-name biz-only">HydroTrail</span>
+          <span class="sw-sub biz-only">App · free for now</span>
+        </span>
+        <span class="sr-only desk-only">, switch to a business</span>
+        <span class="sr-only biz-only">, switch business or go to your desk</span>
+        <svg class="i sw-chev" aria-hidden="true"><use href="#i-chevrons"/></svg>
+      </button>
+      <ul class="sw-list" id="switch-list" hidden>
+        <li><a href="#" data-go="desk"><span class="avatar desk small" aria-hidden="true">W</span>Your desk<svg class="i tick desk-only" aria-label="Current"><use href="#i-check"/></svg></a></li>
+        <li class="divider" role="presentation"></li>
+        <li><a href="#" data-go="business"><span class="avatar biz small" aria-hidden="true">H</span>HydroTrail<svg class="i tick biz-only" aria-label="Current"><use href="#i-check"/></svg></a></li>
+        <li><a href="#"><span class="plus" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span>Start a business <span class="tag sage">Growth</span><span class="sr-only">, a second business needs Growth. See plans</span></a></li>
+      </ul>
+    </div>
+
+    <!-- Desk context: today's nav, unchanged -->
+    <ul class="group desk-only">
+      <li><a class="row" href="#" aria-current="page"><svg class="i"><use href="#i-home"/></svg><span class="label">Home</span></a></li>
+      <li><a class="row" href="#"><svg class="i"><use href="#i-compass"/></svg><span class="label">Ideas</span></a></li>
+      <li><a class="row" href="#"><svg class="i"><use href="#i-bookmark"/></svg><span class="label">Saved</span><span class="count">4</span></a></li>
+      <li><a class="row" href="#"><svg class="i"><use href="#i-hammer"/></svg><span class="label">Builds</span><span class="count">1</span></a></li>
+      <li><a class="row" href="#"><svg class="i"><use href="#i-radio"/></svg><span class="label">Live builds</span></a></li>
+    </ul>
+    <div class="desk-only">
+      <p class="group-h" id="g-res">Resources</p>
+      <ul class="group" aria-labelledby="g-res">
+        <li><a class="row" href="#"><svg class="i"><use href="#i-book"/></svg><span class="label">Starter Kit</span></a></li>
+      </ul>
+    </div>
+
+    <!-- Business context -->
+    <div class="biz-only">
+      <p class="group-h ember" id="g-wk">This weekend</p>
+      <ul class="group" aria-labelledby="g-wk">
+        <li><a class="row" href="#"><svg class="i"><use href="#i-users"/></svg><span class="label">Team HQ</span><span class="count attn">4<span class="sr-only"> need you</span></span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-flag"/></svg><span class="label">Launch plan</span><span class="count">5/8</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-code"/></svg><span class="label">Build pack</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-palette"/></svg><span class="label">Brand kit</span></a></li>
+      </ul>
+    </div>
+    <div class="biz-only">
+      <p class="group-h" id="g-ws">Workspace</p>
+      <ul class="group" aria-labelledby="g-ws">
+        <li><a class="row" href="#" aria-current="page"><svg class="i"><use href="#i-grid"/></svg><span class="label">Dashboard</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-list"/></svg><span class="label">Tasks</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-mail"/></svg><span class="label">Email</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-share"/></svg><span class="label">Social</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-megaphone"/></svg><span class="label">Ads</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-pencil"/></svg><span class="label">Studio</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-folder"/></svg><span class="label">Files</span></a></li>
+        <li><a class="row" href="#"><svg class="i"><use href="#i-settings"/></svg><span class="label">Settings</span></a></li>
+      </ul>
+    </div>
+    <div class="biz-only">
+      <p class="group-h" id="g-lib">Library</p>
+      <ul class="group" aria-labelledby="g-lib">
+        <li><a class="row" href="#" data-go="desk"><svg class="i"><use href="#i-compass"/></svg><span class="label">Ideas</span></a></li>
+        <li><a class="row" href="#" data-go="desk"><svg class="i"><use href="#i-bookmark"/></svg><span class="label">Saved</span><span class="count">4</span></a></li>
+      </ul>
+    </div>
+
+    <div class="foot">
+      <a class="meter" href="#" aria-label="Credits, Free, 48 left, open Billing">
+        <span class="meter-top" aria-hidden="true"><span class="meter-body">Credits</span> <span class="pill drafting meter-body">Free</span><span class="right">48<span class="meter-body"> left</span></span></span>
+        <span class="track" role="meter" aria-label="Credits" aria-valuemin="0" aria-valuemax="50" aria-valuenow="48" aria-valuetext="48 of 50 credits left"><span></span></span>
+        <span class="meter-note meter-body" aria-hidden="true">Free · 50 starter credits, one-time</span>
+      </a>
+      <a class="acct" href="#" aria-label="Account, John, Free plan">
+        <span class="acct-av" aria-hidden="true"><svg class="i"><use href="#i-user"/></svg></span>
+        <span class="acct-text" aria-hidden="true">John<small>Free</small></span>
+        <svg class="i acct-chev" aria-hidden="true"><use href="#i-chevrons"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <header class="top">
+      <label class="search">
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <span class="sr-only">Search ideas</span>
+        <span aria-hidden="true">Search 229 ideas</span>
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+    </header>
+
+    <!-- DESK HOME -->
+    <main class="content desk-only" id="main-desk" tabindex="-1">
+      <div class="stack">
+        <div>
+          <p class="dateline">Fri 6 Nov · Week 45</p>
+          <h1>Good afternoon, John.</h1>
+          <p class="lede">4 saved ideas. Your launch weekend starts tonight.</p>
+        </div>
+
+        <section class="card" aria-labelledby="ln-h">
+          <div class="eyebrow-row">
+            <p class="eyebrow">Launching now</p>
+            <p class="eyebrow">5 of 8 ready</p>
+          </div>
+          <h2 id="ln-h">HydroTrail</h2>
+          <ol class="days" aria-label="Your launch weekend">
+            <li><span class="bar now" aria-hidden="true"></span><span class="day">FRI</span><span class="day-s now">Now</span></li>
+            <li><span class="bar" aria-hidden="true"></span><span class="day">SAT</span><span class="day-s">Up next</span></li>
+            <li><span class="bar" aria-hidden="true"></span><span class="day">SUN</span><span class="day-s">Up next</span></li>
+            <li><span class="bar" aria-hidden="true"></span><span class="day">MON</span><span class="day-s">Up next</span></li>
+          </ol>
+          <p class="next"><b>Next:</b> approve your brand kit. 4 things need your OK; Wren has the rest.</p>
+          <div class="btns">
+            <a class="btn primary" href="#" data-go="business">Open workspace</a>
+            <a class="btn secondary" href="#">Open launch plan</a>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="wk-h">
+          <div class="art" role="img" aria-label="Idea art placeholder"></div>
+          <p class="art-cap">IDEA OF THE WEEK · NOV 2–8</p>
+          <span class="tag sky">Education</span>
+          <h2 id="wk-h">AI Vocal Coach with Real-Time Pitch Feedback</h2>
+          <p class="lede">On-device real-time pitch feedback during Zoom vocal lessons, so students see intonation while they sing.</p>
+          <div class="scores">
+            <div class="score"><span>Opportunity <b>9</b></span><i class="w90" aria-hidden="true"></i></div>
+            <div class="score"><span>Pain <b>9</b></span><i class="w90" aria-hidden="true"></i></div>
+            <div class="score"><span>Timing <b>8</b></span><i class="w80" aria-hidden="true"></i></div>
+            <div class="score"><span>Builder confidence <b>8</b></span><i class="w80" aria-hidden="true"></i></div>
+          </div>
+          <div class="meta"><span class="mono">8 HRS</span><span>$10K/mo goal</span><span>7 cited sources</span></div>
+          <div class="btns">
+            <a class="btn primary" href="#">Build this idea, free<span class="sr-only">: AI Vocal Coach</span></a>
+            <a class="btn secondary" href="#">Read the research</a>
+            <button type="button" class="btn secondary"><svg class="i" aria-hidden="true"><use href="#i-bookmark"/></svg>Save</button>
+          </div>
+        </section>
+
+        <section aria-labelledby="new-h">
+          <div class="eyebrow-row"><h2 id="new-h" class="eyebrow">Newest ideas</h2><a class="link-ember" href="#">View all</a></div>
+          <ul class="rows">
+            <li><span class="n">N°229</span><span class="t">Webhook Gap Reconciliation for Indie SaaS</span><span class="tag sky">Developer tools</span><span class="h">12 HRS</span></li>
+            <li><span class="n">N°228</span><span class="t">Usage-Credit Ledger for Indie AI Apps</span><span class="tag ochre">Fintech</span><span class="h">12 HRS</span></li>
+            <li><span class="n">N°227</span><span class="t">PDF Redaction Preflight for Small Firms</span><span class="tag clay">AI tools</span><span class="h">12 HRS</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <aside class="rail" aria-label="Saved ideas">
+        <section class="card">
+          <div class="eyebrow-row"><h2 class="eyebrow">Saved</h2><a class="link-ember" href="#">See all</a></div>
+          <ul class="saved group">
+            <li>AI lookbook studio for indie fashion brands<small>E-commerce · 12 hrs</small></li>
+            <li>Book closing service for businesses with no finance team<small>Fintech · 10 hrs</small></li>
+            <li>Non-Toxic Appliance Verification Platform<small>Health &amp; Wellness · 10 hrs</small></li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <!-- BUSINESS DASHBOARD -->
+    <main class="content biz biz-only" id="main-biz" tabindex="-1">
+      <div class="stack">
+        <div>
+          <p class="dateline">Fri 6 Nov · Launch weekend</p>
+          <h1>HydroTrail.</h1>
+          <p class="lede">4 things need your OK. Wren has the rest.</p>
+          <p class="site-url"><span class="pill live">Live</span><span class="mono">hydrotrail.weekendmvp.app</span><a class="link-ember" href="#">View site</a></p>
+        </div>
+
+        <section class="banner" aria-labelledby="plan-h">
+          <p class="eyebrow">Weekend launch plan · Fri 6 → Sun 8 Nov</p>
+          <h2 id="plan-h">5 of 8 ready. <em>4 need your OK.</em></h2>
+          <div class="segs" aria-hidden="true"><span class="g"></span><span class="o"></span><span class="o"></span><span class="o"></span><span class="o"></span><span></span><span></span><span></span></div>
+          <p class="detail">Live: landing + waitlist. Ready for your OK: brand kit, 4 emails, 7 posts, ad creative. Drafting: offer images (2 of 3). Yours: download the build pack, send the first share.</p>
+          <div class="btns">
+            <a class="btn light" href="#">Open launch plan</a>
+            <a class="btn ghost-dark" href="#">Build pack</a>
+          </div>
+        </section>
+
+        <section aria-labelledby="ap-h">
+          <div class="eyebrow-row"><h2 id="ap-h" class="eyebrow">Needs your call</h2><p class="eyebrow">4 waiting</p></div>
+          <ul class="rows">
+            <li><span class="ini" style="background:#a84a00" aria-hidden="true">I</span><span class="t">Brand kit<small>From Brand · Iris · 9 pieces</small></span><span class="pill ready">Ready</span><button type="button" class="btn primary sm">Approve<span class="sr-only"> · Brand kit</span></button><a class="btn secondary sm" href="#">Review<span class="sr-only"> · Brand kit</span></a></li>
+            <li><span class="ini" style="background:#83382a" aria-hidden="true">E</span><span class="t">Email sequence · 4 emails<small>From Email · Elle</small></span><span class="pill ready">Ready</span><button type="button" class="btn primary sm">Approve<span class="sr-only"> · Email sequence</span></button><a class="btn secondary sm" href="#">Review<span class="sr-only"> · Email sequence</span></a></li>
+            <li><span class="ini" style="background:#3d3570" aria-hidden="true">T</span><span class="t">7 launch posts<small>From Social · Theo</small></span><span class="pill ready">Ready</span><button type="button" class="btn primary sm">Approve<span class="sr-only"> · 7 launch posts</span></button><a class="btn secondary sm" href="#">Review<span class="sr-only"> · 7 launch posts</span></a></li>
+            <li><span class="ini" style="background:#24211c" aria-hidden="true">K</span><span class="t">Send the first share<small>Yours · Marco drafted the message</small></span><span class="pill yours">Yours</span><a class="btn secondary sm" href="#">Open<span class="sr-only"> · first share</span></a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="tm-h">
+          <div class="eyebrow-row"><h2 id="tm-h" class="eyebrow">Your team · 9 on it</h2><a class="link-ember" href="#">Open Team HQ</a></div>
+          <ul class="team">
+            <li><a href="#"><span class="ini" style="background:#a84a00" role="img" aria-label="Iris, Brand (AI employee)">I</span>Brand <span class="pill ready">Needs you</span></a></li>
+            <li><a href="#"><span class="ini" style="background:#2c4a68" role="img" aria-label="Leo, Landing (AI employee)">L</span>Landing <span class="pill done">Done</span></a></li>
+            <li><a href="#"><span class="ini" style="background:#3a5530" role="img" aria-label="Sana, SEO (AI employee)">S</span>SEO <span class="pill working">Working</span></a></li>
+            <li><a href="#"><span class="ini" style="background:#83382a" role="img" aria-label="Elle, Email (AI employee)">E</span>Email <span class="pill ready">Needs you</span></a></li>
+            <li><a href="#"><span class="ini" style="background:#3d3570" role="img" aria-label="Theo, Social (AI employee)">T</span>Social <span class="pill ready">Needs you</span></a></li>
+            <li><a href="#"><span class="ini" style="background:#24211c" role="img" aria-label="Kai, Engineering (AI employee)">K</span>Engineering <span class="pill done">Done</span></a></li>
+          </ul>
+        </section>
+
+        <section aria-label="Numbers" class="nums">
+          <div><small>Waitlist · first goal</small><b>0 / 50</b></div>
+          <div><small>Total sales</small><b>$0.00</b></div>
+          <div><small>Net revenue</small><b>$0.00</b></div>
+          <div><small>Payouts</small><b>$0.00</b><small>Payments off · free for now</small></div>
+        </section>
+      </div>
+
+      <aside class="rail" aria-label="Co-founder chat with Wren">
+        <section class="card wren">
+          <header>
+            <span class="ini" style="background:#1a1814" aria-hidden="true">W</span>
+            <div><strong>Wren</strong><span class="eyebrow">Crew lead · co-founder</span></div>
+            <a class="link-ember" href="#">Expand chat</a>
+          </header>
+          <div class="thread">
+            <p class="msg">Hey John. HydroTrail is moving: a mobile-web hydration app for long solo hikes, aiming for your first 50 waitlist signups this weekend.</p>
+            <p class="msg"><b>Tonight's one job:</b> approve your brand kit so the site, emails and posts can use it.</p>
+            <p class="from"><span class="ini" style="background:#a84a00" role="img" aria-label="Iris, Brand (AI employee)">I</span>FROM BRAND · IRIS · ROUTED BY WREN</p>
+            <div class="acard">
+              <div class="tiles" aria-hidden="true">
+                <span style="background:#1f4e5f"></span><span style="background:#f2e1b8"></span><span style="background:#cc5500"></span>
+                <span style="background:#dce6d5"></span><span style="background:#1a1814"></span><span style="background:#d8e3ee"></span>
+                <span style="background:#efe8dc"></span><span style="background:#2c4a68"></span><span style="background:#f08a3e"></span>
+              </div>
+              <strong>Generated brand kit · 9 pieces</strong>
+              <div class="btns">
+                <button type="button" class="btn primary sm">Looks good</button>
+                <button type="button" class="btn secondary sm">Ask for changes</button>
+              </div>
+            </div>
+          </div>
+          <form onsubmit="return false">
+            <button type="button" class="icon-btn" aria-label="Attach a file"><svg class="i"><use href="#i-paperclip"/></svg></button>
+            <label class="sr-only" for="wren-msg">Message Wren</label>
+            <textarea id="wren-msg" rows="1" placeholder="Message Wren…"></textarea>
+            <button type="submit" class="icon-btn" aria-label="Send message"><svg class="i"><use href="#i-send"/></svg></button>
+          </form>
+        </section>
+      </aside>
+    </main>
+  </div>
+</div>
+
+<script>
+  const body = document.body;
+  const swBtn = document.getElementById("switch-btn");
+  const swList = document.getElementById("switch-list");
+  const tabs = document.querySelectorAll(".note .tabs button");
+
+  function setContext(ctx) {
+    body.dataset.context = ctx;
+    tabs.forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.go === ctx)));
+    closeList(false);
+  }
+  function closeList(returnFocus) {
+    swList.hidden = true;
+    swBtn.setAttribute("aria-expanded", "false");
+    if (returnFocus) swBtn.focus();
+  }
+  swBtn.addEventListener("click", () => {
+    const open = swList.hidden;
+    swList.hidden = !open;
+    swBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.getElementById("switch").addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !swList.hidden) closeList(true);
+  });
+  document.addEventListener("pointerdown", (e) => {
+    if (!document.getElementById("switch").contains(e.target)) closeList(false);
+  });
+  document.querySelectorAll("[data-go]").forEach((el) =>
+    el.addEventListener("click", (e) => { e.preventDefault(); setContext(el.dataset.go); })
+  );
+
+  const collapse = document.getElementById("collapse");
+  collapse.addEventListener("click", () => {
+    const collapsed = document.getElementById("app").classList.toggle("collapsed");
+    collapse.setAttribute("aria-expanded", String(!collapsed));
+    const label = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    collapse.setAttribute("aria-label", label);
+    collapse.title = label;
+  });
+</script>
+</body>
+</html>

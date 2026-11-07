@@ -420,3 +420,9 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Still open for the owner: 12 WP75 questions (Q11, the `crewJob` limit, must be ruled before S2b), confirming the
   own-idea market ruling recorded in `wp75-progress.md` § S4a, and Needs from Codex 14 (archived-business refunds).
 - G2 still needs live spend and owner steps; nothing live has run.
+
+## 2026-11-07 - Owner: split the launch; L1 private beta on Monday 2026-11-09
+
+- Rulings "L1 Monday cut", "L1 live test launches" and "D26 timing" (`docs/wp/RULINGS.md`).
+- Plan, scope, work left by lane and the L1 gate: `docs/wp/l1-release-plan.md`.
+- Codex 13 (recovery cron) and Codex 18 (launch sweep) are ship gates for Monday.

@@ -26,6 +26,7 @@ and `briefs/kickoff-codex.md`.
 | 6 | [`05-lanes-codex-claude.md`](05-lanes-codex-claude.md) | How Codex and Claude split the work without conflicts: file ownership, single-writer files, branches, reviews, handoffs |
 | 7 | [`07-landing-design.md`](07-landing-design.md) | How Leo and Iris avoid generic AI landing pages: where design quality is decided, the skills used at build time versus runtime, bans, the C-ART change before G0 (proposed, from [`briefs/design-skills-crew-brief.md`](briefs/design-skills-crew-brief.md)) |
 | 8 | [`briefs/codex-lane.md`](briefs/codex-lane.md), [`briefs/claude-lane.md`](briefs/claude-lane.md) | Kickoff prompts to paste into each agent at the start of a work package |
+| 9 | [`08-shell-fusion.md`](08-shell-fusion.md) | **Proposed, not ruled (2026-11-06).** One shell for the Builder's Hub desk and the business workspace, the design-system reconciliation, and proposed ruling D26. Mockup: [`mockups/shell-fusion.html`](mockups/shell-fusion.html) |
 
 ## The numbers that matter
 
