@@ -155,7 +155,13 @@ is still reviewed by the founder first):
 
 ## Needs from Codex
 
-None (S1a used the existing `sequences` / `sequence_steps` tables as they are).
+- S1a: none (it used the existing `sequences` / `sequence_steps` tables as they are).
+- S2c (C-DATA): `social_posts` needs a `day` field (`fri`…`thu`, or an integer `order` 0–6) so each row maps to one
+  post of the pack, and a revision can rewrite the rows in place. Optional `platform` if a row is meant per
+  platform; today a post is one row for every platform (copy-and-post, D7).
+- S2c (C-CONNECT): `SocialPlatform` in `convex/growth/connectors/types.ts` has 5 values (`instagram`, `facebook`,
+  `x`, `linkedin`, `other`); C-ART's `SOCIAL_PLATFORMS` has 8 (adds `tiktok`, `youtube`, `threads`, `pinterest`, no
+  `other`). One list should win before S2c calls `CopyConnector`.
 
 ## WP76-S1b built (Email page)
 
@@ -250,3 +256,119 @@ Needs / follow-ups:
 - The focus-return effect also keys on `canAsk`, so focus moves to the status line when the preview turns busy while focus
   is on Ask for changes.
 - The `stale` / `conflict` reasons use the plain "Changes can't be asked for on this right now."
+
+## 2026-11-07 - S2 planned; S2a started (branch `claude/wp76-s2a-social-generator`, worktree `.worktrees/wp76-social-pack`)
+
+- S2 is split into S2a (generator), S2b (Social page) and S2c (`social_posts` rows, blocked on Codex). Owner ruling
+  "Ship now, rows later" (`docs/wp/RULINGS.md`, 2026-11-07).
+
+## 2026-11-07 - WP76-S2a built (uncommitted, for review)
+
+What was built:
+- Prompt `crew-social-pack@1` (`convex/ai/prompts/socialPack.v1.ts`): `fast` tier, effort `low`, thinking `disabled`,
+  `maxTokens` 4,096 (the tier ceiling), C-ART `socialPackSchema` as the output schema. The system prompt explains the
+  seven days (`fri` launch day to `thu`), the kinds and formats, the stand-alone short caption (280 characters, X), alt
+  text only on image and carousel posts, poll options only on polls, hashtags without `#`, no URLs, web addresses,
+  email addresses or @handles ("link in bio" is allowed), no invented facts, prices, dates, figures, testimonials or
+  user counts, and the brand voice (traits, say, dontSay, the exact business name). Inputs arrive only as `crewShared`
+  data blocks (`<blueprint>`, `<brand>`, plus the runner's revision blocks). Registered in `index.ts`, locked.
+- Inputs (`lib/workspace/crew/inputs.ts`): `SOCIAL_PACK_PROMPT_REF`, `socialPackStepPlan({ blueprint, brandKit })`: the
+  blueprint and the kit's `name`, `tagline.text` and `voice` (the same slice as the email, now one `brandSlice` helper).
+  No wizard answers, matching the registry inputs.
+- Launch registry (`convex/crew/steps.ts`): `social_pack` is `built`, `runner: "generator"`, parent `brand_kit`, inputs
+  blueprint and brand kit.
+- Generator (`convex/crew/generators.ts`): `prepareCrewStep` accepts `crew_social_pack` and briefs exactly as the email
+  does (blueprint and kit approved, else the launch's own first drafts for the launch's own first draft; a revision
+  briefs only from approved documents). Returns `briefDocumentId` and `brandKitDocumentId`.
+- Finish (`convex/crew/jobs.ts`): a social pack finish needs both ids and re-checks both (`briefStillValid`), as the
+  email does; without either it fails as permanent. The document, task, run, card and crew status are written by the
+  shared path. No draft rows: S2a writes no `social_posts` rows (ruling "Ship now, rows later").
+- Retry reasons (`convex/crew/launch.ts`): a failed social pack is retryable only when both briefs exist now; otherwise
+  `SOCIAL_BRIEF_CHANGED_REASON` or `SOCIAL_BRAND_KIT_CHANGED_REASON`. The per-step reasons are now two small maps; the
+  email and brand kit reasons are unchanged.
+- Quality gate: `social_pack` is in `QUALITY_GATED_KINDS`. `lib/workspace/crew/checks/socialLinks.ts` adds a HARD
+  `social_link_in_text` issue for a link (`findLinkLike`, unchanged) or an @handle in every post's hook, caption,
+  shortCaption, imageText, imageAlt, poll options and hashtags. A handle is `@` plus a letter, number or `_`, not
+  preceded by one (so "name@host.tld" stays an email address, and "meet @ 6" is not a handle). The email check is
+  untouched.
+- Owner-only read `api.growth.drafts.socialPack.socialPackDraft({ projectId })`: workspace and AI gates,
+  `requireBusinessAccess(…, "owner")`. Returns `none`, `unavailable` (the newest document does not parse), or `ready`
+  with the seven posts in day order (`socialPostsInOrder`) and the newest `artifact_review` card (`approvalId`,
+  status, round, `expiresAt`), the same card shape as `emailSequenceDraft`. The only id returned is the card's.
+
+Decisions that fill gaps:
+- Effort is written as the literal `"low"`: the prompt lock lets a prompt module import only `definePromptSpec` and
+  types from C-PROMPT, so `TIER_RECOMMENDED_EFFORT` cannot be imported there. A platform test pins
+  `effort === TIER_RECOMMENDED_EFFORT.fast`.
+- Thinking `disabled`: the `fast` tier's thinking-off setting (Haiku accepts `disabled` at effort `high` or below),
+  matching `wrenChat`.
+- Which document the page reads: the business's newest non-archived `social_pack` document by `createdAt` (from the
+  20 newest by `updatedAt`), so a revision supersedes its draft. Before S2c there are no rows to anchor the read.
+- The query returns no status field: without `social_posts` rows the only state is the card's.
+- Hashtags are checked too, as the brief asked, though C-ART's hashtag pattern already rules out `.`, `:` and `@`.
+- Test harness (`onceEach` in `convex/crew/launch.test.ts`, `convex/growth/drafts/emailSequence.test.ts` and the new
+  test): with the email sequence and the social pack now running at the same time under the kit, a repeated dynamic
+  import of the mocked `generators` module returned the original module for the second step (probed: the mock never
+  ran for it, the real action did), so it bypassed the test's fixture hooks. Each test now memoises the first load of
+  every module. Test-only; no runtime change.
+
+Tests: `convex/growth/drafts/socialPack.test.ts` (24, convex-test, fixture mode, the launch DAG on the pool): the
+HydroTrail launch writes the document (`crew-social-pack@1`, body equals the fixture) and one pending card, no
+`social_posts` rows, nothing but `artifact_review` approvals; the request goes to Haiku with `<blueprint>` and
+`<brand>` blocks, no answers and no palette; the step waits under a failed kit; a refusal, three invalid outputs
+(poll options on an image post, a 281-character short caption, a `#` hashtag) and a link or handle in each of six
+fields write nothing; the blueprint and kit briefs are re-checked at the finish; a finish without either id fails
+permanent; both retry reasons; replay is idempotent; a revision writes a new version (superseding the first) and a
+new card (round 1) that the page reads; a revision refuses when the kit is not approved; the page read (seven posts
+fri→thu equal to the fixture, the card, nothing more), `none` before the step, `unavailable` for an unparseable body,
+another business reads `none`, refusals (other owner, workspace off, AI off). Mutation-checked: removing the gate
+entry turns the six link tests red; removing the finish's social re-check turns the three brief tests red.
+Pure: `tests/platform/workspace-growth-social-pack.test.ts` (26: the detector on both sides, the check's path per
+field, the gate on the fixture and a handle on each day, the step inputs, the spec's tier/effort/thinking, the user
+block). Updated: `convex/crew/launch.test.ts` (the social pack runs after the kit in five run-throughs, its marker at
+position 9, `succeeded` in the progress view), `convex/crew/steps.test.ts` (pool steps, the social step's parent and
+inputs).
+
+Checks (worktree, after `npm ci` there: the worktree had no `node_modules`): `git diff --check` 0,
+`npm run typecheck` 0, `npx tsc -p convex --noEmit` 0, `npm run lint` 0 (43 warnings, none in changed files),
+`npm run check:prompt-versions` 0 (8 versions match the lock), `npm run test:convex` 0 (91 files, 1317 tests),
+`npm run test:platform` 0 (85 files, 2271 tests), `npm run test:security` 0 (221 node tests, 121 vitest tests),
+`npm run build` 0.
+
+Docs: this file only (stories and rulings already describe S2a).
+
+Follow-ups:
+- S2b: the Social page reads `socialPackDraft`; copy with `captionFor` and `PLATFORM_CAPTION_LIMITS`.
+- S2c (blocked on Codex, see Needs from Codex): the seven `copy_ready` `social_posts` rows.
+- The S1a re-check's link-detector gaps (title-case TLDs, non-ASCII labels, fullwidth dots, defanged forms) apply to
+  the social check too, since it reuses `findLinkLike`; fix both together.
+- The fixture pack's Wednesday post promises "the first 50 on the waitlist get early access, free", an offer the data
+  does not state. It passes the gate (a soft count at most) and is only a fixture, but the live eval suite
+  `crew-social-pack` should grade invented offers.
+- Launches created before this change get no social task (`ensureLaunchStepTasks` runs only in the blueprint's
+  finish); no launches exist while the platform is dormant.
+
+Note (review nit 2): `socialPackDraft` reads the newest `social_pack` document of any subject. Today a business has
+only the launch pack (`main`) and its revisions; once extra packs exist (WP77 `extra_social_pack`), S2b/S2c must
+filter to the launch pack's lineage.
+
+### WP76-S2a review fixes (independent review: 0 blockers, 0 majors)
+
+- Minor 1: the @handle rule no longer refuses a time after `@` ("Meet us @6pm", "Q&A @noon Friday",
+  "@6:30 PM", "@9 pm", "@12:30am", "@Midnight", "@6pm: bring water"). Exempt: an hour of one or two digits with
+  optional `:mm` and optional am/pm (any case, optional space), or `noon` / `midnight`, ending there. Still refused:
+  `@hydrotrail`, `@HydroTrail`, `@john_doe`, `@6pmclub`, `@noonrun`, `@2026hikers`, `@2026` (four digits is not an
+  hour), `@6:30pmclub`. `findLinkLike` and the email check are unchanged.
+- Minor 3: the prompt now says to keep posts short so all seven fit (a hook one short line, a caption under about
+  900 characters, most posts far less). v1 is not on main, so v1 was edited in place: the uncommitted lock entry was
+  reset to HEAD and re-locked with `--write` (`crew-social-pack@1` now `sha256:ef8c…e47e`).
+- Minor 4: a revision with the kit approved but the blueprint not approved fails with no new document, no new card
+  and no metered call (the kit-not-approved case got the same assertions).
+- Minor 5: the other-owner refusal asserts `RESOURCE_NOT_FOUND`.
+- Nit 4: the `runCrewGeneratorStep` and module doc comments now name the four step types. The type guard is unchanged.
+
+Checks after the fixes (worktree): `git diff --check` 0, `npm run typecheck` 0, `npx tsc -p convex --noEmit` 0,
+`npm run lint` 0 (43 warnings, none in changed files), `npm run check:prompt-versions` 0 (8 versions match),
+`npm run test:convex` 0 (91 files, 1318 tests; `socialPack.test.ts` 25), `npm run test:platform` 0 (85 files, 2286
+tests; `workspace-growth-social-pack.test.ts` 41), `npm run test:security` 0 (221 node tests, 121 vitest tests).
+`npm run build` not re-run (no app code touched).

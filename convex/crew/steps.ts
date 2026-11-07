@@ -8,9 +8,10 @@ import type { CrewStepJobType } from "../../lib/workspace/crew/tasks";
  *
  * DAG (`02` §6.2, reordered by the 2026-11-06 roster ruling):
  *
- *   blueprint → roster → { brand kit text → { logo marks ×3 → landing spec; email sequence (WP76-S1a) };
+ *   blueprint → roster → { brand kit text → { logo marks ×3 → landing spec; email sequence (WP76-S1a);
+ *                                              social pack (WP76-S2a) };
  *                          build pack;
- *                          WP76: launch plan, SEO pack, social pack, ads drafts }
+ *                          WP76: launch plan, SEO pack, ads drafts }
  *
  * Every step lists its job type, employee, inputs and parents. Only steps with
  * a generator are `built`; the rest are slots:
@@ -174,10 +175,11 @@ export const LAUNCH_STEPS: readonly LaunchStep[] = [
     title: "Social pack",
     jobType: "crew_social_pack",
     employee: "social",
+    // WP76-S2a: under the brand kit (`02` §6.2), so it never runs without the kit's voice.
     inputs: [{ step: "blueprint" }, { step: "brand_kit" }],
-    parents: ["roster"],
-    status: "pending_wp76",
-    pendingStory: "WP76",
+    parents: ["brand_kit"],
+    status: "built",
+    runner: "generator",
   },
   {
     key: "ads_drafts",

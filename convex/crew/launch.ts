@@ -517,6 +517,27 @@ export const EMAIL_BRIEF_CHANGED_REASON =
 export const BRAND_KIT_CHANGED_REASON =
   "The brand kit changed. Approve it, or finish its changes, before the email sequence can try again.";
 
+/** WP76-S2a: a failed social pack with no blueprint brief it may use now. */
+export const SOCIAL_BRIEF_CHANGED_REASON =
+  "The blueprint changed. Approve it, or finish its changes, before the social pack can try again.";
+
+/** WP76-S2a: a failed social pack with no brand kit it may use now (approved, or the launch rule). */
+export const SOCIAL_BRAND_KIT_CHANGED_REASON =
+  "The brand kit changed. Approve it, or finish its changes, before the social pack can try again.";
+
+/** What each step that briefs from the blueprint says when no brief exists for it now. */
+const BRIEF_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> = {
+  crew_brand_kit: BRIEF_CHANGED_REASON,
+  crew_email_sequence: EMAIL_BRIEF_CHANGED_REASON,
+  crew_social_pack: SOCIAL_BRIEF_CHANGED_REASON,
+};
+
+/** What each step that reads the brand kit's voice says when no kit exists for it now. */
+const BRAND_KIT_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> = {
+  crew_email_sequence: BRAND_KIT_CHANGED_REASON,
+  crew_social_pack: SOCIAL_BRAND_KIT_CHANGED_REASON,
+};
+
 /** A step whose parents are done, waiting for one of the owner's crew slots. */
 export const WAITING_FOR_SLOT_REASON = "Waiting for a free slot: your team is busy with other work.";
 
@@ -525,8 +546,9 @@ type FailedStep = { readonly step: LaunchStep; readonly retryable: boolean; read
 /**
  * The launch's failed pool steps after the blueprint, in registry order, and
  * whether a retry can help each now. A step reads `failed` only when its
- * parents are all done (`evaluateLaunch`). The brand kit (and, WP76-S1a, the
- * email sequence, which also needs a brand kit under the same rule) is
+ * parents are all done (`evaluateLaunch`). The brand kit (and, WP76-S1a/S2a,
+ * the email sequence and the social pack, which also need a brand kit under
+ * the same rule) is
  * retryable only when a brief exists for it now: an approved blueprint, or the launch's own
  * first draft under the S2b ruling (`launchDraftBlueprint`; `now` applies the
  * pending card's TTL, a query passes none and the step's finish applies it).
@@ -546,17 +568,19 @@ async function failedLaunchSteps(
       out.push({ step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON });
       continue;
     }
-    if (step.jobType === "crew_brand_kit" || step.jobType === "crew_email_sequence") {
+    const briefReason = BRIEF_CHANGED_REASONS[step.jobType];
+    if (briefReason !== undefined) {
       const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
       if (brief === null) {
-        out.push({ step, retryable: false, reason: step.jobType === "crew_brand_kit" ? BRIEF_CHANGED_REASON : EMAIL_BRIEF_CHANGED_REASON });
+        out.push({ step, retryable: false, reason: briefReason });
         continue;
       }
     }
-    // WP76-S1a: the email sequence also needs a brand kit it may brief from, under the same rule.
-    if (step.jobType === "crew_email_sequence" &&
+    // WP76-S1a/S2a: the email sequence and the social pack also need a brand kit they may brief from, under the same rule.
+    const kitReason = BRAND_KIT_CHANGED_REASONS[step.jobType];
+    if (kitReason !== undefined &&
       (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
-      out.push({ step, retryable: false, reason: BRAND_KIT_CHANGED_REASON });
+      out.push({ step, retryable: false, reason: kitReason });
       continue;
     }
     out.push({ step, retryable: true, reason: STEP_FAILED_REASON });
