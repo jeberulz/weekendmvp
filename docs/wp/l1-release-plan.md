@@ -61,6 +61,12 @@ say "Coming soon" for each, so nothing looks broken.
    `email`, `social`, `publish`, `ads` and `studioVideo` stay on (off for the product).
 5. Add the test accounts to the cohort, run (or watch) the five live launches, then add the beta invitees.
 
+## After L1 (behind the same workspace gate)
+
+| Id | Work | Release | Notes |
+|---|---|---|---|
+| WP67-EP | Employee pages, `/dashboard/b/{id}/team/{role}` | After L1, behind the same workspace gate | One page per specialist: profile, status, what is waiting on you, now and next, drafts, activity trail and the job in full. Coming-soon and not-hired employees get the profile and say why, with no invented work. Every name and avatar in the workspace links there (one link per person). No schema change; data gaps for Codex are in `docs/wp/employee-pages/BRIEF.md`. Merging puts it in front of the cohort straight away, because there is no extra flag. Hold the merge until after Monday, or accept it for L1. |
+
 ## L1 gate (replaces G2 for this release only)
 
 - `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass on the merged tree.
