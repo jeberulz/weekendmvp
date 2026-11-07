@@ -32,7 +32,7 @@
  */
 import { z } from "zod";
 
-import { LIMITS, blueprintSchema, type Blueprint } from "./artifacts";
+import { LIMITS, blueprintSchema, type Blueprint } from "./artifacts.ts";
 import {
   commercialModelSchema,
   goalKindSchema,
@@ -42,7 +42,7 @@ import {
   type GoalKind,
   type GoalTarget,
   type RosterInput,
-} from "./roster";
+} from "./roster.ts";
 
 // ---------------------------------------------------------------------------
 // Steps

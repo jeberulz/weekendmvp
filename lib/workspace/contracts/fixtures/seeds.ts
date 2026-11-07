@@ -56,7 +56,7 @@ export const hydrotrailSeedDraft: IdeaSeedDraft = {
     ],
     howItWorks: ["Enter your route", "Get litres to carry and sip times", "Log what you drank"],
     differentiator: "Plans from the route, the heat and the climb, not a fixed daily goal.",
-    quotes: [{ quote: "I always run dry on the last climb.", attribution: "A solo hiker on a hiking forum" }],
+    buyerWords: [{ quote: "I always run dry on the last climb.", attribution: "A solo hiker on a hiking forum" }],
   },
   emailAngles: [
     { angle: "Welcome", hook: "You're on the list. Here is how HydroTrail plans your water." },
@@ -132,7 +132,7 @@ export const bakerySeedDraft: IdeaSeedDraft = {
     heroAngle: "Your Saturday loaf, saved for you.",
     painLines: ["The best bakes sell out before you get there.", "Phoning ahead means calling during the morning rush."],
     howItWorks: ["See tomorrow's bake", "Pre-order and pick a time", "Collect it warm"],
-    quotes: [],
+    buyerWords: [],
   },
   emailAngles: [
     { angle: "Welcome", hook: "You're on the list for pre-orders." },

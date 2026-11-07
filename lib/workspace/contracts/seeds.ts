@@ -27,14 +27,15 @@
  *   `platformSuggestion` decides: any need → native, none → web.
  *
  * Types and pure helpers only: no Convex imports, no I/O. Relative imports
- * only (the Convex bundler loads this file).
+ * only, with `.ts` extensions: the prompt-version check loads this file in
+ * plain Node through `convex/ai/prompts/ideaSeed.v1.ts`.
  */
 import { z } from "zod";
 
-import { LIMITS, blueprintVariantSchemas, type Blueprint } from "./artifacts";
-import { commercialModelSchema, goalKindSchema, singleLineText, type CommercialModel, type GoalKind } from "./roster";
-import { goalTimeframeSchema, nameDedupeKey, type GoalTimeframe, type PlatformKind } from "./wizard";
-import { hasMarketClaim } from "../wizard/light-blueprint";
+import { LIMITS, blueprintVariantSchemas, type Blueprint } from "./artifacts.ts";
+import { hasMarketClaim } from "./marketClaims.ts";
+import { commercialModelSchema, goalKindSchema, singleLineText, type CommercialModel, type GoalKind } from "./roster.ts";
+import { goalTimeframeSchema, nameDedupeKey, type GoalTimeframe, type PlatformKind } from "./wizard.ts";
 
 // ---------------------------------------------------------------------------
 // Limits and enums
@@ -186,7 +187,12 @@ export const brandSeedsSchema = z
   .strict();
 export type BrandSeeds = z.infer<typeof brandSeedsSchema>;
 
-/** A buyer's words from the idea page, quoted exactly (the audit checks it). */
+/**
+ * A buyer's words from the idea page's research, quoted exactly (the audit
+ * checks it). Input for writing copy in the buyer's own language: never shown
+ * as a testimonial, review or proof for the founder's business, which has
+ * none yet ("Never fake it", `crewShared.ts`).
+ */
 export const sourceQuoteSchema = z
   .object({ quote: line(SEED_LIMITS.quote), attribution: line(SEED_LIMITS.attribution) })
   .strict();
@@ -197,7 +203,7 @@ export const landingSeedsSchema = z
     painLines: list(line(SEED_LIMITS.painLine), 1, SEED_LIMITS.painLinesMax),
     howItWorks: list(line(SEED_LIMITS.step), SEED_LIMITS.stepsMin, SEED_LIMITS.stepsMax),
     differentiator: line(SEED_LIMITS.differentiator).optional(),
-    quotes: list(sourceQuoteSchema, 0, SEED_LIMITS.quotesMax),
+    buyerWords: list(sourceQuoteSchema, 0, SEED_LIMITS.quotesMax),
   })
   .strict();
 export type LandingSeeds = z.infer<typeof landingSeedsSchema>;
