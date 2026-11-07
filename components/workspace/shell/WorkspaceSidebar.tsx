@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { Logo } from "@/components/primitives/Logo";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { CreditMeter, creditMeterVisibleLabel } from "@/components/workspace/kit";
 import { groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell/nav-utils";
@@ -32,16 +33,16 @@ function ComingSoonTag() {
   );
 }
 
+/** The brand wordmark (WP67-S6), linked to the member home like the platform shell. */
 export function WorkspaceLogo() {
   return (
-    <div role="img" aria-label="Weekend MVP" className="flex items-center gap-2">
-      <span className="flex size-6 items-center justify-center rounded-[4px] bg-home-ink font-editorial text-sm italic text-home-card">
-        W
-      </span>
-      <span className="font-editorial text-lg text-home-ink">
-        Weekend <em>MVP</em>
-      </span>
-    </div>
+    <Link
+      href="/dashboard"
+      aria-label="Weekend MVP home"
+      className={`inline-flex min-h-10 items-center rounded-md text-home-ink ${FOCUS}`}
+    >
+      <Logo className="h-4 w-32" />
+    </Link>
   );
 }
 
