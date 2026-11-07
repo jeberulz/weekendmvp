@@ -177,12 +177,30 @@ describe("WP74-S1/S4 Meet your co-founder", () => {
     const { container } = render(
       <MeetCofounder
         answers={{ ...hydro.defaults, partnerName: { kind: "custom", name: "Captain" } }}
-        business={{ name: "HydroTrail", slug: "hydrotrail" }}
+        business={{ projectId: "proj1", name: "HydroTrail", slug: "hydrotrail" }}
       />,
     );
     expect(screen.getByRole("heading", { level: 2, name: "Meet Captain, your co-founder" })).toBeTruthy();
     expect(screen.getByText("hydrotrail.weekendmvp.app")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+    await expectNoAxeViolations(container);
+  });
+
+  test("L1-C5: ends with a primary link into the business's workspace, never a dead end", async () => {
+    const { container } = render(
+      <MeetCofounder
+        answers={hydro.defaults}
+        business={{ projectId: "proj 1/x", name: "HydroTrail", slug: "hydrotrail" }}
+        team={<p>Team section</p>}
+      />,
+    );
+    const link = screen.getByRole("link", { name: "Go to your workspace" });
+    expect(link.getAttribute("href")).toBe("/dashboard/b/proj%201%2Fx");
+    expect(link.tagName).toBe("A");
+    // It is the screen's last control, after the team.
+    const links = within(container).getAllByRole("link");
+    expect(links[links.length - 1]).toBe(link);
+    expect(screen.getByText("Team section").compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await expectNoAxeViolations(container);
   });
 });

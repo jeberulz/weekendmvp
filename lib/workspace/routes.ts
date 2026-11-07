@@ -60,6 +60,11 @@ export type WorkspaceRoute = {
   readonly slug: WorkspaceRouteSlug;
   readonly label: string;
   readonly group: WorkspaceNavGroup;
+  /**
+   * L1-C2: not built for the L1 private beta. The nav labels the row "Coming
+   * soon" in visible text and the page renders the coming-soon placeholder.
+   */
+  readonly comingSoon: boolean;
   readonly path: (projectId: string) => string;
 };
 
@@ -69,32 +74,50 @@ export function workspacePath(projectId: string, slug: string = ""): string {
   return slug === "" ? base : `${base}/${slug}`;
 }
 
+type RouteState = "built" | "coming_soon";
+
 function route(
   id: WorkspaceNavId,
   slug: WorkspaceRouteSlug,
   label: string,
   group: WorkspaceNavGroup,
+  state: RouteState,
 ): WorkspaceRoute {
-  return Object.freeze({ id, slug, label, group, path: (projectId: string) => workspacePath(projectId, slug) });
+  return Object.freeze({
+    id,
+    slug,
+    label,
+    group,
+    comingSoon: state === "coming_soon",
+    path: (projectId: string) => workspacePath(projectId, slug),
+  });
 }
 
-/** Nav order within each group matches the canvas Nav board. */
+/**
+ * Nav order within each group matches the canvas Nav board. L1 (the
+ * 2026-11-09 private beta, `docs/wp/l1-release-plan.md`) ships Team HQ (the
+ * roster and the reviews waiting), Brand kit, Dashboard (Wren chat), Email,
+ * Social and Files; every other row is "Coming soon".
+ */
 export const WORKSPACE_ROUTES: readonly WorkspaceRoute[] = Object.freeze([
-  route("team", "team", "Team HQ", "This weekend"),
-  route("launch", "launch", "Launch plan", "This weekend"),
-  route("pack", "build-pack", "Build pack", "This weekend"),
-  route("brand", "brand", "Brand kit", "This weekend"),
-  route("dashboard", "", "Dashboard", "Workspace"),
-  route("tasks", "tasks", "Tasks", "Workspace"),
-  route("email", "email", "Email", "Workspace"),
-  route("ads", "ads", "Ads", "Workspace"),
-  route("studio", "studio", "Studio", "Workspace"),
-  route("outbound", "outbound", "Outbound", "Workspace"),
-  route("social", "social", "Social", "Workspace"),
-  route("files", "files", "Files", "Workspace"),
-  route("settings", "settings", "Settings", "Workspace"),
-  route("billing", "billing", "Billing", "Account"),
+  route("team", "team", "Team HQ", "This weekend", "built"),
+  route("launch", "launch", "Launch plan", "This weekend", "coming_soon"),
+  route("pack", "build-pack", "Build pack", "This weekend", "coming_soon"),
+  route("brand", "brand", "Brand kit", "This weekend", "built"),
+  route("dashboard", "", "Dashboard", "Workspace", "built"),
+  route("tasks", "tasks", "Tasks", "Workspace", "coming_soon"),
+  route("email", "email", "Email", "Workspace", "built"),
+  route("ads", "ads", "Ads", "Workspace", "coming_soon"),
+  route("studio", "studio", "Studio", "Workspace", "coming_soon"),
+  route("outbound", "outbound", "Outbound", "Workspace", "coming_soon"),
+  route("social", "social", "Social", "Workspace", "built"),
+  route("files", "files", "Files", "Workspace", "built"),
+  route("settings", "settings", "Settings", "Workspace", "coming_soon"),
+  route("billing", "billing", "Billing", "Account", "coming_soon"),
 ]);
+
+/** The visible nav and page label for an unbuilt area (L1-C2). */
+export const COMING_SOON_LABEL = "Coming soon";
 
 export function workspaceRoute(slug: WorkspaceRouteSlug): WorkspaceRoute {
   const found = WORKSPACE_ROUTES.find((entry) => entry.slug === slug);

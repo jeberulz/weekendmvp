@@ -84,23 +84,92 @@ function boundedName(raw: string): string {
   return bounded.length > 0 ? bounded : FALLBACK_NAME;
 }
 
-/** "HydroTrail – a hydration planner" → "HydroTrail". */
-function nameFromTitle(title: string): string {
-  const head = title.split(/\s[–—:|-]\s|:\s/u, 1)[0] ?? title;
-  return boundedName(head);
+/**
+ * L1-C7: words a suggested name never ends on. The articles, conjunctions and
+ * prepositions a cut title would otherwise leave dangling ("… app for").
+ */
+const DANGLING_WORDS: ReadonlySet<string> = new Set([
+  "a", "an", "the", "and", "or", "but", "nor", "&", "+",
+  "for", "with", "of", "to", "in", "on", "at", "by", "from", "into", "onto", "via", "vs",
+  "your", "my", "our", "their", "its",
+]);
+
+/** Where a descriptive title turns into its explanation; the name stops before it once it has two words. */
+const PHRASE_BREAKS: ReadonlySet<string> = new Set([
+  "for", "with", "of", "to", "in", "on", "at", "by", "from", "into", "via", "and", "or", "but", "&", "+",
+  "using", "without", "so", "because",
+]);
+
+/** Clause starters: the name always stops before them ("A list that adapts" → "List"). */
+const CLAUSE_STARTERS: ReadonlySet<string> = new Set(["that", "which", "who", "whom", "whose", "where", "when", "while", "if"]);
+
+/** Small words stay lower case inside a title-cased name ("AI for Dentists"). */
+const SMALL_WORDS: ReadonlySet<string> = new Set([...DANGLING_WORDS, "as", "per"]);
+
+/** A suggested name is a short phrase, not a sentence. */
+export const SUGGESTED_NAME_MAX_WORDS = 4;
+
+/** "posture" → "Posture", "ai-powered" → "Ai-Powered"; a word with its own capitals ("HydroTrail", "iOS") is kept. */
+function titleCaseWord(word: string, first: boolean): string {
+  if (/\p{Lu}/u.test(word.slice(1))) return word;
+  const lower = word.toLowerCase();
+  if (!first && SMALL_WORDS.has(lower)) return lower;
+  return word.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("-");
 }
 
-/** The first three words of an own idea, title-cased. */
-function nameFromOwnIdea(text: string): string {
-  const words = text
-    .replace(/^(an?|the)\s+/iu, "")
-    .split(/\s+/u)
-    .filter((word) => /[\p{L}\p{N}]/u.test(word))
-    .slice(0, 3)
-    .map((word) => word.replace(/[^\p{L}\p{N}'-]/gu, ""))
-    .filter((word) => word.length > 0)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-  return boundedName(words.join(" "));
+/** Trims edge punctuation from one word ("phone-" → "phone", "(beta)" → "beta"); "&" and "+" stay. */
+function trimWord(word: string): string {
+  if (word === "&" || word === "+") return word;
+  return word.replace(/^[^\p{L}\p{N}]+/u, "").replace(/[^\p{L}\p{N}]+$/u, "");
+}
+
+/**
+ * L1-C7: a short, clean, title-cased name from a phrase. Whole words only (a
+ * cut never lands mid-word or on a hyphen), at most `maxWords` words and the
+ * business-name limit, stopping before the phrase turns into an explanation
+ * ("for …", "that …"), and never ending on an article, conjunction or
+ * preposition. A single word longer than the limit is cut and trimmed. Empty
+ * input gives the fallback name.
+ */
+export function shortBusinessName(raw: string, maxWords: number = SUGGESTED_NAME_MAX_WORDS): string {
+  const cleaned = raw.replace(/[\p{Cc}\u2028\u2029]+/gu, " ").replace(/\s+/g, " ").trim();
+  const words = cleaned
+    .split(" ")
+    .map(trimWord)
+    .filter((word) => word === "&" || word === "+" || /[\p{L}\p{N}]/u.test(word));
+  const picked: string[] = [];
+  for (const word of words) {
+    const lower = word.toLowerCase();
+    if (picked.length >= maxWords) break;
+    if (picked.length >= 1 && CLAUSE_STARTERS.has(lower)) break;
+    if (picked.length >= 2 && PHRASE_BREAKS.has(lower)) break;
+    if ([...picked, word].join(" ").length > WIZARD_LIMITS.businessName) break;
+    picked.push(word);
+  }
+  while (picked.length > 0 && DANGLING_WORDS.has((picked[picked.length - 1] ?? "").toLowerCase())) picked.pop();
+  if (picked.length === 0) {
+    // Only one over-long word (or nothing usable): cut it to the limit on a letter or digit.
+    const first = words.find((word) => !DANGLING_WORDS.has(word.toLowerCase()));
+    if (first === undefined) return FALLBACK_NAME;
+    const cut = trimWord(truncateText(first, WIZARD_LIMITS.businessName, ""));
+    return cut.length > 0 ? boundedName(titleCaseWord(cut, true)) : FALLBACK_NAME;
+  }
+  return boundedName(picked.map((word, index) => titleCaseWord(word, index === 0)).join(" "));
+}
+
+/** "HydroTrail – a hydration planner" → "HydroTrail"; "Gamified posture tracking app for phone-based…" → "Gamified Posture Tracking App". */
+export function nameFromTitle(title: string): string {
+  const head = title.split(/\s[–—:|-]\s|:\s|[,;(]/u, 1)[0] ?? title;
+  return shortBusinessName(head.replace(/^(an?)\s+/iu, ""));
+}
+
+/** A short name from an own idea's first words: "A packing list that adapts to the forecast" → "Packing List". */
+export function nameFromOwnIdea(text: string): string {
+  const head = text.split(/[.!?\n]|[,;:(]|\s[–—-]\s/u, 1)[0] ?? text;
+  const trimmed = head
+    .replace(/^\s*(i\s+(want|would\s+like|'d\s+like|wanna|plan|am\s+going)\s+to\s+)?(build|make|create|launch|start)\s+/iu, "")
+    .replace(/^\s*(an?|the)\s+/iu, "");
+  return shortBusinessName(trimmed, 3);
 }
 
 function baseDefaults(idea: WizardIdea, name: { chosen: string; alternatives: string[] }): WizardAnswersProgress {

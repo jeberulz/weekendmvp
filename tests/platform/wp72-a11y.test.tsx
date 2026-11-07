@@ -71,7 +71,9 @@ describe("label in name (WCAG 2.5.3)", () => {
         <main id="workspace-main" tabIndex={-1} />
       </WorkspaceFrame>,
     );
-    expect(markup).toContain('aria-label="Credits Free 8 left · low, open Billing"');
+    expect(markup).toContain('aria-label="Credits Free 8 left · low, open Billing, coming soon"');
+    // L1-C2: the visible coming-soon line is in the name too.
+    expect(markup).toContain("Billing · Coming soon</p>");
   });
 
   test("the switcher name starts with the visible business name", () => {

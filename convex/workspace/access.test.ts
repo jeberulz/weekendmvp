@@ -192,3 +192,51 @@ describe("WP72-S1 getWorkspaceAccess", () => {
       .rejects.toThrow(/unique|more than one|multiple/i);
   });
 });
+
+describe("L1-C5b myBusinesses", () => {
+  /** Gives a project a `workspace` object (a business), named `name`, updated at `updatedAt`. */
+  async function makeBusiness(t: Awaited<ReturnType<typeof seed>>["t"], projectId: Id<"projects">, ownerId: Id<"users">, name: string, updatedAt: number) {
+    await t.run(async (ctx) => {
+      const wizardSessionId = await ctx.db.insert("wizard_sessions", { ownerId, step: "done", answers: {}, startedAt: 1, updatedAt: 1 });
+      await ctx.db.patch("projects", projectId, {
+        updatedAt,
+        workspace: {
+          version: 1, name, slug: name.toLowerCase(), platform: "web", commercialModel: "free", goal: "waitlist",
+          partner: { personality: "strategist", name: "Wren" }, wizardSessionId, createdVia: "wizard",
+        },
+      });
+    });
+  }
+
+  test("lists the owner's live businesses, newest first, and never a plain project or an archived one", async () => {
+    const { t, owner, other, ids } = await seed(ON);
+    expect(await owner.query(api.workspace.access.myBusinesses, {})).toEqual([]);
+    await makeBusiness(t, ids.projectId, ids.ownerId, "PostureUp", 5);
+    await makeBusiness(t, ids.archivedProjectId, ids.ownerId, "Gone", 9);
+    const secondId = await t.run(async (ctx) => await ctx.db.insert("projects", {
+      ownerId: ids.ownerId, source: "own_idea", title: "Second", status: "draft", idempotencyKey: "second", createdAt: 1, updatedAt: 1,
+    }));
+    const plainId = await t.run(async (ctx) => await ctx.db.insert("projects", {
+      ownerId: ids.ownerId, source: "own_idea", title: "Plain", status: "draft", idempotencyKey: "plain", createdAt: 1, updatedAt: 99,
+    }));
+    void plainId;
+    await makeBusiness(t, secondId, ids.ownerId, "SipLine", 7);
+    expect(await owner.query(api.workspace.access.myBusinesses, {})).toEqual([
+      { projectId: secondId, name: "SipLine" },
+      { projectId: ids.projectId, name: "PostureUp" },
+    ]);
+    // Someone else's list never shows the owner's businesses.
+    expect(await other.query(api.workspace.access.myBusinesses, {})).toEqual([]);
+  });
+
+  test("dormant-safe: flag off, outside the cohort or signed out reads an empty list, not an error", async () => {
+    for (const setup of [{ ...ON, workspaceEnabled: false }, { ...ON, ownerInCohort: false }]) {
+      const { t, owner, ids } = await seed(setup);
+      await makeBusiness(t, ids.projectId, ids.ownerId, "PostureUp", 5);
+      expect(await owner.query(api.workspace.access.myBusinesses, {})).toEqual([]);
+    }
+    const { t, ids } = await seed(ON);
+    await makeBusiness(t, ids.projectId, ids.ownerId, "PostureUp", 5);
+    expect(await t.query(api.workspace.access.myBusinesses, {})).toEqual([]);
+  });
+});
