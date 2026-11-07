@@ -25,17 +25,6 @@ export const STEP_TITLES = {
   partner_name: "Partner name",
 } as const satisfies Record<WizardStep, string>;
 
-export const STEP_QUESTIONS = {
-  idea: "Is this the idea you want to build?",
-  blueprint: "Does this blueprint look right?",
-  platform: "Where should people use it?",
-  commercial_model: "How will it make money?",
-  goal: "What does a good first launch look like?",
-  name: "What should we call the business?",
-  partner_personality: "How should your co-founder work with you?",
-  partner_name: "What should your co-founder be called?",
-} as const satisfies Record<WizardStep, string>;
-
 /** Lower-case nouns for the signal notes ("Changed goal: …"). */
 const STEP_NOUNS = {
   idea: "idea",
@@ -49,25 +38,25 @@ const STEP_NOUNS = {
 } as const satisfies Record<WizardStep, string>;
 
 export const PLATFORM_OPTIONS = {
-  native: { label: "iOS and Android app", hint: "A native app in both stores. Slower to launch." },
-  web: { label: "Mobile web, installable", hint: "Works in any phone browser and installs to the home screen." },
-  custom: { label: "Something else", hint: "A desktop tool, browser extension, API or anything else." },
+  native: { label: "iOS and Android app", hint: "App-store apps. Review queues add days, not hours." },
+  web: { label: "Mobile web, installable", hint: "Works on any phone and adds to the home screen. Ships this weekend." },
+  custom: { label: "Something else", hint: "Desktop tool, browser extension, API. Tell me." },
 } as const satisfies Record<PlatformKind, { label: string; hint: string }>;
 
 export const COMMERCIAL_MODEL_OPTIONS = {
-  free: { label: "Free for now", hint: "Prove people want it before you charge." },
-  freemium: { label: "Freemium", hint: "A free tier, with a paid upgrade." },
-  subscription: { label: "Subscription", hint: "A monthly or yearly price." },
+  free: { label: "Free for now", hint: "Grow a waitlist and real users first. No payments to set up." },
+  freemium: { label: "Freemium", hint: "A free core, with paid extras." },
+  subscription: { label: "Subscription", hint: "A monthly plan from day one. Adds checkout to the launch." },
   one_time: { label: "One-time price", hint: "People pay once." },
 } as const satisfies Record<CommercialModel, { label: string; hint: string }>;
 
 export const GOAL_KIND_OPTIONS = {
-  waitlist: { label: "First 50 waitlist signups" },
-  first_sale: { label: "First sale" },
-  mrr_500: { label: "$500 a month" },
-  replace_income: { label: "Replace my income" },
-  just_testing: { label: "Just testing the idea" },
-} as const satisfies Record<GoalKind, { label: string }>;
+  waitlist: { label: "First 50 waitlist signups", hint: "Right for a free app." },
+  first_sale: { label: "First sale", hint: "One paying customer." },
+  mrr_500: { label: "$500 a month", hint: "A real side income." },
+  replace_income: { label: "Replace my income", hint: "The long game." },
+  just_testing: { label: "Just testing the idea", hint: "See if anyone cares." },
+} as const satisfies Record<GoalKind, { label: string; hint: string }>;
 
 export const GOAL_TIMEFRAME_OPTIONS = {
   weekend: { label: "This weekend" },
@@ -77,10 +66,10 @@ export const GOAL_TIMEFRAME_OPTIONS = {
 } as const satisfies Record<GoalTimeframe, { label: string }>;
 
 export const PARTNER_PERSONALITY_OPTIONS = {
-  hustler: { label: "Hustler", hint: "Pushes for speed and the first sale." },
-  strategist: { label: "Strategist", hint: "Plans the next move and keeps you focused." },
-  creative: { label: "Creative", hint: "Leads with brand and story." },
-  operator: { label: "Operator", hint: "Keeps every task moving." },
+  hustler: { label: "Hustler", hint: "Fast, pushes for the next share and the next signup." },
+  strategist: { label: "Strategist", hint: "Calm, explains the why, one priority at a time." },
+  creative: { label: "Creative", hint: "Leads with brand, story and content ideas." },
+  operator: { label: "Operator", hint: "Checklists, deadlines, nothing slips." },
 } as const satisfies Record<PartnerPersonality, { label: string; hint: string }>;
 
 /** The optional paid test offered on the goal step (founder's own money, D8). */

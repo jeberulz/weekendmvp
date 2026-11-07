@@ -2,16 +2,16 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
 import { LoadingState } from "@/components/workspace/kit";
-import { BTN_PRIMARY, CARD, FOCUS } from "@/components/workspace/kit/styles";
+import { BTN_PRIMARY, FOCUS } from "@/components/workspace/kit/styles";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
   WIZARD_LIMITS,
   WIZARD_STEPS,
-  partnerNameFromWizard,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
   type WizardStep,
@@ -20,9 +20,11 @@ import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
-import { LiveCofounderTeam, MeetCofounder } from "./MeetCofounder";
+import { FounderSignals } from "./FounderSignals";
+import { LiveMeetCofounder } from "./MeetCofounder";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
+import { Field, ScreenHead } from "./wizard-ui";
 
 export type WizardFlowProps = {
   /** A library idea from `/start/[ideaSlug]`, or null for `/start/own`. */
@@ -98,10 +100,17 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-const HEADING = "font-editorial text-[34px] leading-[1.1] tracking-[-0.02em] text-home-ink sm:text-[40px]";
-const INPUT = `w-full rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink ${FOCUS}`;
-
-function OwnIdeaStart({ pending, error, onStart }: { pending: boolean; error: string | null; onStart: (text: string) => void }) {
+function OwnIdeaStart({
+  pending,
+  error,
+  headingRef,
+  onStart,
+}: {
+  pending: boolean;
+  error: string | null;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  onStart: (text: string) => void;
+}) {
   const base = useId();
   const [text, setText] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
@@ -121,42 +130,37 @@ function OwnIdeaStart({ pending, error, onStart }: { pending: boolean; error: st
   }
 
   return (
-    <section aria-labelledby={`${base}-heading`} className="flex flex-col gap-6">
-      <h2 id={`${base}-heading`} className="font-editorial text-[28px] leading-tight text-home-ink sm:text-[32px]">
-        What do you want to build?
-      </h2>
-      <form onSubmit={submit} noValidate className={cn(CARD, "flex flex-col gap-4 p-5")}>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${base}-idea`} className="text-sm font-medium text-home-ink">
-            Your idea in one sentence
-          </label>
-          <p id={`${base}-hint`} className="text-[13px] text-home-ink-2">
-            Up to {WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked &ldquo;Not yet validated&rdquo;.
-          </p>
-          <input
-            id={`${base}-idea`}
-            type="text"
-            value={text}
-            maxLength={WIZARD_LIMITS.ownIdea}
-            autoComplete="off"
-            onChange={(event) => setText(event.target.value)}
-            aria-invalid={shownError ? true : undefined}
-            aria-describedby={`${base}-hint${shownError ? ` ${errorId}` : ""}`}
-            className={INPUT}
-          />
-        </div>
-        {shownError ? (
-          <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
-            {shownError}
-          </p>
-        ) : null}
-        <div>
-          <button type="submit" className={BTN_PRIMARY} aria-disabled={pending || undefined}>
-            Start building
-          </button>
-        </div>
-      </form>
-    </section>
+    <form onSubmit={submit} noValidate className="flex w-full max-w-[672px] flex-col gap-6">
+      <ScreenHead
+        headingId={`${base}-heading`}
+        headingRef={headingRef}
+        lead="What are we "
+        italic="building"
+        tail="?"
+        sub="One sentence is plenty. I'll suggest everything else."
+      />
+      <div className="rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+        <Field
+          id={`${base}-idea`}
+          label="Your idea in one sentence"
+          hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
+          value={text}
+          onChange={setText}
+          maxLength={WIZARD_LIMITS.ownIdea}
+          errorId={errorId}
+          invalid={shownError !== null}
+          serif
+        />
+      </div>
+      {shownError ? (
+        <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
+          {shownError}
+        </p>
+      ) : null}
+      <button type="submit" className={`${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`} aria-disabled={pending || undefined}>
+        Start building
+      </button>
+    </form>
   );
 }
 
@@ -164,6 +168,11 @@ function OwnIdeaStart({ pending, error, onStart }: { pending: boolean; error: st
  * The eight-step wizard as one client flow. Progress lives on the server
  * (`wizard_sessions`): every decision is a mutation and the view is a live
  * query, so a reload resumes where the founder left off.
+ *
+ * It renders the whole frame: the top bar (logo, "Save & exit" only when the
+ * session can be resumed), the step bar, the step, and the Founder signals
+ * aside. Each screen owns the page's single h1, and focus moves to it when the
+ * step changes.
  */
 export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
   const router = useRouter();
@@ -181,7 +190,6 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
 
   const startOrResume = useMutation(api.workspace.wizard.startOrResume);
   const saveStep = useMutation(api.workspace.wizard.saveStep);
-  const skipStep = useMutation(api.workspace.wizard.skipStep);
   const rewriteStep = useMutation(api.workspace.wizard.rewriteStep);
   const goBack = useMutation(api.workspace.wizard.goBack);
   const createBusiness = useMutation(api.workspace.business.createBusiness);
@@ -219,7 +227,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     router.replace(ownIdeaUrl(viewSessionId), { scroll: false });
   }, [idea, viewSource, viewSessionId, router]);
 
-  // Announce each step change and move focus to its heading.
+  // Announce each step change and move focus to its h1.
   const position = view === undefined ? null : view.business !== null ? "business" : view.completed ? "done" : view.step;
   useEffect(() => {
     if (view === undefined || position === null) return;
@@ -258,27 +266,49 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   }
 
   const title = view?.ideaTitle ?? ideaTitle;
-  const heading = idea === null && view?.answers.idea?.source !== "library" ? "Build your own idea" : `Build ${title ?? "this idea"}`;
   const currentIndex = view === undefined ? 0 : view.completed || view.business !== null ? WIZARD_STEPS.length : view.stepIndex;
+  const businessExists = view !== undefined && view.business !== null;
+  const ownIdea = view !== undefined ? view.answers.idea?.source === "own_idea" : idea === null;
+  const ideaSlug = view?.answers.idea?.source === "library" ? view.answers.idea.ideaSlug : (idea?.ideaSlug ?? null);
 
+  // "Save & exit" only where the session can be resumed: a library idea resumes by its slug; an own idea
+  // resumes by the `?session=` the URL carries once the first sentence started it.
+  const saveExit =
+    businessExists
+      ? null
+      : ownIdea
+        ? sessionId !== null
+          ? { href: "/ideas" }
+          : null
+        : ideaSlug !== null
+          ? { href: `/ideas/${encodeURIComponent(ideaSlug)}` }
+          : null;
+
+  const onStep = view !== undefined && !view.completed && view.business === null;
+  const showAside = parsed !== null && view !== undefined && view.business === null;
   let body;
   if (sessionId === null && idea === null) {
-    body = <OwnIdeaStart pending={pending} error={error} onStart={(text) => void startOwn(text)} />;
+    body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
   } else if (view === undefined || parsed === null) {
-    body = error ? (
-      <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
-        {error}
-      </p>
-    ) : (
-      <LoadingState label="Opening your build…" />
+    body = (
+      <>
+        <h1 className="sr-only">{title === null ? "Build your idea" : `Build ${title}`}</h1>
+        {error ? (
+          <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+            {error}
+          </p>
+        ) : (
+          <LoadingState label="Opening your build…" />
+        )}
+      </>
     );
   } else if (view.business !== null) {
     body = (
-      <MeetCofounder
+      <LiveMeetCofounder
         answers={parsed.answers}
         business={view.business}
+        ideaTitle={view.ideaTitle}
         headingRef={headingRef}
-        team={<LiveCofounderTeam projectId={view.business.projectId} partnerName={partnerNameFromWizard(parsed.answers)} />}
       />
     );
   } else if (view.completed) {
@@ -321,6 +351,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         key={step}
         step={step}
         ideaTitle={view.ideaTitle}
+        ideaSlug={ideaSlug}
         answers={parsed.answers}
         defaults={parsed.defaults}
         suggestedNames={view.suggestedNames}
@@ -328,26 +359,68 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         pending={pending}
         error={error}
         headingRef={headingRef}
+        showResumeHint={ownIdea && sessionId !== null}
         onAccept={() => {
           const answer = stepAnswerOf(step, parsed.defaults);
           if (answer !== undefined) void run(() => saveStep({ ...ids, answer }));
         }}
         onChoose={(answer) => void run(() => saveStep({ ...ids, answer }))}
         onRewrite={(text) => void run(() => rewriteStep({ ...ids, text }))}
-        onSkip={() => void run(() => skipStep(ids))}
-        onBack={() => void run(() => goBack(ids))}
       />
     );
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className={HEADING}>{heading}</h1>
-      <WizardProgress currentIndex={currentIndex} />
-      <p role="status" aria-live="polite" className="sr-only">
-        {announcement}
-      </p>
-      {body}
-    </div>
+    <>
+      <header className="flex items-center justify-between gap-4 px-6 py-3">
+        <div role="img" aria-label="Weekend MVP" className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="flex size-6 items-center justify-center rounded-[5px] bg-home-ink font-editorial text-[15px] italic text-home-card"
+          >
+            W
+          </span>
+          <span aria-hidden="true" className="font-editorial text-lg text-home-ink">
+            Weekend <i>MVP</i>
+          </span>
+        </div>
+        {saveExit ? (
+          <Link
+            href={saveExit.href}
+            className={cn("inline-flex min-h-11 items-center text-[13px] text-home-ink-3 underline-offset-2 hover:underline", FOCUS)}
+          >
+            Save &amp; exit
+          </Link>
+        ) : null}
+      </header>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={cn(
+          "mx-auto w-full px-6 pb-16 pt-2 focus:outline-none",
+          businessExists ? "max-w-[1180px]" : "max-w-[1120px]",
+        )}
+      >
+        <WizardProgress
+          currentIndex={currentIndex}
+          pending={pending}
+          onBack={
+            onStep && view.stepIndex > 0 ? () => void run(() => goBack({ sessionId: view.sessionId, step: view.step })) : null
+          }
+          finishedCaption={businessExists ? "Meet your co-founder" : undefined}
+        />
+        <p role="status" aria-live="polite" className="sr-only">
+          {announcement}
+        </p>
+        {showAside ? (
+          <div className="mt-14 flex flex-wrap items-start gap-12">
+            <div className="flex min-w-0 flex-[999_1_560px] justify-center">{body}</div>
+            <FounderSignals answers={parsed.answers} />
+          </div>
+        ) : (
+          <div className={cn("mt-14", sessionId === null && idea === null ? "flex justify-center" : "")}>{body}</div>
+        )}
+      </main>
+    </>
   );
 }

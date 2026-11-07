@@ -22,7 +22,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }
 vi.mock("convex/react", async () => {
   const { getFunctionName: name } = await import("convex/server");
   return {
-    useQuery: () => state.view,
+    // The session view for the wizard; the launch reads (Meet your co-founder) get an assembling team.
+    useQuery: (ref: Parameters<typeof name>[0]) => {
+      const fn = name(ref);
+      if (fn.endsWith(":launchStatus")) return { state: "assembling" };
+      if (fn.endsWith(":launchProgress")) return { started: false, steps: [] };
+      return state.view;
+    },
     useMutation: (ref: Parameters<typeof name>[0]): Mutation => async (args) => {
       const fn = name(ref);
       state.calls.push({ name: fn, args });
@@ -94,7 +100,7 @@ describe("WP74-S4 CreateBusiness", () => {
     const { container } = render(
       <CreateBusiness answers={seed.defaults} pending={false} onCreate={onCreate} onBack={onBack} />,
     );
-    expect(screen.getByRole("heading", { level: 2, name: `Create ${seed.defaults.name?.chosen}` })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(`Create ${seed.defaults.name?.chosen}.`);
     const user = userEvent.setup();
     await user.tab();
     expect(document.activeElement?.textContent).toBe("Create my business");
@@ -198,9 +204,10 @@ describe("WP74-S4 WizardFlow handoff", () => {
       state.view = finished({ projectId: "project1" as never, name: "HydroTrail", slug: "hydrotrail" });
       rerender(<WizardFlow {...props} />);
     });
-    expect(screen.getByRole("heading", { level: 2, name: "Meet Wren, your co-founder" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Hi, I'm Wren.");
     expect(container.querySelector('[aria-live="polite"]')?.textContent).toBe("Business created. Meet your co-founder.");
-    expect(document.activeElement?.textContent).toBe("Meet Wren, your co-founder");
+    expect(document.activeElement?.tagName).toBe("H1");
+    expect(document.activeElement?.textContent).toBe("Hi, I'm Wren.");
     await expectNoAxeViolations(container);
   });
 
@@ -238,7 +245,7 @@ describe("WP74-S4 WizardFlow handoff", () => {
   test("a reload with ?session= reopens the session instead of starting a new one", () => {
     state.view = finished({ projectId: "project1" as never, name: "HydroTrail", slug: "hydrotrail" });
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId="session123" />);
-    expect(screen.getByRole("heading", { level: 2, name: "Meet Wren, your co-founder" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Hi, I'm Wren.");
     // No wizard call: the session is reopened, never restarted.
     expect(state.calls.filter((call) => !call.name.startsWith("crew/roster:"))).toEqual([]);
     // WP75-S1: the team section asks for the launch once; `startLaunch` is idempotent, so a reload starts nothing new.
