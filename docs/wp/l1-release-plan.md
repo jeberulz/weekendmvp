@@ -42,8 +42,9 @@ say "Coming soon" for each, so nothing looks broken.
 
 ### Codex lane (ship gates for the launch)
 
-- **Codex 13:** a cron for `internal.crew.jobs.recoverStaleCrewRuns` (no args, every few minutes). Without it a run
-  that dies mid-step stays stuck until the founder acts.
+- **Codex 13:** `workspace crew run recovery` in `convex/crons.ts` calls
+  `internal.crew.jobs.recoverStaleCrewRuns({})` every five minutes. The existing worker owns lease checks,
+  settlement, and pagination. The cron registration needs to be deployed before L1.
 - **Codex 18:** the launch sweep on the same cron (re-advance owners with a launch in progress; re-enqueue a running
   step marker whose work is gone).
 

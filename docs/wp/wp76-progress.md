@@ -372,3 +372,78 @@ Checks after the fixes (worktree): `git diff --check` 0, `npm run typecheck` 0, 
 `npm run test:convex` 0 (91 files, 1318 tests; `socialPack.test.ts` 25), `npm run test:platform` 0 (85 files, 2286
 tests; `workspace-growth-social-pack.test.ts` 41), `npm run test:security` 0 (221 node tests, 121 vitest tests).
 `npm run build` not re-run (no app code touched).
+
+## WP76-S2b built (Social page)
+
+### What was built
+- `components/workspace/review/ArtifactReviewCard.tsx`: the review card lifted out of `EmailSequencePanel.tsx`
+  (same behaviour, focus return, live region, ask-for-changes form). Props: `card` (`status`, `expiresAt`), `decide`,
+  `preview`, `artifact: { plural, approvedNote }`. The plural noun ("emails", "posts") feeds the intro line, the form
+  hint, the closed-review line and the outcome, error and paid-round copy. Exports `ReviewDecide` and
+  `ReviewDecideResult`. Brand kit and Team HQ can reuse it.
+- `lib/workspace/emailPage.ts`: `spendRoundCopy`, `previewLine`, `changesOutcomeCopy` and `emailDecisionErrorCopy` take an
+  optional trailing `noun` (default `"emails"`), so existing calls and the Email page words are unchanged.
+- `components/workspace/email/EmailSequencePanel.tsx`: now renders the shared card (`EMAIL_ARTIFACT`); `EmailDecide` is an
+  alias of `ReviewDecide`.
+- `app/(launch-workspace)/dashboard/b/[projectId]/social/page.tsx`: placeholder replaced by a server page
+  (`requireWorkspaceAccess`, same header as Email) rendering `SocialPackPanel`.
+- `components/workspace/social/SocialPackPanel.tsx`: reads `socialPackDraft`. States loading, `none`, `unavailable`,
+  `ready`. Ready: h2, one line saying nothing posts for the founder, the shared review card, a "Post on" platform
+  select (the 8 C-ART platforms, default Instagram), a polite live region, and the seven posts in day order (h3 per
+  post; kind and format, hook, caption for the platform, card text, image description, poll options, hashtags with `#`,
+  length in words, a Copy button).
+- `lib/workspace/socialPage.ts`: pure wording and arithmetic (day, kind, format and platform labels, `copyTextFor`,
+  `captionCount`, `copiedAnnouncement`, empty-state copy).
+- `tests/platform/workspace-social-page.test.tsx`: 38 tests.
+- Nav: no change. `lib/workspace/routes.ts` has no placeholder or "coming soon" marker for Social, so it was already a
+  normal link.
+
+### Decisions that fill gaps
+- Copy text is `captionFor(post, platform)`, then a blank line and the hashtags with `#` (just the caption when there
+  are no hashtags). Poll options are not copied (the story says caption plus hashtags).
+- The page chooses the caption with `chooseCaption` (`lib/workspace/socialPage.ts`), used by both Copy and the count:
+  the full caption plus hashtags if it fits `PLATFORM_CAPTION_LIMITS[platform]`, else the short caption plus hashtags,
+  else the short caption plus hashtags marked over ("305 of 280 characters, hashtags included. Over the limit by 25.").
+  The contract's `captionFor` is untouched and no longer used by the page. The hashtag clause is left out when the post
+  has no hashtags.
+- The page names the caption used ("Caption for X") and says "The full caption is too long for X, so the short caption
+  is used." when it switches.
+- Copy is a text button whose label stays "Copy" (its accessible name starts with it and adds the day and platform). Each result is read from one page-level polite live region (the text is keyed by a counter, so a repeat is announced again) (separate from the card's own
+  status line). A clipboard refusal says "Couldn't copy. Select the text and copy it yourself."
+- The platform picker is a labelled native select, not a button group, for keyboard and screen reader behaviour.
+- The approved line reads "Approved. Nothing is posted for you." for Social.
+
+### Checks (worktree)
+- `npm run typecheck` 0; `npm run lint` 0 errors (43 warnings, none in changed files); `npm test` exit 0
+  (platform 86 files, 2308 tests, of which the Email file has 45 and the Social file 38). `npm run build` not run (orchestrator).
+- One earlier `npm test` run showed 1 failed test in a 34-file vitest suite (1,114 tests) that I did not capture; two
+  later full runs were green with no change in between. Unidentified, probably timing under load.
+
+### a11y-check
+- [x] Icon-only buttons: none; Copy is text with a descriptive `aria-label`
+- [x] Form inputs have labels: the picker and the note field
+- [x] No colour-only indicators: counts, over-limit and statuses are words
+- [x] Heading hierarchy: h1 route, h2 pack, h3 review and each post
+- [x] Live region: copy results and decision outcomes
+- axe (jsdom, WCAG 2.1 A and AA) is clean on the ready state.
+
+### Unverified
+- Not run in a browser, and the `a11y-check` skill was not run beyond the axe test and this checklist (jsdom has no
+  layout, so contrast and focus ring visibility are inherited from the kit).
+- Real clipboard behaviour (secure context, permissions) is mocked.
+- Social page against live `socialPackDraft` data and a real flag-off 404 are not exercised (the 404 comes from
+  `requireWorkspaceAccess`, unchanged).
+
+### S2b browser a11y-check (2026-11-07, local fixture backend)
+
+Run by the orchestrator on the local fixture state (the PostureUp test business; the fixture writes HydroTrail posts).
+- Headings: one h1 (Social), h2 "Your first week of posts", h3 for the review and each of the seven days. In order.
+- The "Post on" select has a visible label. Switching it to X updates every caption and count ("175 of 280 characters,
+  hashtags included").
+- Each Copy button's name is "Copy the {day} post for {platform}". Keyboard focus shows a 2px solid dark outline.
+- The live region announces the copy result. In the in-app browser the clipboard permission is denied, so Copy took
+  the failure path and announced "Couldn't copy. Select the text and copy it yourself." That is correct behaviour.
+  A successful copy in a normal browser is not yet confirmed by hand.
+- Contrast: text in `main` measured at 4.5:1 or better. The only flag was the Approve button, a script false
+  positive: white on near-black, the same kit button as the Email page.
+- Result: pass. The one open item is a manual successful copy in a normal browser.
