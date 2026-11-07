@@ -189,7 +189,7 @@ describe("WP74-S4 createBusiness: success", () => {
     const members = await t.run(async (ctx) => await ctx.db.query("business_members").collect());
     expect(members).toEqual([]);
     await expect(as("owner").query(api.workspace.access.getWorkspaceAccess, { projectId: result.projectId }))
-      .resolves.toEqual({ allowed: true, project: { _id: result.projectId, name: "HydroTrail" } });
+      .resolves.toMatchObject({ allowed: true, project: { _id: result.projectId, name: "HydroTrail", partnerName: "Wren" } });
     await expect(as("other").query(api.workspace.access.getWorkspaceAccess, { projectId: result.projectId }))
       .resolves.toEqual({ allowed: false });
 

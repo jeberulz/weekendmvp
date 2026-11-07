@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 
 import { WorkspaceFrame, businessInitial, groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell";
 import { BusinessSwitcher, SWITCHER_LIST_ID, switcherLabel } from "@/components/workspace/shell/BusinessSwitcher";
-import { listBusinesses } from "@/lib/workspace/businesses";
+import type { WorkspaceBusiness } from "@/lib/workspace/businesses";
 import { getCreditsSummary } from "@/lib/workspace/credits";
 import {
   WORKSPACE_NAV_GROUPS,
@@ -19,7 +19,7 @@ import {
 
 const PROJECT = "proj1";
 const credits = { balance: 48, max: 50, plan: "free" } as const;
-const businesses = listBusinesses({ id: PROJECT, name: "HydroTrail" });
+const businesses: readonly WorkspaceBusiness[] = [{ id: PROJECT, name: "HydroTrail" }];
 
 function renderFrame(weekendActive = true): string {
   return renderToStaticMarkup(
@@ -103,10 +103,6 @@ describe("data seams", () => {
     expect(a).toEqual(b);
     expect(a).toEqual(credits);
   });
-
-  test("the business list is only the current business", () => {
-    expect(listBusinesses({ id: "p", name: "N" })).toEqual([{ id: "p", name: "N" }]);
-  });
 });
 
 describe("WorkspaceFrame markup", () => {
@@ -120,8 +116,11 @@ describe("WorkspaceFrame markup", () => {
       expect(hrefs).toEqual(workspaceRoutesInGroup(group).map((route) => route.path(PROJECT)));
       for (const route of workspaceRoutesInGroup(group)) {
         // L1-C2: unbuilt rows say "Coming soon" in visible text inside the link; built rows never do.
-        const tag = route.comingSoon ? '<span class="ml-auto shrink-0 rounded-full border border-home-rule bg-home-card px-2 py-0.5 text-[11px] font-medium text-home-ink-2">Coming soon</span>' : "";
-        expect(list).toContain(`<span>${route.label}</span>${tag}</a>`);
+        const tag = route.comingSoon ? '<span class="ml-auto shrink-0 font-mono text-[11px] text-home-ink-3">Coming soon</span>' : "";
+        const labelClass = route.comingSoon ? "min-w-0 truncate text-home-ink-2" : "min-w-0 truncate";
+        expect(list).toContain(`<span class="${labelClass}">${route.label}</span>${tag}</a>`);
+        // Each row leads with a decorative icon (the label is the name).
+        expect(list.split(`href="${route.path(PROJECT)}"`)[1]).toMatch(/^[^>]*><svg[^>]*aria-hidden="true"/);
       }
     }
   });
@@ -129,10 +128,10 @@ describe("WorkspaceFrame markup", () => {
   test("aria-current marks only the active page", () => {
     nav.pathname = `/dashboard/b/${PROJECT}/team/brand`;
     const markup = renderFrame();
-    const current = [...markup.matchAll(/<a [^>]*aria-current="page"[^>]*><span>([^<]*)<\/span>/g)].map((m) => m[1]);
+    const current = [...markup.matchAll(/<a [^>]*aria-current="page"[^>]*>(?:<svg[^>]*>.*?<\/svg>)?<span[^>]*>([^<]*)<\/span>/g)].map((m) => m[1]);
     expect(current).toEqual(["Team HQ"]);
     nav.pathname = `/dashboard/b/${PROJECT}`;
-    const index = [...renderFrame().matchAll(/<a [^>]*aria-current="page"[^>]*><span>([^<]*)<\/span>/g)].map((m) => m[1]);
+    const index = [...renderFrame().matchAll(/<a [^>]*aria-current="page"[^>]*>(?:<svg[^>]*>.*?<\/svg>)?<span[^>]*>([^<]*)<\/span>/g)].map((m) => m[1]);
     expect(index).toEqual(["Dashboard"]);
   });
 
@@ -152,7 +151,9 @@ describe("WorkspaceFrame markup", () => {
 
   test("business switcher is a collapsed disclosure whose controls resolve", () => {
     const markup = renderFrame();
-    expect(markup).toContain(`aria-label="${switcherLabel("HydroTrail")}"`);
+    // The accessible name is the button's own text, so it holds every visible word (2.5.3).
+    expect(markup).toContain('<span class="sr-only">, switch business</span>');
+    expect(switcherLabel("HydroTrail")).toBe("HydroTrail, switch business");
     const button = markup.match(/<button[^>]*aria-controls="workspace-switcher-list"[^>]*>/);
     expect(button?.[0]).toContain('aria-expanded="false"');
     expect(markup).toContain(`id="${SWITCHER_LIST_ID}" hidden=""`);
@@ -239,7 +240,7 @@ describe("source guards", () => {
     const gate = layout.indexOf("await requireWorkspaceAccess(projectId)");
     expect(gate).toBeGreaterThan(-1);
     expect(layout.indexOf("getCreditsSummary(")).toBeGreaterThan(gate);
-    expect(layout.indexOf("listBusinesses(")).toBeGreaterThan(gate);
+    expect(layout.indexOf("listMyBusinesses(")).toBeGreaterThan(gate);
   });
 
   test("the data seams are server-only and the shell has no aside", () => {

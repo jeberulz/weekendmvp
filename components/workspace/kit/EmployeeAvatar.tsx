@@ -9,7 +9,7 @@ const AVATAR_COLOURS: Record<RoleKey, string> = {
   seo: "bg-home-sage-ink",
   marketing: "bg-home-ochre-ink",
   email: "bg-home-clay-ink",
-  social: "bg-[#3d3570]",
+  social: "bg-home-dr",
   engineering: "bg-home-panel",
   ads: "bg-home-ink-2",
   curriculum: "bg-home-ink-3",
@@ -21,6 +21,7 @@ const AVATAR_COLOURS: Record<RoleKey, string> = {
 const SIZES = {
   sm: "size-5 text-[11px]",
   md: "size-7 text-sm",
+  md2: "size-8 text-[13px]",
   lg: "size-10 text-lg",
 } as const;
 
@@ -42,7 +43,7 @@ export function EmployeeAvatar({
       role="img"
       aria-label={`${name}, ${ROLE_LABELS[role]} (AI employee)`}
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center rounded-full font-editorial text-home-card",
+        "relative inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-home-card",
         AVATAR_COLOURS[role],
         SIZES[size],
         className,

@@ -83,17 +83,20 @@ describe("L1-C2 placeholder pages", () => {
     expect((COMING_SOON_LINES[slug] ?? "").split(/[.!?](\s|$)/).filter((part) => part.trim().length > 1)).toHaveLength(1);
   });
 
-  test.each(["team", "brand"] as const)("%s is truthful: no coming soon, no state it does not check", async (slug) => {
-    const body = await page(slug);
-    expect(body).not.toContain("Coming soon");
-    expect(body).toContain(PENDING_PAGE_LINES[slug] ?? "missing");
-    for (const claim of STATE_CLAIMS) expect(body).not.toMatch(claim);
-  });
-
   test("exactly the built pages that still render the placeholder have a pending line", () => {
     const usesPlaceholder = BUILT.filter((slug) => slug !== "").filter((slug) =>
       readFileSync(path.join(routeRoot, slug, "page.tsx"), "utf8").includes("<RoutePlaceholder"));
     expect(Object.keys(PENDING_PAGE_LINES).sort()).toEqual([...usesPlaceholder].sort());
+  });
+
+  test.each([
+    ["team", "<TeamHqPanel"],
+    ["brand", "<BrandKitPanel"],
+  ] as const)("%s is its real page, not the placeholder", (slug, panel) => {
+    const source = readFileSync(path.join(routeRoot, slug, "page.tsx"), "utf8");
+    expect(source).toContain(panel);
+    expect(source).not.toContain("RoutePlaceholder");
+    expect(source).not.toContain("Coming soon");
   });
 
   test("Social is its real page (the pack panel), not the placeholder", () => {

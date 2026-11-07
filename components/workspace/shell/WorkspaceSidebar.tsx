@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { Logo } from "@/components/primitives/Logo";
-import { FOCUS } from "@/components/workspace/kit/styles";
+import { COMING_SOON_TAG, FOCUS } from "@/components/workspace/kit/styles";
 import { CreditMeter, creditMeterVisibleLabel } from "@/components/workspace/kit";
+import { NAV_ICONS } from "@/components/workspace/shell/nav-icons";
 import { groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell/nav-utils";
 import type { CreditsSummary } from "@/lib/workspace/credits";
 import { COMING_SOON_LABEL, workspaceRoute } from "@/lib/workspace/routes";
@@ -24,13 +25,9 @@ export function billingLinkLabel(credits: CreditsSummary): string {
   return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing`;
 }
 
-/** L1-C2: the visible text tag on an unbuilt nav row (never colour alone). */
+/** L1-C2: the visible text tag on an unbuilt nav row. Plain mono text, as on the Nav board. */
 function ComingSoonTag() {
-  return (
-    <span className="ml-auto shrink-0 rounded-full border border-home-rule bg-home-card px-2 py-0.5 text-[11px] font-medium text-home-ink-2">
-      {COMING_SOON_LABEL}
-    </span>
-  );
+  return <span className={`ml-auto shrink-0 ${COMING_SOON_TAG}`}>{COMING_SOON_LABEL}</span>;
 }
 
 /** The brand wordmark (WP67-S6), linked to the member home like the platform shell. */
@@ -57,11 +54,17 @@ export function WorkspaceSidebar({
   weekendActive,
   switcher,
   credits,
+  teamBadge,
+  userRow,
 }: {
   projectId: string;
   weekendActive: boolean;
   switcher: ReactNode;
   credits: CreditsSummary;
+  /** The "N need you" badge, rendered inside the Team HQ row. */
+  teamBadge?: ReactNode;
+  /** The footer user row with sign out. */
+  userRow?: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -119,10 +122,10 @@ export function WorkspaceSidebar({
       <div
         id={NAV_PANEL_ID}
         onClickCapture={onPanelClickCapture}
-        className={`${open ? "flex" : "hidden"} flex-col gap-4 px-3 pb-4 pt-2 lg:flex lg:min-h-[calc(100dvh-4.5rem)]`}
+        className={`${open ? "flex" : "hidden"} flex-col gap-3.5 px-3 pb-4 pt-2 lg:flex lg:min-h-[calc(100dvh-4.5rem)]`}
       >
         {switcher}
-        <nav aria-label="Workspace" className="flex flex-1 flex-col gap-4">
+        <nav aria-label="Workspace" className="flex flex-1 flex-col gap-3.5">
           {groups.map(({ group, routes }) => (
             <div key={group}>
               <p
@@ -136,16 +139,19 @@ export function WorkspaceSidebar({
               <ul aria-labelledby={groupHeadingId(group)} className="flex flex-col gap-0.5">
                 {routes.map((route) => {
                   const active = isRouteActive(pathname, projectId, route);
+                  const Icon = NAV_ICONS[route.id];
                   return (
                     <li key={route.id}>
                       <Link
                         href={route.path(projectId)}
                         aria-current={active ? "page" : undefined}
-                        className={`flex min-h-10 items-center gap-2 rounded-md px-2.5 text-[13px] text-home-ink hover:bg-home-sunk ${FOCUS} ${
+                        className={`flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm text-home-ink hover:bg-home-sunk ${FOCUS} ${
                           active ? "bg-home-sunk font-medium" : "font-normal"
                         }`}
                       >
-                        <span>{route.label}</span>
+                        {Icon ? <Icon aria-hidden="true" strokeWidth={1.7} className="size-4 shrink-0" /> : null}
+                        <span className={route.comingSoon ? "min-w-0 truncate text-home-ink-2" : "min-w-0 truncate"}>{route.label}</span>
+                        {route.id === "team" ? teamBadge : null}
                         {route.comingSoon ? <ComingSoonTag /> : null}
                       </Link>
                     </li>
@@ -158,20 +164,21 @@ export function WorkspaceSidebar({
             href={billing.path(projectId)}
             aria-current={billingActive ? "page" : undefined}
             aria-label={billingLabel}
-            className={`mt-auto block rounded-xl border border-home-rule p-3 hover:bg-home-sunk ${FOCUS} ${
+            className={`mt-auto block rounded-lg border border-home-rule px-2.5 pb-2 pt-2.5 hover:bg-home-sunk ${FOCUS} ${
               billingActive ? "bg-home-sunk" : "bg-home-card"
             }`}
           >
             {billing.comingSoon ? (
               <>
                 <p className="text-[13px] font-medium text-home-ink">Credits and billing</p>
-                <p className="mt-1 text-[11px] font-medium text-home-ink-2">{COMING_SOON_LABEL}</p>
+                <p className={`mt-1 ${COMING_SOON_TAG}`}>{COMING_SOON_LABEL}</p>
               </>
             ) : (
               <CreditMeter balance={credits.balance} max={credits.max} plan={credits.plan} />
             )}
           </Link>
         </nav>
+        {userRow}
       </div>
     </div>
   );

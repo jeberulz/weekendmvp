@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { WorkspacePageHeader } from "@/components/workspace/kit/WorkspacePageHeader";
+import { COMING_SOON_TAG } from "@/components/workspace/kit/styles";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
 import { COMING_SOON_LABEL, workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
 
@@ -25,13 +27,10 @@ export const COMING_SOON_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
 
 /**
  * Pages that ship for L1 but still render this placeholder until their story
- * lands. A built page with no line here never renders the placeholder (Social,
- * Email, Files and the dashboard have their own pages).
+ * lands. None today: Team HQ and Brand kit (L1-C6, L1-C1) are real pages like
+ * Social, Email, Files and the dashboard.
  */
-export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
-  team: "Team HQ will show your team and every draft waiting for your review.",
-  brand: "Your brand kit will show here: its name, tagline, voice, colours and type, ready for your review.",
-};
+export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {};
 
 /** The coming-soon sentence for a slug. */
 export function comingSoonLine(slug: WorkspaceRouteSlug): string {
@@ -57,30 +56,33 @@ export function routeMetadata(slug: WorkspaceRouteSlug): Metadata {
 
 export function PlaceholderBody({
   eyebrow,
+  eyebrowSuffix,
   heading,
+  headingTail,
   emptyState,
   comingSoon = false,
 }: {
+  /** The route name (ember eyebrow). */
   eyebrow: string;
+  eyebrowSuffix?: string;
+  /** The h1 sentence. */
   heading: string;
+  /** Optional italic tail of the h1. */
+  headingTail?: string;
   emptyState: string;
   /** Shows "Coming soon" in words above the line. */
   comingSoon?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1.5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-home-ink-3">{eyebrow}</p>
-        <h1 className="font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.025em] text-home-ink sm:text-[42px]">
-          {heading}
-        </h1>
-      </header>
+      <WorkspacePageHeader
+        eyebrow={eyebrow}
+        eyebrowSuffix={eyebrowSuffix}
+        lead={heading}
+        tail={headingTail}
+      />
       <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-home-d2 px-6 py-8 text-center text-sm text-home-ink-2">
-        {comingSoon ? (
-          <p className="rounded-full border border-home-rule bg-home-card px-3 py-1 text-[13px] font-medium text-home-ink">
-            {COMING_SOON_LABEL}
-          </p>
-        ) : null}
+        {comingSoon ? <p className={COMING_SOON_TAG}>{COMING_SOON_LABEL}</p> : null}
         <p>{emptyState}</p>
       </div>
     </div>
@@ -103,8 +105,10 @@ export async function RoutePlaceholder({
   const comingSoon = pendingLine === undefined;
   return (
     <PlaceholderBody
-      eyebrow={project.name}
+      eyebrow={route.label}
+      eyebrowSuffix={project.name}
       heading={route.label}
+      headingTail={comingSoon ? "coming soon." : undefined}
       comingSoon={comingSoon}
       emptyState={pendingLine ?? comingSoonLine(slug)}
     />

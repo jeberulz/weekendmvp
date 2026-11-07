@@ -7,7 +7,7 @@ import type { EmployeeCardData } from "./EmployeeCard";
 import type { WorkstreamData } from "./WorkstreamPanel";
 import type { BuildPackPromptCardProps } from "./BuildPackPromptCard";
 import type { RoleKey } from "@/lib/workspace/contracts/roster";
-import type { ApprovalCost, EmployeeIdentity } from "./types";
+import type { ApprovalCost, EmployeeIdentity, EmployeeStatus } from "./types";
 
 export const hydrotrailEmployees: readonly EmployeeCardData[] = [
   { id: "iris", name: "Iris", role: "brand", specialty: "Logo, palette, type and voice", status: "needs_you", statusDetail: "Brand kit ready for your OK", autopilot: false },
@@ -50,7 +50,7 @@ export const hydrotrailCreditStates = {
   paid: { balance: 500, max: 500, plan: "builders_hub" },
 } as const;
 
-const base = (id: string, name: string, specialty: string, status: EmployeeCardData["status"], statusDetail: string) => ({
+const base = (id: string, name: string, specialty: string, status: EmployeeStatus, statusDetail: string) => ({
   id,
   name,
   specialty,

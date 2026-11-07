@@ -20,7 +20,9 @@ import {
   emailCtaCopy,
   emailDecisionErrorCopy,
   emailDelayCopy,
+  emailDelayShort,
   EMAIL_NOTE_MAX_LENGTH,
+  reviewPill,
   splitMergeTags,
 } from "@/lib/workspace/emailPage";
 
@@ -113,6 +115,22 @@ describe("helpers", () => {
     expect(emailDelayCopy(24)).toBe("1 day after the previous email");
     expect(emailDelayCopy(72)).toBe("3 days after the previous email");
   });
+  test("short delay chips", () => {
+    expect(emailDelayShort(0)).toBe("Immediately");
+    expect(emailDelayShort(24)).toBe("+1 day");
+    expect(emailDelayShort(48)).toBe("+2 days");
+    expect(emailDelayShort(36)).toBe("+36 hours");
+    expect(emailDelayShort(1)).toBe("+1 hour");
+  });
+  test("the review pill follows the card, never the sequence status", () => {
+    const now = 1_000;
+    expect(reviewPill(null, now)).toBeNull();
+    expect(reviewPill({ status: "pending", expiresAt: now + 1 }, now)).toEqual({ status: "ready" });
+    expect(reviewPill({ status: "pending", expiresAt: now }, now)).toEqual({ status: "draft", label: "Expired" });
+    expect(reviewPill({ status: "approved", expiresAt: now + 1 }, now)).toEqual({ status: "approved" });
+    expect(reviewPill({ status: "changes_requested", expiresAt: now + 1 }, now)).toEqual({ status: "changes_requested" });
+    expect(reviewPill({ status: "cancelled", expiresAt: now + 1 }, now)).toEqual({ status: "draft", label: "Not going ahead" });
+  });
   test("paragraphs and cta wording", () => {
     expect(emailBodyParagraphs("a\nb\n\n\nc\r\n\r\nd")).toEqual(["a\nb", "c", "d"]);
     expect(emailCtaCopy({ label: "Go", target: "site" })).toEqual({ label: "Go", destination: "your site" });
@@ -135,6 +153,11 @@ describe("helpers", () => {
     expect(changesOutcomeCopy(undefined, "expired", true)).toBe("This card expired.");
     expect(changesOutcomeCopy(undefined, "changes_requested", false)).toMatch(/note wasn't sent/);
     expect(changesOutcomeCopy({ outcome: "spend_required", costCredits: 1 }, "pending", true)).toMatch(/costs 1 credit\./);
+  });
+  test("an approved status in a change round follows the artifact's approval kind, and is neutral without one", () => {
+    expect(changesOutcomeCopy(undefined, "approved", true, "emails", "send")).toMatch(/Sending is off/);
+    expect(changesOutcomeCopy(undefined, "approved", true, "posts", "post")).toMatch(/Posting is off/);
+    expect(changesOutcomeCopy(undefined, "approved", true, "emails")).toBe("Approved.");
   });
   test("merge tags split out as tokens", () => {
     expect(splitMergeTags("Hi {first name}, welcome")).toEqual([
@@ -172,34 +195,115 @@ describe("states", () => {
 });
 
 describe("ready", () => {
-  test("four emails in order with their facts, and a heading outline", () => {
+  test("a four-step rail and one detail panel, with a heading outline", () => {
     live.view = ready();
     show();
     expect(screen.getByRole("heading", { level: 2, name: "HydroTrail welcome" })).toBeTruthy();
-    expect(screen.getByText(/Sent from John at HydroTrail/)).toBeTruthy();
-    expect(screen.getByText(/Sequence status: Draft/)).toBeTruthy();
-    const list = screen.getByRole("list", { name: "The emails, in order" });
-    const items = within(list).getAllByRole("listitem");
-    expect(items).toHaveLength(4);
-    expect(within(items[0]).getByRole("heading", { level: 3 }).textContent).toBe("Welcome");
-    expect(within(items[1]).getByRole("heading", { level: 3 }).textContent).toBe("Value");
-    expect(within(items[2]).getByRole("heading", { level: 3 }).textContent).toBe("Offer");
-    expect(within(items[3]).getByRole("heading", { level: 3 }).textContent).toBe("Follow-up");
-    expect(within(items[0]).getByText("As soon as someone confirms")).toBeTruthy();
-    expect(within(items[1]).getByText("2 days after the previous email")).toBeTruthy();
-    expect(within(items[2]).getByText("36 hours after the previous email")).toBeTruthy();
-    expect(within(items[0]).getByText("Subject welcome")).toBeTruthy();
-    expect(within(items[0]).getByText("Preview welcome")).toBeTruthy();
-    expect(within(items[0]).getByText(/Join the waitlist/).textContent).toContain("your waitlist");
-    expect(within(items[3]).getByText(/Reply to me/).textContent).toContain("a reply");
-    expect(within(items[1]).queryByText("Button")).toBeNull();
-    expect(within(items[0]).getByText("Goal welcome")).toBeTruthy();
-    expect(within(items[0]).getByText("Email 1 of 4")).toBeTruthy();
-    expect(within(items[0]).getAllByText(/paragraph/)).toHaveLength(2);
+    expect(screen.getByText("Trigger: someone joins your waitlist")).toBeTruthy();
+    const tabs = within(screen.getByRole("tablist", { name: "The four emails, in send order" })).getAllByRole("tab");
+    expect(tabs).toHaveLength(4);
+    expect(tabs.map((tab) => tab.getAttribute("aria-selected"))).toEqual(["true", "false", "false", "false"]);
+    expect(within(tabs[0]).getByText("1 · Welcome")).toBeTruthy();
+    expect(within(tabs[1]).getByText("2 · Value")).toBeTruthy();
+    expect(within(tabs[2]).getByText("3 · Offer")).toBeTruthy();
+    expect(within(tabs[3]).getByText("4 · Follow-up")).toBeTruthy();
+    expect(within(tabs[0]).getByText("Immediately")).toBeTruthy();
+    expect(within(tabs[1]).getByText("+2 days")).toBeTruthy();
+    expect(within(tabs[2]).getByText("+36 hours")).toBeTruthy();
+    expect(within(tabs[0]).getByText("Subject welcome")).toBeTruthy();
+    expect(within(tabs[0]).getByText("Preview welcome")).toBeTruthy();
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.getAttribute("id")).toBe(tabs[0].getAttribute("aria-controls"));
+    expect(panel.getAttribute("aria-labelledby")).toBe(tabs[0].id);
+    expect(within(panel).getByRole("heading", { level: 3 }).textContent).toBe("Email 1 · Welcome · As soon as someone confirms");
+    expect(within(panel).getByText("Subject welcome")).toBeTruthy();
+    expect(within(panel).getByText("Preview welcome")).toBeTruthy();
+    expect(within(panel).getByText("From").textContent).toBe("From John at HydroTrail");
+    expect(within(panel).getByText("Goal welcome")).toBeTruthy();
+    expect(within(panel).getByText(/Join the waitlist/).textContent).toContain("your waitlist");
+    expect(within(panel).getAllByText(/paragraph/)).toHaveLength(2);
     // The merge tag is a visible token with a spoken hint, never filled in.
-    const token = within(items[0]).getByText("{first name}");
+    const token = within(panel).getByText("{first name}");
     expect(token.textContent).toBe("{first name} (merge tag)");
     expect(token.querySelector(".sr-only")?.textContent).toBe(" (merge tag)");
+  });
+
+  test("clicking a step shows that email, and only emails with a button show one", async () => {
+    live.view = ready();
+    show();
+    const user = userEvent.setup();
+    const tabs = screen.getAllByRole("tab");
+    await user.click(tabs[3]);
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByRole("heading", { level: 3 }).textContent).toBe("Email 4 · Follow-up · 1 day after the previous email");
+    expect(within(panel).getByText(/Reply to me/).textContent).toContain("a reply");
+    await user.click(tabs[1]);
+    expect(within(screen.getByRole("tabpanel")).queryByText(/Button:/)).toBeNull();
+    expect(within(screen.getByRole("tabpanel")).getByText("Goal value")).toBeTruthy();
+  });
+
+  test("the rail is keyboard operable: roving tabindex, arrows, Home and End select and move focus", async () => {
+    live.view = ready();
+    show();
+    const user = userEvent.setup();
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs.map((tab) => tab.getAttribute("tabindex"))).toEqual(["0", "-1", "-1", "-1"]);
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Approve all 4" }));
+    tabs[0].focus();
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(tabs[1]);
+    expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+    expect(tabs[0].getAttribute("aria-selected")).toBe("false");
+    expect(tabs.map((tab) => tab.getAttribute("tabindex"))).toEqual(["-1", "0", "-1", "-1"]);
+    expect(within(screen.getByRole("tabpanel")).getByText("Subject value")).toBeTruthy();
+    await user.keyboard("{End}");
+    expect(document.activeElement).toBe(tabs[3]);
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(tabs[0]);
+    await user.keyboard("{ArrowLeft}");
+    expect(document.activeElement).toBe(tabs[3]);
+    await user.keyboard("{Home}");
+    expect(document.activeElement).toBe(tabs[0]);
+    await user.keyboard("{ArrowDown}{ArrowUp}");
+    expect(document.activeElement).toBe(tabs[0]);
+  });
+
+  test("P0: never says Sent from or Sequence status, and shows From in the detail", () => {
+    live.view = ready();
+    const { container } = show();
+    expect(container.textContent).not.toMatch(/Sent from/i);
+    expect(container.textContent).not.toMatch(/Sequence status/i);
+    expect(screen.getByText("From").textContent).toBe("From John at HydroTrail");
+  });
+
+  test("P0: the drafts-only strip says nothing sends, with no send or meter control", () => {
+    live.view = ready();
+    show();
+    expect(screen.getByText("Drafts only for now.")).toBeTruthy();
+    expect(screen.getByText(/Nothing sends from here yet/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /send email|send now/i })).toBeNull();
+    expect(screen.queryByText(/of 50|signups|lifetime/i)).toBeNull();
+  });
+
+  test.each([
+    [{ status: "pending", expiresAt: Date.now() + 86_400_000 }, "Ready for your OK"],
+    [{ status: "approved", expiresAt: Date.now() + 86_400_000 }, "Approved"],
+    [{ status: "changes_requested", expiresAt: Date.now() + 86_400_000 }, "Changes requested"],
+    [{ status: "pending", expiresAt: Date.now() - 1 }, "Expired"],
+    [{ status: "cancelled", expiresAt: Date.now() + 86_400_000 }, "Not going ahead"],
+  ])("P0: the status pill follows the review card (%j shows %s), never Draft beside Approved", (card, label) => {
+    live.view = ready({ approvalId: APPROVAL, changeRound: 0n, ...card });
+    const { container } = show();
+    const pill = container.querySelector("[data-status]");
+    expect(pill?.textContent).toBe(label);
+    if (label === "Approved") expect(screen.queryByText("Draft")).toBeNull();
+  });
+
+  test("no card, no pill", () => {
+    live.view = ready(null);
+    const { container } = show();
+    expect(container.querySelector("[data-status]")).toBeNull();
   });
 
   test("no ids or raw statuses render", () => {
@@ -207,6 +311,7 @@ describe("ready", () => {
     const { container } = show();
     const text = container.textContent ?? "";
     expect(text).not.toContain("approval1");
+    expect(text).not.toContain("waitlist_join");
     expect(text).not.toContain("project1");
     expect(text).not.toMatch(/changes_requested|\bpending\b/);
   });
@@ -231,18 +336,25 @@ describe("ready", () => {
 });
 
 describe("card", () => {
+  test("the approve button reads Approve all 4", () => {
+    live.view = ready();
+    show();
+    expect(screen.getByRole("button", { name: "Approve all 4" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+  });
+
   test("approve calls the mutation, announces, and moves focus to the status line", async () => {
     decideMock.mockResolvedValue({ status: "approved", changed: true });
     live.view = ready();
     show();
     const user = userEvent.setup();
-    const approve = screen.getByRole("button", { name: "Approve" });
+    const approve = screen.getByRole("button", { name: "Approve all 4" });
     approve.focus();
     await user.click(approve);
     expect(decideMock).toHaveBeenCalledWith({ projectId: PROJECT, approvalId: APPROVAL, decision: "approve" });
-    await waitFor(() => expect(screen.getByText("Approved.")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Approved. Sending is off during the beta, so nothing goes out yet.")).toBeTruthy());
     expect(document.activeElement).toBe(screen.getByText(/^Review status:/).parentElement);
-    expect(screen.getByRole("status").textContent).toBe("Approved.");
+    expect(screen.getByRole("status").textContent).toBe("Approved. Sending is off during the beta, so nothing goes out yet.");
   });
 
   test("ask for changes: labelled field, trimmed note sent, form closes, focus on status", async () => {
@@ -299,7 +411,7 @@ describe("card", () => {
     decideMock.mockRejectedValue(new ConvexError({ code: "APPROVAL_ALREADY_DECIDED" }));
     live.view = ready();
     show();
-    await userEvent.setup().click(screen.getByRole("button", { name: "Approve" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "Approve all 4" }));
     await waitFor(() => expect(screen.getByText("This card was already decided.")).toBeTruthy());
   });
 
@@ -309,14 +421,14 @@ describe("card", () => {
     live.view = ready();
     show();
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Approve" }));
-    const approve = screen.getByRole("button", { name: "Approve" });
+    await user.click(screen.getByRole("button", { name: "Approve all 4" }));
+    const approve = screen.getByRole("button", { name: "Approve all 4" });
     expect(approve.getAttribute("aria-disabled")).toBe("true");
     expect(approve.hasAttribute("disabled")).toBe(false);
     await user.click(approve);
     expect(decideMock).toHaveBeenCalledTimes(1);
     resolve({ status: "approved", changed: true });
-    await waitFor(() => expect(screen.getByText("Approved.")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Approved. Sending is off during the beta, so nothing goes out yet.")).toBeTruthy());
   });
 
   test.each([
@@ -381,7 +493,7 @@ describe("card", () => {
     live.view = ready({ approvalId: APPROVAL, status: "changes_requested", changeRound: 1n, expiresAt: Date.now() + 1000 });
     show();
     expect(screen.getByText("Review status: Changes requested")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve all 4" })).toBeNull();
     await askFor("Try again");
     expect(decideMock).toHaveBeenCalledWith({
       projectId: PROJECT,
@@ -416,7 +528,7 @@ describe("card", () => {
     decideMock.mockRejectedValue(new ConvexError({ code: "APPROVAL_SUBJECT_CHANGED" }));
     live.view = ready();
     show();
-    await userEvent.setup().click(screen.getByRole("button", { name: "Approve" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "Approve all 4" }));
     await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/newest version/));
     expect(screen.getByRole("status").textContent).not.toMatch(/reload/i);
   });
@@ -426,14 +538,14 @@ describe("card", () => {
     decideMock.mockRejectedValue(new ConvexError({ kind: "RateLimited" }));
     live.view = ready();
     show();
-    await userEvent.setup().click(screen.getByRole("button", { name: "Approve" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "Approve all 4" }));
     await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/lot of changes this hour/));
   });
 
   test("a live update that leaves pending returns focus from Approve to the status line", () => {
     live.view = ready();
     const { rerender } = show();
-    screen.getByRole("button", { name: "Approve" }).focus();
+    screen.getByRole("button", { name: "Approve all 4" }).focus();
     live.view = ready({ approvalId: APPROVAL, status: "approved", changeRound: 0n, expiresAt: Date.now() + 1000 });
     rerender(<EmailSequencePanel projectId={PROJECT} />);
     expect(screen.queryByRole("button")).toBeNull();
@@ -449,7 +561,7 @@ describe("card", () => {
     );
     live.view = ready();
     const { rerender } = render(tree);
-    screen.getByRole("button", { name: "Approve" }).focus();
+    screen.getByRole("button", { name: "Approve all 4" }).focus();
     screen.getByRole("button", { name: "Elsewhere" }).focus();
     live.view = ready({ approvalId: APPROVAL, status: "approved", changeRound: 0n, expiresAt: Date.now() + 1000 });
     rerender(tree);
@@ -461,7 +573,7 @@ describe("card", () => {
     live.view = ready();
     show();
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await user.click(screen.getByRole("button", { name: "Approve all 4" }));
     await user.click(screen.getByRole("button", { name: "Ask for changes" }));
     expect(screen.queryByLabelText("What should change?")).toBeNull();
   });
@@ -470,7 +582,7 @@ describe("card", () => {
     live.preview = { outcome: "spend_required", changeRound: 3, costCredits: 5 };
     live.view = ready();
     show();
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve all 4" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
     expect(screen.getByText("Another round of changes costs 5 credits. Paying for changes isn't open yet, so you can approve these emails as they are.")).toBeTruthy();
     expect(decideMock).not.toHaveBeenCalled();
@@ -498,7 +610,7 @@ describe("card", () => {
     live.view = ready();
     show();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve all 4" })).toBeTruthy();
     expect(screen.getByText("Changes can't be asked for on this right now.")).toBeTruthy();
   });
 
@@ -508,7 +620,7 @@ describe("card", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     show();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve all 4" })).toBeTruthy();
     vi.restoreAllMocks();
   });
 
@@ -558,10 +670,10 @@ describe("card", () => {
   test("a live update from pending to changes_requested returns focus from Approve to the status line", () => {
     live.view = ready();
     const { rerender } = show();
-    screen.getByRole("button", { name: "Approve" }).focus();
+    screen.getByRole("button", { name: "Approve all 4" }).focus();
     live.view = ready({ approvalId: APPROVAL, status: "changes_requested", changeRound: 1n, expiresAt: Date.now() + 1000 });
     rerender(<EmailSequencePanel projectId={PROJECT} />);
-    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve all 4" })).toBeNull();
     expect(document.activeElement).toBe(screen.getByText(/^Review status:/).parentElement);
   });
 
@@ -569,6 +681,6 @@ describe("card", () => {
     live.view = ready(null);
     show();
     expect(screen.queryByText("Your review")).toBeNull();
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getAllByRole("tab")).toHaveLength(4);
   });
 });

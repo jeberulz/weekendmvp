@@ -70,16 +70,17 @@ describe("WP74-S1 WizardFlow", () => {
     // The live query answers with a resumed session already on step 3.
     state.view = view("platform", 2);
     rerender(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
-    expect(screen.getByRole("heading", { level: 1, name: "Build HydroTrail" })).toBeTruthy();
-    expect(screen.getByRole("heading", { level: 2, name: "Where should people use it?" })).toBeTruthy();
-    expect(screen.getByText("Step 3 of 8: Platform")).toBeTruthy();
+    // One h1: the step's question (jsdom pads inline <i> in computed names, so compare textContent).
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Where should it live first?");
+    expect(screen.getByText("Step 3 of 8 · Platform")).toBeTruthy();
   });
 
   test("accepting sends the suggested default for the current step; a step change is announced and focused", async () => {
     state.view = view("platform", 2);
     const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };
     const { rerender, container } = render(<WizardFlow {...props} />);
-    await userEvent.setup().click(screen.getByRole("button", { name: "Use this platform" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "Use suggested · Continue" }));
     const save = state.calls.find((call) => call.name === getFunctionName(api.workspace.wizard.saveStep));
     expect(save?.args).toEqual({ sessionId: "session123", step: "platform", answer: { kind: "web" } });
 
@@ -89,6 +90,7 @@ describe("WP74-S1 WizardFlow", () => {
     });
     const live = container.querySelector('[aria-live="polite"]');
     expect(live?.textContent).toBe("Step 4 of 8: Commercial model");
+    expect(document.activeElement?.tagName).toBe("H1");
     expect(document.activeElement?.textContent).toBe("How will it make money?");
     const results = await axe(container, { rules: { "color-contrast": { enabled: false } } });
     expect(results.violations.map((violation) => violation.id)).toEqual([]);
@@ -122,7 +124,7 @@ describe("WP74-S1 WizardFlow", () => {
   test("the finished session offers Create my business and creates nothing until clicked", () => {
     state.view = { ...view("partner_name", 7, true), answers: seed.defaults };
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
-    expect(screen.getByRole("heading", { level: 2, name: "Create HydroTrail" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Create HydroTrail.");
     expect(screen.getByRole("button", { name: "Create my business" })).toBeTruthy();
     expect(screen.getByText("All 8 steps done")).toBeTruthy();
     expect(state.calls.map((call) => call.name).filter((name) => !name.endsWith(":startOrResume"))).toEqual([]);

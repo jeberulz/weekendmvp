@@ -21,8 +21,6 @@ function renderBlueprint(seed: WizardSeed) {
     onAccept: vi.fn(),
     onChoose: vi.fn(),
     onRewrite: vi.fn(),
-    onSkip: vi.fn(),
-    onBack: vi.fn(),
   };
   return render(<WizardStepPanel {...props} />);
 }
@@ -64,7 +62,7 @@ describe("WP74-S3 Not yet validated label", () => {
     expect(screen.getByText("Not yet validated")).toBeTruthy();
     expect(screen.getByText(/couldn.t draft a blueprint from your idea/u)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Looks good" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Rework it" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "I\u2019d change some things" })).toBeTruthy();
     expect(container.textContent).not.toMatch(/\$5B|30%/u);
     await expectNoAxeViolations(container);
   });
