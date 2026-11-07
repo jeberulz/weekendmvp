@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { RoleKey } from "@/lib/workspace/contracts/roster";
+import { CREW_AVATAR_SRC } from "@/lib/workspace/crew-avatars";
 import { ROLE_LABELS } from "./types";
 
 const AVATAR_COLOURS: Record<RoleKey, string> = {
@@ -24,19 +25,30 @@ const SIZES = {
   lg: "size-10 text-lg",
 } as const;
 
+const PIXELS: Record<keyof typeof SIZES, number> = { sm: 20, md: 28, lg: 40 };
+
+/**
+ * WP67-S7: the role's shared avatar when it exists (`CREW_AVATAR_SRC`), else
+ * the initial on the role colour. The accessible name is the same either way;
+ * the picture itself is decorative (`alt=""`). `avatarSrc` overrides the
+ * lookup (`null` forces the initial), for previews and tests.
+ */
 export function EmployeeAvatar({
   name,
   role,
   size = "md",
   showAiBadge = false,
   className,
+  avatarSrc,
 }: {
   name: string;
   role: RoleKey;
   size?: keyof typeof SIZES;
   showAiBadge?: boolean;
   className?: string;
+  avatarSrc?: string | null;
 }) {
+  const src = avatarSrc === undefined ? CREW_AVATAR_SRC[role] : avatarSrc;
   return (
     <span
       role="img"
@@ -48,7 +60,22 @@ export function EmployeeAvatar({
         className,
       )}
     >
-      <span aria-hidden="true">{name.charAt(0)}</span>
+      {src ? (
+        // Shipped pre-sized (small square PNGs under public/image/crew/), so the
+        // image optimiser adds nothing; next/image also breaks the kit's SSR tests.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          aria-hidden="true"
+          width={PIXELS[size]}
+          height={PIXELS[size]}
+          decoding="async"
+          className="size-full rounded-full object-cover"
+        />
+      ) : (
+        <span aria-hidden="true">{name.charAt(0)}</span>
+      )}
       {showAiBadge ? (
         <span
           aria-hidden="true"
