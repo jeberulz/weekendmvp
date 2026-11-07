@@ -483,3 +483,18 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
   kit page passes 2). "Waiting on you" refreshes its clock every minute and when the tab is visible again; the
   blueprint section is a focusable jump target, and a blueprint row says so when there is no blueprint to show.
 - Own-idea label meaning is the wizard's sentence, now one constant (`NOT_VALIDATED_MEANING`).
+
+### L1-C1 and L1-C6 browser a11y-check (2026-11-07, local fixture backend)
+
+Run by the orchestrator on the PostureUp test business, where the fixture writes the HydroTrail artifacts.
+- **Team HQ:**
+  - Headings: h1, then h2 for Waiting on you, Launch progress, Your team and Your blueprint, with h3 inside.
+  - Waiting on you lists the three pending cards (Social posts, Brand kit, Blueprint), and each link goes to its
+    built page. The blueprint link jumps to `#blueprint`, which has `tabindex=-1`.
+  - Launch progress reads "5 of 5 steps done. 6 skipped for now." and Your team lists 8 hired and 5 skipped.
+- **Brand kit:**
+  - Headings: one h1, then an h2 per section, with "Your review" as its own h2.
+  - Each swatch is an `aria-hidden` SVG filled from a checked hex, with the name, hex and use as text beside it.
+- **Both pages:** no `[style]` attributes in `main`, and every text node measured at 4.5:1 contrast or better.
+- **Result:** pass.
+- **Not tried:** a real failed or paused step (the fixture launch completes), and a screen reader.
