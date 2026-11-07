@@ -119,6 +119,21 @@ function LiveWrenChat({ projectId, name }: { projectId: Id<"projects">; name: st
     if (box !== null && following.current) box.scrollTop = box.scrollHeight;
   }, [last?._id, lastBody, messages?.length]);
 
+  const threadLoaded = messages !== undefined;
+  // Below xl the panel sits in a `display: none` drawer until it opens, so the effect above can run while the box
+  // has no height. When the box gains a size (the drawer opens, the window crosses xl), catch up to the newest
+  // message, unless the founder had scrolled back. `following` only changes on a real scroll, never while hidden.
+  useEffect(() => {
+    const box = scrollRef.current;
+    if (box === null || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (following.current && box.clientHeight > 0) box.scrollTop = box.scrollHeight;
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+    // The box mounts only once the thread has loaded, so attach then.
+  }, [threadLoaded]);
+
   // The announcement is read once, then cleared so the region does not hold stale text.
   useEffect(() => {
     if (announcement.text === "") return;
