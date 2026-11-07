@@ -6,8 +6,8 @@ import { hasDotSegmentInTarget, isAllowedAuthReturnPath, isBareReturnPath, isWiz
 import { buildHref, isBuildCtaSlug, wizardPath } from "../../lib/workspace/build-cta";
 
 /**
- * WP74-S5: a sign-in may return to `/start/{slug}` and nowhere else outside the
- * private app. The allowlist is shared by the Next.js check, the Convex Auth
+ * WP74-S5: a sign-in may return to `/start/{slug}` (and, since L1, the bare
+ * `/start/own`) and nowhere else outside the private app. The allowlist is shared by the Next.js check, the Convex Auth
  * redirect callback and the magic-link mailer, so each is tested.
  */
 
@@ -31,7 +31,8 @@ const ATTACKS = [
   "/start//evil.example",
   "javascript:alert(1)",
   "/start/hydrotrail?next=https://evil.example",
-  "/start/own",
+  "/start/own?session=abc",
+  "/start/own/extra",
   "/start/./hydrotrail",
   "/start/%2e/hydrotrail",
   "/start/%2E%2e/start/hydrotrail",
@@ -63,7 +64,7 @@ describe("returnTo for the wizard", () => {
 
   test("the path rules", () => {
     expect(isWizardReturnPath("/start/hydrotrail")).toBe(true);
-    expect(isWizardReturnPath("/start/own")).toBe(false);
+    expect(isWizardReturnPath("/start/own")).toBe(true);
     expect(isWizardReturnPath("/start/owned-by-me")).toBe(true);
     expect(isWizardReturnPath("/start/%2e%2e/dashboard")).toBe(false);
     expect(isWizardReturnPath("/start/../start/x")).toBe(false);
@@ -85,6 +86,18 @@ describe("returnTo for the wizard", () => {
     expect(authRouteDecision(new URL("https://x.test/login?returnTo=https%3A%2F%2Fevil.example"), true)).toEqual({
       kind: "redirect",
       target: "/dashboard",
+    });
+  });
+
+  test("L1: the own-idea wizard is a bare return target, and no query rides through sign-in", () => {
+    expect(safePlatformReturn("/start/own")).toBe("/start/own");
+    expect(safeAuthRedirect("/start/own")).toBe("/start/own");
+    expect(authCallbackTarget("/start/own")).toBe("/auth/callback?returnTo=%2Fstart%2Fown");
+    expect(safePlatformReturn("/start/own?session=abc")).toBe(DEFAULT_AUTH_RETURN);
+    expect(safePlatformReturn("/start/own/extra")).toBe(DEFAULT_AUTH_RETURN);
+    expect(authRouteDecision(new URL("https://x.test/signup?returnTo=%2Fstart%2Fown"), true)).toEqual({
+      kind: "redirect",
+      target: "/start/own",
     });
   });
 

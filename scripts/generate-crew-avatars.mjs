@@ -48,6 +48,8 @@ await build({
   format: "esm",
   logLevel: "silent",
 });
+// Literal specifiers: the AI-imports security scan only follows literal paths.
+// Relative to this file they are the two bundles written to `bundleDir` above.
 const core = await import("../tmp/crew-avatars-build/core.mjs");
 const { createRecraftAdapter } = await import("../tmp/crew-avatars-build/recraft.mjs");
 
