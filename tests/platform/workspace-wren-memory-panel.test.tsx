@@ -172,7 +172,7 @@ describe("What Wren knows: keyboard edit", () => {
     await user.type(screen.getByRole("textbox", { name: "Edit fact 1" }), " Really.");
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
   });
 
   test("while a save is in flight the button reads Saving… and is aria-disabled; a second press does nothing", async () => {
@@ -253,7 +253,7 @@ describe("What Wren knows: delete", () => {
     await act(async () => {
       await user.click(screen.getByRole("button", { name: "Delete fact" }));
     });
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
     expect(document.activeElement).not.toBe(document.body);
   });
 });
@@ -310,7 +310,7 @@ describe("What Wren knows: review fixes", () => {
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.getByText("Price is $9 a month.")).toBeTruthy();
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
     expect(await violations()).toEqual([]);
   });
 
@@ -323,7 +323,7 @@ describe("What Wren knows: review fixes", () => {
     act(() => setRemote(view(["Audience is day hikers.", "Price is $9 a month."])));
     expect(screen.queryByRole("group")).toBeNull();
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
   });
 
   test("one status line in every state: deleting the last fact (no summary) is announced in the empty state", async () => {
