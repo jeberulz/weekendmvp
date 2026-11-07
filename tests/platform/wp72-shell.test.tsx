@@ -178,7 +178,7 @@ describe("WorkspaceFrame markup", () => {
     expect(markup).not.toContain("Account");
     expect(markup).not.toContain(groupHeadingId("Account"));
     const link = markup.match(/<a [^>]*href="\/dashboard\/b\/proj1\/billing"[^>]*>/);
-    expect(link?.[0]).toContain('aria-label="Credits Free 48 left, open Billing, coming soon"');
+    expect(link?.[0]).toContain('aria-label="Credits and billing, coming soon"');
     expect(link?.[0]).not.toContain("aria-current");
     // inside the single nav
     const navHtml = markup.slice(markup.indexOf("<nav"), markup.indexOf("</nav>"));
@@ -188,13 +188,11 @@ describe("WorkspaceFrame markup", () => {
     expect(active?.[0]).toContain('aria-current="page"');
   });
 
-  test("the credit meter renders from the mock", () => {
+  test("L1: the credits card shows no balance while billing is coming soon", () => {
     const markup = renderFrame();
-    expect(markup).toContain('role="meter"');
-    expect(markup).toContain('aria-valuenow="48"');
-    expect(markup).toContain('aria-valuemax="50"');
-    expect(markup).toContain("48 left");
-    expect(markup).toContain("Free");
+    expect(markup).not.toContain('role="meter"');
+    expect(markup).not.toContain("48 left");
+    expect(markup).toContain("Credits and billing");
   });
 
   test("the weekend group is dropped when weekendActive is false", () => {

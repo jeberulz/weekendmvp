@@ -14,12 +14,13 @@ export const NAV_PANEL_ID = "workspace-nav-panel";
 const MAIN_ID = "workspace-main";
 
 /**
- * Starts with the meter's visible first row (WCAG 2.5.3) and ends with the
- * card's visible "Billing · Coming soon" line, so the name carries both.
+ * Starts with the card's visible text (WCAG 2.5.3). While billing is coming soon
+ * the card shows no balance: credits are not metered yet.
  */
 export function billingLinkLabel(credits: CreditsSummary): string {
-  const comingSoon = workspaceRoute("billing").comingSoon ? `, ${COMING_SOON_LABEL.toLowerCase()}` : "";
-  return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing${comingSoon}`;
+  // L1: credits are not metered yet, so no balance is shown (it would be made up).
+  if (workspaceRoute("billing").comingSoon) return `Credits and billing, ${COMING_SOON_LABEL.toLowerCase()}`;
+  return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing`;
 }
 
 /** L1-C2: the visible text tag on an unbuilt nav row (never colour alone). */
@@ -86,7 +87,7 @@ export function WorkspaceSidebar({
 
   const billing = workspaceRoute("billing");
   const billingActive = isRouteActive(pathname, projectId, billing);
-  // Starts with the visible text ("Credits Free 48 left") so the name contains it (WCAG 2.5.3).
+  // Starts with the card's visible text so the name contains it (WCAG 2.5.3).
   const billingLabel = billingLinkLabel(credits);
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -160,10 +161,14 @@ export function WorkspaceSidebar({
               billingActive ? "bg-home-sunk" : "bg-home-card"
             }`}
           >
-            <CreditMeter balance={credits.balance} max={credits.max} plan={credits.plan} />
             {billing.comingSoon ? (
-              <p className="mt-2 text-[11px] font-medium text-home-ink-2">Billing · {COMING_SOON_LABEL}</p>
-            ) : null}
+              <>
+                <p className="text-[13px] font-medium text-home-ink">Credits and billing</p>
+                <p className="mt-1 text-[11px] font-medium text-home-ink-2">{COMING_SOON_LABEL}</p>
+              </>
+            ) : (
+              <CreditMeter balance={credits.balance} max={credits.max} plan={credits.plan} />
+            )}
           </Link>
         </nav>
       </div>

@@ -65,7 +65,9 @@ describe("L1-C2 the workspace nav", () => {
 
   test("the credits-and-billing card says Coming soon in visible text", () => {
     const billing = links.find((link) => link.slug === "billing");
-    expect(billing?.text).toContain("Billing · Coming soon");
+    expect(billing?.text).toContain("Credits and billing");
+    expect(billing?.text).toContain("Coming soon");
+    expect(billing?.text).not.toContain("left");
   });
 });
 
