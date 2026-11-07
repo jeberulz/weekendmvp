@@ -1,5 +1,7 @@
 import {
   ART_DIRECTION_INFO,
+  contrastRatio,
+  MIN_TEXT_CONTRAST,
   TYPE_PAIRS,
   type ArtDirection,
   type TypePairId,
@@ -18,7 +20,7 @@ export const BRAND_APPROVED_NOTE = "Nothing is published yet.";
 export const BRAND_ARTIFACT = {
   plural: "brand kit details",
   approvedNote: BRAND_APPROVED_NOTE,
-  readFrom: "above",
+  readFrom: "below",
 } as const;
 
 export const BLUEPRINT_NONE_COPY = "Your blueprint will appear here once your team writes it.";
@@ -35,6 +37,28 @@ export const WAITING_ERROR_COPY = "Your reviews couldn't load right now. Reload 
 export const BLUEPRINT_SECTION_ID = "blueprint";
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
+
+export const PALETTE_ROLES = [
+  ["primary", "Primary"],
+  ["secondary", "Secondary"],
+  ["accent", "Accent"],
+  ["ground", "Ground"],
+  ["ink", "Ink"],
+] as const;
+export type PaletteRoleKey = (typeof PALETTE_ROLES)[number][0];
+
+/**
+ * Black or white, whichever reads better on `hex`. Used for the text on a palette tile, so the text sits only on
+ * a pair that passes. `ok` is false when even the better one is under 4.5:1 (a mid-tone colour): the caller then
+ * puts the text in a ground chip instead.
+ */
+export function readableOn(hex: string): { text: "black" | "white"; ratio: number; ok: boolean } {
+  const black = contrastRatio("#000000", hex);
+  const white = contrastRatio("#ffffff", hex);
+  const text = black >= white ? "black" : "white";
+  const ratio = Math.max(black, white);
+  return { text, ratio, ok: ratio >= MIN_TEXT_CONTRAST };
+}
 /** True for a `#RRGGBB` string; the swatch is drawn only from one. */
 export function isHexColour(value: string): boolean {
   return HEX.test(value);
@@ -139,3 +163,39 @@ export function resumeMessage(result: { resumed: number; waitingForSlot: boolean
     ? "Your team is busy with other work. Try resuming again in a little while."
     : "Nothing was waiting to resume.";
 }
+
+// ---------------------------------------------------------------------------
+// Files: the reader's meta line
+// ---------------------------------------------------------------------------
+
+const WEEK = 7 * DAY;
+
+/** "Thu, 9:20 PM" within a week, "Nov 7" after; an unknown or future time reads as a plain date. */
+export function formatKeptWhen(at: number, now: number, timeZone?: string): string {
+  const age = now - at;
+  if (age >= 0 && age < WEEK) {
+    return new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone }).format(at);
+  }
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone }).format(at);
+}
+
+/** "Kept by Wren · updated Thu, 9:20 PM · 3 of 20 facts", or "Nothing kept yet · 0 of 20 facts". */
+export function memoryMetaLine(input: { name: string; updatedAt: number | null; facts: number; factsMax: number; now: number; timeZone?: string }): string {
+  const kept = input.updatedAt === null ? "Nothing kept yet" : `Kept by ${input.name} · updated ${formatKeptWhen(input.updatedAt, input.now, input.timeZone)}`;
+  return `${kept} · ${input.facts} of ${input.factsMax} facts`;
+}
+
+/** The text a Copy puts on the clipboard: the summary and the facts, as plain text. */
+export function memoryCopyText(name: string, summary: string, facts: readonly string[]): string {
+  const parts = [`# What ${name} knows`, summary === "" ? "(No summary yet.)" : summary, "## Facts"];
+  const list = facts.length === 0 ? "(No facts yet.)" : facts.map((fact) => `- ${fact}`).join("\n");
+  return `${parts[0]}\n\n${parts[1]}\n\n${parts[2]}\n${list}\n`;
+}
+
+/** The rail's links to the pages that hold the team's work. Only built pages; each has its own empty state. */
+export const FILES_RAIL_LINKS = [
+  { label: "Blueprint", slug: "team", hash: BLUEPRINT_SECTION_ID },
+  { label: "Brand kit", slug: "brand" },
+  { label: "Email sequence", slug: "email" },
+  { label: "Social posts", slug: "social" },
+] as const;

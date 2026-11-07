@@ -15,7 +15,7 @@
  * - loading, empty (with "Write a summary") and error states.
  */
 import axe from "axe-core";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState, type ReactNode } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -53,8 +53,9 @@ function outcome(result: FounderMemoryEdit): MemoryEditResult {
  * The view with a stand-in server: actions apply the same pure rules as
  * `convex/workspace/wrenMemory.ts` and update the "live query" state.
  */
-function Harness({ initial, onChange, remote }: {
+function Harness({ initial, onChange, remote, name }: {
   initial: View;
+  name?: string;
   onChange?: (next: View) => void;
   /** Receives a setter that changes the "live query" as another tab or Wren would. */
   remote?: (set: (next: View) => void) => void;
@@ -71,6 +72,7 @@ function Harness({ initial, onChange, remote }: {
   };
   return (
     <WrenMemoryView
+      name={name}
       memory={memory}
       actions={{
         editFact: async (index, expected, text) => apply(editFact(memory, index, expected, text)),
@@ -368,3 +370,42 @@ describe("What Wren knows: review fixes", () => {
   });
 });
 
+
+describe("What Wren knows: reader card", () => {
+  test("a mono file name, a meta line from updatedAt and the fact count, and a 40px-target Edit/Delete", () => {
+    render(<main><Harness initial={view(["Launch is Sunday.", "Price is $9."])} name="Iris" /></main>);
+    const article = screen.getByRole("article");
+    expect(within(article).getByRole("heading", { level: 2, name: "What Iris knows" }).className).toContain("font-mono");
+    expect(article.textContent).toMatch(/Kept by Iris · updated .+ · 2 of 20 facts/u);
+    const edit = screen.getByRole("button", { name: "Edit fact 1" });
+    expect(edit.className).toContain("min-h-10");
+    expect(screen.getByRole("button", { name: "Delete fact 1" }).className).toContain("min-h-10");
+    expect(within(article).getAllByRole("listitem")).toHaveLength(2);
+  });
+
+  test("empty memory says nothing is kept and Copy is aria-disabled", () => {
+    render(<main><Harness initial={{ ...view([], ""), updatedAt: null }} /></main>);
+    expect(screen.getByRole("article").textContent).toContain("Nothing kept yet · 0 of 20 facts");
+    expect(screen.getByRole("button", { name: "Copy" }).getAttribute("aria-disabled")).toBe("true");
+  });
+
+  test("Copy puts the summary and facts on the clipboard and announces it once", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn(async () => undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    render(<main><Harness initial={view(["Launch is Sunday."], "A hiking app.")} /></main>);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(writeText).toHaveBeenCalledWith("# What Wren knows\n\nA hiking app.\n\n## Facts\n- Launch is Sunday.\n");
+    expect(status().textContent).toBe("Copied what Wren knows.");
+    expect(screen.getByRole("button", { name: "Copied" })).toBeTruthy();
+  });
+
+  test("a blocked clipboard says so and the button says so", async () => {
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: async () => { throw new Error("no"); } }, configurable: true });
+    render(<main><Harness initial={view(["Launch is Sunday."])} /></main>);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(status().textContent).toMatch(/Copy is blocked/u);
+    expect(screen.getByRole("button", { name: "Copy blocked here" })).toBeTruthy();
+  });
+});
