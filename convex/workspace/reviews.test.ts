@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import schema from "../schema";
-import { approvalExpiresAt } from "../../lib/workspace/contracts/approvals";
+import { APPROVAL_LIST_LIMIT, approvalExpiresAt } from "../../lib/workspace/contracts/approvals";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import type { CrewStepOutcome } from "../crew/runner";
 
@@ -196,6 +196,15 @@ describe("L1-C6 pendingReviews", () => {
       { approvalId: kitCard, kind: "brand_kit", title: "Brand kit", changeRound: 1n, expiresAt: approvalExpiresAt(20), href: `/dashboard/b/${w.projectId}/brand` },
     ]);
     expect((await reviews(w, w.owner, otherId)).map((row) => row.kind)).toEqual(["brand_kit"]);
+  });
+
+  test("pending cards of other kinds never crowd review cards out of the window", async () => {
+    const w = await world();
+    const kit = await document(w, { kind: "brand_kit", at: 10 });
+    const kitCard = await card(w, kit, { at: 20 });
+    // More newer pending non-review cards than the list cap.
+    for (let i = 0; i < APPROVAL_LIST_LIMIT + 5; i += 1) await card(w, kit, { at: 30 + i, kind: "spend" });
+    expect((await reviews(w)).map((row) => row.approvalId)).toEqual([kitCard]);
   });
 
   test("empty when nothing waits", async () => {
