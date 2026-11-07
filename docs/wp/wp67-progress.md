@@ -517,3 +517,17 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
 - Localhost preview: `/workspace-kit-preview` on port 3189 (dev only). Its dev `instant` validation error (the
   page's dynamic `KitPreviewClient` import) is unrelated to this change.
 - Not deployed. Docs updated: this file and `wp67-stories.md`.
+
+## 2026-11-07 - L1 UI fidelity to the canvas boards (PR #267)
+
+- Audit first: `docs/wp/l1-ui-fidelity/` scores Shell, Dashboard, Chat, Team HQ, Wizard and Meet, Brand kit, Files,
+  Email and Social against canvas row 05. Owner decisions are recorded in `docs/wp/RULINGS.md` ("WP67 L1 UI fidelity").
+- Built in two waves: the kit and the shell/chat column first, then six screens in parallel. Each screen was
+  checked in a browser next to its board on a local Convex fixture (1440px, plus 375px for Social and the chat
+  drawer). An independent review found no security, code-rule or ruling issues; its ten findings are fixed.
+- **#262 never reached main.** It was merged into `claude/l1-core` after #261 had been squash-merged, so the Brand
+  kit and Team HQ work (L1-C1, L1-C6) lands with #267, which is built on it.
+- Turbopack dev broke when a client component imported `components/tenant-site/fonts.ts` (next/font loaders). The
+  Brand kit server page now passes the font map down, and a test guards against it happening again. `next build` alone did not catch it.
+- Not verified: Meet your co-founder in a real browser, screen-reader passes, production data.
+- Follow-ups: none blocking. `lib/engine` and `tests/editorial` CLI tests time out at 5s under machine load (as #265 noted).

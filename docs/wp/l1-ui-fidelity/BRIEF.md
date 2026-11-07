@@ -1,6 +1,6 @@
 # L1 UI fidelity: implementation brief
 
-Status: in progress, 2026-11-07. Branch `claude/l1-ui-fidelity`, stacked on `claude/l1-review-pages` (PR #262).
+Status: built and in review, 2026-11-07. Branch `claude/l1-ui-fidelity`, PR #267 against main (it also lands #262, which never reached main).
 Ruling: `docs/wp/RULINGS.md`, row "WP67 L1 UI fidelity (canvas row 05)", 2026-11-07.
 
 ## Why
