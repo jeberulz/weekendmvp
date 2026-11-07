@@ -295,18 +295,20 @@ describe("workstream links, plan, why rows", () => {
     expect(planSummary([step("a", "lead", "succeeded"), step("b", "brand", "skipped")])).toBe("1 of 1 steps done. 1 skipped for this team.");
   });
 
-  test("whyRows covers hired (always or added) and skipped roles in catalogue order", () => {
+  test("whyRows covers hired (core, the lead's call or added) and skipped roles in catalogue order", () => {
     const rows = whyRows(
       [
-        { role: "lead", name: "Wren", roleLabel: "Crew Lead", reason: "r1" },
+        { role: "lead", name: "Juno", roleLabel: "Crew Lead", reason: "r1" },
+        { role: "seo", name: "Sol", roleLabel: "SEO", reason: "r4", decidedBy: "lead" },
         { role: "ads", name: "Ada", roleLabel: "Ads", reason: "r2" },
       ],
-      [{ role: "outbound", roleLabel: "Outbound", reason: "r3" }],
+      [{ role: "outbound", roleLabel: "Outbound", reason: "r3", decidedBy: "lead" }],
     );
-    expect(rows.map((row) => [row.role, row.decision])).toEqual([
-      ["lead", "always"],
-      ["ads", "added"],
-      ["outbound", "skipped"],
+    expect(rows.map((row) => [row.role, row.decision, row.label])).toEqual([
+      ["lead", "core", "Hired · core"],
+      ["seo", "lead", "Hired · Juno chose"],
+      ["ads", "added", "Hired · added"],
+      ["outbound", "skipped", "Skipped"],
     ]);
   });
 });

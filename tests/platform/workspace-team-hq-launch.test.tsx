@@ -539,7 +539,7 @@ describe("Skipped roles and Why this team", () => {
     const rows = within(table).getAllByRole("row");
     expect(rows).toHaveLength(1 + HIRED.length + SKIPPED.length);
     const lead = within(table).getByRole("rowheader", { name: "Crew Lead" }).closest("tr") as HTMLElement;
-    expect(lead.textContent).toContain("Hired · always");
+    expect(lead.textContent).toContain("Hired · core");
     expect(lead.textContent).toContain("Always: runs the team.");
     const ads = within(table).getByRole("rowheader", { name: "Ads" }).closest("tr") as HTMLElement;
     expect(ads.textContent).toContain("Hired · added");

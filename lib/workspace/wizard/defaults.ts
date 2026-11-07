@@ -15,9 +15,11 @@
  */
 import { hydrotrailBlueprint } from "../contracts/fixtures/hydrotrail";
 import {
-  DEFAULT_PARTNER_NAME,
+  PARTNER_NAME_PRESETS,
   WIZARD_LIMITS,
+  leadNameSuggestions,
   nameDedupeKey,
+  partnerNameAnswer,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
   type WizardStep,
@@ -51,6 +53,8 @@ export type WizardSeed = {
   readonly defaults: WizardAnswersProgress;
   /** Names the name step offers as one-click choices (chosen + alternatives). */
   readonly suggestedNames: readonly string[];
+  /** Roster per idea S2: lead names the partner-name step offers; the first is the default. */
+  readonly suggestedPartnerNames: readonly string[];
 };
 
 export type WizardSeedInput = {
@@ -62,6 +66,12 @@ export type WizardSeedInput = {
    * until then, which gives the fixture outline.
    */
   readonly ownIdeaDraft?: unknown;
+  /**
+   * Roster per idea S2: what the lead-name suggestions are picked from (the
+   * wizard session id), so each session gets its own stable names. Without
+   * one the step offers the three presets.
+   */
+  readonly leadSeedKey?: string;
 };
 
 const GENERIC_FEATURES = [
@@ -183,7 +193,11 @@ export function nameFromOwnIdea(text: string): string {
   return shortBusinessName(trimmed, 3);
 }
 
-function baseDefaults(idea: WizardIdea, name: { chosen: string; alternatives: string[] }): WizardAnswersProgress {
+function baseDefaults(
+  idea: WizardIdea,
+  name: { chosen: string; alternatives: string[] },
+  leadName: string,
+): WizardAnswersProgress {
   return wizardAnswersProgressSchema.parse({
     idea,
     blueprintDecision: { decision: "looks_good" },
@@ -192,7 +206,7 @@ function baseDefaults(idea: WizardIdea, name: { chosen: string; alternatives: st
     goal: { kind: "waitlist", timeframe: "weekend" },
     name,
     partnerPersonality: "strategist",
-    partnerName: { kind: "preset", name: DEFAULT_PARTNER_NAME },
+    partnerName: partnerNameAnswer(leadName),
   });
 }
 
@@ -201,13 +215,16 @@ function seed(
   idea: WizardIdea,
   blueprint: WizardBlueprintPreview,
   name: { chosen: string; alternatives: string[] },
+  leadSeedKey: string | undefined,
 ): WizardSeed {
-  const defaults = baseDefaults(idea, name);
+  const leadNames = leadSeedKey === undefined ? [...PARTNER_NAME_PRESETS] : leadNameSuggestions(leadSeedKey);
+  const defaults = baseDefaults(idea, name, leadNames[0] ?? PARTNER_NAME_PRESETS[0]);
   return Object.freeze({
     source,
     blueprint: Object.freeze(blueprint),
     defaults,
     suggestedNames: Object.freeze([name.chosen, ...name.alternatives]),
+    suggestedPartnerNames: Object.freeze(leadNames),
   });
 }
 
@@ -233,6 +250,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         removedClaims: preview.removedClaims,
       },
       { chosen: nameFromOwnIdea(idea.text), alternatives: [] },
+      input.leadSeedKey,
     );
   }
   if (idea.ideaSlug === HYDROTRAIL_SLUG) {
@@ -250,6 +268,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         removedClaims: 0,
       },
       { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
+      input.leadSeedKey,
     );
   }
   const title = input.ideaTitle?.trim() || idea.ideaSlug.replace(/-/g, " ");
@@ -267,6 +286,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
       removedClaims: 0,
     },
     { chosen: nameFromTitle(title), alternatives: [] },
+    input.leadSeedKey,
   );
 }
 
@@ -276,7 +296,8 @@ export type WizardStepKey = Exclude<keyof WizardAnswersProgress, "signals">;
 /**
  * True when the step's answer is the founder's own words rather than one of
  * the offered choices: an own idea, rework notes, a custom platform, a name
- * that is not one of the suggestions, or a custom partner name.
+ * that is not one of the suggestions, or a partner name that is not one of
+ * the suggested lead names.
  */
 export function isRewrittenAnswer(step: WizardStep, answers: WizardAnswersProgress, s: WizardSeed): boolean {
   switch (step) {
@@ -295,8 +316,11 @@ export function isRewrittenAnswer(step: WizardStep, answers: WizardAnswersProgre
       if (chosen === undefined) return false;
       return !s.suggestedNames.some((name) => nameDedupeKey(name) === nameDedupeKey(chosen));
     }
-    case "partner_name":
-      return answers.partnerName?.kind === "custom";
+    case "partner_name": {
+      const lead = answers.partnerName?.name;
+      if (lead === undefined) return false;
+      return !s.suggestedPartnerNames.some((name) => nameDedupeKey(name) === nameDedupeKey(lead));
+    }
     case "commercial_model":
     case "goal":
     case "partner_personality":

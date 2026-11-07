@@ -114,9 +114,27 @@ describe("Wren fixture reply", () => {
   test("a greeting introduces Wren with the business and what is waiting", async () => {
     const reply = await wrenReply("hello", { reviews: REVIEWS });
     expectWrenVoice(reply);
-    expect(reply.reply).toContain("Hi. I am Wren, your launch partner for PostureUp.");
+    expect(reply.reply).toContain("Hi. I am Wren, your Crew Lead for PostureUp.");
     expect(reply.reply).toContain("2 reviews waiting on you (Brand kit, Blueprint).");
     expect(reply.cards ?? []).toEqual([]);
+  });
+
+  test("the lead uses the name the founder chose, never Wren (roster per idea S1)", async () => {
+    const juno = {
+      ...PROJECT,
+      workspace: { ...PROJECT.workspace, partner: { personality: "strategist", name: "Juno" } },
+    } as unknown as Doc<"projects">;
+    const reply = await wrenReply("hello", { context: wrenBusinessContext(juno, null, [], []) });
+    expect(reply.reply).toContain("Hi. I am Juno, your Crew Lead for PostureUp.");
+    expect(reply.reply).not.toContain("Wren");
+  });
+
+  test("the chat rules name no lead, so the founder's name in the business context wins", () => {
+    for (const spec of [wrenChatSpec, wrenPlanTurnSpec]) {
+      expect(spec.system).not.toMatch(/\bWren\b/u);
+      expect(spec.system).toContain("partner.name in <business_context>");
+      expect(spec.buildUser({ message: "hi", history: [] })).not.toMatch(/\bas Wren\b/u);
+    }
   });
 
   test("a free-form message is quoted back honestly with where the business stands", async () => {

@@ -11,7 +11,7 @@ import { BTN_SECONDARY, CARD, EYEBROW, EYEBROW_EMBER, FOCUS } from "@/components
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { ROLE_CATALOGUE } from "@/convex/crew/roles";
-import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import { CORE_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
 import { partnerNameFromWizard, type WizardAnswersProgress } from "@/lib/workspace/contracts/wizard";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
 import {
@@ -72,8 +72,19 @@ function asRoleKey(value: string): RoleKey | null {
 
 const CATALOGUE_BY_KEY = new Map(ROLE_CATALOGUE.map((entry) => [entry.key, entry]));
 
-function isAlways(roleKey: RoleKey | null): boolean {
-  return roleKey !== null && (ALWAYS_HIRED_ROLE_KEYS as readonly string[]).includes(roleKey);
+/** The Crew Lead's name on this team, or a plain fallback. */
+function leadNameOf(hired: readonly Hired[]): string {
+  return hired.find((entry) => entry.roleKey === "lead")?.employeeName ?? "Your Crew Lead";
+}
+
+function isCore(roleKey: RoleKey | null): boolean {
+  return roleKey !== null && (CORE_ROLE_KEYS as readonly string[]).includes(roleKey);
+}
+
+/** Why a role is on the team: core, the lead's call (roster per idea, WP90), or added by a rule. */
+function hiredTag(role: Hired, roleKey: RoleKey | null, leadName: string): string {
+  if (isCore(roleKey)) return "Core";
+  return role.decidedBy === "lead" ? `${leadName} chose` : "Added";
 }
 
 // ---------------------------------------------------------------------------
@@ -312,9 +323,9 @@ function WhatIRead({
 // Who I hired
 // ---------------------------------------------------------------------------
 
-function HiredRow({ role }: { role: Hired }) {
+function HiredRow({ role, leadName }: { role: Hired; leadName: string }) {
   const roleKey = asRoleKey(role.roleKey);
-  const always = isAlways(roleKey);
+  const core = isCore(roleKey);
   const lead = roleKey === "lead";
   const specialty = roleKey === null ? null : CATALOGUE_BY_KEY.get(roleKey)?.does;
   return (
@@ -344,13 +355,13 @@ function HiredRow({ role }: { role: Hired }) {
       <span
         className={cn(
           "max-w-[280px] rounded-full border px-2.5 py-1 text-xs leading-snug",
-          always
+          core
             ? "border-home-rule bg-home-sunk text-home-ink-2"
             : "border-home-orange-ink/30 bg-home-ember-soft text-home-orange-ink",
         )}
       >
         <span className="sr-only">Why hired: </span>
-        <b className="font-semibold">{always ? "Always" : "Added"}</b> · {role.reason}
+        <b className="font-semibold">{hiredTag(role, roleKey, leadName)}</b> · {role.reason}
       </span>
     </li>
   );
@@ -385,7 +396,7 @@ function WhoIHired({ launch, assembling }: { launch: LaunchView | undefined; ass
       {ready ? (
         <ol aria-label="Hired specialists" className="flex flex-col gap-2">
           {ready.hired.map((role) => (
-            <HiredRow key={role.roleKey} role={role} />
+            <HiredRow key={role.roleKey} role={role} leadName={leadNameOf(ready.hired)} />
           ))}
         </ol>
       ) : assembling ? (
@@ -558,7 +569,7 @@ function NotHiring({ launch, assembling }: { launch: LaunchView | undefined; ass
                 <span className="flex min-w-0 flex-col gap-1">
                   <b className="font-semibold text-home-ink">{role.roleLabel}</b>
                   <span className="rounded-[10px] bg-home-clay px-2.5 py-1 text-xs leading-snug text-home-clay-ink">
-                    <b className="font-semibold">Skipped</b> · {role.reason}
+                    <b className="font-semibold">{role.decidedBy === "lead" ? `${leadNameOf(ready.hired)} skipped` : "Skipped"}</b> · {role.reason}
                   </span>
                 </span>
               </li>

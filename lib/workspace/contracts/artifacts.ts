@@ -74,6 +74,11 @@ export const LIMITS = {
     competitorsMax: 5,
     scopeCut: 160,
     scopeCutsMax: 8,
+    /** Roster per idea: one team entry per optional role (9), with room for a few the server drops. */
+    teamMax: 16,
+    /** Longest team reason the model may write; the server keeps only ≤ 160-character single lines. */
+    teamReasonRaw: 400,
+    teamRoleKeyRaw: 32,
   },
   brandKit: {
     name: 40,
@@ -479,6 +484,32 @@ export const blueprintMarketSchema = z
   })
   .strict();
 
+/**
+ * Roster per idea (WP90): the Crew Lead's team proposal, written by the
+ * blueprint call. One entry per optional role (`OPTIONAL_ROLE_KEYS`): hire it
+ * or skip it, with a one-line reason the founder reads. Deliberately loose
+ * (any role key string, a long reason allowed) so one bad entry never fails
+ * the whole blueprint: the quality gate keeps only clean entries before the
+ * blueprint is stored (`lib/workspace/crew/teamProposal.ts`), and any role
+ * without a clean entry falls back to the rules in `planRoster`.
+ */
+export const blueprintTeamEntrySchema = z
+  .object({
+    roleKey: z.string().max(LIMITS.blueprint.teamRoleKeyRaw).meta(describe("one optional role key", "The role")),
+    hire: z.boolean().meta(describe("true to hire, false to skip")),
+    reason: z
+      .string()
+      .max(LIMITS.blueprint.teamReasonRaw)
+      .meta(describe("single line, ≤ 160 characters", "Why, in words the founder understands")),
+  })
+  .strict();
+export type BlueprintTeamEntry = z.infer<typeof blueprintTeamEntrySchema>;
+
+export const blueprintTeamSchema = z
+  .array(blueprintTeamEntrySchema)
+  .max(LIMITS.blueprint.teamMax)
+  .meta(describe("one entry per optional role", "The team the Crew Lead proposes"));
+
 const blueprintFields = {
   schemaVersion: z.literal(1),
   pitch: line(LIMITS.blueprint.pitch, "One-line pitch"),
@@ -492,6 +523,8 @@ const blueprintFields = {
   ),
   profile: rosterProfileSchema,
   scopeCuts: list(line(LIMITS.blueprint.scopeCut), 0, LIMITS.blueprint.scopeCutsMax, "Left out of the weekend"),
+  /** Roster per idea: optional, so blueprints written before it still parse. */
+  team: blueprintTeamSchema.optional(),
 };
 
 const libraryBlueprintSchema = z
@@ -514,6 +547,15 @@ const ownIdeaBlueprintSchema = z
 export const blueprintVariantSchemas = {
   library: libraryBlueprintSchema,
   own_idea: ownIdeaBlueprintSchema,
+} as const;
+
+/**
+ * Roster per idea: the blueprint prompts' output schemas from version 2, with
+ * the team block required, so the model always answers it.
+ */
+export const blueprintTeamVariantSchemas = {
+  library: libraryBlueprintSchema.extend({ team: blueprintTeamSchema }),
+  own_idea: ownIdeaBlueprintSchema.extend({ team: blueprintTeamSchema }),
 } as const;
 
 export const blueprintSchema = z.discriminatedUnion("source", [libraryBlueprintSchema, ownIdeaBlueprintSchema]);

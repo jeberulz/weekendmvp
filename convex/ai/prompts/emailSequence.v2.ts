@@ -11,8 +11,11 @@
  * link: bodies carry no URLs, and a CTA names its target (`site`, `waitlist`
  * or `reply`), which the platform resolves.
  *
+ * Version 2 (roster per idea, WP90): the text is unchanged; the C-ART
+ * contracts it imports changed (the blueprint gains an optional `team`).
+ *
  * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `emailSequence.v2.ts`),
+ * hashes module source) needs a version bump (a new `emailSequence.v3.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -53,7 +56,7 @@ const SYSTEM = [
 
 export const emailSequenceSpec = definePromptSpec<EmailSequenceInput, EmailSequence>({
   id: "crew-email-sequence",
-  version: 1,
+  version: 2,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },

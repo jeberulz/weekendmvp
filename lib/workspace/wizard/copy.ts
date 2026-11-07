@@ -4,7 +4,7 @@
  * examples and the partner-name hints. Pure copy, shared by the `/start` UI
  * and its tests. D10: eight steps, no SMS.
  */
-import type { PartnerNamePreset, PartnerPersonality, WizardStep } from "../contracts/wizard";
+import type { PartnerPersonality, WizardStep } from "../contracts/wizard";
 
 export type StepHead = {
   /** Text before the italic tail (keeps its trailing space). */
@@ -96,12 +96,6 @@ export const PERSONA_SAMPLES = {
   creative: "I drafted a few hero lines. Want to pick the voice together?",
   operator: "Next up: brand kit approval. Then the emails, then the posts.",
 } as const satisfies Record<PartnerPersonality, string>;
-
-export const PARTNER_NAME_HINTS = {
-  Wren: "Small bird, big range.",
-  Juno: "Steady and direct.",
-  Ridge: "Grounded and calm.",
-} as const satisfies Record<PartnerNamePreset, string>;
 
 export const RENAME_RISK_HEADLINE = "Renaming later costs links.";
 export const RENAME_RISK_BODY = "Pick now; the site, email and brand kit use it.";

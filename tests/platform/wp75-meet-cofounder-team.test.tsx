@@ -150,7 +150,7 @@ describe("L1 T1 Meet your co-founder: the team", () => {
     expect(status().textContent).toBe("Wren is putting your team together.");
   });
 
-  test("ready: the banner, 9 hired rows with specialty and an Always or Added reason, 4 skipped, 13 checked", async () => {
+  test("ready: the banner, 9 hired rows with specialty and a Core or Added reason, 4 skipped, 13 checked", async () => {
     const { container } = setup(ready);
     expect(status().textContent).toBe("Your team is ready: 9 hired, 4 skipped for now.");
 
@@ -166,14 +166,15 @@ describe("L1 T1 Meet your co-founder: the team", () => {
       expect(row?.textContent).toContain(entry?.does ?? "missing specialty");
       expect(row?.textContent).toContain("Why hired: ");
     }
-    // The lead stays in the chat; the paid-test hire is Added, the rest Always.
+    // The lead stays in the chat; the four core roles say Core, the rule-based hires say Added.
     expect(hired[0]?.textContent).toContain("Stays in your chat");
-    expect(within(hired[0] as HTMLElement).getByText("Always")).toBeTruthy();
+    expect(within(hired[0] as HTMLElement).getByText("Core")).toBeTruthy();
     const ads = hired.find((row) => row.getAttribute("data-role") === "ads");
     expect(ads).toBeTruthy();
     expect(within(ads as HTMLElement).getByText("Added")).toBeTruthy();
     expect(ads?.textContent).toContain("Goal has a paid push: $7/day test");
-    expect(within(hiredList).getAllByText("Always")).toHaveLength(8);
+    expect(within(hiredList).getAllByText("Core")).toHaveLength(4);
+    expect(within(hiredList).getAllByText("Added")).toHaveLength(5);
 
     const skipped = within(screen.getByRole("list", { name: "Skipped roles" })).getAllByRole("listitem");
     expect(skipped).toHaveLength(4);
@@ -194,6 +195,24 @@ describe("L1 T1 Meet your co-founder: the team", () => {
     // Q13: no approval card, no hire or assemble controls.
     expect(screen.queryByRole("button")).toBeNull();
     expect(container.textContent).not.toMatch(/Assemble my team/);
+    await expectNoAxeViolations(container);
+  });
+
+  test("ready: roles the lead chose say so, by the lead's name, hired or skipped", async () => {
+    const proposal = [
+      { roleKey: "outbound" as const, hire: true, reason: "Outdoor shops could stock the planner" },
+      { roleKey: "seo" as const, hire: false, reason: "Hikers find trail tools through friends" },
+    ];
+    const chosen = readyLaunchView(planRoster({ ...hydrotrailRosterInput, proposal }, { leadName: "Juno" }));
+    const { container } = setup(chosen);
+    const hiredList = screen.getByRole("list", { name: "Hired specialists" });
+    const outbound = within(hiredList).getAllByRole("listitem").find((row) => row.getAttribute("data-role") === "outbound");
+    expect(within(outbound as HTMLElement).getByText("Juno chose")).toBeTruthy();
+    expect(outbound?.textContent).toContain("Outdoor shops could stock the planner");
+    const seo = container.querySelector('[data-skipped-role="seo"]');
+    expect(seo?.textContent).toContain("Juno skipped · Hikers find trail tools through friends");
+    const merch = container.querySelector('[data-skipped-role="merch"]');
+    expect(merch?.textContent).toContain("Skipped · ");
     await expectNoAxeViolations(container);
   });
 

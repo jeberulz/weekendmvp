@@ -52,9 +52,15 @@ const roleValidator = v.object({
   employeeName: v.string(),
   roleLabel: v.string(),
   reason: v.string(),
+  decidedBy: v.optional(v.literal("lead")),
 });
 
-const skippedRoleValidator = v.object({ roleKey: v.string(), roleLabel: v.string(), reason: v.string() });
+const skippedRoleValidator = v.object({
+  roleKey: v.string(),
+  roleLabel: v.string(),
+  reason: v.string(),
+  decidedBy: v.optional(v.literal("lead")),
+});
 
 export const launchViewValidator = v.union(
   v.object({ state: v.literal("not_started") }),

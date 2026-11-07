@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ALWAYS_HIRED_ROLE_KEYS,
+  CORE_ROLE_KEYS,
   BUYERS,
   DELIVERY_FORMATS,
   IDEA_KINDS,
@@ -39,7 +39,7 @@ const keys = (list: { roleKey: string }[]) => list.map((e) => e.roleKey);
 describe("ROLE_CATALOGUE", () => {
   it("has one entry per role key", () => {
     expect(ROLE_CATALOGUE.map((r) => r.key)).toEqual([...ROLE_KEYS]);
-    expect(ROLE_CATALOGUE.filter((r) => r.always)).toHaveLength(8);
+    expect(ROLE_CATALOGUE.filter((r) => r.always).map((r) => r.key)).toEqual(["lead", "brand", "email", "social"]);
   });
 });
 
@@ -75,7 +75,7 @@ describe("planRoster: HydroTrail", () => {
     expect(summariseRoster(plan)).toEqual({
       hiredCount: 9,
       skippedCount: 4,
-      line: "9 hired: the 8 always-on roles plus Ads. 4 skipped: Merch, Outbound, Curriculum, Community.",
+      line: "9 hired: the 4 core roles plus Landing, SEO, Marketing, Engineering and Ads. 4 skipped: Merch, Outbound, Curriculum, Community.",
     });
   });
 });
@@ -205,7 +205,8 @@ describe("renderTeamMd", () => {
     expect(md).toContain("## Hired");
     expect(md).toContain("## Skipped");
     expect(md).toContain("autopilot: off for everyone");
-    expect(md).toContain("- engineering: Kai (always, weight: full) — PRD slice");
+    expect(md).toContain("- engineering: Kai (added, weight: full) — PRD slice");
+    expect(md).toContain("- brand: Iris (core) — logo, palette, voice");
     expect(md).toContain("- ads: Ada (added) — goal has a paid push: $7/day test");
     expect(md).toContain("- merch — an app; nothing physical to sell");
     for (const key of ROLE_KEYS) {
@@ -410,9 +411,9 @@ describe("ads budget and wording", () => {
 });
 
 describe("drift and sweep", () => {
-  it("catalogue always set equals ALWAYS_HIRED_ROLE_KEYS", () => {
+  it("catalogue always set equals CORE_ROLE_KEYS", () => {
     const always = ROLE_CATALOGUE.filter((r) => r.always).map((r) => r.key);
-    expect([...always].sort()).toEqual([...ALWAYS_HIRED_ROLE_KEYS].sort());
+    expect([...always].sort()).toEqual([...CORE_ROLE_KEYS].sort());
   });
 
   it("every combination yields a valid plan with sane reasons", () => {
@@ -446,5 +447,107 @@ describe("drift and sweep", () => {
               }
             }
     expect(n).toBe(6 * 2 * 3 * 2 * 2);
+  });
+});
+
+describe("roster per idea (WP90): the Crew Lead's proposal", () => {
+  const withProposal = (input: RosterInput, proposal: NonNullable<RosterInput["proposal"]>): RosterInput => ({ ...input, proposal });
+
+  it("with no proposal, the team is the WP69 one", () => {
+    const plan = planRoster(hydroTrail);
+    expect(keys(plan.hired)).toEqual(["lead", "brand", "landing", "seo", "marketing", "email", "social", "engineering", "ads"]);
+    expect(plan.hired.every((h) => h.decidedBy === undefined)).toBe(true);
+    expect(plan.skipped.every((s) => s.decidedBy === undefined)).toBe(true);
+  });
+
+  it("the proposal hires and skips optional roles with its own reasons", () => {
+    const plan = planRoster(withProposal(hydroTrail, [
+      { roleKey: "seo", hire: false, reason: "Hikers find trail tools through friends, not search" },
+      { roleKey: "outbound", hire: true, reason: "Outdoor shops could stock the planner" },
+      { roleKey: "community", hire: true, reason: "A trail group keeps hikers coming back" },
+    ]));
+    const skip = plan.skipped.find((s) => s.roleKey === "seo");
+    expect(skip).toEqual({ roleKey: "seo", roleLabel: "SEO", reason: "Hikers find trail tools through friends, not search", decidedBy: "lead" });
+    expect(plan.hired.find((h) => h.roleKey === "outbound")).toMatchObject({
+      reason: "Outdoor shops could stock the planner",
+      decidedBy: "lead",
+      hiredBy: "rule",
+      always: false,
+    });
+    expect(keys(plan.hired)).toContain("community");
+    // Roles the proposal does not answer keep the rule and its reason.
+    expect(plan.hired.find((h) => h.roleKey === "landing")).toMatchObject({ reason: "Site and waitlist" });
+    expect(plan.hired.find((h) => h.roleKey === "landing")?.decidedBy).toBeUndefined();
+    expect(plan.skipped.find((s) => s.roleKey === "merch")).toMatchObject({ reason: "An app; nothing physical to sell" });
+  });
+
+  it("a paid push always hires Ads and a course always hires Curriculum, whatever the proposal says", () => {
+    const ads = planRoster(withProposal(hydroTrail, [{ roleKey: "ads", hire: false, reason: "Too early for paid" }]));
+    expect(ads.hired.find((h) => h.roleKey === "ads")).toMatchObject({ reason: "Goal has a paid push: $7/day test" });
+    expect(ads.hired.find((h) => h.roleKey === "ads")?.decidedBy).toBeUndefined();
+    const cohort = planRoster(withProposal(course, [
+      { roleKey: "curriculum", hire: false, reason: "Not needed" },
+      { roleKey: "community", hire: false, reason: "A small first cohort runs in the founder's inbox" },
+    ]));
+    expect(keys(cohort.hired)).toContain("curriculum");
+    // Community is not forced: the lead may skip it, with its reason.
+    expect(cohort.skipped.find((s) => s.roleKey === "community")).toMatchObject({ decidedBy: "lead" });
+  });
+
+  it("the core is hired whatever the proposal holds", () => {
+    const everyOptional = (["landing", "seo", "marketing", "engineering", "merch", "outbound", "community"] as const)
+      .map((roleKey) => ({ roleKey, hire: false, reason: "Not for this idea" }));
+    const plan = planRoster({ ...hydroTrail, goal: { ...hydroTrail.goal, paidPush: null }, proposal: everyOptional });
+    expect(keys(plan.hired)).toEqual(["lead", "brand", "email", "social"]);
+    expect(plan.skipped).toHaveLength(9);
+    expect(summariseRoster(plan).line).toBe(
+      "4 hired: the 4 core roles. 9 skipped: Landing, SEO, Marketing, Engineering, Ads, Merch, Outbound, Curriculum, Community.",
+    );
+  });
+
+  it("no cap: the proposal may hire every optional role", () => {
+    const every = (["landing", "seo", "marketing", "engineering", "ads", "curriculum", "community", "merch", "outbound"] as const)
+      .map((roleKey) => ({ roleKey, hire: true, reason: `Needed for ${roleKey}` }));
+    const plan = planRoster(withProposal(hydroTrail, every));
+    expect(plan.hired).toHaveLength(13);
+    expect(plan.skipped).toEqual([]);
+    expect(plan.hired.find((h) => h.roleKey === "engineering")?.weight).toBe("full");
+  });
+
+  it("a skipped engineer carries no weight", () => {
+    const plan = planRoster(withProposal(course, [{ roleKey: "engineering", hire: false, reason: "The course runs on a hosted platform" }]));
+    expect(plan.skipped.find((s) => s.roleKey === "engineering")).toBeDefined();
+    expect(rosterPlanSchema.safeParse(plan).success).toBe(true);
+  });
+
+  it("a proposal for a core role is refused by the input schema", () => {
+    expect(() => planRoster({
+      ...hydroTrail,
+      proposal: [{ roleKey: "brand", hire: false, reason: "No" }] as unknown as NonNullable<RosterInput["proposal"]>,
+    })).toThrow();
+  });
+
+  it("the plan schema refuses a lead decision on a core role", () => {
+    const plan = planRoster(hydroTrail);
+    const tampered = structuredClone(plan) as RosterPlan;
+    const brand = tampered.hired.find((h) => h.roleKey === "brand");
+    if (brand === undefined) throw new Error("missing brand");
+    brand.decidedBy = "lead";
+    expect(rosterPlanSchema.safeParse(tampered).success).toBe(false);
+  });
+
+  it("TEAM.md marks the lead's calls", () => {
+    const plan = planRoster(withProposal(hydroTrail, [
+      { roleKey: "outbound", hire: true, reason: "Outdoor shops could stock the planner" },
+      { roleKey: "seo", hire: false, reason: "Hikers find it through friends" },
+    ]));
+    const md = renderTeamMd(plan, { businessName: "HydroTrail", planLabel: "free", goalLabel: "50 signups" });
+    expect(md).toContain("- outbound: Oli (lead's call) — outdoor shops could stock the planner");
+    expect(md).toContain("- seo (lead's call) — hikers find it through friends");
+  });
+
+  it("is deterministic for the same input", () => {
+    const input = withProposal(course, [{ roleKey: "merch", hire: true, reason: "Printed trail workbooks" }]);
+    expect(planRoster(input)).toEqual(planRoster(input));
   });
 });

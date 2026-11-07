@@ -5,9 +5,9 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { brandKitSpec } from "@/convex/ai/prompts/brandKit.v1";
-import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v1";
-import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v1";
+import { brandKitSpec } from "@/convex/ai/prompts/brandKit.v2";
+import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v2";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v2";
 import { PROMPT_ENTRIES } from "@/convex/ai/prompts/index";
 import {
   BANNED_DISPLAY_FAMILIES,

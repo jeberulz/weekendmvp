@@ -1,5 +1,5 @@
 /**
- * WP75-S3a. The blueprint for the founder's own idea (`crew_blueprint`): a
+ * WP75-S3a (version 2: roster per idea, WP90). The blueprint for the founder's own idea (`crew_blueprint`): a
  * light blueprint labelled "Not yet validated" (D15). The label derives from
  * `source: "own_idea"`; the C-ART own-idea variant has no `market` block and
  * no `ideaSlug`, so the output cannot carry market data. The deterministic
@@ -8,14 +8,19 @@
  * Inputs (all quoted data): the founder's idea in their own words, the light
  * outline the wizard showed them, and their parsed wizard answers.
  *
- * Any change to this file or to `crewShared.ts` (comments included) needs a
- * version bump (a new `blueprintOwnIdea.v2.ts`), then
+ * Version 2 adds the team block (`teamShared.ts`): the Crew Lead proposes who
+ * is hired, with a reason per role. Team reasons follow D15 too; code drops a
+ * reason with a market number and the rules decide that role.
+ *
+ * Any change to this file or to `crewShared.ts` or `teamShared.ts` (comments included) needs a
+ * version bump (a new `blueprintOwnIdea.v3.ts`), then
  * `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
 import { definePromptSpec } from "../../../lib/workspace/contracts/prompts.ts";
-import { blueprintVariantSchemas, type Blueprint } from "../../../lib/workspace/contracts/artifacts.ts";
+import { blueprintTeamVariantSchemas, type Blueprint } from "../../../lib/workspace/contracts/artifacts.ts";
 import { CREW_SYSTEM_RULES, REVISION_INSTRUCTION, dataBlock, revisionBlocks } from "./crewShared.ts";
+import { TEAM_SYSTEM_RULES } from "./teamShared.ts";
 
 export type BlueprintOwnIdeaInput = {
   /** The founder's idea, one sentence in their words. Untrusted. */
@@ -35,12 +40,13 @@ const SYSTEM = [
   "Keep it buildable in one weekend: one user, one loop they repeat, a few core features, and scope cuts that name what is left out this weekend.",
   "Stay with the founder's idea; sharpen it, do not replace it. Shape it to their choices (platform, commercial model, goal, name).",
   "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"campers\").",
+  ...TEAM_SYSTEM_RULES,
   "source is \"own_idea\".",
 ].join("\n");
 
 export const blueprintOwnIdeaSpec = definePromptSpec<BlueprintOwnIdeaInput, Blueprint>({
   id: "crew-blueprint-own-idea",
-  version: 1,
+  version: 2,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },
@@ -55,7 +61,7 @@ export const blueprintOwnIdeaSpec = definePromptSpec<BlueprintOwnIdeaInput, Blue
       ...(typeof inputs.previousArtifact === "string" && inputs.previousArtifact.length > 0 ? [REVISION_INSTRUCTION] : []),
       "Write this founder's light blueprint for their own idea.",
     ].join("\n"),
-  outputSchema: blueprintVariantSchemas.own_idea,
+  outputSchema: blueprintTeamVariantSchemas.own_idea,
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },
   evalSuite: "crew-blueprint",
   mode: "realtime",

@@ -26,6 +26,8 @@ import {
   parseModelOutput,
 } from "@/lib/workspace/contracts/artifacts";
 import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
+import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v2";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v2";
 import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
 import { wrenPlanTurnSpec } from "@/convex/ai/prompts/wrenPlanTurn";
 
@@ -84,7 +86,9 @@ describe("fixture-output registry", () => {
     const keys = new Set(ARTIFACT_FIXTURES.map((fixture) => fixture.key));
     for (const kind of Object.keys(artifactOutputSchemas)) expect(keys.has(kind), kind).toBe(true);
     // By ref: Wren's two chat prompts (L1 beta), nothing else.
-    expect(Object.keys(FIXTURE_OUTPUTS_BY_REF).sort()).toEqual([promptRef(wrenChatSpec), promptRef(wrenPlanTurnSpec)].sort());
+    expect(Object.keys(FIXTURE_OUTPUTS_BY_REF).sort()).toEqual(
+      [promptRef(wrenChatSpec), promptRef(wrenPlanTurnSpec), promptRef(blueprintPersonaliseSpec), promptRef(blueprintOwnIdeaSpec)].sort(),
+    );
   });
 
   test("lookup by artifact schema returns that artifact; an unknown schema returns nothing", () => {
@@ -197,5 +201,6 @@ describe("fixture-output registry", () => {
     };
     expect(importersOf("fixtureOutputs")).toEqual(["convex/ai/providers/fixtures.ts"]);
     expect(importersOf("wrenFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
+    expect(importersOf("blueprintFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
   });
 });

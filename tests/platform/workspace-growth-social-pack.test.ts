@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v1";
+import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v2";
 import { SOCIAL_DAYS, type SocialPack } from "../../lib/workspace/contracts/artifacts";
 import { TIER_RECOMMENDED_EFFORT } from "../../lib/workspace/contracts/prompts";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailSocialPack } from "../../lib/workspace/contracts/fixtures/hydrotrail";
@@ -116,7 +116,7 @@ describe("the step's inputs and spec", () => {
     });
   });
 
-  test("crew-social-pack@1 runs on the fast tier at the tier's recommended effort, thinking off", () => {
+  test("crew-social-pack@2 runs on the fast tier at the tier's recommended effort, thinking off", () => {
     expect(`${socialPackSpec.id}@${socialPackSpec.version}`).toBe(SOCIAL_PACK_PROMPT_REF);
     expect(socialPackSpec).toMatchObject({ tier: "fast", effort: TIER_RECOMMENDED_EFFORT.fast, thinking: { type: "disabled" }, fallbacks: "none" });
   });
