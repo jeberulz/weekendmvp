@@ -31,6 +31,7 @@ import {
 import { currentIdeaMemberToken } from "@/lib/ideas/member-session";
 import { isBuildCtaSlug } from "@/lib/workspace/build-cta";
 import { buildCtaVisible } from "@/lib/workspace/build-cta-access";
+import { BuildIdeaCta } from "@/components/workspace/BuildIdeaCta";
 import { buildPublicIdeaPreview } from "@/lib/ideas/public-preview";
 import { manifestIdeas } from "@/lib/public/library";
 import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
@@ -432,7 +433,9 @@ export default async function IdeaPage({
       </>
     );
   }
-  return <IdeaContent slug={slug} resolved={resolved} />;
+  // L1-C9: a verified member is signed in, so the CTA goes straight to the
+  // wizard. Same flag as the anonymous account card; off, nothing renders.
+  return <IdeaContent slug={slug} resolved={resolved} buildCta={buildCta} />;
 }
 
 const SCORE_LABELS: Array<{
@@ -486,7 +489,15 @@ function IdeaMetaCard({ idea }: { idea: IdeaDoc }) {
 }
 
 /** The gate and the selected body must be from the same request. */
-function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea }) {
+function IdeaContent({
+  slug,
+  resolved,
+  buildCta,
+}: {
+  slug: string;
+  resolved: ResolvedIdea;
+  buildCta: boolean;
+}) {
   const { title, description, content, idea } = resolved;
   const toc = tocFromMarkdown(content);
   const schema = buildSchema(slug, resolved);
@@ -564,6 +575,9 @@ function IdeaContent({ slug, resolved }: { slug: string; resolved: ResolvedIdea 
                 {/* WP44-S6 Save island. Empty in the server HTML. The fixed
                     height keeps the layout still when it appears. */}
                 <div className="mt-6 flex min-h-10 flex-wrap items-center gap-x-3 gap-y-2">
+                  {buildCta ? (
+                    <BuildIdeaCta slug={slug} title={title} location="idea-member-header" signedIn />
+                  ) : null}
                   <SaveIdeaButton slug={slug} title={title} />
                 </div>
               </header>

@@ -17,8 +17,12 @@ describe("WP74-S5 wiring", () => {
     expect(ideaSource).toContain("buildFirst={buildCta}");
   });
 
-  test("signed-in members get no CTA on the idea page", () => {
-    expect(ideaSource).not.toContain("BuildIdeaCta");
+  // WP74-S5 kept the CTA off the member page. L1-C9 (owner, 2026-11-07)
+  // reverses that: a verified member gets the same flag-gated button, linking
+  // straight to the wizard. See tests/platform/l1-build-entry-points.test.tsx.
+  test("signed-in members get the flag-gated CTA, straight to the wizard", () => {
+    expect(ideaSource).toContain("<IdeaContent slug={slug} resolved={resolved} buildCta={buildCta} />");
+    expect(ideaSource).toMatch(/\{buildCta \? \(\s*<BuildIdeaCta [^>]*location="idea-member-header" signedIn \/>\s*\) : null\}/);
   });
 
   test("primary content stays server-rendered: the CTA is never the only way to the research", () => {
