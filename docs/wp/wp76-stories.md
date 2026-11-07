@@ -77,8 +77,38 @@ Done when: the HydroTrail fixture launch shows a draft email sequence with four 
 
 ### WP76-S1b — Email page
 
-The founder reviews the four emails (subject, preview, body, CTA label, delay, goal), sees the card state and can
-approve or ask for changes through WP77's existing card actions. Read-only otherwise; no send button. a11y-check.
+Goal: on `/dashboard/b/{projectId}/email` the founder reads the crew's four emails and approves the sequence draft or
+asks for changes. No send button and no send settings: WP79 activates sending later.
+
+- Replaces the route placeholder (`app/(launch-workspace)/dashboard/b/[projectId]/email/page.tsx`). Server page
+  gated by `requireWorkspaceAccess` (404 with the flag off), same header pattern as the Files page; a client panel
+  reads S1a's `api.growth.drafts.emailSequence.emailSequenceDraft`.
+- States: loading; `none` ("Your email sequence is on its way. Your team writes it after your brand kit.");
+  `unavailable` (calm copy, no detail, no retry); `ready`.
+- `ready` shows the sequence name, the sender name and the status in words (draft, approved, active, paused), then
+  the four emails in order. Each email shows its kind as a plain label (Welcome, Value, Offer, Follow-up), when it
+  goes ("As soon as someone confirms", then "N hours after the previous email" / days when whole), the subject,
+  the preview text, the body as plain text with paragraphs kept (never as HTML or markdown), the CTA label and
+  where it goes in words (your site / your waitlist / a reply), and the goal. `{first name}` shows as a visible
+  token, never filled in.
+- The card: while the newest `artifact_review` card is pending (and not past `expiresAt`), Approve and Ask for
+  changes. Ask for changes opens a labelled text field for the founder's note and sends
+  `decideApproval({ decision: "request_changes", note })`; Approve sends `decision: "approve"`. Reuse the WP77 kit
+  (`components/workspace/kit` approval styles and the chat card's decision copy, focus return and live region
+  pattern in `components/workspace/chat/WrenChatCards.tsx`) rather than new patterns. Other card states show their
+  status in words. A paid change round surfaces the server's answer as it does in chat; no credit UI is built here.
+- Never shows ids, raw statuses or internal reasons. All text from the server is rendered as text nodes.
+- a11y: one h1 (the route label), h2 for the sequence, h3 per email; the email list is an ordered list; the note
+  field has a visible label and its error is tied with `aria-describedby`; buttons stay focusable while a decision
+  is in flight (`aria-disabled`); focus returns to the card's status line after a decision; a polite live region
+  carries the outcome; colour is never the only signal. Run the a11y-check skill.
+- Tests (`tests/platform/`, Testing Library, the query and mutation mocked like the existing workspace panel
+  tests): each state renders; the four emails in order with the delay wording; body text is not parsed as HTML;
+  approve and ask-for-changes call the mutation with the right arguments; an empty note is refused before sending;
+  focus and live-region behaviour; a non-pending card shows no buttons; an expired pending card shows no buttons.
+
+Done when: the HydroTrail fixture state renders the four emails with a working approve / ask-for-changes card, the
+page 404s with the flag off, a11y-check passes and the full gate passes.
 
 ### WP76-S2 to S6
 

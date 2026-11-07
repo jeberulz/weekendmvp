@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
 import { useEffect, useId, useRef, useState, type FocusEvent } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -15,7 +14,9 @@ import {
   APPROVAL_REVIEW_LABELS,
   approvalDecisionCopy,
   approvalDecisionErrorCopy,
+  errorCode,
   navigateRouteSlug,
+  STATUS_LABEL,
   WREN_EXPLAIN_COPY,
   WREN_NAVIGATE_LABELS,
 } from "@/lib/workspace/wrenCards";
@@ -51,14 +52,6 @@ import {
 
 type ApprovalView = Extract<WrenCardView, { kind: "approval" }>;
 
-const STATUS_LABEL: Record<ApprovalView["status"], string> = {
-  pending: "Waiting for you",
-  approved: "Approved",
-  changes_requested: "Changes requested",
-  expired: "Expired",
-  cancelled: "Not going ahead",
-};
-
 function isExplainTopic(topic: string): topic is WrenExplainTopic {
   return Object.prototype.hasOwnProperty.call(WREN_EXPLAIN_TOPICS, topic);
 }
@@ -67,18 +60,12 @@ function isNavigateRoute(route: string): route is WrenNavigateRoute {
   return Object.prototype.hasOwnProperty.call(WREN_NAVIGATE_ROUTES, route);
 }
 
-function errorCode(error: unknown): string | null {
-  if (!(error instanceof ConvexError)) return null;
-  const data: unknown = error.data;
-  return typeof data === "object" && data !== null && "code" in data && typeof data.code === "string" ? data.code : null;
-}
-
-function isFocusIn(element: HTMLElement | null): boolean {
+export function isFocusIn(element: HTMLElement | null): boolean {
   const active = document.activeElement;
   return active !== null && element !== null && element.contains(active);
 }
 
-type FocusFlags = {
+export type FocusFlags = {
   /** Focus is on this card's buttons now (kept by focus / blur on the button group). */
   onButtons: boolean;
   /** Focus was on the buttons when the founder's decision started (kept until that decision settles). */
@@ -90,7 +77,7 @@ type FocusFlags = {
  * (either flag) and is still there or was dropped on the page body by the
  * buttons going away. Focus the founder moved elsewhere is left alone.
  */
-function returnFocusToStatus(
+export function returnFocusToStatus(
   flags: { readonly current: FocusFlags },
   buttons: { readonly current: HTMLElement | null },
   status: { readonly current: HTMLElement | null },
@@ -108,7 +95,7 @@ function returnFocusToStatus(
  * losing focus) counts too; a blur caused by the button being removed does
  * not, so a status change can still return focus from a removed button.
  */
-function focusLeftGroup(event: FocusEvent<HTMLElement>): boolean {
+export function focusLeftGroup(event: FocusEvent<HTMLElement>): boolean {
   const next = event.relatedTarget;
   if (next instanceof Node && event.currentTarget.contains(next)) return false;
   return next !== null || event.target.isConnected;
