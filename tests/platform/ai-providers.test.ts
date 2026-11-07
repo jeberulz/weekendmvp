@@ -29,7 +29,7 @@ import {
   type AnthropicMessagesClient,
   type AnthropicRequestOptions,
 } from "@/convex/ai/providers/anthropic";
-import { FIXTURE_PNG_BASE64, sampleFromJsonSchema } from "@/convex/ai/providers/fixtures";
+import { FIXTURE_PNG_BASE64, FIXTURE_TEXT_REPLY, sampleFromJsonSchema } from "@/convex/ai/providers/fixtures";
 import { providerMode, resolveProviderAccess } from "@/convex/ai/providers/mode";
 import { MAX_TIMEOUT_MS } from "@/convex/ai/providers/transport";
 import { createOpenAiImagesAdapter, openAiImageReservationMicroUsd } from "@/convex/ai/providers/openaiImages";
@@ -188,7 +188,8 @@ describe("fixture mode makes no network call", () => {
 
     const text = await anthropic.complete(textRequest({ outputSchema: undefined }));
     expect(text.json).toBeUndefined();
-    expect(text.text).toContain("Fixture reply");
+    expect(text.text).toBe(FIXTURE_TEXT_REPLY);
+    expect(text.text).not.toMatch(/\bfixture\b/i);
 
     const openai = createOpenAiImagesAdapter({ env: FIXTURE_ENV, fetchImpl });
     const hero = await openai.generate({ prompt: "A hero", size: "1536x1024", quality: "medium", timeoutMs: 1_000 });

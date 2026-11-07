@@ -419,15 +419,76 @@ export async function approvableSubjects(ctx: QueryCtx, project: Project): Promi
   ];
 }
 
+/** One crew review waiting on the founder, as Wren sees it: what it is and the workspace page it is reviewed on. */
+export type WaitingReview = {
+  readonly review: string;
+  /** A `WREN_NAVIGATE_ROUTES` slug, so a navigate card can point at it. */
+  readonly page: "team" | "brand" | "email" | "social";
+};
+
+/**
+ * Where each artifact kind is reviewed. Mirrors `REVIEW_TARGETS`
+ * (`lib/workspace/reviews.ts`), which this module may not import (the WP77
+ * import allowlist); `tests/platform/workspace-wren-fixture.test.ts` keeps the
+ * two equal.
+ */
+export const WREN_REVIEW_TARGETS: ReadonlyMap<string, WaitingReview> = new Map([
+  ["blueprint", { review: "Blueprint", page: "team" }],
+  ["roster_plan", { review: "Team plan", page: "team" }],
+  ["brand_kit", { review: "Brand kit", page: "brand" }],
+  ["landing_spec", { review: "Landing page", page: "team" }],
+  ["email_sequence", { review: "Waitlist emails", page: "email" }],
+  ["social_pack", { review: "Social posts", page: "social" }],
+  ["seo_pack", { review: "SEO pack", page: "team" }],
+  ["launch_plan", { review: "Launch plan", page: "team" }],
+  ["ads_drafts", { review: "Ad drafts", page: "team" }],
+  ["build_pack", { review: "Build pack", page: "team" }],
+]);
+
+/** Pending cards read to find the crew's open reviews. Pending cards expire after seven days (the expiry cron). */
+const PENDING_SCAN_MAX = 50;
+
+/** Most open reviews Wren is told about. */
+const WAITING_REVIEWS_MAX = 10;
+
+/**
+ * L1 beta. The crew's open reviews, newest first: this business's pending
+ * `artifact_review` cards on its live artifact documents, the same set as the
+ * Team HQ "Waiting on you" list (`api.workspace.reviews.pendingReviews`).
+ * Wren cannot raise or attach these cards (they are not in
+ * `WREN_APPROVAL_SUBJECTS`); it names them and the page to review them on.
+ * No ids are passed, so the model has nothing to put on an approval card.
+ */
+export async function waitingReviews(ctx: QueryCtx, project: Project): Promise<WaitingReview[]> {
+  const pending = await ctx.db.query("approvals")
+    .withIndex("by_projectId_and_status", (q) => q.eq("projectId", project._id).eq("status", "pending"))
+    .order("desc")
+    .take(PENDING_SCAN_MAX);
+  const reviews: WaitingReview[] = [];
+  for (const card of pending) {
+    if (reviews.length >= WAITING_REVIEWS_MAX) break;
+    if (card.ownerId !== project.ownerId || card.kind !== "artifact_review" || card.subjectTable !== "documents") continue;
+    const documentId = ctx.db.normalizeId("documents", card.subjectId);
+    const document = documentId === null ? null : await ctx.db.get("documents", documentId);
+    if (document === null || document.ownerId !== project.ownerId || document.projectId !== project._id ||
+      document.archivedAt !== undefined) continue;
+    const target = WREN_REVIEW_TARGETS.get(document.kind);
+    if (target !== undefined) reviews.push(target);
+  }
+  return reviews;
+}
+
 /**
  * The business context block (`02` §5.4) for Wren: the business, the partner,
- * Wren's memory and (S4) what Wren may raise an approval card for. Founder-written fields are data, quoted as JSON with
+ * Wren's memory, (S4) what Wren may raise an approval card for and (L1) the
+ * crew's reviews waiting on the founder. Founder-written fields are data, quoted as JSON with
  * `<` / `>` escaped so they cannot close the block.
  */
 export function wrenBusinessContext(
   project: Project,
   memory: Doc<"wren_memory"> | null,
   approvable: readonly ApprovableSubject[] = [],
+  waitingOnYou: readonly WaitingReview[] = [],
 ): string {
   const workspace = project.workspace;
   const data = {
@@ -442,6 +503,7 @@ export function wrenBusinessContext(
     ...(workspace === undefined ? {} : { partner: { name: workspace.partner.name, personality: workspace.partner.personality } }),
     memory: memoryForPrompt(memory),
     approvable,
+    waitingOnYou,
   };
   return [
     "<business_context>",
@@ -481,7 +543,9 @@ export const loadWrenTurn = internalQuery({
       status: "ready" as const,
       message: founder.body,
       history,
-      businessContext: wrenBusinessContext(project, memory, await approvableSubjects(ctx, project)),
+      businessContext: wrenBusinessContext(
+        project, memory, await approvableSubjects(ctx, project), await waitingReviews(ctx, project),
+      ),
       memoryVersion: memoryVersionOf(memory),
     };
   },

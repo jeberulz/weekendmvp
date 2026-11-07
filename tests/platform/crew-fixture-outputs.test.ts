@@ -25,7 +25,9 @@ import {
   artifactOutputSchemas,
   parseModelOutput,
 } from "@/lib/workspace/contracts/artifacts";
-import { TIER_MODELS } from "@/lib/workspace/contracts/prompts";
+import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
+import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
+import { wrenPlanTurnSpec } from "@/convex/ai/prompts/wrenPlanTurn";
 
 // Request and message types come from the adapter's client type: tests never import the provider SDK.
 type MessageParams = Parameters<AnthropicMessagesClient["messages"]["create"]>[0];
@@ -71,17 +73,18 @@ describe("fixture-output registry", () => {
   test("every artifact fixture is a valid model output for its schema and a valid stored artifact", () => {
     expect(ARTIFACT_FIXTURES.length).toBeGreaterThan(0);
     for (const fixture of ARTIFACT_FIXTURES) {
-      const output = fixture.output();
+      const output = fixture.output(params(fixture.schema));
       expect(fixture.schema.safeParse(output).success, fixture.key).toBe(true);
       const kind = fixture.key.split(":")[0] as (typeof ARTIFACT_KINDS)[number];
       expect(parseModelOutput(kind, output).success, fixture.key).toBe(true);
       // A fresh copy each time: a caller cannot mutate the next reply.
-      expect(fixture.output()).not.toBe(output);
+      expect(fixture.output(params(fixture.schema))).not.toBe(output);
     }
     // Every model-facing artifact schema has a fixture.
     const keys = new Set(ARTIFACT_FIXTURES.map((fixture) => fixture.key));
     for (const kind of Object.keys(artifactOutputSchemas)) expect(keys.has(kind), kind).toBe(true);
-    expect(FIXTURE_OUTPUTS_BY_REF).toEqual({});
+    // By ref: Wren's two chat prompts (L1 beta), nothing else.
+    expect(Object.keys(FIXTURE_OUTPUTS_BY_REF).sort()).toEqual([promptRef(wrenChatSpec), promptRef(wrenPlanTurnSpec)].sort());
   });
 
   test("lookup by artifact schema returns that artifact; an unknown schema returns nothing", () => {
@@ -174,20 +177,25 @@ describe("fixture-output registry", () => {
     expect(fixtureOutputFor).not.toHaveBeenCalled();
   });
 
-  test("only the fixture client imports the registry", () => {
+  test("only the fixture client imports the registry, and only the registry imports the Wren fixture reply", () => {
     const root = process.cwd();
-    const importers: string[] = [];
-    const walk = (dir: string) => {
-      for (const name of readdirSync(dir)) {
-        if (name === "node_modules" || name === "_generated" || name.startsWith(".")) continue;
-        const path = join(dir, name);
-        if (statSync(path).isDirectory()) walk(path);
-        else if (/\.(ts|tsx|mts|mjs|js)$/.test(name) && !/\.test\.(ts|tsx|mjs)$/.test(name)) {
-          if (/from\s+["'][^"']*fixtureOutputs["']/.test(readFileSync(path, "utf8"))) importers.push(relative(root, path));
+    const importersOf = (module: string): string[] => {
+      const pattern = new RegExp(`from\\s+["'][^"']*${module}["']`);
+      const importers: string[] = [];
+      const walk = (dir: string) => {
+        for (const name of readdirSync(dir)) {
+          if (name === "node_modules" || name === "_generated" || name.startsWith(".")) continue;
+          const path = join(dir, name);
+          if (statSync(path).isDirectory()) walk(path);
+          else if (/\.(ts|tsx|mts|mjs|js)$/.test(name) && !/\.test\.(ts|tsx|mjs)$/.test(name)) {
+            if (pattern.test(readFileSync(path, "utf8"))) importers.push(relative(root, path));
+          }
         }
-      }
+      };
+      for (const dir of ["convex", "lib", "app", "components", "scripts"]) walk(join(root, dir));
+      return importers;
     };
-    for (const dir of ["convex", "lib", "app", "components", "scripts"]) walk(join(root, dir));
-    expect(importers).toEqual(["convex/ai/providers/fixtures.ts"]);
+    expect(importersOf("fixtureOutputs")).toEqual(["convex/ai/providers/fixtures.ts"]);
+    expect(importersOf("wrenFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
   });
 });

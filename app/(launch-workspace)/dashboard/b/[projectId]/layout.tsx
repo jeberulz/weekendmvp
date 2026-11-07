@@ -63,7 +63,7 @@ export default async function LaunchWorkspaceLayout({
           switcherSubline={project.subline}
           teamBadge={<TeamNeedsYouBadge projectId={project._id} />}
           userRow={project.viewerName === undefined ? undefined : <SidebarUserRow name={project.viewerName} />}
-          chat={<WrenChatColumn projectId={project._id} name={partnerName} />}
+          chat={<WrenChatColumn projectId={project._id} name={partnerName} founderName={project.viewerName} />}
         >
           <main
             id="workspace-main"
