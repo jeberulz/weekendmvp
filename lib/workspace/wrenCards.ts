@@ -390,7 +390,7 @@ export function approvalDecisionCopy(status: string): string {
   }
 }
 
-const CHANGED_CODES: ReadonlySet<string> = new Set([
+export const CHANGED_CODES: ReadonlySet<string> = new Set([
   "APPROVAL_SUBJECT_CHANGED",
   "APPROVAL_SUBJECT_MISMATCH",
   "APPROVAL_SUBJECT_NOT_PUBLISHABLE",
@@ -417,4 +417,20 @@ export function approvalDecisionErrorCopy(code: string | null): string {
     default:
       return "That didn't go through. Try again in a moment.";
   }
+}
+
+/** The words for an approval card's status, shared by the chat card and the Email page. */
+export const STATUS_LABEL: Record<"pending" | "approved" | "changes_requested" | "expired" | "cancelled", string> = {
+  pending: "Waiting for you",
+  approved: "Approved",
+  changes_requested: "Changes requested",
+  expired: "Expired",
+  cancelled: "Not going ahead",
+};
+
+/** The `code` in a thrown `ConvexError`'s data (read by shape, so this file imports nothing), or null for anything else. */
+export function errorCode(error: unknown): string | null {
+  if (typeof error !== "object" || error === null || !("data" in error)) return null;
+  const data: unknown = error.data;
+  return typeof data === "object" && data !== null && "code" in data && typeof data.code === "string" ? data.code : null;
 }

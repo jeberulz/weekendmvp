@@ -156,3 +156,97 @@ is still reviewed by the founder first):
 ## Needs from Codex
 
 None (S1a used the existing `sequences` / `sequence_steps` tables as they are).
+
+## WP76-S1b built (Email page)
+
+### What was built
+- `app/(launch-workspace)/dashboard/b/[projectId]/email/page.tsx`: the placeholder is replaced by a server page
+  (`requireWorkspaceAccess`, Files-page header, one h1) rendering the client panel.
+- `components/workspace/email/EmailSequencePanel.tsx`: reads `emailSequenceDraft`; states loading, `none`,
+  `unavailable` (calm copy, no retry), `ready`. Sequence name (h2), sender and status in words, the review card, then
+  an ordered list of the four emails (h3 each, facts in a description list). Text is always text nodes; the body is
+  split into paragraphs on blank lines; `{first name}` is shown as written.
+- `lib/workspace/emailPage.ts`: pure wording (delay, kind, CTA target, statuses, note rule, outcome and error copy).
+- `tests/platform/workspace-email-page.test.tsx`: 22 tests (helpers, each state, order and wording, HTML not parsed,
+  approve and ask-for-changes arguments, empty note refused, Escape/Cancel focus, in-flight `aria-disabled`, non-pending
+  and expired cards show no buttons, axe).
+
+### Decisions that fill gaps
+- The decision outcome copy is the chat card's `approvalDecisionCopy` / `approvalDecisionErrorCopy`, plus page-specific
+  lines: `changesOutcomeCopy` turns the server's change-round answer (free, spend required, not available / busy) into
+  words (chat shows nothing for those, because the card stays `pending`); changed-subject errors say "These emails
+  changed since this was raised. Reload the page", not "Ask Wren again".
+- No existing "ask for changes" note UI existed in `components/workspace/**`; a new inline form was built with the
+  limit shown as `APPROVAL_NOTE_MAX_LENGTH` (2,000, trimmed, via `normalizeApprovalNote`) and a character count.
+- Because approval does not change the sequence status (WP79 activates), an approved card shows "Approved. Nothing is
+  sent yet." so "Draft" is not confusing.
+- Expiry is judged once at mount (`Date.now()` vs `expiresAt`); a stale approve is not refused by the server: it marks the card expired (`decideApproval`), and the page announces that.
+- The chat card's focus helpers, `errorCode` and `STATUS_LABEL` are now exported from `WrenChatCards.tsx` (additive) and
+  `CHANGED_CODES` from `lib/workspace/wrenCards.ts`; the panel reuses them. (Superseded below: `STATUS_LABEL` and `errorCode`
+  now live in `lib/workspace/wrenCards.ts`.) Credit UI for paid rounds: none, as the story says.
+- Change round number and approval ids are never shown.
+
+### a11y-check
+- [x] Icon-only buttons have `aria-label`: none exist
+- [x] Decorative icons have `aria-hidden`: no icons used
+- [x] CSS/mask logos: none
+- [x] Form inputs have labels: note textarea has a visible label, hint and error tied by `aria-describedby`
+- [x] Images: none
+- [x] External links: none
+- [x] Focus rings visible: kit `FOCUS` on buttons, field and status line
+- [x] No color-only indicators: statuses are words
+- [x] Heading hierarchy: h1 route, h2 sequence, h3 review and each email
+- [x] Keyboard: Escape/Cancel close the form and return focus; focus to status after a decision; polite live region
+
+### Follow-ups
+- Not run in a browser; axe (jsdom) is clean. Contrast of `home-clay-ink` on the page paper is inherited from the kit.
+- `docs/wp/wp76-stories.md:86` has trailing whitespace (pre-existing uncommitted edit) so `git diff --check` exits 2.
+
+### WP76-S1b review fixes
+
+Opus review: 0 blockers, 3 majors, 7 minors, all addressed.
+- M1: a result with no change-round answer falls back to `approvalDecisionCopy(status)` (an expired result is announced);
+  the form and note stay open on a `not_available` answer and close on `free`, `spend_required` or any other result.
+- M2: the panel uses the chat's focus helpers with `onFocus` / `onBlur` tracking, so a live update that removes the buttons
+  returns focus to the status line unless the founder moved it.
+- M3: a `changes_requested` card offers "Ask for changes" again (no Approve; the server re-asks via `reaskChangeRound`).
+  `spend_required` copy: "Another round of changes costs credits. Paying for it isn't available yet, so your team keeps
+  the current emails." An already-running re-ask (no change) says the team is already working on it.
+- Minors and nits: in-flight guard on Ask for changes; closed-review line for expired and cancelled cards; subject-changed
+  copy says to look at the newest version; `RateLimited` has its own line; label maps typed over the contract unions with no
+  fallback; `{first name}` is a styled token with an sr-only "(merge tag)"; "Sequence status" and "Review status" labels;
+  counter in `aria-describedby`; "Email N of {emails.length}".
+
+Needs / follow-ups:
+- No surface lists `spend` cards yet (`listPendingApprovals` has no consumer), so a paid change round cannot be approved from
+  the UI; the Email page says it is not available yet.
+- There is no "raise it again" path for an expired or cancelled review card; the page says the team raises a new one when
+  the emails change.
+
+### WP76-S1b second re-check fixes
+
+- Paid round dead end (M3): the Review card reads `previewChangeRound` for a `pending` or `changes_requested` card and
+  decides from it before offering anything. `free`: "Ask for changes" as before, plus "N free rounds of changes left."
+  `spend_required`: no Ask button and no `request_changes` is ever sent; a pending card keeps Approve and says "Another
+  round of changes costs N credits. Paying for changes isn't open yet, so you can approve these emails as they are." (a
+  `changes_requested` card says "The next round ... so your emails stay as they are"). `not_available`: no Ask button and
+  the plain reason. Loading or a failed preview (a `QuietErrorBoundary` around the preview) shows no Ask button; Approve
+  stays on a pending card. "Your team is working on your changes." shows only after a free round started, after a re-ask
+  that changed nothing, or while the preview says `busy`.
+- A re-ask that changes nothing keeps the form and the note and says the note was not sent.
+- Closed copy (expired and cancelled): "This review closed without a decision. Your emails stay as they are."
+- Focus: the focus-return effect also keys on `card.status`, so a live move from `pending` to `changes_requested` returns
+  focus from Approve to the status line.
+- `STATUS_LABEL` and `errorCode` moved into `lib/workspace/wrenCards.ts` (pure); `WrenChatCards.tsx` and the panel import
+  them. Chat behaviour is unchanged (platform tests pass).
+- Follow-ups unchanged: no surface lists or pays `spend` cards (`listPendingApprovals` has no consumer); no path raises a
+  fresh review after an expired or cancelled one.
+
+### WP76-S1b third re-check fixes
+
+- "Your team is working on your changes." now comes only from the preview reporting the artifact busy (`previewIsBusy`);
+  the sticky `revisionRunning` state and `startedRevision` are gone. A no-change re-ask still keeps the form and says the
+  note wasn't sent.
+- The focus-return effect also keys on `canAsk`, so focus moves to the status line when the preview turns busy while focus
+  is on Ask for changes.
+- The `stale` / `conflict` reasons use the plain "Changes can't be asked for on this right now."
