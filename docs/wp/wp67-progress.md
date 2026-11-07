@@ -426,3 +426,27 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Rulings "L1 Monday cut", "L1 live test launches" and "D26 timing" (`docs/wp/RULINGS.md`).
 - Plan, scope, work left by lane and the L1 gate: `docs/wp/l1-release-plan.md`.
 - Codex 13 (recovery cron) and Codex 18 (launch sweep) are ship gates for Monday.
+
+## 2026-11-07 - L1-C1 and L1-C6 built
+
+- Brand kit page (L1-C1): `components/workspace/brand/BrandKitPanel.tsx` reads `brandKitDraft` and shows the kit
+  read-only (name and alternatives, tagline, five colours as text, look and type, voice, logo and hero art as
+  words with one "image generation is coming soon" line, pattern and product moment when present), then the
+  review card. States: loading, none, unavailable, ready. Page: `app/(launch-workspace)/dashboard/b/[projectId]/brand/page.tsx`.
+- Team HQ (L1-C6): `components/workspace/team/{TeamHqPanel,WaitingOnYou,BlueprintView}.tsx`. "Waiting on you" lists
+  `pendingReviews` (title, "Change round N", when it closes in words, a link "Review {title}"; the blueprint link
+  jumps to `#blueprint` on the same page; the empty line is shown only for an empty checked list; a card past
+  `expiresAt` is left out). "Your blueprint" shows the pitch, user, loop, features, scope cuts and market, the
+  "Not yet validated" label when `validated` is false, then the blueprint's review card.
+  Page: `.../team/page.tsx`. The roster is not on this page today (it was only the placeholder), so none was kept.
+- Shared: `components/workspace/review/LiveArtifactReview.tsx` (decide and change-round preview wired as on Social),
+  `lib/workspace/reviewPages.ts` (words and expiry arithmetic). `ArtifactReviewCard` gained an optional
+  `artifact.readFrom` ("above" or "below", default "below") so the card under the content says "above"; Email and
+  Social wording is unchanged. Their plural nouns are "brand kit details" and "blueprint details".
+- Swatch colour: an `aria-hidden` SVG `<rect fill>` attribute (not a style attribute), drawn only from a checked
+  `#RRGGBB`; anything else renders no fill. The name, hex and use are text beside it.
+- Tests: `tests/platform/workspace-review-pages.test.tsx` (states, swatch text, validated label, pending rows and
+  links, empty state, approve and ask for changes, jsdom axe on the ready states).
+- Unverified: no real browser or screen reader pass; colour contrast is not checked by jsdom axe (no canvas), so
+  the contrast of the new text rests on the kit tokens already in use; nothing was run against a live Convex
+  deployment (queries are mocked); the `#blueprint` jump and focus behaviour was not tried in a browser.

@@ -55,8 +55,12 @@ export type ArtifactReviewCardProps = {
   card: { status: keyof typeof STATUS_LABEL; expiresAt: number };
   decide: ReviewDecide;
   preview: PreviewState;
-  /** Words for the artifact: `plural` is used in sentences ("emails", "posts"); `approvedNote` follows "Approved". */
-  artifact: { plural: string; approvedNote: string };
+  /**
+   * Words for the artifact: `plural` is used in sentences ("emails", "posts"); `approvedNote` follows "Approved".
+   * `readFrom` says where the thing to read sits relative to the card ("below" by default; the Brand kit page and
+   * Team HQ put the card under what it reviews, so they say "above").
+   */
+  artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below" };
 };
 
 function isRateLimited(error: unknown): boolean {
@@ -195,7 +199,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
       <h3 id={`${id}-title`} className="text-sm font-medium text-home-ink">Your review</h3>
       {canDecide ? (
         <p className="text-[13px] text-home-ink-2">
-          Read the {noun} below. Approve them as they are, or ask your team for changes.
+          Read the {noun} {artifact.readFrom ?? "below"}. Approve them as they are, or ask your team for changes.
         </p>
       ) : null}
       <div ref={statusRef} tabIndex={-1} className={cn("flex flex-col gap-1 rounded text-[13px] text-home-ink-2", FOCUS)}>
