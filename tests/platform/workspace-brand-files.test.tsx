@@ -37,6 +37,7 @@ vi.mock("@/components/platform/client-gates", async () => {
 vi.mock("next/font/google", async () => (await import("./tenant-site-helpers")).fontMockModule([]));
 
 const { BrandKitPanel } = await import("@/components/workspace/brand/BrandKitPanel");
+const { TENANT_FONTS } = await import("@/components/tenant-site/fonts");
 const { FilesRail } = await import("@/components/workspace/files/FilesRail");
 
 const PROJECT = "project1" as Id<"projects">;
@@ -93,7 +94,7 @@ describe("readableOn", () => {
 describe("Brand kit page body", () => {
   test("the review comes first, then the brand board, then the Brand Book", () => {
     live.brand = ready();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(headings[0]).toBe("Your review");
     expect(headings.indexOf("Brand board")).toBeGreaterThan(0);
@@ -103,7 +104,7 @@ describe("Brand kit page body", () => {
 
   test("the board is a 3 x 3 grid of real text with no image, no inline style and no dropped extras", () => {
     live.brand = ready();
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const board = screen.getByRole("region", { name: "Brand board" });
     expect(within(board).getAllByRole("listitem").length).toBe(7);
     expect(screen.getByText("WORDMARK")).toBeTruthy();
@@ -117,7 +118,7 @@ describe("Brand kit page body", () => {
 
   test("tagline emphasis is italic, never an accent-coloured run", () => {
     live.brand = ready();
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const em = Array.from(container.querySelectorAll("section[aria-labelledby='brand-board-h'] em"));
     expect(em.map((node) => node.textContent)).toEqual(["every trail."]);
     expect(em[0].className).toContain("italic");
@@ -126,7 +127,7 @@ describe("Brand kit page body", () => {
 
   test("palette tile text is black or white by contrast, never on a failing colour without a chip", () => {
     live.brand = ready();
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const rows = Array.from(container.querySelectorAll("[class*='grid-rows-[2fr'] > div"));
     expect(rows.length).toBe(5);
     rows.forEach((row) => expect(/text-(black|white)/.test(row.className)).toBe(true));
@@ -140,27 +141,27 @@ describe("Brand kit page body", () => {
       ground: colour("Paper", "#FAF7F2", "Background"),
       ink: colour("Charcoal", "#1F2937", "Text"),
     });
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const board = container.querySelector("section[aria-labelledby='brand-board-h']") as HTMLElement;
     expect(board.textContent).not.toContain("red");
   });
 
   test("an approved kit says nothing is published, and nothing else", () => {
     live.brand = ready("approved");
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText(/Approved\. Nothing is published yet\./)).toBeTruthy();
     expect(container.textContent).not.toMatch(/Studio now use|site, emails/);
   });
 
   test("no kit yet shows the empty state and no board", () => {
     live.brand = { state: "none" };
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.queryByRole("region", { name: "Brand board" })).toBeNull();
   });
 
   test("passes axe", async () => {
     live.brand = ready();
-    const { container } = render(<main><BrandKitPanel projectId={PROJECT} /></main>);
+    const { container } = render(<main><BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} /></main>);
     const results = await axe.run(container, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], rules: { "color-contrast": { enabled: false } } });
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
@@ -205,5 +206,21 @@ describe("Files reader meta line and copy text", () => {
     expect(memoryCopyText("Wren", "A hiking app.", ["Launch Sunday.", "Price $9."])).toBe(
       "# What Wren knows\n\nA hiking app.\n\n## Facts\n- Launch Sunday.\n- Price $9.\n",
     );
+  });
+});
+
+describe("client bundle boundary", () => {
+  test("no client module under components/workspace imports the next/font loaders as a value", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]));
+    const offenders = walk("components/workspace")
+      .filter((f) => /\.tsx?$/.test(f))
+      .filter((f) => {
+        const src = readFileSync(f, "utf8");
+        return src.startsWith('"use client"') && /import\s+\{[^}]*\}\s+from\s+"@\/components\/tenant-site\/fonts"/.test(src);
+      });
+    expect(offenders).toEqual([]);
   });
 });

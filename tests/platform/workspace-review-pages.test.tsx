@@ -68,6 +68,7 @@ vi.mock("@/components/platform/client-gates", async () => {
 vi.mock("next/font/google", async () => (await import("./tenant-site-helpers")).fontMockModule([]));
 
 const { BrandKitPanel } = await import("@/components/workspace/brand/BrandKitPanel");
+const { TENANT_FONTS } = await import("@/components/tenant-site/fonts");
 const { TeamHqPanel } = await import("@/components/workspace/team/TeamHqPanel");
 
 const PROJECT = "project1" as Id<"projects">;
@@ -178,18 +179,18 @@ describe("helpers", () => {
 
 describe("Brand kit states", () => {
   test("loading", () => {
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText("Loading your brand kit…")).toBeTruthy();
   });
   test("none", () => {
     live.brand = { state: "none" };
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText("Your brand kit will appear here once your team writes it.")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
   test("unavailable shows calm copy with no detail", () => {
     live.brand = { state: "unavailable" };
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText(/can't be shown right now/)).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
@@ -198,7 +199,7 @@ describe("Brand kit states", () => {
 describe("Brand kit ready", () => {
   test("shows the name, alternatives, tagline, look, voice, logo and hero art as text", () => {
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getAllByText("HydroTrail").length).toBeGreaterThan(0);
     expect(screen.getByText("Other names your team considered: TrailSip, Aquapath.")).toBeTruthy();
     expect(screen.getAllByText("Drink better on every trail.").length).toBeGreaterThan(0);
@@ -221,14 +222,14 @@ describe("Brand kit ready", () => {
 
   test("pattern and product moment show when present", () => {
     live.brand = brandReady({ pattern: "Contour lines", productMoment: { title: "First refill", body: "The map pins your spot." } });
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText("Contour lines")).toBeTruthy();
     expect(screen.getByText("First refill. The map pins your spot.")).toBeTruthy();
   });
 
   test("five colour cards each carry role, name, hex and use as text, and the swatch is hidden from assistive tech", () => {
     live.brand = brandReady();
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const items = within(screen.getByRole("list", { name: "Colours" })).getAllByRole("listitem");
     expect(items).toHaveLength(5);
     expect(items[0].textContent).toContain("Primary");
@@ -246,7 +247,7 @@ describe("Brand kit ready", () => {
     const bad = kit();
     bad.palette.primary = colour("Odd", 'red" onload="x', "Buttons");
     live.brand = { state: "ready", kit: bad, card: null };
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const first = within(screen.getByRole("list", { name: "Colours" })).getAllByRole("listitem")[0];
     expect(first.querySelector("[aria-hidden='true']")?.className).not.toContain("bg-(--t-primary)");
     expect(screen.getByText("Odd")).toBeTruthy();
@@ -256,7 +257,7 @@ describe("Brand kit ready", () => {
 
   test("server text is never parsed as HTML", () => {
     live.brand = brandReady({ name: "<b>Bold</b> <img src=x onerror=alert(1)>" });
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(Array.from(container.querySelectorAll("b")).some((b) => b.textContent === "Bold")).toBe(false);
     expect(container.querySelector("img")).toBeNull();
     expect(screen.getAllByText(/<b>Bold<\/b>/).length).toBeGreaterThan(0);
@@ -264,7 +265,7 @@ describe("Brand kit ready", () => {
 
   test("the headings run h2 under the page's h1 with no jumps", () => {
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)));
     expect(levels[0]).toBe(2);
     expect(levels.every((level, i) => i === 0 || level - levels[i - 1] <= 1)).toBe(true);
@@ -272,7 +273,7 @@ describe("Brand kit ready", () => {
 
   test("passes axe", async () => {
     live.brand = brandReady({ pattern: "Contour lines", productMoment: { title: "First refill", body: "Pins your spot." } });
-    const { container } = render(<BrandKitPanel projectId={PROJECT} />);
+    const { container } = render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const results = await axe.run(container, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] });
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
@@ -282,7 +283,7 @@ describe("Brand kit review card", () => {
   test("approve calls the mutation with the card's id and says what was read", async () => {
     decideMock.mockResolvedValue({ status: "approved", changed: true });
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const user = userEvent.setup();
     expect(screen.getByText("Read the brand kit details below. Approve them as they are, or ask your team for changes.")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Approve" }));
@@ -297,7 +298,7 @@ describe("Brand kit review card", () => {
       changeRound: { outcome: "free", changeRound: 1, freeRoundsLeft: 1, taskId: "task1" },
     });
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Ask for changes" }));
     expect(screen.getByText(/rewrite the brand kit details/)).toBeTruthy();
@@ -309,7 +310,7 @@ describe("Brand kit review card", () => {
 
   test("an approved card says nothing is published and offers no buttons", () => {
     live.brand = brandReady({}, card({ status: "approved" }));
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getByText(/Review status: Approved\. Nothing is published yet\./)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
   });
@@ -317,7 +318,7 @@ describe("Brand kit review card", () => {
   test("a paid round is explained in terms of the brand kit details and Ask for changes is not offered", () => {
     live.preview = { outcome: "spend_required", costCredits: 5 };
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(
       screen.getByText("Another round of changes costs 5 credits. Paying for changes isn't open yet, so you can approve these brand kit details as they are."),
     ).toBeTruthy();
@@ -327,14 +328,14 @@ describe("Brand kit review card", () => {
 
   test("the review card is its own h2 on this page, so the outline has no jump", () => {
     live.brand = brandReady();
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     const review = screen.getByRole("heading", { name: "Your review" });
     expect(review.tagName).toBe("H2");
   });
 
   test("a kit with no card still shows the kit", () => {
     live.brand = brandReady({}, null);
-    render(<BrandKitPanel projectId={PROJECT} />);
+    render(<BrandKitPanel projectId={PROJECT} fonts={TENANT_FONTS} />);
     expect(screen.getAllByText("HydroTrail").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
   });
