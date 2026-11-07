@@ -24,6 +24,8 @@ describe("WP79 additive C-DATA amendment", () => {
     expect(indexNames(schema.tables.enrollments)).toContain("by_state_and_nextStepAt");
     expect(indexNames(schema.tables.enrollments)).toContain("by_leadId");
     expect(indexNames(schema.tables.enrollments)).toContain("by_leadId_and_state");
+    expect(schema.tables.enrollments.validator.fields.contactRevokedAt.isOptional).toBe("optional");
+    expect(indexNames(schema.tables.enrollments)).toContain("by_leadId_and_contactRevokedAt");
     expect(indexNames(schema.tables.email_sends)).toEqual(expect.arrayContaining([
       "by_idempotencyKey",
       "by_enrollmentId",

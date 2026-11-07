@@ -108,11 +108,14 @@ export const growthTables = {
     sequenceId: v.id("sequences"),
     nextStepAt: v.number(),
     state: v.string(),
+    // Written only after every linked send has been checked for cancellation.
+    contactRevokedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
     .index("by_leadId", ["leadId"])
+    .index("by_leadId_and_contactRevokedAt", ["leadId", "contactRevokedAt"])
     .index("by_leadId_and_state", ["leadId", "state"])
     .index("by_state_and_nextStepAt", ["state", "nextStepAt"]),
 
