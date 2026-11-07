@@ -602,7 +602,7 @@ describe("WP77-S4 cards in the thread", () => {
     expect(cards.map((card) => (card.kind === "approval" ? card.reviewRoute : ""))).toEqual(["social", "social"]);
   });
 
-  test("a site version card names its version and links to the launch page; a sequence card names its title", async () => {
+  test("a site version card names its version and links to Team HQ (Launch plan is coming soon); a sequence card names its title", async () => {
     const seeded = await seed();
     const { reply } = await attack(seeded, "What can I approve?", [
       { tool: "approval_card", kind: "publish", subjectTable: "site_versions", subjectId: seeded.ids.own.readyVersionId },
@@ -611,9 +611,50 @@ describe("WP77-S4 cards in the thread", () => {
     const thread = await seeded.owner.query(api.workspace.chat.listWrenThread, { projectId: seeded.ids.own.projectId });
     const cards = thread.find((row) => row._id === reply._id)?.cards ?? [];
     expect(cards.map((card) => (card.kind === "approval" ? [card.subject, card.reviewRoute] : []))).toEqual([
-      ["Landing page version 1", "launch"],
+      ["Landing page version 1", "team"],
       ["Email sequence: Welcome", "email"],
     ]);
+  });
+
+  test("a documents card links where its artifact kind is reviewed, read from this business's row only", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const { reply } = await attack(seeded, "Can I post my social post?", [
+      { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: ids.own.postId },
+    ], true);
+    const otherOwnerId = (await t.run(async (ctx) => await ctx.db.get("projects", ids.other.projectId)))?.ownerId ?? ids.ownerId;
+    const [brandCard, blueprintCard, archivedCard, foreignDocCard] = await t.run(async (ctx) => {
+      const doc = async (kind: "brand_kit" | "blueprint", ownerId: typeof ids.ownerId, projectId: typeof ids.own.projectId, archivedAt?: number) =>
+        await ctx.db.insert("documents", {
+          ownerId, projectId, kind, format: "json", title: kind, body: "{}", createdAt: 3, updatedAt: 3,
+          ...(archivedAt === undefined ? {} : { archivedAt }),
+        });
+      const card = async (subjectId: string) => await ctx.db.insert("approvals", {
+        ownerId: ids.ownerId, projectId: ids.own.projectId, kind: "artifact_review", subjectTable: "documents", subjectId,
+        status: "pending", changeRound: 0n, createdAt: 4, updatedAt: 4,
+      });
+      return [
+        await card(await doc("brand_kit", ids.ownerId, ids.own.projectId)),
+        await card(await doc("blueprint", ids.ownerId, ids.own.projectId)),
+        await card(await doc("brand_kit", ids.ownerId, ids.own.projectId, 5)),
+        // A card on this business that names another business's document never reads its kind.
+        await card(await doc("brand_kit", otherOwnerId, ids.other.projectId)),
+      ];
+    });
+    // A reply shows at most WREN_CARDS_PER_TURN cards: two replies carry the four.
+    const { reply: second } = await attack(seeded, "What else can I approve?", [
+      { tool: "approval_card", kind: "send", subjectTable: "sequences", subjectId: ids.own.sequenceId },
+    ], true);
+    await t.run(async (ctx) => {
+      await ctx.db.patch("chat_messages", reply._id, { cardApprovalIds: [brandCard, blueprintCard] });
+      await ctx.db.patch("chat_messages", second._id, { cardApprovalIds: [archivedCard, foreignDocCard] });
+    });
+    const thread = await seeded.owner.query(api.workspace.chat.listWrenThread, { projectId: ids.own.projectId });
+    const routes = (id: typeof reply._id) =>
+      (thread.find((row) => row._id === id)?.cards ?? []).map((card) => (card.kind === "approval" ? card.reviewRoute : ""));
+    expect(routes(reply._id)).toEqual(["brand", "team"]);
+    // Archived, or another business's row: no kind is read, so the card falls back to Files.
+    expect(routes(second._id)).toEqual(["files", "files"]);
   });
 
   test("deciding a Wren card goes through S1 and never counts against the message cap", async () => {

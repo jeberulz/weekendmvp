@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
+import { MY_BUSINESSES_MAX } from "./access";
 
 const modules = import.meta.glob("/convex/**/*.ts");
 
@@ -238,5 +239,38 @@ describe("L1-C5b myBusinesses", () => {
     const { t, ids } = await seed(ON);
     await makeBusiness(t, ids.projectId, ids.ownerId, "PostureUp", 5);
     expect(await t.query(api.workspace.access.myBusinesses, {})).toEqual([]);
+  });
+  test(`lists at most MY_BUSINESSES_MAX (${MY_BUSINESSES_MAX}) businesses, the newest ones`, async () => {
+    const { t, owner, ids } = await seed(ON);
+    const total = MY_BUSINESSES_MAX + 2;
+    const made: Id<"projects">[] = [];
+    for (let i = 0; i < total; i += 1) {
+      const projectId = await t.run(async (ctx) => await ctx.db.insert("projects", {
+        ownerId: ids.ownerId, source: "own_idea", title: `Biz ${i}`, status: "draft", idempotencyKey: `cap-${i}`, createdAt: 1, updatedAt: 1,
+      }));
+      await makeBusiness(t, projectId, ids.ownerId, `Biz${i}`, 100 + i);
+      made.push(projectId);
+    }
+    const listed = await owner.query(api.workspace.access.myBusinesses, {});
+    expect(listed).toHaveLength(MY_BUSINESSES_MAX);
+    // Newest first: the two oldest are the ones left out.
+    expect(listed.map((row) => row.projectId)).toEqual([...made].reverse().slice(0, MY_BUSINESSES_MAX));
+    expect(listed.map((row) => row.projectId)).not.toContain(made[0]);
+    expect(listed.map((row) => row.projectId)).not.toContain(made[1]);
+  });
+
+  test("an unexpected fault is rethrown, not reported as an empty list", async () => {
+    const { t, owner, ids } = await seed(ON);
+    await makeBusiness(t, ids.projectId, ids.ownerId, "PostureUp", 5);
+    // A second singleton row makes C-OPS `.unique()` throw a plain Error, not an access denial.
+    await t.run(async (ctx) => {
+      const settings = await ctx.db.query("ops_settings").first();
+      if (settings === null) throw new Error("fixture missing ops_settings");
+      const { _id, _creationTime, ...row } = settings;
+      void _id;
+      void _creationTime;
+      await ctx.db.insert("ops_settings", row);
+    });
+    await expect(owner.query(api.workspace.access.myBusinesses, {})).rejects.toThrow(/unique|more than one|multiple/i);
   });
 });

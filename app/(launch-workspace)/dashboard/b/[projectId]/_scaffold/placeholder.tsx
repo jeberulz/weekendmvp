@@ -23,15 +23,15 @@ export const COMING_SOON_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
   billing: "Billing will show your plan and credits, and let you change plan.",
 };
 
-/** Pages that ship for L1 but still render this placeholder until their story lands. */
+/**
+ * Pages that ship for L1 but still render this placeholder until their story
+ * lands. A built page with no line here never renders the placeholder (Social,
+ * Email, Files and the dashboard have their own pages).
+ */
 export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
   team: "Team HQ will show your team and every draft waiting for your review.",
   brand: "Your brand kit will show here: its name, tagline, voice, colours and type, ready for your review.",
-  social: "Your launch-week social posts will show here, ready for your review.",
 };
-
-/** A built page with no line of its own: say what it is, not what it holds. */
-const DEFAULT_PENDING_LINE = "This page will show your business's work for this area.";
 
 /** The coming-soon sentence for a slug. */
 export function comingSoonLine(slug: WorkspaceRouteSlug): string {
@@ -98,12 +98,15 @@ export async function RoutePlaceholder({
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
   const route = workspaceRoute(slug);
+  const pendingLine = route.comingSoon ? undefined : PENDING_PAGE_LINES[slug];
+  // A page with no pending line of its own is not ready: it says so, like a coming-soon page.
+  const comingSoon = pendingLine === undefined;
   return (
     <PlaceholderBody
       eyebrow={project.name}
       heading={route.label}
-      comingSoon={route.comingSoon}
-      emptyState={route.comingSoon ? comingSoonLine(slug) : (PENDING_PAGE_LINES[slug] ?? DEFAULT_PENDING_LINE)}
+      comingSoon={comingSoon}
+      emptyState={pendingLine ?? comingSoonLine(slug)}
     />
   );
 }

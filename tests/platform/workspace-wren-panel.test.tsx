@@ -99,7 +99,7 @@ describe("WrenChatPanel", () => {
       cards: [
         {
           kind: "approval", approvalId: "a1" as Id<"approvals">, approvalKind: "publish", status: "pending",
-          title: "Publish this landing page version", subject: "Landing page version 3", reviewRoute: "launch",
+          title: "Publish this landing page version", subject: "Landing page version 3", reviewRoute: "team",
         },
         { kind: "explain", topic: "approvals" },
         { kind: "navigate", route: "brand" },
@@ -115,8 +115,8 @@ describe("WrenChatPanel", () => {
     expect(markup).toContain(
       "Approve<span class=\"sr-only\"> · Publish this landing page version, Landing page version 3</span>",
     );
-    expect(markup).toContain('href="/dashboard/b/p1/launch"');
-    expect(markup).toContain("Review it on the launch page");
+    expect(markup).toContain('href="/dashboard/b/p1/team"');
+    expect(markup).toContain("Review it in Team HQ");
     expect(markup).toContain('tabindex="-1"');
     // The only live region on a card is its decision outcome, inside the focusable status line.
     const live = [...document.querySelectorAll('[aria-label="Cards from Wren"] [aria-live], [aria-label="Cards from Wren"] [role="status"]')];

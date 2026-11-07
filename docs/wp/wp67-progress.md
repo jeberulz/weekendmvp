@@ -426,6 +426,11 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Rulings "L1 Monday cut", "L1 live test launches" and "D26 timing" (`docs/wp/RULINGS.md`).
 - Plan, scope, work left by lane and the L1 gate: `docs/wp/l1-release-plan.md`.
 - Codex 13 (recovery cron) and Codex 18 (launch sweep) are ship gates for Monday.
+- Known gaps:
+  - `brandKitDraft` and `blueprintDraft` (`convex/growth/drafts/`) need the `ai` feature as well as the workspace,
+    the same as `emailSequenceDraft`. With the AI kill switch on, the Brand kit and blueprint views read as unavailable
+    even though the drafts are already written. This is a deliberate match with Email, not a bug. Revisit it if a
+    read-only view should work during an AI pause.
 
 ## 2026-11-07 - L1-C1 and L1-C6 built
 

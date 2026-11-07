@@ -88,6 +88,7 @@ const reviewRouteValidator = v.union(
   v.literal(APPROVAL_REVIEW_ROUTES[1]),
   v.literal(APPROVAL_REVIEW_ROUTES[2]),
   v.literal(APPROVAL_REVIEW_ROUTES[3]),
+  v.literal(APPROVAL_REVIEW_ROUTES[4]),
 );
 
 /** What the thread shows for one card. Built by the server; no model text. */
@@ -325,6 +326,18 @@ async function subjectFacts(ctx: QueryCtx, business: Business, approval: Doc<"ap
   }
 }
 
+/**
+ * The artifact kind of a `documents` subject, for its review link: one read
+ * by id, and only this business's live row counts (null otherwise).
+ */
+async function subjectDocumentKind(ctx: QueryCtx, business: Business, approval: Doc<"approvals">): Promise<string | null> {
+  if (approval.subjectTable !== "documents") return null;
+  const id = ctx.db.normalizeId("documents", approval.subjectId);
+  const row = id === null ? null : await ctx.db.get("documents", id);
+  if (row === null || row.ownerId !== business.ownerId || row.projectId !== business.projectId) return null;
+  return row.archivedAt === undefined ? row.kind : null;
+}
+
 /** The thread's view of a reply's approval cards: only cards of this business, in order. */
 export async function approvalCardViews(
   ctx: QueryCtx,
@@ -342,7 +355,7 @@ export async function approvalCardViews(
       status: approval.status,
       title: approvalCardTitle(approval.kind, approval.subjectTable),
       subject: approvalSubjectLine(await subjectFacts(ctx, business, approval)),
-      reviewRoute: approvalReviewRoute(approval.subjectTable),
+      reviewRoute: approvalReviewRoute(approval.subjectTable, await subjectDocumentKind(ctx, business, approval)),
     });
   }
   return views;

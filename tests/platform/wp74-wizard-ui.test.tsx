@@ -201,6 +201,10 @@ describe("WP74-S1/S4 Meet your co-founder", () => {
     const links = within(container).getAllByRole("link");
     expect(links[links.length - 1]).toBe(link);
     expect(screen.getByText("Team section").compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The line under it claims nothing about the launch's state.
+    const note = link.nextElementSibling;
+    expect(note?.textContent).toBe("Your workspace is where you and Wren work on HydroTrail.");
+    expect(container.textContent).not.toMatch(/carries on|launch is|launched/i);
     await expectNoAxeViolations(container);
   });
 });

@@ -348,15 +348,58 @@ export function approvalSubjectLine(facts: ApprovalSubjectFacts): string {
   }
 }
 
-/** Where the founder reviews an approval card's subject (a workspace route key). */
-export const APPROVAL_REVIEW_ROUTES = ["launch", "email", "social", "files"] as const;
+/**
+ * Where the founder reviews an approval card's subject (a workspace route
+ * key). Every key is a built page, never a coming-soon one
+ * (`tests/platform/workspace-wren-cards.test.ts` checks it).
+ */
+export const APPROVAL_REVIEW_ROUTES = ["team", "brand", "email", "social", "files"] as const;
 export type ApprovalReviewRoute = (typeof APPROVAL_REVIEW_ROUTES)[number];
 
-/** The review page for a subject table: the launch plan for the site, email, social; files otherwise. */
-export function approvalReviewRoute(subjectTable: string): ApprovalReviewRoute {
+/**
+ * Where a crew artifact is reviewed, by its document kind: the same answer as
+ * `REVIEW_TARGETS` in `lib/workspace/reviews.ts` (which `pendingReviews`
+ * uses). It is a closed switch over exact strings, not an import, because this
+ * file may import only the Wren contracts (`tests/security/wp77-wren-tools-cards-only.test.mjs`);
+ * `tests/platform/workspace-wren-cards.test.ts` checks it matches
+ * `REVIEW_TARGETS` for every artifact kind. Null for anything else.
+ */
+function documentReviewRoute(kind: string): ApprovalReviewRoute | null {
+  switch (kind) {
+    case "brand_kit":
+      return "brand";
+    case "email_sequence":
+      return "email";
+    case "social_pack":
+      return "social";
+    case "blueprint":
+    case "roster_plan":
+    case "landing_spec":
+    case "seo_pack":
+    case "launch_plan":
+    case "ads_drafts":
+    case "build_pack":
+      return "team";
+    default:
+      return null;
+  }
+}
+
+/**
+ * The review page for a subject. A `documents` card goes where its artifact
+ * kind is reviewed (`documentReviewRoute`), so a brand kit card opens the
+ * Brand kit page. `documentKind` is the subject row's kind, read by the server
+ * from this business's live row (null when it is gone, archived, not this
+ * business's, or not an artifact: Files then). A landing page version is
+ * reviewed on Team HQ with the landing page; email and social have their own
+ * pages; anything else goes to Files.
+ */
+export function approvalReviewRoute(subjectTable: string, documentKind: string | null = null): ApprovalReviewRoute {
   switch (subjectTable) {
+    case "documents":
+      return (documentKind === null ? null : documentReviewRoute(documentKind)) ?? "files";
     case "site_versions":
-      return "launch";
+      return "team";
     case "sequences":
     case "sequence_steps":
       return "email";
@@ -368,7 +411,8 @@ export function approvalReviewRoute(subjectTable: string): ApprovalReviewRoute {
 }
 
 export const APPROVAL_REVIEW_LABELS: Readonly<Record<ApprovalReviewRoute, string>> = {
-  launch: "Review it on the launch page",
+  team: "Review it in Team HQ",
+  brand: "Review it in the brand kit",
   email: "Review it in email",
   social: "Review it in social",
   files: "Review it in files",
