@@ -388,6 +388,13 @@ describe("L1 UI fidelity: Meet your co-founder", () => {
 describe("WP74-S1 wizard error copy", () => {
   test("maps guard codes to plain messages and never leaks raw errors", () => {
     expect(wizardErrorMessage(new ConvexError({ code: "RATE_LIMITED" }))).toMatch(/Try again tomorrow/);
+    // What `startOrResume` really throws once the 3-a-day wizardStart allowance is used.
+    expect(wizardErrorMessage(new ConvexError({ kind: "RateLimited", name: "wizardStart", retryAfter: 14_781_540 })))
+      .toBe("You have started a lot of builds today. Try again in about 5 hours.");
+    expect(wizardErrorMessage(new ConvexError({ kind: "RateLimited", name: "wizardStart", retryAfter: 90_000 })))
+      .toBe("You have started a lot of builds today. Try again in about an hour.");
+    expect(wizardErrorMessage(new ConvexError({ kind: "RateLimited", name: "wizardStart" })))
+      .toBe("You have started a lot of builds today. Try again later.");
     expect(wizardErrorMessage(new ConvexError({ code: "INVALID_ANSWER", message: "name.chosen: Too big" })))
       .toBe("That answer cannot be saved (name.chosen: Too big).");
     expect(wizardErrorMessage(new Error("stack trace"))).toBe("Something went wrong. Try again.");
