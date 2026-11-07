@@ -36,7 +36,10 @@ export const EMAIL_NONE_COPY = "Your email sequence is on its way. Your team wri
 export const EMAIL_UNAVAILABLE_COPY = "Your email sequence can't be shown right now. Check back in a little while.";
 export const EMAIL_APPROVED_NOTE = "Nothing is sent yet.";
 export const EMAIL_CHANGES_PENDING_COPY = "Your team is working on your changes.";
-export const EMAIL_CLOSED_COPY = "This review closed without a decision. Your emails stay as they are.";
+/** The line under a closed (expired or cancelled) review, for the artifact's plural noun. */
+export function closedCopy(noun: string = "emails"): string {
+  return `This review closed without a decision. Your ${noun} stay as they are.`;
+}
 export const EMAIL_MERGE_TAG = EMAIL_MERGE_TAGS[0];
 
 /** When an email goes: the welcome at once, the rest after the previous email (days when whole). */
@@ -112,10 +115,14 @@ const creditsText = (credits: number): string => `${credits} ${credits === 1 ? "
  * A paid round is not open yet (no surface raises or pays a `spend` card), so
  * the page says the cost and what the founder can still do, and never offers it.
  */
-export function spendRoundCopy(costCredits: number | undefined, where: "pending" | "changes_requested" | "result"): string {
+export function spendRoundCopy(
+  costCredits: number | undefined,
+  where: "pending" | "changes_requested" | "result",
+  noun: string = "emails",
+): string {
   const cost = costCredits === undefined ? "credits" : creditsText(costCredits);
   const next = where === "changes_requested" ? "The next" : "Another";
-  const after = where === "pending" ? "so you can approve these emails as they are" : "so your emails stay as they are";
+  const after = where === "pending" ? `so you can approve these ${noun} as they are` : `so your ${noun} stay as they are`;
   return `${next} round of changes costs ${cost}. Paying for changes isn't open yet, ${after}.`;
 }
 
@@ -135,7 +142,11 @@ export function canOfferAsk(state: PreviewState): boolean {
 }
 
 /** The line under the review status that comes from the preview (null: nothing to add). */
-export function previewLine(state: PreviewState, cardStatus: "pending" | "changes_requested"): string | null {
+export function previewLine(
+  state: PreviewState,
+  cardStatus: "pending" | "changes_requested",
+  noun: string = "emails",
+): string | null {
   if (state.kind !== "ready") return null;
   const { preview } = state;
   switch (preview.outcome) {
@@ -144,7 +155,7 @@ export function previewLine(state: PreviewState, cardStatus: "pending" | "change
       return cardStatus === "changes_requested" ? `You can ask for changes again. ${left}`.trim() : left || null;
     }
     case "spend_required":
-      return spendRoundCopy(preview.costCredits, cardStatus);
+      return spendRoundCopy(preview.costCredits, cardStatus, noun);
     case "not_available":
       return notAvailableCopy(preview.reason);
   }
@@ -160,7 +171,12 @@ export function previewIsBusy(state: PreviewState): boolean {
  * change-round answer the decision's own status speaks (an expired card, or a
  * re-ask that changed nothing because the team is already on it).
  */
-export function changesOutcomeCopy(answer: ChangeRoundAnswer | undefined, status: string, changed: boolean): string {
+export function changesOutcomeCopy(
+  answer: ChangeRoundAnswer | undefined,
+  status: string,
+  changed: boolean,
+  noun: string = "emails",
+): string {
   if (answer === undefined) {
     if (!changed && status === "changes_requested") {
       return "Your team is still working on your earlier changes. This note wasn't sent; try again when they're done.";
@@ -169,9 +185,9 @@ export function changesOutcomeCopy(answer: ChangeRoundAnswer | undefined, status
   }
   switch (answer.outcome) {
     case "free":
-      return "Changes requested. Your team is rewriting the emails.";
+      return `Changes requested. Your team is rewriting the ${noun}.`;
     case "spend_required":
-      return spendRoundCopy(answer.costCredits, "result");
+      return spendRoundCopy(answer.costCredits, "result", noun);
     case "not_available":
       return notAvailableCopy(answer.reason);
   }
@@ -184,9 +200,9 @@ export function keepsFormOpen(answer: ChangeRoundAnswer | undefined, status: str
 }
 
 /** The line when a decision is refused; null falls through to the shared card copy. */
-export function emailDecisionErrorCopy(code: string | null, rateLimited: boolean): string | null {
+export function emailDecisionErrorCopy(code: string | null, rateLimited: boolean, noun: string = "emails"): string | null {
   if (rateLimited) return "You've made a lot of changes this hour. Try again later.";
-  if (code !== null && CHANGED_CODES.has(code)) return "These emails changed since this was raised. Look at the newest version, then decide again.";
+  if (code !== null && CHANGED_CODES.has(code)) return `These ${noun} changed since this was raised. Look at the newest version, then decide again.`;
   if (code === "APPROVAL_INVALID_NOTE") return `Keep your note under ${NOTE_LIMIT_TEXT} characters.`;
   return null;
 }
