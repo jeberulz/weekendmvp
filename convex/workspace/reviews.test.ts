@@ -168,7 +168,7 @@ describe("L1-C6 pendingReviews", () => {
     expect(blueprintView).toMatchObject({ state: "ready", blueprint: { validated: true }, card: { status: "pending" } });
     if (blueprintView.state !== "ready") throw new Error("no blueprint");
     expect(blueprintView.blueprint.features.length).toBe(hydrotrailBlueprint.features.length);
-  });
+  }, 20_000); // The whole fixture launch runs here; under the full suite it can pass 5 s.
 
   test("only pending artifact_review cards on this business's live documents", async () => {
     const w = await world();

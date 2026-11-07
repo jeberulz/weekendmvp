@@ -128,7 +128,8 @@ function trimWord(word: string): string {
  * cut never lands mid-word or on a hyphen), at most `maxWords` words and the
  * business-name limit, stopping before the phrase turns into an explanation
  * ("for …", "that …"), and never ending on an article, conjunction or
- * preposition. A single word longer than the limit is cut and trimmed. Empty
+ * preposition, and never starting on "&" or "+". A single word longer than
+ * the limit is cut and trimmed. Empty
  * input gives the fallback name.
  */
 export function shortBusinessName(raw: string, maxWords: number = SUGGESTED_NAME_MAX_WORDS): string {
@@ -141,6 +142,8 @@ export function shortBusinessName(raw: string, maxWords: number = SUGGESTED_NAME
   for (const word of words) {
     const lower = word.toLowerCase();
     if (picked.length >= maxWords) break;
+    // A name never starts on "&" or "+".
+    if (picked.length === 0 && (word === "&" || word === "+")) continue;
     if (picked.length >= 1 && CLAUSE_STARTERS.has(lower)) break;
     if (picked.length >= 2 && PHRASE_BREAKS.has(lower)) break;
     if ([...picked, word].join(" ").length > WIZARD_LIMITS.businessName) break;
@@ -163,11 +166,19 @@ export function nameFromTitle(title: string): string {
   return shortBusinessName(head.replace(/^(an?)\s+/iu, ""));
 }
 
+/**
+ * "I want to", "I'd like to", "I’m going to", "I wanna" … : how an own idea
+ * often starts. Straight and curly apostrophes both count.
+ */
+const OWN_IDEA_LEAD_IN =
+  /^\s*i(?:\s+want\s+to|\s+wanna|\s+plan\s+to|(?:\s+would|\s*['’]d)\s+like\s+to|(?:\s+am|\s*['’]m)\s+going\s+to)\s+/iu;
+
 /** A short name from an own idea's first words: "A packing list that adapts to the forecast" → "Packing List". */
 export function nameFromOwnIdea(text: string): string {
   const head = text.split(/[.!?\n]|[,;:(]|\s[–—-]\s/u, 1)[0] ?? text;
   const trimmed = head
-    .replace(/^\s*(i\s+(want|would\s+like|'d\s+like|wanna|plan|am\s+going)\s+to\s+)?(build|make|create|launch|start)\s+/iu, "")
+    .replace(OWN_IDEA_LEAD_IN, "")
+    .replace(/^\s*(build|make|create|launch|start)\s+/iu, "")
     .replace(/^\s*(an?|the)\s+/iu, "");
   return shortBusinessName(trimmed, 3);
 }

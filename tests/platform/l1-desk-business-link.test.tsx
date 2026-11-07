@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import type { ReactNode } from "react";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { FunctionReference } from "convex/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -50,6 +51,13 @@ afterEach(() => {
   convex.fail = false;
 });
 
+/** The mobile bottom bar's Account button (the one that opens the sheet dialog). */
+const accountTrigger = () => {
+  const trigger = screen.getAllByRole("button", { name: "Account" }).find((button) => button.getAttribute("aria-haspopup") === "dialog");
+  if (trigger === undefined) throw new Error("no Account sheet trigger");
+  return trigger;
+};
+
 const shell = () => renderToStaticMarkup(<WorkspaceShell>Page</WorkspaceShell>);
 const businessLinks = (html: string) => [...html.matchAll(/<a [^>]*href="(\/dashboard\/b\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g)]
   .map((match) => ({ href: match[1], text: match[2].replace(/<[^>]+>/g, "").trim() }));
@@ -80,6 +88,33 @@ describe("L1-C5b desk link into the business workspace", () => {
     quiet.mockRestore();
     expect(container.textContent).toContain("Page");
     expect(container.querySelector('a[href^="/dashboard/b/"]')).toBeNull();
+  });
+
+  test("the mobile Account sheet lists the same links, after Starter Kit, and none without a business", async () => {
+    const user = userEvent.setup();
+    convex.businesses = [{ projectId: "proj1", name: "PostureUp" }, { projectId: "a b/c", name: "SipLine" }];
+    render(<WorkspaceShell>Page</WorkspaceShell>);
+    await user.click(accountTrigger());
+    const sheet = screen.getByRole("dialog", { name: "Account" });
+    const links = within(sheet).getAllByRole("link");
+    const labels = links.map((link) => link.textContent?.trim());
+    expect(labels.slice(-2)).toEqual(["Your business: PostureUp", "Your business: SipLine"]);
+    expect(labels.indexOf("Starter Kit")).toBe(labels.length - 3);
+    expect(links.slice(-2).map((link) => link.getAttribute("href"))).toEqual(["/dashboard/b/proj1", "/dashboard/b/a%20b%2Fc"]);
+    // Choosing one closes the sheet (each link sits in a SheetClose). jsdom cannot navigate, so the click's default is stopped.
+    const stopNavigation = (event: MouseEvent) => event.preventDefault();
+    window.addEventListener("click", stopNavigation);
+    await user.click(within(sheet).getByRole("link", { name: "Your business: PostureUp" }));
+    window.removeEventListener("click", stopNavigation);
+    expect(screen.queryByRole("dialog", { name: "Account" })).toBeNull();
+    cleanup();
+
+    convex.businesses = [];
+    render(<WorkspaceShell>Page</WorkspaceShell>);
+    await user.click(accountTrigger());
+    const empty = screen.getByRole("dialog", { name: "Account" });
+    expect(within(empty).getByRole("link", { name: "Starter Kit" })).toBeTruthy();
+    expect(within(empty).queryByRole("link", { name: /Your business/ })).toBeNull();
   });
 
   test("helpers word and encode the link", () => {

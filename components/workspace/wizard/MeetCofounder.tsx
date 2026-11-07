@@ -68,7 +68,7 @@ export function MeetCofounder({ answers, business, headingRef, team }: MeetCofou
           <ArrowRight aria-hidden="true" className="size-4" />
         </Link>
         <p className="text-[13px] text-home-ink-2">
-          Your launch carries on there with {name} and the team.
+          Your workspace is where you and {name} work on {business.name}.
         </p>
       </div>
     </section>

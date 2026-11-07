@@ -83,11 +83,31 @@ describe("L1-C2 placeholder pages", () => {
     expect((COMING_SOON_LINES[slug] ?? "").split(/[.!?](\s|$)/).filter((part) => part.trim().length > 1)).toHaveLength(1);
   });
 
-  test.each(["team", "brand", "social"] as const)("%s is truthful: no coming soon, no state it does not check", async (slug) => {
+  test.each(["team", "brand"] as const)("%s is truthful: no coming soon, no state it does not check", async (slug) => {
     const body = await page(slug);
     expect(body).not.toContain("Coming soon");
     expect(body).toContain(PENDING_PAGE_LINES[slug] ?? "missing");
     for (const claim of STATE_CLAIMS) expect(body).not.toMatch(claim);
+  });
+
+  test("exactly the built pages that still render the placeholder have a pending line", () => {
+    const usesPlaceholder = BUILT.filter((slug) => slug !== "").filter((slug) =>
+      readFileSync(path.join(routeRoot, slug, "page.tsx"), "utf8").includes("<RoutePlaceholder"));
+    expect(Object.keys(PENDING_PAGE_LINES).sort()).toEqual([...usesPlaceholder].sort());
+  });
+
+  test("Social is its real page (the pack panel), not the placeholder", () => {
+    const social = readFileSync(path.join(routeRoot, "social", "page.tsx"), "utf8");
+    expect(social).toContain("<SocialPackPanel");
+    expect(social).not.toContain("RoutePlaceholder");
+    expect(social).not.toContain("Coming soon");
+  });
+
+  test("a built page with no pending line says it is not ready rather than inventing a line", async () => {
+    // Email has its own page, so it has no pending line; rendered through the placeholder it falls back to coming soon.
+    const body = await page("email");
+    expect(body).toContain("Coming soon");
+    expect(body).toContain("Email is not ready yet.");
   });
 
   test("no placeholder line claims a state", () => {

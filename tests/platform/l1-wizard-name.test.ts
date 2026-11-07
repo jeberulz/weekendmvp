@@ -67,9 +67,37 @@ describe("L1-C7 nameFromOwnIdea", () => {
     ["Tutoring marketplace. Parents book local tutors near them", "Tutoring Marketplace"],
     ["help freelancers chase late invoices", "Help Freelancers Chase"],
     ["Dog walking app for busy city workers", "Dog Walking App"],
+    // Lead-ins are stripped, straight or curly apostrophe, with or without a build verb.
+    ["I'd like to build an app that helps nurses swap shifts", "App"],
+    ["I’d like to build a recipe swap site for neighbours", "Recipe Swap Site"],
+    ["I'd like to help freelancers chase late invoices", "Help Freelancers Chase"],
+    ["I would like to make a habit tracker", "Habit Tracker"],
+    ["I'm going to make a recipe swap site for neighbours", "Recipe Swap Site"],
+    ["I’m going to launch a podcast clipping service", "Podcast Clipping Service"],
+    ["I am going to create a study planner", "Study Planner"],
+    ["I wanna build a dog walking app", "Dog Walking App"],
+    ["i wanna start a podcast clipping service", "Podcast Clipping Service"],
+    ["I wanna help parents swap baby gear", "Help Parents Swap"],
+    ["I plan to build a gym buddy finder", "Gym Buddy Finder"],
+    // A leading "&" or "+" is dropped.
+    ["& friends trip planner", "Friends Trip Planner"],
+    ["+ more budget tracker", "More Budget Tracker"],
   ])("%j → %j", (text, expected) => {
     const name = nameFromOwnIdea(text);
     expect(name).toBe(expected);
+    expectClean(name);
+  });
+});
+
+describe("L1-C7 shortBusinessName never starts on & or +", () => {
+  test.each([
+    ["& Co Studio", "Co Studio"],
+    ["+ + Plus tracker", "Plus Tracker"],
+    ["&", "Weekend Launch"],
+  ])("%j → %j", (text, expected) => {
+    const name = shortBusinessName(text);
+    expect(name).toBe(expected);
+    expect(name).not.toMatch(/^[&+]/u);
     expectClean(name);
   });
 });

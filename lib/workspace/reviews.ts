@@ -2,8 +2,11 @@
  * L1-C6 — where each crew artifact is reviewed, for the "Waiting on you" list
  * (`api.workspace.reviews.pendingReviews`). Pure, relative imports only: the
  * Convex bundler loads this file, so it cannot import `lib/workspace/routes.ts`
- * (which uses the `@/` alias). `tests/platform/l1-review-targets.test.ts`
- * checks every slug here against the route manifest.
+ * (which uses the `@/` alias). `tests/platform/l1-coming-soon.test.tsx`
+ * checks every slug here against the route manifest. Wren's approval cards
+ * mirror this map in `lib/workspace/wrenCards.ts` (`documentReviewRoute`; that
+ * file may not import it), and `tests/platform/workspace-wren-cards.test.ts`
+ * keeps the two equal.
  *
  * Only pages that ship a review (Brand kit, Email, Social) get their own
  * route. Everything else, the blueprint included, is reviewed on Team HQ,
