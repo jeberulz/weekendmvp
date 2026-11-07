@@ -33,7 +33,10 @@ say "Coming soon" for each, so nothing looks broken.
 | WP76-S2a | Social pack generator | Built; review passed; minors being fixed, then PR |
 | WP76-S2b | Social page | As specified in `docs/wp/wp76-stories.md`; kit styles only (D26 later) |
 | L1-C1 | Brand kit page (read-only) | Reads the newest brand kit document and its card; same card flow as the Email page |
-| L1-C2 | "Coming soon" in the nav | Unbuilt rows say so in words, not by colour alone |
+| L1-C2 | Honest "coming soon" | Unbuilt rows and their placeholder pages say "Coming soon" in words. Today's placeholder lines mislead: Team HQ says "Nobody needs you right now" while reviews are waiting, and Brand kit says "Nothing here yet" after the kit exists |
+| L1-C5 | A way into the workspace | "Meet your co-founder" (`/start/...`) ends with no link or button to `/dashboard/b/{id}`: a dead end (found in the local walkthrough) |
+| L1-C6 | "Waiting on you" list and a blueprint view | The crew's review cards only reach the chat when a Wren reply attaches them, so the blueprint and brand kit cards are never shown. Team HQ lists every pending review card (approve / ask for changes, or a link to its page), and the blueprint gets a read-only view to review |
+| L1-C7 | Wizard name suggestion | The suggested business name is the idea title cut mid-word ("Gamified posture tracking app for phone-") |
 | L1-C3 | Local fixture walkthrough | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
 | L1-C4 | Five live test launches | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 
@@ -64,6 +67,18 @@ say "Coming soon" for each, so nothing looks broken.
 - Nothing sends, posts or publishes: the kill switches above are on.
 
 The full G2 (20 live launches) runs during the beta, before L2.
+
+## Local walkthrough findings (2026-11-07, fixture mode)
+
+The whole journey ran on a disposable local backend: sign-in, the wizard, business creation, the team, and a launch
+that wrote the blueprint, team, brand kit and email with three pending review cards; the Email page's Approve worked
+with focus return and the live message. The blockers found are L1-C2, L1-C5, L1-C6 and L1-C7 above. Also:
+
+- With no `idea_crew_seeds` row for an idea, the wizard's blueprint suggestion is generic ("The one person who feels
+  this problem most"). Live launches personalise the blueprint, but the wizard step reads boilerplate for every idea
+  that has no seed. Decide before Monday: seed the ideas we invite people to, or accept it.
+- The Email page says "Sequence status: Draft" right after the founder approves (the row stays draft until WP79
+  activates it). Reword to say it is approved and not sending yet.
 
 ## Known gaps accepted for L1
 
