@@ -4,7 +4,9 @@
  * and from the member dashboard, not only from the homepage. Both entries sit
  * behind the launch-workspace flag (`buildCtaVisible`); off, the pages render
  * as before. Signed in, the links go straight to `/start/*`; the anonymous
- * idea-page CTA still goes through sign-up.
+ * idea-page CTA still goes through sign-up. In `allowlist` mode a signed-out
+ * visitor sees the CTA too (owner's call (b)), and a new account that is not
+ * invited gets `NotInvited` at `/start` instead of a 404.
  */
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
@@ -13,6 +15,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { axe } from "vitest-axe";
 
 import dashboardPageSource from "../../app/dashboard/page.tsx?raw";
+import startIdeaSource from "../../app/start/[ideaSlug]/page.tsx?raw";
+import startOwnSource from "../../app/start/own/page.tsx?raw";
 import ideaSource from "../../app/ideas/[slug]/page.tsx?raw";
 
 const track = vi.hoisted(() => vi.fn());
@@ -24,7 +28,12 @@ vi.mock("../../components/live/WorkshopDashboardCards", () => ({ WorkshopDashboa
 vi.mock("../../components/platform/home/NextStepCard", () => ({ NextStepCard: () => null }));
 vi.mock("../../components/platform/home/PickedForYou", () => ({ PickedForYou: () => null }));
 vi.mock("../../components/platform/home/HomeRail", () => ({ HomeRail: () => null }));
+// The public chrome (MegaNav, footer) is covered elsewhere; keep the landmark.
+vi.mock("../../components/public/PublicShell", () => ({
+  PublicShell: ({ children }: { children: React.ReactNode }) => <main id="main">{children}</main>,
+}));
 
+import { NotInvited } from "../../app/start/NotInvited";
 import { DashboardHome } from "../../components/platform/home/DashboardHome";
 import { StartBuildingCard } from "../../components/platform/home/StartBuildingCard";
 import { BuildIdeaCta } from "../../components/workspace/BuildIdeaCta";
@@ -152,5 +161,36 @@ describe("dashboard", () => {
     expect(dashboardPageSource).toContain(
       "<DashboardHome editorial={editorial} nowMs={nowMs} startBuilding={startBuilding} />",
     );
+  });
+});
+
+describe("not in the beta yet (/start)", () => {
+  test("both wizard routes render NotInvited for a not-invited founder, before any wizard JSX", () => {
+    for (const source of [startIdeaSource, startOwnSource]) {
+      const gate = source.indexOf('access.kind === "not-invited"');
+      expect(gate).toBeGreaterThan(-1);
+      expect(gate).toBeLessThan(source.indexOf("<WizardPage"));
+    }
+    expect(startIdeaSource).toContain("<NotInvited ideaSlug={ideaSlug} />");
+    expect(startOwnSource).toContain("<NotInvited ideaSlug={null} />");
+  });
+
+  test("from an idea: one h1, a way back to that idea, the library and the dashboard; passes axe", async () => {
+    const { container } = render(<NotInvited ideaSlug="example-idea" />);
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("You're not in the beta yet.");
+    const hrefs = screen.getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")]);
+    expect(hrefs).toEqual([
+      ["Back to the idea", "/ideas/example-idea"],
+      ["Browse all ideas", "/startup-ideas"],
+      ["Go to your dashboard", "/dashboard"],
+    ]);
+    expect((await axe(container, AXE)).violations).toEqual([]);
+  });
+
+  test("own idea: no idea link, and it promises no waitlist or email", () => {
+    const html = renderToStaticMarkup(<NotInvited ideaSlug={null} />);
+    expect(html).not.toContain("Back to the idea");
+    expect(html).not.toMatch(/waitlist|we.ll email|we will email/i);
   });
 });

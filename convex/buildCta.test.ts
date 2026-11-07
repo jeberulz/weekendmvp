@@ -48,14 +48,16 @@ describe("WP74-S5 buildCtaVisible", () => {
     await expect(owner.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(false);
   });
 
-  test("allowlist: only a signed-in allowlisted owner sees it", async () => {
+  // L1-C9 (owner's call, 2026-11-07): an anonymous visitor cannot be matched
+  // to the allowlist, so they see the CTA and find out at `/start`.
+  test("allowlist: a signed-out visitor and a signed-in allowlisted owner see it, a signed-in stranger does not", async () => {
     const { t, owner, stranger } = await seed();
-    await expect(t.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(false);
+    await expect(t.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(true);
     await expect(stranger.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(false);
     await expect(owner.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(true);
   });
 
-  test("allowlist with an empty list shows no one", async () => {
+  test("allowlist with an empty list shows no signed-in owner", async () => {
     const { owner } = await seed({ inCohort: false });
     await expect(owner.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(false);
   });
@@ -64,5 +66,23 @@ describe("WP74-S5 buildCtaVisible", () => {
     const { t, stranger } = await seed({ cohortMode: "open", inCohort: false });
     await expect(t.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(true);
     await expect(stranger.query(api.buildCta.buildCtaVisible, {})).resolves.toBe(true);
+  });
+});
+
+describe("L1-C9 awaitingInvite", () => {
+  test("true only for a signed-in owner off the allowlist while the workspace is on", async () => {
+    const { t, owner, stranger } = await seed();
+    await expect(stranger.query(api.buildCta.awaitingInvite, {})).resolves.toBe(true);
+    await expect(owner.query(api.buildCta.awaitingInvite, {})).resolves.toBe(false);
+    await expect(t.query(api.buildCta.awaitingInvite, {})).resolves.toBe(false);
+  });
+
+  test("false when the workspace is off, the cohort is open, or there are no settings", async () => {
+    const off = await seed({ workspaceEnabled: false });
+    await expect(off.stranger.query(api.buildCta.awaitingInvite, {})).resolves.toBe(false);
+    const open = await seed({ cohortMode: "open" });
+    await expect(open.stranger.query(api.buildCta.awaitingInvite, {})).resolves.toBe(false);
+    const bare = convexTest(schema, modules);
+    await expect(bare.query(api.buildCta.awaitingInvite, {})).resolves.toBe(false);
   });
 });
