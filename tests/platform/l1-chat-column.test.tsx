@@ -98,8 +98,8 @@ describe("the partner name flows through the chat", () => {
     expect(within(aside).getByPlaceholderText("Message Sam…")).toBeTruthy();
     const message = aside.querySelector('[data-message="wren"]');
     expect(message?.textContent).toContain("Sam");
-    // The mark's letter is the first letter of the name.
-    expect(message?.querySelector('[aria-hidden="true"]')?.textContent).toBe("S");
+    // The picture belongs to the role: a renamed co-founder keeps the crew lead's portrait, hidden from assistive tech.
+    expect(message?.querySelector('[aria-hidden="true"] img')?.getAttribute("src")).toBe("/image/crew/lead-wren.webp");
     expect(aside.textContent).not.toContain("Wren");
     expect(await violations()).toEqual([]);
   });
@@ -207,6 +207,7 @@ describe("the column below xl: a toggle and a drawer", () => {
 
 describe("the frame has three regions and one main", () => {
   test("nav, then the single main, then the labelled aside, and the skip link still targets main", () => {
+    // React hoists a preload for each avatar image; Next.js puts it in <head>. Read the body markup only.
     const markup = renderToStaticMarkup(
       <WorkspaceFrame
         projectId="p1"
@@ -216,7 +217,7 @@ describe("the frame has three regions and one main", () => {
       >
         <main id="workspace-main" tabIndex={-1}>Page</main>
       </WorkspaceFrame>,
-    );
+    ).replace(/^(<link rel="preload" as="image"[^>]*\/>)+/u, "");
     expect(markup.match(/<main\b/g)).toHaveLength(1);
     expect(markup.match(/<aside\b/g)).toHaveLength(1);
     expect(markup.match(/<nav\b/g)).toHaveLength(1);
@@ -253,6 +254,7 @@ describe("the Team HQ badge", () => {
   });
 
   test("sits inside the Team HQ row of the nav, and only that row", () => {
+    // React hoists a preload for each avatar image; Next.js puts it in <head>. Read the body markup only.
     const markup = renderToStaticMarkup(
       <WorkspaceFrame
         projectId="p1"
@@ -292,6 +294,7 @@ describe("the footer user row", () => {
   });
 
   test("the frame renders the user row slot after the nav", () => {
+    // React hoists a preload for each avatar image; Next.js puts it in <head>. Read the body markup only.
     const markup = renderToStaticMarkup(
       <WorkspaceFrame
         projectId="p1"

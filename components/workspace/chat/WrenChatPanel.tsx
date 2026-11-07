@@ -73,7 +73,7 @@ function TomorrowCard({ name, resetsIn }: { name: string; resetsIn: string }) {
   );
 }
 
-function LiveWrenChat({ projectId, name }: { projectId: Id<"projects">; name: string }) {
+function LiveWrenChat({ projectId, name, founderName }: { projectId: Id<"projects">; name: string; founderName?: string }) {
   const messages = useQuery(api.workspace.chat.listWrenThread, { projectId });
   const now = useNow();
   const sendMessage = useMutation(api.workspace.chat.sendWrenMessage);
@@ -227,7 +227,7 @@ function LiveWrenChat({ projectId, name }: { projectId: Id<"projects">; name: st
         <WrenThread liveUpdates={false} name={name}>
           {messages.map((message) => {
             if (message.author === "founder") {
-              return <UserMessage key={message._id}>{message.body}</UserMessage>;
+              return <UserMessage key={message._id} founderName={founderName}>{message.body}</UserMessage>;
             }
             const isLast = message._id === last?._id;
             const stopped = message.status === "streaming" && isLast && lastStale;
@@ -296,12 +296,21 @@ function LiveWrenChat({ projectId, name }: { projectId: Id<"projects">; name: st
  * landmark and the header. `name` is the co-founder's name; "Wren" only when
  * the founder's is missing.
  */
-export function WrenChatPanel({ projectId, name = DEFAULT_PARTNER_NAME }: { projectId: Id<"projects">; name?: string }) {
+export function WrenChatPanel({
+  projectId,
+  name = DEFAULT_PARTNER_NAME,
+  founderName,
+}: {
+  projectId: Id<"projects">;
+  name?: string;
+  /** The signed-in founder's name, for their avatar. */
+  founderName?: string;
+}) {
   const unavailable = <p className="px-3.5 py-4 text-sm text-home-ink-2">{`Chat with ${name} isn't available right now.`}</p>;
   return (
     <WhenConvexReady fallback={<div className="px-3.5 py-4"><LoadingState label="Loading messages…" /></div>} unavailable={unavailable}>
       <QuietErrorBoundary fallback={unavailable}>
-        <LiveWrenChat projectId={projectId} name={name} />
+        <LiveWrenChat projectId={projectId} name={name} founderName={founderName} />
       </QuietErrorBoundary>
     </WhenConvexReady>
   );

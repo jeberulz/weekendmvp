@@ -206,6 +206,7 @@ export async function runWrenTurnWith(
     projectId: args.projectId,
     founderMessageId: args.founderMessageId,
     wrenMessageId: args.wrenMessageId,
+    now: Date.now(),
   });
   if (turn.status !== "ready") return null;
 
