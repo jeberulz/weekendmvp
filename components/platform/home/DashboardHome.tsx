@@ -6,6 +6,7 @@ import { HomeRail } from "./HomeRail";
 import { NewestIdeas } from "./NewestIdeas";
 import { NextStepCard } from "./NextStepCard";
 import { PickedForYou } from "./PickedForYou";
+import { StartBuildingCard } from "./StartBuildingCard";
 import { WeeklyPick } from "./WeeklyPick";
 
 function WeeklyPickUnavailable() {
@@ -31,10 +32,13 @@ function WeeklyPickUnavailable() {
 export function DashboardHome({
   editorial,
   nowMs,
+  startBuilding = false,
 }: {
   editorial: DashboardEditorial | null;
   /** Clock for workshop abandoned/paid cards (server-stamped). */
   nowMs: number;
+  /** L1-C9: the launch-workspace beta flag. Off, Home renders as before. */
+  startBuilding?: boolean;
 }) {
   const weekly = editorial?.weekly ? { slug: editorial.weekly.slug, title: editorial.weekly.title } : null;
   // Picks skip what Home already shows, so no idea appears twice.
@@ -44,6 +48,7 @@ export function DashboardHome({
     <div className="mx-auto grid w-full max-w-[1200px] gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10 xl:grid-cols-[minmax(0,1fr)_272px] xl:items-start">
       <div className="flex min-w-0 flex-col gap-8">
         <Greeting />
+        {startBuilding && <StartBuildingCard />}
         <WorkshopDashboardCards nowMs={nowMs} />
         <NextStepCard weekly={weekly} total={editorial?.total ?? null} />
         {editorial?.weekly ? (

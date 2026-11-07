@@ -4,13 +4,18 @@ import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
 import { getDashboardEditorial } from "@/lib/dashboard/editorial";
 import { readLiveClockMs } from "@/lib/live/now";
+import { buildCtaVisible } from "@/lib/workspace/build-cta-access";
 
 export const instant = false;
 
 export default async function DashboardPage() {
   await connection();
+  // L1-C9: the beta flag read starts now and runs beside the editorial read.
+  // It fails closed, so off (or slow) the dashboard is unchanged.
+  const startBuildingLookup = buildCtaVisible();
   // The homepage's hourly cache: idea of the week and newest ideas match `/`.
   const editorial = await getDashboardEditorial();
+  const startBuilding = await startBuildingLookup;
   const nowMs = readLiveClockMs();
   return (
     <>
@@ -21,7 +26,7 @@ export default async function DashboardPage() {
       <WhenConvexReady>
         <PreviewClaimRunner />
       </WhenConvexReady>
-      <DashboardHome editorial={editorial} nowMs={nowMs} />
+      <DashboardHome editorial={editorial} nowMs={nowMs} startBuilding={startBuilding} />
     </>
   );
 }
