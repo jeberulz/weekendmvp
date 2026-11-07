@@ -221,4 +221,4 @@ Append-only progress log. Claims must cite checks or code evidence.
 
 ## 2026-11-07 — WP78-S4e3 hourly recovery consumer
 
-- The WP79 sweep uses both persisted job queues while the workspace is off. A stale closure wake is fenced by the job's attempts and update timestamp. A lead job continues on successful partial revocation or deletion only while its stored retry time is due. A worker rejection stays isolated from other jobs. The restored queue preserves the original request epochs and does not promote archive-only rows. See the D5 section of the backup/restore runbook.
+- The WP79 sweep uses both persisted job queues while the workspace is off. A stale closure wake is fenced by the job's attempts and update timestamp. A lead job continues on successful partial revocation or deletion and retries at its persisted backoff time inside the active sweep. The next hourly sweep handles later retries. A worker rejection stays isolated from other jobs. The restored queue preserves the original request epochs and does not promote archive-only rows. See the D5 section of the backup/restore runbook.

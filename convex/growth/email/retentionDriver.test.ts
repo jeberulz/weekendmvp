@@ -84,9 +84,9 @@ async function seedLeadJob(
   });
 }
 
-async function runSweep(t: ReturnType<typeof setup>) {
+async function runSweep(t: ReturnType<typeof setup>, advance = () => vi.runAllTimers()) {
   await t.mutation(driver.sweep, {});
-  await t.finishAllScheduledFunctions(vi.runAllTimers);
+  await t.finishAllScheduledFunctions(advance);
 }
 
 describe("WP79 hourly privacy driver", () => {
@@ -119,7 +119,7 @@ describe("WP79 hourly privacy driver", () => {
         synthetic: true, createdAt: archivedAt,
       });
     });
-    const due = await seedLeadJob(t, owner, "due", { dueAt: START, count: 2 });
+    const due = await seedLeadJob(t, owner, "due", { dueAt: START, count: 20 });
     const future = await seedLeadJob(t, owner, "future", { dueAt: START + 1 });
     const confirmationId = await t.mutation(components.resend.lib.createManualEmail, {
       from: "test@example.test", to: "contact@example.test", subject: "Confirmation",
@@ -147,7 +147,7 @@ describe("WP79 hourly privacy driver", () => {
     await runSweep(t);
 
     expect(await t.run((ctx) => ctx.db.get(due.jobId)))
-      .toMatchObject({ state: "complete", processedCount: 2, deleteDueAt: START });
+      .toMatchObject({ state: "complete", processedCount: 20, deleteDueAt: START });
     expect(await t.run((ctx) => ctx.db.get(legacyLead))).not.toBeNull();
     expect(await t.run((ctx) => ctx.db.get(future.leadIds[0]))).not.toBeNull();
     expect(await t.query(components.resend.lib.getStatus, { emailId: confirmationId }))
@@ -168,14 +168,23 @@ describe("WP79 hourly privacy driver", () => {
       createdAt: epoch, updatedAt: START,
     }));
 
-    await runSweep(t);
-    vi.advanceTimersByTime(1);
-    await runSweep(t);
+    const advance = () => vi.advanceTimersByTime(1);
+    await runSweep(t, advance);
+    await runSweep(t, advance);
 
-    expect(await t.run((ctx) => ctx.db.get(failed.jobId))).toMatchObject({
+    const failedJob = await t.run((ctx) => ctx.db.get(failed.jobId));
+    expect(failedJob).toMatchObject({
       state: "scheduled", attempts: 1, processedCount: 0, deleteDueAt: dueAt,
-      nextAttemptAt: START + 60_000, lastErrorCode: "LEAD_RETENTION_SITE_MISMATCH",
+      lastErrorCode: "LEAD_RETENTION_SITE_MISMATCH",
     });
+    expect(failedJob!.nextAttemptAt - failedJob!.lastAttemptAt!).toBe(60_000);
+    await vi.advanceTimersByTimeAsync(failedJob!.nextAttemptAt - Date.now() - 1);
+    expect(await t.run((ctx) => ctx.db.get(failed.jobId))).toMatchObject({ attempts: 1 });
+    await vi.advanceTimersByTimeAsync(1);
+    await t.finishAllScheduledFunctions(advance);
+    const retried = await t.run((ctx) => ctx.db.get(failed.jobId));
+    expect(retried).toMatchObject({ attempts: 2, deleteDueAt: dueAt });
+    expect(retried!.nextAttemptAt - retried!.lastAttemptAt!).toBe(120_000);
     expect(await t.run((ctx) => ctx.db.get(failed.leadIds[0]))).not.toBeNull();
     expect(await t.run((ctx) => ctx.db.get(backingOff.jobId)))
       .toMatchObject({ attempts: 0, nextAttemptAt: START + HOUR });
@@ -188,9 +197,67 @@ describe("WP79 hourly privacy driver", () => {
       expect(event).toMatchObject({
         ownerId: owner, actorType: "system",
         action: event.subjectId === closureId ? "ops.account_closure.overdue" : "ops.lead_retention.overdue",
-        metadata: JSON.stringify({ deadline: dueAt, detectedAt: START }),
+        metadata: JSON.stringify({ deadline: dueAt }),
       });
+      expect(event.createdAt).toBeGreaterThanOrEqual(START);
     }
+  });
+
+  test("quarantines inconsistent restored jobs and attributes their alerts to the ops owner", async () => {
+    const t = setup();
+    const opsOwner = await seedOwner(t);
+    const owner = await t.run((ctx) => ctx.db.insert("users", {}));
+    const dueAt = START - 2 * HOUR;
+    const invalid = await seedLeadJob(t, owner, "bad-deadline", { dueAt });
+    const mismatch = await seedLeadJob(t, owner, "bad-owner", { dueAt });
+    const closureId = await t.run(async (ctx) => {
+      await ctx.db.patch("lead_retention_jobs", invalid.jobId, { deleteDueAt: dueAt + 1 });
+      await ctx.db.patch("lead_retention_jobs", mismatch.jobId, { ownerId: opsOwner });
+      return await ctx.db.insert("account_closure_jobs", {
+        ownerId: owner, requestedAt: dueAt, nextAttemptAt: dueAt, state: "scheduled",
+        attempts: 0, projectsProcessed: 0, createdAt: dueAt, updatedAt: dueAt,
+      });
+    });
+    await runSweep(t);
+    await runSweep(t);
+
+    for (const leadId of [...invalid.leadIds, ...mismatch.leadIds]) {
+      expect(await t.run((ctx) => ctx.db.get(leadId))).not.toBeNull();
+    }
+    const events = await t.run((ctx) => ctx.db.query("audit_events").collect());
+    expect(events.map((event) => ({ ownerId: event.ownerId, jobId: event.subjectId,
+      action: event.action, metadata: event.metadata }))).toEqual(expect.arrayContaining([
+      { ownerId: opsOwner, jobId: invalid.jobId, action: "ops.lead_retention.inconsistent",
+        metadata: JSON.stringify({ code: "LEAD_RETENTION_EPOCH_INVALID" }) },
+      { ownerId: opsOwner, jobId: mismatch.jobId, action: "ops.lead_retention.inconsistent",
+        metadata: JSON.stringify({ code: "LEAD_RETENTION_PROJECT_MISMATCH" }) },
+      { ownerId: opsOwner, jobId: closureId, action: "ops.account_closure.inconsistent",
+        metadata: JSON.stringify({ code: "ACCOUNT_CLOSURE_EPOCH_MISMATCH" }) },
+    ]));
+    expect(events).toHaveLength(3);
+  });
+
+  test("an alert over its audit read budget does not stop cleanup", async () => {
+    const t = convexTest({ schema, modules, transactionLimits: true });
+    registerResend(t);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const owner = await seedOwner(t);
+    const dueAt = START - 2 * HOUR;
+    const due = await seedLeadJob(t, owner, "busy-audit", { dueAt });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 513; i += 1) {
+        await ctx.db.insert("audit_events", {
+          ownerId: owner, projectId: due.projectId, actorType: "system",
+          action: "test.unrelated", subjectType: "project", subjectId: due.projectId,
+          createdAt: START - i,
+        });
+      }
+    });
+
+    await runSweep(t);
+
+    expect(await t.run((ctx) => ctx.db.get(due.jobId))).toMatchObject({ state: "complete" });
+    expect(warn).toHaveBeenCalledWith("PRIVACY_CLEANUP_AUDIT_UNAVAILABLE", due.jobId, { deadline: dueAt });
   });
 
   test("resumes a persisted closure cursor through the hourly entry point after its pending call is lost", async () => {
