@@ -115,6 +115,18 @@ async function seedCapability(
 }
 
 describe("claiming an anonymous preview", () => {
+  test("a closure marker blocks a new claim without consuming the capability", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "owner@example.com");
+    const { token, capabilityId } = await seedCapability(t);
+    await t.run((ctx) => ctx.db.patch(owner.userId, { accountClosureRequestedAt: Date.now() }));
+    await expect(asUser(t, owner.userId, owner.sessionId).mutation(
+      api.platform.preview.claim.claim, { token },
+    )).rejects.toThrow("ACCOUNT_CLOSURE_ALREADY_REQUESTED");
+    expect(await t.run((ctx) => ctx.db.query("projects").collect())).toHaveLength(0);
+    expect((await t.run((ctx) => ctx.db.get(capabilityId)))?.claimedByUserId).toBeUndefined();
+  });
+
   test("creates one owned project, site config, and site version", async () => {
     const t = convexTest(schema, modules);
     const owner = await seedUser(t, "owner@example.com");

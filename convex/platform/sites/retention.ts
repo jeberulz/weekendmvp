@@ -32,6 +32,9 @@ export const requestBusinessDeletion = mutation({
     if (env.TENANT_LEAD_DELETE_REQUESTS_ENABLED !== "true") {
       throw new ConvexError({ code: "LEAD_RETENTION_NOT_ACTIVE" });
     }
+    if (user.accountClosureRequestedAt !== undefined) {
+      throw new ConvexError({ code: "ACCOUNT_CLOSURE_ALREADY_REQUESTED" });
+    }
     const project = await ctx.db.get("projects", projectId);
     if (project === null || project.ownerId !== user._id) {
       throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });

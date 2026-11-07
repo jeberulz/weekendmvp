@@ -17,4 +17,7 @@ test("lead privacy and retention expose only the reviewed public functions", asy
   assert.deepEqual(await publicFunctions("convex/platform/sites/retention.ts"), [
     "requestBusinessDeletion",
   ]);
+  assert.deepEqual(await publicFunctions("convex/platform/sites/accountClosure.ts"), [
+    "requestAccountClosure",
+  ]);
 });
