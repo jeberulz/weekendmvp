@@ -114,11 +114,10 @@ import {
   anthropicCostMicroUsd,
   anthropicWorstCaseMicroUsd,
   OPENAI_IMAGE_MODEL,
-  RECRAFT_MODEL,
   recraftCostMicroUsd,
 } from "./pricing";
 import { openAiImageReservationMicroUsd, type OpenAiImageRequest } from "./providers/openaiImages";
-import { assertRecraftRequest, type RecraftImageRequest } from "./providers/recraft";
+import { assertRecraftRequest, recraftModelFor, type RecraftImageRequest } from "./providers/recraft";
 import { MAX_TIMEOUT_MS, utf8Bytes } from "./providers/transport";
 import {
   isProviderError,
@@ -1182,7 +1181,7 @@ export type ImageGatewayInput = {
 export function imageReservationMicroUsd(job: ImageJob): number {
   if (job.provider === "openai_images") return openAiImageReservationMicroUsd(job.request);
   assertRecraftRequest(job.request);
-  return recraftCostMicroUsd({ size: job.request.size });
+  return recraftCostMicroUsd({ size: job.request.size, model: recraftModelFor(job.request) });
 }
 
 function generateImage(job: ImageJob): Promise<ImageResult> {
@@ -1219,7 +1218,7 @@ export async function runImageGateway(
       attemptKey: caller.attemptKey(attempt),
       promptRef,
       provider: job.provider,
-      model: job.provider === "openai_images" ? OPENAI_IMAGE_MODEL : RECRAFT_MODEL,
+      model: job.provider === "openai_images" ? OPENAI_IMAGE_MODEL : recraftModelFor(job.request),
       tier: "image",
       feature: "ai",
       reservedMicroUsd: imageReservationMicroUsd(job),

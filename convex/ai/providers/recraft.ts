@@ -16,13 +16,22 @@
  * Recraft request (`scripts/spikes/wp69/media.ts`), including
  * `image_format: "png"`. Bytes that are not a PNG are `invalid_output`.
  * Fixture results carry `billedAs` ending in ` (fixture)`.
+ *
+ * WP67-S7: `model` picks V4.1 (`recraftv4_1`, the default) or V4.1 Flash
+ * (`recraftv4_1_flash`, $0.007). Only priced models are accepted, and Flash
+ * refuses `styleId` before anything is sent: Recraft's API does not take
+ * styles on Flash. There is no other provider behind this adapter, so a
+ * refused or failed Flash call never falls back to OpenAI images.
  */
 
 import {
+  isRecraftModel,
+  RECRAFT_FLASH_MODEL,
   RECRAFT_MODEL,
+  RECRAFT_MODEL_RATES_EFFECTIVE_FROM,
   RECRAFT_PRICES_MICRO_USD,
-  RECRAFT_RATES_EFFECTIVE_FROM,
   recraftCostMicroUsd,
+  type RecraftModel,
   type RecraftSize,
 } from "../pricing";
 import { fixtureRecraftFetch, type ImageFixtureResponder } from "./fixtures";
@@ -35,7 +44,14 @@ export { RECRAFT_ENDPOINT };
 export type RecraftImageRequest = ImageRequestBase & {
   readonly size: RecraftSize;
   readonly styleId?: string;
+  /** Defaults to `recraftv4_1`. */
+  readonly model?: RecraftModel;
 };
+
+/** The model a request will be sent and billed as. */
+export function recraftModelFor(request: Pick<RecraftImageRequest, "model">): RecraftModel {
+  return request.model ?? RECRAFT_MODEL;
+}
 
 function configError(message: string): ProviderError {
   return new ProviderError("recraft", "config", message);
@@ -47,6 +63,8 @@ export function isRecraftSize(size: string): size is RecraftSize {
 }
 
 export function assertRecraftRequest(request: RecraftImageRequest): void {
+  const model: string = recraftModelFor(request);
+  if (!isRecraftModel(model)) throw configError(`Recraft model ${model} is not supported`);
   if (!isRecraftSize(request.size)) {
     throw configError(`Recraft size ${String(request.size)} is not supported; use one of ${Object.keys(RECRAFT_PRICES_MICRO_USD).join(", ")}`);
   }
@@ -54,13 +72,16 @@ export function assertRecraftRequest(request: RecraftImageRequest): void {
   if (request.styleId !== undefined && request.styleId.trim().length === 0) {
     throw configError("styleId must be a non-empty Recraft style id when set");
   }
+  if (model === RECRAFT_FLASH_MODEL && request.styleId !== undefined) {
+    throw configError("Recraft V4.1 Flash does not accept a styleId");
+  }
 }
 
 export function buildRecraftBody(request: RecraftImageRequest): Record<string, unknown> {
   assertRecraftRequest(request);
   return {
     prompt: request.prompt,
-    model: RECRAFT_MODEL,
+    model: recraftModelFor(request),
     size: request.size,
     n: 1,
     response_format: "b64_json",
@@ -70,13 +91,14 @@ export function buildRecraftBody(request: RecraftImageRequest): Record<string, u
 }
 
 function imageCost(request: RecraftImageRequest, fixture: boolean): ProviderCost {
+  const model = recraftModelFor(request);
   return {
     provider: "recraft",
-    billedAs: `${RECRAFT_MODEL} ${request.size}${fixture ? FIXTURE_BILLED_AS_SUFFIX : ""}`,
-    microUsd: recraftCostMicroUsd({ size: request.size }),
+    billedAs: `${model} ${request.size}${fixture ? FIXTURE_BILLED_AS_SUFFIX : ""}`,
+    microUsd: recraftCostMicroUsd({ size: request.size, model }),
     estimated: true,
     units: { images: 1 },
-    rateCard: RECRAFT_RATES_EFFECTIVE_FROM,
+    rateCard: RECRAFT_MODEL_RATES_EFFECTIVE_FROM[model],
   };
 }
 
@@ -133,7 +155,7 @@ export function createRecraftAdapter(options: RecraftAdapterOptions): RecraftAda
         }
         const record = isRecord(payload) ? payload : {};
         const first = Array.isArray(record.data) && isRecord(record.data[0]) ? record.data[0] : {};
-        const base = { provider: "recraft" as const, model: RECRAFT_MODEL, size: request.size, cost };
+        const base = { provider: "recraft" as const, model: recraftModelFor(request), size: request.size, cost };
         if (typeof first.b64_json === "string" && first.b64_json.length > 0) {
           let bytes: Uint8Array;
           try {

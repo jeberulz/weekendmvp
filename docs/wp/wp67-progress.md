@@ -531,3 +531,31 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   Brand kit server page now passes the font map down, and a test guards against it happening again. `next build` alone did not catch it.
 - Not verified: Meet your co-founder in a real browser, screen-reader passes, production data.
 - Follow-ups: none blocking. `lib/engine` and `tests/editorial` CLI tests time out at 5s under machine load (as #265 noted).
+
+## 2026-11-07 - WP67-S7: crew avatars with Recraft V4.1 Flash (issue #220)
+
+- Branch `claude/wp67-crew-avatars` (worktree `.worktrees/wp67-brand-logo`, from `main` `c0204faf`).
+- Recraft API docs, read 2026-11-07: `recraftv4_1_flash`, 7 API units ($0.007) per 1024×1024 raster, no
+  `style`/`style_id`/style references on Flash. 13 named crew, one per role key: the set lists at $0.091.
+- Built with fixtures only: Flash model path in pricing, adapter and image gateway (default stays `recraftv4_1`;
+  Flash refuses a `styleId`; unpriced models refused before any fetch; the ledger records the model sent).
+  Personas and the shared style prompt in `lib/workspace/crew-avatars.ts`. Generator
+  `scripts/generate-crew-avatars.mjs` (dry run by default, Flash only, writes to `tmp/` with a manifest and contact
+  sheet, live needs `--live --confirm-spend-usd=<exact price>`). `EmployeeAvatar` shows an asset once a role is in
+  `CREW_AVATAR_SRC`, else the initial; the list is empty, so the UI is unchanged.
+- Checks: `npm run typecheck` clean; `vitest run tests/platform` 2430/2430 (12 new in
+  `wp67-crew-avatars.test.tsx`, plus Flash cases in `ai-providers` and `ai-gateway`); eslint clean on changed files.
+  A fixture run of the generator wrote 13 PNGs, the manifest and the contact sheet.
+- **Owner approved the visual direction (2026-11-07)**: flat editorial illustration, head and shoulders, solid
+  accent background per role, warm ink and cream palette, circular crop.
+- Waiting on the owner: the live run (the agent's auto mode blocks paid calls). Command:
+  `node --env-file=.env.local scripts/generate-crew-avatars.mjs --live --confirm-spend-usd=0.091` from the worktree.
+  Then: review the contact sheet, shrink approved PNGs, commit under `public/image/crew/`, list them in
+  `CREW_AVATAR_SRC`, a11y check and localhost preview before merge.
+- Live runs by the owner (2026-11-07): full set, 13 × `recraftv4_1_flash`, $0.091; then a redo of Iris, Leo, Theo
+  and Cora, 4 × $0.007 = $0.028 (framing, blank eyes, face in the background colour, persona mismatch), with
+  tightened descriptions in `CREW_PERSONAS`. All four redos replaced the originals. Total list spend $0.119.
+- Shipped: 13 × 192 px WebP (3.7–7.4 KB) under `public/image/crew/`, all listed in `CREW_AVATAR_SRC`.
+  Kit preview (`/workspace-kit-preview`, port 3189): 22 avatar images at 40/28/20 px, none broken; each keeps its
+  `role="img"` name (e.g. "Iris, Brand (AI employee)") with the picture `alt=""`.
+- Checks after the swap: `npm run typecheck` clean; `vitest run tests/platform` 2430/2430.
