@@ -315,8 +315,44 @@ export const RECRAFT_PRICES_MICRO_USD = {
 export type RecraftSize = keyof typeof RECRAFT_PRICES_MICRO_USD;
 export const RECRAFT_SIZES = Object.keys(RECRAFT_PRICES_MICRO_USD) as readonly RecraftSize[];
 
-export function recraftCostMicroUsd(args: { readonly size: RecraftSize; readonly count?: number }): number {
-  const unit = RECRAFT_PRICES_MICRO_USD[args.size];
+/**
+ * WP67-S7. Recraft V4.1 Flash, a separate model (not a mode) used for the
+ * fixed crew avatar set. Id and price read from Recraft's API docs on
+ * 2026-11-07: the appendix lists `recraftv4_1_flash` among the 1K models, and
+ * the API pricing page lists V4.1 Flash raster at 7 API units ($1 = 1,000
+ * units), so $0.007. Flash takes no `style`, `style_id` or style references.
+ * The price is the list price (`estimated: true`) until a live call is measured.
+ */
+export const RECRAFT_FLASH_MODEL = "recraftv4_1_flash";
+export const RECRAFT_FLASH_RATES_EFFECTIVE_FROM = "2026-11-07";
+
+/** Per-model, per-size list price, micro-USD. A model or size missing here is refused. */
+export const RECRAFT_MODEL_PRICES_MICRO_USD = {
+  [RECRAFT_MODEL]: RECRAFT_PRICES_MICRO_USD,
+  [RECRAFT_FLASH_MODEL]: { "1024x1024": 7_000 },
+} as const satisfies Readonly<Record<string, Readonly<Record<RecraftSize, number>>>>;
+
+export type RecraftModel = keyof typeof RECRAFT_MODEL_PRICES_MICRO_USD;
+
+export const RECRAFT_MODEL_RATES_EFFECTIVE_FROM: Readonly<Record<RecraftModel, string>> = {
+  [RECRAFT_MODEL]: RECRAFT_RATES_EFFECTIVE_FROM,
+  [RECRAFT_FLASH_MODEL]: RECRAFT_FLASH_RATES_EFFECTIVE_FROM,
+};
+
+export function isRecraftModel(model: string): model is RecraftModel {
+  return Object.hasOwn(RECRAFT_MODEL_PRICES_MICRO_USD, model);
+}
+
+/** `model` defaults to V4.1 (`recraftv4_1`), so existing callers keep their price. */
+export function recraftCostMicroUsd(args: {
+  readonly size: RecraftSize;
+  readonly count?: number;
+  readonly model?: RecraftModel;
+}): number {
+  const model = args.model ?? RECRAFT_MODEL;
+  if (!isRecraftModel(model)) throw new RangeError(`no Recraft price for model ${String(model)}`);
+  const table: Readonly<Record<string, number>> = RECRAFT_MODEL_PRICES_MICRO_USD[model];
+  const unit = Object.hasOwn(table, args.size) ? table[args.size] : undefined;
   if (unit === undefined) throw new RangeError(`no Recraft price for ${String(args.size)}`);
   return mediaReservation({ kind: "image", unitMicroUsd: unit, count: args.count ?? 1 });
 }

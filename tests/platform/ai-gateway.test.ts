@@ -956,6 +956,50 @@ describe("runImageGateway", () => {
     });
   });
 
+  it("reserves and settles a V4.1 Flash render as recraftv4_1_flash at $0.007 (WP67-S7)", async () => {
+    const meter = stubMeter();
+    const outcome = await runImageGateway(
+      { meter, clock: clock() },
+      {
+        job: {
+          provider: "recraft",
+          request: { prompt: "A crew avatar", size: "1024x1024", model: "recraftv4_1_flash", timeoutMs: 5_000 },
+          adapter: createRecraftAdapter({ env: {} }),
+        },
+        promptRef: "crew-avatar@1",
+        caller: logoCaller,
+      },
+    );
+    expect(outcome.ok).toBe(true);
+    expect(meter.row(outcome.attempts[0].usageId)).toMatchObject({
+      status: "settled",
+      provider: "recraft",
+      model: "recraftv4_1_flash",
+      costMicroUsd: 7_000,
+      reservedMicroUsd: 7_000,
+      estimated: true,
+      images: 1,
+    });
+  });
+
+  it("refuses a Flash request with a styleId before reserving anything (WP67-S7)", async () => {
+    const meter = stubMeter();
+    const outcome = await runImageGateway(
+      { meter, clock: clock() },
+      {
+        job: {
+          provider: "recraft",
+          request: { prompt: "A crew avatar", size: "1024x1024", model: "recraftv4_1_flash", styleId: "style-uuid", timeoutMs: 5_000 },
+          adapter: createRecraftAdapter({ env: {} }),
+        },
+        promptRef: "crew-avatar@1",
+        caller: logoCaller,
+      },
+    );
+    expect(outcome).toMatchObject({ ok: false, failure: { kind: "config" }, attempts: [] });
+    expect(meter.rows()).toHaveLength(0);
+  });
+
   it("charges 0 for a moderation refusal (an HTTP 400, billed none)", async () => {
     const meter = stubMeter();
     const adapter = createOpenAiImagesAdapter({

@@ -16,8 +16,10 @@ import {
   openAiImageSettleMicroUsd,
   OPENAI_IMAGE_TOKEN_RATES,
   recraftCostMicroUsd,
+  RECRAFT_FLASH_MODEL,
   RECRAFT_SIZES,
   specWorstCaseMicroUsd,
+  type RecraftModel,
   type RecraftSize,
 } from "@/convex/ai/pricing";
 import {
@@ -564,6 +566,71 @@ describe("image adapters", () => {
       style_id: "style-uuid",
     });
     expect(result.cost).toMatchObject({ provider: "recraft", microUsd: 35_000, estimated: true });
+  });
+
+  it("sends V4.1 Flash as recraftv4_1_flash at $0.007 and refuses a styleId or an unpriced model (WP67-S7)", async () => {
+    expect(RECRAFT_FLASH_MODEL).toBe("recraftv4_1_flash");
+    expect(recraftCostMicroUsd({ size: "1024x1024", model: RECRAFT_FLASH_MODEL })).toBe(7_000);
+    expect(recraftCostMicroUsd({ size: "1024x1024", model: RECRAFT_FLASH_MODEL, count: 13 })).toBe(91_000);
+    expect(recraftCostMicroUsd({ size: "1024x1024" })).toBe(35_000);
+    expect(() => recraftCostMicroUsd({ size: "1024x1024", model: "gpt-image-2" as RecraftModel })).toThrow(RangeError);
+
+    const fetchImpl = vi.fn<Fetcher>(async () => pngReply());
+    const adapter = createRecraftAdapter({ env: LIVE_ENV, fetchImpl });
+    const withStyle = await caught(
+      adapter.generate({ prompt: "x", size: "1024x1024", model: RECRAFT_FLASH_MODEL, styleId: "style-uuid", timeoutMs: 1_000 }),
+    );
+    expect(withStyle).toMatchObject({ kind: "config", billed: "none" });
+    const unpriced = await caught(
+      adapter.generate({ prompt: "x", size: "1024x1024", model: "gpt-image-2" as RecraftModel, timeoutMs: 1_000 }),
+    );
+    expect(unpriced).toMatchObject({ kind: "config", billed: "none" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+
+    const result = await adapter.generate({ prompt: "An avatar", size: "1024x1024", model: RECRAFT_FLASH_MODEL, timeoutMs: 1_000 });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchImpl.mock.calls[0];
+    expect(url).toBe("https://external.api.recraft.ai/v1/images/generations");
+    expect(JSON.parse(String(init?.body))).toEqual({
+      prompt: "An avatar",
+      model: "recraftv4_1_flash",
+      size: "1024x1024",
+      n: 1,
+      response_format: "b64_json",
+      image_format: "png",
+    });
+    expect(result.model).toBe("recraftv4_1_flash");
+    expect(result.image.kind).toBe("bytes");
+    expect(result.cost).toMatchObject({
+      provider: "recraft",
+      billedAs: "recraftv4_1_flash 1024x1024",
+      microUsd: 7_000,
+      estimated: true,
+      rateCard: "2026-11-07",
+    });
+  });
+
+  it("fails closed for Flash: no key means no call, and fixture mode never reads as live spend (WP67-S7)", async () => {
+    const fetchImpl = vi.fn<Fetcher>(async () => pngReply());
+    const noKey = await caught(
+      createRecraftAdapter({ env: { AI_PROVIDER_MODE: "live" }, fetchImpl }).generate({
+        prompt: "x",
+        size: "1024x1024",
+        model: RECRAFT_FLASH_MODEL,
+        timeoutMs: 1_000,
+      }),
+    );
+    expect(noKey).toMatchObject({ kind: "config", billed: "none" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+
+    const fixture = await createRecraftAdapter({ env: FIXTURE_ENV, fetchImpl }).generate({
+      prompt: "x",
+      size: "1024x1024",
+      model: RECRAFT_FLASH_MODEL,
+      timeoutMs: 1_000,
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(fixture.cost.billedAs).toBe("recraftv4_1_flash 1024x1024 (fixture)");
   });
 
   it("maps HTTP 429, 5xx and moderation blocks to their error classes", async () => {
