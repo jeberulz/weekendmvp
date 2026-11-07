@@ -60,3 +60,31 @@ Append-only progress log. Do not rely on chat history for project state.
 - Known red, fixed in S5: `check-prompt-versions` flags the five crew v1 specs (the contract hash moved) and the unlocked `crew-idea-seed@1`. S5 bumps the crew specs to v2 and runs `--write` once the contracts settle.
 - Not run: no live batch, and nothing against the shared local or prod Convex. A live run needs the owner's go-ahead and a dry run first.
 - Docs: stories and progress updated. CLAUDE.md key paths are deferred to S6.
+
+## 2026-11-07 - WP90-S4
+
+- `wizardSeedFor` (`lib/workspace/wizard/defaults.ts`) takes `storedSeed` and `ideaFacts`.
+  - A valid stored seed for the same idea gives source `idea_crew_seeds`:
+    - the seed's blueprint;
+    - the platform from `platformSuggestion(deviceNeeds)`;
+    - the commercial model, goal and names from the hints;
+    - a one-line reason per step and a `confident` flag.
+  - Defaults are safe-parsed; anything the schema refuses falls back to the fixtures.
+  - `validated` now comes from the idea row (`ideaIsValidated`) for every library seed, fixtures included. This fixes concept ideas shown as validated. An idea row with no research level still counts as validated (legacy researched).
+  - The seed also carries the roster `profile` (seed blueprint, or the HydroTrail fixture's; null for the generic fixture).
+- `convex/workspace/wizard.ts`:
+  - `seedFor` reads `platformSeedRow` + `seedFromColumns`, and passes `researchLevel` and `provenance.auditPassed`.
+  - `getSession` returns `hints` and `crew`. `crewPreviewFor` runs `planRoster` on the profile with the answers so far, defaults filling the rest, and the lead name from the partner-name answer.
+  - `seedSource` gains `idea_crew_seeds`.
+- UI:
+  - A "Why I suggest it" line on platform, commercial model, goal and name when the seed gives a reason.
+  - A confident platform, commercial-model or goal suggestion opens as a quick confirm with "Looks right" and "Change". "Change" opens the full choice and focuses the selected option. A step answered differently before opens on the full choice.
+  - `CrewPreview` ("Your crew": hiring and not hiring yet, each with its reason) sits under Founder signals once the blueprint is reviewed.
+- Checks:
+  - `npm run typecheck`: green.
+  - eslint on changed files: clean.
+  - `vitest tests/platform convex/workspace convex/crew`: 3,265 pass.
+  - New tests: `convex/workspace/wizardSeeds.test.ts` (6) and `tests/platform/wp90-wizard-seed-ui.test.tsx` (9, with axe).
+- a11y-check: passes. No icon-only controls; headings go h1 → h2 → h3; focus moves on "Change"; the reason is linked to the primary button by `aria-describedby`. jsdom cannot check colour contrast; the tokens are the ones Founder signals already uses.
+- Not run: the browser check of a seeded and an unseeded idea. The worktree has no Convex deployment of its own; the rule is not to run convex dev against the shared local or prod from here, and the preview server runs the main checkout. It belongs in the S6 owner handoff, after a fixture `crew:seeds` run on a local deployment.
+- Docs: stories and progress updated.

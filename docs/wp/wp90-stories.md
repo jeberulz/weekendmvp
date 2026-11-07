@@ -59,7 +59,7 @@ accepted moving the L1 date if this needs more time.
       cost estimate, and needs `--apply` to submit. Fixture mode works with zero spend.
   - Verification: convex-test over the full submit → poll → write path in fixture mode.
 
-- [ ] `WP90-S4` - Wizard reads the seed
+- [x] `WP90-S4` - Wizard reads the seed
   - Scope: `lib/workspace/wizard/defaults.ts`, `convex/workspace/wizard.ts`,
     `components/workspace/wizard/*`, `lib/workspace/wizard/copy.ts`.
   - Acceptance criteria:
