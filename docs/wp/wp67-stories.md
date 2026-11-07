@@ -60,6 +60,28 @@ and every gate G0–G7 run and recorded in `docs/wp/wp67-progress.md`.
   - Verification:
     - `npm run typecheck`, `npm run test:platform`, `npm run test:home`, a11y check, localhost preview
 
+- [ ] `WP67-S7` - Generated avatars for the named AI crew with Recraft V4.1 Flash (issue #220)
+  - Branch: `claude/wp67-crew-avatars`
+  - Scope: `convex/ai/pricing.ts`, `convex/ai/providers/recraft.ts`, `convex/ai/gateway.ts` (Flash model path),
+    `lib/workspace/crew-avatars.ts` (style, personas, shipped list), `scripts/generate-crew-avatars{.mjs,-core.ts}`,
+    `components/workspace/kit/EmployeeAvatar.tsx`, `public/image/crew/` (after approval)
+  - Facts (Recraft API docs, read 2026-11-07): model id `recraftv4_1_flash`; 7 API units = $0.007 per 1024×1024
+    raster; Flash takes no `style`, `style_id` or style references. 13 named crew (one per role key), so the full set
+    lists at $0.091.
+  - Acceptance criteria:
+    - The Recraft request takes an optional `model` (default `recraftv4_1`); Flash is priced at 7,000 micro-USD,
+      refuses a `styleId`, and an unpriced model is refused before any fetch; the image gateway reserves and records
+      the model actually sent. No OpenAI image fallback anywhere on this path.
+    - One shared avatar per role, keyed by role (a renamed lead keeps the lead's avatar); no per-founder or per-view
+      paid call.
+    - `EmployeeAvatar` keeps the accessible name and shows the initial until a role is listed in `CREW_AVATAR_SRC`.
+    - Owner approves the visual direction, then separately approves the live run (`--live --confirm-spend-usd`).
+    - Approved PNGs are committed pre-sized (small squares) under `public/image/crew/`, checked at 20/28/40 px and
+      large, and previewed on localhost before merge.
+  - Verification:
+    - `tests/platform/ai-providers.test.ts`, `tests/platform/ai-gateway.test.ts`, `tests/platform/wp67-crew-avatars.test.tsx`,
+      `npm run typecheck`, a11y check, localhost preview
+
 ## Out Of Scope
 
 - Feature code. The orchestrator assigns, reviews and gates; workers build.
