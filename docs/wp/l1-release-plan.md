@@ -42,11 +42,11 @@ say "Coming soon" for each, so nothing looks broken.
 
 ### Codex lane (ship gates for the launch)
 
-- **Codex 13:** `workspace crew run recovery` in `convex/crons.ts` calls
-  `internal.crew.jobs.recoverStaleCrewRuns({})` every five minutes. The existing worker owns lease checks,
-  settlement, and pagination. The cron registration needs to be deployed before L1.
-- **Codex 18:** the launch sweep on the same cron (re-advance owners with a launch in progress; re-enqueue a running
-  step marker whose work is gone).
+- **Codex 13 and 18:** every five minutes, `workspace crew run recovery` in `convex/crons.ts` schedules
+  `internal.crew.jobs.recoverStaleCrewRuns({})` and `internal.crew.launch.recoverStalledLaunches({})` as
+  separate mutations. The first settles expired runs. The second re-advances launches and requeues stranded
+  steps within the owner's workspace and AI gates. Each worker owns its pagination. Deploy the cron registration
+  before L1.
 
 ### Owner (John)
 
