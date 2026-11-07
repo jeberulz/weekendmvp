@@ -133,3 +133,13 @@ Append-only progress log. Do not rely on chat history for project state.
   - the browser check of a seeded and an unseeded idea (the worktree has no Convex deployment of its own);
   - deploying the schema;
   - a PR.
+
+## 2026-11-07 - Small fix: Convex deploy typecheck
+
+- `npx convex deploy` from `main` (by the owner) stopped at Convex's own typecheck (`convex/tsconfig.json`). It found 12 errors, all from `main` (#275). `convex/workspace/employees.test.ts` dynamically imported `lib/workspace/teamHq.ts`, whose `@/` imports that tsconfig cannot resolve. No "Deployed" line was printed, so nothing went live.
+- Fix: that one test ("every specialist owns the artifact kinds Team HQ routes to them") moved to `tests/platform/workspace-team-hq-helpers.test.ts`, which resolves `@/`. It narrows with `isSpecialistRoleKey` instead of indexing by `RoleKey`.
+- Checks:
+  - `npx tsc -p convex/tsconfig.json --noEmit`: 0 errors (was 12).
+  - `npm run typecheck`: green.
+  - Both test files: 33 pass.
+- This lands on `main` with the WP90 merge. Until then, a deploy from `main` still fails this check.

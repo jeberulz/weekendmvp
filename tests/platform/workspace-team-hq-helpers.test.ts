@@ -7,6 +7,7 @@ import { ConvexError } from "convex/values";
 import { describe, expect, test } from "vitest";
 
 import type { LaunchView } from "@/lib/workspace/crew/launch";
+import { EMPLOYEE_ARTIFACT_KINDS, isSpecialistRoleKey } from "@/lib/workspace/employees";
 import {
   applyFilter,
   employeeStatus,
@@ -308,5 +309,16 @@ describe("workstream links, plan, why rows", () => {
       ["ads", "added"],
       ["outbound", "skipped"],
     ]);
+  });
+});
+
+describe("Team HQ review routing", () => {
+  // Moved from convex/workspace/employees.test.ts: the Convex deploy typecheck cannot resolve teamHq's `@/` imports.
+  test("every specialist owns the artifact kinds Team HQ routes to them", async () => {
+    const { REVIEW_OWNER } = await import("@/lib/workspace/teamHq");
+    for (const [kind, owner] of Object.entries(REVIEW_OWNER)) {
+      if (!isSpecialistRoleKey(owner)) continue;
+      expect(EMPLOYEE_ARTIFACT_KINDS[owner]).toContain(kind);
+    }
   });
 });
