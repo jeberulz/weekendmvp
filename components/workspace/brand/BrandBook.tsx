@@ -27,7 +27,7 @@ function Fact({ term, children }: { term: string; children: ReactNode }) {
 
 function ColourCards({ palette }: { palette: Kit["palette"] }) {
   return (
-    <ul aria-label="Colours" className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
+    <ul aria-label="Colours" className="grid grid-cols-[repeat(auto-fit,minmax(124px,1fr))] gap-3">
       {PALETTE_ROLES.map(([role, label]) => {
         const colour = palette[role];
         return (

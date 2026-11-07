@@ -190,7 +190,7 @@ function PlatformPicker({ platform, onChange }: { platform: SocialPlatform; onCh
       <legend className="mb-3 text-[17px] font-semibold text-home-ink">
         Where will you post? <span className="font-normal text-home-ink-3">· captions are fitted to the platform</span>
       </legend>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2.5">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5">
         {SOCIAL_PLATFORMS.map((value) => {
           const checked = value === platform;
           return (
@@ -246,9 +246,11 @@ function CalendarView({
   const post = posts[selected];
   return (
     <div className="flex flex-col gap-3">
+      {/* One week, one row (Social board): the strip scrolls sideways when the column is narrow. Every day is a
+          button, so keyboard focus scrolls it into view. */}
       <ol
         aria-label="Launch week calendar"
-        className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2.5"
+        className="grid auto-cols-[minmax(7.5rem,1fr)] grid-flow-col gap-2.5 overflow-x-auto pb-1"
       >
         {posts.map((item, i) => (
           <li key={item.day} className="min-w-0">
