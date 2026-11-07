@@ -174,7 +174,7 @@ describe("WP72-S1 getWorkspaceAccess", () => {
           _id: ids.projectId,
           name: "HydroTrail Co",
           partnerName: "Wren",
-          subline: "Web app · Free for now",
+          subline: "Web app",
           viewerName: "owner@example.test",
         },
       });
@@ -197,7 +197,7 @@ describe("WP72-S1 getWorkspaceAccess", () => {
     await expect(owner.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))
       .resolves.toMatchObject({
         allowed: true,
-        project: { partnerName: "Sam", subline: "Mobile app · Free for now", viewerName: "John" },
+        project: { partnerName: "Sam", subline: "Mobile app", viewerName: "John" },
       });
     // Someone else learns nothing about the project, not even its co-founder's name.
     await expect(other.query(api.workspace.access.getWorkspaceAccess, { projectId: ids.projectId }))

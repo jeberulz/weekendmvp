@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import axe from "axe-core";
 import { render, cleanup } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
@@ -187,5 +188,36 @@ describe("ArtifactReviewCard approveLabel", () => {
     });
     expect(field.className).toContain("border-home-ink-3");
     expect(field.className).not.toContain("border-home-rule");
+  });
+});
+
+describe("ArtifactReviewCard change-round copy follows the approval kind", () => {
+  async function ask(artifact: { plural: string; approvedNote: string; approvalKind?: "send" | "post" }): Promise<string> {
+    const user = userEvent.setup();
+    const { getByRole, getByLabelText } = render(
+      <ArtifactReviewCard
+        card={{ status: "pending", expiresAt: Date.now() + 86_400_000 }}
+        decide={async () => ({ status: "approved", changed: true })}
+        preview={{ kind: "ready", preview: { outcome: "free", freeRoundsLeft: 2 } }}
+        artifact={artifact}
+      />,
+    );
+    await user.click(getByRole("button", { name: "Ask for changes" }));
+    await user.type(getByLabelText("What should change?"), "Warmer");
+    await user.click(getByRole("button", { name: "Send changes" }));
+    return await vi.waitFor(() => {
+      const text = getByRole("status").textContent;
+      if (text === null || text === "") throw new Error("no status yet");
+      return text;
+    });
+  }
+
+  test("email says sending, social says posting, and a kit without a kind stays neutral", async () => {
+    expect(await ask({ plural: "emails", approvedNote: "x", approvalKind: "send" })).toMatch(/Sending is off/);
+    cleanup();
+    expect(await ask({ plural: "posts", approvedNote: "x", approvalKind: "post" })).toMatch(/Posting is off/);
+    cleanup();
+    const neutral = await ask({ plural: "brand kit", approvedNote: "x" });
+    expect(neutral).not.toMatch(/Sending|Posting/);
   });
 });

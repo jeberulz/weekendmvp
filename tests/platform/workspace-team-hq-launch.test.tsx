@@ -188,6 +188,16 @@ describe("page states", () => {
     expect(container.querySelector("[data-state='skeleton']")).not.toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
   });
+
+  test("assembling names the lead with the chosen partner name, not 'Your co-founder'", () => {
+    live.status = { state: "assembling" };
+    live.progress = progress([step("blueprint", "Blueprint", "lead", "running")]);
+    live.reviews = [];
+    live.blueprint = { state: "none" };
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" partnerName="Juno" />);
+    expect(screen.getAllByText(/Juno is putting your team together/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Your co-founder is putting/)).toBeNull();
+  });
 });
 
 describe("header", () => {
@@ -196,7 +206,7 @@ describe("header", () => {
     const h1 = screen.getByRole("heading", { level: 1 });
     expect(h1.textContent).toBe("6 on the team. Nobody needs you right now.");
     expect(screen.getByText("Team HQ · HydroTrail")).toBeTruthy();
-    expect(screen.getByText(/Of 5 specialists: 0 need you, 2 working, 1 queued, 2 coming soon\./)).toBeTruthy();
+    expect(screen.getByText(/Of 5 specialists: 2 working, 1 queued, 2 coming soon\./)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Why this team?" }).getAttribute("href")).toBe("#why-this-team");
   });
 
@@ -235,6 +245,7 @@ describe("Crew Lead card", () => {
     expect(rows[0].textContent).toContain("Closes in 2 days.");
     expect(rows[1].textContent).toContain("From Social · Theo");
     expect(rows[1].textContent).toContain("Change round 2");
+    expect(rows[1].textContent).toContain("Waiting on you");
     expect(rows[1].textContent).toContain("Closes in 5 hours.");
     expect(within(rows[0]).getByRole("link", { name: "Review Brand kit" }).getAttribute("href")).toBe("/dashboard/b/project1/brand");
     expect(within(rows[1]).getByRole("link", { name: "Review Social posts" }).getAttribute("href")).toBe("/dashboard/b/project1/social");

@@ -14,13 +14,11 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { axe } from "vitest-axe";
 
 import {
-  CofounderTeam,
   LiveMeetCofounder,
   MeanwhileBuilding,
   MeetCofounder,
   launchErrorMessage,
   teamAnnouncement,
-  type CofounderTeamProps,
   type MeetCofounderProps,
   type MeetProgress,
 } from "@/components/workspace/wizard/MeetCofounder";
@@ -357,28 +355,6 @@ describe("L1 T1 Meanwhile, building", () => {
   test("the Meet screen shows it in the aside when given", () => {
     setup(ready, { meanwhile: <MeanwhileBuilding progress={steps([["blueprint", "Blueprint", "succeeded", false]])} /> });
     expect(screen.getByRole("heading", { level: 2, name: "Meanwhile, building" })).toBeTruthy();
-  });
-});
-
-describe("WP75-S1 CofounderTeam (kept for Team HQ until its rebuild drops it)", () => {
-  const base: CofounderTeamProps = { partnerName: "Wren", launch: undefined, onStart: vi.fn(), onRetry: vi.fn(), retrying: false, error: null };
-
-  test("ready: hired and skipped in lists with their reasons, skipped said in text", async () => {
-    const { container } = render(<CofounderTeam {...base} launch={ready} />);
-    const [hiredList, skippedList] = screen.getAllByRole("list");
-    if (hiredList === undefined || skippedList === undefined) throw new Error("expected two lists");
-    expect(within(hiredList).getAllByRole("listitem")).toHaveLength(9);
-    const skipped = within(skippedList).getAllByRole("listitem");
-    expect(skipped).toHaveLength(4);
-    expect(skipped[0]?.textContent).toContain(`${ready.skipped[0]?.roleLabel}: Skipped`);
-    await expectNoAxeViolations(container);
-  });
-
-  test("failed: Try again calls back once", async () => {
-    const onRetry = vi.fn();
-    render(<CofounderTeam {...base} onRetry={onRetry} launch={{ state: "failed", paused: false, retryable: true }} />);
-    await userEvent.setup().click(screen.getByRole("button", { name: "Try again: put your team together" }));
-    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });
 

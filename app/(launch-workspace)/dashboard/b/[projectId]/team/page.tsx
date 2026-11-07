@@ -19,5 +19,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TeamHqPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
-  return <TeamHqPanel projectId={project._id} businessName={project.name} />;
+  return <TeamHqPanel projectId={project._id} businessName={project.name} partnerName={project.partnerName} />;
 }

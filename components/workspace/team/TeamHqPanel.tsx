@@ -14,9 +14,10 @@ import { PlanByOwner } from "@/components/workspace/team/PlanByOwner";
 import { SkippedRoles } from "@/components/workspace/team/SkippedRoles";
 import { TeamGrid } from "@/components/workspace/team/TeamGrid";
 import { SkeletonBlock, TeamSkeleton } from "@/components/workspace/team/TeamSkeleton";
-import { useNow } from "@/components/workspace/team/useNow";
+import { useNow } from "@/components/workspace/kit/useNow";
 import { WhyThisTeam, WHY_THIS_TEAM_ID } from "@/components/workspace/team/WhyThisTeam";
 import { cn } from "@/lib/utils";
+import { openReviews } from "@/lib/workspace/needsYou";
 import { TEAM_PARTNER_NAME, TEAM_UNAVAILABLE_COPY } from "@/lib/workspace/reviewPages";
 import {
   employeeStatuses,
@@ -70,7 +71,7 @@ function Shell({ businessName, summary, children }: { businessName: string; summ
   );
 }
 
-function Live({ projectId, businessName }: { projectId: Id<"projects">; businessName: string }) {
+function Live({ projectId, businessName, partnerName }: { projectId: Id<"projects">; businessName: string; partnerName?: string }) {
   const launch = useQuery(api.crew.roster.launchStatus, { projectId });
   const progress = useQuery(api.crew.launch.launchProgress, { projectId });
   const reviews = useQuery(api.workspace.reviews.pendingReviews, { projectId });
@@ -86,8 +87,8 @@ function Live({ projectId, businessName }: { projectId: Id<"projects">; business
     );
   }
 
-  const open = reviews.filter((review) => review.expiresAt > now);
-  const lead = leadName(launch);
+  const open = openReviews(reviews, now);
+  const lead = leadName(launch, partnerName);
   const steps: TeamStep[] = progress.steps;
   const roster = launch.state === "ready" ? readyRoster(launch) : { hired: [], skipped: [] };
   const statuses = employeeStatuses(roster.hired, steps, open);
@@ -123,16 +124,27 @@ function Live({ projectId, businessName }: { projectId: Id<"projects">; business
   );
 }
 
-function Unavailable({ projectId, businessName, message }: { projectId?: Id<"projects">; businessName: string; message: string }) {
+function Unavailable({
+  projectId,
+  businessName,
+  partnerName,
+  message,
+}: {
+  projectId?: Id<"projects">;
+  businessName: string;
+  partnerName?: string;
+  message: string;
+}) {
   return (
     <Shell businessName={businessName} summary={message}>
       <ErrorState message={message} />
-      {projectId === undefined ? null : <BlueprintView projectId={projectId} leadName={TEAM_PARTNER_NAME} />}
+      {projectId === undefined ? null : <BlueprintView projectId={projectId} leadName={partnerName ?? TEAM_PARTNER_NAME} />}
     </Shell>
   );
 }
 
-export function TeamHqPanel({ projectId, businessName }: { projectId: Id<"projects">; businessName: string }) {
+/** `partnerName` is the name the founder chose; it names the lead until the team is written. */
+export function TeamHqPanel({ projectId, businessName, partnerName }: { projectId: Id<"projects">; businessName: string; partnerName?: string }) {
   return (
     <WhenConvexReady
       fallback={
@@ -141,12 +153,12 @@ export function TeamHqPanel({ projectId, businessName }: { projectId: Id<"projec
           <TeamSkeleton />
         </Shell>
       }
-      unavailable={<Unavailable businessName={businessName} message="Your team couldn't load right now. Reload the page to try again." />}
+      unavailable={<Unavailable businessName={businessName} partnerName={partnerName} message="Your team couldn't load right now. Reload the page to try again." />}
     >
       <QuietErrorBoundary
-        fallback={<Unavailable projectId={projectId} businessName={businessName} message={TEAM_UNAVAILABLE_COPY} />}
+        fallback={<Unavailable projectId={projectId} businessName={businessName} partnerName={partnerName} message={TEAM_UNAVAILABLE_COPY} />}
       >
-        <Live projectId={projectId} businessName={businessName} />
+        <Live projectId={projectId} businessName={businessName} partnerName={partnerName} />
       </QuietErrorBoundary>
     </WhenConvexReady>
   );

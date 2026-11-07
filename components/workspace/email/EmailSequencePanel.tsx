@@ -10,6 +10,7 @@ import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/clien
 import { type ReviewDecide } from "@/components/workspace/review/ArtifactReviewCard";
 import { LiveArtifactReview } from "@/components/workspace/review/LiveArtifactReview";
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
+import { useNow } from "@/components/workspace/kit/useNow";
 import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit/states";
 import { CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
@@ -221,7 +222,7 @@ function StepRail({ emails, selected, onSelect, baseId, panelId }: {
 function ReadyEmail({ projectId, view }: { projectId: Id<"projects">; view: ReadyView }) {
   const [selected, setSelected] = useState(0);
   // Read once on the client, the same way the review card reads its expiry.
-  const [now] = useState(() => Date.now());
+  const now = useNow();
   const baseId = useId();
   const panelId = `${baseId}-panel`;
   const index = Math.min(selected, view.emails.length - 1);

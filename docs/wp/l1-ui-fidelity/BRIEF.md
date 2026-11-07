@@ -25,7 +25,7 @@ It is served at `http://127.0.0.1:3199/project/<Board>.dc.html` while the orches
    (`08-shell-fusion.md`) still waits. Where an audit says "chat column waits for D26" or "chat is on the
    Dashboard only", this decision overrides it.
 2. **The board header on every workspace page**, from one shared kit component: the route name as the eyebrow
-   (ember) and a serif sentence with an italic tail as the h1.
+   (ink by default, ember where the page board uses it) and a serif sentence with an italic tail as the h1.
 3. **New token `home-ember-soft` (#fbf3e8)** under D18. Replace the hard-coded `bg-[#fbf3e8]`.
 4. **Ships before Monday** (L1 private beta, 2026-11-09).
 

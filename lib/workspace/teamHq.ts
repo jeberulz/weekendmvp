@@ -5,6 +5,7 @@ import { ROLE_CATALOGUE } from "@/convex/crew/roles";
 import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
 import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
 import type { LaunchHiredRole, LaunchSkippedRole, LaunchView } from "@/lib/workspace/crew/launch";
+import { needsYouTail } from "@/lib/workspace/needsYou";
 import { TEAM_NOT_STARTED_COPY, TEAM_PARTNER_NAME } from "@/lib/workspace/reviewPages";
 import { workspacePath } from "@/lib/workspace/routes";
 
@@ -72,13 +73,17 @@ export const REVIEW_OWNER: Readonly<Record<ArtifactKind, RoleKey>> = Object.free
   build_pack: "engineering",
 });
 
-/** The lead's name (the partner name), or "Your co-founder" until the team is written. */
-export function leadName(launch: LaunchView | undefined): string {
+/**
+ * The lead's name (the partner name), or the founder's chosen partner name, or
+ * "Your co-founder", until the team is written.
+ */
+export function leadName(launch: LaunchView | undefined, partnerName?: string): string {
   if (launch !== undefined && launch.state === "ready") {
     const lead = launch.hired.find((entry) => entry.roleKey === "lead");
     if (lead !== undefined && lead.employeeName.trim() !== "") return lead.employeeName;
   }
-  return TEAM_PARTNER_NAME;
+  const chosen = partnerName?.trim();
+  return chosen === undefined || chosen === "" ? TEAM_PARTNER_NAME : chosen;
 }
 
 // ---------------------------------------------------------------------------
@@ -259,7 +264,7 @@ export type TeamHeaderInput = {
   readonly lead: string;
   /** Statuses of every hired role (ready only). */
   readonly statuses: readonly EmployeeStatusEntry[];
-  /** Open (unexpired) reviews. */
+  /** Open (unexpired) reviews: the one "need you" count (`lib/workspace/needsYou.ts`). Paused steps are not counted. */
   readonly reviewCount: number;
 };
 
@@ -287,23 +292,25 @@ export function teamHeaderCopy(input: TeamHeaderInput): TeamHeaderCopy {
       const counts = headCounts(statuses);
       const specialists = statuses.filter((entry) => entry.role !== "lead");
       const spec = headCounts(specialists);
-      const needs = counts.needs_you;
       const parts: string[] = [
         reviewCount === 0 ? `${lead} has no reviews waiting.` : `${lead} is routing ${reviewsPhrase(reviewCount)}.`,
       ];
       if (specialists.length > 0) {
-        const clauses = [`${spec.needs_you} need you`];
+        // "Need you" lives only in the h1 tail (open reviews, `needsYou.ts`), so no second count can disagree.
+        const clauses: string[] = [];
         if (spec.working > 0) clauses.push(`${spec.working} working`);
         if (spec.queued > 0) clauses.push(`${spec.queued} queued`);
         if (spec.done > 0) clauses.push(`${spec.done} done`);
         if (spec.failed > 0) clauses.push(`${spec.failed} failed`);
         if (spec.coming_soon > 0) clauses.push(`${spec.coming_soon} coming soon`);
-        parts.push(`Of ${specialists.length} ${specialists.length === 1 ? "specialist" : "specialists"}: ${clauses.join(", ")}.`);
+        if (clauses.length > 0) {
+          parts.push(`Of ${specialists.length} ${specialists.length === 1 ? "specialist" : "specialists"}: ${clauses.join(", ")}.`);
+        }
       }
       parts.push("Nothing sends, posts or spends without your OK.");
       return {
         lead: `${counts.all} on the team.`,
-        tail: needs === 0 ? "Nobody needs you right now." : needs === 1 ? "1 needs you." : `${needs} need you.`,
+        tail: needsYouTail(reviewCount),
         summary: parts.join(" "),
         showWhy: true,
       };

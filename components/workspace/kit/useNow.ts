@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const NOW_REFRESH_MS = 60_000;
 
-/** The time now, refreshed every minute and when the tab becomes visible again, so an expired card drops off. */
+/** The time now, refreshed every minute and when the tab becomes visible again, so an expired card or review drops off. */
 export function useNow(): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {

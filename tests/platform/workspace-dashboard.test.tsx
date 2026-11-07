@@ -145,13 +145,14 @@ describe("helpers", () => {
     expect(parts.find((p) => p.key === "blueprint")?.label).toBe("done");
   });
 
-  test("team counts use distinct hired owners of open reviews", () => {
+  test("team counts use the open reviews, not the roles that own them", () => {
     const hired = [
       { role: "lead" as const, name: "Wren", roleLabel: "Crew Lead" },
       { role: "brand" as const, name: "Iris", roleLabel: "Brand" },
       { role: "email" as const, name: "Elle", roleLabel: "Email" },
     ];
-    expect(teamCounts(hired, [{ kind: "brand_kit" }, { kind: "brand_kit" }])).toEqual({ onIt: 3, needYou: 1 });
+    expect(teamCounts(hired, [{ kind: "brand_kit" }, { kind: "brand_kit" }])).toEqual({ onIt: 3, needYou: 2 });
+    expect(teamCounts(hired, [])).toEqual({ onIt: 3, needYou: 0 });
   });
 
   test("expired reviews drop off", () => {
@@ -238,6 +239,7 @@ describe("ready dashboard", () => {
     expect(within(row("social")).getByText("Working")).toBeTruthy();
     expect(within(row("blueprint")).getByText("Drafted")).toBeTruthy();
     expect(within(row("site")).getByText("Coming soon")).toBeTruthy();
+    expect(within(row("blueprint")).getByRole("link", { name: /Open the blueprint/ }).getAttribute("href")).toBe("/dashboard/b/project1/team#blueprint");
     expect(within(row("workspace")).getByText("Set up")).toBeTruthy();
   });
 

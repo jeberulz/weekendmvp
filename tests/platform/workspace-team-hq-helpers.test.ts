@@ -169,12 +169,12 @@ describe("counts, filters and header", () => {
 
   const ready: LaunchView = { state: "ready", hired: [], skipped: [] };
 
-  test("ready header: counts come from the statuses, and zero says so honestly", () => {
+  test("ready header: the tail counts open reviews, not paused or needs_you roles", () => {
     const copy = teamHeaderCopy({ launch: ready, lead: "Wren", statuses: entries, reviewCount: 2 });
     expect(copy.lead).toBe("5 on the team.");
-    expect(copy.tail).toBe("1 needs you.");
+    expect(copy.tail).toBe("2 need you.");
     expect(copy.summary).toBe(
-      "Wren is routing 2 reviews. Of 4 specialists: 0 need you, 1 working, 1 done, 2 coming soon. Nothing sends, posts or spends without your OK.",
+      "Wren is routing 2 reviews. Of 4 specialists: 1 working, 1 done, 2 coming soon. Nothing sends, posts or spends without your OK.",
     );
     expect(copy.showWhy).toBe(true);
   });
@@ -185,7 +185,8 @@ describe("counts, filters and header", () => {
     expect(copy.tail).toBe("Nobody needs you right now.");
     expect(copy.summary.startsWith("Wren has no reviews waiting.")).toBe(true);
     const two = entries.map((entry) => ({ ...entry, status: "needs_you" as const }));
-    expect(teamHeaderCopy({ launch: ready, lead: "Wren", statuses: two, reviewCount: 1 }).tail).toBe("5 need you.");
+    expect(teamHeaderCopy({ launch: ready, lead: "Wren", statuses: two, reviewCount: 0 }).tail).toBe("Nobody needs you right now.");
+    expect(teamHeaderCopy({ launch: ready, lead: "Wren", statuses: two, reviewCount: 1 }).tail).toBe("1 needs you.");
     expect(teamHeaderCopy({ launch: ready, lead: "Wren", statuses: entries, reviewCount: 1 }).summary).toContain("routing 1 review.");
   });
 
@@ -221,6 +222,9 @@ describe("lead, roster, announcements, errors", () => {
     expect(leadName(launch)).toBe("Wren");
     expect(leadName({ state: "assembling" })).toBe("Your co-founder");
     expect(leadName(undefined)).toBe("Your co-founder");
+    expect(leadName({ state: "assembling" }, "Juno")).toBe("Juno");
+    expect(leadName(undefined, "  ")).toBe("Your co-founder");
+    expect(leadName(launch, "Juno")).toBe("Wren");
   });
 
   test("readyRoster narrows keys", () => {

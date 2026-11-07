@@ -12,7 +12,7 @@ import { LaunchBanner } from "@/components/workspace/dashboard/LaunchBanner";
 import { PendingApprovals } from "@/components/workspace/dashboard/PendingApprovals";
 import { SetupChecklist } from "@/components/workspace/dashboard/SetupChecklist";
 import { TeamStrip } from "@/components/workspace/dashboard/TeamStrip";
-import { useNow } from "@/components/workspace/dashboard/useNow";
+import { useNow } from "@/components/workspace/kit/useNow";
 import {
   bannerCopy,
   checklistRows,

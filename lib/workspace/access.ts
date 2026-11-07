@@ -15,7 +15,7 @@ export type WorkspaceProject = {
   readonly name: string;
   /** The co-founder's name from the wizard. Callers default to "Wren" only when this is missing. */
   readonly partnerName?: string;
-  /** The switcher sub-line, e.g. "Web app · Free for now". */
+  /** The switcher sub-line, e.g. "Web app". */
   readonly subline?: string;
   /** The signed-in owner's display name, name or email. */
   readonly viewerName?: string;

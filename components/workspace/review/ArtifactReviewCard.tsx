@@ -153,7 +153,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact, headingLev
           setMessage(approvalDecisionCopy(result.status, { approvalKind: artifact.approvalKind }));
           return;
         }
-        setMessage(changesOutcomeCopy(result.changeRound, result.status, result.changed, noun));
+        setMessage(changesOutcomeCopy(result.changeRound, result.status, result.changed, noun, artifact.approvalKind));
         keepOpen = keepsFormOpen(result.changeRound, result.status, result.changed);
         if (!keepOpen) {
           setAsking(false);

@@ -211,14 +211,16 @@ export function previewIsBusy(state: PreviewState): boolean {
 /**
  * What the server answered to "Ask for changes", in words. Without a
  * change-round answer the decision's own status speaks (an expired card, or a
- * re-ask that changed nothing because the team is already on it).
+ * re-ask that changed nothing because the team is already on it). `approvalKind`
+ * (`send`, `post`) picks the beta wording; when absent (Brand kit, blueprint) the
+ * line stays neutral.
  */
 export function changesOutcomeCopy(
   answer: ChangeRoundAnswer | undefined,
   status: string,
   changed: boolean,
   noun: string = "emails",
-  approvalKind: string = "send",
+  approvalKind?: string,
 ): string {
   if (answer === undefined) {
     if (!changed && status === "changes_requested") {

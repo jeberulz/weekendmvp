@@ -42,7 +42,7 @@ export function BusinessSwitcher({
 }: {
   currentId: string;
   businesses: readonly WorkspaceBusiness[];
-  /** The current business's sub-line, e.g. "Web app · Free for now". Omitted when unknown. */
+  /** The current business's sub-line, e.g. "Web app". Omitted when unknown. */
   subline?: string;
 }) {
   const [open, setOpen] = useState(false);

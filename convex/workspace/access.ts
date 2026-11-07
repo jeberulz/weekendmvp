@@ -41,7 +41,7 @@ export const workspaceAccessValidator = v.union(
       name: v.string(),
       /** The name the founder gave their co-founder in the wizard (`workspace.partner.name`). Absent for older rows. */
       partnerName: v.optional(v.string()),
-      /** The shell's switcher sub-line, e.g. "Web app · Free for now". Absent when the platform is unknown. */
+      /** The shell's switcher sub-line, e.g. "Web app". Absent when the platform is unknown. */
       subline: v.optional(v.string()),
       /** The signed-in owner's display name, name or email, for the shell's user row. */
       viewerName: v.optional(v.string()),
@@ -50,15 +50,15 @@ export const workspaceAccessValidator = v.union(
   v.object({ allowed: v.literal(false) }),
 );
 
-/** The switcher sub-line. L1 is free only, so "Free for now" is true as a plan state. */
+/** The switcher sub-line: the platform label only (the commercial model is the wizard's, not the shell's). */
 function businessSubline(platform: string | undefined): string | undefined {
   switch (platform) {
     case "web":
-      return "Web app · Free for now";
+      return "Web app";
     case "native":
-      return "Mobile app · Free for now";
+      return "Mobile app";
     case "custom":
-      return "Custom build · Free for now";
+      return "Custom build";
     default:
       return undefined;
   }

@@ -154,6 +154,11 @@ describe("helpers", () => {
     expect(changesOutcomeCopy(undefined, "changes_requested", false)).toMatch(/note wasn't sent/);
     expect(changesOutcomeCopy({ outcome: "spend_required", costCredits: 1 }, "pending", true)).toMatch(/costs 1 credit\./);
   });
+  test("an approved status in a change round follows the artifact's approval kind, and is neutral without one", () => {
+    expect(changesOutcomeCopy(undefined, "approved", true, "emails", "send")).toMatch(/Sending is off/);
+    expect(changesOutcomeCopy(undefined, "approved", true, "posts", "post")).toMatch(/Posting is off/);
+    expect(changesOutcomeCopy(undefined, "approved", true, "emails")).toBe("Approved.");
+  });
   test("merge tags split out as tokens", () => {
     expect(splitMergeTags("Hi {first name}, welcome")).toEqual([
       { text: "Hi ", tag: false },

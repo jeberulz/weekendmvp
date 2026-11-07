@@ -1,9 +1,12 @@
 import { ConvexError } from "convex/values";
 
 import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
-import { ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import type { RoleKey } from "@/lib/workspace/contracts/roster";
 import type { LaunchHiredRole, LaunchView } from "@/lib/workspace/crew/launch";
+import { openReviews } from "@/lib/workspace/needsYou";
+import { BLUEPRINT_SECTION_ID } from "@/lib/workspace/reviewPages";
 import { workspacePath } from "@/lib/workspace/routes";
+import { isRoleKey, REVIEW_OWNER } from "@/lib/workspace/teamHq";
 
 /**
  * L1 UI fidelity: the pure rules behind the workspace Dashboard. Everything on
@@ -36,8 +39,6 @@ export type DashReview = {
 
 export type DashHired = { readonly role: RoleKey; readonly name: string; readonly roleLabel: string };
 
-const isRoleKey = (value: string): value is RoleKey => (ROLE_KEYS as readonly string[]).includes(value);
-
 /** The hired team with role keys narrowed (an unknown key, never expected, is dropped). */
 export function hiredTeam(launch: LaunchView): DashHired[] {
   if (launch.state !== "ready") return [];
@@ -47,20 +48,6 @@ export function hiredTeam(launch: LaunchView): DashHired[] {
   }
   return hired;
 }
-
-/** Who owns the review for each artifact kind. */
-export const REVIEW_OWNER: Readonly<Record<ArtifactKind, RoleKey>> = Object.freeze({
-  blueprint: "lead",
-  roster_plan: "lead",
-  brand_kit: "brand",
-  email_sequence: "email",
-  social_pack: "social",
-  landing_spec: "landing",
-  seo_pack: "seo",
-  launch_plan: "marketing",
-  ads_drafts: "ads",
-  build_pack: "engineering",
-});
 
 /** The step key each review kind belongs to. */
 const REVIEW_STEP: Readonly<Partial<Record<ArtifactKind, string>>> = Object.freeze({
@@ -76,11 +63,6 @@ const REVIEW_STEP: Readonly<Partial<Record<ArtifactKind, string>>> = Object.free
   build_pack: "build_pack",
 });
 
-/** Reviews still open: the query never reads the clock, so a card past `expiresAt` is left out here. */
-export function openReviews<T extends { readonly expiresAt: number }>(reviews: readonly T[], now: number): T[] {
-  return reviews.filter((review) => review.expiresAt > now);
-}
-
 /** Steps that exist in this beta: not "coming later" and not skipped by the roster. */
 export function countedSteps(steps: readonly DashStep[]): DashStep[] {
   return steps.filter((step) => step.notBuilt !== true && step.state !== "skipped");
@@ -94,6 +76,8 @@ export function reviewStepKeys(reviews: readonly Pick<DashReview, "kind">[]): Se
   }
   return keys;
 }
+
+export { openReviews };
 
 // ---------------------------------------------------------------------------
 // Launch banner
@@ -224,11 +208,9 @@ export function segments(steps: readonly DashStep[], reviews: readonly Pick<Dash
 // Team strip
 // ---------------------------------------------------------------------------
 
-/** "9 on it, 4 need you": hired roles, and the distinct hired roles that own an open review. */
+/** "9 on it, 4 need you": hired roles, and the open reviews waiting on the founder (`reviews` are already open). */
 export function teamCounts(hired: readonly DashHired[], reviews: readonly Pick<DashReview, "kind">[]): { onIt: number; needYou: number } {
-  const owners = new Set<RoleKey>();
-  for (const review of reviews) owners.add(REVIEW_OWNER[review.kind]);
-  return { onIt: hired.length, needYou: hired.filter((entry) => owners.has(entry.role)).length };
+  return { onIt: hired.length, needYou: reviews.length };
 }
 
 export function teamHeadingTail(counts: { onIt: number; needYou: number }): string {
@@ -320,7 +302,7 @@ export function checklistRows(input: {
       title: "Blueprint",
       detail: "Who it is for, the one loop, and what is left out.",
       status: stepStatus(find("blueprint"), needs.has("blueprint"), "Drafted"),
-      href: workspacePath(projectId, "team"),
+      href: `${workspacePath(projectId, "team")}#${BLUEPRINT_SECTION_ID}`,
       linkLabel: "Open the blueprint",
     },
     {

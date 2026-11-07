@@ -371,6 +371,27 @@ describe("What Wren knows: review fixes", () => {
 });
 
 
+describe("What Wren knows: the chosen partner name", () => {
+  test("body copy uses the partner name, never Wren", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view(["Launch is Sunday."], "")} name="Juno" /></main>);
+    expect(screen.getByText(/No summary yet\. Juno writes one/u)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Delete fact 1" }));
+    expect(screen.getByRole("group", { name: "Delete fact 1? Juno will forget it." })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Delete fact" }));
+    expect(status().textContent).toBe("Fact deleted. Juno will no longer use it.");
+    expect(screen.getByText("Juno hasn't noted anything yet")).toBeTruthy();
+    expect(screen.queryByText(/Wren/u)).toBeNull();
+  });
+
+  test("the summary editor is labelled with the partner name", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view([])} name="Juno" /></main>);
+    await user.click(screen.getByRole("button", { name: /Edit.*summary/u }));
+    expect(screen.getByRole("textbox", { name: "Edit Juno's summary" })).toBeTruthy();
+  });
+});
+
 describe("What Wren knows: reader card", () => {
   test("a mono file name, a meta line from updatedAt and the fact count, and a 40px-target Edit/Delete", () => {
     render(<main><Harness initial={view(["Launch is Sunday.", "Price is $9."])} name="Iris" /></main>);

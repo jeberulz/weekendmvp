@@ -26,9 +26,7 @@ import { cn } from "@/lib/utils";
 import { launchErrorMessage, launchStateKey, teamAnnouncement, teamView, type TeamView } from "./CofounderTeam";
 import { ScreenHead } from "./wizard-ui";
 
-// Team HQ still imports these from here (until its own rebuild drops the old card).
-export { CofounderTeam, launchErrorMessage, teamAnnouncement } from "./CofounderTeam";
-export type { CofounderTeamProps } from "./CofounderTeam";
+export { launchErrorMessage, teamAnnouncement } from "./CofounderTeam";
 
 /** One launch step as the "Meanwhile, building" list reads it (`api.crew.launch.launchProgress`). */
 export type MeetProgressStep = {

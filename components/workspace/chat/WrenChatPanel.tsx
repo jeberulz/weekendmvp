@@ -10,7 +10,7 @@ import { UserMessage, WrenComposer, WrenThread } from "@/components/workspace/ki
 import { WrenChatCards, visibleWrenCards } from "@/components/workspace/chat/WrenChatCards";
 import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
-import { useNow } from "@/components/workspace/shell/useNow";
+import { useNow } from "@/components/workspace/kit/useNow";
 import { cn } from "@/lib/utils";
 import { resetsInLabel, WREN_STREAM_STALE_MS, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
 

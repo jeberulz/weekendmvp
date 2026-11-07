@@ -92,7 +92,8 @@ function ReviewRow({
         </span>
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-home-ink">{review.title}</span>
-          <StatusPill set="output" status="ready" label={round ?? "Waiting on you"} />
+          <StatusPill set="output" status="ready" label="Waiting on you" />
+          {round === null ? null : <span className="text-[13px] text-home-ink-2">{round}</span>}
         </span>
         <span className="text-[13px] text-home-ink-3">Closes {expiresInWords(review.expiresAt, now)}.</span>
       </span>

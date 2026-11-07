@@ -381,7 +381,7 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
         requestFocus({ kind: "facts_heading" });
         return;
       }
-      setStatus("Fact deleted. Wren will no longer use it.");
+      setStatus(`Fact deleted. ${name} will no longer use it.`);
       // Rows are keyed by position, so the Edit button at this index (or the one before, for the last
       // fact) survives the update and then names the next fact. Wait for the live list to drop the row.
       const left = facts.length - 1;
@@ -430,8 +430,8 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
     return (
       <div className="flex flex-col gap-3 px-6 py-5">
         <div ref={emptyRef} tabIndex={-1} className={cn("rounded-xl", FOCUS)}>
-          <EmptyState title="Wren hasn't noted anything yet">
-            As you chat, Wren keeps a short summary and a few facts about your business here, so it remembers what
+          <EmptyState title={`${name} hasn't noted anything yet`}>
+            As you chat, {name} keeps a short summary and a few facts about your business here, so it remembers what
             matters. You can edit or delete any of them.
           </EmptyState>
         </div>
@@ -463,7 +463,7 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
         </h3>
         {openEdit?.target === "summary" ? (
           <MemoryEditForm
-            label="Edit Wren's summary"
+            label={`Edit ${name}'s summary`}
             initial={summary}
             max={limits.summaryMaxChars}
             hint="Plain prose, no links or instructions. Save it empty to clear it."
@@ -476,7 +476,7 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
         ) : (
           <>
             {summary === "" ? (
-              <p className="text-sm text-home-ink-2">No summary yet. Wren writes one as your plans take shape.</p>
+              <p className="text-sm text-home-ink-2">No summary yet. {name} writes one as your plans take shape.</p>
             ) : (
               <p className={MONO_TEXT}>{summary}</p>
             )}
@@ -509,11 +509,11 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
         </h3>
         {full ? (
           <p className="text-[13px] text-home-ink-2">
-            Wren&apos;s notes are full. Delete a fact you no longer need so Wren can remember new things.
+            {name}&apos;s notes are full. Delete a fact you no longer need so {name} can remember new things.
           </p>
         ) : null}
         {facts.length === 0 ? (
-          <p className="text-sm text-home-ink-2">No facts yet. Wren adds them when you share something worth keeping.</p>
+          <p className="text-sm text-home-ink-2">No facts yet. {name} adds them when you share something worth keeping.</p>
         ) : (
           <ul className="divide-y divide-home-sunk">
             {facts.map((fact, index) => {
@@ -552,7 +552,7 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
                       className="flex flex-wrap items-center gap-2"
                     >
                       <p id={questionId} className="text-[13px] font-medium text-home-ink">
-                        Delete fact {number}? Wren will forget it.
+                        Delete fact {number}? {name} will forget it.
                       </p>
                       <button
                         type="button"

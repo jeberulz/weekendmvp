@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 
 import { WorkspaceFrame, businessInitial, groupHeadingId, isRouteActive, visibleNavGroups } from "@/components/workspace/shell";
 import { BusinessSwitcher, SWITCHER_LIST_ID, switcherLabel } from "@/components/workspace/shell/BusinessSwitcher";
-import { listBusinesses } from "@/lib/workspace/businesses";
+import type { WorkspaceBusiness } from "@/lib/workspace/businesses";
 import { getCreditsSummary } from "@/lib/workspace/credits";
 import {
   WORKSPACE_NAV_GROUPS,
@@ -19,7 +19,7 @@ import {
 
 const PROJECT = "proj1";
 const credits = { balance: 48, max: 50, plan: "free" } as const;
-const businesses = listBusinesses({ id: PROJECT, name: "HydroTrail" });
+const businesses: readonly WorkspaceBusiness[] = [{ id: PROJECT, name: "HydroTrail" }];
 
 function renderFrame(weekendActive = true): string {
   return renderToStaticMarkup(
@@ -102,10 +102,6 @@ describe("data seams", () => {
     const b = await getCreditsSummary("b");
     expect(a).toEqual(b);
     expect(a).toEqual(credits);
-  });
-
-  test("the business list is only the current business", () => {
-    expect(listBusinesses({ id: "p", name: "N" })).toEqual([{ id: "p", name: "N" }]);
   });
 });
 
