@@ -10,9 +10,9 @@ L1 is invite-only (cohort `allowlist`), free only, no payments, nothing sends or
 
 | Area | What the founder gets | State today |
 |---|---|---|
-| Wizard | `/start/{idea}` or own idea, then Meet your co-founder | Merged (WP74) |
+| Wizard | `/start/{idea}` or own idea, then Meet your co-founder | Merged (WP74). An idea with no `idea_crew_seeds` row gets a generic blueprint suggestion, labelled "Not yet validated" (D15). Before Monday, seed every idea we invite people to build, or the owner accepts the generic step (see the findings below). L1-C5 and L1-C7 fix the wizard's dead end and name |
 | The launch | Blueprint → team → brand kit text → 4 waitlist emails + 7 social posts, with retries and refunds | Merged up to the email (WP75, WP76-S1a); social pack in review (WP76-S2a) |
-| Wren chat home | Chat, plus approve / ask-for-changes cards for every artifact | Merged (WP77) |
+| Wren chat home | Chat with Wren | Chat merged (WP77). The crew's `artifact_review` cards are **not** shown there unless a Wren reply attaches one, so reviews need L1-C6 (a "Waiting on you" list) before Monday |
 | Email page | The four emails and the sequence's review card | Merged (WP76-S1b) |
 | Social page | The seven posts, a copy button and character count per platform, the review card | To build (WP76-S2b) |
 | Brand kit page | The kit (name, tagline, voice, palette, type) read-only, with its review card | To build (L1-C1) |
@@ -53,7 +53,9 @@ say "Coming soon" for each, so nothing looks broken.
 2. Deploy Convex to production (`first-squirrel-244`) and Vercel.
 3. Production Convex env: `AI_PROVIDER_MODE=live` and `ANTHROPIC_API_KEY`. No Recraft or OpenAI key: logos and
    Studio are coming soon.
-4. Ops settings (super admin): workspace on, cohort `allowlist`, global daily budget $10, kill switch `ai` off;
+4. Ops settings (super admin): workspace on, cohort `allowlist`, kill switch `ai` off, and the $10 daily cap split
+   across both AI pools, because paid-plan owners (and any credit-funded work) draw from the paid pool, which
+   defaults to zero: for example free pool $7 and paid pool $3. Free and paid together never pass $10;
    `email`, `social`, `publish`, `ads` and `studioVideo` stay on (off for the product).
 5. Add the test accounts to the cohort, run (or watch) the five live launches, then add the beta invitees.
 
@@ -61,7 +63,7 @@ say "Coming soon" for each, so nothing looks broken.
 
 - `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass on the merged tree.
 - Codex 13 and 18 live.
-- Five live launches complete, each under the $10 daily cap, median cost per launch ≤ $0.75. Any step failure is
+- Five live launches complete, with both pools together under the $10 daily cap, median cost per launch ≤ $0.75. Any step failure is
   understood and either fixed or accepted in writing.
 - a11y-check passes on every screen that ships.
 - Nothing sends, posts or publishes: the kill switches above are on.
