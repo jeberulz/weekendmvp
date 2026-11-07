@@ -16,7 +16,18 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { changeRoundNote, expiresInWords, isHexColour } from "@/lib/workspace/reviewPages";
 
 const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
-const live: { brand: unknown; blueprint: unknown; pending: unknown; preview: unknown } = {
+const READY_TEAM = {
+  state: "ready",
+  hired: [
+    { roleKey: "lead", employeeName: "Wren", roleLabel: "Crew Lead", reason: "Always." },
+    { roleKey: "brand", employeeName: "Iris", roleLabel: "Brand", reason: "Always." },
+    { roleKey: "social", employeeName: "Theo", roleLabel: "Social", reason: "Always." },
+  ],
+  skipped: [],
+};
+const live: { brand: unknown; blueprint: unknown; pending: unknown; preview: unknown; status: unknown; progress: unknown } = {
+  status: READY_TEAM,
+  progress: { started: true, retryable: false, steps: [] },
   brand: undefined,
   blueprint: undefined,
   pending: undefined,
@@ -31,6 +42,8 @@ vi.mock("convex/react", async () => {
       if (args === "skip") return undefined;
       const name = getFunctionName(ref);
       if (name.includes("previewChangeRound")) return live.preview;
+      if (name.includes("launchStatus")) return live.status;
+      if (name.includes("launchProgress")) return live.progress;
       if (name.includes("brandKitDraft")) return live.brand;
       if (name.includes("blueprintDraft")) return live.blueprint;
       if (name.includes("pendingReviews")) return live.pending;
@@ -39,6 +52,7 @@ vi.mock("convex/react", async () => {
     useMutation: (ref: Parameters<typeof getFunctionName>[0]) => {
       const name = getFunctionName(ref);
       if (name.endsWith(":decideApproval")) return decideMock;
+      if (name.endsWith(":retryLaunch") || name.endsWith(":resumeLaunch")) return vi.fn();
       throw new Error(`unexpected mutation ${name}`);
     },
   };
@@ -50,6 +64,8 @@ vi.mock("@/components/platform/client-gates", async () => {
     QuietErrorBoundary: actual.QuietErrorBoundary,
   };
 });
+
+vi.mock("next/font/google", async () => (await import("./tenant-site-helpers")).fontMockModule([]));
 
 const { BrandKitPanel } = await import("@/components/workspace/brand/BrandKitPanel");
 const { TeamHqPanel } = await import("@/components/workspace/team/TeamHqPanel");
@@ -133,6 +149,8 @@ afterEach(() => {
   live.blueprint = undefined;
   live.pending = undefined;
   live.preview = FREE_PREVIEW;
+  live.status = READY_TEAM;
+  live.progress = { started: true, retryable: false, steps: [] };
 });
 
 describe("helpers", () => {
@@ -181,17 +199,17 @@ describe("Brand kit ready", () => {
   test("shows the name, alternatives, tagline, look, voice, logo and hero art as text", () => {
     live.brand = brandReady();
     render(<BrandKitPanel projectId={PROJECT} />);
-    expect(screen.getByText("HydroTrail")).toBeTruthy();
-    expect(screen.getByText("Other names your team considered")).toBeTruthy();
-    expect(screen.getByText("TrailSip")).toBeTruthy();
-    expect(screen.getByText("Drink better on every trail.")).toBeTruthy();
+    expect(screen.getAllByText("HydroTrail").length).toBeGreaterThan(0);
+    expect(screen.getByText("Other names your team considered: TrailSip, Aquapath.")).toBeTruthy();
+    expect(screen.getAllByText("Drink better on every trail.").length).toBeGreaterThan(0);
     expect(screen.getByText(/Warm utility\./)).toBeTruthy();
     expect(screen.getByText("Soft corners, balanced spacing")).toBeTruthy();
     expect(screen.getByText(/Light theme\. Used outdoors in daylight\./)).toBeTruthy();
     expect(screen.getByText("Bricolage Grotesque for headings, Figtree for text")).toBeTruthy();
-    expect(screen.getByText("Friendly, Plain")).toBeTruthy();
-    expect(screen.getByText("Fill up and go.")).toBeTruthy();
-    expect(screen.getByText("Hydration solution.")).toBeTruthy();
+    const traits = within(screen.getByRole("list", { name: "Voice traits" })).getAllByRole("listitem");
+    expect(traits.map((item) => item.textContent)).toEqual(["Friendly", "Plain"]);
+    expect(screen.getByText(/Fill up and go\./)).toBeTruthy();
+    expect(screen.getByText(/Hydration solution\./)).toBeTruthy();
     expect(screen.getByText("Sounds like a brochure.")).toBeTruthy();
     expect(screen.getByText("Logo idea")).toBeTruthy();
     expect(screen.getByText("A droplet shaped like a trail marker.")).toBeTruthy();
@@ -208,22 +226,20 @@ describe("Brand kit ready", () => {
     expect(screen.getByText("First refill. The map pins your spot.")).toBeTruthy();
   });
 
-  test("five swatches each carry name, hex and use as text, and the swatch is hidden from assistive tech", () => {
+  test("five colour cards each carry role, name, hex and use as text, and the swatch is hidden from assistive tech", () => {
     live.brand = brandReady();
     const { container } = render(<BrandKitPanel projectId={PROJECT} />);
-    const section = screen.getByRole("heading", { name: "Colours" }).closest("section") as HTMLElement;
-    const items = within(section).getAllByRole("listitem");
+    const items = within(screen.getByRole("list", { name: "Colours" })).getAllByRole("listitem");
     expect(items).toHaveLength(5);
-    expect(items[0].textContent).toContain("Primary: River blue");
+    expect(items[0].textContent).toContain("Primary");
+    expect(items[0].textContent).toContain("River blue");
     expect(items[0].textContent).toContain("#1D4ED8");
     expect(items[0].textContent).toContain("Buttons and links");
-    expect(items[4].textContent).toContain("Ink: Charcoal");
+    expect(items[4].textContent).toContain("Charcoal");
     expect(items[4].textContent).toContain("#1F2937");
-    const swatches = container.querySelectorAll("svg");
-    expect(swatches).toHaveLength(5);
-    swatches.forEach((svg) => expect(svg.getAttribute("aria-hidden")).toBe("true"));
+    items.forEach((item) => expect(item.querySelector("[aria-hidden='true']")?.className).toContain("h-[88px]"));
     expect(container.querySelector("[style]")).toBeNull();
-    expect(swatches[0].querySelector("rect")?.getAttribute("fill")).toBe("#1D4ED8");
+    expect(container.querySelector("svg")).toBeNull();
   });
 
   test("a hex that is not #RRGGBB never reaches the page as a colour", () => {
@@ -231,16 +247,19 @@ describe("Brand kit ready", () => {
     bad.palette.primary = colour("Odd", 'red" onload="x', "Buttons");
     live.brand = { state: "ready", kit: bad, card: null };
     const { container } = render(<BrandKitPanel projectId={PROJECT} />);
-    expect(container.querySelector("rect")?.getAttribute("fill")).toBe("none");
-    expect(screen.getByText(/Odd/)).toBeTruthy();
+    const first = within(screen.getByRole("list", { name: "Colours" })).getAllByRole("listitem")[0];
+    expect(first.querySelector("[aria-hidden='true']")?.className).not.toContain("bg-(--t-primary)");
+    expect(screen.getByText("Odd")).toBeTruthy();
+    expect(container.querySelector("[onload]")).toBeNull();
+    expect(container.querySelector("style")?.textContent).not.toContain("onload");
   });
 
   test("server text is never parsed as HTML", () => {
     live.brand = brandReady({ name: "<b>Bold</b> <img src=x onerror=alert(1)>" });
     const { container } = render(<BrandKitPanel projectId={PROJECT} />);
-    expect(container.querySelector("b")).toBeNull();
+    expect(Array.from(container.querySelectorAll("b")).some((b) => b.textContent === "Bold")).toBe(false);
     expect(container.querySelector("img")).toBeNull();
-    expect(screen.getByText(/<b>Bold<\/b>/)).toBeTruthy();
+    expect(screen.getAllByText(/<b>Bold<\/b>/).length).toBeGreaterThan(0);
   });
 
   test("the headings run h2 under the page's h1 with no jumps", () => {
@@ -265,7 +284,7 @@ describe("Brand kit review card", () => {
     live.brand = brandReady();
     render(<BrandKitPanel projectId={PROJECT} />);
     const user = userEvent.setup();
-    expect(screen.getByText("Read the brand kit details above. Approve them as they are, or ask your team for changes.")).toBeTruthy();
+    expect(screen.getByText("Read the brand kit details below. Approve them as they are, or ask your team for changes.")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Approve" }));
     expect(decideMock).toHaveBeenCalledWith({ projectId: PROJECT, approvalId: APPROVAL, decision: "approve" });
     await waitFor(() => expect(screen.getByText("Approved.")).toBeTruthy());
@@ -316,21 +335,23 @@ describe("Brand kit review card", () => {
   test("a kit with no card still shows the kit", () => {
     live.brand = brandReady({}, null);
     render(<BrandKitPanel projectId={PROJECT} />);
-    expect(screen.getByText("HydroTrail")).toBeTruthy();
+    expect(screen.getAllByText("HydroTrail").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
   });
 });
 
-describe("Team HQ: Waiting on you", () => {
+describe("Team HQ: reviews the Crew Lead is routing", () => {
   test("loading", () => {
-    render(<TeamHqPanel projectId={PROJECT} />);
-    expect(screen.getAllByText("Loading your reviews…").length).toBeGreaterThan(0);
+    live.status = undefined;
+    live.progress = undefined;
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
+    expect(screen.getAllByText("Loading your team…").length).toBeGreaterThan(0);
   });
 
   test("empty state is shown only when pendingReviews is an empty list", () => {
     live.pending = [];
     live.blueprint = { state: "none" };
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.getByText("Nothing is waiting on you right now.")).toBeTruthy();
   });
 
@@ -340,14 +361,14 @@ describe("Team HQ: Waiting on you", () => {
       review({ approvalId: "approval2", kind: "social_pack", title: "Social posts", changeRound: 2n, expiresAt: Date.now() + 5 * 3_600_000 + 1000, href: "/dashboard/b/project1/social" }),
     ];
     live.blueprint = { state: "none" };
-    render(<TeamHqPanel projectId={PROJECT} />);
-    const section = screen.getByRole("heading", { name: "Waiting on you" }).closest("section") as HTMLElement;
-    const rows = within(section).getAllByRole("listitem");
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
+    const rows = within(screen.getByRole("list", { name: "Reviews Wren is routing" })).getAllByRole("listitem");
     expect(rows).toHaveLength(2);
     expect(rows[0].textContent).toContain("Brand kit");
     expect(rows[0].textContent).toContain("Closes in 2 days.");
     expect(rows[0].textContent).not.toContain("Change round");
-    expect(rows[1].textContent).toContain("Change round 2. Closes in 5 hours.");
+    expect(rows[1].textContent).toContain("Change round 2");
+    expect(rows[1].textContent).toContain("Closes in 5 hours.");
     expect(within(rows[0]).getByRole("link", { name: "Review Brand kit" }).getAttribute("href")).toBe("/dashboard/b/project1/brand");
     expect(within(rows[1]).getByRole("link", { name: "Review Social posts" }).getAttribute("href")).toBe("/dashboard/b/project1/social");
   });
@@ -355,7 +376,7 @@ describe("Team HQ: Waiting on you", () => {
   test("the blueprint row jumps to the blueprint section on this page", () => {
     live.pending = [review({ kind: "blueprint", title: "Blueprint", href: "/dashboard/b/project1/team" })];
     live.blueprint = blueprintReady();
-    const { container } = render(<TeamHqPanel projectId={PROJECT} />);
+    const { container } = render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     const jump = screen.getByRole("link", { name: "Review Blueprint" });
     expect(jump.getAttribute("href")).toBe("#blueprint");
     expect(container.querySelector("section#blueprint")).not.toBeNull();
@@ -364,7 +385,7 @@ describe("Team HQ: Waiting on you", () => {
   test("a blueprint row says the blueprint can't be shown when there is none to jump to", () => {
     live.pending = [review({ kind: "blueprint", title: "Blueprint", href: "/dashboard/b/project1/team" })];
     live.blueprint = { state: "unavailable" };
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.queryByRole("link", { name: "Review Blueprint" })).toBeNull();
     expect(screen.getAllByText("The blueprint can't be shown right now.").length).toBeGreaterThan(0);
   });
@@ -372,7 +393,7 @@ describe("Team HQ: Waiting on you", () => {
   test("the blueprint section is a focusable jump target", () => {
     live.pending = [];
     live.blueprint = blueprintReady();
-    const { container } = render(<TeamHqPanel projectId={PROJECT} />);
+    const { container } = render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(container.querySelector("section#blueprint")?.getAttribute("tabindex")).toBe("-1");
   });
 
@@ -381,7 +402,7 @@ describe("Team HQ: Waiting on you", () => {
     try {
       live.pending = [review({ expiresAt: Date.now() + 30_000 })];
       live.blueprint = { state: "none" };
-      render(<TeamHqPanel projectId={PROJECT} />);
+      render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
       expect(screen.getByRole("link", { name: "Review Brand kit" })).toBeTruthy();
       act(() => {
         vi.advanceTimersByTime(61_000);
@@ -396,28 +417,28 @@ describe("Team HQ: Waiting on you", () => {
   test("a review past its expiry is not listed", () => {
     live.pending = [review({ expiresAt: Date.now() - 1000 })];
     live.blueprint = { state: "none" };
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.queryByRole("link", { name: "Review Brand kit" })).toBeNull();
     expect(screen.getByText("Nothing is waiting on you right now.")).toBeTruthy();
   });
 });
 
-describe("Team HQ: Your blueprint", () => {
+describe("Team HQ: the blueprint section", () => {
   test("none and unavailable", () => {
     live.pending = [];
     live.blueprint = { state: "none" };
-    const first = render(<TeamHqPanel projectId={PROJECT} />);
+    const first = render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.getByText("Your blueprint will appear here once your team writes it.")).toBeTruthy();
     first.unmount();
     live.blueprint = { state: "unavailable" };
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.getByText(/Your blueprint can't be shown right now/)).toBeTruthy();
   });
 
   test("a validated blueprint shows every part and no label", () => {
     live.pending = [];
     live.blueprint = blueprintReady();
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.getByText("A refill map for trail runners.")).toBeTruthy();
     expect(screen.getByText("Trail runners who run long.")).toBeTruthy();
     expect(screen.getByText("Find a refill point, fill up, rate it.")).toBeTruthy();
@@ -432,7 +453,7 @@ describe("Team HQ: Your blueprint", () => {
   test("an own idea shows Not yet validated and no market block", () => {
     live.pending = [];
     live.blueprint = blueprintReady({ source: "own_idea", validated: false, market: undefined });
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     expect(screen.getByText("Not yet validated")).toBeTruthy();
     expect(screen.getByText(/This outline comes from your words only/)).toBeTruthy();
     expect(screen.queryByText("The market")).toBeNull();
@@ -442,7 +463,7 @@ describe("Team HQ: Your blueprint", () => {
     decideMock.mockResolvedValue({ status: "approved", changed: true });
     live.pending = [];
     live.blueprint = blueprintReady();
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     const user = userEvent.setup();
     expect(screen.getByText(/Read the blueprint details above\./)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Approve" }));
@@ -458,7 +479,7 @@ describe("Team HQ: Your blueprint", () => {
     });
     live.pending = [];
     live.blueprint = blueprintReady();
-    render(<TeamHqPanel projectId={PROJECT} />);
+    render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Ask for changes" }));
     await user.type(screen.getByLabelText("What should change?"), "Cut a feature");
@@ -469,7 +490,7 @@ describe("Team HQ: Your blueprint", () => {
   test("passes axe with a waiting list and a ready blueprint", async () => {
     live.pending = [review({ kind: "blueprint", title: "Blueprint", changeRound: 1n, href: "/dashboard/b/project1/team" }), review()];
     live.blueprint = blueprintReady({ source: "own_idea", validated: false, market: undefined });
-    const { container } = render(<TeamHqPanel projectId={PROJECT} />);
+    const { container } = render(<TeamHqPanel projectId={PROJECT} businessName="HydroTrail" />);
     const results = await axe.run(container, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] });
     expect(results.violations.map((v) => v.id)).toEqual([]);
   });
