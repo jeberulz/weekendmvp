@@ -25,13 +25,10 @@ export const COMING_SOON_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
 
 /**
  * Pages that ship for L1 but still render this placeholder until their story
- * lands. A built page with no line here never renders the placeholder (Social,
- * Email, Files and the dashboard have their own pages).
+ * lands. None today: Team HQ and Brand kit (L1-C6, L1-C1) are real pages like
+ * Social, Email, Files and the dashboard.
  */
-export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {
-  team: "Team HQ will show your team and every draft waiting for your review.",
-  brand: "Your brand kit will show here: its name, tagline, voice, colours and type, ready for your review.",
-};
+export const PENDING_PAGE_LINES: Partial<Record<WorkspaceRouteSlug, string>> = {};
 
 /** The coming-soon sentence for a slug. */
 export function comingSoonLine(slug: WorkspaceRouteSlug): string {

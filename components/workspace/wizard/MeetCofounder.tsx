@@ -92,6 +92,8 @@ export type CofounderTeamProps = {
   readonly retrying: boolean;
   /** A refused start or retry, in plain words, for the launch state it happened in. */
   readonly error: string | null;
+  /** Heading level of the section: 3 in the wizard (default), 2 on Team HQ. Sub-headings sit one level below. */
+  readonly level?: 2 | 3;
 };
 
 /** Which of the team section's views shows. */
@@ -132,7 +134,9 @@ export function teamAnnouncement(launch: LaunchView | undefined, partnerName: st
  * always labelled "Skipped" in text, never by colour alone. After Try again,
  * when the button goes away, focus moves to the section heading (WCAG 2.4.3).
  */
-export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying, error }: CofounderTeamProps) {
+export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying, error, level = 3 }: CofounderTeamProps) {
+  const Heading = level === 2 ? "h2" : "h3";
+  const SubHeading = level === 2 ? "h3" : "h4";
   const failureId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const focusHeadingWhenGone = useRef(false);
@@ -157,14 +161,17 @@ export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying,
 
   return (
     <section aria-labelledby="cofounder-team-heading" className={cn(CARD, "flex flex-col gap-4 p-5 text-sm text-home-ink-2")}>
-      <h3
+      <Heading
         id="cofounder-team-heading"
         ref={headingRef}
         tabIndex={-1}
-        className="text-base font-semibold text-home-ink focus:outline-none"
+        className={cn(
+          "text-base font-semibold text-home-ink",
+          level === 2 ? "focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink" : "focus:outline-none",
+        )}
       >
         Your team
-      </h3>
+      </Heading>
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
@@ -207,7 +214,7 @@ export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying,
             later.
           </p>
           <div className="flex flex-col gap-2">
-            <h4 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-home-ink">Hired</h4>
+            <SubHeading className="text-[13px] font-semibold uppercase tracking-[0.08em] text-home-ink">Hired</SubHeading>
             <ul className="flex flex-col divide-y divide-home-rule">
               {launch.hired.map((role) => (
                 <li key={role.roleKey} data-role={role.roleKey} className="flex flex-col gap-0.5 py-2">
@@ -221,7 +228,7 @@ export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying,
           </div>
           {launch.skipped.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <h4 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-home-ink">Skipped for now</h4>
+              <SubHeading className="text-[13px] font-semibold uppercase tracking-[0.08em] text-home-ink">Skipped for now</SubHeading>
               <ul className="flex flex-col gap-2">
                 {launch.skipped.map((role) => (
                   <li

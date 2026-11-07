@@ -26,6 +26,10 @@ import { truncateText } from "./labels";
 /** The label every own-idea blueprint carries (D15). */
 export const NOT_VALIDATED_LABEL = "Not yet validated";
 
+/** What the label means in words, beside it wherever it shows. */
+export const NOT_VALIDATED_MEANING =
+  "This outline comes from your words only. Nobody has researched the market for it yet, so it has no market numbers, prices or keyword data.";
+
 /**
  * The light subset of the C-ART own-idea `Blueprint`. Same field limits;
  * `profile` and `schemaVersion` are left out because the wizard preview does
