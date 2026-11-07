@@ -25,7 +25,7 @@ import type { Blueprint } from "../../lib/workspace/contracts/artifacts";
 import { hydrotrailBlueprint, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { FIXTURE_TEAM_PROFILES } from "../../lib/workspace/contracts/fixtures/teamProfiles";
 import { jobKey } from "../../lib/workspace/contracts/jobs";
-import { rosterPlanSchema } from "../../lib/workspace/contracts/roster";
+import { LEGACY_ALWAYS_HIRED_ROLE_KEYS, LEGACY_ROSTER_RULES_VERSIONS, rosterPlanSchema } from "../../lib/workspace/contracts/roster";
 import { rosterInputFromWizard, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { WORKSTREAM_TITLES } from "../../lib/workspace/crew/launch";
 import { runCrewGeneratorStepWith, type CrewGeneratorCtx } from "./generators";
@@ -588,6 +588,28 @@ describe("WP75-S1 review fixes", () => {
     expect(after.scheduled).toEqual(before.scheduled);
     expect(after.steps).toEqual(before.steps);
     expect(await tokensSpent(w)).toBe(1);
+  });
+
+  test("a roster plan stored before WP90 (eight always roles) still reads as the business's team", async () => {
+    const w = await world();
+    await launchToRoster(w);
+    const legacyAlways = new Set<string>(LEGACY_ALWAYS_HIRED_ROLE_KEYS);
+    const current = expectedPlan(FIXTURE_BLUEPRINT);
+    // What the pre-WP90 rules stored: their rules version, landing, seo, marketing and engineering marked always, no lead marks.
+    const legacy = {
+      ...current,
+      rulesVersion: LEGACY_ROSTER_RULES_VERSIONS[0],
+      hired: current.hired.map(({ decidedBy: _decidedBy, ...entry }) => ({ ...entry, always: legacyAlways.has(entry.roleKey) })),
+      skipped: current.skipped.map(({ decidedBy: _decidedBy, ...entry }) => entry),
+    };
+    expect(rosterPlanSchema.safeParse(legacy).success).toBe(true);
+    const document = (await rows(w)).documents.find((row) => row.kind === "roster_plan");
+    if (document === undefined) throw new Error("no roster document");
+    await w.t.run(async (ctx) => await ctx.db.patch("documents", document._id, { body: JSON.stringify(legacy) }));
+    const view = await as(w, w.owner).query(api.crew.roster.launchStatus, { projectId: w.projectId });
+    if (view.state !== "ready") throw new Error(`not ready: ${JSON.stringify(view)}`);
+    expect(view.hired.map((role) => role.roleKey)).toEqual(legacy.hired.map((entry) => entry.roleKey));
+    expect(view.hired.some((role) => role.decidedBy !== undefined)).toBe(false);
   });
 
   test("writeLaunchRoster on a succeeded roster task with its plan row writes nothing", async () => {

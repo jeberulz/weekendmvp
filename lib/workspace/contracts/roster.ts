@@ -29,6 +29,29 @@ export const roleKeySchema = z.enum(ROLE_KEYS);
 export const CORE_ROLE_KEYS = ["lead", "brand", "email", "social"] as const satisfies readonly RoleKey[];
 export type CoreRoleKey = (typeof CORE_ROLE_KEYS)[number];
 
+/**
+ * Rules versions written before roster per idea (WP90). Their plans hired
+ * eight roles always (`LEGACY_ALWAYS_HIRED_ROLE_KEYS`) and are stored that
+ * way, so a stored plan is checked against the always set of its own version:
+ * a business launched before WP90 keeps its team.
+ */
+export const LEGACY_ROSTER_RULES_VERSIONS = ["2026-11-05.1"] as const;
+export const LEGACY_ALWAYS_HIRED_ROLE_KEYS = [
+  "lead",
+  "brand",
+  "landing",
+  "seo",
+  "marketing",
+  "email",
+  "social",
+  "engineering",
+] as const satisfies readonly RoleKey[];
+
+/** The roles a plan of this rules version must always hire. */
+export function alwaysRoleKeysFor(rulesVersion: string): readonly RoleKey[] {
+  return (LEGACY_ROSTER_RULES_VERSIONS as readonly string[]).includes(rulesVersion) ? LEGACY_ALWAYS_HIRED_ROLE_KEYS : CORE_ROLE_KEYS;
+}
+
 /** The roles the idea decides: hired or skipped, each with a reason. */
 export const OPTIONAL_ROLE_KEYS = [
   "landing",
@@ -245,7 +268,8 @@ export const rosterPlanSchema = z
     if (!plan.hired.some((h) => h.roleKey === "lead")) {
       ctx.addIssue({ code: "custom", message: "lead must be hired", path: ["hired"] });
     }
-    const alwaysKeys = new Set<string>(CORE_ROLE_KEYS);
+    // A plan stored under a pre-WP90 rules version keeps that version's always set.
+    const alwaysKeys = new Set<string>(alwaysRoleKeysFor(plan.rulesVersion));
     plan.hired.forEach((h, i) => {
       const isAlways = alwaysKeys.has(h.roleKey);
       if (h.always !== isAlways) {

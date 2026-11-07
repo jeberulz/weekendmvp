@@ -7,7 +7,8 @@ import { describe, expect, test } from "vitest";
 
 import { planRoster } from "@/convex/crew/roles";
 import { blueprintSchema, type BlueprintTeamEntry } from "@/lib/workspace/contracts/artifacts";
-import { hydrotrailBlueprint, hydrotrailWizardAnswers, ownIdeaLightBlueprint } from "@/lib/workspace/contracts/fixtures/hydrotrail";
+import { hydrotrailBlueprint, hydrotrailRosterPlan, hydrotrailWizardAnswers, ownIdeaLightBlueprint } from "@/lib/workspace/contracts/fixtures/hydrotrail";
+import { LEGACY_ALWAYS_HIRED_ROLE_KEYS, LEGACY_ROSTER_RULES_VERSIONS, rosterPlanSchema } from "@/lib/workspace/contracts/roster";
 import { partnerNameFromWizard, rosterInputFromWizard } from "@/lib/workspace/contracts/wizard";
 import { gateCrewArtifact } from "@/lib/workspace/crew/quality";
 import { cleanTeamProposal } from "@/lib/workspace/crew/teamProposal";
@@ -113,5 +114,27 @@ describe("rosterInputFromWizard", () => {
 
   test("without a team block there is no proposal", () => {
     expect(rosterInputFromWizard(hydrotrailWizardAnswers, hydrotrailBlueprint).proposal).toBeUndefined();
+  });
+});
+
+describe("stored plans keep the always set of their own rules version", () => {
+  const legacyAlways = new Set<string>(LEGACY_ALWAYS_HIRED_ROLE_KEYS);
+  const asLegacy = { ...hydrotrailRosterPlan, rulesVersion: LEGACY_ROSTER_RULES_VERSIONS[0] };
+  const withLegacyFlags = (plan: typeof hydrotrailRosterPlan) => ({
+    ...plan,
+    hired: plan.hired.map((entry) => ({ ...entry, always: legacyAlways.has(entry.roleKey) })),
+  });
+
+  test("a pre-WP90 plan (eight always roles) still parses", () => {
+    expect(rosterPlanSchema.safeParse(withLegacyFlags(asLegacy)).success).toBe(true);
+  });
+
+  test("a pre-WP90 plan may not mark only the new core as always", () => {
+    expect(rosterPlanSchema.safeParse(asLegacy).success).toBe(false);
+  });
+
+  test("a current plan uses the four-role core", () => {
+    expect(rosterPlanSchema.safeParse(hydrotrailRosterPlan).success).toBe(true);
+    expect(rosterPlanSchema.safeParse(withLegacyFlags(hydrotrailRosterPlan)).success).toBe(false);
   });
 });

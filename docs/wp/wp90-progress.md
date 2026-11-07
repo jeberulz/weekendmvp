@@ -19,3 +19,9 @@
   - `convex/crew/launchRoster.ts` needed no change: `rosterInputFromWizard` passes the cleaned proposal.
 - Docs updated: this file, `wp90-stories.md`, `roster-per-idea/PLAN.md` status.
 - Not done: S2b (image spend) and S6 (live spend) wait for John's OK.
+- Review fix (Codex P1 on #279): plans stored under the pre-WP90 rules version `2026-11-05.1` marked eight roles
+  always, so checking them against the new four-role core would have hidden an existing business's team.
+  `rosterPlanSchema` now checks each plan against the always set of its own rules version
+  (`alwaysRoleKeysFor`, `LEGACY_ROSTER_RULES_VERSIONS`). Regression tests: schema cases plus a launch whose
+  stored plan is rewritten to the legacy shape still reads as ready. The branch's new prompt versions were
+  relocked (they hash `roster.ts`; none is on main yet).
