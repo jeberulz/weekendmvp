@@ -245,6 +245,8 @@ describe("helpers", () => {
     const after = handsOffTo("brand", team);
     expect(after.map((entry) => entry.name)).toContain("Elle");
     expect(after.every((entry) => team.some((member) => member.name === entry.name))).toBe(true);
+    // Leo's landing page is not built: hired or not, it never "starts" here.
+    expect(handsOffTo("brand", [...team, { role: "landing" as const, name: "Leo" }]).map((entry) => entry.name)).not.toContain("Leo");
     expect(worksFrom("email", team, "Wren").join(" ")).toMatch(/Iris/);
   });
 

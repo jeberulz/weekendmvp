@@ -218,13 +218,14 @@ export function worksFrom(role: RoleKey, roster: readonly Pick<TeamHired, "role"
 /**
  * Who starts after this employee: each child step owned by someone else on
  * this team (`hired`), with its title. A child step whose owner the roster
- * skipped is left out, because it will not run for this business.
+ * skipped, or whose step is not built yet, is left out: it will not run.
  */
 export function handsOffTo(role: RoleKey, hired: readonly Pick<TeamHired, "role" | "name">[]): (Person & { readonly title: string })[] {
   const own = new Set(stepsOwnedBy(role).map((step) => step.key));
   const out: (Person & { readonly title: string })[] = [];
   for (const step of LAUNCH_STEPS) {
-    if (step.employee === role || !step.parents.some((parent) => own.has(parent))) continue;
+    // Only steps that run today: a not-built step would "start" nothing.
+    if (step.employee === role || step.status !== "built" || !step.parents.some((parent) => own.has(parent))) continue;
     const person = hired.find((entry) => entry.role === step.employee);
     if (person !== undefined) out.push({ role: person.role, name: person.name, title: step.title });
   }
