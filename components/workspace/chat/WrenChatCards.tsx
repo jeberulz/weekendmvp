@@ -12,6 +12,7 @@ import { CARD_SHELL, DEFAULT_PARTNER_NAME, FromAttribution } from "@/components/
 import { BTN_PRIMARY, BTN_SECONDARY, COMING_SOON_TAG, FOCUS } from "@/components/workspace/kit/styles";
 import type { OutputStatus } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import type { RoleKey } from "@/lib/workspace/contracts/roster";
 import { COMING_SOON_LABEL, workspacePath, workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
 import {
@@ -187,6 +188,8 @@ function ApprovalChatCard({
           workstreamHref={reviewHref}
           linkLabel="Review"
           routedBy={name}
+          profileHref={employeeHref(projectId, specialist)}
+          linkComponent={Link}
         />
       ) : (
         <p>

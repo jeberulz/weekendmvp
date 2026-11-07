@@ -331,7 +331,8 @@ describe("Team grid", () => {
     const brand = items.find((item) => item.getAttribute("data-employee") === "brand") as HTMLElement;
     expect(within(brand).getByRole("link", { name: /Open Brand kit/ }).getAttribute("href")).toBe("/dashboard/b/project1/brand");
     const seo = items.find((item) => item.getAttribute("data-employee") === "seo") as HTMLElement;
-    expect(within(seo).queryByRole("link")).toBeNull();
+    // WP67: the only link on a coming-soon card is the person's own page.
+    expect(within(seo).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/dashboard/b/project1/team/seo"]);
     expect(within(seo).getByText("Workstream coming soon")).toBeTruthy();
     expect(screen.queryByRole("switch")).toBeNull();
   });

@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { SkippedRoleCard } from "@/components/workspace/kit/EmployeeCard";
 import { SectionHeading } from "@/components/workspace/team/SectionHeading";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import type { TeamSkipped } from "@/lib/workspace/teamHq";
 
 /**
@@ -8,10 +10,12 @@ import type { TeamSkipped } from "@/lib/workspace/teamHq";
  * carry no Hire button. Nothing renders when no role was skipped.
  */
 export function SkippedRoles({
+  projectId,
   businessName,
   lead,
   skipped,
 }: {
+  projectId: string;
   businessName: string;
   lead: string;
   skipped: readonly TeamSkipped[];
@@ -23,7 +27,7 @@ export function SkippedRoles({
       <p className="text-sm text-home-ink-2">{lead} left these out for now. Each one says why.</p>
       <ul aria-label="Skipped roles" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-2.5">
         {skipped.map((entry) => (
-          <SkippedRoleCard key={entry.role} role={entry.role} reason={entry.reason} />
+          <SkippedRoleCard key={entry.role} role={entry.role} reason={entry.reason} href={employeeHref(projectId, entry.role)} linkComponent={Link} />
         ))}
       </ul>
       <p className="text-[13px] text-home-ink-3">Hiring a skipped role is coming soon.</p>

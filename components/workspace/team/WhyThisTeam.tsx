@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PILL_BASE } from "@/components/workspace/kit/styles";
+import { FOCUS, PILL_BASE } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import { DECISION_LABELS, whyRows, type TeamHired, type TeamSkipped } from "@/lib/workspace/teamHq";
 
 export const WHY_THIS_TEAM_ID = "why-this-team";
@@ -13,13 +15,19 @@ const DECISION_STYLES = {
   skipped: "border-home-rule bg-home-sunk text-home-ink-2",
 } as const;
 
+/** The role, linked to its page (WP67) unless it is the Crew Lead, who has none. */
+function RoleName({ href, label }: { href: string | null; label: string }) {
+  if (href === null) return <>{label}</>;
+  return <Link href={href} className={cn("underline underline-offset-2", FOCUS)}>{label}</Link>;
+}
+
 /**
  * "Why this team?": every role the lead decided on, hired or skipped, with its
  * reason, from the roster. It is a disclosure (`details`). The header's link
  * (`#why-this-team`) opens it, whether the hash changes or the same link is
  * clicked again.
  */
-export function WhyThisTeam({ hired, skipped }: { hired: readonly TeamHired[]; skipped: readonly TeamSkipped[] }) {
+export function WhyThisTeam({ projectId, hired, skipped }: { projectId: string; hired: readonly TeamHired[]; skipped: readonly TeamSkipped[] }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -63,7 +71,9 @@ export function WhyThisTeam({ hired, skipped }: { hired: readonly TeamHired[]; s
           <tbody>
             {rows.map((row) => (
               <tr key={row.role} className="border-t border-home-rule align-top">
-                <th scope="row" className="break-words py-2.5 pr-2 font-medium text-home-ink">{row.roleLabel}</th>
+                <th scope="row" className="break-words py-2.5 pr-2 font-medium text-home-ink">
+                  <RoleName href={employeeHref(projectId, row.role)} label={row.roleLabel} />
+                </th>
                 <td className="py-2.5 pr-2">
                   <span className={cn(PILL_BASE, "border", DECISION_STYLES[row.decision])}>{DECISION_LABELS[row.decision]}</span>
                 </td>

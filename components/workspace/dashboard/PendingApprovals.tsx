@@ -4,6 +4,8 @@ import { CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { ROLE_LABELS } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
 import { approvalOwner, type DashHired, type DashReview } from "@/lib/workspace/dashboard";
+import { employeeHref } from "@/lib/workspace/employeePage";
+import { REVIEW_OWNER } from "@/lib/workspace/teamHq";
 import { changeRoundNote, expiresInWords, WAITING_EMPTY_COPY } from "@/lib/workspace/reviewPages";
 
 /**
@@ -12,10 +14,12 @@ import { changeRoundNote, expiresInWords, WAITING_EMPTY_COPY } from "@/lib/works
  * in the loop; the dashboard never approves anything itself.
  */
 export function PendingApprovals({
+  projectId,
   reviews,
   hired,
   now,
 }: {
+  projectId: string;
   reviews: readonly DashReview[];
   hired: readonly DashHired[];
   now: number;
@@ -32,6 +36,8 @@ export function PendingApprovals({
         <ul className={cn(CARD, "overflow-hidden")}>
           {reviews.map((review) => {
             const round = changeRoundNote(Number(review.changeRound));
+            const ownerHref = employeeHref(projectId, REVIEW_OWNER[review.kind]);
+            const owner = approvalOwner(review, hired, ROLE_LABELS);
             return (
               <li
                 key={review.approvalId}
@@ -40,7 +46,10 @@ export function PendingApprovals({
                 <span className="flex min-w-0 flex-[1_1_10rem] flex-col">
                   <span className="text-sm font-medium text-home-ink">{review.title}</span>
                   <span className="text-[13px] text-home-ink-2">
-                    From {approvalOwner(review, hired, ROLE_LABELS)}
+                    From{" "}
+                    {ownerHref === null ? owner : (
+                      <Link href={ownerHref} className={cn("underline underline-offset-2 hover:text-home-ink", FOCUS)}>{owner}</Link>
+                    )}
                     {round === null ? "" : ` · ${round}`} · Closes {expiresInWords(review.expiresAt, now)}
                   </span>
                 </span>

@@ -3,7 +3,9 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DefaultLink } from "./DefaultLink";
 import { EmployeeAvatar } from "./EmployeeAvatar";
+import { EmployeeLink } from "./EmployeeLink";
 import { BTN_APPROVED, BTN_CHANGES, BTN_SECONDARY, CARD } from "./styles";
 import {
   costLabel,
@@ -11,6 +13,7 @@ import {
   ROLE_LABELS,
   type ApprovalCost,
   type EmployeeIdentity,
+  type LinkComponent,
 } from "./types";
 
 export type ApprovalDecisionState = "open" | "approved" | "changes";
@@ -33,6 +36,9 @@ export type ApprovalCardProps = {
   onAskChanges: (id: string) => void;
   /** Prefix for generated ids. Defaults to `approval-<id>`. */
   idPrefix?: string;
+  /** WP67: the specialist's page. Given, the avatar and "From …" line are one link to it. */
+  fromHref?: string | null;
+  linkComponent?: LinkComponent;
 };
 
 export function CostBadge({ cost, id }: { cost: ApprovalCost; id?: string }) {
@@ -70,6 +76,8 @@ export function ApprovalCard({
   onApprove,
   onAskChanges,
   idPrefix,
+  fromHref = null,
+  linkComponent = DefaultLink,
 }: ApprovalCardProps) {
   const prefix = idPrefix ?? `approval-${id}`;
   const costId = `${prefix}-cost`;
@@ -81,10 +89,20 @@ export function ApprovalCard({
       className={cn(CARD, "flex flex-col gap-3 p-4")}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <EmployeeAvatar name={from.name} role={from.role} size="md" />
-        <p className="font-mono text-[11px] text-home-ink-3">
-          From {ROLE_LABELS[from.role]} · {from.name}
-        </p>
+        {fromHref === null ? (
+          <>
+            <EmployeeAvatar name={from.name} role={from.role} size="md" />
+            <p className="font-mono text-[11px] text-home-ink-3">
+              From {ROLE_LABELS[from.role]} · {from.name}
+            </p>
+          </>
+        ) : (
+          <p className="font-mono text-[11px] text-home-ink-3">
+            <EmployeeLink href={fromHref} name={from.name} role={from.role} size="md" linkComponent={linkComponent} className="min-h-7 gap-2">
+              From {ROLE_LABELS[from.role]} · {from.name}
+            </EmployeeLink>
+          </p>
+        )}
         <span className="ml-auto">
           <CostBadge cost={cost} id={costId} />
         </span>

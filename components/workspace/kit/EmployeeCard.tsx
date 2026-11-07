@@ -39,6 +39,8 @@ export type EmployeeCardProps = {
   employee: EmployeeCardData;
   /** The workstream link. `null` (or omitted) shows "Workstream coming soon" in words. */
   workstream?: { href: string; label: string } | null;
+  /** The employee's own page (WP67). Given, the avatar and name are one link to it. */
+  profileHref?: string | null;
   /** `null` hides the switch. Omitted: the legacy props below decide. */
   autopilot?: EmployeeAutopilot | null;
   /** Legacy: same as `workstream={{ href, label: "Open workstream" }}`. */
@@ -81,6 +83,7 @@ export function EmployeeCard({
   onAutopilotToggle,
   linkComponent: Link = DefaultLink,
   idPrefix,
+  profileHref = null,
 }: EmployeeCardProps) {
   const hintId = `${idPrefix ?? `employee-${employee.id}`}-autopilot-hint`;
   const roleLabel = ROLE_LABELS[employee.role];
@@ -101,11 +104,29 @@ export function EmployeeCard({
   return (
     <li data-employee={employee.id} className={cn(CARD, "flex flex-col gap-3 p-4", cardTone(employee.status))}>
       <div className="flex items-start gap-3">
-        <EmployeeAvatar name={employee.name} role={employee.role} size="md2" showAiBadge />
-        <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-home-ink">{employee.name}</h3>
-          <p className="text-[13px] text-home-ink-2">{roleLabel}</p>
-        </div>
+        {profileHref === null ? (
+          <>
+            <EmployeeAvatar name={employee.name} role={employee.role} size="md2" showAiBadge />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-medium text-home-ink">{employee.name}</h3>
+              <p className="text-[13px] text-home-ink-2">{roleLabel}</p>
+            </div>
+          </>
+        ) : (
+          <h3 className="min-w-0 flex-1">
+            <Link
+              href={profileHref}
+              className={cn("group flex min-h-10 items-start gap-3 rounded-lg", FOCUS)}
+            >
+              <EmployeeAvatar name={employee.name} role={employee.role} size="md2" showAiBadge decorative />
+              <span className="flex min-w-0 flex-col">
+                <span className="text-sm font-medium text-home-ink underline-offset-2 group-hover:underline">{employee.name}</span>
+                <span className="sr-only">, </span>
+                <span className="text-[13px] font-normal text-home-ink-2">{roleLabel}</span>
+              </span>
+            </Link>
+          </h3>
+        )}
         <StatusPill set="employee" status={employee.status} />
       </div>
       <p className="text-[13px] text-home-ink-2">{employee.specialty}</p>
@@ -198,17 +219,28 @@ export type SkippedRoleCardProps = {
   hireRequested?: boolean;
   /** Omit it and the card shows the reason with no Hire button. */
   onHire?: (role: RoleKey) => void;
+  /** WP67: the role's page, which says why it was skipped. Given, the heading links there. */
+  href?: string | null;
+  linkComponent?: LinkComponent;
 };
 
 /** Skipped-role variant: dashed card, the reason, and an optional Hire button. */
-export function SkippedRoleCard({ role, reason, hireRequested = false, onHire }: SkippedRoleCardProps) {
+export function SkippedRoleCard({ role, reason, hireRequested = false, onHire, href = null, linkComponent: Link = DefaultLink }: SkippedRoleCardProps) {
   const label = ROLE_LABELS[role];
   return (
     <li
       data-skipped-role={role}
       className="flex flex-col gap-3 rounded-xl border border-dashed border-home-d2 bg-home-card p-4"
     >
-      <h3 className="text-base font-semibold text-home-ink">{label}</h3>
+      <h3 className="text-base font-semibold text-home-ink">
+        {href === null ? (
+          label
+        ) : (
+          <Link href={href} className={cn("inline-flex min-h-6 items-center underline underline-offset-2", FOCUS)}>
+            {label}
+          </Link>
+        )}
+      </h3>
       <p className="rounded-md bg-home-clay px-2.5 py-1.5 text-[13px] text-home-clay-ink">
         <strong className="font-semibold">Skipped</strong> · {reason}
       </p>

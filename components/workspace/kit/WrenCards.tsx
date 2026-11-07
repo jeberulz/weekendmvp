@@ -3,6 +3,7 @@ import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DefaultLink } from "./DefaultLink";
 import { EmployeeAvatar } from "./EmployeeAvatar";
+import { EmployeeLink } from "./EmployeeLink";
 import { BTN_SECONDARY, FOCUS } from "./styles";
 import { ROLE_LABELS, type EmployeeIdentity, type LinkComponent } from "./types";
 
@@ -72,9 +73,12 @@ export function FromAttribution({
   workstreamHref,
   linkLabel = "Workstream",
   routedBy = "Wren",
+  profileHref = null,
   linkComponent: Link = DefaultLink,
 }: {
   from: EmployeeIdentity;
+  /** WP67: the specialist's page. Given, the avatar and "From {role} · {name}" are one link to it. */
+  profileHref?: string | null;
   time: string;
   workstreamHref: string;
   /** The link's visible word. Default "Workstream"; the chat uses "Review" (workstream pages are not built yet). */
@@ -86,11 +90,26 @@ export function FromAttribution({
   const roleLabel = ROLE_LABELS[from.role];
   return (
     <div className="flex flex-wrap items-center gap-2 text-[13px] text-home-ink-2">
-      <EmployeeAvatar name={from.name} role={from.role} size="sm" />
-      <p>
-        <strong className="font-semibold text-home-ink">From {roleLabel}</strong> · {from.name} ·
-        {`routed by ${routedBy} · `}<span className="font-mono text-[11px]">{time}</span>
-      </p>
+      {profileHref === null ? (
+        <>
+          <EmployeeAvatar name={from.name} role={from.role} size="sm" />
+          <p>
+            <strong className="font-semibold text-home-ink">From {roleLabel}</strong> · {from.name} ·
+            {`routed by ${routedBy} · `}<span className="font-mono text-[11px]">{time}</span>
+          </p>
+        </>
+      ) : (
+        <p className="flex flex-wrap items-center gap-x-1.5">
+          <EmployeeLink href={profileHref} name={from.name} role={from.role} linkComponent={Link} className="min-h-6">
+            <span>
+              <strong className="font-semibold text-home-ink">From {roleLabel}</strong> · {from.name}
+            </span>
+          </EmployeeLink>
+          <span>
+            {`· routed by ${routedBy} · `}<span className="font-mono text-[11px]">{time}</span>
+          </span>
+        </p>
+      )}
       <Link
         href={workstreamHref}
         className={cn("ml-auto inline-flex min-h-6 items-center underline underline-offset-2", FOCUS)}

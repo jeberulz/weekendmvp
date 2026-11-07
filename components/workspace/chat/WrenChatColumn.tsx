@@ -12,6 +12,7 @@ import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
 import { DEFAULT_PARTNER_NAME } from "@/components/workspace/kit/WrenCards";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { workspacePath } from "@/lib/workspace/routes";
+import { onWrenPrefill } from "@/lib/workspace/wrenPrefill";
 
 export const CHAT_COLUMN_ID = "workspace-chat";
 
@@ -62,14 +63,25 @@ export function WrenChatColumn({
   const toggleRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
+  /** Opened by a page's "Ask Wren": the composer takes focus, not the Close button. */
+  const openedForPrefill = useRef(false);
   const label = chatColumnLabel(name);
 
   // Focus follows the drawer: into it on open, back to the toggle on close.
   useEffect(() => {
-    if (open) closeRef.current?.focus();
-    else if (wasOpen.current) toggleRef.current?.focus();
+    if (open && !openedForPrefill.current) closeRef.current?.focus();
+    else if (!open && wasOpen.current) toggleRef.current?.focus();
+    openedForPrefill.current = false;
     wasOpen.current = open;
   }, [open]);
+
+  // A page asked Wren something: show the drawer (below `xl`); the composer fills itself and takes focus.
+  useEffect(() => onWrenPrefill(() => {
+    // `wasOpen` mirrors the committed state: an open drawer needs no reopening.
+    if (wasOpen.current) return;
+    openedForPrefill.current = true;
+    setOpen(true);
+  }), []);
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key !== "Escape" || !open) return;

@@ -4,7 +4,9 @@ import { useMutation } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
+import Link from "next/link";
+import { ROLE_CATALOGUE } from "@/convex/crew/roles";
+import { EmployeeLink } from "@/components/workspace/kit/EmployeeLink";
 import { EmptyState } from "@/components/workspace/kit/states";
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
 import { BTN_SECONDARY } from "@/components/workspace/kit/styles";
@@ -18,6 +20,7 @@ import {
   TEAM_STAGE_KEYS,
   TRY_COST_COPY,
 } from "@/lib/workspace/reviewPages";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import {
   launchErrorMessage,
   planGroups,
@@ -42,22 +45,27 @@ import {
  *   on it, focus moves to the heading.
  */
 
-function OwnerChip({ step, roster }: { step: TeamStep; roster: readonly TeamHired[] }) {
+function OwnerChip({ step, roster, projectId }: { step: TeamStep; roster: readonly TeamHired[]; projectId: string }) {
   const hired = roster.find((entry) => entry.role === step.employee);
   const roleLabel = ROLE_LABELS[step.employee];
-  const name = hired?.name ?? roleLabel;
+  // A skipped owner is still named (the catalogue fixes one name per role): the link goes to their page.
+  const name = hired?.name ?? ROLE_CATALOGUE.find((entry) => entry.key === step.employee)?.employeeName ?? roleLabel;
+  // WP67: the chip is one link to the owner's page (the Crew Lead has none, so it stays plain).
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-home-rule py-px pl-0.5 pr-2 text-xs text-home-ink">
-      <span aria-hidden="true">
-        <EmployeeAvatar name={name} role={step.employee} size="sm" />
-      </span>
+    <EmployeeLink
+      href={employeeHref(projectId, step.employee)}
+      name={name}
+      role={step.employee}
+      linkComponent={Link}
+      className="rounded-full border border-home-rule py-px pl-0.5 pr-2 text-xs text-home-ink"
+    >
       <span className="sr-only">Owner: {name}, </span>
       <span>{roleLabel}</span>
-    </span>
+    </EmployeeLink>
   );
 }
 
-function StepRow({ step, roster }: { step: TeamStep; roster: readonly TeamHired[] }) {
+function StepRow({ step, roster, projectId }: { step: TeamStep; roster: readonly TeamHired[]; projectId: string }) {
   return (
     <li
       data-step={step.key}
@@ -66,7 +74,7 @@ function StepRow({ step, roster }: { step: TeamStep; roster: readonly TeamHired[
       <span className="flex min-w-0 flex-[1_1_160px] flex-col gap-1">
         <span className="text-sm font-medium text-home-ink">{step.title}</span>
         <span className="flex flex-wrap items-center gap-1.5">
-          <OwnerChip step={step} roster={roster} />
+          <OwnerChip step={step} roster={roster} projectId={projectId} />
           {step.reason === undefined ? null : <span className="text-xs text-home-ink-3">{step.reason}</span>}
         </span>
       </span>
@@ -148,7 +156,7 @@ export function PlanByOwner({
         <>
           <ul aria-label="Launch steps and owners" className={LIST}>
             {now.map((step) => (
-              <StepRow key={step.key} step={step} roster={roster} />
+              <StepRow key={step.key} step={step} roster={roster} projectId={projectId} />
             ))}
           </ul>
           {comingLater.length === 0 ? null : (
@@ -156,7 +164,7 @@ export function PlanByOwner({
               <h3 className="text-[15px] font-semibold text-home-ink">Coming later ({comingLater.length})</h3>
               <ul aria-label="Launch steps coming later" className={LIST}>
                 {comingLater.map((step) => (
-                  <StepRow key={step.key} step={step} roster={roster} />
+                  <StepRow key={step.key} step={step} roster={roster} projectId={projectId} />
                 ))}
               </ul>
             </div>

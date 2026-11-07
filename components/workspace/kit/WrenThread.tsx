@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { ArrowUp, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { onWrenPrefill } from "@/lib/workspace/wrenPrefill";
 import { DefaultLink } from "./DefaultLink";
 import { BTN_APPROVED, BTN_PRIMARY, BTN_SECONDARY, FOCUS } from "./styles";
 import { ErrorState, LoadingState } from "./states";
@@ -238,18 +239,34 @@ export type WrenComposerProps = {
   sending?: boolean;
   /** The co-founder's name, for the label and placeholder. Default "Wren". */
   name?: string;
+  /** Take questions a page puts in with `askWren` (`lib/workspace/wrenPrefill.ts`): the text replaces the draft and focus moves here. */
+  acceptPrefill?: boolean;
 };
 
 /** The board's send button: a 40px ink square with an up arrow. */
 const SEND_BTN = `inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-home-ink text-home-card hover:bg-home-panel ${FOCUS} aria-disabled:cursor-not-allowed aria-disabled:border aria-disabled:border-dashed aria-disabled:border-home-ink-3 aria-disabled:bg-home-sunk aria-disabled:text-home-ink-2 aria-disabled:hover:bg-home-sunk`;
 
-export function WrenComposer({ onSend, sending = false, name = DEFAULT_PARTNER_NAME }: WrenComposerProps) {
+export function WrenComposer({ onSend, sending = false, name = DEFAULT_PARTNER_NAME, acceptPrefill = false }: WrenComposerProps) {
   const [draft, setDraft] = useState("");
   const inputId = useId();
   const hintId = `${inputId}-hint`;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pending = useRef(false);
+
+  useEffect(() => {
+    if (!acceptPrefill) return;
+    return onWrenPrefill((text) => {
+      setDraft(text);
+      // After the drawer (below `xl`) is shown, so the textarea can take focus.
+      window.setTimeout(() => {
+        const textarea = textareaRef.current;
+        if (textarea === null) return;
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      }, 0);
+    });
+  }, [acceptPrefill]);
 
   /** After an accepted send focus stays in the composer, even when Send was pressed. */
   function keepFocusInComposer() {

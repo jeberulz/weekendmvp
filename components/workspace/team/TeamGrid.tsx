@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { SectionHeading } from "@/components/workspace/team/SectionHeading";
 import { cn } from "@/lib/utils";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import {
   applyFilter,
   FILTER_LABELS,
@@ -99,6 +100,7 @@ export function TeamGrid({
                 blocker: entry.blocker,
               }}
               workstream={workstreamFor(entry.role, projectId)}
+              profileHref={employeeHref(projectId, entry.role)}
               autopilot={null}
               linkComponent={Link}
             />

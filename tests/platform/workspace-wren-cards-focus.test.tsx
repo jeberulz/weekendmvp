@@ -56,6 +56,8 @@ describe("Wren approval card focus", () => {
   test("Approve by keyboard: focus moves to the status line, and stays there when the buttons go", async () => {
     const user = userEvent.setup();
     const view = render(<WrenChatCards projectId={projectId} cards={[card("pending")]} />);
+    // WP67: the From line's employee link, then Review, then Approve.
+    await user.tab();
     await user.tab();
     await user.tab();
     const approve = screen.getByRole("button", { name: /^Approve/u });
@@ -110,6 +112,8 @@ describe("Wren approval card focus", () => {
   test("focus that left the buttons (blur to the page) is not taken back by a remote status change", async () => {
     const user = userEvent.setup();
     const view = render(<WrenChatCards projectId={projectId} cards={[card("pending")]} />);
+    // WP67: the From line's employee link, then Review, then Approve.
+    await user.tab();
     await user.tab();
     await user.tab();
     const approve = screen.getByRole("button", { name: /^Approve/u });
@@ -130,6 +134,8 @@ describe("Wren approval card focus", () => {
         <button type="button">Next control</button>
       </div>,
     );
+    // WP67: the From line's employee link, Review, Approve, Not now, then out.
+    await user.tab();
     await user.tab();
     await user.tab();
     await user.tab();

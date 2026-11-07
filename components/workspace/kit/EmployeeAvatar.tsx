@@ -24,15 +24,19 @@ const SIZES = {
   md: "size-7 text-sm",
   md2: "size-8 text-[13px]",
   lg: "size-10 text-lg",
+  xl: "size-16 text-2xl",
 } as const;
 
-const PIXELS: Record<keyof typeof SIZES, number> = { sm: 20, md: 28, md2: 32, lg: 40 };
+const PIXELS: Record<keyof typeof SIZES, number> = { sm: 20, md: 28, md2: 32, lg: 40, xl: 64 };
 
 /**
  * WP67-S7: the role's shared avatar when it exists (`CREW_AVATAR_SRC`), else
  * the initial on the role colour. The accessible name is the same either way;
  * the picture itself is decorative (`alt=""`). `avatarSrc` overrides the
  * lookup (`null` forces the initial), for previews and tests.
+ *
+ * `decorative` hides the avatar from assistive tech: use it inside a link or
+ * row that already names the person, so the name is not read twice.
  */
 export function EmployeeAvatar({
   name,
@@ -41,6 +45,7 @@ export function EmployeeAvatar({
   showAiBadge = false,
   className,
   avatarSrc,
+  decorative = false,
 }: {
   name: string;
   role: RoleKey;
@@ -48,12 +53,14 @@ export function EmployeeAvatar({
   showAiBadge?: boolean;
   className?: string;
   avatarSrc?: string | null;
+  decorative?: boolean;
 }) {
   const src = avatarSrc === undefined ? CREW_AVATAR_SRC[role] : avatarSrc;
   return (
     <span
-      role="img"
-      aria-label={`${name}, ${ROLE_LABELS[role]} (AI employee)`}
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": `${name}, ${ROLE_LABELS[role]} (AI employee)` })}
       className={cn(
         "relative inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-home-card",
         AVATAR_COLOURS[role],

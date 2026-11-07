@@ -393,23 +393,25 @@ describe("card decision outcomes are announced", () => {
 });
 
 describe("keyboard run-through", () => {
-  test("Tab order: the From line's Review link, Approve, Not now, the explain/navigate links, composer, Send", async () => {
+  test("Tab order: the From line's employee link, Review, Approve, Not now, the explain/navigate links, composer, Send", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mount([
       row("f1", "founder", "Can I post?", "done"),
       row("w1", "wren", "Here.", "done", [pendingCard, { kind: "navigate", route: "brand" }]),
     ]);
     const order: string[] = [];
-    for (let i = 0; i < 6; i += 1) {
+    for (let i = 0; i < 7; i += 1) {
       await user.tab();
       const active = document.activeElement;
       order.push(active?.tagName === "TEXTAREA" ? "composer" : (active?.textContent ?? "").split("·")[0].trim());
     }
-    expect(order[0]).toBe("Review");
-    expect(order[1]).toBe("Approve");
-    expect(order[2]).toBe("Not now");
-    expect(order[3]).toMatch(/brand/iu);
-    expect(order[4]).toBe("composer");
+    // WP67: the From line is one link to the specialist's page.
+    expect(order[0]).toBe("From Social");
+    expect(order[1]).toBe("Review");
+    expect(order[2]).toBe("Approve");
+    expect(order[3]).toBe("Not now");
+    expect(order[4]).toMatch(/brand/iu);
+    expect(order[5]).toBe("composer");
     expect(screen.getByRole("button", { name: "Send message" })).toBe(document.activeElement);
   });
 
@@ -474,6 +476,8 @@ describe("keyboard run-through", () => {
   test("a card decision by keyboard lands focus on the status line; rerendering never drops it on body", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const view = mount([row("w1", "wren", "Here.", "done", [pendingCard])]);
+    // WP67: the From line's employee link, Review, then Approve.
+    await user.tab();
     await user.tab();
     await user.tab();
     await user.keyboard("{Enter}");
