@@ -18,7 +18,6 @@
 import { build } from "esbuild";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 
 const root = path.resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
@@ -39,8 +38,6 @@ if (flag("live") && flag("fixture")) {
 
 const bundleDir = path.join(root, "tmp", "crew-avatars-build");
 await mkdir(bundleDir, { recursive: true });
-const corePath = path.join(bundleDir, "core.mjs");
-const adapterPath = path.join(bundleDir, "recraft.mjs");
 await build({
   entryPoints: { core: path.join(root, "scripts/generate-crew-avatars-core.ts"), recraft: path.join(root, "convex/ai/providers/recraft.ts") },
   outdir: bundleDir,
@@ -51,8 +48,8 @@ await build({
   format: "esm",
   logLevel: "silent",
 });
-const core = await import(pathToFileURL(corePath).href);
-const { createRecraftAdapter } = await import(pathToFileURL(adapterPath).href);
+const core = await import("../tmp/crew-avatars-build/core.mjs");
+const { createRecraftAdapter } = await import("../tmp/crew-avatars-build/recraft.mjs");
 
 const only = option("only")?.split(",").map((s) => s.trim()).filter(Boolean);
 const plan = core.planCrewAvatars(only);
