@@ -433,3 +433,17 @@ tests; `workspace-growth-social-pack.test.ts` 41), `npm run test:security` 0 (22
 - Real clipboard behaviour (secure context, permissions) is mocked.
 - Social page against live `socialPackDraft` data and a real flag-off 404 are not exercised (the 404 comes from
   `requireWorkspaceAccess`, unchanged).
+
+### S2b browser a11y-check (2026-11-07, local fixture backend)
+
+Run by the orchestrator on the local fixture state (the PostureUp test business; the fixture writes HydroTrail posts).
+- Headings: one h1 (Social), h2 "Your first week of posts", h3 for the review and each of the seven days. In order.
+- The "Post on" select has a visible label. Switching it to X updates every caption and count ("175 of 280 characters,
+  hashtags included").
+- Each Copy button's name is "Copy the {day} post for {platform}". Keyboard focus shows a 2px solid dark outline.
+- The live region announces the copy result. In the in-app browser the clipboard permission is denied, so Copy took
+  the failure path and announced "Couldn't copy. Select the text and copy it yourself." That is correct behaviour.
+  A successful copy in a normal browser is not yet confirmed by hand.
+- Contrast: text in `main` measured at 4.5:1 or better. The only flag was the Approve button, a script false
+  positive: white on near-black, the same kit button as the Email page.
+- Result: pass. The one open item is a manual successful copy in a normal browser.
