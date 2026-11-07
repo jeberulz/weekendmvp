@@ -219,17 +219,23 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
     expect(plan.hired).toHaveLength(9);
     expect(plan.skipped).toHaveLength(4);
     const view = await as(w, w.owner).query(api.crew.roster.launchStatus, { projectId: w.projectId });
+    const byLead = (decidedBy: "lead" | undefined) => (decidedBy === undefined ? {} : { decidedBy });
     expect(view).toEqual({
       state: "ready",
-      hired: plan.hired.map(({ roleKey, employeeName, roleLabel, reason }) => ({ roleKey, employeeName, roleLabel, reason })),
-      skipped: plan.skipped.map(({ roleKey, roleLabel, reason }) => ({ roleKey, roleLabel, reason })),
+      hired: plan.hired.map(({ roleKey, employeeName, roleLabel, reason, decidedBy }) => ({ roleKey, employeeName, roleLabel, reason, ...byLead(decidedBy) })),
+      skipped: plan.skipped.map(({ roleKey, roleLabel, reason, decidedBy }) => ({ roleKey, roleLabel, reason, ...byLead(decidedBy) })),
     });
+    // The fixture team proposal decided every optional role, so each carries the lead's mark.
+    if (view.state === "ready") {
+      expect(view.hired.filter((role) => role.decidedBy === "lead").map((role) => role.roleKey)).toEqual(["landing", "seo", "marketing", "engineering"]);
+      expect(view.skipped.every((role) => role.decidedBy === "lead")).toBe(true);
+    }
     if (view.state !== "ready") throw new Error("not ready");
     expect(view.hired.map((role) => role.roleKey)).toEqual(
       ["lead", "brand", "landing", "seo", "marketing", "email", "social", "engineering", "ads"],
     );
     expect(view.hired.find((role) => role.roleKey === "ads")?.reason).toBe("Goal has a paid push: $7/day test");
-    expect(view.skipped).toEqual([
+    expect(view.skipped.map(({ roleKey, roleLabel, reason }) => ({ roleKey, roleLabel, reason }))).toEqual([
       { roleKey: "merch", roleLabel: "Merch", reason: plan.skipped[0]?.reason },
       { roleKey: "outbound", roleLabel: "Outbound", reason: plan.skipped[1]?.reason },
       // The lead's reason (the fixture team proposal), not the rule's "No course content".
