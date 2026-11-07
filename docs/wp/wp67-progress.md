@@ -471,3 +471,10 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
   `node --env-file=.env.local scripts/generate-crew-avatars.mjs --live --confirm-spend-usd=0.091` from the worktree.
   Then: review the contact sheet, shrink approved PNGs, commit under `public/image/crew/`, list them in
   `CREW_AVATAR_SRC`, a11y check and localhost preview before merge.
+- Live runs by the owner (2026-11-07): full set, 13 × `recraftv4_1_flash`, $0.091; then a redo of Iris, Leo, Theo
+  and Cora, 4 × $0.007 = $0.028 (framing, blank eyes, face in the background colour, persona mismatch), with
+  tightened descriptions in `CREW_PERSONAS`. All four redos replaced the originals. Total list spend $0.119.
+- Shipped: 13 × 192 px WebP (3.7–7.4 KB) under `public/image/crew/`, all listed in `CREW_AVATAR_SRC`.
+  Kit preview (`/workspace-kit-preview`, port 3189): 22 avatar images at 40/28/20 px, none broken; each keeps its
+  `role="img"` name (e.g. "Iris, Brand (AI employee)") with the picture `alt=""`.
+- Checks after the swap: `npm run typecheck` clean; `vitest run tests/platform` 2430/2430.

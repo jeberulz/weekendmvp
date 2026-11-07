@@ -60,7 +60,7 @@ and every gate G0–G7 run and recorded in `docs/wp/wp67-progress.md`.
   - Verification:
     - `npm run typecheck`, `npm run test:platform`, `npm run test:home`, a11y check, localhost preview
 
-- [ ] `WP67-S7` - Generated avatars for the named AI crew with Recraft V4.1 Flash (issue #220)
+- [x] `WP67-S7` - Generated avatars for the named AI crew with Recraft V4.1 Flash (issue #220)
   - Branch: `claude/wp67-crew-avatars`
   - Scope: `convex/ai/pricing.ts`, `convex/ai/providers/recraft.ts`, `convex/ai/gateway.ts` (Flash model path),
     `lib/workspace/crew-avatars.ts` (style, personas, shipped list), `scripts/generate-crew-avatars{.mjs,-core.ts}`,
