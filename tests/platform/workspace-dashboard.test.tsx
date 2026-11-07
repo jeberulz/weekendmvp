@@ -205,7 +205,10 @@ describe("ready dashboard", () => {
     const team = screen.getByRole("region", { name: /Your team/ });
     expect(within(team).getByRole("heading", { level: 2 }).textContent).toContain("4 on it, 2 need you");
     expect(within(team).getAllByRole("listitem")).toHaveLength(4);
-    expect(within(team).getByRole("img", { name: "Iris, Brand (AI employee)" })).toBeTruthy();
+    // WP67: one link per person, named by the words; the avatar inside is decorative.
+    const iris = within(team).getByRole("link", { name: "Iris, Brand" });
+    expect(iris.getAttribute("href")).toBe(`/dashboard/b/${PROJECT}/team/brand`);
+    expect(within(team).queryByRole("img", { name: /Iris/ })).toBeNull();
     expect(within(team).getByRole("link", { name: "Open Team HQ" })).toBeTruthy();
   });
 

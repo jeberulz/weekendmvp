@@ -5,7 +5,7 @@ import { EmployeePanel } from "@/components/workspace/team/employee/EmployeePane
 import { EmployeeResponsibilities } from "@/components/workspace/team/employee/EmployeeResponsibilities";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
 import { employeeProfile } from "@/lib/workspace/employeePage";
-import { isSpecialistRoleKey } from "@/lib/workspace/employees";
+import { isSpecialistRoleKey, type SpecialistRoleKey } from "@/lib/workspace/employees";
 import { workspaceEmployee } from "@/lib/workspace/routes";
 import { workspacePageMetadata } from "../../_scaffold/placeholder";
 
@@ -28,8 +28,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function EmployeePage({ params }: { params: Params }) {
   const { projectId, employee: employeeKey } = await params;
   const project = await requireWorkspaceAccess(projectId);
-  if (!isSpecialistRoleKey(employeeKey) || workspaceEmployee(employeeKey) === null) notFound();
-  const profile = employeeProfile(employeeKey);
+  const employee = isSpecialistRoleKey(employeeKey) ? workspaceEmployee(employeeKey) : null;
+  if (employee === null) notFound();
+  const role = employeeKey as SpecialistRoleKey;
+  const profile = employeeProfile(role);
   // The same name the layout gives the Wren chat column.
   const lead = project.partnerName ?? "Wren";
   return (
@@ -37,7 +39,7 @@ export default async function EmployeePage({ params }: { params: Params }) {
       <EmployeeHeader projectId={project._id} businessName={project.name} lead={lead} profile={profile} />
       <EmployeePanel
         projectId={project._id}
-        role={employeeKey}
+        role={role}
         businessName={project.name}
         lead={lead}
         job={<EmployeeResponsibilities profile={profile} lead={lead} />}

@@ -126,9 +126,10 @@ describe("L1-C2 placeholder pages", () => {
     expect(renderToStaticMarkup(<PlaceholderBody eyebrow="E" heading="H" emptyState="Line." />)).not.toContain("Coming soon");
   });
 
-  test("Team pages beyond the roster are coming soon", () => {
+  test("employee pages are built (WP67), not a placeholder", () => {
     const employee = readFileSync(path.join(routeRoot, "team", "[employee]", "page.tsx"), "utf8");
-    expect(employee).toMatch(/<PlaceholderBody[\s\S]*comingSoon[\s\S]*\/>/);
+    expect(employee).not.toMatch(/<PlaceholderBody/);
+    expect(employee).toMatch(/<EmployeePanel/);
     for (const claim of STATE_CLAIMS) expect(employee).not.toMatch(claim);
   });
 });
