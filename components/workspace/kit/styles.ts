@@ -25,5 +25,22 @@ export const ICON_BTN = `inline-flex size-10 items-center justify-center rounded
 export const EYEBROW =
   "text-[11px] font-medium uppercase tracking-[0.14em] text-home-ink-3";
 
+/** Pill shell shared by StatusPill and chips (System PILL_BASE). */
+export const PILL_BASE = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium";
+
+/** Neutral chip and the ember "Suggested" chip from System. */
+export const CHIP = `${PILL_BASE} border border-home-rule bg-home-card text-home-ink-2`;
+export const CHIP_SUGGESTED = `${PILL_BASE} border border-home-orange-ink/30 bg-home-ember-soft text-home-orange-ink`;
+
+/** Plain mono "Coming soon" tag: bare text, no pill (System and Nav boards). */
+export const COMING_SOON_TAG = "font-mono text-[11px] text-home-ink-3";
+
+/** Eyebrow in ember (page headers). home-orange-ink is 5.2:1 on paper. */
+export const EYEBROW_EMBER =
+  "text-[11px] font-medium uppercase tracking-[0.14em] text-home-orange-ink";
+
+/** Chat and approval card shell: card fill, rounded-lg. */
+export const CARD_SHELL = "flex flex-col gap-2 rounded-lg border border-home-rule bg-home-card p-3";
+
 export const CARD = "rounded-xl border border-home-rule bg-home-card";
 export const SR_ONLY = "sr-only";

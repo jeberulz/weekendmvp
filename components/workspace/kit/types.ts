@@ -5,6 +5,14 @@ import type { RoleKey } from "@/lib/workspace/contracts/roster";
 export const EMPLOYEE_STATUSES = ["queued", "working", "needs_you", "done"] as const;
 export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
 
+/** Display states a Team HQ card can show beyond the four data statuses. */
+export const TEAM_CARD_EXTRA_STATUSES = ["coming_soon", "failed"] as const;
+export type TeamCardStatus = EmployeeStatus | (typeof TEAM_CARD_EXTRA_STATUSES)[number];
+
+/** Launch step status set (display names; the data layer maps running to working, succeeded to done). */
+export const STEP_STATUSES = ["waiting", "queued", "working", "paused", "done", "failed", "coming_soon", "skipped"] as const;
+export type StepStatus = (typeof STEP_STATUSES)[number];
+
 /** Output status set (workstream panel). */
 export const OUTPUT_STATUSES = ["draft", "ready", "approved", "changes_requested"] as const;
 export type OutputStatus = (typeof OUTPUT_STATUSES)[number];

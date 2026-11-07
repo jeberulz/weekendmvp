@@ -25,12 +25,14 @@ function Preview({
   decide,
   artifact,
   headingLevel,
+  approveLabel,
 }: {
   projectId: Id<"projects">;
   card: Card;
   decide: ReviewDecide;
   artifact: ArtifactReviewCardProps["artifact"];
   headingLevel?: 2 | 3;
+  approveLabel?: string;
 }) {
   const asks = card.status === "pending" || card.status === "changes_requested";
   const preview = useQuery(
@@ -38,7 +40,7 @@ function Preview({
     asks ? { projectId, approvalId: card.approvalId } : "skip",
   );
   const state: PreviewState = preview === undefined ? { kind: "loading" } : { kind: "ready", preview };
-  return <ArtifactReviewCard card={card} decide={decide} preview={state} artifact={artifact} headingLevel={headingLevel} />;
+  return <ArtifactReviewCard card={card} decide={decide} preview={state} artifact={artifact} headingLevel={headingLevel} approveLabel={approveLabel} />;
 }
 
 export function LiveArtifactReview({
@@ -46,11 +48,13 @@ export function LiveArtifactReview({
   card,
   artifact,
   headingLevel,
+  approveLabel,
 }: {
   projectId: Id<"projects">;
   card: Card;
   artifact: ArtifactReviewCardProps["artifact"];
   headingLevel?: 2 | 3;
+  approveLabel?: string;
 }) {
   const decideApproval = useMutation(api.workspace.approvals.decideApproval);
   const decide: ReviewDecide = async (decision, note) =>
@@ -58,9 +62,9 @@ export function LiveArtifactReview({
   return (
     <QuietErrorBoundary
       key={card.approvalId}
-      fallback={<ArtifactReviewCard card={card} decide={decide} preview={{ kind: "failed" }} artifact={artifact} headingLevel={headingLevel} />}
+      fallback={<ArtifactReviewCard card={card} decide={decide} preview={{ kind: "failed" }} artifact={artifact} headingLevel={headingLevel} approveLabel={approveLabel} />}
     >
-      <Preview projectId={projectId} card={card} decide={decide} artifact={artifact} headingLevel={headingLevel} />
+      <Preview projectId={projectId} card={card} decide={decide} artifact={artifact} headingLevel={headingLevel} approveLabel={approveLabel} />
     </QuietErrorBoundary>
   );
 }
