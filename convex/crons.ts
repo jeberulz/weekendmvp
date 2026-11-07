@@ -13,4 +13,7 @@ crons.cron("tenant email finalized cleanup", "15 2 * * *",
   internal.growth.email.cleanup.finalized, { olderThan: 7 * DAY_MS });
 crons.cron("tenant email abandoned cleanup", "45 2 * * *",
   internal.growth.email.cleanup.abandoned, { olderThan: 30 * DAY_MS });
+// Persisted privacy jobs remain recoverable even if scheduled calls are lost.
+crons.interval("tenant lead retention and closure recovery", { hours: 1 },
+  internal.growth.email.retentionDriver.sweep, {});
 export default crons;

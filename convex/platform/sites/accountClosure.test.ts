@@ -173,6 +173,20 @@ describe("WP78-S4e2b2 account closure", () => {
     expect(await scheduledCount()).toBe(before + 1);
   });
 
+  test("a superseded wake cannot advance the recovered chain", async () => {
+    const t = convexTest(schema, modules);
+    const ids = await seed(t, 3);
+    await asUser(t, ids.ownerId, ids.sessionId).mutation(request, {});
+    const job = (await jobFor(t, ids.ownerId))!;
+    const args = { jobId: job._id, wake: { attempts: job.attempts, updatedAt: job.updatedAt } };
+
+    await expect(t.mutation(next, args)).resolves.toEqual({ processed: 1, more: true });
+    await expect(t.mutation(next, args)).resolves.toEqual({ processed: 0, more: true });
+    expect(await jobFor(t, ids.ownerId)).toMatchObject({ projectsProcessed: 1, attempts: 1 });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await jobFor(t, ids.ownerId)).toMatchObject({ projectsProcessed: 3, state: "complete" });
+  });
+
   test("bounded fan-out includes archived projects, converts legacy jobs, and preserves an earlier deadline while off", async () => {
     const t = convexTest(schema, modules);
     const ids = await seed(t, 3);

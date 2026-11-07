@@ -11,6 +11,20 @@ const RETRY_BASE_MS = 60 * 1000;
 const RETRY_MAX_MS = 60 * RETRY_BASE_MS;
 const REPLAY_WAKE_AFTER_MS = 5 * RETRY_BASE_MS;
 
+const wakeValidator = v.object({ attempts: v.number(), updatedAt: v.number() });
+
+async function scheduleStep(
+  ctx: MutationCtx,
+  jobId: Id<"account_closure_jobs">,
+  delay: number,
+  attempts: number,
+  updatedAt: number,
+) {
+  await ctx.scheduler.runAfter(delay, internal.platform.sites.accountClosure.processNext, {
+    jobId, wake: { attempts, updatedAt },
+  });
+}
+
 function fail(code: string): never {
   throw new ConvexError({ code });
 }
@@ -61,9 +75,7 @@ export const requestAccountClosure = mutation({
       if (job.state === "scheduled" && job.nextAttemptAt <= now &&
           now - job.updatedAt >= REPLAY_WAKE_AFTER_MS) {
         await ctx.db.patch("account_closure_jobs", job._id, { updatedAt: now });
-        await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, {
-          jobId: job._id,
-        });
+        await scheduleStep(ctx, job._id, 0, job.attempts, now);
       }
       return { requestedAt: prior, alreadyRequested: true };
     }
@@ -82,7 +94,7 @@ export const requestAccountClosure = mutation({
       action: "account.closure_requested", subjectType: "user",
       subjectId: user._id, createdAt: now,
     });
-    await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, { jobId });
+    await scheduleStep(ctx, jobId, 0, 0, now);
     return { requestedAt: now, alreadyRequested: false };
   },
 });
@@ -172,11 +184,16 @@ export const processProject = internalMutation({
 
 /** One project per transaction. This is privacy cleanup, including while off. */
 export const processNext = internalMutation({
-  args: { jobId: v.id("account_closure_jobs") },
+  args: { jobId: v.id("account_closure_jobs"), wake: v.optional(wakeValidator) },
   returns: v.object({ processed: v.number(), more: v.boolean() }),
-  handler: async (ctx, { jobId }) => {
+  handler: async (ctx, { jobId, wake }) => {
     const job = await ctx.db.get("account_closure_jobs", jobId);
     if (job === null) fail("RESOURCE_NOT_FOUND");
+    // Pre-existing scheduled calls may omit the fence. Every new wake is
+    // tied to the job version it observed and cannot fork a recovered chain.
+    if (wake && (wake.attempts !== job.attempts || wake.updatedAt !== job.updatedAt)) {
+      return { processed: 0, more: job.state === "scheduled" };
+    }
     const user = await ctx.db.get("users", job.ownerId);
     if (user === null || user.accountClosureRequestedAt !== job.requestedAt ||
         !validEpoch(job.requestedAt) || !Number.isSafeInteger(job.attempts) ||
@@ -221,7 +238,7 @@ export const processNext = internalMutation({
         lastAttemptAt: now, lastErrorCode: "ACCOUNT_CLOSURE_CURSOR_RESET",
         nextAttemptAt: now, updatedAt: now,
       });
-      await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, { jobId });
+      await scheduleStep(ctx, jobId, 0, job.attempts + 1, now);
       return { processed: 0, more: true };
     }
     if (page.page.length > PAGE_SIZE || (page.page.length === 0 && !page.isDone)) {
@@ -244,8 +261,7 @@ export const processNext = internalMutation({
           lastErrorCode: "ACCOUNT_CLOSURE_PROJECT_RETRY",
           nextAttemptAt: now + delay, updatedAt: now,
         });
-        await ctx.scheduler.runAfter(delay,
-          internal.platform.sites.accountClosure.processNext, { jobId });
+        await scheduleStep(ctx, jobId, delay, job.attempts + 1, now);
         return { processed: 0, more: true };
       }
     }
@@ -261,7 +277,7 @@ export const processNext = internalMutation({
       updatedAt: now,
     });
     if (!complete) {
-      await ctx.scheduler.runAfter(0, internal.platform.sites.accountClosure.processNext, { jobId });
+      await scheduleStep(ctx, jobId, 0, job.attempts + 1, now);
     }
     return { processed: project === undefined ? 0 : 1, more: !complete };
   },
