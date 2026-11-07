@@ -224,7 +224,8 @@ describe("helpers", () => {
     expect(availability("seo").kind).toBe("coming_soon");
     expect(availability("landing").kind).toBe("coming_soon");
     for (const key of ["curriculum", "community", "merch", "outbound"] as const) expect(availability(key).kind).toBe("not_in_beta");
-    expect(startsWhenCopy("Sana", availability("seo"))).toBe("Sana starts when the seo pack ships in a later update. Until then there is no work to show.");
+    expect(startsWhenCopy("Sana", availability("seo"))).toBe("Sana starts when the SEO pack ships in a later update. Until then there is no work to show.");
+    expect(startsWhenCopy("Leo", availability("landing"))).toMatch(/^Leo starts when the landing /);
     expect(startsWhenCopy("Oli", availability("outbound"))).toMatch(/not part of this beta yet/);
   });
 
@@ -336,7 +337,7 @@ describe("a coming-soon employee (Sana, SEO)", () => {
     const { container } = show("seo");
     expect(headings(1)).toEqual(["Sana · SEO"]);
     const status = screen.getByRole("region", { name: "Sana's status" });
-    expect(status.textContent).toContain("Sana starts when the seo pack ships in a later update.");
+    expect(status.textContent).toContain("Sana starts when the SEO pack ships in a later update.");
     expect(status.textContent).not.toMatch(/drafts ·/);
     expect(screen.queryByRole("region", { name: /Deliverables/ })).toBeNull();
     expect(screen.queryByRole("region", { name: /Activity/ })).toBeNull();

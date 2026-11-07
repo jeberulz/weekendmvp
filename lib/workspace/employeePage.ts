@@ -163,13 +163,18 @@ function joinList(items: readonly string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+/** "Landing spec" → "landing spec"; an acronym ("SEO pack") keeps its capitals. */
+function lowerFirst(title: string): string {
+  return /^[A-Z][a-z]/u.test(title) ? `${title.charAt(0).toLowerCase()}${title.slice(1)}` : title;
+}
+
 /** "Leo starts when the landing page ships in a later update." */
 export function startsWhenCopy(name: string, a: Availability): string {
   switch (a.kind) {
     case "available":
       return a.later.length === 0 ? "" : `${joinList(a.later)} ${a.later.length === 1 ? "comes" : "come"} in a later update.`;
     case "coming_soon":
-      return `${name} starts when the ${joinList(a.steps.map((title) => title.toLowerCase()))} ${a.steps.length === 1 ? "ships" : "ship"} in a later update. Until then there is no work to show.`;
+      return `${name} starts when the ${joinList(a.steps.map(lowerFirst))} ${a.steps.length === 1 ? "ships" : "ship"} in a later update. Until then there is no work to show.`;
     case "not_in_beta":
       return `${name}'s work is not part of this beta yet, so there is no work to show.`;
   }
