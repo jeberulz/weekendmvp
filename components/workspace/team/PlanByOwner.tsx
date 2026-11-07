@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import { ROLE_CATALOGUE } from "@/convex/crew/roles";
 import { EmployeeLink } from "@/components/workspace/kit/EmployeeLink";
 import { EmptyState } from "@/components/workspace/kit/states";
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
@@ -47,7 +48,8 @@ import {
 function OwnerChip({ step, roster, projectId }: { step: TeamStep; roster: readonly TeamHired[]; projectId: string }) {
   const hired = roster.find((entry) => entry.role === step.employee);
   const roleLabel = ROLE_LABELS[step.employee];
-  const name = hired?.name ?? roleLabel;
+  // A skipped owner is still named (the catalogue fixes one name per role): the link goes to their page.
+  const name = hired?.name ?? ROLE_CATALOGUE.find((entry) => entry.key === step.employee)?.employeeName ?? roleLabel;
   // WP67: the chip is one link to the owner's page (the Crew Lead has none, so it stays plain).
   return (
     <EmployeeLink
