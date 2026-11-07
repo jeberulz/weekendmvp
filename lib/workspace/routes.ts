@@ -96,8 +96,9 @@ function route(
 /**
  * Nav order within each group matches the canvas Nav board. L1 (the
  * 2026-11-09 private beta, `docs/wp/l1-release-plan.md`) ships Team HQ (the
- * roster and the reviews waiting), Brand kit, Dashboard (Wren chat), Email,
- * Social and Files; every other row is "Coming soon".
+ * roster and the reviews waiting, plus a page per specialist at
+ * `team/{role}`), Brand kit, Dashboard (Wren chat), Email, Social and Files;
+ * every other row is "Coming soon".
  */
 export const WORKSPACE_ROUTES: readonly WorkspaceRoute[] = Object.freeze([
   route("team", "team", "Team HQ", "This weekend", "built"),

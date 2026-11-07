@@ -5,7 +5,7 @@ explains what the employee does, what they are doing now, what they have done, a
 comes from stored data or from the code's own contracts (the role catalogue, the launch DAG and the artifact
 schemas). Nothing is invented.
 
-**Ships:** after L1, behind the same workspace gate. "Team pages beyond the roster" is on the L1 coming-soon list.
+**Ships:** in L1 (Monday 2026-11-09), behind the same workspace gate. Owner decision 2026-11-07: "Ship in L1".
 
 ## Route
 

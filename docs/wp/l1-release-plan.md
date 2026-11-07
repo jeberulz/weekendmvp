@@ -17,11 +17,12 @@ L1 is invite-only (cohort `allowlist`), free only, no payments, nothing sends or
 | Social page | The seven posts, a copy button and character count per platform, the review card | To build (WP76-S2b) |
 | Brand kit page | The kit (name, tagline, voice, palette, type) read-only, with its review card | To build (L1-C1) |
 | Files | What Wren remembers about the business | Merged |
+| Employee pages | `/dashboard/b/{id}/team/{role}`: one page per specialist, opened from every name and avatar in the workspace | In review (PR #275), behind the same workspace gate. Owner decision 2026-11-07: "Ship in L1" |
 
 ## What shows as "coming soon"
 
 Site and logo marks, landing page and publishing, build pack, SEO pack, launch plan, ads, Studio, outbound,
-credits and billing, Team pages beyond the roster. Their routes already render a placeholder; L1-C2 makes the nav
+credits and billing. Their routes already render a placeholder; L1-C2 makes the nav
 say "Coming soon" for each, so nothing looks broken.
 
 ## Work left before Monday
@@ -39,6 +40,7 @@ say "Coming soon" for each, so nothing looks broken.
 | L1-C7 | Wizard name suggestion | The suggested business name is the idea title cut mid-word ("Gamified posture tracking app for phone-") |
 | L1-C8 | Homepage own-idea link | Canvas Main board: "Have your own idea? Start building with it" under the hero buttons and in the final call, through sign-up to `/start/own`. Behind the same flag as "Build this idea, free", so in `allowlist` mode only a signed-in cohort member sees it. `/start/own` joins the sign-in return allowlist as a bare path (a query collapses to `/dashboard`); the allowlist is shared with Convex Auth, so it ships with the Convex deploy |
 | L1-C9 | Build entry points for signed-in testers | Owner request, 2026-11-07: signed-in testers had no way into the wizard except the homepage. A verified member on an idea page gets "Build this idea, free" beside Save, straight to `/start/{slug}` with no sign-up hop. This reverses the WP74-S5 rule of no CTA for members. `/dashboard` gets a "Start building" card, straight to `/start/own`, with a secondary link to the workspace library. Both sit behind the same flag (`buildCtaVisible`), and off, the pages are unchanged. Owner's call (b), same day: in `allowlist` mode signed-out visitors see the CTAs too (`buildCta:buildCtaVisible`), and a signed-in founder who is not on the allowlist gets "You're not in the beta yet" at `/start` instead of a 404 (`buildCta:awaitingInvite`, asked only after the wizard gate refuses). A signed-in non-member still sees no CTA. The Convex change ships with the Convex deploy. The wizard re-checks access |
+| WP67-EP | Employee pages, `/dashboard/b/{id}/team/{role}` | In L1, behind the same workspace gate (owner, 2026-11-07: "Ship in L1"). One page per specialist: profile, status, what is waiting on you, now and next, drafts, activity trail and the job in full. Coming-soon and not-hired employees get the profile and say why, with no invented work. Every name and avatar in the workspace links there (one link per person). No schema change; data gaps for Codex are in `docs/wp/employee-pages/BRIEF.md`. A specialist whose work is not built yet still has a page: their profile and "starts when … ships", with no invented work. |
 | L1-C3 | Local fixture walkthrough | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
 | L1-C4 | Five live test launches | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 
@@ -61,12 +63,6 @@ say "Coming soon" for each, so nothing looks broken.
    defaults to zero: for example free pool $7 and paid pool $3. Free and paid together never pass $10;
    `email`, `social`, `publish`, `ads` and `studioVideo` stay on (off for the product).
 5. Add the test accounts to the cohort, run (or watch) the five live launches, then add the beta invitees.
-
-## After L1 (behind the same workspace gate)
-
-| Id | Work | Release | Notes |
-|---|---|---|---|
-| WP67-EP | Employee pages, `/dashboard/b/{id}/team/{role}` | After L1, behind the same workspace gate | One page per specialist: profile, status, what is waiting on you, now and next, drafts, activity trail and the job in full. Coming-soon and not-hired employees get the profile and say why, with no invented work. Every name and avatar in the workspace links there (one link per person). No schema change; data gaps for Codex are in `docs/wp/employee-pages/BRIEF.md`. Merging puts it in front of the cohort straight away, because there is no extra flag. Hold the merge until after Monday, or accept it for L1. |
 
 ## L1 gate (replaces G2 for this release only)
 
