@@ -215,15 +215,20 @@ export function worksFrom(role: RoleKey, roster: readonly Pick<TeamHired, "role"
   return lines;
 }
 
-/** Who starts after this employee's steps: the owners of child steps, other than the employee. */
-export function handsOffTo(role: RoleKey, roster: readonly Pick<TeamHired, "role" | "name">[], lead: string): { people: Person[]; titles: string[] } {
+/**
+ * Who starts after this employee: each child step owned by someone else on
+ * this team (`hired`), with its title. A child step whose owner the roster
+ * skipped is left out, because it will not run for this business.
+ */
+export function handsOffTo(role: RoleKey, hired: readonly Pick<TeamHired, "role" | "name">[]): (Person & { readonly title: string })[] {
   const own = new Set(stepsOwnedBy(role).map((step) => step.key));
-  const children = LAUNCH_STEPS.filter((step) => step.employee !== role && step.parents.some((parent) => own.has(parent)));
-  const people: Person[] = [];
-  for (const step of children) {
-    if (!people.some((p) => p.role === step.employee)) people.push({ role: step.employee, name: nameFor(step.employee, roster, lead) });
+  const out: (Person & { readonly title: string })[] = [];
+  for (const step of LAUNCH_STEPS) {
+    if (step.employee === role || !step.parents.some((parent) => own.has(parent))) continue;
+    const person = hired.find((entry) => entry.role === step.employee);
+    if (person !== undefined) out.push({ role: person.role, name: person.name, title: step.title });
   }
-  return { people, titles: children.map((step) => step.title) };
+  return out;
 }
 
 /** This employee's launch steps as `launchProgress` returns them, in DAG order. */
