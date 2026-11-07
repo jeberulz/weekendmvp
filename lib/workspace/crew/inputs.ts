@@ -12,10 +12,12 @@
  * - The brand kit reads the stored blueprint, the founder's answers and the
  *   Pro Max design candidates for the blueprint (`design/proMax.ts`), worked
  *   out here before the call (no tool loop, D23).
+ * - WP76-S1a: the email sequence reads the blueprint, the brand kit's name,
+ *   tagline and voice (never its palette or art), and the founder's answers.
  * - Every value is a string the spec quotes as data (`convex/ai/prompts/crewShared.ts`).
  */
 
-import { blueprintSchema, type Blueprint } from "../contracts/artifacts";
+import { blueprintSchema, type Blueprint, type BrandKit } from "../contracts/artifacts";
 import { hydrotrailBlueprint } from "../contracts/fixtures/hydrotrail";
 import type { WizardAnswers } from "../contracts/wizard";
 import { HYDROTRAIL_SLUG } from "../wizard/defaults";
@@ -25,6 +27,7 @@ import { designCandidatesFor, type DesignCandidates } from "./design/proMax";
 export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@1";
 export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@1";
 export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@1";
+export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@1";
 
 export type CrewPromptInputs = Record<string, string | null>;
 
@@ -162,5 +165,24 @@ export function brandKitStepPlan(input: { readonly answers: WizardAnswers; reado
       }),
     },
     design,
+  };
+}
+
+export type EmailSequenceStepPlan = { readonly promptRef: string; readonly inputs: CrewPromptInputs };
+
+/** WP76-S1a: the email sequence step's inputs: the blueprint, the brand kit's name and voice, the founder's answers. */
+export function emailSequenceStepPlan(input: {
+  readonly answers: WizardAnswers;
+  readonly blueprint: Blueprint;
+  readonly brandKit: BrandKit;
+}): EmailSequenceStepPlan {
+  const { brandKit } = input;
+  return {
+    promptRef: EMAIL_SEQUENCE_PROMPT_REF,
+    inputs: {
+      blueprint: JSON.stringify(input.blueprint),
+      brand: JSON.stringify({ name: brandKit.name, tagline: brandKit.tagline.text, voice: brandKit.voice }),
+      answers: JSON.stringify(answersForPrompt(input.answers)),
+    },
   };
 }

@@ -255,6 +255,7 @@ export async function runCrewStepWith(
         nextAttempt: result.nextAttempt,
         ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
         ...(args.briefDocumentId === undefined ? {} : { briefDocumentId: args.briefDocumentId }),
+        ...(args.brandKitDocumentId === undefined ? {} : { brandKitDocumentId: args.brandKitDocumentId }),
       });
     }
     return await settle(result.failure, result.nextAttempt);

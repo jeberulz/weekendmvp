@@ -12,6 +12,7 @@ import {
   type WizardAnswers,
 } from "../../lib/workspace/contracts/wizard";
 import { ROSTER_DOCUMENT_TITLE, ROSTER_TASK_TITLE, rosterMemberRows } from "../../lib/workspace/crew/launch";
+import type { CrewStepJobType } from "../../lib/workspace/crew/tasks";
 import { planRoster } from "./roles";
 
 /**
@@ -69,6 +70,22 @@ export async function newestBlueprintFirstDraft(ctx: Ctx, ownerId: Id<"users">, 
   return await newestHolder(ctx, ownerId, projectId, blueprintFirstDraftKey(projectId), "crew_blueprint");
 }
 
+/** WP76-S1a: the newest first draft (round 0, revision-0 key) of a crew step for the business, or null. */
+export async function newestFirstDraft(
+  ctx: Ctx,
+  ownerId: Id<"users">,
+  projectId: Id<"projects">,
+  jobType: CrewStepJobType,
+): Promise<Doc<"tasks"> | null> {
+  return await newestHolder(ctx, ownerId, projectId, jobKey(projectId, jobType, JOB_SUBJECT_MAIN, 0), jobType);
+}
+
+/** WP76-S1a: whether a task is the first draft of `jobType` (round 0, not a revision, the revision-0 key). */
+export function isFirstDraftOf(task: Doc<"tasks">, jobType: CrewStepJobType): boolean {
+  return task.type === jobType && task.revisionOfTaskId === undefined && (task.changeRound ?? 0n) === 0n &&
+    task.jobKey === jobKey(task.projectId, jobType, JOB_SUBJECT_MAIN, 0);
+}
+
 /** The launch's roster task, inserted `queued` by `startLaunch`. No gateway call, no credits, no limiter token. */
 export async function insertLaunchRosterTask(
   ctx: MutationCtx,
@@ -94,8 +111,7 @@ export async function insertLaunchRosterTask(
 
 /** Whether a blueprint task is a launch's first draft (round 0, not a revision). */
 export function isBlueprintFirstDraft(task: Doc<"tasks">): boolean {
-  return task.type === "crew_blueprint" && task.revisionOfTaskId === undefined && (task.changeRound ?? 0n) === 0n &&
-    task.jobKey === blueprintFirstDraftKey(task.projectId);
+  return isFirstDraftOf(task, "crew_blueprint");
 }
 
 /** The roster task still waiting for its blueprint, when the launch has one. */

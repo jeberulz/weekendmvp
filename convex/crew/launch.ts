@@ -16,9 +16,11 @@ import {
   RUN_LEASE_MS,
   abandonCrewTask,
   approvedBlueprint,
+  approvedBrandKit,
   ensureLaunchStepTasks,
   insertCrewTask,
   launchDraftBlueprint,
+  launchDraftBrandKit,
   resumeParkedTask,
 } from "./jobs";
 import {
@@ -29,6 +31,7 @@ import {
   rosterPlanRow,
 } from "./launchRoster";
 import { crewStepOutcomeValidator } from "./runner";
+import { emailDraftTarget } from "../growth/drafts/emailSequence";
 import {
   LAUNCH_STEPS,
   LAUNCH_STEP_KEYS,
@@ -502,6 +505,18 @@ export const STEP_FAILED_REASON = "This step did not finish. Try again to run it
 export const BRIEF_CHANGED_REASON =
   "The blueprint changed. Approve it, or finish its changes, before the brand kit can try again.";
 
+/** WP76-S1a review m4: a failed email sequence whose draft rows conflict; no retry can help. */
+export const EMAIL_DRAFT_CONFLICT_REASON =
+  "Your email sequence has more than one draft, or a draft we cannot safely rewrite, so a retry would not help. Contact support.";
+
+/** WP76-S1a: a failed email sequence with no blueprint brief it may use now. */
+export const EMAIL_BRIEF_CHANGED_REASON =
+  "The blueprint changed. Approve it, or finish its changes, before the email sequence can try again.";
+
+/** WP76-S1a: a failed email sequence with no brand kit it may use now (approved, or the launch rule). */
+export const BRAND_KIT_CHANGED_REASON =
+  "The brand kit changed. Approve it, or finish its changes, before the email sequence can try again.";
+
 /** A step whose parents are done, waiting for one of the owner's crew slots. */
 export const WAITING_FOR_SLOT_REASON = "Waiting for a free slot: your team is busy with other work.";
 
@@ -510,8 +525,9 @@ type FailedStep = { readonly step: LaunchStep; readonly retryable: boolean; read
 /**
  * The launch's failed pool steps after the blueprint, in registry order, and
  * whether a retry can help each now. A step reads `failed` only when its
- * parents are all done (`evaluateLaunch`). The brand kit is retryable only
- * when a brief exists for it now: an approved blueprint, or the launch's own
+ * parents are all done (`evaluateLaunch`). The brand kit (and, WP76-S1a, the
+ * email sequence, which also needs a brand kit under the same rule) is
+ * retryable only when a brief exists for it now: an approved blueprint, or the launch's own
  * first draft under the S2b ruling (`launchDraftBlueprint`; `now` applies the
  * pending card's TTL, a query passes none and the step's finish applies it).
  */
@@ -526,12 +542,22 @@ async function failedLaunchSteps(
   for (const step of LAUNCH_STEPS) {
     if (!isPoolStep(step) || step.key === "blueprint" || read.tasks[step.key] === undefined) continue;
     if (evaluated.find((entry) => entry.key === step.key)?.state !== "failed") continue;
-    if (step.jobType === "crew_brand_kit") {
+    if (step.jobType === "crew_email_sequence" && !(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
+      out.push({ step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON });
+      continue;
+    }
+    if (step.jobType === "crew_brand_kit" || step.jobType === "crew_email_sequence") {
       const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
       if (brief === null) {
-        out.push({ step, retryable: false, reason: BRIEF_CHANGED_REASON });
+        out.push({ step, retryable: false, reason: step.jobType === "crew_brand_kit" ? BRIEF_CHANGED_REASON : EMAIL_BRIEF_CHANGED_REASON });
         continue;
       }
+    }
+    // WP76-S1a: the email sequence also needs a brand kit it may brief from, under the same rule.
+    if (step.jobType === "crew_email_sequence" &&
+      (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
+      out.push({ step, retryable: false, reason: BRAND_KIT_CHANGED_REASON });
+      continue;
     }
     out.push({ step, retryable: true, reason: STEP_FAILED_REASON });
   }
