@@ -44,9 +44,11 @@ import {
   ownIdeaLightBlueprint,
 } from "../../../lib/workspace/contracts/fixtures/hydrotrail";
 import { promptRef } from "../../../lib/workspace/contracts/prompts";
+import { ideaSeedSpec } from "../prompts/ideaSeed.v1";
 import { wrenChatSpec } from "../prompts/wrenChat";
 import { wrenPlanTurnSpec } from "../prompts/wrenPlanTurn";
 import { canonicalJson, getEntry, type PromptEntry } from "../registry";
+import { seedFixtureReply } from "./seedFixtureReply";
 import { wrenFixtureReply } from "./wrenFixtureReply";
 
 /**
@@ -64,10 +66,13 @@ export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) 
  *   (`wrenFixtureReply.ts`). Both specs share a system block and an output
  *   schema, so they share one fingerprint; the reply tells them apart by
  *   the task block.
+ * - The per-idea seed (`crew-idea-seed@1`, WP90-S3): a test-mode seed draft
+ *   built from the quoted idea page (`seedFixtureReply.ts`).
  */
 export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
   [promptRef(wrenChatSpec)]: wrenFixtureReply,
   [promptRef(wrenPlanTurnSpec)]: wrenFixtureReply,
+  [promptRef(ideaSeedSpec)]: seedFixtureReply,
 });
 
 type ArtifactFixture = { readonly key: string; readonly schema: z.ZodType; readonly output: FixtureOutput };

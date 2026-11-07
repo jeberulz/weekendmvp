@@ -13,9 +13,15 @@
  * - `sourceText` is the text the audit checks quotes and competitor names
  *   against: exactly what the model was shown.
  *
+ * - `seedSourceToJson` / `seedSourceFromJson` (WP90-S3): the stored form of a
+ *   source in `idea_seed_items`. The operator script builds the source from
+ *   the files; Convex re-checks every bound when it reads it back, so a
+ *   hand-made or oversized source is refused, not sent.
+ *
  * Pure: no fs, no Convex imports, relative imports only (the Convex bundler
  * loads this file).
  */
+import { z } from "zod";
 
 export const SEED_SOURCE_LIMITS = {
   title: 200,
@@ -241,4 +247,89 @@ export function sourceText(source: SeedSource): string {
     ...source.howItWorks,
     ...source.prompts.flatMap((prompt) => [prompt.title, prompt.text]),
   ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Stored form (WP90-S3)
+// ---------------------------------------------------------------------------
+
+const boundedText = (max: number) => z.string().max(max);
+const sectionsShape = Object.fromEntries(
+  SEED_SOURCE_SECTIONS.map((key) => [key, boundedText(SEED_SOURCE_LIMITS.section).optional()]),
+) as Record<SeedSourceSection, z.ZodOptional<z.ZodString>>;
+
+const storedSourceSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9][a-z0-9-]{0,119}$/u),
+    title: boundedText(SEED_SOURCE_LIMITS.title).min(1),
+    description: boundedText(SEED_SOURCE_LIMITS.description),
+    summary: boundedText(SEED_SOURCE_LIMITS.summary).optional(),
+    category: boundedText(60).optional(),
+    audiences: z.array(boundedText(SEED_SOURCE_LIMITS.audience)).max(SEED_SOURCE_LIMITS.audiences),
+    researchLevel: z.string().max(40).nullable(),
+    auditPassed: z.boolean().nullable(),
+    sections: z.object(sectionsShape).strict(),
+    howItWorks: z.array(boundedText(240)).max(8),
+    prompts: z
+      .array(z.object({ title: boundedText(80), text: boundedText(SEED_SOURCE_LIMITS.prompt) }).strict())
+      .max(SEED_SOURCE_LIMITS.promptsMax),
+  })
+  .strict();
+
+/** The source with every key in a fixed order and no undefined values: one string per source. */
+function normalised(source: SeedSource): SeedSource {
+  const sections: Partial<Record<SeedSourceSection, string>> = {};
+  for (const key of SEED_SOURCE_SECTIONS) {
+    const text = source.sections[key];
+    if (text !== undefined) sections[key] = text;
+  }
+  return {
+    slug: source.slug,
+    title: source.title,
+    description: source.description,
+    ...(source.summary === undefined ? {} : { summary: source.summary }),
+    ...(source.category === undefined ? {} : { category: source.category }),
+    audiences: [...source.audiences],
+    researchLevel: source.researchLevel,
+    auditPassed: source.auditPassed,
+    sections,
+    howItWorks: [...source.howItWorks],
+    prompts: source.prompts.map((prompt) => ({ title: prompt.title, text: prompt.text })),
+  };
+}
+
+/** The stored form of a source: canonical JSON, the same bytes for the same source. */
+export function seedSourceToJson(source: SeedSource): string {
+  return JSON.stringify(normalised(source));
+}
+
+/**
+ * Reads a stored source back. Throws `SeedSourceError` when it is not JSON,
+ * breaks a bound, lacks Problem or Solution, or would be over the prompt's
+ * total bound (`seedSourceJson`).
+ */
+export function seedSourceFromJson(json: string): SeedSource {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(json);
+  } catch {
+    throw new SeedSourceError("the stored seed source is not JSON");
+  }
+  const parsed = storedSourceSchema.safeParse(raw);
+  if (!parsed.success) {
+    const paths = [...new Set(parsed.error.issues.map((issue) => issue.path.filter((p) => typeof p !== "symbol").join(".") || "(root)"))];
+    throw new SeedSourceError(`the stored seed source is invalid at ${paths.slice(0, 5).join(", ")}`);
+  }
+  const source = normalised(parsed.data);
+  if (!source.sections.problem || !source.sections.solution) {
+    throw new SeedSourceError(`${source.slug}: the source needs The Problem and The Solution sections`);
+  }
+  seedSourceJson(source);
+  return source;
+}
+
+/** SHA-256 of the stored form, hex. Web Crypto: available in Convex, Node and the edge test runtime. */
+export async function seedSourceHash(source: SeedSource): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(seedSourceToJson(source)));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }

@@ -407,8 +407,21 @@ export function seedFromColumns(ideaSlug: string, row: IdeaCrewSeedColumns): Ide
   return parsed.data;
 }
 
+/** The typed columns of a stored seed. */
+export type IdeaCrewSeedRow = {
+  readonly blueprint: Blueprint;
+  readonly wizardHints: WizardHints;
+  readonly brandSeeds: BrandSeeds;
+  readonly landingSeeds: LandingSeeds;
+  readonly emailAngles: EmailAngles;
+  readonly socialAngles: SocialAngles;
+  readonly buildPackSeeds: BuildPackSeeds;
+  readonly roleBriefs: RoleBriefs;
+  readonly validated: boolean;
+};
+
 /** The stored columns for a seed (the inverse of `seedFromColumns`). */
-export function seedColumns(seed: IdeaCrewSeed): Required<IdeaCrewSeedColumns> & { readonly blueprint: Blueprint } {
+export function seedColumns(seed: IdeaCrewSeed): IdeaCrewSeedRow {
   return {
     blueprint: seed.blueprint,
     wizardHints: seed.wizardHints,

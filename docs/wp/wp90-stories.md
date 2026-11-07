@@ -17,7 +17,7 @@ accepted moving the L1 date if this needs more time.
 
 ## Stories
 
-- [ ] `WP90-S1` - Seed contract, `local_business`, platform rule
+- [x] `WP90-S1` - Seed contract, `local_business`, platform rule
   - Scope: `lib/workspace/contracts/seeds.ts` (new), `lib/workspace/contracts/roster.ts`,
     `convex/crew/roles.ts`, `lib/workspace/crew/design/proMax.ts`, tests.
   - Acceptance criteria:
@@ -33,7 +33,7 @@ accepted moving the L1 date if this needs more time.
       sells goods, local outreach reasons), engineering weight and Pro Max product type.
   - Verification: `npm test -- tests/workspace/seeds convex/crew/roles`, `npm run typecheck`.
 
-- [ ] `WP90-S2` - Seed source, prompt spec and audit
+- [x] `WP90-S2` - Seed source, prompt spec and audit
   - Scope: `lib/workspace/crew/seedSource.ts` (new), `lib/workspace/crew/seedAudit.ts` (new),
     `convex/ai/prompts/ideaSeed.v1.ts` (new), registry, `versions.lock.json`.
   - Acceptance criteria:
@@ -46,7 +46,7 @@ accepted moving the L1 date if this needs more time.
       `validated` from `researchLevel` / provenance, never from the model.
   - Verification: unit tests over fixtures for a deep, a concept and a local-business idea.
 
-- [ ] `WP90-S3` - Batch precompute path
+- [x] `WP90-S3` - Batch precompute path
   - Scope: `convex/ai/providers/anthropic.ts` (submit, retrieve, results),
     `convex/crew/seeds.ts` (new), `convex/schema/workspace.ts` (`idea_seed_runs`),
     `scripts/crew-seeds.mjs` (new), fixture responder.

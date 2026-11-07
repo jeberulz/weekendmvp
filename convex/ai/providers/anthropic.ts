@@ -43,10 +43,15 @@
  * a dropped connection) has no HTTP status, so it is `network`, billed
  * `possible`, and C-METER charges the worst case.
  *
- * Batch (S5): `buildMessageParams` is the `params` of a Message Batches
- * request and `readMessage(message, request, { batch: true })` reads one
- * succeeded result at the batch rate, so submit and poll can be added here
- * without changing the request or cost code.
+ * Batch (WP90-S3): `createAnthropicBatchAdapter` submits Message Batches,
+ * reads their status and their results. Each request's `params` is
+ * `buildMessageParams` (the same body as a realtime call) and each succeeded
+ * result is read by `readMessage(..., { batch: true })`, so cost, refusal and
+ * JSON checks match the realtime path and the price is the batch rate.
+ * Errored, canceled and expired results are not billed by the Batch API, so
+ * they come back as `ProviderError` billed `none`. Fixture mode is stateless:
+ * the batch id is a hash of the custom ids, the status is always `ended`, and
+ * results are built from the requests the caller passes back.
  */
 
 import Anthropic, { type Middleware } from "@anthropic-ai/sdk";
@@ -173,8 +178,8 @@ const silentLogger = {
  * - `ANTHROPIC_CUSTOM_HEADERS` is still read by the constructor (SDK 1.5.0 has
  *   no option for it); `stripUnlistedHeaders` removes what it adds.
  */
-export const defaultAnthropicClientFactory: AnthropicClientFactory = (apiKey) =>
-  new Anthropic({
+function liveClient(apiKey: string): Anthropic {
+  return new Anthropic({
     apiKey,
     baseURL: ANTHROPIC_BASE_URL,
     maxRetries: 0,
@@ -184,6 +189,9 @@ export const defaultAnthropicClientFactory: AnthropicClientFactory = (apiKey) =>
     openTelemetry: { propagation: false, traces: false },
     middleware: [stripUnlistedHeaders],
   });
+}
+
+export const defaultAnthropicClientFactory: AnthropicClientFactory = liveClient;
 
 /** The API's limit on `cache_control` breakpoints per request. */
 export const MAX_CACHE_BREAKPOINTS = 4;
@@ -505,6 +513,270 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions): Anthro
         deadline.clear();
       }
       return readMessage(message, request, { fixture: access.mode === "fixture" });
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Message Batches (WP90-S3)
+// ---------------------------------------------------------------------------
+
+export type AnthropicBatchProcessingStatus = "in_progress" | "canceling" | "ended";
+
+/** The part of the SDK client the batch adapter uses. A real `Anthropic` instance satisfies it. */
+export type AnthropicBatchesClient = {
+  readonly messages: {
+    readonly batches: {
+      create(
+        params: Anthropic.Messages.BatchCreateParams,
+        options?: AnthropicRequestOptions,
+      ): Promise<Anthropic.Messages.MessageBatch>;
+      retrieve(
+        messageBatchID: string,
+        params?: undefined,
+        options?: AnthropicRequestOptions,
+      ): Promise<Anthropic.Messages.MessageBatch>;
+      results(
+        messageBatchID: string,
+        params?: undefined,
+        options?: AnthropicRequestOptions,
+      ): Promise<AsyncIterable<Anthropic.Messages.MessageBatchIndividualResponse>>;
+    };
+  };
+};
+
+export type AnthropicBatchClientFactory = (apiKey: string) => AnthropicBatchesClient;
+
+export const defaultAnthropicBatchClientFactory: AnthropicBatchClientFactory = liveClient;
+
+/** A batch's custom id: the API allows 1-64 letters, digits, `_` and `-`. */
+export const BATCH_CUSTOM_ID = /^[A-Za-z0-9_-]{1,64}$/u;
+
+/** The Batch API's per-batch request limit. */
+export const MAX_BATCH_REQUESTS = 100_000;
+
+export type BatchRequestItem = {
+  /** The request's `custom_id`. C-METER: the `usageId` of its reservation. */
+  readonly customId: string;
+  readonly request: TextRequest;
+};
+
+export type BatchRequestCounts = {
+  readonly processing: number;
+  readonly succeeded: number;
+  readonly errored: number;
+  readonly canceled: number;
+  readonly expired: number;
+};
+
+export type BatchStatus = {
+  readonly batchId: string;
+  readonly processingStatus: AnthropicBatchProcessingStatus;
+  /** Absent in fixture mode, which keeps no state. */
+  readonly counts?: BatchRequestCounts;
+};
+
+/** One result: a read reply, or a `ProviderError` (refusal and invalid output carry their cost). */
+export type BatchItemOutcome =
+  | { readonly customId: string; readonly ok: true; readonly result: TextResult }
+  | { readonly customId: string; readonly ok: false; readonly error: ProviderError };
+
+export type BatchResults = {
+  readonly outcomes: readonly BatchItemOutcome[];
+  /** Result lines whose custom id the caller did not pass (never read, never charged here). */
+  readonly unknownCustomIds: readonly string[];
+};
+
+/** Fixture mode only: makes a request come back unbilled instead of answered. */
+export type BatchFixtureResultType = (customId: string) => "errored" | "canceled" | "expired" | undefined;
+
+export type AnthropicBatchAdapterOptions = {
+  readonly env: ProviderEnv;
+  readonly clientFactory?: AnthropicBatchClientFactory;
+  readonly fixtureResponder?: AnthropicFixtureResponder;
+  readonly fixtureResultType?: BatchFixtureResultType;
+};
+
+export type BatchCallOptions = { readonly timeoutMs: number; readonly signal?: AbortSignal };
+
+export type AnthropicBatchAdapter = {
+  readonly provider: "anthropic";
+  readonly mode: "live" | "fixture";
+  submit(items: readonly BatchRequestItem[], options: BatchCallOptions): Promise<BatchStatus>;
+  status(batchId: string, options: BatchCallOptions): Promise<BatchStatus>;
+  /** Reads every result line. `items` maps each custom id to the request it was sent with. */
+  results(batchId: string, items: ReadonlyMap<string, TextRequest>, options: BatchCallOptions): Promise<BatchResults>;
+};
+
+const FIXTURE_BATCH_PREFIX = "msgbatch_fixture_";
+
+function fnv1a(text: string): string {
+  let hash = 0x811c9dc5;
+  for (const byte of new TextEncoder().encode(text)) {
+    hash ^= byte;
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
+function countOf(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
+}
+
+function batchStatusOf(batch: unknown): BatchStatus {
+  const body = isRecord(batch) ? batch : {};
+  const status = body.processing_status;
+  if (typeof body.id !== "string" || (status !== "in_progress" && status !== "canceling" && status !== "ended")) {
+    throw new ProviderError("anthropic", "invalid_output", "the batch reply has no id or status", { billed: "none" });
+  }
+  const counts = isRecord(body.request_counts) ? body.request_counts : {};
+  return {
+    batchId: body.id,
+    processingStatus: status,
+    counts: {
+      processing: countOf(counts.processing),
+      succeeded: countOf(counts.succeeded),
+      errored: countOf(counts.errored),
+      canceled: countOf(counts.canceled),
+      expired: countOf(counts.expired),
+    },
+  };
+}
+
+function assertBatchItems(items: readonly BatchRequestItem[]): void {
+  if (items.length === 0) throw configError("a batch needs at least one request");
+  if (items.length > MAX_BATCH_REQUESTS) throw configError(`a batch takes at most ${MAX_BATCH_REQUESTS} requests`);
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (!BATCH_CUSTOM_ID.test(item.customId)) throw configError(`custom id ${JSON.stringify(item.customId)} is not 1-64 of [A-Za-z0-9_-]`);
+    if (seen.has(item.customId)) throw configError(`custom id ${item.customId} appears twice`);
+    seen.add(item.customId);
+  }
+}
+
+/** An unbilled result: the Batch API charges only succeeded requests. */
+function unbilledResult(customId: string, type: "errored" | "canceled" | "expired", status?: number): BatchItemOutcome {
+  const kind = type === "errored" && status !== undefined ? kindForHttpStatus(status) : "server";
+  return {
+    customId,
+    ok: false,
+    error: new ProviderError("anthropic", kind, `the batch request was ${type}`, {
+      billed: "none",
+      ...(status === undefined ? {} : { status }),
+    }),
+  };
+}
+
+function readBatchLine(
+  line: unknown,
+  items: ReadonlyMap<string, TextRequest>,
+  fixture: boolean,
+): BatchItemOutcome | { readonly unknown: string } | null {
+  const body = isRecord(line) ? line : {};
+  const customId = typeof body.custom_id === "string" ? body.custom_id : null;
+  if (customId === null) return null;
+  const request = items.get(customId);
+  if (request === undefined) return { unknown: customId };
+  const result = isRecord(body.result) ? body.result : {};
+  switch (result.type) {
+    case "succeeded":
+      try {
+        return { customId, ok: true, result: readMessage(result.message, request, { batch: true, fixture }) };
+      } catch (error) {
+        if (error instanceof ProviderError) return { customId, ok: false, error };
+        throw error;
+      }
+    case "errored": {
+      const error = isRecord(result.error) ? result.error : {};
+      const inner = isRecord(error.error) ? error.error : error;
+      const status = inner.type === "invalid_request_error" ? 400 : inner.type === "overloaded_error" ? 529 : 500;
+      return unbilledResult(customId, "errored", status);
+    }
+    case "canceled":
+    case "expired":
+      return unbilledResult(customId, result.type);
+    default:
+      return unbilledResult(customId, "errored", 500);
+  }
+}
+
+export function createAnthropicBatchAdapter(options: AnthropicBatchAdapterOptions): AnthropicBatchAdapter {
+  const access = resolveProviderAccess("anthropic", options.env);
+  const fixture = access.mode === "fixture";
+  let client: AnthropicBatchesClient | null = null;
+  const liveBatches = () => {
+    if (access.mode !== "live") throw configError("the live batch client is not available in fixture mode");
+    try {
+      client ??= (options.clientFactory ?? defaultAnthropicBatchClientFactory)(access.apiKey);
+    } catch (cause) {
+      throw new ProviderError("anthropic", "config", "the Anthropic client could not be created", { billed: "none", cause });
+    }
+    return client.messages.batches;
+  };
+
+  async function call<T>(callOptions: BatchCallOptions, run: (requestOptions: AnthropicRequestOptions) => Promise<T>): Promise<T> {
+    const deadline = startDeadline("anthropic", callOptions.timeoutMs, callOptions.signal);
+    try {
+      return await run({ signal: deadline.signal, timeout: callOptions.timeoutMs, maxRetries: 0 });
+    } catch (error) {
+      throw errorForThrown(error, deadline);
+    } finally {
+      deadline.clear();
+    }
+  }
+
+  return {
+    provider: "anthropic",
+    mode: access.mode,
+
+    async submit(items, callOptions) {
+      assertBatchItems(items);
+      const requests = items.map((item) => ({ custom_id: item.customId, params: buildMessageParams(item.request) }));
+      if (fixture) {
+        if (callOptions.signal?.aborted) throw configError("the call was cancelled before it was sent");
+        return { batchId: `${FIXTURE_BATCH_PREFIX}${fnv1a(requests.map((r) => r.custom_id).join(","))}`, processingStatus: "in_progress" };
+      }
+      const batches = liveBatches();
+      return batchStatusOf(await call(callOptions, (requestOptions) => batches.create({ requests }, requestOptions)));
+    },
+
+    async status(batchId, callOptions) {
+      if (fixture) {
+        if (!batchId.startsWith(FIXTURE_BATCH_PREFIX)) throw configError(`${batchId} is not a fixture batch`);
+        return { batchId, processingStatus: "ended" };
+      }
+      const batches = liveBatches();
+      return batchStatusOf(await call(callOptions, (requestOptions) => batches.retrieve(batchId, undefined, requestOptions)));
+    },
+
+    async results(batchId, items, callOptions) {
+      const outcomes: BatchItemOutcome[] = [];
+      const unknownCustomIds: string[] = [];
+      const take = (read: ReturnType<typeof readBatchLine>) => {
+        if (read === null) return;
+        if ("unknown" in read) unknownCustomIds.push(read.unknown);
+        else outcomes.push(read);
+      };
+      if (fixture) {
+        if (!batchId.startsWith(FIXTURE_BATCH_PREFIX)) throw configError(`${batchId} is not a fixture batch`);
+        const fixtureClient = createFixtureAnthropicClient(options.fixtureResponder);
+        for (const [customId, request] of items) {
+          const type = options.fixtureResultType?.(customId);
+          if (type !== undefined) {
+            outcomes.push(unbilledResult(customId, type, type === "errored" ? 500 : undefined));
+            continue;
+          }
+          const message = await fixtureClient.messages.create(buildMessageParams(request));
+          take(readBatchLine({ custom_id: customId, result: { type: "succeeded", message } }, items, true));
+        }
+        return { outcomes, unknownCustomIds };
+      }
+      const batches = liveBatches();
+      await call(callOptions, async (requestOptions) => {
+        const stream = await batches.results(batchId, undefined, requestOptions);
+        for await (const line of stream) take(readBatchLine(line, items, false));
+      });
+      return { outcomes, unknownCustomIds };
     },
   };
 }

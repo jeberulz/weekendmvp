@@ -222,10 +222,86 @@ export const workspaceTables = {
     emailAngles: v.any(),
     socialAngles: v.any(),
     buildPackSeeds: v.any(),
+    /** WP90-S3, additive: the wizard's suggested answers (C-SEED `wizardHintsSchema`). */
+    wizardHints: v.optional(v.any()),
+    /** WP90-S3, additive: outbound and SEO briefs (C-SEED `roleBriefsSchema`). */
+    roleBriefs: v.optional(v.any()),
+    /** WP90-S3, additive: from the idea's research level, never from the model. */
+    validated: v.optional(v.boolean()),
+    /** WP90-S3, additive: SHA-256 of the seed source the batch was sent, so an unchanged page is not re-run. */
+    sourceHash: v.optional(v.string()),
+    /** WP90-S3, additive: the precompute run that wrote the row. */
+    runId: v.optional(v.id("idea_seed_runs")),
     promptRefs: v.array(v.string()),
     createdAt: v.number(),
   })
     .index("by_ownerId", ["ownerId"])
+    .index("by_ideaSlug_and_seedVersion", ["ideaSlug", "seedVersion"]),
+
+  /**
+   * WP90-S3. One per-idea seed precompute run: one Message Batch of
+   * `crew-idea-seed` requests, all at one `seedVersion`. Written only by
+   * `convex/crew/seeds.ts`; operator-run (`scripts/crew-seeds.mjs`).
+   */
+  idea_seed_runs: defineTable({
+    /** The super admin the seed rows are stored under (rows need an owner; seeds are platform data). */
+    ownerId: v.id("users"),
+    seedVersion: v.string(),
+    promptRef: v.string(),
+    /** Set at submit, from the provider mode the action ran in. */
+    mode: v.optional(v.union(v.literal("fixture"), v.literal("live"))),
+    status: v.union(
+      v.literal("preparing"),
+      v.literal("submitted"),
+      v.literal("collected"),
+      v.literal("failed"),
+    ),
+    batchId: v.optional(v.string()),
+    /** Items added, and how many went into the batch. */
+    itemCount: v.number(),
+    submittedCount: v.number(),
+    reservedMicroUsd: v.number(),
+    /** Polls so far; the poll stops rescheduling at `SEED_POLL_MAX`. */
+    polls: v.number(),
+    /** A plain, value-free reason when the run failed or stopped short. */
+    note: v.optional(v.string()),
+    createdAt: v.number(),
+    submittedAt: v.optional(v.number()),
+    collectedAt: v.optional(v.number()),
+  })
+    .index("by_seedVersion", ["seedVersion"])
+    .index("by_status", ["status"]),
+
+  /** WP90-S3. One idea in a run: its source, its reservation and what came of it. */
+  idea_seed_items: defineTable({
+    runId: v.id("idea_seed_runs"),
+    ideaSlug: v.string(),
+    seedVersion: v.string(),
+    /** The `seedSourceFromPage` result as JSON (bounded by `SEED_SOURCE_LIMITS.total` plus the validation facts). */
+    sourceJson: v.string(),
+    sourceHash: v.string(),
+    attempt: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("skipped"),
+      v.literal("not_reserved"),
+      v.literal("sent"),
+      v.literal("written"),
+      v.literal("audit_failed"),
+      v.literal("failed"),
+    ),
+    usageId: v.optional(v.id("ai_usage")),
+    reservedMicroUsd: v.optional(v.number()),
+    costMicroUsd: v.optional(v.number()),
+    /** Audit findings (code and field path only, never model text). */
+    issues: v.optional(v.array(v.object({ code: v.string(), path: v.string() }))),
+    /** The provider error kind for a failed request. */
+    errorKind: v.optional(v.string()),
+    seedId: v.optional(v.id("idea_crew_seeds")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_runId_and_status", ["runId", "status"])
     .index("by_ideaSlug_and_seedVersion", ["ideaSlug", "seedVersion"]),
 
   business_members: defineTable({
