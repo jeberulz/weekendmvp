@@ -443,7 +443,8 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
   jumps to `#blueprint` on the same page; the empty line is shown only for an empty checked list; a card past
   `expiresAt` is left out). "Your blueprint" shows the pitch, user, loop, features, scope cuts and market, the
   "Not yet validated" label when `validated` is false, then the blueprint's review card.
-  Page: `.../team/page.tsx`. The roster is not on this page today (it was only the placeholder), so none was kept.
+  Page: `.../team/page.tsx`. The page was only a placeholder before, so there was no roster to keep; the hired crew
+  now shows in "Your team" (below).
 - Shared: `components/workspace/review/LiveArtifactReview.tsx` (decide and change-round preview wired as on Social),
   `lib/workspace/reviewPages.ts` (words and expiry arithmetic). `ArtifactReviewCard` gained an optional
   `artifact.readFrom` ("above" or "below", default "below") so the card under the content says "above"; Email and
@@ -469,3 +470,16 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
   so "not started" is its own message. The partner's name is not known there, so copy says "Your co-founder".
 - Tests: `tests/platform/workspace-team-hq-launch.test.tsx`. Unverified: the same browser, screen reader,
   contrast and live-Convex gaps as above; no per-step retry exists (one click retries every retryable failed step).
+
+### Review fixes (M1 and minors)
+
+- Try again words come from what `retryLaunch` returned: a view that is still `failed` says "Nothing could start
+  yet: your team is busy with other work", anything else says "Sent" and points at the step list, never that work
+  started. Same in Your team.
+- Launch progress leaves the blueprint and team stage to Your team (no second Try again or Resume for it); the
+  "done" count leaves out skipped steps ("5 of 5 steps done. 6 skipped for now."); a cost line sits by the
+  buttons; both buttons are `aria-disabled` while either works; the working name carries the visible text.
+- `ArtifactReviewCard` gained optional `headingLevel` (default 3, so Email and Social output is unchanged; the Brand
+  kit page passes 2). "Waiting on you" refreshes its clock every minute and when the tab is visible again; the
+  blueprint section is a focusable jump target, and a blueprint row says so when there is no blueprint to show.
+- Own-idea label meaning is the wizard's sentence, now one constant (`NOT_VALIDATED_MEANING`).

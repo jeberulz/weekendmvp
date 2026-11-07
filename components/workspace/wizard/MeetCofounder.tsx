@@ -165,7 +165,10 @@ export function CofounderTeam({ partnerName, launch, onStart, onRetry, retrying,
         id="cofounder-team-heading"
         ref={headingRef}
         tabIndex={-1}
-        className="text-base font-semibold text-home-ink focus:outline-none"
+        className={cn(
+          "text-base font-semibold text-home-ink",
+          level === 2 ? "focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink" : "focus:outline-none",
+        )}
       >
         Your team
       </Heading>

@@ -24,11 +24,13 @@ function Preview({
   card,
   decide,
   artifact,
+  headingLevel,
 }: {
   projectId: Id<"projects">;
   card: Card;
   decide: ReviewDecide;
   artifact: ArtifactReviewCardProps["artifact"];
+  headingLevel?: 2 | 3;
 }) {
   const asks = card.status === "pending" || card.status === "changes_requested";
   const preview = useQuery(
@@ -36,17 +38,19 @@ function Preview({
     asks ? { projectId, approvalId: card.approvalId } : "skip",
   );
   const state: PreviewState = preview === undefined ? { kind: "loading" } : { kind: "ready", preview };
-  return <ArtifactReviewCard card={card} decide={decide} preview={state} artifact={artifact} />;
+  return <ArtifactReviewCard card={card} decide={decide} preview={state} artifact={artifact} headingLevel={headingLevel} />;
 }
 
 export function LiveArtifactReview({
   projectId,
   card,
   artifact,
+  headingLevel,
 }: {
   projectId: Id<"projects">;
   card: Card;
   artifact: ArtifactReviewCardProps["artifact"];
+  headingLevel?: 2 | 3;
 }) {
   const decideApproval = useMutation(api.workspace.approvals.decideApproval);
   const decide: ReviewDecide = async (decision, note) =>
@@ -54,9 +58,9 @@ export function LiveArtifactReview({
   return (
     <QuietErrorBoundary
       key={card.approvalId}
-      fallback={<ArtifactReviewCard card={card} decide={decide} preview={{ kind: "failed" }} artifact={artifact} />}
+      fallback={<ArtifactReviewCard card={card} decide={decide} preview={{ kind: "failed" }} artifact={artifact} headingLevel={headingLevel} />}
     >
-      <Preview projectId={projectId} card={card} decide={decide} artifact={artifact} />
+      <Preview projectId={projectId} card={card} decide={decide} artifact={artifact} headingLevel={headingLevel} />
     </QuietErrorBoundary>
   );
 }

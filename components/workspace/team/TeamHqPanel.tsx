@@ -8,7 +8,7 @@ import { BlueprintView } from "@/components/workspace/team/BlueprintView";
 import { LaunchProgress } from "@/components/workspace/team/LaunchProgress";
 import { WaitingOnYou } from "@/components/workspace/team/WaitingOnYou";
 
-/** L1-C6: Team HQ: reviews waiting, launch progress, the team, then the blueprint. Both sections need Convex, so one gate covers them. */
+/** L1-C6: Team HQ: reviews waiting, launch progress, the team, then the blueprint. Every section reads Convex, so one gate covers them all. */
 export function TeamHqPanel({ projectId }: { projectId: Id<"projects"> }) {
   return (
     <WhenConvexReady

@@ -9,7 +9,7 @@ import { QuietErrorBoundary } from "@/components/platform/client-gates";
 import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit/states";
 import { CARD, EYEBROW } from "@/components/workspace/kit/styles";
 import { LiveArtifactReview } from "@/components/workspace/review/LiveArtifactReview";
-import { NOT_VALIDATED_LABEL } from "@/lib/workspace/wizard/light-blueprint";
+import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import {
   BLUEPRINT_ARTIFACT,
   BLUEPRINT_LABELS,
@@ -23,8 +23,9 @@ type ReadyView = Extract<BlueprintView, { state: "ready" }>;
 
 /**
  * L1-C6: the read-only "Your blueprint" section on Team HQ, then its review
- * card. An own idea (or an unseeded one) is not researched, so it carries the
- * "Not yet validated" label in words. Server text is always a React text node.
+ * card. An own idea is not researched (`blueprintIsValidated` is true only for a
+ * library idea), so it carries the "Not yet validated" label in words.
+ * Server text is always a React text node.
  */
 
 function Block({ term, children }: { term: string; children: ReactNode }) {
@@ -39,8 +40,8 @@ function Block({ term, children }: { term: string; children: ReactNode }) {
 function List({ items }: { items: readonly string[] }) {
   return (
     <ul className="list-disc pl-5">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
+      {items.map((item, index) => (
+        <li key={index}>{item}</li>
       ))}
     </ul>
   );
@@ -52,9 +53,12 @@ function Ready({ projectId, view }: { projectId: Id<"projects">; view: ReadyView
     <div className="flex flex-col gap-4">
       <div className={`${CARD} flex flex-col gap-3 p-4`}>
         {blueprint.validated ? null : (
-          <p className="inline-flex w-fit items-center rounded-full border border-home-ochre-ink/40 bg-home-ochre px-2.5 py-0.5 text-[12px] font-medium text-home-ochre-ink">
-            {NOT_VALIDATED_LABEL}
-          </p>
+          <div className="flex flex-col gap-1.5">
+            <p className="inline-flex w-fit items-center rounded-full border border-home-ochre-ink/40 bg-home-ochre px-2.5 py-0.5 text-[12px] font-medium text-home-ochre-ink">
+              {NOT_VALIDATED_LABEL}
+            </p>
+            <p className="text-sm text-home-ink-2">{NOT_VALIDATED_MEANING}</p>
+          </div>
         )}
         <p className="font-editorial text-xl text-home-ink">{blueprint.pitch}</p>
         <dl className="flex flex-col gap-3">
@@ -72,8 +76,8 @@ function Ready({ projectId, view }: { projectId: Id<"projects">; view: ReadyView
               {blueprint.market.competitors.length === 0 ? null : (
                 <Block term={BLUEPRINT_LABELS.competitors}>
                   <ul className="list-disc pl-5">
-                    {blueprint.market.competitors.map((competitor) => (
-                      <li key={competitor.name}>
+                    {blueprint.market.competitors.map((competitor, index) => (
+                      <li key={index}>
                         {competitor.name}: {competitor.note}
                       </li>
                     ))}
@@ -103,7 +107,12 @@ function Live({ projectId }: { projectId: Id<"projects"> }) {
 
 export function BlueprintView({ projectId }: { projectId: Id<"projects"> }) {
   return (
-    <section id={BLUEPRINT_SECTION_ID} aria-labelledby="your-blueprint" className="flex scroll-mt-6 flex-col gap-3">
+    <section
+      id={BLUEPRINT_SECTION_ID}
+      aria-labelledby="your-blueprint"
+      tabIndex={-1}
+      className="flex scroll-mt-6 flex-col gap-3 focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink"
+    >
       <h2 id="your-blueprint" className="text-lg font-medium text-home-ink">Your blueprint</h2>
       <QuietErrorBoundary
         fallback={<ErrorState message="Your blueprint couldn't load right now. Reload the page to try again." />}

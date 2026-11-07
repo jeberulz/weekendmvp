@@ -7,7 +7,13 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary } from "@/components/platform/client-gates";
 import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { CofounderTeam, launchErrorMessage } from "@/components/workspace/wizard/MeetCofounder";
-import { TEAM_NOT_STARTED_COPY, TEAM_PARTNER_NAME, TEAM_UNAVAILABLE_COPY } from "@/lib/workspace/reviewPages";
+import {
+  RETRY_SENT_TEAM_COPY,
+  retryMessage,
+  TEAM_NOT_STARTED_COPY,
+  TEAM_PARTNER_NAME,
+  TEAM_UNAVAILABLE_COPY,
+} from "@/lib/workspace/reviewPages";
 
 /**
  * L1-C6: the hired crew on Team HQ, from `launchStatus`, using the wizard's
@@ -20,6 +26,7 @@ function Live({ projectId }: { projectId: Id<"projects"> }) {
   const launch = useQuery(api.crew.roster.launchStatus, { projectId });
   const retryLaunch = useMutation(api.crew.roster.retryLaunch);
   const [retrying, setRetrying] = useState(false);
+  const [message, setMessage] = useState("");
   const [refusal, setRefusal] = useState<{ message: string; during: string } | null>(null);
   const stateKey = launch === undefined ? "loading" : launch.state === "failed" ? `failed:${launch.paused}:${launch.retryable}` : launch.state;
   // A refusal is shown only while the launch is still in the state it happened in.
@@ -45,20 +52,25 @@ function Live({ projectId }: { projectId: Id<"projects"> }) {
     const during = stateKey;
     setRetrying(true);
     setRefusal(null);
+    setMessage("");
     retryLaunch({ projectId })
+      .then((view) => setMessage(retryMessage(view, RETRY_SENT_TEAM_COPY)))
       .catch((caught: unknown) => setRefusal({ message: launchErrorMessage(caught), during }))
       .finally(() => setRetrying(false));
   };
   return (
-    <CofounderTeam
-      level={2}
-      partnerName={TEAM_PARTNER_NAME}
-      launch={launch}
-      retrying={retrying}
-      error={error}
-      onStart={retry}
-      onRetry={retry}
-    />
+    <div className="flex flex-col gap-2">
+      <CofounderTeam
+        level={2}
+        partnerName={TEAM_PARTNER_NAME}
+        launch={launch}
+        retrying={retrying}
+        error={error}
+        onStart={retry}
+        onRetry={retry}
+      />
+      <p role="status" aria-live="polite" className="text-[13px] text-home-ink-2">{message}</p>
+    </div>
   );
 }
 

@@ -106,10 +106,29 @@ export const STEP_STATE_LABELS = {
   skipped: "Skipped",
 } as const;
 
-/** "3 of 6 steps done", counting skipped steps as settled but not as done. */
+/**
+ * "5 of 5 steps done. 6 skipped for now." Skipped steps are not built yet and
+ * can never finish, so they are counted apart, not as steps left to do.
+ */
 export function progressSummary(states: readonly string[]): string {
+  const skipped = states.filter((state) => state === "skipped").length;
+  const counted = states.length - skipped;
   const done = states.filter((state) => state === "succeeded").length;
-  return `${done} of ${states.length} steps done.`;
+  return `${done} of ${counted} steps done.${skipped === 0 ? "" : ` ${skipped} skipped for now.`}`;
+}
+
+/** The blueprint and team stage belongs to "Your team"; Launch progress leaves its buttons to that section. */
+export const TEAM_STAGE_KEYS: readonly string[] = ["blueprint", "roster"];
+
+export const RETRY_NOOP_COPY = "Nothing could start yet: your team is busy with other work. Try again in a few minutes.";
+export const RETRY_SENT_PROGRESS_COPY = "Sent. Each step below shows where it stands.";
+export const RETRY_SENT_TEAM_COPY = "Sent. Launch progress above shows where each step stands.";
+export const TRY_COST_COPY = "Each try counts toward your hourly crew work.";
+export const BLUEPRINT_MISSING_COPY = "The blueprint can't be shown right now.";
+
+/** What a Try again says, from what `retryLaunch` returned: never a claim that work started. */
+export function retryMessage(view: { state: string }, sent: string): string {
+  return view.state === "failed" ? RETRY_NOOP_COPY : sent;
 }
 
 export function resumeMessage(result: { resumed: number; waitingForSlot: boolean }): string {

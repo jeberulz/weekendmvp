@@ -5,14 +5,14 @@
  * refusal in plain words, focus and live regions, and the section order.
  */
 import axe from "axe-core";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConvexError } from "convex/values";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import type { Id } from "@/convex/_generated/dataModel";
-import { progressSummary, resumeMessage } from "@/lib/workspace/reviewPages";
+import { progressSummary, resumeMessage, retryMessage } from "@/lib/workspace/reviewPages";
 
 const live: { progress: unknown; status: unknown } = { progress: undefined, status: undefined };
 const retryMock = vi.fn();
@@ -78,10 +78,13 @@ async function noAxe(container: Element) {
 describe("helpers", () => {
   test("summary and resume wording", () => {
     expect(progressSummary(["succeeded", "failed", "queued"])).toBe("1 of 3 steps done.");
+    expect(progressSummary(["succeeded", "succeeded", "skipped", "skipped"])).toBe("2 of 2 steps done. 2 skipped for now.");
     expect(resumeMessage({ resumed: 1, waitingForSlot: false })).toBe("Resumed 1 step.");
     expect(resumeMessage({ resumed: 2, waitingForSlot: true })).toBe("Resumed 2 steps. Others are waiting for a free slot.");
     expect(resumeMessage({ resumed: 0, waitingForSlot: true })).toMatch(/busy with other work/);
     expect(resumeMessage({ resumed: 0, waitingForSlot: false })).toBe("Nothing was waiting to resume.");
+    expect(retryMessage({ state: "failed" }, "Sent.")).toMatch(/Nothing could start yet/);
+    expect(retryMessage({ state: "assembling" }, "Sent.")).toBe("Sent.");
   });
 });
 
@@ -117,7 +120,7 @@ describe("Launch progress", () => {
     expect(items[3].textContent).toContain("Waiting for a free slot");
     expect(items[4].textContent).toContain("Social posts: Waiting");
     expect(items[5].textContent).toContain("Ad drafts: Skipped");
-    expect(screen.getByText("2 of 6 steps done.")).toBeTruthy();
+    expect(screen.getByText("2 of 5 steps done. 1 skipped for now.")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 
@@ -138,8 +141,73 @@ describe("Launch progress", () => {
     await user.click(button);
     expect(retryMock).toHaveBeenCalledWith({ projectId: PROJECT });
     expect(resumeMock).not.toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByText("Trying the failed steps again.")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Sent. Each step below shows where it stands.")).toBeTruthy());
+    expect(screen.queryByText(/Trying the failed steps again/)).toBeNull();
     expect(document.activeElement).toBe(button);
+    expect(screen.getByText("Each try counts toward your hourly crew work.")).toBeTruthy();
+  });
+
+  test("a Try again that did nothing says so and never claims work started", async () => {
+    retryMock.mockResolvedValue({ state: "failed", paused: false, retryable: true });
+    live.progress = progress([step("brand_kit", "Brand kit", "failed", { retryable: true })], true);
+    render(<LaunchProgress projectId={PROJECT} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Try again/ }));
+    await waitFor(() =>
+      expect(screen.getByText("Nothing could start yet: your team is busy with other work. Try again in a few minutes.")).toBeTruthy(),
+    );
+    expect(screen.queryByText(/Sent\./)).toBeNull();
+  });
+
+  test("a double click makes one call, and while working the name carries the visible text", async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    retryMock.mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+    live.progress = progress([step("brand_kit", "Brand kit", "failed", { retryable: true })], true);
+    render(<LaunchProgress projectId={PROJECT} />);
+    const user = userEvent.setup();
+    const button = screen.getByRole("button", { name: /Try again/ });
+    await user.dblClick(button);
+    expect(retryMock).toHaveBeenCalledTimes(1);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(button.textContent).toBe("Trying again");
+    expect(button.getAttribute("aria-label")).toBe("Trying again: running the failed steps");
+    expect((button.getAttribute("aria-label") ?? "").startsWith(button.textContent ?? "")).toBe(true);
+    finish({ state: "ready", hired: [], skipped: [] });
+    await waitFor(() => expect(button.getAttribute("aria-disabled")).toBeNull());
+  });
+
+  test("both buttons are aria-disabled while either is working", async () => {
+    retryMock.mockReturnValue(new Promise(() => undefined));
+    live.progress = progress(
+      [step("brand_kit", "Brand kit", "failed", { retryable: true }), step("social_pack", "Social posts", "paused")],
+      true,
+    );
+    render(<LaunchProgress projectId={PROJECT} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Try again/ }));
+    expect(screen.getByRole("button", { name: /Resume/ }).getAttribute("aria-disabled")).toBe("true");
+  });
+
+  test("when the button goes away after a retry, focus moves to the heading", async () => {
+    retryMock.mockResolvedValue({ state: "ready", hired: [], skipped: [] });
+    live.progress = progress([step("brand_kit", "Brand kit", "failed", { retryable: true })], true);
+    const { rerender } = render(<LaunchProgress projectId={PROJECT} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(screen.getByText(/^Sent\./)).toBeTruthy());
+    live.progress = progress([step("brand_kit", "Brand kit", "running")]);
+    rerender(<LaunchProgress projectId={PROJECT} />);
+    expect(screen.queryByRole("button")).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Launch progress" })));
+  });
+
+  test("the blueprint and team stage is left to Your team: no second Try again or Resume", () => {
+    live.progress = progress([step("blueprint", "Blueprint", "failed", { retryable: true, reason: "This step did not finish. Try again to run it again." })], true);
+    const first = render(<LaunchProgress projectId={PROJECT} />);
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.getByText(/This step did not finish/)).toBeTruthy();
+    first.unmount();
+    live.progress = progress([step("blueprint", "Blueprint", "paused", { reason: "Paused." })]);
+    render(<LaunchProgress projectId={PROJECT} />);
+    expect(screen.queryByRole("button")).toBeNull();
   });
 
   test("a refused Try again says why in plain words", async () => {
@@ -216,6 +284,22 @@ describe("Your team", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 
+  test("a retry that did nothing says so here too", async () => {
+    retryMock.mockResolvedValue({ state: "failed", paused: true, retryable: true });
+    live.status = { state: "failed", paused: true, retryable: true };
+    render(<YourTeam projectId={PROJECT} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(screen.getByText(/Nothing could start yet/)).toBeTruthy());
+  });
+
+  test("a retry that went through says sent, not that work started", async () => {
+    retryMock.mockResolvedValue({ state: "assembling" });
+    live.status = { state: "failed", paused: false, retryable: true };
+    render(<YourTeam projectId={PROJECT} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(screen.getByText("Sent. Launch progress above shows where each step stands.")).toBeTruthy());
+  });
+
   test("failed offers Try again through retryLaunch", async () => {
     retryMock.mockResolvedValue({ state: "assembling" });
     live.status = { state: "failed", paused: false, retryable: true };
@@ -264,6 +348,6 @@ describe("Team HQ order", () => {
     render(<TeamHqPanel projectId={PROJECT} />);
     const names = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(names).toEqual(["Waiting on you", "Launch progress", "Your team", "Your blueprint"]);
-    expect(within(document.body).getAllByRole("status").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 of 1 steps done.")).toBeTruthy();
   });
 });

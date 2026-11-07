@@ -9,6 +9,7 @@ import axe from "axe-core";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
+import { act } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import type { Id } from "@/convex/_generated/dataModel";
@@ -35,7 +36,11 @@ vi.mock("convex/react", async () => {
       if (name.includes("pendingReviews")) return live.pending;
       throw new Error(`unexpected query ${name}`);
     },
-    useMutation: () => decideMock,
+    useMutation: (ref: Parameters<typeof getFunctionName>[0]) => {
+      const name = getFunctionName(ref);
+      if (name.endsWith(":decideApproval")) return decideMock;
+      throw new Error(`unexpected mutation ${name}`);
+    },
   };
 });
 vi.mock("@/components/platform/client-gates", async () => {
@@ -290,6 +295,24 @@ describe("Brand kit review card", () => {
     expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
   });
 
+  test("a paid round is explained in terms of the brand kit details and Ask for changes is not offered", () => {
+    live.preview = { outcome: "spend_required", costCredits: 5 };
+    live.brand = brandReady();
+    render(<BrandKitPanel projectId={PROJECT} />);
+    expect(
+      screen.getByText("Another round of changes costs 5 credits. Paying for changes isn't open yet, so you can approve these brand kit details as they are."),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+  });
+
+  test("the review card is its own h2 on this page, so the outline has no jump", () => {
+    live.brand = brandReady();
+    render(<BrandKitPanel projectId={PROJECT} />);
+    const review = screen.getByRole("heading", { name: "Your review" });
+    expect(review.tagName).toBe("H2");
+  });
+
   test("a kit with no card still shows the kit", () => {
     live.brand = brandReady({}, null);
     render(<BrandKitPanel projectId={PROJECT} />);
@@ -338,6 +361,38 @@ describe("Team HQ: Waiting on you", () => {
     expect(container.querySelector("section#blueprint")).not.toBeNull();
   });
 
+  test("a blueprint row says the blueprint can't be shown when there is none to jump to", () => {
+    live.pending = [review({ kind: "blueprint", title: "Blueprint", href: "/dashboard/b/project1/team" })];
+    live.blueprint = { state: "unavailable" };
+    render(<TeamHqPanel projectId={PROJECT} />);
+    expect(screen.queryByRole("link", { name: "Review Blueprint" })).toBeNull();
+    expect(screen.getAllByText("The blueprint can't be shown right now.").length).toBeGreaterThan(0);
+  });
+
+  test("the blueprint section is a focusable jump target", () => {
+    live.pending = [];
+    live.blueprint = blueprintReady();
+    const { container } = render(<TeamHqPanel projectId={PROJECT} />);
+    expect(container.querySelector("section#blueprint")?.getAttribute("tabindex")).toBe("-1");
+  });
+
+  test("a card that closes while the page is open drops off after a minute", () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "Date"] });
+    try {
+      live.pending = [review({ expiresAt: Date.now() + 30_000 })];
+      live.blueprint = { state: "none" };
+      render(<TeamHqPanel projectId={PROJECT} />);
+      expect(screen.getByRole("link", { name: "Review Brand kit" })).toBeTruthy();
+      act(() => {
+        vi.advanceTimersByTime(61_000);
+      });
+      expect(screen.queryByRole("link", { name: "Review Brand kit" })).toBeNull();
+      expect(screen.getByText("Nothing is waiting on you right now.")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test("a review past its expiry is not listed", () => {
     live.pending = [review({ expiresAt: Date.now() - 1000 })];
     live.blueprint = { state: "none" };
@@ -371,6 +426,7 @@ describe("Team HQ: Your blueprint", () => {
     expect(screen.getByText("Runners already share refill spots in group chats.")).toBeTruthy();
     expect(screen.getByText("WaterMap: Static and out of date")).toBeTruthy();
     expect(screen.queryByText("Not yet validated")).toBeNull();
+    expect(screen.queryByText(/comes from your words only/)).toBeNull();
   });
 
   test("an own idea shows Not yet validated and no market block", () => {
@@ -378,6 +434,7 @@ describe("Team HQ: Your blueprint", () => {
     live.blueprint = blueprintReady({ source: "own_idea", validated: false, market: undefined });
     render(<TeamHqPanel projectId={PROJECT} />);
     expect(screen.getByText("Not yet validated")).toBeTruthy();
+    expect(screen.getByText(/This outline comes from your words only/)).toBeTruthy();
     expect(screen.queryByText("The market")).toBeNull();
   });
 

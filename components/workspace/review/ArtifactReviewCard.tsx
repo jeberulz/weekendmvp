@@ -61,6 +61,8 @@ export type ArtifactReviewCardProps = {
    * Team HQ put the card under what it reviews, so they say "above").
    */
   artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below" };
+  /** Level of the card's "Your review" heading: 3 by default (under a page section), 2 when no h2 sits above it. */
+  headingLevel?: 2 | 3;
 };
 
 function isRateLimited(error: unknown): boolean {
@@ -69,7 +71,8 @@ function isRateLimited(error: unknown): boolean {
   return typeof data === "object" && data !== null && "kind" in data && data.kind === "RateLimited";
 }
 
-export function ArtifactReviewCard({ card, decide, preview, artifact }: ArtifactReviewCardProps) {
+export function ArtifactReviewCard({ card, decide, preview, artifact, headingLevel = 3 }: ArtifactReviewCardProps) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const noun = artifact.plural;
   const [now] = useState(() => Date.now());
   const [pending, setPending] = useState(false);
@@ -196,7 +199,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
 
   return (
     <section aria-labelledby={`${id}-title`} className={cn(CARD, "flex flex-col gap-3 p-4")}>
-      <h3 id={`${id}-title`} className="text-sm font-medium text-home-ink">Your review</h3>
+      <Heading id={`${id}-title`} className="text-sm font-medium text-home-ink">Your review</Heading>
       {canDecide ? (
         <p className="text-[13px] text-home-ink-2">
           Read the {noun} {artifact.readFrom ?? "below"}. Approve them as they are, or ask your team for changes.

@@ -15,7 +15,11 @@ import {
   PROGRESS_UNAVAILABLE_COPY,
   progressSummary,
   resumeMessage,
+  retryMessage,
+  RETRY_SENT_PROGRESS_COPY,
   STEP_STATE_LABELS,
+  TEAM_STAGE_KEYS,
+  TRY_COST_COPY,
 } from "@/lib/workspace/reviewPages";
 
 type Progress = FunctionReturnType<typeof api.crew.launch.launchProgress>;
@@ -57,8 +61,11 @@ function Body({ projectId, progress }: { projectId: Id<"projects">; progress: Pr
   const [error, setError] = useState<string | null>(null);
   const headingFocus = useRef(false);
   const inFlight = useRef(false);
-  const canRetry = progress.started && progress.retryable;
-  const canResume = progress.started && progress.steps.some((step) => step.state === "paused");
+  // The blueprint and team stage is owned by "Your team" (same `retryLaunch`), so its failure or pause gets no second button here.
+  const later = progress.steps.filter((step) => !TEAM_STAGE_KEYS.includes(step.key));
+  const canRetry = progress.started && later.some((step) => step.state === "failed" && step.retryable === true);
+  const canResume = progress.started && later.some((step) => step.state === "paused");
+  const busy = working !== null;
 
   useEffect(() => {
     if (canRetry || canResume || !headingFocus.current) return;
@@ -78,7 +85,7 @@ function Body({ projectId, progress }: { projectId: Id<"projects">; progress: Pr
     setError(null);
     setMessage("");
     const action = kind === "retry"
-      ? retryLaunch({ projectId }).then(() => "Trying the failed steps again.")
+      ? retryLaunch({ projectId }).then((view) => retryMessage(view, RETRY_SENT_PROGRESS_COPY))
       : resumeLaunch({ projectId }).then(resumeMessage);
     action
       .then(setMessage)
@@ -96,29 +103,32 @@ function Body({ projectId, progress }: { projectId: Id<"projects">; progress: Pr
       </p>
       <Steps progress={progress} />
       {canRetry || canResume ? (
-        <div className="flex flex-wrap gap-2">
-          {canRetry ? (
-            <button
-              type="button"
-              className={BTN_SECONDARY}
-              aria-disabled={working === "retry" || undefined}
-              aria-label={working === "retry" ? "Trying the failed steps again" : "Try again: run the failed steps again"}
-              onClick={() => run("retry")}
-            >
-              {working === "retry" ? "Trying again…" : "Try again"}
-            </button>
-          ) : null}
-          {canResume ? (
-            <button
-              type="button"
-              className={BTN_SECONDARY}
-              aria-disabled={working === "resume" || undefined}
-              aria-label={working === "resume" ? "Resuming the paused steps" : "Resume: restart the paused steps"}
-              onClick={() => run("resume")}
-            >
-              {working === "resume" ? "Resuming…" : "Resume"}
-            </button>
-          ) : null}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            {canRetry ? (
+              <button
+                type="button"
+                className={BTN_SECONDARY}
+                aria-disabled={busy || undefined}
+                aria-label={working === "retry" ? "Trying again: running the failed steps" : "Try again: run the failed steps again"}
+                onClick={() => run("retry")}
+              >
+                {working === "retry" ? "Trying again" : "Try again"}
+              </button>
+            ) : null}
+            {canResume ? (
+              <button
+                type="button"
+                className={BTN_SECONDARY}
+                aria-disabled={busy || undefined}
+                aria-label={working === "resume" ? "Resuming: restarting the paused steps" : "Resume: restart the paused steps"}
+                onClick={() => run("resume")}
+              >
+                {working === "resume" ? "Resuming" : "Resume"}
+              </button>
+            ) : null}
+          </div>
+          <p className="text-[13px] text-home-ink-2">{TRY_COST_COPY}</p>
         </div>
       ) : null}
       <p role="status" aria-live="polite" className="text-[13px] text-home-ink-2">{message}</p>
@@ -140,7 +150,7 @@ function Live({ projectId }: { projectId: Id<"projects"> }) {
 export function LaunchProgress({ projectId }: { projectId: Id<"projects"> }) {
   return (
     <section aria-labelledby="launch-progress-title" className="flex flex-col gap-3">
-      <h2 id="launch-progress-title" tabIndex={-1} className="text-lg font-medium text-home-ink focus:outline-none">Launch progress</h2>
+      <h2 id="launch-progress-title" tabIndex={-1} className="text-lg font-medium text-home-ink focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink">Launch progress</h2>
       <QuietErrorBoundary fallback={<EmptyState>{PROGRESS_UNAVAILABLE_COPY}</EmptyState>}>
         <Live projectId={projectId} />
       </QuietErrorBoundary>

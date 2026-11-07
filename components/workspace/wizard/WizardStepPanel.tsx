@@ -37,7 +37,7 @@ import {
   STEP_TITLES,
   summarizeStep,
 } from "@/lib/workspace/wizard/labels";
-import { NOT_VALIDATED_LABEL } from "@/lib/workspace/wizard/light-blueprint";
+import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
 
 export type WizardStepPanelProps = {
@@ -139,8 +139,7 @@ function NotValidatedNote({ id, blueprint }: { id: string; blueprint: WizardBlue
         {NOT_VALIDATED_LABEL}
       </p>
       <p className="text-sm text-home-ink-2">
-        This outline comes from your words only. Nobody has researched the market for it yet, so it has no market
-        numbers, prices or keyword data.
+        {NOT_VALIDATED_MEANING}
       </p>
       {blueprint.origin === "own_fallback" ? (
         <p className="text-sm text-home-ink-2">

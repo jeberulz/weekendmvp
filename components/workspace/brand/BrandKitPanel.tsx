@@ -110,8 +110,8 @@ function KitBody({ kit }: { kit: Kit }) {
           <div className="flex flex-col gap-1">
             <h3 className={EYEBROW}>Other names your team considered</h3>
             <ul className="list-disc pl-5 text-sm text-home-ink-2">
-              {kit.nameAlternatives.map((name) => (
-                <li key={name}>{name}</li>
+              {kit.nameAlternatives.map((name, index) => (
+                <li key={index}>{name}</li>
               ))}
             </ul>
           </div>
@@ -175,7 +175,7 @@ function BrandKitView({ projectId, view }: { projectId: Id<"projects">; view: Br
   return (
     <div className="flex flex-col gap-4">
       <KitBody kit={view.kit} />
-      {view.card === null ? null : <LiveArtifactReview projectId={projectId} card={view.card} artifact={BRAND_ARTIFACT} />}
+      {view.card === null ? null : <LiveArtifactReview projectId={projectId} card={view.card} artifact={BRAND_ARTIFACT} headingLevel={2} />}
     </div>
   );
 }
