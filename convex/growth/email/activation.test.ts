@@ -38,7 +38,7 @@ async function setup() {
       createdAt: 2, updatedAt: 2,
     });
     const approval = {
-      ownerId, projectId, status: "approved" as const, changeRound: 0n, createdAt: 3, updatedAt: 4,
+      ownerId, projectId, status: "approved" as const, changeRound: 0n, createdAt: 3, updatedAt: 10,
     };
     const approvalId = await ctx.db.insert("approvals", {
       ...approval, kind: "send", subjectTable: "sequences", subjectId: sequenceId,
@@ -51,6 +51,10 @@ async function setup() {
   const owner = t.withIdentity({ subject: `${ids.ownerId}|${ids.ownerSession}`, issuer: "https://local.test" });
   const stranger = t.withIdentity({ subject: `${ids.otherId}|${ids.otherSession}`, issuer: "https://local.test" });
   return { t, owner, stranger, ids, args: { sequenceId: ids.sequenceId, approvalId: ids.approvalId } };
+}
+
+async function expectCode(result: Promise<null>, code: string) {
+  await expect(result).rejects.toMatchObject({ data: { code } });
 }
 
 describe("WP79 C-EMAIL activation fixture", () => {
@@ -66,22 +70,35 @@ describe("WP79 C-EMAIL activation fixture", () => {
     }));
     const before = await snapshot();
     for (let attempt = 0; attempt < 2; attempt++) {
-      await expect(owner.mutation(activate, args)).rejects.toThrow("SEQUENCE_ACTIVATION_UNAVAILABLE");
+      await expectCode(owner.mutation(activate, args), "SEQUENCE_ACTIVATION_UNAVAILABLE");
     }
     expect(await snapshot()).toEqual(before);
   });
 
   test("refuses a stranger and an expired founder session before inspecting the approval", async () => {
     const { t, owner, stranger, ids, args } = await setup();
-    await expect(stranger.mutation(activate, args)).rejects.toThrow("RESOURCE_NOT_FOUND");
+    await expectCode(stranger.mutation(activate, args), "RESOURCE_NOT_FOUND");
+    await expectCode(t.mutation(activate, args), "UNAUTHENTICATED");
     await t.run((ctx) => ctx.db.patch("authSessions", ids.ownerSession, { expirationTime: 1 }));
-    await expect(owner.mutation(activate, args)).rejects.toThrow("UNAUTHENTICATED");
+    await expectCode(owner.mutation(activate, args), "UNAUTHENTICATED");
+  });
+
+  test("requires the owner in the allowlist and rejects mismatched sequence ownership", async () => {
+    const { t, owner, ids, args } = await setup();
+    await t.run((ctx) => ctx.db.patch("ops_settings", ids.opsId, { cohortMode: "allowlist" }));
+    await expectCode(owner.mutation(activate, args), "RESOURCE_NOT_FOUND");
+    await t.run((ctx) => ctx.db.insert("workspace_cohort", {
+      ownerId: ids.ownerId, addedBy: ids.ownerId, addedAt: 1,
+    }));
+    await expectCode(owner.mutation(activate, args), "SEQUENCE_ACTIVATION_UNAVAILABLE");
+    await t.run((ctx) => ctx.db.patch("sequences", ids.sequenceId, { ownerId: ids.otherId }));
+    await expectCode(owner.mutation(activate, args), "RESOURCE_NOT_FOUND");
   });
 
   test("refuses while either workspace or email is off", async () => {
     const { t, owner, ids, args } = await setup();
     await t.run((ctx) => ctx.db.patch("ops_settings", ids.opsId, { workspaceEnabled: false }));
-    await expect(owner.mutation(activate, args)).rejects.toThrow("WORKSPACE_DISABLED");
+    await expectCode(owner.mutation(activate, args), "WORKSPACE_DISABLED");
     await t.run(async (ctx) => {
       const ops = await ctx.db.get("ops_settings", ids.opsId);
       if (!ops) throw new Error("missing fixture ops settings");
@@ -90,20 +107,28 @@ describe("WP79 C-EMAIL activation fixture", () => {
         killSwitches: { ...ops.killSwitches, email: true },
       });
     });
-    await expect(owner.mutation(activate, args)).rejects.toThrow("WORKSPACE_DISABLED");
+    await expectCode(owner.mutation(activate, args), "WORKSPACE_DISABLED");
   });
 
   test("refuses a draft review or a send approval for a different sequence", async () => {
     const { owner, ids, args } = await setup();
-    await expect(owner.mutation(activate, { ...args, approvalId: ids.reviewId }))
-      .rejects.toThrow("APPROVAL_KIND_MISMATCH");
-    await expect(owner.mutation(activate, { ...args, sequenceId: ids.otherSequenceId }))
-      .rejects.toThrow("APPROVAL_SUBJECT_MISMATCH");
+    await expectCode(owner.mutation(activate, { ...args, approvalId: ids.reviewId }), "APPROVAL_KIND_MISMATCH");
+    await expectCode(owner.mutation(activate, { ...args, sequenceId: ids.otherSequenceId }), "APPROVAL_SUBJECT_MISMATCH");
+  });
+
+  test("requires the approval to exist and be approved", async () => {
+    const { t, owner, ids, args } = await setup();
+    for (const status of ["pending", "changes_requested", "expired", "cancelled"] as const) {
+      await t.run((ctx) => ctx.db.patch("approvals", ids.approvalId, { status }));
+      await expectCode(owner.mutation(activate, args), "APPROVAL_NOT_APPROVED");
+    }
+    await t.run((ctx) => ctx.db.delete("approvals", ids.approvalId));
+    await expectCode(owner.mutation(activate, args), "APPROVAL_NOT_FOUND");
   });
 
   test("refuses when a linked document changed after the approval was created", async () => {
     const { t, owner, ids, args } = await setup();
     await t.run((ctx) => ctx.db.patch("documents", ids.documentId, { body: "{\"changed\":true}", updatedAt: 5 }));
-    await expect(owner.mutation(activate, args)).rejects.toThrow("APPROVAL_SUBJECT_CHANGED");
+    await expectCode(owner.mutation(activate, args), "APPROVAL_SUBJECT_CHANGED");
   });
 });
