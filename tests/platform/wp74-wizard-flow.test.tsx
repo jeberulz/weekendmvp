@@ -50,6 +50,8 @@ function view(step: WizardSessionView["step"], stepIndex: number, completed = fa
     suggestedNames: [...seed.suggestedNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
+    hints: {},
+    crew: null,
     business: null,
   };
 }

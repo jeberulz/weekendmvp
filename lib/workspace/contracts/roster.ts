@@ -36,6 +36,8 @@ export const IDEA_KINDS = [
   "service",
   "marketplace",
   "b2b_software",
+  /** WP90: a shop, studio, salon or venue that serves people in person. */
+  "local_business",
 ] as const;
 export type IdeaKind = (typeof IDEA_KINDS)[number];
 export const ideaKindSchema = z.enum(IDEA_KINDS);
@@ -125,6 +127,13 @@ export const rosterProfileSchema = z
     buyer: buyerSchema,
     deliveryFormat: deliveryFormatSchema,
     audiencePlural: singleLineText(40),
+    /**
+     * WP90: the business sells physical goods (stock, products, merchandise).
+     * Read only for a `local_business`, where it decides the Merch hire; a
+     * `physical_product` always sells goods. Optional, so blueprints stored
+     * before WP90 still parse.
+     */
+    sellsGoods: z.boolean().optional(),
   })
   .strict();
 export type RosterProfile = z.infer<typeof rosterProfileSchema>;

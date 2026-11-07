@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v1";
+import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v2";
 import { SOCIAL_DAYS, type SocialPack } from "../../lib/workspace/contracts/artifacts";
 import { TIER_RECOMMENDED_EFFORT } from "../../lib/workspace/contracts/prompts";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailSocialPack } from "../../lib/workspace/contracts/fixtures/hydrotrail";
@@ -110,13 +110,15 @@ describe("the step's inputs and spec", () => {
   test("the blueprint and the kit's name, tagline and voice only: no answers, no palette, no art", () => {
     const plan = socialPackStepPlan({ blueprint: hydrotrailBlueprint, brandKit: hydrotrailBrandKit });
     expect(plan.promptRef).toBe(SOCIAL_PACK_PROMPT_REF);
-    expect(Object.keys(plan.inputs).sort()).toEqual(["blueprint", "brand"]);
+    expect(Object.keys(plan.inputs).sort()).toEqual(["blueprint", "brand", "ideaAngles"]);
+    // WP90-S5: no seed, no angles; the spec then sends the v1 user block.
+    expect(plan.inputs.ideaAngles).toBeNull();
     expect(JSON.parse(plan.inputs.brand ?? "null")).toEqual({
       name: hydrotrailBrandKit.name, tagline: hydrotrailBrandKit.tagline.text, voice: hydrotrailBrandKit.voice,
     });
   });
 
-  test("crew-social-pack@1 runs on the fast tier at the tier's recommended effort, thinking off", () => {
+  test("crew-social-pack@2 runs on the fast tier at the tier's recommended effort, thinking off", () => {
     expect(`${socialPackSpec.id}@${socialPackSpec.version}`).toBe(SOCIAL_PACK_PROMPT_REF);
     expect(socialPackSpec).toMatchObject({ tier: "fast", effort: TIER_RECOMMENDED_EFFORT.fast, thinking: { type: "disabled" }, fallbacks: "none" });
   });

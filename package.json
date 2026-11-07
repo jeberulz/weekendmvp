@@ -13,6 +13,7 @@
     "check:server-traces": "node scripts/check-server-traces.mjs",
     "check:idea-corpus": "node scripts/check-idea-corpus.mjs",
     "check:prompt-versions": "node --experimental-strip-types scripts/check-prompt-versions.mjs",
+    "crew:seeds": "node --experimental-strip-types scripts/crew-seeds.mjs",
     "test:local-dashboard": "node scripts/dashboard-local-integration.mjs --confirm-disposable=wp44",
     "lint": "eslint .",
     "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:auth && npm run test:security && npm run test:sitemap && npm run test:convex && npm run test:engine && npm run test:editorial && npm run test:home && npm run test:prompts && npm run test:platform && npm run test:live",

@@ -103,6 +103,7 @@ const IDEA_KIND_PRODUCTS: Readonly<Record<IdeaKind, { consumer: string; business
   service: { consumer: "Hyperlocal Services", business: "B2B Service" },
   marketplace: { consumer: "Marketplace (P2P)", business: "Marketplace (P2P)" },
   b2b_software: { consumer: "SaaS (General)", business: "SaaS (General)" },
+  local_business: { consumer: "Hyperlocal Services", business: "B2B Service" },
 });
 
 /** A keyword match needs this many matched keyword phrases to beat the idea kind's default. */

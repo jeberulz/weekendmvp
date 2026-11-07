@@ -62,7 +62,7 @@ test("every workspace table has a flat validator, D22 ownership and owner-first 
       }
     }
   }
-  assert.equal(count, 30, "Phase 0 inventory plus additive WP79 and WP78 tables");
+  assert.equal(count, 32, "Phase 0 inventory plus additive WP79, WP78 and WP90 (idea_seed_runs, idea_seed_items) tables");
   assert.equal(tableNames.size, count, "workspace table names must not be duplicated across schema modules");
   assert.ok(tableNames.has("business_email_settings"));
   assert.ok(tableNames.has("lead_email_tokens"));

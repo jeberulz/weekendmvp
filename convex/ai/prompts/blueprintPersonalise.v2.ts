@@ -11,7 +11,7 @@
  * model writes (`lib/workspace/crew/quality.ts`).
  *
  * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `blueprintPersonalise.v2.ts`),
+ * hashes module source) needs a version bump (a new `blueprintPersonalise.v3.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -37,14 +37,14 @@ const SYSTEM = [
   "Your role: blueprint. You turn a researched library idea into the blueprint for this founder's business. Every later crew member reads it as the brief.",
   "Keep it buildable in one weekend: one user, one loop they repeat, a few core features, and scope cuts that name what is left out this weekend.",
   "Shape it to the founder's choices (platform, commercial model, goal, name) without changing the idea into a different one.",
-  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"hikers\").",
+  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"hikers\"). ideaKind is local_business for a shop, studio, salon or venue that serves people in person. sellsGoods is true when the business sells physical stock (products, food, merchandise); leave it out otherwise.",
   "source is \"library\" and ideaSlug is the slug in <library_idea>, copied exactly.",
   "market is qualitative only: a summary and named competitors or competitor categories with a short note. No numbers, prices, percentages, market sizes, growth rates or search volumes anywhere. Keep what the seed's market says when it has one; leave market out when there is no seed and the idea record says nothing about the market.",
 ].join("\n");
 
 export const blueprintPersonaliseSpec = definePromptSpec<BlueprintPersonaliseInput, Blueprint>({
   id: "crew-blueprint-personalise",
-  version: 1,
+  version: 2,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },

@@ -445,6 +445,6 @@ describe("drift and sweep", () => {
                 expect(e.reason.length).toBeLessThanOrEqual(160);
               }
             }
-    expect(n).toBe(6 * 2 * 3 * 2 * 2);
+    expect(n).toBe(IDEA_KINDS.length * 2 * 3 * 2 * 2);
   });
 });

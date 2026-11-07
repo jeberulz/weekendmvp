@@ -9,7 +9,7 @@
  * outline the wizard showed them, and their parsed wizard answers.
  *
  * Any change to this file or to `crewShared.ts` (comments included) needs a
- * version bump (a new `blueprintOwnIdea.v2.ts`), then
+ * version bump (a new `blueprintOwnIdea.v3.ts`), then
  * `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -34,13 +34,13 @@ const SYSTEM = [
   "This idea has not been researched, and the founder sees it labelled \"Not yet validated\". State nothing as a market fact: no market size, growth, trends, surveys, statistics, search volumes, competitor names or competitor prices. The founder's own facts from their words (their price, their product) may be used as given.",
   "Keep it buildable in one weekend: one user, one loop they repeat, a few core features, and scope cuts that name what is left out this weekend.",
   "Stay with the founder's idea; sharpen it, do not replace it. Shape it to their choices (platform, commercial model, goal, name).",
-  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"campers\").",
+  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"campers\"). ideaKind is local_business for a shop, studio, salon or venue that serves people in person. sellsGoods is true when the business sells physical stock (products, food, merchandise); leave it out otherwise.",
   "source is \"own_idea\".",
 ].join("\n");
 
 export const blueprintOwnIdeaSpec = definePromptSpec<BlueprintOwnIdeaInput, Blueprint>({
   id: "crew-blueprint-own-idea",
-  version: 1,
+  version: 2,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },
