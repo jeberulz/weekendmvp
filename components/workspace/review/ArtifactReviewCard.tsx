@@ -62,7 +62,7 @@ export type ArtifactReviewCardProps = {
    * `readFrom` says where the thing to read sits relative to the card ("below" by default; the Brand kit page and
    * Team HQ put the card under what it reviews, so they say "above").
    */
-  artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below" };
+  artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below"; approvalKind?: "send" | "post" };
   /** Level of the card's "Your review" heading: 3 by default (under a page section), 2 when no h2 sits above it. */
   headingLevel?: 2 | 3;
   /** Label of the approve button. "Approve" by default; Email and Social say "Approve all 4" and so on. */
@@ -150,7 +150,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact, headingLev
     void decide(decision, text)
       .then((result) => {
         if (decision === "approve") {
-          setMessage(approvalDecisionCopy(result.status));
+          setMessage(approvalDecisionCopy(result.status, { approvalKind: artifact.approvalKind }));
           return;
         }
         setMessage(changesOutcomeCopy(result.changeRound, result.status, result.changed, noun));

@@ -14,7 +14,16 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import type { Id } from "@/convex/_generated/dataModel";
 import { SOCIAL_DAYS, SOCIAL_PLATFORMS } from "@/lib/workspace/contracts/artifacts";
-import { captionCount, copiedAnnouncement, copyTextFor, hashtagLine } from "@/lib/workspace/socialPage";
+import {
+  captionCount,
+  copiedAnnouncement,
+  copyTextFor,
+  hashtagLine,
+  platformLimitCopy,
+  SOCIAL_DAY_SHORT,
+  SOCIAL_FORMAT_SHORT,
+  SOCIAL_PLATFORM_MARKS,
+} from "@/lib/workspace/socialPage";
 
 const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
 const live: { view: unknown; preview: unknown } = { view: undefined, preview: FREE_PREVIEW };
@@ -43,7 +52,7 @@ const { SocialPackPanel } = await import("@/components/workspace/social/SocialPa
 
 const PROJECT = "project1" as Id<"projects">;
 const APPROVAL = "approval1" as Id<"approvals">;
-const DAY_NAMES = ["Friday (launch day)", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const LIST_DAY_NAMES = ["Friday", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 
 const LONG_CAPTION = `${"Long caption. ".repeat(30)}End.`; // about 420 characters, over X's 280
 
@@ -78,6 +87,11 @@ function ready(card: unknown = { approvalId: APPROVAL, status: "pending", change
 
 function show() {
   return render(<SocialPackPanel projectId={PROJECT} />);
+}
+
+/** The List view shows all seven posts at once; the calendar shows the selected one. */
+async function toList(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "List" }));
 }
 
 function postItems() {
@@ -134,6 +148,16 @@ describe("helpers", () => {
     expect(c.count).toBe(2);
     expect(c.summary).toBe("2 of 2,200 characters");
   });
+  test("platform limits and marks", () => {
+    expect(platformLimitCopy("instagram")).toBe("2,200 characters");
+    expect(platformLimitCopy("x")).toBe("280 characters");
+    expect(platformLimitCopy("facebook")).toBe("63,206 characters");
+    expect(SOCIAL_PLATFORMS.map((p) => SOCIAL_PLATFORM_MARKS[p])).toEqual(["IG", "FB", "TT", "X", "YT", "IN", "TH", "PI"]);
+  });
+  test("short labels", () => {
+    expect(SOCIAL_DAYS.map((d) => SOCIAL_DAY_SHORT[d])).toEqual(["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]);
+    expect(SOCIAL_FORMAT_SHORT.reel_script).toBe("Reel script");
+  });
   test("announcement names the day and the platform", () => {
     expect(copiedAnnouncement("fri", "x")).toBe("Copied the Friday post for X.");
   });
@@ -159,64 +183,178 @@ describe("states", () => {
 });
 
 describe("ready", () => {
-  test("seven posts in day order with their facts, and a heading outline", () => {
+  test("the calendar is the default: seven tiles in day order, one detail panel, a heading outline", () => {
     live.view = ready();
     show();
+    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "List" }).getAttribute("aria-pressed")).toBe("false");
+    const calendar = screen.getByRole("list", { name: "Launch week calendar" });
+    const tiles = within(calendar).getAllByRole("button");
+    expect(tiles).toHaveLength(7);
+    expect(tiles.map((tile) => tile.getAttribute("aria-pressed"))).toEqual(["true", "false", "false", "false", "false", "false", "false"]);
+    // Each tile: the day (spoken in full), the hook and the short format. The art repeats text, so it is hidden.
+    expect(within(tiles[0]).getByText("Friday (launch day)")).toBeTruthy();
+    expect(within(tiles[0]).getByText("Hook fri")).toBeTruthy();
+    expect(within(tiles[0]).getByText("Image")).toBeTruthy();
+    expect(within(tiles[2]).getByText("Poll")).toBeTruthy();
+    expect(tiles[0].querySelector("[aria-hidden='true']:not(span span)")).toBeTruthy();
+    const detail = screen.getByRole("region", { name: "Friday (launch day)" });
+    expect(detail.id).toBe(tiles[0].getAttribute("aria-controls"));
+    expect(within(detail).getByRole("heading", { level: 3 }).textContent).toBe("Friday (launch day)");
+    expect(within(detail).getByText("Launch · Image")).toBeTruthy();
+    expect(within(detail).getByText("Card fri")).toBeTruthy();
+    expect(within(detail).getByText("Alt fri")).toBeTruthy();
+    expect(within(detail).getByText("#hydrotrail #weekendmvp")).toBeTruthy();
+    // h1 (page), then h2 for the review card and the week, then h3 for the post: no skipped level.
+    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Your review", "Launch week · Friday to Thursday"]);
+    expect(screen.queryAllByRole("heading", { level: 1 })).toHaveLength(0);
+  });
+
+  test("selecting a tile shows that post's detail", async () => {
+    live.view = ready();
+    show();
+    const user = userEvent.setup();
+    const tiles = within(screen.getByRole("list", { name: "Launch week calendar" })).getAllByRole("button");
+    await user.click(tiles[2]);
+    expect(tiles[2].getAttribute("aria-pressed")).toBe("true");
+    expect(tiles[0].getAttribute("aria-pressed")).toBe("false");
+    const detail = screen.getByRole("region", { name: "Sunday" });
+    expect(within(detail).getByText("Value · Poll")).toBeTruthy();
+    expect(within(detail).getByText("Option A")).toBeTruthy();
+    expect(within(detail).queryByText("Hashtags")).toBeNull();
+    expect(within(detail).getByText("Add these as the poll's choices on the platform.")).toBeTruthy();
+  });
+
+  test("Calendar and List toggle between a tile grid and seven expanded posts", async () => {
+    live.view = ready();
+    show();
+    const user = userEvent.setup();
+    expect(screen.queryByRole("list", { name: "The posts, in order" })).toBeNull();
+    await toList(user);
+    expect(screen.getByRole("button", { name: "List" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Calendar" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.queryByRole("list", { name: "Launch week calendar" })).toBeNull();
     const items = postItems();
     expect(items).toHaveLength(7);
-    expect(items.map((item) => within(item).getByRole("heading", { level: 3 }).textContent)).toEqual(DAY_NAMES);
+    expect(items.map((item) => within(item).getByRole("heading", { level: 3 }).textContent)).toEqual(
+      SOCIAL_DAYS.map((day, i) => `${LIST_DAY_NAMES[i]}: Hook ${day}`),
+    );
     const first = items[0];
     expect(within(first).getByText("Launch · Image post")).toBeTruthy();
-    expect(within(first).getByText("Hook fri")).toBeTruthy();
     expect(within(first).getByText("Card fri")).toBeTruthy();
-    expect(within(first).getByText("Alt fri")).toBeTruthy();
-    expect(within(first).getByText("#hydrotrail #weekendmvp")).toBeTruthy();
-    const poll = items[2];
-    expect(within(poll).getByText("Value · Poll")).toBeTruthy();
-    expect(within(poll).getByText("Option A")).toBeTruthy();
-    expect(within(poll).queryByText("Hashtags")).toBeNull();
-    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
+    expect(within(items[2]).getByText("Value · Poll")).toBeTruthy();
+    expect(within(items[2]).getByText("Option A")).toBeTruthy();
+    expect(within(items[2]).queryByText("Hashtags")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Calendar" }));
+    expect(screen.getByRole("list", { name: "Launch week calendar" })).toBeTruthy();
   });
 
-  test("says plainly that nothing posts and has no post or schedule control", () => {
+  test("day names only: no dates, no month names, no per-post state", async () => {
+    live.view = ready();
+    const { container } = show();
+    const check = () => {
+      const text = container.textContent ?? "";
+      expect(text).not.toMatch(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b/);
+      expect(text).not.toMatch(/\b(Fri|Sat|Sun|Mon|Tue|Wed|Thu)\w*\s+\d{1,2}\b/);
+      expect(text).not.toMatch(/\b\d{1,2}\/\d{1,2}\b/);
+      expect(text).not.toMatch(/Scheduled|Copy-ready|Mark posted/);
+    };
+    check();
+    await toList(userEvent.setup());
+    check();
+    expect(screen.getByText("Written by your team. Friday is launch day.")).toBeTruthy();
+  });
+
+  test("says plainly that you post it yourself and has no post, schedule or connect control", () => {
     live.view = ready();
     show();
-    expect(screen.getByText(/Nothing posts for you/)).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /schedule|publish|post now/i })).toBeNull();
+    expect(screen.getByText("You post it yourself.")).toBeTruthy();
+    expect(screen.getByText(/Nothing posts or schedules from here/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /schedule|publish|post now|connect|compose/i })).toBeNull();
+    expect(screen.queryByText(/connected|of 3 copy|Starter/i)).toBeNull();
   });
 
-  test("text from the server is never parsed as HTML", () => {
+  test("the review card says Approve all 7", () => {
+    live.view = ready();
+    show();
+    expect(screen.getByRole("button", { name: "Approve all 7" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+  });
+
+  test("text from the server is never parsed as HTML", async () => {
     const view = ready();
     view.posts[1] = post("sat", { caption: "<b>bold</b> <img src=x onerror=alert(1)>" });
     live.view = view;
     const { container } = show();
+    const user = userEvent.setup();
+    await user.click(within(screen.getByRole("list", { name: "Launch week calendar" })).getAllByRole("button")[1]);
     expect(container.querySelector("b")).toBeNull();
     expect(container.querySelector("img")).toBeNull();
     expect(screen.getByText(/<b>bold<\/b>/)).toBeTruthy();
+  });
+
+  test("the platform picker is a radio group of 8 cards that show each caption limit", () => {
+    live.view = ready();
+    show();
+    const group = screen.getByRole("radiogroup", { name: /Where will you post\?/ });
+    const radios = within(group).getAllByRole("radio");
+    expect(radios).toHaveLength(8);
+    expect(radios).toHaveLength(SOCIAL_PLATFORMS.length);
+    expect(screen.queryByLabelText("Post on")).toBeNull();
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(radios.map((radio) => radio.getAttribute("aria-checked") ?? String((radio as HTMLInputElement).checked))).toEqual(
+      ["true", "false", "false", "false", "false", "false", "false", "false"],
+    );
+    expect(within(group).getByRole("radio", { name: "Instagram 2,200 characters" })).toBeTruthy();
+    expect(within(group).getByRole("radio", { name: "X 280 characters" })).toBeTruthy();
+    expect(within(group).getByRole("radio", { name: "Facebook 63,206 characters" })).toBeTruthy();
+    expect(within(group).getByRole("radio", { name: "Pinterest 500 characters" })).toBeTruthy();
+  });
+
+  test("arrow keys move through the platform radios and change the platform", async () => {
+    // jsdom has no CSS.escape, which user-event needs to walk a radio group.
+    if (typeof globalThis.CSS === "undefined") {
+      Object.defineProperty(globalThis, "CSS", { value: { escape: (value: string) => value }, configurable: true });
+    } else if (typeof globalThis.CSS.escape !== "function") {
+      Object.defineProperty(globalThis.CSS, "escape", { value: (value: string) => value, configurable: true });
+    }
+    live.view = ready();
+    show();
+    const user = userEvent.setup();
+    const instagram = screen.getByRole("radio", { name: /^Instagram / });
+    instagram.focus();
+    await user.keyboard("{ArrowRight}");
+    const facebook = screen.getByRole("radio", { name: /^Facebook / });
+    expect((facebook as HTMLInputElement).checked).toBe(true);
+    expect((instagram as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByRole("button", { name: "Copy the Friday post for Facebook" })).toBeTruthy();
   });
 
   test("switching platform changes the count, the limit and the caption used", async () => {
     live.view = ready();
     show();
     const { user } = setup();
+    await toList(user);
     const launch = () => postItems()[0];
     expect(within(launch()).getByText("449 of 2,200 characters, hashtags included")).toBeTruthy();
     expect(within(launch()).queryByText(/short caption is used/)).toBeNull();
-    await user.selectOptions(screen.getByLabelText("Post on"), "x");
+    await user.click(screen.getByRole("radio", { name: /^X / }));
     expect(within(launch()).getByText("46 of 280 characters, hashtags included")).toBeTruthy();
     expect(within(launch()).getByText(/short caption is used/)).toBeTruthy();
     expect(within(launch()).getByText("Short launch caption.")).toBeTruthy();
-    await user.selectOptions(screen.getByLabelText("Post on"), "threads");
+    await user.click(screen.getByRole("radio", { name: /^Threads / }));
     expect(within(launch()).getByText("449 of 500 characters, hashtags included")).toBeTruthy();
     expect(within(launch()).queryByText(/short caption is used/)).toBeNull();
   });
 
-  test("the picker lists the 8 platforms", () => {
+  test("the calendar detail follows the platform too", async () => {
     live.view = ready();
     show();
-    const options = within(screen.getByLabelText("Post on")).getAllByRole("option");
-    expect(options).toHaveLength(8);
-    expect(options).toHaveLength(SOCIAL_PLATFORMS.length);
+    const { user } = setup();
+    const detail = () => screen.getByRole("region", { name: "Friday (launch day)" });
+    expect(within(detail()).getByText("449 of 2,200 characters, hashtags included")).toBeTruthy();
+    await user.click(screen.getByRole("radio", { name: /^X / }));
+    expect(within(detail()).getByText("46 of 280 characters, hashtags included")).toBeTruthy();
   });
 
   test("a post still too long after the short caption says so in words", async () => {
@@ -224,22 +362,27 @@ describe("ready", () => {
     view.posts[3] = post("mon", { caption: "x".repeat(400), shortCaption: "y".repeat(280) });
     live.view = view;
     show();
-    await userEvent.setup().selectOptions(screen.getByLabelText("Post on"), "x");
+    const { user } = setup();
+    await toList(user);
+    await user.click(screen.getByRole("radio", { name: /^X / }));
     expect(within(postItems()[3]).getByText("305 of 280 characters, hashtags included. Over the limit by 25.")).toBeTruthy();
     expect(within(postItems()[0]).queryByText(/Over the limit/)).toBeNull();
   });
 
-  test("poll options carry a hint", () => {
+  test("poll options carry a hint", async () => {
     live.view = ready();
     show();
+    await toList(userEvent.setup());
     expect(within(postItems()[2]).getByText("Add these as the poll's choices on the platform.")).toBeTruthy();
   });
 
-  test("passes axe", async () => {
+  test("passes axe (calendar and list)", async () => {
     live.view = ready();
     const { container } = show();
-    const results = await axe.run(container, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] });
-    expect(results.violations.map((v) => v.id)).toEqual([]);
+    const run = () => axe.run(container, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] });
+    expect((await run()).violations.map((v) => v.id)).toEqual([]);
+    await toList(userEvent.setup());
+    expect((await run()).violations.map((v) => v.id)).toEqual([]);
   });
 });
 
@@ -265,7 +408,8 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user, writeText } = setup();
-    await user.selectOptions(screen.getByLabelText("Post on"), value);
+    await toList(user);
+    await user.click(screen.getByRole("radio", { name: new RegExp(`^${label} `) }));
     expect(within(postItems()[0]).getByText(count)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: `Copy the Friday post for ${label}` }));
     expect(writeText).toHaveBeenCalledWith(text);
@@ -275,6 +419,7 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user, writeText } = setup();
+    await toList(user);
     await user.click(screen.getByRole("button", { name: "Copy the Saturday post for Instagram" }));
     expect(writeText).toHaveBeenCalledWith("Caption sat\n\n#hydrotrail #weekendmvp");
     await waitFor(() => expect(screen.getByTestId("social-copy-status").textContent).toBe("Copied the Saturday post for Instagram."));
@@ -284,6 +429,7 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user } = setup();
+    await toList(user);
     const button = screen.getByRole("button", { name: "Copy the Saturday post for Instagram" });
     await user.click(button);
     expect(button.textContent).toBe("Copy");
@@ -294,6 +440,7 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user, writeText } = setup();
+    await toList(user);
     await user.click(screen.getByRole("button", { name: "Copy the Sunday post for Instagram" }));
     expect(writeText).toHaveBeenLastCalledWith("Caption sun");
   });
@@ -302,6 +449,7 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user } = setup();
+    await toList(user);
     const button = screen.getByRole("button", { name: "Copy the Saturday post for Instagram" });
     await user.click(button);
     const first = screen.getByTestId("social-copy-status").firstElementChild;
@@ -316,6 +464,7 @@ describe("copy", () => {
     live.view = ready();
     show();
     const { user, writeText } = setup();
+    await toList(user);
     writeText.mockRejectedValue(new Error("denied"));
     const button = screen.getByRole("button", { name: "Copy the Monday post for Instagram" });
     await user.click(button);
@@ -334,9 +483,9 @@ describe("review card", () => {
     show();
     const user = userEvent.setup();
     expect(screen.getByText(/Read the posts below/)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await user.click(screen.getByRole("button", { name: "Approve all 7" }));
     expect(decideMock).toHaveBeenCalledWith({ projectId: PROJECT, approvalId: APPROVAL, decision: "approve" });
-    await waitFor(() => expect(screen.getByText("Approved.")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Approved. Posting is off during the beta, so nothing goes out yet.")).toBeTruthy());
   });
 
   test("an approved card says nothing is posted for the founder", () => {
@@ -370,7 +519,7 @@ describe("review card", () => {
   test("an approved card shows neither Approve nor Ask for changes", () => {
     live.view = ready({ approvalId: APPROVAL, status: "approved", changeRound: 0n, expiresAt: Date.now() + 86_400_000 });
     show();
-    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve all 7" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
   });
 
@@ -382,13 +531,13 @@ describe("review card", () => {
       screen.getByText("Another round of changes costs 5 credits. Paying for changes isn't open yet, so you can approve these posts as they are."),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve all 7" })).toBeTruthy();
   });
 
   test("an expired card shows no buttons and the closed copy names the posts", () => {
     live.view = ready({ approvalId: APPROVAL, status: "pending", changeRound: 0n, expiresAt: Date.now() - 1000 });
     show();
-    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve all 7" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Ask for changes" })).toBeNull();
     expect(screen.getByText(/Your posts stay as they are\./)).toBeTruthy();
   });
@@ -396,7 +545,7 @@ describe("review card", () => {
   test("a pack with no card still shows the posts", () => {
     live.view = ready(null);
     show();
-    expect(postItems()).toHaveLength(7);
-    expect(screen.queryByRole("button", { name: "Approve" })).toBeNull();
+    expect(within(screen.getByRole("list", { name: "Launch week calendar" })).getAllByRole("button")).toHaveLength(7);
+    expect(screen.queryByRole("button", { name: "Approve all 7" })).toBeNull();
   });
 });

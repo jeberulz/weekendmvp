@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { WorkspacePageHeader } from "@/components/workspace/kit";
 import { SocialPackPanel } from "@/components/workspace/social/SocialPackPanel";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
-import { workspaceRoute } from "@/lib/workspace/routes";
+import { SOCIAL_HEADER } from "@/lib/workspace/socialPage";
 import { routeMetadata } from "../_scaffold/placeholder";
 
 export const instant = false;
@@ -20,13 +21,8 @@ export default async function SocialPage({ params }: { params: Promise<{ project
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1.5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-home-ink-3">{project.name}</p>
-        <h1 className="font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.025em] text-home-ink sm:text-[42px]">
-          {workspaceRoute("social").label}
-        </h1>
-      </header>
+    <div className="flex flex-col gap-7">
+      <WorkspacePageHeader eyebrow="Social" lead={SOCIAL_HEADER.lead} tail={SOCIAL_HEADER.tail} />
       <SocialPackPanel projectId={project._id} />
     </div>
   );
