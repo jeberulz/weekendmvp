@@ -1,7 +1,19 @@
 # Plan: idea-driven crew hiring and varied lead names
 
-Status: **plan only, waiting for John's go-ahead.** Nothing here is built.
+Status: **plan approved in shape; John answered Q1–Q6 on 2026-11-07 (see "Decisions"). Waiting for the
+go-ahead to build.** Nothing here is built. All of it is planned for L1 (Monday 2026-11-09).
 Date: 2026-11-07. Lane: Work Package (number to be assigned). Branch: `claude/roster-per-idea-plan`.
+
+## Decisions (John, 2026-11-07)
+
+| Q | Decision | What it changes in this plan |
+|---|---|---|
+| Q1 core roles | **Lead, Brand, Email, Social** | `CORE_ROLE_KEYS` = these four. The model decides the other 9 |
+| Q2 forced hires | **Paid push → Ads, course → Curriculum** | Community, Merch and Outbound become the model's call, with today's rule as the fallback |
+| Q3 unbuilt roles | **Yes, the model may hire them** | Hired roles with no built work show "starts when … ships" (WP67 pages already do) |
+| Q4 lead avatar | **A one-off set of about 6 lead pictures** | New story S2b: generate them once with `scripts/generate-crew-avatars.mjs` (Recraft). This is a one-time image spend; confirm the exact count and cost with John before the run |
+| Q5 hire cap | **No cap** | The model may hire all 9 optional roles; each hire needs its own reason. The prompt still asks for the smallest team that fits |
+| Q6 timing | **Everything goes into L1** | S1–S5 target Monday 2026-11-09; S6 (live smoke test) needs John's OK for live spend |
 
 ## Why
 
@@ -90,8 +102,8 @@ production deploy.
 
 ### A2 design
 
-**Core (always hired, never skipped).** Recommended for L1: `lead`, `brand`, `email`, `social`, the roles whose
-steps are built. Open question Q1 asks whether email and social stay core or become the model's choice.
+**Core (always hired, never skipped).** Decided (Q1): `lead`, `brand`, `email`, `social`, the roles whose steps
+are built.
 
 **Proposal from the model.** Add an optional `team` block to the blueprint output (C-ART `blueprintFields`,
 `lib/workspace/contracts/artifacts.ts`):
@@ -109,8 +121,8 @@ own ideas).
 
 1. Core roles are hired whatever the proposal says.
 2. Founder-stated facts still force a hire, so the model cannot drop them: a paid push hires Ads, a course
-   hires Curriculum. The other three rules (community, merch, outbound) become defaults the model may override
-   with a reason. Open question Q2.
+   hires Curriculum (decided, Q2). The other three rules (community, merch, outbound) become fallbacks the model
+   overrides with a reason.
 3. Every non-core role must appear exactly once. A missing, duplicate, unknown or over-long entry falls back to
    today's rule for that role, with today's reason.
 4. Reasons pass the existing deterministic text checks (the own-idea market check, length and single line).
@@ -129,9 +141,8 @@ own ideas).
 for a `"lead"` value (the Crew Lead chose). Until it lands, a model-chosen hire is stored as `"rule"`, and its
 reason text says it was the lead's call. `TEAM.md` (`renderTeamMd`) shows "added" either way.
 
-**Hired roles with no built step.** WP67's employee pages already show such a role as "starts when … ships",
-with no invented work. Open question Q3: may the model hire roles that do nothing yet (honest about the plan),
-or only roles with built steps (less to explain)?
+**Hired roles with no built step.** Decided (Q3): the model may hire them. WP67's employee pages already show
+such a role as "starts when … ships", with no invented work. No cap on optional hires (Q5); each needs a reason.
 
 **Existing businesses.** No change: a stored roster is never re-planned. New launches use the new rules version.
 
@@ -170,7 +181,8 @@ is read in Convex queries.
 - (b) Generate a small one-off set of lead avatars, about 6, with `scripts/generate-crew-avatars.mjs`, and pick
   one by a hash of the name. This is a one-time Recraft spend and needs John's OK.
 
-Recommend (a) for now and (b) as an option (Q4).
+Decided (Q4): **(b)**, a one-off set of about 6 lead pictures. The lead's picture is then chosen by a hash of
+the lead's name, so the same name always gets the same face. Specialists keep one picture per role.
 
 **UI fallbacks.** Keep "Wren" only as the last-resort fallback for missing data, never as a default choice.
 
@@ -191,10 +203,18 @@ Recommend (a) for now and (b) as an option (Q4).
 |---|---|---|
 | S1 | Chat uses the founder's lead name (prompt version bumps, test). Ship first: it is a bug | Low |
 | S2 | Lead-name suggestions in the wizard (pool, deterministic pick, preselect, store as custom). Copy and a11y | Low |
+| S2b | Lead avatar set: about 6 pictures generated once (Recraft, one-time spend after John confirms the count and cost), `CREW_AVATAR_SRC` lead lookup by name hash, `EmployeeAvatar` and the chat header use it | Low (spend gate) |
 | S3 | Contracts: `team` on the blueprint, `CORE_ROLE_KEYS`, a proposal in `RosterInput`, new rules version; `planRoster` guardrails and fallback, with full unit tests | Medium (contract) |
 | S4 | Blueprint prompts v2 with the catalogue and the team instruction; version lock; fixture classifier (Part C) | Medium (prompt) |
 | S5 | UI wording: Meet your co-founder, Team HQ "Why this team?" and the employee pages say "Wren chose …" where the lead decided | Low |
 | S6 | Live smoke test of 3–5 different ideas (after John's OK for live spend): team variety, reasons, token cost | Gate |
+
+**L1 timing (Q6: everything in L1).** Monday is 2026-11-09. To fit:
+- S1 and S2 are independent and small; they can run in parallel with S3.
+- S3 → S4 → S5 are sequential (contract, then prompts and fixtures, then copy).
+- S2b waits only on John confirming the image spend.
+- If S3–S5 slip, S1 and S2 still ship alone. The team logic falls back to today's rules by design, so a late
+  S3–S5 never blocks the launch.
 
 ## Files
 
@@ -235,20 +255,18 @@ Neither blocks S1–S5.
 
 ## Risks
 
-- **The model hires too many roles to look busy.** The instruction asks for the smallest team that fits.
-  Consider a soft cap of non-core hires, for example 4 (Q5).
+- **The model hires too many roles to look busy.** No cap was chosen (Q5). The instruction asks for the
+  smallest team that fits and a specific reason per hire; S6 checks team sizes across ideas, and a cap can be
+  added later without a contract change.
 - **Reasons that sound like market claims.** The deterministic checks fall back to the rule's reason.
+- **Two days to Monday.** See "L1 timing": S3–S5 are the risk, and the fallback keeps the launch safe if they
+  slip.
 - **A changed core breaks assumptions in tests and UI copy** ("8 on the team"). Counts are already computed
   from the roster, but the tests need updating.
 - **Prompt cache hit rate.** The catalogue goes in the system block, which stays stable per version.
 
 ## Open questions for John
 
-- **Q1.** Core for L1: `lead, brand, email, social` (recommended), or just `lead, brand`?
-- **Q2.** Which rules stay forced? Recommended: a paid push hires Ads and a course hires Curriculum. The rest
-  become the model's call.
-- **Q3.** May the model hire roles with no built work yet? They show as "starts when … ships".
-- **Q4.** Lead avatar: one picture for every name (no cost), or a one-off set of about 6 (small one-time
-  Recraft spend)?
-- **Q5.** A cap on non-core hires? Recommended: 4.
-- **Q6.** Timing: S1 (the chat-name bug) could go into L1. Should the rest wait until after Monday?
+All six were answered on 2026-11-07; see "Decisions" at the top. Still to confirm at build time:
+- The image spend for S2b (count and cost) before the Recraft run.
+- Live spend for S6.
