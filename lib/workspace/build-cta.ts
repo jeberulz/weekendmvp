@@ -38,3 +38,17 @@ export function wizardPath(slug: string): string {
 export function buildHref(slug: string): string {
   return `/signup?returnTo=${encodeURIComponent(wizardPath(slug))}`;
 }
+
+/** L1: the homepage side door for a founder who brings their own idea (canvas Main board). */
+export const OWN_IDEA_CTA_LABEL = "Start building with it";
+
+/** Where an own-idea click is reported from. */
+export type OwnIdeaCtaLocation = "home-hero" | "home-final";
+
+/** The wizard route for the founder's own idea. */
+export const OWN_IDEA_PATH = "/start/own";
+
+/** Same sign-up hop as `buildHref`: `/start/own` is a 404 to a signed-out visitor. */
+export function ownIdeaHref(): string {
+  return `/signup?returnTo=${encodeURIComponent(OWN_IDEA_PATH)}`;
+}

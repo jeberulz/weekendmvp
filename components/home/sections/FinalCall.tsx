@@ -1,4 +1,5 @@
 import { SignupCta } from "@/components/marketing/SignupCta";
+import { OwnIdeaCta } from "@/components/workspace/OwnIdeaCta";
 import { cn } from "@/lib/utils";
 import { FAQS } from "../content";
 import { IdeaArt } from "../IdeaArt";
@@ -7,8 +8,20 @@ import { Icon } from "../icons";
 
 const TILT = ["-rotate-[5deg]", "rotate-[3deg]", "-rotate-[2deg]", "rotate-[4deg]", "-rotate-[3deg]", "rotate-[5deg]"];
 
-/** 10 · The big close: idea art strip, one last call, three quick answers. */
-export function FinalCall({ total, strip }: { total: number; strip: { slug: string; art: string }[] }) {
+/**
+ * 10 · The big close: idea art strip, one last call, three quick answers.
+ * `buildCta` (launch-workspace flag) adds the own-idea side door (L1); off,
+ * the markup is unchanged.
+ */
+export function FinalCall({
+  total,
+  strip,
+  buildCta = false,
+}: {
+  total: number;
+  strip: { slug: string; art: string }[];
+  buildCta?: boolean;
+}) {
   return (
     <section aria-labelledby="home-final-title" data-scene="final" className="overflow-hidden bg-home-ink pb-14 pt-9 lg:pb-[72px] lg:pt-[72px]">
       <ul aria-hidden data-m="strip" className="flex justify-center gap-3.5 lg:gap-[22px]">
@@ -43,6 +56,11 @@ export function FinalCall({ total, strip }: { total: number; strip: { slug: stri
             Get the free Starter Kit
           </SignupCta>
         </div>
+        {buildCta && (
+          <p className="text-[15px] leading-[1.5] text-home-d2 lg:text-center">
+            Already have an idea? <OwnIdeaCta location="home-final" dark />
+          </p>
+        )}
         <dl data-m="up-list" className="mt-3 grid w-full grid-cols-1 border-b border-home-dr lg:mt-[88px] lg:grid-cols-3 lg:gap-12 lg:border-b-0 lg:border-t lg:pt-8">
           {FAQS.map((f) => (
             <div key={f.question} className="flex flex-col gap-2 border-t border-home-dr py-5 lg:border-t-0 lg:py-0">

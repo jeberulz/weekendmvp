@@ -28,14 +28,15 @@ export function isIdeaReturnPath(pathname: string): boolean {
 }
 
 /**
- * WP74-S5: the build wizard for one library idea, `/start/{slug}`. The slug has
- * the same shape as an idea slug. `/start/own` is not a library idea and is
- * refused. Nothing may follow the slug, and a dot segment is refused as written.
+ * WP74-S5: the build wizard, `/start/{slug}` for one library idea (the slug has
+ * the same shape as an idea slug), or `/start/own` for the founder's own idea
+ * (the homepage "Start building with it" link, L1). Nothing may follow the
+ * segment, and a dot segment is refused as written. Both are bare return paths,
+ * so a `?session=` or any other query collapses to the default.
  */
 export function isWizardReturnPath(pathname: string): boolean {
   if (hasDotSegment(pathname)) return false;
-  const match = /^\/start\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(pathname);
-  return match !== null && match[1] !== "own";
+  return /^\/start\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
 }
 
 /**

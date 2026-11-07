@@ -1,4 +1,5 @@
 import { SignupCta } from "@/components/marketing/SignupCta";
+import { OwnIdeaCta } from "@/components/workspace/OwnIdeaCta";
 import type { HeroIdea } from "@/lib/home/types";
 import { HeroBuildWindow } from "../client/HeroBuildWindow";
 import { Icon } from "../icons";
@@ -13,8 +14,9 @@ const WORD_STEP = 0.045;
  * WP43): headline word by word, then the copy and buttons, then the build
  * window with its prompt pasting in, and the stamp pressing on last.
  *
- * `buildCta` (WP74-S5) is true only behind the launch-workspace flag. Off, the
- * markup is exactly what it was before.
+ * `buildCta` (WP74-S5) is true only behind the launch-workspace flag. On, it
+ * adds the idea CTA in the build window and the own-idea side door under the
+ * buttons (L1). Off, the markup is exactly what it was before.
  */
 export function Hero({ idea, total, buildCta = false }: { idea: HeroIdea | null; total: number; buildCta?: boolean }) {
   return (
@@ -44,6 +46,11 @@ export function Hero({ idea, total, buildCta = false }: { idea: HeroIdea | null;
             Get the free Starter Kit
           </SignupCta>
         </div>
+        {buildCta && (
+          <p className="home-intro text-[15px] leading-[1.5] text-home-ink-2" style={introDelay(0.52)}>
+            Have your own idea? <OwnIdeaCta location="home-hero" />
+          </p>
+        )}
       </Container>
       {idea && <Container className="relative pb-12 pt-[72px] md:pb-16 lg:pt-16">
         {/* The stamp inherits this --d; the window sets its own. */}

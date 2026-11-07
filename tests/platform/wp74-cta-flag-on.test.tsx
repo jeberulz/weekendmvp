@@ -87,12 +87,13 @@ describe("flag on: hero", () => {
   });
 
   test("an engine draft gets no CTA even with the flag on", () => {
-    expect(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
+    expect(renderToStaticMarkup(<Hero idea={draftHero} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2Fengine-draft");
   });
 
   test("flag off, or no hero idea: no wizard link", () => {
     expect(renderToStaticMarkup(<Hero idea={hero} total={225} />)).not.toContain("returnTo=%2Fstart%2F");
-    expect(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2F");
+    // With no hero idea there is no idea link; the own-idea side door (L1) may still show.
+    expect(renderToStaticMarkup(<Hero idea={null} total={225} buildCta />)).not.toContain("returnTo=%2Fstart%2Fexample-idea");
   });
 });
 
