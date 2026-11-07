@@ -73,8 +73,28 @@ export function businessRefusal(error: unknown): BusinessRefusal {
   return none;
 }
 
+/**
+ * The `@convex-dev/rate-limiter` refusal (`{ kind: "RateLimited", retryAfter }`),
+ * which `startOrResume` throws once the daily `wizardStart` allowance is used.
+ * It carries no `code`, so it needs its own branch.
+ */
+function rateLimitedMessage(data: { kind?: unknown; retryAfter?: unknown }): string | null {
+  if (data.kind !== "RateLimited") return null;
+  const lead = "You have started a lot of builds today.";
+  if (typeof data.retryAfter !== "number" || !Number.isFinite(data.retryAfter) || data.retryAfter <= 0) {
+    return `${lead} Try again later.`;
+  }
+  const hours = Math.ceil(data.retryAfter / 3_600_000);
+  if (hours <= 1) return `${lead} Try again in about an hour.`;
+  return `${lead} Try again in about ${hours} hours.`;
+}
+
 /** A short, human message for a failed wizard call. */
 export function wizardErrorMessage(error: unknown): string {
+  if (error instanceof ConvexError && typeof error.data === "object" && error.data !== null) {
+    const limited = rateLimitedMessage(error.data);
+    if (limited !== null) return limited;
+  }
   if (error instanceof ConvexError && typeof error.data === "object" && error.data !== null && "code" in error.data) {
     const data: { code?: unknown; message?: unknown } = error.data;
     if (data.code === "INVALID_ANSWER") {

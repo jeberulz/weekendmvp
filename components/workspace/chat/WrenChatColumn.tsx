@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
 import { WrenChatPanel } from "@/components/workspace/chat/WrenChatPanel";
+import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
 import { DEFAULT_PARTNER_NAME } from "@/components/workspace/kit/WrenCards";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { workspacePath } from "@/lib/workspace/routes";
@@ -50,10 +51,13 @@ function TeamCount({ projectId }: { projectId: Id<"projects"> }) {
 export function WrenChatColumn({
   projectId,
   name = DEFAULT_PARTNER_NAME,
+  founderName,
 }: {
   projectId: Id<"projects">;
   /** The co-founder's name (`projects.workspace.partner.name`). "Wren" only when it is missing. */
   name?: string;
+  /** The signed-in founder's name, for their avatar beside their messages. */
+  founderName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -105,16 +109,22 @@ export function WrenChatColumn({
         className={`${open ? "fixed inset-y-0 right-0 z-40 flex w-full max-w-[420px] border-l shadow-lg" : "hidden"} flex-col border-home-rule bg-home-card xl:sticky xl:bottom-auto xl:right-auto xl:top-0 xl:flex xl:h-dvh xl:w-[360px] xl:max-w-none xl:shrink-0 xl:border-l xl:shadow-none 2xl:w-[380px]`}
       >
         <div className="flex items-center justify-between gap-2 border-b border-home-rule px-3.5 py-3">
-          <div className="flex min-w-0 flex-col leading-[1.15]">
-            <h2 className="truncate font-editorial text-[22px] font-normal text-home-ink">{name}</h2>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-home-ink-3">
-              Crew Lead
-              <WhenConvexReady>
-                <QuietErrorBoundary>
-                  <TeamCount projectId={projectId} />
-                </QuietErrorBoundary>
-              </WhenConvexReady>
-            </p>
+          <div className="flex min-w-0 items-center gap-2.5">
+            {/* Decorative: the heading beside it carries the name. */}
+            <span aria-hidden="true" className="inline-flex">
+              <EmployeeAvatar name={name} role="lead" size="lg" />
+            </span>
+            <div className="flex min-w-0 flex-col leading-[1.15]">
+              <h2 className="truncate font-editorial text-[22px] font-normal text-home-ink">{name}</h2>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-home-ink-3">
+                Crew Lead
+                <WhenConvexReady>
+                  <QuietErrorBoundary>
+                    <TeamCount projectId={projectId} />
+                  </QuietErrorBoundary>
+                </WhenConvexReady>
+              </p>
+            </div>
           </div>
           <button
             ref={closeRef}
@@ -126,7 +136,7 @@ export function WrenChatColumn({
             <span className="sr-only">{`Close chat with ${name}`}</span>
           </button>
         </div>
-        <WrenChatPanel projectId={projectId} name={name} />
+        <WrenChatPanel projectId={projectId} name={name} founderName={founderName} />
       </aside>
     </>
   );

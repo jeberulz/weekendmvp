@@ -11,7 +11,7 @@ import { isEngineDraftSlug } from "@/lib/engine-drafts";
 export const BUILD_CTA_LABEL = "Build this idea, free";
 
 /** Where a click is reported from, so the funnel reads per surface. */
-export type BuildCtaLocation = "home-hero" | "home-idea-of-the-week" | "idea-account-card";
+export type BuildCtaLocation = "home-hero" | "home-idea-of-the-week" | "idea-account-card" | "idea-member-header";
 
 const IDEA_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -39,6 +39,15 @@ export function buildHref(slug: string): string {
   return `/signup?returnTo=${encodeURIComponent(wizardPath(slug))}`;
 }
 
+/**
+ * L1-C9: where the CTA links for this request. A page that already knows the
+ * visitor is signed in (the member idea page) links straight to the wizard;
+ * everyone else goes through sign-up (`buildHref`).
+ */
+export function buildCtaHref(slug: string, signedIn: boolean): string {
+  return signedIn ? wizardPath(slug) : buildHref(slug);
+}
+
 /** L1: the homepage side door for a founder who brings their own idea (canvas Main board). */
 export const OWN_IDEA_CTA_LABEL = "Start building with it";
 
@@ -52,3 +61,9 @@ export const OWN_IDEA_PATH = "/start/own";
 export function ownIdeaHref(): string {
   return `/signup?returnTo=${encodeURIComponent(OWN_IDEA_PATH)}`;
 }
+
+/** L1-C9: the member dashboard's entry into the own-idea wizard. */
+export const START_BUILDING_LABEL = "Start building";
+
+/** L1-C9: the dashboard's secondary link, to pick an idea from the library. */
+export const PICK_LIBRARY_IDEA_LABEL = "Or pick an idea from the library";

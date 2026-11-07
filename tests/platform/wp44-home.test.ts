@@ -92,7 +92,8 @@ describe("WP44-S4 greeting copy", () => {
 describe("WP44-S4 Home composition", () => {
   test("the page reads the homepage cache and keeps the preview claim", () => {
     expect(dashboardPageSource).toContain("await getDashboardEditorial()");
-    expect(dashboardPageSource).toContain("<DashboardHome editorial={editorial} nowMs={nowMs} />");
+    // L1-C9 adds the beta-flag prop (startBuilding); see l1-build-entry-points.test.tsx.
+    expect(dashboardPageSource).toContain("<DashboardHome editorial={editorial} nowMs={nowMs} ");
     expect(dashboardPageSource).toContain("<PreviewClaimRunner />");
     expect(dashboardPageSource).not.toContain("components/platform/shell/DashboardHome");
   });

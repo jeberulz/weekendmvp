@@ -59,7 +59,8 @@ export type AnthropicFixtureResponder = (
   params: Anthropic.MessageCreateParamsNonStreaming,
 ) => AnthropicFixtureReply | undefined | Promise<AnthropicFixtureReply | undefined>;
 
-export const FIXTURE_TEXT_REPLY = "Fixture reply: no model was called.";
+/** The plain-text fixture reply. Written for whoever reads it, a founder included: never the bare word "fixture". */
+export const FIXTURE_TEXT_REPLY = "Test mode: no AI model wrote this reply.";
 
 const utf8 = new TextEncoder();
 

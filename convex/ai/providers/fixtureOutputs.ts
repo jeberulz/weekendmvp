@@ -43,17 +43,32 @@ import {
   lightBuildPack,
   ownIdeaLightBlueprint,
 } from "../../../lib/workspace/contracts/fixtures/hydrotrail";
+import { promptRef } from "../../../lib/workspace/contracts/prompts";
+import { wrenChatSpec } from "../prompts/wrenChat";
+import { wrenPlanTurnSpec } from "../prompts/wrenPlanTurn";
 import { canonicalJson, getEntry, type PromptEntry } from "../registry";
-
-/** A fixture reply value: the JSON the fixture model "returns". */
-export type FixtureOutput = () => unknown;
+import { wrenFixtureReply } from "./wrenFixtureReply";
 
 /**
- * Prompt-specific fixture replies, keyed by `id@version`. Empty until the
- * generator specs land (WP75-S3, S4b): a spec whose output schema is not a
- * C-ART schema (the quality and policy checks, say) registers its reply here.
+ * A fixture reply value: the JSON the fixture model "returns". It may read
+ * the request (a reply built from the request's own context); it must not
+ * read env, the network or the clock.
  */
-export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({});
+export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) => unknown;
+
+/**
+ * Prompt-specific fixture replies, keyed by `id@version`: a spec whose output
+ * schema is not a C-ART schema registers its reply here.
+ * - Wren's chat turns (`wren-chat`, `wren-plan-turn`, L1 beta): a reply built
+ *   from the founder's message and the business context
+ *   (`wrenFixtureReply.ts`). Both specs share a system block and an output
+ *   schema, so they share one fingerprint; the reply tells them apart by
+ *   the task block.
+ */
+export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
+  [promptRef(wrenChatSpec)]: wrenFixtureReply,
+  [promptRef(wrenPlanTurnSpec)]: wrenFixtureReply,
+});
 
 type ArtifactFixture = { readonly key: string; readonly schema: z.ZodType; readonly output: FixtureOutput };
 
@@ -167,11 +182,11 @@ export function createFixtureOutputRegistry(options: FixtureOutputRegistryOption
       if (system !== null) {
         const fingerprint = refFingerprint(system, schema);
         const byPrompt = fingerprint === null ? undefined : refs.get(fingerprint);
-        if (byPrompt !== undefined) return byPrompt();
+        if (byPrompt !== undefined) return byPrompt(params);
       }
       const key = schemaKey(schema);
       const byKind = key === null ? undefined : schemas.get(key);
-      return byKind === undefined ? undefined : byKind();
+      return byKind === undefined ? undefined : byKind(params);
     },
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { onWrenPrefill } from "@/lib/workspace/wrenPrefill";
 import { DefaultLink } from "./DefaultLink";
@@ -56,20 +56,49 @@ export function WrenThread({
   );
 }
 
+/** The founder's initial, or null when there is no name to take one from. */
+export function founderInitial(name: string | undefined): string | null {
+  const first = name === undefined ? undefined : Array.from(name.trim())[0];
+  return first === undefined ? null : first.toUpperCase();
+}
+
+/**
+ * The founder's avatar beside their messages: their initial on the same sky
+ * circle as the sidebar user row (initials only, never a photo), or a person
+ * icon when the name is unknown. Decorative: each message already says "You".
+ */
+export function FounderAvatar({ name }: { name?: string }) {
+  const initial = founderInitial(name);
+  return (
+    <span
+      aria-hidden="true"
+      data-avatar="founder"
+      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-home-sky text-xs font-semibold text-home-sky-ink"
+    >
+      {initial ?? <User className="size-3.5" />}
+    </span>
+  );
+}
+
 export type UserMessageProps = {
   children: ReactNode;
+  /** The founder's name, for their avatar's initial. A person icon when absent. */
+  founderName?: string;
   /** The send failed: show a retry control. */
   failed?: boolean;
   onRetry?: () => void;
 };
 
-export function UserMessage({ children, failed = false, onRetry }: UserMessageProps) {
+export function UserMessage({ children, founderName, failed = false, onRetry }: UserMessageProps) {
   return (
     <div data-message="user" className="flex flex-col items-end gap-1">
-      <p className="max-w-[85%] rounded-[10px_10px_2px_10px] bg-home-sunk px-3 py-2 text-sm text-home-ink">
-        <span className="sr-only">You: </span>
-        {children}
-      </p>
+      <div className="flex max-w-full items-end justify-end gap-2">
+        <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-[10px_10px_2px_10px] bg-home-sunk px-3 py-2 text-sm text-home-ink">
+          <span className="sr-only">You: </span>
+          {children}
+        </p>
+        <FounderAvatar name={founderName} />
+      </div>
       {failed ? (
         <p className="flex items-center gap-2 text-xs text-home-clay-ink">
           <span>Not sent.</span>

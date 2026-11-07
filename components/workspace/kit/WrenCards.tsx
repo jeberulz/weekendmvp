@@ -51,7 +51,10 @@ export function WrenMessage({
   return (
     <div data-message="wren" className="flex flex-col gap-1.5 text-sm text-home-ink">
       <p className="flex items-center gap-2 text-[13px]">
-        <WrenMark name={name} />
+        {/* The crew lead's portrait (WP67-S7). Decorative: the name is written next to it. */}
+        <span aria-hidden="true" className="inline-flex">
+          <EmployeeAvatar name={name} role="lead" size="md" />
+        </span>
         <span className="font-medium">{name}</span>
         {dateTime === undefined ? (
           <span className="font-mono text-[11px] text-home-ink-3">{time}</span>
