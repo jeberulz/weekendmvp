@@ -116,6 +116,7 @@ export const crewStepOutcomeValidator = v.union(
       v.literal("in_flight"),
       v.literal("exhausted"),
       v.literal("unpaid"),
+      v.literal("superseded"),
     ),
   }),
   ...finishCrewStepResult.members,
@@ -206,6 +207,7 @@ export async function runCrewStepWith(
     taskId: args.taskId,
     ...(args.resume === true ? { resume: true } : {}),
     ...(args.seedId === undefined ? {} : { seedId: args.seedId }),
+    ...(args.markerId === undefined ? {} : { markerId: args.markerId }),
   });
   if (start.kind === "skip") return { kind: "skipped", reason: start.reason };
   const retry = args.retryMode === "return" ? {} : { retry: args };

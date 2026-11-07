@@ -373,7 +373,12 @@ export type StepDoneDecision =
   /** The task is terminal: record the step and fill free slots. */
   | { readonly kind: "settle" }
   /** The task is parked: wait for `resumeLaunch`; the slot is free. */
-  | { readonly kind: "park" };
+  | { readonly kind: "park" }
+  /**
+   * L1 launch sweep: this execution's marker was settled by the sweep and the
+   * step re-enqueued under a new one, which owns the step now: do nothing.
+   */
+  | { readonly kind: "superseded" };
 
 const TERMINAL: readonly LaunchTaskStatus[] = ["succeeded", "failed", "cancelled"];
 
@@ -393,6 +398,8 @@ const TERMINAL: readonly LaunchTaskStatus[] = ["succeeded", "failed", "cancelled
  * - blocked: `park` (wait for `resumeLaunch`);
  * - still queued or running after a final-looking outcome (a `stale` finish,
  *   say): again after the lease, counted like an action failure.
+ * A `skipped: superseded` start (the launch sweep re-enqueued the step under a
+ * new marker) is `superseded` whatever the task says: the new work owns it.
  */
 export function stepDoneDecision(
   result: StepRunResult,
@@ -400,6 +407,9 @@ export function stepDoneDecision(
   actionFailures: number,
   leaseMs: number,
 ): StepDoneDecision {
+  if (result.kind === "success" && result.returnValue.kind === "skipped" && result.returnValue.reason === "superseded") {
+    return { kind: "superseded" };
+  }
   if (task.archived || TERMINAL.includes(task.status)) return { kind: "settle" };
   if (task.status === "blocked") return { kind: "park" };
   const failedAgain = (): StepDoneDecision =>

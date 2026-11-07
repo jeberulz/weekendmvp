@@ -206,6 +206,15 @@ describe("stepDoneDecision", () => {
   test("a final-looking outcome on a task still live (a stale finish) is retried like an action failure", () => {
     expect(stepDoneDecision(ok({ kind: "stale" }), live, 0, RUN_LEASE_MS)).toEqual({ kind: "reenqueue", delayMs: RUN_LEASE_MS, actionFailures: 1 });
   });
+
+  test("L1 sweep: a superseded start does nothing, whatever the task says (never re-enqueued, settled or abandoned)", () => {
+    for (const status of ["queued", "running", "blocked", "succeeded", "failed", "cancelled"] as const) {
+      for (const archived of [false, true]) {
+        expect(stepDoneDecision(ok({ kind: "skipped", reason: "superseded" }), { status, archived }, MAX_ACTION_FAILURES - 1, RUN_LEASE_MS))
+          .toEqual({ kind: "superseded" });
+      }
+    }
+  });
 });
 
 describe("waitingOnReason", () => {

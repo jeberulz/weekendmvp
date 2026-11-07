@@ -442,6 +442,8 @@ Owner: C = Codex, Cl = Claude. Blocking = blocks a WP75 story as planned.
     `workId` on the marker would make "work is gone" exact, but `task_steps` lives in Codex's `convex/schema.ts`,
     so S2b stores none. Without the `workId`, the sweep can treat a running marker with no open run for longer
     than `RUN_LEASE_MS` as gone.
+    **Built 2026-11-07 (L1 launch sweep, Codex 18 board):** `internal.crew.launch.recoverStalledLaunches({})`.
+    Codex wires it on #259's five-minute cron. See § L1 launch sweep at the end of this file.
 
 ## Owner questions
 
@@ -1319,7 +1321,8 @@ Branch `claude/wp75-s2b-dag`, cut from `origin/main` `40aa7ce4`. Uncommitted, aw
   but is not throttled by the cap. Since the review fixes, its finish frees the slot (minor 3 below).
 - **A throw in `stepDone` strands the marker** (review minor 4). The running marker stays, so the step counts as
   in flight and is never enqueued again. The fix is a sweep on Codex 13's cron (Codex 18). No `workId` is stored,
-  because `task_steps` is Codex's schema.
+  because `task_steps` is Codex's schema. **Fixed 2026-11-07** by the L1 launch sweep, for a queued task and for a
+  running task between executions (§ at the end of this file).
 
 ### Needs from Codex (S2b)
 
@@ -1432,3 +1435,239 @@ now serves both: `openLaunchRetry` in `convex/crew/launch.ts` (moved there with 
 - Tests (`launch.test.ts`): a failed blueprint (usable, then unusable answers); a succeeded blueprint with no team
   (plans, then cannot); the paused blueprint agrees with `launchStatus`. Mutation probe: with the new read removed,
   all three fail.
+
+## 2026-11-07 - L1 launch sweep built (Needs from Codex 18)
+
+Branch `claude/l1-launch-sweep`, worktree `.worktrees/l1-launch-sweep`, from `origin/main` `4bc5d1ac`. First
+build committed as `bb78d0d7`; main merged in at `82ebb24b`. This entry describes the code after the review fixes
+(§ Review fixes below).
+
+### What strands a step
+
+The workpool is durable: a deploy or a crash does not lose pool work, and the pool always calls `onComplete`. What
+strands a step is a throw inside `stepDone` (or the `advanceOwner` it calls). The mutation rolls back, so its
+re-enqueue or settle never lands. The running marker stays with no work behind it and holds a slot for good. No
+`workId` is stored on the marker, so the sweep infers "the work is gone" from inactivity.
+
+### Entry point
+
+- `internal.crew.launch.recoverStalledLaunches({})`. Args are optional (`cursor`, `limit`), so the cron calls it with
+  none. It is safe alongside `recoverStaleCrewRuns` in the same tick.
+- It reads one page of `projects` and nothing else: at most `LAUNCH_SWEEP_PAGE_MAX` (20), paginated on the default
+  `by_creation_time` index.
+- It schedules `internal.crew.launch.recoverStalledOwner({ ownerId })` with `ctx.scheduler.runAfter(0, …)` once for
+  each distinct owner with a live business that has a workspace. A page that is not the last schedules the next
+  page with its cursor.
+- So one call reads at most a page of projects and schedules at most a page of jobs, whatever the owners hold. One
+  owner's throw, or one owner hitting a transaction limit, fails that owner's job alone.
+- An owner whose businesses span pages is scheduled once per page. The owner job is idempotent, and a test covers
+  it.
+- The page returns `{ businesses, owners, isDone }`.
+
+### Per owner (`recoverStalledOwner`)
+
+1. Gates come first: `assertFeatureEnabledForOwner` for `workspace` and `ai`, which covers the switch, the kill
+   switch and the cohort. If a gate is off, nothing is written (`gated`).
+2. For each pool step of the owner's live launches:
+   - **Leftover marker on a terminal task** (`settled`). A `running` marker on a `succeeded`, `failed` or
+     `cancelled` task, still for `LEFTOVER_MARKER_MS` (one lease), is settled with `settleMarker`. Its late
+     `stepDone` then reads as superseded, and the sweep advances the owner itself.
+   - **Stranded marker.** All of these must hold:
+     - the task is live and `queued` or `running` (never parked or terminal);
+     - its newest marker is `running`;
+     - the task has no `running` run, and at most `RUN_SCAN_MAX` runs (all read);
+     - nothing on the task, the marker or any run has moved for `STRANDED_MARKER_MS` (2 hours).
+
+     Every enqueue moves a reused marker's `updatedAt` to now, so a `stepDone` re-enqueue counts as activity.
+   - **Queued task** (`requeued`). The marker is settled `failed`, and `advanceOwner` enqueues the step again under
+     a new marker. This never counts toward the bound, and a queued task is never failed by the sweep.
+   - **Running task with no open run** (`reinvoked`). This is a step between executions: in return mode
+     `settleCrewRun` closes the run and leaves the task `running` for `stepDone` to re-enqueue the retry. If that
+     `stepDone` threw, nothing else ever acts, because `recoverStaleCrewRuns` reads only open runs.
+     - The marker is settled `failed`, and the step is re-enqueued at once under a new marker, as `stepDone` would
+       have.
+     - The task already counts toward the cap, so no slot is added.
+     - There is no task transition: the task stays `running`, and the marker goes `running` → `failed` through
+       `assertStepTransition`.
+     - The retry budget is applied where it always is: `startCrewRun` fails the task closed before any gateway call
+       when `MAX_RETRY_BUDGET_RUNS` (or `mayRetryAfterAbandoned`) is spent.
+   - **Bound** (`abandoned`). After `LAUNCH_SWEEP_REQUEUES_MAX` (2) re-invokes of one running task, the next strand
+     fails the task as interrupted (`abandonCrewTask`). Refunds follow the usual rule, and DAG first drafts carry
+     no debit.
+     - Re-invokes are counted without a schema field. A task never returns to `queued` (`taskTransitions`), and
+       outside the sweep only an enqueue from `queued` creates a marker; `stepDone` and a resume reuse the running
+       one. So a marker created after the task's first run is a sweep re-invoke.
+3. Then `advanceOwner` runs in its own subtransaction (`internal.crew.launch.advanceSweptOwner`), with its own
+   try/catch. It is the only enqueuer of fresh work, under `OWNER_CREW_CAP` and the revision-0 key rules. It enqueues
+   requeued steps and re-advances an owner left with ready steps and a free slot.
+   - If it throws, it rolls back alone (`advanceFailed`), and the settles and re-invokes before it still commit.
+     The next sweep, or any `stepDone`, advances again.
+
+### Thresholds, and why
+
+- **`STRANDED_MARKER_MS` = 2 hours, for queued and running tasks alike.**
+  - Without a `workId`, "gone" and "late" look the same. Work is late whenever the pool is backlogged: every
+    launch step shares `crewWorkpool`'s global cap (`CREW_MAX_PARALLELISM`, 10), and a step action may live 10
+    minutes. So a busy beta can queue a step for 20 to 60 minutes.
+  - At the first build's 33 minutes, a healthy backlog would be superseded and sent to the back of the queue. It
+    could also be abandoned at about 99 minutes, because queued strands counted toward the bound. That was review
+    M1.
+  - The running case uses the same threshold, not a shorter one. Its next execution (`stepDone`'s re-enqueue)
+    waits in the same FIFO pool, so a backlog delays it just as much. A false positive there also counts toward
+    the bound.
+  - A real strand needs a `stepDone` throw, which is rare. Two hours of one held slot is the price of never failing
+    a healthy step.
+- **`LAUNCH_SWEEP_REQUEUES_MAX` = 2 re-invokes, for running tasks only.** A queued task has spent nothing (no run),
+  so a backlog only moves it in the queue: it is superseded again and again, never failed, and runs exactly once
+  (tested over 5 rounds).
+- **`LEFTOVER_MARKER_MS` = `RUN_LEASE_MS` (11 minutes).** `stepDone` settles a terminal task's marker promptly.
+  Settling earlier would still be safe, because the late `stepDone` reads as superseded.
+
+### The marker fence (work that was only late)
+
+- The enqueue marker's id travels with the work (`runCrewGeneratorStep` / `runCrewStep` arg `markerId`) and in
+  `stepDone`'s context (`markerId`, optional).
+- Once that marker is no longer `running`, `startCrewRun` skips with the reason `superseded`, and `stepDone` does
+  nothing. `stepDoneDecision` maps `skipped: superseded` to a no-op `superseded` decision.
+- So work stuck in a backlog past the threshold never runs the step a second time: the step runs once, under the
+  newer marker. No run, gateway call, meter row or ledger row comes from the superseded work.
+- It is not free: superseded work loses its place in the queue. That is why the threshold is 2 hours.
+- The exact fix needs a schema field (see Needs from Codex).
+- One marker read serves both sides: `launchTaskMarkers` (`jobs.ts`, newest first, at most
+  `LAUNCH_MARKERS_READ_MAX` = 20) is used by the fence and by `launch.ts`.
+- **Rollout edge, option (a).** Work and callbacks enqueued before this deploy carry no `markerId`.
+  - A read-only production inventory by Codex (2026-11-07) found 0 projects and 0 tasks, so no such work or
+    callback can exist in production today. The guard is kept anyway, since it is cheap.
+  - `isSupersededLaunchWork` (`jobs.ts`) reads the task's markers instead. A task with no marker is not DAG work
+    (S2a direct runs, WP77 revisions) and runs as before. Otherwise the work acts only while the task holds exactly
+    one marker and it is `running`.
+  - Outside the sweep, a task holds one marker, settled only with the task. So a second marker, or a settled one
+    on a live task, means the sweep replaced it, and the newer marker owns the step.
+  - Tests cover:
+    - a legacy `stepDone` (re-enqueue, abandon and cancel deliveries);
+    - a legacy `startCrewRun` after a replacement;
+    - a legacy callback after a settle with the cap full;
+    - a legacy callback that still acts before any replacement.
+
+### Indexes read (all existing)
+
+| Table | Index |
+|---|---|
+| `projects` | default `by_creation_time` (the page), `by_ownerId_and_updatedAt` (`ownerProjects`) |
+| `task_steps` | `by_projectId_and_status_and_createdAt`, `by_taskId_and_position` |
+| `tasks` | `by_projectId_and_status_and_createdAt`, `by_ownerId_and_jobKey` |
+| `workflow_runs` | `by_taskId_and_createdAt` |
+| `workspace_cohort` | `by_ownerId` (inside the gate) |
+
+### Needs from Codex
+
+- **`workId: v.optional(v.string())` on `task_steps`** (not blocking L1). This is the exact fix for review M1.
+  - Store the `WorkId` that `crewWorkpool.enqueueAction` returns on the marker, and treat a marker as stranded only
+    when `crewWorkpool.status(ctx, workId)` says the work finished.
+  - Then a backlog is never mistaken for a strand, and the threshold can drop to about one lease.
+- **An ops signal for failed owner jobs** (follow-up). The alert helpers live only in Codex-owned files
+  (`convex/ops/**`, `convex/growth/email/**`, `convex/crons.ts`).
+  - Today a failed owner job is a failed scheduled function in the Convex dashboard and logs, and the next tick
+    retries it. `advanceFailed` is on the owner job's return value only.
+- **A global launch-state index** (not blocking). Each tick schedules a job for every owner with a live workspace
+  business, because no index is keyed on launch state. When the owner count grows, add a global index on
+  `task_steps` `["status", "updatedAt"]` (or `tasks` `["status", "createdAt"]`). The page could then schedule only
+  owners with running markers or queued tasks.
+
+### Known limits
+
+- `ownerProjects` (existing S2b code) takes 20 businesses before it filters out archived ones. So an owner with
+  many archived businesses can lose a live one from the sweep and from `advanceOwner`. This is left as it is (shared
+  with the cap logic) and noted for a later fix.
+- A task with more than `RUN_SCAN_MAX` runs is never judged. That cannot happen while the retry budget holds, and
+  `startCrewRun` refuses such a task anyway; the code comments say so.
+- A marker stranded for real holds its slot for up to 2 hours before the sweep acts.
+- The sweep visits only each step's current key holder (`stepTask`). A leftover running marker on a terminal task
+  that a founder retry has replaced, or on an archived task, is never settled. It takes one row of the 50-row
+  running-marker scan in `ownerInFlight`. That is harmless until an owner has 50 of them, which is unreachable at
+  beta scale. Fix with `workId` (below) or a global marker index.
+- A sustained pool backlog longer than 2 hours supersedes a queued step every cycle, so it would never run. It is
+  never failed or charged. The fix is `workId` plus `crewWorkpool.status`.
+- Independent re-review (Opus, after the fixes): 0 Major. Minors 2 and 3 are the two limits above; Minor 1 is
+  the cron entry, which Codex wires in `convex/crons.ts`.
+
+### Review fixes (adversarial review: 0 blockers, 1 major, 4 minors, nits)
+
+- **M1, backlog superseded and then abandoned.**
+  - The threshold went from 33 minutes to 2 hours, for both cases.
+  - Queued strands no longer count toward the bound; only running re-invokes do.
+  - The doc wording that late work is harmless is gone. It now says the step loses its place in the queue.
+  - Test: a backlog repeated 5 times is never failed, and the step runs exactly once.
+- **m1, a throwing `advanceOwner` rolled back the recovery.** `advanceOwner` now runs in its own nested
+  subtransaction with its own try/catch. Test: the advance throws, and the queued settle and the running re-invoke
+  still commit; the next sweep advances.
+- **m2, an unbounded page.** The page reads only `projects` and schedules one owner job per distinct owner. Tests:
+  every test now runs the owner jobs the page scheduled. One runs them through the real scheduler, where a failed
+  owner job leaves the other owner's job successful. Pagination tests cover an owner spanning two pages, and the
+  continuation's owner job.
+- **m3, leftover markers on terminal tasks.** These are now settled after one lease. Tests: settled once and not
+  before; a late `stepDone` (new and legacy) does nothing; no running marker is left. The overlap test also settles
+  the leftover marker that recovery leaves.
+- **m4, outdated docs.** The `launch.ts` header, `STRANDED_MARKER_MS`, `recoverStalledOwner` and
+  `recoverStalledLaunches` docs now describe the real trigger (a `stepDone` throw) and the running path.
+- **Nits.**
+  - There is now one shared marker read (`launchTaskMarkers` / `LAUNCH_MARKERS_READ_MAX`). It reads newest first;
+    before, it read the oldest 20, which could miss the newest marker on a task with more than 20.
+  - The `RUN_SCAN_MAX` skip is commented.
+  - `ownerProjects` take-before-filter is noted above.
+- **Test gap, a real strand.** A rate-limit failure makes the runner return a retry, and `stepDone`'s re-enqueue
+  throws: inline, then on its scheduled retry. The task is left `running` with a closed run and a running marker.
+  The sweep leaves it alone 1 ms before the threshold and re-invokes it at the threshold. The step then runs once
+  more and the launch completes.
+
+### Tests
+
+- `convex/crew/launchSweep.test.ts`: 29 tests. The `sweep` helper runs one page, then the owner jobs it
+  scheduled. They cover:
+  - requeue once, then the launch completes;
+  - a backlog fence, and a backlog repeated 5 times (never failed, the step runs once);
+  - the late `stepDone` fence;
+  - a running task between executions:
+    - re-invoked exactly once under a new marker, keeping its slot, then the launch completes;
+    - within the lease and under the threshold, untouched;
+    - with an open run, untouched;
+    - a late `stepDone` (with or without `markerId`) and the lost re-invoke's late start do nothing after it;
+    - re-invokes that keep stranding are bounded at 2, then the task fails as interrupted;
+    - a real strand from a `stepDone` throw;
+    - a spent retry budget fails it closed at its start, with no gateway call, metering row or ledger row;
+  - the rollout cases above;
+  - open-run, parked, finished, leftover-terminal and archived (business and task) cases;
+  - AI off, the workspace off, and out of cohort, with the other owner still running;
+  - an owner job that throws (real scheduler), and a throwing advance;
+  - a stall with a free slot, and the cap of 3;
+  - two sweeps in a row, and sweeps interleaved with `recoverStaleCrewRuns` pages (row counts for tasks, markers,
+    runs, `ai_usage`, `credit_ledger`, the limiter and the enqueue count);
+  - pagination: one continuation, a small limit, and an owner spanning two pages.
+- `convex/crew/steps.test.ts`: 1 new test (`superseded`).
+- Mutation-checked (first build). Each of these fails at least one test:
+  - the open-run check removed;
+  - the queued-only check loosened;
+  - the threshold set to 0;
+  - the requeue bound removed;
+  - the AI gate removed;
+  - the `startCrewRun` fence removed;
+  - the `stepDone` fence removed;
+  - the legacy guard removed;
+  - running tasks taken out of scope;
+  - a running task re-enqueued under its old marker.
+- Mutation-checked (review fixes). Each of these fails at least one test:
+  - queued strands counted toward the bound (and abandoned);
+  - `advanceOwner` run inline, not isolated;
+  - the leftover settle removed.
+
+### Checks (after the last code edit)
+
+- `npm run typecheck`: 0.
+- `npm run lint`: 0 (0 errors, 43 warnings, all in untouched files).
+- `npm test`: 0. `test:convex` ran 93 files and 1,356 tests; `test:platform` ran 86 files and 2,324 tests.
+- `npm run check:prompt-versions`: 0 (8 versions match the lock).
+- `git diff --check`: 0.
+- `npm run build`: not run (per the brief).
+
+Docs updated: this file, the `launch.ts` header and sweep docs, and the `jobs.ts` fence doc. Stories: not needed
+(board item, not a story).
