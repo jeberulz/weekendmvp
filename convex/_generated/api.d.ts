@@ -70,6 +70,7 @@ import type * as growth_email_caps from "../growth/email/caps.js";
 import type * as growth_email_cleanup from "../growth/email/cleanup.js";
 import type * as growth_email_contacts from "../growth/email/contacts.js";
 import type * as growth_email_provider from "../growth/email/provider.js";
+import type * as growth_email_retentionDriver from "../growth/email/retentionDriver.js";
 import type * as growth_email_tokens from "../growth/email/tokens.js";
 import type * as http from "../http.js";
 import type * as ideaFacets from "../ideaFacets.js";
@@ -241,6 +242,7 @@ declare const fullApi: ApiFromModules<{
   "growth/email/cleanup": typeof growth_email_cleanup;
   "growth/email/contacts": typeof growth_email_contacts;
   "growth/email/provider": typeof growth_email_provider;
+  "growth/email/retentionDriver": typeof growth_email_retentionDriver;
   "growth/email/tokens": typeof growth_email_tokens;
   http: typeof http;
   ideaFacets: typeof ideaFacets;

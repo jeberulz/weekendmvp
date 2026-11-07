@@ -218,3 +218,7 @@ Append-only progress log. Claims must cite checks or code evidence.
 ## 2026-11-07 — WP78-S4e2c historical revocation consumer
 
 - `purgeDueProjectLeads` allows a bounded WP79 revocation batch and waits for its completion before erasing a lead. `{ deleted: 0, more: true }` now covers successful partial work as well as a blocked retry. S4e3 must use the persisted `nextAttemptAt` to distinguish the cases, without advancing the immutable deletion deadline. See WP79 progress for missing-link recovery.
+
+## 2026-11-07 — WP78-S4e3 hourly recovery consumer
+
+- The WP79 sweep uses both persisted job queues while the workspace is off. A stale closure wake is fenced by the job's attempts and update timestamp. A lead job continues on successful partial revocation or deletion only while its stored retry time is due. A worker rejection stays isolated from other jobs. The restored queue preserves the original request epochs and does not promote archive-only rows. See the D5 section of the backup/restore runbook.
