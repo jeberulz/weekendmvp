@@ -155,7 +155,13 @@ is still reviewed by the founder first):
 
 ## Needs from Codex
 
-None (S1a used the existing `sequences` / `sequence_steps` tables as they are).
+- S1a: none (it used the existing `sequences` / `sequence_steps` tables as they are).
+- S2c (C-DATA): `social_posts` needs a `day` field (`fri`…`thu`, or an integer `order` 0–6) so each row maps to one
+  post of the pack, and a revision can rewrite the rows in place. Optional `platform` if a row is meant per
+  platform; today a post is one row for every platform (copy-and-post, D7).
+- S2c (C-CONNECT): `SocialPlatform` in `convex/growth/connectors/types.ts` has 5 values (`instagram`, `facebook`,
+  `x`, `linkedin`, `other`); C-ART's `SOCIAL_PLATFORMS` has 8 (adds `tiktok`, `youtube`, `threads`, `pinterest`, no
+  `other`). One list should win before S2c calls `CopyConnector`.
 
 ## WP76-S1b built (Email page)
 
@@ -250,3 +256,8 @@ Needs / follow-ups:
 - The focus-return effect also keys on `canAsk`, so focus moves to the status line when the preview turns busy while focus
   is on Ask for changes.
 - The `stale` / `conflict` reasons use the plain "Changes can't be asked for on this right now."
+
+## 2026-11-07 - S2 planned; S2a started (branch `claude/wp76-s2a-social-generator`, worktree `.worktrees/wp76-social-pack`)
+
+- S2 is split into S2a (generator), S2b (Social page) and S2c (`social_posts` rows, blocked on Codex). Owner ruling
+  "Ship now, rows later" (`docs/wp/RULINGS.md`, 2026-11-07).

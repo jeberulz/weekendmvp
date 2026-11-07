@@ -30,7 +30,7 @@ Standing rules (same as WP75):
 | Plan story | Split | Why split |
 |---|---|---|
 | S1 email sequence | S1a generator and draft rows, S1b Email page | Backend and the review page are each a full review |
-| S2 social pack | S2 | One call, one page |
+| S2 social pack | S2a generator, S2b Social page, S2c `social_posts` rows | Same split as S1; S2c waits on a Codex field (`social_posts` has no day) |
 | S3 SEO pack and article | S3 | Needs the DataForSEO record read; may need a Codex table |
 | S4 launch plan | S4 | Approve-all needs one approval per item |
 | S5 ads drafts | S5 | Deterministic readiness checks only |
@@ -110,6 +110,65 @@ asks for changes. No send button and no send settings: WP79 activates sending la
 Done when: the HydroTrail fixture state renders the four emails with a working approve / ask-for-changes card, the
 page 404s with the flag off, a11y-check passes and the full gate passes.
 
-### WP76-S2 to S6
+### WP76-S2a — Social pack draft (generator)
+
+Goal: the launch writes the seven-post social pack (Friday launch day to Thursday) as a draft the founder reviews.
+
+Owner ruling (2026-11-07, "Ship now, rows later"): Codex's `social_posts` table has no day or order field and no
+platform field, so S2a writes no `social_posts` rows. S2c writes them once Codex adds the field.
+
+- Prompt `socialPack.v1` (`convex/ai/prompts/socialPack.v1.ts`), `fast` tier (`02` §5.2 puts social posts on
+  `fast`), registered and locked. Output: C-ART `socialPackSchema` (seven posts keyed `fri`…`thu`; each has a kind,
+  a format, a hook, a caption, a short caption of 280 characters at most, the card text, alt text for image and
+  carousel posts, poll options only on polls, and hashtags stored without `#`). No URLs, no handles, no invented
+  facts, figures or testimonials. Inputs, server-built: the blueprint the launch uses and the brand kit's name,
+  tagline and voice, under the same rule as S1a (approved, else the launch's own first draft for the launch's own
+  first draft; a revision briefs only from approved documents).
+- Launch registry: `social_pack` becomes `built` with `runner: "generator"`. Its parent becomes `brand_kit` (it
+  already lists the kit as an input, and `02` §6.2 draws it under the kit's branch), so it never runs without the
+  kit's voice.
+- Finish (through the S2a runner's `finishCrewStep` path): the `social_pack` document, the task, the employee status
+  and the `artifact_review` card, as every crew artifact does. Both brief documents travel to the finish and are
+  re-checked there, as for the email sequence.
+- Quality gate: `social_pack` joins `QUALITY_GATED_KINDS`; a HARD check refuses a link, web address, email address or
+  `@handle` in any post text field (reuse `findLinkLike`).
+- Reads: an owner-only `socialPackDraft` query for the Social page (the seven posts in day order and the card
+  state, the same shape conventions as `emailSequenceDraft`). No ids beyond what the page needs.
+- Tests (convex-test, fixture mode): the HydroTrail launch produces the document and one card; the step runs only
+  after the brand kit; a refusal, an invalid output or a link writes nothing; replay is idempotent; a revision
+  writes a new version; the query refuses another owner, the workspace off and AI off.
+
+Done when: the HydroTrail fixture launch shows a draft social pack of seven posts with one `artifact_review` card,
+nothing posts, and the full gate passes.
+
+### WP76-S2b — Social page
+
+Goal: on `/dashboard/b/{projectId}/social` the founder reads the seven posts, copies each one for the platform
+they post on, and approves the pack or asks for changes. No post or schedule button: copy-and-post for every
+platform at launch (D7).
+
+- Replaces the route placeholder; the same server gate and header as the Email page. The client panel reads
+  `socialPackDraft`.
+- Each post shows its day (Friday is launch day), kind and format as plain labels, the hook, the caption, the card
+  text and alt text where present, poll options, and hashtags with `#` added for display.
+- Copy per platform: a platform picker (the 8 C-ART platforms) and a Copy button per post that copies
+  `captionFor(post, platform)` plus the hashtags. A character count against `PLATFORM_CAPTION_LIMITS` sits beside
+  each caption, in words as well as numbers ("212 of 280 characters"), and says when the short caption is used.
+- The card: the same approve / ask-for-changes flow as the Email page (shared helpers, the paid-round preview,
+  focus return and live region).
+- a11y as the Email page; the copy buttons announce their result in the live region. Run the a11y-check skill.
+- Tests as S1b's, plus the copy text for each platform and the character counts.
+
+Done when: the HydroTrail fixture state renders the seven posts with working copy buttons, counts and the review
+card, the page 404s with the flag off, a11y-check passes and the full gate passes.
+
+### WP76-S2c — Social posts as copy_ready (blocked)
+
+Blocked on Codex: `social_posts` needs a `day` (or `order`) field before the seven rows can be matched to the pack.
+Codex's `SocialPlatform` (5 values) also differs from C-ART's 8 platforms. Once the field lands, the finish writes
+seven rows marked `copy_ready` through `CopyConnector`, and a revision rewrites them in place while they are still
+`draft` or `copy_ready`.
+
+### WP76-S3 to S6
 
 Planned in `04`; detailed before each starts.
