@@ -738,6 +738,16 @@ describe("L1 the fixture Wren reply reads like Wren, built from the business", (
         ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
         subjectId: ids.docId, status: "pending", changeRound: 0n, createdAt: FIXED_NOW - 1_000, updatedAt: FIXED_NOW - 1_000,
       });
+      // A review card past its seven days, still stored as pending (no expiry run yet): never named.
+      const staleDocId = await ctx.db.insert("documents", {
+        ownerId: ids.ownerId, projectId: ids.projectId, kind: "seo_pack", format: "json", title: "SEO", body: "{}",
+        createdAt: 2, updatedAt: 2,
+      });
+      await ctx.db.insert("approvals", {
+        ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
+        subjectId: staleDocId, status: "pending", changeRound: 0n, createdAt: FIXED_NOW - 8 * DAY_MS,
+        updatedAt: FIXED_NOW - 8 * DAY_MS,
+      });
       return await ctx.db.insert("social_posts", {
         ownerId: ids.ownerId, projectId: ids.projectId, status: "copy_ready", createdAt: 2, updatedAt: 2,
       });
@@ -751,6 +761,7 @@ describe("L1 the fixture Wren reply reads like Wren, built from the business", (
     expect(reply).toMatchObject({ author: "wren", status: "done" });
     expect(reply?.body).toContain("Here is what is waiting on you for HydroTrail:");
     expect(reply?.body).toContain("- Brand kit: review it on the Brand kit page.");
+    expect(reply?.body).not.toContain("SEO pack");
     expect(reply?.body).toContain("- Social post ready to schedule: approve it on the card when you are ready.");
     expect(reply?.body).not.toMatch(/\bfixture\b/iu);
     expect(reply?.cards).toHaveLength(1);

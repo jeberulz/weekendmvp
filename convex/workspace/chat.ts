@@ -445,8 +445,18 @@ export const WREN_REVIEW_TARGETS: ReadonlyMap<string, WaitingReview> = new Map([
   ["build_pack", { review: "Build pack", page: "team" }],
 ]);
 
-/** Pending cards read to find the crew's open reviews. Pending cards expire after seven days (the expiry cron). */
+/** Pending cards read to find the crew's open reviews. */
 const PENDING_SCAN_MAX = 50;
+
+/**
+ * How long a pending review card stays open: `APPROVAL_PENDING_TTL_MS`
+ * (`lib/workspace/contracts/approvals.ts`), which this module may not import
+ * (the WP77 import allowlist). `tests/platform/workspace-wren-fixture.test.ts`
+ * keeps the two equal. A card past it can still be stored as `pending` (the
+ * expiry action is not scheduled by a cron yet), but Team HQ hides it and
+ * `decideApproval` refuses it, so Wren must not point the founder at it.
+ */
+export const WREN_REVIEW_OPEN_MS = 7 * 24 * 60 * 60 * 1_000;
 
 /** Most open reviews Wren is told about. */
 const WAITING_REVIEWS_MAX = 10;
@@ -454,12 +464,14 @@ const WAITING_REVIEWS_MAX = 10;
 /**
  * L1 beta. The crew's open reviews, newest first: this business's pending
  * `artifact_review` cards on its live artifact documents, the same set as the
- * Team HQ "Waiting on you" list (`api.workspace.reviews.pendingReviews`).
+ * Team HQ "Waiting on you" list (`api.workspace.reviews.pendingReviews`
+ * filtered by `openReviews`): a card past its seven days is left out, by the
+ * turn's own `now` (queries never read the clock).
  * Wren cannot raise or attach these cards (they are not in
  * `WREN_APPROVAL_SUBJECTS`); it names them and the page to review them on.
  * No ids are passed, so the model has nothing to put on an approval card.
  */
-export async function waitingReviews(ctx: QueryCtx, project: Project): Promise<WaitingReview[]> {
+export async function waitingReviews(ctx: QueryCtx, project: Project, now: number): Promise<WaitingReview[]> {
   const pending = await ctx.db.query("approvals")
     .withIndex("by_projectId_and_status", (q) => q.eq("projectId", project._id).eq("status", "pending"))
     .order("desc")
@@ -468,6 +480,8 @@ export async function waitingReviews(ctx: QueryCtx, project: Project): Promise<W
   for (const card of pending) {
     if (reviews.length >= WAITING_REVIEWS_MAX) break;
     if (card.ownerId !== project.ownerId || card.kind !== "artifact_review" || card.subjectTable !== "documents") continue;
+    // Expired (Team HQ's `openReviews` rule: open while `createdAt + TTL > now`).
+    if (card.createdAt + WREN_REVIEW_OPEN_MS <= now) continue;
     const documentId = ctx.db.normalizeId("documents", card.subjectId);
     const document = documentId === null ? null : await ctx.db.get("documents", documentId);
     if (document === null || document.ownerId !== project.ownerId || document.projectId !== project._id ||
@@ -514,7 +528,8 @@ export function wrenBusinessContext(
 }
 
 export const loadWrenTurn = internalQuery({
-  args: turnArgs,
+  /** `now`: the turn's time, read by the action, for the review expiry check. */
+  args: { ...turnArgs, now: v.number() },
   returns: loadedTurnValidator,
   handler: async (ctx, args) => {
     const project = await requireBusinessForOwner(ctx, args.projectId, args.ownerId);
@@ -544,7 +559,7 @@ export const loadWrenTurn = internalQuery({
       message: founder.body,
       history,
       businessContext: wrenBusinessContext(
-        project, memory, await approvableSubjects(ctx, project), await waitingReviews(ctx, project),
+        project, memory, await approvableSubjects(ctx, project), await waitingReviews(ctx, project, args.now),
       ),
       memoryVersion: memoryVersionOf(memory),
     };

@@ -39,7 +39,8 @@ exactly as it would a real one.
   wrote this reply." instead of "Fixture reply: …".
 - `convex/workspace/chat.ts` changes **the live prompt's data as well**. Wren's
   business context now carries `waitingOnYou`: the crew's open
-  `artifact_review` cards, from the same set as Team HQ's "Waiting on you".
+  `artifact_review` cards, from the same set as Team HQ's "Waiting on you"
+  (cards past their seven days are left out).
   Each entry has a title and a review page, and no approval ids. Before this,
   live Wren could not see those reviews, so "What needs my approval?" right
   after launch would have said nothing was waiting. The prompt specs are
@@ -111,7 +112,12 @@ Things to watch, none a blocker:
 3. After the deploy, send one message on production. If the reply ends "Test
    mode: no AI model wrote this reply.", `AI_PROVIDER_MODE` is not `live`
    there.
-4. Sonnet cache-read pricing is flagged in `convex/ai/pricing.ts` to check
+4. No cron schedules `expireStaleApprovals` (`convex/workspace/approvals.ts`),
+   so pending cards past their seven days stay stored as `pending`. Wren
+   leaves them out using the turn's own time (review on PR #274), the same
+   way Team HQ hides them. Scheduling the expiry belongs in `convex/crons.ts`
+   (Codex).
+5. Sonnet cache-read pricing is flagged in `convex/ai/pricing.ts` to check
    against the live price page before spending. It can only over-charge.
 
 ## Live smoke test on the local backend (planned, not run)
