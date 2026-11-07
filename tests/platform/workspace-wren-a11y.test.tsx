@@ -186,7 +186,7 @@ describe("Wren chat axe, by state", () => {
 
   test("card decided: status text, no buttons", async () => {
     mount([row("w1", "wren", "Done.", "done", [{ ...pendingCard, status: "approved" }])]);
-    expect(screen.getByText("Status: Approved")).toBeTruthy();
+    expect(screen.getByText("Approved")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^Approve/u })).toBeNull();
     expect(await violations()).toEqual([]);
   });
@@ -393,7 +393,7 @@ describe("card decision outcomes are announced", () => {
 });
 
 describe("keyboard run-through", () => {
-  test("Tab order: card review link, Approve, Not now, the explain/navigate links, composer, Send", async () => {
+  test("Tab order: the From line's Review link, Approve, Not now, the explain/navigate links, composer, Send", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mount([
       row("f1", "founder", "Can I post?", "done"),
@@ -405,7 +405,7 @@ describe("keyboard run-through", () => {
       const active = document.activeElement;
       order.push(active?.tagName === "TEXTAREA" ? "composer" : (active?.textContent ?? "").split("·")[0].trim());
     }
-    expect(order[0]).toMatch(/^Review it/u);
+    expect(order[0]).toBe("Review");
     expect(order[1]).toBe("Approve");
     expect(order[2]).toBe("Not now");
     expect(order[3]).toMatch(/brand/iu);

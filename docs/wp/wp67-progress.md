@@ -432,6 +432,73 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
     even though the drafts are already written. This is a deliberate match with Email, not a bug. Revisit it if a
     read-only view should work during an AI pause.
 
+## 2026-11-07 - L1-C1 and L1-C6 built
+
+- Brand kit page (L1-C1): `components/workspace/brand/BrandKitPanel.tsx` reads `brandKitDraft` and shows the kit
+  read-only (name and alternatives, tagline, five colours as text, look and type, voice, logo and hero art as
+  words with one "image generation is coming soon" line, pattern and product moment when present), then the
+  review card. States: loading, none, unavailable, ready. Page: `app/(launch-workspace)/dashboard/b/[projectId]/brand/page.tsx`.
+- Team HQ (L1-C6): `components/workspace/team/{TeamHqPanel,WaitingOnYou,BlueprintView}.tsx`. "Waiting on you" lists
+  `pendingReviews` (title, "Change round N", when it closes in words, a link "Review {title}"; the blueprint link
+  jumps to `#blueprint` on the same page; the empty line is shown only for an empty checked list; a card past
+  `expiresAt` is left out). "Your blueprint" shows the pitch, user, loop, features, scope cuts and market, the
+  "Not yet validated" label when `validated` is false, then the blueprint's review card.
+  Page: `.../team/page.tsx`. The page was only a placeholder before, so there was no roster to keep; the hired crew
+  now shows in "Your team" (below).
+- Shared: `components/workspace/review/LiveArtifactReview.tsx` (decide and change-round preview wired as on Social),
+  `lib/workspace/reviewPages.ts` (words and expiry arithmetic). `ArtifactReviewCard` gained an optional
+  `artifact.readFrom` ("above" or "below", default "below") so the card under the content says "above"; Email and
+  Social wording is unchanged. Their plural nouns are "brand kit details" and "blueprint details".
+- Swatch colour: an `aria-hidden` SVG `<rect fill>` attribute (not a style attribute), drawn only from a checked
+  `#RRGGBB`; anything else renders no fill. The name, hex and use are text beside it.
+- Tests: `tests/platform/workspace-review-pages.test.tsx` (states, swatch text, validated label, pending rows and
+  links, empty state, approve and ask for changes, jsdom axe on the ready states).
+- Unverified: no real browser or screen reader pass; colour contrast is not checked by jsdom axe (no canvas), so
+  the contrast of the new text rests on the kit tokens already in use; nothing was run against a live Convex
+  deployment (queries are mocked); the `#blueprint` jump and focus behaviour was not tried in a browser.
+
+### Team HQ: launch progress and your team (added after the first build)
+
+- Section order on Team HQ: Waiting on you, Launch progress, Your team, Your blueprint.
+- `components/workspace/team/LaunchProgress.tsx` reads `launchProgress`: each step's title, state in words, reason.
+  "Try again" calls `retryLaunch` (it covers the blueprint and team stage and re-runs later failed steps in one
+  token); "Resume" calls `resumeLaunch` for paused steps. A failed step with no retry shows its reason only.
+  Refusals use `launchErrorMessage`. Not started says so, with no link: Meet your co-founder is a wizard end
+  screen on `/start`, not a route tied to a business.
+- `components/workspace/team/YourTeam.tsx` reads `launchStatus` and reuses the wizard's `CofounderTeam` (new
+  optional `level` prop, default 3, so the wizard is unchanged; Team HQ passes 2). Team HQ never starts a launch,
+  so "not started" is its own message. The partner's name is not known there, so copy says "Your co-founder".
+- Tests: `tests/platform/workspace-team-hq-launch.test.tsx`. Unverified: the same browser, screen reader,
+  contrast and live-Convex gaps as above; no per-step retry exists (one click retries every retryable failed step).
+
+### Review fixes (M1 and minors)
+
+- Try again words come from what `retryLaunch` returned: a view that is still `failed` says "Nothing could start
+  yet: your team is busy with other work", anything else says "Sent" and points at the step list, never that work
+  started. Same in Your team.
+- Launch progress leaves the blueprint and team stage to Your team (no second Try again or Resume for it); the
+  "done" count leaves out skipped steps ("5 of 5 steps done. 6 skipped for now."); a cost line sits by the
+  buttons; both buttons are `aria-disabled` while either works; the working name carries the visible text.
+- `ArtifactReviewCard` gained optional `headingLevel` (default 3, so Email and Social output is unchanged; the Brand
+  kit page passes 2). "Waiting on you" refreshes its clock every minute and when the tab is visible again; the
+  blueprint section is a focusable jump target, and a blueprint row says so when there is no blueprint to show.
+- Own-idea label meaning is the wizard's sentence, now one constant (`NOT_VALIDATED_MEANING`).
+
+### L1-C1 and L1-C6 browser a11y-check (2026-11-07, local fixture backend)
+
+Run by the orchestrator on the PostureUp test business, where the fixture writes the HydroTrail artifacts.
+- **Team HQ:**
+  - Headings: h1, then h2 for Waiting on you, Launch progress, Your team and Your blueprint, with h3 inside.
+  - Waiting on you lists the three pending cards (Social posts, Brand kit, Blueprint), and each link goes to its
+    built page. The blueprint link jumps to `#blueprint`, which has `tabindex=-1`.
+  - Launch progress reads "5 of 5 steps done. 6 skipped for now." and Your team lists 8 hired and 5 skipped.
+- **Brand kit:**
+  - Headings: one h1, then an h2 per section, with "Your review" as its own h2.
+  - Each swatch is an `aria-hidden` SVG filled from a checked hex, with the name, hex and use as text beside it.
+- **Both pages:** no `[style]` attributes in `main`, and every text node measured at 4.5:1 contrast or better.
+- **Result:** pass.
+- **Not tried:** a real failed or paused step (the fixture launch completes), and a screen reader.
+
 ## 2026-11-07 - WP67-S6: one Weekend MVP logo (issue #218)
 
 - Branch `claude/wp67-brand-logo` (worktree `.worktrees/wp67-brand-logo`, from `origin/main` `33597263`).
@@ -450,6 +517,20 @@ Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17
 - Localhost preview: `/workspace-kit-preview` on port 3189 (dev only). Its dev `instant` validation error (the
   page's dynamic `KitPreviewClient` import) is unrelated to this change.
 - Not deployed. Docs updated: this file and `wp67-stories.md`.
+
+## 2026-11-07 - L1 UI fidelity to the canvas boards (PR #267)
+
+- Audit first: `docs/wp/l1-ui-fidelity/` scores Shell, Dashboard, Chat, Team HQ, Wizard and Meet, Brand kit, Files,
+  Email and Social against canvas row 05. Owner decisions are recorded in `docs/wp/RULINGS.md` ("WP67 L1 UI fidelity").
+- Built in two waves: the kit and the shell/chat column first, then six screens in parallel. Each screen was
+  checked in a browser next to its board on a local Convex fixture (1440px, plus 375px for Social and the chat
+  drawer). An independent review found no security, code-rule or ruling issues; its ten findings are fixed.
+- **#262 never reached main.** It was merged into `claude/l1-core` after #261 had been squash-merged, so the Brand
+  kit and Team HQ work (L1-C1, L1-C6) lands with #267, which is built on it.
+- Turbopack dev broke when a client component imported `components/tenant-site/fonts.ts` (next/font loaders). The
+  Brand kit server page now passes the font map down, and a test guards against it happening again. `next build` alone did not catch it.
+- Not verified: Meet your co-founder in a real browser, screen-reader passes, production data.
+- Follow-ups: none blocking. `lib/engine` and `tests/editorial` CLI tests time out at 5s under machine load (as #265 noted).
 
 ## 2026-11-07 - WP67-S7: crew avatars with Recraft V4.1 Flash (issue #220)
 

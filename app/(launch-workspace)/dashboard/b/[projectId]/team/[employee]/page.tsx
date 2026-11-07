@@ -24,8 +24,10 @@ export default async function EmployeeWorkstreamPage({ params }: { params: Param
   if (employee === null) notFound();
   return (
     <PlaceholderBody
-      eyebrow={`AI employee · ${project.name} workstream`}
+      eyebrow="Team HQ"
+      eyebrowSuffix={project.name}
       heading={`${employee.employeeName} · ${employee.label}`}
+      headingTail="coming soon."
       comingSoon
       emptyState={`This page will show ${employee.employeeName}'s work for your business.`}
     />

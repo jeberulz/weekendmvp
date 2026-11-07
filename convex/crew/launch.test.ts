@@ -281,6 +281,20 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
       ["social_pack", "succeeded"],
       ["ads_drafts", "skipped"],
     ]);
+    // Additive fields: the owning role and whether the step is built.
+    expect(view.steps.map((step) => [step.key, step.employee, step.notBuilt])).toEqual([
+      ["blueprint", "lead", false],
+      ["roster", "lead", false],
+      ["brand_kit", "brand", false],
+      ["logo_marks", "brand", true],
+      ["landing_spec", "landing", true],
+      ["build_pack", "engineering", true],
+      ["launch_plan", "marketing", true],
+      ["seo_pack", "seo", true],
+      ["email_sequence", "email", false],
+      ["social_pack", "social", false],
+      ["ads_drafts", "ads", true],
+    ]);
     expect(view.steps.find((step) => step.key === "logo_marks")?.reason).toBe("Logo marks is not built yet, so nothing was written for it yet.");
     expect(view.steps.find((step) => step.key === "seo_pack")?.reason).toBe("SEO pack is coming in a later update, so nothing was written for it yet.");
     expect(view.steps.filter((step) => step.state === "skipped").every((step) => (step.reason ?? "").length > 0)).toBe(true);

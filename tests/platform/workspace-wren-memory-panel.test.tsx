@@ -15,7 +15,7 @@
  * - loading, empty (with "Write a summary") and error states.
  */
 import axe from "axe-core";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState, type ReactNode } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -53,8 +53,9 @@ function outcome(result: FounderMemoryEdit): MemoryEditResult {
  * The view with a stand-in server: actions apply the same pure rules as
  * `convex/workspace/wrenMemory.ts` and update the "live query" state.
  */
-function Harness({ initial, onChange, remote }: {
+function Harness({ initial, onChange, remote, name }: {
   initial: View;
+  name?: string;
   onChange?: (next: View) => void;
   /** Receives a setter that changes the "live query" as another tab or Wren would. */
   remote?: (set: (next: View) => void) => void;
@@ -71,6 +72,7 @@ function Harness({ initial, onChange, remote }: {
   };
   return (
     <WrenMemoryView
+      name={name}
       memory={memory}
       actions={{
         editFact: async (index, expected, text) => apply(editFact(memory, index, expected, text)),
@@ -170,7 +172,7 @@ describe("What Wren knows: keyboard edit", () => {
     await user.type(screen.getByRole("textbox", { name: "Edit fact 1" }), " Really.");
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
   });
 
   test("while a save is in flight the button reads Saving… and is aria-disabled; a second press does nothing", async () => {
@@ -251,7 +253,7 @@ describe("What Wren knows: delete", () => {
     await act(async () => {
       await user.click(screen.getByRole("button", { name: "Delete fact" }));
     });
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
     expect(document.activeElement).not.toBe(document.body);
   });
 });
@@ -308,7 +310,7 @@ describe("What Wren knows: review fixes", () => {
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.getByText("Price is $9 a month.")).toBeTruthy();
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
     expect(await violations()).toEqual([]);
   });
 
@@ -321,7 +323,7 @@ describe("What Wren knows: review fixes", () => {
     act(() => setRemote(view(["Audience is day hikers.", "Price is $9 a month."])));
     expect(screen.queryByRole("group")).toBeNull();
     expect(status().textContent).toBe(WREN_MEMORY_STALE_COPY);
-    expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: /Facts/u })));
   });
 
   test("one status line in every state: deleting the last fact (no summary) is announced in the empty state", async () => {
@@ -368,3 +370,63 @@ describe("What Wren knows: review fixes", () => {
   });
 });
 
+
+describe("What Wren knows: the chosen partner name", () => {
+  test("body copy uses the partner name, never Wren", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view(["Launch is Sunday."], "")} name="Juno" /></main>);
+    expect(screen.getByText(/No summary yet\. Juno writes one/u)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Delete fact 1" }));
+    expect(screen.getByRole("group", { name: "Delete fact 1? Juno will forget it." })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Delete fact" }));
+    expect(status().textContent).toBe("Fact deleted. Juno will no longer use it.");
+    expect(screen.getByText("Juno hasn't noted anything yet")).toBeTruthy();
+    expect(screen.queryByText(/Wren/u)).toBeNull();
+  });
+
+  test("the summary editor is labelled with the partner name", async () => {
+    const user = userEvent.setup();
+    render(<main><Harness initial={view([])} name="Juno" /></main>);
+    await user.click(screen.getByRole("button", { name: /Edit.*summary/u }));
+    expect(screen.getByRole("textbox", { name: "Edit Juno's summary" })).toBeTruthy();
+  });
+});
+
+describe("What Wren knows: reader card", () => {
+  test("a mono file name, a meta line from updatedAt and the fact count, and a 40px-target Edit/Delete", () => {
+    render(<main><Harness initial={view(["Launch is Sunday.", "Price is $9."])} name="Iris" /></main>);
+    const article = screen.getByRole("article");
+    expect(within(article).getByRole("heading", { level: 2, name: "What Iris knows" }).className).toContain("font-mono");
+    expect(article.textContent).toMatch(/Kept by Iris · updated .+ · 2 of 20 facts/u);
+    const edit = screen.getByRole("button", { name: "Edit fact 1" });
+    expect(edit.className).toContain("min-h-10");
+    expect(screen.getByRole("button", { name: "Delete fact 1" }).className).toContain("min-h-10");
+    expect(within(article).getAllByRole("listitem")).toHaveLength(2);
+  });
+
+  test("empty memory says nothing is kept and Copy is aria-disabled", () => {
+    render(<main><Harness initial={{ ...view([], ""), updatedAt: null }} /></main>);
+    expect(screen.getByRole("article").textContent).toContain("Nothing kept yet · 0 of 20 facts");
+    expect(screen.getByRole("button", { name: "Copy" }).getAttribute("aria-disabled")).toBe("true");
+  });
+
+  test("Copy puts the summary and facts on the clipboard and announces it once", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn(async () => undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    render(<main><Harness initial={view(["Launch is Sunday."], "A hiking app.")} /></main>);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(writeText).toHaveBeenCalledWith("# What Wren knows\n\nA hiking app.\n\n## Facts\n- Launch is Sunday.\n");
+    expect(status().textContent).toBe("Copied what Wren knows.");
+    expect(screen.getByRole("button", { name: "Copied" })).toBeTruthy();
+  });
+
+  test("a blocked clipboard says so and the button says so", async () => {
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: async () => { throw new Error("no"); } }, configurable: true });
+    render(<main><Harness initial={view(["Launch is Sunday."])} /></main>);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(status().textContent).toMatch(/Copy is blocked/u);
+    expect(screen.getByRole("button", { name: "Copy blocked here" })).toBeTruthy();
+  });
+});

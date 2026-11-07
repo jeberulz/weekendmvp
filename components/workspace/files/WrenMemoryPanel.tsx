@@ -7,7 +7,8 @@ import type { Id } from "@/convex/_generated/dataModel";
 import type { MemoryEditResult, WrenMemoryView } from "@/convex/workspace/memory";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
 import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit/states";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD, FOCUS } from "@/components/workspace/kit/styles";
+import { copyText, type CopyState } from "@/components/workspace/kit/BuildPackPromptCard";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
 import {
   checkFounderFact,
@@ -16,6 +17,7 @@ import {
   memoryRefusalCopy,
   WREN_MEMORY_STALE_COPY,
 } from "@/lib/workspace/wrenMemory";
+import { memoryCopyText, memoryMetaLine } from "@/lib/workspace/reviewPages";
 
 /**
  * WP77-S5 — "What Wren knows" on the Files page: Wren's rolling summary and
@@ -70,7 +72,37 @@ const FIELD = cn(
   "w-full rounded-lg border border-home-ink-3 bg-home-card px-3 py-2 text-sm text-home-ink placeholder:text-home-ink-3",
   FOCUS,
 );
-const LINK_BUTTON = cn("min-h-6 rounded px-1 text-[13px] font-medium text-home-ink underline", FOCUS);
+const LINK_BUTTON = cn(
+  "min-h-10 rounded px-2 text-[13px] font-medium text-home-ink underline underline-offset-2",
+  FOCUS,
+);
+const MONO_TEXT = "whitespace-pre-wrap break-words font-mono text-sm leading-[1.7] text-home-ink";
+const READER = "min-w-0 flex-1 overflow-hidden rounded-xl border border-home-rule bg-home-card";
+const READER_HEADING_ID = "wren-memory-heading";
+
+function ReaderHeader({ name, meta, action }: { name: string; meta?: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-home-sunk px-[18px] py-3.5">
+      <div className="min-w-0">
+        <h2 id={READER_HEADING_ID} className="font-mono text-[15px] font-medium text-home-ink">
+          What {name} knows
+        </h2>
+        {meta === undefined ? null : <p className="mt-0.5 text-[13px] text-home-ink-3">{meta}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/** The reader card with no data yet (loading, unavailable or error): the header stays, the body says why. */
+function ReaderShell({ name, children }: { name: string; children: React.ReactNode }) {
+  return (
+    <article id="wren-memory" aria-labelledby={READER_HEADING_ID} className={READER}>
+      <ReaderHeader name={name} />
+      <div className="p-4">{children}</div>
+    </article>
+  );
+}
 
 function MemoryEditForm({
   label,
@@ -152,7 +184,7 @@ function MemoryEditForm({
   );
 }
 
-export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; actions: MemoryActions }) {
+export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: WrenMemoryView; actions: MemoryActions; name?: string }) {
   const uid = useId();
   const [editing, setEditing] = useState<Editing | null>(null);
   const [confirming, setConfirming] = useState<{ index: number; expected: string } | null>(null);
@@ -171,6 +203,9 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const inFlight = useRef(false);
   const { facts, summary, limits } = memory;
+  const [now] = useState(() => Date.now());
+  const [copyState, setCopyState] = useState<CopyState>("idle");
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // An open form or question still names what the founder opened it on (index plus text).
   const editingValid = editing === null ||
@@ -204,6 +239,27 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
     focusRequest.current = null;
     target?.focus();
   });
+
+  useEffect(
+    () => () => {
+      if (copyTimer.current !== null) clearTimeout(copyTimer.current);
+    },
+    [],
+  );
+
+  const nothingToCopy = facts.length === 0 && summary === "";
+  async function copyAll() {
+    if (nothingToCopy) return;
+    const result = await copyText(memoryCopyText(name, summary, facts));
+    setCopyState(result);
+    setStatus(
+      result === "copied"
+        ? `Copied what ${name} knows.`
+        : "Copy is blocked in this browser. Select the text and copy it by hand.",
+    );
+    if (copyTimer.current !== null) clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopyState("idle"), 2500);
+  }
 
   function requestFocus(request: FocusRequest) {
     focusRequest.current = request;
@@ -325,7 +381,7 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
         requestFocus({ kind: "facts_heading" });
         return;
       }
-      setStatus("Fact deleted. Wren will no longer use it.");
+      setStatus(`Fact deleted. ${name} will no longer use it.`);
       // Rows are keyed by position, so the Edit button at this index (or the one before, for the last
       // fact) survives the update and then names the next fact. Wait for the live list to drop the row.
       const left = facts.length - 1;
@@ -342,19 +398,40 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   );
 
   const empty = facts.length === 0 && summary === "" && openEdit === null;
+  const copyLabel = copyState === "copied" ? "Copied" : copyState === "blocked" ? "Copy blocked here" : "Copy";
   return (
-    <div className="flex flex-col gap-5">
+    <article id="wren-memory" aria-labelledby={READER_HEADING_ID} className={READER}>
+      <ReaderHeader
+        name={name}
+        meta={memoryMetaLine({
+          name,
+          updatedAt: memory.updatedAt,
+          facts: facts.length,
+          factsMax: limits.factsMax,
+          now,
+        })}
+        action={
+          <button
+            type="button"
+            onClick={() => void copyAll()}
+            aria-disabled={nothingToCopy || undefined}
+            className={cn(BTN_SECONDARY, "min-h-10 px-3.5")}
+          >
+            {copyLabel}
+          </button>
+        }
+      />
       {empty ? renderEmpty() : renderMemory()}
-      {statusLine}
-    </div>
+      <div className="border-t border-home-sunk px-6 py-3">{statusLine}</div>
+    </article>
   );
 
   function renderEmpty() {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 px-6 py-5">
         <div ref={emptyRef} tabIndex={-1} className={cn("rounded-xl", FOCUS)}>
-          <EmptyState title="Wren hasn't noted anything yet">
-            As you chat, Wren keeps a short summary and a few facts about your business here, so it remembers what
+          <EmptyState title={`${name} hasn't noted anything yet`}>
+            As you chat, {name} keeps a short summary and a few facts about your business here, so it remembers what
             matters. You can edit or delete any of them.
           </EmptyState>
         </div>
@@ -379,14 +456,14 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
     const full = facts.length >= limits.factsMax;
 
     return (
-    <div className="flex flex-col gap-5">
-      <section aria-labelledby={summaryHeadingId} className={cn(CARD, "flex flex-col gap-3 p-4")}>
-        <h3 id={summaryHeadingId} className="text-[15px] font-semibold text-home-ink">
+    <div className="flex flex-col">
+      <section aria-labelledby={summaryHeadingId} className="flex flex-col gap-2 px-6 py-5">
+        <h3 id={summaryHeadingId} className={EYEBROW}>
           Summary
         </h3>
         {openEdit?.target === "summary" ? (
           <MemoryEditForm
-            label="Edit Wren's summary"
+            label={`Edit ${name}'s summary`}
             initial={summary}
             max={limits.summaryMaxChars}
             hint="Plain prose, no links or instructions. Save it empty to clear it."
@@ -399,9 +476,9 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
         ) : (
           <>
             {summary === "" ? (
-              <p className="text-sm text-home-ink-2">No summary yet. Wren writes one as your plans take shape.</p>
+              <p className="text-sm text-home-ink-2">No summary yet. {name} writes one as your plans take shape.</p>
             ) : (
-              <p className="whitespace-pre-wrap break-words text-sm text-home-ink">{summary}</p>
+              <p className={MONO_TEXT}>{summary}</p>
             )}
             <p>
               <button
@@ -418,27 +495,27 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
         )}
       </section>
 
-      <section aria-labelledby={factsHeadingId} className="flex flex-col gap-3">
+      <section aria-labelledby={factsHeadingId} className="flex flex-col gap-2 border-t border-home-sunk px-6 py-5">
         <h3
           id={factsHeadingId}
           ref={factsHeading}
           tabIndex={-1}
-          className={cn("rounded text-[15px] font-semibold text-home-ink", FOCUS)}
+          className={cn("w-fit rounded", EYEBROW, FOCUS)}
         >
           Facts{" "}
-          <span className="font-normal text-home-ink-2">
+          <span className="font-normal normal-case tracking-normal">
             ({facts.length.toString()} of {limits.factsMax.toString()})
           </span>
         </h3>
         {full ? (
           <p className="text-[13px] text-home-ink-2">
-            Wren&apos;s notes are full. Delete a fact you no longer need so Wren can remember new things.
+            {name}&apos;s notes are full. Delete a fact you no longer need so {name} can remember new things.
           </p>
         ) : null}
         {facts.length === 0 ? (
-          <p className="text-sm text-home-ink-2">No facts yet. Wren adds them when you share something worth keeping.</p>
+          <p className="text-sm text-home-ink-2">No facts yet. {name} adds them when you share something worth keeping.</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="divide-y divide-home-sunk">
             {facts.map((fact, index) => {
               const number = (index + 1).toString();
               const isEditing = openEdit?.target === "fact" && openEdit.index === index;
@@ -446,7 +523,7 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
               const questionId = `${uid}-confirm-${number}`;
               return (
                 // Keyed by position: after an edit or a delete the buttons stay mounted, so focus can land on them.
-                <li key={number} className={cn(CARD, "flex flex-col gap-2 p-3")}>
+                <li key={number} className="flex flex-col gap-2 py-3 first:pt-1">
                   {isEditing ? (
                     <MemoryEditForm
                       label={`Edit fact ${number}`}
@@ -460,7 +537,7 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
                       onCancel={cancelEdit}
                     />
                   ) : (
-                    <p className="whitespace-pre-wrap break-words text-sm text-home-ink">{fact}</p>
+                    <p className={MONO_TEXT}>{fact}</p>
                   )}
                   {isConfirming ? (
                     <div
@@ -475,7 +552,7 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
                       className="flex flex-wrap items-center gap-2"
                     >
                       <p id={questionId} className="text-[13px] font-medium text-home-ink">
-                        Delete fact {number}? Wren will forget it.
+                        Delete fact {number}? {name} will forget it.
                       </p>
                       <button
                         type="button"
@@ -490,7 +567,7 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
                       </button>
                     </div>
                   ) : isEditing ? null : (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-1">
                       <button
                         ref={(element) => {
                           if (element === null) editButtons.current.delete(index);
@@ -528,14 +605,21 @@ export function WrenMemoryView({ memory, actions }: { memory: WrenMemoryView; ac
   }
 }
 
-function LiveWrenMemory({ projectId }: { projectId: Id<"projects"> }) {
+function LiveWrenMemory({ projectId, name }: { projectId: Id<"projects">; name: string }) {
   const memory = useQuery(api.workspace.memory.getWrenMemory, { projectId });
   const editFact = useMutation(api.workspace.memory.editWrenMemoryFact);
   const deleteFact = useMutation(api.workspace.memory.deleteWrenMemoryFact);
   const editSummary = useMutation(api.workspace.memory.editWrenMemorySummary);
-  if (memory === undefined) return <LoadingState label="Loading what Wren knows…" />;
+  if (memory === undefined) {
+    return (
+      <ReaderShell name={name}>
+        <LoadingState label={`Loading what ${name} knows…`} />
+      </ReaderShell>
+    );
+  }
   return (
     <WrenMemoryView
+      name={name}
       memory={memory}
       actions={{
         editFact: async (index, expected, text) => await editFact({ projectId, index, expected, text }),
@@ -546,22 +630,24 @@ function LiveWrenMemory({ projectId }: { projectId: Id<"projects"> }) {
   );
 }
 
-export function WrenMemoryPanel({ projectId }: { projectId: Id<"projects"> }) {
-  const failed = <ErrorState message="What Wren knows couldn't load right now. Reload the page to try again." />;
+export function WrenMemoryPanel({ projectId, name = "Wren" }: { projectId: Id<"projects">; name?: string }) {
+  const failed = (
+    <ReaderShell name={name}>
+      <ErrorState message={`What ${name} knows couldn't load right now. Reload the page to try again.`} />
+    </ReaderShell>
+  );
   return (
-    <section aria-labelledby="wren-memory-heading" className="flex flex-col gap-3">
-      <h2 id="wren-memory-heading" className="text-lg font-medium text-home-ink">
-        What Wren knows
-      </h2>
-      <p className="max-w-[62ch] text-sm text-home-ink-2">
-        Wren keeps a short summary and a few facts about your business so each chat stays focused. They are notes in
-        plain text, never instructions. Edit or delete anything that is wrong or out of date.
-      </p>
-      <WhenConvexReady fallback={<LoadingState label="Loading what Wren knows…" />} unavailable={failed}>
-        <QuietErrorBoundary fallback={failed}>
-          <LiveWrenMemory projectId={projectId} />
-        </QuietErrorBoundary>
-      </WhenConvexReady>
-    </section>
+    <WhenConvexReady
+      fallback={
+        <ReaderShell name={name}>
+          <LoadingState label={`Loading what ${name} knows…`} />
+        </ReaderShell>
+      }
+      unavailable={failed}
+    >
+      <QuietErrorBoundary fallback={failed}>
+        <LiveWrenMemory projectId={projectId} name={name} />
+      </QuietErrorBoundary>
+    </WhenConvexReady>
   );
 }

@@ -7,7 +7,13 @@ export type { CreditMeterProps, CreditMeterState } from "./CreditMeter";
 export { DefaultLink } from "./DefaultLink";
 export { EmployeeAvatar } from "./EmployeeAvatar";
 export { autopilotTooltip, EmployeeCard, SkippedRoleCard } from "./EmployeeCard";
-export type { EmployeeCardData, EmployeeCardProps, SkippedRoleCardProps } from "./EmployeeCard";
+export type {
+  EmployeeAutopilot,
+  EmployeeBlocker,
+  EmployeeCardData,
+  EmployeeCardProps,
+  SkippedRoleCardProps,
+} from "./EmployeeCard";
 export {
   EMPLOYEE_STATUS_STYLES,
   OUTPUT_STATUS_STYLES,
@@ -55,6 +61,8 @@ export type {
   WrenThreadProps,
   WrenThreadStatus,
 } from "./WrenThread";
+export { WorkspacePageHeader, WORKSPACE_HEADING_ID } from "./WorkspacePageHeader";
+export type { WorkspacePageHeaderProps } from "./WorkspacePageHeader";
 export { EmptyState, ErrorState, LoadingState } from "./states";
 export {
   costLabel,
@@ -64,6 +72,8 @@ export {
   OUTPUT_STATUSES,
   ROLE_LABELS,
   SITE_STATUSES,
+  STEP_STATUSES,
+  TEAM_CARD_EXTRA_STATUSES,
   WORKSTREAM_KINDS,
 } from "./types";
 export type {
@@ -74,5 +84,7 @@ export type {
   LinkComponent,
   OutputStatus,
   SiteStatus,
+  StepStatus,
+  TeamCardStatus,
   WorkstreamKind,
 } from "./types";

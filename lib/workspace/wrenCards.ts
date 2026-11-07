@@ -418,13 +418,43 @@ export const APPROVAL_REVIEW_LABELS: Readonly<Record<ApprovalReviewRoute, string
   files: "Review it in files",
 };
 
-/** The card's line after a decision call returns, by the approval's new status. */
-export function approvalDecisionCopy(status: string): string {
+/**
+ * The line after an approval for a `send` or `post` card: nothing goes out in
+ * the L1 beta, so the line must not imply it. Other kinds have no extra line.
+ */
+export const BETA_APPROVED_COPY = {
+  email: "Approved. Sending is off during the beta, so nothing goes out yet.",
+  social: "Approved. Posting is off during the beta, so nothing goes out yet.",
+} as const;
+
+function approvedCopy(approvalKind: string | undefined): string {
+  switch (approvalKind) {
+    case "send":
+      return BETA_APPROVED_COPY.email;
+    case "post":
+      return BETA_APPROVED_COPY.social;
+    default:
+      return "Approved.";
+  }
+}
+
+/**
+ * The card's line after a decision call returns, by the approval's new status.
+ * `approvalKind` (`send`, `post`, `publish`) selects the beta-safe wording for an
+ * approval; `partnerName` is the co-founder the founder can ask to bring a
+ * declined card back (default "Wren").
+ */
+export function approvalDecisionCopy(
+  status: string,
+  options: { readonly approvalKind?: string; readonly partnerName?: string } = {},
+): string {
   switch (status) {
     case "approved":
-      return "Approved.";
+      return approvedCopy(options.approvalKind);
     case "cancelled":
-      return "Okay, not now.";
+      return options.partnerName === undefined
+        ? "Okay, not now."
+        : `Okay, not now. You can ask ${options.partnerName} to bring it back.`;
     case "expired":
       return "This card expired.";
     case "changes_requested":
@@ -449,8 +479,10 @@ export const CHANGED_CODES: ReadonlySet<string> = new Set([
  * card is not an error: `decideApproval` returns status `expired`, read by
  * `approvalDecisionCopy`.)
  */
-export function approvalDecisionErrorCopy(code: string | null): string {
-  if (code !== null && CHANGED_CODES.has(code)) return "This changed since Wren raised it. Ask Wren again for a fresh card.";
+export function approvalDecisionErrorCopy(code: string | null, partnerName: string = "Wren"): string {
+  if (code !== null && CHANGED_CODES.has(code)) {
+    return `This changed since ${partnerName} raised it. Ask ${partnerName} again for a fresh card.`;
+  }
   switch (code) {
     case "APPROVAL_ALREADY_DECIDED":
       return "This card was already decided.";

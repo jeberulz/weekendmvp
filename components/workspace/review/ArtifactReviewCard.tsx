@@ -28,6 +28,8 @@ import {
 import { approvalDecisionCopy, approvalDecisionErrorCopy, errorCode, STATUS_LABEL } from "@/lib/workspace/wrenCards";
 
 /**
+ * Textarea border is home-ink-3 (4.9:1 on the card fill) so the field edge meets WCAG 1.4.11.
+ *
  * The shared review card for a crew artifact (WP76-S2b, lifted from the Email
  * page without changing it). Email, Social and later the Brand kit page and
  * Team HQ use it: the founder approves the artifact or asks for changes.
@@ -55,8 +57,16 @@ export type ArtifactReviewCardProps = {
   card: { status: keyof typeof STATUS_LABEL; expiresAt: number };
   decide: ReviewDecide;
   preview: PreviewState;
-  /** Words for the artifact: `plural` is used in sentences ("emails", "posts"); `approvedNote` follows "Approved". */
-  artifact: { plural: string; approvedNote: string };
+  /**
+   * Words for the artifact: `plural` is used in sentences ("emails", "posts"); `approvedNote` follows "Approved".
+   * `readFrom` says where the thing to read sits relative to the card ("below" by default; the Brand kit page and
+   * Team HQ put the card under what it reviews, so they say "above").
+   */
+  artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below"; approvalKind?: "send" | "post" };
+  /** Level of the card's "Your review" heading: 3 by default (under a page section), 2 when no h2 sits above it. */
+  headingLevel?: 2 | 3;
+  /** Label of the approve button. "Approve" by default; Email and Social say "Approve all 4" and so on. */
+  approveLabel?: string;
 };
 
 function isRateLimited(error: unknown): boolean {
@@ -65,7 +75,8 @@ function isRateLimited(error: unknown): boolean {
   return typeof data === "object" && data !== null && "kind" in data && data.kind === "RateLimited";
 }
 
-export function ArtifactReviewCard({ card, decide, preview, artifact }: ArtifactReviewCardProps) {
+export function ArtifactReviewCard({ card, decide, preview, artifact, headingLevel = 3, approveLabel = "Approve" }: ArtifactReviewCardProps) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const noun = artifact.plural;
   const [now] = useState(() => Date.now());
   const [pending, setPending] = useState(false);
@@ -139,10 +150,10 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
     void decide(decision, text)
       .then((result) => {
         if (decision === "approve") {
-          setMessage(approvalDecisionCopy(result.status));
+          setMessage(approvalDecisionCopy(result.status, { approvalKind: artifact.approvalKind }));
           return;
         }
-        setMessage(changesOutcomeCopy(result.changeRound, result.status, result.changed, noun));
+        setMessage(changesOutcomeCopy(result.changeRound, result.status, result.changed, noun, artifact.approvalKind));
         keepOpen = keepsFormOpen(result.changeRound, result.status, result.changed);
         if (!keepOpen) {
           setAsking(false);
@@ -192,10 +203,10 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
 
   return (
     <section aria-labelledby={`${id}-title`} className={cn(CARD, "flex flex-col gap-3 p-4")}>
-      <h3 id={`${id}-title`} className="text-sm font-medium text-home-ink">Your review</h3>
+      <Heading id={`${id}-title`} className="text-sm font-medium text-home-ink">Your review</Heading>
       {canDecide ? (
         <p className="text-[13px] text-home-ink-2">
-          Read the {noun} below. Approve them as they are, or ask your team for changes.
+          Read the {noun} {artifact.readFrom ?? "below"}. Approve them as they are, or ask your team for changes.
         </p>
       ) : null}
       <div ref={statusRef} tabIndex={-1} className={cn("flex flex-col gap-1 rounded text-[13px] text-home-ink-2", FOCUS)}>
@@ -236,7 +247,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
                   setNote(event.target.value);
                   setNoteError(null);
                 }}
-                className={cn("w-full rounded-lg border border-home-rule bg-home-card p-2 text-sm text-home-ink", FOCUS)}
+                className={cn("w-full rounded-lg border border-home-ink-3 bg-home-card p-2 text-sm text-home-ink", FOCUS)}
               />
               <p id={countId} className="text-[13px] text-home-ink-2">
                 {length.toLocaleString("en-US")} of {EMAIL_NOTE_MAX_LENGTH.toLocaleString("en-US")}
@@ -253,7 +264,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact }: Artifact
             <div className="flex flex-wrap gap-2">
               {canDecide ? (
                 <button type="button" aria-disabled={pending || undefined} className={BTN_PRIMARY} onClick={() => send("approve")}>
-                  Approve
+                  {approveLabel}
                 </button>
               ) : null}
               {canAsk ? (

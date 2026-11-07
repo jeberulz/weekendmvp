@@ -36,10 +36,33 @@ function isAccessDenial(error: unknown): boolean {
 export const workspaceAccessValidator = v.union(
   v.object({
     allowed: v.literal(true),
-    project: v.object({ _id: v.id("projects"), name: v.string() }),
+    project: v.object({
+      _id: v.id("projects"),
+      name: v.string(),
+      /** The name the founder gave their co-founder in the wizard (`workspace.partner.name`). Absent for older rows. */
+      partnerName: v.optional(v.string()),
+      /** The shell's switcher sub-line, e.g. "Web app". Absent when the platform is unknown. */
+      subline: v.optional(v.string()),
+      /** The signed-in owner's display name, name or email, for the shell's user row. */
+      viewerName: v.optional(v.string()),
+    }),
   }),
   v.object({ allowed: v.literal(false) }),
 );
+
+/** The switcher sub-line: the platform label only (the commercial model is the wizard's, not the shell's). */
+function businessSubline(platform: string | undefined): string | undefined {
+  switch (platform) {
+    case "web":
+      return "Web app";
+    case "native":
+      return "Mobile app";
+    case "custom":
+      return "Custom build";
+    default:
+      return undefined;
+  }
+}
 
 export const getWorkspaceAccess = query({
   args: { projectId: v.id("projects") },
@@ -49,9 +72,22 @@ export const getWorkspaceAccess = query({
       // Feature and cohort first, so a closed workspace never touches the project.
       await assertFeatureEnabled(ctx, "workspace");
       const project = await requireBusinessAccess(ctx, args.projectId, "owner");
+      // The owner is the only caller who passed the guard, so the project's owner is the viewer.
+      const viewer = await ctx.db.get("users", project.ownerId);
+      const viewerName = [viewer?.displayName, viewer?.name, viewer?.email]
+        .map((candidate) => candidate?.trim())
+        .find((candidate) => candidate !== undefined && candidate !== "");
+      const partnerName = project.workspace?.partner.name.trim();
+      const subline = businessSubline(project.workspace?.platform);
       return {
         allowed: true as const,
-        project: { _id: project._id, name: project.workspace?.name ?? project.title },
+        project: {
+          _id: project._id,
+          name: project.workspace?.name ?? project.title,
+          ...(partnerName === undefined || partnerName === "" ? {} : { partnerName }),
+          ...(subline === undefined ? {} : { subline }),
+          ...(viewerName === undefined ? {} : { viewerName }),
+        },
       };
     } catch (error) {
       if (isAccessDenial(error)) return { allowed: false as const };

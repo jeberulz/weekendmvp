@@ -38,9 +38,12 @@ export function shouldCloseOnBlur(next: EventTarget | null, root: Node | null): 
 export function BusinessSwitcher({
   currentId,
   businesses,
+  subline,
 }: {
   currentId: string;
   businesses: readonly WorkspaceBusiness[];
+  /** The current business's sub-line, e.g. "Web app". Omitted when unknown. */
+  subline?: string;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -75,18 +78,23 @@ export function BusinessSwitcher({
         type="button"
         aria-expanded={open}
         aria-controls={SWITCHER_LIST_ID}
-        aria-label={switcherLabel(currentName)}
         onClick={() => setOpen((value) => !value)}
-        className={`flex min-h-[52px] w-full items-center gap-3 rounded-lg border border-home-rule bg-home-card px-3 text-left hover:bg-home-sunk ${FOCUS}`}
+        className={`flex min-h-[52px] w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-home-sunk ${FOCUS}`}
       >
         <span
           aria-hidden="true"
-          className="flex size-8 shrink-0 items-center justify-center rounded-md bg-home-sky-ink font-editorial text-base text-home-card"
+          className="flex size-8 shrink-0 items-center justify-center rounded-md bg-home-sky-ink text-sm font-semibold text-home-card"
         >
           {businessInitial(currentName)}
         </span>
-        <span className="min-w-0 flex-1 truncate font-editorial text-base text-home-ink">{currentName}</span>
-        <ChevronsUpDown aria-hidden="true" className="size-4 shrink-0 text-home-ink-3" />
+        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+          <span className="truncate font-editorial text-base text-home-ink">{currentName}</span>
+          {subline === undefined || subline === "" ? null : (
+            <span className="truncate text-[11px] uppercase tracking-[0.12em] text-home-ink-3">{subline}</span>
+          )}
+        </span>
+        <span className="sr-only">, switch business</span>
+        <ChevronsUpDown aria-hidden="true" className="size-3.5 shrink-0 text-home-ink-3" />
       </button>
       <div
         id={SWITCHER_LIST_ID}

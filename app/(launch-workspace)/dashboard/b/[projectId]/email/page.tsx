@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { EmailSequencePanel } from "@/components/workspace/email/EmailSequencePanel";
+import { WorkspacePageHeader } from "@/components/workspace/kit";
 import { requireWorkspaceAccess } from "@/lib/workspace/access";
-import { workspaceRoute } from "@/lib/workspace/routes";
+import { EMAIL_HEADER } from "@/lib/workspace/emailPage";
 import { routeMetadata } from "../_scaffold/placeholder";
 
 export const instant = false;
@@ -19,13 +20,8 @@ export default async function EmailPage({ params }: { params: Promise<{ projectI
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1.5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-home-ink-3">{project.name}</p>
-        <h1 className="font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.025em] text-home-ink sm:text-[42px]">
-          {workspaceRoute("email").label}
-        </h1>
-      </header>
+    <div className="flex flex-col gap-7">
+      <WorkspacePageHeader eyebrow="Email" lead={EMAIL_HEADER.lead} tail={EMAIL_HEADER.tail} />
       <EmailSequencePanel projectId={project._id} />
     </div>
   );

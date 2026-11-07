@@ -52,6 +52,48 @@ export function emailDelayCopy(delayHours: number): string {
   return `${delayHours} ${delayHours === 1 ? "hour" : "hours"} after the previous email`;
 }
 
+/** The short timing on a rail step: "Immediately", "+2 days", "+36 hours". */
+export function emailDelayShort(delayHours: number): string {
+  if (delayHours <= 0) return "Immediately";
+  if (Number.isInteger(delayHours) && delayHours % 24 === 0) {
+    const days = delayHours / 24;
+    return `+${days} ${days === 1 ? "day" : "days"}`;
+  }
+  return `+${delayHours} ${delayHours === 1 ? "hour" : "hours"}`;
+}
+
+export type ReviewPillStatus = "draft" | "ready" | "approved" | "changes_requested";
+export type ReviewPill = { readonly status: ReviewPillStatus; readonly label?: string };
+
+/**
+ * The pill beside the sequence title, read from the review card's real state.
+ * In L1 approving the card never changes `sequences.status`, so the pill never
+ * reads the sequence status. No card, no pill.
+ */
+export function reviewPill(card: { status: string; expiresAt: number } | null, now: number): ReviewPill | null {
+  if (card === null) return null;
+  switch (card.status) {
+    case "pending":
+      return now < card.expiresAt ? { status: "ready" } : { status: "draft", label: "Expired" };
+    case "approved":
+      return { status: "approved" };
+    case "changes_requested":
+      return { status: "changes_requested" };
+    case "expired":
+      return { status: "draft", label: "Expired" };
+    case "cancelled":
+      return { status: "draft", label: "Not going ahead" };
+    default:
+      return null;
+  }
+}
+
+export const EMAIL_TRIGGER_COPY = "Trigger: someone joins your waitlist";
+export const EMAIL_DRAFTS_ONLY_TITLE = "Drafts only for now.";
+export const EMAIL_DRAFTS_ONLY_COPY =
+  "Nothing sends from here yet. Read the four emails, then approve them or ask for changes. Sending switches on in a later release.";
+export const EMAIL_HEADER = { lead: "The four emails", tail: "that sell your waitlist." } as const;
+
 /** The body's paragraphs, split on blank lines; single line breaks stay inside a paragraph. */
 export function emailBodyParagraphs(body: string): string[] {
   return body
@@ -169,19 +211,22 @@ export function previewIsBusy(state: PreviewState): boolean {
 /**
  * What the server answered to "Ask for changes", in words. Without a
  * change-round answer the decision's own status speaks (an expired card, or a
- * re-ask that changed nothing because the team is already on it).
+ * re-ask that changed nothing because the team is already on it). `approvalKind`
+ * (`send`, `post`) picks the beta wording; when absent (Brand kit, blueprint) the
+ * line stays neutral.
  */
 export function changesOutcomeCopy(
   answer: ChangeRoundAnswer | undefined,
   status: string,
   changed: boolean,
   noun: string = "emails",
+  approvalKind?: string,
 ): string {
   if (answer === undefined) {
     if (!changed && status === "changes_requested") {
       return "Your team is still working on your earlier changes. This note wasn't sent; try again when they're done.";
     }
-    return approvalDecisionCopy(status);
+    return approvalDecisionCopy(status, { approvalKind });
   }
   switch (answer.outcome) {
     case "free":

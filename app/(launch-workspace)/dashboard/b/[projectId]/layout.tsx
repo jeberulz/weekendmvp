@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { AuthPlatformProvider } from "@/app/AuthPlatformProvider";
-import { WorkspaceFrame } from "@/components/workspace/shell";
+import { WrenChatColumn } from "@/components/workspace/chat/WrenChatColumn";
+import { SidebarUserRow, TeamNeedsYouBadge, WorkspaceFrame } from "@/components/workspace/shell";
 import { newsreaderEditorial } from "@/lib/fonts";
-import { requireWorkspaceAccess } from "@/lib/workspace/access";
-import { listBusinesses } from "@/lib/workspace/businesses";
+import { listMyBusinesses, requireWorkspaceAccess } from "@/lib/workspace/access";
 import { getCreditsSummary } from "@/lib/workspace/credits";
 
 /**
@@ -18,7 +18,9 @@ import { getCreditsSummary } from "@/lib/workspace/credits";
  * on for the caller's cohort and the caller owns the business. Layouts render
  * in parallel with pages, so every page calls the same (request-cached) gate.
  * S2 mounts the shell (nav, switcher, credit meter) after the gate; the page
- * main landmark stays here so there is exactly one.
+ * main landmark stays here so there is exactly one. The Wren chat is the
+ * right-hand column of that shell (`WrenChatColumn`), mounted once here so it
+ * persists across navigation.
  */
 export const metadata: Metadata = {
   title: { template: "%s | Workspace", default: "Workspace" },
@@ -48,12 +50,21 @@ export default async function LaunchWorkspaceLayout({
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
   const credits = await getCreditsSummary(project._id);
-  const businesses = listBusinesses({ id: project._id, name: project.name });
+  const businesses = await listMyBusinesses(project);
+  const partnerName = project.partnerName ?? "Wren";
 
   return (
     <AuthPlatformProvider fallbackClassName="bg-home-paper">
       <div className={`${newsreaderEditorial.variable} theme-desk min-h-dvh bg-home-paper text-home-ink`}>
-        <WorkspaceFrame projectId={project._id} businesses={businesses} credits={credits}>
+        <WorkspaceFrame
+          projectId={project._id}
+          businesses={businesses}
+          credits={credits}
+          switcherSubline={project.subline}
+          teamBadge={<TeamNeedsYouBadge projectId={project._id} />}
+          userRow={project.viewerName === undefined ? undefined : <SidebarUserRow name={project.viewerName} />}
+          chat={<WrenChatColumn projectId={project._id} name={partnerName} />}
+        >
           <main
             id="workspace-main"
             tabIndex={-1}

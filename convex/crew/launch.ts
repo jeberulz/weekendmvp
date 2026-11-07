@@ -9,7 +9,7 @@ import { requireBusinessAccess } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
 import { assertStepTransition } from "../platform/transitions";
 import { JOB_SUBJECT_MAIN, jobKey } from "../../lib/workspace/contracts/jobs";
-import type { RosterPlan } from "../../lib/workspace/contracts/roster";
+import { ROLE_KEYS, type RoleKey, type RosterPlan } from "../../lib/workspace/contracts/roster";
 import { pendingLaunchView } from "../../lib/workspace/crew/launch";
 import { isCrewStepJobType } from "../../lib/workspace/crew/tasks";
 import {
@@ -970,6 +970,10 @@ const launchProgressValidator = v.object({
   steps: v.array(v.object({
     key: stepKeyValidator,
     title: v.string(),
+    /** The role that owns the step (`LAUNCH_STEPS[].employee`). */
+    employee: v.union(...ROLE_KEYS.map((role) => v.literal(role))),
+    /** True when the step has no generator yet, so it reads "Coming soon", never "Queued". */
+    notBuilt: v.boolean(),
     state: stepStateValidator,
     reason: v.optional(v.string()),
     /** Set on a failed step: whether a Try again can help it now. */
@@ -980,6 +984,8 @@ const launchProgressValidator = v.object({
 export type LaunchProgressStep = {
   key: LaunchStepKey;
   title: string;
+  employee: RoleKey;
+  notBuilt: boolean;
   state: EvaluatedStep["state"];
   reason?: string;
   retryable?: boolean;
@@ -1022,9 +1028,12 @@ export const launchProgress = query({
       const reason = failure?.reason ?? entry.reason ?? (entry.state === "queued" ? WAITING_FOR_SLOT_REASON : undefined);
       // An unplanned team reads `waiting` from the facts; it has failed, as `launchStatus` says.
       const state = entry.key === openKey && open?.failed === true && !open.paused ? "failed" : entry.state;
+      const definition = launchStep(entry.key);
       return {
         key: entry.key,
-        title: launchStep(entry.key).title,
+        title: definition.title,
+        employee: definition.employee,
+        notBuilt: definition.status !== "built",
         state,
         ...(reason === undefined ? {} : { reason }),
         ...(failure === undefined ? {} : { retryable: failure.retryable }),

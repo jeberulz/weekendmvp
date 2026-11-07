@@ -36,6 +36,17 @@ export const SOCIAL_DAY_NAMES: Record<SocialDay, string> = {
   thu: "Thursday",
 };
 
+/** Short day names for tiles and rows. Day names only: the data has no launch date. */
+export const SOCIAL_DAY_SHORT: Record<SocialDay, string> = {
+  fri: "Fri",
+  sat: "Sat",
+  sun: "Sun",
+  mon: "Mon",
+  tue: "Tue",
+  wed: "Wed",
+  thu: "Thu",
+};
+
 export const SOCIAL_KIND_LABELS: Record<SocialKindKey, string> = {
   launch: "Launch",
   value: "Value",
@@ -50,6 +61,24 @@ export const SOCIAL_FORMAT_LABELS: Record<SocialPostFormat, string> = {
   carousel: "Carousel",
   reel_script: "Reel script",
   poll: "Poll",
+};
+
+export const SOCIAL_FORMAT_SHORT: Record<SocialPostFormat, string> = {
+  image: "Image",
+  carousel: "Carousel",
+  reel_script: "Reel script",
+  poll: "Poll",
+};
+
+export const SOCIAL_PLATFORM_MARKS: Record<SocialPlatform, string> = {
+  instagram: "IG",
+  facebook: "FB",
+  tiktok: "TT",
+  x: "X",
+  youtube: "YT",
+  linkedin: "IN",
+  threads: "TH",
+  pinterest: "PI",
 };
 
 export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
@@ -67,6 +96,12 @@ export const SOCIAL_NONE_COPY = "Your social posts will appear here once your te
 export const SOCIAL_UNAVAILABLE_COPY = "Your social posts can't be shown right now. Check back in a little while.";
 export const SOCIAL_NO_POSTING_COPY =
   "Nothing posts for you. Pick the platform, copy a post and post it yourself.";
+export const SOCIAL_HEADER = { lead: "Seven launch posts,", tail: "ready when you are." } as const;
+export const SOCIAL_WEEK_HEADING = "Launch week · Friday to Thursday";
+export const SOCIAL_WEEK_NOTE = "Written by your team. Friday is launch day.";
+export const SOCIAL_YOU_POST_TITLE = "You post it yourself.";
+export const SOCIAL_YOU_POST_COPY =
+  "Nothing posts or schedules from here. Pick a post, copy its caption and hashtags, then paste them into the app.";
 export const SOCIAL_APPROVED_NOTE = "Nothing is posted for you.";
 export const SOCIAL_COPY_FAILED = "Couldn't copy. Select the text and copy it yourself.";
 
@@ -133,6 +168,11 @@ export function captionCount(post: CaptionParts, platform: SocialPlatform): Capt
     ? `The full caption is too long for ${SOCIAL_PLATFORM_LABELS[platform]}, so the short caption is used.`
     : null;
   return { count, limit, over: choice.over, usesShort: choice.usesShort, summary, note };
+}
+
+/** "2,200 characters": the caption limit shown on a platform card. */
+export function platformLimitCopy(platform: SocialPlatform): string {
+  return `${numberText(PLATFORM_CAPTION_LIMITS[platform])} characters`;
 }
 
 /** The live-region line after a Copy. */
