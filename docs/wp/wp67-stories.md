@@ -43,7 +43,7 @@ and every gate G0–G7 run and recorded in `docs/wp/wp67-progress.md`.
   - Verification:
     - Gate entries in `docs/wp/wp67-progress.md`
 
-- [ ] `WP67-S6` - One Weekend MVP logo across marketing and the workspace (issue #218)
+- [x] `WP67-S6` - One Weekend MVP logo across marketing and the workspace (issue #218)
   - Branch: `claude/wp67-brand-logo`
   - Scope: `components/primitives/Logo.tsx`, `app/globals.css` (logo utilities),
     `public/image/weekendmvp-mark.svg`, `components/workspace/shell/WorkspaceSidebar.tsx`,
