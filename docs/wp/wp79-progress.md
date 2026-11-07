@@ -2,6 +2,12 @@
 
 Append-only progress log. Claims must cite checks or code evidence.
 
+## WP79-S2a — C-EMAIL activation handoff
+
+- Work Package lane, `codex/wp79-sequence-activation-contract` from main `9557593e`. The merged WP76 draft and WP77 approval checks let us register the internal C-EMAIL contract as a refusal-only fixture. Planned scope: `convex/growth/email/activation.ts`, its tests, generated API and WP79 docs. No L1 behavior changes.
+- Real activation needs the approval-version handoff: C-APPROVAL currently checks the sequence's `updatedAt` against the approval's creation time, so the activation status write would make that approval stale for subsequent sends. Although `approvals.subjectVersion` exists, the checker does not use it. The Claude lane owns that checker and the future sequence/step `send` approval creation. WP79 will not bypass the stale-content check or treat a draft `artifact_review` as consent to send.
+- Real activation and sending stay separate. The send transaction must still verify the linked step's own approval, consent, deletion fences, the tenant address and the send cap. No live credentials, deployment, flags or providers are needed for the fixture.
+
 ## 2026-11-06 — Setup
 
 - Branch/worktree: `codex/wp79-tenant-email` / `.worktrees/wp79-tenant-email`, from `origin/main` `d8055b98` after G1 passed.
