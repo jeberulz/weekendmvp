@@ -376,6 +376,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         answers={parsed.answers}
         defaults={parsed.defaults}
         suggestedNames={view.suggestedNames}
+        suggestedPartnerNames={view.suggestedPartnerNames}
         blueprint={view.blueprint}
         pending={pending}
         error={error}

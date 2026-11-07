@@ -7,7 +7,12 @@ import { api } from "../_generated/api";
 import { RESUME_WINDOW } from "./wizard";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
-import { wizardAnswersProgressSchema, wizardAnswersSchema } from "../../lib/workspace/contracts/wizard";
+import {
+  leadNameSuggestions,
+  partnerNameAnswer,
+  wizardAnswersProgressSchema,
+  wizardAnswersSchema,
+} from "../../lib/workspace/contracts/wizard";
 
 const modules = import.meta.glob("/convex/**/*.ts");
 
@@ -325,8 +330,14 @@ describe("WP74-S1 transitions", () => {
       goal: { kind: "waitlist", timeframe: "weekend" },
       name: { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
       partnerPersonality: "strategist",
-      partnerName: { kind: "preset", name: "Wren" },
     });
+    // Roster per idea S2: the lead names are picked per session, the first is the default.
+    const leads = leadNameSuggestions(sessionId);
+    expect(view.suggestedPartnerNames).toEqual(leads);
+    expect(leads).toHaveLength(3);
+    expect(view.defaults.partnerName).toEqual(partnerNameAnswer(leads[0] ?? ""));
+    const again = await owner.query(api.workspace.wizard.getSession, { sessionId });
+    expect(again.suggestedPartnerNames).toEqual(leads);
     const generic = await owner.mutation(api.workspace.wizard.startOrResume, {
       idea: { source: "library", ideaSlug: "meal-planner" },
     });
@@ -445,10 +456,12 @@ describe("WP74-S1 completion", () => {
     const { t, owner } = await seed();
     const sessionId = await owner.mutation(api.workspace.wizard.startOrResume, { idea: HYDRO });
     await walkToLastStep(owner, sessionId);
+    const suggested = (await owner.query(api.workspace.wizard.getSession, { sessionId })).defaults.partnerName;
+    if (suggested === undefined) throw new Error("no suggested lead name");
     await expect(owner.mutation(api.workspace.wizard.saveStep, {
       sessionId,
       step: "partner_name",
-      answer: { kind: "preset", name: "Wren" },
+      answer: suggested,
     })).resolves.toEqual({ applied: true, step: "partner_name", completed: true, action: "kept" });
     const doc = await row(t, sessionId);
     expect(doc.completedAt).toBeTypeOf("number");

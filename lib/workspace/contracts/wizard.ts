@@ -105,7 +105,80 @@ export const partnerPersonalitySchema = z.enum(PARTNER_PERSONALITIES);
 
 export const PARTNER_NAME_PRESETS = ["Wren", "Juno", "Ridge"] as const;
 export type PartnerNamePreset = (typeof PARTNER_NAME_PRESETS)[number];
+/** The last-resort name when none is stored. Never offered as a default choice (roster per idea S2). */
 export const DEFAULT_PARTNER_NAME: PartnerNamePreset = "Wren";
+
+/**
+ * Roster per idea S2: the names the partner-name step may suggest, each with a
+ * one-line hint. Short, easy to read, and never a specialist's name (Iris,
+ * Leo, Sana, Marco, Elle, Theo, Kai, Ada, Cora, Nia, Max, Oli; a test checks).
+ * The three stored presets are in the pool, so an old answer still reads.
+ */
+export const LEAD_NAME_POOL = [
+  { name: "Wren", hint: "Small bird, big range." },
+  { name: "Juno", hint: "Steady and direct." },
+  { name: "Ridge", hint: "Grounded and calm." },
+  { name: "Sage", hint: "Thinks before speaking." },
+  { name: "Rowan", hint: "Quietly resourceful." },
+  { name: "Quinn", hint: "Sharp and to the point." },
+  { name: "Arlo", hint: "Easygoing, keeps things moving." },
+  { name: "Bea", hint: "Warm and organised." },
+  { name: "Remy", hint: "Curious and quick." },
+  { name: "Tess", hint: "Plain-spoken and practical." },
+  { name: "Hugo", hint: "Sees the big picture." },
+  { name: "Ivy", hint: "Never drops a thread." },
+  { name: "Milo", hint: "Friendly and even-tempered." },
+  { name: "Nell", hint: "Careful with the details." },
+  { name: "Otto", hint: "Methodical and patient." },
+  { name: "Pia", hint: "Bright and brisk." },
+  { name: "Rhea", hint: "Calm under pressure." },
+  { name: "Silas", hint: "Measured and thorough." },
+  { name: "Tova", hint: "Clear and decisive." },
+  { name: "Vera", hint: "Honest, even when it stings." },
+  { name: "Ezra", hint: "Asks the useful question." },
+  { name: "Fern", hint: "Patient and steady." },
+  { name: "Lark", hint: "Light touch, early start." },
+  { name: "Jude", hint: "Loyal and level-headed." },
+] as const satisfies readonly { readonly name: string; readonly hint: string }[];
+
+/** How many names the partner-name step offers. */
+export const LEAD_NAME_SUGGESTIONS = 3;
+
+/** FNV-1a, 32 bits: a small, stable hash with no clock or randomness. */
+function fnv1a(text: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+/**
+ * Roster per idea S2: three distinct names from `LEAD_NAME_POOL`, picked by a
+ * hash of `seedKey` (the wizard session id), so the same session always gets
+ * the same names and two businesses rarely share a lead. Pure.
+ */
+export function leadNameSuggestions(seedKey: string, count: number = LEAD_NAME_SUGGESTIONS): string[] {
+  const pool = LEAD_NAME_POOL.map((entry) => entry.name);
+  const picked: string[] = [];
+  for (let round = 0; picked.length < Math.min(count, pool.length); round += 1) {
+    const name = pool[fnv1a(`${seedKey}:${round.toString()}`) % pool.length] ?? pool[0];
+    if (name !== undefined && !picked.includes(name)) picked.push(name);
+  }
+  return picked;
+}
+
+/** The pool's hint for a suggested name, or undefined for a typed one. */
+export function leadNameHint(name: string): string | undefined {
+  return LEAD_NAME_POOL.find((entry) => entry.name === name)?.hint;
+}
+
+/** The stored answer for a chosen lead name: a preset when it is one, else custom. */
+export function partnerNameAnswer(name: string): WizardPartnerName {
+  const preset = PARTNER_NAME_PRESETS.find((value) => value === name);
+  return preset === undefined ? { kind: "custom", name } : { kind: "preset", name: preset };
+}
 
 export const FOUNDER_SIGNALS = ["kept", "edited"] as const;
 export type FounderSignal = (typeof FOUNDER_SIGNALS)[number];
@@ -251,6 +324,7 @@ export const wizardPartnerNameSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("preset"), name: z.enum(PARTNER_NAME_PRESETS) }).strict(),
   z.object({ kind: z.literal("custom"), name: wizardLeadNameSchema }).strict(),
 ]);
+export type WizardPartnerName = z.infer<typeof wizardPartnerNameSchema>;
 
 export const founderSignalSchema = z
   .object({
