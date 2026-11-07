@@ -1,8 +1,9 @@
 # Plan: idea-driven crew hiring and varied lead names
 
-Status: **plan approved in shape; John answered Q1–Q6 on 2026-11-07 (see "Decisions"). Waiting for the
-go-ahead to build.** Nothing here is built. All of it is planned for L1 (Monday 2026-11-09).
-Date: 2026-11-07. Lane: Work Package (number to be assigned). Branch: `claude/roster-per-idea-plan`.
+Status: **S1–S5 built on 2026-11-07 (WP90; see `docs/wp/wp90-stories.md` and `wp90-progress.md`).** S2b
+(lead avatars, image spend) and S6 (live smoke test, live spend) wait for John's OK. Target L1 (Monday
+2026-11-09).
+Date: 2026-11-07. Lane: Work Package WP90. Branch: `claude/roster-per-idea-plan`.
 
 ## Decisions (John, 2026-11-07)
 
