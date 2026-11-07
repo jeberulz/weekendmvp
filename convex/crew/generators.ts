@@ -241,6 +241,8 @@ export const runCrewGeneratorStepArgs = {
   timeoutMs: v.optional(v.number()),
   resume: v.optional(v.boolean()),
   retryMode: v.optional(v.union(v.literal("schedule"), v.literal("return"))),
+  /** L1 launch sweep: the DAG's enqueue marker this execution runs under (`runCrewStepArgs.markerId`). */
+  markerId: v.optional(v.id("task_steps")),
 };
 
 type RunCrewGeneratorStepArgs = ObjectType<typeof runCrewGeneratorStepArgs>;

@@ -1,5 +1,5 @@
 import { vOnCompleteArgs } from "@convex-dev/workpool";
-import { ConvexError, v } from "convex/values";
+import { ConvexError, v, type Infer } from "convex/values";
 
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
@@ -14,11 +14,13 @@ import { pendingLaunchView } from "../../lib/workspace/crew/launch";
 import { isCrewStepJobType } from "../../lib/workspace/crew/tasks";
 import {
   RUN_LEASE_MS,
+  RUN_SCAN_MAX,
   abandonCrewTask,
   approvedBlueprint,
   approvedBrandKit,
   ensureLaunchStepTasks,
   insertCrewTask,
+  isSupersededLaunchWork,
   launchDraftBlueprint,
   launchDraftBrandKit,
   resumeParkedTask,
@@ -79,13 +81,32 @@ import { crewWorkpool } from "./workpool";
  * slot the same way. `startLaunch` (called on every Meet your co-founder
  * mount) advances too, so a launch caught by a switch or a deploy picks up.
  *
+ * The launch sweep (L1, `recoverStalledLaunches`, on a cron). Two things can
+ * still strand a step: a throw inside `stepDone` (it rolls back, so the
+ * running marker stays with no work behind it and holds a slot for good), and
+ * a deploy or crash that loses the pool's work. No `workId` is stored on the
+ * marker (`task_steps` is Codex's schema), so "the work is gone" is inferred:
+ * a running marker on a live `queued` or `running` task with no `running`
+ * run, and nothing on the task, marker or runs for `STRANDED_MARKER_MS`. The
+ * sweep settles that marker `failed`. A queued step is then enqueued again by
+ * `advanceOwner`, under the cap; a running one (a runner retry whose
+ * `stepDone` threw, or whose re-invoke was lost) already holds its slot and is
+ * re-enqueued at once, as `stepDone` would have. Either way under a new
+ * marker. It also re-advances an owner left with a ready step and a free
+ * slot. The enqueue marker is a fence: its id travels
+ * with the work (`runCrewGeneratorStep`'s `markerId`) and with `stepDone`'s
+ * context, so work that was only late (a pool backlog) skips as `superseded`
+ * at `startCrewRun` and its `stepDone` does nothing. A task stranded more
+ * than `LAUNCH_SWEEP_REQUEUES_MAX` times fails as interrupted.
+ *
  * Tokens (C-LIMITS, one per founder action): the launch, a retry and a resume
  * spend one each, in the founder-facing mutation; the steps the DAG runs on
  * its own spend none.
  *
  * Idempotency is the revision-0 job key: a step's task is inserted only while
  * nothing holds its key (`ensureLaunchStepTasks`), and a step is enqueued
- * only while its task is queued without a running marker.
+ * only while its task is queued without a running marker (`stepDone`
+ * re-enqueues under the marker it already holds).
  */
 
 /** Crew tasks in flight per owner, across every business (`02` §6.2). */
@@ -112,20 +133,34 @@ const stepContextValidator = v.object({
   step: stepKeyValidator,
   /** Consecutive action failures so far (`stepDoneDecision`). */
   actionFailures: v.number(),
+  /**
+   * L1 launch sweep: the marker the work was enqueued under. Optional, so work
+   * enqueued before the sweep shipped still completes. A `stepDone` whose
+   * marker is no longer `running` was superseded and does nothing.
+   */
+  markerId: v.optional(v.id("task_steps")),
 });
 
 // ---------------------------------------------------------------------------
 // Reading a launch
 // ---------------------------------------------------------------------------
 
-/** The newest marker of a task, if any. */
-async function newestMarker(ctx: ReadCtx, task: Doc<"tasks">): Promise<Doc<"task_steps"> | null> {
+/** A task's own markers (at most `MARKERS_PER_TASK_MAX` read). */
+async function taskMarkers(ctx: ReadCtx, task: Doc<"tasks">): Promise<Doc<"task_steps">[]> {
   const rows = await ctx.db.query("task_steps")
     .withIndex("by_taskId_and_position", (q) => q.eq("taskId", task._id))
     .take(MARKERS_PER_TASK_MAX);
-  const own = rows.filter((row) => row.ownerId === task.ownerId && row.projectId === task.projectId);
-  return own.reduce<Doc<"task_steps"> | null>((latest, row) =>
+  return rows.filter((row) => row.ownerId === task.ownerId && row.projectId === task.projectId);
+}
+
+function newestOf(markers: readonly Doc<"task_steps">[]): Doc<"task_steps"> | null {
+  return markers.reduce<Doc<"task_steps"> | null>((latest, row) =>
     latest === null || row._creationTime > latest._creationTime ? row : latest, null);
+}
+
+/** The newest marker of a task, if any. */
+async function newestMarker(ctx: ReadCtx, task: Doc<"tasks">): Promise<Doc<"task_steps"> | null> {
+  return newestOf(await taskMarkers(ctx, task));
 }
 
 /** The newest live task holding a step's revision-0 key. */
@@ -224,7 +259,11 @@ async function settleMarker(ctx: MutationCtx, task: Doc<"tasks">, now: number): 
 
 type EnqueueOptions = { readonly resume?: boolean; readonly runAfter?: number; readonly actionFailures: number };
 
-/** Hands a step to the pool: its marker (once), then `runCrewGeneratorStep` with `stepDone` as its `onComplete`. */
+/**
+ * Hands a step to the pool: its marker (once), then `runCrewGeneratorStep` with `stepDone` as its `onComplete`.
+ * A reused marker's `updatedAt` moves to now, so the launch sweep reads every enqueue as activity. The marker id
+ * travels with the work and its `onComplete`, so work the sweep superseded never runs or acts.
+ */
 async function enqueueLaunchStep(
   ctx: MutationCtx,
   task: Doc<"tasks">,
@@ -237,8 +276,9 @@ async function enqueueLaunchStep(
     throw new ConvexError({ code: "LAUNCH_STEP_MISMATCH" });
   }
   const marker = await newestMarker(ctx, task);
+  let markerId: Id<"task_steps">;
   if (marker === null || marker.status !== "running") {
-    await ctx.db.insert("task_steps", {
+    markerId = await ctx.db.insert("task_steps", {
       ownerId: task.ownerId,
       projectId: task.projectId,
       taskId: task._id,
@@ -248,15 +288,18 @@ async function enqueueLaunchStep(
       createdAt: now,
       updatedAt: now,
     });
+  } else {
+    markerId = marker._id;
+    await ctx.db.patch("task_steps", marker._id, { updatedAt: now });
   }
   await crewWorkpool.enqueueAction(
     ctx,
     internal.crew.generators.runCrewGeneratorStep,
-    { taskId: task._id, retryMode: "return", ...(options.resume === true ? { resume: true } : {}) },
+    { taskId: task._id, retryMode: "return", markerId, ...(options.resume === true ? { resume: true } : {}) },
     {
       retry: false,
       onComplete: internal.crew.launch.stepDone,
-      context: { taskId: task._id, step, actionFailures: options.actionFailures },
+      context: { taskId: task._id, step, actionFailures: options.actionFailures, markerId },
       ...(options.runAfter === undefined || options.runAfter <= 0 ? {} : { runAfter: options.runAfter }),
     },
   );
@@ -327,6 +370,11 @@ export const stepDone = internalMutation({
     const now = Date.now();
     const task = await ctx.db.get("tasks", args.context.taskId);
     if (task === null) return null;
+    // L1 launch sweep: the sweep settled this work's marker and re-enqueued the step under a new one, so this
+    // delivery is for work it judged gone. The new marker's work owns the step; this one frees no slot. A
+    // callback enqueued before the sweep shipped has no `markerId`; `isSupersededLaunchWork` reads the task's
+    // markers for it instead.
+    if (await isSupersededLaunchWork(ctx, task, args.context.markerId)) return null;
     const result: StepRunResult = args.result.kind === "success"
       ? { kind: "success", returnValue: args.result.returnValue }
       : { kind: args.result.kind };
@@ -352,6 +400,8 @@ export const stepDone = internalMutation({
         break;
       case "park":
         break;
+      case "superseded":
+        return null;
     }
     await advanceOwner(ctx, task.ownerId, now);
     return null;
@@ -639,6 +689,241 @@ export const advanceAfterRevision = internalMutation({
   handler: async (ctx, args): Promise<null> => {
     await advanceOwner(ctx, args.ownerId, Date.now());
     return null;
+  },
+});
+
+// ---------------------------------------------------------------------------
+// The launch sweep (L1, WP75 Needs from Codex 18)
+// ---------------------------------------------------------------------------
+
+/** Businesses read per `recoverStalledLaunches` page. */
+export const LAUNCH_SWEEP_PAGE_MAX = 20;
+
+/**
+ * How long a running marker on a queued task must sit with no activity (task,
+ * marker or run) before the sweep treats its work as gone. Three leases: a
+ * re-invoke waits up to one lease (`stepDone`), the action may live up to ten
+ * minutes, and the rest is room for a backlog on the pool's global cap. Work
+ * that is only late is still harmless: it runs under the marker it was
+ * enqueued with, and a superseded marker skips it (`startCrewRun`, `stepDone`).
+ */
+export const STRANDED_MARKER_MS = 3 * RUN_LEASE_MS;
+
+/**
+ * Times the sweep re-enqueues one task. The next strand fails the task as
+ * interrupted (`abandonCrewTask`, the calm note, a debit refunded by the usual
+ * rule), so a step whose work keeps vanishing never loops for ever.
+ */
+export const LAUNCH_SWEEP_REQUEUES_MAX = 2;
+
+/**
+ * Whether a business has launch work the sweep might act on: a running marker,
+ * or a queued crew task (a step waiting for a slot or a parent). Parked-only,
+ * running-only and finished launches are not; a running task is in flight
+ * (`recoverStaleCrewRuns` settles it if its action died).
+ */
+async function launchInProgress(ctx: ReadCtx, project: Doc<"projects">): Promise<boolean> {
+  const markers = await ctx.db.query("task_steps")
+    .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", "running"))
+    .take(IN_FLIGHT_SCAN_MAX);
+  if (markers.some((row) => row.ownerId === project.ownerId)) return true;
+  const queued = await ctx.db.query("tasks")
+    .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", "queued"))
+    .take(IN_FLIGHT_SCAN_MAX);
+  return queued.some((row) => row.ownerId === project.ownerId && row.archivedAt === undefined && isCrewStepJobType(row.type));
+}
+
+type Strand = { readonly marker: Doc<"task_steps">; readonly requeues: number };
+
+/**
+ * The task's running marker when its work is gone, else null. All must hold:
+ * the task is live and `queued` or `running` (never parked or terminal); its
+ * newest marker is `running`; it has no `running` run (and no more runs than
+ * `RUN_SCAN_MAX`, read in full); and nothing on the task, the marker or a run
+ * moved for `STRANDED_MARKER_MS`.
+ *
+ * A `running` task with no open run is a step between executions: a runner
+ * retry (return mode) whose `stepDone` threw or whose delayed re-invoke was
+ * lost, or a resumed step whose work was lost. Its next execution is due
+ * within the runner's backoff (at most 30 s, `INDETERMINATE_BACKOFF_MS`) or
+ * one lease (`stepDone`'s re-invoke), so the threshold is far past it.
+ * `requeues`: markers the sweep settled on this live task before (a live
+ * task's marker is otherwise settled only with it).
+ */
+async function strandedMarker(ctx: ReadCtx, task: Doc<"tasks">, now: number): Promise<Strand | null> {
+  if (task.archivedAt !== undefined || (task.status !== "queued" && task.status !== "running")) return null;
+  const markers = await taskMarkers(ctx, task);
+  const marker = newestOf(markers);
+  if (marker === null || marker.status !== "running") return null;
+  const runs = await ctx.db.query("workflow_runs")
+    .withIndex("by_taskId_and_createdAt", (q) => q.eq("taskId", task._id))
+    .order("desc")
+    .take(RUN_SCAN_MAX + 1);
+  if (runs.length > RUN_SCAN_MAX || runs.some((run) => run.status === "running")) return null;
+  let last = Math.max(task.updatedAt, marker.createdAt, marker.updatedAt);
+  for (const run of runs) {
+    last = Math.max(last, run.createdAt, run.updatedAt, run.startedAt ?? 0, run.completedAt ?? 0);
+  }
+  if (now - last < STRANDED_MARKER_MS) return null;
+  return { marker, requeues: markers.filter((row) => row.status === "failed").length };
+}
+
+const ownerSweepResultValidator = v.object({
+  /** The owner's `workspace` or `ai` feature is off (switch, kill switch or cohort): nothing was touched. */
+  gated: v.boolean(),
+  /** Stranded markers on queued tasks, settled so `advanceOwner` enqueues the step again. */
+  requeued: v.number(),
+  /** Stranded running tasks (between executions) re-invoked under a new marker; they keep the slot they hold. */
+  reinvoked: v.number(),
+  /** Tasks failed as interrupted after `LAUNCH_SWEEP_REQUEUES_MAX` re-enqueues. */
+  abandoned: v.number(),
+  /** Steps `advanceOwner` enqueued (requeued ones and any other ready step), under the cap. */
+  enqueued: v.number(),
+});
+
+type OwnerSweepResult = Infer<typeof ownerSweepResultValidator>;
+
+/**
+ * One owner's share of the sweep, in its own subtransaction (the page catches
+ * a throw, so one owner never stops the rest). Gates first: with the owner's
+ * `workspace` or `ai` feature off (or the owner out of cohort) it writes
+ * nothing. Then every stranded marker of the owner's live launches is settled
+ * `failed` (or, past `LAUNCH_SWEEP_REQUEUES_MAX`, its task fails as
+ * interrupted). A queued task's step is left to `advanceOwner`, which fills
+ * free slots: the only enqueuer of fresh work, under `OWNER_CREW_CAP`, with
+ * the revision-0 job-key rules. A running task between executions already
+ * holds its slot, so it is re-enqueued at once under a new marker, as
+ * `stepDone` would have. No token, no charge.
+ * Every condition is re-read here, so a sweep that races another, a
+ * `stepDone` or a `recoverStaleCrewRuns` page acts on committed state only.
+ */
+export const recoverStalledOwner = internalMutation({
+  args: { ownerId: v.id("users") },
+  returns: ownerSweepResultValidator,
+  handler: async (ctx, args): Promise<OwnerSweepResult> => {
+    const now = Date.now();
+    try {
+      await assertFeatureEnabledForOwner(ctx, "workspace", args.ownerId);
+      await assertFeatureEnabledForOwner(ctx, "ai", args.ownerId);
+    } catch {
+      return { gated: true, requeued: 0, reinvoked: 0, abandoned: 0, enqueued: 0 };
+    }
+    let requeued = 0;
+    let reinvoked = 0;
+    let abandoned = 0;
+    for (const project of await ownerProjects(ctx, args.ownerId)) {
+      if ((await launchRosterTask(ctx, args.ownerId, project._id)) === null) continue;
+      for (const step of LAUNCH_STEPS) {
+        if (!isPoolStep(step)) continue;
+        const task = await stepTask(ctx, project, step.key);
+        if (task === null) continue;
+        const strand = await strandedMarker(ctx, task, now);
+        if (strand === null) continue;
+        if (strand.requeues >= LAUNCH_SWEEP_REQUEUES_MAX) {
+          if (await abandonCrewTask(ctx, task._id, now)) {
+            const failed = await ctx.db.get("tasks", task._id);
+            if (failed !== null) await settleMarker(ctx, failed, now);
+            abandoned += 1;
+          }
+          continue;
+        }
+        await ctx.db.patch("task_steps", strand.marker._id, { status: assertStepTransition("running", "failed"), updatedAt: now });
+        if (task.status === "queued") {
+          requeued += 1;
+          continue;
+        }
+        // A running task already counts toward the cap, so its re-invoke adds no slot: the same re-enqueue
+        // `stepDone` makes, under a NEW marker, so the lost re-invoke (or a late `stepDone`) is fenced out.
+        // `startCrewRun` then applies the retry budget (`MAX_RETRY_BUDGET_RUNS`, `mayRetryAfterAbandoned`) and
+        // fails the task closed, before any gateway call, when it is spent.
+        await enqueueLaunchStep(ctx, task, step.key, { actionFailures: 0 }, now);
+        reinvoked += 1;
+      }
+    }
+    const enqueued = await advanceOwner(ctx, args.ownerId, now);
+    return { gated: false, requeued, reinvoked, abandoned, enqueued };
+  },
+});
+
+const sweepPageResultValidator = v.object({
+  /** Businesses read on this page. */
+  businesses: v.number(),
+  /** Owners swept (one subtransaction each). */
+  owners: v.number(),
+  /** Owners skipped because their feature or cohort gate is off. */
+  gatedOwners: v.number(),
+  /** Owners whose subtransaction threw (rolled back; the next sweep tries again). */
+  failedOwners: v.number(),
+  requeued: v.number(),
+  reinvoked: v.number(),
+  abandoned: v.number(),
+  enqueued: v.number(),
+  isDone: v.boolean(),
+});
+
+type SweepPageResult = Infer<typeof sweepPageResultValidator>;
+
+/**
+ * The launch sweep (L1; WP75 Needs from Codex 18). No args for the cron.
+ *
+ * Reads one page of `projects` (`LAUNCH_SWEEP_PAGE_MAX`, by creation time;
+ * there is no index on launch state, see the WP75 progress note), keeps the
+ * live businesses with a workspace, a launch (`launchRosterTask`) and launch
+ * work in progress (`launchInProgress`), and sweeps each distinct owner once
+ * (`recoverStalledOwner`). A page that is not the last schedules the next one
+ * with its cursor, so one call never reads more than a page.
+ *
+ * Safe to overlap with itself, with `stepDone` and with `recoverStaleCrewRuns`:
+ * it acts only on a queued task with no running run (recovery acts only on a
+ * running run and a running task), every enqueue goes through `advanceOwner`,
+ * and late work runs only under its own marker. It never spends a `crewJob`
+ * token, never debits, and refunds only through `abandonCrewTask`'s usual rule
+ * (DAG first drafts carry no debit).
+ */
+export const recoverStalledLaunches = internalMutation({
+  args: {
+    cursor: v.optional(v.union(v.string(), v.null())),
+    limit: v.optional(v.number()),
+  },
+  returns: sweepPageResultValidator,
+  handler: async (ctx, args): Promise<SweepPageResult> => {
+    const limit = Math.max(1, Math.min(Math.floor(args.limit ?? LAUNCH_SWEEP_PAGE_MAX), LAUNCH_SWEEP_PAGE_MAX));
+    const page = await ctx.db.query("projects").paginate({ numItems: limit, cursor: args.cursor ?? null });
+    const owners: Id<"users">[] = [];
+    for (const project of page.page) {
+      if (project.archivedAt !== undefined || project.workspace === undefined || owners.includes(project.ownerId)) continue;
+      if ((await launchRosterTask(ctx, project.ownerId, project._id)) === null) continue;
+      if (await launchInProgress(ctx, project)) owners.push(project.ownerId);
+    }
+    const out: SweepPageResult = {
+      businesses: page.page.length,
+      owners: owners.length,
+      gatedOwners: 0,
+      failedOwners: 0,
+      requeued: 0,
+      reinvoked: 0,
+      abandoned: 0,
+      enqueued: 0,
+      isDone: page.isDone,
+    };
+    for (const ownerId of owners) {
+      let result: OwnerSweepResult;
+      try {
+        result = await ctx.runMutation(internal.crew.launch.recoverStalledOwner, { ownerId });
+      } catch {
+        out.failedOwners += 1;
+        continue;
+      }
+      if (result.gated) out.gatedOwners += 1;
+      out.requeued += result.requeued;
+      out.reinvoked += result.reinvoked;
+      out.abandoned += result.abandoned;
+      out.enqueued += result.enqueued;
+    }
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.crew.launch.recoverStalledLaunches, { cursor: page.continueCursor, limit });
+    }
+    return out;
   },
 });
 

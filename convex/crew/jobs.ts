@@ -169,6 +169,15 @@ export const runCrewStepArgs = {
    * `finishCrewStep` re-checks it like the brief.
    */
   brandKitDocumentId: v.optional(v.id("documents")),
+  /**
+   * L1 launch sweep: the launch DAG's enqueue marker (`task_steps`) this
+   * execution was handed out under. `startCrewRun` skips it as `superseded`
+   * once that marker is no longer `running` (the sweep, `recoverStalledLaunches`
+   * in `./launch.ts`, settled it and re-enqueued the step under a new one), so
+   * work the sweep thought was gone can never run the step a second time.
+   * Unset outside the DAG (S2a's direct runs, WP77 revisions).
+   */
+  markerId: v.optional(v.id("task_steps")),
 };
 
 export type RunCrewStepArgs = ObjectType<typeof runCrewStepArgs>;
@@ -942,6 +951,47 @@ function mayRetryAfterAbandoned(earlierErrorCodes: readonly (string | undefined)
 }
 
 // ---------------------------------------------------------------------------
+// The launch sweep's fence (L1)
+// ---------------------------------------------------------------------------
+
+/** Enqueue markers read per task for the fence (a task holds one, plus at most two the sweep settled). */
+const LAUNCH_MARKERS_READ_MAX = 20;
+
+/**
+ * Whether launch-DAG work (an execution, or its `stepDone`) was superseded by
+ * the launch sweep (`recoverStalledLaunches` in `./launch.ts`), which settles
+ * a stranded marker `failed` and re-enqueues the step under a new one.
+ *
+ * - With `markerId` (work enqueued since the sweep shipped): superseded once
+ *   that marker is no longer `running`.
+ * - Without it (work enqueued before the deploy, or not DAG work): a task
+ *   with no marker is not DAG work (S2a's direct runs, WP77 revisions) and
+ *   is never superseded. A task with markers is superseded unless it holds
+ *   exactly one and it is `running`. Outside the sweep a task only ever
+ *   holds one marker, and it is settled only with the task (terminal or
+ *   archived), so a second marker, or a settled one on a live task, means the
+ *   sweep replaced the marker this work ran under: the newer marker owns the
+ *   step. (A legacy `stepDone` for a terminal task whose one marker settled
+ *   also does nothing; that settle already filled the slot.)
+ */
+export async function isSupersededLaunchWork(
+  ctx: Ctx,
+  task: Doc<"tasks">,
+  markerId: Id<"task_steps"> | undefined,
+): Promise<boolean> {
+  if (markerId !== undefined) {
+    const marker = await ctx.db.get("task_steps", markerId);
+    return marker === null || marker.status !== "running" || marker.taskId !== task._id;
+  }
+  const markers = (await ctx.db.query("task_steps")
+    .withIndex("by_taskId_and_position", (q) => q.eq("taskId", task._id))
+    .take(LAUNCH_MARKERS_READ_MAX))
+    .filter((row) => row.ownerId === task.ownerId && row.projectId === task.projectId);
+  if (markers.length === 0) return false;
+  return markers.length > 1 || markers[0]?.status !== "running";
+}
+
+// ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
 
@@ -953,6 +1003,7 @@ const startSkipReason = v.union(
   v.literal("in_flight"),
   v.literal("exhausted"),
   v.literal("unpaid"),
+  v.literal("superseded"),
 );
 
 const startCrewRunResult = v.union(
@@ -986,7 +1037,12 @@ export type StartCrewRunResult = Infer<typeof startCrewRunResult>;
  * unless `resume` is set.
  */
 export const startCrewRun = internalMutation({
-  args: { taskId: v.id("tasks"), resume: v.optional(v.boolean()), seedId: v.optional(v.id("idea_crew_seeds")) },
+  args: {
+    taskId: v.id("tasks"),
+    resume: v.optional(v.boolean()),
+    seedId: v.optional(v.id("idea_crew_seeds")),
+    markerId: v.optional(v.id("task_steps")),
+  },
   returns: startCrewRunResult,
   handler: async (ctx, args): Promise<StartCrewRunResult> => {
     const found = await ctx.db.get("tasks", args.taskId);
@@ -1000,6 +1056,9 @@ export const startCrewRun = internalMutation({
     const taskJobKey = found.jobKey;
     if (isTerminal(found.status)) return { kind: "skip", reason: "terminal" };
     if (found.status === "blocked" && args.resume !== true) return { kind: "skip", reason: "blocked" };
+    // L1 launch sweep: a DAG execution runs only under the marker it was enqueued with. Once the sweep settled
+    // that marker (it judged the work gone) and re-enqueued the step, this late execution does nothing.
+    if (await isSupersededLaunchWork(ctx, found, args.markerId)) return { kind: "skip", reason: "superseded" };
 
     const now = Date.now();
     const runs = await runsOf(ctx, found._id);
