@@ -102,6 +102,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
         "module": "sha256:47c4bfdac914f6a9132ab2c2e25c234e235245a4f33aa043d6e6fb711eb84b76"
+      },
+      "retired": "Roster per idea S1: replaced by version 4 (the lead uses the founder's chosen name)"
+    },
+    "wren-chat@4": {
+      "hash": "sha256:e3d1ef649149c8a19457177eae0170bd8de20eb2cabd8655e6538bcfcd936ace",
+      "parts": {
+        "system": "sha256:2a2d9e8c0e44c26b27f8663f021fae8d3857e55a270e9615acda091b8e8267b7",
+        "task": "sha256:ca515edbd2d65379e4bf571abd7351dc4adbf5e7e4955980936b75799be81b98",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
+        "module": "sha256:d7f3ba24b97f02ecabfa215eee8dac3e8a0c696204022c50ce0f724908d51e20"
       }
     },
     "wren-plan-turn@1": {
@@ -134,6 +145,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
         "module": "sha256:0243d29e7914bba0e54d8e5044c45cb63faca1a39c2ae9846687b1bf5e012031"
+      },
+      "retired": "Roster per idea S1: replaced by version 4 (the lead uses the founder's chosen name)"
+    },
+    "wren-plan-turn@4": {
+      "hash": "sha256:8081e7c512b2bafb1c10bf83d5457c121fefeb91518a7d95dd6d9ad8ff7cf987",
+      "parts": {
+        "system": "sha256:2a2d9e8c0e44c26b27f8663f021fae8d3857e55a270e9615acda091b8e8267b7",
+        "task": "sha256:21d323894b8ce327f801a77a5d368cf8618bbd2e126689dba40d52d51d389a84",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
+        "module": "sha256:5f576ba81391b54c3cab311dfc1753e6ef9f5f5121d5f22f457fd87740ac9ad7"
       }
     }
   }
