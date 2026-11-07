@@ -116,8 +116,8 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
       <PlanByOwner projectId={projectId} started={progress.started} steps={steps} roster={roster.hired} />
       {launch.state === "ready" ? (
         <>
-          <SkippedRoles businessName={businessName} lead={lead} skipped={roster.skipped} />
-          <WhyThisTeam hired={roster.hired} skipped={roster.skipped} />
+          <SkippedRoles projectId={projectId} businessName={businessName} lead={lead} skipped={roster.skipped} />
+          <WhyThisTeam projectId={projectId} hired={roster.hired} skipped={roster.skipped} />
         </>
       ) : null}
     </div>

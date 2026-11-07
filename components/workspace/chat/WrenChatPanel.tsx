@@ -284,7 +284,7 @@ function LiveWrenChat({ projectId, name }: { projectId: Id<"projects">; name: st
         </p>
       </div>
       <div ref={composerRef}>
-        <WrenComposer onSend={send} sending={sending || replying} name={name} />
+        <WrenComposer onSend={send} sending={sending || replying} name={name} acceptPrefill />
       </div>
     </div>
   );

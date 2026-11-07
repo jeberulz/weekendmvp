@@ -99,7 +99,7 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
       />
       <TeamStrip projectId={projectId} hired={hired} reviews={open} message={teamMessage} />
       <div className="grid gap-6 @2xl:grid-cols-2">
-        <PendingApprovals reviews={open} hired={hired} now={now} />
+        <PendingApprovals projectId={projectId} reviews={open} hired={hired} now={now} />
         {banner.variant === "not_started" ? null : (
           <SetupChecklist rows={checklistRows({ projectId, launch, steps: progress.steps, reviews: open })} />
         )}
@@ -113,7 +113,7 @@ function ReviewsOnly({ projectId }: { projectId: Id<"projects"> }) {
   const reviews = useQuery(api.workspace.reviews.pendingReviews, { projectId });
   const now = useNow();
   if (reviews === undefined) return null;
-  return <PendingApprovals reviews={openReviews(reviews, now)} hired={[]} now={now} />;
+  return <PendingApprovals projectId={projectId} reviews={openReviews(reviews, now)} hired={[]} now={now} />;
 }
 
 function Unavailable({ projectId, businessName, message }: { projectId?: Id<"projects">; businessName: string; message: string }) {

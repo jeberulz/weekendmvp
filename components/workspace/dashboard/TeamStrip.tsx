@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
+import { EmployeeLink } from "@/components/workspace/kit/EmployeeLink";
 import { EmptyState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import { teamCounts, teamHeadingTail, type DashHired, type DashReview } from "@/lib/workspace/dashboard";
 import { workspacePath } from "@/lib/workspace/routes";
 
 /**
- * "Your team · 9 on it, 4 need you": the hired roles from `launchStatus`. The
- * chips are not links (a specialist page is Coming soon) and carry no status
- * (the backend gives none per person); the link goes to Team HQ.
+ * "Your team · 9 on it, 4 need you": the hired roles from `launchStatus`. Each
+ * specialist's chip is one link to their page (WP67); the Crew Lead's chip
+ * stays plain (no page). The chips carry no status; Team HQ has it.
  */
 export function TeamStrip({
   projectId,
@@ -46,12 +47,20 @@ export function TeamStrip({
       {hired.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {hired.map((member) => (
-            <li
-              key={member.role}
-              className="flex min-h-10 items-center gap-2 rounded-full border border-home-rule bg-home-paper py-1 pl-1 pr-3"
-            >
-              <EmployeeAvatar name={member.name} role={member.role} size="md" />
-              <span className="text-[13px] font-medium text-home-ink">{member.roleLabel}</span>
+            <li key={member.role}>
+              <EmployeeLink
+                href={employeeHref(projectId, member.role)}
+                name={member.name}
+                role={member.role}
+                size="md"
+                linkComponent={Link}
+                className="min-h-10 gap-2 rounded-full border border-home-rule bg-home-paper py-1 pl-1 pr-3"
+              >
+                <span className="text-[13px] font-medium text-home-ink">
+                  <span className="sr-only">{member.name}, </span>
+                  {member.roleLabel}
+                </span>
+              </EmployeeLink>
             </li>
           ))}
         </ul>

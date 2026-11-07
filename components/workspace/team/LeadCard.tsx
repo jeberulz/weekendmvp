@@ -9,10 +9,12 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary } from "@/components/platform/client-gates";
 import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
+import { EmployeeLink } from "@/components/workspace/kit/EmployeeLink";
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW } from "@/components/workspace/kit/styles";
 import { ROLE_LABELS } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
+import { employeeHref } from "@/lib/workspace/employeePage";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
 import {
   BLUEPRINT_MISSING_COPY,
@@ -83,12 +85,12 @@ function ReviewRow({
   const round = changeRoundNote(Number(review.changeRound));
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-home-sunk px-3 py-2.5 last:border-b-0">
-      <span aria-hidden="true">
-        <EmployeeAvatar name={ownerName} role={owner} size="md" />
-      </span>
       <span className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
         <span className="font-mono text-[11px] tracking-[0.06em] text-home-ink-3">
-          From {ROLE_LABELS[owner]} · {ownerName}
+          From{" "}
+          <EmployeeLink href={employeeHref(projectId, owner)} name={ownerName} role={owner} linkComponent={Link} className="min-h-6 align-middle">
+            {ROLE_LABELS[owner]} · {ownerName}
+          </EmployeeLink>
         </span>
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-home-ink">{review.title}</span>
