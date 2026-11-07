@@ -5,8 +5,11 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../../_generated/server";
 import { tenantResend } from "./provider";
 
-/** Per-transaction limit, independent of the lead’s lifetime history. */
-const ENROLLMENT_BATCH_SIZE = 16;
+/**
+ * A future enroller must enforce this pending limit transactionally so
+ * a normal contact delete can always revoke the remaining mail atomically.
+ */
+export const MAX_PENDING_ENROLLMENTS_PER_LEAD = 16;
 /** Issuance and state transitions must enforce these limits before enqueue. */
 export const MAX_SENDS_PER_ENROLLMENT = 4;
 export const MAX_TOKENS_PER_PURPOSE = 1;
@@ -64,28 +67,31 @@ export const revokeLeadContact = internalMutation({
   }),
   handler: async (ctx, { leadId, allowPartial }) => {
     const lead = await requireLeadGraph(ctx, leadId);
+    const enrollments = await ctx.db.query("enrollments")
+      .withIndex("by_leadId_and_contactRevokedAt", (q) =>
+        q.eq("leadId", leadId).eq("contactRevokedAt", undefined))
+      .take(MAX_PENDING_ENROLLMENTS_PER_LEAD + 1);
+    const complete = enrollments.length <= MAX_PENDING_ENROLLMENTS_PER_LEAD;
+    if (!complete && !allowPartial) {
+      throw new Error("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
+    }
+
     const tokens = [];
-    for (const purpose of ["opt_in", "unsubscribe"] as const) {
+    // Keep unsubscribe links usable while later batches still have mail.
+    const purposes = complete ? ["opt_in", "unsubscribe"] as const : ["opt_in"] as const;
+    for (const purpose of purposes) {
       const rows = await ctx.db.query("lead_email_tokens")
         .withIndex("by_leadId_and_purpose", (q) => q.eq("leadId", leadId).eq("purpose", purpose))
         .take(MAX_TOKENS_PER_PURPOSE + 1);
       if (rows.length > MAX_TOKENS_PER_PURPOSE) throw new Error("LEAD_TOKEN_LIMIT_EXCEEDED");
       tokens.push(...rows);
     }
-    const enrollments = await ctx.db.query("enrollments")
-      .withIndex("by_leadId_and_contactRevokedAt", (q) =>
-        q.eq("leadId", leadId).eq("contactRevokedAt", undefined))
-      .take(ENROLLMENT_BATCH_SIZE + 1);
-    const complete = enrollments.length <= ENROLLMENT_BATCH_SIZE;
-    if (!complete && !allowPartial) {
-      throw new Error("LEAD_ENROLLMENT_LIMIT_EXCEEDED");
-    }
 
     let enrollmentsRevoked = 0;
     let sendsChecked = 0;
     let queuedEmailsCancelled = 0;
     let submittedEmails = 0;
-    for (const enrollment of enrollments.slice(0, ENROLLMENT_BATCH_SIZE)) {
+    for (const enrollment of enrollments.slice(0, MAX_PENDING_ENROLLMENTS_PER_LEAD)) {
       if (!sameLeadScope(lead, enrollment)) {
         throw new Error("LEAD_ENROLLMENT_OWNERSHIP_MISMATCH");
       }
@@ -181,6 +187,10 @@ export const recoverLeadSendLink = internalMutation({
     const emailId = componentEmailId as EmailId;
     const email = await ctx.runQuery(components.resend.lib.get, { emailId });
     if (!email || email.idempotencyKey !== key) throw new Error("LEAD_SEND_LINK_UNVERIFIED");
+    if (lead.email !== undefined &&
+        (email.to.length !== 1 || email.to[0].toLowerCase() !== lead.email.toLowerCase())) {
+      throw new Error("LEAD_SEND_LINK_UNVERIFIED");
+    }
 
     if (email.status === "waiting" || email.status === "queued") {
       await tenantResend.cancelEmail(ctx, emailId);

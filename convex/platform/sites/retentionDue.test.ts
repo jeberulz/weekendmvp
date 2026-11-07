@@ -132,6 +132,9 @@ describe("WP78 due lead cleanup", () => {
     const queuedId = await t.mutation(component.lib.createManualEmail, {
       from: "sender@example.test", to: "contact0@example.test", subject: "Welcome",
     });
+    const confirmationId = await t.mutation(component.lib.createManualEmail, {
+      from: "sender@example.test", to: "contact0@example.test", subject: "Confirm",
+    });
     const enrollmentId = await t.run(async (ctx) => {
       const now = Date.now();
       const documentId = await ctx.db.insert("documents", {
@@ -168,20 +171,27 @@ describe("WP78 due lead cleanup", () => {
         leadId: ids.leadIds[0], purpose: "unsubscribe", tokenHash: "sha256:due:test",
         createdAt: now,
       });
+      await ctx.db.insert("lead_email_tokens", {
+        ownerId: ids.ownerId, projectId: ids.projectId,
+        leadId: ids.leadIds[0], purpose: "opt_in", tokenHash: "sha256:due:opt-in",
+        componentEmailId: confirmationId, createdAt: now,
+      });
       return enrollmentId;
     });
     expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
       .toEqual({ deleted: 0, more: true });
     const partial = await t.run((ctx) => ctx.db.get(ids.jobId));
-    expect(partial).toMatchObject({ state: "scheduled", attempts: 1, processedCount: 0 });
+    expect(partial).toMatchObject({ state: "scheduled", attempts: 0, processedCount: 0 });
     expect(partial?.nextAttemptAt).toBe(partial?.lastAttemptAt);
     expect(partial?.lastErrorCode).toBeUndefined();
     expect((await t.run((ctx) => ctx.db.get(ids.leadIds[0])))?.email)
       .toBe("contact0@example.test");
     expect((await t.query(component.lib.getStatus, { emailId: queuedId }))?.status)
       .toBe("queued");
-    expect(await t.run((ctx) => ctx.db.query("lead_email_tokens").collect()))
-      .toHaveLength(0);
+    expect((await t.query(component.lib.getStatus, { emailId: confirmationId }))?.status)
+      .toBe("cancelled");
+    const remainingTokens = await t.run((ctx) => ctx.db.query("lead_email_tokens").collect());
+    expect(remainingTokens.map((token) => token.purpose)).toEqual(["unsubscribe"]);
     expect(await t.mutation(dueWorker, { jobId: ids.jobId }))
       .toEqual({ deleted: 1, more: false });
     expect(await t.run((ctx) => ctx.db.get(ids.leadIds[0]))).toBeNull();
@@ -254,8 +264,8 @@ describe("WP78 due lead cleanup", () => {
     const fetch = vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network disabled"));
     try {
       const recoveredId = await t.mutation(component.lib.sendEmail, {
-        options: { initialBackoffMs: 1000, retryAttempts: 0, apiKey: "unused", testMode: true },
-        from: "sender@example.test", to: ["delivered@resend.dev"],
+        options: { initialBackoffMs: 1000, retryAttempts: 0, apiKey: "unused", testMode: false },
+        from: "sender@example.test", to: ["contact0@example.test"],
         subject: "Welcome", text: "Never send", idempotencyKey: brokenSend.key,
       });
       const otherOwnerId = await t.run(async (ctx) => {

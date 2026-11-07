@@ -212,7 +212,7 @@ export const purgeDueProjectLeads = internalMutation({
 
     if (!revocationComplete) {
       await ctx.db.patch(jobId, {
-        attempts, lastAttemptAt: now, lastErrorCode: undefined,
+        lastAttemptAt: now, lastErrorCode: undefined,
         nextAttemptAt: now, updatedAt: now,
       });
       return { deleted: 0, more: true };
