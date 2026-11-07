@@ -77,8 +77,7 @@ export const scan = internalMutation({
       if ("deleteDueAt" in job) {
         if (archiveOnlyJob(job)) continue;
         if (!explicitLeadJob(job) || job.deleteDueAt <= at - HOUR_MS ||
-          (job.deleteDueAt <= at && job.nextAttemptAt <= at &&
-            (job.lastAttemptAt === undefined || job.lastAttemptAt < at))) {
+          (job.deleteDueAt <= at && (job.lastAttemptAt === undefined || job.lastAttemptAt < at))) {
           await ctx.scheduler.runAfter(0, internal.growth.email.retentionDriver.driveLead, {
             jobId: job._id, at,
           });
@@ -178,10 +177,24 @@ async function recordInconsistent(
   }
 }
 
+const leadWake = v.object({
+  lastAttemptAt: v.optional(v.number()), nextAttemptAt: v.number(),
+});
+
+async function scheduleLeadStep(
+  ctx: MutationCtx, job: Doc<"lead_retention_jobs">, at: number,
+) {
+  if (Number.isSafeInteger(job.nextAttemptAt) && job.nextAttemptAt < at + HOUR_MS) {
+    await ctx.scheduler.runAt(job.nextAttemptAt, internal.growth.email.retentionDriver.driveLead, {
+      jobId: job._id, at, wake: { lastAttemptAt: job.lastAttemptAt, nextAttemptAt: job.nextAttemptAt },
+    });
+  }
+}
+
 export const driveLead = internalMutation({
-  args: { jobId: v.id("lead_retention_jobs"), at: v.number(), wakeAt: v.optional(v.number()) },
+  args: { jobId: v.id("lead_retention_jobs"), at: v.number(), wake: v.optional(leadWake) },
   returns: v.null(),
-  handler: async (ctx, { jobId, at, wakeAt }): Promise<null> => {
+  handler: async (ctx, { jobId, at, wake }): Promise<null> => {
     const now = Date.now();
     if (!withinSweep(at, now)) return null;
     const job = await ctx.db.get("lead_retention_jobs", jobId);
@@ -192,7 +205,7 @@ export const driveLead = internalMutation({
       return null;
     }
 
-    if (wakeAt === undefined) {
+    if (wake === undefined) {
       const project = await ctx.db.get("projects", job.projectId);
       if (project?.ownerId !== job.ownerId || project.archivedAt === undefined ||
           project.deletionRequestedAt !== job.deletionRequestedAt) {
@@ -204,7 +217,12 @@ export const driveLead = internalMutation({
           { deadline: job.deleteDueAt });
       }
       if (job.lastAttemptAt !== undefined && job.lastAttemptAt >= at) return null;
-    } else if (job.lastAttemptAt !== wakeAt) {
+      if (job.deleteDueAt <= at && job.nextAttemptAt > now) {
+        // A restored job may have a retry inside this hour and no pending call.
+        await scheduleLeadStep(ctx, job, at);
+        return null;
+      }
+    } else if (job.lastAttemptAt !== wake.lastAttemptAt || job.nextAttemptAt !== wake.nextAttemptAt) {
       return null;
     }
     if (job.nextAttemptAt > now || job.deleteDueAt > now) return null;
@@ -219,13 +237,9 @@ export const driveLead = internalMutation({
     }
     if (more) {
       const current = await ctx.db.get("lead_retention_jobs", jobId);
-      if (current?.state === "scheduled" && current.lastAttemptAt !== undefined &&
-          current.nextAttemptAt < at + HOUR_MS) {
-        // Both success and backoff are persisted. A zero-delete partial batch
-        // can continue immediately; a failure cannot run before its retry time.
-        await ctx.scheduler.runAt(current.nextAttemptAt, internal.growth.email.retentionDriver.driveLead, {
-          jobId, at, wakeAt: current.lastAttemptAt,
-        });
+      if (current?.state === "scheduled" && current.lastAttemptAt !== undefined) {
+        // Partial revocation can continue immediately, even with zero deletes.
+        await scheduleLeadStep(ctx, current, at);
       }
     }
     return null;

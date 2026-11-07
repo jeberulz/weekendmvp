@@ -203,6 +203,33 @@ describe("WP79 hourly privacy driver", () => {
     }
   });
 
+  test("recreates a lost retry that falls later in the current hour", async () => {
+    const t = setup();
+    const owner = await seedOwner(t);
+    const retryAt = START + 30 * 60_000;
+    const overdue = await seedLeadJob(t, owner, "old-retry", {
+      dueAt: START - 2 * HOUR, nextAttemptAt: retryAt,
+    });
+    const recent = await seedLeadJob(t, owner, "recent-retry", {
+      dueAt: START - 60_000, nextAttemptAt: retryAt,
+    });
+    const advance = () => vi.advanceTimersByTime(1);
+    await runSweep(t, advance);
+    // Repeated scans can see a deferred job; only one wake may advance it.
+    await runSweep(t, advance);
+    await vi.advanceTimersByTimeAsync(retryAt - Date.now() - 1);
+    expect(await t.run((ctx) => ctx.db.get(overdue.leadIds[0]))).not.toBeNull();
+    expect(await t.run((ctx) => ctx.db.get(recent.leadIds[0]))).not.toBeNull();
+
+    await vi.advanceTimersByTimeAsync(1);
+    await t.finishAllScheduledFunctions(advance);
+
+    for (const { jobId } of [overdue, recent]) {
+      expect(await t.run((ctx) => ctx.db.get(jobId)))
+        .toMatchObject({ state: "complete", attempts: 1, processedCount: 1 });
+    }
+  });
+
   test("quarantines inconsistent restored jobs and attributes their alerts to the ops owner", async () => {
     const t = setup();
     const opsOwner = await seedOwner(t);
