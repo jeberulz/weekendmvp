@@ -30,6 +30,7 @@ import type * as ai_providers_openaiImages from "../ai/providers/openaiImages.js
 import type * as ai_providers_recraft from "../ai/providers/recraft.js";
 import type * as ai_providers_transport from "../ai/providers/transport.js";
 import type * as ai_providers_types from "../ai/providers/types.js";
+import type * as ai_providers_wrenFixtureReply from "../ai/providers/wrenFixtureReply.js";
 import type * as ai_registry from "../ai/registry.js";
 import type * as ai_router from "../ai/router.js";
 import type * as articles from "../articles.js";
@@ -70,6 +71,7 @@ import type * as growth_drafts_brandKit from "../growth/drafts/brandKit.js";
 import type * as growth_drafts_documentDraft from "../growth/drafts/documentDraft.js";
 import type * as growth_drafts_emailSequence from "../growth/drafts/emailSequence.js";
 import type * as growth_drafts_socialPack from "../growth/drafts/socialPack.js";
+import type * as growth_email_activation from "../growth/email/activation.js";
 import type * as growth_email_caps from "../growth/email/caps.js";
 import type * as growth_email_cleanup from "../growth/email/cleanup.js";
 import type * as growth_email_contacts from "../growth/email/contacts.js";
@@ -208,6 +210,7 @@ declare const fullApi: ApiFromModules<{
   "ai/providers/recraft": typeof ai_providers_recraft;
   "ai/providers/transport": typeof ai_providers_transport;
   "ai/providers/types": typeof ai_providers_types;
+  "ai/providers/wrenFixtureReply": typeof ai_providers_wrenFixtureReply;
   "ai/registry": typeof ai_registry;
   "ai/router": typeof ai_router;
   articles: typeof articles;
@@ -248,6 +251,7 @@ declare const fullApi: ApiFromModules<{
   "growth/drafts/documentDraft": typeof growth_drafts_documentDraft;
   "growth/drafts/emailSequence": typeof growth_drafts_emailSequence;
   "growth/drafts/socialPack": typeof growth_drafts_socialPack;
+  "growth/email/activation": typeof growth_email_activation;
   "growth/email/caps": typeof growth_email_caps;
   "growth/email/cleanup": typeof growth_email_cleanup;
   "growth/email/contacts": typeof growth_email_contacts;

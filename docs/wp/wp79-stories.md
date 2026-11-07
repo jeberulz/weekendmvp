@@ -9,7 +9,7 @@ Definition of done: an approved four-step sequence reaches a test inbox on sched
 
 - [ ] `WP79-S1` — Configure the mounted Resend component for a separate tenant project and domain using optional tenant-only env. Keep auth mail isolated and all sends off without credentials.
 - [ ] `WP79-S2` — `activateSequence` requires current approved `send` approval and version; respect per-step approvals. Fail closed until WP76 draft and WP77 C-APPROVAL contracts merge.
-  - [ ] `WP79-S2a` — Register the internal C-EMAIL activation fixture with the frozen sequence and approval IDs. Require a live owner session, workspace and email access, and the exact sequence's current `send` approval. Even with valid inputs, refuse activation and leave all state unchanged. No caller, enrollment, scheduler or provider wiring.
+  - [x] `WP79-S2a` — Register the internal C-EMAIL activation fixture with the frozen sequence and approval IDs. Require a live owner session, workspace and email access, and the exact sequence's current `send` approval. Even with valid inputs, refuse activation and leave all state unchanged. No caller, enrollment, scheduler or provider wiring.
 - [ ] `WP79-S3` — Five-minute sender scans due opted-in enrollments, reserves a stable `send:{enrollmentId}:{stepId}` key, enforces plan caps including Free 50 lifetime, and handles retries exactly once.
 - [ ] `WP79-S4` — Double opt-in confirmation first, tokenized `/u/{token}` unsubscribe, and mandatory founder postal address in every tenant email before any send.
   - [x] `WP79-S4a` — Schedule daily seven-day finalized and 30-day abandoned Resend component cleanup, including while workspace/email is off. Prove cleanup removes due rows, preserves younger rows, and never enqueues mail. Keep tenant sending off.
