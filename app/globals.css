@@ -185,6 +185,20 @@ body {
   mask-size: contain;
 }
 
+/* Compact mark: the W from the wordmark (WP67-S6). Keep a 2:1 box, e.g. h-4 w-8. */
+@utility logo-mark {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-image: url("/image/weekendmvp-mark.svg");
+  mask-image: url("/image/weekendmvp-mark.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
 /* Hide scrollbars (ported from the starter-kit.html page styles). */
 @utility no-scrollbar {
   -ms-overflow-style: none;

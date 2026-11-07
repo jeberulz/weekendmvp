@@ -498,3 +498,22 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
 - **Both pages:** no `[style]` attributes in `main`, and every text node measured at 4.5:1 contrast or better.
 - **Result:** pass.
 - **Not tried:** a real failed or paused step (the fixture launch completes), and a screen reader.
+
+## 2026-11-07 - WP67-S6: one Weekend MVP logo (issue #218)
+
+- Branch `claude/wp67-brand-logo` (worktree `.worktrees/wp67-brand-logo`, from `origin/main` `33597263`).
+- Owner direction: the logo is the SVG wordmark on www.weekendmvp.app (identical to
+  `public/image/weekendmvp-logo.svg`); its W is the compact mark. The serif lockup in the first mockup was dropped.
+- Changes: `public/image/weekendmvp-mark.svg` (the W subpath of the wordmark, same coordinates), `logo-mark`
+  utility in `app/globals.css`, `Logo` gains `variant="mark"` (wordmark markup unchanged, so snapshots hold),
+  `WorkspaceLogo` renders the wordmark linked to `/dashboard`, and the platform shell's `BrandMark` is the W.
+  Marketing nav, footer and the other public surfaces already used the wordmark and are unchanged.
+- Checks: `npm run typecheck` clean. `vitest run tests/platform tests/home tests/auth` 2693/2693. `test:og`,
+  `test:links`, `test:redirects`, `test:auth`, `test:security`, `test:sitemap`, `test:convex` (1380/1380),
+  `test:prompts`, `test:live` pass. `test:engine` and `test:editorial` failed on 5 s timeouts and timing bounds
+  under machine load; the 11 failing files pass run serially (390/390). None touch the logo.
+- a11y: one `role="img" aria-label="Weekend MVP"` per shell; links named "Weekend MVP home"; 2px orange-ink
+  focus ring confirmed in the browser; no horizontal scroll at 375px; the W is decorative inside its named link.
+- Localhost preview: `/workspace-kit-preview` on port 3189 (dev only). Its dev `instant` validation error (the
+  page's dynamic `KitPreviewClient` import) is unrelated to this change.
+- Not deployed. Docs updated: this file and `wp67-stories.md`.

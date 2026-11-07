@@ -43,6 +43,23 @@ and every gate G0–G7 run and recorded in `docs/wp/wp67-progress.md`.
   - Verification:
     - Gate entries in `docs/wp/wp67-progress.md`
 
+- [x] `WP67-S6` - One Weekend MVP logo across marketing and the workspace (issue #218)
+  - Branch: `claude/wp67-brand-logo`
+  - Scope: `components/primitives/Logo.tsx`, `app/globals.css` (logo utilities),
+    `public/image/weekendmvp-mark.svg`, `components/workspace/shell/WorkspaceSidebar.tsx`,
+    `components/platform/shell/WorkspaceShell.tsx`
+  - Owner direction (2026-11-07): the brand logo is the SVG wordmark on www.weekendmvp.app
+    (`public/image/weekendmvp-logo.svg`); its first letter, the W, is the compact mark. The serif
+    "W tile + Weekend MVP" lockup from the workspace kit preview is retired.
+  - Acceptance criteria:
+    - `Logo` renders the wordmark (unchanged markup) or, with `variant="mark"`, the W cut from the
+      same SVG path; both are coloured by `currentColor` with `role="img" aria-label="Weekend MVP"`
+    - The workspace sidebar shows the wordmark linked to `/dashboard` ("Weekend MVP home")
+    - The platform shell's collapsed sidebar and mobile header show the W mark, not a serif tile
+    - Wren's avatar (`WrenMark`) is an agent avatar, not the brand, and stays as it is
+  - Verification:
+    - `npm run typecheck`, `npm run test:platform`, `npm run test:home`, a11y check, localhost preview
+
 ## Out Of Scope
 
 - Feature code. The orchestrator assigns, reviews and gates; workers build.

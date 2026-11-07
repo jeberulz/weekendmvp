@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import Link from "next/link";
+import { Logo } from "@/components/primitives/Logo";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
 import { LoadingState } from "@/components/workspace/kit";
@@ -373,17 +374,8 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   return (
     <>
       <header className="flex items-center justify-between gap-4 px-6 py-3">
-        <div role="img" aria-label="Weekend MVP" className="flex items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="flex size-6 items-center justify-center rounded-[5px] bg-home-ink font-editorial text-[15px] italic text-home-card"
-          >
-            W
-          </span>
-          <span aria-hidden="true" className="font-editorial text-lg text-home-ink">
-            Weekend <i>MVP</i>
-          </span>
-        </div>
+        {/* The one brand wordmark (WP67-S6), not linked: leaving mid-wizard goes through "Save & exit". */}
+        <Logo className="h-4 w-32 text-home-ink" />
         {saveExit ? (
           <Link
             href={saveExit.href}
