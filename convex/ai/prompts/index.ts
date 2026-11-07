@@ -27,6 +27,7 @@ import { brandKitSpec } from "./brandKit.v1.ts";
 import { emailSequenceSpec } from "./emailSequence.v1.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
+import { socialPackSpec } from "./socialPack.v1.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
 import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
 
@@ -81,6 +82,13 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
       answers: CREW_SAMPLE_ANSWERS,
+    },
+  }),
+  promptEntry(socialPackSpec, {
+    module: "convex/ai/prompts/socialPack.v1.ts",
+    sampleInputs: {
+      blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
+      brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
     },
   }),
 ]);

@@ -163,9 +163,10 @@ export const runCrewStepArgs = {
    */
   briefDocumentId: v.optional(v.id("documents")),
   /**
-   * WP76-S1a: the brand kit document an email sequence's prompt read its name
-   * and voice from (approved, or the launch's own first draft under the same
-   * rule as the blueprint brief). `finishCrewStep` re-checks it like the brief.
+   * WP76-S1a: the brand kit document an email sequence's (WP76-S2a: or a
+   * social pack's) prompt read its name and voice from (approved, or the
+   * launch's own first draft under the same rule as the blueprint brief).
+   * `finishCrewStep` re-checks it like the brief.
    */
   brandKitDocumentId: v.optional(v.id("documents")),
 };
@@ -1135,7 +1136,7 @@ export const finishCrewStep = internalMutation({
     seedId: v.optional(v.id("idea_crew_seeds")),
     /** The approved blueprint a brand kit was briefed from (`runCrewStepArgs.briefDocumentId`). */
     briefDocumentId: v.optional(v.id("documents")),
-    /** WP76-S1a: the brand kit an email sequence read its voice from (`runCrewStepArgs.brandKitDocumentId`). */
+    /** WP76-S1a: the brand kit an email sequence (WP76-S2a: or a social pack) read its voice from (`runCrewStepArgs.brandKitDocumentId`). */
     brandKitDocumentId: v.optional(v.id("documents")),
   },
   returns: finishCrewStepResult,
@@ -1173,11 +1174,12 @@ export const finishCrewStep = internalMutation({
     // since the step was prepared fails the step like a config failure would have at preflight: permanent, no
     // document, the usual calm note, a debit refunded.
     // WP76-S1a: the email sequence needs both of its briefs (the blueprint and the brand kit) and re-checks each
-    // the same way; an email finish without either one fails as permanent (review m1).
+    // the same way; an email finish without either one fails as permanent (review m1). WP76-S2a: so does the
+    // social pack.
     let briefsValid = true;
     if (kind === "brand_kit" && args.briefDocumentId !== undefined) {
       briefsValid = await briefStillValid(ctx, project, task, args.briefDocumentId, now);
-    } else if (kind === "email_sequence") {
+    } else if (kind === "email_sequence" || kind === "social_pack") {
       briefsValid = args.briefDocumentId !== undefined && args.brandKitDocumentId !== undefined &&
         (await briefStillValid(ctx, project, task, args.briefDocumentId, now)) &&
         (await briefStillValid(ctx, project, task, args.brandKitDocumentId, now, "brand_kit"));
