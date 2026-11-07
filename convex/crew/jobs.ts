@@ -954,13 +954,31 @@ function mayRetryAfterAbandoned(earlierErrorCodes: readonly (string | undefined)
 // The launch sweep's fence (L1)
 // ---------------------------------------------------------------------------
 
-/** Enqueue markers read per task for the fence (a task holds one, plus at most two the sweep settled). */
-const LAUNCH_MARKERS_READ_MAX = 20;
+/**
+ * Enqueue markers read per task, newest first. Outside the sweep a task holds
+ * one; the sweep adds one per recovery, so a long-lived task may hold more,
+ * and only the newest matter (the live one, and the sweep's recent recoveries).
+ */
+export const LAUNCH_MARKERS_READ_MAX = 20;
+
+/**
+ * A task's own launch markers (`task_steps`), newest first, at most
+ * `LAUNCH_MARKERS_READ_MAX`. The one marker read for the launch DAG
+ * (`./launch.ts`) and the sweep's fence below.
+ */
+export async function launchTaskMarkers(ctx: Pick<QueryCtx, "db">, task: Doc<"tasks">): Promise<Doc<"task_steps">[]> {
+  const rows = await ctx.db.query("task_steps")
+    .withIndex("by_taskId_and_position", (q) => q.eq("taskId", task._id))
+    .order("desc")
+    .take(LAUNCH_MARKERS_READ_MAX);
+  return rows.filter((row) => row.ownerId === task.ownerId && row.projectId === task.projectId);
+}
 
 /**
  * Whether launch-DAG work (an execution, or its `stepDone`) was superseded by
  * the launch sweep (`recoverStalledLaunches` in `./launch.ts`), which settles
- * a stranded marker `failed` and re-enqueues the step under a new one.
+ * a stranded marker `failed` and re-enqueues the step under a new one, or
+ * settles a leftover running marker on a terminal task.
  *
  * - With `markerId` (work enqueued since the sweep shipped): superseded once
  *   that marker is no longer `running`.
@@ -975,7 +993,7 @@ const LAUNCH_MARKERS_READ_MAX = 20;
  *   also does nothing; that settle already filled the slot.)
  */
 export async function isSupersededLaunchWork(
-  ctx: Ctx,
+  ctx: Pick<QueryCtx, "db">,
   task: Doc<"tasks">,
   markerId: Id<"task_steps"> | undefined,
 ): Promise<boolean> {
@@ -983,10 +1001,7 @@ export async function isSupersededLaunchWork(
     const marker = await ctx.db.get("task_steps", markerId);
     return marker === null || marker.status !== "running" || marker.taskId !== task._id;
   }
-  const markers = (await ctx.db.query("task_steps")
-    .withIndex("by_taskId_and_position", (q) => q.eq("taskId", task._id))
-    .take(LAUNCH_MARKERS_READ_MAX))
-    .filter((row) => row.ownerId === task.ownerId && row.projectId === task.projectId);
+  const markers = await launchTaskMarkers(ctx, task);
   if (markers.length === 0) return false;
   return markers.length > 1 || markers[0]?.status !== "running";
 }

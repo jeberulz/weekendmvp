@@ -5,8 +5,9 @@
  * registry, C-METER, ledger, approvals and limiter; no provider is ever called.
  *
  * "The work is gone" is simulated by dropping a `crewWorkpool.enqueueAction` call (the
- * marker is written, no work exists), and "the work is only late" by leaving enqueued work
- * pending on the fake clock while the sweep runs.
+ * marker is written, no work exists), or produced for real by making `stepDone`'s re-enqueue
+ * throw; "the work is only late" by leaving enqueued work pending on the fake clock while
+ * the sweep runs. `sweep` runs one page and then the owner jobs it scheduled, directly.
  */
 import { HOUR, RateLimiter } from "@convex-dev/rate-limiter";
 import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
@@ -20,14 +21,24 @@ import { api, components, internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import type { AnthropicFixtureReply } from "../ai/providers/fixtures";
+import { ProviderError } from "../ai/providers/types";
 import { RUN_LEASE_MS } from "./jobs";
-import { LAUNCH_SWEEP_PAGE_MAX, LAUNCH_SWEEP_REQUEUES_MAX, OWNER_CREW_CAP, STRANDED_MARKER_MS } from "./launch";
+import {
+  LAUNCH_SWEEP_PAGE_MAX,
+  LAUNCH_SWEEP_REQUEUES_MAX,
+  LEFTOVER_MARKER_MS,
+  OWNER_CREW_CAP,
+  STRANDED_MARKER_MS,
+} from "./launch";
 import type { CrewStepOutcome } from "./runner";
 import { crewWorkpool } from "./workpool";
 
 type Plan = {
   /** Runs just before the gateway call. */
   readonly before?: () => Promise<void>;
+  /** The fixture reply for this call's gateway run (throw a `ProviderError` for a provider failure). */
+  readonly reply?: () => AnthropicFixtureReply | undefined;
 };
 
 const hooks = vi.hoisted(() => ({
@@ -52,7 +63,7 @@ vi.mock("./generators", async (importOriginal) => {
         const type = await hooks.readType(args.taskId);
         hooks.calls.push({ taskId: args.taskId, type, markerId: args.markerId });
         const plan = hooks.plan({ type, n: hooks.calls.length });
-        const adapter = createAnthropicAdapter({ env: {}, fixtureResponder: () => undefined });
+        const adapter = createAnthropicAdapter({ env: {}, fixtureResponder: () => plan.reply?.() });
         const outcome = await actual.runCrewGeneratorStepWith(ctx, args, {
           runPrompt: async (promptArgs) => {
             await plan.before?.();
@@ -181,8 +192,57 @@ const as = (w: World, o: number) => {
 
 const start = async (w: World, o = 0, b = 0) => await as(w, o).mutation(api.crew.roster.startLaunch, { projectId: project(w, o, b) });
 
-const sweep = async (w: World, args: { cursor?: string | null; limit?: number } = {}) =>
-  await w.t.mutation(internal.crew.launch.recoverStalledLaunches, args);
+type SweepTotals = {
+  businesses: number;
+  owners: number;
+  isDone: boolean;
+  gatedOwners: number;
+  /** Owner jobs that threw (each rolls back alone; in production a failed scheduled function). */
+  failedOwners: number;
+  requeued: number;
+  reinvoked: number;
+  abandoned: number;
+  settled: number;
+  enqueued: number;
+  /** Owner jobs whose `advanceOwner` subtransaction threw. */
+  advanceFailed: number;
+};
+
+/** Pending scheduled jobs whose name includes `name`, cancelled, with their args. */
+async function takeScheduled<A>(w: World, name: string): Promise<A[]> {
+  return await w.t.run(async (ctx) => {
+    const pending = (await ctx.db.system.query("_scheduled_functions").collect())
+      .filter((job) => job.state.kind === "pending" && job.name.includes(name));
+    for (const job of pending) await ctx.scheduler.cancel(job._id);
+    return pending.map((job) => job.args[0] as A);
+  });
+}
+
+/**
+ * One sweep page, then the `recoverStalledOwner` jobs it scheduled, run here one by one (and cancelled on the
+ * scheduler, so a later drain does not run them again). A continuation page stays scheduled.
+ */
+async function sweep(w: World, args: { cursor?: string | null; limit?: number } = {}): Promise<SweepTotals> {
+  const page = await w.t.mutation(internal.crew.launch.recoverStalledLaunches, args);
+  const totals: SweepTotals = {
+    ...page, gatedOwners: 0, failedOwners: 0, requeued: 0, reinvoked: 0, abandoned: 0, settled: 0, enqueued: 0, advanceFailed: 0,
+  };
+  for (const job of await takeScheduled<{ ownerId: Id<"users"> }>(w, "recoverStalledOwner")) {
+    try {
+      const out = await w.t.mutation(internal.crew.launch.recoverStalledOwner, job);
+      if (out.gated) totals.gatedOwners += 1;
+      if (out.advanceFailed) totals.advanceFailed += 1;
+      totals.requeued += out.requeued;
+      totals.reinvoked += out.reinvoked;
+      totals.abandoned += out.abandoned;
+      totals.settled += out.settled;
+      totals.enqueued += out.enqueued;
+    } catch {
+      totals.failedOwners += 1;
+    }
+  }
+  return totals;
+}
 
 const drain = async (w: World) => await w.t.finishAllScheduledFunctions(vi.runAllTimers);
 
@@ -258,6 +318,35 @@ function expectLaunchDone(r: Rows, projectId: Id<"projects">): void {
   expect(r.documents.filter((doc) => doc.projectId === projectId).map((doc) => doc.kind).sort())
     .toEqual(["blueprint", "brand_kit", "email_sequence", "roster_plan", "social_pack"]);
   expect(r.ledger).toEqual([]);
+}
+
+/**
+ * The blueprint as `settleCrewRun` leaves it in return mode after a retryable failure: task `running`, its run
+ * closed `failed` with the retry class, the marker `running`, and no work on the pool (the re-invoke never came).
+ * One closed run per error code, oldest first.
+ */
+async function betweenExecutions(
+  w: World,
+  errorCodes: readonly string[] = ["retryable_unbilled"],
+  o = 0,
+  b = 0,
+): Promise<Doc<"tasks">> {
+  pool.drop = () => true;
+  await start(w, o, b);
+  pool.drop = () => false;
+  const blueprint = only(ofType(await rows(w), "crew_blueprint", project(w, o, b)));
+  await w.t.run(async (ctx) => {
+    const now = Date.now();
+    await ctx.db.patch("tasks", blueprint._id, { status: "running", updatedAt: now });
+    for (const [i, errorCode] of errorCodes.entries()) {
+      await ctx.db.insert("workflow_runs", {
+        ownerId: blueprint.ownerId, projectId: blueprint.projectId, taskId: blueprint._id, type: "crew_blueprint",
+        status: "failed", errorCode, idempotencyKey: `run:${blueprint._id}:${i + 1}`, attempt: BigInt(2 * i + 1),
+        createdAt: now, updatedAt: now, startedAt: now, completedAt: now,
+      });
+    }
+  });
+  return blueprint;
 }
 
 // ---------------------------------------------------------------------------
@@ -365,56 +454,37 @@ describe("L1 launch sweep: a stranded marker", () => {
     expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", ...LAUNCH_CALLS]);
   });
 
-  test("a task whose work keeps vanishing is requeued at most twice, then fails as interrupted with no refund", async () => {
+  test("a backlog past the threshold, again and again: never failed, and the step runs exactly once", async () => {
     const w = await world();
-    pool.drop = () => true;
     await start(w);
-    for (let i = 0; i < LAUNCH_SWEEP_REQUEUES_MAX; i += 1) {
+    // The pool never gets to the work: each sweep supersedes it and enqueues the step at the back again.
+    const rounds = LAUNCH_SWEEP_REQUEUES_MAX + 3;
+    for (let i = 0; i < rounds; i += 1) {
       later(STRANDED_MARKER_MS);
-      expect(await sweep(w)).toMatchObject({ requeued: 1, abandoned: 0, enqueued: 1 });
+      expect(await sweep(w)).toMatchObject({ requeued: 1, reinvoked: 0, abandoned: 0, enqueued: 1 });
     }
-    later(STRANDED_MARKER_MS);
-    expect(await sweep(w)).toMatchObject({ requeued: 0, abandoned: 1, enqueued: 0 });
-    const r = await rows(w);
+    let r = await rows(w);
     const blueprint = only(ofType(r, "crew_blueprint"));
-    expect(blueprint.status).toBe("failed");
-    expect(markersOf(r, blueprint._id)).toEqual(["failed", "failed", "failed"]);
-    expect(r.ledger).toEqual([]);
-    expect(r.runs).toEqual([]);
-    expect(await as(w, 0).query(api.crew.roster.launchStatus, { projectId: project(w) }))
-      .toEqual({ state: "failed", paused: false, retryable: true });
-    // Settled: the next sweep has nothing to do.
-    later(STRANDED_MARKER_MS);
-    expect(await sweep(w)).toMatchObject({ owners: 0, requeued: 0, abandoned: 0, enqueued: 0 });
-    expect(pool.log).toHaveLength(1 + LAUNCH_SWEEP_REQUEUES_MAX);
+    expect(blueprint.status).toBe("queued");
+    expect(markersOf(r, blueprint._id)).toEqual([...Array(rounds).fill("failed"), "running"]);
+    expect(pool.log).toHaveLength(1 + rounds);
+    expect(pool.log.every((call) => !call.dropped)).toBe(true);
+
+    // The backlog clears: every superseded piece of work stops at its start, the newest runs the step once.
+    await drain(w);
+    r = await rows(w);
+    expectLaunchDone(r, project(w));
+    expect(hooks.outcomes.filter((outcome) => outcome.kind === "skipped"))
+      .toEqual(Array(rounds).fill({ kind: "skipped", reason: "superseded" }));
+    expect(hooks.calls.filter((call) => call.type === "crew_blueprint").map((call) => call.markerId))
+      .toEqual(pool.log.filter((call) => call.taskId === blueprint._id).map((call) => call.markerId));
+    expect(r.runs.filter((run) => run.taskId === blueprint._id)).toHaveLength(1);
+    expect(markersOf(r, blueprint._id)).toEqual([...Array(rounds).fill("failed"), "succeeded"]);
+    expect(inFlight(r)).toBe(0);
   });
 });
 
 describe("L1 launch sweep: a running task between executions (a retry whose stepDone threw or whose re-invoke was lost)", () => {
-  /**
-   * The blueprint as `settleCrewRun` leaves it in return mode after a retryable failure: task `running`, its run
-   * closed `failed` with the retry class, the marker `running`, and no work on the pool (the re-invoke never came).
-   * One closed run per error code, oldest first.
-   */
-  async function betweenExecutions(w: World, errorCodes: readonly string[] = ["retryable_unbilled"]): Promise<Doc<"tasks">> {
-    pool.drop = () => true;
-    await start(w);
-    pool.drop = () => false;
-    const blueprint = only(ofType(await rows(w), "crew_blueprint"));
-    await w.t.run(async (ctx) => {
-      const now = Date.now();
-      await ctx.db.patch("tasks", blueprint._id, { status: "running", updatedAt: now });
-      for (const [i, errorCode] of errorCodes.entries()) {
-        await ctx.db.insert("workflow_runs", {
-          ownerId: blueprint.ownerId, projectId: blueprint.projectId, taskId: blueprint._id, type: "crew_blueprint",
-          status: "failed", errorCode, idempotencyKey: `run:${blueprint._id}:${i + 1}`, attempt: BigInt(2 * i + 1),
-          createdAt: now, updatedAt: now, startedAt: now, completedAt: now,
-        });
-      }
-    });
-    return blueprint;
-  }
-
   test("recovered exactly once, under a new marker, keeping its slot; the launch then completes", async () => {
     const w = await world();
     const blueprint = await betweenExecutions(w);
@@ -493,6 +563,64 @@ describe("L1 launch sweep: a running task between executions (a retry whose step
     expect(only(ofType(r, "crew_blueprint"))).toMatchObject({ status: "succeeded" });
     expect(r.runs.filter((run) => run.taskId === blueprint._id && run.status === "succeeded")).toHaveLength(1);
     expect(hooks.calls.filter((call) => call.type === "crew_blueprint")).toHaveLength(1);
+  });
+
+  test("re-invokes that keep stranding: at most twice, then the task fails as interrupted with no refund", async () => {
+    const w = await world();
+    const blueprint = await betweenExecutions(w);
+    pool.drop = () => true;
+    for (let i = 0; i < LAUNCH_SWEEP_REQUEUES_MAX; i += 1) {
+      later(STRANDED_MARKER_MS);
+      expect(await sweep(w)).toMatchObject({ reinvoked: 1, abandoned: 0 });
+    }
+    later(STRANDED_MARKER_MS);
+    expect(await sweep(w)).toMatchObject({ requeued: 0, reinvoked: 0, abandoned: 1, enqueued: 0 });
+    const r = await rows(w);
+    expect(only(ofType(r, "crew_blueprint")).status).toBe("failed");
+    expect(markersOf(r, blueprint._id)).toEqual(["failed", "failed", "failed"]);
+    expect(r.ledger).toEqual([]);
+    expect(r.runs.filter((run) => run.taskId === blueprint._id)).toHaveLength(1);
+    expect(inFlight(r)).toBe(0);
+    // Settled: the next sweep has nothing to do.
+    later(STRANDED_MARKER_MS);
+    expect(await sweep(w)).toMatchObject({ owners: 1, requeued: 0, reinvoked: 0, abandoned: 0, settled: 0, enqueued: 0 });
+    expect(pool.log).toHaveLength(1 + LAUNCH_SWEEP_REQUEUES_MAX);
+  });
+
+  test("a real strand: stepDone's re-enqueue throws after a retryable failure; the sweep re-invokes it once", async () => {
+    const w = await world();
+    hooks.plan = ({ type, n }) => (type === "crew_blueprint" && n === 1
+      ? { reply: () => { throw new ProviderError("anthropic", "rate_limit", "scripted rate_limit"); } }
+      : {});
+    await start(w);
+    const blueprintId = only(ofType(await rows(w), "crew_blueprint"))._id;
+    // Every later enqueue of the blueprint throws, so `stepDone` (inline, then its scheduled retry) rolls back.
+    pool.fail = (taskId) => taskId === blueprintId;
+    await drain(w);
+    let r = await rows(w);
+    expect(only(ofType(r, "crew_blueprint")).status).toBe("running");
+    expect(r.runs.filter((run) => run.taskId === blueprintId)).toEqual([expect.objectContaining({ status: "failed" })]);
+    expect(markersOf(r, blueprintId)).toEqual(["running"]);
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint"]);
+
+    pool.fail = () => false;
+    // Draining moved the fake clock on; measure from the strand's last activity.
+    const task = only(ofType(r, "crew_blueprint"));
+    const run = only(r.runs.filter((row) => row.taskId === blueprintId));
+    const marker = only(r.steps.filter((row) => row.taskId === blueprintId));
+    const last = Math.max(task.updatedAt, marker.updatedAt, run.updatedAt, run.completedAt ?? 0);
+    vi.setSystemTime(last + STRANDED_MARKER_MS - 1);
+    expect(await sweep(w)).toMatchObject({ reinvoked: 0 });
+    later(1);
+    expect(await sweep(w)).toMatchObject({ requeued: 0, reinvoked: 1, abandoned: 0, enqueued: 0 });
+    await drain(w);
+    r = await rows(w);
+    expect(only(ofType(r, "crew_blueprint"))).toMatchObject({ status: "succeeded" });
+    expect(r.runs.filter((run) => run.taskId === blueprintId).map((run) => run.status).sort()).toEqual(["failed", "succeeded"]);
+    expect(markersOf(r, blueprintId)).toEqual(["failed", "succeeded"]);
+    expect(hooks.calls.map((call) => call.type)).toEqual(["crew_blueprint", ...LAUNCH_CALLS]);
+    expect(r.ledger).toEqual([]);
+    expect(inFlight(r)).toBe(0);
   });
 
   test("a spent retry budget: the re-invoke fails the task closed at its start, with no gateway call or charge", async () => {
@@ -625,21 +753,39 @@ describe("L1 launch sweep: what it leaves alone", () => {
     expect(pool.log).toHaveLength(1);
   });
 
-  test("a finished launch, and a terminal task with a leftover running marker, are untouched", async () => {
+  test("a finished launch is untouched; a leftover running marker on a terminal task is settled once", async () => {
     const w = await world(2);
     await start(w, 0);
     await drain(w);
+    const finished = (await rows(w)).steps;
     pool.drop = () => true;
     await start(w, 1);
     const failedId = only(ofType(await rows(w), "crew_blueprint", project(w, 1)))._id;
-    // Its stepDone never came, and the task ended anyway (recovery failed it, say).
-    await w.t.run(async (ctx) => await ctx.db.patch("tasks", failedId, { status: "failed" }));
+    const markerId = only(pool.log.filter((call) => call.taskId === failedId)).markerId as Id<"task_steps">;
+    // Its stepDone threw, and the task ended anyway (recovery failed it, say).
+    await w.t.run(async (ctx) => await ctx.db.patch("tasks", failedId, { status: "failed", updatedAt: Date.now() }));
     const before = await rows(w);
-    later(STRANDED_MARKER_MS);
-    const out = await sweep(w);
-    expect(out).toMatchObject({ requeued: 0, abandoned: 0, enqueued: 0 });
+    later(LEFTOVER_MARKER_MS - 1);
+    expect(await sweep(w)).toMatchObject({ requeued: 0, abandoned: 0, settled: 0, enqueued: 0 });
     expect(await rows(w)).toEqual(before);
-    expect(markersOf(before, failedId)).toEqual(["running"]);
+
+    later(1);
+    expect(await sweep(w)).toMatchObject({ requeued: 0, reinvoked: 0, abandoned: 0, settled: 1, enqueued: 0 });
+    const r = await rows(w);
+    expect(markersOf(r, failedId)).toEqual(["failed"]);
+    expect(r.steps.filter((row) => row.status === "running")).toEqual([]);
+    expect(r.steps.filter((row) => row.projectId === project(w, 0))).toEqual(finished.filter((row) => row.projectId === project(w, 0)));
+    expect(inFlight(r)).toBe(0);
+    // Its stepDone, arriving late (new or legacy): superseded, so nothing moves.
+    for (const context of [
+      { taskId: failedId, step: "blueprint" as const, actionFailures: 0, markerId },
+      { taskId: failedId, step: "blueprint" as const, actionFailures: 0 },
+    ]) {
+      await w.t.mutation(internal.crew.launch.stepDone, { workId: "late-work" as WorkId, context, result: { kind: "failed", error: "the action died" } });
+    }
+    expect(await rows(w)).toEqual(r);
+    expect(await sweep(w)).toMatchObject({ settled: 0, enqueued: 0 });
+    expect(pool.log.filter((call) => call.taskId === failedId)).toHaveLength(1);
   });
 
   test("an archived business, and an archived task, are untouched", async () => {
@@ -694,21 +840,54 @@ describe("L1 launch sweep: gates before anything can spend", () => {
     expect(markersOf(r, only(ofType(r, "crew_blueprint", project(w, 1)))._id)).toEqual(["failed", "running"]);
   });
 
-  test("an owner whose sweep throws rolls back alone; the next owner on the page is still requeued", async () => {
+  test("an owner job that throws rolls back alone; the other owner's job still requeues (real scheduler)", async () => {
     const w = await world(2);
+    const brokenId = (await betweenExecutions(w, ["retryable_unbilled"], 0))._id;
     pool.drop = () => true;
-    await start(w, 0);
     await start(w, 1);
-    const r = await rows(w);
-    const brokenId = only(ofType(r, "crew_blueprint", project(w, 0)))._id;
     pool.drop = () => false;
+    // Owner 0's re-invoke throws inside its job, before its advance.
     pool.fail = (taskId) => taskId === brokenId;
     later(STRANDED_MARKER_MS);
-    expect(await sweep(w)).toMatchObject({ owners: 2, failedOwners: 1, requeued: 1, enqueued: 1 });
+    expect(await w.t.mutation(internal.crew.launch.recoverStalledLaunches, {})).toEqual({ businesses: 2, owners: 2, isDone: true });
+    vi.runOnlyPendingTimers();
+    await w.t.finishInProgressScheduledFunctions();
+    const jobs = (await w.t.run(async (ctx) => await ctx.db.system.query("_scheduled_functions").collect()))
+      .filter((job) => job.name.includes("recoverStalledOwner"));
+    const stateOf = (o: number) => jobs.find((job) => (job.args[0] as { ownerId: string }).ownerId === person(w, o).userId)?.state.kind;
+    expect(stateOf(0)).toBe("failed");
+    expect(stateOf(1)).toBe("success");
     const after = await rows(w);
-    // Owner 0's marker settle rolled back with its failed enqueue.
+    // Owner 0's marker settle rolled back with its failed re-invoke.
     expect(markersOf(after, brokenId)).toEqual(["running"]);
     expect(markersOf(after, only(ofType(after, "crew_blueprint", project(w, 1)))._id)).toEqual(["failed", "running"]);
+  });
+
+  test("a throwing advanceOwner rolls back alone: the settles and the re-invoke before it still commit", async () => {
+    const w = await world(1, 2);
+    const running = await betweenExecutions(w, ["retryable_unbilled"], 0, 0);
+    pool.drop = () => true;
+    await start(w, 0, 1);
+    pool.drop = () => false;
+    const queuedId = only(ofType(await rows(w), "crew_blueprint", project(w, 0, 1)))._id;
+    // The advance (the only enqueuer of the requeued step) throws; the running task's re-invoke does not.
+    pool.fail = (taskId) => taskId === queuedId;
+    later(STRANDED_MARKER_MS);
+    expect(await sweep(w)).toMatchObject({ failedOwners: 0, advanceFailed: 1, requeued: 1, reinvoked: 1, enqueued: 0 });
+    let r = await rows(w);
+    expect(markersOf(r, running._id)).toEqual(["failed", "running"]);
+    expect(markersOf(r, queuedId)).toEqual(["failed"]);
+    expect(only(ofType(r, "crew_blueprint", project(w, 0, 1))).status).toBe("queued");
+
+    // The next sweep advances the requeued step; then both launches complete.
+    pool.fail = () => false;
+    expect(await sweep(w)).toMatchObject({ advanceFailed: 0, requeued: 0, reinvoked: 0, enqueued: 1 });
+    await drain(w);
+    r = await rows(w);
+    expectLaunchDone(r, project(w, 0, 1));
+    expect(only(ofType(r, "crew_blueprint", project(w, 0, 0)))).toMatchObject({ status: "succeeded" });
+    expect(markersOf(r, queuedId)).toEqual(["failed", "succeeded"]);
+    expect(inFlight(r)).toBe(0);
   });
 });
 
@@ -808,6 +987,11 @@ describe("L1 launch sweep: overlap with itself and with recoverStaleCrewRuns", (
     expect(ofType(done, "crew_blueprint", project(w, 0, 1))).toEqual([expect.objectContaining({ status: "failed" })]);
     expect(hooks.calls.filter((call) => call.type === "crew_blueprint")).toHaveLength(1);
     expect(done.ledger).toEqual([]);
+    // Once still for LEFTOVER_MARKER_MS, the failed task's leftover marker is settled, once.
+    later(LEFTOVER_MARKER_MS);
+    expect(await sweep(w)).toMatchObject({ settled: 1, requeued: 0, enqueued: 0 });
+    expect(await sweep(w)).toMatchObject({ settled: 0 });
+    expect(markersOf(await rows(w), dying._id)).toEqual(["failed"]);
   });
 });
 
@@ -815,7 +999,8 @@ describe("L1 launch sweep: pagination", () => {
   test("more businesses than one page: the page schedules exactly one continuation, which ends the chain", async () => {
     const w = await world(LAUNCH_SWEEP_PAGE_MAX + 1);
     const first = await sweep(w, { limit: 10 * LAUNCH_SWEEP_PAGE_MAX });
-    expect(first).toMatchObject({ businesses: LAUNCH_SWEEP_PAGE_MAX, owners: 0, isDone: false });
+    // Every owner with a live workspace business gets a job (here none has a launch, so each does nothing).
+    expect(first).toMatchObject({ businesses: LAUNCH_SWEEP_PAGE_MAX, owners: LAUNCH_SWEEP_PAGE_MAX, isDone: false, requeued: 0, enqueued: 0 });
     const scheduled = async () => (await w.t.run(async (ctx) => await ctx.db.system.query("_scheduled_functions").collect()))
       .filter((job) => job.name.includes("recoverStalledLaunches"));
     const pending = await scheduled();
@@ -826,6 +1011,10 @@ describe("L1 launch sweep: pagination", () => {
     const all = await scheduled();
     expect(all).toHaveLength(1);
     expect(all[0]?.state.kind).toBe("success");
+    // The continuation scheduled the last owner's job, which the scheduler ran.
+    const ownerJobs = (await w.t.run(async (ctx) => await ctx.db.system.query("_scheduled_functions").collect()))
+      .filter((job) => job.name.includes("recoverStalledOwner") && job.state.kind !== "canceled");
+    expect(ownerJobs.map((job) => job.state.kind)).toEqual(["success"]);
   });
 
   test("a no-arg call reads one page; a small limit pages through owners with launches, each swept once", async () => {
@@ -841,6 +1030,28 @@ describe("L1 launch sweep: pagination", () => {
     for (let o = 0; o < 3; o += 1) {
       expect(markersOf(r, only(ofType(r, "crew_blueprint", project(w, o)))._id)).toEqual(["failed", "succeeded"]);
     }
-    expect(await sweep(w)).toMatchObject({ businesses: 3, owners: 0, isDone: true });
+    expect(await sweep(w)).toMatchObject({ businesses: 3, owners: 3, requeued: 0, enqueued: 0, isDone: true });
+  });
+
+  test("an owner whose businesses span two pages is swept by each page's job, and recovered once", async () => {
+    const w = await world(1, 2);
+    pool.drop = () => true;
+    await start(w, 0, 0);
+    await start(w, 0, 1);
+    pool.drop = () => false;
+    later(STRANDED_MARKER_MS);
+    expect(await sweep(w, { limit: 1 })).toMatchObject({ businesses: 1, owners: 1, requeued: 2, enqueued: 2, isDone: false });
+    const [next] = await takeScheduled<{ cursor: string; limit: number }>(w, "recoverStalledLaunches");
+    expect(next).toMatchObject({ limit: 1, cursor: expect.any(String) });
+    const r = await rows(w);
+    expect(await sweep(w, next)).toMatchObject({ businesses: 1, owners: 1, requeued: 0, reinvoked: 0, enqueued: 0 });
+    expect(await rows(w)).toEqual(r);
+    expect(pool.log.filter((call) => !call.dropped)).toHaveLength(2);
+    await drain(w);
+    const done = await rows(w);
+    for (let b = 0; b < 2; b += 1) {
+      expectLaunchDone(done, project(w, 0, b));
+      expect(markersOf(done, only(ofType(done, "crew_blueprint", project(w, 0, b)))._id)).toEqual(["failed", "succeeded"]);
+    }
   });
 });
