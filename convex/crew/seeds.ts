@@ -27,6 +27,7 @@ import { v } from "convex/values";
 
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "../_generated/server";
+import { soleActiveSuperAdminUserId } from "../admin/superAdmin";
 import { ideaIsValidated, seedColumns } from "../../lib/workspace/contracts/seeds";
 import { auditSeedDraft } from "../../lib/workspace/crew/seedAudit";
 import { SeedSourceError, seedSourceFromJson, seedSourceHash, type SeedSource } from "../../lib/workspace/crew/seedSource";
@@ -53,14 +54,9 @@ const itemInput = v.object({ ideaSlug: v.string(), sourceJson: v.string() });
 
 /** The seed rows' owner: the one active super admin. Refuses none or several. */
 async function soleSuperAdmin(ctx: Pick<QueryCtx, "db">): Promise<Id<"users">> {
-  const active = await ctx.db
-    .query("super_admins")
-    .withIndex("by_role_and_revokedAt", (q) => q.eq("role", "super_admin").eq("revokedAt", undefined))
-    .take(2);
-  if (active.length !== 1) {
-    throw new Error(`seed runs need exactly one active super admin to own the seed rows, found ${active.length}`);
-  }
-  return active[0]!.userId;
+  const ownerId = await soleActiveSuperAdminUserId(ctx);
+  if (ownerId === null) throw new Error("seed runs need exactly one active super admin to own the seed rows");
+  return ownerId;
 }
 
 /** The source, read back with every bound re-checked, for this slug. */
@@ -201,6 +197,7 @@ export const addItems = internalMutation({
       const existing = await platformSeedAt(ctx, item.ideaSlug, run.seedVersion);
       const status = existing !== null && existing.sourceHash === sourceHash ? "skipped" : "pending";
       await ctx.db.insert("idea_seed_items", {
+        ownerId: run.ownerId,
         runId: args.runId,
         ideaSlug: item.ideaSlug,
         seedVersion: run.seedVersion,

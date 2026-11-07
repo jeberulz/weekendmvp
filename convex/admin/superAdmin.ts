@@ -49,6 +49,19 @@ async function activeBindings(ctx: ReadCtx): Promise<Doc<"super_admins">[]> {
   return rows;
 }
 
+/**
+ * WP90-S3: the one active super admin's user id, or null when there is none
+ * or more than one. Platform-owned rows (the per-idea seed runs) are stored
+ * under it; the caller refuses rather than guessing between several owners.
+ */
+export async function soleActiveSuperAdminUserId(ctx: Pick<QueryCtx, "db">): Promise<Id<"users"> | null> {
+  const rows = await ctx.db
+    .query("super_admins")
+    .withIndex("by_role_and_revokedAt", (q) => q.eq("role", "super_admin").eq("revokedAt", undefined))
+    .take(2);
+  return rows.length === 1 ? (rows[0]?.userId ?? null) : null;
+}
+
 /** Revocation is the emergency control, so it never stops at the bound above. Run it again if it ends this many. */
 const REVOKE_BATCH = 1_000;
 

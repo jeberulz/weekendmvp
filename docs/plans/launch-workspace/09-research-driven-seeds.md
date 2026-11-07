@@ -1,7 +1,12 @@
 # 09 — Research-driven seeds: how idea-page content shapes the wizard, the crew and the landing page
 
-**Status:** proposal, 2026-11-07. Not ruled, not built. Extends `WP71-S5`
-(seed precompute). Nothing here changes the eight wizard steps, D10 or D15.
+**Status:** ruled and built, 2026-11-07, in WP90 (branch
+`claude/wp90-idea-seeds`, stories `docs/wp/wp90-stories.md`, log
+`docs/wp/wp90-progress.md`). The owner's answers to the four open questions
+are in `docs/wp/RULINGS.md` (2026-11-07, WP90) and under "Open questions"
+below. The live seed run has not happened: see "Running it". Extends
+`WP71-S5` (seed precompute). Nothing here changes the eight wizard steps, D10
+or D15.
 
 ## The question
 
@@ -153,7 +158,40 @@ so the founder sees who gets hired and why before launch.
   content changes. Store a content hash next to `seedVersion` so stale seeds
   can be found.
 
-## Open questions for the owner
+## As built (WP90)
+
+| Story | What landed |
+|-------|-------------|
+| S1 | C-SEED contract (`lib/workspace/contracts/seeds.ts`): the wizard hints, `deviceNeeds` and `platformSuggestion`, brand, landing, email, social, build-pack and role briefs, and `validated` from `ideaIsValidated`. `local_business` and `sellsGoods` were added to C-ROSTER. |
+| S2 | `crew-idea-seed@1` (`convex/ai/prompts/ideaSeed.v1.ts`, `deep`, batch) and the seed audit: no market claims, quotes must match the page, the slug must match. |
+| S3 | Message Batches precompute: `convex/crew/seeds.ts`, `seedsBatch.ts`, the `idea_seed_runs` / `idea_seed_items` tables and `npm run crew:seeds` (dry run by default). |
+| S4 | The wizard reads the newest platform seed. It shows a reason line, a quick confirm for confident platform, commercial-model and goal hints, and a "Your crew" preview after the blueprint step. |
+| S5 | The crew prompts move to v2. Brand, email and social read the seed's brand seeds, angles and buyer words (quoted, never attributed). The blueprint prompts know `local_business`. |
+
+Differences from the proposal:
+- The seed source is the published page only (MDX plus the manifest row). The engine research record is not read: a public page already carries what it verified.
+- The landing, build-pack, SEO and outbound fields are written and validated now. They are read by the WPs that build those steps.
+
+## Running it
+
+Operator commands. Each needs the owner's OK, and a dry run comes first.
+
+1. Dry run against prod (read-only, spends nothing): `npm run crew:seeds -- --seed-version 2026-11-08.1 --prod`
+2. A spike of 5: `npm run crew:seeds -- --seed-version 2026-11-08.1 --prod --limit 5 --apply`, then `--status <runId> --prod`.
+3. The rest of the library: the same command without `--limit`. Unchanged pages are skipped.
+
+Cost, worked out locally on 2026-11-07 for the 231 published pages (227 validated, 4 not):
+- The worst-case reservation is $53.28 for the library, or about $1.15 for 5 ideas. That is what the meter holds: `crew-idea-seed@1` on Opus 5.5 at the batch rate ($2 / $10 per MTok), with 16,384 output tokens allowed.
+- The expected spend is about $13–$22 for the library: around 7.5K input tokens per idea, and 4K–8K output.
+- This replaces both earlier figures (the $40–$51 here, and the WP71-S5 story's ≈ $15).
+
+Prod writes need `AI_PROVIDER_MODE=live` on the deployment. In any other mode the run writes test-mode fixture seeds at zero spend.
+
+## Open questions for the owner (answered 2026-11-07)
+
+Answers: (1) add `local_business`; (2) show the crew preview in the wizard;
+(3) a confident seed may show a quick confirm; (4) seed every public idea,
+with concept ideas labelled "Not yet validated".
 
 1. Add `local_business` to `IDEA_KINDS`, or treat a shop as `service`?
 2. Show the crew preview inside the wizard, or keep the roster a launch-time

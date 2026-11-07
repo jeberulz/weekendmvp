@@ -269,11 +269,14 @@ export const workspaceTables = {
     submittedAt: v.optional(v.number()),
     collectedAt: v.optional(v.number()),
   })
+    .index("by_ownerId", ["ownerId"])
     .index("by_seedVersion", ["seedVersion"])
     .index("by_status", ["status"]),
 
   /** WP90-S3. One idea in a run: its source, its reservation and what came of it. */
   idea_seed_items: defineTable({
+    /** The run's owner (D22: every workspace row has one). */
+    ownerId: v.id("users"),
     runId: v.id("idea_seed_runs"),
     ideaSlug: v.string(),
     seedVersion: v.string(),
@@ -301,6 +304,7 @@ export const workspaceTables = {
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("by_ownerId", ["ownerId"])
     .index("by_runId_and_status", ["runId", "status"])
     .index("by_ideaSlug_and_seedVersion", ["ideaSlug", "seedVersion"]),
 

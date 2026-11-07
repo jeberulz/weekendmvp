@@ -106,3 +106,30 @@ Append-only progress log. Do not rely on chat history for project state.
   - eslint on changed files: clean.
   - `vitest tests/platform convex`: 4,191 pass. New tests: `tests/platform/wp90-crew-angles.test.ts` (7) and a seeded brand-kit generator case in `convex/crew/generators.test.ts`.
 - Docs: stories and progress updated.
+
+## 2026-11-07 - WP90-S6
+
+- The full gate found two repo rules the S3 code broke. Both are fixed:
+  - D22 ownership (`tests/security/wp68-workspace-boundaries.test.mjs`): `idea_seed_items` now has `ownerId` (the run's owner), and both seed tables have a `by_ownerId` index. The table count went from 30 to 32, with WP90 named.
+  - WP46-E4a (`tests/editorial/structure/boundaries.test.ts`): only `convex/admin/superAdmin.ts` reads `super_admins`. The sole-owner lookup moved there (`soleActiveSuperAdminUserId`), and `convex/crew/seeds.ts` calls it.
+- Gate:
+  - `npm run typecheck`: green.
+  - `npm run lint`: 0 errors. The 43 warnings are in files WP90 did not touch.
+  - `npm test`: exit 0, 6,539 tests across every suite.
+  - `npm run build`: exit 0. It ran before the two small Convex fixes; typecheck and the affected suites were rerun after them.
+  - `check-prompt-versions`: 9 match.
+- Cost, worked out locally (`seedRequestFor` over all 231 pages; 227 validated, 4 concept):
+  - worst-case reservation $53.28 for the library, about $1.15 for a spike of 5;
+  - expected spend about $13–$22 for the library (Opus 5.5 batch at $2 / $10 per MTok, about 7.5K input and 4K–8K output per idea).
+  - Recorded in plan 09 ("Running it").
+- Docs updated:
+  - plan `09` (status, as built, running it, answers);
+  - `CLAUDE.md` key paths;
+  - `RULINGS.md` (a WP90 build-choices row for owner review);
+  - stories and progress.
+  - No prompt-registry doc table exists; the registry is `convex/ai/prompts/index.ts`, updated in S5.
+- Not done, owner-only or blocked here:
+  - a live or fixture seed run;
+  - the browser check of a seeded and an unseeded idea (the worktree has no Convex deployment of its own);
+  - deploying the schema;
+  - a PR.

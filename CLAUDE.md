@@ -124,6 +124,14 @@ read the response as text before parsing JSON.
   Anonymous mobile idea pages place the single account card after the title
   and description, before the long public summary/teasers/prompts; desktop
   keeps the sticky account rail beside the reader column (WP63-S4).
+- `lib/workspace/contracts/seeds.ts` + `convex/crew/seeds*.ts` — per-idea crew
+  seeds (WP90, plan `docs/plans/launch-workspace/09-research-driven-seeds.md`).
+  Each idea gets one `crew-idea-seed` precompute from its published page,
+  operator-run with `npm run crew:seeds` (dry run by default; `--apply` spends
+  money in live mode). The wizard (`wizardSeedFor`) reads the newest platform
+  seed for defaults, reasons, quick confirms and the crew preview. The crew
+  prompts v2 read its brand seeds and angles. `validated` comes from the idea
+  row's research level, never the model. No seed → fixtures
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

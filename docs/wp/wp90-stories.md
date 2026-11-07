@@ -82,7 +82,7 @@ accepted moving the L1 date if this needs more time.
     - Prompt versions bump; the lock check passes.
   - Verification: inputs/generators tests; `scripts/check-prompt-versions.mjs`.
 
-- [ ] `WP90-S6` - Gate, docs and handoff
+- [x] `WP90-S6` - Gate, docs and handoff
   - Scope: docs only.
   - Acceptance criteria:
     - Standard checks pass. Docs updated: plan `09`, `CLAUDE.md` key paths, stories,
