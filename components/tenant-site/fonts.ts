@@ -9,36 +9,41 @@ import type { TypePairId } from "@/lib/workspace/contracts/artifacts";
  * next/font cannot pick a family at render time: every loader is a module-scope call with literal options. So one
  * loader per family sits here (`TYPE_PAIRS` lists each family once), `TENANT_FONTS` maps a pair id to its loaders'
  * class names and CSS variables, and a page applies only the chosen pair's classes. `preload: false` means no
- * `<link rel=preload>`, and the browser fetches a face only when the page uses it. The weights below are literals
- * (next/font requires it) and `tests/platform/wp75-tenant-theme.test.ts` checks them against `TYPE_PAIRS`.
+ * `<link rel=preload>`, and the browser fetches a face only when the page uses it.
+ *
+ * A family that is a variable font on Google loads as `weight: "variable"`: one stable file per subset. Asking
+ * for named weights of a variable font makes Google build those instances on demand and sometimes answer with
+ * `fonts.gstatic.com/l/font?kit=…&skey=…` URLs, whose `&` breaks Turbopack's next/font import ("next/font/google
+ * queries have exactly one entry") and fails the build at random. Static families list their weights as
+ * literals. `tests/platform/wp75-tenant-theme.test.ts` checks both against `TYPE_PAIRS`.
  */
-const fraunces = Fraunces({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-fraunces", weight: ["300", "400", "500", "600", "700", "800", "900"] });
-const newsreader = Newsreader({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-newsreader", weight: ["400", "500", "600"] });
+const fraunces = Fraunces({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-fraunces", weight: "variable" });
+const newsreader = Newsreader({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-newsreader", weight: "variable" });
 const instrumentSerif = Instrument_Serif({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-instrument-serif", weight: ["400"] });
-const instrumentSans = Instrument_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-instrument-sans", weight: ["400", "500", "600"] });
+const instrumentSans = Instrument_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-instrument-sans", weight: "variable" });
 const dmSerif = DM_Serif_Display({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-dm-serif", weight: ["400"] });
-const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-dm-sans", weight: ["400", "500", "600"] });
-const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-bricolage", weight: ["500", "600", "700", "800"] });
-const figtree = Figtree({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-figtree", weight: ["400", "500", "600"] });
-const syne = Syne({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-syne", weight: ["600", "700", "800"] });
-const manrope = Manrope({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-manrope", weight: ["400", "500", "600"] });
-const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-archivo", weight: ["400", "500", "600", "700", "800", "900"] });
-const plexSans = IBM_Plex_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-plex-sans", weight: ["400", "500", "600", "700"] });
+const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-dm-sans", weight: "variable" });
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-bricolage", weight: "variable" });
+const figtree = Figtree({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-figtree", weight: "variable" });
+const syne = Syne({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-syne", weight: "variable" });
+const manrope = Manrope({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-manrope", weight: "variable" });
+const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-archivo", weight: "variable" });
+const plexSans = IBM_Plex_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-plex-sans", weight: "variable" });
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-plex-mono", weight: ["400", "500"] });
-const schibsted = Schibsted_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-schibsted", weight: ["600", "700", "800"] });
-const literata = Literata({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-literata", weight: ["400", "500"] });
+const schibsted = Schibsted_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-schibsted", weight: "variable" });
+const literata = Literata({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-literata", weight: "variable" });
 const youngSerif = Young_Serif({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-young-serif", weight: ["400"] });
-const publicSans = Public_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-public-sans", weight: ["400", "500", "600"] });
+const publicSans = Public_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-public-sans", weight: "variable" });
 const caprasimo = Caprasimo({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-caprasimo", weight: ["400"] });
-const karla = Karla({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-karla", weight: ["400", "500", "600"] });
+const karla = Karla({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-karla", weight: "variable" });
 const gloock = Gloock({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-gloock", weight: ["400"] });
-const workSans = Work_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-work-sans", weight: ["400", "500"] });
-const redHatDisplay = Red_Hat_Display({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-red-hat-display", weight: ["600", "700", "800", "900"] });
-const redHatText = Red_Hat_Text({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-red-hat-text", weight: ["400", "500"] });
-const hanken = Hanken_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-hanken", weight: ["600", "700", "800"] });
+const workSans = Work_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-work-sans", weight: "variable" });
+const redHatDisplay = Red_Hat_Display({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-red-hat-display", weight: "variable" });
+const redHatText = Red_Hat_Text({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-red-hat-text", weight: "variable" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-hanken", weight: "variable" });
 const spectral = Spectral({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-spectral", weight: ["400", "500"] });
-const familjen = Familjen_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-familjen", weight: ["500", "600", "700"] });
-const onest = Onest({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-onest", weight: ["400", "500"] });
+const familjen = Familjen_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-familjen", weight: "variable" });
+const onest = Onest({ subsets: ["latin"], display: "swap", preload: false, variable: "--tsr-onest", weight: "variable" });
 
 /** `className` (next/font's `.variable` class) defines `cssVar`; `cssVar` must equal the loader's `variable` option (tested). */
 type Face = { readonly className: string; readonly cssVar: string };
