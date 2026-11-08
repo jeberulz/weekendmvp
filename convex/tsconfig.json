@@ -8,6 +8,8 @@
     "allowJs": true,
     "strict": true,
     "moduleResolution": "Bundler",
+    /* Convex imports shared workspace modules that use the root alias. */
+    "paths": { "@/*": ["../*"] },
     /* Matches the root tsconfig. `convex/platform/sites/publish.ts` reuses
      * `lib/tenant-host.ts`, which imports `./canonical-path.ts` with an
      * explicit extension so a `node --test --experimental-strip-types` suite

@@ -34,6 +34,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Typecheck Convex deployment
+        run: npx --no-install tsc --project convex/tsconfig.json
+
       - name: Lint and accessibility rules
         run: npm run lint
 
