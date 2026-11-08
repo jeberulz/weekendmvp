@@ -12,6 +12,7 @@ import {
   ideaIsValidated,
   ideaSeedDraftSchema,
   platformSuggestion,
+  seedBlueprintDraftSchema,
   seedColumns,
   seedFromColumns,
   seedFromDraft,
@@ -21,6 +22,16 @@ describe("WP90-S1 seed draft contract", () => {
   it("accepts both fixture drafts", () => {
     expect(ideaSeedDraftSchema.safeParse(hydrotrailSeedDraft).success).toBe(true);
     expect(ideaSeedDraftSchema.safeParse(bakerySeedDraft).success).toBe(true);
+  });
+
+  it("keeps the blueprint's team out of the model-facing draft (roster per idea, WP91)", () => {
+    expect("team" in seedBlueprintDraftSchema.shape).toBe(false);
+    const withTeam = structuredClone(hydrotrailSeedDraft) as typeof hydrotrailSeedDraft & {
+      blueprint: { team?: unknown };
+    };
+    withTeam.blueprint.team = [{ roleKey: "seo", decision: "hire", reason: "Searchers look for this" }];
+    const parsed = ideaSeedDraftSchema.safeParse(withTeam);
+    expect(parsed.success && "team" in parsed.data.blueprint).toBe(false);
   });
 
   it("rejects a market claim anywhere in the seed", () => {

@@ -12,8 +12,11 @@
  * themselves, so no field carries a URL, an address or an @handle (the S2a
  * `social_link_in_text` check refuses one).
  *
+ * Version 3 (roster per idea, WP91): the text is version 2's; the C-ART
+ * contracts it imports changed (the blueprint gains an optional `team`).
+ *
  * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `socialPack.v3.ts`),
+ * hashes module source) needs a version bump (a new `socialPack.v4.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -58,7 +61,7 @@ const SYSTEM = [
 
 export const socialPackSpec = definePromptSpec<SocialPackInput, SocialPack>({
   id: "crew-social-pack",
-  version: 2,
+  version: 3,
   tier: "fast",
   // TIER_RECOMMENDED_EFFORT.fast, written out: the lock lets a prompt module import only definePromptSpec from C-PROMPT.
   effort: "low",

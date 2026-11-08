@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import { brandKitSpec } from "@/convex/ai/prompts/brandKit.v2";
-import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v2";
-import { emailSequenceSpec } from "@/convex/ai/prompts/emailSequence.v2";
-import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v2";
+import { brandKitSpec } from "@/convex/ai/prompts/brandKit.v3";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
+import { emailSequenceSpec } from "@/convex/ai/prompts/emailSequence.v3";
+import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v3";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailWizardAnswers } from "@/lib/workspace/contracts/fixtures/hydrotrail";
 import { hydrotrailSeedDraft } from "@/lib/workspace/contracts/fixtures/seeds";
 import { seedFromDraft } from "@/lib/workspace/contracts/seeds";
@@ -41,9 +41,9 @@ describe("WP90-S5 idea angles", () => {
   });
 
   test("each copy step's plan carries the angles, and the refs are v2", () => {
-    expect(BRAND_KIT_PROMPT_REF).toBe("crew-brand-kit@2");
-    expect(EMAIL_SEQUENCE_PROMPT_REF).toBe("crew-email-sequence@2");
-    expect(SOCIAL_PACK_PROMPT_REF).toBe("crew-social-pack@2");
+    expect(BRAND_KIT_PROMPT_REF).toBe("crew-brand-kit@3");
+    expect(EMAIL_SEQUENCE_PROMPT_REF).toBe("crew-email-sequence@3");
+    expect(SOCIAL_PACK_PROMPT_REF).toBe("crew-social-pack@3");
     expect(brandKitStepPlan({ answers, blueprint: hydrotrailBlueprint, seed }).inputs.ideaAngles).toBe(ideaAnglesFor("brand_kit", seed));
     expect(
       emailSequenceStepPlan({ answers, blueprint: hydrotrailBlueprint, brandKit: hydrotrailBrandKit, seed }).inputs.ideaAngles,
@@ -90,7 +90,7 @@ describe("WP90-S5 v2 specs", () => {
   }
 
   test("the blueprint prompt knows the local business kind and sellsGoods", () => {
-    expect(blueprintPersonaliseSpec.version).toBe(2);
+    expect(blueprintPersonaliseSpec.version).toBe(3);
     expect(blueprintPersonaliseSpec.system).toContain("local_business");
     expect(blueprintPersonaliseSpec.system).toContain("sellsGoods");
   });

@@ -47,7 +47,7 @@ export const WREN_EXPLAIN_TOPICS = {
   approvals: "how approval cards work and why nothing happens without the founder's click",
   change_rounds: "how asking for changes works: two free rounds, then a priced round",
   credits: "what credits are and when work costs them",
-  wren_limits: "how many messages Wren answers per day on each plan",
+  wren_limits: "how many messages the Crew Lead answers per day on each plan",
   publishing: "how the landing page goes live",
   email_sending: "how emails reach a list, and when they are sent",
   social_posting: "how social posts are scheduled and posted",
@@ -72,7 +72,7 @@ export const WREN_NAVIGATE_ROUTES = {
   email: "email sequences",
   ads: "ads drafts",
   social: "social posts",
-  files: "files and what Wren knows",
+  files: "files and what the Crew Lead knows",
   settings: "business settings",
 } as const;
 export type WrenNavigateRoute = keyof typeof WREN_NAVIGATE_ROUTES;

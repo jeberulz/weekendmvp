@@ -23,8 +23,9 @@ import { createAnthropicAdapter } from "../ai/providers/anthropic";
 import type { AnthropicFixtureReply } from "../ai/providers/fixtures";
 import type { Blueprint } from "../../lib/workspace/contracts/artifacts";
 import { hydrotrailBlueprint, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { FIXTURE_TEAM_PROFILES } from "../../lib/workspace/contracts/fixtures/teamProfiles";
 import { jobKey } from "../../lib/workspace/contracts/jobs";
-import { rosterPlanSchema } from "../../lib/workspace/contracts/roster";
+import { LEGACY_ALWAYS_HIRED_ROLE_KEYS, LEGACY_ROSTER_RULES_VERSIONS, rosterPlanSchema } from "../../lib/workspace/contracts/roster";
 import { rosterInputFromWizard, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { WORKSTREAM_TITLES } from "../../lib/workspace/crew/launch";
 import { runCrewGeneratorStepWith, type CrewGeneratorCtx } from "./generators";
@@ -172,6 +173,13 @@ async function tokensSpent(w: World): Promise<number> {
   return 10 - value.value;
 }
 
+/**
+ * The blueprint the fixture client returns for HydroTrail (roster per idea,
+ * WP91): HydroTrail with the consumer-app team proposal. The model-facing
+ * schema (version 2) requires a team, so a test reply carries one too.
+ */
+const FIXTURE_BLUEPRINT: Blueprint = { ...hydrotrailBlueprint, team: FIXTURE_TEAM_PROFILES.consumer_app.team.map((entry) => ({ ...entry })) };
+
 function expectedPlan(blueprint: Blueprint, answers: WizardAnswers = hydrotrailWizardAnswers) {
   return planRoster(rosterInputFromWizard(answers, blueprint), { leadName: "Wren" });
 }
@@ -188,7 +196,7 @@ async function launchToRoster(w: World, reply?: () => AnthropicFixtureReply | un
 // ---------------------------------------------------------------------------
 
 describe("WP75-S1 startLaunch → blueprint → roster", () => {
-  test("HydroTrail: 9 hired and 4 skipped with the C-ROSTER reasons, every row written once, no roster card", async () => {
+  test("HydroTrail: 9 hired and 4 skipped with the lead's reasons, every row written once, no roster card", async () => {
     const w = await world();
     const started = await as(w, w.owner).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     expect(started).toEqual({ state: "assembling" });
@@ -207,24 +215,31 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
     const outcome = await runBlueprint(w, blueprintTasks(r)[0]?._id as Id<"tasks">);
     expect(outcome).toMatchObject({ kind: "finished" });
 
-    const plan = expectedPlan(hydrotrailBlueprint);
+    const plan = expectedPlan(FIXTURE_BLUEPRINT);
     expect(plan.hired).toHaveLength(9);
     expect(plan.skipped).toHaveLength(4);
     const view = await as(w, w.owner).query(api.crew.roster.launchStatus, { projectId: w.projectId });
+    const byLead = (decidedBy: "lead" | undefined) => (decidedBy === undefined ? {} : { decidedBy });
     expect(view).toEqual({
       state: "ready",
-      hired: plan.hired.map(({ roleKey, employeeName, roleLabel, reason }) => ({ roleKey, employeeName, roleLabel, reason })),
-      skipped: plan.skipped.map(({ roleKey, roleLabel, reason }) => ({ roleKey, roleLabel, reason })),
+      hired: plan.hired.map(({ roleKey, employeeName, roleLabel, reason, decidedBy }) => ({ roleKey, employeeName, roleLabel, reason, ...byLead(decidedBy) })),
+      skipped: plan.skipped.map(({ roleKey, roleLabel, reason, decidedBy }) => ({ roleKey, roleLabel, reason, ...byLead(decidedBy) })),
     });
+    // The fixture team proposal decided every optional role, so each carries the lead's mark.
+    if (view.state === "ready") {
+      expect(view.hired.filter((role) => role.decidedBy === "lead").map((role) => role.roleKey)).toEqual(["landing", "seo", "marketing", "engineering"]);
+      expect(view.skipped.every((role) => role.decidedBy === "lead")).toBe(true);
+    }
     if (view.state !== "ready") throw new Error("not ready");
     expect(view.hired.map((role) => role.roleKey)).toEqual(
       ["lead", "brand", "landing", "seo", "marketing", "email", "social", "engineering", "ads"],
     );
     expect(view.hired.find((role) => role.roleKey === "ads")?.reason).toBe("Goal has a paid push: $7/day test");
-    expect(view.skipped).toEqual([
+    expect(view.skipped.map(({ roleKey, roleLabel, reason }) => ({ roleKey, roleLabel, reason }))).toEqual([
       { roleKey: "merch", roleLabel: "Merch", reason: plan.skipped[0]?.reason },
       { roleKey: "outbound", roleLabel: "Outbound", reason: plan.skipped[1]?.reason },
-      { roleKey: "curriculum", roleLabel: "Curriculum", reason: "No course content" },
+      // The lead's reason (the fixture team proposal), not the rule's "No course content".
+      { roleKey: "curriculum", roleLabel: "Curriculum", reason: "Nothing to teach; the app does the work" },
       { roleKey: "community", roleLabel: "Community", reason: plan.skipped[3]?.reason },
     ]);
 
@@ -270,6 +285,7 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
       ...hydrotrailBlueprint,
       ideaSlug: COURSE_SLUG,
       profile: { ideaKind: "course", buyer: "consumer", deliveryFormat: "cohort", audiencePlural: "new hikers" },
+      team: [],
     };
     const { outcome } = await launchToRoster(w, () => ({ json: course }));
     expect(outcome).toMatchObject({ kind: "finished" });
@@ -281,7 +297,7 @@ describe("WP75-S1 startLaunch → blueprint → roster", () => {
     expect(view.skipped.map((role) => role.roleKey)).not.toContain("curriculum");
     const answers: WizardAnswers = { ...hydrotrailWizardAnswers, idea: { source: "library", ideaSlug: COURSE_SLUG } };
     expect(view.hired.map((role) => role.reason)).toEqual(expectedPlan(course, answers).hired.map((entry) => entry.reason));
-    const hydro = expectedPlan(hydrotrailBlueprint).hired.map((entry) => entry.roleKey);
+    const hydro = expectedPlan(FIXTURE_BLUEPRINT).hired.map((entry) => entry.roleKey);
     expect(hired).not.toEqual(hydro);
   });
 
@@ -323,7 +339,7 @@ describe("WP75-S1 idempotency and tokens", () => {
     if (run === null) throw new Error("no run");
     const blueprintDoc = before.documents.find((doc) => doc.kind === "blueprint");
     const replay = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@2", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
+      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@3", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
     });
     expect(replay).toEqual({ kind: "stale" });
 
@@ -555,6 +571,7 @@ async function insertBlueprintRevision(w: World, revisionOfTaskId: Id<"tasks">) 
 const courseBlueprint = (): Blueprint => ({
   ...hydrotrailBlueprint,
   profile: { ideaKind: "course", buyer: "consumer", deliveryFormat: "cohort", audiencePlural: "new hikers" },
+  team: [],
 });
 
 describe("WP75-S1 review fixes", () => {
@@ -573,6 +590,28 @@ describe("WP75-S1 review fixes", () => {
     expect(await tokensSpent(w)).toBe(1);
   });
 
+  test("a roster plan stored before WP91 (eight always roles) still reads as the business's team", async () => {
+    const w = await world();
+    await launchToRoster(w);
+    const legacyAlways = new Set<string>(LEGACY_ALWAYS_HIRED_ROLE_KEYS);
+    const current = expectedPlan(FIXTURE_BLUEPRINT);
+    // What the pre-WP91 rules stored: their rules version, landing, seo, marketing and engineering marked always, no lead marks.
+    const legacy = {
+      ...current,
+      rulesVersion: LEGACY_ROSTER_RULES_VERSIONS[0],
+      hired: current.hired.map(({ decidedBy: _decidedBy, ...entry }) => ({ ...entry, always: legacyAlways.has(entry.roleKey) })),
+      skipped: current.skipped.map(({ decidedBy: _decidedBy, ...entry }) => entry),
+    };
+    expect(rosterPlanSchema.safeParse(legacy).success).toBe(true);
+    const document = (await rows(w)).documents.find((row) => row.kind === "roster_plan");
+    if (document === undefined) throw new Error("no roster document");
+    await w.t.run(async (ctx) => await ctx.db.patch("documents", document._id, { body: JSON.stringify(legacy) }));
+    const view = await as(w, w.owner).query(api.crew.roster.launchStatus, { projectId: w.projectId });
+    if (view.state !== "ready") throw new Error(`not ready: ${JSON.stringify(view)}`);
+    expect(view.hired.map((role) => role.roleKey)).toEqual(legacy.hired.map((entry) => entry.roleKey));
+    expect(view.hired.some((role) => role.decidedBy !== undefined)).toBe(false);
+  });
+
   test("writeLaunchRoster on a succeeded roster task with its plan row writes nothing", async () => {
     const w = await world();
     await launchToRoster(w);
@@ -580,7 +619,7 @@ describe("WP75-S1 review fixes", () => {
     const rosterTask = before.tasks.find((row) => row.type === "crew_roster");
     if (rosterTask === undefined) throw new Error("no roster task");
     expect(before.rosterPlans).toHaveLength(1);
-    const result = await w.t.run(async (ctx) => await writeLaunchRoster(ctx, rosterTask, expectedPlan(hydrotrailBlueprint), Date.now()));
+    const result = await w.t.run(async (ctx) => await writeLaunchRoster(ctx, rosterTask, expectedPlan(FIXTURE_BLUEPRINT), Date.now()));
     expect(result).toBe("exists");
     const after = await rows(w);
     expect(after.tasks).toEqual(before.tasks);
@@ -686,7 +725,7 @@ describe("WP75-S1 review fixes", () => {
     if (view.state !== "ready") throw new Error(`not ready: ${JSON.stringify(view)}`);
     expect(view.hired.map((role) => role.roleKey)).toEqual(expectedPlan(courseBlueprint()).hired.map((entry) => entry.roleKey));
     expect(view.hired.map((role) => role.roleKey)).toContain("curriculum");
-    expect(view.hired.map((role) => role.roleKey)).not.toEqual(expectedPlan(hydrotrailBlueprint).hired.map((entry) => entry.roleKey));
+    expect(view.hired.map((role) => role.roleKey)).not.toEqual(expectedPlan(FIXTURE_BLUEPRINT).hired.map((entry) => entry.roleKey));
     // The launch already existed (its roster task), so this is a free heal.
     expect(await tokensSpent(w)).toBe(spent);
   });
@@ -696,7 +735,7 @@ describe("WP75-S1 review fixes", () => {
     await storedFirstDraftWithOpenRoster(w);
     const view = await as(w, w.owner).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     if (view.state !== "ready") throw new Error(`not ready: ${JSON.stringify(view)}`);
-    expect(view.hired.map((role) => role.roleKey)).toEqual(expectedPlan(hydrotrailBlueprint).hired.map((entry) => entry.roleKey));
+    expect(view.hired.map((role) => role.roleKey)).toEqual(expectedPlan(FIXTURE_BLUEPRINT).hired.map((entry) => entry.roleKey));
   });
 });
 
@@ -780,7 +819,7 @@ describe("WP75-S1 re-check fixes", () => {
     });
     const openTask = await w.t.run(async (ctx) => await ctx.db.get("tasks", rosterTask._id));
     if (openTask === null) throw new Error("no task");
-    expect(await w.t.run(async (ctx) => await writeLaunchRoster(ctx, openTask, expectedPlan(hydrotrailBlueprint), Date.now())))
+    expect(await w.t.run(async (ctx) => await writeLaunchRoster(ctx, openTask, expectedPlan(FIXTURE_BLUEPRINT), Date.now())))
       .toBe("healed");
     const after = await rows(w);
     expect(after.documents.filter((d) => d.kind === "roster_plan")).toEqual(written.documents.filter((d) => d.kind === "roster_plan"));

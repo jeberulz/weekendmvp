@@ -78,14 +78,14 @@ export const ownIdeaLightBlueprint: Blueprint = {
 
 export const hydrotrailRosterPlan: RosterPlan = {
   schemaVersion: 1,
-  rulesVersion: "2026-11-05.1",
+  rulesVersion: "2026-11-08.1",
   ideaKind: "app",
   hired: [
     { roleKey: "lead", employeeName: "Wren", roleLabel: "Crew Lead", hiredBy: "rule", always: true, reason: "Routes approvals" },
     { roleKey: "brand", employeeName: "Iris", roleLabel: "Brand", hiredBy: "rule", always: true, reason: "Logo, palette, voice" },
-    { roleKey: "landing", employeeName: "Leo", roleLabel: "Landing", hiredBy: "rule", always: true, reason: "Site and waitlist" },
-    { roleKey: "seo", employeeName: "Sana", roleLabel: "SEO", hiredBy: "rule", always: true, reason: "People search for this problem" },
-    { roleKey: "marketing", employeeName: "Marco", roleLabel: "Marketing", hiredBy: "rule", always: true, reason: "Owns 50 waitlist signups" },
+    { roleKey: "landing", employeeName: "Leo", roleLabel: "Landing", hiredBy: "rule", always: false, reason: "Site and waitlist" },
+    { roleKey: "seo", employeeName: "Sana", roleLabel: "SEO", hiredBy: "rule", always: false, reason: "People search for this problem" },
+    { roleKey: "marketing", employeeName: "Marco", roleLabel: "Marketing", hiredBy: "rule", always: false, reason: "Owns 50 waitlist signups" },
     { roleKey: "email", employeeName: "Elle", roleLabel: "Email", hiredBy: "rule", always: true, reason: "Waitlist email sequence" },
     { roleKey: "social", employeeName: "Theo", roleLabel: "Social", hiredBy: "rule", always: true, reason: "Launch posts" },
     {
@@ -93,7 +93,7 @@ export const hydrotrailRosterPlan: RosterPlan = {
       employeeName: "Kai",
       roleLabel: "Engineering",
       hiredBy: "rule",
-      always: true,
+      always: false,
       weight: "full",
       reason: "An app: PRD slice and the 8-prompt build pack",
     },

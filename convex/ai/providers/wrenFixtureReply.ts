@@ -46,6 +46,7 @@ const QUOTE_MAX = 80;
 
 const contextSchema = z.object({
   business: z.object({ name: z.string().optional() }).catch({}).optional(),
+  partner: z.object({ name: z.string().optional() }).catch({}).optional(),
   waitingOnYou: z.array(z.object({ review: z.string(), page: z.string() })).catch([]).optional(),
   approvable: z.array(z.object({
     kind: z.string(),
@@ -57,6 +58,8 @@ const contextSchema = z.object({
 
 type WrenContext = {
   readonly name: string;
+  /** The founder's name for their Crew Lead, or null when none is stored. */
+  readonly lead: string | null;
   readonly reviews: readonly { readonly review: string; readonly page: string }[];
   readonly approvable: readonly { readonly kind: string; readonly subjectTable: string; readonly subjectId: string; readonly label: string }[];
 };
@@ -98,8 +101,10 @@ function contextOf(params: Anthropic.MessageCreateParamsNonStreaming): WrenConte
   const parsed = contextSchema.safeParse(taggedJson(block, "business_context") ?? {});
   const data = parsed.success ? parsed.data : {};
   const name = data.business?.name?.trim();
+  const lead = data.partner?.name?.trim();
   return {
     name: name === undefined || name.length === 0 ? "your business" : name,
+    lead: lead === undefined || lead.length === 0 ? null : lead,
     reviews: (data.waitingOnYou ?? []).slice(0, LIST_MAX),
     approvable: (data.approvable ?? []).slice(0, LIST_MAX),
   };
@@ -177,7 +182,7 @@ function replyFor(intent: Intent, context: WrenContext, message: string): string
       return approvalsReply(context);
     case "greeting":
       return [
-        `Hi. I am Wren, your launch partner for ${context.name}. ${standing(context)}`,
+        `Hi. ${context.lead === null ? "I am your Crew Lead" : `I am ${context.lead}, your Crew Lead`} for ${context.name}. ${standing(context)}`,
         "Ask me what needs your approval, what the crew is working on, or how to change the plan.",
       ].join("\n\n");
     case "status":

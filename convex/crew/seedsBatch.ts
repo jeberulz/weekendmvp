@@ -6,7 +6,7 @@
  *
  * Meter (C-METER, ownerless platform work):
  * - one reservation per idea, `batch: true`, attempt key
- *   `precompute:{ideaSlug}:{seedVersion}:crew-idea-seed@1:{attempt}`, the
+ *   `precompute:{ideaSlug}:{seedVersion}:crew-idea-seed@2:{attempt}`, the
  *   worst case at the batch rate. The batch request's `custom_id` is the
  *   reservation's `usageId`, so results settle by it in any order;
  * - a budget or kill-switch refusal stops reserving: the rest of the run is

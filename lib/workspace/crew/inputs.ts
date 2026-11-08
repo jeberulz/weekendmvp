@@ -4,8 +4,8 @@
  * Convex imports, relative imports only (the Convex bundler loads this file).
  *
  * - The prompt is chosen by the business's source: a library idea gets
- *   `crew-blueprint-personalise@2`, an own idea `crew-blueprint-own-idea@2`
- *   (D15, "Not yet validated").
+ *   `crew-blueprint-personalise@3`, an own idea `crew-blueprint-own-idea@3`
+ *   (D15, "Not yet validated"). Version 3 also proposes the team (roster per idea, WP91).
  * - The seed: `idea_crew_seeds` when a row parses as a library blueprint for
  *   this idea; the HydroTrail fixture seed for its slug until WP71-S5 has run;
  *   otherwise none (the library idea record carries the facts).
@@ -34,11 +34,11 @@ import { HYDROTRAIL_SLUG } from "../wizard/defaults";
 import { ownIdeaBlueprintPreview } from "../wizard/light-blueprint";
 import { designCandidatesFor, type DesignCandidates } from "./design/proMax";
 
-export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@2";
-export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@2";
-export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@2";
-export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@2";
-export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@2";
+export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@3";
+export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@3";
+export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@3";
+export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@3";
+export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@3";
 
 export type CrewPromptInputs = Record<string, string | null>;
 

@@ -78,6 +78,7 @@ function viewAt(index: number, completed = false, business: WizardSessionView["b
     answers: seed.defaults,
     defaults: seed.defaults,
     suggestedNames: [...seed.suggestedNames],
+    suggestedPartnerNames: [...seed.suggestedPartnerNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
     hints: {},

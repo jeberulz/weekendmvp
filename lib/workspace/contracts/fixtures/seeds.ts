@@ -1,5 +1,5 @@
 /**
- * WP90 fixture seed drafts: what `crew-idea-seed@1` returns, for tests, the
+ * WP90 fixture seed drafts: what `crew-idea-seed@2` returns, for tests, the
  * fixture batch responder and the local walkthrough. Two shapes:
  * - HydroTrail: a consumer app whose loop needs the phone (offline,
  *   push notifications), so the platform rule suggests native.

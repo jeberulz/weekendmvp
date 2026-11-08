@@ -75,12 +75,16 @@ export type LaunchHiredRole = {
   readonly employeeName: string;
   readonly roleLabel: string;
   readonly reason: string;
+  /** Roster per idea (WP91): present when the Crew Lead's team proposal made this call. */
+  readonly decidedBy?: "lead";
 };
 
 export type LaunchSkippedRole = {
   readonly roleKey: string;
   readonly roleLabel: string;
   readonly reason: string;
+  /** Roster per idea (WP91): present when the Crew Lead's team proposal made this call. */
+  readonly decidedBy?: "lead";
 };
 
 /**
@@ -110,8 +114,14 @@ export function readyLaunchView(plan: RosterPlan): Extract<LaunchView, { state: 
       employeeName: entry.employeeName,
       roleLabel: entry.roleLabel,
       reason: entry.reason,
+      ...(entry.decidedBy === undefined ? {} : { decidedBy: entry.decidedBy }),
     })),
-    skipped: plan.skipped.map((entry) => ({ roleKey: entry.roleKey, roleLabel: entry.roleLabel, reason: entry.reason })),
+    skipped: plan.skipped.map((entry) => ({
+      roleKey: entry.roleKey,
+      roleLabel: entry.roleLabel,
+      reason: entry.reason,
+      ...(entry.decidedBy === undefined ? {} : { decidedBy: entry.decidedBy }),
+    })),
   };
 }
 

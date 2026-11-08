@@ -3,7 +3,7 @@ import { ConvexError } from "convex/values";
 import type { TeamCardStatus } from "@/components/workspace/kit/types";
 import { ROLE_CATALOGUE } from "@/convex/crew/roles";
 import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
-import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import { CORE_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
 import type { LaunchHiredRole, LaunchSkippedRole, LaunchView } from "@/lib/workspace/crew/launch";
 import { needsYouTail } from "@/lib/workspace/needsYou";
 import { TEAM_NOT_STARTED_COPY, TEAM_PARTNER_NAME } from "@/lib/workspace/reviewPages";
@@ -37,8 +37,15 @@ export type TeamReview = {
   readonly changeRound: bigint | number;
 };
 
-export type TeamHired = { readonly role: RoleKey; readonly name: string; readonly roleLabel: string; readonly reason: string };
-export type TeamSkipped = { readonly role: RoleKey; readonly roleLabel: string; readonly reason: string };
+/** `decidedBy: "lead"` (roster per idea, WP91): the Crew Lead's team proposal made this call. */
+export type TeamHired = {
+  readonly role: RoleKey;
+  readonly name: string;
+  readonly roleLabel: string;
+  readonly reason: string;
+  readonly decidedBy?: "lead";
+};
+export type TeamSkipped = { readonly role: RoleKey; readonly roleLabel: string; readonly reason: string; readonly decidedBy?: "lead" };
 
 export function isRoleKey(value: string): value is RoleKey {
   return (ROLE_KEYS as readonly string[]).includes(value);
@@ -49,12 +56,25 @@ export function readyRoster(launch: Extract<LaunchView, { state: "ready" }>): { 
   const hired: TeamHired[] = [];
   for (const entry of launch.hired as readonly LaunchHiredRole[]) {
     if (isRoleKey(entry.roleKey)) {
-      hired.push({ role: entry.roleKey, name: entry.employeeName, roleLabel: entry.roleLabel, reason: entry.reason });
+      hired.push({
+        role: entry.roleKey,
+        name: entry.employeeName,
+        roleLabel: entry.roleLabel,
+        reason: entry.reason,
+        ...(entry.decidedBy === undefined ? {} : { decidedBy: entry.decidedBy }),
+      });
     }
   }
   const skipped: TeamSkipped[] = [];
   for (const entry of launch.skipped as readonly LaunchSkippedRole[]) {
-    if (isRoleKey(entry.roleKey)) skipped.push({ role: entry.roleKey, roleLabel: entry.roleLabel, reason: entry.reason });
+    if (isRoleKey(entry.roleKey)) {
+      skipped.push({
+        role: entry.roleKey,
+        roleLabel: entry.roleLabel,
+        reason: entry.reason,
+        ...(entry.decidedBy === undefined ? {} : { decidedBy: entry.decidedBy }),
+      });
+    }
   }
   return { hired, skipped };
 }
@@ -418,28 +438,55 @@ export function planSummary(steps: readonly Pick<TeamStep, "state" | "notBuilt">
 // Why this team
 // ---------------------------------------------------------------------------
 
+/**
+ * - `core`: Lead, Brand, Email or Social, on every team.
+ * - `lead`: hired because the Crew Lead chose it for this idea (roster per idea, WP91).
+ * - `added`: hired by a rule (a paid push, a course) or by the founder.
+ * - `skipped`: not on the team for now.
+ */
+export type WhyDecision = "core" | "lead" | "added" | "skipped";
+
 export type WhyRow = {
   readonly role: RoleKey;
   readonly roleLabel: string;
-  readonly decision: "always" | "added" | "skipped";
+  readonly decision: WhyDecision;
+  /** The pill text, for example "Hired · Juno chose". */
+  readonly label: string;
   readonly reason: string;
 };
 
-export const DECISION_LABELS = { always: "Hired · always", added: "Hired · added", skipped: "Skipped" } as const;
+const CORE: ReadonlySet<RoleKey> = new Set<RoleKey>(CORE_ROLE_KEYS);
 
-const ALWAYS: ReadonlySet<RoleKey> = new Set<RoleKey>(ALWAYS_HIRED_ROLE_KEYS);
+/** The hired role's decision: core, the lead's call, or added. */
+export function hiredDecision(role: RoleKey, decidedBy: "lead" | undefined): Exclude<WhyDecision, "skipped"> {
+  if (CORE.has(role)) return "core";
+  return decidedBy === "lead" ? "lead" : "added";
+}
+
+/** The Crew Lead's name on this team, or a plain fallback. */
+export function leadNameOf(hired: readonly TeamHired[]): string {
+  return hired.find((entry) => entry.role === "lead")?.name ?? "Your Crew Lead";
+}
 
 /** Every role the roster decided on, hired or skipped, in catalogue order. */
 export function whyRows(hired: readonly TeamHired[], skipped: readonly TeamSkipped[]): WhyRow[] {
+  const leadName = leadNameOf(hired);
+  const labels: Readonly<Record<WhyDecision, string>> = {
+    core: "Hired · core",
+    lead: `Hired · ${leadName} chose`,
+    added: "Hired · added",
+    skipped: "Skipped",
+  };
   const rows: WhyRow[] = [];
   for (const role of ROLE_KEYS) {
     const h = hired.find((entry) => entry.role === role);
     if (h !== undefined) {
-      rows.push({ role, roleLabel: h.roleLabel, decision: ALWAYS.has(role) ? "always" : "added", reason: h.reason });
+      const decision = hiredDecision(role, h.decidedBy);
+      rows.push({ role, roleLabel: h.roleLabel, decision, label: labels[decision], reason: h.reason });
       continue;
     }
     const s = skipped.find((entry) => entry.role === role);
-    if (s !== undefined) rows.push({ role, roleLabel: s.roleLabel, decision: "skipped", reason: s.reason });
+    if (s !== undefined) rows.push({ role, roleLabel: s.roleLabel, decision: "skipped", label: labels.skipped, reason: s.reason });
   }
   return rows;
 }

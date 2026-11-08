@@ -1,5 +1,5 @@
 /**
- * WP90-S2 — the seed audit. Every `crew-idea-seed@1` result passes through
+ * WP90-S2 — the seed audit. Every `crew-idea-seed@2` result passes through
  * `auditSeedDraft` before anything is stored; a seed that fails is never
  * written, and the idea keeps its previous seed (or the generic fixture).
  *
