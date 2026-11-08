@@ -293,7 +293,7 @@ describe("WP76-S1a HydroTrail launch writes the email sequence draft", () => {
     const documents = r.documents.filter((row) => row.kind === "email_sequence");
     expect(documents).toHaveLength(1);
     const document = documents[0] as Doc<"documents">;
-    expect(document).toMatchObject({ taskId: email?._id, promptRef: "crew-email-sequence@2", format: "json" });
+    expect(document).toMatchObject({ taskId: email?._id, promptRef: "crew-email-sequence@3", format: "json" });
 
     expect(r.sequences).toHaveLength(1);
     const sequence = r.sequences[0] as Doc<"sequences">;
@@ -507,7 +507,7 @@ describe("WP76-S1a writes nothing on a failed step", () => {
       const started = await w.t.mutation(internal.crew.jobs.startCrewRun, { taskId });
       if (started.kind !== "run") throw new Error(`expected a run, got ${JSON.stringify(started)}`);
       const outcome = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-        runId: started.runId, promptRef: "crew-email-sequence@2", outputJson: JSON.stringify(hydrotrailEmailSequence),
+        runId: started.runId, promptRef: "crew-email-sequence@3", outputJson: JSON.stringify(hydrotrailEmailSequence),
         nextAttempt: started.attempt + 1,
         ...(ids === "brief only" ? { briefDocumentId: blueprint.document._id } : {}),
         ...(ids === "kit only" ? { brandKitDocumentId: kit.document._id } : {}),
@@ -548,7 +548,7 @@ describe("WP76-S1a replay and revisions", () => {
     const run = before.runs.find((row) => row.taskId === email._id);
     if (run === undefined) throw new Error("no run");
     expect(await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: "crew-email-sequence@2", outputJson: JSON.stringify(hydrotrailEmailSequence), nextAttempt: 3,
+      runId: run._id, promptRef: "crew-email-sequence@3", outputJson: JSON.stringify(hydrotrailEmailSequence), nextAttempt: 3,
     })).toEqual({ kind: "stale" });
     await as(w).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     await drain(w);

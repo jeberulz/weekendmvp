@@ -10,14 +10,14 @@ import {
   PARTNER_NAME_PRESETS,
   PARTNER_PERSONALITIES,
   WIZARD_LIMITS,
+  leadNameHint,
+  partnerNameAnswer,
   type GoalTimeframe,
-  type PartnerNamePreset,
   type PartnerPersonality,
   type WizardAnswersProgress,
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
 import {
-  PARTNER_NAME_HINTS,
   PERSONA_SAMPLES,
   RENAME_RISK_BODY,
   RENAME_RISK_HEADLINE,
@@ -53,6 +53,8 @@ export type WizardStepPanelProps = {
   readonly answers: WizardAnswersProgress;
   readonly defaults: WizardAnswersProgress;
   readonly suggestedNames: readonly string[];
+  /** Roster per idea S2: the lead names the partner-name step offers (the first is the default). */
+  readonly suggestedPartnerNames?: readonly string[];
   readonly blueprint: WizardBlueprintPreview;
   /** WP90-S4: why each suggestion was made; a confident one opens as a quick confirm. */
   readonly hints?: WizardStepHints;
@@ -303,6 +305,7 @@ export function WizardStepPanel({
   answers,
   defaults,
   suggestedNames,
+  suggestedPartnerNames = PARTNER_NAME_PRESETS,
   blueprint,
   hints = {},
   pending,
@@ -360,11 +363,14 @@ export function WizardStepPanel({
   const [chosenName, setChosenName] = useState<string>(savedNameIsListed ? savedName : "");
   const [nameText, setNameText] = useState<string>(savedNameIsListed ? "" : savedName);
   const [personality, setPersonality] = useState<PartnerPersonality>(current.partnerPersonality ?? "strategist");
-  const savedPartner = current.partnerName;
-  const [partnerPreset, setPartnerPreset] = useState<PartnerNamePreset | "">(
-    savedPartner === undefined ? "Wren" : savedPartner.kind === "preset" ? savedPartner.name : "",
+  const savedPartner = current.partnerName?.name;
+  const savedPartnerIsListed = savedPartner !== undefined && suggestedPartnerNames.includes(savedPartner);
+  const [partnerChoice, setPartnerChoice] = useState<string>(
+    savedPartner === undefined ? (suggestedPartnerNames[0] ?? "") : savedPartnerIsListed ? savedPartner : "",
   );
-  const [partnerText, setPartnerText] = useState<string>(savedPartner?.kind === "custom" ? savedPartner.name : "");
+  const [partnerText, setPartnerText] = useState<string>(
+    savedPartner !== undefined && !savedPartnerIsListed ? savedPartner : "",
+  );
   const toggleRef = useRef<HTMLButtonElement>(null);
 
   const defaultName = defaults.name?.chosen;
@@ -435,10 +441,10 @@ export function WizardStepPanel({
           : { kind: "choose", label: CONTINUE, answer: personality };
       case "partner_name": {
         if (customPartner.length > 0) return { kind: "rewrite", label: CONTINUE, text: customPartner };
-        if (partnerPreset === "") return { kind: "missing", label: CONTINUE, message: "Pick a name or type your own." };
-        return defaults.partnerName?.kind === "preset" && defaults.partnerName.name === partnerPreset
+        if (partnerChoice === "") return { kind: "missing", label: CONTINUE, message: "Pick a name or type your own." };
+        return defaults.partnerName?.name === partnerChoice
           ? { kind: "accept", label: USE_SUGGESTED }
-          : { kind: "choose", label: CONTINUE, answer: { kind: "preset", name: partnerPreset } };
+          : { kind: "choose", label: CONTINUE, answer: partnerNameAnswer(partnerChoice) };
       }
     }
   }
@@ -728,19 +734,19 @@ export function WizardStepPanel({
         <>
           <fieldset className="flex flex-col gap-2.5">
             <legend className="sr-only">{STEP_TITLES.partner_name}</legend>
-            {PARTNER_NAME_PRESETS.map((preset) => (
+            {suggestedPartnerNames.map((lead) => (
               <OptionCard
-                key={preset}
+                key={lead}
                 name={group}
-                value={preset}
-                checked={customPartner.length === 0 && partnerPreset === preset}
+                value={lead}
+                checked={customPartner.length === 0 && partnerChoice === lead}
                 onChange={() => {
-                  setPartnerPreset(preset);
+                  setPartnerChoice(lead);
                   setPartnerText("");
                 }}
-                label={preset}
-                hint={PARTNER_NAME_HINTS[preset]}
-                suggested={defaults.partnerName?.kind === "preset" && defaults.partnerName.name === preset}
+                label={lead}
+                hint={leadNameHint(lead)}
+                suggested={defaults.partnerName?.name === lead}
               />
             ))}
           </fieldset>

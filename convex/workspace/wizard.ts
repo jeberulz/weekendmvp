@@ -155,6 +155,8 @@ const sessionViewValidator = v.object({
   answers: answersValidator,
   defaults: answersValidator,
   suggestedNames: v.array(v.string()),
+  /** Roster per idea S2: the lead names the partner-name step offers. */
+  suggestedPartnerNames: v.array(v.string()),
   blueprint: blueprintPreviewValidator,
   seedSource: v.union(
     v.literal("idea_crew_seeds"),
@@ -225,12 +227,17 @@ async function libraryIdea(ctx: Pick<QueryCtx, "db">, slug: string): Promise<Doc
   return idea === null || idea.editorialVisibility === "removed" ? null : idea;
 }
 
-async function seedFor(ctx: Pick<QueryCtx, "db">, idea: WizardIdea): Promise<{ seed: WizardSeed; title: string }> {
+/** `sessionId` picks the session's lead-name suggestions (roster per idea S2). */
+async function seedFor(
+  ctx: Pick<QueryCtx, "db">,
+  idea: WizardIdea,
+  sessionId: Id<"wizard_sessions">,
+): Promise<{ seed: WizardSeed; title: string }> {
   if (idea.source === "own_idea") {
     // WP74-S3 seam (Option A, awaiting the owner's ruling): pass the session's
     // stored gateway draft here as `ownIdeaDraft`. `wizardSeedFor` already runs
     // it through `acceptLightBlueprint` and falls back when it is rejected.
-    return { seed: wizardSeedFor({ idea }), title: idea.text };
+    return { seed: wizardSeedFor({ idea, leadSeedKey: sessionId }), title: idea.text };
   }
   const row = await libraryIdea(ctx, idea.ideaSlug);
   const title = row?.title ?? idea.ideaSlug;
@@ -247,6 +254,7 @@ async function seedFor(ctx: Pick<QueryCtx, "db">, idea: WizardIdea): Promise<{ s
     seed: wizardSeedFor({
       idea,
       ideaTitle: title,
+      leadSeedKey: sessionId,
       storedSeed,
       ideaFacts: {
         researchLevel: row?.researchLevel ?? null,
@@ -386,7 +394,7 @@ async function commitStep(
   }
 
   // Classify against the seed the session had before this decision.
-  const { seed } = await seedFor(ctx, sessionIdea(current));
+  const { seed } = await seedFor(ctx, sessionIdea(current), session._id);
   const action: FounderSignalAction =
     forcedAction ??
     (isDefaultAnswer(step, merged, seed) ? "kept" : isRewrittenAnswer(step, merged, seed) ? "rewrote" : "changed");
@@ -552,7 +560,7 @@ export const getSession = query({
     await assertFeatureEnabled(ctx, "workspace");
     const session = await requireOwnedWizardSession(ctx, args.sessionId, { allowLinked: true });
     const answers = storedAnswers(session);
-    const { seed, title } = await seedFor(ctx, sessionIdea(answers));
+    const { seed, title } = await seedFor(ctx, sessionIdea(answers), session._id);
     const step = sessionStep(session);
     const project = session.projectId === undefined ? null : await ctx.db.get("projects", session.projectId);
     const business = project !== null && project.ownerId === session.ownerId && project.workspace !== undefined
@@ -568,6 +576,7 @@ export const getSession = query({
       answers,
       defaults: seed.defaults,
       suggestedNames: [...seed.suggestedNames],
+      suggestedPartnerNames: [...seed.suggestedPartnerNames],
       blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
       seedSource: seed.source,
       hints: hintsView(seed),
@@ -599,7 +608,7 @@ export const skipStep = mutation({
     const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
-    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
+    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)), session._id);
     return await commitStep(ctx, session, args.step, seed.defaults[stepKey(args.step)], "skipped");
   },
 });
@@ -617,7 +626,7 @@ export const rewriteStep = mutation({
     const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
-    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
+    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)), session._id);
     return await commitStep(ctx, session, args.step, rewriteAnswer(args.step, args.text, seed), "rewrote");
   },
 });

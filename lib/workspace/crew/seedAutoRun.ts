@@ -1,5 +1,5 @@
 /**
- * WP91. The unattended seed run's decision: given the dry-run estimate and the
+ * WP92. The unattended seed run's decision: given the dry-run estimate and the
  * deployment's state, may an automatic `crew:seeds --auto` run submit a batch?
  *
  * The automatic run (`.github/workflows/crew-seeds.yml`) keeps per-idea seeds

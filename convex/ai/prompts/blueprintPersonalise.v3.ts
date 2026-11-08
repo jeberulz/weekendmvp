@@ -1,5 +1,5 @@
 /**
- * WP75-S3a. Blueprint personalisation for a library idea: the first crew step
+ * WP75-S3a (version 3: roster per idea, WP91). Blueprint personalisation for a library idea: the first crew step
  * (`crew_blueprint`, ruled "blueprint first"). `draft` tier, thinking off
  * between tools (`02` §5.2), one structured call with the C-ART library
  * blueprint variant as the output schema.
@@ -10,14 +10,21 @@
  * sets `ideaSlug` to the business's own idea after the call, whatever the
  * model writes (`lib/workspace/crew/quality.ts`).
  *
- * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `blueprintPersonalise.v3.ts`),
+ * Version 3 (roster per idea, WP91) keeps version 2's seed and local-business
+ * rules and adds the team block (`teamShared.ts`): the Crew Lead proposes who
+ * is hired for this business, with a reason per role, in the same call. Code
+ * cleans the proposal and applies the guardrails (`lib/workspace/crew/teamProposal.ts`,
+ * `planRoster`).
+ *
+ * Any change to this file or to `crewShared.ts` or `teamShared.ts` (comments included: the lock
+ * hashes module source) needs a version bump (a new `blueprintPersonalise.v4.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
 import { definePromptSpec } from "../../../lib/workspace/contracts/prompts.ts";
-import { blueprintVariantSchemas, type Blueprint } from "../../../lib/workspace/contracts/artifacts.ts";
+import { blueprintTeamVariantSchemas, type Blueprint } from "../../../lib/workspace/contracts/artifacts.ts";
 import { CREW_SYSTEM_RULES, REVISION_INSTRUCTION, dataBlock, revisionBlocks } from "./crewShared.ts";
+import { TEAM_SYSTEM_RULES } from "./teamShared.ts";
 
 export type BlueprintPersonaliseInput = {
   /** The idea's seed blueprint as JSON, or null when no seed exists. Weekend MVP research. */
@@ -38,13 +45,14 @@ const SYSTEM = [
   "Keep it buildable in one weekend: one user, one loop they repeat, a few core features, and scope cuts that name what is left out this weekend.",
   "Shape it to the founder's choices (platform, commercial model, goal, name) without changing the idea into a different one.",
   "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"hikers\"). ideaKind is local_business for a shop, studio, salon or venue that serves people in person. sellsGoods is true when the business sells physical stock (products, food, merchandise); leave it out otherwise.",
+  ...TEAM_SYSTEM_RULES,
   "source is \"library\" and ideaSlug is the slug in <library_idea>, copied exactly.",
   "market is qualitative only: a summary and named competitors or competitor categories with a short note. No numbers, prices, percentages, market sizes, growth rates or search volumes anywhere. Keep what the seed's market says when it has one; leave market out when there is no seed and the idea record says nothing about the market.",
 ].join("\n");
 
 export const blueprintPersonaliseSpec = definePromptSpec<BlueprintPersonaliseInput, Blueprint>({
   id: "crew-blueprint-personalise",
-  version: 2,
+  version: 3,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },
@@ -59,7 +67,7 @@ export const blueprintPersonaliseSpec = definePromptSpec<BlueprintPersonaliseInp
       ...(typeof inputs.previousArtifact === "string" && inputs.previousArtifact.length > 0 ? [REVISION_INSTRUCTION] : []),
       "Write this founder's blueprint for the library idea.",
     ].join("\n"),
-  outputSchema: blueprintVariantSchemas.library,
+  outputSchema: blueprintTeamVariantSchemas.library,
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },
   evalSuite: "crew-blueprint",
   mode: "realtime",

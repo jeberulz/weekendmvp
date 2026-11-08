@@ -15,8 +15,11 @@
  * direction. After the call S4a's checks run (AA contrast on every
  * `BRAND_TEXT_PAIRS` pair is hard).
  *
+ * Version 3 (roster per idea, WP91): the text is version 2's; the C-ART
+ * contracts it imports changed (the blueprint gains an optional `team`).
+ *
  * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `brandKit.v3.ts`), then
+ * hashes module source) needs a version bump (a new `brandKit.v4.ts`), then
  * `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -61,7 +64,7 @@ const SYSTEM = [
 
 export const brandKitSpec = definePromptSpec<BrandKitInput, BrandKit>({
   id: "crew-brand-kit",
-  version: 2,
+  version: 3,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },

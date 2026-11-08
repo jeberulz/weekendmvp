@@ -1,5 +1,5 @@
 /**
- * WP90-S2. The per-idea seed precompute (`crew-idea-seed@1`): one `deep`
+ * WP90-S2. The per-idea seed precompute (`crew-idea-seed@2`): one `deep`
  * Message Batches call per library idea and seed version (D11: Opus on the
  * Batch API for per-idea precompute), run by `convex/crew/seeds.ts`.
  *
@@ -8,8 +8,11 @@
  * seed without the fields the server sets. Every result goes through
  * `auditSeedDraft` (`lib/workspace/crew/seedAudit.ts`) before it is stored.
  *
+ * Version 2 (roster per idea, WP91): the text is version 1's; the C-ART
+ * contracts it imports changed (the blueprint gains an optional `team`).
+ *
  * Any change to this file or to the modules it imports (comments included:
- * the lock hashes module source) needs a version bump (`ideaSeed.v2.ts`),
+ * the lock hashes module source) needs a version bump (`ideaSeed.v3.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -55,7 +58,7 @@ const SYSTEM = [
 
 export const ideaSeedSpec = definePromptSpec<IdeaSeedInput, IdeaSeedDraft>({
   id: "crew-idea-seed",
-  version: 1,
+  version: 2,
   tier: "deep",
   effort: "medium",
   thinking: { type: "adaptive" },

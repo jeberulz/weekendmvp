@@ -5,15 +5,16 @@ import { useEffect, useState } from "react";
 import { FOCUS, PILL_BASE } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
 import { employeeHref } from "@/lib/workspace/employeePage";
-import { DECISION_LABELS, whyRows, type TeamHired, type TeamSkipped } from "@/lib/workspace/teamHq";
+import { whyRows, type TeamHired, type TeamSkipped, type WhyDecision } from "@/lib/workspace/teamHq";
 
 export const WHY_THIS_TEAM_ID = "why-this-team";
 
-const DECISION_STYLES = {
-  always: "border-home-sage-ink/30 bg-home-sage text-home-sage-ink",
+const DECISION_STYLES: Readonly<Record<WhyDecision, string>> = {
+  core: "border-home-sage-ink/30 bg-home-sage text-home-sage-ink",
+  lead: "border-home-orange-ink/30 bg-home-ember-soft text-home-orange-ink",
   added: "border-home-orange-ink/30 bg-home-ember-soft text-home-orange-ink",
   skipped: "border-home-rule bg-home-sunk text-home-ink-2",
-} as const;
+};
 
 /** The role, linked to its page (WP67) unless it is the Crew Lead, who has none. */
 function RoleName({ href, label }: { href: string | null; label: string }) {
@@ -75,7 +76,7 @@ export function WhyThisTeam({ projectId, hired, skipped }: { projectId: string; 
                   <RoleName href={employeeHref(projectId, row.role)} label={row.roleLabel} />
                 </th>
                 <td className="py-2.5 pr-2">
-                  <span className={cn(PILL_BASE, "border", DECISION_STYLES[row.decision])}>{DECISION_LABELS[row.decision]}</span>
+                  <span className={cn(PILL_BASE, "border", DECISION_STYLES[row.decision])}>{row.label}</span>
                 </td>
                 <td className="break-words py-2.5 text-home-ink-2">{row.reason}</td>
               </tr>

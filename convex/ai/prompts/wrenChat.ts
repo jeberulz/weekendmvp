@@ -1,5 +1,5 @@
 /**
- * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory). Wren's everyday chat turn: the `fast` tier (`02` §5.2, D11).
+ * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory; version 4: the founder's lead name). Wren's everyday chat turn: the `fast` tier (`02` §5.2, D11).
  * Every turn runs this unless the routing rule in `lib/workspace/wren.ts`
  * marks it plan-changing and the business has an escalation left today.
  *
@@ -19,7 +19,7 @@ import {
 
 export const wrenChatSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   id: "wren-chat",
-  version: 3,
+  version: 4,
   tier: "fast",
   effort: "low",
   thinking: { type: "disabled" },
@@ -28,7 +28,7 @@ export const wrenChatSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   buildUser: (inputs) =>
     wrenTaskBlock(
       inputs,
-      "Answer the founder's message as Wren. Be brief and specific to their business.",
+      "Answer the founder's message as their Crew Lead, by the name in <business_context>. Be brief and specific to their business.",
     ),
   outputSchema: wrenReplyOutput,
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },

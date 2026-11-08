@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 /**
- * WP91. The unattended seed run: the pure gate (`decideSeedAutoRun`), the
+ * WP92. The unattended seed run: the pure gate (`decideSeedAutoRun`), the
  * read-only `crew/seeds:autoRunState` query in convex-test, and the workflow
  * file's guards. No test reaches the network or spends anything.
  */
@@ -50,7 +50,7 @@ const fresh = (slug: string, reservedMicroUsd = 230_000): SeedEstimateRow => ({
 });
 const unchanged = (slug: string): SeedEstimateRow => ({ ideaSlug: slug, status: "unchanged" });
 
-describe("WP91 decideSeedAutoRun", () => {
+describe("WP92 decideSeedAutoRun", () => {
   test("sends only the changed pages when every guard passes", () => {
     const decision = decideSeedAutoRun([fresh("a"), unchanged("b"), fresh("c")], live, limits);
     expect(decision).toEqual({ action: "apply", send: ["a", "c"], worstCaseMicroUsd: 460_000 });
@@ -151,7 +151,7 @@ function actionCtx(t: T): SeedBatchCtx {
   };
 }
 
-describe("WP91 crew/seeds:autoRunState", () => {
+describe("WP92 crew/seeds:autoRunState", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -231,7 +231,7 @@ describe("WP91 crew/seeds:autoRunState", () => {
 // The workflow's guards
 // ---------------------------------------------------------------------------
 
-describe("WP91 crew-seeds workflow", () => {
+describe("WP92 crew-seeds workflow", () => {
   const workflow = fs.readFileSync(path.join(process.cwd(), ".github/workflows/crew-seeds.yml"), "utf8");
   const script = fs.readFileSync(path.join(process.cwd(), "scripts/crew-seeds.mjs"), "utf8");
 

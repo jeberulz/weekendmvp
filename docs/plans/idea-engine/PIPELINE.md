@@ -72,7 +72,7 @@ only. Candidate selection uses manifest category coverage + Step 0 evidence
 fetches. There is **no** GSC impressions/queries feed into Scout — report
 missing rather than inventing demand data.
 
-Crew seeds (WP91): no publish step seeds the crew. Once an idea page is live on
+Crew seeds (WP92): no publish step seeds the crew. Once an idea page is live on
 `main`, the `Crew seeds` workflow writes its per-idea crew seed after the next
 Production deploy, if the owner has switched it on. See
 `docs/plans/launch-workspace/10-seed-freshness.md`.

@@ -1,6 +1,6 @@
 name: Crew seeds
 
-# WP91. Keeps per-idea crew seeds (WP90) current without an operator.
+# WP92. Keeps per-idea crew seeds (WP90) current without an operator.
 #
 # When: after every successful Vercel Production deployment (that build also
 # deploys Convex prod, so the functions this calls are live), once a day as a

@@ -57,6 +57,7 @@ import {
   socialPackSchema,
   socialPostsInOrder,
   structuredOutputComplexity,
+  blueprintTeamVariantSchemas,
   toStructuredOutputSchema,
   typePairBrief,
   withDefaultProofSlots,
@@ -216,6 +217,9 @@ const SENT_SCHEMAS: readonly (readonly [string, JsonSchema])[] = [
   ...OBJECT_ARTIFACT_KINDS.map((kind) => [kind, artifactJsonSchema(kind)] as const),
   ["blueprint.library", artifactVariantJsonSchema("blueprint", "library")],
   ["blueprint.own_idea", artifactVariantJsonSchema("blueprint", "own_idea")],
+  // Roster per idea (WP91): what blueprint prompts v2 send, the team block required.
+  ["blueprint.library.team", toStructuredOutputSchema(blueprintTeamVariantSchemas.library)],
+  ["blueprint.own_idea.team", toStructuredOutputSchema(blueprintTeamVariantSchemas.own_idea)],
   ["build_pack.full", artifactVariantJsonSchema("build_pack", "full")],
   ["build_pack.light", artifactVariantJsonSchema("build_pack", "light")],
 ];
@@ -234,8 +238,10 @@ const SCHEMA_BYTE_CEILINGS: Readonly<Record<string, number>> = {
   seo_pack: 2_500,
   launch_plan: 2_500,
   ads_drafts: 3_000,
-  "blueprint.library": 2_500,
+  "blueprint.library": 3_000,
   "blueprint.own_idea": 2_000,
+  "blueprint.library.team": 3_000,
+  "blueprint.own_idea.team": 2_000,
   "build_pack.full": 3_000,
   "build_pack.light": 2_000,
 };

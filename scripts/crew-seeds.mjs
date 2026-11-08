@@ -17,7 +17,7 @@
  *   --prod | --deployment <name>         target (default: the CLI's dev deployment, or the
  *                                        deployment of CONVEX_DEPLOY_KEY when it is set)
  *   --auto --max-reserve-usd 2.50 --keep-free-pool 0.5
- *                                        WP91 unattended run (the crew-seeds workflow): skips when a
+ *                                        WP92 unattended run (the crew-seeds workflow): skips when a
  *                                        run at this version is open, submits only in live mode, only
  *                                        with --apply, only under the cap, and only while the share of
  *                                        today's free pool stays free for founders. Exit 3 = over the cap.
@@ -207,7 +207,7 @@ if (flag("--auto")) {
   }
 }
 
-/** WP91. The unattended run's gate; returns the slugs to send or exits. */
+/** WP92. The unattended run's gate; returns the slugs to send or exits. */
 function autoDecision() {
   if (!deployment && !prod && !deployKeyTarget) fail("--auto needs a target: --prod, --deployment <name> or CONVEX_DEPLOY_KEY", 2);
   const capText = value("--max-reserve-usd");

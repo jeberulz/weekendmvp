@@ -176,7 +176,7 @@ Differences from the proposal:
 
 Operator commands. Each needs the owner's OK, and a dry run comes first.
 
-After the first library run, WP91 keeps seeds current on its own: the
+After the first library run, WP92 keeps seeds current on its own: the
 `Crew seeds` GitHub workflow seeds changed pages after each Production deploy,
 under a per-run cap and a founders' share of the free pool. It is off until the
 owner switches it on. See `10-seed-freshness.md`. A seed version bump is still

@@ -1,5 +1,5 @@
 /**
- * WP90-S3. The fixture reply for `crew-idea-seed@1`: a valid, audit-passing
+ * WP90-S3. The fixture reply for `crew-idea-seed@2`: a valid, audit-passing
  * seed draft built from the idea page the request quotes, so a fixture
  * precompute run writes a real seed row for every idea, offline and free.
  *

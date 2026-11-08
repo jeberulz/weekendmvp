@@ -16,11 +16,11 @@ import { promptRef, type PromptModel } from "../../lib/workspace/contracts/promp
 import { seedSourceJson, type SeedSource } from "../../lib/workspace/crew/seedSource";
 import { inputTokenUpperBound, outputJsonSchema, systemBlocksFor } from "../ai/gateway";
 import { anthropicWorstCaseMicroUsd } from "../ai/pricing";
-import { ideaSeedSpec } from "../ai/prompts/ideaSeed.v1";
+import { ideaSeedSpec } from "../ai/prompts/ideaSeed.v2";
 import type { TextRequest } from "../ai/providers/types";
 import { routeSpec } from "../ai/router";
 
-/** The seed prompt every precompute run sends: `crew-idea-seed@1`. */
+/** The seed prompt every precompute run sends: `crew-idea-seed@2`. */
 export const SEED_PROMPT_REF = promptRef(ideaSeedSpec);
 
 /** Deadline for one Batch API call (create, retrieve, results). */

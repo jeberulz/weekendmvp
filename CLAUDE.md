@@ -131,7 +131,7 @@ read the response as text before parsing JSON.
   money in live mode). The wizard (`wizardSeedFor`) reads the newest platform
   seed for defaults, reasons, quick confirms and the crew preview. The crew
   prompts v2 read its brand seeds and angles. `validated` comes from the idea
-  row's research level, never the model. No seed → fixtures. WP91: the
+  row's research level, never the model. No seed → fixtures. WP92: the
   `Crew seeds` workflow (`.github/workflows/crew-seeds.yml`, `crew:seeds --auto`)
   re-seeds changed pages after each Production deploy, at `CREW_SEED_VERSION`,
   under a per-run cap and a founders' pool floor. Live spend stays off until

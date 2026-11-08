@@ -1,5 +1,5 @@
 /**
- * WP91. `scripts/crew-seeds.mjs --auto` end to end against a fake `npx` on
+ * WP92. `scripts/crew-seeds.mjs --auto` end to end against a fake `npx` on
  * PATH: the script reads the real library pages, and every `npx convex run`
  * is answered from a scripted state and logged. Nothing reaches Convex.
  */
@@ -11,7 +11,7 @@ import path from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
 
 const root = process.cwd();
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wp91-npx-"));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wp92-npx-"));
 const log = path.join(dir, "calls.log");
 
 // The fake answers each function from FAKE_* env vars and logs the function name.
@@ -71,7 +71,7 @@ function run(options: { changed: string[]; state?: object; apply?: boolean; cap?
   return { status: res.status, out: `${res.stdout}${res.stderr}`, calls };
 }
 
-describe("WP91 crew-seeds --auto", () => {
+describe("WP92 crew-seeds --auto", () => {
   test("the library has pages to drive the script", () => {
     expect(published.length).toBeGreaterThanOrEqual(2);
   });

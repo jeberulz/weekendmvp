@@ -1,4 +1,4 @@
-# 10 — Keeping per-idea crew seeds current (WP91)
+# 10 — Keeping per-idea crew seeds current (WP92)
 
 Status: built on `claude/wp91-seed-freshness`. **Live spend stays off** until the
 owner does the "Switching it on" steps below. Nothing has run against prod.

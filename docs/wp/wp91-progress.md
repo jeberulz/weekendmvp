@@ -1,42 +1,51 @@
-# WP91 Progress - Keep per-idea crew seeds current
+# WP91 Progress — Roster per idea
 
-Append-only progress log. Do not rely on chat history for project state.
+## 2026-11-07
 
-## 2026-11-08 - Setup
+- Branch: `claude/roster-per-idea-plan` (worktree `.claude/worktrees/wp67-employee-pages-5df33e`), on top of
+  WP67 (#275).
+- Commits: S1 `8e573dab`, S2 `61064218`, S3+S4 `3ffee6e5`, S5 `de78c429`, docs (this commit).
+- Prompt lock: wren-chat@4, wren-plan-turn@4, crew-blueprint-personalise@2, crew-blueprint-own-idea@2,
+  crew-brand-kit@2, crew-email-sequence@2, crew-social-pack@2 locked; the old versions are retired with notes.
+  The brand, email and social bumps are forced by the lock hashing imported modules (`artifacts.ts`,
+  `roster.ts`); their text is unchanged.
+- Codex-owned files: only the approved `@1`→`@2` ref strings in `convex/growth/drafts/emailSequence.test.ts`
+  and `socialPack.test.ts` (John approved, 2026-11-07). Nothing else under the Codex list was edited.
+- Decisions made while building:
+  - The fixture classifier uses keywords and defaults to consumer app (no hash), so the result is easy to
+    predict in tests.
+  - The model-facing blueprint schema (v2) requires `team`; the stored schema keeps it optional, so older
+    blueprints and the rule fallback still work.
+  - `convex/crew/launchRoster.ts` needed no change: `rosterInputFromWizard` passes the cleaned proposal.
+- Docs updated: this file, `wp91-stories.md`, `roster-per-idea/PLAN.md` status.
+- Not done: S2b (image spend) and S6 (live spend) wait for John's OK.
+- Review fix (Codex P1 on #279): plans stored under the pre-WP91 rules versions (`2026-11-05.1` and main's `2026-11-07.1`) marked eight roles
+  always, so checking them against the new four-role core would have hidden an existing business's team.
+  `rosterPlanSchema` now checks each plan against the always set of its own rules version
+  (`alwaysRoleKeysFor`, `LEGACY_ROSTER_RULES_VERSIONS`). Regression tests: schema cases plus a launch whose
+  stored plan is rewritten to the legacy shape still reads as ready. The branch's new prompt versions were
+  relocked (they hash `roster.ts`; none is on main yet).
 
-- Branch and worktree: `claude/wp91-seed-freshness` in `.worktrees/wp91-seed-freshness`, cut from `origin/main` at `2a8c8c54` (the WP90 merge, #278). The root checkout holds other sessions' uncommitted work.
-- Assignment: a session that started this one asked for the smallest reliable way to keep WP90 seeds current, with a written proposal, a branch with tests, progress notes and a PR. Nothing may run live against prod.
-- Lane: Work Package. It automates AI spend, so it is routed high-tier.
+## 2026-11-08 — merge with main (#278, WP90 research-driven seeds)
 
-## 2026-11-08 - WP91-S1..S3
-
-- Proposal: `docs/plans/launch-workspace/10-seed-freshness.md`. It chooses option (b), a GitHub workflow after Production deploys, over (a), a step in the publish path, and proposes a $2.50 per-run cap and a founders' share of 0.5.
-- What was found in the WP90 code, and how it shaped the design:
-  - `createRun` refuses only while a run at the version is open, so a fixed version can be re-run. But until that run's results land, its ideas have no seed row, and a second run would send them again. The gate therefore skips while a run is open.
-  - In fixture mode, a run writes fixture seeds at the version. An unchanged page is then skipped for good once live mode is on. The gate therefore never sends outside live mode.
-  - Seeds reserve from the free global pool (D22). `autoRunState` reads today's free-pool budget, plus what is spent and in flight, from the same counters the meter uses.
-- Code:
-  - `lib/workspace/crew/seedAutoRun.ts` (new): `decideSeedAutoRun`, `usdToMicroUsd`.
-  - `convex/crew/seeds.ts`: `autoRunState`, an internal, read-only query.
-  - `scripts/crew-seeds.mjs`: `--auto`, `--max-reserve-usd` and `--keep-free-pool`. It can target a deploy key, refuses `vibrant-jackal-308`, and writes its decision to the GitHub step summary.
-  - `.github/workflows/crew-seeds.yml` (new): runs on `deployment_status` (Production, success), daily and by hand, with concurrency 1 on `main`. It skips when the secret or the version is missing, and passes `--apply` only on `CREW_SEEDS_AUTO_APPLY=true`.
-  - `.env.example`: `CONVEX_DEPLOY_KEY` and `GITHUB_STEP_SUMMARY`. `tests/security/env-documentation` requires every key the code reads to be listed.
-- Tests:
-  - `tests/platform/wp91-seed-auto-run.test.ts` (17): the gate, `autoRunState` in convex-test with a real fixture run, and the workflow guards.
-  - `tests/platform/wp91-seed-auto-script.test.ts` (7): the script end to end against a fake `npx` on PATH. Nothing reaches Convex.
-- Docs updated: plan 10 (new), plan 09 "Running it", `CLAUDE.md` key paths, `docs/plans/idea-engine/PIPELINE.md`, `docs/PROJECT_STRATEGY.md` (WP91 row), `RULINGS.md` (a row for owner review), stories and progress.
-- Not done (owner only):
-  - adding the GitHub secret and variables;
-  - the first library run;
-  - any live or fixture run against prod.
-  - The assumption that `npx convex run` honours `CONVEX_DEPLOY_KEY` without `--prod` is checked by the read-only dry run in plan 10, step 4.
-
-## 2026-11-08 - Review fix (PR #280, Codex P2)
-
-- **The open-run check could miss a newer open run.** `autoRunState` and `createRun` read only the first 20 runs at a version. A fixed, long-lived version gains a run every time content changes, so after 20 finished runs a newer preparing or submitted run was invisible, and `--auto` could send the same ideas twice. Both now go through `hasOpenRunAt`, which reads the open statuses through the existing `by_status` index and matches the version. Finished runs can no longer hide an open one, and no schema change was needed.
-- New test: 25 finished runs at the version, then an open run. `autoRunState` reports it, and a second `createRun` is refused.
-- Checks:
-  - `npm run typecheck`: green.
-  - Convex tsc: 0 errors.
-  - eslint on the changed files: clean.
-  - `npm run test:platform`: 2,822 pass.
+- This work was WP90 on the branch; main's #278 took WP90, so it is renumbered WP91 (stories, progress,
+  plan status, comments). Main's WP90 docs are kept as they are.
+- Prompts: #278 locked the blueprint, brand-kit, email and social prompts at @2, so this branch's versions
+  became @3 (blueprint v3 = WP90's v2 text plus the team rules; the others' text is unchanged).
+  `crew-idea-seed` went to @2 because it imports `contracts/wizard.ts` and `roster.ts`, which changed
+  (text unchanged). The @2 versions and `crew-idea-seed@1` are retired with notes. The growth tests' ref
+  strings moved to @3 (the same string-only edit John approved).
+- Roster: rules version `2026-11-08.1`; main's `2026-11-07.1` (eight always-hired roles) is treated as
+  legacy alongside `2026-11-05.1`. Main's `sellsGoods` (local business that sells goods → Merch) and the
+  local-business SEO and Merch reasons are kept.
+- `normaliseTeamProposal` (zod-only structural cleaning) moved into `contracts/roster.ts` so the prompt
+  import graph stays plain-Node loadable; `cleanTeamProposal` wraps it with the content checks the quality
+  gate runs.
+- Wizard: the stored-seed path (`seedFromStored`) also suggests the session's own lead names, first one
+  preselected; `seedFor` passes the session id as `leadSeedKey`.
+- Follow-up: the wizard crew preview (`crewPreviewFor`) uses the rules without a lead proposal, so the
+  launched team can differ from the preview.
+- Review fix (CodeRabbit on #279): `seedBlueprintDraftSchema` now omits `team`, so the idea-seed prompt's
+  output schema no longer offers an unvetted team (and a market number in one can't reject a seed). The
+  stored seed keeps `team` optional. `crew-idea-seed@2` relocked (new on this branch). Regression test in
+  `tests/platform/wp90-seed-contract.test.ts`.
