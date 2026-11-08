@@ -60,6 +60,7 @@ import type { PromptModel, PromptThinking } from "../../../lib/workspace/contrac
 import { ANTHROPIC_RATE_CARDS, anthropicCostMicroUsd, anthropicRateCard } from "../pricing";
 import { createFixtureAnthropicClient, type AnthropicFixtureResponder } from "./fixtures";
 import { resolveProviderAccess, type ProviderEnv } from "./mode";
+import { wireOutputSchema } from "./wireSchema";
 import {
   isRecord,
   kindForHttpStatus,
@@ -262,7 +263,7 @@ export function buildMessageParams(request: TextRequest): Anthropic.MessageCreat
   const outputConfig: Anthropic.OutputConfig =
     request.outputSchema === undefined
       ? { effort: request.effort }
-      : { effort: request.effort, format: { type: "json_schema", schema: { ...request.outputSchema } } };
+      : { effort: request.effort, format: { type: "json_schema", schema: wireOutputSchema(request.outputSchema) } };
   return {
     model: request.model,
     max_tokens: request.maxTokens,

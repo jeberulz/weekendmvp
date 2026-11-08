@@ -53,6 +53,7 @@ import { canonicalJson, getEntry, type PromptEntry } from "../registry";
 import { blueprintFixtureReply } from "./blueprintFixtureReply";
 import { seedFixtureReply } from "./seedFixtureReply";
 import { wrenFixtureReply } from "./wrenFixtureReply";
+import { wireOutputSchema } from "./wireSchema";
 
 /**
  * A fixture reply value: the JSON the fixture model "returns". It may read
@@ -120,11 +121,11 @@ export const ARTIFACT_FIXTURES: readonly ArtifactFixture[] = Object.freeze([
   { key: "build_pack", schema: artifactOutputSchemas.build_pack, output: () => clone(hydrotrailArtifacts.build_pack) },
 ]);
 
-/** The output schema as the gateway sends it (`outputJsonSchema`): zod's JSON Schema without `$schema`. */
+/** The output schema as the request carries it: zod's JSON Schema without `$schema`, in its wire form (`wireOutputSchema`). */
 function sentSchema(schema: z.ZodType): Record<string, unknown> {
   const json: Record<string, unknown> = { ...z.toJSONSchema(schema) };
   delete json.$schema;
-  return json;
+  return wireOutputSchema(json);
 }
 
 function schemaKey(schema: unknown): string | null {
