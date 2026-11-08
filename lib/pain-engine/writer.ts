@@ -26,8 +26,31 @@
  * and year-one math are labelled planning assumptions, exactly as published
  * engine pages label them ("an assumption, not observed market data").
  * The writer makes NO network or LLM calls: cost is $0 per draft.
+ *
+ * Ideabrowser-inspired additions (folded in 8 Nov 2026, structure only —
+ * no copied text): a verdict scorecard (composite + four dials + a verdict
+ * that can be PASS), an explicit "What is NOT proven" section on every
+ * draft, a value ladder built ONLY from real prices found in the evidence,
+ * "What it demands" (time to first revenue, capital, difficulty) plus the
+ * named status-quo competitor and the biggest risk, and community-signal
+ * counts by platform. All of these map onto the existing eight H2 sections
+ * as H3 subsections — the house format is unchanged, and the scorecard /
+ * verdict also live as fields on the draft and in the review record, where
+ * the reasoning is visible to the reviewer.
  */
-import type { PainCluster, PainDraft, PainFinding } from "./types.ts";
+import {
+  extractPrices,
+  mentionsWorkaroundSpend,
+  namedStatusQuoCompetitor,
+} from "./extract.ts";
+import type {
+  CommunitySignal,
+  Demands,
+  PainCluster,
+  PainDraft,
+  PainFinding,
+  PricePoint,
+} from "./types.ts";
 
 export const WRITER_WORD_TARGET = 2200;
 
@@ -121,6 +144,94 @@ function evidenceLinks(findings: PainFinding[]): string[] {
   return [...seen.entries()].map(([url, context]) => `- [${context}](${url})`);
 }
 
+/** Community-signal counts by platform: reports + agreement per source. */
+function communitySignalsFor(findings: PainFinding[]): CommunitySignal[] {
+  const bySource = new Map<string, CommunitySignal>();
+  for (const f of findings) {
+    const entry = bySource.get(f.source) ?? {
+      source: f.source,
+      reports: 0,
+      totalAgreement: 0,
+    };
+    entry.reports += 1;
+    entry.totalAgreement += f.agreementCount;
+    bySource.set(f.source, entry);
+  }
+  return [...bySource.values()].sort((a, b) => b.reports - a.reports);
+}
+
+/**
+ * What building this demands. Every value is a planning assumption,
+ * labelled as such in the MDX — difficulty is the only evidence-derived
+ * part (inverted from buildability: an easy weekend build is low demand).
+ */
+function demandsFor(cluster: PainCluster): Demands {
+  const buildability = cluster.score.buildability;
+  const difficultyScore = Math.max(1, Math.min(10, 11 - buildability));
+  const difficulty =
+    buildability >= 8 ? "Low" : buildability >= 5 ? "Moderate" : "High";
+  return {
+    timeToFirstRevenue:
+      "2–4 weeks after launch (planning assumption): a weekend build, then a landing-page test with the people in the reports.",
+    capital:
+      "$0–$100 to start (planning assumption): no paid tools are required for version one.",
+    difficulty: `${difficulty} — a single focused workflow, not a platform`,
+    difficultyScore,
+  };
+}
+
+/** The single biggest risk, picked deterministically from the evidence. */
+function biggestRiskFor(cluster: PainCluster, hasSpend: boolean): string {
+  if (!hasSpend) {
+    return "Willingness to pay is unproven: nobody in the reports says they would pay for a fix, so a narrow paid pilot is the first test, not a build.";
+  }
+  if (cluster.findings.length === 1) {
+    return "Thin evidence: a single report supports this draft. One more independent report would change the verdict more than any feature.";
+  }
+  if (cluster.sources.length === 1) {
+    return "Single-source evidence: every report comes from one platform, so the pain may be narrower than it looks.";
+  }
+  return "Distribution: the pain is real and shared, but reaching these buyers cheaply is unproven — the first test is a landing page in the communities where the pain was reported.";
+}
+
+/**
+ * The explicit "what is NOT proven" list every draft carries. Each item
+ * names the missing proof and the test that would close it; nothing here
+ * is asserted as fact about the market.
+ */
+function notProvenFor(
+  cluster: PainCluster,
+  prices: PricePoint[],
+  spendMentions: number,
+): string[] {
+  const items: string[] = [];
+  items.push(
+    spendMentions > 0
+      ? `Paid-pilot evidence: ${spendMentions} report${spendMentions === 1 ? "" : "s"} say${spendMentions === 1 ? "s" : ""} they would pay, but none describes an actual purchase, pilot, or renewal — validate with a narrow paid pilot.`
+      : "Paid-pilot evidence: no report describes a purchase, a paid pilot, or a renewal — willingness to pay is stated nowhere, so validate with a narrow paid pilot.",
+  );
+  items.push(
+    "Keyword volume and growth: no search-volume or trend figures were in the evidence, so no keyword chart is shown and no demand size is claimed.",
+  );
+  items.push(
+    "Market size: no sizing figure appeared in any report, so this draft claims none.",
+  );
+  items.push(
+    "Competitor pricing: none of the reports quoted a rival's price.",
+  );
+  if (cluster.findings.length === 1) {
+    items.push(
+      "Breadth: a single report supports this draft — one more independent report would strengthen it more than any feature.",
+    );
+  }
+  if (prices.length === 0) {
+    items.push(
+      "Value ladder: no real prices were found in the reports, so the pricing tiers in the Business Model section are proposals to test, not observed prices.",
+    );
+  }
+  return items;
+}
+
 /**
  * Draft one idea from one winning cluster. Returns the MDX, the manifest
  * row, the evidence used, and the gaps the reviewer still needs to close.
@@ -152,6 +263,51 @@ export function writeDraft(cluster: PainCluster): PainDraft {
 
   const problemQuote = quotable[0]?.quote ?? "";
   const sourceUrls = [...new Set(findings.map((f) => f.url))];
+
+  // Ideabrowser-inspired evidence presentation (structure only).
+  const scorecard = cluster.scorecard;
+  const communitySignals = communitySignalsFor(findings);
+  const prices: PricePoint[] = findings.flatMap((f) =>
+    extractPrices(`${f.title} ${f.text}`, f.url, f.context),
+  );
+  const statusQuoCompetitor =
+    findings.map((f) => namedStatusQuoCompetitor(`${f.title} ${f.text}`)).find(Boolean) ?? "";
+  const spendMentions = findings.filter((f) =>
+    mentionsWorkaroundSpend(`${f.title} ${f.text}`),
+  ).length;
+  const demands = demandsFor(cluster);
+  const biggestRisk = biggestRiskFor(cluster, spendMentions > 0);
+  const notProven = notProvenFor(cluster, prices, spendMentions);
+  gaps.push(
+    "No keyword volume or growth figures in the evidence — search demand is not quantified. Add a sourced keyword trend before publish if one is wanted.",
+  );
+  gaps.push(
+    "No paid pilot, purchase, or renewal evidence — willingness to pay is stated intent at best. Validate with a narrow paid pilot before publish.",
+  );
+  if (prices.length === 0) {
+    gaps.push(
+      "No real prices found in the evidence — the value ladder cannot be built from observed prices; the tiers are proposals to test.",
+    );
+  }
+  if (!statusQuoCompetitor) {
+    gaps.push(
+      "No status-quo competitor named in the evidence — name the closest product and its published pricing before publish if the section is wanted.",
+    );
+  }
+
+  // Evidence dates for the Market Research section (search-volume data
+  // usually lags 1–2 months, so the dates of the reports themselves are
+  // the honest "why now" anchor).
+  const dated = findings
+    .map((f) => f.date)
+    .filter((d) => d && !Number.isNaN(Date.parse(d)))
+    .sort();
+  const dateRange =
+    dated.length > 0
+      ? dated.length === 1
+        ? `The single report is dated ${dated[0]}.`
+        : `The reports span ${dated[0]} to ${dated[dated.length - 1]} (dates as supplied by the sources).`
+      : "The reports carry no usable dates, so no recency claim is made.";
 
   // Each finding gets its own paragraph, but the framing sentences rotate
   // and the two analytical sentences appear exactly once, after the loop:
@@ -271,6 +427,22 @@ export function writeDraft(cluster: PainCluster): PainDraft {
       (f) => `- ${f.agreementCount} agreement — ${f.context}.`,
     ),
     "",
+    "### Scorecard",
+    "",
+    `Verdict: **${scorecard.verdict}** — composite ${scorecard.composite}/10. ` +
+      `Opportunity ${scorecard.opportunity}/10 (${scorecard.labels.opportunity}), ` +
+      `Problem ${scorecard.problem}/10 (${scorecard.labels.problem}), ` +
+      `Feasibility ${scorecard.feasibility}/10 (${scorecard.labels.feasibility}), ` +
+      `Why Now ${scorecard.whyNow}/10 (${scorecard.labels.whyNow}). ${scorecard.rationale}`,
+    "",
+    "### What is NOT proven",
+    "",
+    "Every draft ends its research section with what the evidence does not prove, so the reviewer can see the holes instead of tripping over them later:",
+    "",
+    ...notProven.map((item) => `- ${item}`),
+    "",
+    `${dateRange} Search-volume data usually lags 1–2 months and none was in the evidence, so no keyword trend is charted here.`,
+    "",
     "For the reviewer: treat this draft as a hypothesis to test, not a forecast to trust. " +
       "The strongest next step is a week of conversations with the people behind the reports above — show them a landing page, ask what they would pay, and watch whether they sign up. " +
       "That week answers the three questions this draft cannot: how many share the pain, what it is worth to them, and what they have already tried. " +
@@ -281,7 +453,9 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     "",
     `No competitor pricing was verified from the evidence for this cluster, so none is asserted here. ` +
       `The reports name the workaround, not a vendor price list, and inventing a competitor's price would fail the evidence rule. ` +
-      `What the reports do show is that people are solving this today with manual work, spreadsheets, or a patchwork of tools — which means the competition for version one is the status quo, not a named rival. ` +
+      (statusQuoCompetitor
+        ? `One report names ${statusQuoCompetitor} as the tool people compare against, so that is the status quo to beat — but no price for it was quoted in the evidence, so none is asserted here. `
+        : `What the reports do show is that people are solving this today with manual work, spreadsheets, or a patchwork of tools — which means the competition for version one is the status quo, not a named rival. `) +
       `${productName} should not compete by reproducing every capability of a broad platform. Its differentiation is workflow compression for a small, specific job: take the input as it already exists, do the manual step, and return a checkable result. ` +
       `The landing experience should begin with the task itself, not an empty dashboard. Before publish, name the two or three closest products here, with their published pricing linked, if the reviewer wants that section strengthened.`,
     "",
@@ -296,6 +470,30 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     "- **Starter** (Free) — 1 workspace, the core workflow, limited history",
     "- **Solo** ($19/month) — 1 workspace, unlimited runs, longer history, priority support",
     "- **Team** ($49/month) — 5 workspaces, shared review, longer history",
+    "",
+    "### Value ladder",
+    "",
+    ...(prices.length > 0
+      ? [
+          "Real prices found in the evidence — use them to anchor the tiers above:",
+          "",
+          ...prices.map(
+            (p) => `- **${p.amount} ${p.cadence}** — as written in [${p.context}](${p.url})`,
+          ),
+        ]
+      : [
+          "No real prices were found in the reports, so there is no evidence-backed ladder to show. The tiers above are proposals to test, not observed prices.",
+        ]),
+    "",
+    "### What it demands",
+    "",
+    "What building this asks of the founder, before the first line of code is a commitment:",
+    "",
+    `- **Time to first revenue:** ${demands.timeToFirstRevenue}`,
+    `- **Capital to start:** ${demands.capital}`,
+    `- **Difficulty:** ${demands.difficulty} (${demands.difficultyScore}/10)`,
+    `- **Status quo to beat:** ${statusQuoCompetitor ? `${statusQuoCompetitor} — named in a source report as the tool people compare against.` : "Manual work — no status-quo tool was named in the evidence."}`,
+    `- **Biggest risk:** ${biggestRisk}`,
     "",
     "**Unit Economics**",
     "",
@@ -390,14 +588,24 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     "",
     ...evidenceLinks(findings),
     "",
+    "### Community signals",
+    "",
+    "Where the pain was voiced, by platform — counts are reports found by this engine's listeners, not audience sizes:",
+    "",
+    ...communitySignals.map(
+      (s) => `- ${s.source}: ${s.reports} report${s.reports === 1 ? "" : "s"}, ${s.totalAgreement} total agreement.`,
+    ),
+    "",
   ].join("\n");
 
   const wordCount = countWords(mdx);
+  // Manifest scores mirror the scorecard dials: timing is the Why Now dial
+  // (recency of the reports), not frequency — that is what "timing" means.
   const scores = {
-    opportunity: clampScore(cluster.score.total / 10),
-    pain: clampScore(cluster.score.intensity),
-    timing: clampScore(cluster.score.frequency),
-    builder_confidence: clampScore(cluster.score.buildability),
+    opportunity: clampScore(scorecard.opportunity),
+    pain: clampScore(scorecard.problem),
+    timing: clampScore(scorecard.whyNow),
+    builder_confidence: clampScore(scorecard.feasibility),
   };
 
   const manifestRow: Record<string, unknown> = {
@@ -440,6 +648,13 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     manifestRow,
     evidence: findings,
     gaps,
+    scorecard,
+    communitySignals,
+    prices,
+    statusQuoCompetitor,
+    biggestRisk,
+    notProven,
+    demands,
     costUsd: 0,
   };
 }

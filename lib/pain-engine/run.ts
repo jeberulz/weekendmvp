@@ -94,6 +94,10 @@ export async function runPainEngine(options: RunOptions): Promise<PainRunReport>
   const drafts: ReviewRecord[] = [];
   for (const cluster of winners) {
     const draft = writeDraft(cluster);
+    log(
+      `draft ${draft.slug}: verdict ${draft.scorecard.verdict} ` +
+        `(${draft.scorecard.composite}/10) — ${draft.scorecard.rationale}`,
+    );
     const record: ReviewRecord = {
       slug: draft.slug,
       status: "pending",

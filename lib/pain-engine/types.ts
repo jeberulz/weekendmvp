@@ -78,6 +78,8 @@ export interface PainCluster {
   /** Distinct sources represented, e.g. ["reddit", "hacker-news"]. */
   sources: string[];
   score: ClusterScore;
+  /** Composite + four dials + verdict, computed from the same evidence. */
+  scorecard: Scorecard;
 }
 
 /** The four scoring axes, each 0–10, plus the weighted total 0–100. */
@@ -95,6 +97,60 @@ export interface ClusterScore {
   rationale: string;
 }
 
+/**
+ * The verdict scorecard, inspired by Ideabrowser's idea-page structure
+ * (IB Index + four dials + a verdict that can be no). All four sub-scores
+ * are computed from real evidence — no invented figures — and the reasoning
+ * is visible in the review record, not hidden in a number.
+ */
+export type Verdict = "BUILD" | "PIVOT" | "PASS";
+
+export interface Scorecard {
+  /** Composite 0–10 (one decimal): the cluster total / 10. */
+  composite: number;
+  /** Opportunity 0–10: how often the pain is reported (frequency). */
+  opportunity: number;
+  /** Problem 0–10: how strongly worded the complaints are (intensity). */
+  problem: number;
+  /** Feasibility 0–10: how small and weekend-shaped a first version is. */
+  feasibility: number;
+  /** Why Now 0–10: how recent the reports are, plus workaround-spend signal. */
+  whyNow: number;
+  /** Word label per dial (Strong / Good / Weak / Poor), as on a dial. */
+  labels: { opportunity: string; problem: string; feasibility: string; whyNow: string };
+  /** BUILD / PIVOT / PASS — the verdict CAN be no. */
+  verdict: Verdict;
+  /** Why this verdict, in plain words — shown in the review queue. */
+  rationale: string;
+}
+
+/** Community-signal counts by platform, for the evidence panel. */
+export interface CommunitySignal {
+  source: string;
+  reports: number;
+  totalAgreement: number;
+}
+
+/** A real price found in the evidence (never invented). */
+export interface PricePoint {
+  /** As written in the source, e.g. "$79". */
+  amount: string;
+  /** "per month" | "per year" | "one-time" | "one-off". */
+  cadence: string;
+  /** Who charged it, from the finding's context. */
+  context: string;
+  url: string;
+}
+
+/** What building this demands — planning assumptions, labelled as such. */
+export interface Demands {
+  timeToFirstRevenue: string;
+  capital: string;
+  difficulty: string;
+  /** Difficulty 0–10 (10 = hardest), inverted from buildability. */
+  difficultyScore: number;
+}
+
 /** A draft idea produced by the writer from ONE winning cluster. */
 export interface PainDraft {
   slug: string;
@@ -110,6 +166,20 @@ export interface PainDraft {
   evidence: PainFinding[];
   /** Things the draft could not fill from evidence (gaps for the reviewer). */
   gaps: string[];
+  /** Composite + four dials + verdict for this draft. */
+  scorecard: Scorecard;
+  /** Community-signal counts by platform (reports + agreement per source). */
+  communitySignals: CommunitySignal[];
+  /** Real prices found in the evidence ([] when none — never invented). */
+  prices: PricePoint[];
+  /** Status-quo tool named in the evidence ("" when none is named). */
+  statusQuoCompetitor: string;
+  /** The single biggest risk to this idea, derived from the evidence/gaps. */
+  biggestRisk: string;
+  /** Explicit "what is NOT proven" list — every draft carries one. */
+  notProven: string[];
+  /** What building this demands (labelled planning assumptions). */
+  demands: Demands;
   /** Provider spend for this draft in USD. Phase 1 writer is $0 (no LLM). */
   costUsd: number;
 }

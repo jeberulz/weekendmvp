@@ -108,6 +108,67 @@ export function pickQuote(text: string): string {
   return "";
 }
 
+/**
+ * Real prices found in the evidence, for the value ladder. Only prices
+ * actually written in a source text are returned — the writer must show
+ * an empty ladder (and a gap) when this returns [], never invent one.
+ * Matches "$79/mo", "$500 one-time setup", "$19 per month" and the like.
+ */
+export function extractPrices(
+  text: string,
+  url: string,
+  context: string,
+): { amount: string; cadence: string; context: string; url: string }[] {
+  const found: { amount: string; cadence: string; context: string; url: string }[] = [];
+  const seen = new Set<string>();
+  const re =
+    /\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(\/mo|\/month|per month|\/yr|\/year|per year|one-time|once|setup)?/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(text)) !== null) {
+    const amount = `$${match[1]}`;
+    const raw = (match[2] ?? "").toLowerCase();
+    const cadence =
+      raw === "/mo" || raw === "/month" || raw === "per month"
+        ? "per month"
+        : raw === "/yr" || raw === "/year" || raw === "per year"
+          ? "per year"
+          : raw === "one-time" || raw === "once" || raw === "setup"
+            ? "one-time"
+            : "one-off";
+    const key = `${amount}|${cadence}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    found.push({ amount, cadence, context, url });
+    if (found.length >= 5) break;
+  }
+  return found;
+}
+
+const COMPETITOR_PATTERNS = [
+  /alternative to ([A-Z][A-Za-z0-9 .&'-]{1,40})/i,
+  /switch(?:ing|ed)? from ([A-Z][A-Za-z0-9 .&'-]{1,40})/i,
+  /replac(?:e|ing) ([A-Z][A-Za-z0-9 .&'-]{1,40})/i,
+];
+
+/**
+ * The status-quo tool named in a finding ("alternative to Notion",
+ * "switching from Xero") — the named competitor to beat. Returns ""
+ * when no finding names one; the writer then says the status quo is
+ * manual work, and flags the naming as a gap.
+ */
+export function namedStatusQuoCompetitor(text: string): string {
+  for (const pattern of COMPETITOR_PATTERNS) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    const name = match[1]
+      .split(/\s+(and|with|because|to|for|so|but)\s/i)[0]
+      .replace(/[.,;:!?]+$/, "")
+      .trim();
+    if (name.length >= 2) return name;
+  }
+  return "";
+}
+
 /** Build a PainFinding from raw listener fields, applying the shared rules. */
 export function normaliseFinding(input: {
   source: string;
