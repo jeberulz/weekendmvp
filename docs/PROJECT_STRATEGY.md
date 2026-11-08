@@ -40,6 +40,7 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP88 | Source Critic gate + Ideabrowser Phase 9 cleanup | Work Package | `cursor/source-critic-gate-p0p2-53d8` | Merged (#233) 2026-11-06 | Live compile/editorial submit refuse without sealed Source Critic PASS; Ideabrowser MCP wiring removed from repo configs/docs; `docs/plans/idea-engine/PIPELINE.md` is the runtime truth. No publish/deploy. See `docs/wp/wp88-stories.md`. |
 | WP89 | Engine runtime gate + batch research path | Work Package | `cursor/publish-ideas-batch-adapters-5637` | In progress 2026-11-06 | Node >= 22.6 resolver (Node 20 → exit 3 + install steps); `engine-replay.sh`; semantic-dedupe-before-spend; Source Critic draft CLI; E7 remains NO-GO. See `docs/wp/wp89-stories.md`. |
 | WP90 | Research-driven idea seeds | Work Package | `claude/wp90-idea-seeds` | In progress 2026-11-07 | Every public idea can carry an audited seed built from its page; the wizard suggestions, reasons and crew preview and the blueprint, brand kit, email and social steps read it. See `docs/wp/wp90-stories.md`. |
+| WP91 | Keep crew seeds current | Work Package | `claude/wp91-seed-freshness` | In review 2026-11-08 | A guarded GitHub workflow re-seeds changed idea pages after each Production deploy, at a fixed seed version, under a per-run cap and a founders' share of the free pool. Live spend stays off until the owner switches it on. See `docs/wp/wp91-stories.md` and plan `10-seed-freshness.md`. |
 
 ## Launch Workspace Program (WP67)
 

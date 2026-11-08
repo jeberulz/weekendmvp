@@ -176,6 +176,12 @@ Differences from the proposal:
 
 Operator commands. Each needs the owner's OK, and a dry run comes first.
 
+After the first library run, WP91 keeps seeds current on its own: the
+`Crew seeds` GitHub workflow seeds changed pages after each Production deploy,
+under a per-run cap and a founders' share of the free pool. It is off until the
+owner switches it on. See `10-seed-freshness.md`. A seed version bump is still
+this operator run.
+
 1. Dry run against prod (read-only, spends nothing): `npm run crew:seeds -- --seed-version 2026-11-08.1 --prod`
 2. A spike of 5: `npm run crew:seeds -- --seed-version 2026-11-08.1 --prod --limit 5 --apply`, then `--status <runId> --prod`.
 3. The rest of the library: the same command without `--limit`. Unchanged pages are skipped.
