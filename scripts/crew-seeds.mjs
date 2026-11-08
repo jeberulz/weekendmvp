@@ -14,7 +14,13 @@
  *   --status <runId>                     print a run's summary
  *   --poll <runId>                       poll a run now (it also polls itself every minute)
  *   --slugs a,b,c   --limit N            narrow the ideas
- *   --prod | --deployment <name>         target (default: the CLI's dev deployment)
+ *   --prod | --deployment <name>         target (default: the CLI's dev deployment, or the
+ *                                        deployment of CONVEX_DEPLOY_KEY when it is set)
+ *   --auto --max-reserve-usd 2.50 --keep-free-pool 0.5
+ *                                        WP92 unattended run (the crew-seeds workflow): skips when a
+ *                                        run at this version is open, submits only in live mode, only
+ *                                        with --apply, only under the cap, and only while the share of
+ *                                        today's free pool stays free for founders. Exit 3 = over the cap.
  *
  * The dry run calls `crew/seeds:estimateItems`, a read-only query: per idea,
  * whether it would be sent (or is unchanged since its seed at this version)
@@ -28,6 +34,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { decideSeedAutoRun, usdToMicroUsd } from "../lib/workspace/crew/seedAutoRun.ts";
 import { SeedSourceError, seedSourceFromPage, seedSourceToJson } from "../lib/workspace/crew/seedSource.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -52,7 +59,12 @@ const prod = flag("--prod");
 const deployment = value("--deployment");
 if (prod && deployment) fail("pass either --prod or --deployment <name>, not both", 2);
 const targetFlags = deployment ? ["--deployment", deployment] : prod ? ["--prod"] : [];
-const targetLabel = deployment ?? (prod ? "prod" : "dev");
+/** The deployment a deploy key names (`prod:first-squirrel-244|…` → `prod:first-squirrel-244`); never the secret part. */
+const deployKeyTarget = (process.env.CONVEX_DEPLOY_KEY ?? "").split("|")[0].trim();
+const targetLabel = deployment ?? (prod ? "prod" : deployKeyTarget ? `deploy key ${deployKeyTarget}` : "dev");
+/** The retired project's deployment; no run ever targets it. */
+const FORBIDDEN_DEPLOYMENT = "vibrant-jackal-308";
+if (targetLabel.includes(FORBIDDEN_DEPLOYMENT)) fail(`${FORBIDDEN_DEPLOYMENT} is the retired weekendmvp-2a6d0 deployment; never seed it`, 2);
 
 /** One `npx convex run`; returns the parsed JSON result. */
 function convexRun(fn, args) {
@@ -181,16 +193,70 @@ console.log(`  unchanged since their seed: ${unchanged.length}; refused by Conve
 for (const row of invalid) console.log(`  invalid: ${row.ideaSlug} (${row.reason})`);
 console.log(`  worst-case reservation at the batch rate: ${usd(worstCase)} (the meter's free pool and kill switch apply; actual cost is usually far lower)`);
 
-if (!flag("--apply")) {
-  console.log("dry run: nothing reserved, sent or written. Re-run with --apply to submit.");
-  process.exit(0);
-}
-if (fresh.length === 0) {
-  console.log("nothing to send.");
-  process.exit(0);
+let sendable = new Set(fresh.map((row) => row.ideaSlug));
+if (flag("--auto")) {
+  sendable = autoDecision();
+} else {
+  if (!flag("--apply")) {
+    console.log("dry run: nothing reserved, sent or written. Re-run with --apply to submit.");
+    process.exit(0);
+  }
+  if (fresh.length === 0) {
+    console.log("nothing to send.");
+    process.exit(0);
+  }
 }
 
-const sendable = new Set(fresh.map((row) => row.ideaSlug));
+/** WP92. The unattended run's gate; returns the slugs to send or exits. */
+function autoDecision() {
+  if (!deployment && !prod && !deployKeyTarget) fail("--auto needs a target: --prod, --deployment <name> or CONVEX_DEPLOY_KEY", 2);
+  const capText = value("--max-reserve-usd");
+  const keepText = value("--keep-free-pool");
+  if (capText === null || keepText === null) fail("--auto needs --max-reserve-usd and --keep-free-pool", 2);
+  const keep = Number(keepText);
+  let decision;
+  try {
+    const state = convexRun("crew/seeds:autoRunState", { seedVersion });
+    decision = decideSeedAutoRun(estimate, state, {
+      applyEnabled: flag("--apply"),
+      maxReserveMicroUsd: usdToMicroUsd(capText),
+      keepFreePoolShare: keep,
+    });
+  } catch (error) {
+    fail(error instanceof RangeError ? error.message : String(error), 2);
+  }
+  const say = (line) => {
+    console.log(line);
+    if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${line}\n`);
+  };
+  const pending = "wouldSend" in decision ? `${decision.wouldSend} idea(s), worst case ${usd(decision.worstCaseMicroUsd)}` : "";
+  switch (decision.action) {
+    case "skip_open_run":
+      say(`auto: a run at ${seedVersion} is still open; the next run picks up any change.`);
+      process.exit(0);
+    case "nothing_to_send":
+      say(`auto: every seed at ${seedVersion} is current.`);
+      process.exit(0);
+    case "dry_run_not_live":
+      say(`auto: ${pending} need a seed, but the deployment is not in live provider mode; nothing sent.`);
+      process.exit(0);
+    case "dry_run_apply_off":
+      say(`auto: ${pending} need a seed. Live spend is off (CREW_SEEDS_AUTO_APPLY); nothing sent.`);
+      process.exit(0);
+    case "refuse_over_cap":
+      say(`auto: ${pending} need a seed, over the ${usd(usdToMicroUsd(capText))} cap for an unattended run. Run it by hand (plan 09, "Running it").`);
+      process.exit(3);
+    case "wait_for_pool":
+      say(`auto: ${pending} need a seed, but only ${usd(decision.headroomMicroUsd)} of today's free pool is left and ${Math.round(keep * 100)}% stays free for founders. A later run sends them.`);
+      process.exit(0);
+    case "apply":
+      say(`auto: sending ${decision.send.length} idea(s), worst case ${usd(decision.worstCaseMicroUsd)}: ${decision.send.join(", ")}`);
+      return new Set(decision.send);
+    default:
+      fail(`unknown decision ${JSON.stringify(decision)}`);
+  }
+}
+
 const runId = convexRun("crew/seeds:createRun", { seedVersion });
 console.log(`run ${runId} created`);
 for (const part of chunks(payload(items.filter((item) => sendable.has(item.ideaSlug))))) {

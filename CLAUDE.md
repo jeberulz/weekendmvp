@@ -131,7 +131,11 @@ read the response as text before parsing JSON.
   money in live mode). The wizard (`wizardSeedFor`) reads the newest platform
   seed for defaults, reasons, quick confirms and the crew preview. The crew
   prompts v2 read its brand seeds and angles. `validated` comes from the idea
-  row's research level, never the model. No seed → fixtures
+  row's research level, never the model. No seed → fixtures. WP92: the
+  `Crew seeds` workflow (`.github/workflows/crew-seeds.yml`, `crew:seeds --auto`)
+  re-seeds changed pages after each Production deploy, at `CREW_SEED_VERSION`,
+  under a per-run cap and a founders' pool floor. Live spend stays off until
+  `CREW_SEEDS_AUTO_APPLY=true` (plan `10-seed-freshness.md`)
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

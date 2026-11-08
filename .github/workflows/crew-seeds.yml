@@ -1,0 +1,88 @@
+name: Crew seeds
+
+# WP92. Keeps per-idea crew seeds (WP90) current without an operator.
+#
+# When: after every successful Vercel Production deployment (that build also
+# deploys Convex prod, so the functions this calls are live), once a day as a
+# safety net, and by hand. Each run is `npm run crew:seeds -- --auto` against
+# prod at one fixed seed version: a page unchanged since its seed at that
+# version is skipped (`sourceHash`), so most runs send nothing.
+#
+# Live spend is OFF until the owner sets every one of these:
+#   secret   CONVEX_PROD_DEPLOY_KEY       prod deploy key (first-squirrel-244)
+#   variable CREW_SEED_VERSION            e.g. 2026-11-08.1, the version of the last library run
+#   variable CREW_SEEDS_AUTO_APPLY=true   the live-spend switch; anything else is a dry run
+# Optional limits (defaults below; plan 10-seed-freshness.md explains them):
+#   variable CREW_SEEDS_MAX_RESERVE_USD   worst-case reservation cap per run (2.50)
+#   variable CREW_SEEDS_KEEP_FREE_POOL    share of today's free pool kept for founders (0.5)
+#
+# The script also refuses to send when a run at this version is still open or
+# the deployment is not in live provider mode. Over the cap it exits 3, which
+# fails this job: that change (a version bump, a mass edit) is an operator run.
+
+on:
+  deployment_status:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crew-seeds
+  cancel-in-progress: false
+
+jobs:
+  seeds:
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_PROD_DEPLOY_KEY }}
+      SEED_VERSION: ${{ vars.CREW_SEED_VERSION }}
+      AUTO_APPLY: ${{ vars.CREW_SEEDS_AUTO_APPLY }}
+      MAX_RESERVE_USD: ${{ vars.CREW_SEEDS_MAX_RESERVE_USD || '2.50' }}
+      KEEP_FREE_POOL: ${{ vars.CREW_SEEDS_KEEP_FREE_POOL || '0.5' }}
+
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ] || [ -z "$SEED_VERSION" ]; then
+            echo "Crew seeds are not configured (CONVEX_PROD_DEPLOY_KEY secret or CREW_SEED_VERSION variable missing); skipping." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Always the newest content on main: an older deployment finishing late
+      # must not seed pages that main has since changed.
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install locked dependencies
+        if: steps.config.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Keep seeds current
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          APPLY_FLAG=""
+          if [ "$AUTO_APPLY" = "true" ]; then APPLY_FLAG="--apply"; fi
+          npm run crew:seeds -- --auto \
+            --seed-version "$SEED_VERSION" \
+            --max-reserve-usd "$MAX_RESERVE_USD" \
+            --keep-free-pool "$KEEP_FREE_POOL" \
+            $APPLY_FLAG
