@@ -19,10 +19,11 @@ listen (6 sources, isolated) -> cluster -> score -> write -> review queue
    retries, timeouts, and an on-disk cache (`engine/pain/cache/`, git-ignored)
    so a retry never re-fetches. One source failing is reported in the run
    report; it can never kill the batch.
-2. **Cluster.** Near-duplicate pains are grouped by token overlap (Jaccard
-   ≥ 0.25, deterministic, no LLM).
+2. **Cluster.** Near-duplicate pains are grouped by token-overlap
+   coefficient (≥ 0.3, deterministic, no LLM).
 3. **Score.** Each cluster scores 0–100 on frequency (×4), pain intensity
-   (×3), workaround spend (×2) and weekend-buildability (×1).
+   (×3), workaround spend (×2) and weekend-buildability (×1), plus a
+   verdict scorecard (composite + four dials + BUILD / PIVOT / PASS).
 4. **Write.** Only top-scored clusters reach the writer. The writer is
    deterministic and makes **no LLM calls** — cost is $0 per draft.
 5. **Review.** Drafts wait in `engine/pain/review/{slug}.json` as `pending`.
@@ -76,6 +77,35 @@ Studied from the published pages before writing the writer
 - **Page rendering:** `app/ideas/[slug]/page.tsx` renders the MDX file plus
   the manifest row; `scores` is optional in the render, so a draft with
   scores renders the same as a published page.
+
+## Ideabrowser-inspired additions (8 Nov 2026 — structure only, no copied text)
+
+Sir Rulz had ideabrowser.com studied (its idea-page structure, research and
+validation signals). The applicable bits were folded into the writer and the
+review queue — its **structure and validation discipline, not its copy**,
+and **not** its paywall/gating. The house MDX format stays the primary
+output; every element below maps onto the existing eight H2 sections as an
+H3 subsection, or onto fields in the review record.
+
+| Ideabrowser element | Adopted as |
+|---|---|
+| IB Index composite + four score dials (Opportunity / Problem / Feasibility / Why Now, /10 with word labels) | `Scorecard` on the cluster and draft (`lib/pain-engine/cluster.ts` `scorecardForCluster`): composite = cluster total / 10; Opportunity = frequency, Problem = intensity, Feasibility = buildability, Why Now = report recency + workaround spend; labels Strong / Good / Weak / Poor. Rendered as `### Scorecard` under Market Research; reasoning visible in the review record. Manifest `timing` now maps to the Why Now dial. |
+| Keyword trend chart (volume + growth %, "data usually lags 1-2 months") + dated market figures | Market Research states the reports' date range and that search-volume data lags 1–2 months; keyword volume/growth and market size are shown only when the evidence contains them — otherwise the draft says so plainly and lists it in `gaps` / "What is NOT proven". No keyword data is invented. |
+| Value ladder with real prices (free lead magnet → $500 setup → $79/mo) | `### Value ladder` under Business Model, built ONLY from prices actually written in the evidence (`extractPrices`). When none are found the section says so and the tiers stay labelled proposals to test. |
+| "What it demands" (time to first revenue, capital, difficulty) + named status-quo competitor + Biggest Risk | `### What it demands` under Business Model: time to first revenue, capital, difficulty (inverted from buildability) — all labelled planning assumptions — plus the status-quo competitor named in the evidence (`alternative to X` / `switching from X`, else "manual work") and the single biggest risk, picked deterministically from the evidence (unproven willingness to pay / thin evidence / single source / distribution). |
+| "What is NOT proven" caveat (e.g. no paid pilot / renewal evidence) | `### What is NOT proven` under Market Research on **every** draft: paid-pilot evidence, keyword volume/growth, market size, competitor pricing, plus breadth and value-ladder gaps when they apply. Each item names the test that would close it. |
+| Community Signals counts by platform | `### Community signals` under Sources, and `communitySignals` on the draft: reports + total agreement per source platform. Counts are reports found, not audience sizes. |
+| Verdict that CAN be no (BUILD / PIVOT / PASS); Roast = four critics | `Scorecard.verdict`: BUILD (composite ≥ 7, ≥ 3 reports, real quote), PASS (composite < 5, or a single report with no quote), PIVOT otherwise. The verdict and its rationale are in the review record and the draft; a PASS draft still lands in the queue for the human to confirm — the verdict advises, the human decides. The four-critic roast was **not** adopted (no LLM in Phase 1; the reviewer plays that role). |
+
+**Where a new frontmatter / section field would be needed:** if the
+published page should *render* the scorecard and verdict (rather than
+keeping them in the draft MDX as H3 subsections and in the review record),
+the page would need either new frontmatter fields (e.g. `verdict`,
+`scorecard: {composite, opportunity, problem, feasibility, whyNow}`) or a
+new H2 section (e.g. `## Verdict`) — both would need the page renderer
+(`app/ideas/[slug]/page.tsx`) and the manifest shape updated, and the
+eight-heading audit contract extended. That is a separate decision, not
+part of Phase 1: drafts already carry everything in MDX + review record.
 
 ## Evidence rule (hard)
 
