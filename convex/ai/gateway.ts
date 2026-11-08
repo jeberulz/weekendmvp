@@ -119,6 +119,7 @@ import {
 import { openAiImageReservationMicroUsd, type OpenAiImageRequest } from "./providers/openaiImages";
 import { assertRecraftRequest, recraftModelFor, type RecraftImageRequest } from "./providers/recraft";
 import { MAX_TIMEOUT_MS, utf8Bytes } from "./providers/transport";
+import { wireOutputSchema } from "./providers/wireSchema";
 import {
   isProviderError,
   type ImageResult,
@@ -812,14 +813,15 @@ export function systemBlocksFor(
 
 /**
  * An upper bound on the request's input tokens: every UTF-8 byte of the
- * system blocks, the task block and the schema, plus framing. A token is
+ * system blocks, the task block and the schema as sent (`wireOutputSchema`),
+ * plus framing. A token is
  * never shorter than a byte, so the true count cannot be higher.
  */
 export function inputTokenUpperBound(request: Pick<TextRequest, "system" | "user" | "outputSchema">): number {
   return (
     request.system.reduce((sum, block) => sum + utf8Bytes(block.text), 0) +
     utf8Bytes(request.user) +
-    (request.outputSchema === undefined ? 0 : utf8Bytes(JSON.stringify(request.outputSchema))) +
+    (request.outputSchema === undefined ? 0 : utf8Bytes(JSON.stringify(wireOutputSchema(request.outputSchema)))) +
     GATEWAY_FRAMING_TOKENS
   );
 }
