@@ -21,13 +21,14 @@
  * lock entry.
  */
 
-import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v1.ts";
-import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v1.ts";
-import { brandKitSpec } from "./brandKit.v1.ts";
-import { emailSequenceSpec } from "./emailSequence.v1.ts";
+import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v2.ts";
+import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v2.ts";
+import { brandKitSpec } from "./brandKit.v2.ts";
+import { emailSequenceSpec } from "./emailSequence.v2.ts";
+import { ideaSeedSpec } from "./ideaSeed.v1.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
-import { socialPackSpec } from "./socialPack.v1.ts";
+import { socialPackSpec } from "./socialPack.v2.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
 import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
 
@@ -53,7 +54,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
   promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(wrenPlanTurnSpec, { module: "convex/ai/prompts/wrenPlanTurn.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(blueprintPersonaliseSpec, {
-    module: "convex/ai/prompts/blueprintPersonalise.v1.ts",
+    module: "convex/ai/prompts/blueprintPersonalise.v2.ts",
     sampleInputs: {
       seed: null,
       idea: JSON.stringify({ slug: "hydrotrail", title: "HydroTrail", description: "A hydration planner for solo hikers." }),
@@ -61,7 +62,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(blueprintOwnIdeaSpec, {
-    module: "convex/ai/prompts/blueprintOwnIdea.v1.ts",
+    module: "convex/ai/prompts/blueprintOwnIdea.v2.ts",
     sampleInputs: {
       ownIdea: "A packing checklist that adapts to the weather forecast for weekend campers.",
       outline: null,
@@ -69,26 +70,43 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(brandKitSpec, {
-    module: "convex/ai/prompts/brandKit.v1.ts",
+    module: "convex/ai/prompts/brandKit.v2.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       answers: CREW_SAMPLE_ANSWERS,
       design: JSON.stringify({ productType: "Micro SaaS", palettes: [], typePairs: [], landingPattern: { id: "minimal-single-column" } }),
+      ideaAngles: JSON.stringify({ positioning: "Water planning for solo hikers.", voiceCues: ["Calm", "Practical"], avoid: [], imagery: "A bottle on a ridge." }),
     },
   }),
   promptEntry(emailSequenceSpec, {
-    module: "convex/ai/prompts/emailSequence.v1.ts",
+    module: "convex/ai/prompts/emailSequence.v2.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
       answers: CREW_SAMPLE_ANSWERS,
+      ideaAngles: JSON.stringify({ emailAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one." }], buyerWords: [] }),
+    },
+  }),
+  promptEntry(ideaSeedSpec, {
+    module: "convex/ai/prompts/ideaSeed.v1.ts",
+    sampleInputs: {
+      source: JSON.stringify({
+        slug: "hydrotrail",
+        title: "HydroTrail",
+        description: "A hydration planner for solo hikers.",
+        audiences: ["hikers"],
+        sections: { problem: "Hikers run dry on long, hot routes.", solution: "Plan litres to carry from the route." },
+        howItWorks: ["Enter your route", "Get litres to carry"],
+        buildPrompts: [],
+      }),
     },
   }),
   promptEntry(socialPackSpec, {
-    module: "convex/ai/prompts/socialPack.v1.ts",
+    module: "convex/ai/prompts/socialPack.v2.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
+      ideaAngles: JSON.stringify({ socialAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one.", channel: "Instagram" }], buyerWords: [] }),
     },
   }),
 ]);

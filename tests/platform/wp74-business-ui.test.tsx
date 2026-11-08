@@ -69,6 +69,8 @@ function finished(business: WizardSessionView["business"] = null): WizardSession
     suggestedNames: [...seed.suggestedNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
+    hints: {},
+    crew: null,
     business,
   };
 }

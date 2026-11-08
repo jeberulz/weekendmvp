@@ -323,7 +323,7 @@ describe("WP75-S1 idempotency and tokens", () => {
     if (run === null) throw new Error("no run");
     const blueprintDoc = before.documents.find((doc) => doc.kind === "blueprint");
     const replay = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@1", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
+      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@2", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
     });
     expect(replay).toEqual({ kind: "stale" });
 

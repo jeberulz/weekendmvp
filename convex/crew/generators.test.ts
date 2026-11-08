@@ -17,6 +17,8 @@ import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import schema from "../schema";
+import { hydrotrailSeedDraft } from "../../lib/workspace/contracts/fixtures/seeds";
+import { seedColumns, seedFromDraft } from "../../lib/workspace/contracts/seeds";
 import { runPromptWithMeter } from "../ai/gatewayActions";
 import { createAnthropicAdapter } from "../ai/providers/anthropic";
 import type { AnthropicFixtureReply, AnthropicFixtureResponder } from "../ai/providers/fixtures";
@@ -239,7 +241,7 @@ describe("blueprint step", () => {
 
     const { documents, approvals } = await stored(t, business.projectId);
     expect(documents).toHaveLength(1);
-    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-personalise@1", taskId });
+    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-personalise@2", taskId });
     const blueprint = parseArtifact("blueprint", JSON.parse(documents[0]?.body ?? "null"));
     expect(blueprint.success && blueprint.data).toMatchObject({ source: "library", ideaSlug: "hydrotrail" });
     expect(approvals).toHaveLength(1);
@@ -385,7 +387,7 @@ describe("blueprint step", () => {
     expect(systemText(gw.requests[0])[0]).toContain(NOT_VALIDATED_LABEL);
     expect(userText(gw.requests[0])).not.toContain("idea_seed");
     const { documents, approvals } = await stored(t, business.projectId);
-    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-own-idea@1" });
+    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-own-idea@2" });
     const parsed = parseArtifact("blueprint", JSON.parse(documents[0]?.body ?? "null"));
     if (!parsed.success) throw new Error("own-idea blueprint did not parse");
     expect(parsed.data.source).toBe("own_idea");
@@ -535,11 +537,35 @@ describe("brand kit step", () => {
 
     const { documents, approvals } = await stored(t, business.projectId);
     const kit = documents.find((doc) => doc.kind === "brand_kit");
-    expect(kit).toMatchObject({ promptRef: "crew-brand-kit@1", taskId });
+    expect(kit).toMatchObject({ promptRef: "crew-brand-kit@2", taskId });
     expect(parseArtifact("brand_kit", JSON.parse(kit?.body ?? "null")).success).toBe(true);
     expect(approvals.filter((row) => row.subjectId === kit?._id)).toEqual([
       expect.objectContaining({ kind: "artifact_review", status: "pending" }),
     ]);
+  });
+
+  test("WP90-S5: with a full seed stored, the kit reads its brand seeds; without one, no idea angles", async () => {
+    const t = crewTest();
+    const business = await seedBusiness(t, "seeded", "library");
+    const columns = seedColumns(seedFromDraft(hydrotrailSeedDraft, { ideaSlug: "hydrotrail", researchLevel: "deep" }));
+    await t.run(async (ctx) => await ctx.db.insert("idea_crew_seeds", {
+      ownerId: business.ownerId, ideaSlug: "hydrotrail", seedVersion: "2026-11-07.1", ...columns, promptRefs: [], createdAt: 1,
+    }));
+    await blueprintFirst(t, business);
+    const { taskId } = await createTask(t, business, "crew_brand_kit");
+    const gw = gateway(t);
+    expect(await run(t, taskId, gw)).toMatchObject({ kind: "finished" });
+    const user = userText(gw.requests[0]);
+    expect(user).toContain("<idea_angles");
+    expect(user).toContain(JSON.stringify(hydrotrailSeedDraft.brandSeeds.positioning).slice(1, -1));
+
+    const plain = crewTest();
+    const other = await seedBusiness(plain, "plain", "library");
+    await blueprintFirst(plain, other);
+    const second = await createTask(plain, other, "crew_brand_kit");
+    const gw2 = gateway(plain);
+    expect(await run(plain, second.taskId, gw2)).toMatchObject({ kind: "finished" });
+    expect(userText(gw2.requests[0])).not.toContain("idea_angles");
   });
 
   test("the kit's name is code-owned: the founder's chosen name is stored, whatever the model wrote", async () => {

@@ -21,6 +21,7 @@ import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
+import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
 import { WizardProgress, progressLabel } from "./WizardProgress";
@@ -307,6 +308,8 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
 
   const onStep = view !== undefined && !view.completed && view.business === null;
   const showAside = parsed !== null && view !== undefined && view.business === null;
+  // WP90-S4: the crew preview shows once the blueprint is reviewed, while the founder answers the rest.
+  const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
   if (sessionId === null && idea === null) {
     body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
@@ -377,6 +380,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         defaults={parsed.defaults}
         suggestedNames={view.suggestedNames}
         blueprint={view.blueprint}
+        hints={view.hints}
         pending={pending}
         error={error}
         headingRef={headingRef}
@@ -427,7 +431,14 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         {showAside ? (
           <div className="mt-14 flex flex-wrap items-start gap-12">
             <div className="flex min-w-0 flex-[999_1_560px] justify-center">{body}</div>
-            <FounderSignals answers={parsed.answers} />
+            {crewVisible && view.crew !== null ? (
+              <div className="flex max-w-[340px] flex-[1_1_280px] flex-col gap-6">
+                <FounderSignals answers={parsed.answers} className="w-full" />
+                <CrewPreview crew={view.crew} />
+              </div>
+            ) : (
+              <FounderSignals answers={parsed.answers} />
+            )}
           </div>
         ) : (
           <div className={cn("mt-14", sessionId === null && idea === null ? "flex justify-center" : "")}>{body}</div>

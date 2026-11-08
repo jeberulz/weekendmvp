@@ -17,7 +17,7 @@ import {
   type RosterPlan,
 } from "../../lib/workspace/contracts/roster";
 
-export const ROSTER_RULES_VERSION = "2026-11-05.1";
+export const ROSTER_RULES_VERSION = "2026-11-07.1";
 
 export type RoleCatalogueEntry = {
   readonly key: RoleKey;
@@ -139,6 +139,7 @@ const KIND_ARTICLE_LABEL: Record<IdeaKind, string> = {
   service: "A service",
   marketplace: "A marketplace",
   b2b_software: "A B2B tool",
+  local_business: "A local business",
 };
 
 const PRODUCT_NOUN: Record<IdeaKind, string> = {
@@ -148,6 +149,7 @@ const PRODUCT_NOUN: Record<IdeaKind, string> = {
   service: "a service",
   marketplace: "a marketplace",
   b2b_software: "a B2B tool",
+  local_business: "a local business",
 };
 
 /** Order in which skipped roles are listed. */
@@ -197,6 +199,9 @@ function engineeringReason(kind: IdeaKind, weight: EngineeringWeight): string {
   if (kind === "service") {
     return "Booking and checkout setup only. No product build pack.";
   }
+  if (kind === "local_business") {
+    return "Booking, ordering or storefront setup only. No product build pack.";
+  }
   return "Checkout and storefront setup only. No product build pack.";
 }
 
@@ -230,7 +235,9 @@ function alwaysReason(key: AlwaysKey, input: RosterInput): string {
     case "landing":
       return landingReason(input.goal.kind);
     case "seo":
-      return "People search for this problem";
+      return input.ideaKind === "local_business"
+        ? "Local searches and map listings"
+        : "People search for this problem";
     case "marketing": {
       const phrase = goalPhrase(input);
       return phrase ? `Owns ${phrase}` : "Owns the first goal";
@@ -252,11 +259,15 @@ function alwaysReason(key: AlwaysKey, input: RosterInput): string {
 function merchSkipReason(kind: IdeaKind): string {
   // Canvas wording for the course example is "Nothing physical", not the template.
   if (kind === "course") return "Nothing physical";
+  if (kind === "local_business") return "Sells a service in person, no goods";
   return `${KIND_ARTICLE_LABEL[kind]}; nothing physical to sell`;
 }
 
 function outboundSkipReason(input: RosterInput): string {
   // Canvas wording: consumer self-serve products are found via communities and search.
+  if (input.ideaKind === "local_business" && input.buyer === "consumer") {
+    return `${capitalise(input.audiencePlural)} come via local search, maps and word of mouth`;
+  }
   if (input.buyer === "consumer" && input.deliveryFormat === "self_serve") {
     return `${capitalise(input.audiencePlural)} come via communities and search`;
   }
@@ -276,6 +287,12 @@ function communityHireReason(input: RosterInput): string {
     : "Courses run better with a community";
 }
 
+/** WP90: a physical product always sells goods; a local business only when its profile says so. */
+function sellsGoods(input: RosterInput): boolean {
+  if (input.ideaKind === "physical_product") return true;
+  return input.ideaKind === "local_business" && input.sellsGoods === true;
+}
+
 export function planRoster(
   rawInput: RosterInput,
   options?: { leadName?: string },
@@ -291,7 +308,7 @@ export function planRoster(
     ads: input.goal.paidPush !== null,
     curriculum: isCourse,
     community: isCourse || isCohort,
-    merch: input.ideaKind === "physical_product",
+    merch: sellsGoods(input),
     outbound: input.buyer === "business",
   };
 
@@ -304,7 +321,9 @@ export function planRoster(
       case "community":
         return communityHireReason(input);
       case "merch":
-        return "Idea kind is physical product";
+        return input.ideaKind === "local_business"
+          ? "Sells goods in store"
+          : "Idea kind is physical product";
       case "outbound":
         return "Buyer is a business";
       default:
