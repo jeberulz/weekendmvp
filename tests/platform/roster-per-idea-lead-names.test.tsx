@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Roster per idea S2 (WP90): the partner-name step suggests three lead names
+ * Roster per idea S2 (WP91): the partner-name step suggests three lead names
  * picked per wizard session, so businesses stop sharing one Crew Lead.
  */
 import { cleanup, render, screen } from "@testing-library/react";

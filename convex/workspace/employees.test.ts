@@ -16,7 +16,7 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
-import { EMPLOYEE_ARTIFACT_KINDS, EMPLOYEE_TASKS_MAX, isSpecialistRoleKey, type SpecialistRoleKey } from "../../lib/workspace/employees";
+import { EMPLOYEE_TASKS_MAX, isSpecialistRoleKey, type SpecialistRoleKey } from "../../lib/workspace/employees";
 import type { CrewStepOutcome } from "../crew/runner";
 
 vi.mock("../crew/generators", async (importOriginal) => {
@@ -267,11 +267,7 @@ describe("WP67 employeeActivity", () => {
     expect(JSON.stringify(iris, (_key, value: unknown) => (typeof value === "bigint" ? value.toString() : value))).not.toContain("provider_timeout");
   });
 
-  test("every specialist owns the artifact kinds Team HQ routes to them", async () => {
-    const { REVIEW_OWNER } = await import("../../lib/workspace/teamHq");
-    for (const [kind, owner] of Object.entries(REVIEW_OWNER)) {
-      if (owner === "lead") continue;
-      expect(EMPLOYEE_ARTIFACT_KINDS[owner]).toContain(kind);
-    }
-  });
+  // "every specialist owns the artifact kinds Team HQ routes to them" lives in
+  // tests/platform/workspace-team-hq-helpers.test.ts: `lib/workspace/teamHq.ts`
+  // uses `@/` imports, which the Convex deploy typecheck (convex/tsconfig.json) cannot resolve.
 });

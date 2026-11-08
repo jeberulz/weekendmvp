@@ -32,9 +32,9 @@
  */
 import { z } from "zod";
 
-import { cleanTeamProposal } from "../crew/teamProposal";
-import { LIMITS, blueprintSchema, type Blueprint } from "./artifacts";
+import { LIMITS, blueprintSchema, type Blueprint } from "./artifacts.ts";
 import {
+  normaliseTeamProposal,
   commercialModelSchema,
   goalKindSchema,
   goalTargetSchema,
@@ -43,7 +43,7 @@ import {
   type GoalKind,
   type GoalTarget,
   type RosterInput,
-} from "./roster";
+} from "./roster.ts";
 
 // ---------------------------------------------------------------------------
 // Steps
@@ -412,9 +412,11 @@ export function rosterInputFromWizard(answers: WizardAnswers, blueprint: Bluepri
   if (a.idea.source === "library" && b.source === "library" && a.idea.ideaSlug !== b.ideaSlug) {
     throw new Error(`Blueprint idea "${b.ideaSlug}" does not match the wizard idea "${a.idea.ideaSlug}"`);
   }
-  // Roster per idea (WP90): the Crew Lead's proposal, cleaned again here so a
-  // blueprint stored without the quality gate can never break the roster.
-  const proposal = cleanTeamProposal(b.team, { ownIdea: b.source === "own_idea", brandName: a.name.chosen });
+  // Roster per idea (WP91): the Crew Lead's proposal. The quality gate already
+  // ran the full cleaning (`cleanTeamProposal`: links, invented proof, market
+  // numbers) on every stored blueprint; the structural part runs again here so
+  // a malformed team can never break the roster.
+  const proposal = normaliseTeamProposal(b.team);
   return rosterInputSchema.parse({
     ...b.profile,
     ...(proposal === undefined ? {} : { proposal }),

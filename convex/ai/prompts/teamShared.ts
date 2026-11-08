@@ -1,5 +1,5 @@
 /**
- * Roster per idea (WP90). What both blueprint prompts (version 2) say about
+ * Roster per idea (WP91). What both blueprint prompts (version 3) say about
  * the team: the optional roles, one line each, and how to decide them. The
  * text is fixed, so it stays in the stable system block and the prompt cache
  * keeps working.

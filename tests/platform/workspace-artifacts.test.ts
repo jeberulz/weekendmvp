@@ -217,7 +217,7 @@ const SENT_SCHEMAS: readonly (readonly [string, JsonSchema])[] = [
   ...OBJECT_ARTIFACT_KINDS.map((kind) => [kind, artifactJsonSchema(kind)] as const),
   ["blueprint.library", artifactVariantJsonSchema("blueprint", "library")],
   ["blueprint.own_idea", artifactVariantJsonSchema("blueprint", "own_idea")],
-  // Roster per idea (WP90): what blueprint prompts v2 send, the team block required.
+  // Roster per idea (WP91): what blueprint prompts v2 send, the team block required.
   ["blueprint.library.team", toStructuredOutputSchema(blueprintTeamVariantSchemas.library)],
   ["blueprint.own_idea.team", toStructuredOutputSchema(blueprintTeamVariantSchemas.own_idea)],
   ["build_pack.full", artifactVariantJsonSchema("build_pack", "full")],

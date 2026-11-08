@@ -75,7 +75,7 @@ export type LaunchHiredRole = {
   readonly employeeName: string;
   readonly roleLabel: string;
   readonly reason: string;
-  /** Roster per idea (WP90): present when the Crew Lead's team proposal made this call. */
+  /** Roster per idea (WP91): present when the Crew Lead's team proposal made this call. */
   readonly decidedBy?: "lead";
 };
 
@@ -83,7 +83,7 @@ export type LaunchSkippedRole = {
   readonly roleKey: string;
   readonly roleLabel: string;
   readonly reason: string;
-  /** Roster per idea (WP90): present when the Crew Lead's team proposal made this call. */
+  /** Roster per idea (WP91): present when the Crew Lead's team proposal made this call. */
   readonly decidedBy?: "lead";
 };
 

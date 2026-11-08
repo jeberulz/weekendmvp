@@ -11,16 +11,27 @@
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
         "module": "sha256:7aab983fd43b6ffddeefe834a50688eb88253313dcffdc15cccc43c5a1b81f28"
       },
-      "retired": "Roster per idea (WP90): replaced by version 2 (the blueprint also proposes the team)"
+      "retired": "WP90-S5: bumped to @2 (C-ROSTER local_business/sellsGoods in the blueprint schema; brand, email and social read the idea seed's angles)"
     },
     "crew-blueprint-own-idea@2": {
-      "hash": "sha256:aa202ba98ce817a4cefcd9550312b97b9188a403a3480dbd00aa219b3dc80bfe",
+      "hash": "sha256:7c308444cb864cef0f86800ac104143cb7ec49a0384a9bbf51a56fd304fdcdb5",
       "parts": {
-        "system": "sha256:1b0b238add0f95304395ccc238950118286d479075769878fb85a556ce634d14",
+        "system": "sha256:c0ec7ce277582298b69b4a05f6e4cbf27d6223250e78a3edee9ca7173a8d0d0d",
         "task": "sha256:77e609bce18d7b5b48fe458cdd0dcf09f3ecb1a52fb0e154661f31ae81ef0991",
-        "outputSchema": "sha256:11a228e4a0e1d8bca3bf8ddd911b0b7ac773639b09f860646506a49717b14beb",
+        "outputSchema": "sha256:0802e70ab8342248933e8b044b0e3263139f4b39d9450fa4cbc3c1fcd28dbdde",
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
-        "module": "sha256:538ef9c82040d63d07863fe58ad6c8936cc061ccbadefa5803526880a0cd8dd0"
+        "module": "sha256:bd24d65f7758a795ec5f0faa7fc9e4aab26d31fe9582e4db59e67ff4a9a45eb8"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 3 (the blueprint also proposes the team)"
+    },
+    "crew-blueprint-own-idea@3": {
+      "hash": "sha256:82f9a905f9b0dd965b4ee998d109c03ad76755dfecaa7be3466da795e05457dd",
+      "parts": {
+        "system": "sha256:ec2454a3b51d9344f00a49c3d9346804f6fd14a734a3911e0ddb7be0901b16be",
+        "task": "sha256:77e609bce18d7b5b48fe458cdd0dcf09f3ecb1a52fb0e154661f31ae81ef0991",
+        "outputSchema": "sha256:c1d68f1077f4d555d1707271d3ada706a4bec0aaa679e0cdccd22c3b7223fe1c",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:e32a3acacac8e336374fb38ed7f6825f34c6fa5c621908d8069a14e2d4ccc88c"
       }
     },
     "crew-blueprint-personalise@1": {
@@ -32,16 +43,27 @@
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
         "module": "sha256:1448ad38e471839be36157e024c29cf2a11d0b61b1cd99eca88be1e79dc9df80"
       },
-      "retired": "Roster per idea (WP90): replaced by version 2 (the blueprint also proposes the team)"
+      "retired": "WP90-S5: bumped to @2 (C-ROSTER local_business/sellsGoods in the blueprint schema; brand, email and social read the idea seed's angles)"
     },
     "crew-blueprint-personalise@2": {
-      "hash": "sha256:beb3988714fdd796d00b28b1356daa647b0e5e4e2c08bef606ab73b312f9034e",
+      "hash": "sha256:3c6aa5e5329a63a125d5b4e57314b88a2af9c08144bf8c32d735e30ff52dbd88",
       "parts": {
-        "system": "sha256:ca65ff8be8b76ec13a72a887e305c0bb0962f1085e9f53c54a59c275b71c33d1",
+        "system": "sha256:1636c384b8cf1127fdd07d7139c8549f41a2d54f6efc576c5a106c13b73f0165",
         "task": "sha256:4d3730f86d74ad2eeffcf67e03d4768ba5849e8e5b8a44620c8642e407dbe454",
-        "outputSchema": "sha256:265ce99000a1fb9832ce76bf8812beacacb5942396399108f5db84aa04f9f49e",
+        "outputSchema": "sha256:45be5192b3c0a951be9f44ff850a4c1038cce01f80e0825f1d76adba14f914f1",
         "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
-        "module": "sha256:70ddf6804f2eba45b26fa412656e61d9d91fece0ab162bfd29b8440b7a617d2b"
+        "module": "sha256:ce38ab2456f641017b9abd52c1769d9b789b2ed182831ccf9b7131f7f8585121"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 3 (the blueprint also proposes the team)"
+    },
+    "crew-blueprint-personalise@3": {
+      "hash": "sha256:30242d921b59c85c85d1f1cfc9d2ff763716112c33f021a7d309347a3f30da03",
+      "parts": {
+        "system": "sha256:0fe1bf21429c9fcfe9ab904885aa7194bed9d598831baa611a2ba2c94d6faf1f",
+        "task": "sha256:4d3730f86d74ad2eeffcf67e03d4768ba5849e8e5b8a44620c8642e407dbe454",
+        "outputSchema": "sha256:75c3f338b3541141c60f12eaf367ffe37218f8a0fc8b2e85e170f5ca990ba7e5",
+        "run": "sha256:4b706ab8ab1562b71b9e27cd8467157478aa8c7575f31745c5992c01849ad092",
+        "module": "sha256:62dddc2c721a788503d936f1a9f3dc10a2be4bf635c69ffe65b9bd5c13d85ef2"
       }
     },
     "crew-brand-kit@1": {
@@ -53,16 +75,27 @@
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
         "module": "sha256:bf292a7551b42105176653673f53534c3b8be567b29bb56d3fa20b5ad4dff9f2"
       },
-      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+      "retired": "WP90-S5: bumped to @2 (C-ROSTER local_business/sellsGoods in the blueprint schema; brand, email and social read the idea seed's angles)"
     },
     "crew-brand-kit@2": {
-      "hash": "sha256:644bad56f362458ad15e2a998f3ba62ff58e93b1424748e7d49ab088e6dde68e",
+      "hash": "sha256:3d57844602649e931bc36a56a2e75051b066a65ce93f2b45304738c34694e811",
       "parts": {
         "system": "sha256:55721abaee7741920b42cf6967b2a2c8e2a225043cec551d6540932345f9d2b6",
-        "task": "sha256:8217770fd379a8fa1e213db0109a4ee7a06653f5a2bc7f5c006b2b9b8903ec52",
+        "task": "sha256:35db1b9e1e22f21f89b49a6cbd931616499983b5fb447d1b4abbb059b7e6cac2",
         "outputSchema": "sha256:d32dd28185af67dc6ecb51dc52e0a716ab2a29a1ecd5e40626433e199614b4a6",
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
-        "module": "sha256:d0802cfb91536aa9c17db2efc2466089593e723e5cf616b9687724e667a689f3"
+        "module": "sha256:576bb1e725273d089ddce754e9370c102a50115a7f68b4a8572ea8e74f60d535"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 3 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-brand-kit@3": {
+      "hash": "sha256:3a2a8d29ecbd1257ea99d795ebc3fe9cd41a775da765b06692bf3ac543babad1",
+      "parts": {
+        "system": "sha256:55721abaee7741920b42cf6967b2a2c8e2a225043cec551d6540932345f9d2b6",
+        "task": "sha256:35db1b9e1e22f21f89b49a6cbd931616499983b5fb447d1b4abbb059b7e6cac2",
+        "outputSchema": "sha256:d32dd28185af67dc6ecb51dc52e0a716ab2a29a1ecd5e40626433e199614b4a6",
+        "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
+        "module": "sha256:fd1098b25305b6c4cb4d1972b6163e08ad207cbad52297fe55dfb69b8c1b6440"
       }
     },
     "crew-email-sequence@1": {
@@ -74,16 +107,48 @@
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
         "module": "sha256:945bc4feb9b0092d073f6fd3e341d5fc6fc7fae922b9ea47831f1ee4bad250d3"
       },
-      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+      "retired": "WP90-S5: bumped to @2 (C-ROSTER local_business/sellsGoods in the blueprint schema; brand, email and social read the idea seed's angles)"
     },
     "crew-email-sequence@2": {
-      "hash": "sha256:40007e720d35c3b938f3467935e5155d5855a090e642390b4c2f30f565b01a5e",
+      "hash": "sha256:ad9ea5c31070ec7f76f06cd5c0ac4395e6ce3de50be4a3d686036f46fb51f377",
       "parts": {
         "system": "sha256:2fa35de0323ba055cd3cb70912cd5fa365f23c3e79f636f68710fa48ec6bd29a",
-        "task": "sha256:a4c3f87d1d51528850e830a6a0dccbd81db9833d946dc78ea47eb0e053a06527",
+        "task": "sha256:e0ad96a3ea6cc6ab85d3673222b9b1025888dcf3010be3da8f63b11e7b17d509",
         "outputSchema": "sha256:f53704273bca4e709b3e456ef33ae7c2c63ab9934ddd43b52da31f2ccf31d9d7",
         "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
-        "module": "sha256:ea5a18ebaf8f121544e9b531deb6bf3e145100f0eb7609907d38d620c389948b"
+        "module": "sha256:0d31c8450d90b31ed4e2b99b36249777ed99159ec1dea52806869cb46488a980"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 3 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-email-sequence@3": {
+      "hash": "sha256:366d708b9c42e8647ecf3b24f31b8f0a3ac02ddc3d10e8510406420dc4ab38a0",
+      "parts": {
+        "system": "sha256:2fa35de0323ba055cd3cb70912cd5fa365f23c3e79f636f68710fa48ec6bd29a",
+        "task": "sha256:e0ad96a3ea6cc6ab85d3673222b9b1025888dcf3010be3da8f63b11e7b17d509",
+        "outputSchema": "sha256:f53704273bca4e709b3e456ef33ae7c2c63ab9934ddd43b52da31f2ccf31d9d7",
+        "run": "sha256:56c9e66f08c195ce1ba0cda81e06c3bff453143515ea1d49932c063987efb547",
+        "module": "sha256:58dae0c52f1ecd5230a273af57cc57bd506eb60ab7424bd4f5af3d9597d15796"
+      }
+    },
+    "crew-idea-seed@1": {
+      "hash": "sha256:b773ef29cdddac93d9e95fa446e6070f4a7732b267e3fe4b8defba97f0cf1d0a",
+      "parts": {
+        "system": "sha256:d7ed181a2cef893b1bf674d31be9f6ecffed16c4ca386d783d5b5c2b3cfd025e",
+        "task": "sha256:c226071c8b9f22c7f036d8ec3c1ed78c2eb2ebc1693baa09380ce1e874cec17f",
+        "outputSchema": "sha256:e7cb2d5b22f9b6be593cd9e0fb204a5f809756dae8bc7abacc09008446aa95b5",
+        "run": "sha256:060ba5ecca804fb631887aba48329ec9e3a82421b2b19d40f80056d97f0e00ce",
+        "module": "sha256:8164675071334604e7a9c42cb6aae948aa1ba197e3e44b878248e2989e7cc27e"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-idea-seed@2": {
+      "hash": "sha256:0c9ee7b72de48bd61a428b5d64d1ae89a554f45235b912cc389bc5dc6c58e504",
+      "parts": {
+        "system": "sha256:d7ed181a2cef893b1bf674d31be9f6ecffed16c4ca386d783d5b5c2b3cfd025e",
+        "task": "sha256:c226071c8b9f22c7f036d8ec3c1ed78c2eb2ebc1693baa09380ce1e874cec17f",
+        "outputSchema": "sha256:91bb663ed34bd6c62b1bae1b4b4c4d4589094948d4c13ce58133a9f0fcd5d155",
+        "run": "sha256:060ba5ecca804fb631887aba48329ec9e3a82421b2b19d40f80056d97f0e00ce",
+        "module": "sha256:4cfc7bd38fa60beda9e67bfd2a31f81d992d1a59dc70269a0882c4ced243a56e"
       }
     },
     "crew-social-pack@1": {
@@ -95,16 +160,27 @@
         "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
         "module": "sha256:6a35e1b5c5d66432641f82cb3947c5fc1fd10e3bd70e580f4b9b6298197f311f"
       },
-      "retired": "Roster per idea (WP90): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
+      "retired": "WP90-S5: bumped to @2 (C-ROSTER local_business/sellsGoods in the blueprint schema; brand, email and social read the idea seed's angles)"
     },
     "crew-social-pack@2": {
-      "hash": "sha256:1d80b9bc08e4a42cf94eaf0f9c1ef079bad46526b84ac7a39a7826cbc17e7839",
+      "hash": "sha256:566e096f4a8503c4df6e4bdc1b46575407e51a0a3fadf3e90a9ab7b722913c26",
       "parts": {
         "system": "sha256:c4cd924c2c298759d7181dbe3a1a489016906195c07f4a29d347d7d2d0685a16",
-        "task": "sha256:2f039282143c14d84dece3bc91a4db4bbd753d3505837d04aa700788d750fa32",
+        "task": "sha256:c882991349b6c7bb1f96b1a2d4f963c5fa0f287391579006f2881c8a29267a60",
         "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
         "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
-        "module": "sha256:b8f6ca0576bae45c54a2de257cb317595b90d1e3b89a57a8d3493664e2545dfb"
+        "module": "sha256:d6b1f392a90f581a49160bc5322e92dde8296e3323381d63e33695a0d429d2fa"
+      },
+      "retired": "Roster per idea (WP91): replaced by version 3 (the C-ART contracts it imports changed; text unchanged)"
+    },
+    "crew-social-pack@3": {
+      "hash": "sha256:b1a76d1c7ea0cc8ae26fd71c1ba88c3946100b91f6fabd988951989fba27d7aa",
+      "parts": {
+        "system": "sha256:c4cd924c2c298759d7181dbe3a1a489016906195c07f4a29d347d7d2d0685a16",
+        "task": "sha256:c882991349b6c7bb1f96b1a2d4f963c5fa0f287391579006f2881c8a29267a60",
+        "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
+        "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
+        "module": "sha256:216342b9ad74c541b8636540c4e8cc0e9623d3d79e61ab3a0239b062edcb67f5"
       }
     },
     "internal-registry-probe@1": {

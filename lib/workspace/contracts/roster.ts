@@ -19,7 +19,7 @@ export type RoleKey = (typeof ROLE_KEYS)[number];
 export const roleKeySchema = z.enum(ROLE_KEYS);
 
 /**
- * Roster per idea (WP90, owner decision 2026-11-07): the core every business
+ * Roster per idea (WP91, owner decision 2026-11-07): the core every business
  * hires, whatever the idea. These are the roles whose launch steps are built
  * (blueprint and roster, brand kit, emails, social posts), so the L1 loop
  * always runs. Every other role is the idea's call: the blueprint proposes
@@ -30,12 +30,13 @@ export const CORE_ROLE_KEYS = ["lead", "brand", "email", "social"] as const sati
 export type CoreRoleKey = (typeof CORE_ROLE_KEYS)[number];
 
 /**
- * Rules versions written before roster per idea (WP90). Their plans hired
+ * Rules versions written before roster per idea (WP91): WP69's and WP90's
+ * (local businesses, research seeds). Their plans hired
  * eight roles always (`LEGACY_ALWAYS_HIRED_ROLE_KEYS`) and are stored that
  * way, so a stored plan is checked against the always set of its own version:
- * a business launched before WP90 keeps its team.
+ * a business launched before WP91 keeps its team.
  */
-export const LEGACY_ROSTER_RULES_VERSIONS = ["2026-11-05.1"] as const;
+export const LEGACY_ROSTER_RULES_VERSIONS = ["2026-11-05.1", "2026-11-07.1"] as const;
 export const LEGACY_ALWAYS_HIRED_ROLE_KEYS = [
   "lead",
   "brand",
@@ -84,6 +85,8 @@ export const IDEA_KINDS = [
   "service",
   "marketplace",
   "b2b_software",
+  /** WP90: a shop, studio, salon or venue that serves people in person. */
+  "local_business",
 ] as const;
 export type IdeaKind = (typeof IDEA_KINDS)[number];
 export const ideaKindSchema = z.enum(IDEA_KINDS);
@@ -173,6 +176,13 @@ export const rosterProfileSchema = z
     buyer: buyerSchema,
     deliveryFormat: deliveryFormatSchema,
     audiencePlural: singleLineText(40),
+    /**
+     * WP90: the business sells physical goods (stock, products, merchandise).
+     * Read only for a `local_business`, where it decides the Merch hire; a
+     * `physical_product` always sells goods. Optional, so blueprints stored
+     * before WP90 still parse.
+     */
+    sellsGoods: z.boolean().optional(),
   })
   .strict();
 export type RosterProfile = z.infer<typeof rosterProfileSchema>;
@@ -190,6 +200,49 @@ export const teamDecisionSchema = z
   })
   .strict();
 export type TeamDecision = z.infer<typeof teamDecisionSchema>;
+
+/** A team entry as the blueprint stores it (`blueprintTeamEntrySchema`): loose, cleaned before use. */
+export type RawTeamEntry = { readonly roleKey: string; readonly hire: boolean; readonly reason: string };
+
+const teamReasonSchema = singleLineText(TEAM_REASON_MAX);
+
+/**
+ * The structural part of cleaning a team proposal, in `OPTIONAL_ROLE_KEYS`
+ * order: a known optional role (core and unknown keys are dropped), answered
+ * once (a role answered twice is ambiguous, so neither answer counts), with a
+ * single-line reason of at most `TEAM_REASON_MAX` characters. `keepReason`
+ * adds content checks on the cleaned reason (`cleanTeamProposal` in
+ * `lib/workspace/crew/teamProposal.ts`: links, invented proof, market
+ * numbers). Undefined in, undefined out: a blueprint without a team keeps the
+ * rules.
+ *
+ * Lives here, with no imports beyond zod, because `rosterInputFromWizard`
+ * (loaded by prompt modules in plain Node) re-applies it before planning.
+ */
+export function normaliseTeamProposal(
+  team: readonly RawTeamEntry[] | undefined,
+  keepReason: (reason: string) => boolean = () => true,
+): TeamDecision[] | undefined {
+  if (team === undefined) return undefined;
+  const byRole = new Map<string, TeamDecision>();
+  const seen = new Set<string>();
+  for (const entry of team) {
+    const key = entry.roleKey.trim();
+    if (seen.has(key)) {
+      byRole.delete(key);
+      continue;
+    }
+    seen.add(key);
+    if (!isOptionalRoleKey(key)) continue;
+    const parsed = teamReasonSchema.safeParse(entry.reason);
+    if (!parsed.success || !keepReason(parsed.data)) continue;
+    byRole.set(key, { roleKey: key, hire: entry.hire, reason: parsed.data });
+  }
+  return OPTIONAL_ROLE_KEYS.flatMap((key) => {
+    const decision = byRole.get(key);
+    return decision === undefined ? [] : [decision];
+  });
+}
 
 export const rosterInputSchema = rosterProfileSchema
   .extend({
@@ -268,7 +321,7 @@ export const rosterPlanSchema = z
     if (!plan.hired.some((h) => h.roleKey === "lead")) {
       ctx.addIssue({ code: "custom", message: "lead must be hired", path: ["hired"] });
     }
-    // A plan stored under a pre-WP90 rules version keeps that version's always set.
+    // A plan stored under a pre-WP91 rules version keeps that version's always set.
     const alwaysKeys = new Set<string>(alwaysRoleKeysFor(plan.rulesVersion));
     plan.hired.forEach((h, i) => {
       const isAlways = alwaysKeys.has(h.roleKey);

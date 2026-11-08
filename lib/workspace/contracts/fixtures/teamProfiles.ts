@@ -1,5 +1,5 @@
 /**
- * Roster per idea, Part C (WP90). Fixture team profiles: what the fixture
+ * Roster per idea, Part C (WP91). Fixture team profiles: what the fixture
  * Claude client answers for the blueprint's `profile` and `team` blocks, so a
  * local fixture run gives different ideas different teams with zero AI spend.
  * Everything else in a fixture blueprint stays HydroTrail (or the own-idea

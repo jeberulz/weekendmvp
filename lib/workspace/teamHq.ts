@@ -37,7 +37,7 @@ export type TeamReview = {
   readonly changeRound: bigint | number;
 };
 
-/** `decidedBy: "lead"` (roster per idea, WP90): the Crew Lead's team proposal made this call. */
+/** `decidedBy: "lead"` (roster per idea, WP91): the Crew Lead's team proposal made this call. */
 export type TeamHired = {
   readonly role: RoleKey;
   readonly name: string;
@@ -440,7 +440,7 @@ export function planSummary(steps: readonly Pick<TeamStep, "state" | "notBuilt">
 
 /**
  * - `core`: Lead, Brand, Email or Social, on every team.
- * - `lead`: hired because the Crew Lead chose it for this idea (roster per idea, WP90).
+ * - `lead`: hired because the Crew Lead chose it for this idea (roster per idea, WP91).
  * - `added`: hired by a rule (a paid push, a course) or by the founder.
  * - `skipped`: not on the team for now.
  */

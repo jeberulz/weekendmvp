@@ -446,11 +446,11 @@ describe("drift and sweep", () => {
                 expect(e.reason.length).toBeLessThanOrEqual(160);
               }
             }
-    expect(n).toBe(6 * 2 * 3 * 2 * 2);
+    expect(n).toBe(IDEA_KINDS.length * 2 * 3 * 2 * 2);
   });
 });
 
-describe("roster per idea (WP90): the Crew Lead's proposal", () => {
+describe("roster per idea (WP91): the Crew Lead's proposal", () => {
   const withProposal = (input: RosterInput, proposal: NonNullable<RosterInput["proposal"]>): RosterInput => ({ ...input, proposal });
 
   it("with no proposal, the team is the WP69 one", () => {

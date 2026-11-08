@@ -485,7 +485,7 @@ export const blueprintMarketSchema = z
   .strict();
 
 /**
- * Roster per idea (WP90): the Crew Lead's team proposal, written by the
+ * Roster per idea (WP91): the Crew Lead's team proposal, written by the
  * blueprint call. One entry per optional role (`OPTIONAL_ROLE_KEYS`): hire it
  * or skip it, with a one-line reason the founder reads. Deliberately loose
  * (any role key string, a long reason allowed) so one bad entry never fails

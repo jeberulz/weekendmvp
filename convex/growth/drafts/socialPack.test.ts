@@ -264,7 +264,7 @@ describe("WP76-S2a HydroTrail launch writes the social pack draft", () => {
     const documents = socialDocs(r);
     expect(documents).toHaveLength(1);
     const document = documents[0] as Doc<"documents">;
-    expect(document).toMatchObject({ taskId: social?._id, promptRef: "crew-social-pack@2", format: "json" });
+    expect(document).toMatchObject({ taskId: social?._id, promptRef: "crew-social-pack@3", format: "json" });
     expect(JSON.parse(document.body ?? "null")).toEqual(hydrotrailSocialPack);
     expect(cardOn(r, document._id)).toEqual([expect.objectContaining({ kind: "artifact_review", status: "pending", subjectTable: "documents" })]);
     expect(r.socialPosts).toEqual([]);
@@ -358,7 +358,7 @@ describe("WP76-S2a writes nothing on a failed step", () => {
       const started = await w.t.mutation(internal.crew.jobs.startCrewRun, { taskId });
       if (started.kind !== "run") throw new Error(`expected a run, got ${JSON.stringify(started)}`);
       const outcome = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-        runId: started.runId, promptRef: "crew-social-pack@2", outputJson: JSON.stringify(hydrotrailSocialPack),
+        runId: started.runId, promptRef: "crew-social-pack@3", outputJson: JSON.stringify(hydrotrailSocialPack),
         nextAttempt: started.attempt + 1,
         ...(ids === "brief only" ? { briefDocumentId: blueprint.document._id } : {}),
         ...(ids === "kit only" ? { brandKitDocumentId: kit.document._id } : {}),
@@ -398,7 +398,7 @@ describe("WP76-S2a replay and revisions", () => {
     const run = before.runs.find((row) => row.taskId === social._id);
     if (run === undefined) throw new Error("no run");
     expect(await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: "crew-social-pack@2", outputJson: JSON.stringify(hydrotrailSocialPack), nextAttempt: 3,
+      runId: run._id, promptRef: "crew-social-pack@3", outputJson: JSON.stringify(hydrotrailSocialPack), nextAttempt: 3,
     })).toEqual({ kind: "stale" });
     await as(w).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     await w.t.finishAllScheduledFunctions(vi.runAllTimers);
@@ -416,7 +416,7 @@ describe("WP76-S2a replay and revisions", () => {
     if (outcome.kind !== "finished") throw new Error(`revision did not finish: ${JSON.stringify(outcome)}`);
     const r = await rows(w);
     const revised = r.documents.find((row) => row._id === outcome.documentId);
-    expect(revised).toMatchObject({ kind: "social_pack", supersedesDocumentId: first._id, promptRef: "crew-social-pack@2" });
+    expect(revised).toMatchObject({ kind: "social_pack", supersedesDocumentId: first._id, promptRef: "crew-social-pack@3" });
     expect(socialDocs(r)).toHaveLength(2);
     expect(cardOn(r, outcome.documentId)).toEqual([expect.objectContaining({ kind: "artifact_review", status: "pending", changeRound: 1n })]);
     expect(r.socialPosts).toEqual([]);

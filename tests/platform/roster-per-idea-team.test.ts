@@ -1,5 +1,5 @@
 /**
- * Roster per idea S3 (WP90): the blueprint's team proposal is cleaned before
+ * Roster per idea S3 (WP91): the blueprint's team proposal is cleaned before
  * it is stored and before it is planned from, so a bad entry falls back to the
  * rules and never blocks the blueprint or the launch.
  */
@@ -125,11 +125,11 @@ describe("stored plans keep the always set of their own rules version", () => {
     hired: plan.hired.map((entry) => ({ ...entry, always: legacyAlways.has(entry.roleKey) })),
   });
 
-  test("a pre-WP90 plan (eight always roles) still parses", () => {
+  test("a pre-WP91 plan (eight always roles) still parses", () => {
     expect(rosterPlanSchema.safeParse(withLegacyFlags(asLegacy)).success).toBe(true);
   });
 
-  test("a pre-WP90 plan may not mark only the new core as always", () => {
+  test("a pre-WP91 plan may not mark only the new core as always", () => {
     expect(rosterPlanSchema.safeParse(asLegacy).success).toBe(false);
   });
 

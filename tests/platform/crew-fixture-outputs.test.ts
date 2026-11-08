@@ -26,8 +26,9 @@ import {
   parseModelOutput,
 } from "@/lib/workspace/contracts/artifacts";
 import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
-import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v2";
-import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v2";
+import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
+import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v2";
 import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
 import { wrenPlanTurnSpec } from "@/convex/ai/prompts/wrenPlanTurn";
 
@@ -85,9 +86,15 @@ describe("fixture-output registry", () => {
     // Every model-facing artifact schema has a fixture.
     const keys = new Set(ARTIFACT_FIXTURES.map((fixture) => fixture.key));
     for (const kind of Object.keys(artifactOutputSchemas)) expect(keys.has(kind), kind).toBe(true);
-    // By ref: Wren's two chat prompts (L1 beta), nothing else.
+    // By ref: Wren's two chat prompts (L1 beta), the per-idea seed (WP90-S3) and the blueprint prompts (WP91), nothing else.
     expect(Object.keys(FIXTURE_OUTPUTS_BY_REF).sort()).toEqual(
-      [promptRef(wrenChatSpec), promptRef(wrenPlanTurnSpec), promptRef(blueprintPersonaliseSpec), promptRef(blueprintOwnIdeaSpec)].sort(),
+      [
+        promptRef(wrenChatSpec),
+        promptRef(wrenPlanTurnSpec),
+        promptRef(ideaSeedSpec),
+        promptRef(blueprintPersonaliseSpec),
+        promptRef(blueprintOwnIdeaSpec),
+      ].sort(),
     );
   });
 
@@ -202,5 +209,6 @@ describe("fixture-output registry", () => {
     expect(importersOf("fixtureOutputs")).toEqual(["convex/ai/providers/fixtures.ts"]);
     expect(importersOf("wrenFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
     expect(importersOf("blueprintFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
+    expect(importersOf("seedFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Roster per idea, Part C (WP90). The fixture reply for the blueprint prompts
+ * Roster per idea, Part C (WP91). The fixture reply for the blueprint prompts
  * (version 2): the HydroTrail blueprint for a library idea, or the own-idea
  * light blueprint, with the `profile` and `team` of the fixture profile the
  * idea's own words point to (`lib/workspace/contracts/fixtures/teamProfiles.ts`).

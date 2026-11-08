@@ -1,9 +1,9 @@
 # Plan: idea-driven crew hiring and varied lead names
 
-Status: **S1–S5 built on 2026-11-07 (WP90; see `docs/wp/wp90-stories.md` and `wp90-progress.md`).** S2b
+Status: **S1–S5 built on 2026-11-07 (WP91; see `docs/wp/wp91-stories.md` and `wp91-progress.md`).** S2b
 (lead avatars, image spend) and S6 (live smoke test, live spend) wait for John's OK. Target L1 (Monday
 2026-11-09).
-Date: 2026-11-07. Lane: Work Package WP90. Branch: `claude/roster-per-idea-plan`.
+Date: 2026-11-07. Lane: Work Package WP91. Branch: `claude/roster-per-idea-plan`.
 
 ## Decisions (John, 2026-11-07)
 

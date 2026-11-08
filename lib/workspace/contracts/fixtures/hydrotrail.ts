@@ -78,7 +78,7 @@ export const ownIdeaLightBlueprint: Blueprint = {
 
 export const hydrotrailRosterPlan: RosterPlan = {
   schemaVersion: 1,
-  rulesVersion: "2026-11-07.1",
+  rulesVersion: "2026-11-08.1",
   ideaKind: "app",
   hired: [
     { roleKey: "lead", employeeName: "Wren", roleLabel: "Crew Lead", hiredBy: "rule", always: true, reason: "Routes approvals" },

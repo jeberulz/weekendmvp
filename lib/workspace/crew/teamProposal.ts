@@ -1,5 +1,5 @@
 /**
- * Roster per idea (WP90). The Crew Lead's team proposal, as the blueprint
+ * Roster per idea (WP91). The Crew Lead's team proposal, as the blueprint
  * call wrote it, made safe to store and to plan from.
  *
  * The model proposes; code decides what counts. An entry is kept only when:
@@ -16,13 +16,7 @@
  * bundler loads this file).
  */
 import type { BlueprintTeamEntry } from "../contracts/artifacts";
-import {
-  OPTIONAL_ROLE_KEYS,
-  TEAM_REASON_MAX,
-  isOptionalRoleKey,
-  singleLineText,
-  type TeamDecision,
-} from "../contracts/roster";
+import { normaliseTeamProposal, type TeamDecision } from "../contracts/roster";
 import { findLinkLike } from "./checks/emailLinks";
 import { carriesMarketNumber } from "./checks/marketNumbers";
 import { checkNeverFake } from "./checks/neverFake";
@@ -34,18 +28,12 @@ export type TeamProposalContext = {
   readonly brandName?: string;
 };
 
-const reasonSchema = singleLineText(TEAM_REASON_MAX);
-
-/** The cleaned reason, or null when it must not be stored. */
-function cleanReason(raw: string, context: TeamProposalContext): string | null {
-  const parsed = reasonSchema.safeParse(raw);
-  if (!parsed.success) return null;
-  const reason = parsed.data;
-  if (findLinkLike(reason) !== null) return null;
+/** Whether a (structurally clean) reason passes the blueprint's own content checks. */
+function reasonPassesChecks(reason: string, context: TeamProposalContext): boolean {
+  if (findLinkLike(reason) !== null) return false;
   const options = context.brandName === undefined ? {} : { brandName: context.brandName };
-  if (checkNeverFake(reason, options).some((found) => found.severity === "hard")) return null;
-  if (context.ownIdea && carriesMarketNumber(reason, options)) return null;
-  return reason;
+  if (checkNeverFake(reason, options).some((found) => found.severity === "hard")) return false;
+  return !(context.ownIdea && carriesMarketNumber(reason, options));
 }
 
 /**
@@ -56,24 +44,5 @@ export function cleanTeamProposal(
   team: readonly BlueprintTeamEntry[] | undefined,
   context: TeamProposalContext,
 ): TeamDecision[] | undefined {
-  if (team === undefined) return undefined;
-  const byRole = new Map<string, TeamDecision>();
-  const seen = new Set<string>();
-  for (const entry of team) {
-    const key = entry.roleKey.trim();
-    if (seen.has(key)) {
-      // A role answered twice is ambiguous: neither answer counts.
-      byRole.delete(key);
-      continue;
-    }
-    seen.add(key);
-    if (!isOptionalRoleKey(key)) continue;
-    const reason = cleanReason(entry.reason, context);
-    if (reason === null) continue;
-    byRole.set(key, { roleKey: key, hire: entry.hire, reason });
-  }
-  return OPTIONAL_ROLE_KEYS.flatMap((key) => {
-    const decision = byRole.get(key);
-    return decision === undefined ? [] : [decision];
-  });
+  return normaliseTeamProposal(team, (reason) => reasonPassesChecks(reason, context));
 }

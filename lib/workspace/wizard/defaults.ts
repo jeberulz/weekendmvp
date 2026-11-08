@@ -1,19 +1,27 @@
 /**
  * WP74-S1 suggested defaults for the eight wizard steps.
  *
- * Every step shows a suggested answer. Until WP71-S5 precomputes per-idea
- * seeds (`idea_crew_seeds`), the seed comes from fixtures: HydroTrail for its
- * slug, a generic fallback for every other library idea, and a light outline
- * for an own idea (D15: "Not yet validated", no market numbers; built and
- * checked in `light-blueprint.ts`).
+ * Every step shows a suggested answer. For a library idea with a stored
+ * WP90 seed (`idea_crew_seeds`, precomputed from the idea's own page), the
+ * blueprint, the platform, commercial-model, goal and name defaults and a
+ * one-line reason for each come from that seed. Without one, the seed comes
+ * from fixtures: HydroTrail for its slug, a generic fallback for every other
+ * library idea, and a light outline for an own idea (D15: "Not yet
+ * validated", no market numbers; built and checked in `light-blueprint.ts`).
  *
- * `wizardSeedFor` is the ONE place the seed source is chosen, so switching to
- * precomputed seeds later changes this function and nothing else.
+ * `wizardSeedFor` is the ONE place the seed source is chosen.
  *
  * Pure: no Convex or React imports, relative imports only (the Convex bundler
  * loads this file).
  */
 import { hydrotrailBlueprint } from "../contracts/fixtures/hydrotrail";
+import type { RosterProfile } from "../contracts/roster";
+import {
+  ideaIsValidated,
+  platformSuggestion,
+  type IdeaCrewSeed,
+  type IdeaValidationFacts,
+} from "../contracts/seeds";
 import {
   PARTNER_NAME_PRESETS,
   WIZARD_LIMITS,
@@ -44,7 +52,19 @@ export type WizardBlueprintPreview = {
   readonly removedClaims: number;
 };
 
-export type WizardSeedSource = "fixture_hydrotrail" | "fixture_generic" | "fixture_own_idea";
+export type WizardSeedSource = "idea_crew_seeds" | "fixture_hydrotrail" | "fixture_generic" | "fixture_own_idea";
+
+/** The steps a stored seed explains. */
+export const WIZARD_HINT_STEPS = ["platform", "commercial_model", "goal", "name"] as const;
+export type WizardHintStep = (typeof WIZARD_HINT_STEPS)[number];
+
+/** Why a step's suggestion was made, and whether the step may offer a quick confirm. */
+export type WizardStepHint = {
+  readonly reason: string;
+  /** A confident suggestion shows "Looks right" with the full choice one click away. */
+  readonly confident: boolean;
+};
+export type WizardStepHints = Readonly<Partial<Record<WizardHintStep, WizardStepHint>>>;
 
 export type WizardSeed = {
   readonly source: WizardSeedSource;
@@ -55,6 +75,10 @@ export type WizardSeed = {
   readonly suggestedNames: readonly string[];
   /** Roster per idea S2: lead names the partner-name step offers; the first is the default. */
   readonly suggestedPartnerNames: readonly string[];
+  /** Reasons for the suggestions; empty for fixture seeds, which have none to give. */
+  readonly hints: WizardStepHints;
+  /** The idea's roster profile, for the crew preview; null when no blueprint states one. */
+  readonly profile: RosterProfile | null;
 };
 
 export type WizardSeedInput = {
@@ -72,6 +96,14 @@ export type WizardSeedInput = {
    * one the step offers the three presets.
    */
   readonly leadSeedKey?: string;
+  /** The library idea's newest stored WP90 seed, if any (`seedFromColumns` output). */
+  readonly storedSeed?: IdeaCrewSeed | null;
+  /**
+   * The library idea row's research level and audit result. Decides
+   * `validated` for every library seed: a concept idea, or one whose audit
+   * failed, is "Not yet validated" (owner ruling, 2026-11-07).
+   */
+  readonly ideaFacts?: IdeaValidationFacts;
 };
 
 const GENERIC_FEATURES = [
@@ -216,8 +248,9 @@ function seed(
   blueprint: WizardBlueprintPreview,
   name: { chosen: string; alternatives: string[] },
   leadSeedKey: string | undefined,
+  profile: RosterProfile | null = null,
 ): WizardSeed {
-  const leadNames = leadSeedKey === undefined ? [...PARTNER_NAME_PRESETS] : leadNameSuggestions(leadSeedKey);
+  const leadNames = leadNamesFor(leadSeedKey);
   const defaults = baseDefaults(idea, name, leadNames[0] ?? PARTNER_NAME_PRESETS[0]);
   return Object.freeze({
     source,
@@ -225,15 +258,101 @@ function seed(
     defaults,
     suggestedNames: Object.freeze([name.chosen, ...name.alternatives]),
     suggestedPartnerNames: Object.freeze(leadNames),
+    hints: Object.freeze({}),
+    profile,
+  });
+}
+
+/** Roster per idea S2: the lead names a session offers (stable per session), or the presets without a key. */
+function leadNamesFor(leadSeedKey: string | undefined): string[] {
+  return leadSeedKey === undefined ? [...PARTNER_NAME_PRESETS] : leadNameSuggestions(leadSeedKey);
+}
+
+/** Why the name step offers the seed's names. */
+export const SEED_NAME_REASON = "Drafted from the idea's page. Pick one or type your own.";
+
+/** The seed's names as a name answer: bounded, deduplicated, at most the alternatives limit. */
+function seedNameAnswer(names: readonly string[]): { chosen: string; alternatives: string[] } | null {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of names) {
+    const name = boundedName(raw);
+    const key = nameDedupeKey(name);
+    if (name === FALLBACK_NAME && raw.trim() !== FALLBACK_NAME) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(name);
+    if (out.length > WIZARD_LIMITS.nameAlternativesMax) break;
+  }
+  const [chosen, ...alternatives] = out;
+  return chosen === undefined ? null : { chosen, alternatives };
+}
+
+/**
+ * The wizard seed from a stored WP90 seed, or null when it cannot make one
+ * (a wrong idea, or defaults the progress schema refuses): the caller then
+ * falls back to the fixtures, so a bad row never breaks the wizard.
+ */
+function seedFromStored(
+  idea: Extract<WizardIdea, { source: "library" }>,
+  stored: IdeaCrewSeed,
+  validated: boolean,
+  leadSeedKey: string | undefined,
+): WizardSeed | null {
+  const { blueprint, wizardHints: hints } = stored;
+  const leadNames = leadNamesFor(leadSeedKey);
+  if (blueprint.ideaSlug !== idea.ideaSlug) return null;
+  const name = seedNameAnswer(hints.names);
+  if (name === null) return null;
+  const platform = platformSuggestion(hints.platform.deviceNeeds);
+  const parsed = wizardAnswersProgressSchema.safeParse({
+    idea,
+    blueprintDecision: { decision: "looks_good" },
+    platform: { kind: platform.kind },
+    commercialModel: hints.commercialModel.value,
+    goal: { kind: hints.goal.kind, timeframe: hints.goal.timeframe },
+    name,
+    partnerPersonality: "strategist",
+    partnerName: partnerNameAnswer(leadNames[0] ?? PARTNER_NAME_PRESETS[0]),
+  });
+  if (!parsed.success) return null;
+  return Object.freeze({
+    source: "idea_crew_seeds",
+    blueprint: Object.freeze({
+      pitch: blueprint.pitch,
+      oneUser: blueprint.oneUser,
+      oneLoop: blueprint.oneLoop,
+      features: Object.freeze([...blueprint.features]),
+      scopeCuts: Object.freeze([...blueprint.scopeCuts]),
+      validated,
+      origin: "library",
+      removedClaims: 0,
+    }),
+    defaults: parsed.data,
+    suggestedNames: Object.freeze([name.chosen, ...name.alternatives]),
+    suggestedPartnerNames: Object.freeze(leadNames),
+    hints: Object.freeze({
+      platform: { reason: platform.reason, confident: hints.platform.confidence === "high" },
+      commercial_model: { reason: hints.commercialModel.reason, confident: hints.commercialModel.confidence === "high" },
+      goal: { reason: hints.goal.reason, confident: hints.goal.confidence === "high" },
+      name: { reason: SEED_NAME_REASON, confident: false },
+    }),
+    profile: blueprint.profile,
   });
 }
 
 /**
  * The seed for a wizard session. The single switch point for the seed source:
- * fixtures now, `idea_crew_seeds` once WP71-S5 lands.
+ * a stored WP90 seed when the library idea has a valid one, else fixtures.
  */
 export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
   const { idea } = input;
+  // An idea row with no facts (tests, older callers) keeps the pre-WP90 behaviour: validated.
+  const libraryValidated = ideaIsValidated(input.ideaFacts ?? {});
+  if (idea.source === "library" && input.storedSeed) {
+    const fromStored = seedFromStored(idea, input.storedSeed, input.storedSeed.validated && libraryValidated, input.leadSeedKey);
+    if (fromStored !== null) return fromStored;
+  }
   if (idea.source === "own_idea") {
     const preview = ownIdeaBlueprintPreview(idea.text, input.ownIdeaDraft);
     return seed(
@@ -263,12 +382,13 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         oneLoop: hydrotrailBlueprint.oneLoop,
         features: hydrotrailBlueprint.features,
         scopeCuts: hydrotrailBlueprint.scopeCuts,
-        validated: true,
+        validated: libraryValidated,
         origin: "library",
         removedClaims: 0,
       },
       { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
       input.leadSeedKey,
+      hydrotrailBlueprint.profile,
     );
   }
   const title = input.ideaTitle?.trim() || idea.ideaSlug.replace(/-/g, " ");
@@ -281,7 +401,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
       oneLoop: "They arrive, do the one core thing, and come back next time they need it.",
       features: GENERIC_FEATURES,
       scopeCuts: GENERIC_SCOPE_CUTS,
-      validated: true,
+      validated: libraryValidated,
       origin: "library",
       removedClaims: 0,
     },

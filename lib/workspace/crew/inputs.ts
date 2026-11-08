@@ -4,8 +4,8 @@
  * Convex imports, relative imports only (the Convex bundler loads this file).
  *
  * - The prompt is chosen by the business's source: a library idea gets
- *   `crew-blueprint-personalise@2`, an own idea `crew-blueprint-own-idea@2`
- *   (D15, "Not yet validated"). Version 2 also proposes the team (WP90).
+ *   `crew-blueprint-personalise@3`, an own idea `crew-blueprint-own-idea@3`
+ *   (D15, "Not yet validated"). Version 3 also proposes the team (roster per idea, WP91).
  * - The seed: `idea_crew_seeds` when a row parses as a library blueprint for
  *   this idea; the HydroTrail fixture seed for its slug until WP71-S5 has run;
  *   otherwise none (the library idea record carries the facts).
@@ -17,21 +17,28 @@
  * - WP76-S2a: the social pack reads the blueprint and the same brand slice as
  *   the email sequence. No wizard answers: its registry inputs are the
  *   blueprint and the brand kit only.
+ * - WP90-S5: when the library idea has a full stored seed (`seedFromColumns`),
+ *   the brand kit also reads its brand seeds, and the email sequence and
+ *   social pack its angles and buyer words (`ideaAngles`). Without one the
+ *   input is null and the prompt is the same as v1's. Buyer words go in as
+ *   bare quotes, never with their attribution: copy borrows the language,
+ *   never presents it as a testimonial.
  * - Every value is a string the spec quotes as data (`convex/ai/prompts/crewShared.ts`).
  */
 
 import { blueprintSchema, type Blueprint, type BrandKit } from "../contracts/artifacts";
+import type { IdeaCrewSeed } from "../contracts/seeds";
 import { hydrotrailBlueprint } from "../contracts/fixtures/hydrotrail";
 import type { WizardAnswers } from "../contracts/wizard";
 import { HYDROTRAIL_SLUG } from "../wizard/defaults";
 import { ownIdeaBlueprintPreview } from "../wizard/light-blueprint";
 import { designCandidatesFor, type DesignCandidates } from "./design/proMax";
 
-export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@2";
-export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@2";
-export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@2";
-export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@2";
-export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@2";
+export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@3";
+export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@3";
+export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@3";
+export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@3";
+export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@3";
 
 export type CrewPromptInputs = Record<string, string | null>;
 
@@ -151,10 +158,28 @@ export function blueprintStepPlan(
   };
 }
 
+/** WP90-S5: the seed's angles for one copy step, as the JSON the spec quotes, or null without a seed. */
+export function ideaAnglesFor(step: "brand_kit" | "email_sequence" | "social_pack", seed: IdeaCrewSeed | null | undefined): string | null {
+  if (seed === null || seed === undefined) return null;
+  const buyerWords = seed.landingSeeds.buyerWords.map((entry) => entry.quote);
+  switch (step) {
+    case "brand_kit":
+      return JSON.stringify(seed.brandSeeds);
+    case "email_sequence":
+      return JSON.stringify({ emailAngles: seed.emailAngles, buyerWords });
+    case "social_pack":
+      return JSON.stringify({ socialAngles: seed.socialAngles, buyerWords });
+  }
+}
+
 export type BrandKitStepPlan = { readonly promptRef: string; readonly inputs: CrewPromptInputs; readonly design: DesignCandidates };
 
 /** The brand kit step's inputs: the stored blueprint, the founder's answers and the design candidates. */
-export function brandKitStepPlan(input: { readonly answers: WizardAnswers; readonly blueprint: Blueprint }): BrandKitStepPlan {
+export function brandKitStepPlan(input: {
+  readonly answers: WizardAnswers;
+  readonly blueprint: Blueprint;
+  readonly seed?: IdeaCrewSeed | null;
+}): BrandKitStepPlan {
   const design = designCandidatesFor(input.blueprint);
   return {
     promptRef: BRAND_KIT_PROMPT_REF,
@@ -167,6 +192,7 @@ export function brandKitStepPlan(input: { readonly answers: WizardAnswers; reado
         typePairs: design.typePairs,
         landingPattern: design.landingPattern,
       }),
+      ideaAngles: ideaAnglesFor("brand_kit", input.seed),
     },
     design,
   };
@@ -179,6 +205,7 @@ export function emailSequenceStepPlan(input: {
   readonly answers: WizardAnswers;
   readonly blueprint: Blueprint;
   readonly brandKit: BrandKit;
+  readonly seed?: IdeaCrewSeed | null;
 }): EmailSequenceStepPlan {
   return {
     promptRef: EMAIL_SEQUENCE_PROMPT_REF,
@@ -186,6 +213,7 @@ export function emailSequenceStepPlan(input: {
       blueprint: JSON.stringify(input.blueprint),
       brand: brandSlice(input.brandKit),
       answers: JSON.stringify(answersForPrompt(input.answers)),
+      ideaAngles: ideaAnglesFor("email_sequence", input.seed),
     },
   };
 }
@@ -198,9 +226,17 @@ function brandSlice(brandKit: BrandKit): string {
 export type SocialPackStepPlan = { readonly promptRef: string; readonly inputs: CrewPromptInputs };
 
 /** WP76-S2a: the social pack step's inputs: the blueprint and the brand kit's name, tagline and voice. */
-export function socialPackStepPlan(input: { readonly blueprint: Blueprint; readonly brandKit: BrandKit }): SocialPackStepPlan {
+export function socialPackStepPlan(input: {
+  readonly blueprint: Blueprint;
+  readonly brandKit: BrandKit;
+  readonly seed?: IdeaCrewSeed | null;
+}): SocialPackStepPlan {
   return {
     promptRef: SOCIAL_PACK_PROMPT_REF,
-    inputs: { blueprint: JSON.stringify(input.blueprint), brand: brandSlice(input.brandKit) },
+    inputs: {
+      blueprint: JSON.stringify(input.blueprint),
+      brand: brandSlice(input.brandKit),
+      ideaAngles: ideaAnglesFor("social_pack", input.seed),
+    },
   };
 }

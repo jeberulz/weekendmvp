@@ -1,5 +1,5 @@
 /**
- * WP75-S3a (version 2: roster per idea, WP90). The blueprint for the founder's own idea (`crew_blueprint`): a
+ * WP75-S3a (version 3: roster per idea, WP91). The blueprint for the founder's own idea (`crew_blueprint`): a
  * light blueprint labelled "Not yet validated" (D15). The label derives from
  * `source: "own_idea"`; the C-ART own-idea variant has no `market` block and
  * no `ideaSlug`, so the output cannot carry market data. The deterministic
@@ -8,12 +8,13 @@
  * Inputs (all quoted data): the founder's idea in their own words, the light
  * outline the wizard showed them, and their parsed wizard answers.
  *
- * Version 2 adds the team block (`teamShared.ts`): the Crew Lead proposes who
+ * Version 3 (roster per idea, WP91) keeps version 2's seed and local-business
+ * rules and adds the team block (`teamShared.ts`): the Crew Lead proposes who
  * is hired, with a reason per role. Team reasons follow D15 too; code drops a
  * reason with a market number and the rules decide that role.
  *
  * Any change to this file or to `crewShared.ts` or `teamShared.ts` (comments included) needs a
- * version bump (a new `blueprintOwnIdea.v3.ts`), then
+ * version bump (a new `blueprintOwnIdea.v4.ts`), then
  * `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -39,14 +40,14 @@ const SYSTEM = [
   "This idea has not been researched, and the founder sees it labelled \"Not yet validated\". State nothing as a market fact: no market size, growth, trends, surveys, statistics, search volumes, competitor names or competitor prices. The founder's own facts from their words (their price, their product) may be used as given.",
   "Keep it buildable in one weekend: one user, one loop they repeat, a few core features, and scope cuts that name what is left out this weekend.",
   "Stay with the founder's idea; sharpen it, do not replace it. Shape it to their choices (platform, commercial model, goal, name).",
-  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"campers\").",
+  "profile describes the business for the roster: ideaKind, buyer, deliveryFormat, and audiencePlural, a short plural noun for the audience in lower case (for example \"campers\"). ideaKind is local_business for a shop, studio, salon or venue that serves people in person. sellsGoods is true when the business sells physical stock (products, food, merchandise); leave it out otherwise.",
   ...TEAM_SYSTEM_RULES,
   "source is \"own_idea\".",
 ].join("\n");
 
 export const blueprintOwnIdeaSpec = definePromptSpec<BlueprintOwnIdeaInput, Blueprint>({
   id: "crew-blueprint-own-idea",
-  version: 2,
+  version: 3,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },

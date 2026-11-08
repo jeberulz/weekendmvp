@@ -11,8 +11,14 @@ import {
   requireOwnedWizardSession,
 } from "../platform/authz";
 import schema from "../schema";
+import { platformSeedRow } from "../crew/jobs";
+import { planRoster } from "../crew/roles";
+import { rosterInputSchema, type RosterProfile } from "../../lib/workspace/contracts/roster";
+import { seedFromColumns } from "../../lib/workspace/contracts/seeds";
 import {
   WIZARD_STEPS,
+  goalTargetFor,
+  partnerNameFromWizard,
   wizardAnswersProgressSchema,
   wizardAnswersSchema,
   wizardIdeaSchema,
@@ -25,6 +31,7 @@ import {
   nameAnswerFor,
   stepKey,
   wizardSeedFor,
+  type WizardHintStep,
   type WizardIdea,
   type WizardSeed,
 } from "../../lib/workspace/wizard/defaults";
@@ -118,6 +125,26 @@ const blueprintPreviewValidator = v.object({
   removedClaims: v.number(),
 });
 
+const stepHintValidator = v.optional(v.object({ reason: v.string(), confident: v.boolean() }));
+
+const hintsValidator = v.object({
+  platform: stepHintValidator,
+  commercial_model: stepHintValidator,
+  goal: stepHintValidator,
+  name: stepHintValidator,
+});
+
+const crewPreviewValidator = v.union(
+  v.null(),
+  v.object({
+    hired: v.array(
+      v.object({ roleKey: v.string(), employeeName: v.string(), roleLabel: v.string(), always: v.boolean(), reason: v.string() }),
+    ),
+    skipped: v.array(v.object({ roleKey: v.string(), roleLabel: v.string(), reason: v.string() })),
+  }),
+);
+export type WizardCrewPreview = Infer<typeof crewPreviewValidator>;
+
 const sessionViewValidator = v.object({
   sessionId: v.id("wizard_sessions"),
   step: stepValidator,
@@ -131,7 +158,16 @@ const sessionViewValidator = v.object({
   /** Roster per idea S2: the lead names the partner-name step offers. */
   suggestedPartnerNames: v.array(v.string()),
   blueprint: blueprintPreviewValidator,
-  seedSource: v.union(v.literal("fixture_hydrotrail"), v.literal("fixture_generic"), v.literal("fixture_own_idea")),
+  seedSource: v.union(
+    v.literal("idea_crew_seeds"),
+    v.literal("fixture_hydrotrail"),
+    v.literal("fixture_generic"),
+    v.literal("fixture_own_idea"),
+  ),
+  /** WP90-S4: why each suggestion was made, and which steps may quick-confirm. */
+  hints: hintsValidator,
+  /** WP90-S4: who the roster rules would hire for the idea's profile and the current answers. */
+  crew: crewPreviewValidator,
   /** The business this session created (WP74-S4), or null before "Create my business". */
   business: v.union(
     v.null(),
@@ -205,7 +241,67 @@ async function seedFor(
   }
   const row = await libraryIdea(ctx, idea.ideaSlug);
   const title = row?.title ?? idea.ideaSlug;
-  return { seed: wizardSeedFor({ idea, ideaTitle: title, leadSeedKey: sessionId }), title };
+  // WP90-S4: the newest platform seed, when one is stored and valid. A row
+  // overflow or a pre-WP90 row reads as "no seed": the fixtures apply.
+  const seedRead = row === null ? null : await platformSeedRow(ctx, idea.ideaSlug);
+  const storedSeed = seedRead?.ok === true && seedRead.row !== null ? seedFromColumns(idea.ideaSlug, seedRead.row) : null;
+  const provenance: unknown = row?.provenance;
+  const auditPassed =
+    typeof provenance === "object" && provenance !== null && "auditPassed" in provenance
+      ? (provenance as { auditPassed?: unknown }).auditPassed
+      : undefined;
+  return {
+    seed: wizardSeedFor({
+      idea,
+      ideaTitle: title,
+      leadSeedKey: sessionId,
+      storedSeed,
+      ideaFacts: {
+        researchLevel: row?.researchLevel ?? null,
+        auditPassed: typeof auditPassed === "boolean" ? auditPassed : null,
+      },
+    }),
+    title,
+  };
+}
+
+/**
+ * WP90-S4: the crew preview, `planRoster` for the idea's profile and the
+ * founder's answers so far (suggested defaults fill the steps not answered
+ * yet). Null without a profile, or when the answers cannot make a roster
+ * input; display only, never stored (the business stores its own plan).
+ */
+export function crewPreviewFor(profile: RosterProfile | null, answers: WizardAnswersProgress, defaults: WizardAnswersProgress): WizardCrewPreview {
+  if (profile === null) return null;
+  const merged: WizardAnswersProgress = { ...defaults, ...answers };
+  if (merged.commercialModel === undefined || merged.goal === undefined) return null;
+  const input = rosterInputSchema.safeParse({
+    ...profile,
+    commercialModel: merged.commercialModel,
+    goal: {
+      kind: merged.goal.kind,
+      target: goalTargetFor(merged.goal.kind),
+      paidPush: merged.goal.paidPush ?? null,
+    },
+  });
+  if (!input.success) return null;
+  try {
+    const plan = planRoster(input.data, { leadName: partnerNameFromWizard(merged) });
+    return {
+      hired: plan.hired.map(({ roleKey, employeeName, roleLabel, always, reason }) => ({ roleKey, employeeName, roleLabel, always, reason })),
+      skipped: plan.skipped.map(({ roleKey, roleLabel, reason }) => ({ roleKey, roleLabel, reason })),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function hintsView(seed: WizardSeed): Infer<typeof hintsValidator> {
+  const out: Partial<Record<WizardHintStep, { reason: string; confident: boolean }>> = {};
+  for (const [step, hint] of Object.entries(seed.hints) as [WizardHintStep, { reason: string; confident: boolean } | undefined][]) {
+    if (hint !== undefined) out[step] = { reason: hint.reason, confident: hint.confident };
+  }
+  return out;
 }
 
 function storedAnswers(session: Doc<"wizard_sessions">): WizardAnswersProgress {
@@ -483,6 +579,8 @@ export const getSession = query({
       suggestedPartnerNames: [...seed.suggestedPartnerNames],
       blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
       seedSource: seed.source,
+      hints: hintsView(seed),
+      crew: crewPreviewFor(seed.profile, answers, seed.defaults),
       business,
     };
   },

@@ -1,5 +1,5 @@
 /**
- * Roster per idea S4 (WP90): the blueprint prompts (version 2) ask the model
+ * Roster per idea S4 (WP91): the blueprint prompts (version 3) ask the model
  * for a team, and the fixture client answers with a team that fits the idea's
  * own words, so a local fixture run gives different ideas different crews
  * with zero AI spend.
@@ -7,8 +7,8 @@
 import { describe, expect, test } from "vitest";
 
 import { outputJsonSchema } from "@/convex/ai/gateway";
-import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v2";
-import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v2";
+import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
 import { TEAM_ROLE_LINES } from "@/convex/ai/prompts/teamShared";
 import type { AnthropicMessagesClient } from "@/convex/ai/providers/anthropic";
 import { createFixtureOutputRegistry } from "@/convex/ai/providers/fixtureOutputs";
@@ -81,7 +81,7 @@ describe("the team block the prompts describe", () => {
 
   test("both blueprint prompts carry the team rules and the team schema", () => {
     for (const spec of [blueprintPersonaliseSpec, blueprintOwnIdeaSpec]) {
-      expect(spec.version).toBe(2);
+      expect(spec.version).toBe(3);
       expect(spec.system).toContain("smallest team");
       for (const line of TEAM_ROLE_LINES) expect(spec.system).toContain(line);
     }

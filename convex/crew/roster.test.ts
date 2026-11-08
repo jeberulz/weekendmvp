@@ -175,7 +175,7 @@ async function tokensSpent(w: World): Promise<number> {
 
 /**
  * The blueprint the fixture client returns for HydroTrail (roster per idea,
- * WP90): HydroTrail with the consumer-app team proposal. The model-facing
+ * WP91): HydroTrail with the consumer-app team proposal. The model-facing
  * schema (version 2) requires a team, so a test reply carries one too.
  */
 const FIXTURE_BLUEPRINT: Blueprint = { ...hydrotrailBlueprint, team: FIXTURE_TEAM_PROFILES.consumer_app.team.map((entry) => ({ ...entry })) };
@@ -339,7 +339,7 @@ describe("WP75-S1 idempotency and tokens", () => {
     if (run === null) throw new Error("no run");
     const blueprintDoc = before.documents.find((doc) => doc.kind === "blueprint");
     const replay = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@2", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
+      runId: run._id, promptRef: blueprintDoc?.promptRef ?? "crew-blueprint-personalise@3", outputJson: blueprintDoc?.body ?? "{}", nextAttempt: 3,
     });
     expect(replay).toEqual({ kind: "stale" });
 
@@ -590,12 +590,12 @@ describe("WP75-S1 review fixes", () => {
     expect(await tokensSpent(w)).toBe(1);
   });
 
-  test("a roster plan stored before WP90 (eight always roles) still reads as the business's team", async () => {
+  test("a roster plan stored before WP91 (eight always roles) still reads as the business's team", async () => {
     const w = await world();
     await launchToRoster(w);
     const legacyAlways = new Set<string>(LEGACY_ALWAYS_HIRED_ROLE_KEYS);
     const current = expectedPlan(FIXTURE_BLUEPRINT);
-    // What the pre-WP90 rules stored: their rules version, landing, seo, marketing and engineering marked always, no lead marks.
+    // What the pre-WP91 rules stored: their rules version, landing, seo, marketing and engineering marked always, no lead marks.
     const legacy = {
       ...current,
       rulesVersion: LEGACY_ROSTER_RULES_VERSIONS[0],

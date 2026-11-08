@@ -1,10 +1,10 @@
 /**
- * Crew role catalogue and hiring rules (WP69-S3; roster per idea, WP90).
+ * Crew role catalogue and hiring rules (WP69-S3; roster per idea, WP91).
  *
  * Plain TypeScript module of pure functions. It deliberately registers no
  * Convex functions and does no I/O; later Convex code calls `planRoster`.
  *
- * Who is hired (WP90, owner decision 2026-11-07):
+ * Who is hired (WP91, owner decision 2026-11-07):
  * - the core (`CORE_ROLE_KEYS`: Crew Lead, Brand, Email, Social) always;
  * - a paid push always hires Ads, and a course always hires Curriculum: the
  *   founder stated those facts, so no proposal can drop them;
@@ -30,7 +30,7 @@ import {
   type TeamDecision,
 } from "../../lib/workspace/contracts/roster";
 
-export const ROSTER_RULES_VERSION = "2026-11-07.1";
+export const ROSTER_RULES_VERSION = "2026-11-08.1";
 
 export type RoleCatalogueEntry = {
   readonly key: RoleKey;
@@ -144,6 +144,7 @@ const KIND_ARTICLE_LABEL: Record<IdeaKind, string> = {
   service: "A service",
   marketplace: "A marketplace",
   b2b_software: "A B2B tool",
+  local_business: "A local business",
 };
 
 const PRODUCT_NOUN: Record<IdeaKind, string> = {
@@ -153,6 +154,7 @@ const PRODUCT_NOUN: Record<IdeaKind, string> = {
   service: "a service",
   marketplace: "a marketplace",
   b2b_software: "a B2B tool",
+  local_business: "a local business",
 };
 
 /** Order in which skipped roles are listed. */
@@ -206,6 +208,9 @@ function engineeringReason(kind: IdeaKind, weight: EngineeringWeight): string {
   if (kind === "service") {
     return "Booking and checkout setup only. No product build pack.";
   }
+  if (kind === "local_business") {
+    return "Booking, ordering or storefront setup only. No product build pack.";
+  }
   return "Checkout and storefront setup only. No product build pack.";
 }
 
@@ -248,11 +253,15 @@ function coreReason(key: CoreRoleKey, input: RosterInput): string {
 function merchSkipReason(kind: IdeaKind): string {
   // Canvas wording for the course example is "Nothing physical", not the template.
   if (kind === "course") return "Nothing physical";
+  if (kind === "local_business") return "Sells a service in person, no goods";
   return `${KIND_ARTICLE_LABEL[kind]}; nothing physical to sell`;
 }
 
 function outboundSkipReason(input: RosterInput): string {
   // Canvas wording: consumer self-serve products are found via communities and search.
+  if (input.ideaKind === "local_business" && input.buyer === "consumer") {
+    return `${capitalise(input.audiencePlural)} come via local search, maps and word of mouth`;
+  }
   if (input.buyer === "consumer" && input.deliveryFormat === "self_serve") {
     return `${capitalise(input.audiencePlural)} come via communities and search`;
   }
@@ -270,6 +279,12 @@ function communityHireReason(input: RosterInput): string {
   return input.deliveryFormat === "cohort"
     ? "Cohort format"
     : "Courses run better with a community";
+}
+
+/** WP90: a physical product always sells goods; a local business only when its profile says so. */
+function sellsGoods(input: RosterInput): boolean {
+  if (input.ideaKind === "physical_product") return true;
+  return input.ideaKind === "local_business" && input.sellsGoods === true;
 }
 
 /** The founder-stated facts no proposal can override (owner decision Q2): a paid push hires Ads, a course hires Curriculum. */
@@ -294,7 +309,7 @@ function ruleHires(key: OptionalRoleKey, input: RosterInput): boolean {
     case "community":
       return input.ideaKind === "course" || input.deliveryFormat === "cohort";
     case "merch":
-      return input.ideaKind === "physical_product";
+      return sellsGoods(input);
     case "outbound":
       return input.buyer === "business";
     default:
@@ -307,7 +322,7 @@ function ruleHireReason(key: OptionalRoleKey, input: RosterInput): string {
     case "landing":
       return landingReason(input.goal.kind);
     case "seo":
-      return "People search for this problem";
+      return input.ideaKind === "local_business" ? "Local searches and map listings" : "People search for this problem";
     case "marketing": {
       const phrase = goalPhrase(input);
       return phrase ? `Owns ${phrase}` : "Owns the first goal";
@@ -321,7 +336,7 @@ function ruleHireReason(key: OptionalRoleKey, input: RosterInput): string {
     case "community":
       return communityHireReason(input);
     case "merch":
-      return "Idea kind is physical product";
+      return input.ideaKind === "local_business" ? "Sells goods in store" : "Idea kind is physical product";
     case "outbound":
       return "Buyer is a business";
     default:

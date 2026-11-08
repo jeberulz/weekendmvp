@@ -81,7 +81,7 @@ function isCore(roleKey: RoleKey | null): boolean {
   return roleKey !== null && (CORE_ROLE_KEYS as readonly string[]).includes(roleKey);
 }
 
-/** Why a role is on the team: core, the lead's call (roster per idea, WP90), or added by a rule. */
+/** Why a role is on the team: core, the lead's call (roster per idea, WP91), or added by a rule. */
 function hiredTag(role: Hired, roleKey: RoleKey | null, leadName: string): string {
   if (isCore(roleKey)) return "Core";
   return role.decidedBy === "lead" ? `${leadName} chose` : "Added";

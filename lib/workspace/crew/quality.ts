@@ -74,7 +74,7 @@ function normaliseBlueprint(
   if (blueprint.source !== expected) {
     return { result: blocked("blueprint_source_mismatch", ["source"], `This business needs a ${expected} blueprint.`) };
   }
-  // Roster per idea (WP90): only clean team decisions are stored; a dropped one leaves its role to the rules.
+  // Roster per idea (WP91): only clean team decisions are stored; a dropped one leaves its role to the rules.
   const team = cleanTeamProposal(blueprint.team, {
     ownIdea: blueprint.source === "own_idea",
     ...(context.businessName === undefined ? {} : { brandName: context.businessName }),
