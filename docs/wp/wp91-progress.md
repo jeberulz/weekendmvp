@@ -45,3 +45,7 @@
   preselected; `seedFor` passes the session id as `leadSeedKey`.
 - Follow-up: the wizard crew preview (`crewPreviewFor`) uses the rules without a lead proposal, so the
   launched team can differ from the preview.
+- Review fix (CodeRabbit on #279): `seedBlueprintDraftSchema` now omits `team`, so the idea-seed prompt's
+  output schema no longer offers an unvetted team (and a market number in one can't reject a seed). The
+  stored seed keeps `team` optional. `crew-idea-seed@2` relocked (new on this branch). Regression test in
+  `tests/platform/wp90-seed-contract.test.ts`.

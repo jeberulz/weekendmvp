@@ -142,13 +142,13 @@
       "retired": "Roster per idea (WP91): replaced by version 2 (the C-ART contracts it imports changed; text unchanged)"
     },
     "crew-idea-seed@2": {
-      "hash": "sha256:0c9ee7b72de48bd61a428b5d64d1ae89a554f45235b912cc389bc5dc6c58e504",
+      "hash": "sha256:e16acd23efae74cc1de79c919244ee0f02eb6f5ba997dd7ce98dc100be13b4a9",
       "parts": {
         "system": "sha256:d7ed181a2cef893b1bf674d31be9f6ecffed16c4ca386d783d5b5c2b3cfd025e",
         "task": "sha256:c226071c8b9f22c7f036d8ec3c1ed78c2eb2ebc1693baa09380ce1e874cec17f",
-        "outputSchema": "sha256:91bb663ed34bd6c62b1bae1b4b4c4d4589094948d4c13ce58133a9f0fcd5d155",
+        "outputSchema": "sha256:e7cb2d5b22f9b6be593cd9e0fb204a5f809756dae8bc7abacc09008446aa95b5",
         "run": "sha256:060ba5ecca804fb631887aba48329ec9e3a82421b2b19d40f80056d97f0e00ce",
-        "module": "sha256:4cfc7bd38fa60beda9e67bfd2a31f81d992d1a59dc70269a0882c4ced243a56e"
+        "module": "sha256:a2a432591dfc33e08cb970382e7ecfe84896eeb819c77c21641338b78a7f2028"
       }
     },
     "crew-social-pack@1": {

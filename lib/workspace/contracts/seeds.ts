@@ -249,11 +249,16 @@ export type RoleBriefs = z.infer<typeof roleBriefsSchema>;
 // The draft (model output) and the stored seed
 // ---------------------------------------------------------------------------
 
-/** The library blueprint without the fields the server sets. */
+/**
+ * The library blueprint without the fields the server sets. The seed prompt
+ * never asks for a team (roster per idea, WP91), so `team` stays out of the
+ * model-facing draft; the stored seed keeps it optional.
+ */
 export const seedBlueprintDraftSchema = blueprintVariantSchemas.library.omit({
   schemaVersion: true,
   source: true,
   ideaSlug: true,
+  team: true,
 });
 export type SeedBlueprintDraft = z.infer<typeof seedBlueprintDraftSchema>;
 
