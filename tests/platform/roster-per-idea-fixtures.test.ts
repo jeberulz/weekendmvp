@@ -7,6 +7,7 @@
 import { describe, expect, test } from "vitest";
 
 import { outputJsonSchema } from "@/convex/ai/gateway";
+import { wireOutputSchema } from "@/convex/ai/providers/wireSchema";
 import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
 import { TEAM_ROLE_LINES } from "@/convex/ai/prompts/teamShared";
@@ -38,7 +39,7 @@ function libraryParams(idea: Record<string, unknown>): MessageParams {
     messages: [
       { role: "user", content: blueprintPersonaliseSpec.buildUser({ seed: null, idea: JSON.stringify(idea), answers: ANSWERS }) },
     ],
-    output_config: { format: { type: "json_schema", schema: outputJsonSchema(blueprintPersonaliseSpec.outputSchema) } },
+    output_config: { format: { type: "json_schema", schema: wireOutputSchema(outputJsonSchema(blueprintPersonaliseSpec.outputSchema)) } },
   };
 }
 
@@ -48,7 +49,7 @@ function ownIdeaParams(ownIdea: string): MessageParams {
     max_tokens: blueprintOwnIdeaSpec.maxTokens,
     system: [{ type: "text", text: blueprintOwnIdeaSpec.system }],
     messages: [{ role: "user", content: blueprintOwnIdeaSpec.buildUser({ ownIdea, outline: null, answers: ANSWERS }) }],
-    output_config: { format: { type: "json_schema", schema: outputJsonSchema(blueprintOwnIdeaSpec.outputSchema) } },
+    output_config: { format: { type: "json_schema", schema: wireOutputSchema(outputJsonSchema(blueprintOwnIdeaSpec.outputSchema)) } },
   };
 }
 

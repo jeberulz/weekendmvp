@@ -10,6 +10,7 @@ import { z } from "zod";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { outputJsonSchema } from "@/convex/ai/gateway";
+import { wireOutputSchema } from "@/convex/ai/providers/wireSchema";
 import { createAnthropicAdapter, type AnthropicMessagesClient } from "@/convex/ai/providers/anthropic";
 import { createFixtureAnthropicClient } from "@/convex/ai/providers/fixtures";
 import {
@@ -51,7 +52,8 @@ function params(schema: z.ZodType, system = "Any system block"): MessageParams {
     max_tokens: 4_096,
     system: [{ type: "text", text: system }],
     messages: [{ role: "user", content: "Draft it." }],
-    output_config: { format: { type: "json_schema", schema: outputJsonSchema(schema) } },
+    // What the adapter sends: the wire form of the schema (`wireOutputSchema`).
+    output_config: { format: { type: "json_schema", schema: wireOutputSchema(outputJsonSchema(schema)) } },
   };
 }
 

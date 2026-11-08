@@ -154,3 +154,17 @@ Append-only progress log. Do not rely on chat history for project state.
   - Convex tsc: 0 errors.
   - eslint on the changed files: clean.
   - `npm test`: exit 0.
+
+## 2026-11-08 - Small fix: structured-output schemas the API accepts
+
+- **Found by the first live run.** The 5-idea seed spike on prod (`2026-11-08.1`, batch `msgbatch_014AxSipqBSDKghrmZA38C8A`) failed all five requests with `invalid_request_error`. Nothing was charged. Every reply schema went out as raw zod JSON Schema, with `minLength`, `maxLength`, `maxItems` and `minItems` above 1. Anthropic's structured outputs rejects all of those. All 9 prompts with a reply schema were affected, Wren chat and every crew step included. No live AI call had run on prod before this, because the workspace was off until today.
+- **Fix.** `convex/ai/providers/wireSchema.ts` (`wireOutputSchema`) applies the SDK's own `transformJSONSchema`, the step `messages.parse()` uses. The limits move into each field's description. The gateway still enforces them, because it parses every reply with the spec's zod schema. Three places use it: the request body (`buildMessageParams`), the input-token bound (`inputTokenUpperBound`) and the fixture client's schema keys (`sentSchema`).
+- **Tests.**
+  - New: `tests/platform/ai-structured-output-wire.test.ts`. Every registered prompt's wire schema uses only keywords the API accepts, and the input bound covers the schema as sent. It failed on all 9 prompts before the fix.
+  - Two fixture tests that hand-build request bodies now send the wire form.
+- **Checks:**
+  - `npm run typecheck`: green.
+  - Convex tsc: 0 errors.
+  - `npm test`: exit 0.
+  - Prompt lock: 9 match. The prompt text and its zod schema did not change.
+- **Not verified:** a live call. After merge, re-run the spike to prove it.
