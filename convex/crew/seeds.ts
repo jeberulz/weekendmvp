@@ -83,6 +83,26 @@ async function platformSeedAt(
   return rows.find((row) => row.projectId === undefined) ?? null;
 }
 
+/** Open runs (preparing or submitted) read per status; there is normally at most one per version. */
+const OPEN_RUNS_READ_MAX = 100;
+
+/**
+ * Whether a run at this version is still preparing or submitted. Reads the
+ * open statuses through `by_status`, not the version's history, so finished
+ * runs at a long-lived version can never hide an open one (PR #280 review).
+ */
+async function hasOpenRunAt(ctx: Pick<QueryCtx, "db">, seedVersion: string): Promise<boolean> {
+  for (const status of ["preparing", "submitted"] as const) {
+    const open = await ctx.db
+      .query("idea_seed_runs")
+      .withIndex("by_status", (q) => q.eq("status", status))
+      .take(OPEN_RUNS_READ_MAX);
+    if (open.length >= OPEN_RUNS_READ_MAX) throw new Error(`${OPEN_RUNS_READ_MAX} or more seed runs are ${status}; finish or fail them first`);
+    if (open.some((run) => run.seedVersion === seedVersion)) return true;
+  }
+  return false;
+}
+
 function assertSeedVersion(seedVersion: string): void {
   if (!SEED_VERSION.test(seedVersion)) throw new Error("seedVersion must be 1-40 of [0-9A-Za-z._-]");
 }
@@ -168,11 +188,7 @@ export const autoRunState = internalQuery({
   }),
   handler: async (ctx, args) => {
     assertSeedVersion(args.seedVersion);
-    const runs = await ctx.db
-      .query("idea_seed_runs")
-      .withIndex("by_seedVersion", (q) => q.eq("seedVersion", args.seedVersion))
-      .take(SEED_ROWS_READ_MAX);
-    const openRun = runs.some((run) => run.status === "preparing" || run.status === "submitted");
+    const openRun = await hasOpenRunAt(ctx, args.seedVersion);
     const env = {
       [AI_PROVIDER_MODE_ENV]: process.env[AI_PROVIDER_MODE_ENV],
     };
@@ -198,11 +214,7 @@ export const createRun = internalMutation({
   handler: async (ctx, args) => {
     assertSeedVersion(args.seedVersion);
     const ownerId = await soleSuperAdmin(ctx);
-    const open = await ctx.db
-      .query("idea_seed_runs")
-      .withIndex("by_seedVersion", (q) => q.eq("seedVersion", args.seedVersion))
-      .take(SEED_ROWS_READ_MAX);
-    if (open.some((run) => run.status === "preparing" || run.status === "submitted")) {
+    if (await hasOpenRunAt(ctx, args.seedVersion)) {
       throw new Error(`a run at ${args.seedVersion} is still open; let it finish first`);
     }
     return await ctx.db.insert("idea_seed_runs", {

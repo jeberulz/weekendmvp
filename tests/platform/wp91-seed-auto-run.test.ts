@@ -203,6 +203,24 @@ describe("WP91 crew/seeds:autoRunState", () => {
     expect(decideSeedAutoRun(estimate, { ...done, providerLive: true }, limits)).toEqual({ action: "nothing_to_send" });
   });
 
+  test("an open run is still seen after many finished runs at the same long-lived version", async () => {
+    vi.stubEnv("AI_PROVIDER_MODE", "fixture");
+    const t = await setup();
+    await t.run(async (ctx) => {
+      const ownerId = (await ctx.db.query("users").first())!._id;
+      for (let i = 0; i < 25; i += 1) {
+        await ctx.db.insert("idea_seed_runs", {
+          ownerId, seedVersion: VERSION, promptRef: "crew-idea-seed@1", status: i % 2 === 0 ? "collected" : "failed",
+          itemCount: 1, submittedCount: 1, reservedMicroUsd: 0, polls: 1, createdAt: i,
+        });
+      }
+    });
+    expect((await t.query(internal.crew.seeds.autoRunState, { seedVersion: VERSION })).openRun).toBe(false);
+    await t.mutation(internal.crew.seeds.createRun, { seedVersion: VERSION });
+    expect((await t.query(internal.crew.seeds.autoRunState, { seedVersion: VERSION })).openRun).toBe(true);
+    await expect(t.mutation(internal.crew.seeds.createRun, { seedVersion: VERSION })).rejects.toThrow(/still open/);
+  });
+
   test("refuses a malformed seed version", async () => {
     const t = await setup();
     await expect(t.query(internal.crew.seeds.autoRunState, { seedVersion: "bad version!" })).rejects.toThrow(/seedVersion/);

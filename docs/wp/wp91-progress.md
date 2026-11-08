@@ -30,3 +30,13 @@ Append-only progress log. Do not rely on chat history for project state.
   - the first library run;
   - any live or fixture run against prod.
   - The assumption that `npx convex run` honours `CONVEX_DEPLOY_KEY` without `--prod` is checked by the read-only dry run in plan 10, step 4.
+
+## 2026-11-08 - Review fix (PR #280, Codex P2)
+
+- **The open-run check could miss a newer open run.** `autoRunState` and `createRun` read only the first 20 runs at a version. A fixed, long-lived version gains a run every time content changes, so after 20 finished runs a newer preparing or submitted run was invisible, and `--auto` could send the same ideas twice. Both now go through `hasOpenRunAt`, which reads the open statuses through the existing `by_status` index and matches the version. Finished runs can no longer hide an open one, and no schema change was needed.
+- New test: 25 finished runs at the version, then an open run. `autoRunState` reports it, and a second `createRun` is refused.
+- Checks:
+  - `npm run typecheck`: green.
+  - Convex tsc: 0 errors.
+  - eslint on the changed files: clean.
+  - `npm run test:platform`: 2,822 pass.
