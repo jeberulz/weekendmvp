@@ -76,6 +76,7 @@ import {
 import {
   FIXTURE_BILLED_AS_SUFFIX,
   ProviderError,
+  providerErrorDetail,
   type ProviderCost,
   type TextCallHooks,
   type TextRequest,
@@ -681,7 +682,12 @@ function assertBatchItems(items: readonly BatchRequestItem[]): void {
 }
 
 /** An unbilled result: the Batch API charges only succeeded requests. */
-function unbilledResult(customId: string, type: "errored" | "canceled" | "expired", status?: number): BatchItemOutcome {
+function unbilledResult(
+  customId: string,
+  type: "errored" | "canceled" | "expired",
+  status?: number,
+  detail?: string,
+): BatchItemOutcome {
   const kind = type === "errored" && status !== undefined ? kindForHttpStatus(status) : "server";
   return {
     customId,
@@ -689,6 +695,7 @@ function unbilledResult(customId: string, type: "errored" | "canceled" | "expire
     error: new ProviderError("anthropic", kind, `the batch request was ${type}`, {
       billed: "none",
       ...(status === undefined ? {} : { status }),
+      ...(detail === undefined ? {} : { detail }),
     }),
   };
 }
@@ -716,7 +723,7 @@ function readBatchLine(
       const error = isRecord(result.error) ? result.error : {};
       const inner = isRecord(error.error) ? error.error : error;
       const status = inner.type === "invalid_request_error" ? 400 : inner.type === "overloaded_error" ? 529 : 500;
-      return unbilledResult(customId, "errored", status);
+      return unbilledResult(customId, "errored", status, providerErrorDetail(inner.message));
     }
     case "canceled":
     case "expired":

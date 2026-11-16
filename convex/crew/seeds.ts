@@ -440,7 +440,12 @@ export const markPolled = internalMutation({
 
 const resultInput = v.union(
   v.object({ kind: v.literal("succeeded"), replyText: v.string(), costMicroUsd: v.number() }),
-  v.object({ kind: v.literal("failed"), errorKind: v.string(), costMicroUsd: v.optional(v.number()) }),
+  v.object({
+    kind: v.literal("failed"),
+    errorKind: v.string(),
+    errorDetail: v.optional(v.string()),
+    costMicroUsd: v.optional(v.number()),
+  }),
 );
 
 /** The largest reply the audit reads: the seed's bounds keep a valid draft far below this. */
@@ -464,6 +469,7 @@ export const recordResult = internalMutation({
       await ctx.db.patch("idea_seed_items", item._id, {
         status: "failed",
         errorKind: args.result.errorKind,
+        ...(args.result.errorDetail === undefined ? {} : { errorDetail: args.result.errorDetail }),
         ...(args.result.costMicroUsd === undefined ? {} : { costMicroUsd: args.result.costMicroUsd }),
         updatedAt: now,
       });
@@ -564,14 +570,16 @@ export const runSummary = internalQuery({
     costMicroUsd: v.number(),
     counts: v.record(v.string(), v.number()),
     auditFindings: v.array(v.object({ ideaSlug: v.string(), code: v.string(), path: v.string() })),
-    failures: v.array(v.object({ ideaSlug: v.string(), status: v.string(), errorKind: v.string() })),
+    failures: v.array(
+      v.object({ ideaSlug: v.string(), status: v.string(), errorKind: v.string(), errorDetail: v.optional(v.string()) }),
+    ),
   }),
   handler: async (ctx, args) => {
     const run = await requireRun(ctx, args.runId);
     const counts: Record<string, number> = {};
     let costMicroUsd = 0;
     const auditFindings: { ideaSlug: string; code: string; path: string }[] = [];
-    const failures: { ideaSlug: string; status: string; errorKind: string }[] = [];
+    const failures: { ideaSlug: string; status: string; errorKind: string; errorDetail?: string }[] = [];
     for (const status of ITEM_STATUSES) {
       const items = await ctx.db
         .query("idea_seed_items")
@@ -584,7 +592,12 @@ export const runSummary = internalQuery({
           if (auditFindings.length < 100) auditFindings.push({ ideaSlug: item.ideaSlug, code: issue.code, path: issue.path });
         }
         if ((status === "failed" || status === "not_reserved") && failures.length < 100) {
-          failures.push({ ideaSlug: item.ideaSlug, status, errorKind: item.errorKind ?? "unknown" });
+          failures.push({
+            ideaSlug: item.ideaSlug,
+            status,
+            errorKind: item.errorKind ?? "unknown",
+            ...(item.errorDetail === undefined ? {} : { errorDetail: item.errorDetail }),
+          });
         }
       }
     }

@@ -300,6 +300,8 @@ export const workspaceTables = {
     issues: v.optional(v.array(v.object({ code: v.string(), path: v.string() }))),
     /** The provider error kind for a failed request. */
     errorKind: v.optional(v.string()),
+    /** The provider's own message for a failed request, one line, at most 300 characters. */
+    errorDetail: v.optional(v.string()),
     seedId: v.optional(v.id("idea_crew_seeds")),
     createdAt: v.number(),
     updatedAt: v.number(),
