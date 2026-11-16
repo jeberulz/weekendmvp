@@ -15,8 +15,14 @@
  * Version 3 (roster per idea, WP91): the text is version 2's; the C-ART
  * contracts it imports changed (the blueprint gains an optional `team`).
  *
+ * Version 4 (2026-11-16): the text and schema are version 3's, with
+ * `outputMode: "prompted"`. The API refused the social pack schema as a
+ * grammar ("The compiled grammar is too large", live probe 2026-11-08), so the
+ * schema now goes in a system block and the reply is still checked with the
+ * C-ART schema (`convex/ai/providers/wireSchema.ts`).
+ *
  * Any change to this file or to `crewShared.ts` (comments included: the lock
- * hashes module source) needs a version bump (a new `socialPack.v4.ts`),
+ * hashes module source) needs a version bump (a new `socialPack.v5.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -50,9 +56,10 @@ const SYSTEM = [
   `The days, in order: ${SOCIAL_DAYS.join(", ")}. fri is launch day: its post announces the business and its kind is launch. The other six days build on it through the week to thu.`,
   `Each post has a kind (${SOCIAL_POST_KINDS.join(", ")}) and a format (${SOCIAL_POST_FORMATS.join(", ")}). Vary kinds and formats across the week. A reel_script caption reads as the script of a short video.`,
   `hook is the first line a reader sees. caption is the full post. shortCaption must stand alone at ${LIMITS.socialPack.shortCaption} characters or fewer, because it is posted as is on X; it is not a fragment of the caption. imageText is the 2 to 3 words printed on the post's card.`,
+  `Every post has kind, format, hook, caption, shortCaption, imageText and hashtags, whatever its format. imageText is never left out: on a reel_script it is the cover text and on a poll it is the card above the question, ${LIMITS.socialPack.imageText} characters at most. Only imageAlt and pollOptions are ever left out.`,
   "Keep every post short so all seven fit in one reply: a hook is one short line, a caption stays under about 900 characters, and most posts need far less.",
   "imageAlt is plain alt text for a screen reader, describing the card. Include it only on image and carousel posts; leave it out on every other format.",
-  `pollOptions are only for a poll: ${LIMITS.socialPack.pollOptionsMin} to ${LIMITS.socialPack.pollOptionsMax} short answers. Leave the field out on every other format.`,
+  `pollOptions are only for a poll: ${LIMITS.socialPack.pollOptionsMin} to ${LIMITS.socialPack.pollOptionsMax} short answers, each ${LIMITS.socialPack.pollOption} characters at most. Leave the field out on every other format.`,
   "hashtags are plain words without the # sign: letters, numbers and _ only, no spaces, none repeated.",
   "No URLs, web addresses, domain names, email addresses or @handles in any field. The founder adds their own link and tags; you may say \"link in bio\".",
   "Never invent facts, prices, discounts, dates, figures, testimonials or user counts, and never claim other people already use the product. Use only what the data states.",
@@ -61,7 +68,7 @@ const SYSTEM = [
 
 export const socialPackSpec = definePromptSpec<SocialPackInput, SocialPack>({
   id: "crew-social-pack",
-  version: 3,
+  version: 4,
   tier: "fast",
   // TIER_RECOMMENDED_EFFORT.fast, written out: the lock lets a prompt module import only definePromptSpec from C-PROMPT.
   effort: "low",
@@ -83,6 +90,7 @@ export const socialPackSpec = definePromptSpec<SocialPackInput, SocialPack>({
       "Write this business's launch-week social pack.",
     ].join("\n"),
   outputSchema: artifactOutputSchemas.social_pack,
+  outputMode: "prompted",
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },
   evalSuite: "crew-social-pack",
   mode: "realtime",

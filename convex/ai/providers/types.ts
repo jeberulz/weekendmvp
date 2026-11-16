@@ -22,7 +22,7 @@ import type {
   MeterErrorClass,
   MeterProvider,
 } from "../../../lib/workspace/contracts/metering";
-import type { PromptEffort, PromptModel, PromptThinking } from "../../../lib/workspace/contracts/prompts";
+import type { PromptEffort, PromptModel, PromptOutputMode, PromptThinking } from "../../../lib/workspace/contracts/prompts";
 
 // ---------------------------------------------------------------------------
 // Cost
@@ -205,6 +205,12 @@ export type TextRequest = {
    * reply must parse as JSON; the gateway re-validates it with the spec's zod schema.
    */
   readonly outputSchema?: Readonly<Record<string, unknown>>;
+  /**
+   * `"prompted"`: send `outputSchema` as a system block (`promptedSchemaBlock`)
+   * instead of `output_config.format`, for a schema too large for the API's
+   * grammar. The reply is parsed and re-validated the same way. Absent: grammar.
+   */
+  readonly outputMode?: PromptOutputMode;
   /** Hard deadline for the call, in milliseconds. */
   readonly timeoutMs: number;
   /** Optional caller signal (e.g. the action being cancelled). */

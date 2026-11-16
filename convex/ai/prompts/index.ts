@@ -25,10 +25,10 @@ import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v3.ts";
 import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v3.ts";
 import { brandKitSpec } from "./brandKit.v3.ts";
 import { emailSequenceSpec } from "./emailSequence.v3.ts";
-import { ideaSeedSpec } from "./ideaSeed.v2.ts";
+import { ideaSeedSpec } from "./ideaSeed.v3.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
-import { socialPackSpec } from "./socialPack.v3.ts";
+import { socialPackSpec } from "./socialPack.v4.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
 import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
 
@@ -88,7 +88,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(ideaSeedSpec, {
-    module: "convex/ai/prompts/ideaSeed.v2.ts",
+    module: "convex/ai/prompts/ideaSeed.v3.ts",
     sampleInputs: {
       source: JSON.stringify({
         slug: "hydrotrail",
@@ -102,7 +102,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(socialPackSpec, {
-    module: "convex/ai/prompts/socialPack.v3.ts",
+    module: "convex/ai/prompts/socialPack.v4.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),

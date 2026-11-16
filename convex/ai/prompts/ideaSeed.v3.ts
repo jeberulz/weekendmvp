@@ -1,5 +1,5 @@
 /**
- * WP90-S2. The per-idea seed precompute (`crew-idea-seed@2`): one `deep`
+ * WP90-S2. The per-idea seed precompute (`crew-idea-seed@3`): one `deep`
  * Message Batches call per library idea and seed version (D11: Opus on the
  * Batch API for per-idea precompute), run by `convex/crew/seeds.ts`.
  *
@@ -11,8 +11,14 @@
  * Version 2 (roster per idea, WP91): the text is version 1's; the C-ART
  * contracts it imports changed (the blueprint gains an optional `team`).
  *
+ * Version 3 (2026-11-16): the text and schema are version 2's, with
+ * `outputMode: "prompted"`. The API refused version 2's schema as a grammar
+ * ("The compiled grammar is too large", first live batch 2026-11-08), so the
+ * schema now goes in a system block and the reply is still checked with
+ * `ideaSeedDraftSchema` (`convex/ai/providers/wireSchema.ts`).
+ *
  * Any change to this file or to the modules it imports (comments included:
- * the lock hashes module source) needs a version bump (`ideaSeed.v3.ts`),
+ * the lock hashes module source) needs a version bump (`ideaSeed.v4.ts`),
  * then `node --experimental-strip-types scripts/check-prompt-versions.mjs --write`.
  */
 
@@ -58,7 +64,7 @@ const SYSTEM = [
 
 export const ideaSeedSpec = definePromptSpec<IdeaSeedInput, IdeaSeedDraft>({
   id: "crew-idea-seed",
-  version: 2,
+  version: 3,
   tier: "deep",
   effort: "medium",
   thinking: { type: "adaptive" },
@@ -70,6 +76,7 @@ export const ideaSeedSpec = definePromptSpec<IdeaSeedInput, IdeaSeedDraft>({
       "Write the seed for this idea.",
     ].join("\n"),
   outputSchema: ideaSeedDraftSchema,
+  outputMode: "prompted",
   cacheLayout: { system: "stable", business: "none", ttl: "5m" },
   evalSuite: "crew-idea-seed",
   mode: "batch",

@@ -27,6 +27,7 @@ import {
   type PromptEffort,
   type PromptMode,
   type PromptModel,
+  type PromptOutputMode,
   type PromptSpec,
   type PromptThinking,
 } from "../../lib/workspace/contracts/prompts.ts";
@@ -44,6 +45,12 @@ export type PromptRoute = {
   /** The lane ceiling for this tier and mode (`TIER_MAX_INPUT_TOKENS`). */
   readonly maxInputTokens: number;
   readonly mode: PromptMode;
+  /**
+   * Present only when the spec sets it (`"prompted"`). Absent means the
+   * schema is a grammar, so a spec without it routes exactly as before and
+   * its locked `run` hash is unchanged.
+   */
+  readonly outputMode?: PromptOutputMode;
 };
 
 /** Any C-PROMPT spec; its input and output types do not matter for routing. */
@@ -65,5 +72,6 @@ export function routeSpec(spec: RoutableSpec): PromptRoute {
     maxTokens: safe.maxTokens,
     maxInputTokens: maxInputTokensForSpec(safe),
     mode: safe.mode,
+    ...(safe.outputMode === undefined ? {} : { outputMode: safe.outputMode }),
   });
 }

@@ -29,7 +29,7 @@ import {
 import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
-import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v2";
+import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v3";
 import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
 import { wrenPlanTurnSpec } from "@/convex/ai/prompts/wrenPlanTurn";
 

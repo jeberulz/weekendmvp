@@ -168,3 +168,19 @@ Append-only progress log. Do not rely on chat history for project state.
   - `npm test`: exit 0.
   - Prompt lock: 9 match. The prompt text and its zod schema did not change.
 - **Not verified:** a live call. After merge, re-run the spike to prove it.
+
+## 2026-11-16 - Small fix: two schemas too large for the API's grammar
+
+- **Found by the second spike.** After #282, the re-run (`2026-11-08.1`, batch `msgbatch_0141VEct1ovupSTXcV9mDAZR`) again failed all five with `bad_request` and $0 charged. The batch results gave the real message (the code keeps only the error kind): "The compiled grammar is too large, which would cause performance issues."
+- **Probe (1-token live requests; a rejected one is free).** Six reply schemas are accepted: Wren chat, Wren plan turn, both blueprints, brand kit, email sequence. Two are refused: `crew-idea-seed` (each of its 8 sections passes alone; sections 1-7 together fail) and `crew-social-pack` (`posts` alone fails). Removing every description, requiring every field or dropping `minItems` did not bring either under the limit.
+- **Fix (owner's choice: drop the grammar for both).**
+  - C-PROMPT gains an optional `outputMode: "prompted"` (`INVALID_OUTPUT_MODE` otherwise). The router passes it on only when set, so the other seven specs route, and lock, exactly as before.
+  - A prompted request sends no `output_config.format`. The same wire schema goes in a system block right after the spec's system text (`promptedSchemaBlock`, header `PROMPTED_SCHEMA_HEADER`). That block takes the first block's cache breakpoint, so the schema is cached and the breakpoint count is unchanged.
+  - The reply is parsed as before; one surrounding code fence is tolerated (`unfencedJson`); the zod schema and, for seeds, the seed audit still decide. The gateway's one re-ask still applies to realtime calls.
+  - The input-token bound counts the whole prompted block. The fixture client reads the schema back from that block (`requestSchemaOf`), so fixture mode answers prompted requests exactly as before.
+  - Versions: `crew-idea-seed@3` (text and schema of @2) and `crew-social-pack@4`. @2 and @3 are retired in the lock. The social pack text gains two rules found live: every post has `imageText` (Haiku left it out on reel_script and poll posts without a grammar), and each poll answer is at most 25 characters.
+- **Live check before merge (prod key, outside the meter, about $0.20 in all).**
+  - `crew-idea-seed@3` on Opus, hydrotrail page, as `seedRequestFor` builds it: 3 of 3 replies parse, pass zod and pass `auditSeedDraft`, no fence; $0.05-0.08 each at the realtime rate (the batch rate is half).
+  - `crew-social-pack@4` on Haiku, registry sample inputs: 5 of 5 pass zod after the two rules; about $0.001 each. Before them, 1 of 6 passed.
+- **Checks:** typecheck green, Convex tsc 0 errors, eslint clean on changed files, `npm test` exit 0, prompt lock 9 match (7 unchanged, 2 new).
+- **Not verified:** a Message Batches run of the new seed version. After merge and deploy, re-run the 5-idea spike.
