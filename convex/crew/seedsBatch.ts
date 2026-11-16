@@ -41,6 +41,7 @@ import {
   type BatchRequestItem,
 } from "../ai/providers/anthropic";
 import { isProviderError, type TextRequest } from "../ai/providers/types";
+import { unfencedJson } from "../ai/providers/wireSchema";
 import { SEED_BATCH_CALL_TIMEOUT_MS, SEED_PROMPT_REF, precomputeAttemptKey, seedRequestFor } from "./seedRequest";
 import { SEED_POLL_MAX } from "./seeds";
 
@@ -254,7 +255,10 @@ async function recordOutcome(
     });
     return await ctx.runMutation(internal.crew.seeds.recordResult, {
       itemId: item.itemId,
-      result: { kind: "succeeded", replyText: result.text, costMicroUsd: result.cost.microUsd },
+      // The seed is prompted (`crew-idea-seed@3`): `readMessage` parsed the text
+      // after removing one code fence, and `recordResult` parses it again, so it
+      // gets the same unfenced text.
+      result: { kind: "succeeded", replyText: unfencedJson(result.text), costMicroUsd: result.cost.microUsd },
     });
   }
   const { error } = outcome;
