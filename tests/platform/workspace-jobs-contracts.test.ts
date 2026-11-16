@@ -531,6 +531,13 @@ describe("C-PROMPT", () => {
     expectCode(() => definePromptSpec(missing), "INVALID_FALLBACKS");
   });
 
+  test("outputMode is omitted (grammar) or prompted", () => {
+    expect(definePromptSpec({ ...good, outputMode: "prompted" }).outputMode).toBe("prompted");
+    expect(definePromptSpec(good).outputMode).toBeUndefined();
+    const grammar = { ...good, outputMode: "grammar" } as unknown as PromptSpec<Input, Output>;
+    expectCode(() => definePromptSpec(grammar), "INVALID_OUTPUT_MODE");
+  });
+
   test("rejects thinking the tier's model refuses", () => {
     expectCode(() => definePromptSpec({ ...good, thinking: { type: "disabled" } }), "INVALID_THINKING");
     expectCode(

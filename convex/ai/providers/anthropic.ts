@@ -12,7 +12,11 @@
  *   (`adaptive` / `between_tools` / `disabled`; C-PROMPT validates which
  *   model accepts which). Never `budget_tokens`.
  * - Structured output is `output_config.format: { type: "json_schema", schema }`
- *   with the caller's JSON Schema.
+ *   with the caller's JSON Schema, or, for `outputMode: "prompted"` (a schema
+ *   whose grammar the API refuses as too large), the same wire schema as a
+ *   system block right after the first one (`promptedSchemaBlock`). That
+ *   block takes the first block's cache breakpoint, so the cached prefix
+ *   covers it and the breakpoint count is unchanged.
  * - System blocks carry `cache_control: { type: "ephemeral", ttl: "5m" }`
  *   where the caller asks for a breakpoint (at most four).
  * - No `fallbacks`, no beta header: a refusal stops the request and fails
@@ -60,7 +64,7 @@ import type { PromptModel, PromptThinking } from "../../../lib/workspace/contrac
 import { ANTHROPIC_RATE_CARDS, anthropicCostMicroUsd, anthropicRateCard } from "../pricing";
 import { createFixtureAnthropicClient, type AnthropicFixtureResponder } from "./fixtures";
 import { resolveProviderAccess, type ProviderEnv } from "./mode";
-import { wireOutputSchema } from "./wireSchema";
+import { promptedSchemaBlock, unfencedJson, wireOutputSchema } from "./wireSchema";
 import {
   isRecord,
   kindForHttpStatus,
@@ -77,6 +81,7 @@ import {
   type TextRequest,
   type TextResult,
   type TextStopReason,
+  type TextSystemBlock,
   type TextUsage,
 } from "./types";
 
@@ -250,18 +255,38 @@ export function assertTextRequest(request: TextRequest): void {
 }
 
 /**
+ * The system blocks of a prompted request: the schema block goes right after
+ * the first block and takes its cache breakpoint, so the cached prefix covers
+ * the schema and the breakpoint count does not change.
+ */
+function withSchemaBlock(
+  system: readonly TextSystemBlock[],
+  schema: Readonly<Record<string, unknown>>,
+): readonly TextSystemBlock[] {
+  const [first, ...rest] = system;
+  if (first === undefined) return system;
+  const schemaBlock: TextSystemBlock = { text: promptedSchemaBlock(schema), cacheBreakpoint: first.cacheBreakpoint === true };
+  return [{ text: first.text }, schemaBlock, ...rest];
+}
+
+/**
  * The Messages API body for a request. Also the `params` of a Message
  * Batches request (S5).
  */
 export function buildMessageParams(request: TextRequest): Anthropic.MessageCreateParamsNonStreaming {
   assertTextRequest(request);
-  const system: Anthropic.TextBlockParam[] = request.system.map((block) =>
+  const prompted = request.outputSchema !== undefined && request.outputMode === "prompted";
+  const blocks =
+    prompted && request.outputSchema !== undefined
+      ? withSchemaBlock(request.system, request.outputSchema)
+      : request.system;
+  const system: Anthropic.TextBlockParam[] = blocks.map((block) =>
     block.cacheBreakpoint === true
       ? { type: "text", text: block.text, cache_control: { type: "ephemeral", ttl: "5m" } }
       : { type: "text", text: block.text },
   );
   const outputConfig: Anthropic.OutputConfig =
-    request.outputSchema === undefined
+    request.outputSchema === undefined || prompted
       ? { effort: request.effort }
       : { effort: request.effort, format: { type: "json_schema", schema: wireOutputSchema(request.outputSchema) } };
   return {
@@ -427,7 +452,7 @@ export function readMessage(message: unknown, request: TextRequest, options: Rea
 
   let json: unknown;
   try {
-    json = JSON.parse(text);
+    json = JSON.parse(request.outputMode === "prompted" ? unfencedJson(text) : text);
   } catch (cause) {
     throw billedError("invalid_output", "the structured reply is not valid JSON", { cause });
   }

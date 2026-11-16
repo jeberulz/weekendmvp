@@ -167,6 +167,17 @@ describe("WP90-S3 seed precompute", () => {
     expect(await usageRows(t)).toHaveLength(1);
   });
 
+  test("a prompted reply wrapped in one code fence is stored like a bare one", async () => {
+    const t = await setup();
+    const runId = await preparedRun(t, [items[0]!]);
+    const fenced = `\`\`\`json\n${JSON.stringify(hydrotrailSeedDraft)}\n\`\`\``;
+    const adapter = createAnthropicBatchAdapter({ env: fixtureEnv, fixtureResponder: () => ({ text: fenced }) });
+    const { ctx } = actionCtx(t);
+    await submitSeedRun(ctx, { runId }, { adapter });
+    expect(await pollSeedRun(ctx, { runId }, { adapter })).toMatchObject({ written: 1, auditFailed: 0, failed: 0 });
+    expect(await t.run(async (db) => await db.db.query("idea_crew_seeds").take(5))).toHaveLength(1);
+  });
+
   test("a reply that fails the audit is charged but never stored", async () => {
     const t = await setup();
     const runId = await preparedRun(t, [items[0]!]);

@@ -57,6 +57,7 @@ export const SPEC_KEYS = [
   "system",
   "buildUser",
   "outputSchema",
+  "outputMode",
   "cacheLayout",
   "evalSuite",
   "mode",

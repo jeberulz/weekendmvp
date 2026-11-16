@@ -149,6 +149,17 @@
         "outputSchema": "sha256:e7cb2d5b22f9b6be593cd9e0fb204a5f809756dae8bc7abacc09008446aa95b5",
         "run": "sha256:060ba5ecca804fb631887aba48329ec9e3a82421b2b19d40f80056d97f0e00ce",
         "module": "sha256:a2a432591dfc33e08cb970382e7ecfe84896eeb819c77c21641338b78a7f2028"
+      },
+      "retired": "Structured-output fix (2026-11-16): replaced by version 3 (outputMode prompted; the API refused this schema as a grammar)"
+    },
+    "crew-idea-seed@3": {
+      "hash": "sha256:4f9176a292ed1a7408257b8527711d9c79d773f38f251295129408539aaf72a5",
+      "parts": {
+        "system": "sha256:d7ed181a2cef893b1bf674d31be9f6ecffed16c4ca386d783d5b5c2b3cfd025e",
+        "task": "sha256:c226071c8b9f22c7f036d8ec3c1ed78c2eb2ebc1693baa09380ce1e874cec17f",
+        "outputSchema": "sha256:e7cb2d5b22f9b6be593cd9e0fb204a5f809756dae8bc7abacc09008446aa95b5",
+        "run": "sha256:306dd1daaa835a2d5e2ee4e6d8751cb5bb7ecca71411662da1769fe705fa3a7c",
+        "module": "sha256:04735227a580958602166d89afde36f83d4f31f6f1a6f2485a3b6e553c470e07"
       }
     },
     "crew-social-pack@1": {
@@ -181,6 +192,17 @@
         "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
         "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
         "module": "sha256:216342b9ad74c541b8636540c4e8cc0e9623d3d79e61ab3a0239b062edcb67f5"
+      },
+      "retired": "Structured-output fix (2026-11-16): replaced by version 4 (outputMode prompted; the API refused this schema as a grammar)"
+    },
+    "crew-social-pack@4": {
+      "hash": "sha256:ca9e7e07baf54125ab0d0e991b797296b537bdc5848064511ff690f646249cd5",
+      "parts": {
+        "system": "sha256:66260b61b5a9b891095bcca8e302c7327734870f85a13c3f3631df84cbe5da26",
+        "task": "sha256:c882991349b6c7bb1f96b1a2d4f963c5fa0f287391579006f2881c8a29267a60",
+        "outputSchema": "sha256:1165dda981dac9e4eb94cb388236278f54ca6bff3380542cd8ab03d210ad0992",
+        "run": "sha256:144b9e1091f647d68bde06bddf71e09af7f7a76e47b0e1b57b7fa00b1de70fe5",
+        "module": "sha256:c88b9ee77eac73b1a676033fd23a3b3a8060461632a782ee12b7abe7d9716021"
       }
     },
     "internal-registry-probe@1": {

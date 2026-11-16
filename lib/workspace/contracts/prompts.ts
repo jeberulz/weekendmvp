@@ -180,6 +180,17 @@ export type PromptCacheLayout = {
   readonly ttl: "5m";
 };
 
+/**
+ * How the reply's shape is enforced. Absent (the default): the JSON Schema is
+ * sent as `output_config.format`, so the model is constrained to it by a
+ * compiled grammar. `"prompted"`: the schema is sent as a system block instead
+ * and the reply is still parsed and re-validated with the zod schema. For a
+ * schema the API rejects with "The compiled grammar is too large" (live probe
+ * 2026-11-08: `crew-idea-seed` and `crew-social-pack`).
+ */
+export const PROMPT_OUTPUT_MODES = ["prompted"] as const;
+export type PromptOutputMode = (typeof PROMPT_OUTPUT_MODES)[number];
+
 export type PromptSpec<TInput, TOutput> = {
   /** kebab-case, unique in the registry, e.g. `crew-brand-kit`. */
   readonly id: string;
@@ -197,6 +208,8 @@ export type PromptSpec<TInput, TOutput> = {
   readonly buildUser: (inputs: TInput) => string;
   /** zod schema for the structured output (`output_config.format`), re-validated on our side. */
   readonly outputSchema: ZodType<TOutput>;
+  /** Absent: the schema is a grammar (`output_config.format`). `"prompted"`: see `PROMPT_OUTPUT_MODES`. */
+  readonly outputMode?: PromptOutputMode;
   readonly cacheLayout: PromptCacheLayout;
   /** Eval suite id under `evals/crew`. */
   readonly evalSuite: string;
@@ -232,6 +245,7 @@ export const PROMPT_SPEC_ERROR_CODES = [
   "INVALID_PURPOSE",
   "INVALID_FALLBACKS",
   "INVALID_PROMPT_REF",
+  "INVALID_OUTPUT_MODE",
 ] as const;
 
 export type PromptSpecErrorCode = (typeof PROMPT_SPEC_ERROR_CODES)[number];
@@ -337,6 +351,10 @@ export function definePromptSpec<TInput, TOutput>(
     typeof (schema as { safeParse?: unknown }).safeParse !== "function"
   ) {
     throw new PromptSpecError("MISSING_OUTPUT_SCHEMA", `${id}: outputSchema must be a zod schema`);
+  }
+  const outputMode: unknown = spec.outputMode;
+  if (outputMode !== undefined && !includes(PROMPT_OUTPUT_MODES, outputMode)) {
+    throw new PromptSpecError("INVALID_OUTPUT_MODE", `${id}: outputMode must be omitted or "prompted"`);
   }
   validateCacheLayout(id, spec.cacheLayout);
   if (typeof spec.evalSuite !== "string" || spec.evalSuite.trim().length === 0) {
