@@ -592,3 +592,18 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   fresh draft; two are promised).
 - Gate lines now open: the live `bad_request`, five live launches, cron ticking on prod, and the ops settings.
 - Checks for this entry: docs only, `git diff --check`.
+
+## 2026-11-16 - L1 F1 and F2 fixed (branch `claude/l1-gate-1116`)
+
+- F1: Wren is no longer offered, and cannot raise, an approval card for an action whose kill switch is on
+  (`approvalKindSwitchedOn` in `convex/ops/settings.ts`, used by `approvableSubjects` and `raiseApprovalCard`). In
+  L1 that removes "Start sending this email sequence" and any post or publish card from chat. Security allowlist
+  (`tests/security/wp77-wren-tools-cards-only.test.mjs`) widened by those two read-only C-OPS names. Tests: three in
+  `convex/workspace/wrenTools.test.ts`, one in `convex/workspace/chat.test.ts`; the fixture-reply test now opens
+  `social` to keep covering the raise path.
+- F2: review pages count the previewed free round as the founder's (`previewLine` in `lib/workspace/emailPage.ts`),
+  so a fresh draft says 2 free rounds left. Page test mocks corrected to the server's real preview values.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0 (2,897 platform tests plus the Convex,
+  security and node suites), build 0. Browser, against the local fixture backend: Brand kit and Social both read
+  "2 free rounds of changes left." on a fresh draft. F1 is covered by tests only, because the local backend runs
+  main's Convex code. a11y: only the number in a sentence changed, so no markup changed and nothing new to audit.

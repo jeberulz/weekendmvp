@@ -13,6 +13,7 @@ import {
   type WrenCardRefusal,
 } from "../../lib/workspace/wrenCards";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
+import { approvalKindSwitchedOn, getOpsSettings } from "../ops/settings";
 import { WREN_APPROVAL_SUBJECTS, type WrenApprovalKind } from "../../lib/workspace/contracts/wrenTools";
 import {
   approvalKindValidator,
@@ -205,6 +206,8 @@ export async function raiseApprovalCard(
 ): Promise<{ approvalId: Id<"approvals">; created: boolean } | null> {
   // Early, so a forged kind cannot even reuse (attach) an existing card of that kind.
   if (!isWrenApprovalSubject(card.kind, card.subjectTable)) return null;
+  // L1 F1: no card (new or reused) for an action whose kill switch is on.
+  if (!approvalKindSwitchedOn(await getOpsSettings(ctx), card.kind)) return null;
   const state = await readSubjectState(ctx, business.ownerId, business.projectId, card.subjectTable, card.subjectId);
   if (!state.found) return null;
   if (!(await subjectStatusAllows(ctx, card))) return null;

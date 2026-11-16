@@ -10,7 +10,7 @@ import {
   type MutationCtx,
   type QueryCtx,
 } from "../_generated/server";
-import { assertFeatureEnabled } from "../ops/settings";
+import { approvalKindSwitchedOn, assertFeatureEnabled, getOpsSettings } from "../ops/settings";
 import { requireBusinessAccess, requireBusinessForOwner } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
 import { wrenChatSpec } from "../ai/prompts/wrenChat";
@@ -390,8 +390,16 @@ const SEQUENCE_SCAN_MAX = 50;
  * the newest `ready` site versions, draft sequences and `copy_ready` social
  * posts of this business, a few of each. Server-read and bounded. The model
  * may still name any id; `resolveWrenCards` checks it against the business.
+ * A kind whose action is switched off (`approvalKindSwitchedOn`: publish, send
+ * or post while that kill switch is on) is left out, so Wren never offers the
+ * founder an approval for something that cannot happen (L1 F1).
  */
 export async function approvableSubjects(ctx: QueryCtx, project: Project): Promise<ApprovableSubject[]> {
+  const settings = await getOpsSettings(ctx);
+  return (await approvableRows(ctx, project)).filter((subject) => approvalKindSwitchedOn(settings, subject.kind));
+}
+
+async function approvableRows(ctx: QueryCtx, project: Project): Promise<ApprovableSubject[]> {
   const versions = await ctx.db.query("site_versions")
     .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", "ready"))
     .order("desc")

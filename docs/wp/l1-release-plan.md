@@ -28,7 +28,7 @@ the gate open:
 
 What is left, in order: find and fix the live `bad_request`, get one live seed run to pass, run the five live launches and record them, confirm the ops settings, then invite the beta.
 The full checks and the a11y-check on the merged tree passed on 2026-11-16 (see "Gate re-run (2026-11-16)"); that
-walkthrough found two copy issues worth fixing before invites (F1, F2).
+walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed on `claude/l1-gate-1116`.
 
 ## What ships Monday
 
@@ -154,12 +154,17 @@ Not done: a VoiceOver pass, and the failed or paused launch states (the fixture 
   The fixture reply does, and a live Wren reply can. In L1 the founder sees an Approve button on "Start sending this
   email sequence" while sending is off, and approves the same four emails twice. After the click the card says
   "Approved. Sending is off during the beta, so nothing goes out yet", so nothing misleads after approval, but the
-  title does before it. Option: leave `send` subjects out of `approvableSubjects` while the `email` kill switch is on
-  (and `post` while `social` is on), or retitle the card.
+  title does before it. **Fixed on `claude/l1-gate-1116`:** `approvalKindSwitchedOn` (`convex/ops/settings.ts`) maps
+  `publish`, `send`, `post` and `ad_launch` to their kill switches. `approvableSubjects` leaves a switched-off kind out
+  of what Wren is offered, and `raiseApprovalCard` refuses (and does not reuse) a card of that kind, so a live model
+  naming an id it was not offered is refused too. Review and spend cards are unaffected.
 - **F2 (fix before invites): the free change round count is off by one.** Email, Brand kit and Social show
   "1 free round of changes left." on a fresh draft, while Meet your co-founder and the "Asking for changes" help say
   two free rounds per piece. `freeRoundsLeft` (`lib/workspace/changeRounds.ts`) is the count left after the round
-  being previewed, and `freeRoundsCopy` (`lib/workspace/emailPage.ts`) prints it as the current count.
+  being previewed, and `freeRoundsCopy` (`lib/workspace/emailPage.ts`) prints it as the current count. **Fixed on
+  `claude/l1-gate-1116`:** `previewLine` counts the previewed round as still the founder's (`freeRoundsLeft + 1`), so a
+  fresh draft reads "2 free rounds of changes left." The server contract is unchanged. The page tests had mocked the
+  preview with values the server never sends (round 1 with 2 left), which hid the bug; they now use the real ones.
 - **F3 (low): the wizard Name step** says "Alternatives are there if you want them" with only one name shown (no
   seed, fixture). Recheck once a seed exists.
 - **F4 (low): duplicate ids on a full page load.** A hidden React streaming container (`<div hidden id="S:0">`) stays

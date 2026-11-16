@@ -178,7 +178,7 @@ describe("ArtifactReviewCard approveLabel", () => {
 
   test("the change-request textarea border is the 3:1 ink-3 token", async () => {
     const { getByRole, container } = render(
-      <ArtifactReviewCard {...props} preview={{ kind: "ready", preview: { outcome: "free", freeRoundsLeft: 2 } }} />,
+      <ArtifactReviewCard {...props} preview={{ kind: "ready", preview: { outcome: "free", freeRoundsLeft: 1 } }} />,
     );
     getByRole("button", { name: "Ask for changes" }).click();
     const field = await vi.waitFor(() => {
@@ -198,7 +198,7 @@ describe("ArtifactReviewCard change-round copy follows the approval kind", () =>
       <ArtifactReviewCard
         card={{ status: "pending", expiresAt: Date.now() + 86_400_000 }}
         decide={async () => ({ status: "approved", changed: true })}
-        preview={{ kind: "ready", preview: { outcome: "free", freeRoundsLeft: 2 } }}
+        preview={{ kind: "ready", preview: { outcome: "free", freeRoundsLeft: 1 } }}
         artifact={artifact}
       />,
     );
