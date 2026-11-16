@@ -156,7 +156,10 @@ function printSummary(summary) {
   console.log(`  reserved ${usd(summary.reservedMicroUsd)}, charged so far ${usd(summary.costMicroUsd)}, polls ${summary.polls}`);
   if (summary.note) console.log(`  note: ${summary.note}`);
   for (const finding of summary.auditFindings) console.log(`  audit: ${finding.ideaSlug} ${finding.code} at ${finding.path}`);
-  for (const failure of summary.failures) console.log(`  ${failure.status}: ${failure.ideaSlug} (${failure.errorKind})`);
+  for (const failure of summary.failures) {
+    const detail = failure.errorDetail === undefined ? "" : `: ${failure.errorDetail}`;
+    console.log(`  ${failure.status}: ${failure.ideaSlug} (${failure.errorKind}${detail})`);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -273,7 +273,12 @@ async function recordOutcome(
   });
   return await ctx.runMutation(internal.crew.seeds.recordResult, {
     itemId: item.itemId,
-    result: { kind: "failed", errorKind: error.kind, ...(costMicroUsd === undefined ? {} : { costMicroUsd }) },
+    result: {
+      kind: "failed",
+      errorKind: error.kind,
+      ...(error.detail === undefined ? {} : { errorDetail: error.detail }),
+      ...(costMicroUsd === undefined ? {} : { costMicroUsd }),
+    },
   });
 }
 

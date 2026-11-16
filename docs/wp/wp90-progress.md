@@ -184,3 +184,36 @@ Append-only progress log. Do not rely on chat history for project state.
   - `crew-social-pack@4` on Haiku, registry sample inputs: 5 of 5 pass zod after the two rules; about $0.001 each. Before them, 1 of 6 passed.
 - **Checks:** typecheck green, Convex tsc 0 errors, eslint clean on changed files, `npm test` exit 0, prompt lock 9 match (7 unchanged, 2 new).
 - **Not verified:** a Message Batches run of the new seed version. After merge and deploy, re-run the 5-idea spike.
+
+## 2026-11-16 - Small fix: keep the provider's message on a failed seed item
+
+- **Why.** The live seed re-run on prod (run `zd72txwgg442hzmypyx3aqert18jbtrg`, batch
+  `msgbatch_01J8S67Vo457F1EruQRXbqcV`, 2026-11-16) failed all five items as `bad_request` and charged nothing. That is
+  the same result the 2026-11-08 run reported, so #282 is not proven live. The cause could not be read, because the
+  batch adapter kept only the error type and dropped Anthropic's message. Locally, the request (`claude-opus-5-5`,
+  adaptive thinking, effort `medium`, 16,384 max tokens, `output_config.format`) and the seed schema as sent match the
+  documented structured-output limits. Details: `docs/wp/l1-release-plan.md` § Live seed run.
+- **Change.**
+  - `ProviderError` gains an optional `detail`: the provider's own message on one line, at most
+    `PROVIDER_ERROR_DETAIL_MAX` (300) characters (`providerErrorDetail` in `convex/ai/providers/types.ts`).
+  - The batch adapter's `errored` case keeps `error.error.message` as that detail.
+  - `seedsBatch` passes it to `recordResult`. The item stores it as `errorDetail`, and `runSummary` returns it.
+  - `crew:seeds --status` prints it after the kind, for example `failed: phone-neck-score-app (bad_request: …)`.
+- **Schema.** One additive optional field, `idea_seed_items.errorDetail`, in `convex/schema/workspace.ts`. That file
+  belongs to the Codex lane, so Codex should review this field. Existing rows are unaffected.
+- **Not changed.** Realtime (non-batch) calls still map a 400 to `bad_request` without the message. If the live
+  `bad_request` turns out to affect them as well, carry the message the same way there.
+- **Tests.** `tests/platform/wp90-seed-batch.test.ts`, three of them written first and failing before the fix:
+  - the scripted live adapter keeps an errored line's message, and an expired line has none;
+  - a long or multi-line message is put on one line and capped, and a message that is not text, or is blank, is
+    dropped;
+  - a failed item's detail reaches `runSummary.failures`.
+- **Checks:**
+  - `npm run typecheck`: exit 0.
+  - `npx tsc -p convex/tsconfig.json --noEmit`: exit 0.
+  - `npm run lint`: exit 0, 0 errors; the 45 warnings are in other files.
+  - `npm test`: exit 0, every suite passed (platform: 116 files, 2,897 tests).
+  - `npm run build`: exit 0.
+  - `check:prompt-versions`: 9 match.
+- **Next, after merge and deploy:** re-run `npm run crew:seeds -- --seed-version 2026-11-08.1 --prod --limit 5
+  --apply`. Then `--status` shows Anthropic's reason, and the real fix follows from it.
