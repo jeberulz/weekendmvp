@@ -15,7 +15,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Id } from "@/convex/_generated/dataModel";
 import { changeRoundNote, expiresInWords, isHexColour } from "@/lib/workspace/reviewPages";
 
-const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
 const READY_TEAM = {
   state: "ready",
   hired: [

@@ -10,7 +10,7 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `18dcb3fd` (#282). Open: **live calls still fail** (the 2026-11-16 seed run, the first since #282, failed all five items as `bad_request`; cause unknown), the five live launches, a11y-check on the merged screens, and the owner's ops settings. Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
+Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `18dcb3fd` (#282). Open: **live calls still fail** (the 2026-11-16 seed run, the first since #282, failed all five items as `bad_request`; cause unknown), the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
 
 Earlier (2026-11-06, later): **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
@@ -578,3 +578,48 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
 - Not recorded anywhere: the five live launches (L1-C4), the ops settings (owner step 4), the cohort invites, and
   an a11y-check after #267 restyled the screens.
 - Checks: docs only, `git diff --check`.
+
+## 2026-11-16 - L1 gate re-run: checks, walkthrough and a11y on the merged tree
+
+- Branch `claude/l1-gate-1116` (worktree `.worktrees/l1-gate-1116`, from `origin/main` `45ac7371`).
+- Full checks after `npm ci`: typecheck 0; lint 0 errors, 45 warnings; `npm test` 6,659 passed, 0 failed; build 0.
+- L1-C3 walkthrough re-run on a local fixture backend (zero spend): idea page, wizard, Meet your co-founder,
+  dashboard, chat, Email approve, Team HQ, Brand kit, Social, Files, employee pages. No blockers.
+- a11y-check in a real browser on every L1 screen at 1440px and the dashboard and chat drawer at 375px: pass.
+  Not done: VoiceOver, and failed or paused launch states.
+- Findings F1–F6 in `docs/wp/l1-release-plan.md` § Gate re-run (2026-11-16). Two to fix before invites: F1 (chat
+  offers "Start sending this email sequence" while sending is off) and F2 (free change rounds read "1 left" on a
+  fresh draft; two are promised).
+- Gate lines now open: the live `bad_request`, five live launches, cron ticking on prod, and the ops settings.
+- Checks for this entry: docs only, `git diff --check`.
+
+## 2026-11-16 - L1 F1 and F2 fixed (branch `claude/l1-gate-1116`)
+
+- F1: Wren is no longer offered, and cannot raise, an approval card for an action whose kill switch is on
+  (`approvalKindSwitchedOn` in `convex/ops/settings.ts`, used by `approvableSubjects` and `raiseApprovalCard`). In
+  L1 that removes "Start sending this email sequence" and any post or publish card from chat. Security allowlist
+  (`tests/security/wp77-wren-tools-cards-only.test.mjs`) widened by those two read-only C-OPS names. Tests: three in
+  `convex/workspace/wrenTools.test.ts`, one in `convex/workspace/chat.test.ts`; the fixture-reply test now opens
+  `social` to keep covering the raise path.
+- F2: review pages count the previewed free round as the founder's (`previewLine` in `lib/workspace/emailPage.ts`),
+  so a fresh draft says 2 free rounds left. Page test mocks corrected to the server's real preview values.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0 (2,897 platform tests plus the Convex,
+  security and node suites), build 0. Browser, against the local fixture backend: Brand kit and Social both read
+  "2 free rounds of changes left." on a fresh draft. F1 is covered by tests only, because the local backend runs
+  main's Convex code. a11y: only the number in a sentence changed, so no markup changed and nothing new to audit.
+
+## 2026-11-16 - L1 F3-F6 (branch `claude/l1-gate-1116`)
+
+- F3: wizard Name step line now "A name is pre-selected. Keep it or type your own." (`lib/workspace/wizard/copy.ts`).
+- F4: checked on a production build; the leftover hidden `S:0` copy comes from React's frame-gated streaming reveal
+  when the page runs no animation frames (hidden pane, background tab). Hidden and after the visible copy; left as is.
+- F5: a written launch step with an open review reads "Waiting on you" on the employee page and Team HQ (new step
+  pill state `needs_you`). Confirmed on the production build: blueprint, brand kit and social read Waiting on you,
+  email (approved) reads Done.
+- F6: `businessLimitFor` (`convex/workspace/business.ts`) is shared by `createBusiness`, `startOrResume` (refuses a
+  new session at the allowance, before spending a wizard start) and `getSession` (`businessLimit`), so a resumed
+  session opens on "Your plan is full." with a link to the founder's business. A missing field reads as no limit.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0, build 0. New tests: two Convex
+  (`business.test.ts`), two wizard UI with axe (`wp74-business-ui.test.tsx`), one step pill (`workspace-team-hq-helpers`).
+  a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
+  says "Waiting on you" in words, never colour alone.

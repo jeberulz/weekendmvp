@@ -26,8 +26,9 @@ the gate open:
   Until it runs, or an operator seeds by hand, an unseeded idea shows the generic "Not yet validated" blueprint step.
 - **Owner steps 4–5** (ops settings, cohort) are not recorded in the repo.
 
-What is left, in order: find and fix the live `bad_request`, get one live seed run to pass, run the five live launches and record them, run a11y-check on
-every screen that ships without a record, confirm the ops settings, then invite the beta.
+What is left, in order: find and fix the live `bad_request`, get one live seed run to pass, run the five live launches and record them, confirm the ops settings, then invite the beta.
+The full checks and the a11y-check on the merged tree passed on 2026-11-16 (see "Gate re-run (2026-11-16)"); that
+walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed on `claude/l1-gate-1116`.
 
 ## What ships Monday
 
@@ -63,7 +64,7 @@ say "Coming soon" for each, so nothing looks broken.
 | L1-C8 | Homepage own-idea link | Merged (#270) | Canvas Main board: "Have your own idea? Start building with it" under the hero buttons and in the final call, through sign-up to `/start/own`. Behind the same flag as "Build this idea, free", so in `allowlist` mode only a signed-in cohort member sees it. `/start/own` joins the sign-in return allowlist as a bare path (a query collapses to `/dashboard`); the allowlist is shared with Convex Auth, so it ships with the Convex deploy |
 | L1-C9 | Build entry points for signed-in testers | Merged (#272) | Owner request, 2026-11-07: signed-in testers had no way into the wizard except the homepage. A verified member on an idea page gets "Build this idea, free" beside Save, straight to `/start/{slug}` with no sign-up hop. This reverses the WP74-S5 rule of no CTA for members. `/dashboard` gets a "Start building" card, straight to `/start/own`, with a secondary link to the workspace library. Both sit behind the same flag (`buildCtaVisible`), and off, the pages are unchanged. Owner's call (b), same day: in `allowlist` mode signed-out visitors see the CTAs too (`buildCta:buildCtaVisible`), and a signed-in founder who is not on the allowlist gets "You're not in the beta yet" at `/start` instead of a 404 (`buildCta:awaitingInvite`, asked only after the wizard gate refuses). A signed-in non-member still sees no CTA. The Convex change ships with the Convex deploy. The wizard re-checks access |
 | L1-C9 | Team and lead name decided by the idea | Merged as WP91 (#279). This id is used twice; this row is the roster one | `docs/wp/roster-per-idea/PLAN.md` (owner decisions 2026-11-07, RULINGS). S1: the chat uses the founder's lead name (today it always says "Wren"). S2: varied lead-name suggestions. S2b: about 6 lead avatars (one-time image spend, confirm first). S3–S5: the blueprint call proposes the team with a fallback to today's rules; core Lead, Brand, Email, Social. If S3–S5 slip, S1–S2 ship alone and the fallback keeps launches safe |
-| L1-C3 | Local fixture walkthrough | Done 2026-11-07; blockers fixed in #261 and #267 | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
+| L1-C3 | Local fixture walkthrough | Done 2026-11-07; blockers fixed in #261 and #267. Re-run on `45ac7371` 2026-11-16: no blockers, findings F1–F6 below | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
 | L1-C4 | Five live test launches | **Open.** Not recorded. Needs #282 (merged) and a passing live seed run first | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 
 ### Codex lane (ship gates for the launch)
@@ -106,16 +107,87 @@ Status 2026-11-16 in brackets.
 
 Status 2026-11-16 in brackets.
 
-- `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass on the merged tree. (Each PR ran its
-  checks, and the Production build of `18dcb3fd` passed. A full run on the merged tree is not recorded.)
+- `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass on the merged tree. (**Passed
+  2026-11-16 on `45ac7371`** after a clean `npm ci`: typecheck 0, lint 0 errors and 45 warnings, `npm test` 6,659
+  passed and 0 failed across all suites, build 0. See "Gate re-run (2026-11-16)" below.)
 - Codex 13 and 18 live. (Merged and deployed; ticking on prod not recorded.)
 - Five live launches complete, with both pools together under the $10 daily cap, median cost per launch ≤ $0.75. Any step failure is
   understood and either fixed or accepted in writing. (**Open.**)
-- a11y-check passes on every screen that ships. (Recorded for Brand kit and Team HQ on 2026-11-07 and for the chat in
-  WP77-S6, both before #267 restyled the screens. **Re-run on the merged tree.**)
+- a11y-check passes on every screen that ships. (**Passed 2026-11-16 on `45ac7371`**, local fixture backend, in a
+  real browser: wizard, Meet your co-founder, dashboard with the chat column (1440px) and drawer (375px), Team HQ,
+  Brand kit, Email, Social, Files and two employee pages. No screen-reader pass. See "Gate re-run (2026-11-16)".)
 - Nothing sends, posts or publishes: the kill switches above are on. (Not recorded; see owner step 4.)
 
 The full G2 (20 live launches) runs during the beta, before L2.
+
+## Gate re-run (2026-11-16)
+
+Merged tree `45ac7371`, branch `claude/l1-gate-1116`, worktree `.worktrees/l1-gate-1116`, after `npm ci`.
+
+| Check | Exit | Result |
+|---|---|---|
+| `npm run typecheck` | 0 | no errors |
+| `npm run lint` | 0 | 0 errors, 45 existing warnings |
+| `npm test` | 0 | 6,659 passed, 0 failed (every chained suite, including `test:engine` and `test:editorial`) |
+| `npm run build` | 0 | build completed |
+
+**Walkthrough (L1-C3 re-run).** Local fixture backend (`AI_PROVIDER_MODE` unset, zero spend), test founder
+`founder-a@example.test`, idea `ai-protein-tracker`. Idea page "Build this idea, free" → wizard (8 steps) → Meet
+your co-founder (Ezra, 8 hired, 5 skipped, both links into the workspace) → dashboard (5 of 5 ready, 4 pending
+cards) → a chat question to Ezra (fixture reply listing every open review) → Email "Approve all 4" (focus moves to
+the status, live message "Sending is off during the beta") → Team HQ, Brand kit, Social, Files, employee pages for
+Iris and Leo. The founder was at the free plan's one-business limit, so the local `addBusiness` helper created the
+business, as before.
+
+**a11y-check.** In-browser script on each screen: heading order (one h1, no skips), names on every button and link,
+labels on every input, `alt` on every image, no stray SVGs, no `style` attributes in `main`, no horizontal scroll,
+and WCAG contrast on every visible text node (4.5:1, 3:1 for large text). Result: pass on every screen, with no
+contrast failures. Keyboard: focus rings visible (Meet's links measure 6.4:1 on their dark panel). The 375px chat
+drawer moves focus to its close button, keeps Tab inside, closes on Escape and returns focus to "Chat with Ezra".
+Not done: a VoiceOver pass, and the failed or paused launch states (the fixture launch always completes).
+
+**Findings** (none blocks the gate):
+
+- **F1 (fix before invites): a "Start sending this email sequence" card in chat.** Besides the Email page's review
+  card (`artifact_review` on the document), Wren can raise a `send` card on the draft sequence
+  (`approvableSubjects` in `convex/workspace/chat.ts`; title from `approvalCardTitle` in `lib/workspace/wrenCards.ts`).
+  The fixture reply does, and a live Wren reply can. In L1 the founder sees an Approve button on "Start sending this
+  email sequence" while sending is off, and approves the same four emails twice. After the click the card says
+  "Approved. Sending is off during the beta, so nothing goes out yet", so nothing misleads after approval, but the
+  title does before it. **Fixed on `claude/l1-gate-1116`:** `approvalKindSwitchedOn` (`convex/ops/settings.ts`) maps
+  `publish`, `send`, `post` and `ad_launch` to their kill switches. `approvableSubjects` leaves a switched-off kind out
+  of what Wren is offered, and `raiseApprovalCard` refuses (and does not reuse) a card of that kind, so a live model
+  naming an id it was not offered is refused too. Review and spend cards are unaffected.
+- **F2 (fix before invites): the free change round count is off by one.** Email, Brand kit and Social show
+  "1 free round of changes left." on a fresh draft, while Meet your co-founder and the "Asking for changes" help say
+  two free rounds per piece. `freeRoundsLeft` (`lib/workspace/changeRounds.ts`) is the count left after the round
+  being previewed, and `freeRoundsCopy` (`lib/workspace/emailPage.ts`) prints it as the current count. **Fixed on
+  `claude/l1-gate-1116`:** `previewLine` counts the previewed round as still the founder's (`freeRoundsLeft + 1`), so a
+  fresh draft reads "2 free rounds of changes left." The server contract is unchanged. The page tests had mocked the
+  preview with values the server never sends (round 1 with 2 left), which hid the bug; they now use the real ones.
+- **F3 (low): the wizard Name step** says "Alternatives are there if you want them" with only one name shown (no
+  seed, fixture). Recheck once a seed exists. **Fixed on `claude/l1-gate-1116`:** the line now reads "A name is
+  pre-selected. Keep it or type your own." (`lib/workspace/wizard/copy.ts`), true with one name or several.
+- **F4 (low): duplicate ids on a full page load.** A hidden React streaming container (`<div hidden id="S:0">`) stays
+  in the DOM with a second copy of the shell (`workspace-main`, `workspace-nav-panel`, the chat). Hidden, so screen
+  readers skip it; seen in `next dev` only, not checked on a production build. **Checked 2026-11-16 on a production
+  build (`next start`): not a code bug, left as is.** The dashboard had no leftover; Team HQ did, but only because the
+  test browser pane was hidden and ran no animation frames (`requestAnimationFrame` never fired). React 19.2 reveals
+  streamed content on an animation frame (`$RV`); with none, the client hydrated first and the server swap found
+  nothing to do, so the hidden copy stays. A founder who opens a page in a background tab can see the same. The copy
+  is `hidden` (screen readers skip it) and sits at the end of `<body>`, so the skip link and `getElementById` reach
+  the visible copy first. Removing React's streaming nodes ourselves would be riskier than the leftover.
+- **F5 (low): the employee page** for Iris lists "Brand kit · Done" under Now and next while its review card waits.
+  **Fixed on `claude/l1-gate-1116`:** a written step whose review is still open reads "Waiting on you" (new step pill
+  state `needs_you`, `stepPillStatus` in `lib/workspace/teamHq.ts`) on the employee page and on Team HQ's launch
+  steps. It reads Done once the review is decided.
+- **F6 (low): an at-limit founder** who resumes an older wizard session can finish all eight steps before "Create my
+  business" refuses. New sessions are refused at the start (#273), so only old sessions reach this. **Fixed on
+  `claude/l1-gate-1116`:** #273 only covered the daily start limit; nothing checked the business allowance before
+  "Create my business". Now `startOrResume` refuses a new session at the allowance (before spending a wizard start,
+  with a link to the founder's business), and `getSession` returns `businessLimit` for a session with no business,
+  so a resumed one opens on "Your plan is full." instead of the steps. `businessLimitFor`
+  (`convex/workspace/business.ts`) is the one rule both use with `createBusiness`.
 
 ## Local walkthrough findings (2026-11-07, fixture mode)
 

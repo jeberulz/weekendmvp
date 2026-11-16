@@ -131,6 +131,8 @@ const STRICT_FILES = {
     ["../../lib/workspace/wrenCards", null],
     ["../../lib/workspace/contracts/approvals", ["isPendingApprovalStale"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_APPROVAL_SUBJECTS", "WrenApprovalKind"]],
+    // L1 F1: a read-only C-OPS check that narrows what may be raised.
+    ["../ops/settings", ["approvalKindSwitchedOn", "getOpsSettings"]],
     ["./approvals", [
       "approvalKindValidator", "approvalStatusValidator", "createApprovalRecord", "readSubjectState", "subjectRefusal",
       "SubjectState",
@@ -148,7 +150,8 @@ const CHAT_IMPORTS = {
     ["../_generated/api", ["internal"]],
     ["../_generated/dataModel", ["Doc", "Id"]],
     ["../_generated/server", ["internalMutation", "internalQuery", "mutation", "query", "MutationCtx", "QueryCtx"]],
-    ["../ops/settings", ["assertFeatureEnabled"]],
+    // `approvalKindSwitchedOn` + `getOpsSettings`: L1 F1, Wren is not offered cards for switched-off actions.
+    ["../ops/settings", ["approvalKindSwitchedOn", "assertFeatureEnabled", "getOpsSettings"]],
     ["../platform/authz", ["requireBusinessAccess", "requireBusinessForOwner"]],
     ["../platform/limits", ["checkLimit"]],
     ["../ai/prompts/wrenChat", ["wrenChatSpec"]],

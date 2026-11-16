@@ -84,6 +84,7 @@ function viewAt(index: number, completed = false, business: WizardSessionView["b
     hints: {},
     crew: null,
     business,
+    businessLimit: null,
   };
 }
 

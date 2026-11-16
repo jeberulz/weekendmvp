@@ -54,6 +54,7 @@ function view(step: WizardSessionView["step"], stepIndex: number, completed = fa
     hints: {},
     crew: null,
     business: null,
+    businessLimit: null,
   };
 }
 

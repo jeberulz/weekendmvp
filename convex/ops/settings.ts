@@ -94,6 +94,26 @@ function assertSwitchOpen(settings: OpsSettings, feature: WorkspaceFeature): voi
   }
 }
 
+/** The kill switch behind the action an approval card of this kind would allow. Review and spend cards have none. */
+const APPROVAL_KIND_SWITCH: Readonly<Record<string, "publish" | "email" | "social" | "ads">> = Object.freeze({
+  publish: "publish",
+  send: "email",
+  post: "social",
+  ad_launch: "ads",
+});
+
+/**
+ * Whether a card of this approval kind may be raised now (L1 F1). A card for a
+ * switched-off action would ask the founder to approve something that cannot
+ * happen, so Wren is not offered one and cannot raise one. Kinds with no
+ * switch (reviews, spend) are always allowed here; other gates still apply.
+ */
+export function approvalKindSwitchedOn(settings: OpsSettings, kind: string): boolean {
+  const feature = APPROVAL_KIND_SWITCH[kind];
+  if (feature === undefined) return true;
+  return settings.workspaceEnabled && !settings.killSwitches[feature];
+}
+
 async function assertOwnerInCohort(
   ctx: OpsReadCtx,
   settings: OpsSettings,

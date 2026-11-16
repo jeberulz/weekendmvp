@@ -25,7 +25,7 @@ import {
   SOCIAL_PLATFORM_MARKS,
 } from "@/lib/workspace/socialPage";
 
-const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
 const live: { view: unknown; preview: unknown } = { view: undefined, preview: FREE_PREVIEW };
 const decideMock = vi.fn();
 

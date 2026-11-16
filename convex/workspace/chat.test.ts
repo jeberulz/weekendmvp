@@ -733,6 +733,10 @@ describe("L1 the fixture Wren reply reads like Wren, built from the business", (
     const seeded = await seed();
     const { t, ids } = seeded;
     const postId = await t.run(async (ctx) => {
+      // Social is switched on here so a post card can be raised (L1 F1 withholds it while off; see below).
+      const ops = await ctx.db.get("ops_settings", ids.opsId);
+      if (ops === null) throw new Error("ops settings missing");
+      await ctx.db.patch("ops_settings", ids.opsId, { killSwitches: { ...ops.killSwitches, social: false } });
       // The crew's open review on the brand kit (Team HQ "Waiting on you").
       await ctx.db.insert("approvals", {
         ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
@@ -771,6 +775,36 @@ describe("L1 the fixture Wren reply reads like Wren, built from the business", (
     expect(card).toHaveLength(1);
     // The meter saw it like any turn: one settled fixture attempt.
     expect(await usageRows(t)).toHaveLength(1);
+  });
+
+  test("L1 F1: with email and social off, the reply names the reviews and offers no send or post card", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const sequenceId = await t.run(async (ctx) => {
+      await ctx.db.insert("approvals", {
+        ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review", subjectTable: "documents",
+        subjectId: ids.docId, status: "pending", changeRound: 0n, createdAt: FIXED_NOW - 1_000, updatedAt: FIXED_NOW - 1_000,
+      });
+      await ctx.db.insert("social_posts", {
+        ownerId: ids.ownerId, projectId: ids.projectId, status: "copy_ready", createdAt: 2, updatedAt: 2,
+      });
+      return await ctx.db.insert("sequences", {
+        ownerId: ids.ownerId, projectId: ids.projectId, status: "draft", title: "Waitlist launch sequence",
+        createdAt: 2, updatedAt: 2,
+      });
+    });
+
+    const turn = await sendTurn(seeded, "What needs my approval right now?");
+    await runTurn(t, turn, createAnthropicAdapter({ env: {} }));
+
+    const reply = (await thread(seeded)).at(-1);
+    expect(reply).toMatchObject({ author: "wren", status: "done" });
+    expect(reply?.body).toContain("- Brand kit: review it on the Brand kit page.");
+    expect(reply?.body).not.toContain("approve it on the card");
+    expect(reply?.cards).toEqual([]);
+    const cards = await t.run(async (ctx) =>
+      await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", sequenceId)).collect());
+    expect(cards).toEqual([]);
   });
 
   test("a free-form message gets an honest, Wren-voiced reply, never the bare word", async () => {

@@ -103,13 +103,56 @@ export function wizardErrorMessage(error: unknown): string {
     }
     if (data.code === "BUSINESS_LIMIT_REACHED") {
       const limit = "limit" in error.data && typeof error.data.limit === "number" ? error.data.limit : 1;
-      return limit === 1
-        ? "Your plan includes one business, and you already have it."
-        : `Your plan includes ${limit} businesses, and you have used them all.`;
+      return businessLimitCopy(limit);
     }
     if (typeof data.code === "string" && ERROR_COPY[data.code]) return ERROR_COPY[data.code];
   }
   return "Something went wrong. Try again.";
+}
+
+/** The line for a founder at the business allowance (same words as the "Create my business" refusal). */
+export function businessLimitCopy(limit: number): string {
+  return limit === 1
+    ? "Your plan includes one business, and you already have it."
+    : `Your plan includes ${limit} businesses, and you have used them all.`;
+}
+
+/**
+ * L1 F6: a resumed session whose owner is already at the business allowance
+ * says so as soon as it opens, instead of after all eight steps.
+ */
+function BusinessLimitNotice({
+  limit,
+  existingBusinessHref,
+  headingRef,
+}: {
+  limit: number;
+  existingBusinessHref: string | null;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+}) {
+  const base = useId();
+  return (
+    <section aria-labelledby={`${base}-heading`} className="flex w-full max-w-[672px] flex-col gap-6">
+      <ScreenHead
+        headingId={`${base}-heading`}
+        headingRef={headingRef}
+        lead="Your plan is "
+        italic="full"
+        tail="."
+        sub="Your answers here are saved, but this build can't become a new business on your plan."
+      />
+      <p role="status" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+        {businessLimitCopy(limit)}
+      </p>
+      {existingBusinessHref ? (
+        <p className="text-sm">
+          <Link href={existingBusinessHref} className={cn("font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+            Open your business
+          </Link>
+        </p>
+      ) : null}
+    </section>
+  );
 }
 
 /** The own-idea route for a session; `?session=` makes a reload resume it. */
@@ -235,7 +278,10 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     started.current = true;
     startOrResume({ idea })
       .then((id) => setSessionId(id))
-      .catch((caught: unknown) => setError(wizardErrorMessage(caught)));
+      .catch((caught: unknown) => {
+        setRefusal(businessRefusal(caught));
+        setError(wizardErrorMessage(caught));
+      });
   }, [idea, sessionId, startOrResume]);
 
   // A library session rewritten as an own idea now belongs to `/start/own`:
@@ -306,8 +352,11 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
           ? { href: `/ideas/${encodeURIComponent(ideaSlug)}` }
           : null;
 
-  const onStep = view !== undefined && !view.completed && view.business === null;
-  const showAside = parsed !== null && view !== undefined && view.business === null;
+  // `?? null`: a backend from before L1 F6 sends no field, which must read as no limit.
+  const limitNotice = view === undefined || view.business !== null ? null : (view.businessLimit ?? null);
+  const blocked = limitNotice !== null;
+  const onStep = view !== undefined && !view.completed && view.business === null && !blocked;
+  const showAside = parsed !== null && view !== undefined && view.business === null && !blocked;
   // WP90-S4: the crew preview shows once the blueprint is reviewed, while the founder answers the rest.
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
@@ -318,9 +367,18 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       <>
         <h1 className="sr-only">{title === null ? "Build your idea" : `Build ${title}`}</h1>
         {error ? (
-          <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
-            {error}
-          </p>
+          <div className="flex flex-col gap-3">
+            <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+              {error}
+            </p>
+            {refusal?.existingBusinessHref ? (
+              <p className="text-sm">
+                <Link href={refusal.existingBusinessHref} className={cn("font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+                  Open your business
+                </Link>
+              </p>
+            ) : null}
+          </div>
         ) : (
           <LoadingState label="Opening your build…" />
         )}
@@ -332,6 +390,14 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         answers={parsed.answers}
         business={view.business}
         ideaTitle={view.ideaTitle}
+        headingRef={headingRef}
+      />
+    );
+  } else if (limitNotice !== null) {
+    body = (
+      <BusinessLimitNotice
+        limit={limitNotice.limit}
+        existingBusinessHref={limitNotice.projectId === null ? null : workspacePath(limitNotice.projectId)}
         headingRef={headingRef}
       />
     );

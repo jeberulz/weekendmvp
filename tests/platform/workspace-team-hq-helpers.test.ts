@@ -271,6 +271,15 @@ describe("workstream links, plan, why rows", () => {
     expect(stepPillStatus({ state: "paused", notBuilt: false })).toBe("paused");
   });
 
+  test("L1 F5: a written step whose review is still open reads Waiting on you, not Done", () => {
+    const open = new Set(["brand_kit", "roster_plan"]);
+    expect(stepPillStatus({ key: "brand_kit", state: "succeeded", notBuilt: false }, open)).toBe("needs_you");
+    expect(stepPillStatus({ key: "roster", state: "succeeded", notBuilt: false }, open)).toBe("needs_you");
+    expect(stepPillStatus({ key: "email_sequence", state: "succeeded", notBuilt: false }, open)).toBe("done");
+    expect(stepPillStatus({ key: "brand_kit", state: "running", notBuilt: false }, open)).toBe("working");
+    expect(stepPillStatus({ key: "brand_kit", state: "succeeded", notBuilt: false })).toBe("done");
+  });
+
   test("planGroups puts built steps first, grouped by owner, then coming later", () => {
     const steps = [
       step("blueprint", "lead", "succeeded"),

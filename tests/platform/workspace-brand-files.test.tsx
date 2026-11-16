@@ -20,7 +20,7 @@ vi.mock("convex/react", async () => {
     useQuery: (ref: Parameters<typeof getFunctionName>[0], args: unknown) => {
       if (args === "skip") return undefined;
       const name = getFunctionName(ref);
-      if (name.includes("previewChangeRound")) return { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+      if (name.includes("previewChangeRound")) return { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
       if (name.includes("brandKitDraft")) return live.brand;
       throw new Error(`unexpected query ${name}`);
     },

@@ -140,7 +140,11 @@ export type ChangeRoundAnswer =
   | { readonly outcome: "spend_required"; readonly costCredits?: number }
   | { readonly outcome: "not_available"; readonly reason: string };
 
-/** What `previewChangeRound` says "Ask for changes" would be, before the founder clicks. */
+/**
+ * What `previewChangeRound` says "Ask for changes" would be, before the founder clicks.
+ * `freeRoundsLeft` is the server's count AFTER the previewed round is taken
+ * (`FREE_CHANGE_ROUNDS - changeRound`), so a fresh draft previews round 1 with 1 left.
+ */
 export type ChangePreview =
   | { readonly outcome: "free"; readonly freeRoundsLeft: number }
   | { readonly outcome: "spend_required"; readonly costCredits: number }
@@ -193,7 +197,8 @@ export function previewLine(
   const { preview } = state;
   switch (preview.outcome) {
     case "free": {
-      const left = freeRoundsCopy(preview.freeRoundsLeft);
+      // Before the click the previewed round is still the founder's, so it counts (L1 F2): a fresh draft has 2 left.
+      const left = freeRoundsCopy(preview.freeRoundsLeft + 1);
       return cardStatus === "changes_requested" ? `You can ask for changes again. ${left}`.trim() : left || null;
     }
     case "spend_required":

@@ -792,6 +792,67 @@ describe("WP77-S4 review fixes: reuse only a card that can still be approved", (
   });
 });
 
+describe("L1 F1: no approval card for an action whose kill switch is on", () => {
+  async function switchOff(seeded: Seeded, switches: Partial<Doc<"ops_settings">["killSwitches"]>) {
+    await seeded.t.run(async (ctx) => {
+      const ops = await ctx.db.query("ops_settings").withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique();
+      if (ops === null) throw new Error("ops settings missing");
+      await ctx.db.patch("ops_settings", ops._id, { killSwitches: { ...ops.killSwitches, ...switches } });
+    });
+  }
+
+  test("with publish, email and social off (the L1 beta), Wren is offered none of them and raising one is refused", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await switchOff(seeded, { publish: true, email: true, social: true });
+    const before = await snapshot(t);
+    const { reply, requests } = await attack(seeded, "Send the emails, post the posts and publish the site.", [
+      { tool: "approval_card", kind: "send", subjectTable: "sequences", subjectId: ids.own.sequenceId },
+      { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: ids.own.postId },
+      { tool: "approval_card", kind: "publish", subjectTable: "site_versions", subjectId: ids.own.readyVersionId },
+    ]);
+    const system = systemText(requests[0]);
+    expect(system).not.toContain(ids.own.sequenceId);
+    expect(system).not.toContain(ids.own.postId);
+    expect(system).not.toContain(ids.own.readyVersionId);
+    expect(reply.cardApprovalIds).toEqual([]);
+    expect((await refusalAudit(t, reply._id)).refused).toEqual([
+      { index: 0, code: "subject_refused" },
+      { index: 1, code: "subject_refused" },
+      { index: 2, code: "subject_refused" },
+    ]);
+    const after = await snapshot(t);
+    expect(after.approvals).toBe(before.approvals);
+  });
+
+  test("only the switched-off kind is withheld: email off still offers and raises a post card", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await switchOff(seeded, { email: true });
+    const { reply, requests } = await attack(seeded, "What can I approve?", [
+      { tool: "approval_card", kind: "send", subjectTable: "sequences", subjectId: ids.own.sequenceId },
+      { tool: "approval_card", kind: "post", subjectTable: "social_posts", subjectId: ids.own.postId },
+    ], true);
+    const system = systemText(requests[0]);
+    expect(system).not.toContain(ids.own.sequenceId);
+    expect(system).toContain(ids.own.postId);
+    expect(reply.cardApprovalIds).toHaveLength(1);
+    const raised = await t.run(async (ctx) => await ctx.db.get("approvals", reply.cardApprovalIds[0]));
+    expect(raised).toMatchObject({ kind: "post", subjectTable: "social_posts", status: "pending" });
+  });
+
+  test("an existing pending send card is not reused while email is off", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const business = { ownerId: ids.ownerId, projectId: ids.own.projectId };
+    const card = { tool: "approval_card", kind: "send", subjectTable: "sequences", subjectId: ids.own.sequenceId } as const;
+    const first = await t.run(async (ctx) => await raiseApprovalCard(ctx, business, card));
+    expect(first).toMatchObject({ created: true });
+    await switchOff(seeded, { email: true });
+    await expect(t.run(async (ctx) => await raiseApprovalCard(ctx, business, card))).resolves.toBeNull();
+  });
+});
+
 describe("WP77-S4 review fixes: one bad card never costs the reply", () => {
   test("a 600-character field lands as done with that card refused, and the good card still raised", async () => {
     const seeded = await seed();
