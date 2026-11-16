@@ -9,26 +9,27 @@ L1 is invite-only (cohort `allowlist`), free only, no payments, nothing sends or
 ## Status on 2026-11-16
 
 **The build is done. The release is held at the L1 gate.** Every Claude-lane and Codex-lane item below is merged,
-and production deployed `18dcb3fd` (#282) on 2026-11-08. Nothing has merged since. Monday 2026-11-09 passed with
-the gate open:
+and production now runs `8d33b8f8` (#286, deployed 2026-11-16). Monday 2026-11-09 passed with the gate open:
 
 - **Live AI calls failed until #282.** The first live run on production (the 5-idea seed spike, 2026-11-08) was
   rejected by Anthropic for every prompt with a reply schema: Wren, both blueprint prompts, brand kit, email, social
   and the idea seed. Nothing was charged. #282 sends the schema in the accepted form. The L1 launches would have
   failed the same way before it.
-- **Live calls still fail after #282.** The owner re-ran the spike on 2026-11-16 (`--seed-version 2026-11-08.1
-  --prod --limit 5 --apply`). All five items failed again as `bad_request`, and nothing was charged. The cause is
-  unknown: see "Live seed run (2026-11-16)" below. **This blocks L1:** every crew step and Wren's chat use the same
-  request path.
+- **Live calls pass since #283.** The 15:33 spike on 2026-11-16 still failed all five as `bad_request`. The cause
+  was "The compiled grammar is too large" for the seed and social-pack schemas. #283 sends those two schemas in the
+  prompt instead. A live probe had found the other six reply schemas accepted. Two live runs after #283 wrote all five
+  seeds each, for about $0.28 a run: see "Live seed runs after #283" below. The other six schemas still go out as
+  `output_config`, so the five live launches are their first end-to-end test.
 - **Five live test launches (L1-C4): not recorded.** No cost or quality notes are in `wp67-progress.md`.
 - **The `Crew seeds` workflow skips every day.** It has run daily since 2026-11-09 and stops with "Crew seeds are
   not configured" because the `CONVEX_PROD_DEPLOY_KEY` secret or the `CREW_SEED_VERSION` variable is missing.
   Until it runs, or an operator seeds by hand, an unseeded idea shows the generic "Not yet validated" blueprint step.
 - **Owner steps 4–5** (ops settings, cohort) are not recorded in the repo.
 
-What is left, in order: find and fix the live `bad_request`, get one live seed run to pass, run the five live launches and record them, confirm the ops settings, then invite the beta.
+What is left, in order: run the five live launches and record them, confirm the ops settings and the recovery cron,
+then invite the beta. Setting the `Crew seeds` secrets is wanted but not a blocker.
 The full checks and the a11y-check on the merged tree passed on 2026-11-16 (see "Gate re-run (2026-11-16)"); that
-walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed on `claude/l1-gate-1116`.
+walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed in #286.
 
 ## What ships Monday
 
@@ -223,6 +224,19 @@ Five validated idea pages sent, none refused, $1.20 reserved at the batch rate.
      Console or with `GET /v1/messages/batches/msgbatch_01J8S67Vo457F1EruQRXbqcV/results` (read only, no spend).
   2. Small fix: keep a short form of the provider's error message on failed items, so `crew:seeds --status` prints
      it.
+
+## Live seed runs after #283 (2026-11-16)
+
+Both runs are on prod (`first-squirrel-244`, `AI_PROVIDER_MODE=live`), five validated ideas, $1.20 reserved at the
+batch rate:
+
+| Run | Version | Batch | Items | Charged |
+|---|---|---|---|---|
+| `zd7a1npxqamt378x3117fta7ed8jah05` (16:40 UTC) | `2026-11-16.1` | `msgbatch_01QzkEuKu8z8DaiToYbepQQN` | written 5 | $0.28 |
+| `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs` (17:01 UTC) | `2026-11-08.1` | `msgbatch_017vQ5TZixDK8hBRCinbX8MA` | written 5 | $0.27 |
+
+"Written" means each reply parsed, passed the zod check and passed the seed audit. A dry run at either version now
+reports all five "unchanged since their seed", so a re-run spends nothing. The live `bad_request` is closed.
 
 ## Known gaps accepted for L1
 

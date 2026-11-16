@@ -623,3 +623,14 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   (`business.test.ts`), two wizard UI with axe (`wp74-business-ui.test.tsx`), one step pill (`workspace-team-hq-helpers`).
   a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
   says "Waiting on you" in words, never colour alone.
+
+## 2026-11-16 - Live seed runs pass after #283
+
+- The live `bad_request` is closed. #283 sends the seed and social-pack schemas in the prompt, because the API refused
+  their grammar as too large. Two prod runs after it wrote all five seeds each: `zd7a1npxqamt378x3117fta7ed8jah05`
+  (`2026-11-16.1`, $0.28) and `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs` (`2026-11-08.1`, $0.27). Read with
+  `crew:seeds --status`, no spend. A dry run now finds all five unchanged, so nothing was re-sent.
+- Production runs `8d33b8f8` (#286).
+- Still open for L1: the five live launches (L1-C4, the first live test of the six `output_config` schemas), ops
+  settings and cohort (owner steps 4–5), the recovery cron on prod, and the `Crew seeds` secrets.
+- Checks: docs only, `git diff --check`.
