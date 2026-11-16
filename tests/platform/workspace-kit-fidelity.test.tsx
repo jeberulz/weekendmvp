@@ -75,6 +75,7 @@ describe("StatusPill step set and new states", () => {
     queued: "Queued",
     working: "Working",
     paused: "Paused",
+    needs_you: "Waiting on you",
     done: "Done",
     failed: "Failed",
     coming_soon: "Coming soon",

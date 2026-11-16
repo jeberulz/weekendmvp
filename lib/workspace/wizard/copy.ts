@@ -52,7 +52,7 @@ export const STEP_HEADS = {
     before: "What do we ",
     italic: "call",
     after: " it?",
-    sub: "A name is pre-selected. Alternatives are there if you want them.",
+    sub: "A name is pre-selected. Keep it or type your own.",
   },
   partner_personality: {
     before: "How should your co-founder ",

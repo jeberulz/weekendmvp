@@ -180,12 +180,15 @@ function NowAndNext({
   steps,
   hired,
   reach,
+  openReviewKinds,
 }: {
   profile: EmployeeProfile;
   lead: string;
   steps: readonly TeamStep[];
   hired: readonly TeamHired[];
   reach: Availability;
+  /** Kinds with a review still waiting, so a written draft reads Waiting on you, not Done (L1 F5). */
+  openReviewKinds: ReadonlySet<string>;
 }) {
   const mine = myLaunchSteps(profile.role, steps);
   const blockers = waitingOn(profile.role, steps, hired, lead);
@@ -207,7 +210,7 @@ function NowAndNext({
                 <span className="text-sm font-medium text-home-ink">{step.title}</span>
                 {step.reason === undefined ? null : <span className="text-xs text-home-ink-3">{step.reason}</span>}
               </span>
-              <StatusPill set="step" status={stepPillStatus(step)} />
+              <StatusPill set="step" status={stepPillStatus(step, openReviewKinds)} />
             </li>
           ))}
         </ol>
@@ -497,6 +500,7 @@ function Live({
 
   const steps: TeamStep[] = progress.steps;
   const open = openReviews(reviews, now);
+  const openKinds = new Set<string>(open.map((review) => review.kind));
   const reach = availability(role);
   const statusBox = (
     <HiredStatus profile={profile} lead={lead} reason={state.reason} steps={steps} open={open} activity={activity} reach={reach} />
@@ -507,7 +511,7 @@ function Live({
       <div className={SHELL}>
         {statusBox}
         {reach.kind === "coming_soon" ? (
-          <NowAndNext profile={profile} lead={lead} steps={steps} hired={roster.hired} reach={reach} />
+          <NowAndNext profile={profile} lead={lead} steps={steps} hired={roster.hired} reach={reach} openReviewKinds={openKinds} />
         ) : null}
         {job}
         {ask}
@@ -519,7 +523,7 @@ function Live({
     <div className={SHELL}>
       {statusBox}
       <WaitingOnYou profile={profile} reviews={open} now={now} />
-      <NowAndNext profile={profile} lead={lead} steps={steps} hired={roster.hired} reach={reach} />
+      <NowAndNext profile={profile} lead={lead} steps={steps} hired={roster.hired} reach={reach} openReviewKinds={openKinds} />
       <Deliverables projectId={projectId} profile={profile} activity={activity} />
       <Activity profile={profile} activity={activity} />
       {job}

@@ -399,15 +399,26 @@ export function launchErrorMessage(error: unknown): string {
 // Plan by owner
 // ---------------------------------------------------------------------------
 
-/** The step pill set: running reads Working, succeeded Done, an unbuilt step Coming soon, a roster-skipped one Skipped. */
-export function stepPillStatus(step: Pick<TeamStep, "state" | "notBuilt">):
-  "waiting" | "queued" | "working" | "paused" | "done" | "failed" | "coming_soon" | "skipped" {
+/** The review kind a launch step's draft goes to (the roster step's review is the roster plan). */
+export function stepReviewKind(stepKey: string): string {
+  return stepKey === "roster" ? "roster_plan" : stepKey;
+}
+
+/**
+ * The step pill set: running reads Working, succeeded Done, an unbuilt step Coming soon, a roster-skipped one Skipped.
+ * A succeeded step whose draft still has an open review reads Waiting on you, not Done (L1 F5), when the caller
+ * passes the open review kinds.
+ */
+export function stepPillStatus(
+  step: Pick<TeamStep, "state" | "notBuilt"> & { readonly key?: string },
+  openReviewKinds?: ReadonlySet<string>,
+): "waiting" | "queued" | "working" | "paused" | "needs_you" | "done" | "failed" | "coming_soon" | "skipped" {
   if (step.notBuilt) return "coming_soon";
   switch (step.state) {
     case "running":
       return "working";
     case "succeeded":
-      return "done";
+      return step.key !== undefined && openReviewKinds?.has(stepReviewKind(step.key)) === true ? "needs_you" : "done";
     default:
       return step.state;
   }

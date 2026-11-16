@@ -37,6 +37,7 @@ import {
 } from "../../lib/workspace/wizard/defaults";
 import { summarizeStep, type FounderSignalAction } from "../../lib/workspace/wizard/labels";
 import { mirrorSignal, recordFounderSignal } from "./signals";
+import { businessLimitFor } from "./business";
 
 /**
  * WP74-S1 launch wizard: eight steps (C-WIZARD `WIZARD_STEPS`, D10 — no SMS
@@ -173,6 +174,12 @@ const sessionViewValidator = v.object({
     v.null(),
     v.object({ projectId: v.id("projects"), name: v.string(), slug: v.string() }),
   ),
+  /**
+   * L1 F6: set when this session has no business yet and the owner's plan
+   * allowance is used, so the wizard says so up front instead of after the
+   * last step. `projectId` is the owner's own live business, when there is one.
+   */
+  businessLimit: v.union(v.null(), v.object({ limit: v.number(), projectId: v.union(v.id("projects"), v.null()) })),
 });
 export type WizardSessionView = Infer<typeof sessionViewValidator>;
 
@@ -527,6 +534,19 @@ export const startOrResume = mutation({
     const existing = await activeSessionFor(ctx, user._id, idea);
     if (existing) return existing._id;
 
+    // L1 F6: a founder at the business allowance cannot start a new build, so
+    // refuse before spending the wizard-start allowance. Resumed sessions
+    // above are told on the session view instead.
+    const atLimit = await businessLimitFor(ctx, user._id);
+    if (atLimit !== null) {
+      throw new ConvexError({
+        code: "BUSINESS_LIMIT_REACHED",
+        plan: atLimit.plan,
+        limit: atLimit.limit,
+        ...(atLimit.projectId === null ? {} : { projectId: atLimit.projectId }),
+      });
+    }
+
     // C-LIMITS: only a new session spends the daily wizard-start allowance. A
     // refusal throws here, so nothing below is written. It also needs the
     // `ai` feature, because the blueprint and roster spend AI right after start.
@@ -582,9 +602,21 @@ export const getSession = query({
       hints: hintsView(seed),
       crew: crewPreviewFor(seed.profile, answers, seed.defaults),
       business,
+      businessLimit: await sessionBusinessLimit(ctx, session, business !== null),
     };
   },
 });
+
+/** The session view's `businessLimit`: only for a session that has not made its business yet. */
+async function sessionBusinessLimit(
+  ctx: QueryCtx,
+  session: Doc<"wizard_sessions">,
+  hasBusiness: boolean,
+): Promise<{ limit: number; projectId: Id<"projects"> | null } | null> {
+  if (hasBusiness || session.projectId !== undefined) return null;
+  const atLimit = await businessLimitFor(ctx, session.ownerId);
+  return atLimit === null ? null : { limit: atLimit.limit, projectId: atLimit.projectId };
+}
 
 /** Saves the current step's answer (classified as `kept`, `changed` or `rewrote`) and moves on. */
 export const saveStep = mutation({

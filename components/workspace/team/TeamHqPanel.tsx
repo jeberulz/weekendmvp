@@ -113,7 +113,7 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
         </section>
       ) : null}
       <BlueprintView projectId={projectId} leadName={lead} />
-      <PlanByOwner projectId={projectId} started={progress.started} steps={steps} roster={roster.hired} />
+      <PlanByOwner projectId={projectId} started={progress.started} steps={steps} roster={roster.hired} openReviewKinds={new Set(open.map((review) => review.kind))} />
       {launch.state === "ready" ? (
         <>
           <SkippedRoles projectId={projectId} businessName={businessName} lead={lead} skipped={roster.skipped} />

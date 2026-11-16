@@ -166,13 +166,28 @@ Not done: a VoiceOver pass, and the failed or paused launch states (the fixture 
   fresh draft reads "2 free rounds of changes left." The server contract is unchanged. The page tests had mocked the
   preview with values the server never sends (round 1 with 2 left), which hid the bug; they now use the real ones.
 - **F3 (low): the wizard Name step** says "Alternatives are there if you want them" with only one name shown (no
-  seed, fixture). Recheck once a seed exists.
+  seed, fixture). Recheck once a seed exists. **Fixed on `claude/l1-gate-1116`:** the line now reads "A name is
+  pre-selected. Keep it or type your own." (`lib/workspace/wizard/copy.ts`), true with one name or several.
 - **F4 (low): duplicate ids on a full page load.** A hidden React streaming container (`<div hidden id="S:0">`) stays
   in the DOM with a second copy of the shell (`workspace-main`, `workspace-nav-panel`, the chat). Hidden, so screen
-  readers skip it; seen in `next dev` only, not checked on a production build.
+  readers skip it; seen in `next dev` only, not checked on a production build. **Checked 2026-11-16 on a production
+  build (`next start`): not a code bug, left as is.** The dashboard had no leftover; Team HQ did, but only because the
+  test browser pane was hidden and ran no animation frames (`requestAnimationFrame` never fired). React 19.2 reveals
+  streamed content on an animation frame (`$RV`); with none, the client hydrated first and the server swap found
+  nothing to do, so the hidden copy stays. A founder who opens a page in a background tab can see the same. The copy
+  is `hidden` (screen readers skip it) and sits at the end of `<body>`, so the skip link and `getElementById` reach
+  the visible copy first. Removing React's streaming nodes ourselves would be riskier than the leftover.
 - **F5 (low): the employee page** for Iris lists "Brand kit · Done" under Now and next while its review card waits.
+  **Fixed on `claude/l1-gate-1116`:** a written step whose review is still open reads "Waiting on you" (new step pill
+  state `needs_you`, `stepPillStatus` in `lib/workspace/teamHq.ts`) on the employee page and on Team HQ's launch
+  steps. It reads Done once the review is decided.
 - **F6 (low): an at-limit founder** who resumes an older wizard session can finish all eight steps before "Create my
-  business" refuses. New sessions are refused at the start (#273), so only old sessions reach this.
+  business" refuses. New sessions are refused at the start (#273), so only old sessions reach this. **Fixed on
+  `claude/l1-gate-1116`:** #273 only covered the daily start limit; nothing checked the business allowance before
+  "Create my business". Now `startOrResume` refuses a new session at the allowance (before spending a wizard start,
+  with a link to the founder's business), and `getSession` returns `businessLimit` for a session with no business,
+  so a resumed one opens on "Your plan is full." instead of the steps. `businessLimitFor`
+  (`convex/workspace/business.ts`) is the one rule both use with `createBusiness`.
 
 ## Local walkthrough findings (2026-11-07, fixture mode)
 

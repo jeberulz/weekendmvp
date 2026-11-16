@@ -607,3 +607,19 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   security and node suites), build 0. Browser, against the local fixture backend: Brand kit and Social both read
   "2 free rounds of changes left." on a fresh draft. F1 is covered by tests only, because the local backend runs
   main's Convex code. a11y: only the number in a sentence changed, so no markup changed and nothing new to audit.
+
+## 2026-11-16 - L1 F3-F6 (branch `claude/l1-gate-1116`)
+
+- F3: wizard Name step line now "A name is pre-selected. Keep it or type your own." (`lib/workspace/wizard/copy.ts`).
+- F4: checked on a production build; the leftover hidden `S:0` copy comes from React's frame-gated streaming reveal
+  when the page runs no animation frames (hidden pane, background tab). Hidden and after the visible copy; left as is.
+- F5: a written launch step with an open review reads "Waiting on you" on the employee page and Team HQ (new step
+  pill state `needs_you`). Confirmed on the production build: blueprint, brand kit and social read Waiting on you,
+  email (approved) reads Done.
+- F6: `businessLimitFor` (`convex/workspace/business.ts`) is shared by `createBusiness`, `startOrResume` (refuses a
+  new session at the allowance, before spending a wizard start) and `getSession` (`businessLimit`), so a resumed
+  session opens on "Your plan is full." with a link to the founder's business. A missing field reads as no limit.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0, build 0. New tests: two Convex
+  (`business.test.ts`), two wizard UI with axe (`wp74-business-ui.test.tsx`), one step pill (`workspace-team-hq-helpers`).
+  a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
+  says "Waiting on you" in words, never colour alone.
