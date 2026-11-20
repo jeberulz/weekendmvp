@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { AI_COSTS_BASE, ConsoleFallback, ConsoleShell, focusRing } from "@/components/admin/ai-costs/ConsoleShell";
+import { CapOverridePanel } from "@/components/admin/ai-costs/cap-override";
+import { StepUpBoundary } from "@/components/admin/ai-costs/StepUpBoundary";
 import {
   Card,
+  Notice,
   PageTitle,
   Section,
   StatGrid,
@@ -20,6 +23,8 @@ import {
 import { PLAN_LABELS, formatUtc } from "@/lib/admin/ai-costs/labels";
 import { chargedMicroUsd, formatCount, formatTokens, formatUsd } from "@/lib/admin/ai-costs/money";
 import { isRejectedInput } from "@/lib/admin/ai-costs/errors";
+import type { CapOverride } from "@/lib/admin/ai-costs/cap-override";
+import { readCapOverrides, type CapOverrides, type ControlsBackend, type StepUpState } from "@/lib/admin/ai-costs/controls-server";
 import { requireAiCostSource } from "@/lib/admin/ai-costs/server";
 import type { OwnerSummary, TimelineRow } from "@/lib/admin/ai-costs/types";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
@@ -90,6 +95,13 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
   }
   if (ownerId !== null && summary === null) notFound();
 
+  // Phase 3: a live raise for this founder, and whether raises can be made yet (Codex C2).
+  const { caps, backend: controls }: { caps: CapOverrides; backend: ControlsBackend | null } = summary
+    ? await readCapOverrides(source.mode)
+    : { caps: { available: false, overrides: [] }, backend: null };
+  const override: CapOverride | null = caps.overrides.find((candidate) => candidate.ownerId === ownerId) ?? null;
+  const stepUp: StepUpState | null = controls && caps.available ? await controls.stepUpState() : null;
+
   const title = ownerId === null ? "Platform (ownerless work)" : summary?.email ?? "Founder without an email";
   const pageCharged = page.page.reduce((sum, row) => sum + chargedMicroUsd(row), 0);
 
@@ -108,7 +120,13 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
         <Section id="founder-facts" title="Budgets and activity">
           <StatGrid label="Founder facts">
             <StatTile label="Plan" value={PLAN_LABELS[summary.plan]} detail={summary.inCohort ? "In the beta cohort" : "Not in the beta cohort"} />
-            <StatTile label="Today vs daily cap" value={formatUsd(summary.daySpentMicroUsd)} detail={`of ${formatUsd(summary.dayCapMicroUsd)} · ${formatUsd(summary.reservedMicroUsd)} reserved now`} />
+            <StatTile
+              label="Today vs daily cap"
+              value={formatUsd(summary.daySpentMicroUsd)}
+              detail={override
+                ? `of ${formatUsd(override.capMicroUsd)}, raised until ${formatUtc(override.expiresAt)} (plan cap ${formatUsd(summary.dayCapMicroUsd)}) · ${formatUsd(summary.reservedMicroUsd)} reserved now`
+                : `of ${formatUsd(summary.dayCapMicroUsd)} · ${formatUsd(summary.reservedMicroUsd)} reserved now`}
+            />
             <StatTile
               label="Lifetime free spend"
               value={summary.plan === "free" ? formatUsd(summary.freeLifetimeSpentMicroUsd) : "Paid plan"}
@@ -116,6 +134,33 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
             />
             <StatTile label="Businesses" value={`${formatCount(summary.businesses)}${summary.businessesTruncated ? "+" : ""}`} detail={`${formatCount(summary.launches)} launched · last active ${formatUtc(summary.lastActiveAt)}`} />
           </StatGrid>
+        </Section>
+      ) : null}
+
+      {summary && ownerId !== null ? (
+        <Section
+          id="cap-override"
+          title="Daily cap override"
+          description="Raise this founder's daily AI cap for a while, for a demo or a support case. Every raise is audited and ends on its own."
+        >
+          {caps.available && controls && stepUp ? (
+            <Card>
+              <StepUpBoundary live={controls.mode === "live"} stepUp={stepUp.stepUp}>
+                <CapOverridePanel
+                  ownerId={ownerId}
+                  label={summary.email ?? "this founder"}
+                  planCapMicroUsd={summary.dayCapMicroUsd}
+                  freePlan={summary.plan === "free"}
+                  override={override}
+                  signedInRecently={stepUp.signedInRecently}
+                />
+              </StepUpBoundary>
+            </Card>
+          ) : (
+            <Notice tone="info">
+              Raising one founder&apos;s cap needs a meter change that is not live yet (Codex request C2). Until it lands, this founder&apos;s cap is the plan&apos;s {formatUsd(summary.dayCapMicroUsd)} a day.
+            </Notice>
+          )}
         </Section>
       ) : null}
 

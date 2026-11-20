@@ -71,3 +71,30 @@ Append-only progress log. Do not rely on chat history for project state.
 - a11y-check: labelled inputs, switches named by feature, `aria-hidden` on the visible on/off text, h1 → h2 → h3, focusable table region with its own name. axe-core WCAG 2.1 A/AA + best practice with the risk step and remove form open: 0 violations at 1280 px and at mobile width, no horizontal page overflow.
 - Evidence: `docs/reviews/evidence/wp93-phase2-2026-11-20/` (fixture data).
 - Not done: nothing deployed, merged or applied; no prod read.
+
+## 2026-11-20 - Phase 3 built (cap override, console side)
+
+- The owner chose to build the console side of the per-founder cap override now, ahead of Codex C2. Branch `claude/wp93-phase3-cap-override` from `main` (`b1be06d5`).
+- Rules (`lib/admin/ai-costs/cap-override.ts`):
+  - a raise above the plan cap, at most $25 a day;
+  - ends in 1 hour, in 4 hours, or at midnight UTC (default), never later;
+  - a reason is required;
+  - setting one always needs a recent sign-in and the typed "confirm"; ending one is one click.
+  - New refusal codes: `CAP_TOO_HIGH`, `CAP_NOT_A_RAISE`, `CAP_REASON_REQUIRED`, `NOT_AVAILABLE`.
+- Data: `ControlsBackend` gains `stepUpState`, `capOverrides`, `setCapOverride` and `clearCapOverride`. Fixtures apply the rules and write `ops.cap_override.set` / `ops.cap_override.cleared` rows. Live mode reads nothing extra and refuses writes with `NOT_AVAILABLE` while `CAP_OVERRIDE_LIVE` is false. No Convex function and no Codex-owned file changed.
+- UI:
+  - the founder page has a "Daily cap override" section (the raise form, or the live raise with "End it now"); live shows a note until C2 lands;
+  - the cap tile and the founders table show a raised cap and when it ends;
+  - Recent changes on the Controls tab describe raises and ends;
+  - focus moves to the new status after a raise and back to the amount after an end.
+- `TableRegion` now names its scroll region "<heading> table", so it no longer repeats its section's name. This was axe `landmark-unique` (best practice) on every Phase 1 table.
+- `StepUpBoundary` moved to `components/admin/ai-costs/StepUpBoundary.tsx` so both pages share it.
+- Tests: `tests/admin-ai/cap-override.test.ts` (6): the rules, the fixture flow with every refusal, expiry and the early end, and live mode reading nothing.
+- Checks:
+  - typecheck ✅;
+  - lint 0 errors (45 warnings, none in WP93 files);
+  - `npm test`: every suite passes up to `check:ideabrowser-runtime`, the same untracked local skill files as before; `test:platform` (2,919) and `test:live` ✅ run alone;
+  - `npm run build`: the first run exited 1 at the Next.js security-advisory step after compiling every route; the run after the last change exited 0.
+- a11y: axe-core WCAG 2.1 A/AA + best practice, 0 violations on all six console pages at 1280 px, and on the founder page with the raise form at mobile width, with no horizontal overflow.
+- Evidence: `docs/reviews/evidence/wp93-phase3-2026-11-20/` (fixture data).
+- Not done: nothing deployed, merged or applied; no prod read.
