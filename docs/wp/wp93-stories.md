@@ -31,7 +31,7 @@ Thinking tokens are not metered apart: Anthropic bills thinking as output and `a
 
 ## Stories
 
-- [ ] `WP93-S1` - Bounded Convex reads (`convex/admin/aiCosts.ts`)
+- [x] `WP93-S1` - Bounded Convex reads (`convex/admin/aiCosts.ts`)
   - Scope: `usagePage` (one page of `ai_usage` rows in a time window, over the built-in `by_creation_time` index, projected to numbers), `ownerSummaries` (email, plan, `ai_budgets`, businesses, launches, cohort member), `launchCosts` (full per-business cost through `by_projectId_and_createdAt`), `ownerTimeline` (one owner's or the platform's calls, newest first, paginated, seed error details joined), `controlRoom` (ops settings, spend-alarm state, today's pool counters).
   - Acceptance criteria:
     - Each query refuses anyone but the bound super admin with `FORBIDDEN`.
@@ -39,18 +39,19 @@ Thinking tokens are not metered apart: Anthropic bills thinking as output and `a
     - No query returns `chat_messages` bodies, artifact text or business names.
   - Verification: `convex/admin/aiCosts.test.ts` (access refusal, pagination, projection, bounds).
 
-- [ ] `WP93-S2` - Pure aggregation and pricing helpers (`lib/admin/ai-costs/`)
+- [x] `WP93-S2` - Pure aggregation and pricing helpers (`lib/admin/ai-costs/`)
   - Scope: overview by range and pool, unit economics (median and p90 launch cost against $0.75, cost per Wren message, per seed, per active founder-day), by prompt, by model and tier, per owner, efficiency signals, what-if model swap (re-price real tokens at another Claude model's rates from `convex/ai/pricing.ts`), forecast, CSV.
   - Acceptance criteria:
     - Totals equal the integer sum of the meter's charge rule. A convex-test drives the real `reserve`/`settle`/`fail`/late `settle` mutations and checks the console's total equals the meter's own global and per-owner counters to the micro-dollar.
     - Every helper is pure and unit-tested on fixtures.
-  - Verification: `lib/admin/ai-costs/*.test.ts`, `convex/admin/aiCosts.test.ts`.
+  - Verification: `tests/admin-ai/ai-costs.test.ts` (`npm run test:admin-ai`, in the `npm test` chain), `convex/admin/aiCosts.test.ts`.
 
-- [ ] `WP93-S3` - Server data layer
+- [x] `WP93-S3` - Server data layer
   - Scope: `lib/admin/ai-costs/server.ts`: resolves the super admin on the server (live), or local fixtures (development with `EDITORIAL_FIXTURE_MODE=local-demo`, the editorial demo switch the middleware already honours). Loops `usagePage` up to a row cap and marks the range cut off when it stops early.
   - Acceptance criteria: anyone the backend cannot vouch for gets `notFound()`; a production build has no fixture path.
+  - Verification: the access probe is `controlRoom` (any refusal → 404); the fixture import sits behind `NODE_ENV !== "production"`, which Next inlines at build.
 
-- [ ] `WP93-S4` - Screens
+- [x] `WP93-S4` - Screens
   - Scope: `app/admin/ai/` — Overview (pools, alarm, calls, failures, unit economics, daily spend chart), Prompts and models (tables, share of spend, efficiency signals, what-if), Founders (one row per owner, CSV), Founder drill-down (call timeline, metadata only), Forecast (inputs → monthly cost next to Builder's Hub revenue).
   - Acceptance criteria: range switch Today / 7 days / 30 days; truncation is stated on screen; charts follow the `dataviz` skill and have a table or text equivalent; a11y-check passes; CSV export of the per-owner and per-prompt tables.
 
