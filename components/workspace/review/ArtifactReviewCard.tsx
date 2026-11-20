@@ -79,6 +79,16 @@ export type ArtifactReviewCardProps = {
   approveLabel?: string;
 };
 
+/** True when the server really took the decision: approved, or a free change round that was started. */
+export function decisionApplied(decision: "approve" | "request_changes", result: ReviewDecideResult): boolean {
+  if (decision === "approve") return result.status === "approved";
+  return (
+    result.changed &&
+    result.status === "changes_requested" &&
+    (result.changeRound === undefined || result.changeRound.outcome === "free")
+  );
+}
+
 function isRateLimited(error: unknown): boolean {
   if (!(error instanceof ConvexError)) return false;
   const data: unknown = error.data;
@@ -159,7 +169,9 @@ export function ArtifactReviewCard({ card, decide, preview, artifact, headingLev
     let keepOpen = false;
     void decide(decision, text)
       .then((result) => {
-        if (artifact.piece !== undefined) {
+        // Only a decision the server applied is a funnel event: an expired card or a change round that is
+        // not available resolves without error but did nothing.
+        if (artifact.piece !== undefined && decisionApplied(decision, result)) {
           trackWorkspaceEvent({
             name: decision === "approve" ? "review_approved" : "review_changes_asked",
             props: { piece: artifact.piece },

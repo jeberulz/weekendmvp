@@ -40,7 +40,12 @@ export class ReportingBoundary extends Component<Props, State> {
   render() {
     const { error } = this.state;
     if (error === null) return this.props.children;
-    if (this.props.fallback === undefined) throw error;
+    if (this.props.fallback === undefined) {
+      // A boundary that throws while rendering is skipped by React, so its `componentDidCatch` never
+      // commits. Report here, before handing the error up (repeats within a few seconds count once).
+      reportClientError({ source: "boundary", error });
+      throw error;
+    }
     return this.props.fallback(this.reset);
   }
 }

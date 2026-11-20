@@ -4,12 +4,12 @@
  * error registry, the feedback dialog (what it attaches, what it never does),
  * and the funnel wiring of the review card.
  */
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axe from "axe-core";
 import { ConvexError } from "convex/values";
 import { getFunctionName } from "convex/server";
-import type { ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { errorClassOf, sanitizeErrorClass, sanitizeRoute } from "@/lib/feedback/contracts";
@@ -30,6 +30,8 @@ vi.mock("convex/react", () => ({
     },
   }),
 }));
+const consentState = vi.hoisted(() => ({ value: null as boolean | null }));
+vi.mock("@/components/consent/ConsentProvider", () => ({ useConsent: () => ({ consent: consentState.value }) }));
 vi.mock("@/components/platform/client-gates", () => ({
   WhenConvexReady: ({ children }: { children: ReactNode }) => children,
   QuietErrorBoundary: ({ children }: { children: ReactNode }) => children,
@@ -253,19 +255,51 @@ describe("ReportingBoundary", () => {
     expect(screen.getByText("recovered")).toBeTruthy();
   });
 
-  test("without a fallback it reports and hands the error to the next boundary", async () => {
+  test("without a fallback it reports before handing the error to a boundary that does not report", async () => {
     const { ReportingBoundary } = await import("@/components/workspace/feedback/ReportingBoundary");
+    // Like the route's own error.tsx: shows a message, reports nothing.
+    class PlainBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+      state = { failed: false };
+      static getDerivedStateFromError() {
+        return { failed: true };
+      }
+      render() {
+        return this.state.failed ? <p>route error page</p> : this.props.children;
+      }
+    }
     const sent: unknown[] = [];
     clientErrors.registerErrorReporter(async (entry) => void sent.push(entry));
     render(
-      <ReportingBoundary fallback={() => <p>outer fallback</p>}>
+      <PlainBoundary>
         <ReportingBoundary>
           <Boom />
         </ReportingBoundary>
-      </ReportingBoundary>,
+      </PlainBoundary>,
     );
-    expect(screen.getByText("outer fallback")).toBeTruthy();
-    expect(sent).toHaveLength(1);
+    expect(screen.getByText("route error page")).toBeTruthy();
+    expect(sent).toEqual([expect.objectContaining({ source: "boundary", errorClass: "TypeError" })]);
+  });
+});
+
+describe("useAnalyticsReady", () => {
+  afterEach(() => {
+    delete window.gtag;
+    consentState.value = null;
+    vi.useRealTimers();
+  });
+
+  test("keeps working after a late consent: gtag appears after the first polling window", async () => {
+    vi.useFakeTimers();
+    const { useAnalyticsReady } = await import("@/components/workspace/feedback/useAnalyticsReady");
+    const { result, rerender } = renderHook(() => useAnalyticsReady());
+    await act(async () => void vi.advanceTimersByTime(20_000));
+    expect(result.current).toBe(false);
+    // The tester accepts at 20 s; the scripts load a moment later.
+    consentState.value = true;
+    rerender();
+    window.gtag = vi.fn();
+    await act(async () => void vi.advanceTimersByTime(2_000));
+    expect(result.current).toBe(true);
   });
 });
 
@@ -298,6 +332,24 @@ describe("review card funnel events", () => {
     await user.click(screen.getByRole("button", { name: "Approve" }));
     await act(async () => undefined);
     expect(gtag).toHaveBeenCalledWith("event", "review_approved", { piece: "email_sequence" });
+  });
+
+  test("a decision the server did not apply is not a funnel event", async () => {
+    const user = userEvent.setup();
+    await renderCard(async () => ({ status: "expired", changed: false }));
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await act(async () => undefined);
+    expect(gtag).not.toHaveBeenCalled();
+  });
+
+  test("ask for changes counts only when a free round started", async () => {
+    const { decisionApplied } = await import("@/components/workspace/review/ArtifactReviewCard");
+    expect(decisionApplied("request_changes", { status: "changes_requested", changed: true, changeRound: { outcome: "free" } })).toBe(true);
+    expect(decisionApplied("request_changes", { status: "changes_requested", changed: true })).toBe(true);
+    expect(decisionApplied("request_changes", { status: "pending", changed: false, changeRound: { outcome: "not_available", reason: "x" } })).toBe(false);
+    expect(decisionApplied("request_changes", { status: "pending", changed: false, changeRound: { outcome: "spend_required" } })).toBe(false);
+    expect(decisionApplied("approve", { status: "approved", changed: true })).toBe(true);
+    expect(decisionApplied("approve", { status: "cancelled", changed: false })).toBe(false);
   });
 
   test("a failed approval sends no funnel event but is reported by class", async () => {
