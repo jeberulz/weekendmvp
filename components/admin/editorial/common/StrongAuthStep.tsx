@@ -16,7 +16,18 @@ export function isReauthMessage(message: string | null): boolean {
 
 export type StrongAuthContext = { fresh: boolean; mechanism: string };
 
-type StepProps = { fresh: boolean; mechanism: string; onConfirmed(): void };
+type StepProps = {
+  fresh: boolean;
+  mechanism: string;
+  onConfirmed(): void;
+  /** The local demo's simulated confirmation. Defaults to the editorial demo's. */
+  simulate?: () => Promise<{ ok: true } | { ok: false; message: string }>;
+};
+
+async function editorialSimulate(): Promise<{ ok: true } | { ok: false; message: string }> {
+  const result = await demoConfirmStrongAuthAction({});
+  return result.ok ? { ok: true } : { ok: false, message: result.error.message };
+}
 
 /**
  * The recent sign-in confirmation that publishing, retrying, rolling back,
@@ -138,7 +149,7 @@ function LiveStrongAuthStep({ fresh, mechanism, stepUp, onConfirmed }: StepProps
   );
 }
 
-function SimulatedStrongAuthStep({ fresh, mechanism, onConfirmed }: StepProps) {
+function SimulatedStrongAuthStep({ fresh, mechanism, onConfirmed, simulate = editorialSimulate }: StepProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   return (
@@ -159,10 +170,10 @@ function SimulatedStrongAuthStep({ fresh, mechanism, onConfirmed }: StepProps) {
             onClick={async () => {
               if (busy) return;
               setBusy(true);
-              const result = await demoConfirmStrongAuthAction({}).catch(() => null);
+              const result = await simulate().catch(() => null);
               setBusy(false);
               if (!result) setError("The server could not be reached.");
-              else if (!result.ok) setError(result.error.message);
+              else if (!result.ok) setError(result.message);
               else {
                 setError(null);
                 onConfirmed();
