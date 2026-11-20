@@ -99,7 +99,7 @@ Append-only progress log. Do not rely on chat history for project state.
 - Evidence: `docs/reviews/evidence/wp93-phase3-2026-11-20/` (fixture data).
 - Not done: nothing deployed, merged or applied; no prod read.
 
-## 2026-11-20 - Phase 3 turned on (after Codex C2, #296)
+## 2026-11-20 - Phase 3 turned on (after Codex C2, #296; PR #303)
 
 - Convex (`convex/admin/aiControls.ts`):
   - `capOverrides({ownerIds})` reads at most 200 founders' `ai_budgets` rows by `by_ownerId`. It returns only overrides the meter would honour now, using the meter's own `activeCapOverrideMicroUsd`.
