@@ -121,10 +121,11 @@ describe("WP93 Phase 2 ops controls", () => {
     const t = setup();
     const { adminId, admin } = await seed(t);
     // $1.90 of free-pool spend today, through the real meter.
-    const { usageId } = await t.mutation(internal.ai.metering.reserve, {
+    const reserved = await t.mutation(internal.ai.metering.reserve, {
       ownerId: undefined, attemptKey: "controls-spend", promptRef: "cost-test@1", provider: "anthropic",
       model: "claude-haiku-4-5", tier: "fast", feature: "ai", reservedMicroUsd: 2_000_000,
     });
+    const usageId = reserved.usageId as Id<"ai_usage">;
     await t.mutation(internal.ai.metering.markSent, { usageId });
     await t.mutation(internal.ai.metering.settle, {
       usageId, inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 10,
