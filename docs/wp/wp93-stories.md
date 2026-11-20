@@ -146,7 +146,7 @@ Branch: `claude/wp93-phase3-cap-override` (from `main` at `b1be06d5`).
 
 ### How it stays off in production
 
-- `CAP_OVERRIDE_LIVE` in `lib/admin/ai-costs/cap-override.ts` is `false`. While it is false, the live console shows a note on the founder page ("waiting on the meter change") and no form, and the live backend refuses any write with `NOT_AVAILABLE`.
+- (Superseded the same day: C2 landed and the override is on. See "Turning it on" below.) `CAP_OVERRIDE_LIVE` in `lib/admin/ai-costs/cap-override.ts` is `false`. While it is false, the live console shows a note on the founder page ("waiting on the meter change") and no form, and the live backend refuses any write with `NOT_AVAILABLE`.
 - No Convex function is added: a write needs the schema field first. When C2 lands, a follow-up adds `setCapOverride` and `clearCapOverride` to `convex/admin/aiControls.ts` with the same rules, wires the live backend, and flips the flag.
 - On local fixtures (`EDITORIAL_FIXTURE_MODE=local-demo`) the whole flow works against the in-memory store, so the owner can review it now.
 
@@ -167,3 +167,17 @@ Branch: `claude/wp93-phase3-cap-override` (from `main` at `b1be06d5`).
   - the "Today vs daily cap" tile and the founders table show the raised cap and when it ends;
   - Recent changes on the Controls tab describe override rows.
 - [x] `WP93-P3-S4` - Checks: typecheck, lint, the full `npm test`, build, the a11y-check skill with axe on the founder page, screenshots on fixtures, a PR.
+
+### Turning it on (2026-11-20, after Codex C2 landed in #296)
+
+- [x] `WP93-P3-S5` - Convex: `capOverrides`, `setCapOverride` and `clearCapOverride` in `convex/admin/aiControls.ts`, on the C2 storage contract. A raise checks, in order:
+  1. the super admin;
+  2. that the account is real;
+  3. a reason;
+  4. a raise above the plan cap from `readMembershipState`, at most $25;
+  5. a sign-in from the last 10 minutes;
+  6. the typed confirm.
+
+  It then writes the five fields and an `ops.cap_override.set` row. Ending early is one click and writes `ops.cap_override.cleared`. Recent changes name the founder on cap rows too. No Codex-owned file changed.
+- [x] `WP93-P3-S6` - Live backend wired: the founder pages read only the founders shown, in chunks of 200. `CAP_OVERRIDE_LIVE` is now `true`; setting it to `false` hides the live form and refuses writes again.
+- [x] `WP93-P3-S7` - Tests: Convex tests for every refusal, the audit rows, a zero row for a founder with no calls, expiry, a raise from a past day, and the meter honouring a console raise. Vitest covers the live backend's Convex calls and error mapping (mocked).
