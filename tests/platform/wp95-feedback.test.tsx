@@ -218,3 +218,100 @@ describe("FeedbackControl", () => {
     expect(convexState.submit).not.toHaveBeenCalled();
   });
 });
+
+describe("ReportingBoundary", () => {
+  beforeEach(() => {
+    clientErrors.resetClientErrorsForTests();
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    window.history.pushState({}, "", `/dashboard/b/${PROJECT}/files`);
+  });
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  function Boom(): never {
+    throw new TypeError("secret idea text");
+  }
+
+  test("reports class and route, shows the fallback, and clears it when the key changes", async () => {
+    const { ReportingBoundary } = await import("@/components/workspace/feedback/ReportingBoundary");
+    const sent: unknown[] = [];
+    clientErrors.registerErrorReporter(async (entry) => void sent.push(entry));
+    const view = render(
+      <ReportingBoundary resetKey="a" fallback={() => <p>fallback shown</p>}>
+        <Boom />
+      </ReportingBoundary>,
+    );
+    expect(screen.getByText("fallback shown")).toBeTruthy();
+    expect(sent).toEqual([expect.objectContaining({ source: "boundary", errorClass: "TypeError", route: "/dashboard/b/[id]/files", projectId: PROJECT })]);
+    expect(JSON.stringify(sent)).not.toContain("secret");
+    view.rerender(
+      <ReportingBoundary resetKey="b" fallback={() => <p>fallback shown</p>}>
+        <p>recovered</p>
+      </ReportingBoundary>,
+    );
+    expect(screen.getByText("recovered")).toBeTruthy();
+  });
+
+  test("without a fallback it reports and hands the error to the next boundary", async () => {
+    const { ReportingBoundary } = await import("@/components/workspace/feedback/ReportingBoundary");
+    const sent: unknown[] = [];
+    clientErrors.registerErrorReporter(async (entry) => void sent.push(entry));
+    render(
+      <ReportingBoundary fallback={() => <p>outer fallback</p>}>
+        <ReportingBoundary>
+          <Boom />
+        </ReportingBoundary>
+      </ReportingBoundary>,
+    );
+    expect(screen.getByText("outer fallback")).toBeTruthy();
+    expect(sent).toHaveLength(1);
+  });
+});
+
+describe("review card funnel events", () => {
+  let gtag: ReturnType<typeof vi.fn<(...args: unknown[]) => void>>;
+  beforeEach(() => {
+    gtag = vi.fn<(...args: unknown[]) => void>();
+    window.gtag = gtag;
+  });
+  afterEach(() => {
+    cleanup();
+    delete window.gtag;
+  });
+
+  async function renderCard(decide: () => Promise<{ status: string; changed: boolean }>) {
+    const { ArtifactReviewCard } = await import("@/components/workspace/review/ArtifactReviewCard");
+    return render(
+      <ArtifactReviewCard
+        card={{ status: "pending", expiresAt: Date.now() + 86_400_000 }}
+        decide={decide}
+        preview={{ kind: "failed" }}
+        artifact={{ plural: "emails", approvedNote: "Nothing is sent yet.", piece: "email_sequence" }}
+      />,
+    );
+  }
+
+  test("approving sends review_approved with the piece only", async () => {
+    const user = userEvent.setup();
+    await renderCard(async () => ({ status: "approved", changed: true }));
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await act(async () => undefined);
+    expect(gtag).toHaveBeenCalledWith("event", "review_approved", { piece: "email_sequence" });
+  });
+
+  test("a failed approval sends no funnel event but is reported by class", async () => {
+    const user = userEvent.setup();
+    const sent: unknown[] = [];
+    clientErrors.resetClientErrorsForTests();
+    clientErrors.registerErrorReporter(async (entry) => void sent.push(entry));
+    await renderCard(async () => {
+      throw new ConvexError({ code: "APPROVAL_NOT_PENDING" });
+    });
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await act(async () => undefined);
+    expect(gtag).not.toHaveBeenCalled();
+    expect(sent).toEqual([expect.objectContaining({ source: "action", errorClass: "APPROVAL_NOT_PENDING" })]);
+  });
+});

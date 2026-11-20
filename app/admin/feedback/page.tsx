@@ -77,7 +77,7 @@ async function FeedbackNotes({ source, overview, cursor }: { source: FeedbackSou
         />
         <Tile
           label="Ratings, 1 to 5 stars"
-          value={<span className="text-base tabular-nums">{feedback.ratingCounts.map((count, index) => `${index + 1}: ${count}`).join("  ")}</span>}
+          value={<span className="text-base tabular-nums">{feedback.ratingCounts.map((count, index) => `${index + 1}: ${count}`).join(" · ")}</span>}
         />
       </dl>
 
