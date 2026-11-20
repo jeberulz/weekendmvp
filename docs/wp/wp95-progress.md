@@ -159,7 +159,18 @@ Once-only events are remembered in `localStorage` (try/catch around every access
   - `npm run lint`: 0 errors, 45 warnings (same 45 as main).
   - Targeted: `npx vitest run convex/feedback tests/platform/wp95-feedback.test.tsx tests/platform/wp95-track.test.ts`:
     16 + 17 + 8 tests passing.
-  - `npm test` and `npm run build`: see the "Gate" entry below.
+  - `npm test`: every chained suite passes (convex 1,466, engine 1,114, editorial 298, home 82, admin-ai 27,
+    prompts 24, platform 2,927, live 38, security 121, auth 199) except one local-only check:
+    `check:ideabrowser-runtime` flags `.claude/skills/newsletter/`, a git-ignored folder that exists only in this
+    checkout, so it is not in a clean clone or CI. Because `npm test` chains with `&&`, that stop skipped the
+    last two suites, so `npm run test:platform` and `npm run test:live` were run on their own.
+  - `npm run build`: passes. The first run compiled, then stopped on a Next.js security-advisory notice; the same
+    command passed on retry. Upgrading Next.js is not part of this package.
+  - Two things the full run found and this package fixed: `tests/security/env-documentation.test.mjs` wants every
+    env key named in `.env.example` (added `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`), and four wizard suites queried
+    `[aria-live]` or `[role=status]`, or expected the first Tab to reach the idea field. The control now reads the
+    route when it opens (no router hook) and mounts its status line at first open; `wp74-keyboard.test.tsx` expects
+    the header's Send feedback as the first stop.
 - Local walkthrough (disposable local Convex on port 3510, Next dev on 3520, fixture AI mode, synthetic
   `@example.test` accounts, nothing near production). Screenshots in `docs/wp/evidence/wp95/`:
   1. `01-wizard-feedback-dialog.jpg`: the wizard header button and dialog.
