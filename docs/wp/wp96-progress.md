@@ -25,7 +25,7 @@ None are required for the delivered scope. These would improve it:
 2. An index `idea_request_votes.by_voterKey` already exists, but `voterKey` embeds the session id (`user:<userId>|<sessionId>`), so WP96 finds a founder's votes by a string-prefix range. No change needed; noted so nobody "fixes" the key shape without telling WP96.
 3. `stripe_events` (legacy ship·able payments) holds an `email` with no email index. WP96 cannot find or scrub those rows. If the owner wants them scrubbed, Codex adds `by_email` (staged) or a one-off script.
 4. `offer_cohorts` stores an email hash only. WP96 does not touch it (owner question Q6).
-5. A cron that re-runs a stuck deletion chain. Today a failed batch retries by rescheduling itself; if Convex drops the chain, a founder can press "Delete my account" again and it resumes. A cron would remove the need for that (Q7).
+5. A cron that restarts a stopped deletion chain. Each batch schedules the next, and a failed batch does not retry on its own. The founder is signed out by then and cannot press the button again, so only an operator can resume it, by running the internal `account/deletion:step` with the owner id. A cron (or a second guard in the sweeper) would remove that hand step (owner question Q7).
 
 ## 2026-11-20 - WP96-S1, S2 (data map, policy drafts)
 
