@@ -9,6 +9,7 @@ import {
   type QueryCtx,
 } from "../_generated/server";
 import { hasActiveSuperAdminBinding } from "../admin/superAdmin";
+import { readMembershipState } from "../platform/membership/state";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../platform/authz";
 import { drainAuth, OWNER_DRAINS, PROJECT_DRAINS } from "./purge";
 
@@ -29,7 +30,6 @@ export const DELETE_CONFIRMATION = "DELETE";
 const BATCH_BUDGET = 120;
 const AUDIT_PAGE = 100;
 const REQUEST_AUTH_ROWS = 25;
-const LIVE_SUBSCRIPTION_STATUSES: readonly string[] = ["active", "trialing", "past_due", "unpaid", "paused"];
 
 const blockerValidator = v.union(
   v.literal("super_admin"),
@@ -41,17 +41,17 @@ export type DeletionBlocker = "super_admin" | "platform_owner" | "paid_subscript
 type ReadCtx = Pick<QueryCtx, "db">;
 
 /** Accounts that must not be deleted by this path, and why. */
-async function deletionBlockers(ctx: ReadCtx, user: Doc<"users">): Promise<DeletionBlocker[]> {
+async function deletionBlockers(ctx: QueryCtx, user: Doc<"users">): Promise<DeletionBlocker[]> {
   const blockers: DeletionBlocker[] = [];
   // Seeds, spend settings and editorial records hang off the operator's account.
   if (await hasActiveSuperAdminBinding(ctx, user._id)) blockers.push("super_admin");
   if (user.platformOwnerAccess?.enabled === true) blockers.push("platform_owner");
-  const subscriptions = await ctx.db.query("plan_subscriptions")
-    .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id)).take(50);
   // Deleting here cannot cancel Stripe, so a plan that still renews must be cancelled first.
-  const renewing = subscriptions.some((sub) =>
-    LIVE_SUBSCRIPTION_STATUSES.includes(sub.status) && !sub.cancelAtPeriodEnd && sub.canceledAt === undefined);
-  if (renewing) blockers.push("paid_subscription");
+  // The membership module owns its tables, so ask it rather than reading them here.
+  const { billing } = await readMembershipState(ctx, user._id);
+  const subscribed = billing.term === "monthly" || billing.term === "annual";
+  const live = billing.status === "active" || billing.status === "past_due";
+  if (subscribed && live && billing.endsAt === null) blockers.push("paid_subscription");
   return blockers;
 }
 

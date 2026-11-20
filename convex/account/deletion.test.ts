@@ -232,7 +232,7 @@ describe("WP96 account deletion", () => {
     expect(await everyRowAsText(t)).toEqual(snapshot);
 
     // Cancelled at period end: nothing more will be charged, so deletion may go ahead.
-    await t.run(async (ctx) => await ctx.db.patch("plan_subscriptions", renewing, { cancelAtPeriodEnd: true }));
+    await t.run(async (ctx) => await ctx.db.patch("plan_subscriptions", renewing, { cancelAtPeriodEnd: true, currentPeriodEnd: Date.now() + 86_400_000 }));
     expect((await asA.query(api.account.deletion.getDeletionState, {})).blockers).toEqual([]);
 
     await t.run(async (ctx) => await ctx.db.patch("users", a.userId, { platformOwnerAccess: { enabled: true, bypassAiBudget: false, updatedAt: 1 } }));
