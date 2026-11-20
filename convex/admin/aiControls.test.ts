@@ -223,7 +223,7 @@ describe("WP93 Phase 3 founder cap overrides", () => {
     const t = setup();
     const { tester, testerId } = await seed(t);
     const calls = [
-      (c: Mutator) => c.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId] }),
+      (c: Mutator) => c.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs: Date.now() }),
       (c: Mutator) => c.mutation(api.admin.aiControls.setCapOverride, { ownerId: testerId, ...raise() }),
       (c: Mutator) => c.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId }),
     ];
@@ -283,7 +283,7 @@ describe("WP93 Phase 3 founder cap overrides", () => {
     const recent = (await admin.query(api.admin.aiControls.controlsState, {})).recent;
     expect(recent[0]).toMatchObject({ action: "ops.cap_override.set", subjectId: testerId, subjectEmail: "tester@example.test" });
 
-    expect(await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId, adminId, "not-an-id"] })).toEqual({
+    expect(await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId, adminId, "not-an-id"], nowMs: Date.now() })).toEqual({
       overrides: [{ ownerId: testerId, capMicroUsd: 1_250_000, expiresAt: START + HOUR, setAt: START, reason: "Demo for an investor" }],
       truncated: false,
     });
@@ -302,9 +302,11 @@ describe("WP93 Phase 3 founder cap overrides", () => {
     // The meter's own writes keep the override fields.
     expect(await storedBudget(t, testerId)).toMatchObject({ reservedMicroUsd: 1_250_000n, capOverrideMicroUsd: 1_250_000n });
 
-    // At the expiry instant it is gone from the console too.
-    vi.setSystemTime(START + HOUR);
-    expect((await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId] })).overrides).toEqual([]);
+    // At the expiry instant it is gone from the console too. The time is an argument,
+    // so the same data read at a later time gives a fresh answer without any write.
+    const at = (nowMs: number) => admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs });
+    expect((await at(START + HOUR - 1)).overrides).toHaveLength(1);
+    expect((await at(START + HOUR)).overrides).toEqual([]);
   });
 
   test("ending a raise early is one click, audited, and a no-op once it has ended", async () => {
@@ -349,7 +351,7 @@ describe("WP93 Phase 3 founder cap overrides", () => {
       capOverrideMicroUsd: 5_000_000n, capOverrideSetBy: adminId, capOverrideSetAt: START - 24 * HOUR,
       capOverrideExpiresAt: START + HOUR, capOverrideReason: "Stale",
     }));
-    expect((await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId] })).overrides).toEqual([]);
+    expect((await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs: Date.now() })).overrides).toEqual([]);
     expect(await admin.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId })).toEqual({ changed: false });
   });
 });

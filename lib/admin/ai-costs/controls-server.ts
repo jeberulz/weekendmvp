@@ -180,9 +180,10 @@ function liveBackend(token: string): ControlsBackend {
     async capOverrides(ownerIds) {
       if (!CAP_OVERRIDE_LIVE) return { available: false, overrides: [] };
       const ids = [...new Set(ownerIds)];
+      const nowMs = Date.now();
       const chunks: string[][] = [];
       for (let start = 0; start < ids.length; start += CAP_OVERRIDE_READ_CHUNK) chunks.push(ids.slice(start, start + CAP_OVERRIDE_READ_CHUNK));
-      const pages = await Promise.all(chunks.map((chunk) => fetchQuery(api.admin.aiControls.capOverrides, { ownerIds: chunk }, { token })));
+      const pages = await Promise.all(chunks.map((chunk) => fetchQuery(api.admin.aiControls.capOverrides, { ownerIds: chunk, nowMs }, { token })));
       return { available: true, overrides: pages.flatMap((page) => page.overrides) };
     },
     async setCapOverride(input) {

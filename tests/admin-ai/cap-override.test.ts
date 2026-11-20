@@ -165,7 +165,11 @@ describe("cap override on live Convex", () => {
     const { caps, backend } = await readCapOverrides("live", [OWNER, OWNER]);
     expect(backend?.mode).toBe("live");
     expect(caps).toEqual({ available: true, overrides: [override] });
-    expect(convex.fetchQuery).toHaveBeenCalledWith(api.admin.aiControls.capOverrides, { ownerIds: [OWNER] }, { token: "token" });
+    expect(convex.fetchQuery).toHaveBeenCalledWith(
+      api.admin.aiControls.capOverrides,
+      { ownerIds: [OWNER], nowMs: expect.any(Number) },
+      { token: "token" },
+    );
   });
 
   test("reads a long founder list in chunks Convex accepts", async () => {

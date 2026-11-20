@@ -227,11 +227,15 @@ function definedSwitches(patch: Partial<Record<keyof SpendControls["killSwitches
 
 const expiryValidator = v.union(...EXPIRY_CHOICES.map((choice) => v.literal(choice)));
 
-/** The overrides the meter would honour right now for these founders. Expired or partial ones are left out. */
+/**
+ * The overrides the meter would honour at `nowMs` for these founders. Expired or
+ * partial ones are left out. The caller passes the time, so a cached result
+ * never outlives an expiry that no write marked.
+ */
 export const capOverrides = query({
-  args: { ownerIds: v.array(v.string()) },
+  args: { ownerIds: v.array(v.string()), nowMs: v.number() },
   handler: async (ctx, args) => {
-    const now = Date.now();
+    const now = args.nowMs;
     await requireSuperAdmin(ctx);
     const ids = [...new Set(args.ownerIds)].slice(0, CAP_OVERRIDE_READ_MAX)
       .map((id) => ctx.db.normalizeId("users", id))
