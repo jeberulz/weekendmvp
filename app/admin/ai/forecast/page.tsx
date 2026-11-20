@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ConsoleFallback, ConsoleShell } from "@/components/admin/ai-costs/ConsoleShell";
 import { ForecastPanel } from "@/components/admin/ai-costs/interactive";
 import { RangeNotices } from "@/components/admin/ai-costs/RangeNotices";
-import { Card, PageTitle, Section, StatGrid, StatTile } from "@/components/admin/ai-costs/primitives";
+import { Card, Notice, PageTitle, Section, StatGrid, StatTile } from "@/components/admin/ai-costs/primitives";
 import type { ForecastUnits } from "@/lib/admin/ai-costs/forecast";
 import { BUILDERS_HUB_MONTHLY_MICRO_USD } from "@/lib/admin/ai-costs/forecast";
 import { formatCount, formatUsd } from "@/lib/admin/ai-costs/money";
@@ -37,6 +37,8 @@ async function Forecast({ searchParams }: { searchParams: SearchParams }) {
     wrenMessageMicroUsd: unit.wren.perMessageMicroUsd,
     platformPerDayMicroUsd: Math.ceil(unit.platformMicroUsd / range.days),
   };
+  // Launches with more calls than one read takes have a cost that is a floor; so is any mean that includes them.
+  const launchFloor = unit.launches.truncated > 0;
   const sample = rangeId === "today" ? "today" : `the last ${RANGE_LABELS[rangeId]}`;
 
   return (
@@ -46,12 +48,18 @@ async function Forecast({ searchParams }: { searchParams: SearchParams }) {
         description="An estimate, not a bill: this range's measured unit costs multiplied by your assumptions. Change the range to use a different sample."
       />
       <RangeNotices view={view} />
+      {launchFloor ? (
+        <Notice tone="warning">
+          {formatCount(unit.launches.truncated)} of {formatCount(unit.launches.count)} launches have more calls than one read takes, so
+          their cost is a floor. The launch mean and every launch figure in this forecast are lower bounds.
+        </Notice>
+      ) : null}
       <Section id="units" title="Measured unit costs" description={`Measured over ${sample}. These are means, so a few costly launches move them.`}>
         <StatGrid label="Measured unit costs">
           <StatTile
-            label="Cost per launch (mean)"
-            value={units.launchMicroUsd === null ? "No launches" : formatUsd(units.launchMicroUsd)}
-            detail={`${formatCount(unit.launches.count)} launches started in the range`}
+            label={launchFloor ? "Cost per launch (mean, at least)" : "Cost per launch (mean)"}
+            value={units.launchMicroUsd === null ? "No launches" : `${launchFloor ? "≥ " : ""}${formatUsd(units.launchMicroUsd)}`}
+            detail={`${formatCount(unit.launches.count)} launches started in the range${launchFloor ? ` · ${formatCount(unit.launches.truncated)} cut off` : ""}`}
           />
           <StatTile
             label="Cost per Wren message"
@@ -70,7 +78,13 @@ async function Forecast({ searchParams }: { searchParams: SearchParams }) {
           />
         </StatGrid>
       </Section>
-      <Section id="model" title="Monthly AI cost" description="Change any input; the estimate updates as you type.">
+      <Section
+        id="model"
+        title="Monthly AI cost"
+        description={launchFloor
+          ? "Change any input; the estimate updates as you type. Launch costs here are lower bounds (see the warning above)."
+          : "Change any input; the estimate updates as you type."}
+      >
         <Card>
           <ForecastPanel units={units} />
         </Card>
