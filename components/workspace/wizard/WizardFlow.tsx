@@ -165,6 +165,13 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
+/** A few concrete example ideas, to lower the blank-page cost on the own path. */
+const OWN_IDEA_EXAMPLES = [
+  "A packing list that builds itself from your trip",
+  "Invoice reminders for freelancers",
+  "A meal-prep planner for lifters",
+] as const;
+
 function OwnIdeaStart({
   pending,
   error,
@@ -194,8 +201,16 @@ function OwnIdeaStart({
     onStart(trimmed);
   }
 
+  const fieldId = `${base}-idea`;
+  // A tapped example fills the field and hands focus back to it, ready to edit.
+  function useExample(example: string) {
+    setText(example);
+    setLocalError(null);
+    document.getElementById(fieldId)?.focus();
+  }
+
   return (
-    <form onSubmit={submit} noValidate className="flex w-full max-w-[672px] flex-col gap-6">
+    <form onSubmit={submit} noValidate className="flex w-full max-w-[600px] flex-col gap-6">
       <ScreenHead
         headingId={`${base}-heading`}
         headingRef={headingRef}
@@ -204,18 +219,34 @@ function OwnIdeaStart({
         tail="?"
         sub="One sentence is plenty. I'll suggest everything else."
       />
-      <div className="rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-        <Field
-          id={`${base}-idea`}
-          label="Your idea in one sentence"
-          hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
-          value={text}
-          onChange={setText}
-          maxLength={WIZARD_LIMITS.ownIdea}
-          errorId={errorId}
-          invalid={shownError !== null}
-          serif
-        />
+      <Field
+        id={fieldId}
+        label="Your idea in one sentence"
+        hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
+        value={text}
+        onChange={setText}
+        maxLength={WIZARD_LIMITS.ownIdea}
+        errorId={errorId}
+        invalid={shownError !== null}
+        serif
+      />
+      <div className="flex flex-col gap-2">
+        <p className="text-[13px] text-home-ink-3">Try one of these</p>
+        <div className="flex flex-wrap gap-2">
+          {OWN_IDEA_EXAMPLES.map((example) => (
+            <button
+              key={example}
+              type="button"
+              onClick={() => useExample(example)}
+              className={cn(
+                "rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-[13px] text-home-ink-2 hover:bg-home-sunk",
+                FOCUS,
+              )}
+            >
+              {example}
+            </button>
+          ))}
+        </div>
       </div>
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
@@ -223,7 +254,7 @@ function OwnIdeaStart({
         </p>
       ) : null}
       <button type="submit" className={`${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`} aria-disabled={pending || undefined}>
-        Start building
+        Continue
       </button>
     </form>
   );
@@ -356,7 +387,13 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const limitNotice = view === undefined || view.business !== null ? null : (view.businessLimit ?? null);
   const blocked = limitNotice !== null;
   const onStep = view !== undefined && !view.completed && view.business === null && !blocked;
-  const showAside = parsed !== null && view !== undefined && view.business === null && !blocked;
+  // The Founder-signals rail appears from step 2 — step 1 (idea) has nothing to show yet.
+  const showAside =
+    parsed !== null &&
+    view !== undefined &&
+    view.business === null &&
+    !blocked &&
+    (view.completed || view.stepIndex > 0);
   // WP90-S4: the crew preview shows once the blueprint is reviewed, while the founder answers the rest.
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
@@ -508,7 +545,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
             )}
           </div>
         ) : (
-          <div className={cn("mt-14", sessionId === null && idea === null ? "flex justify-center" : "")}>{body}</div>
+          <div className="mt-14 flex justify-center">{body}</div>
         )}
       </main>
     </>

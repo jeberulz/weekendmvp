@@ -261,37 +261,36 @@ function LibraryIdea({
 }) {
   return (
     <>
-      <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className={EYEBROW}>Your idea</h2>
-          <SuggestedChip>Suggested · from the idea you picked</SuggestedChip>
-        </div>
-        <p className="font-editorial text-xl leading-[1.45] text-home-ink">{ideaTitle}</p>
+      {/* The idea you picked, confirmed as one surface — not re-advertised. */}
+      <div className="flex flex-col gap-2.5">
+        <p className={EYEBROW}>From the library</p>
+        <p className="font-editorial text-[30px] font-normal leading-[1.15] text-home-ink">{ideaTitle}</p>
+        <p className="text-sm text-home-ink-2">
+          Your co-founder starts from its research and its 4 build prompts.{" "}
+          {ideaSlug ? (
+            <Link
+              href={`/ideas/${encodeURIComponent(ideaSlug)}`}
+              className={cn("whitespace-nowrap text-home-orange-ink underline underline-offset-2", FOCUS)}
+            >
+              Read the research
+            </Link>
+          ) : null}
+        </p>
       </div>
-      <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-dashed border-home-orange bg-home-ember-soft px-4 py-3">
-        <span className="font-mono text-[11px] font-medium tracking-[0.08em] text-home-orange-ink">FROM THE LIBRARY</span>
-        <span className="min-w-60 flex-[1_1_240px] text-sm text-home-ink">
-          <b className="font-semibold">{ideaTitle}</b>. Your co-founder starts from its research and its 4 build prompts.
-        </span>
-        {ideaSlug ? (
-          <Link href={`/ideas/${encodeURIComponent(ideaSlug)}`} className={cn("text-sm text-home-orange-ink underline", FOCUS)}>
-            Read the research
-          </Link>
-        ) : null}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Link href="/ideas" className={cn(BTN_SECONDARY, "min-h-11 text-sm font-normal")}>
-          Pick a different idea from the library
+      {/* The alternatives are quiet links, so the confident path leads. */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Link href="/ideas" className={cn("text-sm text-home-ink-2 underline underline-offset-2 hover:text-home-ink", FOCUS)}>
+          Pick a different idea
         </Link>
         <button
           ref={ownButtonRef}
           type="button"
-          className={cn(BTN_SECONDARY, "min-h-11 text-sm font-normal")}
+          className={cn("text-sm text-home-ink-2 underline underline-offset-2 hover:text-home-ink", FOCUS)}
           aria-expanded={ownOpen}
           aria-controls="wizard-own-idea"
           onClick={onToggleOwn}
         >
-          Write my own idea instead
+          Write my own instead
         </button>
       </div>
     </>

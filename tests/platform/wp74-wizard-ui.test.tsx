@@ -191,14 +191,14 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     const { container, handlers, user } = setup("idea");
     // textContent, not the computed name: jsdom pads inline <i> with spaces in the name.
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("What are we building?");
-    expect(screen.getByText("FROM THE LIBRARY")).toBeTruthy();
+    expect(screen.getByText("From the library")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Read the research" }).getAttribute("href")).toBe("/ideas/hydrotrail");
-    expect(screen.getByRole("link", { name: "Pick a different idea from the library" }).getAttribute("href")).toBe("/ideas");
+    expect(screen.getByRole("link", { name: "Pick a different idea" }).getAttribute("href")).toBe("/ideas");
     expect(container.textContent).not.toMatch(/I already run a business|N°/);
     await user.click(screen.getByRole("button", { name: "Use this idea · Continue" }));
     expect(handlers.onAccept).toHaveBeenCalledTimes(1);
 
-    const toggle = screen.getByRole("button", { name: "Write my own idea instead" });
+    const toggle = screen.getByRole("button", { name: "Write my own instead" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     await user.click(toggle);
     await user.type(screen.getByLabelText("Your idea in one sentence"), "A packing list for campers");
@@ -219,7 +219,7 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
       showResumeHint: true,
     });
     expect(screen.getByText("Your answers save as you go. Bookmark this page to come back.")).toBeTruthy();
-    expect(screen.queryByText("FROM THE LIBRARY")).toBeNull();
+    expect(screen.queryByText("From the library")).toBeNull();
     const field = screen.getByLabelText("Your idea in one sentence");
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(handlers.onAccept).toHaveBeenCalledTimes(1);

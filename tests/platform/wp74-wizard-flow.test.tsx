@@ -104,7 +104,7 @@ describe("WP74-S1 WizardFlow", () => {
     render(<WizardFlow idea={null} ideaTitle={null} initialSessionId={null} />);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText("Your idea in one sentence"), "A packing list for campers");
-    await user.click(screen.getByRole("button", { name: "Start building" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/start/own?session=session123", { scroll: false }));
     expect(state.calls[0]?.args).toEqual({ idea: { source: "own_idea", text: "A packing list for campers" } });
   });

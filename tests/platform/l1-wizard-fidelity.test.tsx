@@ -188,11 +188,16 @@ describe("L1 wizard: Founder signals aside", () => {
     await axeClean(container);
   });
 
-  test("empty at the start, and gone once the business exists", () => {
+  test("no rail on step 1, empty from step 2, and gone once the business exists", () => {
     state.view = view(0);
-    const { unmount } = render(<WizardFlow {...library} />);
+    const first = render(<WizardFlow {...library} />);
+    // No Founder-signals rail on step 1 (idea) — nothing to show yet.
+    expect(screen.queryByRole("complementary", { name: "Founder signals" })).toBeNull();
+    first.unmount();
+    state.view = view(1);
+    const second = render(<WizardFlow {...library} />);
     expect(screen.getByText("Signals appear as you answer.")).toBeTruthy();
-    unmount();
+    second.unmount();
     state.view = withBusiness();
     render(<WizardFlow {...library} />);
     expect(screen.queryByRole("complementary", { name: "Founder signals" })).toBeNull();
