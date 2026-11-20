@@ -142,3 +142,120 @@ export function trackDashboardEvent(event: DashboardEvent): void {
   }
   trackEvent(event.name, props);
 }
+
+/**
+ * WP95 funnel events for the founder journey (wizard, launch, review, chat).
+ * Props are plain tokens only: a wizard step name, an artifact kind, a source
+ * enum, a day bucket. The allowlist drops any other key, and `isToken` drops
+ * any value that is not a short lowercase token, so free text, an email, a
+ * business name or idea content cannot be forwarded even by mistake.
+ *
+ * Consent: with no `window.gtag` nothing is sent, and the once-only helpers
+ * then remember nothing, so a visit before consent does not use up the shot.
+ */
+export type WorkspaceEvent =
+  | { name: "wizard_step_finished"; props: { step: string } }
+  | { name: "business_created"; props: { source: "library" | "own_idea" } }
+  | { name: "launch_piece_waiting"; props: { piece: string } }
+  | { name: "review_approved"; props: { piece: string } }
+  | { name: "review_changes_asked"; props: { piece: string } }
+  | { name: "first_wren_message"; props: Record<string, never> }
+  | { name: "workspace_return"; props: { days_away: "1" | "2_6" | "7_plus" } };
+
+export const WORKSPACE_EVENT_PROPS = {
+  wizard_step_finished: ["step"],
+  business_created: ["source"],
+  launch_piece_waiting: ["piece"],
+  review_approved: ["piece"],
+  review_changes_asked: ["piece"],
+  first_wren_message: [],
+  workspace_return: ["days_away"],
+} as const satisfies { [N in WorkspaceEvent["name"]]: readonly string[] };
+
+const TOKEN = /^[a-z0-9_]{1,32}$/;
+
+function isToken(value: unknown): value is string {
+  return typeof value === "string" && TOKEN.test(value);
+}
+
+/** True once analytics has loaded, which only happens after consent. */
+export function analyticsReady(): boolean {
+  return typeof window !== "undefined" && typeof window.gtag === "function";
+}
+
+/** Sends one workspace event. Returns whether analytics received it. */
+export function trackWorkspaceEvent(event: WorkspaceEvent): boolean {
+  if (!analyticsReady()) return false;
+  const allowed: readonly string[] = WORKSPACE_EVENT_PROPS[event.name];
+  const props: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(event.props)) {
+    if (allowed.includes(key) && isToken(value)) props[key] = value;
+  }
+  trackEvent(event.name, props);
+  return true;
+}
+
+const ONCE_PREFIX = "wmvp:t1:";
+
+function readStore(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStore(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Private mode or blocked storage: the event may repeat on a later visit, which is harmless.
+  }
+}
+
+/**
+ * Sends `event` once per browser for `scope` (a business id, say). Analytics
+ * must have received it before it counts as sent.
+ */
+export function trackWorkspaceEventOnce(scope: string, event: WorkspaceEvent): boolean {
+  if (!analyticsReady()) return false;
+  const key = `${ONCE_PREFIX}${event.name}:${event.name === "launch_piece_waiting" ? `${scope}:${String(event.props.piece)}` : scope}`;
+  if (readStore(key) !== null) return false;
+  if (!trackWorkspaceEvent(event)) return false;
+  writeStore(key, "1");
+  return true;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** The UTC day number of a time, for comparing visit days without time zones. */
+function utcDayNumber(ms: number): number {
+  return Math.floor(ms / DAY_MS);
+}
+
+/** How far back the last visit was, in the buckets the event reports. */
+export function daysAwayBucket(days: number): "1" | "2_6" | "7_plus" {
+  if (days <= 1) return "1";
+  return days <= 6 ? "2_6" : "7_plus";
+}
+
+/**
+ * "Coming back on a later day": the first workspace open on a UTC day after the
+ * last recorded one sends `workspace_return` once. The first ever visit only
+ * records the day. Nothing is stored before analytics is ready.
+ */
+export function trackWorkspaceReturn(nowMs: number = Date.now()): boolean {
+  if (!analyticsReady()) return false;
+  const key = `${ONCE_PREFIX}last_day`;
+  const today = utcDayNumber(nowMs);
+  const stored = readStore(key);
+  const last = stored === null ? Number.NaN : Number(stored);
+  if (!Number.isSafeInteger(last)) {
+    writeStore(key, String(today));
+    return false;
+  }
+  if (today <= last) return false;
+  const sent = trackWorkspaceEvent({ name: "workspace_return", props: { days_away: daysAwayBucket(today - last) } });
+  if (sent) writeStore(key, String(today));
+  return sent;
+}

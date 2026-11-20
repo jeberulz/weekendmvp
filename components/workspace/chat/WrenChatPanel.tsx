@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import { CARD_SHELL, DEFAULT_PARTNER_NAME, WrenMessage } from "@/components/workspace/kit/WrenCards";
 import { UserMessage, WrenComposer, WrenThread } from "@/components/workspace/kit/WrenThread";
 import { WrenChatCards, visibleWrenCards } from "@/components/workspace/chat/WrenChatCards";
@@ -12,6 +13,7 @@ import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { useNow } from "@/components/workspace/kit/useNow";
 import { cn } from "@/lib/utils";
+import { trackWorkspaceEventOnce } from "@/lib/track";
 import { pageFocus } from "@/lib/workspace/crewAssignment";
 import { resetsInLabel, WREN_STREAM_STALE_MS, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
 
@@ -120,6 +122,19 @@ function LiveWrenChat({ projectId, name, founderName }: { projectId: Id<"project
     if (box !== null && following.current) box.scrollTop = box.scrollHeight;
   }, [last?._id, lastBody, messages?.length]);
 
+  // WP95: a reply that ended as "couldn't finish" or "stopped partway" goes to the owner's error log,
+  // once per message (the server also keeps one row per message id). Class only, never the text.
+  const failedMessageId = last !== undefined && (lastState === "failed" || lastState === "stopped") ? last._id : null;
+  useEffect(() => {
+    if (failedMessageId === null) return;
+    reportClientError({
+      source: "wren",
+      errorClass: lastState === "stopped" ? "wren_stopped" : "wren_failed",
+      dedupeKey: `wren:${failedMessageId}`,
+      projectId,
+    });
+  }, [failedMessageId, lastState, projectId]);
+
   const threadLoaded = messages !== undefined;
   // Below xl the panel sits in a `display: none` drawer until it opens, so the effect above can run while the box
   // has no height. When the box gains a size (the drawer opens, the window crosses xl), catch up to the newest
@@ -170,7 +185,8 @@ function LiveWrenChat({ projectId, name, founderName }: { projectId: Id<"project
       setNotice(notice);
       if (notice.kind === "tomorrow") announce(WREN_TOMORROW_CARD.title);
       return notice.kind === "none";
-    } catch {
+    } catch (caught) {
+      reportClientError({ source: "action", error: caught, projectId });
       setNotice({ kind: "message", text: "That didn't go through. Try again in a moment." });
       return false;
     } finally {
@@ -181,11 +197,15 @@ function LiveWrenChat({ projectId, name, founderName }: { projectId: Id<"project
 
   function send(text: string): Promise<boolean> {
     following.current = true;
+    // The first message the founder has ever sent in this business: nothing of theirs is in the thread yet.
+    const firstEver = messages !== undefined && !messages.some((message) => message.author === "founder");
     return run(async () => {
       const focusRole = pageFocus(projectId, window.location.pathname);
       const result = await sendMessage({ projectId, body: text, ...(focusRole === undefined ? {} : { focusRole }) });
       switch (result.kind) {
         case "sent":
+          if (firstEver) trackWorkspaceEventOnce(projectId, { name: "first_wren_message", props: {} });
+          return { kind: "none" };
         case "duplicate":
           return { kind: "none" };
         case "busy":

@@ -21,6 +21,7 @@ import {
   TRY_COST_COPY,
 } from "@/lib/workspace/reviewPages";
 import { employeeHref } from "@/lib/workspace/employeePage";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   launchErrorMessage,
   planGroups,
@@ -142,7 +143,10 @@ export function PlanByOwner({
       : resumeLaunch({ projectId }).then(resumeMessage);
     action
       .then(setMessage)
-      .catch((caught: unknown) => setError(launchErrorMessage(caught)))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setError(launchErrorMessage(caught));
+      })
       .finally(() => {
         inFlight.current = false;
         setWorking(null);
