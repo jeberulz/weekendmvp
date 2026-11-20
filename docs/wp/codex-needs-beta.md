@@ -52,8 +52,8 @@ Already specified by WP93: **`docs/wp/wp93-codex-cap-override.md`**. That covers
 - the Free lifetime ceiling and pool budgets never lifted;
 - tests.
 
-The console UI (a `setCapOverride` mutation with step-up, a $25 a day ceiling, and a founder form) is built in the
-Claude lane once this lands.
+The console side is already built and switched off live (WP93 Phase 3: rules, founder form, fixtures). Once this
+lands, the Claude lane adds the `setCapOverride` mutation and turns it on; the steps are at the end of the spec.
 
 ## C3. Testers' Free lifetime ceiling (waiting on an owner decision; do nothing yet)
 

@@ -160,10 +160,10 @@ Branch: `claude/wp93-phase3-cap-override` (from `main` at `b1be06d5`).
 
 ### Stories
 
-- [ ] `WP93-P3-S1` - Pure rules: `lib/admin/ai-costs/cap-override.ts` (ceiling, raise check, expiry choices clipped to the end of the UTC day, active check, effective cap), unit-tested.
-- [ ] `WP93-P3-S2` - Data: `ControlsBackend` gains `capOverrides`, `setCapOverride` and `clearCapOverride`. Fixtures apply the rules and write `ops.cap_override.set` / `ops.cap_override.cleared` rows to Recent changes; live refuses with `NOT_AVAILABLE`. Server actions validate input with zod.
-- [ ] `WP93-P3-S3` - UI:
+- [x] `WP93-P3-S1` - Pure rules: `lib/admin/ai-costs/cap-override.ts` (ceiling, raise check, expiry choices clipped to the end of the UTC day, active check, effective cap), unit-tested.
+- [x] `WP93-P3-S2` - Data: `ControlsBackend` gains `capOverrides`, `setCapOverride` and `clearCapOverride`. Fixtures apply the rules and write `ops.cap_override.set` / `ops.cap_override.cleared` rows to Recent changes; live refuses with `NOT_AVAILABLE`. Server actions validate input with zod.
+- [x] `WP93-P3-S3` - UI:
   - the founder page gets a "Daily cap override" section: the active override with "End it now", or the raise form (amount, ends, reason, step-up, confirm);
   - the "Today vs daily cap" tile and the founders table show the raised cap and when it ends;
   - Recent changes on the Controls tab describe override rows.
-- [ ] `WP93-P3-S4` - Checks: typecheck, lint, the full `npm test`, build, the a11y-check skill with axe on the founder page, screenshots on fixtures, a PR.
+- [x] `WP93-P3-S4` - Checks: typecheck, lint, the full `npm test`, build, the a11y-check skill with axe on the founder page, screenshots on fixtures, a PR.

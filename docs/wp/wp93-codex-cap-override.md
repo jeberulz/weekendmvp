@@ -1,7 +1,8 @@
 # WP93 — Codex request: per-founder daily cap override
 
 Status: requested 2026-11-20. Blocks the Phase 2 "raise one founder's cap" control.
-Owner decision: deferred until Codex lands the schema and meter change below. The console builds the UI after that.
+Owner decision: deferred until Codex lands the schema and meter change below.
+Console side: built ahead on 2026-11-20 (WP93 Phase 3) and switched off live. The rules are in `lib/admin/ai-costs/cap-override.ts`; the UI works on local fixtures. When this lands, see "Turning it on" at the end.
 
 ## Why
 
@@ -31,3 +32,11 @@ The meter refuses a founder's call once `ai_budgets.daySpentMicroUsd` would pass
   - an expiry that defaults to the end of the UTC day;
   - a fresh sign-in and a typed confirm, the same as other risky controls.
 - On the founder drill-down, a "Raise today's cap" form, and the live override shown in the founder row with its expiry.
+
+## Turning it on (Claude lane, after this lands)
+
+1. Add `setCapOverride` and `clearCapOverride` to `convex/admin/aiControls.ts`, using the rules in `lib/admin/ai-costs/cap-override.ts`: `requireSuperAdmin`, a reason, `capOverrideRefusal`, `expiryFor`, a recent sign-in and the typed confirm for a raise, and an `audit_events` row (`ops.cap_override.set` / `ops.cap_override.cleared`, the metadata the fixture store writes today). Add a read of live overrides to `controlsState` or a new query.
+2. Wire `liveBackend` in `lib/admin/ai-costs/controls-server.ts` (`capOverrides`, `setCapOverride`, `clearCapOverride`) to those functions.
+3. Set `CAP_OVERRIDE_LIVE` to `true` and update the test that pins it to `false` (`tests/admin-ai/cap-override.test.ts`).
+4. Convex tests for every refusal, as `convex/admin/aiControls.test.ts` does for the spend controls.
+
