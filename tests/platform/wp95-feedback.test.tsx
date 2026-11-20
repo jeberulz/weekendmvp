@@ -14,14 +14,12 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { errorClassOf, sanitizeErrorClass, sanitizeRoute } from "@/lib/feedback/contracts";
 
-const nav = vi.hoisted(() => ({ pathname: "/dashboard/b/k57abcdefghijklmnopqrstuvwxyz1234/email" }));
 const convexState = vi.hoisted(() => ({
   submit: vi.fn<(args: Record<string, unknown>) => Promise<null>>(async () => null),
   queryRefs: [] as string[],
   progress: { steps: [{ key: "blueprint", state: "succeeded" }, { key: "email", state: "needs_you" }] } as { steps: { key: string; state: string }[] } | Error,
 }));
 
-vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 vi.mock("convex/react", () => ({
   useMutation: () => convexState.submit,
   useConvex: () => ({
@@ -120,6 +118,7 @@ describe("FeedbackControl", () => {
     convexState.queryRefs.length = 0;
     convexState.progress = { steps: [{ key: "blueprint", state: "succeeded" }, { key: "email", state: "needs_you" }] };
     clientErrors.resetClientErrorsForTests();
+    window.history.pushState({}, "", `/dashboard/b/${PROJECT}/email?tab=1`);
     // jsdom has no modal dialog support: model the open state.
     HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
       this.setAttribute("open", "");
