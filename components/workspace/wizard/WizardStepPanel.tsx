@@ -83,7 +83,6 @@ const USE_SUGGESTED = "Use suggested · Continue";
 const LOOKS_RIGHT = "Looks right";
 const CONTINUE = "Continue";
 const PRIMARY = `${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`;
-const SECONDARY_WIDE = `${BTN_SECONDARY} min-h-12 w-full text-[15px]`;
 
 /** Key-order independent equality for plain answer objects. */
 function sameAnswer(a: unknown, b: unknown): boolean {
@@ -149,13 +148,13 @@ function QuickConfirm({
   hint: WizardStepHint;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+    <div className="flex flex-col gap-3 border-y border-home-rule py-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className={EYEBROW}>My suggestion</h2>
         <SuggestedChip>Suggested · from the idea page</SuggestedChip>
       </div>
-      <p className="font-editorial text-xl leading-[1.45] text-home-ink">{summary.title}</p>
-      {summary.detail ? <p className="text-sm text-home-ink-2">{summary.detail}</p> : null}
+      <p className="font-editorial text-2xl font-normal leading-tight text-home-ink">{summary.title}</p>
+      {summary.detail ? <p className="text-[15px] text-home-ink-2">{summary.detail}</p> : null}
       <ReasonLine id={reasonId} reason={hint.reason} />
     </div>
   );
@@ -798,7 +797,7 @@ export function WizardStepPanel({
   const primary = (
     <button
       type="submit"
-      className={step === "blueprint" ? `${BTN_PRIMARY} min-h-12 flex-[1_1_240px] text-[15px]` : PRIMARY}
+      className={step === "blueprint" || quick ? `${BTN_PRIMARY} min-h-12 flex-[1_1_240px] text-[15px]` : PRIMARY}
       aria-disabled={pending || undefined}
       aria-describedby={describeAccept}
     >
@@ -856,12 +855,13 @@ export function WizardStepPanel({
           </button>
         </div>
       ) : quick ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        // Confirming the suggestion leads; "Change" is a quieter escape to the full choice.
+        <div className="flex flex-wrap items-center gap-3">
           {primary}
           <button
             ref={toggleRef}
             type="button"
-            className={SECONDARY_WIDE}
+            className={cn(BTN_SECONDARY, "min-h-12 px-5 text-sm")}
             onClick={() => {
               focusChoice.current = true;
               setChoosing(true);
