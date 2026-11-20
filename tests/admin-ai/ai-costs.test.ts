@@ -42,6 +42,7 @@ function row(overrides: Partial<UsageRow> = {}): UsageRow {
     plan: "free",
     globalPool: "free",
     creditFunded: false,
+    ownerBudgetBypass: false,
     batch: false,
     escalation: false,
     reask: false,
@@ -123,11 +124,24 @@ describe("aggregation", () => {
     expect(result.pools.free).toEqual({ chargedMicroUsd: 145, inFlightMicroUsd: 7_000, calls: 4 });
     expect(result.pools.paid).toEqual({ chargedMicroUsd: 250, inFlightMicroUsd: 0, calls: 1 });
     expect(result.byDay).toEqual([
-      { dayKey: "2026-11-19", free: 5, paid: 0 },
-      { dayKey: TODAY, free: 140, paid: 250 },
+      { dayKey: "2026-11-19", free: 5, paid: 0, uncappedOwner: 0 },
+      { dayKey: TODAY, free: 140, paid: 250, uncappedOwner: 0 },
     ]);
     expect(result.totals.failed).toBe(1);
     expect(result.totals.failedMicroUsd).toBe(40);
+  });
+
+  test("the owner's uncapped calls stay out of the pools but in the totals", () => {
+    const rows = [
+      row({ costMicroUsd: 100 }),
+      row({ ownerBudgetBypass: true, globalPool: "paid", plan: "builders_hub", costMicroUsd: 9_000 }),
+      row({ ownerBudgetBypass: true, globalPool: "paid", status: "reserved", reservedMicroUsd: 4_000, costMicroUsd: 0 }),
+    ];
+    const result = overview(rows, [TODAY]);
+    expect(result.pools.paid).toEqual({ chargedMicroUsd: 0, inFlightMicroUsd: 0, calls: 0 });
+    expect(result.uncappedOwner).toEqual({ chargedMicroUsd: 9_000, inFlightMicroUsd: 4_000, calls: 2 });
+    expect(result.byDay).toEqual([{ dayKey: TODAY, free: 100, paid: 0, uncappedOwner: 9_000 }]);
+    expect(result.totals.chargedMicroUsd).toBe(9_100);
   });
 
   test("nearest-rank percentiles", () => {
@@ -308,7 +322,7 @@ describe("view model on fixtures", () => {
     const rows = rowsInDays(data.rows, view.range.dayKeys);
     const total = sumMicroUsd(rows, chargedMicroUsd);
     expect(view.overview.totals.chargedMicroUsd).toBe(total);
-    expect(view.overview.pools.free.chargedMicroUsd + view.overview.pools.paid.chargedMicroUsd).toBe(total);
+    expect(view.overview.pools.free.chargedMicroUsd + view.overview.pools.paid.chargedMicroUsd + view.overview.uncappedOwner.chargedMicroUsd).toBe(total);
     expect(view.founders.reduce((sum, founder) => sum + founder.chargedMicroUsd, 0)).toBe(total);
     expect(view.prompts.reduce((sum, prompt) => sum + prompt.chargedMicroUsd, 0)).toBe(total);
     expect(view.unit.launches.count).toBeGreaterThan(0);

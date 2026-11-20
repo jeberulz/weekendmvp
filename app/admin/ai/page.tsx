@@ -78,6 +78,12 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
             <BudgetMeter label="Paid pool" usedMicroUsd={control.paid.spentMicroUsd} inFlightMicroUsd={control.paid.inFlightMicroUsd} budgetMicroUsd={control.paidBudgetMicroUsd} />
           </Card>
         </div>
+        {control.uncappedOwner.spentMicroUsd + control.uncappedOwner.inFlightMicroUsd > 0 ? (
+          <p className="mt-3 text-sm text-(--ed-text-2)">
+            Plus {formatUsd(control.uncappedOwner.spentMicroUsd)} of the platform owner&apos;s own uncapped use today
+            ({formatUsd(control.uncappedOwner.inFlightMicroUsd)} in flight). The meter keeps it on separate counters, outside both pool budgets.
+          </p>
+        ) : null}
         <Card className="mt-3">
           <h3 className="text-sm font-semibold">Spend alarm and switches</h3>
           <ul className="mt-2 flex flex-wrap gap-2" aria-label="Spend alarm thresholds today">
@@ -106,7 +112,12 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
             <BudgetMeter label={`Paid pool, ${days} day${days === 1 ? "" : "s"}`} usedMicroUsd={overview.pools.paid.chargedMicroUsd} inFlightMicroUsd={overview.pools.paid.inFlightMicroUsd} budgetMicroUsd={control.paidBudgetMicroUsd * days} />
           </Card>
         </div>
-        <p className="mb-3 text-xs text-(--ed-text-2)">Range budgets are today&apos;s daily budgets times the number of days; past days may have run on other budgets.</p>
+        <p className="mb-3 text-xs text-(--ed-text-2)">
+          Range budgets are today&apos;s daily budgets times the number of days; past days may have run on other budgets.
+          {overview.uncappedOwner.calls > 0
+            ? ` The platform owner's uncapped use (${formatUsd(overview.uncappedOwner.chargedMicroUsd)}, ${formatCount(overview.uncappedOwner.calls)} calls) is outside both pools but inside the totals below.`
+            : ""}
+        </p>
         <StatGrid label="Range totals">
           <StatTile label="Spend (settled + failed)" value={formatUsd(overview.totals.chargedMicroUsd)} detail={`${formatUsd(overview.totals.chargedMicroUsd - overview.totals.failedMicroUsd)} on calls that succeeded`} />
           <StatTile label="Calls" value={formatCount(overview.totals.calls)} detail={`${formatCount(overview.totals.settled)} settled · ${formatCount(overview.totals.reserved)} in flight`} />
@@ -115,7 +126,7 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
         </StatGrid>
       </Section>
 
-      <Section id="daily" title="Spend by day and pool" description="Charged spend per UTC day, by the pool it counted against.">
+      <Section id="daily" title="Spend by day and pool" description="Charged spend per UTC day, by the pool it counted against. The platform owner's uncapped use is not in either pool; it is in the table.">
         <Card>
           <DailySpendChart days={overview.byDay} dailyBudgetMicroUsd={control.freeBudgetMicroUsd + control.paidBudgetMicroUsd} title="Charged spend per UTC day, free pool and paid pool stacked" />
           <details className="mt-3">
@@ -128,6 +139,7 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
                       <th scope="col" className={th}>Day (UTC)</th>
                       <th scope="col" className={thNum}>Free pool</th>
                       <th scope="col" className={thNum}>Paid pool</th>
+                      <th scope="col" className={thNum}>Owner, uncapped</th>
                       <th scope="col" className={thNum}>Total</th>
                     </tr>
                   </thead>
@@ -137,7 +149,8 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
                         <th scope="row" className={`${td} text-left font-normal`}>{day.dayKey}</th>
                         <td className={tdNum}>{formatUsd(day.free)}</td>
                         <td className={tdNum}>{formatUsd(day.paid)}</td>
-                        <td className={tdNum}>{formatUsd(day.free + day.paid)}</td>
+                        <td className={tdNum}>{formatUsd(day.uncappedOwner)}</td>
+                        <td className={tdNum}>{formatUsd(day.free + day.paid + day.uncappedOwner)}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -83,6 +83,7 @@ export function toUsageRow(row: Doc<"ai_usage">): UsageRow {
     plan: row.plan ?? null,
     globalPool: row.globalPool,
     creditFunded: row.creditFunded,
+    ownerBudgetBypass: row.ownerBudgetBypass === true,
     batch: row.batch === true,
     escalation: row.escalation === true,
     reask: row.reask === true,
@@ -303,10 +304,13 @@ export const controlRoom = query({
   handler: async (ctx, args): Promise<ControlRoom> => {
     await requireSuperAdmin(ctx);
     assertDayKey(args.dayKey);
-    const [settings, free, paid, cohort] = await Promise.all([
+    const [settings, free, paid, ownerFree, ownerPaid, cohort] = await Promise.all([
       ctx.db.query("ops_settings").withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique(),
       readGlobalBudget(ctx, "free", args.dayKey),
       readGlobalBudget(ctx, "paid", args.dayKey),
+      // The owner's uncapped calls count on separate counters (WP68 owner access).
+      readGlobalBudget(ctx, "free", args.dayKey, true),
+      readGlobalBudget(ctx, "paid", args.dayKey, true),
       ctx.db.query("workspace_cohort").take(COHORT_COUNT_MAX + 1),
     ]);
     const alarm = settings?.spendAlarmState?.dayKey === args.dayKey
@@ -325,6 +329,10 @@ export const controlRoom = query({
       dayKey: args.dayKey,
       free: { spentMicroUsd: free.spentTodayMicroUsd, inFlightMicroUsd: free.inFlightMicroUsd },
       paid: { spentMicroUsd: paid.spentTodayMicroUsd, inFlightMicroUsd: paid.inFlightMicroUsd },
+      uncappedOwner: {
+        spentMicroUsd: ownerFree.spentTodayMicroUsd + ownerPaid.spentTodayMicroUsd,
+        inFlightMicroUsd: ownerFree.inFlightMicroUsd + ownerPaid.inFlightMicroUsd,
+      },
     };
   },
 });

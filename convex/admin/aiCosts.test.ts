@@ -25,7 +25,11 @@ function setup() {
 
 async function seed(t: ReturnType<typeof setup>) {
   const ids = await t.run(async (ctx) => {
-    const adminId = await ctx.db.insert("users", { email: "cost-admin@example.test" });
+    // The admin is also the platform owner with uncapped AI (WP68 owner access).
+    const adminId = await ctx.db.insert("users", {
+      email: "cost-admin@example.test", emailVerificationTime: 1,
+      platformOwnerAccess: { enabled: true, bypassAiBudget: true, updatedAt: 1 },
+    });
     const customerId = await ctx.db.insert("users", { email: "cost-customer@example.test" });
     const adminSessionId = await ctx.db.insert("authSessions", { userId: adminId, expirationTime: 9_999_999_999_999 });
     const customerSessionId = await ctx.db.insert("authSessions", { userId: customerId, expirationTime: 9_999_999_999_999 });
@@ -119,7 +123,7 @@ describe("WP93 AI cost console reads", () => {
 
   test("console totals match the meter's own counters to the micro-dollar", async () => {
     const t = setup();
-    const { admin, customerId } = await seed(t);
+    const { admin, adminId, customerId } = await seed(t);
     const startMs = Date.now() - 1_000;
     const dayKey = new Date().toISOString().slice(0, 10);
     const reserve = (args: ReturnType<typeof reserveArgs>) => t.mutation(internal.ai.metering.reserve, args)
@@ -152,12 +156,21 @@ describe("WP93 AI cost console reads", () => {
     // 5. Still in flight.
     await reserve(reserveArgs("cost:in-flight", 222_222, customerId));
 
+    // 6. The platform owner's uncapped calls: one settled, one in flight. The meter counts them apart.
+    const ownerSettled = await reserve(reserveArgs("cost:owner", 90_000, adminId));
+    await t.mutation(internal.ai.metering.markSent, { usageId: ownerSettled });
+    await t.mutation(internal.ai.metering.settle, settleArgs(ownerSettled, 45_678));
+    await reserve(reserveArgs("cost:owner-in-flight", 11_111, adminId));
+
     const rows = await readToday(admin, startMs, Date.now() + 1_000);
-    expect(rows).toHaveLength(5);
+    expect(rows).toHaveLength(7);
+    expect(rows.filter((row) => row.ownerBudgetBypass)).toHaveLength(2);
     const [meter, control, owners] = await Promise.all([
       t.run(async (ctx) => ({
         free: await readGlobalBudget(ctx, "free", dayKey),
         paid: await readGlobalBudget(ctx, "paid", dayKey),
+        ownerFree: await readGlobalBudget(ctx, "free", dayKey, true),
+        ownerPaid: await readGlobalBudget(ctx, "paid", dayKey, true),
         ownerBudget: await ctx.db.query("ai_budgets").withIndex("by_ownerId", (q) => q.eq("ownerId", customerId)).unique(),
       })),
       admin.query(api.admin.aiCosts.controlRoom, { dayKey }),
@@ -170,8 +183,19 @@ describe("WP93 AI cost console reads", () => {
     expect(view.pools.free.inFlightMicroUsd).toBe(meter.free.inFlightMicroUsd);
     expect(view.pools.paid.chargedMicroUsd).toBe(meter.paid.spentTodayMicroUsd);
     expect(view.pools.paid.inFlightMicroUsd).toBe(meter.paid.inFlightMicroUsd);
-    expect(view.byDay).toEqual([{ dayKey, free: meter.free.spentTodayMicroUsd, paid: meter.paid.spentTodayMicroUsd }]);
+    const ownerSpent = meter.ownerFree.spentTodayMicroUsd + meter.ownerPaid.spentTodayMicroUsd;
+    const ownerInFlight = meter.ownerFree.inFlightMicroUsd + meter.ownerPaid.inFlightMicroUsd;
+    expect(view.uncappedOwner.chargedMicroUsd).toBe(ownerSpent);
+    expect(view.uncappedOwner.inFlightMicroUsd).toBe(ownerInFlight);
+    expect(ownerSpent).toBe(45_678);
+    expect(ownerInFlight).toBe(11_111);
+    expect(view.byDay).toEqual([{
+      dayKey, free: meter.free.spentTodayMicroUsd, paid: meter.paid.spentTodayMicroUsd, uncappedOwner: ownerSpent,
+    }]);
     expect(control.free).toEqual({ spentMicroUsd: meter.free.spentTodayMicroUsd, inFlightMicroUsd: meter.free.inFlightMicroUsd });
+    expect(control.paid).toEqual({ spentMicroUsd: meter.paid.spentTodayMicroUsd, inFlightMicroUsd: meter.paid.inFlightMicroUsd });
+    expect(control.uncappedOwner).toEqual({ spentMicroUsd: ownerSpent, inFlightMicroUsd: ownerInFlight });
+    expect(view.totals.chargedMicroUsd).toBe(meter.free.spentTodayMicroUsd + meter.paid.spentTodayMicroUsd + ownerSpent);
 
     // Hand-computed: 123_457 + 77_777 + 31_001 + max(sweep charge, 650_003).
     expect(meter.free.spentTodayMicroUsd).toBe(123_457 + 77_777 + 31_001 + 650_003);

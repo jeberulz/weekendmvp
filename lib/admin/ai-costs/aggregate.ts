@@ -101,32 +101,45 @@ export function totalsOf(rows: readonly UsageRow[]): Totals {
 // Overview
 // ---------------------------------------------------------------------------
 
-export type PoolDay = { readonly dayKey: string; readonly free: number; readonly paid: number };
+export type PoolDay = {
+  readonly dayKey: string;
+  readonly free: number;
+  readonly paid: number;
+  /** The platform owner's uncapped spend: outside both pool budgets. */
+  readonly uncappedOwner: number;
+};
+
+export type PoolTotals = { chargedMicroUsd: number; inFlightMicroUsd: number; calls: number };
 
 export type Overview = {
   readonly totals: Totals;
-  readonly pools: Readonly<Record<UsagePool, { chargedMicroUsd: number; inFlightMicroUsd: number; calls: number }>>;
+  /** Spend that counts against each pool's budget, as the meter's pool counters do. */
+  readonly pools: Readonly<Record<UsagePool, PoolTotals>>;
+  /** The platform owner's uncapped calls, which the meter keeps on separate counters. */
+  readonly uncappedOwner: PoolTotals;
   /** Charged per UTC day and pool, oldest first, one entry per day of the range. */
   readonly byDay: readonly PoolDay[];
 };
 
 export function overview(rows: readonly UsageRow[], dayKeys: readonly string[]): Overview {
   const totals = totalsOf(rows);
-  const pools = {
-    free: { chargedMicroUsd: 0, inFlightMicroUsd: 0, calls: 0 },
-    paid: { chargedMicroUsd: 0, inFlightMicroUsd: 0, calls: 0 },
-  };
-  const days = new Map<string, { free: number; paid: number }>(dayKeys.map((key) => [key, { free: 0, paid: 0 }]));
+  const empty = (): PoolTotals => ({ chargedMicroUsd: 0, inFlightMicroUsd: 0, calls: 0 });
+  const pools = { free: empty(), paid: empty() };
+  const uncappedOwner = empty();
+  const days = new Map<string, { free: number; paid: number; uncappedOwner: number }>(
+    dayKeys.map((key) => [key, { free: 0, paid: 0, uncappedOwner: 0 }]));
   for (const row of rows) {
-    const pool = pools[row.globalPool];
+    const bucket = row.ownerBudgetBypass ? uncappedOwner : pools[row.globalPool];
     const charged = chargedMicroUsd(row);
-    pool.calls += 1;
-    pool.chargedMicroUsd = addMicroUsd(pool.chargedMicroUsd, charged);
-    if (row.status === "reserved") pool.inFlightMicroUsd = addMicroUsd(pool.inFlightMicroUsd, row.reservedMicroUsd);
+    bucket.calls += 1;
+    bucket.chargedMicroUsd = addMicroUsd(bucket.chargedMicroUsd, charged);
+    if (row.status === "reserved") bucket.inFlightMicroUsd = addMicroUsd(bucket.inFlightMicroUsd, row.reservedMicroUsd);
     const day = days.get(row.dayKey);
-    if (day) day[row.globalPool] = addMicroUsd(day[row.globalPool], charged);
+    if (!day) continue;
+    const key = row.ownerBudgetBypass ? "uncappedOwner" : row.globalPool;
+    day[key] = addMicroUsd(day[key], charged);
   }
-  return { totals, pools, byDay: [...days].map(([dayKey, value]) => ({ dayKey, ...value })) };
+  return { totals, pools, uncappedOwner, byDay: [...days].map(([dayKey, value]) => ({ dayKey, ...value })) };
 }
 
 // ---------------------------------------------------------------------------

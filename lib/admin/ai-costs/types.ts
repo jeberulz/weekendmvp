@@ -32,6 +32,8 @@ export type UsageRow = {
   readonly plan: UsagePlan | null;
   readonly globalPool: UsagePool;
   readonly creditFunded: boolean;
+  /** The platform owner's uncapped call (WP68 owner access): counted on the meter's separate owner counters, not the pool. */
+  readonly ownerBudgetBypass: boolean;
   readonly batch: boolean;
   readonly escalation: boolean;
   readonly reask: boolean;
@@ -118,4 +120,6 @@ export type ControlRoom = {
   readonly dayKey: string;
   readonly free: { readonly spentMicroUsd: number; readonly inFlightMicroUsd: number };
   readonly paid: { readonly spentMicroUsd: number; readonly inFlightMicroUsd: number };
+  /** The platform owner's uncapped spend today, both pools: outside the pool budgets. */
+  readonly uncappedOwner: { readonly spentMicroUsd: number; readonly inFlightMicroUsd: number };
 };

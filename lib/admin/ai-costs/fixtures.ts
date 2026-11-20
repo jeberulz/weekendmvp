@@ -134,6 +134,7 @@ function buildFixture(nowMs: number): FixtureData {
       plan,
       globalPool: plan === "builders_hub" || plan === "growth" ? "paid" : "free",
       creditFunded: false,
+      ownerBudgetBypass: false,
       batch: spec.batch === true,
       escalation: flags.escalation === true,
       reask: flags.reask === true,
@@ -168,7 +169,7 @@ function buildFixture(nowMs: number): FixtureData {
       model: recraft ? "recraftv4_1" : "gpt-image-2",
       tier: "image", plan: owner.plan,
       globalPool: owner.plan === "free" ? "free" : "paid",
-      creditFunded: owner.plan === "free", batch: false, escalation: false, reask: false,
+      creditFunded: owner.plan === "free", ownerBudgetBypass: false, batch: false, escalation: false, reask: false,
       status: "settled", reservedMicroUsd: cost + 2_000, costMicroUsd: cost, lateCostMicroUsd: null,
       inputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0, images: 1,
       estimated: recraft, latencyMs: between([6_000, 20_000]), stopReason: null, billed: "actual",
@@ -284,6 +285,7 @@ function buildFixture(nowMs: number): FixtureData {
     dayKey: today,
     free: { spentMicroUsd: freeSpent, inFlightMicroUsd: poolInFlight("free") },
     paid: { spentMicroUsd: poolSpent("paid"), inFlightMicroUsd: poolInFlight("paid") },
+    uncappedOwner: { spentMicroUsd: 0, inFlightMicroUsd: 0 },
   };
 
   return { rows, summaries, projects, controlRoom };
