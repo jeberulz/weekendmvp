@@ -67,6 +67,11 @@ export const aiTables = {
     dayKey: v.string(),
     daySpentMicroUsd: v.int64(),
     dayEscalations: v.int64(),
+    capOverrideMicroUsd: v.optional(v.int64()),
+    capOverrideExpiresAt: v.optional(v.number()),
+    capOverrideSetBy: v.optional(v.id("users")),
+    capOverrideSetAt: v.optional(v.number()),
+    capOverrideReason: v.optional(v.string()),
     updatedAt: v.number(),
   }).index("by_ownerId", ["ownerId"]),
 

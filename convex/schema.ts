@@ -34,6 +34,7 @@ import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import { workspaceTables } from "./schema/workspace";
 import { aiTables } from "./schema/ai";
 import { growthTables } from "./schema/growth";
+import { feedbackTables } from "./feedback/tables";
 import {
   auditActorValidator,
   briefStatusValidator,
@@ -63,6 +64,7 @@ export default defineSchema({
   ...workspaceTables,
   ...aiTables,
   ...growthTables,
+  ...feedbackTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),

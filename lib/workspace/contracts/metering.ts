@@ -826,7 +826,7 @@ export type ReserveState = {
     readonly plan: MeterPlan;
     /** The `ai_budgets` row, or null when the owner has none yet (counts as zero). */
     readonly budgets: AiBudgetsRow | null;
-    /** A super admin's raised daily cap for this owner, when set. */
+    /** The effective override, resolved by reserve at the server's current time. */
     readonly dailyCapOverrideMicroUsd?: number;
   };
 };

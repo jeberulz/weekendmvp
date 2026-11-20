@@ -56,6 +56,7 @@ export function WorkspaceSidebar({
   switcher,
   credits,
   teamBadge,
+  feedback,
   userRow,
 }: {
   projectId: string;
@@ -64,6 +65,8 @@ export function WorkspaceSidebar({
   credits: CreditsSummary;
   /** The "N need you" badge, rendered inside the Team HQ row. */
   teamBadge?: ReactNode;
+  /** The "Send feedback" control, above the user row. */
+  feedback?: ReactNode;
   /** The footer user row with sign out. */
   userRow?: ReactNode;
 }) {
@@ -184,6 +187,7 @@ export function WorkspaceSidebar({
             )}
           </Link>
         </nav>
+        {feedback}
         {userRow}
       </div>
     </div>

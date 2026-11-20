@@ -18,6 +18,7 @@ import { ROLE_LABELS } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
 import { employeeHref } from "@/lib/workspace/employeePage";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   BLUEPRINT_MISSING_COPY,
   BLUEPRINT_SECTION_ID,
@@ -169,7 +170,10 @@ export function LeadCard({
     setMessage("");
     retryLaunch({ projectId })
       .then((result) => setMessage(retryMessage(result, RETRY_SENT_TEAM_COPY)))
-      .catch((caught: unknown) => setRefusal({ message: launchErrorMessage(caught), during }))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setRefusal({ message: launchErrorMessage(caught), during });
+      })
       .finally(() => setRetrying(false));
   };
 

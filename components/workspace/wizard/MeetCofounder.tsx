@@ -25,6 +25,7 @@ import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { launchErrorMessage, launchStateKey, teamAnnouncement, teamView, type TeamView } from "./CofounderTeam";
 import { ScreenHead } from "./wizard-ui";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 
 export { launchErrorMessage, teamAnnouncement } from "./CofounderTeam";
 
@@ -751,8 +752,10 @@ function LiveMeet({ answers, business, ideaTitle, headingRef }: MeetBase) {
   useEffect(() => {
     if (started.current === projectId) return;
     started.current = projectId;
-    startLaunch({ projectId }).catch((caught: unknown) =>
-      setRefusal({ message: launchErrorMessage(caught), during: "not_started" }));
+    startLaunch({ projectId }).catch((caught: unknown) => {
+      reportClientError({ source: "action", error: caught, projectId });
+      setRefusal({ message: launchErrorMessage(caught), during: "not_started" });
+    });
   }, [projectId, startLaunch]);
 
   const run = (action: () => Promise<LaunchView>) => {
@@ -761,7 +764,10 @@ function LiveMeet({ answers, business, ideaTitle, headingRef }: MeetBase) {
     setRetrying(true);
     setRefusal(null);
     action()
-      .catch((caught: unknown) => setRefusal({ message: launchErrorMessage(caught), during }))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setRefusal({ message: launchErrorMessage(caught), during });
+      })
       .finally(() => setRetrying(false));
   };
 
