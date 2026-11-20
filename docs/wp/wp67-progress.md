@@ -10,7 +10,7 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `18dcb3fd` (#282). Open: **live calls still fail** (the 2026-11-16 seed run, the first since #282, failed all five items as `bad_request`; cause unknown), the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
+Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `8d33b8f8` (#286). The live `bad_request` is closed: #283 sends the seed and social-pack schemas in the prompt, and two live seed runs on 2026-11-16 wrote all five seeds each (about $0.28 a run). Open: the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
 
 Earlier (2026-11-06, later): **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
@@ -624,17 +624,13 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
   says "Waiting on you" in words, never colour alone.
 
-## 2026-11-16 - Live seed run passes on prod
+## 2026-11-16 - Live seed runs pass after #283
 
-- #283 found the cause of the live `bad_request`: the API refused the `crew-idea-seed` reply schema as a compiled
-  grammar that was too large. It sends the seed and social pack schemas inside the prompt instead. #284 keeps the
-  provider's error message on a failed seed item.
-- The owner re-ran the spike on prod after #283–#285 deployed (`45ac7371`): run `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs`,
-  batch `msgbatch_017vQ5TZixDK8hBRCinbX8MA`, seed version `2026-11-08.1`, five ideas. All five seeds written, $1.20
-  reserved, $0.27 charged, 6 polls. This is the first live AI call to succeed on production.
-- Only the seed prompt is proven live. Wren's chat, both blueprint prompts, brand kit, email and social get their first
-  live test in the five launches (L1-C4), which are now unblocked.
-- Five ideas are seeded; the rest wait for the `Crew seeds` workflow (secret and variable still missing) or a wider
-  hand run.
-- `l1-release-plan.md`: status, L1-C4, the seed gap note and "Live seed runs (2026-11-16)" updated.
+- The live `bad_request` is closed. #283 sends the seed and social-pack schemas in the prompt, because the API refused
+  their grammar as too large. Two prod runs after it wrote all five seeds each: `zd7a1npxqamt378x3117fta7ed8jah05`
+  (`2026-11-16.1`, $0.28) and `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs` (`2026-11-08.1`, $0.27). Read with
+  `crew:seeds --status`, no spend. A dry run now finds all five unchanged, so nothing was re-sent.
+- Production runs `8d33b8f8` (#286).
+- Still open for L1: the five live launches (L1-C4, the first live test of the six `output_config` schemas), ops
+  settings and cohort (owner steps 4–5), the recovery cron on prod, and the `Crew seeds` secrets.
 - Checks: docs only, `git diff --check`.
