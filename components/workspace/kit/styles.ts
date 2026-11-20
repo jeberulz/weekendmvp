@@ -44,3 +44,6 @@ export const CARD_SHELL = "flex flex-col gap-2 rounded-lg border border-home-rul
 
 export const CARD = "rounded-xl border border-home-rule bg-home-card";
 export const SR_ONLY = "sr-only";
+
+/** The shared serif lead for cards and sections (wizard rail cards, previews). */
+export const SECTION_LEAD = "font-editorial text-xl font-normal text-home-ink";
