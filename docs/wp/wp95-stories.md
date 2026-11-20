@@ -30,7 +30,7 @@ owner three things: feedback with automatic context, a private error log, and fu
 
 ## Stories
 
-- [ ] `WP95-S1` - Convex feedback and error modules
+- [x] `WP95-S1` - Convex feedback and error modules
   - Scope: `convex/feedback/**` (tables definition, `submit`, `reportError`, owner-only reads), tests in
     `convex/feedback/*.test.ts`.
   - Acceptance criteria:
@@ -47,7 +47,7 @@ owner three things: feedback with automatic context, a private error log, and fu
   - Verification:
     - `npx vitest run convex/feedback`
 
-- [ ] `WP95-S2` - "Send feedback" control in the workspace shell and the wizard
+- [x] `WP95-S2` - "Send feedback" control in the workspace shell and the wizard
   - Scope: `components/workspace/feedback/**`, `components/workspace/shell/WorkspaceFrame.tsx`,
     `components/workspace/wizard/WizardFlow.tsx`, helper code under `lib/feedback/**`.
   - Acceptance criteria:
@@ -61,7 +61,7 @@ owner three things: feedback with automatic context, a private error log, and fu
   - Verification:
     - `npx vitest run tests/platform` (control logic) and the a11y-check skill in a real browser.
 
-- [ ] `WP95-S3` - Error capture
+- [x] `WP95-S3` - Error capture
   - Scope: `app/start/error.tsx`, new `app/(launch-workspace)/dashboard/b/[projectId]/error.tsx`,
     `components/workspace/feedback/useReportError.ts`, `components/workspace/chat/WrenChatPanel.tsx`, the founder-facing
     action catch blocks in `components/workspace/**`.
@@ -74,7 +74,7 @@ owner three things: feedback with automatic context, a private error log, and fu
   - Verification:
     - `npx vitest run tests/platform`, plus a forced error in the browser.
 
-- [ ] `WP95-S4` - Funnel events through `lib/track.ts`
+- [x] `WP95-S4` - Funnel events through `lib/track.ts`
   - Scope: `lib/track.ts`, `components/workspace/**` call sites.
   - Acceptance criteria:
     - New `trackWorkspaceEvent` with an allowlist of props per event, like `trackDashboardEvent`.
@@ -87,7 +87,7 @@ owner three things: feedback with automatic context, a private error log, and fu
   - Verification:
     - `npx vitest run tests/platform`
 
-- [ ] `WP95-S5` - Owner-only `/admin/feedback`
+- [x] `WP95-S5` - Owner-only `/admin/feedback`
   - Scope: `app/admin/feedback/**` (layout, page, simple admin header, two tabs), `lib/feedback/admin*`.
   - Acceptance criteria:
     - `/admin/feedback` lists feedback newest first (rating, note, route, business id, step states, version, owner id,
@@ -99,7 +99,7 @@ owner three things: feedback with automatic context, a private error log, and fu
   - Verification:
     - `npx vitest run tests/platform`, a11y-check, screenshots.
 
-- [ ] `WP95-S6` - Docs, error-tracker recommendation, handoff
+- [x] `WP95-S6` - Docs, error-tracker recommendation, handoff
   - Scope: `docs/wp/wp95-*`.
   - Acceptance criteria:
     - The Codex schema need is in the progress file and the PR with exact table definitions and indexes.

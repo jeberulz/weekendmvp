@@ -127,4 +127,81 @@ Once-only events are remembered in `localStorage` (try/catch around every access
 
 ## Log
 
-(Entries are appended below as stories finish.)
+### 2026-11-20 - WP95-S1 to S6
+
+- Actions taken:
+  - `convex/feedback/{tables,entries,errors,admin}.ts` plus shared rules in `lib/feedback/contracts.ts`. `submit` and
+    `report` are rate limited per owner by index count (10 feedback an hour, 30 errors a minute), not by the
+    rate-limiter component, so no `convex/platform/limits.ts` change.
+  - Browser side in `components/workspace/feedback/`: `FeedbackControl` and `FeedbackDialog` (native modal
+    `<dialog>`, portalled to `body`), `clientErrors.ts` (registry plus `reportClientError`), `ErrorReporterMount`,
+    `ReportingBoundary`, `WorkspacePageBoundary` and `WorkspaceCrash`, `WorkspaceFunnel`, `useAnalyticsReady`.
+  - Wired into `WorkspaceFrame` and `WorkspaceSidebar` (button above the user row, page boundary around the page
+    area, mount for the reporter), `WizardFlow` (header button, step and business events, boundary that re-throws to
+    `app/start/error.tsx`), `ArtifactReviewCard` (review events, action errors), `WrenChatPanel` (first message,
+    failed or stopped replies, send errors), and the launch retry and approval catch blocks.
+  - `lib/track.ts`: `trackWorkspaceEvent`, `trackWorkspaceEventOnce`, `trackWorkspaceReturn`. Values must be short
+    lowercase tokens, so free text cannot be forwarded.
+  - `/admin/feedback` (Feedback and Errors tabs, own header, fixtures for `EDITORIAL_FIXTURE_MODE=local-demo`).
+- Decisions made:
+  - Workspace crashes show `WorkspaceCrash` inside the shell instead of falling to the root error page: the
+    workspace had no `error.tsx`, so a render error used to lose the nav and chat. No new `app/` file was needed.
+  - The wizard boundary re-throws, so `app/start/error.tsx` still shows its own message; neither `app/` error file
+    was edited.
+  - A failed Wren reply is reported from the browser (class `wren_failed` or `wren_stopped`, one row per message id).
+  - Chat approval cards (send, post) are not funnel events: `review_approved` and `review_changes_asked` mean a
+    launch piece's review card. The chat card's failures are error-logged.
+  - Fixed on the way: `useExample` in `WizardFlow.tsx` broke `react-hooks/rules-of-hooks` on main; main fixed the
+    same line (`applyExample`) while this branch was open, and the rebase kept main's.
+- Checks run (after rebasing on `origin/main` at `84d31018` and regenerating `convex/_generated` with
+  `convex codegen` against a disposable local backend):
+  - `npm run typecheck`: clean.
+  - `npm run lint`: 0 errors, 45 warnings (same 45 as main).
+  - Targeted: `npx vitest run convex/feedback tests/platform/wp95-feedback.test.tsx tests/platform/wp95-track.test.ts`:
+    16 + 17 + 8 tests passing.
+  - `npm test` and `npm run build`: see the "Gate" entry below.
+- Local walkthrough (disposable local Convex on port 3510, Next dev on 3520, fixture AI mode, synthetic
+  `@example.test` accounts, nothing near production). Screenshots in `docs/wp/evidence/wp95/`:
+  1. `01-wizard-feedback-dialog.jpg`: the wizard header button and dialog.
+  2. `02-workspace-shell-send-feedback.jpg`: the sidebar control on Team HQ with four launch pieces waiting.
+  3. `03-workspace-feedback-dialog.jpg`: the dialog with a note and a rating of 5.
+  4. `04-workspace-page-error-fallback.jpg`: a forced client error (a temporary throw, removed) replaced by the in-shell
+     fallback; the error landed in `client_errors` as `TypeError`, `/dashboard/b/[id]/files`, `boundary`.
+  5. `05-admin-feedback-tab.jpg` and `06-admin-errors-tab.jpg`: `/admin/feedback` read live from the local backend as
+     the bound super admin.
+  6. `07-mobile-feedback-dialog-375.jpg`: the dialog at 375px.
+  Funnel events were observed through a `window.gtag` stub (consent was declined): `wizard_step_finished` for each of
+  platform, commercial_model, goal, name, partner_personality and partner_name, `business_created`,
+  `launch_piece_waiting` for blueprint, brand_kit, email_sequence and social_pack, `review_approved` (brand_kit),
+  `review_changes_asked` (email_sequence) and `first_wren_message`. `wizard_step_finished` for the idea step is
+  sent from the own-idea start (added after this run, covered by reading the code path only); the `blueprint` step
+  came through only in the first pass because a hot reload cleared the stub mid-run.
+- a11y-check (jstack:a11y-check, WCAG 2.1 AA), on the feedback control and `/admin/feedback`:
+  - Icon-only close button has `aria-label`; icons are `aria-hidden`; every field has a label (rating is a
+    fieldset with a legend and radios named "N out of 5"); no images; no external links.
+  - Focus: visible rings on every control (`has-[:focus-visible]` on the rating labels); the native modal traps Tab,
+    Escape closes it, focus returns to the button (checked in the browser at 375px too: the mobile menu panel stays
+    open behind it, because the dialog stops the Escape from reaching the sidebar).
+  - Headings: dialog h2 under the page h1; admin page one h1 then h2s. No inline `style` attributes.
+  - In-browser script on both admin tabs at 1440px and 375px: one main, names on every control, no contrast failures
+    (4.5:1, 3:1 for large text), no page-level horizontal scroll (wide tables scroll inside a focusable, labelled
+    region). axe-core (jsdom) on the open dialog: no violations (colour contrast not computable in jsdom, covered by
+    the browser script).
+  - Not done: a VoiceOver pass.
+- Result: S1 to S6 built. Waiting on Codex for the schema.
+- Gotchas:
+  - `window.gtag` appears only after consent and after the page is interactive, so once-only events retry through
+    `useAnalyticsReady` instead of firing once at mount.
+  - The funnel `workspace_return` records the visit day only once analytics is ready, so a visitor who never
+    consents is never given a stored date.
+  - A returnTo of `/admin/feedback` is not on the sign-in allowlist and falls back to `/dashboard`, same as
+    `/admin/ai`.
+- Next: Codex wires `feedbackTables` into the schema; the owner decides on the error tracker, on showing emails, and
+  on linking `/admin/feedback` from the AI console (WP94 owns that file).
+
+### CLAUDE.md line for the owner to add (not edited here)
+
+> `convex/feedback/**`, `app/admin/feedback/**`, `components/workspace/feedback/**`, `lib/feedback/**` - the beta
+> feedback loop (WP95). In-app feedback and a private error log go to Convex tables `feedback_entries` and
+> `client_errors`, read only by the super admin at `/admin/feedback`. Never store chat text; errors keep route,
+> business id and error class only. Funnel events go through `trackWorkspaceEvent` in `lib/track.ts`.
