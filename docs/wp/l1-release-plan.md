@@ -24,6 +24,7 @@ and production now runs `8d33b8f8` (#286, deployed 2026-11-16). Monday 2026-11-0
 - **The `Crew seeds` workflow skips every day.** It has run daily since 2026-11-09 and stops with "Crew seeds are
   not configured" because the `CONVEX_PROD_DEPLOY_KEY` secret or the `CREW_SEED_VERSION` variable is missing.
   Until it runs, or an operator seeds by hand, an unseeded idea shows the generic "Not yet validated" blueprint step.
+  Five ideas are seeded by hand (the runs after #283); every other idea is still unseeded.
 - **Owner steps 4–5** (ops settings, cohort) are not recorded in the repo.
 
 What is left, in order: run the five live launches and record them, confirm the ops settings and the recovery cron,
@@ -66,7 +67,7 @@ say "Coming soon" for each, so nothing looks broken.
 | L1-C9 | Build entry points for signed-in testers | Merged (#272) | Owner request, 2026-11-07: signed-in testers had no way into the wizard except the homepage. A verified member on an idea page gets "Build this idea, free" beside Save, straight to `/start/{slug}` with no sign-up hop. This reverses the WP74-S5 rule of no CTA for members. `/dashboard` gets a "Start building" card, straight to `/start/own`, with a secondary link to the workspace library. Both sit behind the same flag (`buildCtaVisible`), and off, the pages are unchanged. Owner's call (b), same day: in `allowlist` mode signed-out visitors see the CTAs too (`buildCta:buildCtaVisible`), and a signed-in founder who is not on the allowlist gets "You're not in the beta yet" at `/start` instead of a 404 (`buildCta:awaitingInvite`, asked only after the wizard gate refuses). A signed-in non-member still sees no CTA. The Convex change ships with the Convex deploy. The wizard re-checks access |
 | L1-C9 | Team and lead name decided by the idea | Merged as WP91 (#279). This id is used twice; this row is the roster one | `docs/wp/roster-per-idea/PLAN.md` (owner decisions 2026-11-07, RULINGS). S1: the chat uses the founder's lead name (today it always says "Wren"). S2: varied lead-name suggestions. S2b: about 6 lead avatars (one-time image spend, confirm first). S3–S5: the blueprint call proposes the team with a fallback to today's rules; core Lead, Brand, Email, Social. If S3–S5 slip, S1–S2 ship alone and the fallback keeps launches safe |
 | L1-C3 | Local fixture walkthrough | Done 2026-11-07; blockers fixed in #261 and #267. Re-run on `45ac7371` 2026-11-16: no blockers, findings F1–F6 below | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
-| L1-C4 | Five live test launches | **Open.** Not recorded. Needs #282 (merged) and a passing live seed run first | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
+| L1-C4 | Five live test launches | **Open.** Not recorded. Unblocked: #282 and #283 merged, and live seed runs pass since 2026-11-16 | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 
 ### Codex lane (ship gates for the launch)
 
@@ -199,7 +200,8 @@ with focus return and the live message. The blockers found are L1-C2, L1-C5, L1-
 - With no `idea_crew_seeds` row for an idea, the wizard's blueprint suggestion is generic ("The one person who feels
   this problem most"). Live launches personalise the blueprint, but the wizard step reads boilerplate for every idea
   that has no seed. Decide before Monday: seed the ideas we invite people to, or accept it. (Owner ruled: seed every
-  public idea, WP90 #278, with WP92 #280 to keep seeds current. No seed is on prod yet; see the status section.)
+  public idea, WP90 #278, with WP92 #280 to keep seeds current. Five seeds are on prod since 2026-11-16; the rest
+  wait for the workflow or a wider hand run. See the status section.)
 - The Email page says "Sequence status: Draft" right after the founder approves (the row stays draft until WP79
   activates it). Reword to say it is approved and not sending yet. (Fixed in #267: the line is gone, and an approved
   sequence reads "Nothing is sent yet." Not rechecked in a browser.)

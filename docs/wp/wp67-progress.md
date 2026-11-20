@@ -10,7 +10,7 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `18dcb3fd` (#282). Open: **live calls still fail** (the 2026-11-16 seed run, the first since #282, failed all five items as `bad_request`; cause unknown), the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
+Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `8d33b8f8` (#286). The live `bad_request` is closed: #283 sends the seed and social-pack schemas in the prompt, and two live seed runs on 2026-11-16 wrote all five seeds each (about $0.28 a run). Open: the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
 
 Earlier (2026-11-06, later): **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
