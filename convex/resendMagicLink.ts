@@ -79,7 +79,7 @@ function requireEnvironmentValue(
   return value;
 }
 
-function requireExplicitSender(env: DeliveryEnvironment) {
+export function platformResendFromAddress(env: DeliveryEnvironment) {
   const from = requireEnvironmentValue(env, "AUTH_RESEND_FROM");
   if (/\r|\n/u.test(from)) throw new Error(MAGIC_LINK_DELIVERY_ERROR);
   const bracketed = from.match(/<([^<>]+)>$/u);
@@ -161,7 +161,7 @@ export async function deliverResendMagicLink(
   try {
     const env = dependencies.env ?? process.env;
     const apiKey = requireEnvironmentValue(env, "AUTH_RESEND_KEY");
-    const from = requireExplicitSender(env);
+    const from = platformResendFromAddress(env);
     const siteUrl = requireEnvironmentValue(env, "SITE_URL");
     const { payload } = createResendMagicLinkEmail({
       ...args,

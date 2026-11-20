@@ -99,6 +99,7 @@ import type * as live_workshopQueries from "../live/workshopQueries.js";
 import type * as newsletter from "../newsletter.js";
 import type * as ops_settings from "../ops/settings.js";
 import type * as ops_spend from "../ops/spend.js";
+import type * as ops_spendAlerts from "../ops/spendAlerts.js";
 import type * as payments from "../payments.js";
 import type * as paymentsBridge from "../paymentsBridge.js";
 import type * as platform_accountClosureGuard from "../platform/accountClosureGuard.js";
@@ -289,6 +290,7 @@ declare const fullApi: ApiFromModules<{
   newsletter: typeof newsletter;
   "ops/settings": typeof ops_settings;
   "ops/spend": typeof ops_spend;
+  "ops/spendAlerts": typeof ops_spendAlerts;
   payments: typeof payments;
   paymentsBridge: typeof paymentsBridge;
   "platform/accountClosureGuard": typeof platform_accountClosureGuard;
@@ -414,4 +416,5 @@ export declare const components: {
   crewWorkpool: import("@convex-dev/workpool/_generated/component.js").ComponentApi<"crewWorkpool">;
   shardedCounter: import("@convex-dev/sharded-counter/_generated/component.js").ComponentApi<"shardedCounter">;
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+  ownerSpendResend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"ownerSpendResend">;
 };
