@@ -19,6 +19,7 @@ import {
 } from "@/components/admin/ai-costs/primitives";
 import { PLAN_LABELS, formatUtc } from "@/lib/admin/ai-costs/labels";
 import { chargedMicroUsd, formatCount, formatTokens, formatUsd } from "@/lib/admin/ai-costs/money";
+import { isRejectedInput } from "@/lib/admin/ai-costs/errors";
 import { requireAiCostSource } from "@/lib/admin/ai-costs/server";
 import type { OwnerSummary, TimelineRow } from "@/lib/admin/ai-costs/types";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
@@ -81,9 +82,11 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
   try {
     if (ownerId !== null) summary = (await source.ownerSummaries([ownerId])).summaries[0] ?? null;
     page = await source.timeline(ownerId, cursor);
-  } catch {
+  } catch (error) {
     // A malformed id or cursor is refused by Convex validation: a missing page, like any other.
-    notFound();
+    // Anything else (an outage, an expired session) goes to the error boundary as it is.
+    if (isRejectedInput(error)) notFound();
+    throw error;
   }
   if (ownerId !== null && summary === null) notFound();
 

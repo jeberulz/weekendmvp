@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { formatUsd } from "@/lib/admin/ai-costs/money";
+import { formatCount, formatUsd } from "@/lib/admin/ai-costs/money";
 import type { PoolDay } from "@/lib/admin/ai-costs/aggregate";
 
 /*
@@ -147,6 +147,10 @@ export function DailySpendChart({
   );
 }
 
+/** Dot spacing in the launch strip, and the highest row before dots fold into a "+N" count. */
+const STRIP_STEP = 11;
+const STRIP_ROW_MAX = 7;
+
 export function LaunchCostStrip({
   costs,
   targetMicroUsd,
@@ -159,20 +163,30 @@ export function LaunchCostStrip({
   p90MicroUsd: number | null;
 }) {
   const [hover, setHover] = useState<number | null>(null);
-  const H = 150;
   const pad = { top: 34, right: 16, bottom: 30, left: 16 };
   const plotW = W - pad.left - pad.right;
   const max = niceMax(Math.max(targetMicroUsd * 1.4, ...costs));
   const x = (value: number) => pad.left + (value / max) * plotW;
-  // Stack dots that would overlap into rows (a simple dot plot).
-  const placed: { cx: number; cy: number; cost: number }[] = [];
-  const baseY = H - pad.bottom - 10;
+  // Stack dots that would overlap into rows (a simple dot plot). A launch that
+  // finds no free row joins the nearest top-row dot's "+N" count instead of
+  // being drawn on top of it.
+  const stacked: { cx: number; row: number; cost: number; more: number }[] = [];
   for (const cost of costs) {
     const cx = x(cost);
     let row = 0;
-    while (placed.some((dot) => Math.abs(dot.cx - cx) < 11 && dot.cy === baseY - row * 11)) row += 1;
-    placed.push({ cx, cy: baseY - Math.min(row, 7) * 11, cost });
+    while (row <= STRIP_ROW_MAX && stacked.some((dot) => Math.abs(dot.cx - cx) < STRIP_STEP && dot.row === row)) row += 1;
+    if (row <= STRIP_ROW_MAX) {
+      stacked.push({ cx, row, cost, more: 0 });
+      continue;
+    }
+    // Row STRIP_ROW_MAX was taken, so a top-row dot within one step exists.
+    const top = stacked.find((dot) => dot.row === STRIP_ROW_MAX && Math.abs(dot.cx - cx) < STRIP_STEP);
+    if (top) top.more += 1;
   }
+  const overflow = stacked.some((dot) => dot.more > 0);
+  const H = 150 + (overflow ? STRIP_STEP + 4 : 0);
+  const baseY = H - pad.bottom - 10;
+  const placed = stacked.map((dot) => ({ ...dot, cy: baseY - dot.row * STRIP_STEP }));
   const ticks = [0, max / 4, max / 2, (3 * max) / 4, max];
 
   return (
@@ -203,8 +217,20 @@ export function LaunchCostStrip({
             onMouseEnter={() => setHover(index)}
           />
         ))}
+        {placed.map((dot, index) => (dot.more > 0 ? (
+          <text key={`more-${index}`} x={dot.cx} y={dot.cy - 9} textAnchor="middle" pointerEvents="none" className="fill-(--ed-text) text-[11px] font-semibold tabular-nums">
+            +{formatCount(dot.more)}
+          </text>
+        ) : null))}
         {hover !== null && placed[hover] ? (
-          <Tooltip x={placed[hover].cx} y={placed[hover].cy} chartWidth={W} lines={[`Launch ${formatUsd(placed[hover].cost)}`]} />
+          <Tooltip
+            x={placed[hover].cx}
+            y={placed[hover].cy}
+            chartWidth={W}
+            lines={placed[hover].more > 0
+              ? [`Launch ${formatUsd(placed[hover].cost)}`, `+${formatCount(placed[hover].more)} more at about this cost`]
+              : [`Launch ${formatUsd(placed[hover].cost)}`]}
+          />
         ) : null}
       </svg>
     </figure>

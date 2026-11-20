@@ -12,6 +12,7 @@ import {
   OWNER_DAILY_CAP_MICRO_USD,
   int64ToMicroUsd,
 } from "../../lib/workspace/contracts/metering";
+import { chargedMicroUsd } from "../../lib/admin/ai-costs/money";
 import type {
   ControlRoom,
   OwnerSummary,
@@ -206,10 +207,13 @@ function isLaunchCall(promptRef: string): boolean {
   return promptRef.startsWith("crew-") && !promptRef.startsWith("crew-idea-seed");
 }
 
+/** The meter's charge rule, shared with the console (`chargedMicroUsd`). */
 function chargedOf(row: Doc<"ai_usage">): number {
-  if (row.status === "reserved") return 0;
-  const base = int64ToMicroUsd(row.costMicroUsd);
-  return row.lateCostMicroUsd === undefined ? base : Math.max(base, int64ToMicroUsd(row.lateCostMicroUsd));
+  return chargedMicroUsd({
+    status: row.status,
+    costMicroUsd: int64ToMicroUsd(row.costMicroUsd),
+    lateCostMicroUsd: row.lateCostMicroUsd === undefined ? null : int64ToMicroUsd(row.lateCostMicroUsd),
+  });
 }
 
 /**

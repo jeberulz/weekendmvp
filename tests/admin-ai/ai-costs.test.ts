@@ -15,6 +15,7 @@ import {
   unitEconomics,
 } from "@/lib/admin/ai-costs/aggregate";
 import { csvCell, csvUsd, toCsv } from "@/lib/admin/ai-costs/csv";
+import { isRejectedInput } from "@/lib/admin/ai-costs/errors";
 import { breakdownCsv, foundersCsv } from "@/lib/admin/ai-costs/exports";
 import { BUILDERS_HUB_MONTHLY_MICRO_USD, forecast } from "@/lib/admin/ai-costs/forecast";
 import { fixtureData } from "@/lib/admin/ai-costs/fixtures";
@@ -327,5 +328,15 @@ describe("view model on fixtures", () => {
     expect(view.prompts.reduce((sum, prompt) => sum + prompt.chargedMicroUsd, 0)).toBe(total);
     expect(view.unit.launches.count).toBeGreaterThan(0);
     expect(data.summaries.every((summary) => summary.email === null || summary.email.endsWith("@example.test"))).toBe(true);
+  });
+});
+
+describe("founder timeline errors", () => {
+  test("only Convex input refusals count as a missing page", () => {
+    expect(isRejectedInput(new Error("[Request ID: x] Server Error\nArgumentValidationError: Value does not match validator."))).toBe(true);
+    expect(isRejectedInput(new Error("Uncaught Error: InvalidCursor: Failed to parse cursor"))).toBe(true);
+    expect(isRejectedInput(new Error("fetch failed"))).toBe(false);
+    expect(isRejectedInput(new Error("Server Error: FORBIDDEN"))).toBe(false);
+    expect(isRejectedInput("ArgumentValidationError")).toBe(false);
   });
 });

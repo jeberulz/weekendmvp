@@ -53,7 +53,14 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
   const { control, overview, unit, range } = view;
   const days = range.days;
   const launches = unit.launches;
-  const medianTone = launches.medianMicroUsd === null ? "info" : launches.medianMicroUsd > launches.targetMicroUsd ? "critical" : "good";
+  // A cut-off launch's cost is a floor, so the measured median and p90 are floors too:
+  // "over target" still holds, but "within target" cannot be claimed.
+  const launchFloor = launches.truncated > 0;
+  const medianTone = launches.medianMicroUsd === null
+    ? "none"
+    : launches.medianMicroUsd > launches.targetMicroUsd
+      ? "critical"
+      : launchFloor ? "unknown" : "good";
   const alarms = control.spendAlarmState;
 
   return (
@@ -168,16 +175,23 @@ async function Overview({ searchParams }: { searchParams: SearchParams }) {
       >
         <StatGrid label="Unit costs">
           <StatTile
-            label="Median launch"
-            value={formatUsd(launches.medianMicroUsd)}
+            label={launchFloor ? "Median launch (at least)" : "Median launch"}
+            value={`${launchFloor && launches.medianMicroUsd !== null ? "≥ " : ""}${formatUsd(launches.medianMicroUsd)}`}
             detail={
               <span className="flex flex-wrap items-center gap-1.5">
-                {medianTone === "critical" ? <StatusBadge tone="critical">Over the $0.75 target</StatusBadge> : medianTone === "good" ? <StatusBadge tone="good">Within the $0.75 target</StatusBadge> : <span>No launch yet</span>}
+                {medianTone === "critical" ? <StatusBadge tone="critical">Over the $0.75 target</StatusBadge>
+                  : medianTone === "good" ? <StatusBadge tone="good">Within the $0.75 target</StatusBadge>
+                  : medianTone === "unknown" ? <StatusBadge tone="warning">Lower bound: may be over the target</StatusBadge>
+                  : <span>No launch yet</span>}
                 <span>{formatCount(launches.count)} launches</span>
               </span>
             }
           />
-          <StatTile label="p90 launch" value={formatUsd(launches.p90MicroUsd)} detail={`${formatCount(launches.overTarget)} of ${formatCount(launches.count)} over $0.75 · mean ${formatUsd(launches.meanMicroUsd)}`} />
+          <StatTile
+            label={launchFloor ? "p90 launch (at least)" : "p90 launch"}
+            value={`${launchFloor && launches.p90MicroUsd !== null ? "≥ " : ""}${formatUsd(launches.p90MicroUsd)}`}
+            detail={`${launchFloor ? "At least " : ""}${formatCount(launches.overTarget)} of ${formatCount(launches.count)} over $0.75 · mean ${launchFloor ? "≥ " : ""}${formatUsd(launches.meanMicroUsd)}`}
+          />
           <StatTile label="Per Wren message" value={formatUsd(unit.wren.perMessageMicroUsd)} detail={`${formatCount(unit.wren.messages)} messages · ${formatUsd(unit.wren.chargedMicroUsd)} incl. failed attempts`} />
           <StatTile label="Per seed" value={formatUsd(unit.seeds.perSeedMicroUsd)} detail={`${formatCount(unit.seeds.seeds)} seeds · ${formatUsd(unit.seeds.chargedMicroUsd)}`} />
           <StatTile label="Per active founder a day" value={formatUsd(unit.founders.perFounderDayMicroUsd)} detail={`${formatCount(unit.founders.activeFounders)} founders · ${formatCount(unit.founders.founderDays)} founder-days`} />
