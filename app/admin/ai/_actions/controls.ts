@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { CAP_OVERRIDE_CEILING_MICRO_USD, EXPIRY_CHOICES, type CapOverride } from "@/lib/admin/ai-costs/cap-override";
 import { CONTROL_ERRORS, POOL_BUDGET_CEILING_MICRO_USD, REASON_MAX } from "@/lib/admin/ai-costs/controls";
 import { resolveControlsBackend, type ControlResult, type FoundAccount } from "@/lib/admin/ai-costs/controls-server";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
@@ -71,6 +72,34 @@ export async function findAccountAction(input: z.input<typeof findSchema>): Prom
   } catch {
     return { ok: false, code: "UNAVAILABLE", message: CONTROL_ERRORS.UNAVAILABLE };
   }
+}
+
+const capSchema = z.strictObject({
+  ownerId: ownerIdSchema,
+  capMicroUsd: z.int().min(0).max(CAP_OVERRIDE_CEILING_MICRO_USD * 10),
+  expiry: z.enum(EXPIRY_CHOICES),
+  reason: z.string().max(REASON_MAX * 2).nullable(),
+  confirm: z.string().max(40).nullable(),
+});
+
+export async function setCapOverrideAction(input: z.input<typeof capSchema>): Promise<ControlResult<{ override: CapOverride }>> {
+  assertEditorialRoutesEnabled();
+  const parsed = capSchema.safeParse(input);
+  if (!parsed.success) return INVALID;
+  const backend = await resolveControlsBackend();
+  if (!backend) return FORBIDDEN;
+  return await backend.setCapOverride(parsed.data);
+}
+
+const clearCapSchema = z.strictObject({ ownerId: ownerIdSchema });
+
+export async function clearCapOverrideAction(input: z.input<typeof clearCapSchema>): Promise<ControlResult<{ changed: boolean }>> {
+  assertEditorialRoutesEnabled();
+  const parsed = clearCapSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "RESOURCE_NOT_FOUND", message: CONTROL_ERRORS.RESOURCE_NOT_FOUND };
+  const backend = await resolveControlsBackend();
+  if (!backend) return FORBIDDEN;
+  return await backend.clearCapOverride(parsed.data.ownerId);
 }
 
 /** Local fixtures only: the simulated sign-in. Production never resolves a fixture backend. */

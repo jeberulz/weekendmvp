@@ -116,6 +116,10 @@ export const CONTROL_ERRORS = {
   NOT_VERIFIED: "This account has not verified its email, so it cannot join the cohort.",
   RESOURCE_NOT_FOUND: "That account no longer exists.",
   UNAVAILABLE: "The change could not be saved. Nothing was changed; reload and try again.",
+  CAP_TOO_HIGH: "A founder's daily cap can be raised to at most $25.",
+  CAP_NOT_A_RAISE: "Enter more than the plan's daily cap: an override only raises it.",
+  CAP_REASON_REQUIRED: "Give a reason for raising this founder's cap.",
+  NOT_AVAILABLE: "Raising one founder's cap needs a meter change that is not live yet. Nothing was changed.",
 } as const;
 
 export type ControlErrorCode = keyof typeof CONTROL_ERRORS;

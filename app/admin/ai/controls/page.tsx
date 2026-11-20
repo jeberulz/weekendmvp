@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { Suspense, type ReactNode } from "react";
+import { Suspense } from "react";
 
-import { AuthPlatformProvider } from "@/app/AuthPlatformProvider";
 import { ConsoleFallback, ConsoleShell } from "@/components/admin/ai-costs/ConsoleShell";
+import { StepUpBoundary } from "@/components/admin/ai-costs/StepUpBoundary";
 import { AddToCohort, CohortTable, SpendControlsForm } from "@/components/admin/ai-costs/controls";
 import { Card, Notice, PageTitle, Section } from "@/components/admin/ai-costs/primitives";
-import { StepUpProvider } from "@/components/admin/editorial/common/StepUpContext";
 import { SWITCH_KEYS, SWITCH_LABELS, type SwitchKey } from "@/lib/admin/ai-costs/controls";
 import { resolveControlsBackend, type RecentChange } from "@/lib/admin/ai-costs/controls-server";
 import { formatUtc } from "@/lib/admin/ai-costs/labels";
@@ -32,6 +31,8 @@ const ACTION_LABELS: Record<string, string> = {
   "ops.settings.changed": "Controls changed",
   "ops.cohort.added": "Added to cohort",
   "ops.cohort.removed": "Removed from cohort",
+  "ops.cap_override.set": "Founder cap raised",
+  "ops.cap_override.cleared": "Founder cap raise ended",
 };
 
 function parseMetadata(metadata: string | null): Record<string, unknown> {
@@ -63,18 +64,22 @@ function describeChange(change: RecentChange): string {
     return parts.join(" · ");
   }
   const who = change.subjectEmail ?? "an account without an email";
+  if (change.action === "ops.cap_override.set") {
+    const cap = Number(data.capMicroUsd);
+    const until = Number(data.expiresAt);
+    const parts = [who];
+    if (Number.isFinite(cap)) parts.push(`${formatUsd(cap)} a day`);
+    if (Number.isFinite(until)) parts.push(`until ${formatUtc(until)}`);
+    if (typeof data.reason === "string") parts.push(`reason: ${data.reason}`);
+    if (data.risky === true) parts.push("confirmed with a recent sign-in");
+    return parts.join(" · ");
+  }
+  if (change.action === "ops.cap_override.cleared") {
+    const cap = Number(data.capMicroUsd);
+    return Number.isFinite(cap) ? `${who} · was ${formatUsd(cap)} a day` : who;
+  }
   const reason = typeof data.reason === "string" ? ` · reason: ${data.reason}` : "";
   return `${who}${reason}`;
-}
-
-function StepUpBoundary({ live, stepUp, children }: { live: boolean; stepUp: { method: "google" | "email" | null; email: string | null } | null; children: ReactNode }) {
-  if (!live || stepUp === null) return children;
-  // The live console signs in again with the account's own method (the editorial step-up).
-  return (
-    <AuthPlatformProvider fallbackClassName="bg-(--ed-canvas)">
-      <StepUpProvider value={stepUp}>{children}</StepUpProvider>
-    </AuthPlatformProvider>
-  );
 }
 
 async function Controls() {
