@@ -57,7 +57,7 @@ Thinking tokens are not metered apart: Anthropic bills thinking as output and `a
   - Scope: `app/admin/ai/` — Overview (pools, alarm, calls, failures, unit economics, daily spend chart), Prompts and models (tables, share of spend, efficiency signals, what-if), Founders (one row per owner, CSV), Founder drill-down (call timeline, metadata only), Forecast (inputs → monthly cost next to Builder's Hub revenue).
   - Acceptance criteria: range switch Today / 7 days / 30 days; truncation is stated on screen; charts follow the `dataviz` skill and have a table or text equivalent; a11y-check passes; CSV export of the per-owner and per-prompt tables.
 
-- [ ] `WP93-S5` - Docs, checks, PR
+- [x] `WP93-S5` - Docs, checks, PR
   - Scope: this file, the progress log, the registry row, CLAUDE.md key path line, screenshots.
   - Verification: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
 
