@@ -33,7 +33,7 @@ import type { ControlRoom } from "./types";
  */
 
 export type CohortMember = { ownerId: string; email: string | null; verified: boolean; addedAt: number };
-export type RecentChange = { id: string; action: string; subjectId: string; metadata: string | null; createdAt: number };
+export type RecentChange = { id: string; action: string; subjectId: string; subjectEmail: string | null; metadata: string | null; createdAt: number };
 
 export type ControlsView = {
   readonly mode: "fixture" | "live";
@@ -205,9 +205,16 @@ async function fixtureStore(nowMs: number): Promise<{ store: FixtureControls; co
   };
 }
 
-function record(store: FixtureControls, nowMs: number, action: string, subjectId: string, metadata: Record<string, unknown>): void {
+function record(
+  store: FixtureControls,
+  nowMs: number,
+  action: string,
+  subjectId: string,
+  subjectEmail: string | null,
+  metadata: Record<string, unknown>,
+): void {
   store.sequence += 1;
-  store.recent.unshift({ id: `fixture-audit-${store.sequence}`, action, subjectId, metadata: JSON.stringify(metadata), createdAt: nowMs });
+  store.recent.unshift({ id: `fixture-audit-${store.sequence}`, action, subjectId, subjectEmail, metadata: JSON.stringify(metadata), createdAt: nowMs });
   store.recent.length = Math.min(store.recent.length, 20);
 }
 
@@ -248,7 +255,7 @@ function fixtureBackend(): ControlsBackend {
       if (allowed === store.cohort.has(ownerId)) return { ok: true, value: { changed: false } };
       if (allowed) store.cohort.set(ownerId, { ownerId, email: account.email, verified: account.verified, addedAt: nowMs });
       else store.cohort.delete(ownerId);
-      record(store, nowMs, allowed ? "ops.cohort.added" : "ops.cohort.removed", ownerId, reason === null ? { allowed } : { allowed, reason });
+      record(store, nowMs, allowed ? "ops.cohort.added" : "ops.cohort.removed", ownerId, account.email, reason === null ? { allowed } : { allowed, reason });
       return { ok: true, value: { changed: true } };
     },
     async updateSpend(input) {
@@ -272,7 +279,7 @@ function fixtureBackend(): ControlsBackend {
       }
       store.settings = next;
       store.version = nowMs;
-      record(store, nowMs, "ops.settings.changed", "ops_settings", {
+      record(store, nowMs, "ops.settings.changed", "ops_settings", null, {
         globalDailyBudgetMicroUsd: String(next.freeBudgetMicroUsd),
         paidGlobalDailyBudgetMicroUsd: String(next.paidBudgetMicroUsd),
         killSwitches: next.killSwitches,

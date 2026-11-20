@@ -188,6 +188,8 @@ describe("WP93 Phase 2 ops controls", () => {
     expect(JSON.parse(audit[1].metadata ?? "{}")).toEqual({ allowed: false, reason: "Beta ended" });
     const recent = (await admin.query(api.admin.aiControls.controlsState, {})).recent;
     expect(recent.map((row) => row.action)).toEqual(["ops.cohort.removed", "ops.cohort.added"]);
+    // A removed member is still named on its audit row.
+    expect(recent.map((row) => row.subjectEmail)).toEqual(["tester@example.test", "tester@example.test"]);
   });
 
   test("the old mutations keep their behaviour on the shared write paths", async () => {

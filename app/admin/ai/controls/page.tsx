@@ -45,7 +45,7 @@ function parseMetadata(metadata: string | null): Record<string, unknown> {
 }
 
 /** One readable line per audit row. Never more than the row itself recorded. */
-function describeChange(change: RecentChange, emails: ReadonlyMap<string, string>): string {
+function describeChange(change: RecentChange): string {
   const data = parseMetadata(change.metadata);
   if (change.action === "ops.settings.changed") {
     const parts: string[] = [];
@@ -62,7 +62,7 @@ function describeChange(change: RecentChange, emails: ReadonlyMap<string, string
     if (data.via !== "ai-console") parts.push("changed outside the console");
     return parts.join(" · ");
   }
-  const who = emails.get(change.subjectId) ?? "an account";
+  const who = change.subjectEmail ?? "an account without an email";
   const reason = typeof data.reason === "string" ? ` · reason: ${data.reason}` : "";
   return `${who}${reason}`;
 }
@@ -83,7 +83,6 @@ async function Controls() {
   if (backend === null) notFound();
   const view = await backend.view();
   const { control } = view;
-  const emails = new Map(view.cohort.filter((member) => member.email !== null).map((member) => [member.ownerId, member.email as string]));
 
   return (
     <StepUpBoundary live={view.mode === "live"} stepUp={view.stepUp}>
@@ -104,12 +103,11 @@ async function Controls() {
         >
           <Card>
             <SpendControlsForm
-                key={view.version ?? "none"}
-                version={view.version}
-                current={{ freeBudgetMicroUsd: control.freeBudgetMicroUsd, paidBudgetMicroUsd: control.paidBudgetMicroUsd, killSwitches: control.killSwitches }}
-                spentToday={{ free: control.free.spentMicroUsd, paid: control.paid.spentMicroUsd }}
-                signedInRecently={view.signedInRecently}
-              />
+              version={view.version}
+              current={{ freeBudgetMicroUsd: control.freeBudgetMicroUsd, paidBudgetMicroUsd: control.paidBudgetMicroUsd, killSwitches: control.killSwitches }}
+              spentToday={{ free: control.free.spentMicroUsd, paid: control.paid.spentMicroUsd }}
+              signedInRecently={view.signedInRecently}
+            />
           </Card>
           <p className="mt-2 text-xs text-(--ed-text-2)">
             The workspace switch, cohort mode and free sign-ups are not changed here. Today&apos;s spend is from the meter&apos;s pool counters for {control.dayKey} (UTC).
@@ -140,7 +138,7 @@ async function Controls() {
                 <li key={change.id} className="flex flex-col gap-0.5 px-3 py-2 text-sm sm:flex-row sm:gap-3">
                   <span className="shrink-0 tabular-nums text-(--ed-text-2)">{formatUtc(change.createdAt)}</span>
                   <span className="font-medium">{ACTION_LABELS[change.action] ?? change.action}</span>
-                  <span className="min-w-0 break-words text-(--ed-text-2)">{describeChange(change, emails)}</span>
+                  <span className="min-w-0 break-words text-(--ed-text-2)">{describeChange(change)}</span>
                 </li>
               ))}
             </ol>

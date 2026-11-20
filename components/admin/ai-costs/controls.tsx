@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { findAccountAction, setCohortAction, simulateSignInAction, updateSpendControlsAction } from "@/app/admin/ai/_actions/controls";
 import { StrongAuthStep } from "@/components/admin/editorial/common/StrongAuthStep";
@@ -69,6 +69,14 @@ export function SpendControlsForm({
   const [fresh, setFresh] = useState(signedInRecently);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [saving, startSaving] = useTransition();
+  // After a save the server sends a new version: show its values, keep the feedback line.
+  const [syncedVersion, setSyncedVersion] = useState(version);
+  if (syncedVersion !== version) {
+    setSyncedVersion(version);
+    setBudgets({ free: dollars(current.freeBudgetMicroUsd), paid: dollars(current.paidBudgetMicroUsd) });
+    setSwitches(current.killSwitches);
+    setFresh(signedInRecently);
+  }
 
   const parsed: Record<Pool, number | null> = { free: parseUsdInput(budgets.free), paid: parseUsdInput(budgets.paid) };
   const valid = parsed.free !== null && parsed.paid !== null && budgetAllowed(parsed.free) && budgetAllowed(parsed.paid);
@@ -148,10 +156,12 @@ export function SpendControlsForm({
                     role="switch"
                     className="size-4 accent-(--ed-text)"
                     checked={on}
+                    aria-label={SWITCH_LABELS[key]}
                     onChange={(event) => setSwitches((prev) => ({ ...prev, [key]: !event.target.checked }))}
                   />
-                  <span>{SWITCH_LABELS[key]}</span>
-                  <span className="text-xs text-(--ed-text-2)">{on ? "on" : "off"}</span>
+                  <span aria-hidden="true">{SWITCH_LABELS[key]}</span>
+                  {/* The switch's checked state already says on or off to assistive tech. */}
+                  <span aria-hidden="true" className="text-xs text-(--ed-text-2)">{on ? "on" : "off"}</span>
                 </label>
               </li>
             );
@@ -276,10 +286,21 @@ function RemoveMember({ member }: { member: CohortMember }) {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [busy, startBusy] = useTransition();
   const label = member.email ?? "this account";
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  // Opening moves focus to the reason; cancelling returns it to "Remove…".
+  useEffect(() => {
+    if (open) reasonRef.current?.focus();
+    else if (restoreFocus.current) {
+      restoreFocus.current = false;
+      openerRef.current?.focus();
+    }
+  }, [open]);
 
   if (!open) {
     return (
-      <button type="button" className={buttonClass} onClick={() => setOpen(true)} aria-label={`Remove ${label} from the cohort`}>
+      <button ref={openerRef} type="button" className={buttonClass} onClick={() => setOpen(true)} aria-label={`Remove ${label} from the cohort`}>
         Remove…
       </button>
     );
@@ -300,10 +321,10 @@ function RemoveMember({ member }: { member: CohortMember }) {
   return (
     <form onSubmit={submit} className="flex min-w-64 flex-col gap-2 whitespace-normal">
       <label htmlFor={reasonId} className="text-sm font-medium">Reason for removing {label}</label>
-      <textarea id={reasonId} rows={2} maxLength={300} required className={cn(controlClass, "py-1.5")} value={reason} onChange={(event) => setReason(event.target.value)} />
+      <textarea ref={reasonRef} id={reasonId} rows={2} maxLength={300} required className={cn(controlClass, "py-1.5")} value={reason} onChange={(event) => setReason(event.target.value)} />
       <div className="flex gap-2">
         <button type="submit" className={primaryButton} disabled={busy || reason.trim().length === 0}>{busy ? "Removing…" : "Remove from cohort"}</button>
-        <button type="button" className={buttonClass} onClick={() => { setOpen(false); setReason(""); setFeedback(null); }}>Cancel</button>
+        <button type="button" className={buttonClass} onClick={() => { restoreFocus.current = true; setOpen(false); setReason(""); setFeedback(null); }}>Cancel</button>
       </div>
       <FeedbackLine feedback={feedback} />
     </form>

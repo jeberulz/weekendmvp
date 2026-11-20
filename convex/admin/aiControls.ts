@@ -60,10 +60,22 @@ export const controlsState = query({
       .withIndex("by_ownerId_and_createdAt", (q) => q.eq("ownerId", admin.user._id))
       .order("desc")
       .take(AUDIT_SCAN_MAX);
-    const recent = audit
+    const recent = await Promise.all(audit
       .filter((row) => row.action.startsWith("ops."))
       .slice(0, RECENT_CHANGES_MAX)
-      .map((row) => ({ id: row._id as string, action: row.action, subjectId: row.subjectId, metadata: row.metadata ?? null, createdAt: row.createdAt }));
+      .map(async (row) => {
+        // Cohort rows name an account: show its email (super admin only), never more.
+        const userId = row.action.startsWith("ops.cohort.") ? ctx.db.normalizeId("users", row.subjectId) : null;
+        const subject = userId === null ? null : await ctx.db.get("users", userId);
+        return {
+          id: row._id as string,
+          action: row.action,
+          subjectId: row.subjectId,
+          subjectEmail: subject?.email ?? null,
+          metadata: row.metadata ?? null,
+          createdAt: row.createdAt,
+        };
+      }));
     return {
       version: settings?.updatedAt ?? null,
       cohort,
