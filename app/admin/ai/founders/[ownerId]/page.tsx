@@ -95,9 +95,9 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
   }
   if (ownerId !== null && summary === null) notFound();
 
-  // Phase 3: a live raise for this founder, and whether raises can be made yet (Codex C2).
-  const { caps, backend: controls }: { caps: CapOverrides; backend: ControlsBackend | null } = summary
-    ? await readCapOverrides(source.mode)
+  // Phase 3: this founder's raise, if one is in force, and whether raises can be made here.
+  const { caps, backend: controls }: { caps: CapOverrides; backend: ControlsBackend | null } = summary && ownerId !== null
+    ? await readCapOverrides(source.mode, [ownerId])
     : { caps: { available: false, overrides: [] }, backend: null };
   const override: CapOverride | null = caps.overrides.find((candidate) => candidate.ownerId === ownerId) ?? null;
   const stepUp: StepUpState | null = controls && caps.available ? await controls.stepUpState() : null;
@@ -158,7 +158,7 @@ async function Timeline({ params, searchParams }: { params: Params; searchParams
             </Card>
           ) : (
             <Notice tone="info">
-              Raising one founder&apos;s cap needs a meter change that is not live yet (Codex request C2). Until it lands, this founder&apos;s cap is the plan&apos;s {formatUsd(summary.dayCapMicroUsd)} a day.
+              Raising a founder&apos;s cap is switched off here, so this founder&apos;s cap is the plan&apos;s {formatUsd(summary.dayCapMicroUsd)} a day.
             </Notice>
           )}
         </Section>

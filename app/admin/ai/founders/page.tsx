@@ -42,8 +42,8 @@ async function Founders({ searchParams }: { searchParams: SearchParams }) {
   const view = await loadRangeView(rangeId);
   const rows = view.founders;
   const day = view.range.dayKeys.at(-1);
-  // Phase 3: founders whose daily cap is raised right now (none in live mode until Codex C2).
-  const { caps } = await readCapOverrides(view.mode);
+  // Phase 3: founders whose daily cap is raised right now.
+  const { caps } = await readCapOverrides(view.mode, rows.flatMap((row) => (row.ownerId === null ? [] : [row.ownerId])));
   const raised = new Map(caps.overrides.map((override) => [override.ownerId, override]));
 
   return (
