@@ -4,6 +4,7 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { readMembershipState } from "./membership/state";
+import { ownerAccess } from "./ownerAccess";
 
 /** C-LIMITS: consume these in the mutation that starts the work. */
 const limits = new RateLimiter(components.rateLimiter, {
@@ -29,6 +30,8 @@ export async function checkLimit(
 ): Promise<void> {
   const feature = name === "studioVideo" ? "studioVideo" : name === "publish" ? "publish" : "ai";
   await assertFeatureEnabledForOwner(ctx, feature, key);
+  if ((name === "wrenMessage" || name === "wizardStart" || name === "crewJob") &&
+      (await ownerAccess(ctx, key)).unlimited) return;
   const limiterName = name === "wrenMessage"
     ? ({ free: "wrenFree", builders_hub: "wrenBuildersHub", growth: "wrenGrowth" } as const)[
         (await readMembershipState(ctx, key)).plan

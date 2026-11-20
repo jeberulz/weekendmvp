@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { requireSuperAdmin } from "../admin/superAdmin";
 import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "../platform/authz";
+import { ownerAccess } from "../platform/ownerAccess";
 
 type OpsReadCtx = Pick<QueryCtx, "db">;
 
@@ -75,9 +76,9 @@ export async function getOpsSettings(ctx: OpsReadCtx): Promise<OpsSettings> {
   };
 }
 
-function assertSwitchOpen(settings: OpsSettings, feature: WorkspaceFeature): void {
+function assertSwitchOpen(settings: OpsSettings, feature: WorkspaceFeature, bypassAiBudget = false): void {
   const aiAvailable = !settings.killSwitches.ai &&
-    (settings.globalDailyBudgetMicroUsd > 0n || settings.paidGlobalDailyBudgetMicroUsd > 0n);
+    (bypassAiBudget || settings.globalDailyBudgetMicroUsd > 0n || settings.paidGlobalDailyBudgetMicroUsd > 0n);
   const enabled = settings.workspaceEnabled && (
     feature === "workspace" ||
     (feature === "freeSignups"
@@ -133,10 +134,16 @@ export async function assertFeatureEnabled(
   feature: WorkspaceFeature,
 ): Promise<OpsSettings> {
   const settings = await getOpsSettings(ctx);
-  assertSwitchOpen(settings, feature);
+  // Resolve identity before a zero-budget check only when an owner exemption
+  // can affect it. All kill switches still fail in their original order.
+  const budgetOnly = settings.workspaceEnabled && !settings.killSwitches.ai &&
+    (feature === "ai" || feature === "studioVideo") &&
+    settings.globalDailyBudgetMicroUsd <= 0n && settings.paidGlobalDailyBudgetMicroUsd <= 0n;
+  if (!budgetOnly) assertSwitchOpen(settings, feature);
   const user = "scheduler" in ctx
     ? await requireCurrentPlatformUserForMutation(ctx)
     : await requireCurrentPlatformUser(ctx);
+  if (budgetOnly) assertSwitchOpen(settings, feature, (await ownerAccess(ctx, user._id)).bypassAiBudget);
   await assertOwnerInCohort(ctx, settings, user._id);
   return settings;
 }
@@ -149,7 +156,7 @@ export async function assertFeatureEnabledForOwner(
   ownerId: Id<"users">,
 ): Promise<OpsSettings> {
   const settings = await getOpsSettings(ctx);
-  assertSwitchOpen(settings, feature);
+  assertSwitchOpen(settings, feature, (await ownerAccess(ctx, ownerId)).bypassAiBudget);
   await assertOwnerInCohort(ctx, settings, ownerId);
   return settings;
 }

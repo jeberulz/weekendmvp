@@ -5,6 +5,7 @@ import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireCurrentPlatformUser } from "./authz";
 import { billingSummaryValidator, readMembershipState } from "./membership/state";
 import { resolvePlan } from "./planResolver";
+import { ownerAccess } from "./ownerAccess";
 import { PLAN_LIMITS, UPGRADE_REQUIRED, WORKSPACE_PLAN_LIMITS, type GatedFeature, type WorkspaceFeatureKey, type WorkspacePlanId } from "./plans";
 
 /**
@@ -33,6 +34,7 @@ export async function requireWorkspaceFeature(
   feature: WorkspaceFeatureKey,
 ): Promise<void> {
   await assertFeatureEnabledForOwner(ctx, "workspace", ownerId);
+  if ((await ownerAccess(ctx, ownerId)).unlimited) return;
   const plan = await resolvePlan(ctx, ownerId);
   if (!workspaceFeatureAllowed(plan, feature)) throw new ConvexError({ code: UPGRADE_REQUIRED, feature });
 }

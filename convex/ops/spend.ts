@@ -50,7 +50,7 @@ export const readDaily = query({
   handler: async (ctx, { dayKey }) => {
     await requireSuperAdmin(ctx);
     const { start, end } = dateRange(dayKey);
-    const [settled, failed, settings, free, paid] = await Promise.all([
+    const [settled, failed, settings, free, paid, ownerFree, ownerPaid] = await Promise.all([
       ctx.db.query("ai_usage").withIndex("by_status_and_createdAt", (q) =>
         q.eq("status", "settled").gte("createdAt", start).lt("createdAt", end))
         .take(MAX_DAILY_ROWS_PER_STATUS + 1),
@@ -60,6 +60,8 @@ export const readDaily = query({
       ctx.db.query("ops_settings").withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace")).unique(),
       readGlobalBudget(ctx, "free", dayKey),
       readGlobalBudget(ctx, "paid", dayKey),
+      readGlobalBudget(ctx, "free", dayKey, true),
+      readGlobalBudget(ctx, "paid", dayKey, true),
     ]);
     const truncated = settled.length > MAX_DAILY_ROWS_PER_STATUS || failed.length > MAX_DAILY_ROWS_PER_STATUS;
     const rows = [...settled.slice(0, MAX_DAILY_ROWS_PER_STATUS), ...failed.slice(0, MAX_DAILY_ROWS_PER_STATUS)];
@@ -67,6 +69,10 @@ export const readDaily = query({
       dayKey, truncated, sampledCalls: rows.length,
       free: { budgetMicroUsd: settings?.globalDailyBudgetMicroUsd ?? 0n, ...free },
       paid: { budgetMicroUsd: settings?.paidGlobalDailyBudgetMicroUsd ?? 0n, ...paid },
+      uncappedOwner: {
+        spentTodayMicroUsd: ownerFree.spentTodayMicroUsd + ownerPaid.spentTodayMicroUsd,
+        inFlightMicroUsd: ownerFree.inFlightMicroUsd + ownerPaid.inFlightMicroUsd,
+      },
       byModel: groups(rows, (row) => row.model),
       byPrompt: groups(rows, (row) => row.promptRef),
       byPlan: groups(rows, (row) => row.plan ?? "platform"),

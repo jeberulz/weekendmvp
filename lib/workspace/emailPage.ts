@@ -146,7 +146,7 @@ export type ChangeRoundAnswer =
  * (`FREE_CHANGE_ROUNDS - changeRound`), so a fresh draft previews round 1 with 1 left.
  */
 export type ChangePreview =
-  | { readonly outcome: "free"; readonly freeRoundsLeft: number }
+  | { readonly outcome: "free"; readonly freeRoundsLeft: number; readonly unlimited?: boolean }
   | { readonly outcome: "spend_required"; readonly costCredits: number }
   | { readonly outcome: "not_available"; readonly reason: string };
 
@@ -198,7 +198,7 @@ export function previewLine(
   switch (preview.outcome) {
     case "free": {
       // Before the click the previewed round is still the founder's, so it counts (L1 F2): a fresh draft has 2 left.
-      const left = freeRoundsCopy(preview.freeRoundsLeft + 1);
+      const left = preview.unlimited ? "Unlimited owner changes." : freeRoundsCopy(preview.freeRoundsLeft + 1);
       return cardStatus === "changes_requested" ? `You can ask for changes again. ${left}`.trim() : left || null;
     }
     case "spend_required":

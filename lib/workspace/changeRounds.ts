@@ -146,7 +146,7 @@ export type ChangeRoundUnavailableReason =
   | "not_revisable";
 
 export type ChangeRoundDecision =
-  | { readonly decision: "free"; readonly changeRound: number; readonly freeRoundsLeft: number }
+  | { readonly decision: "free"; readonly changeRound: number; readonly freeRoundsLeft: number; readonly unlimited?: boolean }
   | {
     readonly decision: "spend";
     readonly changeRound: number;

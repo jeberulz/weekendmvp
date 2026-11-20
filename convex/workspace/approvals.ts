@@ -740,7 +740,8 @@ async function requestArtifactChanges(
       approvalId: approval._id,
       status: "changes_requested",
       changed: true,
-      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId },
+      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId,
+        ...(decision.unlimited ? { unlimited: true } : {}) },
     };
   }
 
@@ -795,7 +796,8 @@ async function reaskChangeRound(
       approvalId: approval._id,
       status: approval.status,
       changed: true,
-      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId },
+      changeRound: { outcome: "free", changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft, taskId,
+        ...(decision.unlimited ? { unlimited: true } : {}) },
     };
   }
   if (decision.decision !== "spend") return noop;

@@ -177,6 +177,8 @@ export const LEDGER_REASON_VALUES = [
   "plan_grant",
   "starter_grant",
   "allowance_expiry",
+  "owner_comp_grant",
+  "owner_comp_reversal",
 ] as const;
 export const ledgerReasonValidator = stringLiteralUnion(LEDGER_REASON_VALUES);
 export type LedgerReason = Infer<typeof ledgerReasonValidator>;

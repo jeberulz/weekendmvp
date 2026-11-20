@@ -3,6 +3,7 @@ import type { Id } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { requireBusinessAccess, requireCurrentPlatformUser } from "../platform/authz";
 import { assertFeatureEnabled } from "../ops/settings";
+import { ownerAccess } from "../platform/ownerAccess";
 
 /**
  * WP72-S1 route gate for `/dashboard/b/[projectId]/*`.
@@ -45,6 +46,7 @@ export const workspaceAccessValidator = v.union(
       subline: v.optional(v.string()),
       /** The signed-in owner's display name, name or email, for the shell's user row. */
       viewerName: v.optional(v.string()),
+      unlimited: v.optional(v.boolean()),
     }),
   }),
   v.object({ allowed: v.literal(false) }),
@@ -79,6 +81,7 @@ export const getWorkspaceAccess = query({
         .find((candidate) => candidate !== undefined && candidate !== "");
       const partnerName = project.workspace?.partner.name.trim();
       const subline = businessSubline(project.workspace?.platform);
+      const access = await ownerAccess(ctx, project.ownerId);
       return {
         allowed: true as const,
         project: {
@@ -87,6 +90,7 @@ export const getWorkspaceAccess = query({
           ...(partnerName === undefined || partnerName === "" ? {} : { partnerName }),
           ...(subline === undefined ? {} : { subline }),
           ...(viewerName === undefined ? {} : { viewerName }),
+          ...(access.unlimited ? { unlimited: true } : {}),
         },
       };
     } catch (error) {

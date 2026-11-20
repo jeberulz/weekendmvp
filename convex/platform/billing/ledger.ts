@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { ownerAccess } from "../ownerAccess";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../../_generated/server";
 import { assertTaskRefundEligible } from "../transitions";
@@ -166,8 +167,23 @@ export async function applyLedgerDelta(
     if (!refreshed) throw new ConvexError({ code: "CREDIT_ACCOUNT_NOT_FOUND" });
     account = refreshed;
   }
+  // Fund the exact shortfall as a complimentary owner grant. This retains the
+  // normal debit/refund evidence without accumulating a debt for free owner work.
+  const ownerCreditExemption = write.reason === "task_debit" && (await ownerAccess(ctx, write.ownerId)).unlimited;
+  if (ownerCreditExemption && account.balance + write.delta < 0n) {
+    const shortfall = -(account.balance + write.delta);
+    const grant = shortfall < -write.delta ? shortfall : -write.delta;
+    await applyLedgerDelta(ctx, {
+      ownerId: write.ownerId, projectId: write.projectId, taskId: write.taskId,
+      reason: "owner_comp_grant", bucket: "bonus", delta: grant,
+      idempotencyKey: `owner-access:${write.idempotencyKey}`, allowNegative: true,
+    });
+    const funded = await ctx.db.get("credit_accounts", account._id);
+    if (!funded) throw new ConvexError({ code: "CREDIT_ACCOUNT_NOT_FOUND" });
+    account = funded;
+  }
   const nextBalance = account.balance + write.delta;
-  if (nextBalance < 0n && !write.allowNegative) {
+  if (nextBalance < 0n && !write.allowNegative && !ownerCreditExemption) {
     throw new ConvexError({ code: "INSUFFICIENT_CREDITS" });
   }
 
@@ -264,7 +280,11 @@ export const refundFailedTask = internalMutation({
     ) {
       throw new ConvexError({ code: "TASK_DEBIT_NOT_FOUND" });
     }
-    const refund = await applyLedgerDelta(ctx, {
+    const ownerGrant = await ctx.db.query("credit_ledger")
+      .withIndex("by_ownerId_and_idempotencyKey", q => q.eq("ownerId", task.ownerId)
+        .eq("idempotencyKey", `owner-access:${debit.idempotencyKey}`)).unique();
+    const ownerFunded = ownerGrant?.reason === "owner_comp_grant";
+    let refund = await applyLedgerDelta(ctx, {
       ownerId: task.ownerId,
       projectId: task.projectId,
       taskId: task._id,
@@ -273,8 +293,16 @@ export const refundFailedTask = internalMutation({
       idempotencyKey: `task-refund:${debit._id}`,
       bucketSplit: debit.bucketSplit,
       allowancePeriodEnd: debit.allowancePeriodEnd,
-      allowNegative: false,
+      allowNegative: ownerFunded,
     });
+    if (ownerFunded) {
+      const reversal = await applyLedgerDelta(ctx, {
+        ownerId: task.ownerId, projectId: task.projectId, taskId: task._id,
+        reason: "owner_comp_reversal", bucket: "bonus", delta: -ownerGrant.delta,
+        idempotencyKey: `owner-access-reversal:${debit._id}`, allowNegative: true,
+      });
+      refund = { ...refund, balance: reversal.balance };
+    }
     if (refund.duplicate) {
       const current = await ctx.db.query("credit_accounts")
         .withIndex("by_ownerId", (query) => query.eq("ownerId", task.ownerId)).unique();

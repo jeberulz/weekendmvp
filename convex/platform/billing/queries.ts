@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { query } from "../../_generated/server";
 import { assertFeatureEnabled } from "../../ops/settings";
 import { requireCurrentPlatformUser } from "../authz";
+import { ownerAccess } from "../ownerAccess";
 
 /** Owner-scoped meter for the dormant workspace shell. */
 export const creditsSummary = query({
@@ -16,6 +17,7 @@ export const creditsSummary = query({
     spendableAllowance: v.int64(),
     allowancePeriodEnd: v.union(v.number(), v.null()),
     paidActionsSuspended: v.boolean(),
+    unlimited: v.boolean(),
   }),
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -32,6 +34,7 @@ export const creditsSummary = query({
     const expiredAllowance = account?.allowancePeriodEnd !== undefined &&
       account.allowancePeriodEnd <= now ? allowanceRemaining : 0n;
     const spendableBalance = balance - expiredAllowance;
+    const access = await ownerAccess(ctx, owner._id);
     return {
       balance,
       allowanceRemaining,
@@ -39,7 +42,8 @@ export const creditsSummary = query({
       spendableBalance,
       spendableAllowance: allowanceRemaining - expiredAllowance,
       allowancePeriodEnd: account?.allowancePeriodEnd ?? null,
-      paidActionsSuspended: spendableBalance < 0n,
+      paidActionsSuspended: !access.unlimited && spendableBalance < 0n,
+      unlimited: access.unlimited,
     };
   },
 });
@@ -87,9 +91,11 @@ export const summary = query({
       .order("desc")
       .take(25);
 
+    const access = await ownerAccess(ctx, user._id);
     return {
       balance: account?.balance ?? 0n,
-      paidActionsSuspended: (account?.balance ?? 0n) < 0n,
+      paidActionsSuspended: !access.unlimited && (account?.balance ?? 0n) < 0n,
+      unlimited: access.unlimited,
       ledger: ledger.map((row) => ({
         id: row._id,
         reason: row.reason,

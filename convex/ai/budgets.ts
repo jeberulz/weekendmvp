@@ -19,18 +19,19 @@ import {
 const globalCounter = new ShardedCounter(components.shardedCounter);
 type GlobalCounterKind = "spent" | "inFlight";
 
-function counterKey(pool: GlobalPool, dayKey: string, kind: GlobalCounterKind): string {
-  return `workspace-ai:${dayKey}:${pool}:${kind}`;
+function counterKey(pool: GlobalPool, dayKey: string, kind: GlobalCounterKind, ownerBudgetBypass = false): string {
+  return `workspace-ai:${dayKey}:${ownerBudgetBypass ? "owner-" : ""}${pool}:${kind}`;
 }
 
 export async function readGlobalBudget(
   ctx: MutationCtx | QueryCtx,
   pool: GlobalPool,
   dayKey: string,
+  ownerBudgetBypass = false,
 ): Promise<{ spentTodayMicroUsd: number; inFlightMicroUsd: number }> {
   const [spentTodayMicroUsd, inFlightMicroUsd] = await Promise.all([
-    globalCounter.count(ctx, counterKey(pool, dayKey, "spent")),
-    globalCounter.count(ctx, counterKey(pool, dayKey, "inFlight")),
+    globalCounter.count(ctx, counterKey(pool, dayKey, "spent", ownerBudgetBypass)),
+    globalCounter.count(ctx, counterKey(pool, dayKey, "inFlight", ownerBudgetBypass)),
   ]);
   return { spentTodayMicroUsd, inFlightMicroUsd };
 }
@@ -40,8 +41,9 @@ export async function addGlobalReservation(
   pool: GlobalPool,
   dayKey: string,
   amount: number,
+  ownerBudgetBypass = false,
 ): Promise<void> {
-  await globalCounter.add(ctx, counterKey(pool, dayKey, "inFlight"), amount);
+  await globalCounter.add(ctx, counterKey(pool, dayKey, "inFlight", ownerBudgetBypass), amount);
 }
 
 export async function addGlobalSpend(
@@ -50,12 +52,13 @@ export async function addGlobalSpend(
   dayKey: string,
   spentMicroUsd: number,
   releaseMicroUsd: number,
+  ownerBudgetBypass = false,
 ): Promise<void> {
   if (releaseMicroUsd > 0) {
-    await globalCounter.subtract(ctx, counterKey(pool, dayKey, "inFlight"), releaseMicroUsd);
+    await globalCounter.subtract(ctx, counterKey(pool, dayKey, "inFlight", ownerBudgetBypass), releaseMicroUsd);
   }
   if (spentMicroUsd > 0) {
-    await globalCounter.add(ctx, counterKey(pool, dayKey, "spent"), spentMicroUsd);
+    await globalCounter.add(ctx, counterKey(pool, dayKey, "spent", ownerBudgetBypass), spentMicroUsd);
   }
 }
 

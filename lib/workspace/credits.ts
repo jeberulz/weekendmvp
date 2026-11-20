@@ -7,6 +7,7 @@ export type CreditsSummary = {
   readonly balance: number;
   readonly max: number;
   readonly plan: WorkspacePlanId;
+  readonly unlimited?: boolean;
 };
 
 const MOCK_CREDITS_SUMMARY: CreditsSummary = Object.freeze({ balance: 48, max: 50, plan: "free" });
@@ -18,7 +19,8 @@ const MOCK_CREDITS_SUMMARY: CreditsSummary = Object.freeze({ balance: 48, max: 5
  * shows the same Free-plan meter for every business until the metering query
  * lands. Keep the async signature so the swap changes no caller.
  */
-export async function getCreditsSummary(projectId: string): Promise<CreditsSummary> {
+export async function getCreditsSummary(projectId: string, unlimited = false): Promise<CreditsSummary> {
   void projectId;
+  if (unlimited) return { balance: 0, max: 0, plan: "builders_hub", unlimited: true };
   return MOCK_CREDITS_SUMMARY;
 }
