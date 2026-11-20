@@ -14,6 +14,9 @@ import type { UsageRow } from "../../lib/admin/ai-costs/types";
 const modules = import.meta.glob("/convex/**/*.ts");
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Anything that can run a query: the anonymous test client or one with an identity. */
+type Caller = Pick<ReturnType<typeof convexTest>, "query">;
+
 function setup() {
   const t = convexTest(schema, modules);
   shardedCounterTest.register(t);
@@ -58,7 +61,7 @@ function settleArgs(usageId: Id<"ai_usage">, costMicroUsd: number) {
 }
 
 /** Reads every row for today the way the console does: bounded pages over the creation-time index. */
-async function readToday(admin: ReturnType<typeof setup>, startMs: number, endMs: number): Promise<UsageRow[]> {
+async function readToday(admin: Caller, startMs: number, endMs: number): Promise<UsageRow[]> {
   const rows: UsageRow[] = [];
   let cursor: string | null = null;
   for (let page = 0; page < 10; page += 1) {
@@ -79,11 +82,11 @@ describe("WP93 AI cost console reads", () => {
     const dayKey = new Date().toISOString().slice(0, 10);
     const now = Date.now();
     const calls = [
-      (c: typeof t) => c.query(api.admin.aiCosts.usagePage, { startMs: now - DAY_MS, endMs: now, paginationOpts: { numItems: 10, cursor: null } }),
-      (c: typeof t) => c.query(api.admin.aiCosts.ownerSummaries, { ownerIds: [customerId], dayKey }),
-      (c: typeof t) => c.query(api.admin.aiCosts.launchCosts, { projectIds: [] }),
-      (c: typeof t) => c.query(api.admin.aiCosts.ownerTimeline, { ownerId: customerId, paginationOpts: { numItems: 10, cursor: null } }),
-      (c: typeof t) => c.query(api.admin.aiCosts.controlRoom, { dayKey }),
+      (c: Caller) => c.query(api.admin.aiCosts.usagePage, { startMs: now - DAY_MS, endMs: now, paginationOpts: { numItems: 10, cursor: null } }),
+      (c: Caller) => c.query(api.admin.aiCosts.ownerSummaries, { ownerIds: [customerId], dayKey }),
+      (c: Caller) => c.query(api.admin.aiCosts.launchCosts, { projectIds: [] }),
+      (c: Caller) => c.query(api.admin.aiCosts.ownerTimeline, { ownerId: customerId, paginationOpts: { numItems: 10, cursor: null } }),
+      (c: Caller) => c.query(api.admin.aiCosts.controlRoom, { dayKey }),
     ];
     for (const call of calls) {
       await expect(call(customer)).rejects.toThrow("FORBIDDEN");
