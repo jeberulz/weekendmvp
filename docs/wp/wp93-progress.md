@@ -32,3 +32,10 @@ Append-only progress log. Do not rely on chat history for project state.
 - Known: a malformed id on the drill-down shows the not-found page with HTTP 200 (the check runs inside the streamed Suspense boundary). Only the super admin reaches it.
 - Evidence: `docs/reviews/evidence/wp93-ai-costs-2026-11-20/` (fixture data, `EDITORIAL_FIXTURE_MODE=local-demo`).
 - Not done: no prod read for a sanity check (fixtures only); nothing deployed, merged or applied.
+
+## 2026-11-20 - Rebased on #289 (owner access)
+
+- `origin/main` gained #289 (unlimited owner access). It adds `ai_usage.ownerBudgetBypass` and separate `owner-` global counters, so the platform owner's uncapped calls no longer count in the free or paid pool counters.
+- Rebased the branch (clean). `UsageRow` now carries `ownerBudgetBypass`; `overview()` keeps those rows out of the pools and the per-day pool split and reports them as `uncappedOwner`; `controlRoom` also reads the owner counters. The overview shows the owner's uncapped spend apart (today, the range note and a daily table column).
+- Money-match test extended: an uncapped owner call (settled and in flight) matches `readGlobalBudget(…, true)` for both pools, the pools still match their counters, and the range total equals pools plus owner.
+- `convex/admin/aiCosts.test.ts` + `tests/admin-ai`: 25/25. axe on the changed overview: 0 violations.

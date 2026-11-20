@@ -26,6 +26,8 @@ Definition of done: the owner opens `/admin/ai` and sees what the live AI costs,
 | Cache hit rate | `cacheReadTokens / (inputTokens + cacheReadTokens + cacheWriteTokens)` on Anthropic rows |
 | Batch saving | standard-rate price of the batch rows' tokens minus what they were charged (re-priced with `anthropicCostMicroUsd`) |
 | Over-reservation | on final rows, `reservedMicroUsd − charged` |
+| Pool spend | charged on rows without `ownerBudgetBypass`, by `globalPool`: what the meter's pool counters hold |
+| Owner, uncapped | rows with `ownerBudgetBypass: true` (WP68 owner access, #289). The meter keeps them on separate `owner-` counters, so the console shows them outside both pools but inside every total |
 
 Thinking tokens are not metered apart: Anthropic bills thinking as output and `ai_usage` stores one `outputTokens` count. The console says so in the column header instead of inventing a split.
 
