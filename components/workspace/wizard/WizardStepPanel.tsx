@@ -1,9 +1,9 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Check, Minus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type Ref } from "react";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, EYEBROW_EMBER, FOCUS } from "@/components/workspace/kit/styles";
 import { COMMERCIAL_MODELS, GOAL_KINDS, type CommercialModel, type GoalKind } from "@/lib/workspace/contracts/roster";
 import {
   GOAL_TIMEFRAMES,
@@ -189,7 +189,19 @@ function NotValidatedNote({ id, blueprint }: { id: string; blueprint: WizardBlue
   );
 }
 
-/** The blueprint as a dashed card: what I'd build, who it is for, the one loop, what is left out. */
+/** Drop a leading restatement of the title from the pitch ("{Title}: …" / "{Title} — …"). */
+function dedupePitch(pitch: string, title: string): string {
+  const trimmed = title.trim();
+  if (trimmed.length === 0) return pitch;
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return pitch.replace(new RegExp(`^${escaped}\\s*[:—–-]\\s*`), "");
+}
+
+/**
+ * The blueprint as a confident one-page document (not a boxed form): the pitch
+ * as a serif lead, who it is for, the one loop in a single emphasised callout,
+ * what I'd build, and what's left out on purpose.
+ */
 function BlueprintCard({
   blueprint,
   ideaTitle,
@@ -201,42 +213,48 @@ function BlueprintCard({
   isOwn: boolean;
   noteId: string;
 }) {
+  const title = isOwn ? "Your idea" : ideaTitle;
+  const pitch = dedupePitch(blueprint.pitch, title);
   return (
-    <div className="flex flex-col gap-4 rounded-[10px] border border-dashed border-home-d2 bg-home-card px-6 pb-5 pt-6">
+    <div className="flex flex-col gap-6">
       {!blueprint.validated ? <NotValidatedNote id={noteId} blueprint={blueprint} /> : null}
       <div className="flex flex-col gap-2">
-        <h2 className="font-editorial text-2xl font-normal leading-tight text-home-ink">
-          {isOwn ? "Your idea" : ideaTitle}
-        </h2>
-        <p className="text-base text-home-ink-2">{blueprint.pitch}</p>
+        <h2 className="font-editorial text-[26px] font-normal leading-tight text-home-ink">{title}</h2>
+        {pitch ? <p className="font-editorial text-lg italic leading-snug text-home-ink-2">{pitch}</p> : null}
       </div>
-      <dl className="grid gap-2 text-sm text-home-ink-2">
+      <div className="border-t border-home-rule" />
+      {/* The core: who it is for, and the one loop (the single emphasis). */}
+      <div className="flex flex-col gap-4">
         <div>
-          <dt className="font-medium text-home-ink">Who it is for</dt>
-          <dd>{blueprint.oneUser}</dd>
+          <p className="text-sm font-semibold text-home-ink">Who it is for</p>
+          <p className="text-[15px] text-home-ink-2">{blueprint.oneUser}</p>
         </div>
-        <div>
-          <dt className="font-medium text-home-ink">The one loop</dt>
-          <dd>{blueprint.oneLoop}</dd>
+        <div className="border-l-2 border-home-orange-ink pl-4">
+          <p className={EYEBROW_EMBER}>The one loop</p>
+          <p className="mt-1.5 font-editorial text-xl leading-snug text-home-ink">{blueprint.oneLoop}</p>
         </div>
-      </dl>
-      <div className="flex flex-col gap-2">
+      </div>
+      <div className="border-t border-home-rule" />
+      <div className="flex flex-col gap-2.5">
         <h3 className={EYEBROW}>What I&rsquo;d build</h3>
-        <ul className="flex flex-col gap-1.5 text-sm text-home-ink">
+        <ul className="flex flex-col gap-2 text-[15px] text-home-ink">
           {blueprint.features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2">
-              <Plus aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-sky-ink" />
+            <li key={feature} className="flex items-start gap-2.5">
+              <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-ink-3" />
               <span>{feature}</span>
             </li>
           ))}
         </ul>
       </div>
       {blueprint.scopeCuts.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <h3 className={EYEBROW}>Left out on purpose</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-home-ink-2">
+          <ul className="flex flex-col gap-2 text-sm text-home-ink-3">
             {blueprint.scopeCuts.map((cut) => (
-              <li key={cut}>{cut}</li>
+              <li key={cut} className="flex items-start gap-2.5">
+                <Minus aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-d2" />
+                <span>{cut}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -780,7 +798,7 @@ export function WizardStepPanel({
   const primary = (
     <button
       type="submit"
-      className={step === "blueprint" ? `${BTN_PRIMARY} min-h-12 w-full text-[15px]` : PRIMARY}
+      className={step === "blueprint" ? `${BTN_PRIMARY} min-h-12 flex-[1_1_240px] text-[15px]` : PRIMARY}
       aria-disabled={pending || undefined}
       aria-describedby={describeAccept}
     >
@@ -820,12 +838,13 @@ export function WizardStepPanel({
       ) : null}
 
       {step === "blueprint" ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        // Approve leads; refine is a quieter, auto-width secondary.
+        <div className="flex flex-wrap items-center gap-3">
           {primary}
           <button
             ref={toggleRef}
             type="button"
-            className={SECONDARY_WIDE}
+            className={cn(BTN_SECONDARY, "min-h-12 px-5 text-sm")}
             aria-expanded={disclosure}
             aria-controls={`${base}-rework`}
             onClick={() => {

@@ -139,7 +139,7 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     });
   });
 
-  test("an own idea's blueprint is a dashed card labelled Not yet validated, with Looks good and I'd change some things", async () => {
+  test("an own idea's blueprint is labelled Not yet validated, with Looks good and I'd change some things", async () => {
     const { container, handlers, user } = setup("blueprint", {
       ideaTitle: "A packing list",
       ideaSlug: null,
