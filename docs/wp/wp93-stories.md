@@ -135,3 +135,35 @@ Lane: Work Package. These are audited writes to production controls, so they are
   - typecheck, lint, the full `npm test`, build;
   - the a11y-check skill, with axe on the new screen;
   - a PR with screenshots on fixtures.
+
+## Phase 3 stories — per-founder cap override, console side (2026-11-20)
+
+Branch: `claude/wp93-phase3-cap-override` (from `main` at `b1be06d5`).
+
+### Owner decision
+
+- **Build the console side now** (2026-11-20), ahead of Codex request C2 (`docs/wp/codex-needs-beta.md`, spec `docs/wp/wp93-codex-cap-override.md`). The schema field and the meter change are not on `main`, so nothing live can be raised yet.
+
+### How it stays off in production
+
+- `CAP_OVERRIDE_LIVE` in `lib/admin/ai-costs/cap-override.ts` is `false`. While it is false, the live console shows a note on the founder page ("waiting on the meter change") and no form, and the live backend refuses any write with `NOT_AVAILABLE`.
+- No Convex function is added: a write needs the schema field first. When C2 lands, a follow-up adds `setCapOverride` and `clearCapOverride` to `convex/admin/aiControls.ts` with the same rules, wires the live backend, and flips the flag.
+- On local fixtures (`EDITORIAL_FIXTURE_MODE=local-demo`) the whole flow works against the in-memory store, so the owner can review it now.
+
+### Rules (shared by the fixture store now and the Convex mutation later)
+
+- An override is a raise: more than the founder's plan cap ($1 free, $5 paid), and at most **$25 a day**.
+- It ends on its own: in 1 hour, in 4 hours, or at the end of the UTC day (the default). Never later than the end of the UTC day, as the spec says, unless the owner rules otherwise.
+- A reason is required and goes into the audit row.
+- Setting or changing one always needs a sign-in from the last 10 minutes and the typed "confirm". Ending one early is one click.
+- It never lifts the Free lifetime ceiling ($1.50), the pool budgets or the kill switches. The form says so.
+
+### Stories
+
+- [ ] `WP93-P3-S1` - Pure rules: `lib/admin/ai-costs/cap-override.ts` (ceiling, raise check, expiry choices clipped to the end of the UTC day, active check, effective cap), unit-tested.
+- [ ] `WP93-P3-S2` - Data: `ControlsBackend` gains `capOverrides`, `setCapOverride` and `clearCapOverride`. Fixtures apply the rules and write `ops.cap_override.set` / `ops.cap_override.cleared` rows to Recent changes; live refuses with `NOT_AVAILABLE`. Server actions validate input with zod.
+- [ ] `WP93-P3-S3` - UI:
+  - the founder page gets a "Daily cap override" section: the active override with "End it now", or the raise form (amount, ends, reason, step-up, confirm);
+  - the "Today vs daily cap" tile and the founders table show the raised cap and when it ends;
+  - Recent changes on the Controls tab describe override rows.
+- [ ] `WP93-P3-S4` - Checks: typecheck, lint, the full `npm test`, build, the a11y-check skill with axe on the founder page, screenshots on fixtures, a PR.
