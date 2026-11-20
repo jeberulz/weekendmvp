@@ -8,7 +8,10 @@ import {
   returnFocusToStatus,
   type FocusFlags,
 } from "@/components/workspace/chat/WrenChatCards";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, FOCUS } from "@/components/workspace/kit/styles";
+import { trackWorkspaceEvent } from "@/lib/track";
+import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
 import { cn } from "@/lib/utils";
 import {
   canOfferAsk,
@@ -62,7 +65,14 @@ export type ArtifactReviewCardProps = {
    * `readFrom` says where the thing to read sits relative to the card ("below" by default; the Brand kit page and
    * Team HQ put the card under what it reviews, so they say "above").
    */
-  artifact: { plural: string; approvedNote: string; readFrom?: "above" | "below"; approvalKind?: "send" | "post" };
+  artifact: {
+    plural: string;
+    approvedNote: string;
+    readFrom?: "above" | "below";
+    approvalKind?: "send" | "post";
+    /** The launch piece this card reviews, for the funnel events (WP95). Enum only. */
+    piece?: ArtifactKind;
+  };
   /** Level of the card's "Your review" heading: 3 by default (under a page section), 2 when no h2 sits above it. */
   headingLevel?: 2 | 3;
   /** Label of the approve button. "Approve" by default; Email and Social say "Approve all 4" and so on. */
@@ -149,6 +159,12 @@ export function ArtifactReviewCard({ card, decide, preview, artifact, headingLev
     let keepOpen = false;
     void decide(decision, text)
       .then((result) => {
+        if (artifact.piece !== undefined) {
+          trackWorkspaceEvent({
+            name: decision === "approve" ? "review_approved" : "review_changes_asked",
+            props: { piece: artifact.piece },
+          });
+        }
         if (decision === "approve") {
           setMessage(approvalDecisionCopy(result.status, { approvalKind: artifact.approvalKind }));
           return;
@@ -161,6 +177,7 @@ export function ArtifactReviewCard({ card, decide, preview, artifact, headingLev
         }
       })
       .catch((error: unknown) => {
+        reportClientError({ source: "action", error });
         const code = errorCode(error);
         const copy = emailDecisionErrorCopy(code, isRateLimited(error), noun);
         if (decision === "request_changes") {

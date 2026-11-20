@@ -9,7 +9,7 @@ export type FeedbackRow = {
   readonly note: string;
   readonly rating: number | null;
   readonly route: string;
-  readonly stepStates: readonly StepState[];
+  readonly stepStates: StepState[];
   readonly buildVersion: string;
   readonly createdAt: number;
 };
@@ -34,15 +34,15 @@ export type FeedbackOverview = {
     readonly count: number;
     readonly ratingAverage: number | null;
     /** Index 0 is one star, index 4 is five. */
-    readonly ratingCounts: readonly [number, number, number, number, number];
+    readonly ratingCounts: number[];
     readonly unrated: number;
     readonly truncated: boolean;
   };
   readonly errors: {
     readonly count: number;
-    readonly byClass: readonly CountBy[];
-    readonly byRoute: readonly CountBy[];
-    readonly bySource: readonly CountBy[];
+    readonly byClass: CountBy[];
+    readonly byRoute: CountBy[];
+    readonly bySource: CountBy[];
     readonly truncated: boolean;
   };
 };

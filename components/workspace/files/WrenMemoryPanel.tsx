@@ -18,6 +18,7 @@ import {
   WREN_MEMORY_STALE_COPY,
 } from "@/lib/workspace/wrenMemory";
 import { memoryCopyText, memoryMetaLine } from "@/lib/workspace/reviewPages";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 
 /**
  * WP77-S5 — "What Wren knows" on the Files page: Wren's rolling summary and
@@ -282,7 +283,8 @@ export function WrenMemoryView({ memory, actions, name = "Wren" }: { memory: Wre
     setPending(true);
     try {
       await action();
-    } catch {
+    } catch (caught) {
+      reportClientError({ source: "action", error: caught });
       setStatus(FAILED_COPY);
     } finally {
       inFlight.current = false;

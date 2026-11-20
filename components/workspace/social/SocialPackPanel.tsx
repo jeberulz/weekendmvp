@@ -66,7 +66,7 @@ type PostView = ReadyView["posts"][number];
 
 export type SocialDecide = ReviewDecide;
 
-const SOCIAL_ARTIFACT = { plural: "posts", approvedNote: SOCIAL_APPROVED_NOTE, approvalKind: "post" } as const;
+const SOCIAL_ARTIFACT = { plural: "posts", approvedNote: SOCIAL_APPROVED_NOTE, approvalKind: "post", piece: "social_pack" } as const;
 
 function CopyButton({
   post,

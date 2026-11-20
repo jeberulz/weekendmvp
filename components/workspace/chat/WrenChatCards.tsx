@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { employeeHref } from "@/lib/workspace/employeePage";
 import type { RoleKey } from "@/lib/workspace/contracts/roster";
 import { COMING_SOON_LABEL, workspacePath, workspaceRoute, type WorkspaceRouteSlug } from "@/lib/workspace/routes";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   approvalDecisionCopy,
   approvalDecisionErrorCopy,
@@ -167,7 +168,10 @@ function ApprovalChatCard({
     void decide({ projectId, approvalId: card.approvalId, decision })
       .then((result) =>
         setMessage(approvalDecisionCopy(result.status, { approvalKind: card.approvalKind, partnerName: name })))
-      .catch((error: unknown) => setMessage(approvalDecisionErrorCopy(errorCode(error), name)))
+      .catch((error: unknown) => {
+        reportClientError({ source: "action", error, projectId });
+        setMessage(approvalDecisionErrorCopy(errorCode(error), name));
+      })
       .finally(() => {
         inFlight.current = false;
         setPending(false);

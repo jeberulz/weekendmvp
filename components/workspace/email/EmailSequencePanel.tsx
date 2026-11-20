@@ -56,7 +56,7 @@ type ReadyView = Extract<EmailDraftView, { state: "ready" }>;
 type EmailView = ReadyView["emails"][number];
 export type EmailDecide = ReviewDecide;
 
-const EMAIL_ARTIFACT = { plural: "emails", approvedNote: EMAIL_APPROVED_NOTE, approvalKind: "send" } as const;
+const EMAIL_ARTIFACT = { plural: "emails", approvedNote: EMAIL_APPROVED_NOTE, approvalKind: "send", piece: "email_sequence" } as const;
 
 function MergeText({ text }: { text: string }) {
   return (

@@ -24,6 +24,9 @@ import {
 type BlueprintView = FunctionReturnType<typeof api.growth.drafts.blueprint.blueprintDraft>;
 type ReadyView = Extract<BlueprintView, { state: "ready" }>;
 
+/** The blueprint review, tagged with its launch piece for the funnel events (WP95). */
+const BLUEPRINT_REVIEW = { ...BLUEPRINT_ARTIFACT, piece: "blueprint" } as const;
+
 /**
  * L1-C6: the read-only "Your blueprint" section on Team HQ, then its review
  * card. An own idea is not researched (`blueprintIsValidated` is true only for a
@@ -104,7 +107,7 @@ function Ready({ projectId, view }: { projectId: Id<"projects">; view: ReadyView
           )}
         </dl>
       </div>
-      {view.card === null ? null : <LiveArtifactReview projectId={projectId} card={view.card} artifact={BLUEPRINT_ARTIFACT} />}
+      {view.card === null ? null : <LiveArtifactReview projectId={projectId} card={view.card} artifact={BLUEPRINT_REVIEW} />}
     </div>
   );
 }

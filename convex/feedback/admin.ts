@@ -164,7 +164,7 @@ export const overview = query({
     const feedbackKept = feedbackRows.slice(0, OVERVIEW_ROWS_MAX);
     const errorsKept = errorRows.slice(0, OVERVIEW_ROWS_MAX);
 
-    const ratingCounts: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+    const ratingCounts = [0, 0, 0, 0, 0];
     let ratingSum = 0;
     let rated = 0;
     for (const row of feedbackKept) {

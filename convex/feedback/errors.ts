@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
 import { requireCurrentPlatformUserForMutation, requireOwnedProjectForMutation } from "../platform/authz";
 import {
@@ -31,7 +32,8 @@ export const report = mutation({
     source: v.union(...ERROR_SOURCES.map((value) => v.literal(value))),
     errorClass: v.string(),
     route: v.string(),
-    projectId: v.optional(v.id("projects")),
+    /** A string, not an id validator: a malformed id must not make the report itself fail. */
+    projectId: v.optional(v.string()),
     buildVersion: v.string(),
     /** One row per key and owner, e.g. the Wren message id of a failed reply. */
     dedupeKey: v.optional(v.string()),
@@ -59,10 +61,11 @@ export const report = mutation({
         .take(ERRORS_PER_MINUTE_MAX);
       if (recent.length >= ERRORS_PER_MINUTE_MAX) return { recorded: false };
 
-      let projectId: Awaited<ReturnType<typeof requireOwnedProjectForMutation>>["_id"] | null = null;
-      if (args.projectId !== undefined) {
+      let projectId: Id<"projects"> | null = null;
+      const claimed = args.projectId === undefined ? null : ctx.db.normalizeId("projects", args.projectId);
+      if (claimed !== null) {
         try {
-          projectId = (await requireOwnedProjectForMutation(ctx, args.projectId))._id;
+          projectId = (await requireOwnedProjectForMutation(ctx, claimed))._id;
         } catch {
           // Not theirs, or gone: keep the error, drop the id.
         }

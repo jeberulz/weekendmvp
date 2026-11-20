@@ -11,11 +11,11 @@ import {
 const DAY = 24 * 60 * 60 * 1000;
 
 describe("WP95 funnel events", () => {
-  let gtag: ReturnType<typeof vi.fn>;
+  let gtag: ReturnType<typeof vi.fn<(...args: unknown[]) => void>>;
 
   beforeEach(() => {
     window.localStorage.clear();
-    gtag = vi.fn();
+    gtag = vi.fn<(...args: unknown[]) => void>();
     window.gtag = gtag;
   });
   afterEach(() => {
