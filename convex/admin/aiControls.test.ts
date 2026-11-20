@@ -204,3 +204,154 @@ describe("WP93 Phase 2 ops controls", () => {
     expect(JSON.parse(audit[0].metadata ?? "{}")).toEqual({ allowed: true });
   });
 });
+
+describe("WP93 Phase 3 founder cap overrides", () => {
+  const HOUR = 60 * MINUTE;
+  const raise = (overrides: Record<string, unknown> = {}) => ({
+    capMicroUsd: 5_000_000n,
+    expiry: "1h" as const,
+    reason: "Demo for an investor",
+    confirm: "confirm",
+    ...overrides,
+  });
+
+  async function storedBudget(t: ReturnType<typeof setup>, ownerId: Id<"users">) {
+    return await t.run((ctx) => ctx.db.query("ai_budgets").withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId)).unique());
+  }
+
+  test("refuses customers and anonymous callers", async () => {
+    const t = setup();
+    const { tester, testerId } = await seed(t);
+    const calls = [
+      (c: Mutator) => c.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs: Date.now() }),
+      (c: Mutator) => c.mutation(api.admin.aiControls.setCapOverride, { ownerId: testerId, ...raise() }),
+      (c: Mutator) => c.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId }),
+    ];
+    for (const call of calls) {
+      await expect(call(tester)).rejects.toThrow("FORBIDDEN");
+      await expect(call(t)).rejects.toThrow("FORBIDDEN");
+    }
+    expect(await storedBudget(t, testerId)).toBeNull();
+  });
+
+  test("a raise needs a real account, a reason, a real raise under $25, a recent sign-in and the typed confirm", async () => {
+    const t = setup();
+    const { admin, adminId, testerId } = await seed(t);
+    const anonId = await t.run((ctx) => ctx.db.insert("users", { isAnonymous: true }));
+    const set = (caller: Mutator, overrides: Record<string, unknown> = {}, ownerId = testerId) =>
+      caller.mutation(api.admin.aiControls.setCapOverride, { ownerId, ...raise(overrides) });
+
+    await expect(set(admin, {}, anonId)).rejects.toThrow("RESOURCE_NOT_FOUND");
+    await expect(set(admin, { reason: "   " })).rejects.toThrow("CAP_REASON_REQUIRED");
+    await expect(set(admin, { reason: undefined })).rejects.toThrow("CAP_REASON_REQUIRED");
+    await expect(set(admin, { capMicroUsd: -1n })).rejects.toThrow("INVALID_BUDGET");
+    // A free founder's plan cap is $1: an override must be more than that.
+    await expect(set(admin, { capMicroUsd: 1_000_000n })).rejects.toThrow("CAP_NOT_A_RAISE");
+    await expect(set(admin, { capMicroUsd: 25_000_001n })).rejects.toThrow("CAP_TOO_HIGH");
+    // The seeded session started at START; ten minutes later it is too old.
+    vi.setSystemTime(START + 11 * MINUTE);
+    await expect(set(admin)).rejects.toThrow("REAUTH_REQUIRED");
+    const fresh = await signInAgain(t, adminId);
+    await expect(set(fresh, { confirm: undefined })).rejects.toThrow("CONFIRM_REQUIRED");
+    await expect(set(fresh, { confirm: "yes" })).rejects.toThrow("CONFIRM_REQUIRED");
+    expect(await storedBudget(t, testerId)).toBeNull();
+    expect(await auditActions(t)).toEqual([]);
+
+    const now = START + 11 * MINUTE;
+    expect(await set(fresh, { capMicroUsd: 25_000_000n })).toEqual({
+      override: { ownerId: testerId, capMicroUsd: 25_000_000, expiresAt: now + HOUR, setAt: now, reason: "Demo for an investor" },
+    });
+  });
+
+  test("a raise writes all five fields with its audit row, and the meter honours it", async () => {
+    const t = setup();
+    const { admin, adminId, testerId } = await seed(t);
+    // A founder with no AI calls yet has no budget row: the raise creates a zero one.
+    await admin.mutation(api.admin.aiControls.setCapOverride, { ownerId: testerId, ...raise({ capMicroUsd: 1_250_000n }) });
+    const stored = await storedBudget(t, testerId);
+    expect(stored).toMatchObject({
+      dayKey: "2026-11-20", daySpentMicroUsd: 0n, reservedMicroUsd: 0n, freeLifetimeSpentMicroUsd: 0n,
+      capOverrideMicroUsd: 1_250_000n, capOverrideExpiresAt: START + HOUR, capOverrideSetBy: adminId,
+      capOverrideSetAt: START, capOverrideReason: "Demo for an investor",
+    });
+    const audit = await auditActions(t);
+    expect(audit.map((row) => row.action)).toEqual(["ops.cap_override.set"]);
+    expect(JSON.parse(audit[0].metadata ?? "{}")).toEqual({
+      capMicroUsd: "1250000", planCapMicroUsd: "1000000", expiresAt: START + HOUR,
+      reason: "Demo for an investor", via: "ai-console", risky: true,
+    });
+    const recent = (await admin.query(api.admin.aiControls.controlsState, {})).recent;
+    expect(recent[0]).toMatchObject({ action: "ops.cap_override.set", subjectId: testerId, subjectEmail: "tester@example.test" });
+
+    expect(await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId, adminId, "not-an-id"], nowMs: Date.now() })).toEqual({
+      overrides: [{ ownerId: testerId, capMicroUsd: 1_250_000, expiresAt: START + HOUR, setAt: START, reason: "Demo for an investor" }],
+      truncated: false,
+    });
+
+    // The meter reads the same row: $1.25 fits under the raise, not under the $1 plan cap.
+    await t.run(async (ctx) => {
+      const ops = await ctx.db.query("ops_settings").unique();
+      if (ops) await ctx.db.patch("ops_settings", ops._id, { cohortMode: "open" });
+    });
+    const reserve = (key: string, amount: number) => t.mutation(internal.ai.metering.reserve, {
+      ownerId: testerId, attemptKey: key, promptRef: "test@1", provider: "anthropic" as const,
+      model: "fixture-haiku", tier: "fast" as const, feature: "ai" as const, reservedMicroUsd: amount,
+    });
+    await expect(reserve("raised", 1_250_000)).resolves.toMatchObject({ existing: false });
+    await expect(reserve("over", 1)).rejects.toThrow("owner_daily");
+    // The meter's own writes keep the override fields.
+    expect(await storedBudget(t, testerId)).toMatchObject({ reservedMicroUsd: 1_250_000n, capOverrideMicroUsd: 1_250_000n });
+
+    // At the expiry instant it is gone from the console too. The time is an argument,
+    // so the same data read at a later time gives a fresh answer without any write.
+    const at = (nowMs: number) => admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs });
+    expect((await at(START + HOUR - 1)).overrides).toHaveLength(1);
+    expect((await at(START + HOUR)).overrides).toEqual([]);
+  });
+
+  test("ending a raise early is one click, audited, and a no-op once it has ended", async () => {
+    const t = setup();
+    const { admin, testerId } = await seed(t);
+    await t.run((ctx) => ctx.db.insert("ai_budgets", {
+      ownerId: testerId, freeLifetimeSpentMicroUsd: 300_000n, reservedMicroUsd: 0n, freeReservedMicroUsd: 0n,
+      dayKey: "2026-11-20", daySpentMicroUsd: 400_000n, dayEscalations: 0n, updatedAt: START,
+    }));
+    expect(await admin.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId })).toEqual({ changed: false });
+
+    await admin.mutation(api.admin.aiControls.setCapOverride, { ownerId: testerId, ...raise({ expiry: "end_of_day" }) });
+    // An existing row keeps its counters.
+    expect(await storedBudget(t, testerId)).toMatchObject({
+      daySpentMicroUsd: 400_000n, freeLifetimeSpentMicroUsd: 300_000n,
+      capOverrideMicroUsd: 5_000_000n, capOverrideExpiresAt: Date.parse("2026-11-21T00:00:00Z"),
+    });
+
+    // Long after the sign-in window: ending it needs no fresh sign-in.
+    vi.setSystemTime(START + 3 * HOUR);
+    expect(await admin.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId })).toEqual({ changed: true });
+    const cleared = await storedBudget(t, testerId);
+    expect(cleared).toMatchObject({ daySpentMicroUsd: 400_000n, freeLifetimeSpentMicroUsd: 300_000n });
+    expect(cleared?.capOverrideMicroUsd).toBeUndefined();
+    expect(cleared?.capOverrideExpiresAt).toBeUndefined();
+    expect(cleared?.capOverrideSetBy).toBeUndefined();
+    expect(cleared?.capOverrideSetAt).toBeUndefined();
+    expect(cleared?.capOverrideReason).toBeUndefined();
+    expect(await admin.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId })).toEqual({ changed: false });
+
+    const audit = await auditActions(t);
+    expect(audit.map((row) => row.action)).toEqual(["ops.cap_override.set", "ops.cap_override.cleared"]);
+    expect(JSON.parse(audit[1].metadata ?? "{}")).toEqual({ capMicroUsd: "5000000", via: "ai-console" });
+  });
+
+  test("a raise set yesterday is not shown or honoured today", async () => {
+    const t = setup();
+    const { admin, adminId, testerId } = await seed(t);
+    await t.run((ctx) => ctx.db.insert("ai_budgets", {
+      ownerId: testerId, freeLifetimeSpentMicroUsd: 0n, reservedMicroUsd: 0n, freeReservedMicroUsd: 0n,
+      dayKey: "2026-11-19", daySpentMicroUsd: 0n, dayEscalations: 0n, updatedAt: START - 24 * HOUR,
+      capOverrideMicroUsd: 5_000_000n, capOverrideSetBy: adminId, capOverrideSetAt: START - 24 * HOUR,
+      capOverrideExpiresAt: START + HOUR, capOverrideReason: "Stale",
+    }));
+    expect((await admin.query(api.admin.aiControls.capOverrides, { ownerIds: [testerId], nowMs: Date.now() })).overrides).toEqual([]);
+    expect(await admin.mutation(api.admin.aiControls.clearCapOverride, { ownerId: testerId })).toEqual({ changed: false });
+  });
+});

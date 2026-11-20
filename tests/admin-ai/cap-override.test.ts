@@ -1,4 +1,16 @@
+import { getFunctionName, type FunctionReference } from "convex/server";
+import { ConvexError } from "convex/values";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
+const convex = vi.hoisted(() => ({
+  fetchQuery: vi.fn(),
+  fetchMutation: vi.fn(),
+  token: vi.fn(),
+}));
+vi.mock("convex/nextjs", () => ({ fetchQuery: convex.fetchQuery, fetchMutation: convex.fetchMutation }));
+vi.mock("@convex-dev/auth/nextjs/server", () => ({ convexAuthNextjsToken: convex.token }));
+
+import { api } from "@/convex/_generated/api";
 
 import {
   CAP_OVERRIDE_CEILING_MICRO_USD,
@@ -81,7 +93,7 @@ describe("cap override on local fixtures", () => {
 
   test("a raise needs a reason, a real raise, a recent sign-in and the typed confirm", async () => {
     expect(backend.mode).toBe("fixture");
-    expect(await backend.capOverrides()).toEqual({ available: true, overrides: [] });
+    expect(await backend.capOverrides([founder.ownerId])).toEqual({ available: true, overrides: [] });
 
     expect(await raise({ reason: "  " })).toMatchObject({ ok: false, code: "CAP_REASON_REQUIRED" });
     expect(await raise({ capMicroUsd: founder.dayCapMicroUsd })).toMatchObject({ ok: false, code: "CAP_NOT_A_RAISE" });
@@ -97,7 +109,9 @@ describe("cap override on local fixtures", () => {
       ok: true,
       value: { override: { ownerId: founder.ownerId, capMicroUsd: 5_000_000, expiresAt: NOON + HOUR, setAt: NOON, reason: "Demo for an investor" } },
     });
-    expect((await backend.capOverrides()).overrides).toHaveLength(1);
+    expect((await backend.capOverrides([founder.ownerId])).overrides).toHaveLength(1);
+    // Only the founders asked about.
+    expect((await backend.capOverrides(["fixture-someone-else"])).overrides).toEqual([]);
 
     const recent = (await backend.view()).recent;
     expect(recent[0]).toMatchObject({ action: "ops.cap_override.set", subjectId: founder.ownerId, subjectEmail: founder.email });
@@ -109,7 +123,7 @@ describe("cap override on local fixtures", () => {
     expect(await raise()).toMatchObject({ ok: true });
 
     vi.setSystemTime(NOON + HOUR);
-    expect((await backend.capOverrides()).overrides).toEqual([]);
+    expect((await backend.capOverrides([founder.ownerId])).overrides).toEqual([]);
     expect(await backend.clearCapOverride(founder.ownerId)).toEqual({ ok: true, value: { changed: false } });
 
     vi.setSystemTime(NOON + HOUR + 1000);
@@ -118,13 +132,80 @@ describe("cap override on local fixtures", () => {
     // Ending early needs no fresh sign-in.
     vi.setSystemTime(NOON + 3 * HOUR);
     expect(await backend.clearCapOverride(founder.ownerId)).toEqual({ ok: true, value: { changed: true } });
-    expect((await backend.capOverrides()).overrides).toEqual([]);
+    expect((await backend.capOverrides([founder.ownerId])).overrides).toEqual([]);
     const recent = (await backend.view()).recent;
     expect(recent.map((row) => row.action)).toEqual(["ops.cap_override.cleared", "ops.cap_override.set", "ops.cap_override.set"]);
   });
 
-  test("live mode reads nothing while the meter cannot use overrides", async () => {
-    expect(CAP_OVERRIDE_LIVE).toBe(false);
-    expect(await readCapOverrides("live")).toEqual({ caps: { available: false, overrides: [] }, backend: null });
+});
+
+describe("cap override on live Convex", () => {
+  const OWNER = "k17abcdefghijklmnopqrstuvw";
+  const CAP_READ = getFunctionName(api.admin.aiControls.capOverrides);
+  const isCapRead = (ref: unknown) => getFunctionName(ref as FunctionReference<"query">) === CAP_READ;
+  const override: CapOverride = { ownerId: OWNER, capMicroUsd: 5_000_000, expiresAt: NOON + HOUR, setAt: NOON, reason: "Demo" };
+
+  beforeEach(() => {
+    vi.stubEnv("EDITORIAL_FIXTURE_MODE", "");
+    vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://example-test-123.convex.cloud");
+    convex.token.mockResolvedValue("token");
+    convex.fetchQuery.mockImplementation(async (ref: unknown) => {
+      if (isCapRead(ref)) return { overrides: [override], truncated: false };
+      return { version: null, cohort: [], cohortTruncated: false, recent: [], sessionCreatedAt: NOON };
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.clearAllMocks();
+  });
+
+  test("is switched on now that the meter reads overrides", async () => {
+    expect(CAP_OVERRIDE_LIVE).toBe(true);
+    const { caps, backend } = await readCapOverrides("live", [OWNER, OWNER]);
+    expect(backend?.mode).toBe("live");
+    expect(caps).toEqual({ available: true, overrides: [override] });
+    expect(convex.fetchQuery).toHaveBeenCalledWith(
+      api.admin.aiControls.capOverrides,
+      { ownerIds: [OWNER], nowMs: expect.any(Number) },
+      { token: "token" },
+    );
+  });
+
+  test("reads a long founder list in chunks Convex accepts", async () => {
+    const backend = await resolveControlsBackend();
+    const ids = Array.from({ length: 450 }, (_, index) => `owner-${index}`);
+    await backend?.capOverrides(ids);
+    const sizes = convex.fetchQuery.mock.calls
+      .filter(([ref]) => isCapRead(ref))
+      .map(([, args]) => (args as { ownerIds: string[] }).ownerIds.length);
+    expect(sizes).toEqual([200, 200, 50]);
+  });
+
+  test("sends a raise as int64 micro-USD and maps Convex refusals", async () => {
+    const backend = await resolveControlsBackend();
+    if (!backend) throw new Error("live backend expected");
+    convex.fetchMutation.mockResolvedValueOnce({ override });
+    expect(await backend.setCapOverride({ ownerId: OWNER, capMicroUsd: 5_000_000, expiry: "1h", reason: "Demo", confirm: "confirm" }))
+      .toEqual({ ok: true, value: { override } });
+    expect(convex.fetchMutation).toHaveBeenLastCalledWith(
+      api.admin.aiControls.setCapOverride,
+      { ownerId: OWNER, capMicroUsd: 5_000_000n, expiry: "1h", reason: "Demo", confirm: "confirm" },
+      { token: "token" },
+    );
+
+    convex.fetchMutation.mockRejectedValueOnce(new ConvexError({ code: "REAUTH_REQUIRED" }));
+    expect(await backend.setCapOverride({ ownerId: OWNER, capMicroUsd: 5_000_000, expiry: "4h", reason: null, confirm: null }))
+      .toMatchObject({ ok: false, code: "REAUTH_REQUIRED" });
+    expect(convex.fetchMutation).toHaveBeenLastCalledWith(
+      api.admin.aiControls.setCapOverride,
+      { ownerId: OWNER, capMicroUsd: 5_000_000n, expiry: "4h" },
+      { token: "token" },
+    );
+
+    convex.fetchMutation.mockRejectedValueOnce(new Error("network"));
+    expect(await backend.clearCapOverride(OWNER)).toMatchObject({ ok: false, code: "UNAVAILABLE" });
+    convex.fetchMutation.mockResolvedValueOnce({ changed: true });
+    expect(await backend.clearCapOverride(OWNER)).toEqual({ ok: true, value: { changed: true } });
   });
 });

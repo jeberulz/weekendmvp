@@ -52,8 +52,8 @@ Already specified by WP93: **`docs/wp/wp93-codex-cap-override.md`**. That covers
 - the Free lifetime ceiling and pool budgets never lifted;
 - tests.
 
-The console side is already built and switched off live (WP93 Phase 3: rules, founder form, fixtures). Once this
-lands, the Claude lane adds the `setCapOverride` mutation and turns it on; the steps are at the end of the spec.
+Done. Codex landed the storage and meter change in #296. WP93 (#303) added the console's Convex functions
+(`setCapOverride`, `clearCapOverride`, `capOverrides`) and turned the founder form on live.
 
 ## C3. Testers' Free lifetime ceiling (waiting on an owner decision; do nothing yet)
 

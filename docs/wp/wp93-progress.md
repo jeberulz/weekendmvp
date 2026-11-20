@@ -98,3 +98,17 @@ Append-only progress log. Do not rely on chat history for project state.
 - a11y: axe-core WCAG 2.1 A/AA + best practice, 0 violations on all six console pages at 1280 px, and on the founder page with the raise form at mobile width, with no horizontal overflow.
 - Evidence: `docs/reviews/evidence/wp93-phase3-2026-11-20/` (fixture data).
 - Not done: nothing deployed, merged or applied; no prod read.
+
+## 2026-11-20 - Phase 3 turned on (after Codex C2, #296; PR #303)
+
+- Convex (`convex/admin/aiControls.ts`):
+  - `capOverrides({ownerIds})` reads at most 200 founders' `ai_budgets` rows by `by_ownerId`. It returns only overrides the meter would honour now, using the meter's own `activeCapOverrideMicroUsd`.
+  - `setCapOverride` checks, in order: `requireSuperAdmin`, a real account, a reason (`CAP_REASON_REQUIRED`), a raise above the plan cap (`readMembershipState`, `OWNER_DAILY_CAP_MICRO_USD`) and at most $25, a recent sign-in, and the typed confirm. It then writes the five C2 fields and an `ops.cap_override.set` audit row (same metadata as the fixtures). A founder with no AI calls gets a zero `ai_budgets` row in the meter's shape.
+  - `clearCapOverride` clears the fields and writes `ops.cap_override.cleared`. It is one click, and a no-op when nothing is in force.
+  - `controlsState` names the founder on cap rows.
+- The live backend calls these functions. The founder pages pass only the founders they show (chunks of 200). `CAP_OVERRIDE_LIVE` is now `true`.
+- An override is ignored for accounts with unlimited access, as the meter does; the console still records it.
+- Tests:
+  - `convex/admin/aiControls.test.ts` +5. They cover FORBIDDEN, every refusal, the five fields and the audit rows, the zero row, `internal.ai.metering.reserve` honouring a console raise (and its writes keeping the fields), expiry, a raise from a past day, and the early end.
+  - `tests/admin-ai/cap-override.test.ts` +3 with mocked Convex: the flag is on, chunked reads, and int64 arguments with refusal mapping.
+- No Codex-owned file changed. Nothing deployed, merged or run against production.

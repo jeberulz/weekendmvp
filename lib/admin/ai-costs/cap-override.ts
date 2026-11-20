@@ -1,7 +1,7 @@
 /**
  * WP93 Phase 3. The rules for raising one founder's daily AI cap for a while,
- * shared by the fixture store today and the Convex mutation once Codex lands
- * the schema field and meter change (C2, `docs/wp/wp93-codex-cap-override.md`).
+ * shared by the fixture store and the Convex mutation (`convex/admin/aiControls.ts`).
+ * The meter reads the stored override (Codex C2, `docs/wp/wp93-codex-cap-override.md`).
  *
  * An override only ever raises the plan's daily cap. It never lifts the Free
  * lifetime ceiling, the pool budgets or the kill switches.
@@ -10,10 +10,11 @@
 import { MICRO_USD_PER_USD } from "./money";
 
 /**
- * Off until the meter reads overrides. While false, the live console shows
- * a note instead of the form, and the live backend refuses every write.
+ * On since the meter reads overrides (Codex C2, #296). Set it to false to hide
+ * the live form: the console then shows a note, and the live backend refuses
+ * every write without calling Convex.
  */
-export const CAP_OVERRIDE_LIVE = false;
+export const CAP_OVERRIDE_LIVE = true;
 
 /** A typo guard: no founder above $25 a day. */
 export const CAP_OVERRIDE_CEILING_MICRO_USD = 25 * MICRO_USD_PER_USD;
