@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { internal } from "../_generated/api";
 import type { Doc } from "../_generated/dataModel";
 import { internalMutation, query } from "../_generated/server";
 import { int64ToMicroUsd, utcDayKey } from "../../lib/workspace/contracts/metering";
@@ -85,7 +86,7 @@ function crossed(used: number, budget: bigint, threshold: 80 | 100): boolean {
   return budget > 0n && BigInt(used) * 100n >= budget * BigInt(threshold);
 }
 
-/** Durable alarm dedupe on the admin-owned ops singleton; no external send. */
+/** Commit the daily flags, threshold audit and notification jobs together. */
 export const checkDailyAlarms = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -103,21 +104,20 @@ export const checkDailyAlarms = internalMutation({
         readGlobalBudget(ctx, "free", checkedDayKey), readGlobalBudget(ctx, "paid", checkedDayKey),
       ]);
       const previous = states.find((state) => state?.dayKey === checkedDayKey) ?? emptyAlarmState(checkedDayKey);
-      const usage = {
-        free: free.spentTodayMicroUsd + free.inFlightMicroUsd,
-        paid: paid.spentTodayMicroUsd + paid.inFlightMicroUsd,
-      };
-      const due: AlarmKey[] = [];
+      const due = [];
       for (const pool of ["free", "paid"] as const) {
         const budget = pool === "free" ? settings.globalDailyBudgetMicroUsd : settings.paidGlobalDailyBudgetMicroUsd;
+        const { spentTodayMicroUsd, inFlightMicroUsd } = pool === "free" ? free : paid;
         for (const threshold of [80, 100] as const) {
           const key: AlarmKey = `${pool}${threshold}`;
-          if (!previous[key] && crossed(usage[pool], budget, threshold)) due.push(key);
+          if (!previous[key] && crossed(spentTodayMicroUsd + inFlightMicroUsd, budget, threshold)) {
+            due.push({ key, pool, threshold, spentTodayMicroUsd, inFlightMicroUsd, budgetMicroUsd: budget });
+          }
         }
       }
       const next = { ...previous };
-      for (const key of due) next[key] = true;
-      return { dayKey: checkedDayKey, state: next, due, usage };
+      for (const { key } of due) next[key] = true;
+      return { dayKey: checkedDayKey, state: next, due };
     }));
     const [today, yesterday] = results;
     if (settings.spendAlarmState?.dayKey !== dayKey ||
@@ -129,18 +129,21 @@ export const checkDailyAlarms = internalMutation({
       });
     }
     for (const result of results) {
-      for (const key of result.due) {
-        await ctx.db.insert("audit_events", {
+      for (const { key, ...amounts } of result.due) {
+        const alarmId = await ctx.db.insert("audit_events", {
           ownerId: settings.ownerId,
           actorType: "system",
           action: "ops.spend.threshold",
           subjectType: "ops_settings",
           subjectId: settings._id,
-          metadata: JSON.stringify({ dayKey: result.dayKey, threshold: key, usedMicroUsd: result.usage[key.startsWith("free") ? "free" : "paid"] }),
+          metadata: JSON.stringify({ dayKey: result.dayKey, threshold: key, usedMicroUsd: amounts.spentTodayMicroUsd + amounts.inFlightMicroUsd }),
           createdAt: now,
+        });
+        await ctx.scheduler.runAfter(0, internal.ops.spendAlerts.send, {
+          alarmId, dayKey: result.dayKey, ...amounts,
         });
       }
     }
-    return { dayKey, raised: today.due, priorDayRaised: yesterday.due };
+    return { dayKey, raised: today.due.map(({ key }) => key), priorDayRaised: yesterday.due.map(({ key }) => key) };
   },
 });
