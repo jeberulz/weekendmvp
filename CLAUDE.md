@@ -136,6 +136,11 @@ read the response as text before parsing JSON.
   re-seeds changed pages after each Production deploy, at `CREW_SEED_VERSION`,
   under a per-run cap and a founders' pool floor. Live spend stays off until
   `CREW_SEEDS_AUTO_APPLY=true` (plan `10-seed-freshness.md`)
+- `app/admin/ai/**` + `lib/admin/ai-costs/*` + `convex/admin/aiCosts.ts` — the
+  owner-only AI cost console (WP93). Read only; every query checks
+  `requireSuperAdmin`; totals use the meter's charge rule and must match
+  `ai_usage` exactly (`convex/admin/aiCosts.test.ts`). Reads are bounded and
+  the UI says when a range is cut off. Dev fixtures: `EDITORIAL_FIXTURE_MODE=local-demo`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it
