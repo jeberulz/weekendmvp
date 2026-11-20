@@ -9,13 +9,14 @@ import viz from "./ai-costs.module.css";
 
 export const AI_COSTS_BASE = "/admin/ai";
 
-export type ConsoleTab = "overview" | "prompts" | "founders" | "forecast";
+export type ConsoleTab = "overview" | "prompts" | "founders" | "forecast" | "controls";
 
 const TABS: ReadonlyArray<{ id: ConsoleTab; label: string; href: string }> = [
   { id: "overview", label: "Overview", href: AI_COSTS_BASE },
   { id: "prompts", label: "Prompts and models", href: `${AI_COSTS_BASE}/prompts` },
   { id: "founders", label: "Founders", href: `${AI_COSTS_BASE}/founders` },
   { id: "forecast", label: "Forecast", href: `${AI_COSTS_BASE}/forecast` },
+  { id: "controls", label: "Controls", href: `${AI_COSTS_BASE}/controls` },
 ];
 
 export const focusRing =

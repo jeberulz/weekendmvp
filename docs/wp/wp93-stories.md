@@ -68,7 +68,7 @@ Thinking tokens are not metered apart: Anthropic bills thinking as output and `a
 3. **Optional `ai_usage.errorDetail`.** Only seed items keep the provider's error message (`idea_seed_items.errorDetail`). Crew and Wren failures carry only `errorClass`. If the owner wants the message on every failed call, the gateway should store the same one-line, 300-character detail on the usage row.
 4. **Per-owner cap override** (needed for Phase 2 "raise one owner's cap"). `ai_budgets` has no override field and `OWNER_DAILY_CAP_MICRO_USD` is a constant. Phase 2 needs a nullable `dailyCapOverrideMicroUsd` (with `setBy`, `setAt`, `reason`) and the meter's owner check reading it.
 
-## Phase 2 proposal — ops controls panel (write-up only, not built)
+## Phase 2 proposal — ops controls panel (approved 2026-11-20; see Phase 2 stories)
 
 These are audited writes. They need the owner's go-ahead before any build, and each one already has (or needs) a server mutation that checks `requireSuperAdmin(ctx, now)` and writes an `audit_events` row.
 
@@ -82,7 +82,7 @@ Open questions for the owner before Phase 2: should a cap raise ever outlive one
 
 ## Out Of Scope
 
-- Any write (Phase 2 above).
+- Phase 1: any write (Phase 2 above).
 - Schema, index, cron, http or middleware changes (Codex).
 - Showing prompt, reply, chat or artifact text, business names, or impersonating a founder.
 - Live provider calls (the what-if is an estimate from stored tokens).
@@ -91,3 +91,47 @@ Open questions for the owner before Phase 2: should a cap raise ever outlive one
 ## Notes
 
 - Promote unknown product decisions to `docs/wp/RULINGS.md`.
+
+## Phase 2 stories — ops controls (2026-11-20)
+
+Branch: `claude/wp93-phase2-ops-controls` (from `main` at `3add0084`).
+Lane: Work Package. These are audited writes to production controls, so they are high risk.
+
+### Owner decisions (2026-11-20)
+
+- **Per-founder cap raise: deferred.** It needs a schema field and a meter change that Codex owns. See `docs/wp/wp93-codex-cap-override.md`. Phase 2 builds the cohort and spend controls only.
+- **Fresh sign-in only for risky changes.** A risky change needs a sign-in from the last 10 minutes (the editorial step-up: the session's creation time) and a typed confirm. Risky means:
+  - turning any feature back on;
+  - raising a pool budget from $0;
+  - raising a pool budget above 2× today's spend in that pool.
+  Turning things off and lowering budgets stay one click.
+- **Emails are shown in full** when an account is looked up to add to the cohort. Phase 1 shows them in full too.
+
+### Guardrails
+
+- Every write calls `requireSuperAdmin(ctx, now)` and writes an `audit_events` row through the existing helpers in `convex/ops/settings.ts`.
+- The server re-checks every rule. The browser only explains them.
+- A pool budget above $100 a day is refused outright, as a typo guard.
+- A form saved against settings that changed since it loaded is refused (`STALE`).
+- Removing someone from the cohort needs a reason, which goes into the audit metadata.
+
+### Stories
+
+- [x] `WP93-P2-S1` - Server: `convex/admin/aiControls.ts`
+  - `controlsState` returns the settings, the version, today's pool spend and the cohort (bounded) with emails.
+  - `findAccount` looks up an account by email: zero, one or many matches; anonymous accounts are skipped.
+  - `setCohort` adds or removes a cohort member. Adding needs a verified email; removing needs a reason.
+  - `updateSpendControls` changes budgets and switches. It applies the risk rule, the step-up, the typed confirm, the $100 ceiling and the version check.
+  - Recent changes: the latest `ops.*` audit rows, returned by `controlsState`, with the email of the account a cohort row names.
+  - `convex/ops/settings.ts` exports its write and audit paths so the old and new mutations share them; `updateForAdmin` and `setCohortMember` keep their behaviour.
+  - Acceptance: `FORBIDDEN` for everyone but the super admin; every refusal code is covered by a convex-test.
+- [x] `WP93-P2-S2` - Pure rules: `lib/admin/ai-costs/controls.ts` (risk classification, dollar parsing), unit-tested.
+- [x] `WP93-P2-S3` - UI: a "Controls" tab at `/admin/ai/controls` with three sections:
+  - Spend controls: budgets in dollars beside today's spend, and the switches.
+  - Beta cohort: the member list, an add-by-email lookup with a confirm, and removal with a reason.
+  - Recent changes.
+  Risky saves show the "Confirm it's you" step and a typed confirm. In fixture mode, writes go to an in-memory store and the step-up is simulated.
+- [x] `WP93-P2-S4` - Checks:
+  - typecheck, lint, the full `npm test`, build;
+  - the a11y-check skill, with axe on the new screen;
+  - a PR with screenshots on fixtures.

@@ -209,6 +209,77 @@ async function auditOpsChange(
   });
 }
 
+export type OpsSettingsPatch = {
+  workspaceEnabled?: boolean;
+  cohortMode?: "allowlist" | "open";
+  freeSignupsOpen?: boolean;
+  globalDailyBudgetMicroUsd?: bigint;
+  paidGlobalDailyBudgetMicroUsd?: bigint;
+  killSwitches?: Partial<OpsSettings["killSwitches"]>;
+};
+
+/** The settings after a patch: unset fields keep their current value. */
+export function patchedOpsSettings(current: OpsSettings, patch: OpsSettingsPatch): OpsSettings {
+  const switches = patch.killSwitches;
+  return {
+    workspaceEnabled: patch.workspaceEnabled ?? current.workspaceEnabled,
+    cohortMode: patch.cohortMode ?? current.cohortMode,
+    freeSignupsOpen: patch.freeSignupsOpen ?? current.freeSignupsOpen,
+    globalDailyBudgetMicroUsd: patch.globalDailyBudgetMicroUsd ?? current.globalDailyBudgetMicroUsd,
+    paidGlobalDailyBudgetMicroUsd: patch.paidGlobalDailyBudgetMicroUsd ?? current.paidGlobalDailyBudgetMicroUsd,
+    killSwitches: {
+      ai: switches?.ai ?? current.killSwitches.ai,
+      studioVideo: switches?.studioVideo ?? current.killSwitches.studioVideo,
+      publish: switches?.publish ?? current.killSwitches.publish,
+      email: switches?.email ?? current.killSwitches.email,
+      social: switches?.social ?? current.killSwitches.social,
+      ads: switches?.ads ?? current.killSwitches.ads,
+    },
+  };
+}
+
+/**
+ * The one write path for ops settings: validates budgets, writes the
+ * singleton and its `ops.settings.changed` audit row. Callers have already
+ * checked `requireSuperAdmin(ctx, now)`. `auditExtra` adds fields (a reason,
+ * what was confirmed) to the audit metadata.
+ */
+export async function writeOpsSettings(
+  ctx: MutationCtx,
+  adminId: Id<"users">,
+  patch: OpsSettingsPatch,
+  now: number,
+  auditExtra: Record<string, string | boolean> = {},
+): Promise<OpsSettings> {
+  if (patch.globalDailyBudgetMicroUsd !== undefined && patch.globalDailyBudgetMicroUsd < 0n) {
+    throw new ConvexError({ code: "INVALID_BUDGET" });
+  }
+  if (patch.paidGlobalDailyBudgetMicroUsd !== undefined && patch.paidGlobalDailyBudgetMicroUsd < 0n) {
+    throw new ConvexError({ code: "INVALID_BUDGET" });
+  }
+  const row = await ctx.db.query("ops_settings")
+    .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
+    .unique();
+  const next = patchedOpsSettings(row ?? DEFAULT_OPS_SETTINGS, patch);
+  let rowId: Id<"ops_settings">;
+  if (row === null) {
+    rowId = await ctx.db.insert("ops_settings", { ...next, ownerId: adminId, singletonKey: "workspace", updatedAt: now });
+  } else {
+    rowId = row._id;
+    await ctx.db.patch("ops_settings", rowId, { ...next, updatedAt: now });
+  }
+  await auditOpsChange(ctx, adminId, "ops.settings.changed", "ops_settings", rowId, JSON.stringify({
+    workspaceEnabled: next.workspaceEnabled,
+    cohortMode: next.cohortMode,
+    freeSignupsOpen: next.freeSignupsOpen,
+    globalDailyBudgetMicroUsd: next.globalDailyBudgetMicroUsd.toString(),
+    paidGlobalDailyBudgetMicroUsd: next.paidGlobalDailyBudgetMicroUsd.toString(),
+    killSwitches: next.killSwitches,
+    ...auditExtra,
+  }), now);
+  return next;
+}
+
 /** Only a bound super admin may turn runtime features on or off. */
 export const updateForAdmin = mutation({
   args: {
@@ -223,50 +294,47 @@ export const updateForAdmin = mutation({
   handler: async (ctx, args) => {
     const now = Date.now();
     const admin = await requireSuperAdmin(ctx, now);
-    if (args.globalDailyBudgetMicroUsd !== undefined && args.globalDailyBudgetMicroUsd < 0n) {
-      throw new ConvexError({ code: "INVALID_BUDGET" });
-    }
-    if (args.paidGlobalDailyBudgetMicroUsd !== undefined && args.paidGlobalDailyBudgetMicroUsd < 0n) {
-      throw new ConvexError({ code: "INVALID_BUDGET" });
-    }
-    const row = await ctx.db.query("ops_settings")
-      .withIndex("by_singletonKey", (q) => q.eq("singletonKey", "workspace"))
-      .unique();
-    const current = row ?? DEFAULT_OPS_SETTINGS;
-    const switches = args.killSwitches;
-    const next: OpsSettings = {
-      workspaceEnabled: args.workspaceEnabled ?? current.workspaceEnabled,
-      cohortMode: args.cohortMode ?? current.cohortMode,
-      freeSignupsOpen: args.freeSignupsOpen ?? current.freeSignupsOpen,
-      globalDailyBudgetMicroUsd: args.globalDailyBudgetMicroUsd ?? current.globalDailyBudgetMicroUsd,
-      paidGlobalDailyBudgetMicroUsd: args.paidGlobalDailyBudgetMicroUsd ?? current.paidGlobalDailyBudgetMicroUsd,
-      killSwitches: {
-        ai: switches?.ai ?? current.killSwitches.ai,
-        studioVideo: switches?.studioVideo ?? current.killSwitches.studioVideo,
-        publish: switches?.publish ?? current.killSwitches.publish,
-        email: switches?.email ?? current.killSwitches.email,
-        social: switches?.social ?? current.killSwitches.social,
-        ads: switches?.ads ?? current.killSwitches.ads,
-      },
-    };
-    let rowId: Id<"ops_settings">;
-    if (row === null) {
-      rowId = await ctx.db.insert("ops_settings", { ...next, ownerId: admin.user._id, singletonKey: "workspace", updatedAt: now });
-    } else {
-      rowId = row._id;
-      await ctx.db.patch("ops_settings", rowId, { ...next, updatedAt: now });
-    }
-    await auditOpsChange(ctx, admin.user._id, "ops.settings.changed", "ops_settings", rowId, JSON.stringify({
-      workspaceEnabled: next.workspaceEnabled,
-      cohortMode: next.cohortMode,
-      freeSignupsOpen: next.freeSignupsOpen,
-      globalDailyBudgetMicroUsd: next.globalDailyBudgetMicroUsd.toString(),
-      paidGlobalDailyBudgetMicroUsd: next.paidGlobalDailyBudgetMicroUsd.toString(),
-      killSwitches: next.killSwitches,
-    }), now);
-    return next;
+    return await writeOpsSettings(ctx, admin.user._id, args, now);
   },
 });
+
+/**
+ * The one write path for the cohort allowlist: adds or removes the member and
+ * writes the `ops.cohort.*` audit row. Callers have already checked
+ * `requireSuperAdmin(ctx, now)`. An optional reason goes into the audit metadata.
+ */
+export async function writeCohortMember(
+  ctx: MutationCtx,
+  adminId: Id<"users">,
+  ownerId: Id<"users">,
+  allowed: boolean,
+  now: number,
+  reason?: string,
+): Promise<{ allowed: boolean; changed: boolean }> {
+  const target = await ctx.db.get("users", ownerId);
+  if (target === null || target.isAnonymous === true) {
+    throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+  }
+  const existing = await ctx.db.query("workspace_cohort")
+    .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
+    .unique();
+  if (allowed === (existing !== null)) return { allowed, changed: false };
+  if (allowed) {
+    await ctx.db.insert("workspace_cohort", { ownerId, addedBy: adminId, addedAt: now });
+  } else if (existing !== null) {
+    await ctx.db.delete("workspace_cohort", existing._id);
+  }
+  await auditOpsChange(
+    ctx,
+    adminId,
+    allowed ? "ops.cohort.added" : "ops.cohort.removed",
+    "workspace_cohort",
+    ownerId,
+    JSON.stringify(reason === undefined ? { allowed } : { allowed, reason }),
+    now,
+  );
+  return { allowed, changed: true };
+}
 
 /** The allowlist can be changed while the workspace is off. */
 export const setCohortMember = mutation({
@@ -275,20 +343,6 @@ export const setCohortMember = mutation({
   handler: async (ctx, args) => {
     const now = Date.now();
     const admin = await requireSuperAdmin(ctx, now);
-    const target = await ctx.db.get("users", args.ownerId);
-    if (target === null || target.isAnonymous === true) {
-      throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
-    }
-    const existing = await ctx.db.query("workspace_cohort")
-      .withIndex("by_ownerId", (q) => q.eq("ownerId", args.ownerId))
-      .unique();
-    if (args.allowed === (existing !== null)) return { allowed: args.allowed, changed: false };
-    if (args.allowed) {
-      await ctx.db.insert("workspace_cohort", { ownerId: args.ownerId, addedBy: admin.user._id, addedAt: now });
-    } else if (existing !== null) {
-      await ctx.db.delete("workspace_cohort", existing._id);
-    }
-    await auditOpsChange(ctx, admin.user._id, args.allowed ? "ops.cohort.added" : "ops.cohort.removed", "workspace_cohort", args.ownerId, JSON.stringify({ allowed: args.allowed }), now);
-    return { allowed: args.allowed, changed: true };
+    return await writeCohortMember(ctx, admin.user._id, args.ownerId, args.allowed, now);
   },
 });

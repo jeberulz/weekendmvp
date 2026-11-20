@@ -9,9 +9,9 @@ import { MODEL_LABELS, WHAT_IF_MODELS, type WhatIfPrompt } from "@/lib/admin/ai-
 import type { PromptModel } from "@/lib/workspace/contracts/prompts";
 import { cn } from "@/lib/utils";
 
-const control =
+export const controlClass =
   "min-h-10 rounded-md border border-(--ed-input) bg-(--ed-surface) px-2 text-sm outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)";
-const button =
+export const buttonClass =
   "inline-flex min-h-10 items-center gap-1.5 rounded-md border border-(--ed-input) bg-(--ed-surface) px-3 text-sm font-medium hover:bg-(--ed-sunk) outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)";
 
 /** Downloads a CSV the server already built. Nothing leaves the browser. */
@@ -21,7 +21,7 @@ export function CsvButton({ filename, csv, label }: { filename: string; csv: str
     <span className="inline-flex items-center gap-2">
       <button
         type="button"
-        className={button}
+        className={buttonClass}
         onClick={() => {
           const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
           const link = document.createElement("a");
@@ -61,13 +61,13 @@ export function WhatIfPanel({ prompts }: { prompts: readonly WhatIfPrompt[] }) {
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1">
           <label htmlFor={promptId} className="text-sm font-medium">Prompt</label>
-          <select id={promptId} className={cn(control, "font-mono")} value={current.promptRef} onChange={(event) => { setRef(event.target.value); setTarget(null); }}>
+          <select id={promptId} className={cn(controlClass, "font-mono")} value={current.promptRef} onChange={(event) => { setRef(event.target.value); setTarget(null); }}>
             {prompts.map((prompt) => <option key={prompt.promptRef} value={prompt.promptRef}>{prompt.promptRef}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor={modelId} className="text-sm font-medium">Run it on</label>
-          <select id={modelId} className={control} value={chosen} onChange={(event) => setTarget(event.target.value as PromptModel)}>
+          <select id={modelId} className={controlClass} value={chosen} onChange={(event) => setTarget(event.target.value as PromptModel)}>
             {WHAT_IF_MODELS.map((model) => <option key={model} value={model}>{MODEL_LABELS[model]}</option>)}
           </select>
         </div>
@@ -125,7 +125,7 @@ export function ForecastPanel({ units }: { units: ForecastUnits }) {
         step={step}
         inputMode="decimal"
         aria-describedby={`${id}-hint`}
-        className={cn(control, "w-40 tabular-nums")}
+        className={cn(controlClass, "w-40 tabular-nums")}
         value={inputs[key]}
         onChange={(event) => {
           const value = event.target.value;

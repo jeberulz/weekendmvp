@@ -40,3 +40,34 @@ Append-only progress log. Do not rely on chat history for project state.
 - Money-match test extended: an uncapped owner call (settled and in flight) matches `readGlobalBudget(…, true)` for both pools, the pools still match their counters, and the range total equals pools plus owner.
 - `convex/admin/aiCosts.test.ts` + `tests/admin-ai`: 25/25. axe on the changed overview: 0 violations.
 - Full checks after the rebase: typecheck ✅, lint 0 errors, `npm run build` ✅ (exit 0; the earlier security-advisory exit no longer appears), `test:platform` and `test:live` ✅. `npm test` still stops only at `check:ideabrowser-runtime` on untracked local skill files (see above).
+
+## 2026-11-20 - Phase 2 started
+
+- The owner approved Phase 2 and answered the open questions:
+  - defer the cap raise (Codex spec written);
+  - require a fresh sign-in and a typed confirm only for risky changes;
+  - show emails in full.
+- Branch `claude/wp93-phase2-ops-controls` from `main` (`3add0084`). Stories in `docs/wp/wp93-stories.md` (Phase 2).
+
+## 2026-11-20 - Phase 2 built (ops controls)
+
+- Server: `convex/admin/aiControls.ts` (`controlsState`, `findAccount`, `setCohort`, `updateSpendControls`). Every function calls `requireSuperAdmin`. Writes go through the shared paths now exported from `convex/ops/settings.ts` (`writeOpsSettings`, `writeCohortMember`), so each one writes its `audit_events` row; `updateForAdmin` and `setCohortMember` keep their behaviour.
+- Risk rule (`lib/admin/ai-costs/controls.ts`): turning any feature back on, raising a budget from $0, or raising one above twice today's pool spend is risky. A risky save needs a Convex Auth session from the last 10 minutes (`REAUTH_REQUIRED`) and the typed word "confirm" (`CONFIRM_REQUIRED`). Turning off and lowering stay one click. Other refusals: `BUDGET_TOO_HIGH` (above $100 a day), `STALE` (the settings changed after the form loaded), `NO_CHANGE`, `NOT_VERIFIED`, `REASON_REQUIRED`.
+- UI: a Controls tab at `/admin/ai/controls` with spend controls, the beta cohort (find by email, add, remove with a reason) and recent changes. The live page reuses the editorial step-up (`StrongAuthStep`, new optional `simulate` prop); fixtures keep writes in memory and simulate the sign-in.
+- Recent changes name the account on cohort rows by email, even after it left the cohort.
+- No Codex-owned file changed. `convex/_generated/api.d.ts` gained `admin/aiControls` by hand, as Phase 1 did. The cap raise is deferred: `docs/wp/wp93-codex-cap-override.md`.
+- Tests: `convex/admin/aiControls.test.ts` (7, including the over-2× rule against the real meter) and `tests/admin-ai/controls.test.ts` (5).
+- Checks:
+  - typecheck ✅.
+  - lint 0 errors (45 warnings, none in WP93 files).
+  - `npm test`: every suite passes up to `check:ideabrowser-runtime`, which still stops on the untracked local `.claude/skills/newsletter/*` copies; `test:platform` (2,902) and `test:live` ✅ run alone.
+  - `npm run build`: the first run exited 1 at the Next.js security-advisory step after compiling every route; the retry exited 0.
+- Browser checks (fixtures):
+  - a one-click lower;
+  - turning Publishing on shows the risk notice; saving is refused without the sign-in, then without the typed confirm, then succeeds and is audited as confirmed;
+  - an unverified account is refused;
+  - add and remove with a reason;
+  - focus moves into the reason field and Cancel returns it to Remove.
+- a11y-check: labelled inputs, switches named by feature, `aria-hidden` on the visible on/off text, h1 → h2 → h3, focusable table region with its own name. axe-core WCAG 2.1 A/AA + best practice with the risk step and remove form open: 0 violations at 1280 px and at mobile width, no horizontal page overflow.
+- Evidence: `docs/reviews/evidence/wp93-phase2-2026-11-20/` (fixture data).
+- Not done: nothing deployed, merged or applied; no prod read.
