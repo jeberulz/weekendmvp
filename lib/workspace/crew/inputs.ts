@@ -219,7 +219,7 @@ export function emailSequenceStepPlan(input: {
 }
 
 /** The brand kit's name, tagline and voice as JSON: what the copy steps read (never the palette or art). */
-function brandSlice(brandKit: BrandKit): string {
+export function brandSlice(brandKit: BrandKit): string {
   return JSON.stringify({ name: brandKit.name, tagline: brandKit.tagline.text, voice: brandKit.voice });
 }
 

@@ -198,6 +198,11 @@ export type RevisionTaskInput = {
    */
   readonly approvalId: Id<"approvals">;
   readonly now: number;
+  readonly requestId?: string;
+  readonly note?: string;
+  readonly followUpEmail?: boolean;
+  readonly emailNote?: string;
+  readonly requiresBrandDocumentId?: Id<"documents">;
 };
 
 export function revisionTitle(jobType: JobType, changeRound: number): string {
@@ -235,7 +240,7 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
   const idempotencyKey = holders.length === 0
     ? `change-round:${approvalId}:${key}`
     : `change-round:${approvalId}:${key}:retry:${holders.length}`;
-  return await ctx.db.insert("tasks", {
+  const taskId = await ctx.db.insert("tasks", {
     ownerId: lineage.ownerId,
     projectId: lineage.projectId,
     type: lineage.jobType,
@@ -247,10 +252,21 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
     revisionOfTaskId: lineage.reviewedTask._id,
     approvalId,
     jobKey: key,
-    idempotencyKey,
+    idempotencyKey: input.requestId === undefined ? idempotencyKey : crewRequestKey(lineage.projectId, input.requestId),
+    ...(input.note === undefined ? {} : { revisionNote: input.note }),
+    ...(input.followUpEmail === true ? { emailHandoff: {
+      state: "requested" as const,
+      ...(input.emailNote === undefined ? {} : { note: input.emailNote }),
+    } } : {}),
+    ...(input.requiresBrandDocumentId === undefined ? {} : { requiresBrandDocumentId: input.requiresBrandDocumentId }),
     createdAt: now,
     updatedAt: now,
   });
+  return taskId;
+}
+
+export function crewRequestKey(projectId: Id<"projects">, requestId: string): string {
+  return `crew-request:${projectId}:${requestId}`;
 }
 
 /**
@@ -285,6 +301,7 @@ export async function cardRoundWasReleased(
 export async function revisionNoteFor(ctx: Pick<QueryCtx, "db">, taskId: Id<"tasks">): Promise<string | null> {
   const task = await ctx.db.get("tasks", taskId);
   if (task === null || task.revisionOfTaskId === undefined || task.approvalId === undefined) return null;
+  if (task.revisionNote !== undefined) return task.revisionNote;
   const card = await ctx.db.get("approvals", task.approvalId);
   if (
     card === null ||

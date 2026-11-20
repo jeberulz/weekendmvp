@@ -210,62 +210,67 @@ export const emailSequenceDraft = query({
     await assertFeatureEnabled(ctx, "workspace");
     await assertFeatureEnabled(ctx, "ai");
     const project = await requireBusinessAccess(ctx, args.projectId, "owner");
-    const business: Business = { ownerId: project.ownerId, projectId: project._id };
-    const read = await businessSequences(ctx, business);
-    if (!read.ok) return { state: "unavailable" as const };
-    const drafts = read.rows.filter((row) => row.status === "draft");
-    if (drafts.length > 1) return { state: "unavailable" as const };
-    const sequence = drafts[0] ?? read.rows.reduce<Doc<"sequences"> | null>(
-      (newest, row) => (newest === null || row.updatedAt > newest.updatedAt ? row : newest),
-      null,
-    );
-    if (sequence === null) return { state: "none" as const };
-
-    // The index reads steps by order: exactly 0–3, once each, all from this business.
-    const steps = await stepsOf(ctx, sequence._id);
-    const documentId = steps[0]?.documentId;
-    if (steps.length !== EMAIL_KINDS.length || documentId === undefined ||
-      !steps.every((step, index) => inBusiness(step, business) && Number(step.order) === index)) {
-      return { state: "unavailable" as const };
-    }
-    const document = await ctx.db.get("documents", documentId);
-    if (document === null || !inBusiness(document, business) || document.kind !== "email_sequence" || document.archivedAt !== undefined) {
-      return { state: "unavailable" as const };
-    }
-    // Parsed once; each step is then checked against it.
-    const parsed = parseEmailSequenceBody(document.body);
-    if (parsed === null) return { state: "unavailable" as const };
-    const emails: Infer<typeof emailViewValidator>[] = [];
-    for (const step of steps) {
-      const content = step.documentId === document._id ? emailStepFromSequence(step, parsed) : null;
-      if (content === null || !content.ok) return { state: "unavailable" as const };
-      const { email } = content;
-      emails.push({
-        kind: content.kind,
-        delayHours: email.delayHours,
-        subject: email.subject,
-        preview: email.preview,
-        body: email.body,
-        ...(email.cta === undefined ? {} : { cta: { label: email.cta.label, target: email.cta.target } }),
-        goal: email.goal,
-      });
-    }
-
-    // Newest first, so the newest card within the cap is the one seen.
-    const card = (await ctx.db.query("approvals")
-      .withIndex("by_subjectId", (q) => q.eq("subjectId", document._id))
-      .order("desc")
-      .take(CARDS_PER_DOCUMENT_MAX))
-      .find((row) => row.kind === "artifact_review" && row.subjectTable === "documents" && inBusiness(row, business)) ?? null;
-    return {
-      state: "ready" as const,
-      status: sequence.status,
-      name: parsed.name,
-      senderName: parsed.senderName,
-      emails,
-      card: card === null
-        ? null
-        : { approvalId: card._id, status: card.status, changeRound: card.changeRound, expiresAt: approvalExpiresAt(card.createdAt) },
-    };
+    return await readEmailSequenceDraft(ctx, project);
   },
 });
+
+/** The owner-scoped, validated copy used by both Email and read-only chat previews. */
+export async function readEmailSequenceDraft(ctx: Ctx, project: Doc<"projects">): Promise<Infer<typeof emailSequenceDraftView>> {
+  const business: Business = { ownerId: project.ownerId, projectId: project._id };
+  const read = await businessSequences(ctx, business);
+  if (!read.ok) return { state: "unavailable" as const };
+  const drafts = read.rows.filter((row) => row.status === "draft");
+  if (drafts.length > 1) return { state: "unavailable" as const };
+  const sequence = drafts[0] ?? read.rows.reduce<Doc<"sequences"> | null>(
+    (newest, row) => (newest === null || row.updatedAt > newest.updatedAt ? row : newest),
+    null,
+  );
+  if (sequence === null) return { state: "none" as const };
+
+  // The index reads steps by order: exactly 0–3, once each, all from this business.
+  const steps = await stepsOf(ctx, sequence._id);
+  const documentId = steps[0]?.documentId;
+  if (steps.length !== EMAIL_KINDS.length || documentId === undefined ||
+    !steps.every((step, index) => inBusiness(step, business) && Number(step.order) === index)) {
+    return { state: "unavailable" as const };
+  }
+  const document = await ctx.db.get("documents", documentId);
+  if (document === null || !inBusiness(document, business) || document.kind !== "email_sequence" || document.archivedAt !== undefined) {
+    return { state: "unavailable" as const };
+  }
+  // Parsed once; each step is then checked against it.
+  const parsed = parseEmailSequenceBody(document.body);
+  if (parsed === null) return { state: "unavailable" as const };
+  const emails: Infer<typeof emailViewValidator>[] = [];
+  for (const step of steps) {
+    const content = step.documentId === document._id ? emailStepFromSequence(step, parsed) : null;
+    if (content === null || !content.ok) return { state: "unavailable" as const };
+    const { email } = content;
+    emails.push({
+      kind: content.kind,
+      delayHours: email.delayHours,
+      subject: email.subject,
+      preview: email.preview,
+      body: email.body,
+      ...(email.cta === undefined ? {} : { cta: { label: email.cta.label, target: email.cta.target } }),
+      goal: email.goal,
+    });
+  }
+
+  // Newest first, so the newest card within the cap is the one seen.
+  const card = (await ctx.db.query("approvals")
+    .withIndex("by_subjectId", (q) => q.eq("subjectId", document._id))
+    .order("desc")
+    .take(CARDS_PER_DOCUMENT_MAX))
+    .find((row) => row.kind === "artifact_review" && row.subjectTable === "documents" && inBusiness(row, business)) ?? null;
+  return {
+    state: "ready" as const,
+    status: sequence.status,
+    name: parsed.name,
+    senderName: parsed.senderName,
+    emails,
+    card: card === null
+      ? null
+      : { approvalId: card._id, status: card.status, changeRound: card.changeRound, expiresAt: approvalExpiresAt(card.createdAt) },
+  };
+}

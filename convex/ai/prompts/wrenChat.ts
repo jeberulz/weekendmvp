@@ -19,7 +19,7 @@ import {
 
 export const wrenChatSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   id: "wren-chat",
-  version: 4,
+  version: 5,
   tier: "fast",
   effort: "low",
   thinking: { type: "disabled" },

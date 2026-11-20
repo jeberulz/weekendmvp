@@ -351,13 +351,17 @@ export async function approvalCardViews(
   for (const approvalId of approvalIds) {
     const approval = await ctx.db.get("approvals", approvalId);
     if (approval === null || approval.ownerId !== business.ownerId || approval.projectId !== business.projectId) continue;
+    const pricedRevision = approval.kind === "spend" && approval.crewRevision !== undefined &&
+      approval.costCredits !== undefined && approval.costCredits > 0n;
     views.push({
       kind: "approval",
       approvalId: approval._id,
       approvalKind: approval.kind,
       status: approval.status,
-      title: approvalCardTitle(approval.kind, approval.subjectTable),
-      subject: approvalSubjectLine(await subjectFacts(ctx, business, approval)),
+      title: pricedRevision ? `Approve ${approval.costCredits} credits for change round ${approval.changeRound}`
+        : approvalCardTitle(approval.kind, approval.subjectTable),
+      subject: pricedRevision ? (approval.note ?? "Revision to the current draft")
+        : approvalSubjectLine(await subjectFacts(ctx, business, approval)),
       reviewRoute: approvalReviewRoute(approval.subjectTable, await subjectDocumentKind(ctx, business, approval)),
     });
   }

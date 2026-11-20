@@ -14,7 +14,7 @@ import {
   wrenMemoryOverlongMarker,
 } from "../../lib/workspace/contracts/wrenMemory";
 import { dropLoneSurrogates } from "../../lib/workspace/plainText";
-import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
+import { WREN_PROMPT_REFS, type loadedTurnValidator, type finishOutcomeValidator } from "./chat";
 
 /**
  * WP77-S3. One Wren turn: load it, call the metered gateway, end the row.
@@ -177,7 +177,7 @@ export async function runWrenTurnWith(
    * bad note or card; only if that throws too, write `failed`.
    */
   const finish = async (outcome: FinishOutcome, attempt: number = args.attempt) => {
-    if (outcome.status === "failed") {
+    if (outcome.status !== "done") {
       await finishOnce(outcome, attempt);
       return;
     }
@@ -201,14 +201,27 @@ export async function runWrenTurnWith(
       status: "failed", cause: "failed", ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
     }, attempt);
   };
-  const turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
-    ownerId: args.ownerId,
-    projectId: args.projectId,
-    founderMessageId: args.founderMessageId,
-    wrenMessageId: args.wrenMessageId,
-    now: Date.now(),
-  });
-  if (turn.status !== "ready") return null;
+  let turn: Infer<typeof loadedTurnValidator>;
+  try {
+    turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
+      ownerId: args.ownerId, projectId: args.projectId,
+      founderMessageId: args.founderMessageId, wrenMessageId: args.wrenMessageId, now: Date.now(),
+    });
+  } catch (error) {
+    await finish({ status: "failed", cause: "failed" });
+    throw error;
+  }
+  if (turn.status === "skip") return null;
+  if (turn.status === "assignment" || turn.status === "answer") {
+    try {
+      await finishOnce(turn.status === "assignment"
+        ? { status: "assignment", founderMessageId: args.founderMessageId }
+        : { status: "done", body: turn.body, ...(turn.route ? { route: turn.route } : {}) }, args.attempt);
+    } catch {
+      await finish({ status: "failed", cause: "failed" });
+    }
+    return null;
+  }
 
   let result: GatewayRunResult;
   try {
