@@ -150,6 +150,8 @@ export function DailySpendChart({
 /** Dot spacing in the launch strip, and the highest row before dots fold into a "+N" count. */
 const STRIP_STEP = 11;
 const STRIP_ROW_MAX = 7;
+/** Wider than the widest "+N" label at 11px ("+20,000" is about 45 units). */
+const STRIP_LABEL_GAP = 48;
 
 export function LaunchCostStrip({
   costs,
@@ -187,6 +189,19 @@ export function LaunchCostStrip({
   const H = 150 + (overflow ? STRIP_STEP + 4 : 0);
   const baseY = H - pad.bottom - 10;
   const placed = stacked.map((dot) => ({ ...dot, cy: baseY - dot.row * STRIP_STEP }));
+  // One "+N" label per cluster: counts on top-row dots closer than a label's
+  // width share a label, centred over them, so no two labels overlap.
+  const labels: { x: number; y: number; count: number; firstX: number; lastX: number }[] = [];
+  for (const dot of [...placed].filter((d) => d.more > 0).sort((a, b) => a.cx - b.cx)) {
+    const last = labels.at(-1);
+    if (last && dot.cx - last.lastX < STRIP_LABEL_GAP) {
+      last.count += dot.more;
+      last.lastX = dot.cx;
+      last.x = (last.firstX + dot.cx) / 2;
+    } else {
+      labels.push({ x: dot.cx, y: dot.cy - 9, count: dot.more, firstX: dot.cx, lastX: dot.cx });
+    }
+  }
   const ticks = [0, max / 4, max / 2, (3 * max) / 4, max];
 
   return (
@@ -217,11 +232,11 @@ export function LaunchCostStrip({
             onMouseEnter={() => setHover(index)}
           />
         ))}
-        {placed.map((dot, index) => (dot.more > 0 ? (
-          <text key={`more-${index}`} x={dot.cx} y={dot.cy - 9} textAnchor="middle" pointerEvents="none" className="fill-(--ed-text) text-[11px] font-semibold tabular-nums">
-            +{formatCount(dot.more)}
+        {labels.map((label) => (
+          <text key={`more-${label.firstX}`} x={label.x} y={label.y} textAnchor="middle" pointerEvents="none" className="fill-(--ed-text) text-[11px] font-semibold tabular-nums">
+            +{formatCount(label.count)}
           </text>
-        ) : null))}
+        ))}
         {hover !== null && placed[hover] ? (
           <Tooltip
             x={placed[hover].cx}
