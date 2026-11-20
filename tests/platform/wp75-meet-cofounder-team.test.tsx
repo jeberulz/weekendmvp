@@ -93,11 +93,10 @@ describe("L1 T1 Meet your co-founder: structure", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Hi, I'm Wren.");
     expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
       "Your team",
-      "What I read",
       "Who I hired",
+      "What I read",
+      "How I decided",
       "They start now. I keep the chat.",
-      "Roles I checked",
-      "Not hiring, on purpose",
     ]);
     expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
   });
@@ -151,7 +150,7 @@ describe("L1 T1 Meet your co-founder: the team", () => {
   });
 
   test("ready: the banner, 9 hired rows with specialty and a Core or Added reason, 4 skipped, 13 checked", async () => {
-    const { container } = setup(ready);
+    const { container, user } = setup(ready);
     expect(status().textContent).toBe("Your team is ready: 9 hired, 4 skipped for now.");
 
     const hiredList = screen.getByRole("list", { name: "Hired specialists" });
@@ -176,6 +175,11 @@ describe("L1 T1 Meet your co-founder: the team", () => {
     expect(within(hiredList).getAllByText("Core")).toHaveLength(4);
     expect(within(hiredList).getAllByText("Added")).toHaveLength(5);
 
+    // How I decided: a 9-of-13 meter replaces the old 13-chip "Roles checked" cloud.
+    expect(screen.getByRole("img", { name: "9 of 13 roles hired" })).toBeTruthy();
+
+    // The roles left out fold into one disclosure; open it to read them.
+    await user.click(screen.getByText(/Why I left 4 roles out/));
     const skipped = within(screen.getByRole("list", { name: "Skipped roles" })).getAllByRole("listitem");
     expect(skipped).toHaveLength(4);
     for (const [index, role] of ready.skipped.entries()) {
@@ -185,15 +189,10 @@ describe("L1 T1 Meet your co-founder: the team", () => {
     expect(screen.getByText(/No course content/)).toBeTruthy();
     expect(screen.getByText("Hiring a skipped role is coming soon.")).toBeTruthy();
 
-    const checked = within(screen.getByRole("list", { name: "Roles checked" })).getAllByRole("listitem");
-    expect(checked).toHaveLength(13);
-    expect(checked.filter((chip) => chip.textContent?.endsWith("· hire"))).toHaveLength(9);
-    expect(checked.filter((chip) => chip.textContent?.endsWith("· skip"))).toHaveLength(4);
-
     const banner = screen.getByRole("heading", { level: 2, name: /They start now/ }).closest("section");
     expect(banner?.textContent).toContain("Team ready · 9 hired · 4 skipped");
-    // Q13: no approval card, no hire or assemble controls.
-    expect(screen.queryByRole("button")).toBeNull();
+    // Q13: no approval card, no hire or assemble controls (the disclosure is a summary, not a button).
+    expect(screen.queryByRole("button", { name: /assemble|hire|try again/i })).toBeNull();
     expect(container.textContent).not.toMatch(/Assemble my team/);
     await expectNoAxeViolations(container);
   });
