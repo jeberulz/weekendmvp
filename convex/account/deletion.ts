@@ -83,7 +83,7 @@ export const getDeletionState = query({
   },
 });
 
-async function removeNewsletterRows(ctx: MutationCtx, email: string | undefined): Promise<void> {
+async function removeEmailKeyedRows(ctx: MutationCtx, email: string | undefined): Promise<void> {
   if (email === undefined) return;
   const normalized = email.trim().toLowerCase();
   if (normalized === "") return;
@@ -93,6 +93,12 @@ async function removeNewsletterRows(ctx: MutationCtx, email: string | undefined)
   const legacy = await ctx.db.query("subscriptions")
     .withIndex("by_email", (q) => q.eq("email", email)).take(10);
   for (const row of legacy) await ctx.db.delete("subscriptions", row._id);
+  // Sign-in attempt counters are keyed by the address typed at sign-in.
+  for (const identifier of new Set([email, normalized])) {
+    const limits = await ctx.db.query("authRateLimits")
+      .withIndex("identifier", (q) => q.eq("identifier", identifier)).take(10);
+    for (const row of limits) await ctx.db.delete("authRateLimits", row._id);
+  }
 }
 
 /**
@@ -120,7 +126,7 @@ export const requestDeletion = mutation({
       });
     }
     // Everything that identifies the founder goes now. The marker also stops new businesses.
-    await removeNewsletterRows(ctx, user.email);
+    await removeEmailKeyedRows(ctx, user.email);
     await ctx.db.patch("users", user._id, {
       name: undefined, image: undefined, email: undefined, emailVerificationTime: undefined,
       phone: undefined, phoneVerificationTime: undefined, displayName: undefined,

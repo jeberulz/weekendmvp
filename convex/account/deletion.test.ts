@@ -61,6 +61,7 @@ async function seedFounder(t: T, input: { email: string; name: string; title: st
     await ctx.db.insert("saved_ideas", { userId, ideaId, savedAt: now });
     await ctx.db.insert("idea_notes", { ownerId: userId, ideaId, body: input.chat, updatedAt: now });
     await ctx.db.insert("user_preferences", { ownerId: userId, tools: ["cursor"], updatedAt: now });
+    await ctx.db.insert("authRateLimits", { identifier: input.email, lastAttemptTime: now, attemptsLeft: 3 });
     await ctx.db.insert("subscriptions", { email: input.email, normalizedEmail: input.email, source: "test", automationIds: [], createdAt: now });
     await ctx.db.insert("account_beehiiv_sync", { userId, email: input.email, state: "synced", attempts: 1, updatedAt: now });
 
