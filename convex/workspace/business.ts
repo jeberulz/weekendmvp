@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
+import { ownerAccess } from "../platform/ownerAccess";
 import { assertAccountOpenForProjectCreation } from "../platform/accountClosureGuard";
 import { requireOwnedWizardSession } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
@@ -125,6 +126,7 @@ export async function businessLimitFor(
   ctx: QueryCtx,
   ownerId: Id<"users">,
 ): Promise<{ plan: string; limit: number; projectId: Id<"projects"> | null } | null> {
+  if ((await ownerAccess(ctx, ownerId)).unlimited) return null;
   const plan = await resolvePlan(ctx, ownerId);
   const allowance = WORKSPACE_PLAN_LIMITS[plan].limits.businesses;
   const existing = await businessesOf(ctx, ownerId, allowance);

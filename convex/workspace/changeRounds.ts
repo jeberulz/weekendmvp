@@ -4,6 +4,7 @@ import { query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
 import { requireBusinessAccess } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
+import { ownerAccess } from "../platform/ownerAccess";
 import { jobKey, parseJobKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import {
   JOB_TYPE_TITLES,
@@ -170,6 +171,13 @@ export async function resolveChangeRound(
   if ("block" in read) return { ok: false, reason: read.block };
   const position = nextChangeRound(read.tasks, read.lineage.reviewedTask._id);
   if (position.state !== "ready") return { ok: false, reason: position.state };
+  if ((await ownerAccess(ctx, ownerId)).unlimited) {
+    return {
+      ok: true,
+      lineage: read.lineage,
+      decision: { decision: "free", changeRound: position.changeRound, freeRoundsLeft: 0, unlimited: true },
+    };
+  }
   const plan = await resolvePlan(ctx, ownerId);
   const decision = decideChangeRound({ jobType: read.lineage.jobType, changeRound: position.changeRound, plan });
   return { ok: true, lineage: read.lineage, decision };
@@ -317,7 +325,7 @@ const unavailableReasonValidator = v.union(
  * starts nothing: `price_not_set` is the "not available yet" answer.
  */
 export const changeRoundOutcomeValidator = v.union(
-  v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number(), taskId: v.id("tasks") }),
+  v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number(), unlimited: v.optional(v.boolean()), taskId: v.id("tasks") }),
   v.object({
     outcome: v.literal("spend_required"),
     changeRound: v.number(),
@@ -328,12 +336,12 @@ export const changeRoundOutcomeValidator = v.union(
 );
 
 export type ChangeRoundOutcome =
-  | { outcome: "free"; changeRound: number; freeRoundsLeft: number; taskId: Id<"tasks"> }
+  | { outcome: "free"; changeRound: number; freeRoundsLeft: number; unlimited?: boolean; taskId: Id<"tasks"> }
   | { outcome: "spend_required"; changeRound: number; costCredits: number; spendApprovalId: Id<"approvals"> }
   | { outcome: "not_available"; reason: ChangeRoundUnavailable; changeRound?: number };
 
 const changeRoundPreviewValidator = v.union(
-  v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number() }),
+  v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number(), unlimited: v.optional(v.boolean()) }),
   v.object({ outcome: v.literal("spend_required"), changeRound: v.number(), costCredits: v.number() }),
   v.object({ outcome: v.literal("not_available"), reason: unavailableReasonValidator, changeRound: v.optional(v.number()) }),
 );
@@ -363,7 +371,8 @@ export const previewChangeRound = query({
     const decision = resolution.decision;
     switch (decision.decision) {
       case "free":
-        return { outcome: "free" as const, changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft };
+        return { outcome: "free" as const, changeRound: decision.changeRound, freeRoundsLeft: decision.freeRoundsLeft,
+          ...(decision.unlimited ? { unlimited: true } : {}) };
       case "spend":
         return { outcome: "spend_required" as const, changeRound: decision.changeRound, costCredits: decision.costCredits };
       case "not_available":

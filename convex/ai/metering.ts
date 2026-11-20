@@ -4,6 +4,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../_generated/server";
 import { requireBusinessForOwner } from "../platform/authz";
 import { readMembershipState } from "../platform/membership/state";
+import { ownerAccess } from "../platform/ownerAccess";
 import { assertFeatureEnabledForOwner, getOpsSettings } from "../ops/settings";
 import {
   addGlobalReservation,
@@ -44,6 +45,9 @@ const errorClassValidator = v.union(
   v.literal("retryable"), v.literal("indeterminate"), v.literal("permanent"),
   v.literal("refusal"), v.literal("schema_invalid"), v.literal("timeout"),
 );
+
+const OWNER_ALLOWANCE_SCOPES = new Set(["owner_free_lifetime", "owner_daily", "owner_daily_escalations"]);
+const GLOBAL_ALLOWANCE_SCOPES = new Set(["global_daily_free", "global_daily_paid"]);
 
 const reserveArgs = {
   ownerId: v.optional(v.id("users")),
@@ -193,7 +197,13 @@ export const reserve = internalMutation({
       escalation: args.escalation,
       creditFunded,
     });
-    if (failure !== null) throw new ConvexError(failure);
+    const access = args.ownerId === undefined
+      ? { unlimited: false, bypassAiBudget: false }
+      : await ownerAccess(ctx, args.ownerId);
+    const bypassFailure = failure?.code === "BUDGET_EXHAUSTED" && access.unlimited &&
+      (OWNER_ALLOWANCE_SCOPES.has(failure.scope) ||
+        (access.bypassAiBudget && GLOBAL_ALLOWANCE_SCOPES.has(failure.scope)));
+    if (failure !== null && !bypassFailure) throw new ConvexError(failure);
 
     const usageId = await ctx.db.insert("ai_usage", {
       ownerId: args.ownerId,
@@ -208,6 +218,7 @@ export const reserve = internalMutation({
       plan: ownerPlan,
       globalPool: pool,
       creditFunded,
+      ...(access.bypassAiBudget ? { ownerBudgetBypass: true } : {}),
       creditDebitId: args.creditDebitId,
       batch: args.batch,
       escalation: args.escalation,
@@ -232,7 +243,7 @@ export const reserve = internalMutation({
         globalPool: pool, dayKey,
       }, ownerBudget, now);
     }
-    await addGlobalReservation(ctx, pool, dayKey, args.reservedMicroUsd);
+    await addGlobalReservation(ctx, pool, dayKey, args.reservedMicroUsd, access.bypassAiBudget);
     return { usageId, existing: false };
   },
 });
@@ -284,6 +295,7 @@ async function applyFinalSpend(
   await addGlobalSpend(
     ctx, row.globalPool, row.dayKey, chargeMicroUsd,
     releaseReservation ? int64ToMicroUsd(row.reservedMicroUsd) : 0,
+    row.ownerBudgetBypass === true,
   );
 }
 

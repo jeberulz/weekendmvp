@@ -55,7 +55,7 @@ export function WorkspaceFrame({
         <WorkspaceSidebar
           projectId={projectId}
           weekendActive={weekendActive}
-          switcher={<BusinessSwitcher currentId={projectId} businesses={businesses} subline={switcherSubline} />}
+          switcher={<BusinessSwitcher currentId={projectId} businesses={businesses} subline={switcherSubline} unlimited={credits.unlimited} />}
           credits={credits}
           teamBadge={teamBadge}
           userRow={userRow}

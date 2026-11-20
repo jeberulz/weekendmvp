@@ -49,7 +49,7 @@ export default async function LaunchWorkspaceLayout({
 }) {
   const { projectId } = await params;
   const project = await requireWorkspaceAccess(projectId);
-  const credits = await getCreditsSummary(project._id);
+  const credits = await getCreditsSummary(project._id, project.unlimited);
   const businesses = await listMyBusinesses(project);
   const partnerName = project.partnerName ?? "Wren";
 

@@ -294,6 +294,12 @@ export default defineSchema({
     accountClosureRequestedAt: v.optional(v.number()),
     /** Optional signup attribution (e.g. live-buildalong). Set once, never overwritten. */
     signupSrc: v.optional(v.string()),
+    /** Operator-controlled commercial access for the platform owner's account. */
+    platformOwnerAccess: v.optional(v.object({
+      enabled: v.boolean(),
+      bypassAiBudget: v.boolean(),
+      updatedAt: v.number(),
+    })),
   })
     // `email` and `phone` are required exact names for Convex Auth internals.
     .index("email", ["email"])

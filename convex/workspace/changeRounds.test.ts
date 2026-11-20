@@ -140,6 +140,30 @@ async function spendCards(t: T, projectId: Id<"projects">) {
 }
 
 describe("WP77-S2 free rounds", () => {
+  test("the explicit platform owner grant keeps later rounds free and revocation restores the spend card", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async ctx => {
+      await ctx.db.patch("users", ids.ownerId, {
+        emailVerificationTime: 1,
+        platformOwnerAccess: { enabled: true, bypassAiBudget: true, updatedAt: 1 },
+      });
+      await ctx.db.insert("super_admins", {
+        userId: ids.ownerId, role: "super_admin", boundAt: 1, boundVia: "deployment_bootstrap",
+      });
+    });
+    const { cardId } = await throughTwoFreeRounds(seeded);
+    const third = await askForChanges(seeded, cardId);
+    expect(third.changeRound).toMatchObject({ outcome: "free", changeRound: 3, unlimited: true });
+    if (third.changeRound?.outcome !== "free") throw new Error("owner round must be free");
+    const next = await finishRound(t, ids, third.changeRound.taskId, "brand_kit", 3);
+    await t.run(ctx => ctx.db.patch("users", ids.ownerId, {
+      platformOwnerAccess: { enabled: false, bypassAiBudget: false, updatedAt: 2 },
+    }));
+    const fourth = await askForChanges(seeded, next.cardId);
+    expect(fourth.changeRound).toMatchObject({ outcome: "spend_required", changeRound: 4 });
+  });
+
   test("rounds 1 and 2 are free: the card records the round and note; a free revision task is queued", async () => {
     const seeded = await seed();
     const { t, owner, ids } = seeded;
