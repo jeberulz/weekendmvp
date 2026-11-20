@@ -24,6 +24,11 @@ import type { OwnerSummary, TimelineRow } from "@/lib/admin/ai-costs/types";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
 import { cn } from "@/lib/utils";
 
+// A private, per-request tool: navigation into it may block on the server.
+// (Instant-navigation validation otherwise flags the shared root layout's
+// pathname read, which this WP may not edit. Same as the editorial idea page.)
+export const instant = false;
+
 type Params = Promise<{ ownerId: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
