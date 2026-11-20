@@ -203,7 +203,7 @@ function OwnIdeaStart({
 
   const fieldId = `${base}-idea`;
   // A tapped example fills the field and hands focus back to it, ready to edit.
-  function fillExample(example: string) {
+  function applyExample(example: string) {
     setText(example);
     setLocalError(null);
     document.getElementById(fieldId)?.focus();
@@ -237,7 +237,7 @@ function OwnIdeaStart({
             <button
               key={example}
               type="button"
-              onClick={() => fillExample(example)}
+              onClick={() => applyExample(example)}
               className={cn(
                 "rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-[13px] text-home-ink-2 hover:bg-home-sunk",
                 FOCUS,
