@@ -40,3 +40,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Money-match test extended: an uncapped owner call (settled and in flight) matches `readGlobalBudget(…, true)` for both pools, the pools still match their counters, and the range total equals pools plus owner.
 - `convex/admin/aiCosts.test.ts` + `tests/admin-ai`: 25/25. axe on the changed overview: 0 violations.
 - Full checks after the rebase: typecheck ✅, lint 0 errors, `npm run build` ✅ (exit 0; the earlier security-advisory exit no longer appears), `test:platform` and `test:live` ✅. `npm test` still stops only at `check:ideabrowser-runtime` on untracked local skill files (see above).
+
+## 2026-11-20 - Phase 2 started
+
+- The owner approved Phase 2 and answered the open questions:
+  - defer the cap raise (Codex spec written);
+  - require a fresh sign-in and a typed confirm only for risky changes;
+  - show emails in full.
+- Branch `claude/wp93-phase2-ops-controls` from `main` (`3add0084`). Stories in `docs/wp/wp93-stories.md` (Phase 2).
