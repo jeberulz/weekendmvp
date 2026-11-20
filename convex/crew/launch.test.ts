@@ -19,9 +19,10 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, components, internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import schema from "../schema";
-import type { AnthropicFixtureReply } from "../ai/providers/fixtures";
+import type { AnthropicFixtureResponder } from "../ai/providers/fixtures";
 import { ProviderError } from "../ai/providers/types";
-import { hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { hydrotrailBrandKit, hydrotrailEmailSequence, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { CREDIT_ACTIONS, jobKey } from "../../lib/workspace/contracts/jobs";
 import type { WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { RUN_LEASE_MS, abandonCrewTask, ensureLaunchStepTasks } from "./jobs";
 import { FAILED_STEP_INTERRUPTED_REASON } from "../../lib/workspace/crew/retry";
@@ -40,7 +41,7 @@ type Plan = {
   /** Runs first, before the step starts. */
   readonly prelude?: () => Promise<void>;
   /** The fixture reply for this call's gateway run. */
-  readonly reply?: () => AnthropicFixtureReply | undefined;
+  readonly reply?: AnthropicFixtureResponder;
   /** Runs just before the gateway call (between prepare and finish). */
   readonly before?: () => Promise<void>;
   /** The action opens its run and then dies (throws): the workpool reports a failure. */
@@ -85,7 +86,7 @@ vi.mock("./generators", async (importOriginal) => {
           await ctx.runMutation(refs.crew.jobs.startCrewRun, { taskId: args.taskId, ...(resume ? { resume: true } : {}) });
           throw new Error("the action died mid-run");
         }
-        const adapter = createAnthropicAdapter({ env: {}, fixtureResponder: () => plan.reply?.() });
+        const adapter = createAnthropicAdapter({ env: {}, fixtureResponder: plan.reply });
         const outcome = await actual.runCrewGeneratorStepWith(ctx, args, {
           runPrompt: async (promptArgs) => {
             await plan.before?.();
@@ -298,6 +299,296 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
     expect(view.steps.find((step) => step.key === "logo_marks")?.reason).toBe("Logo marks is not built yet, so nothing was written for it yet.");
     expect(view.steps.find((step) => step.key === "seo_pack")?.reason).toBe("SEO pack is coming in a later update, so nothing was written for it yet.");
     expect(view.steps.filter((step) => step.state === "skipped").every((step) => (step.reason ?? "").length > 0)).toBe(true);
+  });
+});
+
+describe("WP94 founder-requested revisions", () => {
+  async function launchedBrand(approveBlueprint = true) {
+    const w = await world();
+    const founder = as(w);
+    const [projectId] = w.projectIds;
+    if (!projectId) throw new Error("Missing business");
+    await start(w);
+    await drain(w);
+    const initial = await rows(w);
+    const original = initial.documents.find((doc) => doc.kind === "brand_kit");
+    const pending = await founder.query(api.workspace.reviews.pendingReviews, { projectId });
+    const blueprint = pending.find((review) => review.kind === "blueprint");
+    const brand = pending.find((review) => review.kind === "brand_kit");
+    if (!original?.taskId || !original.contentSha256 || !blueprint || !brand) throw new Error("Missing launch artifacts");
+    if (approveBlueprint) await founder.mutation(api.workspace.approvals.decideApproval, {
+      projectId, approvalId: blueprint.approvalId, decision: "approve",
+    });
+    return { w, founder, projectId, original, brand, blueprint, originalTaskId: original.taskId };
+  }
+
+  test("a review decision schedules one real revision and the brand page shows its changed draft", async () => {
+    const { w, founder, projectId, original, brand, originalTaskId } = await launchedBrand();
+    const tagline = "Pack enough water for the next ridge.";
+    const note = `Change the tagline to "${tagline}"`;
+    const prompts: string[] = [];
+    hooks.plan = ({ type }) => type === "crew_brand_kit" ? {
+      reply: (request) => {
+        prompts.push(JSON.stringify(request.messages));
+        return { json: { ...hydrotrailBrandKit, tagline: { text: tagline } } };
+      },
+    } : {};
+    const request = { projectId, approvalId: brand.approvalId, decision: "request_changes" as const, note };
+    const result = await founder.mutation(api.workspace.approvals.decideApproval, request);
+    if (result.changeRound?.outcome !== "free") throw new Error("First brand revision did not return its task");
+    const { taskId } = result.changeRound;
+    await founder.mutation(api.workspace.approvals.decideApproval, request);
+    await drain(w);
+
+    const finished = await rows(w);
+    expect(finished.tasks.filter((task) => task.revisionOfTaskId === originalTaskId)).toEqual([
+      expect.objectContaining({ _id: taskId, status: "succeeded", changeRound: 1n, creditCost: 0n }),
+    ]);
+    expect(finished.runs.filter((run) => run.taskId === taskId)).toEqual([expect.objectContaining({ status: "succeeded" })]);
+    expect(prompts).toHaveLength(1);
+    expect(prompts[0]).toContain(tagline);
+    expect(prompts[0]).toContain(hydrotrailBrandKit.tagline.text);
+    const superseding = finished.documents.filter((doc) => doc.supersedesDocumentId === original._id);
+    expect(superseding).toEqual([expect.objectContaining({ kind: "brand_kit", taskId })]);
+    expect(superseding[0]?.contentSha256).not.toBe(original.contentSha256);
+    const current = await founder.query(api.growth.drafts.brandKit.brandKitDraft, { projectId });
+    expect(current).toMatchObject({ state: "ready", kit: { tagline: { text: tagline } }, card: { status: "pending", changeRound: 1n } });
+    const open = await founder.query(api.workspace.reviews.pendingReviews, { projectId });
+    const brandReviews = open.filter((review) => review.kind === "brand_kit");
+    expect(brandReviews).toEqual([expect.objectContaining({ changeRound: 1n })]);
+    expect(brandReviews[0]?.approvalId).not.toBe(brand.approvalId);
+  });
+
+  test("the owner recovery sweep starts a pre-WP94 queued revision without a second task or debit", async () => {
+    const { w, projectId, originalTaskId, original, brand } = await launchedBrand();
+    const tagline = "Carry enough water for the ridge.";
+    const taskId = await w.t.run(async (ctx) => {
+      const now = Date.now();
+      const key = jobKey(projectId, "crew_brand_kit", "main", 1);
+      await ctx.db.patch("approvals", brand.approvalId, {
+        status: "changes_requested", note: `Use the tagline "${tagline}"`, decidedAt: now, updatedAt: now,
+      });
+      // Legacy records have neither an enqueue marker nor a scheduler entry.
+      return await ctx.db.insert("tasks", {
+        projectId, ownerId: w.owner.userId, type: "crew_brand_kit", employeeKey: "brand",
+        status: "queued", title: "Brand kit, change round 1", creditCost: 0n, changeRound: 1n,
+        revisionOfTaskId: originalTaskId, approvalId: brand.approvalId,
+        jobKey: key, idempotencyKey: `change-round:${brand.approvalId}:${key}`, createdAt: now, updatedAt: now,
+      });
+    });
+    hooks.plan = ({ type }) => type === "crew_brand_kit" ? {
+      reply: () => ({ json: { ...hydrotrailBrandKit, tagline: { text: tagline } } }),
+    } : {};
+    const sweep = () => w.t.mutation(internal.crew.launch.recoverStalledOwner, { ownerId: w.owner.userId });
+    await sweep();
+    await sweep();
+    await drain(w);
+    await sweep();
+    await drain(w);
+
+    const recovered = await rows(w);
+    expect(recovered.tasks.filter((task) => task.revisionOfTaskId === originalTaskId)).toEqual([
+      expect.objectContaining({ _id: taskId, status: "succeeded" }),
+    ]);
+    expect(recovered.documents.filter((doc) => doc.supersedesDocumentId === original._id)).toHaveLength(1);
+    expect(recovered.runs.filter((run) => run.taskId === taskId)).toHaveLength(1);
+    expect(hooks.calls.filter((call) => call.taskId === taskId)).toHaveLength(1);
+    const ledger = await w.t.run(async (ctx) => await ctx.db.query("credit_ledger").collect());
+    expect(ledger.filter((entry) => entry.taskId === taskId)).toEqual([]);
+  });
+
+  test("a revision that returns the old brand reports the failure without a new draft or review", async () => {
+    const { w, founder, projectId, original, brand } = await launchedBrand();
+    const result = await founder.mutation(api.workspace.approvals.decideApproval, {
+      projectId, approvalId: brand.approvalId, decision: "request_changes", note: "Make the tagline shorter.",
+    });
+    if (result.changeRound?.outcome !== "free") throw new Error("Missing revision task");
+    const { taskId } = result.changeRound;
+    // The default fixture returns exactly the brand it supplied for the first draft.
+    await drain(w);
+    const records = await rows(w);
+    expect(records.tasks.find((task) => task._id === taskId)).toMatchObject({
+      status: "failed", crewFailureReason: expect.stringMatching(/made no changes/i),
+    });
+    expect(records.documents.filter((doc) => doc.kind === "brand_kit").map((doc) => doc._id)).toEqual([original._id]);
+    const pending = await founder.query(api.workspace.reviews.pendingReviews, { projectId });
+    expect(pending.filter((review) => review.kind === "brand_kit")).toEqual([]);
+  });
+
+  test("Iris waits for the blueprint and starts when the founder approves it", async () => {
+    const { w, founder, projectId, brand, blueprint } = await launchedBrand(false);
+    const result = await founder.mutation(api.workspace.approvals.decideApproval, {
+      projectId, approvalId: brand.approvalId, decision: "request_changes", note: "Use a shorter tagline.",
+    });
+    if (result.changeRound?.outcome !== "free") throw new Error("No revision task");
+    const { taskId } = result.changeRound;
+    await drain(w);
+    const waiting = await founder.query(api.workspace.crewStatus.snapshot, { projectId });
+    expect(waiting.assignments.find((assignment) => assignment.taskId === taskId)).toMatchObject({
+      role: "brand", status: "queued", blocker: "blueprint",
+    });
+    expect(hooks.calls.filter((call) => call.taskId === taskId)).toHaveLength(0);
+    hooks.plan = ({ type }) => type === "crew_brand_kit" ? {
+      reply: () => ({ json: { ...hydrotrailBrandKit, tagline: { text: "Sip on the trail." } } }),
+    } : {};
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: blueprint.approvalId, decision: "approve" });
+    await drain(w);
+    expect(hooks.calls.filter((call) => call.taskId === taskId)).toHaveLength(1);
+    const ready = await founder.query(api.workspace.crewStatus.snapshot, { projectId });
+    expect(ready.assignments.find((assignment) => assignment.taskId === taskId)).toMatchObject({
+      role: "brand", status: "succeeded", changedFields: ["tagline"],
+      changePreview: [expect.stringContaining("Sip on the trail.")],
+    });
+  });
+
+  async function brandSpendRequest() {
+    const { w, founder, projectId, brand, blueprint } = await launchedBrand();
+    await w.t.mutation(internal.platform.billing.grants.grantStarter, { ownerId: w.owner.userId, projectId });
+    const freeTaglines = ["Check your water before the climb.", "Find your next water stop."];
+    let reviewId = brand.approvalId;
+    for (const [index, tagline] of freeTaglines.entries()) {
+      const round = index + 1;
+      hooks.plan = ({ type }) => type === "crew_brand_kit" ? {
+        reply: () => ({ json: { ...hydrotrailBrandKit, tagline: { text: tagline } } }),
+      } : {};
+      const result = await founder.mutation(api.workspace.approvals.decideApproval, {
+        projectId, approvalId: reviewId, decision: "request_changes", note: `Set the tagline to "${tagline}"`,
+      });
+      expect(result.changeRound).toMatchObject({ outcome: "free", changeRound: round });
+      await drain(w);
+      const view = await founder.query(api.growth.drafts.brandKit.brandKitDraft, { projectId });
+      if (view.state !== "ready" || !view.card) throw new Error("Missing revised brand review");
+      expect(view.kit.tagline.text).toBe(tagline);
+      expect(view.card).toMatchObject({ status: "pending", changeRound: BigInt(round) });
+      reviewId = view.card.approvalId;
+    }
+    const tagline = "Plan the water you carry.";
+    const result = await founder.mutation(api.workspace.approvals.decideApproval, {
+      projectId, approvalId: reviewId, decision: "request_changes", note: `Set the tagline to "${tagline}"`,
+    });
+    if (result.changeRound?.outcome !== "spend_required") throw new Error("Missing paid revision terms");
+    const price = BigInt(CREDIT_ACTIONS.brand_kit_regenerate.credits);
+    expect(BigInt(result.changeRound.costCredits)).toBe(price);
+    await drain(w);
+    expect(ofType(await rows(w), "crew_brand_kit").some((task) => task.changeRound === 3n)).toBe(false);
+    const approval = { projectId, approvalId: result.changeRound.spendApprovalId, decision: "approve" as const };
+    return { w, founder, projectId, price, tagline, approval, blueprint };
+  }
+
+  test("a priced brand revision starts only after spend approval and a repeated decision debits once", async () => {
+    const { w, founder, projectId, price, tagline, approval } = await brandSpendRequest();
+    hooks.plan = ({ type }) => type === "crew_brand_kit" ? {
+      reply: () => ({ json: { ...hydrotrailBrandKit, tagline: { text: tagline } } }),
+    } : {};
+    await founder.mutation(api.workspace.approvals.decideApproval, approval);
+    await founder.mutation(api.workspace.approvals.decideApproval, approval);
+    await drain(w);
+    const view = await founder.query(api.growth.drafts.brandKit.brandKitDraft, { projectId });
+    expect(view).toMatchObject({
+      state: "ready", kit: { tagline: { text: tagline } }, card: { status: "pending", changeRound: 3n },
+    });
+    const final = await rows(w);
+    const paid = ofType(final, "crew_brand_kit").filter((task) => task.changeRound === 3n);
+    expect(paid).toEqual([expect.objectContaining({ status: "succeeded", creditCost: price })]);
+    const ledger = await w.t.run(async (ctx) => await ctx.db.query("credit_ledger").collect());
+    expect(ledger.filter((entry) => entry.reason === "task_debit")).toEqual([
+      expect.objectContaining({ taskId: paid[0]?._id, delta: -price }),
+    ]);
+    expect(final.runs.filter((run) => run.taskId === paid[0]?._id)).toHaveLength(1);
+  });
+
+  test("revoking a paid revision before dispatch prevents the model call and refunds its one debit once", async () => {
+    const { w, founder, projectId, price, approval, blueprint } = await brandSpendRequest();
+    const modelCall = vi.fn();
+    hooks.plan = () => ({ before: async () => { modelCall(); } });
+    await founder.mutation(api.workspace.approvals.decideApproval, approval);
+    // Losing its prerequisite must not hold either the cancelled revision or the founder's credit.
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: blueprint.approvalId, decision: "cancel" });
+    const revoke = { ...approval, decision: "cancel" as const };
+    await founder.mutation(api.workspace.approvals.decideApproval, revoke);
+    await founder.mutation(api.workspace.approvals.decideApproval, revoke);
+    await drain(w);
+    await w.t.mutation(internal.crew.launch.recoverStalledOwner, { ownerId: w.owner.userId });
+    await drain(w);
+    const final = await rows(w);
+    const paid = ofType(final, "crew_brand_kit").filter((task) => task.changeRound === 3n);
+    expect(paid).toEqual([expect.objectContaining({
+      status: "failed", approvalId: approval.approvalId, crewFailureReason: expect.stringMatching(/revoked/i),
+    })]);
+    const taskId = paid[0]?._id;
+    expect(modelCall).not.toHaveBeenCalled();
+    expect(final.runs.filter((run) => run.taskId === taskId)).toHaveLength(0);
+    expect(final.documents.filter((doc) => doc.taskId === taskId)).toHaveLength(0);
+    const ledger = await w.t.run(async (ctx) => await ctx.db.query("credit_ledger").collect());
+    expect(ledger.filter((entry) => entry.taskId === taskId).map(({ reason, delta }) => ({ reason, delta }))).toEqual([
+      { reason: "task_debit", delta: -price }, { reason: "task_refund", delta: price },
+    ]);
+  });
+
+  test("the lead accepts a change to an approved brand and Elle uses the replacement only after approval", async () => {
+    vi.stubEnv("AI_PROVIDER_MODE", "fixture");
+    try {
+      const { w, founder, projectId, original, brand } = await launchedBrand();
+      await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: brand.approvalId, decision: "approve" });
+      const newVoice = "Let's choose the next water stop together.";
+      const emailSubject = "Let's choose your first water stop";
+      const emailPrompts: string[] = [];
+      hooks.plan = ({ type }) => {
+        if (type === "crew_brand_kit") return {
+          reply: () => ({ json: { ...hydrotrailBrandKit, voice: { ...hydrotrailBrandKit.voice, say: newVoice } } }),
+        };
+        if (type === "crew_email_sequence") return {
+          reply: (request) => {
+            emailPrompts.push(JSON.stringify(request.messages));
+            const { emails } = hydrotrailEmailSequence;
+            return { json: { ...hydrotrailEmailSequence, emails: { ...emails, welcome: { ...emails.welcome, subject: emailSubject } } } };
+          },
+        };
+        return {};
+      };
+      const turn = await founder.mutation(api.workspace.chat.sendWrenMessage, {
+        projectId, body: "Ask Iris to make the brand voice warmer, then have Elle update the waitlist emails.",
+      });
+      if (turn.kind !== "sent") throw new Error(`Lead did not receive the request: ${turn.kind}`);
+      await drain(w);
+      const receipt = await w.t.run(async (ctx) => await ctx.db.get("chat_messages", turn.wrenMessageId));
+      expect(receipt).toMatchObject({ status: "done", body: expect.stringContaining("Elle") });
+      const reviewed = await rows(w);
+      const revisedBrand = reviewed.documents.find((doc) => doc.supersedesDocumentId === original._id);
+      const emailDraft = reviewed.documents.find((doc) => doc.kind === "email_sequence");
+      if (!revisedBrand || !emailDraft) throw new Error("Missing revised brand or launch email draft");
+      expect(ofType(reviewed, "crew_email_sequence")).toHaveLength(1);
+      expect(emailPrompts).toEqual([]);
+      const brandPage = await founder.query(api.growth.drafts.brandKit.brandKitDraft, { projectId });
+      if (brandPage.state !== "ready" || !brandPage.card) throw new Error("No revised brand review on the brand page");
+      expect(brandPage.kit.voice.say).toBe(newVoice);
+      expect(brandPage.card).toMatchObject({ status: "pending", changeRound: 1n });
+      const approve = { projectId, approvalId: brandPage.card.approvalId, decision: "approve" as const };
+      await founder.mutation(api.workspace.approvals.decideApproval, approve);
+      await founder.mutation(api.workspace.approvals.decideApproval, approve);
+      await drain(w);
+
+      const final = await rows(w);
+      const emailTasks = ofType(final, "crew_email_sequence").filter((task) => task.revisionOfTaskId === emailDraft.taskId);
+      expect(emailTasks).toEqual([expect.objectContaining({ status: "succeeded", requiresBrandDocumentId: revisedBrand._id })]);
+      expect(final.documents.filter((doc) => doc.supersedesDocumentId === emailDraft._id)).toEqual([
+        expect.objectContaining({ kind: "email_sequence", brandKitDocumentId: revisedBrand._id }),
+      ]);
+      expect(emailPrompts).toHaveLength(1);
+      expect(emailPrompts[0]).toContain(newVoice);
+      const emailPage = await founder.query(api.growth.drafts.emailSequence.emailSequenceDraft, { projectId });
+      expect(emailPage).toMatchObject({
+        state: "ready", status: "draft", card: { status: "pending", changeRound: 1n },
+        emails: expect.arrayContaining([expect.objectContaining({ kind: "welcome", subject: emailSubject })]),
+      });
+      expect(ofType(final, "crew_social_pack")).toHaveLength(1);
+      const crew = await founder.query(api.workspace.crewStatus.snapshot, { projectId });
+      expect(crew.assignments.find(({ role }) => role === "brand")?.changePreview).toEqual([expect.stringContaining(newVoice)]);
+      expect(crew.assignments.find(({ role }) => role === "email")?.source).toBe("current");
+      expect(crew.assignments.find(({ role }) => role === "social")?.source).toBe("stale");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 

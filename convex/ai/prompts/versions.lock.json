@@ -266,6 +266,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
         "module": "sha256:d7f3ba24b97f02ecabfa215eee8dac3e8a0c696204022c50ce0f724908d51e20"
+      },
+      "retired": "WP94 grounds the lead in current crew status and routes internal draft revisions."
+    },
+    "wren-chat@5": {
+      "hash": "sha256:3aa0161ff9ed161248f8b64bd5956c1528563510eac4ebcba25348013be2bf33",
+      "parts": {
+        "system": "sha256:7b2ffc9c6c0e991d41c8dae5cae252c6c61bd799de23e808bdc2e42b7be9d6a0",
+        "task": "sha256:ca515edbd2d65379e4bf571abd7351dc4adbf5e7e4955980936b75799be81b98",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
+        "module": "sha256:0497dd22eebadaf7be043228c514848b2e08a7fee216b3f0760f4b8015e4cf38"
       }
     },
     "wren-plan-turn@1": {
@@ -309,6 +320,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
         "module": "sha256:5f576ba81391b54c3cab311dfc1753e6ef9f5f5121d5f22f457fd87740ac9ad7"
+      },
+      "retired": "WP94 grounds the lead in current crew status and routes internal draft revisions."
+    },
+    "wren-plan-turn@5": {
+      "hash": "sha256:8243a2b986a745dc60448a840e56ede2b111184f1fe16f4745aaf7ba0573ba67",
+      "parts": {
+        "system": "sha256:7b2ffc9c6c0e991d41c8dae5cae252c6c61bd799de23e808bdc2e42b7be9d6a0",
+        "task": "sha256:54b22ac25836d5b8909e08d360b051e1f40b09107fcd0b27c868d672764bc856",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
+        "module": "sha256:d896eebafc013ed9fd5e87d64a8d97fb4062b04a6c9245ca2e12320b41b3c8ec"
       }
     }
   }

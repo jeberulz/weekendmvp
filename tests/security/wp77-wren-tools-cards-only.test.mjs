@@ -162,7 +162,12 @@ const CHAT_IMPORTS = {
       "applyWrenMemoryProposal", "memoryForPrompt", "memoryVersionOf", "pairedFounderMessage", "readWrenMemory",
       "wrenMemoryProposalValidator",
     ]],
-    ["./approvals", APPROVAL_VALIDATORS],
+    // WP94: the sole command boundary accepts a typed request derived from the founder's own row.
+    ["./approvals", [...APPROVAL_VALIDATORS, "requestCrewRevision"]],
+    ["./crewStatus", ["readCrewStatus"]],
+    ["../growth/drafts/emailSequence", ["readEmailSequenceDraft"]],
+    ["../../lib/workspace/contracts/roster", ["ROLE_KEYS"]],
+    ["../../lib/workspace/crewAssignment", ["crewAssignmentIntent", "REVISION_TARGETS", "declinedRevisionMessage", "emailPreviewRequest", "specialistStatusAnswer"]],
     ["../../lib/workspace/plainText", ["sliceWellFormed"]],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARDS_PER_TURN"]],
@@ -186,7 +191,7 @@ const CHAT_IMPORTS = {
       "wrenMemoryOverlongMarker",
     ]],
     ["../../lib/workspace/plainText", ["dropLoneSurrogates"]],
-    ["./chat", ["WREN_PROMPT_REFS", "finishOutcomeValidator"]],
+    ["./chat", ["WREN_PROMPT_REFS", "loadedTurnValidator", "finishOutcomeValidator"]],
   ]),
 };
 
@@ -245,11 +250,15 @@ const PLATFORM_GATES = new Set([
   "convex/ops/settings.ts",
   "convex/platform/authz.ts",
   "convex/platform/limits.ts",
+  "convex/workspace/crewStatus.ts",
+  "convex/growth/drafts/emailSequence.ts",
+  "lib/workspace/contracts/roster.ts",
 ]);
 
 /** Pure modules the chat and handler modules import. Scanned below (no ctx, no db, no I/O). */
 const PURE_HELPERS = [
   "lib/workspace/wren.ts",
+  "lib/workspace/crewAssignment.ts",
   "lib/workspace/contracts/prompts.ts",
   "lib/workspace/contracts/wrenTools.ts",
   "convex/ai/prompts/wrenChat.ts",
@@ -295,7 +304,7 @@ const BANNED_PROPERTIES = new Set(["eval", "Function", "constructor", "__proto__
 
 /** Module-level constant maps the strict and chat files may index with a computed key. */
 const STATIC_MAPS = new Set([
-  "FIELDS", "WREN_APPROVAL_SUBJECTS", "WREN_EXPLAIN_TOPICS", "WREN_NAVIGATE_ROUTES", "WREN_FAILURE_COPY", "WREN_PROMPT_REFS",
+  "REVISION_TARGETS", "FIELDS", "WREN_APPROVAL_SUBJECTS", "WREN_EXPLAIN_TOPICS", "WREN_NAVIGATE_ROUTES", "WREN_FAILURE_COPY", "WREN_PROMPT_REFS",
 ]);
 /** `Object.*` members that expose or rewire an object's properties. */
 const BANNED_OBJECT_MEMBERS = new Set([

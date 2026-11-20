@@ -37,11 +37,12 @@ import {
   type ApprovalSubject,
   type ApprovalSubjectTable,
 } from "../../lib/workspace/contracts/approvals";
-import { jobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
+import { jobKey, parseJobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import { spendTermsFor, type ChangeRoundDecision } from "../../lib/workspace/changeRounds";
 import {
   cardRoundWasReleased,
   changeRoundOutcomeValidator,
+  crewRequestKey,
   insertRevisionTask,
   resolveChangeRound,
   type ArtifactLineage,
@@ -389,6 +390,16 @@ async function auditApproval(
   });
 }
 
+/** A charged revision that failed needs a new explicit spend decision before another attempt. */
+export async function releaseFailedRevisionSpend(ctx: MutationCtx, task: Doc<"tasks">, now: number): Promise<void> {
+  if (task.revisionOfTaskId === undefined || task.approvalId === undefined) return;
+  const spend = await ctx.db.get("approvals", task.approvalId);
+  if (spend?.kind !== "spend" || spend.status !== "approved" || spend.ownerId !== task.ownerId ||
+      spend.projectId !== task.projectId || spend.changeRound !== task.changeRound || spend.costCredits !== task.creditCost) return;
+  await ctx.db.patch("approvals", spend._id, { status: "cancelled", updatedAt: now });
+  await auditApproval(ctx, spend, "approval.revision_spend_released", { type: "system" }, now);
+}
+
 // ---------------------------------------------------------------------------
 // C-APPROVAL: assertApproved
 // ---------------------------------------------------------------------------
@@ -662,6 +673,32 @@ async function liveSpendCard(
     isSubjectUnchangedSince(state.writeTimes, card.createdAt)) ?? null;
 }
 
+const CREW_REVISION_TYPES = {
+  brand_kit: "crew_brand_kit",
+  email_sequence: "crew_email_sequence",
+  social_pack: "crew_social_pack",
+} as const;
+
+type CrewRevisionInput = {
+  kind: keyof typeof CREW_REVISION_TYPES;
+  note: string;
+  requestId: string;
+  followUpEmail?: boolean;
+  emailNote?: string;
+  requiresBrandDocumentId?: Id<"documents">;
+};
+
+type CrewRevisionReceipt = {
+  outcome: "queued" | "spend_required" | "not_available";
+  taskId?: Id<"tasks">;
+  approvalId?: Id<"approvals">;
+  reason?: string;
+};
+
+async function wakeCrew(ctx: MutationCtx, ownerId: Id<"users">) {
+  await ctx.scheduler.runAfter(0, internal.crew.launch.advanceAfterRevision, { ownerId });
+}
+
 /**
  * Raises (or reuses) the `spend` card for a paid round. `changed` is true when
  * a new card was written. The founder's note is copied onto a new card.
@@ -673,10 +710,23 @@ async function raiseSpendCard(
   note: string | undefined,
   founder: { type: "user"; userId: Id<"users"> },
   now: number,
-): Promise<{ spendApprovalId: Id<"approvals">; created: boolean }> {
+  request?: CrewRevisionInput,
+): Promise<{ spendApprovalId: Id<"approvals">; created: boolean; conflictingRequest?: boolean }> {
   const terms = spendTermsFor(decision);
   const existing = await liveSpendCard(ctx, lineage, terms.expectedChangeRound, terms.expectedCostCredits, now);
-  if (existing !== null) return { spendApprovalId: existing._id, created: false };
+  if (existing !== null && (request === undefined || existing.status === "pending" || existing.crewRevision !== undefined)) {
+    if (existing.status === "pending" && existing.crewRevision === undefined &&
+        Object.values(CREW_REVISION_TYPES).some((type) => type === lineage.jobType)) {
+      // Expose the original confirmed terms in HQ. A new brief cannot replace
+      // them while the founder could still approve the older request.
+      await ctx.db.patch("approvals", existing._id, { crewRevision: {} });
+    }
+    return {
+      spendApprovalId: existing._id,
+      created: false,
+      ...(request === undefined ? {} : { conflictingRequest: existing.crewRevision?.requestId !== request.requestId }),
+    };
+  }
   const { approvalId, created } = await createApprovalRecord(ctx, {
     ownerId: lineage.ownerId,
     projectId: lineage.projectId,
@@ -688,6 +738,14 @@ async function raiseSpendCard(
     ...(note === undefined ? {} : { note }),
   });
   if (created) {
+    if (Object.values(CREW_REVISION_TYPES).some((type) => type === lineage.jobType)) {
+      await ctx.db.patch("approvals", approvalId, { crewRevision: {
+        ...(request === undefined ? {} : { requestId: request.requestId }),
+        ...(request?.followUpEmail === true ? { followUpEmail: true } : {}),
+        ...(request?.emailNote === undefined ? {} : { emailNote: request.emailNote }),
+        ...(request?.requiresBrandDocumentId === undefined ? {} : { requiresBrandDocumentId: request.requiresBrandDocumentId }),
+      } });
+    }
     const spendCard = await ctx.db.get("approvals", approvalId);
     if (spendCard !== null) await auditApproval(ctx, spendCard, "approval.spend_raised", founder, now);
   }
@@ -706,6 +764,7 @@ async function requestArtifactChanges(
   note: string | undefined,
   founder: { type: "user"; userId: Id<"users"> },
   now: number,
+  request?: CrewRevisionInput,
 ): Promise<DecisionResult> {
   const resolution = await resolveChangeRound(ctx, approval.ownerId, approval.projectId, approval.subjectTable, approval.subjectId);
   if (!resolution.ok) {
@@ -724,6 +783,12 @@ async function requestArtifactChanges(
   // `crewJob` token here, before any write. With AI off or no token left it throws and the card stays
   // `pending`. A paid round spends its token where its task starts (the debit site, progress Needs 12).
   if (decision.decision === "free") await checkLimit(ctx, "crewJob", approval.ownerId);
+  const spend = decision.decision === "spend" ? await raiseSpendCard(ctx, lineage, decision, note, founder, now, request) : null;
+  if (spend?.conflictingRequest === true) {
+    return { approvalId: approval._id, status: approval.status, changed: false, changeRound: {
+      outcome: "not_available", reason: "busy", changeRound: decision.changeRound,
+    } };
+  }
 
   await ctx.db.patch("approvals", approval._id, {
     status: "changes_requested",
@@ -735,7 +800,9 @@ async function requestArtifactChanges(
   if (decision.decision === "free") {
     const taskId = await insertRevisionTask(ctx, {
       lineage, changeRound: decision.changeRound, creditCost: 0n, approvalId: approval._id, now,
+      ...request, note,
     });
+    await wakeCrew(ctx, approval.ownerId);
     return {
       approvalId: approval._id,
       status: "changes_requested",
@@ -745,14 +812,115 @@ async function requestArtifactChanges(
     };
   }
 
-  const { spendApprovalId } = await raiseSpendCard(ctx, lineage, decision, note, founder, now);
+  if (spend === null || decision.decision !== "spend") throw new Error("Expected a priced revision.");
   return {
     approvalId: approval._id,
     status: "changes_requested",
     changed: true,
-    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId },
+    changeRound: { outcome: "spend_required", changeRound: decision.changeRound, costCredits: decision.costCredits, spendApprovalId: spend.spendApprovalId },
   };
 }
+
+/**
+ * Turns a founder's explicit request into an artifact change round. The
+ * immutable approved version stays approved while a replacement is drafted.
+ */
+export async function requestCrewRevision(
+  ctx: MutationCtx,
+  project: Doc<"projects">,
+  request: CrewRevisionInput,
+): Promise<CrewRevisionReceipt> {
+  await assertFeatureEnabledForOwner(ctx, "workspace", project.ownerId);
+  await assertFeatureEnabledForOwner(ctx, "ai", project.ownerId);
+  const unavailable = (reason: string): CrewRevisionReceipt => ({ outcome: "not_available", reason });
+  const note = normalizeApprovalNote(request.note);
+  if (typeof note !== "string") return unavailable("invalid_note");
+  const emailNote = normalizeApprovalNote(request.emailNote);
+  if (emailNote === null) return unavailable("invalid_note");
+  request = { ...request, emailNote };
+  const existing = await ctx.db.query("tasks")
+    .withIndex("by_ownerId_and_idempotencyKey", (q) => q.eq("ownerId", project.ownerId)
+      .eq("idempotencyKey", crewRequestKey(project._id, request.requestId)))
+    .unique();
+  if (existing !== null) {
+    return existing.projectId === project._id && existing.type === CREW_REVISION_TYPES[request.kind]
+      ? { outcome: "queued", taskId: existing._id }
+      : unavailable("conflict");
+  }
+
+  const document = await ctx.db.query("documents")
+    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", request.kind))
+    .order("desc")
+    .filter((q) => q.and(q.eq(q.field("ownerId"), project.ownerId), q.eq(q.field("archivedAt"), undefined)))
+    .first();
+  if (document === null) return unavailable("missing_artifact");
+  const resolution = await resolveChangeRound(ctx, project.ownerId, project._id, "documents", document._id);
+  if (!resolution.ok) return unavailable(resolution.reason);
+  const { decision, lineage } = resolution;
+  if (lineage.jobType !== CREW_REVISION_TYPES[request.kind]) return unavailable("untracked");
+  if (decision.decision === "not_available") return unavailable(decision.reason);
+
+  const cards = (await ctx.db.query("approvals")
+    .withIndex("by_subjectId", (q) => q.eq("subjectId", document._id))
+    .order("desc").take(SPEND_CARD_HISTORY_MAX))
+    .filter((card) => card.kind === "artifact_review" && card.subjectTable === "documents" &&
+      card.projectId === project._id && card.ownerId === project.ownerId);
+  const source = cards[0];
+  if (source === undefined) return unavailable("missing_review");
+
+  const now = Date.now();
+  const founder = { type: "user" as const, userId: project.ownerId };
+  if (source.status === "pending" && !isPendingApprovalStale(source.createdAt, now)) {
+    const result = await requestArtifactChanges(ctx, source, note, founder, now, request);
+    if (result.changeRound?.outcome === "free") return { outcome: "queued", taskId: result.changeRound.taskId };
+    if (result.changeRound?.outcome === "spend_required") {
+      return { outcome: "spend_required", approvalId: result.changeRound.spendApprovalId };
+    }
+    return unavailable(result.changeRound?.outcome === "not_available" ? result.changeRound.reason : "review_unavailable");
+  }
+
+  if (decision.decision === "spend") {
+    const spend = await raiseSpendCard(ctx, lineage, decision, note, founder, now, request);
+    return spend.conflictingRequest ? unavailable("pending_spend") : { outcome: "spend_required", approvalId: spend.spendApprovalId };
+  }
+  await checkLimit(ctx, "crewJob", project.ownerId);
+  const taskId = await insertRevisionTask(ctx, {
+    ...request, lineage, note, changeRound: decision.changeRound, creditCost: 0n, approvalId: source._id, now,
+  });
+  await wakeCrew(ctx, project.ownerId);
+  return { outcome: "queued", taskId };
+}
+
+export const handOffBrandToEmail = internalMutation({
+  args: { projectId: v.id("projects"), documentId: v.id("documents"), approvalId: v.id("approvals") },
+  returns: v.null(),
+  handler: async (ctx, args): Promise<null> => {
+    const brand = await ctx.db.get("documents", args.documentId);
+    if (brand === null || brand.kind !== "brand_kit" || brand.taskId === undefined || brand.projectId !== args.projectId) return null;
+    const task = await ctx.db.get("tasks", brand.taskId);
+    if (task === null || task.emailHandoff?.state !== "requested" || task.projectId !== brand.projectId || task.ownerId !== brand.ownerId) return null;
+    const project = await requireBusinessForOwner(ctx, args.projectId, brand.ownerId);
+    await assertApproved(ctx, args.approvalId, {
+      kind: "artifact_review", projectId: project._id, ownerId: project.ownerId, subjectTable: "documents", subjectId: brand._id,
+    });
+    const result = await requestCrewRevision(ctx, project, {
+      kind: "email_sequence",
+      requestId: `brand-handoff:${task._id}`,
+      requiresBrandDocumentId: brand._id,
+      note: task.emailHandoff.note ??
+        "Update the waitlist email draft to use the approved brand voice and positioning. Preserve the sequence structure and existing factual claims.",
+    });
+    await ctx.db.patch("tasks", task._id, {
+      emailHandoff: {
+        state: result.outcome,
+        ...(result.taskId === undefined ? {} : { taskId: result.taskId }),
+        ...(result.approvalId === undefined ? {} : { approvalId: result.approvalId }),
+        ...(result.reason === undefined ? {} : { reason: result.reason }),
+      },
+    });
+    return null;
+  },
+});
 
 /**
  * "Ask for changes" again on a `changes_requested` review card. It does one of
@@ -792,6 +960,7 @@ async function reaskChangeRound(
     const taskId = await insertRevisionTask(ctx, {
       lineage, changeRound: decision.changeRound, creditCost: 0n, approvalId: approval._id, now,
     });
+    await wakeCrew(ctx, approval.ownerId);
     return {
       approvalId: approval._id,
       status: approval.status,
@@ -877,6 +1046,23 @@ export async function assertPaidRevisionApproved(
   };
 }
 
+async function revokePaidCrewRevision(ctx: MutationCtx, approval: Doc<"approvals">) {
+  const documentId = ctx.db.normalizeId("documents", approval.subjectId);
+  const document = documentId === null ? null : await ctx.db.get("documents", documentId);
+  if (document?.taskId === undefined || document.ownerId !== approval.ownerId || document.projectId !== approval.projectId) return;
+  const base = await ctx.db.get("tasks", document.taskId);
+  const key = base?.jobKey === undefined ? null : parseJobKey(base.jobKey);
+  if (key === null || key.projectId !== approval.projectId) return;
+  const revisionKey = jobKey(approval.projectId, key.jobType, key.subject, Number(approval.changeRound));
+  const revisions = await ctx.db.query("tasks")
+    .withIndex("by_ownerId_and_jobKey", (q) => q.eq("ownerId", approval.ownerId).eq("jobKey", revisionKey))
+    .filter((q) => q.eq(q.field("approvalId"), approval._id)).take(2);
+  const [revision] = revisions;
+  if (revisions.length === 1 && revision !== undefined) {
+    await ctx.runMutation(internal.crew.jobs.closeRevokedRevision, { taskId: revision._id });
+  }
+}
+
 /** Kinds whose decisions go to the security log (`02` §4.1: approvals that send or spend). */
 const AUDITED_KINDS: ReadonlySet<ApprovalKind> = new Set(["send", "post", "publish", "spend", "ad_launch", "upgrade"]);
 
@@ -923,6 +1109,7 @@ export const decideApproval = mutation({
         // `decidedAt` keeps the approve time; the audit row carries the revoke time.
         await ctx.db.patch("approvals", approval._id, { status: "cancelled", updatedAt: now });
         await auditApproval(ctx, approval, "approval.revoked", founder, now);
+        if (approval.kind === "spend" && approval.crewRevision !== undefined) await revokePaidCrewRevision(ctx, approval);
         return { approvalId: approval._id, status: "cancelled" as const, changed: true };
       }
       return refuse("APPROVAL_ALREADY_DECIDED", { status: approval.status });
@@ -953,6 +1140,41 @@ export const decideApproval = mutation({
       ...(note === undefined ? {} : { note }),
     });
     if (AUDITED_KINDS.has(approval.kind)) await auditApproval(ctx, approval, `approval.${target}`, founder, now);
+    if (target === "approved" && approval.subjectTable === "documents") {
+      const documentId = ctx.db.normalizeId("documents", approval.subjectId);
+      const document = documentId === null ? null : await ctx.db.get("documents", documentId);
+      if (document !== null && documentId !== null) {
+        if (approval.kind === "spend" && approval.crewRevision !== undefined) {
+          const paid = await assertPaidRevisionApproved(ctx, approval._id, { projectId: project._id, documentId });
+          await checkLimit(ctx, "crewJob", project.ownerId);
+          const taskId = await insertRevisionTask(ctx, {
+            ...approval.crewRevision,
+            lineage: paid.lineage, changeRound: paid.changeRound, creditCost: BigInt(paid.costCredits),
+            approvalId: approval._id, now,
+          });
+          await ctx.runMutation(internal.platform.billing.ledger.debitTask, {
+            taskId, projectId: project._id, credits: BigInt(paid.costCredits),
+          });
+          await wakeCrew(ctx, project.ownerId);
+        }
+        if (approval.kind === "artifact_review" && (document.kind === "blueprint" || document.kind === "brand_kit")) {
+          await wakeCrew(ctx, project.ownerId);
+          if (document.kind === "brand_kit" && document.taskId !== undefined) {
+            const task = await ctx.db.get("tasks", document.taskId);
+            if (task?.emailHandoff?.state === "requested") {
+              try {
+                await ctx.runMutation(internal.workspace.approvals.handOffBrandToEmail, {
+                  projectId: project._id, documentId, approvalId: approval._id,
+                });
+              } catch (error) {
+                if (!(error instanceof ConvexError)) throw error;
+                await ctx.db.patch("tasks", task._id, { emailHandoff: { state: "not_available", reason: "blocked" } });
+              }
+            }
+          }
+        }
+      }
+    }
     return { approvalId: approval._id, status: target, changed: true };
   },
 });

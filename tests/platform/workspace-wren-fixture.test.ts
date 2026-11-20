@@ -15,7 +15,6 @@ import { createAnthropicAdapter } from "@/convex/ai/providers/anthropic";
 import { FIXTURE_WREN_FOOTER, wrenFixtureIntent } from "@/convex/ai/providers/wrenFixtureReply";
 import type { TextRequest } from "@/convex/ai/providers/types";
 import {
-  WREN_REVIEW_OPEN_MS,
   WREN_REVIEW_TARGETS,
   wrenBusinessContext,
   type ApprovableSubject,
@@ -23,7 +22,6 @@ import {
 } from "@/convex/workspace/chat";
 import { WREN_CARDS_PER_TURN, WREN_NAVIGATE_ROUTES } from "@/lib/workspace/contracts/wrenTools";
 import { REVIEW_TARGETS } from "@/lib/workspace/reviews";
-import { APPROVAL_PENDING_TTL_MS } from "@/lib/workspace/contracts/approvals";
 
 const PROJECT = {
   _id: "project_1",
@@ -149,7 +147,7 @@ describe("Wren fixture reply", () => {
   test("a plan-changing turn (wren-plan-turn) explains how to change the plan", async () => {
     const reply = await wrenReply("Can we move the launch email to Sunday?", { spec: wrenPlanTurnSpec });
     expectWrenVoice(reply);
-    expect(reply.reply).toContain("I cannot change the plan myself, but you can.");
+    expect(reply.reply).toContain("Team HQ shows the current steps");
   });
 
   test("the same request always gets the same reply", async () => {
@@ -181,10 +179,6 @@ describe("Wren's business context lists the crew's open reviews", () => {
     );
     expect(Object.fromEntries(WREN_REVIEW_TARGETS)).toEqual(mirrored);
     for (const target of WREN_REVIEW_TARGETS.values()) expect(Object.hasOwn(WREN_NAVIGATE_ROUTES, target.page)).toBe(true);
-  });
-
-  test("a review stays open exactly as long as a pending approval card", () => {
-    expect(WREN_REVIEW_OPEN_MS).toBe(APPROVAL_PENDING_TTL_MS);
   });
 
   test("the block carries waitingOnYou as data, without approval ids", () => {
