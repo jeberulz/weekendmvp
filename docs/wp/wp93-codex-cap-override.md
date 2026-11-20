@@ -1,6 +1,6 @@
 # WP93 — Codex request: per-founder daily cap override
 
-Status: Codex C2 landed in #296 (meter honours an expiring override on `ai_budgets`). Console side built in WP93 Phase 3 (#300) and still switched off live (`CAP_OVERRIDE_LIVE`); turning it on is the Claude-lane follow-up under "Turning it on" at the end.
+Status: done. Codex C2 landed in #296 (the meter honours an expiring override on `ai_budgets`). WP93 Phase 3 (#300) built the console side, wired it to Convex and turned it on (`CAP_OVERRIDE_LIVE` is `true`). See "Turning it on" at the end.
 
 The C2 implementation stores all five optional fields below on the founder's existing `ai_budgets` row. The console follow-up should set the fields together with the audit event in its mutation. Use an exclusive expiry in epoch milliseconds (the following midnight UTC for a whole-day override). The meter uses the plan cap again at the expiry instant or UTC rollover, whichever comes first. Partial overrides use the plan cap.
 
@@ -35,7 +35,10 @@ The meter refuses a founder's call once `ai_budgets.daySpentMicroUsd` would pass
   - a fresh sign-in and a typed confirm, the same as other risky controls.
 - On the founder drill-down, a "Raise today's cap" form, and the live override shown in the founder row with its expiry.
 
-## Turning it on (Claude lane, after this lands)
+## Turning it on (Claude lane) — done in #300
+
+All four steps below are done. `convex/admin/aiControls.ts` has `capOverrides` (a bounded read by founder id, using the meter's own `activeCapOverrideMicroUsd`), `setCapOverride` and `clearCapOverride`. A raise patches the five fields together with its audit row, and creates a zero `ai_budgets` row when the founder has made no AI call yet. `convex/admin/aiControls.test.ts` checks every refusal and the audit rows, and checks that `internal.ai.metering.reserve` honours a raise set through the console.
+
 
 1. Add `setCapOverride` and `clearCapOverride` to `convex/admin/aiControls.ts`, using the rules in `lib/admin/ai-costs/cap-override.ts`: `requireSuperAdmin`, a reason, `capOverrideRefusal`, `expiryFor`, a recent sign-in and the typed confirm for a raise, and an `audit_events` row (`ops.cap_override.set` / `ops.cap_override.cleared`, the metadata the fixture store writes today). Add a read of live overrides to `controlsState` or a new query.
 2. Wire `liveBackend` in `lib/admin/ai-costs/controls-server.ts` (`capOverrides`, `setCapOverride`, `clearCapOverride`) to those functions.

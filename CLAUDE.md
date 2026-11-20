@@ -142,8 +142,9 @@ read the response as text before parsing JSON.
   (`convex/admin/aiCosts.test.ts`). Reads are bounded and the UI says when a
   range is cut off. The Controls tab (`convex/admin/aiControls.ts`) and the
   per-founder cap override are audited writes; risky ones need a recent sign-in
-  and a typed confirm. The cap override stays off live (`CAP_OVERRIDE_LIVE`)
-  until Codex C2 lands. Dev fixtures: `EDITORIAL_FIXTURE_MODE=local-demo`
+  and a typed confirm. The cap override writes the five C2 fields on the
+  founder's `ai_budgets` row, which the meter reads; `CAP_OVERRIDE_LIVE` turns
+  the live form off. Dev fixtures: `EDITORIAL_FIXTURE_MODE=local-demo`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it
