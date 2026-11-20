@@ -9,6 +9,8 @@
  */
 
 import type * as accountBeehiiv from "../accountBeehiiv.js";
+import type * as account_deletion from "../account/deletion.js";
+import type * as account_purge from "../account/purge.js";
 import type * as admin_aiControls from "../admin/aiControls.js";
 import type * as admin_aiCosts from "../admin/aiCosts.js";
 import type * as admin_superAdmin from "../admin/superAdmin.js";
@@ -199,6 +201,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   accountBeehiiv: typeof accountBeehiiv;
+  "account/deletion": typeof account_deletion;
+  "account/purge": typeof account_purge;
   "admin/aiControls": typeof admin_aiControls;
   "admin/aiCosts": typeof admin_aiCosts;
   "admin/superAdmin": typeof admin_superAdmin;
