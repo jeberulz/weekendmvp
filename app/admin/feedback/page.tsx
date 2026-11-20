@@ -50,6 +50,10 @@ function PageTitle({ title, description }: { title: string; description: string 
   );
 }
 
+function times(count: number): string {
+  return count === 1 ? "1 time" : `${count.toLocaleString("en-US")} times`;
+}
+
 function stars(rating: number | null): string {
   return rating === null ? "No rating" : `${rating} of 5`;
 }
@@ -108,6 +112,31 @@ async function FeedbackNotes({ source, overview, cursor }: { source: FeedbackSou
   );
 }
 
+/** Open steps in full, finished and skipped ones as counts: the row stays short, nothing is hidden from the owner. */
+function StepSummary({ steps }: { steps: readonly { key: string; state: string }[] }) {
+  if (steps.length === 0) return <span className="text-(--ed-text-2)">None</span>;
+  const quiet = steps.filter((step) => step.state === "skipped" || step.state === "succeeded");
+  const open = steps.filter((step) => step.state !== "skipped" && step.state !== "succeeded");
+  const skipped = quiet.filter((step) => step.state === "skipped").length;
+  const done = quiet.length - skipped;
+  return (
+    <>
+      <p>
+        {done} done, {skipped} skipped{open.length === 0 ? "" : `, ${open.length} open`}
+      </p>
+      {open.length === 0 ? null : (
+        <ul className="mt-1 flex flex-col gap-0.5">
+          {open.map((step) => (
+            <li key={`${step.key}:${step.state}`}>
+              <span className="font-mono">{step.key}</span>: {step.state}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
 function FeedbackLine({ row }: { row: FeedbackRow }) {
   return (
     <tr>
@@ -118,22 +147,12 @@ function FeedbackLine({ row }: { row: FeedbackRow }) {
         <span className="font-mono text-xs">{row.route}</span>
         <span className="block text-xs text-(--ed-text-2)">{row.surface === "wizard" ? "Wizard" : "Workspace"}</span>
       </td>
-      <td className={td}>
-        {row.stepStates.length === 0 ? (
-          <span className="text-(--ed-text-2)">None</span>
-        ) : (
-          <ul className="flex flex-col gap-0.5 text-xs">
-            {row.stepStates.map((step) => (
-              <li key={`${step.key}:${step.state}`}>
-                <span className="font-mono">{step.key}</span>: {step.state}
-              </li>
-            ))}
-          </ul>
-        )}
+      <td className={`${td} min-w-44 text-xs`}>
+        <StepSummary steps={row.stepStates} />
       </td>
       <td className={td}>
-        <span className="block font-mono text-xs"><span className="text-(--ed-text-2)">Founder </span>{shortId(row.ownerId)}</span>
-        <span className="block font-mono text-xs">
+        <span className="block whitespace-nowrap font-mono text-xs"><span className="text-(--ed-text-2)">Founder </span>{shortId(row.ownerId)}</span>
+        <span className="block whitespace-nowrap font-mono text-xs">
           <span className="text-(--ed-text-2)">Business </span>
           {row.projectId === null ? "none yet" : shortId(row.projectId)}
         </span>
@@ -190,8 +209,8 @@ async function ErrorsTab({ source, overview, cursor }: { source: FeedbackSource;
       {errors.truncated ? <Notice>The counts below cover only the newest {errors.count.toLocaleString("en-US")} errors of the last {OVERVIEW_DAYS} days.</Notice> : null}
       <dl aria-label={`Errors in the last ${OVERVIEW_DAYS} days`} className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Tile label={`Errors, last ${OVERVIEW_DAYS} days`} value={errors.count.toLocaleString("en-US")} />
-        <Tile label="Most common class" value={<span className="break-all text-lg">{errors.byClass[0]?.key ?? "None yet"}</span>} detail={errors.byClass[0] === undefined ? undefined : `${errors.byClass[0].count} times`} />
-        <Tile label="Most affected page" value={<span className="break-all font-mono text-sm">{errors.byRoute[0]?.key ?? "None yet"}</span>} detail={errors.byRoute[0] === undefined ? undefined : `${errors.byRoute[0].count} times`} />
+        <Tile label="Most common class" value={<span className="break-all text-lg">{errors.byClass[0]?.key ?? "None yet"}</span>} detail={errors.byClass[0] === undefined ? undefined : times(errors.byClass[0].count)} />
+        <Tile label="Most affected page" value={<span className="break-all font-mono text-sm">{errors.byRoute[0]?.key ?? "None yet"}</span>} detail={errors.byRoute[0] === undefined ? undefined : times(errors.byRoute[0].count)} />
       </dl>
 
       <div className="mb-8 grid gap-6 lg:grid-cols-3">
@@ -236,8 +255,8 @@ function ErrorLine({ row }: { row: ErrorRow }) {
       <td className={`${td} break-all font-mono text-xs`}>{row.errorClass}</td>
       <td className={`${td} font-mono text-xs`}>{row.route}</td>
       <td className={td}>
-        <span className="block font-mono text-xs"><span className="text-(--ed-text-2)">Founder </span>{shortId(row.ownerId)}</span>
-        <span className="block font-mono text-xs">
+        <span className="block whitespace-nowrap font-mono text-xs"><span className="text-(--ed-text-2)">Founder </span>{shortId(row.ownerId)}</span>
+        <span className="block whitespace-nowrap font-mono text-xs">
           <span className="text-(--ed-text-2)">Business </span>
           {row.projectId === null ? "none" : shortId(row.projectId)}
         </span>

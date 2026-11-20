@@ -382,6 +382,8 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId }: WizardFlowProps)
   async function startOwn(text: string) {
     await run(async () => {
       const id = await startOrResume({ idea: { source: "own_idea", text } });
+      // The own-idea sentence is step 1; the session (and so the position tracking) starts after it.
+      trackWorkspaceEvent({ name: "wizard_step_finished", props: { step: "idea" } });
       setSessionId(id);
       router.replace(ownIdeaUrl(id), { scroll: false });
     });
