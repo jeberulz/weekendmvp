@@ -7,7 +7,7 @@ import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireBusinessForOwner } from "../platform/authz";
 import { assertTaskTransition } from "../platform/transitions";
 import { assertGeneratedDocumentBody } from "../platform/validators";
-import { assertApproved, createApprovalRecord, readSubjectState, subjectRefusal } from "../workspace/approvals";
+import { assertApproved, createApprovalRecord, readSubjectState, releaseFailedRevisionSpend, subjectRefusal } from "../workspace/approvals";
 import { revisionNoteFor } from "../workspace/changeRounds";
 import type { LineageTask } from "../../lib/workspace/changeRounds";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
@@ -403,6 +403,13 @@ async function revisedDocument(ctx: Ctx, task: Doc<"tasks">, kind: string): Prom
     .first();
   return document !== null && document.ownerId === task.ownerId && document.projectId === task.projectId &&
     document.kind === kind && document.archivedAt === undefined ? document : null;
+}
+
+async function hasApprovedRevisionSpend(ctx: Ctx, task: Doc<"tasks">, previous: Doc<"documents">): Promise<boolean> {
+  const spend = task.approvalId === undefined ? null : await ctx.db.get("approvals", task.approvalId);
+  return spend?.status === "approved" && spend.kind === "spend" && spend.subjectTable === "documents" &&
+    spend.subjectId === previous._id && spend.ownerId === task.ownerId && spend.projectId === task.projectId &&
+    spend.changeRound === task.changeRound && spend.costCredits === task.creditCost;
 }
 
 /** The task's live credit debit (WP73 ledger: `task-debit:{taskId}`), read on the server. */
@@ -830,7 +837,7 @@ async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskSta
  * interrupted action, a missing payment, or a draft that failed the quality
  * checks (S3a).
  */
-type FailCause = "failed" | "interrupted" | "unpaid" | "quality";
+type FailCause = "failed" | "interrupted" | "unpaid" | "quality" | "no_change" | "stale_input" | "spend_revoked";
 
 function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: boolean): string {
   if (hasDebit && !refundScheduled) return FAILED_STEP_ARCHIVED_REASON;
@@ -843,6 +850,16 @@ function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: bool
       return FAILED_STEP_UNPAID_REASON;
     case "quality":
       return refundScheduled ? FAILED_STEP_QUALITY_REFUNDED_REASON : FAILED_STEP_QUALITY_REASON;
+    case "spend_revoked":
+      return refundScheduled ? "The spend approval was revoked. Credits are being returned." : "The spend approval was revoked.";
+    case "stale_input":
+      return refundScheduled
+        ? "The approved brand changed before this email revision finished. Credits are being returned."
+        : "The approved brand changed before this email revision finished. Ask Elle to revise against the current kit.";
+    case "no_change":
+      return refundScheduled
+        ? "The revision made no changes. Credits are being returned."
+        : "The revision made no changes. You can try again with a more specific request.";
   }
 }
 
@@ -858,15 +875,18 @@ async function failTask(
   const archived = failed.archivedAt !== undefined || project === null || project.archivedAt !== undefined;
   const refundScheduled = debit !== null && !archived;
   if (refundScheduled) {
+    await releaseFailedRevisionSpend(ctx, failed, now);
     await ctx.scheduler.runAfter(0, internal.platform.billing.ledger.refundFailedTask, {
       taskId: failed._id,
       projectId: failed.projectId,
     });
   }
+  const reason = failedReason(cause, refundScheduled, debit !== null);
+  if (failed.revisionOfTaskId !== undefined) await ctx.db.patch("tasks", failed._id, { crewFailureReason: reason });
   await setCrewStatus(ctx, failed, {
     member: "needs_you",
     workstream: "failed",
-    blocker: failedReason(cause, refundScheduled, debit !== null),
+    blocker: reason,
   }, now);
   return { refundScheduled };
 }
@@ -905,6 +925,29 @@ export async function abandonCrewTask(ctx: MutationCtx, taskId: Id<"tasks">, now
   const running = task.status === "running" ? task : await setTaskStatus(ctx, task, "running", now);
   await failTask(ctx, running, now, "interrupted");
   return true;
+}
+
+export const closeRevokedRevision = internalMutation({
+  args: { taskId: v.id("tasks") },
+  returns: v.null(),
+  handler: async (ctx, { taskId }): Promise<null> => {
+    const task = await ctx.db.get("tasks", taskId);
+    if (task?.revisionOfTaskId === undefined || task.approvalId === undefined ||
+        (task.status !== "queued" && task.status !== "blocked")) return null;
+    const spend = await ctx.db.get("approvals", task.approvalId);
+    if (spend?.kind !== "spend" || spend.status !== "cancelled" ||
+        spend.ownerId !== task.ownerId || spend.projectId !== task.projectId) return null;
+    const now = Date.now();
+    const running = await setTaskStatus(ctx, task, "running", now);
+    await failTask(ctx, running, now, "spend_revoked");
+    return null;
+  },
+});
+
+/** The approved version an addressed handoff pinned has been superseded or revoked. */
+export async function failStaleHandoff(ctx: MutationCtx, task: Doc<"tasks">, now: number): Promise<void> {
+  const running = await setTaskStatus(ctx, task, "running", now);
+  await failTask(ctx, running, now, "stale_input");
 }
 
 async function closeRun(
@@ -1114,6 +1157,10 @@ export const startCrewRun = internalMutation({
       await failTask(ctx, task, now);
       return { kind: "skip", reason: "missing" };
     }
+    if (debit !== null && previous !== null && !(await hasApprovedRevisionSpend(ctx, task, previous))) {
+      await failTask(ctx, task, now, "spend_revoked");
+      return { kind: "skip", reason: "unpaid" };
+    }
 
     const attempt = await nextAttemptForJobKey(ctx, task.ownerId, taskJobKey);
     const runNumber = runs.length + 1;
@@ -1258,17 +1305,31 @@ export const finishCrewStep = internalMutation({
         (await briefStillValid(ctx, project, task, args.briefDocumentId, now)) &&
         (await briefStillValid(ctx, project, task, args.brandKitDocumentId, now, "brand_kit"));
     }
+    if (briefsValid && task.requiresBrandDocumentId !== undefined) {
+      briefsValid = args.brandKitDocumentId === task.requiresBrandDocumentId &&
+        (await approvedBrandKit(ctx, project))?._id === task.requiresBrandDocumentId;
+    }
     if (!briefsValid) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now, task.requiresBrandDocumentId === undefined ? "failed" : "stale_input")) };
+    }
+    const previous = await revisedDocument(ctx, task, kind);
+    if (task.revisionOfTaskId !== undefined && (previous === null || previous.body === undefined)) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
     }
-    const previous = await revisedDocument(ctx, task, kind);
+    if (previous !== null && (task.creditCost ?? 0n) > 0n && !(await hasApprovedRevisionSpend(ctx, task, previous))) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now, "spend_revoked")) };
+    }
     let body: string | null = null;
     let gate: ReturnType<typeof gateCrewArtifact> | null = null;
+    let prior: Record<string, unknown> | null = null;
     try {
       const raw: unknown = JSON.parse(args.outputJson);
       // The revised draft, re-validated: a LandingSpec revision keeps the stored proof slots.
       const stored = previous?.body === undefined ? null : parseArtifact(kind, JSON.parse(previous.body));
+      if (stored?.success === true) prior = stored.data as Record<string, unknown>;
       const parsed = parseModelOutput(kind, raw, stored?.success === true ? stored.data : null);
       if (parsed.success) {
         // S3a: the deterministic quality gate (S4a checks plus the server's facts) decides what is stored.
@@ -1286,6 +1347,16 @@ export const finishCrewStep = internalMutation({
     if (body === null) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now)) };
+    }
+    const after = JSON.parse(body) as Record<string, unknown>;
+    const previousFields = prior;
+    const changedFields = previousFields === null ? undefined
+      : [...new Set([...Object.keys(previousFields), ...Object.keys(after)])].filter(
+        (field) => JSON.stringify(previousFields[field]) !== JSON.stringify(after[field]),
+      );
+    if (changedFields?.length === 0) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now, "no_change")) };
     }
     const softIssueCodes = gate === null ? [] : issueCodes(gate.result.soft);
 
@@ -1317,6 +1388,9 @@ export const finishCrewStep = internalMutation({
       format: "json",
       title: crewDocumentTitle(jobType, Number(task.changeRound ?? 0n)),
       ...(previous === null ? {} : { supersedesDocumentId: previous._id }),
+      ...(args.briefDocumentId === undefined ? {} : { briefDocumentId: args.briefDocumentId }),
+      ...(args.brandKitDocumentId === undefined ? {} : { brandKitDocumentId: args.brandKitDocumentId }),
+      ...(changedFields === undefined ? {} : { changedFields }),
       schemaVersion: "1",
       promptRef: args.promptRef,
       body,

@@ -31,6 +31,8 @@ import {
 import { checkLimit } from "../platform/limits";
 import { TIER_MODELS } from "../../lib/workspace/contracts/prompts";
 import { WREN_ESCALATIONS_PER_BUSINESS_PER_DAY, WREN_FAILURE_COPY } from "../../lib/workspace/wren";
+import { hydrotrailEmailSequence } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { planEmailSequenceDraft, writeEmailSequenceDraft } from "../growth/drafts/emailSequence";
 import { runWrenTurnWith } from "./chatActions";
 
 const modules = import.meta.glob("/convex/**/*.ts");
@@ -254,7 +256,7 @@ describe("WP77-S3 a turn streams to done", () => {
     expect(scripted.calls()).toBe(1);
     expect(prompts).toHaveLength(1);
     expect(prompts[0]).toMatchObject({
-      promptRef: "wren-chat@4",
+      promptRef: "wren-chat@5",
       attemptKey: { kind: "chat", chatMessageId: sent.wrenMessageId },
       attempt: 1,
       stream: { kind: "wren_reply", messageId: sent.wrenMessageId },
@@ -271,7 +273,7 @@ describe("WP77-S3 a turn streams to done", () => {
     expect(usage).toHaveLength(1);
     expect(usage[0]).toMatchObject({
       attemptKey: `chat:${ids.projectId}:${sent.wrenMessageId}:1`,
-      promptRef: "wren-chat@4",
+      promptRef: "wren-chat@5",
       model: TIER_MODELS.fast,
       tier: "fast",
       status: "settled",
@@ -413,12 +415,12 @@ describe("WP77-S3 routing: Haiku by default, Sonnet for plan-changing turns, cap
     const change = await sendTurn(seeded, PLAN_MESSAGE);
     expect(change.route).toBe("plan");
     const prompts = await runTurn(seeded.t, change, scriptedAdapter().adapter);
-    expect(prompts[0].promptRef).toBe("wren-plan-turn@4");
+    expect(prompts[0].promptRef).toBe("wren-plan-turn@5");
 
     const usage = await usageRows(seeded.t);
     expect(usage.map((row) => [row.promptRef, row.model])).toEqual([
-      ["wren-chat@4", TIER_MODELS.fast],
-      ["wren-plan-turn@4", TIER_MODELS.draft],
+      ["wren-chat@5", TIER_MODELS.fast],
+      ["wren-plan-turn@5", TIER_MODELS.draft],
     ]);
   });
 
@@ -436,7 +438,7 @@ describe("WP77-S3 routing: Haiku by default, Sonnet for plan-changing turns, cap
     expect(turn?.route).toBe("fast");
     if (turn === undefined) throw new Error("no turn");
     await runTurn(seeded.t, turn, scriptedAdapter().adapter);
-    expect((await usageRows(seeded.t)).filter((row) => row.promptRef === "wren-plan-turn@4"))
+    expect((await usageRows(seeded.t)).filter((row) => row.promptRef === "wren-plan-turn@5"))
       .toHaveLength(WREN_ESCALATIONS_PER_BUSINESS_PER_DAY);
 
     vi.setSystemTime(FIXED_NOW + DAY_MS);
@@ -607,7 +609,7 @@ describe("WP77-S3 idempotency: no second reply, no second charge", () => {
     await retry(seeded, turn.wrenMessageId);
     // Attempt 2 reserves and runs through the gateway (drafts written), but this run has not finished the row yet.
     await runPromptWithMeter(turnCtx(t), {
-      promptRef: "wren-chat@4",
+      promptRef: "wren-chat@5",
       inputs: { message: "Hello", history: [] },
       businessContext: "<business_context>{}</business_context>",
       ownerId: ids.ownerId,
@@ -817,4 +819,68 @@ describe("L1 the fixture Wren reply reads like Wren, built from the business", (
     expect(reply?.body).not.toMatch(/\bfixture\b/iu);
     expect(reply?.cards).toEqual([]);
   });
+});
+
+describe("WP94 bounded crew assignments", () => {
+  test("a missing artifact returns a truthful receipt and workstream link, with no model or task", async () => {
+    const seeded = await seed();
+    const turn = await sendTurn(seeded, "Elle, rewrite the waitlist emails in a warmer voice.");
+    expect(await runTurn(seeded.t, turn, scriptedAdapter().adapter)).toEqual([]);
+    expect((await thread(seeded))[1]).toMatchObject({
+      status: "done",
+      body: expect.stringContaining("hasn't produced"),
+      cards: [{ kind: "navigate", route: "email" }],
+    });
+    expect(await seeded.t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
+    expect(await usageRows(seeded.t)).toEqual([]);
+  });
+
+  test("a previous command from the same millisecond cannot be substituted for a status question", async () => {
+    const seeded = await seed();
+    const first = await sendTurn(seeded, "Please revise the email sequence to sound warmer.");
+    await runTurn(seeded.t, first, scriptedAdapter().adapter);
+    const status = await sendTurn(seeded, "What happened to the email revision?");
+    expect(await seeded.t.mutation(internal.workspace.chat.finishWrenTurn, {
+      ownerId: status.ownerId, projectId: status.projectId, messageId: status.wrenMessageId, attempt: 1,
+      outcome: { status: "assignment", founderMessageId: first.founderMessageId },
+    })).toBe(false);
+    expect(await seeded.t.mutation(internal.workspace.chat.finishWrenTurn, {
+      ownerId: status.ownerId, projectId: status.projectId, messageId: status.wrenMessageId, attempt: 1,
+      outcome: { status: "assignment", founderMessageId: status.founderMessageId },
+    })).toBe(false);
+    expect(await seeded.t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
+  });
+});
+
+test("read-only chat previews the saved revised email, and never calls the provider or schedules email work", async () => {
+  const seeded = await seed();
+  const { t, ids } = seeded;
+  const request = "Show me one revised email.";
+  const first = await sendTurn(seeded, request);
+  expect(await runTurn(t, first, scriptedAdapter().adapter)).toEqual([]);
+  expect((await thread(seeded))[1].body).toContain("no revised welcome email");
+  await t.run(async (ctx) => {
+    const business = { projectId: ids.projectId, ownerId: ids.ownerId };
+    const body = JSON.stringify(hydrotrailEmailSequence);
+    const now = Date.now();
+    const documentId = await ctx.db.insert("documents", {
+      ...business, kind: "email_sequence", format: "json", title: "Emails, revision 1", body, createdAt: now, updatedAt: now,
+    });
+    const plan = await planEmailSequenceDraft(ctx, business, body);
+    if (!plan.ok) throw new Error("expected valid fixture email sequence");
+    await writeEmailSequenceDraft(ctx, plan, { ...business, documentId, now });
+    await ctx.db.insert("approvals", {
+      ...business, kind: "artifact_review", subjectTable: "documents", subjectId: documentId,
+      status: "pending", changeRound: 1n, createdAt: now, updatedAt: now,
+    });
+  });
+  vi.setSystemTime(Date.now() + 10);
+  const second = await sendTurn(seeded, request);
+  expect(await runTurn(t, second, scriptedAdapter().adapter)).toEqual([]);
+  const latest = (await thread(seeded)).at(-1);
+  expect(latest?.body).toContain("change round 1");
+  expect(latest?.body).toContain(hydrotrailEmailSequence.emails.welcome.subject);
+  expect(latest?.body).toContain(hydrotrailEmailSequence.emails.welcome.body);
+  expect(latest?.cards).toEqual([{ kind: "navigate", route: "email" }]);
+  expect(await seeded.t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
 });

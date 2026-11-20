@@ -380,7 +380,7 @@ describe("approval cards in the chat", () => {
     const { container } = render(
       <ul><WrenChatCards projectId={projectId} cards={[{ kind: "explain", topic: "approvals" }]} name="Sam" /></ul>,
     );
-    expect(container.textContent).toContain("Sam and the crew");
+    expect(container.textContent).toContain("Sam can queue internal draft revisions.");
     expect(container.textContent).not.toContain("Wren");
   });
 });

@@ -183,6 +183,7 @@ import type * as workspace_business from "../workspace/business.js";
 import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 import type * as workspace_chat from "../workspace/chat.js";
 import type * as workspace_chatActions from "../workspace/chatActions.js";
+import type * as workspace_crewStatus from "../workspace/crewStatus.js";
 import type * as workspace_employees from "../workspace/employees.js";
 import type * as workspace_memory from "../workspace/memory.js";
 import type * as workspace_reviews from "../workspace/reviews.js";
@@ -373,6 +374,7 @@ declare const fullApi: ApiFromModules<{
   "workspace/changeRounds": typeof workspace_changeRounds;
   "workspace/chat": typeof workspace_chat;
   "workspace/chatActions": typeof workspace_chatActions;
+  "workspace/crewStatus": typeof workspace_crewStatus;
   "workspace/employees": typeof workspace_employees;
   "workspace/memory": typeof workspace_memory;
   "workspace/reviews": typeof workspace_reviews;

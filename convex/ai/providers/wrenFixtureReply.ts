@@ -193,11 +193,7 @@ function replyFor(intent: Intent, context: WrenContext, message: string): string
           : "The crew carries on with the weekend plan, and I will tell you when something needs you.",
       ].join("\n\n");
     case "plan":
-      return [
-        "I cannot change the plan myself, but you can.",
-        "Open the launch plan, move the step you want to change, and check what depends on it before you save. " +
-          "Everything else stays as it is.",
-      ].join("\n\n");
+      return "I can help plan the order of your work. Team HQ shows the current steps and the drafts ready for review.";
     case "other":
       return [
         `I can only answer "${quoteOf(message)}" properly with the live model switched on.`,

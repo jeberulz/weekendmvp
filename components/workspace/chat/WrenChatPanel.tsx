@@ -12,6 +12,7 @@ import { EmptyState, LoadingState } from "@/components/workspace/kit/states";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { useNow } from "@/components/workspace/kit/useNow";
 import { cn } from "@/lib/utils";
+import { pageFocus } from "@/lib/workspace/crewAssignment";
 import { resetsInLabel, WREN_STREAM_STALE_MS, WREN_TOMORROW_CARD } from "@/lib/workspace/wren";
 
 /**
@@ -181,7 +182,8 @@ function LiveWrenChat({ projectId, name, founderName }: { projectId: Id<"project
   function send(text: string): Promise<boolean> {
     following.current = true;
     return run(async () => {
-      const result = await sendMessage({ projectId, body: text });
+      const focusRole = pageFocus(projectId, window.location.pathname);
+      const result = await sendMessage({ projectId, body: text, ...(focusRole === undefined ? {} : { focusRole }) });
       switch (result.kind) {
         case "sent":
         case "duplicate":
