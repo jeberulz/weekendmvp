@@ -117,21 +117,21 @@ Lane: Work Package. These are audited writes to production controls, so they are
 
 ### Stories
 
-- [ ] `WP93-P2-S1` - Server: `convex/admin/aiControls.ts`
+- [x] `WP93-P2-S1` - Server: `convex/admin/aiControls.ts`
   - `controlsState` returns the settings, the version, today's pool spend and the cohort (bounded) with emails.
   - `findAccount` looks up an account by email: zero, one or many matches; anonymous accounts are skipped.
   - `setCohort` adds or removes a cohort member. Adding needs a verified email; removing needs a reason.
   - `updateSpendControls` changes budgets and switches. It applies the risk rule, the step-up, the typed confirm, the $100 ceiling and the version check.
-  - `recentChanges` lists the latest `ops.*` audit rows.
+  - Recent changes: the latest `ops.*` audit rows, returned by `controlsState`, with the email of the account a cohort row names.
   - `convex/ops/settings.ts` exports its write and audit paths so the old and new mutations share them; `updateForAdmin` and `setCohortMember` keep their behaviour.
   - Acceptance: `FORBIDDEN` for everyone but the super admin; every refusal code is covered by a convex-test.
-- [ ] `WP93-P2-S2` - Pure rules: `lib/admin/ai-costs/controls.ts` (risk classification, dollar parsing), unit-tested.
-- [ ] `WP93-P2-S3` - UI: a "Controls" tab at `/admin/ai/controls` with three sections:
+- [x] `WP93-P2-S2` - Pure rules: `lib/admin/ai-costs/controls.ts` (risk classification, dollar parsing), unit-tested.
+- [x] `WP93-P2-S3` - UI: a "Controls" tab at `/admin/ai/controls` with three sections:
   - Spend controls: budgets in dollars beside today's spend, and the switches.
   - Beta cohort: the member list, an add-by-email lookup with a confirm, and removal with a reason.
   - Recent changes.
   Risky saves show the "Confirm it's you" step and a typed confirm. In fixture mode, writes go to an in-memory store and the step-up is simulated.
-- [ ] `WP93-P2-S4` - Checks:
+- [x] `WP93-P2-S4` - Checks:
   - typecheck, lint, the full `npm test`, build;
   - the a11y-check skill, with axe on the new screen;
   - a PR with screenshots on fixtures.

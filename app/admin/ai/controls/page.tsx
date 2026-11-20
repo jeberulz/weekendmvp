@@ -125,7 +125,8 @@ async function Controls() {
             <h3 className="mb-2 text-sm font-semibold">Add a tester</h3>
             <AddToCohort />
           </Card>
-          <CohortTable members={view.cohort} labelledBy="cohort" />
+          <h3 id="cohort-members" className="mb-2 text-sm font-semibold">Members ({view.cohort.length}{view.cohortTruncated ? "+" : ""})</h3>
+          <CohortTable members={view.cohort} labelledBy="cohort-members" />
           {view.cohortTruncated ? <p className="mt-2 text-xs text-(--ed-text-2)">Showing the newest 200 members.</p> : null}
         </Section>
 
