@@ -1,0 +1,33 @@
+/*
+ * WP93 AI cost console: chart roles on top of the editorial theme
+ * (`../editorial/editorial.module.css`). The admin area is light only, like
+ * the editorial shell, so one validated light set.
+ *
+ * Series follow the dataviz reference palette in fixed order and were run
+ * through its validator on 2026-11-20: free pool slot 1 blue #2a78d6, paid
+ * pool slot 2 orange #eb6834 — every check passes (worst adjacent CVD ΔE
+ * 24.7, normal-vision ΔE 33.6, both ≥ 3:1 on white). Status colours are the
+ * reserved status palette and always ship with an icon and a label.
+ */
+.viz {
+  --viz-surface: #ffffff;
+  --viz-grid: #e3e1db;
+  --viz-axis: #59635d;
+  --viz-free: #2a78d6;
+  --viz-paid: #eb6834;
+  --viz-track: #cde2fb;
+  --viz-target: #202522;
+  --viz-good: #0ca30c;
+  --viz-warning: #fab219;
+  --viz-critical: #d03b3b;
+  --viz-tooltip-bg: #202522;
+  --viz-tooltip-text: #ffffff;
+}
+
+@media (forced-colors: active) {
+  .viz {
+    --viz-free: CanvasText;
+    --viz-paid: Highlight;
+    --viz-track: Canvas;
+  }
+}
