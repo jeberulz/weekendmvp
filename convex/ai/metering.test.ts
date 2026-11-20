@@ -2,7 +2,7 @@
 
 import { convexTest } from "convex-test";
 import shardedCounterTest from "@convex-dev/sharded-counter/test";
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
@@ -285,5 +285,101 @@ describe("WP70 C-METER", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("per-founder daily cap overrides", () => {
+  const start = Date.parse("2026-11-20T12:00:00Z");
+  const expiry = start + 3_600_000;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(start);
+  });
+  afterEach(() => { vi.useRealTimers(); });
+
+  async function setup() {
+    const t = meterTest();
+    const { ownerId, adminId, opsId } = await seedMeter(t);
+    const budgetId = await t.run(ctx => ctx.db.insert("ai_budgets", {
+      ownerId, freeLifetimeSpentMicroUsd: 0n, reservedMicroUsd: 0n, freeReservedMicroUsd: 0n,
+      dayKey: "2026-11-20", daySpentMicroUsd: 0n, dayEscalations: 0n, updatedAt: start,
+      capOverrideMicroUsd: 1_250_000n, capOverrideSetBy: adminId, capOverrideSetAt: start,
+      capOverrideExpiresAt: expiry, capOverrideReason: "Demo",
+    }));
+    const reserve = (key: string, amount: number) =>
+      t.mutation(internal.ai.metering.reserve, reservation(ownerId, key, amount));
+    return { t, ownerId, adminId, opsId, budgetId, reserve };
+  }
+
+  test("honors the raised cap for its founder only, includes in-flight work, and expires at the exact instant", async () => {
+    const { t, adminId, reserve } = await setup();
+    await expect(t.mutation(internal.ai.metering.reserve, reservation(adminId, "other-founder", 1_250_000)))
+      .rejects.toThrow("owner_daily");
+
+    vi.setSystemTime(expiry - 1);
+    const call = await reserve("live", 1_250_000);
+    await expect(reserve("over-override", 1)).rejects.toThrow("owner_daily");
+    await t.mutation(internal.ai.metering.fail, {
+      usageId: call.usageId as Id<"ai_usage">, billed: "none", errorClass: "permanent", latencyMs: 0,
+    });
+    vi.setSystemTime(expiry);
+    await expect(reserve("expired", 1_250_000)).rejects.toThrow("owner_daily");
+    await expect(reserve("at-default", 1_000_000)).resolves.toMatchObject({ existing: false });
+  });
+
+  test("ends the override at UTC midnight even if its stored expiry is later", async () => {
+    const { t, budgetId, reserve } = await setup();
+    const midnight = Date.parse("2026-11-21T00:00:00Z");
+    await t.run(ctx => ctx.db.patch("ai_budgets", budgetId, { capOverrideExpiresAt: midnight + 60_000 }));
+    vi.setSystemTime(midnight);
+    await expect(reserve("next-day", 1_250_000)).rejects.toThrow("owner_daily");
+  });
+
+  test("falls back to the plan cap for incomplete override metadata", async () => {
+    const { t, budgetId, reserve } = await setup();
+    await t.run(ctx => ctx.db.patch("ai_budgets", budgetId, { capOverrideReason: undefined }));
+    await expect(reserve("missing-reason", 1_250_000)).rejects.toThrow("owner_daily");
+  });
+
+  test("retains the free lifetime ceiling, the free pool limit and the AI kill switch", async () => {
+    const { t, budgetId, opsId, reserve } = await setup();
+    await t.run(ctx => ctx.db.patch("ai_budgets", budgetId, { freeLifetimeSpentMicroUsd: 500_000n }));
+    await expect(reserve("lifetime", 1_250_000)).rejects.toThrow("owner_free_lifetime");
+    await t.run(ctx => ctx.db.patch("ops_settings", opsId, { globalDailyBudgetMicroUsd: 1_000_000n }));
+    await expect(reserve("pool", 1_250_000)).rejects.toThrow("global_daily_free");
+    await t.run(async ctx => {
+      const ops = await ctx.db.get("ops_settings", opsId);
+      await ctx.db.patch("ops_settings", opsId, { killSwitches: { ...ops!.killSwitches, ai: true } });
+    });
+    await expect(reserve("switched-off", 1)).rejects.toThrow("AI_DISABLED");
+  });
+
+  test("can raise the paid daily cap while preserving the paid pool limit", async () => {
+    const { t, ownerId, budgetId, opsId, reserve } = await setup();
+    await t.run(async ctx => {
+      await ctx.db.insert("plan_grants", { ownerId, kind: "comp", grantedAt: start });
+      await ctx.db.patch("ai_budgets", budgetId, { daySpentMicroUsd: 5_000_000n, capOverrideMicroUsd: 6_000_000n });
+      await ctx.db.patch("ops_settings", opsId, { paidGlobalDailyBudgetMicroUsd: 500_000n });
+    });
+    await expect(reserve("paid", 500_000)).resolves.toMatchObject({ existing: false });
+    await expect(reserve("paid-pool", 1)).rejects.toThrow("global_daily_paid");
+  });
+
+  test("an uncapped platform owner still uses the separate bypass counters above the stored override", async () => {
+    const { t, ownerId, reserve } = await setup();
+    await t.run(async ctx => {
+      await ctx.db.patch("users", ownerId, {
+        emailVerificationTime: start, platformOwnerAccess: { enabled: true, bypassAiBudget: true, updatedAt: start },
+      });
+      await ctx.db.insert("super_admins", {
+        userId: ownerId, role: "super_admin", boundAt: start, boundVia: "deployment_bootstrap",
+      });
+    });
+    const call = await reserve("uncapped", 1_700_000);
+    expect(await t.run(ctx => ctx.db.get("ai_usage", call.usageId as Id<"ai_usage">)))
+      .toMatchObject({ ownerBudgetBypass: true });
+    expect(await t.run(ctx => readGlobalBudget(ctx, "paid", "2026-11-20", true)))
+      .toMatchObject({ inFlightMicroUsd: 1_700_000 });
   });
 });

@@ -7,6 +7,7 @@ import { readMembershipState } from "../platform/membership/state";
 import { ownerAccess } from "../platform/ownerAccess";
 import { assertFeatureEnabledForOwner, getOpsSettings } from "../ops/settings";
 import {
+  activeCapOverrideMicroUsd,
   addGlobalReservation,
   addGlobalSpend,
   readGlobalBudget,
@@ -180,6 +181,9 @@ export const reserve = internalMutation({
       readGlobalBudget(ctx, "paid", dayKey),
       args.ownerId === undefined ? Promise.resolve(null) : readOwnerBudget(ctx, args.ownerId),
     ]);
+    const access = args.ownerId === undefined
+      ? { unlimited: false, bypassAiBudget: false }
+      : await ownerAccess(ctx, args.ownerId);
     const failure = firstReserveFailure({
       dayKey,
       killSwitches: settings.killSwitches,
@@ -189,7 +193,11 @@ export const reserve = internalMutation({
       },
       owner: args.ownerId === undefined || ownerPlan === undefined
         ? undefined
-        : { plan: ownerPlan, budgets: ownerBudget?.budget ?? null },
+        : {
+            plan: ownerPlan,
+            budgets: ownerBudget?.budget ?? null,
+            dailyCapOverrideMicroUsd: access.unlimited ? undefined : activeCapOverrideMicroUsd(ownerBudget?.stored, now),
+          },
     }, {
       ownerId: args.ownerId,
       feature: args.feature,
@@ -197,9 +205,6 @@ export const reserve = internalMutation({
       escalation: args.escalation,
       creditFunded,
     });
-    const access = args.ownerId === undefined
-      ? { unlimited: false, bypassAiBudget: false }
-      : await ownerAccess(ctx, args.ownerId);
     const bypassFailure = failure?.code === "BUDGET_EXHAUSTED" && access.unlimited &&
       (OWNER_ALLOWANCE_SCOPES.has(failure.scope) ||
         (access.bypassAiBudget && GLOBAL_ALLOWANCE_SCOPES.has(failure.scope)));
