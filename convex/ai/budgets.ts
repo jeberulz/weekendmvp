@@ -74,6 +74,17 @@ function fromStored(row: Doc<"ai_budgets">): AiBudgetsRow {
   };
 }
 
+/** Only a documented override issued on this UTC day can change a reservation. */
+export function activeCapOverrideMicroUsd(stored: Doc<"ai_budgets"> | null | undefined, now: number): number | undefined {
+  if (stored?.capOverrideMicroUsd === undefined || stored.capOverrideSetBy === undefined ||
+      !stored.capOverrideReason?.trim()) return undefined;
+  const { capOverrideSetAt: setAt, capOverrideExpiresAt: expiresAt } = stored;
+  const dayStart = now - (now % 86_400_000);
+  if (setAt === undefined || expiresAt === undefined || !Number.isFinite(expiresAt) ||
+      !(dayStart <= setAt && setAt <= now && now < expiresAt)) return undefined;
+  return int64ToMicroUsd(stored.capOverrideMicroUsd);
+}
+
 export async function readOwnerBudget(
   ctx: MutationCtx,
   ownerId: Id<"users">,

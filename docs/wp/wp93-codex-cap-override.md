@@ -1,7 +1,8 @@
 # WP93 — Codex request: per-founder daily cap override
 
-Status: requested 2026-11-20. Blocks the Phase 2 "raise one founder's cap" control.
-Owner decision: deferred until Codex lands the schema and meter change below. The console builds the UI after that.
+The C2 implementation stores all five optional fields below on the founder's existing `ai_budgets` row. The console follow-up should set the fields together with the audit event in its mutation. Use an exclusive expiry in epoch milliseconds (the following midnight UTC for a whole-day override). The meter uses the plan cap again at the expiry instant or UTC rollover, whichever comes first. Partial overrides use the plan cap.
+
+The Claude lane owns the Phase 2 control. Local verification is recorded in `wp93-c2-progress.md`.
 
 ## Why
 
