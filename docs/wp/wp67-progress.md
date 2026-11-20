@@ -623,3 +623,18 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   (`business.test.ts`), two wizard UI with axe (`wp74-business-ui.test.tsx`), one step pill (`workspace-team-hq-helpers`).
   a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
   says "Waiting on you" in words, never colour alone.
+
+## 2026-11-16 - Live seed run passes on prod
+
+- #283 found the cause of the live `bad_request`: the API refused the `crew-idea-seed` reply schema as a compiled
+  grammar that was too large. It sends the seed and social pack schemas inside the prompt instead. #284 keeps the
+  provider's error message on a failed seed item.
+- The owner re-ran the spike on prod after #283–#285 deployed (`45ac7371`): run `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs`,
+  batch `msgbatch_017vQ5TZixDK8hBRCinbX8MA`, seed version `2026-11-08.1`, five ideas. All five seeds written, $1.20
+  reserved, $0.27 charged, 6 polls. This is the first live AI call to succeed on production.
+- Only the seed prompt is proven live. Wren's chat, both blueprint prompts, brand kit, email and social get their first
+  live test in the five launches (L1-C4), which are now unblocked.
+- Five ideas are seeded; the rest wait for the `Crew seeds` workflow (secret and variable still missing) or a wider
+  hand run.
+- `l1-release-plan.md`: status, L1-C4, the seed gap note and "Live seed runs (2026-11-16)" updated.
+- Checks: docs only, `git diff --check`.

@@ -8,27 +8,30 @@ L1 is invite-only (cohort `allowlist`), free only, no payments, nothing sends or
 
 ## Status on 2026-11-16
 
-**The build is done. The release is held at the L1 gate.** Every Claude-lane and Codex-lane item below is merged,
-and production deployed `18dcb3fd` (#282) on 2026-11-08. Nothing has merged since. Monday 2026-11-09 passed with
-the gate open:
+**The build is done. The release is held at the L1 gate.** Every Claude-lane and Codex-lane item below is merged.
+Production deployed `18dcb3fd` (#282) on 2026-11-08, then #283–#285 (`45ac7371`) and #286 (`8d33b8f8`) on
+2026-11-16. Monday 2026-11-09 passed with the gate open:
 
 - **Live AI calls failed until #282.** The first live run on production (the 5-idea seed spike, 2026-11-08) was
   rejected by Anthropic for every prompt with a reply schema: Wren, both blueprint prompts, brand kit, email, social
   and the idea seed. Nothing was charged. #282 sends the schema in the accepted form. The L1 launches would have
   failed the same way before it.
-- **Live calls still fail after #282.** The owner re-ran the spike on 2026-11-16 (`--seed-version 2026-11-08.1
-  --prod --limit 5 --apply`). All five items failed again as `bad_request`, and nothing was charged. The cause is
-  unknown: see "Live seed run (2026-11-16)" below. **This blocks L1:** every crew step and Wren's chat use the same
-  request path.
+- **The live seed run passes since #283.** The first re-run on 2026-11-16 still failed: all five items
+  `bad_request`, nothing charged. The API refused the seed schema as too large to compile. #283 sends the seed and
+  social pack schemas inside the prompt instead. The second re-run, on `45ac7371`, wrote all five seeds for $0.27.
+  See "Live seed runs (2026-11-16)" below. Only the seed prompt is proven live. Wren's chat, both blueprint prompts,
+  brand kit, email and social have not run live on production yet; the five launches are their first live test.
 - **Five live test launches (L1-C4): not recorded.** No cost or quality notes are in `wp67-progress.md`.
 - **The `Crew seeds` workflow skips every day.** It has run daily since 2026-11-09 and stops with "Crew seeds are
   not configured" because the `CONVEX_PROD_DEPLOY_KEY` secret or the `CREW_SEED_VERSION` variable is missing.
   Until it runs, or an operator seeds by hand, an unseeded idea shows the generic "Not yet validated" blueprint step.
+  Five ideas are seeded by hand (the second seed run); every other idea is still unseeded.
 - **Owner steps 4–5** (ops settings, cohort) are not recorded in the repo.
 
-What is left, in order: find and fix the live `bad_request`, get one live seed run to pass, run the five live launches and record them, confirm the ops settings, then invite the beta.
+What is left, in order: confirm the ops settings, run the five live launches and record them, seed the ideas we
+invite people to (by hand or through the workflow), then invite the beta.
 The full checks and the a11y-check on the merged tree passed on 2026-11-16 (see "Gate re-run (2026-11-16)"); that
-walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed on `claude/l1-gate-1116`.
+walkthrough found two copy issues worth fixing before invites (F1, F2), both fixed and merged in #286.
 
 ## What ships Monday
 
@@ -65,7 +68,7 @@ say "Coming soon" for each, so nothing looks broken.
 | L1-C9 | Build entry points for signed-in testers | Merged (#272) | Owner request, 2026-11-07: signed-in testers had no way into the wizard except the homepage. A verified member on an idea page gets "Build this idea, free" beside Save, straight to `/start/{slug}` with no sign-up hop. This reverses the WP74-S5 rule of no CTA for members. `/dashboard` gets a "Start building" card, straight to `/start/own`, with a secondary link to the workspace library. Both sit behind the same flag (`buildCtaVisible`), and off, the pages are unchanged. Owner's call (b), same day: in `allowlist` mode signed-out visitors see the CTAs too (`buildCta:buildCtaVisible`), and a signed-in founder who is not on the allowlist gets "You're not in the beta yet" at `/start` instead of a 404 (`buildCta:awaitingInvite`, asked only after the wizard gate refuses). A signed-in non-member still sees no CTA. The Convex change ships with the Convex deploy. The wizard re-checks access |
 | L1-C9 | Team and lead name decided by the idea | Merged as WP91 (#279). This id is used twice; this row is the roster one | `docs/wp/roster-per-idea/PLAN.md` (owner decisions 2026-11-07, RULINGS). S1: the chat uses the founder's lead name (today it always says "Wren"). S2: varied lead-name suggestions. S2b: about 6 lead avatars (one-time image spend, confirm first). S3–S5: the blueprint call proposes the team with a fallback to today's rules; core Lead, Brand, Email, Social. If S3–S5 slip, S1–S2 ship alone and the fallback keeps launches safe |
 | L1-C3 | Local fixture walkthrough | Done 2026-11-07; blockers fixed in #261 and #267. Re-run on `45ac7371` 2026-11-16: no blockers, findings F1–F6 below | Whole journey on a disposable local backend, zero spend; findings fixed or logged |
-| L1-C4 | Five live test launches | **Open.** Not recorded. Needs #282 (merged) and a passing live seed run first | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
+| L1-C4 | Five live test launches | **Open.** Not recorded. Unblocked: #282 and #283 merged, and the live seed run passed on 2026-11-16 | After the owner's deploy; different ideas; cost and quality recorded in `docs/wp/wp67-progress.md` |
 
 ### Codex lane (ship gates for the launch)
 
@@ -198,31 +201,35 @@ with focus return and the live message. The blockers found are L1-C2, L1-C5, L1-
 - With no `idea_crew_seeds` row for an idea, the wizard's blueprint suggestion is generic ("The one person who feels
   this problem most"). Live launches personalise the blueprint, but the wizard step reads boilerplate for every idea
   that has no seed. Decide before Monday: seed the ideas we invite people to, or accept it. (Owner ruled: seed every
-  public idea, WP90 #278, with WP92 #280 to keep seeds current. No seed is on prod yet; see the status section.)
+  public idea, WP90 #278, with WP92 #280 to keep seeds current. Five seeds are on prod since 2026-11-16; the rest
+  wait for the workflow or a wider hand run. See the status section.)
 - The Email page says "Sequence status: Draft" right after the founder approves (the row stays draft until WP79
   activates it). Reword to say it is approved and not sending yet. (Fixed in #267: the line is gone, and an approved
   sequence reads "Nothing is sent yet." Not rechecked in a browser.)
 
-## Live seed run (2026-11-16)
+## Live seed runs (2026-11-16)
 
-Run `zd72txwgg442hzmypyx3aqert18jbtrg`, seed version `2026-11-08.1`, batch `msgbatch_01J8S67Vo457F1EruQRXbqcV`.
-Five validated idea pages sent, none refused, $1.20 reserved at the batch rate.
+Seed version `2026-11-08.1`, `--prod --limit 5 --apply`, the same five validated idea pages both times:
+`phone-neck-score-app`, `timed-tool-access-contractors`, `contractor-ai-receptionist`, `ai-site-design-blueprints`,
+`ai-fashion-lookbook-studio`. $1.20 reserved at the batch rate each time.
 
-- **Outcome: all five failed** (`phone-neck-score-app`, `timed-tool-access-contractors`,
-  `contractor-ai-receptionist`, `ai-site-design-blueprints`, `ai-fashion-lookbook-studio`), each `bad_request`.
-  Charged $0.00. This is the same failure the 2026-11-08 run reported, so #282 is **not** proven live.
-- **Why we can't see the cause:** the batch adapter (`convex/ai/providers/anthropic.ts`, the `errored` case) keeps only
-  the error type, which maps to 400 and then `bad_request`. Anthropic's message is dropped.
-- **Ruled out locally:**
-  - The request matches the documented API: `claude-opus-5-5`, adaptive thinking, effort `medium`, 16,384 max
-    tokens, and `output_config.format`. Batches support structured outputs.
-  - The seed schema as sent (`z.toJSONSchema` then `wireOutputSchema`) has 62 properties, 3 optional, no unions,
-    `minItems` only 0 or 1, and no `minLength`, `maxLength`, `pattern`, `format`, numeric limits or `oneOf`.
-- **Next:**
-  1. Read the real error from Anthropic. The batch results are kept 29 days, and the owner can read them in the
-     Console or with `GET /v1/messages/batches/msgbatch_01J8S67Vo457F1EruQRXbqcV/results` (read only, no spend).
-  2. Small fix: keep a short form of the provider's error message on failed items, so `crew:seeds --status` prints
-     it.
+| Run | Batch | Code on prod | Result | Charged |
+|---|---|---|---|---|
+| `zd72txwgg442hzmypyx3aqert18jbtrg` | `msgbatch_01J8S67Vo457F1EruQRXbqcV` | `18dcb3fd` (#282) | 5 failed, `bad_request` | $0.00 |
+| `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs` | `msgbatch_017vQ5TZixDK8hBRCinbX8MA` | `45ac7371` (#283–#285) | **5 written**, 6 polls | **$0.27** |
+
+- **Cause of the first failure:** the API refused the `crew-idea-seed` reply schema because its compiled grammar was
+  too large. The request settings and the schema keywords were valid; size was the problem. #282 alone did not fix
+  it.
+- **Fix:** #283 sends the seed and social pack schemas as a block inside the prompt (`outputMode: "prompted"`, in
+  `ideaSeed.v3` and `socialPack.v4`) instead of `output_config.format`. The reply is still parsed and checked against
+  the same zod schema.
+- **Visibility:** #284 keeps a short form of the provider's error message on a failed item, and `crew:seeds --status`
+  prints it, so the next failure shows its reason without the Anthropic Console.
+- **Cost:** $0.27 for five seeds, about $0.054 per idea at the batch rate.
+- **Still unproven live:** Wren's chat, both blueprint prompts, brand kit and email (still `output_config.format`),
+  and the social pack (prompted, like the seed). The five live launches (L1-C4) are their first test on production.
+  A grammar-size refusal there would show as `bad_request`.
 
 ## Known gaps accepted for L1
 
