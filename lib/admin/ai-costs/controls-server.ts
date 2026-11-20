@@ -71,7 +71,7 @@ export type CapOverrideInput = {
   confirm: string | null;
 };
 
-/** `available` is false until the meter reads overrides (Codex C2): the console then shows a note, not the form. */
+/** `available` is false while `CAP_OVERRIDE_LIVE` is off: the console then shows a note, not the form. */
 export type CapOverrides = { available: boolean; overrides: readonly CapOverride[] };
 
 export type ControlResult<T> = { ok: true; value: T } | { ok: false; code: ControlErrorCode; message: string };
@@ -86,8 +86,8 @@ export type ControlsBackend = {
   findAccount(email: string): Promise<FoundAccount>;
   setCohort(ownerId: string, allowed: boolean, reason: string | null): Promise<ControlResult<{ changed: boolean }>>;
   updateSpend(input: SpendInput): Promise<ControlResult<{ risky: boolean }>>;
-  /** Live overrides only (expired ones are left out). */
-  capOverrides(): Promise<CapOverrides>;
+  /** These founders' overrides that are in force now (expired ones are left out). */
+  capOverrides(ownerIds: readonly string[]): Promise<CapOverrides>;
   /** Always a risky change: a recent sign-in and the typed confirm. */
   setCapOverride(input: CapOverrideInput): Promise<ControlResult<{ override: CapOverride }>>;
   /** Ends an override early. One click, audited. */
@@ -111,6 +111,9 @@ function fromError<T>(error: unknown): ControlResult<T> {
 }
 
 /* Live ------------------------------------------------------------------- */
+
+/** The Convex read takes at most this many founders per call. */
+const CAP_OVERRIDE_READ_CHUNK = 200;
 
 function liveBackend(token: string): ControlsBackend {
   return {
@@ -174,15 +177,37 @@ function liveBackend(token: string): ControlsBackend {
         return fromError(error);
       }
     },
-    async capOverrides() {
-      // Codex C2 (schema field + meter) is not on main yet: nothing to read or write.
-      return { available: CAP_OVERRIDE_LIVE, overrides: [] };
+    async capOverrides(ownerIds) {
+      if (!CAP_OVERRIDE_LIVE) return { available: false, overrides: [] };
+      const ids = [...new Set(ownerIds)];
+      const chunks: string[][] = [];
+      for (let start = 0; start < ids.length; start += CAP_OVERRIDE_READ_CHUNK) chunks.push(ids.slice(start, start + CAP_OVERRIDE_READ_CHUNK));
+      const pages = await Promise.all(chunks.map((chunk) => fetchQuery(api.admin.aiControls.capOverrides, { ownerIds: chunk }, { token })));
+      return { available: true, overrides: pages.flatMap((page) => page.overrides) };
     },
-    async setCapOverride() {
-      return refused("NOT_AVAILABLE");
+    async setCapOverride(input) {
+      if (!CAP_OVERRIDE_LIVE) return refused("NOT_AVAILABLE");
+      try {
+        const result = await fetchMutation(api.admin.aiControls.setCapOverride, {
+          ownerId: input.ownerId as Id<"users">,
+          capMicroUsd: BigInt(input.capMicroUsd),
+          expiry: input.expiry,
+          ...(input.reason === null ? {} : { reason: input.reason }),
+          ...(input.confirm === null ? {} : { confirm: input.confirm }),
+        }, { token });
+        return { ok: true, value: { override: result.override } };
+      } catch (error) {
+        return fromError(error);
+      }
     },
-    async clearCapOverride() {
-      return refused("NOT_AVAILABLE");
+    async clearCapOverride(ownerId) {
+      if (!CAP_OVERRIDE_LIVE) return refused("NOT_AVAILABLE");
+      try {
+        const result = await fetchMutation(api.admin.aiControls.clearCapOverride, { ownerId: ownerId as Id<"users"> }, { token });
+        return { ok: true, value: { changed: result.changed } };
+      } catch (error) {
+        return fromError(error);
+      }
     },
     async simulateSignIn() {
       // Live sign-in is a real Convex Auth sign-in, started in the browser.
@@ -340,10 +365,11 @@ function fixtureBackend(): ControlsBackend {
       });
       return { ok: true, value: { risky: risks.length > 0 } };
     },
-    async capOverrides() {
+    async capOverrides(ownerIds) {
       const nowMs = Date.now();
       const { store } = await fixtureStore(nowMs);
-      const overrides = [...(store.overrides?.values() ?? [])].filter((override) => isActive(override, nowMs));
+      const wanted = new Set(ownerIds);
+      const overrides = [...(store.overrides?.values() ?? [])].filter((override) => wanted.has(override.ownerId) && isActive(override, nowMs));
       return { available: true, overrides };
     },
     async setCapOverride(input) {
@@ -413,13 +439,16 @@ export async function resolveControlsBackend(): Promise<ControlsBackend | null> 
 }
 
 /**
- * Live raises for the founder pages. While the meter cannot read overrides
- * (`CAP_OVERRIDE_LIVE` false), live mode skips the extra Convex reads.
+ * These founders' raises for the founder pages. With `CAP_OVERRIDE_LIVE` off,
+ * live mode skips the extra Convex reads.
  */
-export async function readCapOverrides(mode: "fixture" | "live"): Promise<{ caps: CapOverrides; backend: ControlsBackend | null }> {
+export async function readCapOverrides(
+  mode: "fixture" | "live",
+  ownerIds: readonly string[],
+): Promise<{ caps: CapOverrides; backend: ControlsBackend | null }> {
   const none: CapOverrides = { available: false, overrides: [] };
   if (mode === "live" && !CAP_OVERRIDE_LIVE) return { caps: none, backend: null };
   const backend = await resolveControlsBackend();
   if (!backend) return { caps: none, backend: null };
-  return { caps: await backend.capOverrides(), backend };
+  return { caps: await backend.capOverrides(ownerIds), backend };
 }
