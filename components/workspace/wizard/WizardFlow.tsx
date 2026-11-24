@@ -439,6 +439,7 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
         error={error}
         headingRef={headingRef}
         ownIdeaExamples={ownIdeaExamples}
+        crew={view.crew}
         onAccept={() => {
           const answer = stepAnswerOf(step, parsed.defaults);
           if (answer !== undefined) void run(() => saveStep({ ...ids, answer }));

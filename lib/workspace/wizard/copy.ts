@@ -46,7 +46,7 @@ export const STEP_HEADS = {
     before: "What's the ",
     italic: "first",
     after: " win?",
-    sub: "One number every launch task aims at.",
+    sub: "The one result your crew aims at first.",
   },
   name: {
     before: "What do we ",
