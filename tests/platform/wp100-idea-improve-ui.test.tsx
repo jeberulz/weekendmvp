@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * WP100-S4. The "Improve with AI" control on the unified own-idea Step 1
- * (`OwnIdeaForm`): states, use / keep / try again / undo, selection mode,
+ * (`OwnIdeaForm`, through its `renderFieldAction` slot): states, use / keep / try again / undo, selection mode,
  * the live region, the field staying usable, and axe. The Convex binding is
  * replaced by a scripted `IdeaImproveApi`; nothing reaches a model.
  */
@@ -10,6 +10,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { axe } from "vitest-axe";
 
+import { ideaImproveAction } from "@/components/workspace/wizard/IdeaImprove";
 import { OwnIdeaForm } from "@/components/workspace/wizard/OwnIdeaForm";
 import type { IdeaImproveApi, IdeaImproveId, IdeaImproveResult } from "@/components/workspace/wizard/useIdeaImprove";
 import { wordDiff } from "@/lib/workspace/wizard/idea-diff";
@@ -29,7 +30,10 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function setup(results: IdeaImproveResult[] | (() => Promise<IdeaImproveResult>), options: { enabled?: boolean; initialText?: string } = {}) {
+function setup(
+  results: IdeaImproveResult[] | (() => Promise<IdeaImproveResult>),
+  options: { enabled?: boolean; initialText?: string; pending?: boolean } = {},
+) {
   const queue = Array.isArray(results) ? [...results] : null;
   const improve = vi.fn<IdeaImproveApi["improve"]>(async () =>
     queue === null ? await (results as () => Promise<IdeaImproveResult>)() : (queue.shift() ?? { status: "failed", improvementId: ID }),
@@ -38,7 +42,13 @@ function setup(results: IdeaImproveResult[] | (() => Promise<IdeaImproveResult>)
   const onSubmit = vi.fn();
   const api: IdeaImproveApi = { enabled: options.enabled ?? true, improve, decide };
   const view = render(
-    <OwnIdeaForm pending={false} error={null} onSubmit={onSubmit} initialText={options.initialText ?? ROUGH} improve={api} />,
+    <OwnIdeaForm
+      pending={options.pending ?? false}
+      error={null}
+      onSubmit={onSubmit}
+      initialText={options.initialText ?? ROUGH}
+      renderFieldAction={ideaImproveAction(api)}
+    />,
   );
   const field = screen.getByLabelText("Your idea in one sentence") as HTMLInputElement;
   return { ...view, improve, decide, onSubmit, field, user: userEvent.setup() };
@@ -200,6 +210,14 @@ describe("Improve with AI on Step 1", () => {
     expect(onSubmit).not.toHaveBeenCalled();
     await user.keyboard("{Enter}");
     expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  test("while the step is saving the button is inert", async () => {
+    const { user, improve } = setup([], { pending: true });
+    const button = screen.getByRole("button", { name: "Improve" });
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    await user.click(button);
+    expect(improve).not.toHaveBeenCalled();
   });
 
   test("the button names its shortcut and hint for assistive tech", () => {

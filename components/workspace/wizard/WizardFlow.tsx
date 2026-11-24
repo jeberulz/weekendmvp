@@ -30,6 +30,7 @@ import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
 import { OwnIdeaForm } from "./OwnIdeaForm";
+import { ideaImproveAction } from "./IdeaImprove";
 import { useIdeaImproveApi } from "./useIdeaImprove";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
@@ -224,7 +225,8 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
   const goBack = useMutation(api.workspace.wizard.goBack);
   const createBusiness = useMutation(api.workspace.business.createBusiness);
   const view = useQuery(api.workspace.wizard.getSession, sessionId === null ? "skip" : { sessionId });
-  const ideaImprove = useIdeaImproveApi();
+  // WP100: "Improve with AI" in the own-idea field's action slot; undefined while AI is off.
+  const ownIdeaFieldAction = ideaImproveAction(useIdeaImproveApi());
   // The server stores only C-WIZARD-parsed answers; parsing again narrows the
   // storage type (which allows a null paid push) to the contract type.
   const parsed = useMemo<{ answers: WizardAnswersProgress; defaults: WizardAnswersProgress } | null>(
@@ -351,7 +353,7 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
         headingRef={headingRef}
         onSubmit={(text) => void startOwn(text)}
         examples={ownIdeaExamples}
-        improve={ideaImprove}
+        renderFieldAction={ownIdeaFieldAction}
       />
     );
   } else if (view === undefined || parsed === null) {
@@ -445,7 +447,7 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
         headingRef={headingRef}
         ownIdeaExamples={ownIdeaExamples}
         crew={view.crew}
-        ideaImprove={ideaImprove}
+        ownIdeaFieldAction={ownIdeaFieldAction}
         onAccept={() => {
           const answer = stepAnswerOf(step, parsed.defaults);
           if (answer !== undefined) void run(() => saveStep({ ...ids, answer }));

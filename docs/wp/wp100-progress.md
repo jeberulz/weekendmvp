@@ -87,3 +87,17 @@ Append-only progress log. Do not rely on chat history for project state.
   to the slot in a follow-up once #316 lands.
 - Checks: typecheck, eslint on the wizard folders, `tests/platform` plus `convex/workspace/ideaImprove.test.ts` (124
   files, 3054 tests), `test:security` (221), `git diff --check`.
+
+## 2026-11-24 - Moved onto the #316 slot
+
+- #316 merged while the UI PR was open, so the PR conflicted on `OwnIdeaForm`. Rebased onto main and took main's
+  `OwnIdeaForm` unchanged: this branch no longer edits it.
+- `useIdeaImprove` now takes `{ api, field: OwnIdeaFieldApi }` and reads the selection through
+  `field.getSelection()`. `ideaImproveAction(api)` (in `IdeaImprove.tsx`) returns the `renderFieldAction`, or undefined
+  while AI is off. `WizardFlow` passes it to `OwnIdeaForm` and to `WizardStepPanel` (`ownIdeaFieldAction`).
+- Change: the button is now inert while the step saves (`field.pending`). Continue is no longer blocked while a
+  suggestion loads, because the slot cannot block the form's submit. The field is read-only then, so Continue sends the
+  founder's own words, and a late reply after the step moves on is dropped with the unmounted control.
+- Checks: typecheck, eslint on the changed files, `tests/platform` plus `convex/workspace/ideaImprove.test.ts` (125
+  files, 3057 tests), `test:security` (121), `git diff --check`. The control's markup and place are unchanged, so the
+  browser pass from S4 was not repeated.

@@ -47,8 +47,7 @@ import { goalLine, type GoalLineCrew } from "@/lib/workspace/wizard/goal-line";
 import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
 import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
-import { OwnIdeaForm } from "./OwnIdeaForm";
-import type { IdeaImproveApi } from "./useIdeaImprove";
+import { OwnIdeaForm, type OwnIdeaFormProps } from "./OwnIdeaForm";
 import { Field, OptionCard, StepHeadView, SuggestedChip } from "./wizard-ui";
 
 export type WizardStepPanelProps = {
@@ -72,8 +71,8 @@ export type WizardStepPanelProps = {
   readonly ownIdeaExamples?: readonly OwnIdeaExample[];
   /** The crew preview's hires, for Step 5's live consequence line; null or omitted, the line names no one. */
   readonly crew?: GoalLineCrew;
-  /** WP100: "Improve with AI" for the own-idea field; omitted, the field works as before. */
-  readonly ideaImprove?: IdeaImproveApi;
+  /** The own-idea field's inline action (WP100: "Improve with AI"); omitted, the field works as before. */
+  readonly ownIdeaFieldAction?: OwnIdeaFormProps["renderFieldAction"];
   /** Use the suggested default. */
   readonly onAccept: () => void;
   /** Pick a different offered choice (or keep a previous answer). */
@@ -357,7 +356,7 @@ export function WizardStepPanel({
   headingRef,
   ownIdeaExamples,
   crew = null,
-  ideaImprove,
+  ownIdeaFieldAction,
   onAccept,
   onChoose,
   onRewrite,
@@ -531,7 +530,7 @@ export function WizardStepPanel({
         error={error}
         headingRef={headingRef}
         examples={ownIdeaExamples}
-        improve={ideaImprove}
+        renderFieldAction={ownIdeaFieldAction}
         onSubmit={(text) => {
           const unchanged = defaults.idea?.source === "own_idea" ? defaults.idea.text === text : text === savedText;
           if (unchanged) onAccept();

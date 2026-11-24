@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Loader2, Sparkles, Undo2 } from "lucide-react";
 import { BTN_PRIMARY, BTN_SECONDARY, FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
 import { wordDiff } from "@/lib/workspace/wizard/idea-diff";
-import { IDEA_IMPROVE_NOTICE_COPY, type IdeaImproveController } from "./useIdeaImprove";
+import type { OwnIdeaFieldApi } from "./OwnIdeaForm";
+import { IDEA_IMPROVE_NOTICE_COPY, useIdeaImprove, type IdeaImproveApi, type IdeaImproveController } from "./useIdeaImprove";
 
 /**
  * WP100-S4. The "Improve with AI" control under the own-idea field: one button
  * (its label follows the selection), the suggestion card, the Undo line and
  * the notices. Presentational: the state lives in `useIdeaImprove`.
+ * `ideaImproveAction` adapts it to `OwnIdeaForm`'s `renderFieldAction` slot.
  *
  * One live region announces every change; focus stays put when a suggestion
  * arrives and returns to the field after Use this, Keep mine and Undo.
@@ -28,7 +30,7 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
   const headingId = `${base}-heading`;
   const improveRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLElement>(null);
-  const { state, announcement, canImprove, hasSelection, rounds } = controller;
+  const { state, announcement, canImprove, hasSelection, pending, rounds } = controller;
   const loading = state.phase === "loading";
   const label = loading ? "Improving…" : hasSelection ? "Improve selection" : "Improve";
 
@@ -72,7 +74,7 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
           ref={improveRef}
           type="button"
           onClick={() => void controller.run()}
-          aria-disabled={loading || !canImprove || undefined}
+          aria-disabled={loading || pending || !canImprove || undefined}
           aria-describedby={hintId}
           aria-keyshortcuts="Control+Shift+Enter Meta+Shift+Enter"
           title="Improve with AI (Ctrl or ⌘ + Shift + Enter)"
@@ -169,4 +171,21 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
       </p>
     </div>
   );
+}
+
+/** The control for one own-idea field, wired to the founder's text through the slot. */
+export function IdeaImproveAction({ api, field }: { api: IdeaImproveApi; field: OwnIdeaFieldApi }) {
+  const controller = useIdeaImprove({ api, field });
+  return <IdeaImprove controller={controller} fieldId={field.fieldId} />;
+}
+
+/**
+ * `OwnIdeaForm`'s `renderFieldAction` for "Improve with AI". Undefined while AI
+ * is off for this founder, so the form renders exactly as it does without it.
+ */
+export function ideaImproveAction(api: IdeaImproveApi): ((field: OwnIdeaFieldApi) => ReactNode) | undefined {
+  if (!api.enabled) return undefined;
+  return function renderIdeaImprove(field) {
+    return <IdeaImproveAction api={api} field={field} />;
+  };
 }

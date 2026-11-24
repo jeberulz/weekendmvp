@@ -5,15 +5,18 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import type { FunctionArgs, FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
 import { IDEA_IMPROVE_MIN_WORDS, wordCount } from "@/lib/workspace/wizard/idea-improve";
+import type { OwnIdeaFieldApi } from "./OwnIdeaForm";
 
 /**
  * WP100-S4. "Improve with AI" for the own-idea field (`docs/design/wizard-idea-ai-improve.md`).
  *
  * `useIdeaImproveApi` binds the Convex functions; `WizardFlow` calls it and
- * passes the result down, so the Step 1 form and panel stay free of Convex
- * hooks (and render without a client in tests). `useIdeaImprove` is the state
- * machine the control renders: nothing in the field changes unless the
- * founder chooses Use this, Undo or Back to my words, or types.
+ * hands `OwnIdeaForm` the control through its `renderFieldAction` slot (#316),
+ * so the Step 1 form and panel stay free of Convex hooks (and render without a
+ * client in tests). `useIdeaImprove` is the state machine the control renders.
+ * It reads and writes the field only through `OwnIdeaFieldApi`: nothing in the
+ * field changes unless the founder chooses Use this, Undo or Back to my words,
+ * or types.
  */
 
 export type IdeaImproveArgs = FunctionArgs<typeof api.workspace.ideaImprove.improve>;
@@ -85,9 +88,7 @@ export type IdeaImproveState =
 
 type Options = {
   readonly api: IdeaImproveApi;
-  readonly fieldId: string;
-  readonly text: string;
-  readonly setText: (text: string) => void;
+  readonly field: OwnIdeaFieldApi;
 };
 
 function focusFieldAtEnd(fieldId: string) {
@@ -98,16 +99,21 @@ function focusFieldAtEnd(fieldId: string) {
   field.setSelectionRange(end, end);
 }
 
-function selectionIn(fieldId: string): { start: number; end: number } | null {
-  const field = document.getElementById(fieldId);
-  if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return null;
-  const { selectionStart, selectionEnd } = field;
-  if (selectionStart === null || selectionEnd === null || selectionEnd <= selectionStart) return null;
-  if (field.value.slice(selectionStart, selectionEnd).trim() === "") return null;
-  return { start: selectionStart, end: selectionEnd };
+/** The field's selection when it covers some words; a caret or only spaces is no selection. */
+function wordsSelected(field: OwnIdeaFieldApi): { start: number; end: number } | null {
+  const range = field.getSelection();
+  if (range === null || range.end <= range.start) return null;
+  if (field.text.slice(range.start, range.end).trim() === "") return null;
+  return { start: range.start, end: range.end };
 }
 
-export function useIdeaImprove({ api, fieldId, text, setText }: Options) {
+export function useIdeaImprove({ api, field }: Options) {
+  const { fieldId, text, setText, pending } = field;
+  /** The latest field, for the DOM listeners below. */
+  const fieldRef = useRef(field);
+  useEffect(() => {
+    fieldRef.current = field;
+  });
   const [state, setState] = useState<IdeaImproveState>({ phase: "idle" });
   const [announcement, setAnnouncement] = useState("");
   const [hasSelection, setHasSelection] = useState(false);
@@ -122,17 +128,17 @@ export function useIdeaImprove({ api, fieldId, text, setText }: Options) {
 
   // Follow the selection so the button can say "Improve selection".
   useEffect(() => {
-    const update = () => setHasSelection(selectionIn(fieldId) !== null);
+    const update = () => setHasSelection(wordsSelected(fieldRef.current) !== null);
     document.addEventListener("selectionchange", update);
-    const field = document.getElementById(fieldId);
-    field?.addEventListener("select", update);
-    field?.addEventListener("keyup", update);
-    field?.addEventListener("mouseup", update);
+    const input = document.getElementById(fieldId);
+    input?.addEventListener("select", update);
+    input?.addEventListener("keyup", update);
+    input?.addEventListener("mouseup", update);
     return () => {
       document.removeEventListener("selectionchange", update);
-      field?.removeEventListener("select", update);
-      field?.removeEventListener("keyup", update);
-      field?.removeEventListener("mouseup", update);
+      input?.removeEventListener("select", update);
+      input?.removeEventListener("keyup", update);
+      input?.removeEventListener("mouseup", update);
     };
   }, [fieldId]);
 
@@ -157,14 +163,15 @@ export function useIdeaImprove({ api, fieldId, text, setText }: Options) {
   );
 
   const run = useCallback(async () => {
-    if (state.phase === "loading") return;
+    // Not while a request runs, nor while the step itself is saving.
+    if (state.phase === "loading" || pending) return;
     if (!canImprove) {
       setState({ phase: "notice", notice: "too_short", retryable: false });
       setAnnouncement(IDEA_IMPROVE_NOTICE_COPY.too_short);
       return;
     }
     if (state.phase === "suggestion") void api.decide({ improvementId: state.improvementId, outcome: "retried" }).catch(() => undefined);
-    const selection = selectionIn(fieldId);
+    const selection = wordsSelected(field);
     const before = text;
     const requestId = requestRef.current + 1;
     requestRef.current = requestId;
@@ -198,7 +205,7 @@ export function useIdeaImprove({ api, fieldId, text, setText }: Options) {
     const notice: IdeaImproveNotice = result.status;
     setState({ phase: "notice", notice, retryable: RETRYABLE.has(notice) });
     setAnnouncement(IDEA_IMPROVE_NOTICE_COPY[notice]);
-  }, [api, canImprove, fieldId, rounds, state, text]);
+  }, [api, canImprove, field, pending, rounds, state, text]);
 
   const stop = useCallback(() => {
     requestRef.current += 1;
@@ -255,6 +262,8 @@ export function useIdeaImprove({ api, fieldId, text, setText }: Options) {
     announcement,
     canImprove,
     hasSelection,
+    /** The step is saving: the button stays focusable but inert, like Continue. */
+    pending,
     rounds: rounds.length,
     /** The improvement behind the field's current text, if the founder kept one. */
     acceptedId: rounds.at(-1)?.after === text ? rounds.at(-1)?.improvementId ?? null : null,
