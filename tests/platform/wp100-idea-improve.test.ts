@@ -94,6 +94,21 @@ describe("rejectReason", () => {
     expect(rejectReason(source, candidate)).toBe(reason);
   });
 
+  test("a price the founder wrote does not let the model add a market claim (Codex #311)", () => {
+    expect(rejectReason("A $5 packing app for weekend campers", "A packing app for millions of weekend campers at $5.")).toBe("new_market_claim");
+    expect(rejectReason("A $5 packing app for weekend campers", "A $5 packing app for weekend campers.")).toBeNull();
+    expect(rejectReason(source, "A packing checklist trusted by weekend campers.")).toBe("new_market_claim");
+    expect(rejectReason(source, "The leading checklist for weekend campers.")).toBe("new_market_claim");
+  });
+
+  test("a name the model puts first is still an invented name (Codex #311)", () => {
+    expect(rejectReason("an app for weekend campers", "Notion checklists for weekend campers.")).toBe("new_proper_noun");
+    expect(rejectReason("an app for weekend campers", "TikTok packing lists for weekend campers.")).toBe("new_proper_noun");
+    expect(rejectReason("an app for weekend campers", "A packing app for weekend campers.")).toBeNull();
+    expect(rejectReason("an app for weekend campers", "Packing lists for weekend campers.")).toBeNull();
+    expect(rejectReason("notion templates for weekend campers", "Notion templates for weekend campers.")).toBeNull();
+  });
+
   test("keeps numbers, names and AI the founder wrote", () => {
     expect(rejectReason("an AI planner for 3 day trips with Strava", "An AI planner for 3 day trips with Strava.")).toBeNull();
   });

@@ -141,13 +141,56 @@ function contentWords(text: string): string[] {
   return normalised(text).split(" ").filter((word) => word.length >= 4 && !STOP_WORDS.has(word));
 }
 
-/** Words written with a capital (or in capitals) that are not the sentence's first word. */
+/**
+ * Words a sentence may start with that are capitalised only because they come
+ * first: articles, pronouns and the generic product nouns a tidy-up leads with.
+ */
+const SENTENCE_STARTERS = new Set([
+  "a", "an", "the", "this", "that", "it", "its", "my", "our", "your", "we", "you", "they", "one", "every", "each",
+  "for", "help", "helps", "let", "lets", "find", "track", "plan", "book", "get", "make", "turn", "share", "keep",
+  "app", "apps", "tool", "tools", "platform", "service", "website", "site", "checklist", "checklists", "list", "lists",
+  "planner", "planners", "tracker", "trackers", "marketplace", "guide", "guides", "community", "newsletter", "course",
+  "bot", "assistant", "dashboard", "simple", "small", "free", "weekly", "daily", "local", "online", "mobile", "private",
+  "shared", "personal", "packing", "booking", "budget", "budgeting", "simply", "easily", "quickly", "now", "finally",
+]);
+
+function bareWord(word: string): string {
+  return word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+}
+
+/**
+ * Capitalised words that may be names: every capitalised word after the first,
+ * and the first word too unless it is an ordinary sentence starter. A name the
+ * model puts first ("Notion checklists for …") is still caught; "A checklist …"
+ * and "Packing lists …" are not.
+ */
 function properNouns(text: string): string[] {
-  const words = text.trim().split(/\s+/u);
-  return words
-    .slice(1)
-    .map((word) => word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""))
-    .filter((word) => /^\p{Lu}/u.test(word));
+  const words = text.trim().split(/\s+/u).map(bareWord).filter((word) => word.length > 0);
+  return words.filter((word, index) => {
+    if (!/^\p{Lu}/u.test(word)) return false;
+    if (index > 0) return true;
+    // Inner capitals or all capitals ("TikTok", "CRM") read as a name even first.
+    if (/\p{Lu}/u.test(word.slice(1))) return true;
+    return !SENTENCE_STARTERS.has(word.toLowerCase());
+  });
+}
+
+/** Traction and ranking words the shared claim patterns leave to prose. */
+const TRACTION = /\b(?:hundreds|thousands|millions|billions)\s+of\b|\b(?:trusted|used|loved|chosen)\s+by\b|\bleading\b|\bmost\s+popular\b|\bbest[-\s]selling\b|#\s?1\b|\bnumber\s+one\b|\bfastest[-\s]growing\b/iu;
+
+/**
+ * True when the candidate carries a market or traction claim the founder did
+ * not write. Price and number tokens the founder wrote are masked first, so a
+ * founder's "$5" does not let the model add "for millions of campers".
+ */
+function addsMarketClaim(source: string, candidate: string): boolean {
+  const sourceTokens = new Set(source.split(/\s+/u).map(bareWord).filter((token) => /\d/u.test(token)));
+  const masked = candidate
+    .split(/(\s+)/u)
+    .map((token) => (sourceTokens.has(bareWord(token)) ? token.replace(/[$€£¥₹]?\s?\d[\d,.]*\s?[%$€£¥₹]?/gu, " ") : token))
+    .join("");
+  if (hasMarketClaim(masked)) return true;
+  return TRACTION.test(candidate) && !TRACTION.test(source);
 }
 
 function hasHype(text: string): boolean {
@@ -167,7 +210,7 @@ export function rejectReason(source: string, candidate: string): IdeaImproveReje
     return "more_sentences";
   }
   // Most specific first, so the stored reason says what actually went wrong.
-  if (hasMarketClaim(candidate) && !hasMarketClaim(source)) return "new_market_claim";
+  if (addsMarketClaim(source, candidate)) return "new_market_claim";
   const sourceNumbers = new Set(numbersIn(source));
   if (numbersIn(candidate).some((n) => !sourceNumbers.has(n))) return "new_number";
   if (EMOJI.test(candidate) || candidate.includes("!")) return "hype";

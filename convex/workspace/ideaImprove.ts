@@ -1,8 +1,8 @@
 import { ConvexError, v, type Infer } from "convex/values";
 
 import { internal } from "../_generated/api";
-import type { Doc, Id } from "../_generated/dataModel";
-import { action, internalMutation, mutation, query, type ActionCtx, type MutationCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
+import { action, internalMutation, mutation, query, type ActionCtx } from "../_generated/server";
 // Types only: erased at build, so this default-runtime file never loads the Node action module.
 import type { GatewayRunResult, RunPromptArgs } from "../ai/gatewayActions";
 import { ideaImproveSpec } from "../ai/prompts/ideaImprove.v1";
@@ -175,19 +175,6 @@ export const finish = internalMutation({
   },
 });
 
-async function requireOwnedSuggestion(
-  ctx: MutationCtx,
-  improvementId: Id<"wizard_idea_improvements">,
-): Promise<Doc<"wizard_idea_improvements">> {
-  const user = await requireCurrentPlatformUserForMutation(ctx);
-  const row = await ctx.db.get("wizard_idea_improvements", improvementId);
-  // Not found and not yours read the same, so ids cannot be probed.
-  if (row === null || row.ownerId !== user._id || row.status !== "suggested") {
-    throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
-  }
-  return row;
-}
-
 /** What the founder did with a suggestion. The latest decision wins. */
 export const decide = mutation({
   args: {
@@ -197,7 +184,12 @@ export const decide = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await assertFeatureEnabled(ctx, "workspace");
-    await requireOwnedSuggestion(ctx, args.improvementId);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
+    const row = await ctx.db.get("wizard_idea_improvements", args.improvementId);
+    // Not found and not yours read the same, so ids cannot be probed.
+    if (row === null || row.ownerId !== user._id || row.status !== "suggested") {
+      throw new ConvexError({ code: "RESOURCE_NOT_FOUND" });
+    }
     await ctx.db.patch("wizard_idea_improvements", args.improvementId, { outcome: args.outcome, decidedAt: Date.now() });
     return null;
   },

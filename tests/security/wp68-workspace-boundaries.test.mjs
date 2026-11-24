@@ -62,12 +62,13 @@ test("every workspace table has a flat validator, D22 ownership and owner-first 
       }
     }
   }
-  assert.equal(count, 32, "Phase 0 inventory plus additive WP79, WP78 and WP90 (idea_seed_runs, idea_seed_items) tables");
+  assert.equal(count, 33, "Phase 0 inventory plus additive WP79, WP78, WP90 (idea_seed_runs, idea_seed_items) and WP100 (wizard_idea_improvements) tables");
   assert.equal(tableNames.size, count, "workspace table names must not be duplicated across schema modules");
   assert.ok(tableNames.has("business_email_settings"));
   assert.ok(tableNames.has("lead_email_tokens"));
   assert.ok(tableNames.has("lead_retention_jobs"));
   assert.ok(tableNames.has("account_closure_jobs"));
+  assert.ok(tableNames.has("wizard_idea_improvements"));
 });
 
 const WORKSPACE_RUNTIME_DIRS = ["workspace", "crew", "studio", "ai", "growth", "ops"];
@@ -90,17 +91,34 @@ const PRE_BUSINESS_CONTROLS = new Map([
   ["convex/workspace/wizard.ts:rewriteStep", ["ownedWizardSession", "requireOwnedWizardSession"]],
   ["convex/workspace/wizard.ts:goBack", ["ownedWizardSession", "requireOwnedWizardSession"]],
   ["convex/workspace/business.ts:createBusiness", ["ownedWizardSession", "requireOwnedWizardSession"]],
+  // WP100 "Improve with AI" on Step 1: owner-scoped rows, before a session exists.
+  ["convex/workspace/ideaImprove.ts:decide", ["requireCurrentPlatformUserForMutation"]],
+  ["convex/workspace/ideaImprove.ts:availability", ["requireCurrentPlatformUser"]],
+]);
+// Public actions cannot read the database, so their gate runs in an internal
+// mutation they call first. Each entry names the action's body helper and the
+// internal mutation that must carry every guard.
+const ACTION_DELEGATED_CONTROLS = new Map([
+  [
+    "convex/workspace/ideaImprove.ts:improve",
+    {
+      body: "improveWith",
+      internal: "begin",
+      guards: ["assertFeatureEnabled", "requireCurrentPlatformUserForMutation", "checkLimit"],
+    },
+  ],
 ]);
 const PUBLIC_REGISTRATIONS = new Set(["query", "mutation", "action", "httpAction"]);
+const INTERNAL_REGISTRATIONS = new Set(["internalQuery", "internalMutation", "internalAction"]);
 
-function publicRegistrations(file) {
+function publicRegistrations(file, kinds = PUBLIC_REGISTRATIONS) {
   const registrations = [];
   for (const statement of file.statements) {
     if (!ts.isVariableStatement(statement) || !statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
     for (const declaration of statement.declarationList.declarations) {
       const initializer = declaration.initializer;
       if (!ts.isCallExpression(initializer) || !ts.isIdentifier(initializer.expression)) continue;
-      if (!PUBLIC_REGISTRATIONS.has(initializer.expression.text)) continue;
+      if (!kinds.has(initializer.expression.text)) continue;
       const calls = new Set();
       function visit(node) {
         if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) calls.add(node.expression.text);
@@ -135,12 +153,21 @@ test("workspace public Convex functions check both the feature and the capabilit
       for (const registration of publicRegistrations(file)) {
         const key = `${relative}:${registration.name}`;
         seen.push(key);
+        const delegated = ACTION_DELEGATED_CONTROLS.get(key);
+        if (delegated !== undefined) {
+          assert.ok(registration.calls.has(delegated.body), `${key} must run through ${delegated.body}`);
+          const gate = publicRegistrations(file, INTERNAL_REGISTRATIONS).find((candidate) => candidate.name === delegated.internal);
+          assert.ok(gate, `${key}: internal gate ${delegated.internal} not found`);
+          for (const guard of delegated.guards) assert.ok(gate.calls.has(guard), `${key}: ${delegated.internal} missing ${guard}`);
+          continue;
+        }
         assertRegistrationGuard(key, registration);
       }
     }
   }
   for (const control of ADMIN_CONTROLS) assert.ok(seen.includes(control), `${control} was not scanned`);
   for (const control of PRE_BUSINESS_CONTROLS.keys()) assert.ok(seen.includes(control), `${control} was not scanned`);
+  for (const control of ACTION_DELEGATED_CONTROLS.keys()) assert.ok(seen.includes(control), `${control} was not scanned`);
 });
 
 test("pre-business scanner exception stays exact and requires the right guard", () => {
