@@ -30,6 +30,8 @@ vi.mock("convex/react", async () => {
       if (fn.endsWith(":launchProgress")) return { started: false, steps: [] };
       return state.view;
     },
+    // WP100: "Improve with AI" is off here (availability reads as not enabled).
+    useAction: () => async () => ({ status: "unavailable" }),
     useMutation: (ref: Parameters<typeof name>[0]): Mutation => async (args) => {
       const fn = name(ref);
       state.calls.push({ name: fn, args });
