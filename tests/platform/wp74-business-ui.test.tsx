@@ -8,6 +8,7 @@ import { axe } from "vitest-axe";
 
 import type { WizardSessionView } from "@/convex/workspace/wizard";
 import { wizardSeedFor } from "@/lib/workspace/wizard/defaults";
+import { NAME_RESERVED_MESSAGE } from "@/lib/workspace/wizard/labels";
 
 type Mutation = (args: Record<string, unknown>) => Promise<unknown>;
 
@@ -242,6 +243,25 @@ describe("WP74-S4 WizardFlow handoff", () => {
     await user.click(screen.getByRole("button", { name: "Choose a different name" }));
     const back = state.calls.find((call) => call.name === getFunctionName(api.workspace.wizard.goBack));
     expect(back?.args).toEqual({ sessionId: "session123", step: "partner_name", to: "name" });
+    await expectNoAxeViolations(container);
+  });
+
+  test("after the bounce, Step 6 still says why the name was refused", async () => {
+    state.view = finished();
+    state.createError = new ConvexError({ code: "NAME_RESERVED" });
+    const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };
+    const { rerender, container } = render(<WizardFlow {...props} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Create my business" }));
+    await user.click(await screen.findByRole("button", { name: "Choose a different name" }));
+
+    // The server moved the session back to the name step.
+    await act(async () => {
+      state.view = { ...finished(), completed: false, step: "name", stepIndex: 5 };
+      rerender(<WizardFlow {...props} />);
+    });
+    expect(screen.getByLabelText("Or type your own")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toBe(NAME_RESERVED_MESSAGE);
     await expectNoAxeViolations(container);
   });
 

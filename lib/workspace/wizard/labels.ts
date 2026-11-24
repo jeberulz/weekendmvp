@@ -88,6 +88,9 @@ export const PARTNER_PERSONALITY_OPTIONS = {
   operator: { label: "Operator", hint: "Checklists, deadlines, nothing slips." },
 } as const satisfies Record<PartnerPersonality, { label: string; hint: string }>;
 
+/** Why a name can't be used: it would make a weekendmvp.app address that looks like ours. Shown on Step 6 and at Create. */
+export const NAME_RESERVED_MESSAGE = "That name is kept for Weekend MVP's own addresses. Choose a different name.";
+
 /** The optional paid test offered on the goal step (founder's own money, D8). */
 export const PAID_PUSH_DAILY_USD = 7;
 
