@@ -37,6 +37,7 @@ import {
   carriedBlueprintNotes,
   GOAL_KIND_OPTIONS,
   GOAL_TIMEFRAME_OPTIONS,
+  NAME_RESERVED_MESSAGE,
   PAID_PUSH_DAILY_USD,
   PARTNER_PERSONALITY_OPTIONS,
   PLATFORM_OPTIONS,
@@ -44,6 +45,7 @@ import {
   goalKindsToOffer,
 } from "@/lib/workspace/wizard/labels";
 import { goalLine, type GoalLineCrew } from "@/lib/workspace/wizard/goal-line";
+import { isReservedTenantBase, tenantSlugBase } from "@/lib/workspace/wizard/tenant-slug";
 import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
 import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
@@ -494,6 +496,11 @@ export function WizardStepPanel({
           : { kind: "choose", label: CONTINUE, answer };
       }
       case "name": {
+        const picked = customName.length > 0 ? customName : chosenName;
+        // The same rule "Create my business" applies, caught here instead of after Steps 7 and 8.
+        if (picked !== "" && isReservedTenantBase(tenantSlugBase(picked))) {
+          return { kind: "missing", label: CONTINUE, message: NAME_RESERVED_MESSAGE };
+        }
         if (customName.length > 0) return { kind: "rewrite", label: CONTINUE, text: customName };
         if (chosenName === "") return { kind: "missing", label: CONTINUE, message: "Pick a name or type your own." };
         return chosenName === defaultName

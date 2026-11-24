@@ -22,6 +22,7 @@ import {
 } from "@/lib/workspace/contracts/wizard";
 import { trackWorkspaceEvent } from "@/lib/track";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { NAME_RESERVED_MESSAGE } from "@/lib/workspace/wizard/labels";
 import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
@@ -65,7 +66,7 @@ const ERROR_COPY: Record<string, string> = {
     "We cannot create a business for a temporary email address. Sign in with an address you keep, then try again.",
   SLUG_UNAVAILABLE: "We could not find a free web address for this name. Choose a different name.",
   EMAIL_INVALID: "We could not read the domain of your email address. Sign in with a standard address, then try again.",
-  NAME_RESERVED: "That name is kept for Weekend MVP's own addresses. Choose a different name.",
+  NAME_RESERVED: NAME_RESERVED_MESSAGE,
 };
 
 /** What the "Create my business" screen offers after a refusal, beyond the message. */
@@ -405,7 +406,14 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
         existingBusinessHref={refusal?.existingBusinessHref ?? null}
         onChooseName={
           refusal?.chooseName
-            ? () => void run(() => goBack({ sessionId: view.sessionId, step: view.step, to: "name" }))
+            ? () => {
+                // Step 6 reopens with the refused name, so it keeps the reason (run clears errors first).
+                const reason = error;
+                void run(async () => {
+                  await goBack({ sessionId: view.sessionId, step: view.step, to: "name" });
+                  setError(reason);
+                });
+              }
             : null
         }
         onCreate={() =>

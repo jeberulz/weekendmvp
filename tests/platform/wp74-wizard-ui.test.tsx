@@ -12,6 +12,7 @@ import { WizardProgress, progressCaption, progressLabel } from "@/components/wor
 import { WizardStepPanel, type WizardStepPanelProps } from "@/components/workspace/wizard/WizardStepPanel";
 import type { WizardStep } from "@/lib/workspace/contracts/wizard";
 import { wizardSeedFor } from "@/lib/workspace/wizard/defaults";
+import { NAME_RESERVED_MESSAGE } from "@/lib/workspace/wizard/labels";
 
 afterEach(cleanup);
 
@@ -341,6 +342,24 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(handlers.onRewrite).toHaveBeenCalledWith("Trailhead Water");
     await expectNoAxeViolations(container);
+  });
+
+  test("name step: a reserved name is refused here, not after Steps 7 and 8", async () => {
+    const { container, handlers, user } = setup("name");
+    const field = screen.getByLabelText("Or type your own");
+    await user.type(field, "Weekend MVP Studio");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(handlers.onRewrite).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toBe(NAME_RESERVED_MESSAGE);
+    expect(field.getAttribute("aria-invalid")).toBe("true");
+    await expectNoAxeViolations(container);
+
+    // A different name clears the error and goes through.
+    await user.clear(field);
+    await user.type(field, "Trailhead Water");
+    expect(screen.queryByRole("alert")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(handlers.onRewrite).toHaveBeenCalledWith("Trailhead Water");
   });
 
   test("name step: picking an alternative sends the choice and its alternatives", async () => {
