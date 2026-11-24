@@ -23,12 +23,14 @@ import {
 } from "@/lib/workspace/contracts/wizard";
 import { trackWorkspaceEvent } from "@/lib/track";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
+import { OwnIdeaExamples } from "./OwnIdeaExamples";
 import { OwnIdeaLibraryLink } from "./OwnIdeaLibraryLink";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
@@ -40,6 +42,11 @@ export type WizardFlowProps = {
   readonly ideaTitle: string | null;
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
+  /**
+   * WP99: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
+   * (`own-idea-examples.server.ts`). Omitted, the static fallback lines show.
+   */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
 };
 
 const ERROR_COPY: Record<string, string> = {
@@ -186,23 +193,19 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-/** A few concrete example ideas, to lower the blank-page cost on the own path. */
-const OWN_IDEA_EXAMPLES = [
-  "A packing list that builds itself from your trip",
-  "Invoice reminders for freelancers",
-  "A meal-prep planner for lifters",
-] as const;
-
 function OwnIdeaStart({
   pending,
   error,
   headingRef,
   onStart,
+  examples,
 }: {
   pending: boolean;
   error: string | null;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onStart: (text: string) => void;
+  /** Concrete example ideas, to lower the blank-page cost on the own path (WP99). */
+  examples: readonly OwnIdeaExample[];
 }) {
   const base = useId();
   const [text, setText] = useState("");
@@ -251,24 +254,7 @@ function OwnIdeaStart({
         invalid={shownError !== null}
         serif
       />
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] text-home-ink-3">Try one of these</p>
-        <div className="flex flex-wrap gap-2">
-          {OWN_IDEA_EXAMPLES.map((example) => (
-            <button
-              key={example}
-              type="button"
-              onClick={() => applyExample(example)}
-              className={cn(
-                "rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-[13px] text-home-ink-2 hover:bg-home-sunk",
-                FOCUS,
-              )}
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
+      <OwnIdeaExamples examples={examples} value={text} onApply={applyExample} />
       <OwnIdeaLibraryLink />
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
@@ -292,7 +278,7 @@ function OwnIdeaStart({
  * aside. Each screen owns the page's single h1, and focus moves to it when the
  * step changes.
  */
-function WizardFlowInner({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
+function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = OWN_IDEA_FALLBACK_EXAMPLES }: WizardFlowProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<Id<"wizard_sessions"> | null>(
     initialSessionId === null ? null : (initialSessionId as Id<"wizard_sessions">),
@@ -429,7 +415,15 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId }: WizardFlowProps)
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
   if (sessionId === null && idea === null) {
-    body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
+    body = (
+      <OwnIdeaStart
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        onStart={(text) => void startOwn(text)}
+        examples={ownIdeaExamples}
+      />
+    );
   } else if (view === undefined || parsed === null) {
     body = (
       <>
