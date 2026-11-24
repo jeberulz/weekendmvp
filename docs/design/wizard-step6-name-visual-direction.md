@@ -191,8 +191,7 @@ The name flows further than any earlier answer, and the step says almost none of
   the fold" problem Step 5 recorded and left open (Step 5 doc §7: "needs a further choice, such as a sticky
   Continue"). John picked a sticky Continue for Step 5. It's built as `stickyPrimary` in `WizardStepPanel.tsx`
   (commit `d67a75ca`, a `max-sm:sticky` bar with a hairline top and safe-area padding, plus `scroll-mb-28` on inputs
-  for WCAG 2.4.11). That commit was pushed after #315 merged, so **it is not on `main` yet** (the Step 5 session
-  owns landing it).
+  for WCAG 2.4.11). It landed in #320, and Step 6 now uses it too (decision 6, below).
 - **Two accents compete again.** The "Suggested" chip and the ember-soft rename box are both ember, so the series'
   "one ember accent per view" rule breaks whenever the founder departs from the default.
 - **The sage web-address line is the only sage text in the wizard body.** Sage means "kept" in the signals rail. Here
@@ -385,6 +384,11 @@ names should feel drafted by someone who read the idea, not generated.
    the other non-quick steps). That's the same bar and the same 2.4.11 guard, with no new component.
    (B) No sticky bar. Shorten the step until Continue fits, and accept that it won't on the seeded case with a typed
    name.
+   **Shipped (John's call, 2026-11-24): A.** `stickyPrimary` is now `(step === "goal" && !quick) || step === "name"`.
+   At 375px with the header and progress bar, the seeded step ends at 792px, so Continue sits in place on the first
+   screen. With a typed name the rename box adds 49px, the form ends at 841px, and Continue sticks to the bottom
+   (735–812px). The focused name field ends at 647px, clear of the bar. Past the form the bar settles above the
+   rail, and at 1280px it is static. The other non-quick steps (7 and 8) are unchanged.
 7. **"Type your own" semantics.**
    **(A, recommended)** Make it the last option of the same radio group ("Something else" → field), with the serif
    field and the limit in its hint.

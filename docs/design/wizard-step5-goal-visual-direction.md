@@ -294,6 +294,7 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 >   bar stuck to the bottom of the screen until the form ends (a paper fill and a hairline on top). It is on the
 >   first screen at 748–800px. Focused options keep a scroll margin so the bar never hides them. Desktop is unchanged,
 >   and so is the quick confirm, which already fits.
+>   Step 6 (Name) uses the same bar since 2026-11-24 (its doc's decision 6).
 
 1. **The goal options.**
    **(A, recommended)** Three first wins (First 50 signups, First sale, Test the idea). Hide `mrr_500` and
