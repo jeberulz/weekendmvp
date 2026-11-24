@@ -189,7 +189,10 @@ The name flows further than any earlier answer, and the step says almost none of
 - **Mobile: Continue falls just below the fold.** At 375px, with the real 68px header, the primary ends at about
   y≈831 on an 812px screen. When the rename box shows (69px), it ends at about y≈880. That's the same "Continue below
   the fold" problem Step 5 recorded and left open (Step 5 doc §7: "needs a further choice, such as a sticky
-  Continue"). No sticky Continue exists on `main` yet.
+  Continue"). John picked a sticky Continue for Step 5. It's built as `stickyPrimary` in `WizardStepPanel.tsx`
+  (commit `d67a75ca`, a `max-sm:sticky` bar with a hairline top and safe-area padding, plus `scroll-mb-28` on inputs
+  for WCAG 2.4.11). That commit was pushed after #315 merged, so **it is not on `main` yet** (the Step 5 session
+  owns landing it).
 - **Two accents compete again.** The "Suggested" chip and the ember-soft rename box are both ember, so the series'
   "one ember accent per view" rule breaks whenever the founder departs from the default.
 - **The sage web-address line is the only sage text in the wizard body.** Sage means "kept" in the signals rail. Here
@@ -303,8 +306,9 @@ it, in one quiet line. AI suggestions are labelled as AI and come with an honest
 7. **One accent.** The "Suggested" chip on the default card is the only ember on the view. The address line is ink-2,
    and an error is clay.
 8. **Mobile.** With the rename box gone and the address line in its place, the panel is shorter, but Continue still
-   ends near the fold. Step 6 is the second step in a row with this problem, so it's time for the shared sticky
-   Continue (decision 6). Note WCAG 2.4.11: a sticky bar must not cover the focused field when the keyboard is up.
+   ends near the fold. Reuse Step 5's sticky Continue (`stickyPrimary`) by widening its condition from `goal` to
+   `name` (decision 6). Its `scroll-mb-28` keeps a focused card or the typed-name field clear of the bar (WCAG
+   2.4.11). Check that with the keyboard up at 375px.
 
 ### Where AI earns its place (John's question)
 In order of value for cost:
@@ -340,8 +344,9 @@ names should feel drafted by someone who read the idea, not generated.
   becomes a kit piece only if a third step needs it.
 - **The address line** is Name-only. It's a one-line `<p>` in the same `text-sm text-home-ink-2` style as Step 5's
   consequence line, so the two read as one family ("what your answer does").
-- **The sticky mobile Continue** is shared. Steps 5 and 6 both need it, and it touches the shared primary and the
-  form layout. It should be built once, for every non-quick step, not per step (decision 6).
+- **The sticky mobile Continue** already exists for Step 5 as `stickyPrimary` (`step === "goal" && !quick`), on
+  the Step 5 branch and not yet on `main`. Step 6 adopts it by widening that condition, not by adding a new
+  component (decision 6).
 - **The AI-names line** ("Drafted by AI from the idea page…") could share the reason-line style. No new component.
 - **Content changes** live in `copy.ts` (sub line, address line, AI line) and the seed prompt `ideaSeed.v3.ts`
   (names with reasons, three directions), which needs a seed version bump (`CREW_SEED_VERSION`) and a re-seed.
@@ -375,9 +380,9 @@ names should feel drafted by someone who read the idea, not generated.
    **(A, recommended)** Yes, later: a metered "Suggest three more" with optional steers, built on the WP100 metering
    and fixtures. Ship 1–4 first.
    (B) No: the step offers its first three names and the field, nothing more.
-6. **Sticky Continue on mobile (shared with Step 5).**
-   **(A, recommended)** Build one shared sticky Continue for the non-quick steps at small widths, respecting focus
-   not obscured (WCAG 2.4.11). Step 6 and Step 5 adopt it together.
+6. **Sticky Continue on mobile (reuse Step 5's).**
+   **(A, recommended)** Once Step 5's `stickyPrimary` is on `main`, widen its condition to include `name` (and later
+   the other non-quick steps). That's the same bar and the same 2.4.11 guard, with no new component.
    (B) No sticky bar. Shorten the step until Continue fits, and accept that it won't on the seeded case with a typed
    name.
 7. **"Type your own" semantics.**
