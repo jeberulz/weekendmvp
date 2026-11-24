@@ -78,3 +78,12 @@ Append-only progress log. Do not rely on chat history for project state.
 - S5: `improvementId` goes from the hook to the `onSubmit` callers (`WizardFlow` → `startOrResume`,
   `WizardStepPanel` → `onRewrite`). The blueprint reads the stored `ownIdeaAi.hints` as quoted data (the #314 plan),
   so the extract-only prompt mode is needed only if the owner picks option B alone.
+
+## 2026-11-24 - UI PR
+
+- #311 (backend) merged. Rebased the UI commits onto main. The conflicts with #315 (the Step 5 `crew` prop) were
+  additive and both sides were kept.
+- #316 (the `renderFieldAction` slot) is still open, so the UI PR keeps the `improve` prop on `OwnIdeaForm`. It moves
+  to the slot in a follow-up once #316 lands.
+- Checks: typecheck, eslint on the wizard folders, `tests/platform` plus `convex/workspace/ideaImprove.test.ts` (124
+  files, 3054 tests), `test:security` (221), `git diff --check`.
