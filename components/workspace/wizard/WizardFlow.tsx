@@ -268,6 +268,13 @@ function OwnIdeaStart({
           ))}
         </div>
       </div>
+      {/* The other way in is a quiet link, the same one the library variant uses, so Continue leads.
+          A library idea page offers "Build this idea, free", which starts `/start/{slug}`. */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Link href="/ideas" className={cn("text-sm text-home-ink-2 underline underline-offset-2 hover:text-home-ink", FOCUS)}>
+          Pick one from the library instead
+        </Link>
+      </div>
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
           {shownError}
