@@ -26,6 +26,7 @@ import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v3.ts";
 import { brandKitSpec } from "./brandKit.v3.ts";
 import { crewConsultationSpec } from "./crewConsultation.ts";
 import { emailSequenceSpec } from "./emailSequence.v3.ts";
+import { ideaImproveSpec } from "./ideaImprove.v1.ts";
 import { ideaSeedSpec } from "./ideaSeed.v3.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
@@ -94,6 +95,14 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
       answers: CREW_SAMPLE_ANSWERS,
       ideaAngles: JSON.stringify({ emailAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one." }], buyerWords: [] }),
+    },
+  }),
+  promptEntry(ideaImproveSpec, {
+    module: "convex/ai/prompts/ideaImprove.v1.ts",
+    sampleInputs: {
+      mode: "whole",
+      idea: "basically an app for people who go camping on weekends so they dont forget stuff",
+      selected: null,
     },
   }),
   promptEntry(ideaSeedSpec, {
