@@ -41,7 +41,7 @@ const library = [
   idea("royalty-recovery", "Music royalty recovery platform for musicians' families"),
 ];
 
-describe("WP97 ownIdeaExamplePool", () => {
+describe("WP99 ownIdeaExamplePool", () => {
   test("keeps live, buildable library ideas, as short headline lines with their slug", () => {
     const pool = ownIdeaExamplePool([
       ...library,
@@ -73,7 +73,7 @@ describe("WP97 ownIdeaExamplePool", () => {
   });
 });
 
-describe("WP97 drawOwnIdeaExamples", () => {
+describe("WP99 drawOwnIdeaExamples", () => {
   const pool = ownIdeaExamplePool(library);
 
   test("draws three distinct library chips, different draws for different randomness", () => {
@@ -107,7 +107,7 @@ describe("WP97 drawOwnIdeaExamples", () => {
   });
 });
 
-describe("WP97 the cached library read", () => {
+describe("WP99 the cached library read", () => {
   beforeEach(() => {
     state.query.mockReset();
     state.manifest = library;

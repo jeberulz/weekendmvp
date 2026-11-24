@@ -109,6 +109,19 @@ describe("WP74-S1 WizardFlow", () => {
     expect(state.calls[0]?.args).toEqual({ idea: { source: "own_idea", text: "A packing list for campers" } });
   });
 
+  test("own idea: a quiet link offers the library instead, as real navigation to /ideas", async () => {
+    const { container } = render(<WizardFlow idea={null} ideaTitle={null} initialSessionId={null} />);
+    const link = screen.getByRole("link", { name: "Pick one from the library instead" });
+    expect(link.getAttribute("href")).toBe("/ideas");
+    expect(link.tagName).toBe("A");
+    // Under the suggestions, above Continue.
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    expect(link.compareDocumentPosition(continueButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(link.className).toContain("focus-visible:");
+    const results = await axe(container);
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  });
+
   test("a library session rewritten as an own idea moves to the own-idea URL, carrying the session", async () => {
     state.view = { ...view("blueprint", 1), ideaTitle: "Trail water refill map", answers: { idea: { source: "own_idea", text: "Trail water refill map" } } };
     const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };

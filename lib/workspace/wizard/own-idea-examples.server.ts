@@ -9,7 +9,7 @@ import { manifestIdeas } from "@/lib/public/library";
 import { drawOwnIdeaExamples, ownIdeaExamplePool, type OwnIdeaExample } from "./own-idea-examples";
 
 /**
- * WP97. Every library idea that can be an own-idea chip, with the same
+ * WP99. Every library idea that can be an own-idea chip, with the same
  * membership rule as `/ideas` and the homepage (`publicIdeaSlugs`): the
  * manifest merged with editorial releases, minus retired, drafts and withdrawn.
  *

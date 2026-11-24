@@ -35,6 +35,7 @@ import { z } from "zod";
 import {
   artifactOutputSchemas,
   blueprintVariantSchemas,
+  SOCIAL_DAYS,
   buildPackVariantSchemas,
   type ArtifactKind,
 } from "../../../lib/workspace/contracts/artifacts";
@@ -46,6 +47,8 @@ import {
 import { promptRef } from "../../../lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "../prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "../prompts/blueprintPersonalise.v3";
+import { crewConsultationSpec } from "../prompts/crewConsultation";
+import { socialPackSpec } from "../prompts/socialPack.v5";
 import { ideaSeedSpec } from "../prompts/ideaSeed.v3";
 import { wrenChatSpec } from "../prompts/wrenChat";
 import { wrenPlanTurnSpec } from "../prompts/wrenPlanTurn";
@@ -77,11 +80,18 @@ export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) 
  *   built from the quoted idea page (`seedFixtureReply.ts`).
  */
 export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
+  [promptRef(crewConsultationSpec)]: () => ({ answer: "Test mode: this is a fixture specialist response. No AI model wrote this answer." }),
   [promptRef(wrenChatSpec)]: wrenFixtureReply,
   [promptRef(wrenPlanTurnSpec)]: wrenFixtureReply,
   [promptRef(blueprintPersonaliseSpec)]: blueprintFixtureReply,
   [promptRef(blueprintOwnIdeaSpec)]: blueprintFixtureReply,
   [promptRef(ideaSeedSpec)]: seedFixtureReply,
+  [promptRef(socialPackSpec)]: () => ({
+    posts: SOCIAL_DAYS.map((day) => {
+      const row = hydrotrailArtifacts.social_pack.posts[day];
+      return { ...clone(row), imageAlt: row.imageAlt ?? "", pollOptions: row.pollOptions ?? [] };
+    }),
+  }),
 });
 
 type ArtifactFixture = { readonly key: string; readonly schema: z.ZodType; readonly output: FixtureOutput };

@@ -1,6 +1,6 @@
 # Wizard Step 1: where the own-idea example chips come from
 
-Status: recommendation, implemented in WP97 (`docs/wp/wp97-stories.md`).
+Status: recommendation, implemented in WP99 (`docs/wp/wp99-stories.md`).
 Surface: `/start/own`, "Try one of these" under the idea field (`OwnIdeaStart` in
 `components/workspace/wizard/WizardFlow.tsx`).
 
@@ -79,5 +79,5 @@ interests).
 
 - No paid call, no new prompt and no schema change.
 - No change to what Continue sends: the session still starts from the text in the field as an own idea.
-- No personalisation. If the owner later wants chips tuned to the founder, option (b) is the path, and the WP97 seam
+- No personalisation. If the owner later wants chips tuned to the founder, option (b) is the path, and the WP99 seam
   (`OwnIdeaExample[]` passed in as a prop) lets a Convex pool replace the library draw without touching the UI.

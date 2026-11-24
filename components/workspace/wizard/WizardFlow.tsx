@@ -31,6 +31,7 @@ import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
 import { OwnIdeaExamples } from "./OwnIdeaExamples";
+import { OwnIdeaLibraryLink } from "./OwnIdeaLibraryLink";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
 import { Field, ScreenHead } from "./wizard-ui";
@@ -42,7 +43,7 @@ export type WizardFlowProps = {
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
   /**
-   * WP97: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
+   * WP99: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
    * (`own-idea-examples.server.ts`). Omitted, the static fallback lines show.
    */
   readonly ownIdeaExamples?: readonly OwnIdeaExample[];
@@ -203,7 +204,7 @@ function OwnIdeaStart({
   error: string | null;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onStart: (text: string) => void;
-  /** Concrete example ideas, to lower the blank-page cost on the own path (WP97). */
+  /** Concrete example ideas, to lower the blank-page cost on the own path (WP99). */
   examples: readonly OwnIdeaExample[];
 }) {
   const base = useId();
@@ -254,6 +255,7 @@ function OwnIdeaStart({
         serif
       />
       <OwnIdeaExamples examples={examples} value={text} onApply={applyExample} />
+      <OwnIdeaLibraryLink />
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
           {shownError}

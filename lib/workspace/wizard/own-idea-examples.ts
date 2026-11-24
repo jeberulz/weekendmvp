@@ -1,5 +1,5 @@
 /**
- * WP97. The example ideas under the own-idea field on `/start/own` ("Try one of
+ * WP99. The example ideas under the own-idea field on `/start/own` ("Try one of
  * these"). Recommendation: `docs/design/wizard-step1-own-idea-suggestions.md`.
  *
  * The chips are real, published library ideas, drawn three per visit from the

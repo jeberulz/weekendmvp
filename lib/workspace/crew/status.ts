@@ -14,6 +14,7 @@ export type TeamStep = {
   readonly notBuilt: boolean;
   readonly state: TeamStepState;
   readonly reason?: string;
+  readonly lastFailure?: { readonly failureClass: string; readonly detail: string };
   readonly retryable?: boolean;
 };
 
@@ -85,6 +86,7 @@ export type EmployeeStatusEntry = {
   readonly name: string;
   readonly status: TeamCardStatus;
   readonly detail: string;
+  readonly failureClass?: string;
   readonly blocker?: { readonly label: string; readonly detail?: string };
 };
 
@@ -128,7 +130,13 @@ function launchEmployeeStatus(
   }
   const failed = relevant.find((step) => step.state === "failed");
   if (failed !== undefined) {
-    return { ...base, status: "failed", detail: failed.reason ?? `${failed.title} did not finish.` };
+    return {
+      ...base,
+      status: "failed",
+      detail: failed.lastFailure?.detail ?? failed.reason ?? `${failed.title} did not finish.`,
+      ...(failed.lastFailure ? { failureClass: failed.lastFailure.failureClass } : {}),
+      ...(failed.lastFailure && failed.retryable === false && failed.reason ? { blocker: { label: failed.reason } } : {}),
+    };
   }
   const paused = relevant.find((step) => step.state === "paused");
   if (paused !== undefined) {
@@ -184,6 +192,7 @@ export type CrewAssignment = {
   documentId?: string;
   blocker?: "blueprint" | "brand_kit";
   failure?: string;
+  failureClass?: string;
   changedFields?: string[];
   changePreview?: string[];
   handoff?: "requested" | "queued" | "spend_required" | "not_available";
@@ -202,7 +211,7 @@ const handoffDetail: Record<NonNullable<CrewAssignment["handoff"]>, string> = {
 function revisionActivity(
   assignment: CrewAssignment,
   reviews: readonly TeamReview[],
-): Pick<EmployeeStatusEntry, "status" | "detail" | "blocker"> {
+): Pick<EmployeeStatusEntry, "status" | "detail" | "blocker" | "failureClass"> {
   const title = `${assignment.title} · change round ${assignment.round}`;
   switch (assignment.status) {
     case "queued":
@@ -216,7 +225,10 @@ function revisionActivity(
     case "running": return { status: "working", detail: `${title} is in progress.` };
     case "blocked": return { status: "needs_you", detail: `${title} is paused.` };
     case "cancelled": return { status: "failed", detail: `${title} was cancelled.` };
-    case "failed": return { status: "failed", detail: assignment.failure ? `${title} failed. ${assignment.failure}` : `${title} failed.` };
+    case "failed": return {
+      status: "failed", detail: assignment.failure ? `${title} failed. ${assignment.failure}` : `${title} failed.`,
+      ...(assignment.failureClass ? { failureClass: assignment.failureClass } : {}),
+    };
     case "succeeded": {
       if (!assignment.documentId) return { status: "failed", detail: `${title} has no saved draft.` };
       const review = reviews.find((item) => REVIEW_OWNER[item.kind] === assignment.role && Number(item.changeRound) === assignment.round);

@@ -12,7 +12,7 @@ export const instant = false;
 /**
  * WP74-S1: the wizard for the founder's own idea (D15). `?session=` resumes after a reload.
  * L1-C9: a signed-in founder who is not invited yet gets `NotInvited`, not a 404.
- * WP97: the "Try one of these" chips are three live library ideas, drawn per visit.
+ * WP99: the "Try one of these" chips are three live library ideas, drawn per visit.
  */
 export default async function StartOwnPage({
   searchParams,
@@ -22,7 +22,7 @@ export default async function StartOwnPage({
   // Render at request time, not a prerendered/edge-cached shell: this is an
   // auth-gated flow, and a cached shell pins the client bundle to an old deploy.
   await connection();
-  // WP97: the example chips come from the cached library pool; the draw runs beside the access check.
+  // WP99: the example chips come from the cached library pool; the draw runs beside the access check.
   const examples = ownIdeaExamplesForRequest();
   const access = await requireWizardAccess(null);
   if (access.kind === "not-invited") return <NotInvited ideaSlug={null} />;

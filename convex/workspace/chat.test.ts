@@ -31,7 +31,7 @@ import {
 import { checkLimit } from "../platform/limits";
 import { TIER_MODELS } from "../../lib/workspace/contracts/prompts";
 import { WREN_ESCALATIONS_PER_BUSINESS_PER_DAY, WREN_FAILURE_COPY } from "../../lib/workspace/wren";
-import { hydrotrailEmailSequence } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { hydrotrailBrandKit, hydrotrailBlueprint, hydrotrailEmailSequence, hydrotrailSocialPack } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { planEmailSequenceDraft, writeEmailSequenceDraft } from "../growth/drafts/emailSequence";
 import { runWrenTurnWith } from "./chatActions";
 
@@ -883,4 +883,181 @@ test("read-only chat previews the saved revised email, and never calls the provi
   expect(latest?.body).toContain(hydrotrailEmailSequence.emails.welcome.body);
   expect(latest?.cards).toEqual([{ kind: "navigate", route: "email" }]);
   expect(await seeded.t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
+});
+
+describe("WP97 lead answers from the artifact and its exact review", () => {
+  const approvalQuestion = "Where is the button to approve the Brand Kit? Tell me whether it has already been approved. Please only answer the question.";
+
+  test("an approved review wins over an earlier chat reply, and other owners and spending cards cannot replace its decision", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async (ctx) => {
+      await ctx.db.patch("documents", ids.docId, { body: JSON.stringify(hydrotrailBrandKit) });
+      const review = {
+        ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review" as const, subjectTable: "documents" as const,
+        subjectId: ids.docId, status: "approved" as const, changeRound: 1n, createdAt: 2, updatedAt: 3,
+      };
+      await ctx.db.insert("approvals", review);
+      await ctx.db.insert("approvals", { ...review, ownerId: ids.otherId, status: "pending" });
+      await ctx.db.insert("approvals", { ...review, kind: "spend", status: "pending" });
+      await ctx.db.insert("chat_messages", { ownerId: ids.ownerId, projectId: ids.projectId, author: "wren",
+        body: "Please approve the kit now.", status: "done", createdAt: 3, updatedAt: 3, cardApprovalIds: [] });
+    });
+    const turn = await sendTurn(seeded, approvalQuestion);
+    expect(await runTurn(t, turn, scriptedAdapter().adapter)).toEqual([]);
+    expect((await thread(seeded)).at(-1)).toMatchObject({ body: expect.stringContaining("change round 1) is already approved"), cards: [{ kind: "navigate", route: "brand" }] });
+    // A newer draft has its own decision history. The old approved kit cannot stand in for it.
+    await t.run(async (ctx) => {
+      await ctx.db.insert("documents", { projectId: ids.projectId, ownerId: ids.ownerId, kind: "brand_kit", format: "json",
+        title: "New kit", body: JSON.stringify(hydrotrailBrandKit), createdAt: 5, updatedAt: 5 });
+    });
+    vi.setSystemTime(Date.now() + 1);
+    const next = await sendTurn(seeded, "have we apprioved the brand kit?");
+    expect(await runTurn(t, next, scriptedAdapter().adapter)).toEqual([]);
+    expect((await thread(seeded)).at(-1)?.body).toContain("no recorded review");
+    expect(await t.run((ctx) => ctx.db.query("approvals").collect())).toHaveLength(3);
+    expect(await t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
+    expect(await usageRows(t)).toEqual([]);
+  });
+
+  test.each([
+    ["pending", 0, "awaiting your approval"],
+    ["pending", 8, "expired"],
+    ["changes_requested", 0, "requested changes"],
+    ["cancelled", 0, "cancelled"],
+    ["expired", 0, "expired"],
+  ] as const)("reflects a %s review after %i days and gives the relevant controls", async (status, days, copy) => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const createdAt = Date.now() - days * 86_400_000;
+    await t.run(async (ctx) => {
+      await ctx.db.patch("documents", ids.docId, { body: JSON.stringify(hydrotrailBrandKit) });
+      await ctx.db.insert("approvals", { ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review",
+        subjectTable: "documents", subjectId: ids.docId, status, changeRound: 0n, createdAt, updatedAt: createdAt });
+    });
+    const turn = await sendTurn(seeded, approvalQuestion);
+    expect(await runTurn(t, turn, scriptedAdapter().adapter)).toEqual([]);
+    const reply = (await thread(seeded)).at(-1)?.body;
+    expect(reply).toContain(copy);
+    expect(reply?.includes("choose “Approve”")).toBe(status === "pending" && days === 0);
+  });
+
+  test("an approval for an earlier body cannot approve an edited document", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async (ctx) => {
+      await ctx.db.patch("documents", ids.docId, { body: JSON.stringify(hydrotrailBrandKit), updatedAt: 5 });
+      await ctx.db.insert("approvals", { ownerId: ids.ownerId, projectId: ids.projectId, kind: "artifact_review",
+        subjectTable: "documents", subjectId: ids.docId, status: "approved", changeRound: 1n, createdAt: 3, updatedAt: 4 });
+    });
+    const turn = await sendTurn(seeded, approvalQuestion);
+    expect(await runTurn(t, turn, scriptedAdapter().adapter)).toEqual([]);
+    expect((await thread(seeded)).at(-1)?.body).toContain("fresh review is needed");
+  });
+
+  test("explains the requested Iris → Elle workflow and its review surfaces without running it", async () => {
+    const seeded = await seed();
+    const turn = await sendTurn(seeded, "If I wanted Iris to revise our brand voice and then Elle to update one email, what would you do and where could I follow the handoff? Describe the steps only. Do not start work.");
+    expect(await runTurn(seeded.t, turn, scriptedAdapter().adapter)).toEqual([]);
+    const latest = (await thread(seeded)).at(-1);
+    expect(latest?.body).toContain("approve the revised kit");
+    expect(latest?.body).toContain("your email brief to Elle");
+    expect(latest?.cards).toEqual([{ kind: "navigate", route: "team" }]);
+    expect(await seeded.t.run((ctx) => ctx.db.query("tasks").collect())).toEqual([]);
+    expect(await seeded.t.run((ctx) => ctx.db.query("approvals").collect())).toEqual([]);
+    expect(await usageRows(seeded.t)).toEqual([]);
+  });
+
+  test.each([
+    ["social_pack", hydrotrailSocialPack, "Is the social pack approved?", "social", "Approve all 7"],
+    ["blueprint", hydrotrailBlueprint, "Where do I approve the blueprint?", "team", "Approve"],
+    ["email_sequence", hydrotrailEmailSequence, "Have we approved the email sequence?", "email", "Approve all 4"],
+  ] as const)("locates the review on the %s page", async (kind, data, question, route, button) => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async (ctx) => {
+      const business = { ownerId: ids.ownerId, projectId: ids.projectId };
+      const now = Date.now();
+      const body = JSON.stringify(data);
+      const documentId = await ctx.db.insert("documents", { ...business, kind, title: kind, format: "json", body, createdAt: now, updatedAt: now });
+      if (kind === "email_sequence") {
+        const plan = await planEmailSequenceDraft(ctx, business, body);
+        if (!plan.ok) throw new Error("invalid fixture email sequence");
+        await writeEmailSequenceDraft(ctx, plan, { ...business, documentId, now });
+      }
+      await ctx.db.insert("approvals", { ...business, kind: "artifact_review", subjectTable: "documents", subjectId: documentId,
+        status: "pending", changeRound: 0n, createdAt: now, updatedAt: now });
+    });
+    const turn = await sendTurn(seeded, question);
+    expect(await runTurn(t, turn, scriptedAdapter().adapter)).toEqual([]);
+    expect((await thread(seeded)).at(-1)).toMatchObject({ body: expect.stringContaining(`choose “${button}”`), cards: [{ kind: "navigate", route }] });
+  });
+
+  test("ordinary writes cannot end a consultation, and an unmetered failure still fences the retry attempt", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    const turn = await sendTurn(seeded, "Ask Iris: what is blocking the brand work?");
+    const claim = await t.run(async (ctx) => {
+      const employeeId = await ctx.db.insert("crew_members", { ownerId: ids.ownerId, projectId: ids.projectId, roleKey: "brand",
+        displayName: "Iris", autopilot: false, hiredBy: "rule", status: "done", createdAt: 1, updatedAt: 1 });
+      const recipient = { employeeId, name: "Iris", role: "brand" };
+      const state = { recipient, attempt: 1, state: "working" as const };
+      await ctx.db.patch("chat_messages", turn.wrenMessageId, { crewConsultation: state });
+      return state;
+    });
+    const args = { ownerId: ids.ownerId, projectId: ids.projectId, messageId: turn.wrenMessageId };
+    expect(await t.mutation(internal.workspace.chat.writeWrenDraft, { ...args, body: "stale ordinary draft" })).toBe(false);
+    expect(await t.mutation(internal.workspace.chat.finishWrenTurn, { ...args, attempt: 1, outcome: { status: "done", body: "stale ordinary finish" } })).toBe(false);
+    await t.run((ctx) => ctx.db.patch("chat_messages", turn.wrenMessageId, { status: "failed", crewConsultation: { ...claim, state: "failed" } }));
+    expect(await retry(seeded, turn.wrenMessageId)).toMatchObject({ kind: "retrying", attempt: 2 });
+    await t.run((ctx) => ctx.db.patch("chat_messages", turn.wrenMessageId, {
+      status: "failed", crewConsultation: { ...claim, attempt: 5, state: "failed" },
+    }));
+    expect(await retry(seeded, turn.wrenMessageId)).toEqual({ kind: "exhausted" });
+    expect(await usageRows(t)).toEqual([]);
+  });
+
+  test.each([
+    ["Can you communicate with the brand? Can you pass a message to?", "pass a question to Iris"],
+    ["Can you communicate with Brian and the team?", "couldn’t find a hired specialist called “Brian”"],
+  ])("explains real communication against this project's roster: %s", async (question, expected) => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async (ctx) => {
+      for (const [roleKey, displayName] of [["brand", "Iris"], ["email", "Elle"]]) {
+        await ctx.db.insert("crew_members", { ownerId: ids.ownerId, projectId: ids.projectId, roleKey,
+          displayName, hiredBy: "rule", status: "done", autopilot: false, createdAt: 1, updatedAt: 1 });
+      }
+      await ctx.db.insert("crew_members", { ownerId: ids.otherId, projectId: ids.otherProjectId, roleKey: "brand",
+        displayName: "Brian", hiredBy: "rule", status: "done", autopilot: false, createdAt: 1, updatedAt: 1 });
+    });
+    const turn = await sendTurn(seeded, question);
+    expect(await runTurn(t, turn, scriptedAdapter().adapter)).toEqual([]);
+    const latest = (await thread(seeded)).at(-1);
+    expect(latest?.body).toContain(expected);
+    expect(latest?.body).toContain("Ask Iris to consult with Elle");
+    expect(latest?.cards).toEqual([{ kind: "navigate", route: "team" }]);
+    expect(await usageRows(t)).toEqual([]);
+  });
+
+  test("the specialist receives a question about an approved artifact", async () => {
+    const seeded = await seed();
+    const turn = await sendTurn(seeded, "Ask Iris: What would you change in the approved brand kit?");
+    const consultation = vi.fn(async () => null);
+    const model = vi.fn(async () => { throw new Error("unexpected model turn"); });
+    await runWrenTurnWith(turnCtx(seeded.t), turn, model, consultation);
+    expect(consultation).toHaveBeenCalledExactlyOnceWith(turn);
+    expect(model).not.toHaveBeenCalled();
+  });
+
+  test("forwards a request for Iris’s own answer once and leaves turn completion to the consultation", async () => {
+    const seeded = await seed();
+    const turn = await sendTurn(seeded, "Please pass this message to Iris: what is one blocker you have for Siteprimer? Bring me Iris’s own answer. This is a question only. Leave all drafts as they are.");
+    const consultation = vi.fn(async () => null);
+    const model = vi.fn(async () => { throw new Error("unexpected model turn"); });
+    await runWrenTurnWith(turnCtx(seeded.t), turn, model, consultation);
+    expect(consultation).toHaveBeenCalledExactlyOnceWith(turn);
+    expect(model).not.toHaveBeenCalled();
+    expect((await thread(seeded)).at(-1)?.status).toBe("streaming");
+  });
 });

@@ -1,6 +1,7 @@
 import { v, type Infer } from "convex/values";
 
 import type { Doc, Id } from "../../_generated/dataModel";
+import { socialDraftFailure } from "../../crew/launch";
 import { query } from "../../_generated/server";
 import { assertFeatureEnabled } from "../../ops/settings";
 import { requireBusinessAccess } from "../../platform/authz";
@@ -67,6 +68,7 @@ const socialPostViewValidator = v.object({
 
 const socialPackDraftView = v.union(
   v.object({ state: v.literal("none") }),
+  v.object({ state: v.literal("failed"), detail: v.string(), failureClass: v.optional(v.string()), retryBlocker: v.optional(v.string()) }),
   /** The newest document does not parse as a social pack: shown as unavailable. */
   v.object({ state: v.literal("unavailable") }),
   v.object({
@@ -109,7 +111,10 @@ export const socialPackDraft = query({
     const document = rows
       .filter((row) => inBusiness(row, business) && row.archivedAt === undefined)
       .reduce<Doc<"documents"> | null>((newest, row) => (newest === null || row.createdAt > newest.createdAt ? row : newest), null);
-    if (document === null) return { state: "none" as const };
+    if (document === null) {
+      const failure = await socialDraftFailure(ctx, project);
+      return failure ? { state: "failed" as const, ...failure } : { state: "none" as const };
+    }
     const pack = parseSocialPackBody(document.body);
     if (pack === null) return { state: "unavailable" as const };
 

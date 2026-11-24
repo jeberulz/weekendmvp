@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 
 /**
- * WP97. The "Try one of these" chips under the own-idea field, plus the offer of a chip's researched version.
+ * WP99. The "Try one of these" chips under the own-idea field, plus the offer of a chip's researched version.
  *
  * Data comes in as a prop (`examples`, drawn per visit by `ownIdeaExamplesForRequest`). The host owns the
  * field: it passes the field's current `value` and fills and focuses the field in `onApply`. A tap replaces
