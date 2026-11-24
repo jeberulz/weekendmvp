@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled } from "../ops/settings";
+import { ownerAccess } from "../platform/ownerAccess";
 import { assertAccountOpenForProjectCreation } from "../platform/accountClosureGuard";
 import { requireOwnedWizardSession } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
@@ -116,6 +117,22 @@ async function businessesOf(
   return { count: rows.length, live: live?._id ?? null };
 }
 
+/**
+ * L1 F6: the owner's business allowance when it is used up, else null. The
+ * same rule `createBusiness` enforces, read early so the wizard can say so
+ * before the founder answers every step.
+ */
+export async function businessLimitFor(
+  ctx: QueryCtx,
+  ownerId: Id<"users">,
+): Promise<{ plan: string; limit: number; projectId: Id<"projects"> | null } | null> {
+  if ((await ownerAccess(ctx, ownerId)).unlimited) return null;
+  const plan = await resolvePlan(ctx, ownerId);
+  const allowance = WORKSPACE_PLAN_LIMITS[plan].limits.businesses;
+  const existing = await businessesOf(ctx, ownerId, allowance);
+  return existing.count >= allowance ? { plan, limit: allowance, projectId: existing.live } : null;
+}
+
 function isVerified(user: Doc<"users"> | null): user is Doc<"users"> & { email: string } {
   return user !== null && user.isAnonymous !== true && typeof user.email === "string" &&
     user.email.length > 0 && user.emailVerificationTime !== undefined;
@@ -203,14 +220,13 @@ export const createBusiness = mutation({
     if (domain === null) return refuse("EMAIL_INVALID");
     if (isDisposableEmailDomain(domain)) return refuse("DISPOSABLE_EMAIL");
 
-    const plan = await resolvePlan(ctx, user._id);
-    const allowance = WORKSPACE_PLAN_LIMITS[plan].limits.businesses;
-    const existing = await businessesOf(ctx, user._id, allowance);
-    if (existing.count >= allowance) {
+    const atLimitPlan = await resolvePlan(ctx, user._id);
+    const atLimit = await businessLimitFor(ctx, user._id);
+    if (atLimit !== null) {
       return refuse("BUSINESS_LIMIT_REACHED", {
-        plan,
-        limit: allowance,
-        ...(existing.live === null ? {} : { projectId: existing.live }),
+        plan: atLimit.plan,
+        limit: atLimit.limit,
+        ...(atLimit.projectId === null ? {} : { projectId: atLimit.projectId }),
       });
     }
 
@@ -239,7 +255,7 @@ export const createBusiness = mutation({
       action: "business.created",
       subjectType: "project",
       subjectId: projectId,
-      metadata: JSON.stringify({ wizardSessionId: session._id, slug, plan, source: answers.idea.source }),
+      metadata: JSON.stringify({ wizardSessionId: session._id, slug, plan: atLimitPlan, source: answers.idea.source }),
       createdAt: now,
     });
     return { projectId, name: answers.name.chosen, slug, created: true };

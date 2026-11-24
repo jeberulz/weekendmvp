@@ -9,8 +9,8 @@
  * script checks every field). The lock hashes that file and every repo-local
  * module it imports at runtime (not `node_modules`, not
  * `lib/workspace/contracts/prompts.ts`), so a locked version's module is
- * frozen. Keep each version in its own module (`brandKit.v1.ts`,
- * `brandKit.v2.ts`) when an old one must stay registered.
+ * frozen. Keep each version in its own module (`brandKit.v3.ts`,
+ * `brandKit.v4.ts`) when an old one must stay registered.
  *
  * Dependency bumps count too: the `outputSchema` part is zod's
  * `toJSONSchema` output, so a zod upgrade that changes it (and a C-PROMPT
@@ -21,14 +21,17 @@
  * lock entry.
  */
 
-import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v2.ts";
-import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v2.ts";
-import { brandKitSpec } from "./brandKit.v2.ts";
-import { emailSequenceSpec } from "./emailSequence.v2.ts";
-import { ideaSeedSpec } from "./ideaSeed.v1.ts";
+import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v3.ts";
+import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v3.ts";
+import { brandKitSpec } from "./brandKit.v3.ts";
+import { crewConsultationSpec } from "./crewConsultation.ts";
+import { emailSequenceSpec } from "./emailSequence.v3.ts";
+import { ideaImproveSpec } from "./ideaImprove.v1.ts";
+import { ideaSeedSpec } from "./ideaSeed.v3.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
-import { socialPackSpec } from "./socialPack.v2.ts";
+import { socialPackSpec as socialPackV4 } from "./socialPack.v4.ts";
+import { socialPackSpec } from "./socialPack.v5.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
 import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
 
@@ -51,10 +54,17 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     sampleInputs: { label: "registry probe sample" },
     internal: true,
   }),
+  promptEntry(crewConsultationSpec, {
+    module: "convex/ai/prompts/crewConsultation.ts",
+    sampleInputs: {
+      specialist: "Iris", role: "brand", question: "Does the welcome email match the kit?",
+      evidence: '{"voice":"calm and practical"}', colleague: "Elle", colleagueAnswer: "The welcome email uses short sentences.",
+    },
+  }),
   promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(wrenPlanTurnSpec, { module: "convex/ai/prompts/wrenPlanTurn.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(blueprintPersonaliseSpec, {
-    module: "convex/ai/prompts/blueprintPersonalise.v2.ts",
+    module: "convex/ai/prompts/blueprintPersonalise.v3.ts",
     sampleInputs: {
       seed: null,
       idea: JSON.stringify({ slug: "hydrotrail", title: "HydroTrail", description: "A hydration planner for solo hikers." }),
@@ -62,7 +72,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(blueprintOwnIdeaSpec, {
-    module: "convex/ai/prompts/blueprintOwnIdea.v2.ts",
+    module: "convex/ai/prompts/blueprintOwnIdea.v3.ts",
     sampleInputs: {
       ownIdea: "A packing checklist that adapts to the weather forecast for weekend campers.",
       outline: null,
@@ -70,7 +80,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(brandKitSpec, {
-    module: "convex/ai/prompts/brandKit.v2.ts",
+    module: "convex/ai/prompts/brandKit.v3.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       answers: CREW_SAMPLE_ANSWERS,
@@ -79,7 +89,7 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     },
   }),
   promptEntry(emailSequenceSpec, {
-    module: "convex/ai/prompts/emailSequence.v2.ts",
+    module: "convex/ai/prompts/emailSequence.v3.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
@@ -87,8 +97,16 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       ideaAngles: JSON.stringify({ emailAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one." }], buyerWords: [] }),
     },
   }),
+  promptEntry(ideaImproveSpec, {
+    module: "convex/ai/prompts/ideaImprove.v1.ts",
+    sampleInputs: {
+      mode: "whole",
+      idea: "basically an app for people who go camping on weekends so they dont forget stuff",
+      selected: null,
+    },
+  }),
   promptEntry(ideaSeedSpec, {
-    module: "convex/ai/prompts/ideaSeed.v1.ts",
+    module: "convex/ai/prompts/ideaSeed.v3.ts",
     sampleInputs: {
       source: JSON.stringify({
         slug: "hydrotrail",
@@ -101,8 +119,16 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       }),
     },
   }),
+  promptEntry(socialPackV4, {
+    module: "convex/ai/prompts/socialPack.v4.ts",
+    sampleInputs: {
+      blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
+      brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
+      ideaAngles: JSON.stringify({ socialAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one.", channel: "Instagram" }], buyerWords: [] }),
+    },
+  }),
   promptEntry(socialPackSpec, {
-    module: "convex/ai/prompts/socialPack.v2.ts",
+    module: "convex/ai/prompts/socialPack.v5.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),

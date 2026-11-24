@@ -50,13 +50,29 @@ export const COMMERCIAL_MODEL_OPTIONS = {
   one_time: { label: "One-time price", hint: "People pay once." },
 } as const satisfies Record<CommercialModel, { label: string; hint: string }>;
 
+/**
+ * Step 5 options. Each hint says what the crew builds for that goal, in the
+ * roster's terms (`landingReason` / `emailReason` in `convex/crew/roles.ts`).
+ */
 export const GOAL_KIND_OPTIONS = {
-  waitlist: { label: "First 50 waitlist signups", hint: "Right for a free app." },
-  first_sale: { label: "First sale", hint: "One paying customer." },
-  mrr_500: { label: "$500 a month", hint: "A real side income." },
-  replace_income: { label: "Replace my income", hint: "The long game." },
-  just_testing: { label: "Just testing the idea", hint: "See if anyone cares." },
+  waitlist: { label: "First 50 signups", hint: "A site and a waitlist. People ask to hear when it's live." },
+  first_sale: { label: "First sale", hint: "A sales page that takes a real order or pre-order." },
+  mrr_500: { label: "$500 a month", hint: "A sales page and launch emails, aimed at $500 a month." },
+  replace_income: { label: "Replace my income", hint: "A sales page and launch emails, with no set number yet." },
+  just_testing: { label: "Test the idea", hint: "A site and a short welcome email. No target." },
 } as const satisfies Record<GoalKind, { label: string; hint: string }>;
+
+/**
+ * The first wins Step 5 offers (owner decision 1A, 2026-11-24). `mrr_500` and
+ * `replace_income` stay valid answers: the step still shows one when it is
+ * the suggested or saved answer, so a seed or an earlier answer never vanishes.
+ */
+export const FIRST_WIN_GOALS = ["waitlist", "first_sale", "just_testing"] as const satisfies readonly GoalKind[];
+
+/** The goals Step 5 lists: the first wins, plus a suggested or saved goal outside them, in `kinds` order. */
+export function goalKindsToOffer(kinds: readonly GoalKind[], ...keep: readonly (GoalKind | undefined)[]): GoalKind[] {
+  return kinds.filter((kind) => (FIRST_WIN_GOALS as readonly GoalKind[]).includes(kind) || keep.includes(kind));
+}
 
 export const GOAL_TIMEFRAME_OPTIONS = {
   weekend: { label: "This weekend" },
@@ -135,6 +151,34 @@ function rawSummary(step: WizardStep, answers: WizardAnswersProgress): string | 
 
 export type FounderSignalAction = "kept" | "changed" | "skipped" | "rewrote";
 
+/** How a blueprint approved after rework notes is recorded, so the crew still reads the notes. */
+export const BLUEPRINT_NOTES_PREFIX = "Approved blueprint with notes: ";
+
+/** The `after` summary (and signal note) for a blueprint approved with the founder's notes. */
+export function blueprintNotesSummary(notes: string): string {
+  return truncateText(`${BLUEPRINT_NOTES_PREFIX}${notes}`, WIZARD_LIMITS.signalNote);
+}
+
+/**
+ * The founder's rework notes this session still carries: the saved rework
+ * decision's notes, else the notes an earlier "Looks good" already folded into
+ * the blueprint signal (so Back and "Looks good" again keeps them). Null when
+ * there are none.
+ */
+export function carriedBlueprintNotes(answers: Pick<WizardAnswersProgress, "blueprintDecision" | "signals">): string | null {
+  const decision = answers.blueprintDecision;
+  if (decision?.decision === "rework") {
+    const notes = decision.notes?.trim();
+    return notes ? notes : null;
+  }
+  const note = answers.signals?.blueprint?.note;
+  if (note?.startsWith(BLUEPRINT_NOTES_PREFIX)) {
+    const notes = note.slice(BLUEPRINT_NOTES_PREFIX.length).trim();
+    return notes ? notes : null;
+  }
+  return null;
+}
+
 /**
  * The `answers.signals` note for one decision, in the canvas's words
  * ("Approved suggested platform: …", "Changed goal: A → B"). Single-line and
@@ -146,6 +190,8 @@ export function signalNote(
   before: string | undefined,
   after: string | undefined,
 ): string {
+  // A blueprint approved with notes reads as itself: the notes are the point, not "Looks good → …".
+  if (step === "blueprint" && after?.startsWith(BLUEPRINT_NOTES_PREFIX)) return truncateText(after, WIZARD_LIMITS.signalNote);
   const noun = STEP_NOUNS[step];
   const chosen = after ?? "no answer";
   const note =

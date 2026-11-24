@@ -16,6 +16,9 @@ import { BrandBook } from "./BrandBook";
 import { BrandBoard } from "./BrandBoard";
 import type { BrandKitView, Kit } from "./brandTypes";
 
+/** The brand kit review, tagged with its launch piece for the funnel events (WP95). */
+const BRAND_REVIEW = { ...BRAND_ARTIFACT, piece: "brand_kit" } as const;
+
 /**
  * L1 Brand kit page body: the review first (the decision), then the brand board, then the Brand Book.
  *
@@ -52,7 +55,7 @@ function BrandKitReady({ projectId, view, fonts }: { projectId: Id<"projects">; 
       {round === null ? null : <p className="text-[13px] text-home-ink-3">{round}</p>}
       {view.card === null ? null : (
         <div className="max-w-[560px]">
-          <LiveArtifactReview projectId={projectId} card={view.card} artifact={BRAND_ARTIFACT} headingLevel={2} />
+          <LiveArtifactReview projectId={projectId} card={view.card} artifact={BRAND_REVIEW} headingLevel={2} />
         </div>
       )}
       <KitScope kit={view.kit} fonts={fonts}>

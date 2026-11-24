@@ -10,6 +10,7 @@ import { z } from "zod";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { outputJsonSchema } from "@/convex/ai/gateway";
+import { wireOutputSchema } from "@/convex/ai/providers/wireSchema";
 import { createAnthropicAdapter, type AnthropicMessagesClient } from "@/convex/ai/providers/anthropic";
 import { createFixtureAnthropicClient } from "@/convex/ai/providers/fixtures";
 import {
@@ -26,7 +27,12 @@ import {
   parseModelOutput,
 } from "@/lib/workspace/contracts/artifacts";
 import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
-import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v1";
+import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
+import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
+import { crewConsultationSpec } from "@/convex/ai/prompts/crewConsultation";
+import { ideaImproveSpec } from "@/convex/ai/prompts/ideaImprove.v1";
+import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v5";
+import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v3";
 import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
 import { wrenPlanTurnSpec } from "@/convex/ai/prompts/wrenPlanTurn";
 
@@ -49,7 +55,8 @@ function params(schema: z.ZodType, system = "Any system block"): MessageParams {
     max_tokens: 4_096,
     system: [{ type: "text", text: system }],
     messages: [{ role: "user", content: "Draft it." }],
-    output_config: { format: { type: "json_schema", schema: outputJsonSchema(schema) } },
+    // What the adapter sends: the wire form of the schema (`wireOutputSchema`).
+    output_config: { format: { type: "json_schema", schema: wireOutputSchema(outputJsonSchema(schema)) } },
   };
 }
 
@@ -84,9 +91,18 @@ describe("fixture-output registry", () => {
     // Every model-facing artifact schema has a fixture.
     const keys = new Set(ARTIFACT_FIXTURES.map((fixture) => fixture.key));
     for (const kind of Object.keys(artifactOutputSchemas)) expect(keys.has(kind), kind).toBe(true);
-    // By ref: Wren's two chat prompts (L1 beta) and the per-idea seed (WP90-S3), nothing else.
+    // Prompts with a fixture selected by exact reference instead of by artifact schema.
     expect(Object.keys(FIXTURE_OUTPUTS_BY_REF).sort()).toEqual(
-      [promptRef(wrenChatSpec), promptRef(wrenPlanTurnSpec), promptRef(ideaSeedSpec)].sort(),
+      [
+        promptRef(wrenChatSpec),
+        promptRef(wrenPlanTurnSpec),
+        promptRef(ideaSeedSpec),
+        promptRef(socialPackSpec),
+        promptRef(crewConsultationSpec),
+        promptRef(blueprintPersonaliseSpec),
+        promptRef(blueprintOwnIdeaSpec),
+        promptRef(ideaImproveSpec),
+      ].sort(),
     );
   });
 
@@ -200,6 +216,8 @@ describe("fixture-output registry", () => {
     };
     expect(importersOf("fixtureOutputs")).toEqual(["convex/ai/providers/fixtures.ts"]);
     expect(importersOf("wrenFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
+    expect(importersOf("blueprintFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
     expect(importersOf("seedFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
+    expect(importersOf("ideaImproveFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
   });
 });

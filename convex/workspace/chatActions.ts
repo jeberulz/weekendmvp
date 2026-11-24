@@ -14,7 +14,7 @@ import {
   wrenMemoryOverlongMarker,
 } from "../../lib/workspace/contracts/wrenMemory";
 import { dropLoneSurrogates } from "../../lib/workspace/plainText";
-import { WREN_PROMPT_REFS, type finishOutcomeValidator } from "./chat";
+import { WREN_PROMPT_REFS, type loadedTurnValidator, type finishOutcomeValidator } from "./chat";
 
 /**
  * WP77-S3. One Wren turn: load it, call the metered gateway, end the row.
@@ -165,6 +165,7 @@ export async function runWrenTurnWith(
   ctx: TurnCtx,
   args: RunWrenTurnArgs,
   runPrompt: (prompt: RunPromptArgs) => Promise<GatewayRunResult>,
+  runConsultation?: (turn: RunWrenTurnArgs) => Promise<null>,
 ): Promise<null> {
   const finishOnce = async (outcome: FinishOutcome, attempt: number) => {
     await ctx.runMutation(internal.workspace.chat.finishWrenTurn, {
@@ -177,7 +178,7 @@ export async function runWrenTurnWith(
    * bad note or card; only if that throws too, write `failed`.
    */
   const finish = async (outcome: FinishOutcome, attempt: number = args.attempt) => {
-    if (outcome.status === "failed") {
+    if (outcome.status !== "done") {
       await finishOnce(outcome, attempt);
       return;
     }
@@ -201,14 +202,41 @@ export async function runWrenTurnWith(
       status: "failed", cause: "failed", ...(outcome.usageId === undefined ? {} : { usageId: outcome.usageId }),
     }, attempt);
   };
-  const turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
-    ownerId: args.ownerId,
-    projectId: args.projectId,
-    founderMessageId: args.founderMessageId,
-    wrenMessageId: args.wrenMessageId,
-    now: Date.now(),
-  });
-  if (turn.status !== "ready") return null;
+  let turn: Infer<typeof loadedTurnValidator>;
+  try {
+    turn = await ctx.runQuery(internal.workspace.chat.loadWrenTurn, {
+      ownerId: args.ownerId, projectId: args.projectId,
+      founderMessageId: args.founderMessageId, wrenMessageId: args.wrenMessageId, now: Date.now(),
+    });
+  } catch (error) {
+    await finish({ status: "failed", cause: "failed" });
+    throw error;
+  }
+  if (turn.status === "skip") return null;
+  if (turn.status === "consultation") {
+    if (runConsultation === undefined) {
+      await finish({ status: "failed", cause: "failed" });
+      return null;
+    }
+    try {
+      return await runConsultation(args);
+    } catch {
+      // A failed claim still needs a terminal reply. Once claimed, only
+      // the consultation worker can commit its outcome.
+      await finish({ status: "failed", cause: "failed" });
+      return null;
+    }
+  }
+  if (turn.status === "assignment" || turn.status === "answer") {
+    try {
+      await finishOnce(turn.status === "assignment"
+        ? { status: "assignment", founderMessageId: args.founderMessageId }
+        : { status: "done", body: turn.body, ...(turn.route ? { route: turn.route } : {}) }, args.attempt);
+    } catch {
+      await finish({ status: "failed", cause: "failed" });
+    }
+    return null;
+  }
 
   let result: GatewayRunResult;
   try {
@@ -258,5 +286,8 @@ export const runWrenTurn = internalAction({
   args: runWrenTurnArgs,
   returns: v.null(),
   handler: async (ctx, args): Promise<null> =>
-    await runWrenTurnWith(ctx, args, async (prompt) => await ctx.runAction(internal.ai.gatewayActions.runPrompt, prompt)),
+    await runWrenTurnWith(ctx, args,
+      (prompt) => ctx.runAction(internal.ai.gatewayActions.runPrompt, prompt),
+      (turn) => ctx.runAction(internal.workspace.crewConsultationActions.run, turn),
+    ),
 });

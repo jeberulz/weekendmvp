@@ -74,8 +74,10 @@ export function ScreenHead({
   );
 }
 
+// Selected is a crisp ink border + inset ring on the card's own fill (no muddy
+// sunk wash); the suggested card carries a whisper ember hairline when unchosen.
 const CARD_BASE =
-  "group flex w-full cursor-pointer items-center gap-3.5 border border-home-rule bg-home-card text-home-ink has-[:checked]:border-home-ink has-[:checked]:bg-home-sunk has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-home-orange-ink";
+  "group flex w-full cursor-pointer items-center gap-3.5 border border-home-rule bg-home-card text-home-ink transition-colors motion-reduce:transition-none has-[:checked]:border-home-ink has-[:checked]:ring-1 has-[:checked]:ring-inset has-[:checked]:ring-home-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-home-orange-ink";
 
 /**
  * A radio (or checkbox) card. The native input is visually hidden but real,
@@ -101,7 +103,7 @@ export function OptionCard({
   label: string;
   hint?: string;
   suggested?: boolean;
-  /** `pill` is the compact radio used for the goal's deadline. */
+  /** `pill` is the compact radio used for the goal's deadline (no chip, only the hairline). */
   variant?: "card" | "pill";
 }) {
   const indicator =
@@ -124,9 +126,10 @@ export function OptionCard({
     <label
       className={cn(
         CARD_BASE,
+        suggested && "border-home-orange-ink/30",
         variant === "pill"
           ? "min-h-11 w-auto rounded-full px-4 text-sm"
-          : "min-h-16 rounded-[10px] px-4 py-3.5 text-[15px]",
+          : "min-h-16 rounded-xl px-4 py-3.5 text-[15px]",
       )}
     >
       <input
@@ -142,7 +145,9 @@ export function OptionCard({
         <span className="font-medium">{label}</span>
         {hint ? <span className="text-sm text-home-ink-2">{hint}</span> : null}
       </span>
-      {suggested ? <SuggestedChip /> : null}
+      {/* One chip per view: a suggested pill keeps only the ember hairline. */}
+      {suggested && variant === "card" ? <SuggestedChip /> : null}
+      {suggested && variant === "pill" ? <span className="sr-only">(suggested)</span> : null}
     </label>
   );
 }

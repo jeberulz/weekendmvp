@@ -13,7 +13,7 @@ import { internal } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import schema from "@/convex/schema";
 import { createAnthropicBatchAdapter, type AnthropicBatchAdapter } from "@/convex/ai/providers/anthropic";
-import { ProviderError } from "@/convex/ai/providers/types";
+import { PROVIDER_ERROR_DETAIL_MAX, ProviderError } from "@/convex/ai/providers/types";
 import { SEED_PROMPT_REF, precomputeAttemptKey, seedRequestFor } from "@/convex/crew/seedRequest";
 import { pollSeedRun, submitSeedRun, type SeedBatchCtx } from "@/convex/crew/seedsBatch";
 import { hydrotrailSeedDraft } from "@/lib/workspace/contracts/fixtures/seeds";
@@ -167,6 +167,17 @@ describe("WP90-S3 seed precompute", () => {
     expect(await usageRows(t)).toHaveLength(1);
   });
 
+  test("a prompted reply wrapped in one code fence is stored like a bare one", async () => {
+    const t = await setup();
+    const runId = await preparedRun(t, [items[0]!]);
+    const fenced = `\`\`\`json\n${JSON.stringify(hydrotrailSeedDraft)}\n\`\`\``;
+    const adapter = createAnthropicBatchAdapter({ env: fixtureEnv, fixtureResponder: () => ({ text: fenced }) });
+    const { ctx } = actionCtx(t);
+    await submitSeedRun(ctx, { runId }, { adapter });
+    expect(await pollSeedRun(ctx, { runId }, { adapter })).toMatchObject({ written: 1, auditFailed: 0, failed: 0 });
+    expect(await t.run(async (db) => await db.db.query("idea_crew_seeds").take(5))).toHaveLength(1);
+  });
+
   test("a reply that fails the audit is charged but never stored", async () => {
     const t = await setup();
     const runId = await preparedRun(t, [items[0]!]);
@@ -212,6 +223,29 @@ describe("WP90-S3 seed precompute", () => {
       expect(row).toMatchObject({ status: "failed", billed: "none" });
     }
     expect((await t2.query(internal.crew.seeds.runSummary, { runId: run2 })).status).toBe("failed");
+  });
+
+  test("a failed item keeps the provider's message, and the run summary returns it", async () => {
+    const t = await setup();
+    const runId = await preparedRun(t, [items[0]!]);
+    const fixture = createAnthropicBatchAdapter({ env: fixtureEnv });
+    const detail = "output_config.format.schema: too complex";
+    const rejecting: AnthropicBatchAdapter = {
+      ...fixture,
+      results: async (_batchId, sent) => ({
+        outcomes: [...sent.keys()].map((customId) => ({
+          customId,
+          ok: false as const,
+          error: new ProviderError("anthropic", "bad_request", "the batch request was errored", { billed: "none", status: 400, detail }),
+        })),
+        unknownCustomIds: [],
+      }),
+    };
+    const { ctx } = actionCtx(t);
+    await submitSeedRun(ctx, { runId }, { adapter: rejecting });
+    expect(await pollSeedRun(ctx, { runId }, { adapter: rejecting })).toMatchObject({ failed: 1 });
+    const summary = await t.query(internal.crew.seeds.runSummary, { runId });
+    expect(summary.failures).toEqual([{ ideaSlug: hydrotrail.slug, status: "failed", errorKind: "bad_request", errorDetail: detail }]);
   });
 
   test("a passing provider error while polling polls again, and the results are still collected", async () => {
@@ -303,7 +337,7 @@ describe("WP90-S3 batch adapter, live path with a scripted client", () => {
     };
     const lines = [
       { custom_id: "a", result: { type: "succeeded", message } },
-      { custom_id: "b", result: { type: "errored", error: { type: "error", error: { type: "invalid_request_error", message: "x" } } } },
+      { custom_id: "b", result: { type: "errored", error: { type: "error", error: { type: "invalid_request_error", message: "output_config.format.schema: too complex" } } } },
       { custom_id: "c", result: { type: "expired" } },
       { custom_id: "zzz", result: { type: "canceled" } },
     ];
@@ -350,7 +384,41 @@ describe("WP90-S3 batch adapter, live path with a scripted client", () => {
     }
     expect(b?.ok === false && b.error.billed).toBe("none");
     expect(b?.ok === false && b.error.kind).toBe("bad_request");
+    expect(b?.ok === false && b.error.detail).toBe("output_config.format.schema: too complex");
     expect(c?.ok === false && c.error.billed).toBe("none");
+    expect(c?.ok === false && c.error.detail).toBeUndefined();
+  });
+
+  test("an errored line's message is kept on one line, capped, and dropped when it is not text", async () => {
+    const request = seedRequestFor(hydrotrail).request;
+    const errorLine = (id: string, message: unknown) => ({
+      custom_id: id,
+      result: { type: "errored", error: { type: "error", error: { type: "invalid_request_error", message } } },
+    });
+    const lines = [errorLine("long", `first line\n\tsecond ${"y".repeat(600)}`), errorLine("none", { nested: true }), errorLine("blank", "   ")];
+    const adapter = createAnthropicBatchAdapter({
+      env: liveEnv,
+      clientFactory: () => ({
+        messages: {
+          batches: {
+            create: async () => ({}) as never,
+            retrieve: async () => ({}) as never,
+            results: async () =>
+              (async function* () {
+                for (const line of lines) yield line as never;
+              })(),
+          },
+        },
+      }),
+    });
+    const items = new Map([["long", request], ["none", request], ["blank", request]]);
+    const [long, none, blank] = (await adapter.results("msgbatch_1", items, { timeoutMs: 5_000 })).outcomes;
+    const detail = long?.ok === false ? long.error.detail : undefined;
+    expect(detail?.startsWith("first line second yyy")).toBe(true);
+    expect(detail?.length).toBe(PROVIDER_ERROR_DETAIL_MAX);
+    expect(detail?.endsWith("…")).toBe(true);
+    expect(none?.ok === false && none.error.detail).toBeUndefined();
+    expect(blank?.ok === false && blank.error.detail).toBeUndefined();
   });
 
   test("refuses bad custom ids before anything is sent", async () => {

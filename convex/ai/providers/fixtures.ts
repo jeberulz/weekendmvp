@@ -8,8 +8,9 @@
  * gateway (S2) and the evals (S6) can run end to end offline.
  *
  * Determinism: the same request always yields the same reply, id and usage.
- * - Claude: with `output_config.format`, the reply is the smallest instance
- *   of the schema (`sampleFromJsonSchema`); otherwise a fixed sentence.
+ * - Claude: with `output_config.format` (or a prompted schema block,
+ *   `requestSchemaOf`), the reply is the smallest instance of the schema
+ *   (`sampleFromJsonSchema`); otherwise a fixed sentence.
  *   Usage is one token per four UTF-8 bytes, rounded up: the system prefix up
  *   to the last cache breakpoint is a cache write, the rest is input.
  * - Images: a 1×1 transparent PNG, as `b64_json`.
@@ -24,7 +25,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 import type { AnthropicMessagesClient, AnthropicRequestOptions } from "./anthropic";
-import { fixtureOutputFor } from "./fixtureOutputs";
+import { fixtureOutputFor, requestSchemaOf } from "./fixtureOutputs";
 import { isRecord, OPENAI_IMAGES_ENDPOINT, RECRAFT_ENDPOINT } from "./transport";
 import type { Fetcher, TextStopReason } from "./types";
 
@@ -166,14 +167,14 @@ function buildMessage(
   params: Anthropic.MessageCreateParamsNonStreaming,
   reply: AnthropicFixtureReply,
 ): Anthropic.Message {
-  const format = params.output_config?.format;
+  const schema = requestSchemaOf(params);
   const refusal = reply.refusal;
   const text =
     refusal !== undefined
       ? ""
       : reply.json !== undefined
         ? JSON.stringify(reply.json)
-        : reply.text ?? (format ? JSON.stringify(sampleFromJsonSchema(format.schema)) : FIXTURE_TEXT_REPLY);
+        : reply.text ?? (schema !== undefined ? JSON.stringify(sampleFromJsonSchema(schema)) : FIXTURE_TEXT_REPLY);
   const usage = reply.usage ?? fixtureUsageFor(params, text);
   const stopReason: TextStopReason = refusal !== undefined ? "refusal" : (reply.stopReason ?? "end_turn");
   const content: Anthropic.ContentBlock[] =

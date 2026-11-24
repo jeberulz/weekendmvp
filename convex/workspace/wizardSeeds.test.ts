@@ -118,7 +118,10 @@ describe("WP90-S4 wizard reads the seed", () => {
     expect(view.crew?.hired.map((entry) => entry.roleKey)).toContain("merch");
     expect(view.crew?.hired.find((entry) => entry.roleKey === "merch")?.reason).toBe("Sells goods in store");
     expect(view.crew?.skipped.map((entry) => entry.roleKey)).toContain("outbound");
-    expect(view.crew?.hired.find((entry) => entry.roleKey === "lead")?.employeeName).toBe("Wren");
+    // Roster per idea S2 (WP91): the seeded path also suggests the session's own lead names, first one preselected.
+    expect(view.suggestedPartnerNames).toHaveLength(3);
+    expect(view.defaults.partnerName?.name).toBe(view.suggestedPartnerNames[0]);
+    expect(view.crew?.hired.find((entry) => entry.roleKey === "lead")?.employeeName).toBe(view.suggestedPartnerNames[0]);
   });
 
   test("the crew preview follows the founder's answers (a paid push hires Ads)", async () => {

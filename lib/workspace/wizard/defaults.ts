@@ -23,9 +23,11 @@ import {
   type IdeaValidationFacts,
 } from "../contracts/seeds";
 import {
-  DEFAULT_PARTNER_NAME,
+  PARTNER_NAME_PRESETS,
   WIZARD_LIMITS,
+  leadNameSuggestions,
   nameDedupeKey,
+  partnerNameAnswer,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
   type WizardStep,
@@ -71,6 +73,8 @@ export type WizardSeed = {
   readonly defaults: WizardAnswersProgress;
   /** Names the name step offers as one-click choices (chosen + alternatives). */
   readonly suggestedNames: readonly string[];
+  /** Roster per idea S2: lead names the partner-name step offers; the first is the default. */
+  readonly suggestedPartnerNames: readonly string[];
   /** Reasons for the suggestions; empty for fixture seeds, which have none to give. */
   readonly hints: WizardStepHints;
   /** The idea's roster profile, for the crew preview; null when no blueprint states one. */
@@ -86,6 +90,12 @@ export type WizardSeedInput = {
    * until then, which gives the fixture outline.
    */
   readonly ownIdeaDraft?: unknown;
+  /**
+   * Roster per idea S2: what the lead-name suggestions are picked from (the
+   * wizard session id), so each session gets its own stable names. Without
+   * one the step offers the three presets.
+   */
+  readonly leadSeedKey?: string;
   /** The library idea's newest stored WP90 seed, if any (`seedFromColumns` output). */
   readonly storedSeed?: IdeaCrewSeed | null;
   /**
@@ -215,7 +225,11 @@ export function nameFromOwnIdea(text: string): string {
   return shortBusinessName(trimmed, 3);
 }
 
-function baseDefaults(idea: WizardIdea, name: { chosen: string; alternatives: string[] }): WizardAnswersProgress {
+function baseDefaults(
+  idea: WizardIdea,
+  name: { chosen: string; alternatives: string[] },
+  leadName: string,
+): WizardAnswersProgress {
   return wizardAnswersProgressSchema.parse({
     idea,
     blueprintDecision: { decision: "looks_good" },
@@ -224,7 +238,7 @@ function baseDefaults(idea: WizardIdea, name: { chosen: string; alternatives: st
     goal: { kind: "waitlist", timeframe: "weekend" },
     name,
     partnerPersonality: "strategist",
-    partnerName: { kind: "preset", name: DEFAULT_PARTNER_NAME },
+    partnerName: partnerNameAnswer(leadName),
   });
 }
 
@@ -233,17 +247,25 @@ function seed(
   idea: WizardIdea,
   blueprint: WizardBlueprintPreview,
   name: { chosen: string; alternatives: string[] },
+  leadSeedKey: string | undefined,
   profile: RosterProfile | null = null,
 ): WizardSeed {
-  const defaults = baseDefaults(idea, name);
+  const leadNames = leadNamesFor(leadSeedKey);
+  const defaults = baseDefaults(idea, name, leadNames[0] ?? PARTNER_NAME_PRESETS[0]);
   return Object.freeze({
     source,
     blueprint: Object.freeze(blueprint),
     defaults,
     suggestedNames: Object.freeze([name.chosen, ...name.alternatives]),
+    suggestedPartnerNames: Object.freeze(leadNames),
     hints: Object.freeze({}),
     profile,
   });
+}
+
+/** Roster per idea S2: the lead names a session offers (stable per session), or the presets without a key. */
+function leadNamesFor(leadSeedKey: string | undefined): string[] {
+  return leadSeedKey === undefined ? [...PARTNER_NAME_PRESETS] : leadNameSuggestions(leadSeedKey);
 }
 
 /** Why the name step offers the seed's names. */
@@ -271,8 +293,14 @@ function seedNameAnswer(names: readonly string[]): { chosen: string; alternative
  * (a wrong idea, or defaults the progress schema refuses): the caller then
  * falls back to the fixtures, so a bad row never breaks the wizard.
  */
-function seedFromStored(idea: Extract<WizardIdea, { source: "library" }>, stored: IdeaCrewSeed, validated: boolean): WizardSeed | null {
+function seedFromStored(
+  idea: Extract<WizardIdea, { source: "library" }>,
+  stored: IdeaCrewSeed,
+  validated: boolean,
+  leadSeedKey: string | undefined,
+): WizardSeed | null {
   const { blueprint, wizardHints: hints } = stored;
+  const leadNames = leadNamesFor(leadSeedKey);
   if (blueprint.ideaSlug !== idea.ideaSlug) return null;
   const name = seedNameAnswer(hints.names);
   if (name === null) return null;
@@ -285,7 +313,7 @@ function seedFromStored(idea: Extract<WizardIdea, { source: "library" }>, stored
     goal: { kind: hints.goal.kind, timeframe: hints.goal.timeframe },
     name,
     partnerPersonality: "strategist",
-    partnerName: { kind: "preset", name: DEFAULT_PARTNER_NAME },
+    partnerName: partnerNameAnswer(leadNames[0] ?? PARTNER_NAME_PRESETS[0]),
   });
   if (!parsed.success) return null;
   return Object.freeze({
@@ -302,6 +330,7 @@ function seedFromStored(idea: Extract<WizardIdea, { source: "library" }>, stored
     }),
     defaults: parsed.data,
     suggestedNames: Object.freeze([name.chosen, ...name.alternatives]),
+    suggestedPartnerNames: Object.freeze(leadNames),
     hints: Object.freeze({
       platform: { reason: platform.reason, confident: hints.platform.confidence === "high" },
       commercial_model: { reason: hints.commercialModel.reason, confident: hints.commercialModel.confidence === "high" },
@@ -321,7 +350,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
   // An idea row with no facts (tests, older callers) keeps the pre-WP90 behaviour: validated.
   const libraryValidated = ideaIsValidated(input.ideaFacts ?? {});
   if (idea.source === "library" && input.storedSeed) {
-    const fromStored = seedFromStored(idea, input.storedSeed, input.storedSeed.validated && libraryValidated);
+    const fromStored = seedFromStored(idea, input.storedSeed, input.storedSeed.validated && libraryValidated, input.leadSeedKey);
     if (fromStored !== null) return fromStored;
   }
   if (idea.source === "own_idea") {
@@ -340,6 +369,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         removedClaims: preview.removedClaims,
       },
       { chosen: nameFromOwnIdea(idea.text), alternatives: [] },
+      input.leadSeedKey,
     );
   }
   if (idea.ideaSlug === HYDROTRAIL_SLUG) {
@@ -357,6 +387,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
         removedClaims: 0,
       },
       { chosen: "HydroTrail", alternatives: ["SipLine", "Trailwater"] },
+      input.leadSeedKey,
       hydrotrailBlueprint.profile,
     );
   }
@@ -375,6 +406,7 @@ export function wizardSeedFor(input: WizardSeedInput): WizardSeed {
       removedClaims: 0,
     },
     { chosen: nameFromTitle(title), alternatives: [] },
+    input.leadSeedKey,
   );
 }
 
@@ -384,7 +416,8 @@ export type WizardStepKey = Exclude<keyof WizardAnswersProgress, "signals">;
 /**
  * True when the step's answer is the founder's own words rather than one of
  * the offered choices: an own idea, rework notes, a custom platform, a name
- * that is not one of the suggestions, or a custom partner name.
+ * that is not one of the suggestions, or a partner name that is not one of
+ * the suggested lead names.
  */
 export function isRewrittenAnswer(step: WizardStep, answers: WizardAnswersProgress, s: WizardSeed): boolean {
   switch (step) {
@@ -403,8 +436,11 @@ export function isRewrittenAnswer(step: WizardStep, answers: WizardAnswersProgre
       if (chosen === undefined) return false;
       return !s.suggestedNames.some((name) => nameDedupeKey(name) === nameDedupeKey(chosen));
     }
-    case "partner_name":
-      return answers.partnerName?.kind === "custom";
+    case "partner_name": {
+      const lead = answers.partnerName?.name;
+      if (lead === undefined) return false;
+      return !s.suggestedPartnerNames.some((name) => nameDedupeKey(name) === nameDedupeKey(lead));
+    }
     case "commercial_model":
     case "goal":
     case "partner_personality":

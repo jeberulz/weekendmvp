@@ -5,28 +5,36 @@ import { ConvexError } from "convex/values";
 import Link from "next/link";
 import { Logo } from "@/components/primitives/Logo";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
+import { ErrorReporterMount } from "@/components/workspace/feedback/ErrorReporterMount";
+import { FeedbackControl } from "@/components/workspace/feedback/FeedbackControl";
+import { ReportingBoundary } from "@/components/workspace/feedback/ReportingBoundary";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import { LoadingState } from "@/components/workspace/kit";
-import { BTN_PRIMARY, FOCUS } from "@/components/workspace/kit/styles";
+import { FOCUS } from "@/components/workspace/kit/styles";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
-  WIZARD_LIMITS,
   WIZARD_STEPS,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
+import { trackWorkspaceEvent } from "@/lib/track";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
+import { OwnIdeaForm } from "./OwnIdeaForm";
+import { ideaImproveAction } from "./IdeaImprove";
+import { useIdeaImproveApi } from "./useIdeaImprove";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
-import { Field, ScreenHead } from "./wizard-ui";
+import { ScreenHead } from "./wizard-ui";
 
 export type WizardFlowProps = {
   /** A library idea from `/start/[ideaSlug]`, or null for `/start/own`. */
@@ -34,6 +42,11 @@ export type WizardFlowProps = {
   readonly ideaTitle: string | null;
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
+  /**
+   * WP99: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
+   * (`own-idea-examples.server.ts`). Omitted, the static fallback lines show.
+   */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
 };
 
 const ERROR_COPY: Record<string, string> = {
@@ -42,6 +55,8 @@ const ERROR_COPY: Record<string, string> = {
   INVALID_STEP: "This step has fixed choices. Pick one of them instead.",
   RESOURCE_NOT_FOUND: "We could not find this build. Start again from the idea page.",
   WORKSPACE_DISABLED: "Building is switched off right now. Try again later.",
+  // checkLimit("wizardStart") when AI is switched off or has no budget: a new start is refused, resuming still works.
+  AI_DISABLED: "Starting new builds is paused right now. Builds you already started still open. Try again later.",
   UNAUTHENTICATED: "Your session ended. Sign in again to carry on.",
   // WP74-S4 "Create my business" refusals.
   SESSION_INCOMPLETE: "Finish every step and accept the blueprint before you create your business.",
@@ -103,13 +118,71 @@ export function wizardErrorMessage(error: unknown): string {
     }
     if (data.code === "BUSINESS_LIMIT_REACHED") {
       const limit = "limit" in error.data && typeof error.data.limit === "number" ? error.data.limit : 1;
-      return limit === 1
-        ? "Your plan includes one business, and you already have it."
-        : `Your plan includes ${limit} businesses, and you have used them all.`;
+      return businessLimitCopy(limit);
     }
     if (typeof data.code === "string" && ERROR_COPY[data.code]) return ERROR_COPY[data.code];
   }
   return "Something went wrong. Try again.";
+}
+
+/** The line for a founder at the business allowance (same words as the "Create my business" refusal). */
+export function businessLimitCopy(limit: number): string {
+  return limit === 1
+    ? "Your plan includes one business, and you already have it."
+    : `Your plan includes ${limit} businesses, and you have used them all.`;
+}
+
+/**
+ * L1 F6: a resumed session whose owner is already at the business allowance
+ * says so as soon as it opens, instead of after all eight steps.
+ */
+function BusinessLimitNotice({
+  limit,
+  existingBusinessHref,
+  headingRef,
+}: {
+  limit: number;
+  existingBusinessHref: string | null;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+}) {
+  const base = useId();
+  return (
+    <section aria-labelledby={`${base}-heading`} className="flex w-full max-w-[672px] flex-col gap-6">
+      <ScreenHead
+        headingId={`${base}-heading`}
+        headingRef={headingRef}
+        lead="Your plan is "
+        italic="full"
+        tail="."
+        sub="Your answers here are saved, but this build can't become a new business on your plan."
+      />
+      <p role="status" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+        {businessLimitCopy(limit)}
+      </p>
+      {existingBusinessHref ? (
+        <p className="text-sm">
+          <Link href={existingBusinessHref} className={cn("font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+            Open your business
+          </Link>
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * WP95-S4. A move forward is a finished step (never Back): `wizard_step_finished` with the step
+ * left behind. Moving from "done" to the business is `business_created`. Enums only.
+ */
+function trackWizardMove(from: string, to: string, source: "library" | "own_idea" | undefined): void {
+  const order = (position: string) =>
+    position === "business" ? WIZARD_STEPS.length + 1 : position === "done" ? WIZARD_STEPS.length : WIZARD_STEPS.indexOf(position as WizardStep);
+  if (order(to) <= order(from)) return;
+  if (to === "business") {
+    trackWorkspaceEvent({ name: "business_created", props: { source: source === "own_idea" ? "own_idea" : "library" } });
+    return;
+  }
+  if (from !== "done") trackWorkspaceEvent({ name: "wizard_step_finished", props: { step: from } });
 }
 
 /** The own-idea route for a session; `?session=` makes a reload resume it. */
@@ -122,70 +195,6 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-function OwnIdeaStart({
-  pending,
-  error,
-  headingRef,
-  onStart,
-}: {
-  pending: boolean;
-  error: string | null;
-  headingRef: RefObject<HTMLHeadingElement | null>;
-  onStart: (text: string) => void;
-}) {
-  const base = useId();
-  const [text, setText] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
-  const errorId = `${base}-error`;
-  const shownError = localError ?? error;
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (pending) return;
-    const trimmed = text.trim();
-    if (trimmed.length === 0) {
-      setLocalError("Write your idea in one sentence first.");
-      return;
-    }
-    setLocalError(null);
-    onStart(trimmed);
-  }
-
-  return (
-    <form onSubmit={submit} noValidate className="flex w-full max-w-[672px] flex-col gap-6">
-      <ScreenHead
-        headingId={`${base}-heading`}
-        headingRef={headingRef}
-        lead="What are we "
-        italic="building"
-        tail="?"
-        sub="One sentence is plenty. I'll suggest everything else."
-      />
-      <div className="rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-        <Field
-          id={`${base}-idea`}
-          label="Your idea in one sentence"
-          hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
-          value={text}
-          onChange={setText}
-          maxLength={WIZARD_LIMITS.ownIdea}
-          errorId={errorId}
-          invalid={shownError !== null}
-          serif
-        />
-      </div>
-      {shownError ? (
-        <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
-          {shownError}
-        </p>
-      ) : null}
-      <button type="submit" className={`${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`} aria-disabled={pending || undefined}>
-        Start building
-      </button>
-    </form>
-  );
-}
-
 /**
  * The eight-step wizard as one client flow. Progress lives on the server
  * (`wizard_sessions`): every decision is a mutation and the view is a live
@@ -196,7 +205,7 @@ function OwnIdeaStart({
  * aside. Each screen owns the page's single h1, and focus moves to it when the
  * step changes.
  */
-export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
+function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = OWN_IDEA_FALLBACK_EXAMPLES }: WizardFlowProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<Id<"wizard_sessions"> | null>(
     initialSessionId === null ? null : (initialSessionId as Id<"wizard_sessions">),
@@ -216,6 +225,8 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const goBack = useMutation(api.workspace.wizard.goBack);
   const createBusiness = useMutation(api.workspace.business.createBusiness);
   const view = useQuery(api.workspace.wizard.getSession, sessionId === null ? "skip" : { sessionId });
+  // WP100: "Improve with AI" in the own-idea field's action slot; undefined while AI is off.
+  const ownIdeaFieldAction = ideaImproveAction(useIdeaImproveApi());
   // The server stores only C-WIZARD-parsed answers; parsing again narrows the
   // storage type (which allows a null paid push) to the contract type.
   const parsed = useMemo<{ answers: WizardAnswersProgress; defaults: WizardAnswersProgress } | null>(
@@ -235,7 +246,11 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     started.current = true;
     startOrResume({ idea })
       .then((id) => setSessionId(id))
-      .catch((caught: unknown) => setError(wizardErrorMessage(caught)));
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught });
+        setRefusal(businessRefusal(caught));
+        setError(wizardErrorMessage(caught));
+      });
   }, [idea, sessionId, startOrResume]);
 
   // A library session rewritten as an own idea now belongs to `/start/own`:
@@ -261,6 +276,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     if (lastPosition.current !== null && lastPosition.current !== position) {
       setAnnouncement(label);
       headingRef.current?.focus();
+      trackWizardMove(lastPosition.current, position, view.answers.idea?.source);
     }
     lastPosition.current = position;
   }, [position, view]);
@@ -273,6 +289,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     try {
       await action();
     } catch (caught) {
+      reportClientError({ source: "action", error: caught });
       setError(wizardErrorMessage(caught));
     } finally {
       setPending(false);
@@ -282,6 +299,10 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   async function startOwn(text: string) {
     await run(async () => {
       const id = await startOrResume({ idea: { source: "own_idea", text } });
+      // The own-idea sentence is step 1, answered before the session exists. Starting the position
+      // tracking at "idea" makes the session's first view a step change: it is announced, focus moves
+      // to its h1, and `trackWizardMove` logs step 1 as finished (once, there).
+      lastPosition.current = "idea";
       setSessionId(id);
       router.replace(ownIdeaUrl(id), { scroll: false });
     });
@@ -292,6 +313,10 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const businessExists = view !== undefined && view.business !== null;
   const ownIdea = view !== undefined ? view.answers.idea?.source === "own_idea" : idea === null;
   const ideaSlug = view?.answers.idea?.source === "library" ? view.answers.idea.ideaSlug : (idea?.ideaSlug ?? null);
+
+  // Where the founder is, for feedback: the step name, or "done" before the business exists. A plain token.
+  const wizardStepStates =
+    view === undefined || view.business !== null ? [] : [{ key: "wizard_step", state: view.completed ? "done" : view.step }];
 
   // "Save & exit" only where the session can be resumed: a library idea resumes by its slug; an own idea
   // resumes by the `?session=` the URL carries once the first sentence started it.
@@ -306,21 +331,48 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
           ? { href: `/ideas/${encodeURIComponent(ideaSlug)}` }
           : null;
 
-  const onStep = view !== undefined && !view.completed && view.business === null;
-  const showAside = parsed !== null && view !== undefined && view.business === null;
+  // `?? null`: a backend from before L1 F6 sends no field, which must read as no limit.
+  const limitNotice = view === undefined || view.business !== null ? null : (view.businessLimit ?? null);
+  const blocked = limitNotice !== null;
+  const onStep = view !== undefined && !view.completed && view.business === null && !blocked;
+  // The Founder-signals rail appears from step 2 — step 1 (idea) has nothing to show yet.
+  const showAside =
+    parsed !== null &&
+    view !== undefined &&
+    view.business === null &&
+    !blocked &&
+    (view.completed || view.stepIndex > 0);
   // WP90-S4: the crew preview shows once the blueprint is reviewed, while the founder answers the rest.
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
   if (sessionId === null && idea === null) {
-    body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
+    body = (
+      <OwnIdeaForm
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        onSubmit={(text) => void startOwn(text)}
+        examples={ownIdeaExamples}
+        renderFieldAction={ownIdeaFieldAction}
+      />
+    );
   } else if (view === undefined || parsed === null) {
     body = (
       <>
         <h1 className="sr-only">{title === null ? "Build your idea" : `Build ${title}`}</h1>
         {error ? (
-          <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
-            {error}
-          </p>
+          <div className="flex flex-col gap-3">
+            <p role="alert" className="rounded-lg border border-home-clay-ink/30 bg-home-clay px-4 py-3 text-sm text-home-clay-ink">
+              {error}
+            </p>
+            {refusal?.existingBusinessHref ? (
+              <p className="text-sm">
+                <Link href={refusal.existingBusinessHref} className={cn("font-medium text-home-ink underline underline-offset-2", FOCUS)}>
+                  Open your business
+                </Link>
+              </p>
+            ) : null}
+          </div>
         ) : (
           <LoadingState label="Opening your build…" />
         )}
@@ -332,6 +384,14 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         answers={parsed.answers}
         business={view.business}
         ideaTitle={view.ideaTitle}
+        headingRef={headingRef}
+      />
+    );
+  } else if (limitNotice !== null) {
+    body = (
+      <BusinessLimitNotice
+        limit={limitNotice.limit}
+        existingBusinessHref={limitNotice.projectId === null ? null : workspacePath(limitNotice.projectId)}
         headingRef={headingRef}
       />
     );
@@ -379,12 +439,15 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         answers={parsed.answers}
         defaults={parsed.defaults}
         suggestedNames={view.suggestedNames}
+        suggestedPartnerNames={view.suggestedPartnerNames}
         blueprint={view.blueprint}
         hints={view.hints}
         pending={pending}
         error={error}
         headingRef={headingRef}
-        showResumeHint={ownIdea && sessionId !== null}
+        ownIdeaExamples={ownIdeaExamples}
+        crew={view.crew}
+        ownIdeaFieldAction={ownIdeaFieldAction}
         onAccept={() => {
           const answer = stepAnswerOf(step, parsed.defaults);
           if (answer !== undefined) void run(() => saveStep({ ...ids, answer }));
@@ -400,14 +463,22 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       <header className="flex items-center justify-between gap-4 px-6 py-3">
         {/* The one brand wordmark (WP67-S6), not linked: leaving mid-wizard goes through "Save & exit". */}
         <Logo className="h-4 w-32 text-home-ink" />
-        {saveExit ? (
-          <Link
-            href={saveExit.href}
-            className={cn("inline-flex min-h-11 items-center text-[13px] text-home-ink-3 underline-offset-2 hover:underline", FOCUS)}
-          >
-            Save &amp; exit
-          </Link>
-        ) : null}
+        <div className="flex items-center gap-3">
+          <FeedbackControl
+            surface="wizard"
+            variant="header"
+            projectId={view?.business?.projectId}
+            extraStates={wizardStepStates}
+          />
+          {saveExit ? (
+            <Link
+              href={saveExit.href}
+              className={cn("inline-flex min-h-11 items-center text-[13px] text-home-ink-3 underline-offset-2 hover:underline", FOCUS)}
+            >
+              Save &amp; exit
+            </Link>
+          ) : null}
+        </div>
       </header>
       <main
         id="main-content"
@@ -441,9 +512,22 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
             )}
           </div>
         ) : (
-          <div className={cn("mt-14", sessionId === null && idea === null ? "flex justify-center" : "")}>{body}</div>
+          <div className="mt-14 flex justify-center">{body}</div>
         )}
       </main>
     </>
+  );
+}
+
+/**
+ * The wizard, with the private error log wired in (WP95-S3): a render error is reported (class and
+ * route only) and handed up, so `app/start/error.tsx` still shows its message.
+ */
+export function WizardFlow(props: WizardFlowProps) {
+  return (
+    <ReportingBoundary>
+      <ErrorReporterMount />
+      <WizardFlowInner {...props} />
+    </ReportingBoundary>
   );
 }

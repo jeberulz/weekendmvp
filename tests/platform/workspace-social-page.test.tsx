@@ -25,7 +25,7 @@ import {
   SOCIAL_PLATFORM_MARKS,
 } from "@/lib/workspace/socialPage";
 
-const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
 const live: { view: unknown; preview: unknown } = { view: undefined, preview: FREE_PREVIEW };
 const decideMock = vi.fn();
 
@@ -173,6 +173,13 @@ describe("states", () => {
     show();
     expect(screen.getByText("Your social posts will appear here once your team writes them.")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
+  });
+  test("failed shows the recorded cause, the current retry prerequisite and a route to Team HQ", () => {
+    live.view = { state: "failed", detail: "The model returned an invalid seven-post draft.",
+      retryBlocker: "Approve the brand kit before retrying." };
+    show();
+    expect(screen.getByText(/The model returned an invalid seven-post draft/).textContent).toContain("Approve the brand kit");
+    expect(screen.getByRole("link", { name: "Review on Team HQ" }).getAttribute("href")).toBe("/dashboard/b/project1/team");
   });
   test("unavailable shows calm copy with no detail", () => {
     live.view = { state: "unavailable" };

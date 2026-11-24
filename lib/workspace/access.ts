@@ -19,6 +19,7 @@ export type WorkspaceProject = {
   readonly subline?: string;
   /** The signed-in owner's display name, name or email. */
   readonly viewerName?: string;
+  readonly unlimited?: boolean;
 };
 
 /**

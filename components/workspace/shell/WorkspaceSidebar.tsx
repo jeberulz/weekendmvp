@@ -20,6 +20,7 @@ const MAIN_ID = "workspace-main";
  * the card shows no balance: credits are not metered yet.
  */
 export function billingLinkLabel(credits: CreditsSummary): string {
+  if (credits.unlimited) return "Credits Owner Unlimited";
   // L1: credits are not metered yet, so no balance is shown (it would be made up).
   if (workspaceRoute("billing").comingSoon) return `Credits and billing, ${COMING_SOON_LABEL.toLowerCase()}`;
   return `${creditMeterVisibleLabel(credits.balance, credits.max, credits.plan)}, open Billing`;
@@ -55,6 +56,7 @@ export function WorkspaceSidebar({
   switcher,
   credits,
   teamBadge,
+  feedback,
   userRow,
 }: {
   projectId: string;
@@ -63,6 +65,8 @@ export function WorkspaceSidebar({
   credits: CreditsSummary;
   /** The "N need you" badge, rendered inside the Team HQ row. */
   teamBadge?: ReactNode;
+  /** The "Send feedback" control, above the user row. */
+  feedback?: ReactNode;
   /** The footer user row with sign out. */
   userRow?: ReactNode;
 }) {
@@ -168,7 +172,12 @@ export function WorkspaceSidebar({
               billingActive ? "bg-home-sunk" : "bg-home-card"
             }`}
           >
-            {billing.comingSoon ? (
+            {credits.unlimited ? (
+              <>
+                <p className="text-[13px] font-medium text-home-ink">Credits · Owner · Unlimited</p>
+                <p className="mt-1 text-[11px] text-home-ink-3">Unlimited owner access</p>
+              </>
+            ) : billing.comingSoon ? (
               <>
                 <p className="text-[13px] font-medium text-home-ink">Credits and billing</p>
                 <p className={`mt-1 ${COMING_SOON_TAG}`}>{COMING_SOON_LABEL}</p>
@@ -178,6 +187,7 @@ export function WorkspaceSidebar({
             )}
           </Link>
         </nav>
+        {feedback}
         {userRow}
       </div>
     </div>

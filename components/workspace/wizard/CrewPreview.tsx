@@ -1,4 +1,4 @@
-import { EYEBROW } from "@/components/workspace/kit/styles";
+import { EYEBROW, SECTION_LEAD } from "@/components/workspace/kit/styles";
 import type { WizardCrewPreview } from "@/convex/workspace/wizard";
 
 /**
@@ -13,7 +13,7 @@ export function CrewPreview({ crew }: { crew: NonNullable<WizardCrewPreview> }) 
       aria-labelledby="crew-preview-heading"
       className="rounded-[10px] border border-home-rule bg-home-card p-[18px]"
     >
-      <h2 id="crew-preview-heading" className="font-editorial text-xl font-normal text-home-ink">
+      <h2 id="crew-preview-heading" className={SECTION_LEAD}>
         Your crew
       </h2>
       <p className="mb-3.5 mt-1.5 text-[13px] text-home-ink-3">

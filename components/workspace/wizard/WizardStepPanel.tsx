@@ -1,23 +1,23 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Check, Minus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type Ref } from "react";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, EYEBROW_EMBER, FOCUS } from "@/components/workspace/kit/styles";
 import { COMMERCIAL_MODELS, GOAL_KINDS, type CommercialModel, type GoalKind } from "@/lib/workspace/contracts/roster";
 import {
   GOAL_TIMEFRAMES,
   PARTNER_NAME_PRESETS,
   PARTNER_PERSONALITIES,
   WIZARD_LIMITS,
+  leadNameHint,
+  partnerNameAnswer,
   type GoalTimeframe,
-  type PartnerNamePreset,
   type PartnerPersonality,
   type WizardAnswersProgress,
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
 import {
-  PARTNER_NAME_HINTS,
   PERSONA_SAMPLES,
   RENAME_RISK_BODY,
   RENAME_RISK_HEADLINE,
@@ -34,15 +34,20 @@ import {
 } from "@/lib/workspace/wizard/defaults";
 import {
   COMMERCIAL_MODEL_OPTIONS,
+  carriedBlueprintNotes,
   GOAL_KIND_OPTIONS,
   GOAL_TIMEFRAME_OPTIONS,
   PAID_PUSH_DAILY_USD,
   PARTNER_PERSONALITY_OPTIONS,
   PLATFORM_OPTIONS,
   STEP_TITLES,
+  goalKindsToOffer,
 } from "@/lib/workspace/wizard/labels";
+import { goalLine, type GoalLineCrew } from "@/lib/workspace/wizard/goal-line";
 import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
+import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
+import { OwnIdeaForm, type OwnIdeaFormProps } from "./OwnIdeaForm";
 import { Field, OptionCard, StepHeadView, SuggestedChip } from "./wizard-ui";
 
 export type WizardStepPanelProps = {
@@ -53,6 +58,8 @@ export type WizardStepPanelProps = {
   readonly answers: WizardAnswersProgress;
   readonly defaults: WizardAnswersProgress;
   readonly suggestedNames: readonly string[];
+  /** Roster per idea S2: the lead names the partner-name step offers (the first is the default). */
+  readonly suggestedPartnerNames?: readonly string[];
   readonly blueprint: WizardBlueprintPreview;
   /** WP90-S4: why each suggestion was made; a confident one opens as a quick confirm. */
   readonly hints?: WizardStepHints;
@@ -60,8 +67,12 @@ export type WizardStepPanelProps = {
   readonly pending: boolean;
   readonly error: string | null;
   readonly headingRef?: Ref<HTMLHeadingElement>;
-  /** Own idea with a pinned session: tell the founder the answers save as they go. */
-  readonly showResumeHint?: boolean;
+  /** WP99: the own-idea Step 1 example chips, the same ones the first visit shows. */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
+  /** The crew preview's hires, for Step 5's live consequence line; null or omitted, the line names no one. */
+  readonly crew?: GoalLineCrew;
+  /** The own-idea field's inline action (WP100: "Improve with AI"); omitted, the field works as before. */
+  readonly ownIdeaFieldAction?: OwnIdeaFormProps["renderFieldAction"];
   /** Use the suggested default. */
   readonly onAccept: () => void;
   /** Pick a different offered choice (or keep a previous answer). */
@@ -80,8 +91,8 @@ type Decision =
 const USE_SUGGESTED = "Use suggested · Continue";
 const LOOKS_RIGHT = "Looks right";
 const CONTINUE = "Continue";
+const SAVE_NOTES = "Save notes";
 const PRIMARY = `${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`;
-const SECONDARY_WIDE = `${BTN_SECONDARY} min-h-12 w-full text-[15px]`;
 
 /** Key-order independent equality for plain answer objects. */
 function sameAnswer(a: unknown, b: unknown): boolean {
@@ -131,7 +142,9 @@ function quickSummary(step: QuickStep, defaults: WizardAnswersProgress): { title
     case "goal": {
       const goal = defaults.goal;
       if (goal === undefined || goal.paidPush !== undefined) return null;
-      return { title: GOAL_KIND_OPTIONS[goal.kind].label, detail: GOAL_TIMEFRAME_OPTIONS[goal.timeframe].label };
+      // The goal and its deadline read as one line; the hint says what the crew builds.
+      const when = goal.timeframe === "weekend" ? "by this weekend" : GOAL_TIMEFRAME_OPTIONS[goal.timeframe].label.toLowerCase();
+      return { title: `${GOAL_KIND_OPTIONS[goal.kind].label} · ${when}`, detail: GOAL_KIND_OPTIONS[goal.kind].hint };
     }
   }
 }
@@ -141,20 +154,24 @@ function QuickConfirm({
   summary,
   reasonId,
   hint,
+  children,
 }: {
   summary: { title: string; detail?: string };
   reasonId: string;
   hint: WizardStepHint;
+  /** A quiet line under the reason (Step 5: the paid test left out). */
+  children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+    <div className="flex flex-col gap-3 border-y border-home-rule py-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className={EYEBROW}>My suggestion</h2>
         <SuggestedChip>Suggested · from the idea page</SuggestedChip>
       </div>
-      <p className="font-editorial text-xl leading-[1.45] text-home-ink">{summary.title}</p>
-      {summary.detail ? <p className="text-sm text-home-ink-2">{summary.detail}</p> : null}
+      <p className="font-editorial text-2xl font-normal leading-tight text-home-ink">{summary.title}</p>
+      {summary.detail ? <p className="text-[15px] text-home-ink-2">{summary.detail}</p> : null}
       <ReasonLine id={reasonId} reason={hint.reason} />
+      {children}
     </div>
   );
 }
@@ -187,7 +204,30 @@ function NotValidatedNote({ id, blueprint }: { id: string; blueprint: WizardBlue
   );
 }
 
-/** The blueprint as a dashed card: what I'd build, who it is for, the one loop, what is left out. */
+/** The founder's saved rework notes, shown under the outline until they edit them. */
+function SavedNotes({ notes }: { notes: string }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+      <p className={EYEBROW}>Your notes</p>
+      <p className="text-[15px] text-home-ink">{notes}</p>
+      <p className="text-[13px] text-home-ink-2">Saved. Your crew reads these before it builds. The outline stays as it is.</p>
+    </div>
+  );
+}
+
+/** Drop a leading restatement of the title from the pitch ("{Title}: …" / "{Title} — …"). */
+function dedupePitch(pitch: string, title: string): string {
+  const trimmed = title.trim();
+  if (trimmed.length === 0) return pitch;
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return pitch.replace(new RegExp(`^${escaped}\\s*[:—–-]\\s*`), "");
+}
+
+/**
+ * The blueprint as a confident one-page document (not a boxed form): the pitch
+ * as a serif lead, who it is for, the one loop in a single emphasised callout,
+ * what I'd build, and what's left out on purpose.
+ */
 function BlueprintCard({
   blueprint,
   ideaTitle,
@@ -199,42 +239,48 @@ function BlueprintCard({
   isOwn: boolean;
   noteId: string;
 }) {
+  const title = isOwn ? "Your idea" : ideaTitle;
+  const pitch = dedupePitch(blueprint.pitch, title);
   return (
-    <div className="flex flex-col gap-4 rounded-[10px] border border-dashed border-home-d2 bg-home-card px-6 pb-5 pt-6">
+    <div className="flex flex-col gap-6">
       {!blueprint.validated ? <NotValidatedNote id={noteId} blueprint={blueprint} /> : null}
       <div className="flex flex-col gap-2">
-        <h2 className="font-editorial text-2xl font-normal leading-tight text-home-ink">
-          {isOwn ? "Your idea" : ideaTitle}
-        </h2>
-        <p className="text-base text-home-ink-2">{blueprint.pitch}</p>
+        <h2 className="font-editorial text-[26px] font-normal leading-tight text-home-ink">{title}</h2>
+        {pitch ? <p className="font-editorial text-lg italic leading-snug text-home-ink-2">{pitch}</p> : null}
       </div>
-      <dl className="grid gap-2 text-sm text-home-ink-2">
+      <div className="border-t border-home-rule" />
+      {/* The core: who it is for, and the one loop (the single emphasis). */}
+      <div className="flex flex-col gap-4">
         <div>
-          <dt className="font-medium text-home-ink">Who it is for</dt>
-          <dd>{blueprint.oneUser}</dd>
+          <p className="text-sm font-semibold text-home-ink">Who it is for</p>
+          <p className="text-[15px] text-home-ink-2">{blueprint.oneUser}</p>
         </div>
-        <div>
-          <dt className="font-medium text-home-ink">The one loop</dt>
-          <dd>{blueprint.oneLoop}</dd>
+        <div className="border-l-2 border-home-orange-ink pl-4">
+          <p className={EYEBROW_EMBER}>The one loop</p>
+          <p className="mt-1.5 font-editorial text-xl leading-snug text-home-ink">{blueprint.oneLoop}</p>
         </div>
-      </dl>
-      <div className="flex flex-col gap-2">
+      </div>
+      <div className="border-t border-home-rule" />
+      <div className="flex flex-col gap-2.5">
         <h3 className={EYEBROW}>What I&rsquo;d build</h3>
-        <ul className="flex flex-col gap-1.5 text-sm text-home-ink">
+        <ul className="flex flex-col gap-2 text-[15px] text-home-ink">
           {blueprint.features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2">
-              <Plus aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-sky-ink" />
+            <li key={feature} className="flex items-start gap-2.5">
+              <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-ink-3" />
               <span>{feature}</span>
             </li>
           ))}
         </ul>
       </div>
       {blueprint.scopeCuts.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <h3 className={EYEBROW}>Left out on purpose</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-home-ink-2">
+          <ul className="flex flex-col gap-2 text-sm text-home-ink-3">
             {blueprint.scopeCuts.map((cut) => (
-              <li key={cut}>{cut}</li>
+              <li key={cut} className="flex items-start gap-2.5">
+                <Minus aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-home-d2" />
+                <span>{cut}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -259,37 +305,36 @@ function LibraryIdea({
 }) {
   return (
     <>
-      <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className={EYEBROW}>Your idea</h2>
-          <SuggestedChip>Suggested · from the idea you picked</SuggestedChip>
-        </div>
-        <p className="font-editorial text-xl leading-[1.45] text-home-ink">{ideaTitle}</p>
+      {/* The idea you picked, confirmed as one surface — not re-advertised. */}
+      <div className="flex flex-col gap-2.5">
+        <p className={EYEBROW}>From the library</p>
+        <p className="font-editorial text-[30px] font-normal leading-[1.15] text-home-ink">{ideaTitle}</p>
+        <p className="text-sm text-home-ink-2">
+          Your co-founder starts from its research and its 4 build prompts.{" "}
+          {ideaSlug ? (
+            <Link
+              href={`/ideas/${encodeURIComponent(ideaSlug)}`}
+              className={cn("whitespace-nowrap text-home-orange-ink underline underline-offset-2", FOCUS)}
+            >
+              Read the research
+            </Link>
+          ) : null}
+        </p>
       </div>
-      <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-dashed border-home-orange bg-home-ember-soft px-4 py-3">
-        <span className="font-mono text-[11px] font-medium tracking-[0.08em] text-home-orange-ink">FROM THE LIBRARY</span>
-        <span className="min-w-60 flex-[1_1_240px] text-sm text-home-ink">
-          <b className="font-semibold">{ideaTitle}</b>. Your co-founder starts from its research and its 4 build prompts.
-        </span>
-        {ideaSlug ? (
-          <Link href={`/ideas/${encodeURIComponent(ideaSlug)}`} className={cn("text-sm text-home-orange-ink underline", FOCUS)}>
-            Read the research
-          </Link>
-        ) : null}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Link href="/ideas" className={cn(BTN_SECONDARY, "min-h-11 text-sm font-normal")}>
-          Pick a different idea from the library
+      {/* The alternatives are quiet links, so the confident path leads. */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Link href="/ideas" className={cn("text-sm text-home-ink-2 underline underline-offset-2 hover:text-home-ink", FOCUS)}>
+          Pick a different idea
         </Link>
         <button
           ref={ownButtonRef}
           type="button"
-          className={cn(BTN_SECONDARY, "min-h-11 text-sm font-normal")}
+          className={cn("text-sm text-home-ink-2 underline underline-offset-2 hover:text-home-ink", FOCUS)}
           aria-expanded={ownOpen}
           aria-controls="wizard-own-idea"
           onClick={onToggleOwn}
         >
-          Write my own idea instead
+          Write my own instead
         </button>
       </div>
     </>
@@ -303,12 +348,15 @@ export function WizardStepPanel({
   answers,
   defaults,
   suggestedNames,
+  suggestedPartnerNames = PARTNER_NAME_PRESETS,
   blueprint,
   hints = {},
   pending,
   error,
   headingRef,
-  showResumeHint = false,
+  ownIdeaExamples,
+  crew = null,
+  ownIdeaFieldAction,
   onAccept,
   onChoose,
   onRewrite,
@@ -333,12 +381,17 @@ export function WizardStepPanel({
   const [choosing, setChoosing] = useState(!quickEligible);
   const quick = quickEligible && !choosing;
   const choiceRef = useRef<HTMLDivElement>(null);
-  const focusChoice = useRef(false);
+  // Where focus lands when the quick confirm opens the full choice: the selected option, or the paid test.
+  const focusChoice = useRef<"selected" | "paid" | null>(null);
   useEffect(() => {
-    if (!choosing || !focusChoice.current) return;
-    focusChoice.current = false;
-    // "Change" opened the full choice: focus lands on the selected option.
-    const target = choiceRef.current?.querySelector<HTMLInputElement>("input:checked") ?? choiceRef.current?.querySelector<HTMLInputElement>("input");
+    const where = focusChoice.current;
+    if (!choosing || where === null) return;
+    focusChoice.current = null;
+    const root = choiceRef.current;
+    const target =
+      where === "paid"
+        ? root?.querySelector<HTMLInputElement>("input[type=checkbox]")
+        : (root?.querySelector<HTMLInputElement>("input:checked") ?? root?.querySelector<HTMLInputElement>("input"));
     target?.focus();
   }, [choosing]);
 
@@ -346,7 +399,6 @@ export function WizardStepPanel({
   const isOwn = ideaAnswer?.source === "own_idea";
 
   const [localError, setLocalError] = useState<string | null>(null);
-  const [ideaText, setIdeaText] = useState(ideaAnswer?.source === "own_idea" ? ideaAnswer.text : "");
   const [disclosure, setDisclosure] = useState(false);
   const [disclosureText, setDisclosureText] = useState("");
   const [platformKind, setPlatformKind] = useState<"native" | "web" | "custom">(current.platform?.kind ?? "web");
@@ -360,12 +412,40 @@ export function WizardStepPanel({
   const [chosenName, setChosenName] = useState<string>(savedNameIsListed ? savedName : "");
   const [nameText, setNameText] = useState<string>(savedNameIsListed ? "" : savedName);
   const [personality, setPersonality] = useState<PartnerPersonality>(current.partnerPersonality ?? "strategist");
-  const savedPartner = current.partnerName;
-  const [partnerPreset, setPartnerPreset] = useState<PartnerNamePreset | "">(
-    savedPartner === undefined ? "Wren" : savedPartner.kind === "preset" ? savedPartner.name : "",
+  const savedPartner = current.partnerName?.name;
+  const savedPartnerIsListed = savedPartner !== undefined && suggestedPartnerNames.includes(savedPartner);
+  const [partnerChoice, setPartnerChoice] = useState<string>(
+    savedPartner === undefined ? (suggestedPartnerNames[0] ?? "") : savedPartnerIsListed ? savedPartner : "",
   );
-  const [partnerText, setPartnerText] = useState<string>(savedPartner?.kind === "custom" ? savedPartner.name : "");
+  const [partnerText, setPartnerText] = useState<string>(
+    savedPartner !== undefined && !savedPartnerIsListed ? savedPartner : "",
+  );
   const toggleRef = useRef<HTMLButtonElement>(null);
+
+  // Blueprint rework notes: saved notes show under the outline. A fresh save
+  // closes the field, returns to "Looks good" and says so.
+  const savedNotes = step === "blueprint" ? carriedBlueprintNotes(answers) : null;
+  const primaryRef = useRef<HTMLButtonElement>(null);
+  const [lastNotes, setLastNotes] = useState(savedNotes);
+  const [notesSaves, setNotesSaves] = useState(0);
+  const [notesStatus, setNotesStatus] = useState("");
+  if (savedNotes !== lastNotes) {
+    setLastNotes(savedNotes);
+    if (savedNotes !== null) {
+      setDisclosure(false);
+      setDisclosureText("");
+      setLocalError(null);
+      setNotesStatus("Notes saved. Your crew will read them.");
+      setNotesSaves((count) => count + 1);
+    }
+  }
+  useEffect(() => {
+    if (notesSaves > 0) primaryRef.current?.focus();
+  }, [notesSaves]);
+  // Opening the notes field puts the cursor in it.
+  useEffect(() => {
+    if (step === "blueprint" && disclosure) document.getElementById(textId)?.focus();
+  }, [step, disclosure, textId]);
 
   const defaultName = defaults.name?.chosen;
   const customName = nameText.trim();
@@ -375,12 +455,7 @@ export function WizardStepPanel({
     if (quick) return { kind: "accept", label: LOOKS_RIGHT };
     switch (step) {
       case "idea": {
-        if (isOwn) {
-          const text = ideaText.trim();
-          if (text.length === 0) return { kind: "missing", label: CONTINUE, message: "Write your idea in one sentence first." };
-          const unchanged = defaults.idea?.source === "own_idea" && defaults.idea.text === text;
-          return unchanged ? { kind: "accept", label: CONTINUE } : { kind: "rewrite", label: CONTINUE, text };
-        }
+        // An own idea's step 1 is `OwnIdeaForm` (returned below); this is the library idea.
         if (disclosure) {
           const text = disclosureText.trim();
           if (text.length === 0) return { kind: "missing", label: "Use my idea", message: "Write your idea in one sentence first." };
@@ -391,8 +466,8 @@ export function WizardStepPanel({
       case "blueprint": {
         if (!disclosure) return { kind: "accept", label: "Looks good" };
         const text = disclosureText.trim();
-        if (text.length === 0) return { kind: "missing", label: "Rework it", message: "Say what should change first." };
-        return { kind: "rewrite", label: "Rework it", text };
+        if (text.length === 0) return { kind: "missing", label: SAVE_NOTES, message: "Say what should change first." };
+        return { kind: "rewrite", label: SAVE_NOTES, text };
       }
       case "platform": {
         if (platformKind === "custom") {
@@ -435,16 +510,42 @@ export function WizardStepPanel({
           : { kind: "choose", label: CONTINUE, answer: personality };
       case "partner_name": {
         if (customPartner.length > 0) return { kind: "rewrite", label: CONTINUE, text: customPartner };
-        if (partnerPreset === "") return { kind: "missing", label: CONTINUE, message: "Pick a name or type your own." };
-        return defaults.partnerName?.kind === "preset" && defaults.partnerName.name === partnerPreset
+        if (partnerChoice === "") return { kind: "missing", label: CONTINUE, message: "Pick a name or type your own." };
+        return defaults.partnerName?.name === partnerChoice
           ? { kind: "accept", label: USE_SUGGESTED }
-          : { kind: "choose", label: CONTINUE, answer: { kind: "preset", name: partnerPreset } };
+          : { kind: "choose", label: CONTINUE, answer: partnerNameAnswer(partnerChoice) };
       }
     }
   }
 
+  // Step 1 for an own idea is the one shared surface, the same before the
+  // session exists and after Back or a reload. Unchanged text keeps the idea;
+  // edited text rewrites it (and so the blueprint the next step shows).
+  if (step === "idea" && isOwn) {
+    const savedText = ideaAnswer.text;
+    return (
+      <OwnIdeaForm
+        initialText={savedText}
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        examples={ownIdeaExamples}
+        renderFieldAction={ownIdeaFieldAction}
+        onSubmit={(text) => {
+          const unchanged = defaults.idea?.source === "own_idea" ? defaults.idea.text === text : text === savedText;
+          if (unchanged) onAccept();
+          else onRewrite(text);
+        }}
+      />
+    );
+  }
+
   const decision = decide();
-  const invalid = localError !== null;
+  // A "fill this in first" error clears as soon as the founder fixes it (picks a choice or types),
+  // and does not come back on its own: only the next Continue shows it again.
+  if (decision.kind !== "missing" && localError !== null) setLocalError(null);
+  const shownLocalError = decision.kind === "missing" ? localError : null;
+  const invalid = shownLocalError !== null;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -456,7 +557,13 @@ export function WizardStepPanel({
     setLocalError(null);
     if (decision.kind === "accept") onAccept();
     else if (decision.kind === "choose") onChoose(decision.answer);
-    else onRewrite(decision.text);
+    else if (step === "blueprint" && decision.text === savedNotes) {
+      // Unchanged notes: nothing to save, but confirm and close like a real save.
+      setDisclosure(false);
+      setDisclosureText("");
+      setNotesStatus("Notes saved. Your crew will read them.");
+      setNotesSaves((count) => count + 1);
+    } else onRewrite(decision.text);
   }
 
   /** Escape closes an open disclosure and hands focus back to the button that opened it. */
@@ -476,21 +583,7 @@ export function WizardStepPanel({
   let body: ReactNode;
   switch (step) {
     case "idea":
-      body = isOwn ? (
-        <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-          <Field
-            id={textId}
-            label="Your idea in one sentence"
-            hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
-            value={ideaText}
-            onChange={setIdeaText}
-            maxLength={WIZARD_LIMITS.ownIdea}
-            errorId={errorId}
-            invalid={invalid}
-            serif
-          />
-        </div>
-      ) : (
+      body = (
         <>
           <LibraryIdea
             ideaTitle={ideaTitle}
@@ -524,6 +617,7 @@ export function WizardStepPanel({
       body = (
         <>
           <BlueprintCard blueprint={blueprint} ideaTitle={ideaTitle} isOwn={isOwn} noteId={noteId} />
+          {savedNotes !== null && !disclosure ? <SavedNotes notes={savedNotes} /> : null}
           <div id={`${base}-rework`} hidden={!disclosure}>
             {disclosure ? (
               <div className="flex flex-col gap-1.5">
@@ -531,7 +625,8 @@ export function WizardStepPanel({
                   What should change?
                 </label>
                 <p id={`${textId}-hint`} className="text-[13px] text-home-ink-2">
-                  Your notes go back with the blueprint. You can still choose &ldquo;Looks good&rdquo; afterwards.
+                  Your crew reads these before it builds. The outline above stays as it is, and you can still choose
+                  &ldquo;Looks good&rdquo; afterwards.
                 </p>
                 <textarea
                   id={textId}
@@ -607,12 +702,13 @@ export function WizardStepPanel({
         </fieldset>
       );
       break;
-    case "goal":
+    case "goal": {
+      const line = goalLine(goalKind, paidPush, crew);
       body = (
         <>
           <fieldset className="flex flex-col gap-2.5">
             <legend className="sr-only">{STEP_TITLES.goal}</legend>
-            {GOAL_KINDS.map((kind) => (
+            {goalKindsToOffer(GOAL_KINDS, defaults.goal?.kind, answers.goal?.kind).map((kind) => (
               <OptionCard
                 key={kind}
                 name={`${group}-goal`}
@@ -625,35 +721,51 @@ export function WizardStepPanel({
               />
             ))}
           </fieldset>
-          <fieldset className="flex flex-col gap-2.5">
-            <legend className="text-sm font-medium text-home-ink">
-              By when? <span className="font-normal text-home-ink-2">(optional)</span>
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {GOAL_TIMEFRAMES.map((value) => (
-                <OptionCard
-                  key={value}
-                  variant="pill"
-                  name={`${group}-when`}
-                  value={value}
-                  checked={timeframe === value}
-                  onChange={() => setTimeframe(value)}
-                  label={GOAL_TIMEFRAME_OPTIONS[value].label}
-                  suggested={defaults.goal?.timeframe === value}
-                />
-              ))}
-            </div>
-          </fieldset>
-          <OptionCard
-            type="checkbox"
-            checked={paidPush}
-            onChange={setPaidPush}
-            label={`Add a $${PAID_PUSH_DAILY_USD} a day paid test`}
-            hint="Your own ad budget. Nothing runs without your approval."
-          />
+          {/* What the choice makes the crew do, updated as the founder picks. */}
+          <p aria-live="polite" className="text-sm text-home-ink-2">
+            {line.lead}
+            <b className="font-semibold text-home-ink">{line.target}</b>
+            {line.rest}
+          </p>
+          {/* The details: the deadline and the paid test, visibly secondary to the goal. */}
+          <div className="flex flex-col gap-5 border-t border-home-rule pt-5">
+            <fieldset className="flex flex-col gap-2.5">
+              <legend className="text-sm font-medium text-home-ink">By when?</legend>
+              <div className="flex flex-wrap gap-2">
+                {GOAL_TIMEFRAMES.map((value) => (
+                  <OptionCard
+                    key={value}
+                    variant="pill"
+                    name={`${group}-when`}
+                    value={value}
+                    checked={timeframe === value}
+                    onChange={() => setTimeframe(value)}
+                    label={GOAL_TIMEFRAME_OPTIONS[value].label}
+                    suggested={defaults.goal?.timeframe === value}
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={paidPush}
+                onChange={(event) => setPaidPush(event.target.checked)}
+                aria-describedby={`${base}-paid-hint`}
+                className={cn("mt-0.5 size-5 shrink-0 cursor-pointer accent-home-ink", FOCUS)}
+              />
+              <span className="flex flex-col">
+                <span className="font-medium text-home-ink">Add a ${PAID_PUSH_DAILY_USD} a day paid test</span>
+                <span id={`${base}-paid-hint`} className="text-home-ink-2">
+                  Your own ad budget. Nothing runs without your approval.
+                </span>
+              </span>
+            </label>
+          </div>
         </>
       );
       break;
+    }
     case "name":
       body = (
         <>
@@ -728,19 +840,19 @@ export function WizardStepPanel({
         <>
           <fieldset className="flex flex-col gap-2.5">
             <legend className="sr-only">{STEP_TITLES.partner_name}</legend>
-            {PARTNER_NAME_PRESETS.map((preset) => (
+            {suggestedPartnerNames.map((lead) => (
               <OptionCard
-                key={preset}
+                key={lead}
                 name={group}
-                value={preset}
-                checked={customPartner.length === 0 && partnerPreset === preset}
+                value={lead}
+                checked={customPartner.length === 0 && partnerChoice === lead}
                 onChange={() => {
-                  setPartnerPreset(preset);
+                  setPartnerChoice(lead);
                   setPartnerText("");
                 }}
-                label={preset}
-                hint={PARTNER_NAME_HINTS[preset]}
-                suggested={defaults.partnerName?.kind === "preset" && defaults.partnerName.name === preset}
+                label={lead}
+                hint={leadNameHint(lead)}
+                suggested={defaults.partnerName?.name === lead}
               />
             ))}
           </fieldset>
@@ -761,7 +873,26 @@ export function WizardStepPanel({
 
   if (isHintStep(step) && hint !== undefined) {
     if (quick && summary !== null) {
-      body = <QuickConfirm summary={summary} reasonId={reasonId} hint={hint} />;
+      body = (
+        <QuickConfirm summary={summary} reasonId={reasonId} hint={hint}>
+          {step === "goal" ? (
+            // Confirming says the paid test is left out; the link opens the full choice on the checkbox.
+            <p className="text-sm text-home-ink-2">
+              <span className="font-medium text-home-ink">No paid ads.</span>{" "}
+              <button
+                type="button"
+                className={cn("text-home-orange-ink underline underline-offset-2", FOCUS)}
+                onClick={() => {
+                  focusChoice.current = "paid";
+                  setChoosing(true);
+                }}
+              >
+                Add a ${PAID_PUSH_DAILY_USD} a day test
+              </button>
+            </p>
+          ) : null}
+        </QuickConfirm>
+      );
     } else {
       body = (
         <div id={choiceId} ref={choiceRef} className="flex flex-col gap-6">
@@ -774,8 +905,9 @@ export function WizardStepPanel({
 
   const primary = (
     <button
+      ref={primaryRef}
       type="submit"
-      className={step === "blueprint" ? `${BTN_PRIMARY} min-h-12 w-full text-[15px]` : PRIMARY}
+      className={step === "blueprint" || quick ? `${BTN_PRIMARY} min-h-12 flex-[1_1_240px] text-[15px]` : PRIMARY}
       aria-disabled={pending || undefined}
       aria-describedby={describeAccept}
     >
@@ -790,21 +922,17 @@ export function WizardStepPanel({
       noValidate
       className="flex w-full max-w-[672px] flex-col gap-6"
     >
-      <StepHeadView step={step} headingId={headingId} headingRef={headingRef}>
-        {showResumeHint && step === "idea" ? (
-          <p className="mt-2 text-[13px] text-home-ink-3">Your answers save as you go. Bookmark this page to come back.</p>
-        ) : null}
-      </StepHeadView>
+      <StepHeadView step={step} headingId={headingId} headingRef={headingRef} />
 
       {body}
 
       <p role="status" aria-live="polite" className="sr-only">
-        {pending ? "Saving…" : ""}
+        {pending ? "Saving…" : notesStatus}
       </p>
 
-      {localError ? (
+      {shownLocalError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
-          {localError}
+          {shownLocalError}
         </p>
       ) : null}
 
@@ -815,31 +943,36 @@ export function WizardStepPanel({
       ) : null}
 
       {step === "blueprint" ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        // Approve leads; refine is a quieter, auto-width secondary.
+        <div className="flex flex-wrap items-center gap-3">
           {primary}
           <button
             ref={toggleRef}
             type="button"
-            className={SECONDARY_WIDE}
+            className={cn(BTN_SECONDARY, "min-h-12 px-5 text-sm")}
             aria-expanded={disclosure}
             aria-controls={`${base}-rework`}
             onClick={() => {
+              // Editing starts from the saved notes.
+              if (!disclosure && savedNotes !== null && disclosureText.length === 0) setDisclosureText(savedNotes);
               setDisclosure((open) => !open);
               setLocalError(null);
+              setNotesStatus("");
             }}
           >
-            I&rsquo;d change some things
+            {savedNotes !== null ? "Edit my notes" : <>I&rsquo;d change some things</>}
           </button>
         </div>
       ) : quick ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        // Confirming the suggestion leads; "Change" is a quieter escape to the full choice.
+        <div className="flex flex-wrap items-center gap-3">
           {primary}
           <button
             ref={toggleRef}
             type="button"
-            className={SECONDARY_WIDE}
+            className={cn(BTN_SECONDARY, "min-h-12 px-5 text-sm")}
             onClick={() => {
-              focusChoice.current = true;
+              focusChoice.current = "selected";
               setChoosing(true);
             }}
           >

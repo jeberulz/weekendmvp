@@ -4,7 +4,7 @@
  * examples and the partner-name hints. Pure copy, shared by the `/start` UI
  * and its tests. D10: eight steps, no SMS.
  */
-import type { PartnerNamePreset, PartnerPersonality, WizardStep } from "../contracts/wizard";
+import type { PartnerPersonality, WizardStep } from "../contracts/wizard";
 
 export type StepHead = {
   /** Text before the italic tail (keeps its trailing space). */
@@ -28,7 +28,7 @@ export const STEP_HEADS = {
     before: "Here's how I'd ",
     italic: "build",
     after: " it.",
-    sub: "Skim it. If something's off, tell me and I'll rework it right here.",
+    sub: "Skim it. If something's off, leave a note and your crew will work from it.",
   },
   platform: {
     before: "Where should it ",
@@ -46,13 +46,13 @@ export const STEP_HEADS = {
     before: "What's the ",
     italic: "first",
     after: " win?",
-    sub: "One number every launch task aims at.",
+    sub: "The one result your crew aims at first.",
   },
   name: {
     before: "What do we ",
     italic: "call",
     after: " it?",
-    sub: "A name is pre-selected. Alternatives are there if you want them.",
+    sub: "A name is pre-selected. Keep it or type your own.",
   },
   partner_personality: {
     before: "How should your co-founder ",
@@ -96,12 +96,6 @@ export const PERSONA_SAMPLES = {
   creative: "I drafted a few hero lines. Want to pick the voice together?",
   operator: "Next up: brand kit approval. Then the emails, then the posts.",
 } as const satisfies Record<PartnerPersonality, string>;
-
-export const PARTNER_NAME_HINTS = {
-  Wren: "Small bird, big range.",
-  Juno: "Steady and direct.",
-  Ridge: "Grounded and calm.",
-} as const satisfies Record<PartnerNamePreset, string>;
 
 export const RENAME_RISK_HEADLINE = "Renaming later costs links.";
 export const RENAME_RISK_BODY = "Pick now; the site, email and brand kit use it.";

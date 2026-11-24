@@ -39,6 +39,8 @@ vi.mock("convex/react", async () => {
       if (fn.endsWith(":launchProgress")) return { started: false, steps: [] };
       return view;
     },
+    // WP100: "Improve with AI" is off here (availability reads as not enabled).
+    useAction: () => async () => ({ status: "unavailable" }),
     useMutation: (ref: Parameters<typeof name>[0]): Mutation => async (args) => {
       const fn = name(ref);
       store.calls.push({ name: fn, args });
@@ -78,11 +80,13 @@ function viewAt(index: number, completed = false, business: WizardSessionView["b
     answers: seed.defaults,
     defaults: seed.defaults,
     suggestedNames: [...seed.suggestedNames],
+    suggestedPartnerNames: [...seed.suggestedPartnerNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
     hints: {},
     crew: null,
     business,
+    businessLimit: null,
   };
 }
 
@@ -304,6 +308,9 @@ describe("WP74-S6 keyboard-only run-through", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("What are we building?");
     // No "Save & exit" yet: nothing can be resumed until the first sentence starts a session.
     expect(screen.queryByRole("link", { name: /Save/ })).toBeNull();
+    // WP95: the header's "Send feedback" is the first stop, then the field.
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Send feedback" }));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText("Your idea in one sentence"));
     await user.keyboard("{Enter}");

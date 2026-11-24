@@ -10,12 +10,15 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { QuietErrorBoundary } from "@/components/platform/client-gates";
 import { EmployeeAvatar } from "@/components/workspace/kit/EmployeeAvatar";
 import { EmployeeLink } from "@/components/workspace/kit/EmployeeLink";
+import { WrenChatCards } from "@/components/workspace/chat/WrenChatCards";
+import { approvalReviewRoute } from "@/lib/workspace/wrenCards";
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW } from "@/components/workspace/kit/styles";
 import { ROLE_LABELS } from "@/components/workspace/kit/types";
 import { cn } from "@/lib/utils";
 import { employeeHref } from "@/lib/workspace/employeePage";
 import type { LaunchView } from "@/lib/workspace/crew/launch";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   BLUEPRINT_MISSING_COPY,
   BLUEPRINT_SECTION_ID,
@@ -125,6 +128,7 @@ export function LeadCard({
   lead,
   roster,
   reviews,
+  spend,
   now,
 }: {
   projectId: Id<"projects">;
@@ -133,6 +137,7 @@ export function LeadCard({
   roster: readonly TeamHired[];
   /** Open (unexpired) reviews only. */
   reviews: readonly PendingReview[];
+  spend: readonly (PendingReview & { costCredits: bigint })[];
   now: number;
 }) {
   const retryLaunch = useMutation(api.crew.roster.retryLaunch);
@@ -165,11 +170,15 @@ export function LeadCard({
     setMessage("");
     retryLaunch({ projectId })
       .then((result) => setMessage(retryMessage(result, RETRY_SENT_TEAM_COPY)))
-      .catch((caught: unknown) => setRefusal({ message: launchErrorMessage(caught), during }))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setRefusal({ message: launchErrorMessage(caught), during });
+      })
       .finally(() => setRetrying(false));
   };
 
-  const pill = leadPill(launch, reviews.length);
+  const waitingCount = reviews.length + spend.length;
+  const pill = leadPill(launch, waitingCount);
   return (
     <section
       aria-labelledby="lead-h"
@@ -236,19 +245,24 @@ export function LeadCard({
       <div className="flex min-w-0 flex-[2_1_360px] flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2">
           <h3 id="appr-h" className="text-[15px] font-semibold text-home-ink">Reviews {lead} is routing</h3>
-          <span className="font-mono text-xs text-home-ink-3">{reviews.length} waiting</span>
+          <span className="font-mono text-xs text-home-ink-3">{waitingCount} waiting</span>
         </div>
-        {reviews.length === 0 ? (
+        {waitingCount === 0 ? (
           <p className="rounded-[10px] border border-dashed border-home-d2 px-3 py-4 text-sm text-home-ink-2">
             {WAITING_EMPTY_COPY}
           </p>
-        ) : (
+        ) : reviews.length > 0 ? (
           <ul aria-labelledby="appr-h" className="rounded-[10px] border border-home-rule">
             {reviews.map((review) => (
               <ReviewRow key={review.approvalId} review={review} now={now} projectId={projectId} roster={roster} />
             ))}
           </ul>
-        )}
+        ) : null}
+        {spend.length > 0 && <WrenChatCards projectId={projectId} name={lead} cards={spend.map((card) => ({
+          approvalId: card.approvalId, kind: "approval" as const, approvalKind: "spend" as const, status: "pending" as const,
+          title: `Approve ${card.costCredits} credits for ${card.title.toLowerCase()}`,
+          subject: `Change round ${card.changeRound}`, reviewRoute: approvalReviewRoute("documents", card.kind),
+        }))} />}
       </div>
     </section>
   );

@@ -241,7 +241,7 @@ describe("blueprint step", () => {
 
     const { documents, approvals } = await stored(t, business.projectId);
     expect(documents).toHaveLength(1);
-    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-personalise@2", taskId });
+    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-personalise@3", taskId });
     const blueprint = parseArtifact("blueprint", JSON.parse(documents[0]?.body ?? "null"));
     expect(blueprint.success && blueprint.data).toMatchObject({ source: "library", ideaSlug: "hydrotrail" });
     expect(approvals).toHaveLength(1);
@@ -273,7 +273,7 @@ describe("blueprint step", () => {
     await insertSeed(t, business, "v1", { ...hydrotrailBlueprint, market: seedMarket });
     const modelMarket = { summary: "Trusted by 10,000 hikers; a $4 billion market growing 20% a year.", competitors: [] };
     const { taskId } = await createTask(t, business, "crew_blueprint");
-    const outcome = await run(t, taskId, gateway(t, () => ({ json: { ...hydrotrailBlueprint, market: modelMarket } })));
+    const outcome = await run(t, taskId, gateway(t, () => ({ json: { ...hydrotrailBlueprint, market: modelMarket, team: [] } })));
     expect(outcome).toMatchObject({ kind: "finished" });
     const { documents } = await stored(t, business.projectId);
     expect(storedBody(documents[0]).market).toEqual(seedMarket);
@@ -285,7 +285,7 @@ describe("blueprint step", () => {
     if (hydrotrailBlueprint.source !== "library") throw new Error("fixture is a library blueprint");
     const modelMarket = { summary: "Trusted by 10,000 hikers; a $4 billion market growing 20% a year.", competitors: [] };
     const { taskId } = await createTask(t, business, "crew_blueprint");
-    const gw = gateway(t, () => ({ json: { ...hydrotrailBlueprint, ideaSlug: "trail-snacks", market: modelMarket } }));
+    const gw = gateway(t, () => ({ json: { ...hydrotrailBlueprint, ideaSlug: "trail-snacks", market: modelMarket, team: [] } }));
     expect((await run(t, taskId, gw)).kind).toBe("finished");
     expect(userText(gw.requests[0])).toContain("idea_seed");
     const { documents } = await stored(t, business.projectId);
@@ -372,7 +372,7 @@ describe("blueprint step", () => {
     const t = crewTest();
     const business = await seedBusiness(t, "slug", "library");
     const { taskId } = await createTask(t, business, "crew_blueprint");
-    const gw = gateway(t, () => ({ json: { ...hydrotrailBlueprint, ideaSlug: "not-this-idea" } }));
+    const gw = gateway(t, () => ({ json: { ...hydrotrailBlueprint, ideaSlug: "not-this-idea", team: [] } }));
     expect((await run(t, taskId, gw)).kind).toBe("finished");
     const { documents } = await stored(t, business.projectId);
     expect(JSON.parse(documents[0]?.body ?? "{}")).toMatchObject({ ideaSlug: "hydrotrail" });
@@ -387,7 +387,7 @@ describe("blueprint step", () => {
     expect(systemText(gw.requests[0])[0]).toContain(NOT_VALIDATED_LABEL);
     expect(userText(gw.requests[0])).not.toContain("idea_seed");
     const { documents, approvals } = await stored(t, business.projectId);
-    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-own-idea@2" });
+    expect(documents[0]).toMatchObject({ kind: "blueprint", promptRef: "crew-blueprint-own-idea@3" });
     const parsed = parseArtifact("blueprint", JSON.parse(documents[0]?.body ?? "null"));
     if (!parsed.success) throw new Error("own-idea blueprint did not parse");
     expect(parsed.data.source).toBe("own_idea");
@@ -537,7 +537,7 @@ describe("brand kit step", () => {
 
     const { documents, approvals } = await stored(t, business.projectId);
     const kit = documents.find((doc) => doc.kind === "brand_kit");
-    expect(kit).toMatchObject({ promptRef: "crew-brand-kit@2", taskId });
+    expect(kit).toMatchObject({ promptRef: "crew-brand-kit@3", taskId });
     expect(parseArtifact("brand_kit", JSON.parse(kit?.body ?? "null")).success).toBe(true);
     expect(approvals.filter((row) => row.subjectId === kit?._id)).toEqual([
       expect.objectContaining({ kind: "artifact_review", status: "pending" }),

@@ -207,6 +207,9 @@ export const prepareCrewStep = internalQuery({
         const kitRow = (await approvedBrandKit(ctx, project)) ?? (inLaunch ? await launchDraftBrandKit(ctx, project, args.now) : null);
         const kit = kitRow?.body === undefined ? null : brandKitSchema.safeParse(parseJson(kitRow.body));
         const step = task.type === "crew_email_sequence" ? "email sequence" : "social pack";
+        if (task.requiresBrandDocumentId !== undefined && kitRow?._id !== task.requiresBrandDocumentId) {
+          return refuse(promptRef, "the approved brand kit changed before this handoff ran");
+        }
         if (kitRow === null || kit === null || !kit.success) return refuse(promptRef, `the ${step} needs the business's brand kit first`);
         const briefs = { ...(stored === null ? {} : { briefDocumentId: stored._id }), brandKitDocumentId: kitRow._id };
         if (task.type === "crew_social_pack") {

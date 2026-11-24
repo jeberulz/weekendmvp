@@ -31,11 +31,16 @@ export type Account = {
 /** Bootstrap keeps this at one; anything past the bound is investigated, not truncated. */
 const MAX_ACTIVE_BINDINGS = 10;
 
-async function activeBindingFor(ctx: ReadCtx, userId: Id<"users">): Promise<Doc<"super_admins"> | null> {
+async function activeBindingFor(ctx: Pick<QueryCtx, "db">, userId: Id<"users">): Promise<Doc<"super_admins"> | null> {
   return await ctx.db
     .query("super_admins")
     .withIndex("by_userId_and_revokedAt", (q) => q.eq("userId", userId).eq("revokedAt", undefined))
     .first();
+}
+
+/** Server-derived owner IDs may check the binding without exposing its row. */
+export async function hasActiveSuperAdminBinding(ctx: Pick<QueryCtx, "db">, userId: Id<"users">): Promise<boolean> {
+  return await activeBindingFor(ctx, userId) !== null;
 }
 
 async function activeBindings(ctx: ReadCtx): Promise<Doc<"super_admins">[]> {

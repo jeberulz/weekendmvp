@@ -3,6 +3,7 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import type { QueryCtx } from "../../_generated/server";
 import { PRICING, lifetimeTrancheForSeat, type PlanId } from "../plans";
 import { ACCESS_SUBSCRIPTION_STATUSES } from "./validators";
+import { ownerAccess } from "../ownerAccess";
 
 /**
  * WP64-S2. Read-only membership state: which plan an owner holds and the
@@ -152,7 +153,16 @@ export async function readMembershipState(ctx: QueryCtx, ownerId: Id<"users">) {
       .order("desc")
       .take(MEMBERSHIP_SCAN_CAP),
   ]);
-  return deriveMembership(grants, subscriptions);
+  const membership = deriveMembership(grants, subscriptions);
+  if ((await ownerAccess(ctx, ownerId)).unlimited) {
+    return {
+      plan: "builders_hub" as const,
+      billing: membership.billing.term === null
+        ? { ...NO_BILLING, term: "comp" as const, status: "active" as const }
+        : membership.billing,
+    };
+  }
+  return membership;
 }
 
 export type SeatCounts = {

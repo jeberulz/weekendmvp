@@ -168,6 +168,9 @@ const ofType = (r: Rows, type: Doc<"tasks">["type"]) => r.tasks.filter((row) => 
 const socialDocs = (r: Rows) => r.documents.filter((row) => row.kind === "social_pack");
 const cardOn = (r: Rows, documentId: Id<"documents">) => r.approvals.filter((row) => row.subjectId === documentId);
 const clonePack = (): SocialPack => JSON.parse(JSON.stringify(hydrotrailSocialPack)) as SocialPack;
+const wirePack = (pack: SocialPack) => ({
+  posts: socialPostsInOrder(pack).map(({ post }) => ({ ...post, imageAlt: post.imageAlt ?? "", pollOptions: post.pollOptions ?? [] })),
+});
 const socialOnly = (plan: Plan): PlanFor => ({ type }) => (type === "crew_social_pack" ? plan : {});
 
 function ctxFor(t: T): CrewGeneratorCtx {
@@ -264,7 +267,7 @@ describe("WP76-S2a HydroTrail launch writes the social pack draft", () => {
     const documents = socialDocs(r);
     expect(documents).toHaveLength(1);
     const document = documents[0] as Doc<"documents">;
-    expect(document).toMatchObject({ taskId: social?._id, promptRef: "crew-social-pack@2", format: "json" });
+    expect(document).toMatchObject({ taskId: social?._id, promptRef: "crew-social-pack@5", format: "json" });
     expect(JSON.parse(document.body ?? "null")).toEqual(hydrotrailSocialPack);
     expect(cardOn(r, document._id)).toEqual([expect.objectContaining({ kind: "artifact_review", status: "pending", subjectTable: "documents" })]);
     expect(r.socialPosts).toEqual([]);
@@ -313,12 +316,12 @@ describe("WP76-S2a writes nothing on a failed step", () => {
   test.each([
     ["poll options on an image post", (pack: SocialPack): void => void (pack.posts.fri.pollOptions = ["Yes", "No"])],
     ["a short caption over 280 characters", (pack: SocialPack): void => void (pack.posts.sat.shortCaption = "a".repeat(281))],
-    ["a hashtag with #", (pack: SocialPack): void => void (pack.posts.sun.hashtags = ["#hiking"])],
+    ["a hashtag containing whitespace", (pack: SocialPack): void => void (pack.posts.sun.hashtags = ["hiking group"])],
   ] as const)("an invalid output (%s) writes nothing", async (_label, edit) => {
     const w = await world();
     const bad = clonePack();
     edit(bad);
-    hooks.plan = socialOnly({ reply: () => ({ json: bad }) });
+    hooks.plan = socialOnly({ reply: () => ({ json: wirePack(bad) }) });
     await launch(w);
     await expectNothingWritten(w);
   });
@@ -334,7 +337,7 @@ describe("WP76-S2a writes nothing on a failed step", () => {
     const w = await world();
     const linked = clonePack();
     edit(linked);
-    hooks.plan = socialOnly({ reply: () => ({ json: linked }) });
+    hooks.plan = socialOnly({ reply: () => ({ json: wirePack(linked) }) });
     await launch(w);
     await expectNothingWritten(w);
   });
@@ -358,7 +361,7 @@ describe("WP76-S2a writes nothing on a failed step", () => {
       const started = await w.t.mutation(internal.crew.jobs.startCrewRun, { taskId });
       if (started.kind !== "run") throw new Error(`expected a run, got ${JSON.stringify(started)}`);
       const outcome = await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-        runId: started.runId, promptRef: "crew-social-pack@2", outputJson: JSON.stringify(hydrotrailSocialPack),
+        runId: started.runId, promptRef: "crew-social-pack@5", outputJson: JSON.stringify(hydrotrailSocialPack),
         nextAttempt: started.attempt + 1,
         ...(ids === "brief only" ? { briefDocumentId: blueprint.document._id } : {}),
         ...(ids === "kit only" ? { brandKitDocumentId: kit.document._id } : {}),
@@ -370,12 +373,38 @@ describe("WP76-S2a writes nothing on a failed step", () => {
     }
   });
 
+  test("an invalid native reply records its safe field, preserves the metered cause for older runs, and keeps the retry prerequisite separate", async () => {
+    const w = await world();
+    const bad = wirePack(clonePack());
+    bad.posts[0].imageAlt = "";
+    hooks.plan = socialOnly({ reply: () => ({ json: bad }) });
+    await launch(w);
+    await expectNothingWritten(w);
+    const [social] = ofType(await rows(w), "crew_social_pack");
+    const metered = await w.t.run(async (ctx) => await ctx.db.query("ai_usage")
+      .withIndex("by_taskId_and_sentAt", (q) => q.eq("taskId", social._id)).collect());
+    expect(metered.map((row) => row.errorClass)).toEqual(["schema_invalid", "schema_invalid"]);
+    const socialStep = async () => (await progress(w)).steps.find((step) => step.key === "social_pack");
+    const exact = { failureClass: "schema_invalid", detail: "The model returned an invalid seven-post draft (Fri image description)." };
+    expect(await socialStep()).toMatchObject({ state: "failed", retryable: true, lastFailure: exact });
+    expect(await view(w)).toEqual({ state: "failed", ...exact });
+    const kit = await newestCard(w, "brand_kit");
+    await w.t.run(async (ctx) => await ctx.db.patch("approvals", kit.card._id, { status: "changes_requested" }));
+    expect(await socialStep()).toMatchObject({ retryable: false, reason: SOCIAL_BRAND_KIT_CHANGED_REASON, lastFailure: exact });
+    expect(await view(w)).toEqual({ state: "failed", ...exact, retryBlocker: SOCIAL_BRAND_KIT_CHANGED_REASON });
+    // Older runs recorded only the failure's class in the meter.
+    await w.t.run(async (ctx) => await ctx.db.patch("tasks", social._id, { crewFailureReason: undefined }));
+    expect((await socialStep())?.lastFailure).toEqual({
+      failureClass: "schema_invalid", detail: "The model’s reply did not match the expected draft format.",
+    });
+  });
+
   test("a failed social pack reports why a retry cannot help: the blueprint changed, or the brand kit changed", async () => {
     const w = await world();
     hooks.plan = socialOnly({ reply: () => ({ refusal: { category: "cyber" } }) });
     await launch(w);
     const socialStep = async () => (await progress(w)).steps.find((step) => step.key === "social_pack");
-    expect(await socialStep()).toMatchObject({ state: "failed", retryable: true });
+    expect(await socialStep()).toMatchObject({ state: "failed", retryable: true, lastFailure: { failureClass: "refusal" } });
 
     const blueprint = await newestCard(w, "blueprint");
     await w.t.run(async (ctx) => await ctx.db.patch("approvals", blueprint.card._id, { status: "changes_requested" }));
@@ -398,7 +427,7 @@ describe("WP76-S2a replay and revisions", () => {
     const run = before.runs.find((row) => row.taskId === social._id);
     if (run === undefined) throw new Error("no run");
     expect(await w.t.mutation(internal.crew.jobs.finishCrewStep, {
-      runId: run._id, promptRef: "crew-social-pack@2", outputJson: JSON.stringify(hydrotrailSocialPack), nextAttempt: 3,
+      runId: run._id, promptRef: "crew-social-pack@5", outputJson: JSON.stringify(hydrotrailSocialPack), nextAttempt: 3,
     })).toEqual({ kind: "stale" });
     await as(w).mutation(api.crew.roster.startLaunch, { projectId: w.projectId });
     await w.t.finishAllScheduledFunctions(vi.runAllTimers);
@@ -412,11 +441,11 @@ describe("WP76-S2a replay and revisions", () => {
     const w = await launch(await world());
     const first = socialDocs(await rows(w))[0] as Doc<"documents">;
     const revisionId = await socialRevision(w);
-    const outcome = await runStep(w, revisionId, () => ({ json: revisedPack() }));
+    const outcome = await runStep(w, revisionId, () => ({ json: wirePack(revisedPack()) }));
     if (outcome.kind !== "finished") throw new Error(`revision did not finish: ${JSON.stringify(outcome)}`);
     const r = await rows(w);
     const revised = r.documents.find((row) => row._id === outcome.documentId);
-    expect(revised).toMatchObject({ kind: "social_pack", supersedesDocumentId: first._id, promptRef: "crew-social-pack@2" });
+    expect(revised).toMatchObject({ kind: "social_pack", supersedesDocumentId: first._id, promptRef: "crew-social-pack@5" });
     expect(socialDocs(r)).toHaveLength(2);
     expect(cardOn(r, outcome.documentId)).toEqual([expect.objectContaining({ kind: "artifact_review", status: "pending", changeRound: 1n })]);
     expect(r.socialPosts).toEqual([]);
@@ -433,7 +462,7 @@ describe("WP76-S2a replay and revisions", () => {
     const w = await launch(await world());
     const before = await rows(w);
     const revisionId = await socialRevision(w, approved);
-    const outcome = await runStep(w, revisionId, () => ({ json: revisedPack() }));
+    const outcome = await runStep(w, revisionId, () => ({ json: wirePack(revisedPack()) }));
     expect(outcome).toMatchObject({ kind: "failed" });
     const after = await rows(w);
     expect(socialDocs(after)).toEqual(socialDocs(before));

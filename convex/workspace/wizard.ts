@@ -35,8 +35,14 @@ import {
   type WizardIdea,
   type WizardSeed,
 } from "../../lib/workspace/wizard/defaults";
-import { summarizeStep, type FounderSignalAction } from "../../lib/workspace/wizard/labels";
+import {
+  blueprintNotesSummary,
+  carriedBlueprintNotes,
+  summarizeStep,
+  type FounderSignalAction,
+} from "../../lib/workspace/wizard/labels";
 import { mirrorSignal, recordFounderSignal } from "./signals";
+import { businessLimitFor } from "./business";
 
 /**
  * WP74-S1 launch wizard: eight steps (C-WIZARD `WIZARD_STEPS`, D10 — no SMS
@@ -155,6 +161,8 @@ const sessionViewValidator = v.object({
   answers: answersValidator,
   defaults: answersValidator,
   suggestedNames: v.array(v.string()),
+  /** Roster per idea S2: the lead names the partner-name step offers. */
+  suggestedPartnerNames: v.array(v.string()),
   blueprint: blueprintPreviewValidator,
   seedSource: v.union(
     v.literal("idea_crew_seeds"),
@@ -171,6 +179,12 @@ const sessionViewValidator = v.object({
     v.null(),
     v.object({ projectId: v.id("projects"), name: v.string(), slug: v.string() }),
   ),
+  /**
+   * L1 F6: set when this session has no business yet and the owner's plan
+   * allowance is used, so the wizard says so up front instead of after the
+   * last step. `projectId` is the owner's own live business, when there is one.
+   */
+  businessLimit: v.union(v.null(), v.object({ limit: v.number(), projectId: v.union(v.id("projects"), v.null()) })),
 });
 export type WizardSessionView = Infer<typeof sessionViewValidator>;
 
@@ -225,12 +239,17 @@ async function libraryIdea(ctx: Pick<QueryCtx, "db">, slug: string): Promise<Doc
   return idea === null || idea.editorialVisibility === "removed" ? null : idea;
 }
 
-async function seedFor(ctx: Pick<QueryCtx, "db">, idea: WizardIdea): Promise<{ seed: WizardSeed; title: string }> {
+/** `sessionId` picks the session's lead-name suggestions (roster per idea S2). */
+async function seedFor(
+  ctx: Pick<QueryCtx, "db">,
+  idea: WizardIdea,
+  sessionId: Id<"wizard_sessions">,
+): Promise<{ seed: WizardSeed; title: string }> {
   if (idea.source === "own_idea") {
     // WP74-S3 seam (Option A, awaiting the owner's ruling): pass the session's
     // stored gateway draft here as `ownIdeaDraft`. `wizardSeedFor` already runs
     // it through `acceptLightBlueprint` and falls back when it is rejected.
-    return { seed: wizardSeedFor({ idea }), title: idea.text };
+    return { seed: wizardSeedFor({ idea, leadSeedKey: sessionId }), title: idea.text };
   }
   const row = await libraryIdea(ctx, idea.ideaSlug);
   const title = row?.title ?? idea.ideaSlug;
@@ -247,6 +266,7 @@ async function seedFor(ctx: Pick<QueryCtx, "db">, idea: WizardIdea): Promise<{ s
     seed: wizardSeedFor({
       idea,
       ideaTitle: title,
+      leadSeedKey: sessionId,
       storedSeed,
       ideaFacts: {
         researchLevel: row?.researchLevel ?? null,
@@ -386,12 +406,22 @@ async function commitStep(
   }
 
   // Classify against the seed the session had before this decision.
-  const { seed } = await seedFor(ctx, sessionIdea(current));
+  const { seed } = await seedFor(ctx, sessionIdea(current), session._id);
+  // "Looks good" after rework notes keeps the notes: the completed answers only
+  // hold `looks_good`, so the blueprint signal (which the crew reads) carries them.
+  const approvedNotes =
+    step === "blueprint" && merged.blueprintDecision?.decision === "looks_good" ? carriedBlueprintNotes(current) : null;
   const action: FounderSignalAction =
     forcedAction ??
-    (isDefaultAnswer(step, merged, seed) ? "kept" : isRewrittenAnswer(step, merged, seed) ? "rewrote" : "changed");
+    (approvedNotes !== null
+      ? "changed"
+      : isDefaultAnswer(step, merged, seed)
+        ? "kept"
+        : isRewrittenAnswer(step, merged, seed)
+          ? "rewrote"
+          : "changed");
   const before = options.hadSuggestion ? summarizeStep(step, seed.defaults) : undefined;
-  const after = summarizeStep(step, merged);
+  const after = approvedNotes !== null ? blueprintNotesSummary(approvedNotes) : summarizeStep(step, merged);
   const now = Date.now();
 
   await recordFounderSignal(ctx, { ownerId: session.ownerId, session, step, action, before, after, now });
@@ -519,6 +549,19 @@ export const startOrResume = mutation({
     const existing = await activeSessionFor(ctx, user._id, idea);
     if (existing) return existing._id;
 
+    // L1 F6: a founder at the business allowance cannot start a new build, so
+    // refuse before spending the wizard-start allowance. Resumed sessions
+    // above are told on the session view instead.
+    const atLimit = await businessLimitFor(ctx, user._id);
+    if (atLimit !== null) {
+      throw new ConvexError({
+        code: "BUSINESS_LIMIT_REACHED",
+        plan: atLimit.plan,
+        limit: atLimit.limit,
+        ...(atLimit.projectId === null ? {} : { projectId: atLimit.projectId }),
+      });
+    }
+
     // C-LIMITS: only a new session spends the daily wizard-start allowance. A
     // refusal throws here, so nothing below is written. It also needs the
     // `ai` feature, because the blueprint and roster spend AI right after start.
@@ -552,7 +595,7 @@ export const getSession = query({
     await assertFeatureEnabled(ctx, "workspace");
     const session = await requireOwnedWizardSession(ctx, args.sessionId, { allowLinked: true });
     const answers = storedAnswers(session);
-    const { seed, title } = await seedFor(ctx, sessionIdea(answers));
+    const { seed, title } = await seedFor(ctx, sessionIdea(answers), session._id);
     const step = sessionStep(session);
     const project = session.projectId === undefined ? null : await ctx.db.get("projects", session.projectId);
     const business = project !== null && project.ownerId === session.ownerId && project.workspace !== undefined
@@ -568,14 +611,27 @@ export const getSession = query({
       answers,
       defaults: seed.defaults,
       suggestedNames: [...seed.suggestedNames],
+      suggestedPartnerNames: [...seed.suggestedPartnerNames],
       blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
       seedSource: seed.source,
       hints: hintsView(seed),
       crew: crewPreviewFor(seed.profile, answers, seed.defaults),
       business,
+      businessLimit: await sessionBusinessLimit(ctx, session, business !== null),
     };
   },
 });
+
+/** The session view's `businessLimit`: only for a session that has not made its business yet. */
+async function sessionBusinessLimit(
+  ctx: QueryCtx,
+  session: Doc<"wizard_sessions">,
+  hasBusiness: boolean,
+): Promise<{ limit: number; projectId: Id<"projects"> | null } | null> {
+  if (hasBusiness || session.projectId !== undefined) return null;
+  const atLimit = await businessLimitFor(ctx, session.ownerId);
+  return atLimit === null ? null : { limit: atLimit.limit, projectId: atLimit.projectId };
+}
 
 /** Saves the current step's answer (classified as `kept`, `changed` or `rewrote`) and moves on. */
 export const saveStep = mutation({
@@ -599,7 +655,7 @@ export const skipStep = mutation({
     const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
-    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
+    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)), session._id);
     return await commitStep(ctx, session, args.step, seed.defaults[stepKey(args.step)], "skipped");
   },
 });
@@ -617,7 +673,7 @@ export const rewriteStep = mutation({
     const session = await requireOwnedWizardSession(ctx, args.sessionId);
     if (session.completedAt !== undefined) return deny("SESSION_COMPLETE");
     if (args.step !== sessionStep(session)) return unchanged(session);
-    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)));
+    const { seed } = await seedFor(ctx, sessionIdea(storedAnswers(session)), session._id);
     return await commitStep(ctx, session, args.step, rewriteAnswer(args.step, args.text, seed), "rewrote");
   },
 });

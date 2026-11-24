@@ -35,6 +35,7 @@ import { z } from "zod";
 import {
   artifactOutputSchemas,
   blueprintVariantSchemas,
+  SOCIAL_DAYS,
   buildPackVariantSchemas,
   type ArtifactKind,
 } from "../../../lib/workspace/contracts/artifacts";
@@ -44,12 +45,20 @@ import {
   ownIdeaLightBlueprint,
 } from "../../../lib/workspace/contracts/fixtures/hydrotrail";
 import { promptRef } from "../../../lib/workspace/contracts/prompts";
-import { ideaSeedSpec } from "../prompts/ideaSeed.v1";
+import { blueprintOwnIdeaSpec } from "../prompts/blueprintOwnIdea.v3";
+import { blueprintPersonaliseSpec } from "../prompts/blueprintPersonalise.v3";
+import { crewConsultationSpec } from "../prompts/crewConsultation";
+import { ideaImproveSpec } from "../prompts/ideaImprove.v1";
+import { socialPackSpec } from "../prompts/socialPack.v5";
+import { ideaSeedSpec } from "../prompts/ideaSeed.v3";
 import { wrenChatSpec } from "../prompts/wrenChat";
 import { wrenPlanTurnSpec } from "../prompts/wrenPlanTurn";
 import { canonicalJson, getEntry, type PromptEntry } from "../registry";
+import { blueprintFixtureReply } from "./blueprintFixtureReply";
+import { ideaImproveFixtureReply } from "./ideaImproveFixtureReply";
 import { seedFixtureReply } from "./seedFixtureReply";
 import { wrenFixtureReply } from "./wrenFixtureReply";
+import { promptedSchemaFrom, wireOutputSchema } from "./wireSchema";
 
 /**
  * A fixture reply value: the JSON the fixture model "returns". It may read
@@ -66,13 +75,28 @@ export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) 
  *   (`wrenFixtureReply.ts`). Both specs share a system block and an output
  *   schema, so they share one fingerprint; the reply tells them apart by
  *   the task block.
- * - The per-idea seed (`crew-idea-seed@1`, WP90-S3): a test-mode seed draft
+ * - The blueprint prompts (version 3, roster per idea WP91): the HydroTrail or
+ *   own-idea blueprint with a profile and team picked from the idea's own
+ *   words (`blueprintFixtureReply.ts`), so local teams differ by idea.
+ * - The per-idea seed (`crew-idea-seed@3`, WP90-S3): a test-mode seed draft
  *   built from the quoted idea page (`seedFixtureReply.ts`).
+ * - Improve with AI (`wizard-idea-improve@1`, WP100): a tidied version of the
+ *   founder's own sentence (`ideaImproveFixtureReply.ts`).
  */
 export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
+  [promptRef(crewConsultationSpec)]: () => ({ answer: "Test mode: this is a fixture specialist response. No AI model wrote this answer." }),
   [promptRef(wrenChatSpec)]: wrenFixtureReply,
   [promptRef(wrenPlanTurnSpec)]: wrenFixtureReply,
+  [promptRef(blueprintPersonaliseSpec)]: blueprintFixtureReply,
+  [promptRef(blueprintOwnIdeaSpec)]: blueprintFixtureReply,
   [promptRef(ideaSeedSpec)]: seedFixtureReply,
+  [promptRef(socialPackSpec)]: () => ({
+    posts: SOCIAL_DAYS.map((day) => {
+      const row = hydrotrailArtifacts.social_pack.posts[day];
+      return { ...clone(row), imageAlt: row.imageAlt ?? "", pollOptions: row.pollOptions ?? [] };
+    }),
+  }),
+  [promptRef(ideaImproveSpec)]: ideaImproveFixtureReply,
 });
 
 type ArtifactFixture = { readonly key: string; readonly schema: z.ZodType; readonly output: FixtureOutput };
@@ -112,11 +136,11 @@ export const ARTIFACT_FIXTURES: readonly ArtifactFixture[] = Object.freeze([
   { key: "build_pack", schema: artifactOutputSchemas.build_pack, output: () => clone(hydrotrailArtifacts.build_pack) },
 ]);
 
-/** The output schema as the gateway sends it (`outputJsonSchema`): zod's JSON Schema without `$schema`. */
+/** The output schema as the request carries it: zod's JSON Schema without `$schema`, in its wire form (`wireOutputSchema`). */
 function sentSchema(schema: z.ZodType): Record<string, unknown> {
   const json: Record<string, unknown> = { ...z.toJSONSchema(schema) };
   delete json.$schema;
-  return json;
+  return wireOutputSchema(json);
 }
 
 function schemaKey(schema: unknown): string | null {
@@ -125,6 +149,20 @@ function schemaKey(schema: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The reply schema a request carries: `output_config.format.schema`, or, for a
+ * prompted request (`outputMode: "prompted"`), the schema in its second system
+ * block (`promptedSchemaFrom`). Undefined when the request has neither.
+ */
+export function requestSchemaOf(params: Anthropic.MessageCreateParamsNonStreaming): unknown {
+  const format = params.output_config?.format?.schema;
+  if (format !== undefined) return format;
+  const system = params.system;
+  if (system === undefined || typeof system === "string") return undefined;
+  const second = system[1]?.text;
+  return second === undefined ? undefined : promptedSchemaFrom(second);
 }
 
 function firstSystemText(params: Anthropic.MessageCreateParamsNonStreaming): string | null {
@@ -181,7 +219,7 @@ export function createFixtureOutputRegistry(options: FixtureOutputRegistryOption
   return {
     outputFor(params) {
       if (registrationError !== null) throw registrationError;
-      const schema = params.output_config?.format?.schema;
+      const schema = requestSchemaOf(params);
       if (schema === undefined) return undefined;
       const system = firstSystemText(params);
       if (system !== null) {

@@ -1,42 +1,47 @@
 /**
- * Crew role catalogue and hiring rules (WP69-S3).
+ * Crew role catalogue and hiring rules (WP69-S3; roster per idea, WP91).
  *
  * Plain TypeScript module of pure functions. It deliberately registers no
  * Convex functions and does no I/O; later Convex code calls `planRoster`.
+ *
+ * Who is hired (WP91, owner decision 2026-11-07):
+ * - the core (`CORE_ROLE_KEYS`: Crew Lead, Brand, Email, Social) always;
+ * - a paid push always hires Ads, and a course always hires Curriculum: the
+ *   founder stated those facts, so no proposal can drop them;
+ * - every other optional role follows the Crew Lead's proposal from the
+ *   blueprint (`RosterInput.proposal`, already cleaned), with its reason;
+ * - a role the proposal does not answer falls back to the WP69 rules, with the
+ *   rule's reason. With no proposal at all the team is the WP69 one.
  */
 import {
-  ALWAYS_HIRED_ROLE_KEYS,
+  CORE_ROLE_KEYS,
+  isCoreRoleKey,
   rosterInputSchema,
   rosterPlanSchema,
   singleLineText,
+  type CoreRoleKey,
   type EngineeringWeight,
   type GoalKind,
   type IdeaKind,
+  type OptionalRoleKey,
   type RoleKey,
   type RosterInput,
   type RosterPlan,
+  type TeamDecision,
 } from "../../lib/workspace/contracts/roster";
 
-export const ROSTER_RULES_VERSION = "2026-11-07.1";
+export const ROSTER_RULES_VERSION = "2026-11-08.1";
 
 export type RoleCatalogueEntry = {
   readonly key: RoleKey;
   readonly label: string;
   readonly employeeName: string;
+  /** A core role (`CORE_ROLE_KEYS`), hired for every business. */
   readonly always: boolean;
   readonly does: string;
 };
 
-type AlwaysKey = (typeof ALWAYS_HIRED_ROLE_KEYS)[number];
-type ExtraKey = Exclude<RoleKey, AlwaysKey>;
-
-const ALWAYS_SET: ReadonlySet<RoleKey> = new Set<RoleKey>(
-  ALWAYS_HIRED_ROLE_KEYS,
-);
-
-function isAlwaysKey(key: RoleKey): key is AlwaysKey {
-  return ALWAYS_SET.has(key);
-}
+const CORE_SET: ReadonlySet<RoleKey> = new Set<RoleKey>(CORE_ROLE_KEYS);
 
 function assertNever(value: never): never {
   throw new Error(`Unhandled value: ${String(value)}`);
@@ -126,7 +131,7 @@ const CATALOGUE_SOURCE: readonly Omit<RoleCatalogueEntry, "always">[] = [
 export const ROLE_CATALOGUE: readonly RoleCatalogueEntry[] =
   CATALOGUE_SOURCE.map((entry) => ({
     ...entry,
-    always: ALWAYS_SET.has(entry.key),
+    always: CORE_SET.has(entry.key),
   }));
 
 /** Optional founder-chosen display name for the lead. */
@@ -154,6 +159,10 @@ const PRODUCT_NOUN: Record<IdeaKind, string> = {
 
 /** Order in which skipped roles are listed. */
 const SKIPPED_ORDER: readonly RoleKey[] = [
+  "landing",
+  "seo",
+  "marketing",
+  "engineering",
   "ads",
   "merch",
   "outbound",
@@ -226,31 +235,16 @@ function landingReason(goal: GoalKind): string {
     : "Site and waitlist";
 }
 
-function alwaysReason(key: AlwaysKey, input: RosterInput): string {
+function coreReason(key: CoreRoleKey, input: RosterInput): string {
   switch (key) {
     case "lead":
       return "Routes approvals; the only voice in chat";
     case "brand":
       return "Logo, palette, voice";
-    case "landing":
-      return landingReason(input.goal.kind);
-    case "seo":
-      return input.ideaKind === "local_business"
-        ? "Local searches and map listings"
-        : "People search for this problem";
-    case "marketing": {
-      const phrase = goalPhrase(input);
-      return phrase ? `Owns ${phrase}` : "Owns the first goal";
-    }
     case "email":
       return emailReason(input.goal.kind);
     case "social":
       return "Launch posts";
-    case "engineering":
-      return engineeringReason(
-        input.ideaKind,
-        engineeringWeight(input.ideaKind),
-      );
     default:
       return assertNever(key);
   }
@@ -293,6 +287,97 @@ function sellsGoods(input: RosterInput): boolean {
   return input.ideaKind === "local_business" && input.sellsGoods === true;
 }
 
+/** The founder-stated facts no proposal can override (owner decision Q2): a paid push hires Ads, a course hires Curriculum. */
+function forcedHire(key: OptionalRoleKey, input: RosterInput): boolean {
+  if (key === "ads") return input.goal.paidPush !== null;
+  if (key === "curriculum") return input.ideaKind === "course";
+  return false;
+}
+
+/** The WP69 rule for an optional role, used when the proposal does not answer it. */
+function ruleHires(key: OptionalRoleKey, input: RosterInput): boolean {
+  switch (key) {
+    case "landing":
+    case "seo":
+    case "marketing":
+    case "engineering":
+      return true;
+    case "ads":
+      return input.goal.paidPush !== null;
+    case "curriculum":
+      return input.ideaKind === "course";
+    case "community":
+      return input.ideaKind === "course" || input.deliveryFormat === "cohort";
+    case "merch":
+      return sellsGoods(input);
+    case "outbound":
+      return input.buyer === "business";
+    default:
+      return assertNever(key);
+  }
+}
+
+function ruleHireReason(key: OptionalRoleKey, input: RosterInput): string {
+  switch (key) {
+    case "landing":
+      return landingReason(input.goal.kind);
+    case "seo":
+      return input.ideaKind === "local_business" ? "Local searches and map listings" : "People search for this problem";
+    case "marketing": {
+      const phrase = goalPhrase(input);
+      return phrase ? `Owns ${phrase}` : "Owns the first goal";
+    }
+    case "engineering":
+      return engineeringReason(input.ideaKind, engineeringWeight(input.ideaKind));
+    case "ads":
+      return `Goal has a paid push: $${formatUsd(input.goal.paidPush?.dailyBudgetUsd ?? 0)}/day test`;
+    case "curriculum":
+      return "Idea kind is course";
+    case "community":
+      return communityHireReason(input);
+    case "merch":
+      return input.ideaKind === "local_business" ? "Sells goods in store" : "Idea kind is physical product";
+    case "outbound":
+      return "Buyer is a business";
+    default:
+      return assertNever(key);
+  }
+}
+
+function ruleSkipReason(key: OptionalRoleKey, input: RosterInput): string {
+  switch (key) {
+    case "landing":
+    case "seo":
+    case "marketing":
+    case "engineering":
+      // The rules always hire these; only a proposal skips them, with its own reason.
+      return "Not needed for this idea yet";
+    case "ads":
+      return "No paid goal yet";
+    case "curriculum":
+      return "No course content";
+    case "community":
+      return communitySkipReason(input);
+    case "merch":
+      return merchSkipReason(input.ideaKind);
+    case "outbound":
+      return outboundSkipReason(input);
+    default:
+      return assertNever(key);
+  }
+}
+
+type Decision = { readonly hire: boolean; readonly reason: string; readonly byLead: boolean };
+
+/** Who decides an optional role: a forced rule, else the lead's proposal, else the WP69 rule. */
+function decide(key: OptionalRoleKey, input: RosterInput, proposal: ReadonlyMap<RoleKey, TeamDecision>): Decision {
+  if (forcedHire(key, input)) return { hire: true, reason: ruleHireReason(key, input), byLead: false };
+  const proposed = proposal.get(key);
+  if (proposed !== undefined) return { hire: proposed.hire, reason: proposed.reason, byLead: true };
+  const hire = ruleHires(key, input);
+  return { hire, reason: hire ? ruleHireReason(key, input) : ruleSkipReason(key, input), byLead: false };
+}
+
 export function planRoster(
   rawInput: RosterInput,
   options?: { leadName?: string },
@@ -300,53 +385,7 @@ export function planRoster(
   const input = rosterInputSchema.parse(rawInput);
   const rawLead = options?.leadName?.trim();
   const leadName = rawLead ? leadNameSchema.parse(rawLead) : undefined;
-
-  const isCourse = input.ideaKind === "course";
-  const isCohort = input.deliveryFormat === "cohort";
-
-  const hireExtras: Record<ExtraKey, boolean> = {
-    ads: input.goal.paidPush !== null,
-    curriculum: isCourse,
-    community: isCourse || isCohort,
-    merch: sellsGoods(input),
-    outbound: input.buyer === "business",
-  };
-
-  const extraHireReason = (key: ExtraKey): string => {
-    switch (key) {
-      case "ads":
-        return `Goal has a paid push: $${formatUsd(input.goal.paidPush?.dailyBudgetUsd ?? 0)}/day test`;
-      case "curriculum":
-        return "Idea kind is course";
-      case "community":
-        return communityHireReason(input);
-      case "merch":
-        return input.ideaKind === "local_business"
-          ? "Sells goods in store"
-          : "Idea kind is physical product";
-      case "outbound":
-        return "Buyer is a business";
-      default:
-        return assertNever(key);
-    }
-  };
-
-  const extraSkipReason = (key: ExtraKey): string => {
-    switch (key) {
-      case "ads":
-        return "No paid goal yet";
-      case "curriculum":
-        return "No course content";
-      case "community":
-        return communitySkipReason(input);
-      case "merch":
-        return merchSkipReason(input.ideaKind);
-      case "outbound":
-        return outboundSkipReason(input);
-      default:
-        return assertNever(key);
-    }
-  };
+  const proposal = new Map<RoleKey, TeamDecision>((input.proposal ?? []).map((entry) => [entry.roleKey, entry]));
 
   const hired: RosterPlan["hired"] = [];
   const skipped: RosterPlan["skipped"] = [];
@@ -355,32 +394,38 @@ export function planRoster(
     const key = entry.key;
     const employeeName =
       key === "lead" && leadName ? leadName : entry.employeeName;
-    if (isAlwaysKey(key)) {
+    if (isCoreRoleKey(key)) {
       hired.push({
         roleKey: key,
         employeeName,
         roleLabel: entry.label,
         hiredBy: "rule",
         always: true,
-        ...(key === "engineering"
-          ? { weight: engineeringWeight(input.ideaKind) }
-          : {}),
-        reason: alwaysReason(key, input),
+        reason: coreReason(key, input),
       });
-    } else if (hireExtras[key]) {
+      continue;
+    }
+    const decision = decide(key, input, proposal);
+    const byLead = decision.byLead ? { decidedBy: "lead" as const } : {};
+    if (decision.hire) {
       hired.push({
         roleKey: key,
         employeeName,
         roleLabel: entry.label,
         hiredBy: "rule",
         always: false,
-        reason: extraHireReason(key),
+        ...(key === "engineering"
+          ? { weight: engineeringWeight(input.ideaKind) }
+          : {}),
+        reason: decision.reason,
+        ...byLead,
       });
     } else {
       skipped.push({
         roleKey: key,
         roleLabel: entry.label,
-        reason: extraSkipReason(key),
+        reason: decision.reason,
+        ...byLead,
       });
     }
   }
@@ -415,8 +460,8 @@ export function summariseRoster(plan: RosterPlan): {
   const extras = plan.hired.filter((h) => !h.always).map((h) => h.roleLabel);
   const hiredPart =
     extras.length === 0
-      ? `${hiredCount} hired: the ${alwaysCount} always-on roles.`
-      : `${hiredCount} hired: the ${alwaysCount} always-on roles plus ${joinNames(extras)}.`;
+      ? `${hiredCount} hired: the ${alwaysCount} core roles.`
+      : `${hiredCount} hired: the ${alwaysCount} core roles plus ${joinNames(extras)}.`;
   const skippedPart =
     skippedCount === 0
       ? "0 skipped."
@@ -445,13 +490,13 @@ export function renderTeamMd(
 ): string {
   const hiredLines = plan.hired.map((h) => {
     const tags: string[] = [
-      h.always ? "always" : h.hiredBy === "founder" ? "founder" : "added",
+      h.always ? "core" : h.hiredBy === "founder" ? "founder" : h.decidedBy === "lead" ? "lead's call" : "added",
     ];
     if (h.weight) tags.push(`weight: ${h.weight}`);
     return `- ${h.roleKey}: ${flat(h.employeeName)} (${tags.join(", ")}) — ${lowerFirst(flat(h.reason))}`;
   });
   const skippedLines = plan.skipped.map(
-    (s) => `- ${s.roleKey} — ${lowerFirst(flat(s.reason))}`,
+    (s) => `- ${s.roleKey}${s.decidedBy === "lead" ? " (lead's call)" : ""} — ${lowerFirst(flat(s.reason))}`,
   );
   return [
     `# TEAM.md — ${flat(meta.businessName)}`,

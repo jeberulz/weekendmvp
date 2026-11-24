@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { Clock } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
@@ -12,7 +12,7 @@ import { LiveArtifactReview } from "@/components/workspace/review/LiveArtifactRe
 import { StatusPill } from "@/components/workspace/kit/StatusPill";
 import { useNow } from "@/components/workspace/kit/useNow";
 import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit/states";
-import { CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
+import { BTN_SECONDARY, CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { cn } from "@/lib/utils";
 import {
   EMAIL_APPROVED_NOTE,
@@ -56,7 +56,7 @@ type ReadyView = Extract<EmailDraftView, { state: "ready" }>;
 type EmailView = ReadyView["emails"][number];
 export type EmailDecide = ReviewDecide;
 
-const EMAIL_ARTIFACT = { plural: "emails", approvedNote: EMAIL_APPROVED_NOTE, approvalKind: "send" } as const;
+const EMAIL_ARTIFACT = { plural: "emails", approvedNote: EMAIL_APPROVED_NOTE, approvalKind: "send", piece: "email_sequence" } as const;
 
 function MergeText({ text }: { text: string }) {
   return (
@@ -221,6 +221,22 @@ function StepRail({ emails, selected, onSelect, baseId, panelId }: {
 
 function ReadyEmail({ projectId, view }: { projectId: Id<"projects">; view: ReadyView }) {
   const [selected, setSelected] = useState(0);
+  const retry = useMutation(api.growth.drafts.emailSequence.retryEmailHandoff);
+  const [retrying, setRetrying] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  async function retryHandoff() {
+    if (!view.failedHandoff?.canRetry || retrying) return;
+    setRetrying(true);
+    try {
+      const result = await retry({ projectId, taskId: view.failedHandoff.taskId });
+      setFeedback(result === "queued" ? "Elle received your retry request." : result === "spend_required"
+        ? "Review the credit cost in Team HQ to start the rewrite." : "The draft or its approval changed. Check the latest status in Team HQ.");
+    } catch {
+      setFeedback("The retry request could not be confirmed. Check Team HQ for its status.");
+    } finally {
+      setRetrying(false);
+    }
+  }
   // Read once on the client, the same way the review card reads its expiry.
   const now = useNow();
   const baseId = useId();
@@ -231,6 +247,17 @@ function ReadyEmail({ projectId, view }: { projectId: Id<"projects">; view: Read
   return (
     <div className="flex flex-col gap-4">
       <DraftsOnlyStrip />
+      {view.failedHandoff && (
+        <div className={cn(CARD, "p-4")}>
+          <p className="text-sm text-home-ink">{view.failedHandoff.reason}</p>
+          {view.failedHandoff.canRetry ? (
+            <button type="button" onClick={retryHandoff} disabled={retrying} className={cn(BTN_SECONDARY, "mt-2")}>
+              {retrying ? "Requesting a retry…" : "Retry Elle’s rewrite"}
+            </button>
+          ) : <p className="mt-2 text-sm text-home-ink-2">Ask your lead for a new rewrite using the current brand kit.</p>}
+        </div>
+      )}
+      {feedback && <p role="status" className="text-sm text-home-ink-2">{feedback}</p>}
       <section aria-labelledby={`${baseId}-seq`} className="@container flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

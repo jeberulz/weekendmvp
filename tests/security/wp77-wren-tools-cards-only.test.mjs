@@ -131,6 +131,8 @@ const STRICT_FILES = {
     ["../../lib/workspace/wrenCards", null],
     ["../../lib/workspace/contracts/approvals", ["isPendingApprovalStale"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_APPROVAL_SUBJECTS", "WrenApprovalKind"]],
+    // L1 F1: a read-only C-OPS check that narrows what may be raised.
+    ["../ops/settings", ["approvalKindSwitchedOn", "getOpsSettings"]],
     ["./approvals", [
       "approvalKindValidator", "approvalStatusValidator", "createApprovalRecord", "readSubjectState", "subjectRefusal",
       "SubjectState",
@@ -148,7 +150,8 @@ const CHAT_IMPORTS = {
     ["../_generated/api", ["internal"]],
     ["../_generated/dataModel", ["Doc", "Id"]],
     ["../_generated/server", ["internalMutation", "internalQuery", "mutation", "query", "MutationCtx", "QueryCtx"]],
-    ["../ops/settings", ["assertFeatureEnabled"]],
+    // `approvalKindSwitchedOn` + `getOpsSettings`: L1 F1, Wren is not offered cards for switched-off actions.
+    ["../ops/settings", ["approvalKindSwitchedOn", "assertFeatureEnabled", "getOpsSettings"]],
     ["../platform/authz", ["requireBusinessAccess", "requireBusinessForOwner"]],
     ["../platform/limits", ["checkLimit"]],
     ["../ai/prompts/wrenChat", ["wrenChatSpec"]],
@@ -159,7 +162,16 @@ const CHAT_IMPORTS = {
       "applyWrenMemoryProposal", "memoryForPrompt", "memoryVersionOf", "pairedFounderMessage", "readWrenMemory",
       "wrenMemoryProposalValidator",
     ]],
-    ["./approvals", APPROVAL_VALIDATORS],
+    // WP94: the sole command boundary accepts a typed request derived from the founder's own row.
+    ["./approvals", [...APPROVAL_VALIDATORS, "requestCrewRevision"]],
+    ["./crewStatus", ["readCrewStatus"]],
+    ["./crewApprovalAnswer", ["readCrewApprovalAnswer"]],
+    ["./consultationRoster", ["readConsultationRoster"]],
+    ["./wrenHandoffReceipt", ["readWrenHandoffReceipt"]],
+    ["../../lib/workspace/crew/consultation", ["consultationAttemptsAvailable", "consultationMember", "crewConsultationIntent"]],
+    ["../growth/drafts/emailSequence", ["readEmailSequenceDraft"]],
+    ["../../lib/workspace/contracts/roster", ["ROLE_KEYS"]],
+    ["../../lib/workspace/crewAssignment", ["answerOnlyRequest", "artifactReviewQuestion", "capabilityQuestion", "handoffGuide", "crewAssignmentIntent", "REVISION_TARGETS", "declinedRevisionMessage", "emailPreviewRequest", "specialistStatusAnswer"]],
     ["../../lib/workspace/plainText", ["sliceWellFormed"]],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARDS_PER_TURN"]],
@@ -183,7 +195,7 @@ const CHAT_IMPORTS = {
       "wrenMemoryOverlongMarker",
     ]],
     ["../../lib/workspace/plainText", ["dropLoneSurrogates"]],
-    ["./chat", ["WREN_PROMPT_REFS", "finishOutcomeValidator"]],
+    ["./chat", ["WREN_PROMPT_REFS", "loadedTurnValidator", "finishOutcomeValidator"]],
   ]),
 };
 
@@ -242,11 +254,19 @@ const PLATFORM_GATES = new Set([
   "convex/ops/settings.ts",
   "convex/platform/authz.ts",
   "convex/platform/limits.ts",
+  "convex/workspace/crewStatus.ts",
+  "convex/workspace/crewApprovalAnswer.ts",
+  "convex/workspace/consultationRoster.ts",
+  "convex/workspace/wrenHandoffReceipt.ts",
+  "convex/growth/drafts/emailSequence.ts",
+  "lib/workspace/contracts/roster.ts",
 ]);
 
 /** Pure modules the chat and handler modules import. Scanned below (no ctx, no db, no I/O). */
 const PURE_HELPERS = [
   "lib/workspace/wren.ts",
+  "lib/workspace/crewAssignment.ts",
+  "lib/workspace/crew/consultation.ts",
   "lib/workspace/contracts/prompts.ts",
   "lib/workspace/contracts/wrenTools.ts",
   "convex/ai/prompts/wrenChat.ts",
@@ -265,7 +285,7 @@ const CHAT_WRITE_TABLES = new Set(["chat_messages"]);
 const CHAT_TARGETS = {
   runMutation: new Set(["internal.workspace.chat.finishWrenTurn"]),
   runQuery: new Set(["internal.workspace.chat.loadWrenTurn"]),
-  runAction: new Set(["internal.ai.gatewayActions.runPrompt"]),
+  runAction: new Set(["internal.ai.gatewayActions.runPrompt", "internal.workspace.crewConsultationActions.run"]),
   runAfter: new Set(["internal.workspace.chatActions.runWrenTurn"]),
 };
 const ALL_TARGETS = new Set(Object.values(CHAT_TARGETS).flatMap((targets) => [...targets]));
@@ -292,7 +312,7 @@ const BANNED_PROPERTIES = new Set(["eval", "Function", "constructor", "__proto__
 
 /** Module-level constant maps the strict and chat files may index with a computed key. */
 const STATIC_MAPS = new Set([
-  "FIELDS", "WREN_APPROVAL_SUBJECTS", "WREN_EXPLAIN_TOPICS", "WREN_NAVIGATE_ROUTES", "WREN_FAILURE_COPY", "WREN_PROMPT_REFS",
+  "REVISION_TARGETS", "FIELDS", "WREN_APPROVAL_SUBJECTS", "WREN_EXPLAIN_TOPICS", "WREN_NAVIGATE_ROUTES", "WREN_FAILURE_COPY", "WREN_PROMPT_REFS",
 ]);
 /** `Object.*` members that expose or rewire an object's properties. */
 const BANNED_OBJECT_MEMBERS = new Set([
@@ -699,7 +719,7 @@ function scanTargets(fileName, sourceFile, problems) {
           problems.push(`${fileName}:${line(sourceFile, node)} uses ${name} outside a direct call`);
         } else {
           const target = (name === "runAfter" ? call.arguments[1] : call.arguments[0])?.getText(sourceFile) ?? "";
-          if (!CHAT_TARGETS[name].has(target)) problems.push(`${fileName}:${line(sourceFile, node)} ${name}(${target})`);
+          if (!CHAT_TARGETS[name].has(target) || (target === "internal.workspace.crewConsultationActions.run" && fileName !== "convex/workspace/chatActions.ts")) problems.push(`${fileName}:${line(sourceFile, node)} ${name}(${target})`);
         }
       }
       // The outermost chain rooted at `internal` must be one exact allowed reference.
@@ -1191,6 +1211,8 @@ test("fixtures: the chat scan catches each side-effect shape", () => {
     patchApproval: "export async function f(ctx,id){ await ctx.db.patch(\"approvals\", id, {status:\"approved\"}); }",
     helper: "import { go } from \"./wrenHelpers\"; export async function f(ctx){ await go(ctx); }",
     insertTask: "export async function f(ctx){ await ctx.db.insert(\"tasks\", {}); }",
+    consultationOutsideAction: "export async function f(ctx){ await ctx.runAction(internal.workspace.crewConsultationActions.run, {}); }",
+    consultationRecord: "export async function f(ctx){ await ctx.runMutation(internal.workspace.crewConsultation.record, {}); }",
     scheduleViaChat: "export async function f(ctx){ await ctx.runMutation(internal.workspace.chat.doAnything, {}); }",
     // Variants of the same holes.
     aliasCreate: "import { createApprovalRecord as raise } from \"./approvals\"; export async function f(ctx){ await raise(ctx,{}); }",

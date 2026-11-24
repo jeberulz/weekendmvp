@@ -13,6 +13,7 @@ import {
   type WrenCardRefusal,
 } from "../../lib/workspace/wrenCards";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
+import { approvalKindSwitchedOn, getOpsSettings } from "../ops/settings";
 import { WREN_APPROVAL_SUBJECTS, type WrenApprovalKind } from "../../lib/workspace/contracts/wrenTools";
 import {
   approvalKindValidator,
@@ -205,6 +206,8 @@ export async function raiseApprovalCard(
 ): Promise<{ approvalId: Id<"approvals">; created: boolean } | null> {
   // Early, so a forged kind cannot even reuse (attach) an existing card of that kind.
   if (!isWrenApprovalSubject(card.kind, card.subjectTable)) return null;
+  // L1 F1: no card (new or reused) for an action whose kill switch is on.
+  if (!approvalKindSwitchedOn(await getOpsSettings(ctx), card.kind)) return null;
   const state = await readSubjectState(ctx, business.ownerId, business.projectId, card.subjectTable, card.subjectId);
   if (!state.found) return null;
   if (!(await subjectStatusAllows(ctx, card))) return null;
@@ -348,13 +351,17 @@ export async function approvalCardViews(
   for (const approvalId of approvalIds) {
     const approval = await ctx.db.get("approvals", approvalId);
     if (approval === null || approval.ownerId !== business.ownerId || approval.projectId !== business.projectId) continue;
+    const pricedRevision = approval.kind === "spend" && approval.crewRevision !== undefined &&
+      approval.costCredits !== undefined && approval.costCredits > 0n;
     views.push({
       kind: "approval",
       approvalId: approval._id,
       approvalKind: approval.kind,
       status: approval.status,
-      title: approvalCardTitle(approval.kind, approval.subjectTable),
-      subject: approvalSubjectLine(await subjectFacts(ctx, business, approval)),
+      title: pricedRevision ? `Approve ${approval.costCredits} credits for change round ${approval.changeRound}`
+        : approvalCardTitle(approval.kind, approval.subjectTable),
+      subject: pricedRevision ? (approval.note ?? "Revision to the current draft")
+        : approvalSubjectLine(await subjectFacts(ctx, business, approval)),
       reviewRoute: approvalReviewRoute(approval.subjectTable, await subjectDocumentKind(ctx, business, approval)),
     });
   }

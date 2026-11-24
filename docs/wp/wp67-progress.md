@@ -10,22 +10,24 @@ To read the other lane's latest status, fetch first:
 
 ## Board
 
-Updated 2026-11-06 (later). **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
+Updated 2026-11-16. **L1 private beta: build merged and deployed (2026-11-08), held at the L1 gate.** Every L1 item on both lanes is merged and production runs `8d33b8f8` (#286). The live `bad_request` is closed: #283 sends the seed and social-pack schemas in the prompt, and two live seed runs on 2026-11-16 wrote all five seeds each (about $0.28 a run). Open: the five live launches and the owner's ops settings. The full checks and the a11y-check on the merged tree passed on 2026-11-16 (`45ac7371`). Status per item: `docs/wp/l1-release-plan.md` § Status on 2026-11-16. Outside the original WP list: WP90 (#278), WP91 (#279) and WP92 (#280) merged; WP67 employee pages merged (#275).
+
+Earlier (2026-11-06, later): **G0 passed** (`d67dc8e2`). **G1 passed** (`a3f54c17`, #194). **Phase 2 in progress**: WP74 merged (#208); **WP77 done** (S1–S6, last #215, #217); WP75 S2a + S4a merged (#216); Claude runs WP75 (lane limit two); WP76 follows WP75 S2. Codex: WP78 and WP79 dormant primitives merged (#211, #212). Next gate: G2.
 
 | WP | Phase | Lane | Branch | Status | Blockers | Next |
 |---|---|---|---|---|---|---|
-| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board-p2` (board PR) | G0, G1 passed | — | Run G2 when WP74–WP79 merge; G2 needs live spend (20 test launches) and an owner OK |
+| WP67 | 0–7 | Claude (orchestrator) | `claude/wp67-board-p2` (board PR) | G0, G1 passed; L1 gate open | — | Close the L1 gate (`l1-release-plan.md`); the full G2 (20 live launches) runs during the beta, before L2 |
 | WP68 | 0 | Codex | `codex/wp68-data-contract` | **Done**: #167 merged, review fixes in #171 | — | — |
 | WP69 | 0 | Claude | `claude/wp69-crew-contracts` | **Done**: S1–S6 merged (#168, #172, #175); C-JOBS frozen | — | — |
 | WP70 | 1 | Codex | `codex/wp70-metering` | **Done**: S1–S3 (#180), S4–S6 (#191, sweep and alarm crons, limits, ops summary); G1 reviews pass with should-fix | — | Alarm delivery and the P2s below before the AI switch goes on |
 | WP71 | 1 | Claude | `claude/wp71-ai-gateway` | **S1–S3 merged (#184)**, lock follow-up (#185), **gateway action bound to the real meter (#192)**. S4 cache helper, S5 seed precompute and S6 evals open | — | S4 and S6 in fixture mode on the owner's go; the S4 live cache test and S5 seed precompute need OK |
 | WP72 | 1 | Claude | `claude/wp72-workspace-shell` | **Done, merged (#183)**; Codex's middleware hard 404 merged (#186, #190) | `creditsSummary` shape differs from the shell's typed mock (adapter needed) | Wire the real `creditsSummary` in Phase 2 |
 | WP73 | 1 | Codex | `codex/wp73-ledger-v2` | **Done, merged (#179)**; G1 review: pass with should-fix | — | Review P2s below before WP80 |
-| WP74 | 2 | Claude | `claude/wp74-wizard` | **Merged (#208)**; Codex's scanner reconcile and `requireOwnedWizardSession` merged (#209) | — | Follow-up: move the wizard from its local `ownedWizardSession` to C-AUTHZ `requireOwnedWizardSession` |
-| WP75 | 2 | Claude | `claude/wp75-*` per story | **In progress**: S2a job runner and S4a deterministic checks merged (#216, dormant); S3a blueprint + brand kit text being built (`claude/wp75-s3a-blueprint`) | 12 owner questions in `wp75-progress.md` (Q11 `crewJob` limit before S2b); Needs from Codex 1–14 (13, the stale-run recovery cron, before S1 ships) | S3a review, then S1 roster, S2b DAG |
-| WP76 | 2 | Claude | `claude/wp76-growth-drafts` | Waiting | WP75 S2 | — |
+| WP74 | 2 | Claude | `claude/wp74-wizard` | **Merged (#208)**; Codex's scanner reconcile and `requireOwnedWizardSession` merged (#209); the wizard moved to C-AUTHZ (#224); L1 fixes (#261, #272, #273) | — | — |
+| WP75 | 2 | Claude | `claude/wp75-*` per story | **L1 scope merged**: S2a, S4a (#216), S3a (#227), S5a renderer (#225, dormant), S1 roster (#230), S2b launch DAG (#239); Codex 13 recovery cron (#259) and Codex 18 launch sweep (#263, #264) | No live launch recorded; live calls only work since #282 | L1-C4 five live launches |
+| WP76 | 2 | Claude | `claude/wp76-growth-drafts` | **L1 scope merged**: S1a email draft (#247), S1b Email page (#251), S2a social pack (#258), S2b Social page (#260) | — | Live launches (L1-C4) |
 | WP77 | 2 | Claude | `claude/wp77-*` | **Done**: S1 (#203), S2–S4 (#210), S5 memory and Files (#215), S6 accessibility (#217) | Colour contrast of the chat still needs a real-browser check | — |
-| WP78–WP79 | 2 | Codex | see registry | **Dormant primitives merged**: WP78 lead privacy (#211), WP79 tenant email and retention (#212). Nothing live | D5, D6; WP79 also needs WP76 S1 email drafts | Claude's independent privacy and publishing review of #211/#212 is running; findings go to Codex before D5 real capture |
+| WP78–WP79 | 2 | Codex | see registry | **Dormant primitives merged**: WP78 lead privacy (#211) and closure/cleanup (#229, #231, #235, #237, #245, #248, #257); WP79 tenant email and retention (#212), revocation (#228, #252, #254), sequence activation contract (#277). Nothing live | D5, D6; WP79 also needs WP76 S1 email drafts | Claude's independent privacy and publishing review of #211/#212 is running; findings go to Codex before D5 real capture |
 | WP80–WP81 | 3 | Both | see registry | Waiting | G2 | — |
 | WP82 | 4 | Claude | `claude/wp82-studio` | Waiting | G3 | — |
 | WP83–WP84 | 5 | Both | see registry | Waiting | G4; Meta review | — |
@@ -559,3 +561,76 @@ Run by the orchestrator on the PostureUp test business, where the fixture writes
   Kit preview (`/workspace-kit-preview`, port 3189): 22 avatar images at 40/28/20 px, none broken; each keeps its
   `role="img"` name (e.g. "Iris, Brand (AI employee)") with the picture `alt=""`.
 - Checks after the swap: `npm run typecheck` clean; `vitest run tests/platform` 2430/2430.
+
+## 2026-11-16 - L1 status check
+
+- Main has not moved since 2026-11-08 (`18dcb3fd`, #282). Vercel Production deployed it, so Convex prod runs it too.
+- Every L1 build item on both lanes is merged. `docs/wp/l1-release-plan.md` now carries a status per item, per
+  owner step and per gate line.
+- #282: the first live run on prod (the 2026-11-08 seed spike) was rejected for all nine prompts with a reply schema.
+  Nothing was charged. Before #282, every L1 live launch would have failed the same way.
+- 2026-11-16: the owner re-ran the spike live (run `zd72txwgg442hzmypyx3aqert18jbtrg`, five ideas, $1.20 reserved).
+  All five items failed as `bad_request` and nothing was charged, the same result as 2026-11-08. #282 is not proven
+  live. The batch adapter drops Anthropic's error message, so the cause is unknown. Locally the request and the schema
+  as sent both match the documented limits. Details and next steps: `l1-release-plan.md` § Live seed run.
+- The `Crew seeds` workflow (WP92) has run daily since 2026-11-09 and skipped every time: the `CONVEX_PROD_DEPLOY_KEY`
+  secret or the `CREW_SEED_VERSION` variable is missing in GitHub.
+- Not recorded anywhere: the five live launches (L1-C4), the ops settings (owner step 4), the cohort invites, and
+  an a11y-check after #267 restyled the screens.
+- Checks: docs only, `git diff --check`.
+
+## 2026-11-16 - L1 gate re-run: checks, walkthrough and a11y on the merged tree
+
+- Branch `claude/l1-gate-1116` (worktree `.worktrees/l1-gate-1116`, from `origin/main` `45ac7371`).
+- Full checks after `npm ci`: typecheck 0; lint 0 errors, 45 warnings; `npm test` 6,659 passed, 0 failed; build 0.
+- L1-C3 walkthrough re-run on a local fixture backend (zero spend): idea page, wizard, Meet your co-founder,
+  dashboard, chat, Email approve, Team HQ, Brand kit, Social, Files, employee pages. No blockers.
+- a11y-check in a real browser on every L1 screen at 1440px and the dashboard and chat drawer at 375px: pass.
+  Not done: VoiceOver, and failed or paused launch states.
+- Findings F1–F6 in `docs/wp/l1-release-plan.md` § Gate re-run (2026-11-16). Two to fix before invites: F1 (chat
+  offers "Start sending this email sequence" while sending is off) and F2 (free change rounds read "1 left" on a
+  fresh draft; two are promised).
+- Gate lines now open: the live `bad_request`, five live launches, cron ticking on prod, and the ops settings.
+- Checks for this entry: docs only, `git diff --check`.
+
+## 2026-11-16 - L1 F1 and F2 fixed (branch `claude/l1-gate-1116`)
+
+- F1: Wren is no longer offered, and cannot raise, an approval card for an action whose kill switch is on
+  (`approvalKindSwitchedOn` in `convex/ops/settings.ts`, used by `approvableSubjects` and `raiseApprovalCard`). In
+  L1 that removes "Start sending this email sequence" and any post or publish card from chat. Security allowlist
+  (`tests/security/wp77-wren-tools-cards-only.test.mjs`) widened by those two read-only C-OPS names. Tests: three in
+  `convex/workspace/wrenTools.test.ts`, one in `convex/workspace/chat.test.ts`; the fixture-reply test now opens
+  `social` to keep covering the raise path.
+- F2: review pages count the previewed free round as the founder's (`previewLine` in `lib/workspace/emailPage.ts`),
+  so a fresh draft says 2 free rounds left. Page test mocks corrected to the server's real preview values.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0 (2,897 platform tests plus the Convex,
+  security and node suites), build 0. Browser, against the local fixture backend: Brand kit and Social both read
+  "2 free rounds of changes left." on a fresh draft. F1 is covered by tests only, because the local backend runs
+  main's Convex code. a11y: only the number in a sentence changed, so no markup changed and nothing new to audit.
+
+## 2026-11-16 - L1 F3-F6 (branch `claude/l1-gate-1116`)
+
+- F3: wizard Name step line now "A name is pre-selected. Keep it or type your own." (`lib/workspace/wizard/copy.ts`).
+- F4: checked on a production build; the leftover hidden `S:0` copy comes from React's frame-gated streaming reveal
+  when the page runs no animation frames (hidden pane, background tab). Hidden and after the visible copy; left as is.
+- F5: a written launch step with an open review reads "Waiting on you" on the employee page and Team HQ (new step
+  pill state `needs_you`). Confirmed on the production build: blueprint, brand kit and social read Waiting on you,
+  email (approved) reads Done.
+- F6: `businessLimitFor` (`convex/workspace/business.ts`) is shared by `createBusiness`, `startOrResume` (refuses a
+  new session at the allowance, before spending a wizard start) and `getSession` (`businessLimit`), so a resumed
+  session opens on "Your plan is full." with a link to the founder's business. A missing field reads as no limit.
+- Checks: typecheck 0, lint 0 (0 errors, 45 existing warnings), test 0, build 0. New tests: two Convex
+  (`business.test.ts`), two wizard UI with axe (`wp74-business-ui.test.tsx`), one step pill (`workspace-team-hq-helpers`).
+  a11y: the limit notice has an h1 via ScreenHead, a status line and a focus-ringed link (axe clean); the new pill
+  says "Waiting on you" in words, never colour alone.
+
+## 2026-11-16 - Live seed runs pass after #283
+
+- The live `bad_request` is closed. #283 sends the seed and social-pack schemas in the prompt, because the API refused
+  their grammar as too large. Two prod runs after it wrote all five seeds each: `zd7a1npxqamt378x3117fta7ed8jah05`
+  (`2026-11-16.1`, $0.28) and `zd7a1957kqxhr2wnfgc72rb6yd8jbfbs` (`2026-11-08.1`, $0.27). Read with
+  `crew:seeds --status`, no spend. A dry run now finds all five unchanged, so nothing was re-sent.
+- Production runs `8d33b8f8` (#286).
+- Still open for L1: the five live launches (L1-C4, the first live test of the six `output_config` schemas), ops
+  settings and cohort (owner steps 4–5), the recovery cron on prod, and the `Crew seeds` secrets.
+- Checks: docs only, `git diff --check`.

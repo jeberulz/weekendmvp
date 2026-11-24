@@ -21,6 +21,7 @@ import {
   TRY_COST_COPY,
 } from "@/lib/workspace/reviewPages";
 import { employeeHref } from "@/lib/workspace/employeePage";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   launchErrorMessage,
   planGroups,
@@ -65,7 +66,17 @@ function OwnerChip({ step, roster, projectId }: { step: TeamStep; roster: readon
   );
 }
 
-function StepRow({ step, roster, projectId }: { step: TeamStep; roster: readonly TeamHired[]; projectId: string }) {
+function StepRow({
+  step,
+  roster,
+  projectId,
+  openReviewKinds,
+}: {
+  step: TeamStep;
+  roster: readonly TeamHired[];
+  projectId: string;
+  openReviewKinds: ReadonlySet<string>;
+}) {
   return (
     <li
       data-step={step.key}
@@ -75,10 +86,11 @@ function StepRow({ step, roster, projectId }: { step: TeamStep; roster: readonly
         <span className="text-sm font-medium text-home-ink">{step.title}</span>
         <span className="flex flex-wrap items-center gap-1.5">
           <OwnerChip step={step} roster={roster} projectId={projectId} />
+          {step.lastFailure ? <span className="text-xs text-home-ink-2">{step.lastFailure.detail}</span> : null}
           {step.reason === undefined ? null : <span className="text-xs text-home-ink-3">{step.reason}</span>}
         </span>
       </span>
-      <StatusPill set="step" status={stepPillStatus(step)} />
+      <StatusPill set="step" status={stepPillStatus(step, openReviewKinds)} />
     </li>
   );
 }
@@ -90,11 +102,14 @@ export function PlanByOwner({
   started,
   steps,
   roster,
+  openReviewKinds,
 }: {
   projectId: Id<"projects">;
   started: boolean;
   steps: readonly TeamStep[];
   roster: readonly TeamHired[];
+  /** Kinds with a review still waiting, so a written draft reads Waiting on you, not Done (L1 F5). */
+  openReviewKinds: ReadonlySet<string>;
 }) {
   const retryLaunch = useMutation(api.crew.roster.retryLaunch);
   const resumeLaunch = useMutation(api.crew.launch.resumeLaunch);
@@ -129,7 +144,10 @@ export function PlanByOwner({
       : resumeLaunch({ projectId }).then(resumeMessage);
     action
       .then(setMessage)
-      .catch((caught: unknown) => setError(launchErrorMessage(caught)))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setError(launchErrorMessage(caught));
+      })
       .finally(() => {
         inFlight.current = false;
         setWorking(null);
@@ -156,7 +174,7 @@ export function PlanByOwner({
         <>
           <ul aria-label="Launch steps and owners" className={LIST}>
             {now.map((step) => (
-              <StepRow key={step.key} step={step} roster={roster} projectId={projectId} />
+              <StepRow key={step.key} step={step} roster={roster} projectId={projectId} openReviewKinds={openReviewKinds} />
             ))}
           </ul>
           {comingLater.length === 0 ? null : (
@@ -164,7 +182,7 @@ export function PlanByOwner({
               <h3 className="text-[15px] font-semibold text-home-ink">Coming later ({comingLater.length})</h3>
               <ul aria-label="Launch steps coming later" className={LIST}>
                 {comingLater.map((step) => (
-                  <StepRow key={step.key} step={step} roster={roster} projectId={projectId} />
+                  <StepRow key={step.key} step={step} roster={roster} projectId={projectId} openReviewKinds={openReviewKinds} />
                 ))}
               </ul>
             </div>

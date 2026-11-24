@@ -97,6 +97,21 @@ describe("shell helpers", () => {
 });
 
 describe("data seams", () => {
+  test("owner access shows an unlimited account label and an active new-business link", async () => {
+    const ownerCredits = await getCreditsSummary(PROJECT, true);
+    const markup = renderToStaticMarkup(
+      <WorkspaceFrame projectId={PROJECT} businesses={businesses} credits={ownerCredits}>
+        <main id="workspace-main">Owner workspace</main>
+      </WorkspaceFrame>,
+    );
+    expect(markup).toContain("Credits · Owner · Unlimited");
+    expect(markup).toContain("Unlimited owner access");
+    expect(markup).toContain('href="/start/own"');
+    expect(markup).not.toContain("Running a second business needs Growth");
+    expect(markup).not.toContain("48 left");
+    expectIdIntegrity(markup);
+  });
+
   test("credits mock is typed, fixed and project-independent", async () => {
     const a = await getCreditsSummary("a");
     const b = await getCreditsSummary("b");

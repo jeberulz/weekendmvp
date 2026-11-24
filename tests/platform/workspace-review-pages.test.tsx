@@ -15,7 +15,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Id } from "@/convex/_generated/dataModel";
 import { changeRoundNote, expiresInWords, isHexColour } from "@/lib/workspace/reviewPages";
 
-const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
 const READY_TEAM = {
   state: "ready",
   hired: [
@@ -41,6 +41,11 @@ vi.mock("convex/react", async () => {
     useQuery: (ref: Parameters<typeof getFunctionName>[0], args: unknown) => {
       if (args === "skip") return undefined;
       const name = getFunctionName(ref);
+      if (name === "workspace/crewStatus:snapshot") {
+        if (live.progress === "throw") throw new Error("boom");
+        if (live.status === undefined || live.progress === undefined || live.pending === undefined) return undefined;
+        return { launch: live.status, progress: live.progress, reviews: live.pending, assignments: [], spend: [] };
+      }
       if (name.includes("previewChangeRound")) return live.preview;
       if (name.includes("launchStatus")) return live.status;
       if (name.includes("launchProgress")) return live.progress;

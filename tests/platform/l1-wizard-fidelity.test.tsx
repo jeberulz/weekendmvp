@@ -38,6 +38,8 @@ vi.mock("convex/react", async () => {
       if (fn.endsWith(":launchProgress")) return state.progress;
       return state.view;
     },
+    // WP100: "Improve with AI" is off here (availability reads as not enabled).
+    useAction: () => async () => ({ status: "unavailable" }),
     useMutation: (ref: Parameters<typeof name>[0]): Mutation => async (args) => {
       const fn = name(ref);
       state.calls.push({ name: fn, args });
@@ -69,11 +71,13 @@ function view(
     answers: { idea: { source: "library", ideaSlug: "hydrotrail" } },
     defaults: seed.defaults,
     suggestedNames: [...seed.suggestedNames],
+    suggestedPartnerNames: [...seed.suggestedPartnerNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
     hints: {},
     crew: null,
     business: null,
+    businessLimit: null,
     ...overrides,
   };
 }
@@ -186,11 +190,16 @@ describe("L1 wizard: Founder signals aside", () => {
     await axeClean(container);
   });
 
-  test("empty at the start, and gone once the business exists", () => {
+  test("no rail on step 1, empty from step 2, and gone once the business exists", () => {
     state.view = view(0);
-    const { unmount } = render(<WizardFlow {...library} />);
+    const first = render(<WizardFlow {...library} />);
+    // No Founder-signals rail on step 1 (idea) — nothing to show yet.
+    expect(screen.queryByRole("complementary", { name: "Founder signals" })).toBeNull();
+    first.unmount();
+    state.view = view(1);
+    const second = render(<WizardFlow {...library} />);
     expect(screen.getByText("Signals appear as you answer.")).toBeTruthy();
-    unmount();
+    second.unmount();
     state.view = withBusiness();
     render(<WizardFlow {...library} />);
     expect(screen.queryByRole("complementary", { name: "Founder signals" })).toBeNull();
@@ -217,7 +226,7 @@ describe("L1 wizard: Save & exit only when a session can be resumed", () => {
   test("an own idea's first step tells the founder the answers save as they go", () => {
     state.view = view(0, { answers: { idea: { source: "own_idea", text: "A packing list" } }, defaults: wizardSeedFor({ idea: { source: "own_idea", text: "A packing list" } }).defaults });
     render(<WizardFlow idea={null} ideaTitle={null} initialSessionId="session123" />);
-    expect(screen.getByText("Your answers save as you go. Bookmark this page to come back.")).toBeTruthy();
+    expect(screen.getByText("Your answers save as you go.")).toBeTruthy();
   });
 
   test("there is nothing to save once the business exists", () => {

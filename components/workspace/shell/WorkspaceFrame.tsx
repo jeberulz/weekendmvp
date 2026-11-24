@@ -1,4 +1,10 @@
 import type { ReactNode } from "react";
+import { WhenConvexReady } from "@/components/platform/client-gates";
+import { ErrorReporterMount } from "@/components/workspace/feedback/ErrorReporterMount";
+import { FeedbackControl } from "@/components/workspace/feedback/FeedbackControl";
+import { WorkspaceFunnel } from "@/components/workspace/feedback/WorkspaceFunnel";
+import { WorkspacePageBoundary } from "@/components/workspace/feedback/WorkspacePageBoundary";
+import type { Id } from "@/convex/_generated/dataModel";
 import { FOCUS } from "@/components/workspace/kit/styles";
 import { BusinessSwitcher } from "@/components/workspace/shell/BusinessSwitcher";
 import { WorkspaceSidebar } from "@/components/workspace/shell/WorkspaceSidebar";
@@ -55,14 +61,21 @@ export function WorkspaceFrame({
         <WorkspaceSidebar
           projectId={projectId}
           weekendActive={weekendActive}
-          switcher={<BusinessSwitcher currentId={projectId} businesses={businesses} subline={switcherSubline} />}
+          switcher={<BusinessSwitcher currentId={projectId} businesses={businesses} subline={switcherSubline} unlimited={credits.unlimited} />}
           credits={credits}
           teamBadge={teamBadge}
+          feedback={<FeedbackControl surface="workspace" projectId={projectId} />}
           userRow={userRow}
         />
-        <div className="min-w-0 flex-1">{children}</div>
+        <div className="min-w-0 flex-1">
+          <WorkspacePageBoundary>{children}</WorkspacePageBoundary>
+        </div>
         {chat}
       </div>
+      <WhenConvexReady>
+        <ErrorReporterMount />
+        <WorkspaceFunnel projectId={projectId as Id<"projects">} />
+      </WhenConvexReady>
     </>
   );
 }

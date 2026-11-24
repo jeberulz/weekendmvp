@@ -4,8 +4,12 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v2";
-import { SOCIAL_DAYS, type SocialPack } from "../../lib/workspace/contracts/artifacts";
+import { socialPackSpec } from "../../convex/ai/prompts/socialPack.v5";
+import { outputJsonSchema } from "../../convex/ai/gateway";
+import { wireOutputSchema } from "../../convex/ai/providers/wireSchema";
+import { socialSchemaFailure } from "../../lib/workspace/crew/socialFailure";
+import { decodeSocialPackReply } from "../../lib/workspace/crew/socialPackReply";
+import { SOCIAL_DAYS, structuredOutputComplexity, toStructuredOutputSchema, type SocialPack } from "../../lib/workspace/contracts/artifacts";
 import { TIER_RECOMMENDED_EFFORT } from "../../lib/workspace/contracts/prompts";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailSocialPack } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { checkSocialPackLinks, findLinkOrHandle } from "../../lib/workspace/crew/checks/socialLinks";
@@ -118,7 +122,7 @@ describe("the step's inputs and spec", () => {
     });
   });
 
-  test("crew-social-pack@2 runs on the fast tier at the tier's recommended effort, thinking off", () => {
+  test("crew-social-pack@5 runs on the fast tier at the tier's recommended effort, thinking off", () => {
     expect(`${socialPackSpec.id}@${socialPackSpec.version}`).toBe(SOCIAL_PACK_PROMPT_REF);
     expect(socialPackSpec).toMatchObject({ tier: "fast", effort: TIER_RECOMMENDED_EFFORT.fast, thinking: { type: "disabled" }, fallbacks: "none" });
   });
@@ -131,5 +135,52 @@ describe("the step's inputs and spec", () => {
     expect(user).not.toContain("This is a revision.");
     const revision = socialPackSpec.buildUser({ blueprint: "{}", brand: "{}", previousArtifact: "<previous_draft>\n{}\n</previous_draft>" });
     expect(revision).toContain("This is a revision.");
+  });
+});
+
+describe("Social v5 wire reply", () => {
+  const rows = () => SOCIAL_DAYS.map((day) => {
+    const post = structuredClone(hydrotrailSocialPack.posts[day]);
+    return { ...post, imageAlt: post.imageAlt ?? "", pollOptions: post.pollOptions ?? [] };
+  });
+
+  test("a single native row grammar stores all seven days under the original artifact contract", () => {
+    const posts = rows();
+    posts[0].hashtags = posts[0].hashtags.map((tag) => `#${tag}`);
+    expect(socialPackSpec.outputMode).toBeUndefined();
+    const schema = outputJsonSchema(socialPackSpec.outputSchema);
+    const wire = JSON.stringify(wireOutputSchema(schema));
+    expect(wire.match(/"shortCaption":/g)).toHaveLength(1);
+    expect(structuredOutputComplexity(toStructuredOutputSchema(socialPackSpec.outputSchema))).toEqual({ optionalParams: 0, unionParams: 0 });
+    expect(decodeSocialPackReply({ posts })).toEqual(hydrotrailSocialPack);
+  });
+
+  test("the repair sees row-specific schema paths for a missing option or an invalid image", () => {
+    const posts = rows();
+    posts[0].imageAlt = "";
+    posts[3].format = "poll";
+    posts[3].pollOptions = [];
+    const result = socialPackSpec.outputSchema.safeParse({ posts });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues.map((issue) => issue.path)).toEqual(expect.arrayContaining([
+      ["posts", 0, "imageAlt"], ["posts", 3, "pollOptions"],
+    ]));
+  });
+
+  test("diagnosis includes only known day and field names and caps the list", () => {
+    expect(socialSchemaFailure(["posts.1.secret: custom", "posts.2.caption: secret with spaces", "(root): invalid_json"]))
+      .toBe("The model returned an invalid seven-post draft.");
+    expect(socialSchemaFailure(["posts.0.imageAlt: custom", "posts.fri.imageAlt: custom", "posts.1.hashtags.0: too_big",
+      "posts.sun.pollOptions: custom", "posts.4.hook: invalid_type"]))
+      .toBe("The model returned an invalid seven-post draft (Fri image description, Sat hashtags, Sun poll options).");
+  });
+
+  test("short weeks, extra posts, misplaced launch copy and duplicate hashtags are rejected", () => {
+    const posts = rows();
+    for (const bad of [posts.slice(1), [...posts, posts[0]], [{ ...posts[0], kind: "value" }, ...posts.slice(1)]]) {
+      expect(socialPackSpec.outputSchema.safeParse({ posts: bad }).success).toBe(false);
+    }
+    posts[2].hashtags = ["hike", "#Hike"];
+    expect(socialPackSpec.outputSchema.safeParse({ posts }).success).toBe(false);
   });
 });

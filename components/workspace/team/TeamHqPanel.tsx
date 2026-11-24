@@ -72,12 +72,10 @@ function Shell({ businessName, summary, children }: { businessName: string; summ
 }
 
 function Live({ projectId, businessName, partnerName }: { projectId: Id<"projects">; businessName: string; partnerName?: string }) {
-  const launch = useQuery(api.crew.roster.launchStatus, { projectId });
-  const progress = useQuery(api.crew.launch.launchProgress, { projectId });
-  const reviews = useQuery(api.workspace.reviews.pendingReviews, { projectId });
+  const snapshot = useQuery(api.workspace.crewStatus.snapshot, { projectId });
   const now = useNow();
 
-  if (launch === undefined || progress === undefined || reviews === undefined) {
+  if (snapshot === undefined) {
     return (
       <Shell businessName={businessName} summary="Loading your team…">
         <p role="status" className="sr-only">Loading your team…</p>
@@ -87,12 +85,14 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
     );
   }
 
+  const { launch, progress, reviews, assignments } = snapshot;
+  const spend = openReviews(snapshot.spend, now);
   const open = openReviews(reviews, now);
   const lead = leadName(launch, partnerName);
   const steps: TeamStep[] = progress.steps;
   const roster = launch.state === "ready" ? readyRoster(launch) : { hired: [], skipped: [] };
-  const statuses = employeeStatuses(roster.hired, steps, open);
-  const copy = teamHeaderCopy({ launch, lead, statuses, reviewCount: open.length });
+  const statuses = employeeStatuses(roster.hired, steps, open, assignments, spend, now);
+  const copy = teamHeaderCopy({ launch, lead, statuses, reviewCount: open.length, spendCount: spend.length });
   const specialists = statuses.filter((entry) => entry.role !== "lead");
 
   return (
@@ -101,7 +101,7 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
       {launch.state === "not_started" ? (
         <EmptyState>{copy.summary}</EmptyState>
       ) : (
-        <LeadCard projectId={projectId} launch={launch} lead={lead} roster={roster.hired} reviews={open} now={now} />
+        <LeadCard projectId={projectId} launch={launch} lead={lead} roster={roster.hired} reviews={open} spend={spend} now={now} />
       )}
       {launch.state === "ready" ? (
         <TeamGrid projectId={projectId} businessName={businessName} lead={lead} specialists={specialists} />
@@ -113,7 +113,7 @@ function Live({ projectId, businessName, partnerName }: { projectId: Id<"project
         </section>
       ) : null}
       <BlueprintView projectId={projectId} leadName={lead} />
-      <PlanByOwner projectId={projectId} started={progress.started} steps={steps} roster={roster.hired} />
+      <PlanByOwner projectId={projectId} started={progress.started} steps={steps} roster={roster.hired} openReviewKinds={new Set(open.map((review) => review.kind))} />
       {launch.state === "ready" ? (
         <>
           <SkippedRoles projectId={projectId} businessName={businessName} lead={lead} skipped={roster.skipped} />

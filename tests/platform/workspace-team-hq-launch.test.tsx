@@ -17,7 +17,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Id } from "@/convex/_generated/dataModel";
 import { resumeMessage, retryMessage } from "@/lib/workspace/reviewPages";
 
-const live: { progress: unknown; status: unknown; reviews: unknown; blueprint: unknown } = {
+const live: { assignments: unknown[]; spend: unknown[]; progress: unknown; status: unknown; reviews: unknown; blueprint: unknown } = {
+  assignments: [], spend: [],
   progress: undefined,
   status: undefined,
   reviews: [],
@@ -33,6 +34,11 @@ vi.mock("convex/react", async () => {
     useQuery: (ref: Parameters<typeof getFunctionName>[0], args: unknown) => {
       if (args === "skip") return undefined;
       const name = getFunctionName(ref);
+      if (name === "workspace/crewStatus:snapshot") {
+        if (live.progress === "throw") throw new Error("boom");
+        if (live.status === undefined || live.progress === undefined || live.reviews === undefined) return undefined;
+        return { launch: live.status, progress: live.progress, reviews: live.reviews, assignments: live.assignments, spend: live.spend };
+      }
       if (live.progress === "throw" && name.includes("launchProgress")) throw new Error("boom");
       if (name.includes("launchProgress")) return live.progress;
       if (name.includes("launchStatus")) return live.status;
@@ -113,12 +119,16 @@ const review = (extra: Record<string, unknown> = {}) => ({
 
 function show(
   options: {
+    assignments?: unknown[];
+    spend?: unknown[];
     status?: unknown;
     progress?: unknown;
     reviews?: unknown;
     blueprint?: unknown;
   } = {},
 ) {
+  live.assignments = options.assignments ?? [];
+  live.spend = options.spend ?? [];
   live.status = "status" in options ? options.status : READY;
   live.progress = "progress" in options ? options.progress : progress(BASE_STEPS());
   live.reviews = "reviews" in options ? options.reviews : [];
@@ -313,6 +323,30 @@ describe("Team grid", () => {
     expect(by("email").textContent).toContain("Waiting on the brand kit.");
     expect(by("social").textContent).toContain("Waiting for a free slot");
     expect(by("lead")).toBeUndefined();
+  });
+
+  test("Iris shows a queued change round waiting on the blueprint even when the launch kit is done", () => {
+    show({
+      progress: progress([step("brand_kit", "Brand kit", "brand", "succeeded")]),
+      assignments: [{ role: "brand", taskId: "t1", title: "Brand kit", round: 1, status: "queued", blocker: "blueprint" }],
+    });
+    const iris = cards().find((item) => item.getAttribute("data-employee") === "brand") as HTMLElement;
+    expect(iris.querySelector("[data-status]")?.getAttribute("data-status")).toBe("queued");
+    expect(iris.textContent).toMatch(/Brand kit · change round 1 is waiting/);
+    expect(iris.textContent).toContain("Waiting for blueprint approval.");
+  });
+
+  test("a pending email spend card names the price and requires a separate approval", async () => {
+    const spend = { ...review({ kind: "email_sequence", title: "Waitlist emails", approvalId: "approval-paid", href: "/dashboard/b/project1/email" }),
+      changeRound: 3n, costCredits: 5n };
+    otherMock.mockResolvedValue({ status: "approved" });
+    show({ spend: [spend] });
+    const paid = screen.getByText("Approve 5 credits for waitlist emails").closest("li") as HTMLElement;
+    expect(paid.textContent).toContain("Change round 3");
+    expect(screen.getByText(/1 paid change round needs your approval/)).toBeTruthy();
+    expect(otherMock).not.toHaveBeenCalled();
+    await userEvent.setup().click(within(paid).getByRole("button", { name: /^Approve/i }));
+    expect(otherMock).toHaveBeenCalledWith({ projectId: PROJECT, approvalId: "approval-paid", decision: "approve" });
   });
 
   test("a role whose steps are all unbuilt reads Coming soon, never Queued", () => {
@@ -539,7 +573,7 @@ describe("Skipped roles and Why this team", () => {
     const rows = within(table).getAllByRole("row");
     expect(rows).toHaveLength(1 + HIRED.length + SKIPPED.length);
     const lead = within(table).getByRole("rowheader", { name: "Crew Lead" }).closest("tr") as HTMLElement;
-    expect(lead.textContent).toContain("Hired · always");
+    expect(lead.textContent).toContain("Hired · core");
     expect(lead.textContent).toContain("Always: runs the team.");
     const ads = within(table).getByRole("rowheader", { name: "Ads" }).closest("tr") as HTMLElement;
     expect(ads.textContent).toContain("Hired · added");

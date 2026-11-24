@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { decodeSocialPackReply } from "../../lib/workspace/crew/socialPackReply";
 
 import { internal } from "../_generated/api";
 import { internalAction, type ActionCtx } from "../_generated/server";
@@ -236,6 +237,15 @@ export async function runCrewStepWith(
     });
   } catch (error) {
     return await settle(unknownOutcome(error, "the gateway call did not return"), start.attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
+  }
+
+  // v4 tasks already in flight still return the keyed artifact. Only v5 uses the row grammar.
+  if (result.ok && result.promptRef === "crew-social-pack@5" && start.jobType === "crew_social_pack") {
+    try {
+      result = { ...result, outputJson: JSON.stringify(decodeSocialPackReply(JSON.parse(result.outputJson))) };
+    } catch {
+      return await settle({ kind: "schema_invalid", issues: ["posts: invalid_social_pack"] }, result.nextAttempt);
+    }
   }
 
   if (result.ok) {

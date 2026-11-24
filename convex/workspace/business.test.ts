@@ -318,6 +318,38 @@ describe("WP74-S4 createBusiness: one free business", () => {
   });
 });
 
+describe("L1 F6: the business allowance is said before the steps, not after", () => {
+  test("a new wizard session is refused at the start once the allowance is used", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const created = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId: await finishedSession(t, owner) });
+    const refusal = await refusalOf(as("owner").mutation(api.workspace.wizard.startOrResume, {
+      idea: { source: "own_idea", text: "A second idea for a second business" },
+    }));
+    expect(refusal).toEqual({ code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1, projectId: created.projectId });
+    const sessions = await t.run(async (ctx) =>
+      (await ctx.db.query("wizard_sessions").collect()).filter((row) => row.ownerId === owner));
+    expect(sessions).toHaveLength(1);
+  });
+
+  test("a resumed older session reports the limit on its view; the session with the business does not", async () => {
+    const { t, as, ids } = await seed();
+    const owner = ids.users.owner.userId;
+    const first = await finishedSession(t, owner);
+    const older = await finishedSession(t, owner, {
+      idea: { source: "library", ideaSlug: "trail-cafe" },
+      name: { chosen: "Trail Cafe", alternatives: [] },
+    });
+    const before = await as("owner").query(api.workspace.wizard.getSession, { sessionId: older });
+    expect(before.businessLimit).toBeNull();
+    const created = await as("owner").mutation(api.workspace.business.createBusiness, { sessionId: first });
+    const after = await as("owner").query(api.workspace.wizard.getSession, { sessionId: older });
+    expect(after.businessLimit).toEqual({ limit: 1, projectId: created.projectId });
+    const own = await as("owner").query(api.workspace.wizard.getSession, { sessionId: first });
+    expect(own.businessLimit).toBeNull();
+  });
+});
+
 describe("WP74-S4 createBusiness: account checks", () => {
   test("an unverified account is refused", async () => {
     const { t, as, ids } = await seed();

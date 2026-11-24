@@ -52,9 +52,15 @@ const roleValidator = v.object({
   employeeName: v.string(),
   roleLabel: v.string(),
   reason: v.string(),
+  decidedBy: v.optional(v.literal("lead")),
 });
 
-const skippedRoleValidator = v.object({ roleKey: v.string(), roleLabel: v.string(), reason: v.string() });
+const skippedRoleValidator = v.object({
+  roleKey: v.string(),
+  roleLabel: v.string(),
+  reason: v.string(),
+  decidedBy: v.optional(v.literal("lead")),
+});
 
 export const launchViewValidator = v.union(
   v.object({ state: v.literal("not_started") }),
@@ -66,7 +72,7 @@ export const launchViewValidator = v.union(
 type Ctx = Pick<QueryCtx, "db">;
 
 /** What Meet your co-founder shows for the business now. */
-async function readLaunch(ctx: Ctx, project: Doc<"projects">): Promise<LaunchView> {
+export async function readLaunch(ctx: Ctx, project: Doc<"projects">): Promise<LaunchView> {
   const rosterTask = await launchRosterTask(ctx, project.ownerId, project._id);
   if (rosterTask === null) return { state: "not_started" };
   if (rosterTask.status === "succeeded") {

@@ -39,11 +39,13 @@ export function BusinessSwitcher({
   currentId,
   businesses,
   subline,
+  unlimited = false,
 }: {
   currentId: string;
   businesses: readonly WorkspaceBusiness[];
   /** The current business's sub-line, e.g. "Web app". Omitted when unknown. */
   subline?: string;
+  unlimited?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -120,7 +122,15 @@ export function BusinessSwitcher({
           })}
         </ul>
         <ul className="mt-1 border-t border-home-rule pt-1">
-          <li className="px-2.5 py-2 text-[13px] text-home-ink-2">
+          {unlimited ? (
+            <li>
+              <Link href="/start/own" onClick={() => setOpen(false)}
+                className={`flex min-h-10 items-center gap-2 rounded-md px-2.5 text-[13px] text-home-ink hover:bg-home-sunk ${FOCUS}`}>
+                <Plus aria-hidden="true" className="size-4 shrink-0" />
+                Start another idea
+              </Link>
+            </li>
+          ) : <li className="px-2.5 py-2 text-[13px] text-home-ink-2">
             <span className="flex items-center gap-2">
               <Plus aria-hidden="true" className="size-4 shrink-0" />
               <span className="flex-1">Start a second idea</span>
@@ -129,7 +139,7 @@ export function BusinessSwitcher({
             <span className="mt-1 block text-[11px] text-home-ink-3">
               Running a second business needs Growth. Not available yet.
             </span>
-          </li>
+          </li>}
         </ul>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { SECTION_LEAD } from "@/components/workspace/kit/styles";
 import { WIZARD_STEPS, type WizardAnswersProgress } from "@/lib/workspace/contracts/wizard";
 import { cn } from "@/lib/utils";
 
@@ -27,10 +28,10 @@ export function FounderSignals({ answers, className }: { answers: WizardAnswersP
       className={cn(className ?? "max-w-[340px] flex-[1_1_280px]", "rounded-[10px] border border-home-rule bg-home-card p-[18px]")}
     >
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="founder-signals-heading" className="font-editorial text-xl font-normal text-home-ink">
+        <h2 id="founder-signals-heading" className={SECTION_LEAD}>
           Founder signals
         </h2>
-        <span className="font-mono text-xs text-home-ink-3">{signals.length} logged</span>
+        <span className="text-xs text-home-ink-3">{signals.length} logged</span>
       </div>
       <p className="mb-3.5 mt-1.5 text-[13px] text-home-ink-3">
         What you kept and changed. Your team reads these when it drafts.
@@ -45,7 +46,7 @@ export function FounderSignals({ answers, className }: { answers: WizardAnswersP
             <li key={entry.step} className="flex gap-2.5 text-sm text-home-ink">
               <span
                 className={cn(
-                  "h-fit shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px]",
+                  "h-fit shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium tracking-wide",
                   entry.signal === "kept" ? "bg-home-sage text-home-sage-ink" : "bg-home-ember-soft text-home-orange-ink",
                 )}
               >

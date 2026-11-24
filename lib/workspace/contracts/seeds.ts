@@ -28,7 +28,7 @@
  *
  * Types and pure helpers only: no Convex imports, no I/O. Relative imports
  * only, with `.ts` extensions: the prompt-version check loads this file in
- * plain Node through `convex/ai/prompts/ideaSeed.v1.ts`.
+ * plain Node through `convex/ai/prompts/ideaSeed.v2.ts`.
  */
 import { z } from "zod";
 
@@ -249,11 +249,16 @@ export type RoleBriefs = z.infer<typeof roleBriefsSchema>;
 // The draft (model output) and the stored seed
 // ---------------------------------------------------------------------------
 
-/** The library blueprint without the fields the server sets. */
+/**
+ * The library blueprint without the fields the server sets. The seed prompt
+ * never asks for a team (roster per idea, WP91), so `team` stays out of the
+ * model-facing draft; the stored seed keeps it optional.
+ */
 export const seedBlueprintDraftSchema = blueprintVariantSchemas.library.omit({
   schemaVersion: true,
   source: true,
   ideaSlug: true,
+  team: true,
 });
 export type SeedBlueprintDraft = z.infer<typeof seedBlueprintDraftSchema>;
 

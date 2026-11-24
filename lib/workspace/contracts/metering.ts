@@ -297,6 +297,10 @@ export function globalOvershootBoundMicroUsd(args: {
  *   feature switches and cohort, the Free lifetime ceiling, the daily cap). The
  *   meter cannot see the session: the caller checks that the owner owns it
  *   (2026-11-06, owner-approved; see `contract-changes.md`);
+ * - "Improve with AI" on wizard Step 1, before the session exists:
+ *   `idea-improve:{improvementId}:{attempt}` (`ideaImproveAttemptKey`, WP100).
+ *   Owner-scoped like the wizard form; the caller created the
+ *   `wizard_idea_improvements` row for that owner;
  * - ownerless work: `precompute:{ideaSlug}:{seedVersion}:{promptRef}:{attempt}`
  *   and `eval:{runId}:{caseId}:{attempt}`.
  * `attempt` starts at 1 and counts across every task that has held the job key.
@@ -338,6 +342,21 @@ export function wizardAttemptKey(wizardSessionId: string, step: string, attempt:
     throw new RangeError("step must be a C-WIZARD step");
   }
   return `wizard:${wizardSessionId}:${step}:${positiveAttempt(attempt)}`;
+}
+
+/**
+ * WP100. One "Improve with AI" call on wizard Step 1, before the session
+ * exists: `idea-improve:{improvementId}:{attempt}`. The same rules as
+ * `wizardAttemptKey`: the reserve MUST carry the owner's `ownerId` and no
+ * `projectId`, `taskId` or `creditDebitId`, and the caller MUST have created
+ * the `wizard_idea_improvements` row for that owner (the meter cannot see it).
+ * Each call is a new row, so a key is never reused across calls.
+ */
+export function ideaImproveAttemptKey(improvementId: string, attempt: number): string {
+  if (typeof improvementId !== "string" || !WIZARD_SESSION_ID.test(improvementId)) {
+    throw new RangeError("improvementId must be a wizard_idea_improvements id");
+  }
+  return `idea-improve:${improvementId}:${positiveAttempt(attempt)}`;
 }
 
 function positiveAttempt(attempt: number): number {
@@ -826,7 +845,7 @@ export type ReserveState = {
     readonly plan: MeterPlan;
     /** The `ai_budgets` row, or null when the owner has none yet (counts as zero). */
     readonly budgets: AiBudgetsRow | null;
-    /** A super admin's raised daily cap for this owner, when set. */
+    /** The effective override, resolved by reserve at the server's current time. */
     readonly dailyCapOverrideMicroUsd?: number;
   };
 };

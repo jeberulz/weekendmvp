@@ -1,5 +1,5 @@
 /**
- * WP90-S2 — the seed source: what `crew-idea-seed@1` reads about one library
+ * WP90-S2 — the seed source: what `crew-idea-seed@2` reads about one library
  * idea. Built from the idea's published page only (`content/ideas/{slug}.mdx`)
  * and its `ideas/manifest.json` row; nothing the founder wrote, nothing from
  * another idea.

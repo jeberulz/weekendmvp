@@ -15,6 +15,7 @@ const state = vi.hoisted(() => ({
   view: undefined as unknown,
   calls: [] as { name: string; args: Record<string, unknown> }[],
   createError: null as unknown,
+  startError: null as unknown,
   replace: vi.fn(),
 }));
 
@@ -29,6 +30,8 @@ vi.mock("convex/react", async () => {
       if (fn.endsWith(":launchProgress")) return { started: false, steps: [] };
       return state.view;
     },
+    // WP100: "Improve with AI" is off here (availability reads as not enabled).
+    useAction: () => async () => ({ status: "unavailable" }),
     useMutation: (ref: Parameters<typeof name>[0]): Mutation => async (args) => {
       const fn = name(ref);
       state.calls.push({ name: fn, args });
@@ -36,7 +39,10 @@ vi.mock("convex/react", async () => {
         if (state.createError) throw state.createError;
         return { projectId: "project1", name: "HydroTrail", slug: "hydrotrail", created: true };
       }
-      if (fn.endsWith(":startOrResume")) return "session123";
+      if (fn.endsWith(":startOrResume")) {
+        if (state.startError) throw state.startError;
+        return "session123";
+      }
       return { applied: true, step: "partner_name", completed: false, action: null };
     },
   };
@@ -67,11 +73,13 @@ function finished(business: WizardSessionView["business"] = null): WizardSession
     answers: seed.defaults,
     defaults: seed.defaults,
     suggestedNames: [...seed.suggestedNames],
+    suggestedPartnerNames: [...seed.suggestedPartnerNames],
     blueprint: { ...seed.blueprint, features: [...seed.blueprint.features], scopeCuts: [...seed.blueprint.scopeCuts] },
     seedSource: "fixture_hydrotrail",
     hints: {},
     crew: null,
     business,
+    businessLimit: null,
   };
 }
 
@@ -190,6 +198,7 @@ describe("WP74-S4 WizardFlow handoff", () => {
     state.view = undefined;
     state.calls = [];
     state.createError = null;
+    state.startError = null;
     state.replace.mockReset();
   });
 
@@ -242,6 +251,25 @@ describe("WP74-S4 WizardFlow handoff", () => {
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
     await userEvent.setup().click(screen.getByRole("button", { name: "Create my business" }));
     expect((await screen.findByRole("link", { name: "Open your business" })).getAttribute("href")).toBe("/dashboard/b/project9");
+  });
+
+  test("L1 F6: a resumed session at the business allowance says so up front, with no steps and no Create", async () => {
+    state.view = { ...finished(), completed: false, step: "goal", stepIndex: 2, businessLimit: { limit: 1, projectId: "project9" } };
+    const { container } = render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId="session123" />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Your plan is full.");
+    expect(screen.getByText("Your plan includes one business, and you already have it.").getAttribute("role")).toBe("status");
+    expect(screen.getByRole("link", { name: "Open your business" }).getAttribute("href")).toBe("/dashboard/b/project9");
+    expect(screen.queryByRole("button", { name: "Create my business" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Continue|Looks good/ })).toBeNull();
+    await expectNoAxeViolations(container);
+  });
+
+  test("L1 F6: a new start refused at the allowance shows the alert and links to the founder's business", async () => {
+    state.view = undefined;
+    state.startError = new ConvexError({ code: "BUSINESS_LIMIT_REACHED", plan: "free", limit: 1, projectId: "project9" });
+    render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
+    expect((await screen.findByRole("alert")).textContent).toBe("Your plan includes one business, and you already have it.");
+    expect(screen.getByRole("link", { name: "Open your business" }).getAttribute("href")).toBe("/dashboard/b/project9");
   });
 
   test("a reload with ?session= reopens the session instead of starting a new one", () => {

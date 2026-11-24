@@ -22,7 +22,7 @@ import type {
   MeterErrorClass,
   MeterProvider,
 } from "../../../lib/workspace/contracts/metering";
-import type { PromptEffort, PromptModel, PromptThinking } from "../../../lib/workspace/contracts/prompts";
+import type { PromptEffort, PromptModel, PromptOutputMode, PromptThinking } from "../../../lib/workspace/contracts/prompts";
 
 // ---------------------------------------------------------------------------
 // Cost
@@ -136,8 +136,25 @@ export type ProviderErrorOptions = {
   readonly usage?: TextUsage;
   readonly stopReason?: string;
   readonly refusal?: ProviderRefusal;
+  /** The provider's own error message, cleaned by `providerErrorDetail`. */
+  readonly detail?: string;
   readonly cause?: unknown;
 };
+
+/** The longest provider message an error keeps, ellipsis included. */
+export const PROVIDER_ERROR_DETAIL_MAX = 300;
+
+/**
+ * The provider's error message as one short line, or undefined when it is not
+ * text. Kept so an operator can see why a request was refused (a batch line's
+ * `invalid_request_error`, say) without the provider's console.
+ */
+export function providerErrorDetail(message: unknown): string | undefined {
+  if (typeof message !== "string") return undefined;
+  const line = message.replace(/\p{Cc}+/gu, " ").replace(/\s+/gu, " ").trim();
+  if (line === "") return undefined;
+  return line.length <= PROVIDER_ERROR_DETAIL_MAX ? line : `${line.slice(0, PROVIDER_ERROR_DETAIL_MAX - 1)}…`;
+}
 
 export class ProviderError extends Error {
   readonly provider: MeterProvider;
@@ -150,6 +167,7 @@ export class ProviderError extends Error {
   readonly usage?: TextUsage;
   readonly stopReason?: string;
   readonly refusal?: ProviderRefusal;
+  readonly detail?: string;
 
   constructor(provider: MeterProvider, kind: ProviderErrorKind, message: string, options: ProviderErrorOptions = {}) {
     super(message, options.cause === undefined ? undefined : { cause: options.cause });
@@ -163,6 +181,7 @@ export class ProviderError extends Error {
     this.usage = options.usage;
     this.stopReason = options.stopReason;
     this.refusal = options.refusal;
+    this.detail = options.detail;
   }
 
   get errorClass(): MeterErrorClass {
@@ -205,6 +224,12 @@ export type TextRequest = {
    * reply must parse as JSON; the gateway re-validates it with the spec's zod schema.
    */
   readonly outputSchema?: Readonly<Record<string, unknown>>;
+  /**
+   * `"prompted"`: send `outputSchema` as a system block (`promptedSchemaBlock`)
+   * instead of `output_config.format`, for a schema too large for the API's
+   * grammar. The reply is parsed and re-validated the same way. Absent: grammar.
+   */
+  readonly outputMode?: PromptOutputMode;
   /** Hard deadline for the call, in milliseconds. */
   readonly timeoutMs: number;
   /** Optional caller signal (e.g. the action being cancelled). */

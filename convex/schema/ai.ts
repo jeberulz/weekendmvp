@@ -23,6 +23,8 @@ export const aiTables = {
     plan: v.optional(v.union(v.literal("free"), v.literal("builders_hub"), v.literal("growth"))),
     globalPool: v.union(v.literal("free"), v.literal("paid")),
     creditFunded: v.boolean(),
+    /** Reservation and settlement use separate counters for uncapped owner spend. */
+    ownerBudgetBypass: v.optional(v.boolean()),
     creditDebitId: v.optional(v.id("credit_ledger")),
     batch: v.optional(v.literal(true)),
     escalation: v.optional(v.literal(true)),
@@ -65,6 +67,11 @@ export const aiTables = {
     dayKey: v.string(),
     daySpentMicroUsd: v.int64(),
     dayEscalations: v.int64(),
+    capOverrideMicroUsd: v.optional(v.int64()),
+    capOverrideExpiresAt: v.optional(v.number()),
+    capOverrideSetBy: v.optional(v.id("users")),
+    capOverrideSetAt: v.optional(v.number()),
+    capOverrideReason: v.optional(v.string()),
     updatedAt: v.number(),
   }).index("by_ownerId", ["ownerId"]),
 

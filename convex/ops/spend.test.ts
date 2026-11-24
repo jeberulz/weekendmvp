@@ -2,7 +2,7 @@
 
 import { convexTest } from "convex-test";
 import shardedCounterTest from "@convex-dev/sharded-counter/test";
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { addGlobalReservation, addGlobalSpend } from "../ai/budgets";
@@ -18,6 +18,10 @@ function setup() {
 }
 
 describe("WP70 spend alarms and console", () => {
+  // Inspect the detection transaction before its separately tested notification jobs run.
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
   test("reconciles yesterday's late spend once after UTC rollover", async () => {
     const t = setup();
     const yesterday = utcDayKey(Date.now() - 24 * 60 * 60 * 1000);

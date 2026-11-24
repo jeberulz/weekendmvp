@@ -2,12 +2,19 @@ import { ConvexError } from "convex/values";
 
 import type { TeamCardStatus } from "@/components/workspace/kit/types";
 import { ROLE_CATALOGUE } from "@/convex/crew/roles";
-import type { ArtifactKind } from "@/lib/workspace/contracts/artifacts";
-import { ALWAYS_HIRED_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
-import type { LaunchHiredRole, LaunchSkippedRole, LaunchView } from "@/lib/workspace/crew/launch";
+import { CORE_ROLE_KEYS, ROLE_KEYS, type RoleKey } from "@/lib/workspace/contracts/roster";
+import type { LaunchView } from "@/lib/workspace/crew/launch";
 import { needsYouTail } from "@/lib/workspace/needsYou";
 import { TEAM_NOT_STARTED_COPY, TEAM_PARTNER_NAME } from "@/lib/workspace/reviewPages";
 import { workspacePath } from "@/lib/workspace/routes";
+
+import type { EmployeeStatusEntry, TeamHired, TeamSkipped, TeamStep } from "./crew/status";
+export {
+  employeeStatus, employeeStatuses, isRoleKey, readyRoster, REVIEW_OWNER,
+  type EmployeeStatusEntry, type TeamHired, type TeamReview, type TeamSkipped, type TeamStep, type TeamStepState,
+} from "./crew/status";
+
+const lower = (text: string): string => text.charAt(0).toLowerCase() + text.slice(1);
 
 /**
  * L1 UI fidelity: the pure rules behind Team HQ. Every status on the page is
@@ -15,63 +22,6 @@ import { workspacePath } from "@/lib/workspace/routes";
  * `pendingReviews`); nothing is invented. Unit-tested in
  * `tests/platform/workspace-team-hq-helpers.test.ts`.
  */
-
-export type TeamStepState = "waiting" | "queued" | "running" | "paused" | "succeeded" | "failed" | "skipped";
-
-/** A launch step as `launchProgress` returns it. */
-export type TeamStep = {
-  readonly key: string;
-  readonly title: string;
-  readonly employee: RoleKey;
-  /** True when the step has no generator yet: it reads "Coming soon", never "Queued". */
-  readonly notBuilt: boolean;
-  readonly state: TeamStepState;
-  readonly reason?: string;
-  readonly retryable?: boolean;
-};
-
-/** A pending review as `pendingReviews` returns it. */
-export type TeamReview = {
-  readonly kind: ArtifactKind;
-  readonly title: string;
-  readonly changeRound: bigint | number;
-};
-
-export type TeamHired = { readonly role: RoleKey; readonly name: string; readonly roleLabel: string; readonly reason: string };
-export type TeamSkipped = { readonly role: RoleKey; readonly roleLabel: string; readonly reason: string };
-
-export function isRoleKey(value: string): value is RoleKey {
-  return (ROLE_KEYS as readonly string[]).includes(value);
-}
-
-/** The ready roster with role keys narrowed; an unknown key (never expected) is dropped. */
-export function readyRoster(launch: Extract<LaunchView, { state: "ready" }>): { hired: TeamHired[]; skipped: TeamSkipped[] } {
-  const hired: TeamHired[] = [];
-  for (const entry of launch.hired as readonly LaunchHiredRole[]) {
-    if (isRoleKey(entry.roleKey)) {
-      hired.push({ role: entry.roleKey, name: entry.employeeName, roleLabel: entry.roleLabel, reason: entry.reason });
-    }
-  }
-  const skipped: TeamSkipped[] = [];
-  for (const entry of launch.skipped as readonly LaunchSkippedRole[]) {
-    if (isRoleKey(entry.roleKey)) skipped.push({ role: entry.roleKey, roleLabel: entry.roleLabel, reason: entry.reason });
-  }
-  return { hired, skipped };
-}
-
-/** Who owns the review for each artifact kind. */
-export const REVIEW_OWNER: Readonly<Record<ArtifactKind, RoleKey>> = Object.freeze({
-  blueprint: "lead",
-  roster_plan: "lead",
-  brand_kit: "brand",
-  email_sequence: "email",
-  social_pack: "social",
-  landing_spec: "landing",
-  seo_pack: "seo",
-  launch_plan: "marketing",
-  ads_drafts: "ads",
-  build_pack: "engineering",
-});
 
 /**
  * The lead's name (the partner name), or the founder's chosen partner name, or
@@ -89,92 +39,6 @@ export function leadName(launch: LaunchView | undefined, partnerName?: string): 
 // ---------------------------------------------------------------------------
 // Per-employee status
 // ---------------------------------------------------------------------------
-
-export type EmployeeStatusEntry = {
-  readonly role: RoleKey;
-  readonly name: string;
-  readonly status: TeamCardStatus;
-  readonly detail: string;
-  readonly blocker?: { readonly label: string; readonly detail?: string };
-};
-
-const lower = (text: string): string => text.charAt(0).toLowerCase() + text.slice(1);
-
-function joinTitles(titles: readonly string[]): string {
-  if (titles.length <= 1) return titles.join("");
-  return `${titles.slice(0, -1).join(", ")} and ${titles[titles.length - 1]}`;
-}
-
-/**
- * One hired role's status. Rules, first match wins (steps the roster skipped or
- * that are not built are left out of rules 2-7 so a half-built role still reads
- * truthfully):
- * 1. a pending review it owns: needs_you;
- * 2. a step failed: failed (the reason);
- * 3. a step paused: needs_you (Resume exists);
- * 4. a step running: working;
- * 5. a step queued (waiting for a free slot): working;
- * 6. a step waiting on its parent: queued, with the reason as the blocker;
- * 7. every step done: done;
- * 8. nothing built to do: coming_soon, never "queued".
- */
-export function employeeStatus(
-  hired: Pick<TeamHired, "role" | "name">,
-  steps: readonly TeamStep[],
-  reviews: readonly TeamReview[],
-): EmployeeStatusEntry {
-  const { role, name } = hired;
-  const owned = steps.filter((step) => step.employee === role);
-  const relevant = owned.filter((step) => !step.notBuilt && step.state !== "skipped");
-  const base = { role, name };
-
-  const mine = reviews.filter((review) => REVIEW_OWNER[review.kind] === role);
-  if (mine.length > 0) {
-    const first = mine[0];
-    const round = Number(first.changeRound);
-    const lead = round > 0 ? `${first.title} · change round ${round}` : first.title;
-    const more = mine.length > 1 ? ` (+${mine.length - 1} more)` : "";
-    return { ...base, status: "needs_you", detail: `${lead} ready for your OK${more}` };
-  }
-  const failed = relevant.find((step) => step.state === "failed");
-  if (failed !== undefined) {
-    return { ...base, status: "failed", detail: failed.reason ?? `${failed.title} did not finish.` };
-  }
-  const paused = relevant.find((step) => step.state === "paused");
-  if (paused !== undefined) {
-    return { ...base, status: "needs_you", detail: paused.reason ?? `${paused.title} is paused. Resume it below.` };
-  }
-  const running = relevant.find((step) => step.state === "running");
-  if (running !== undefined) {
-    return { ...base, status: "working", detail: `Writing the ${lower(running.title)}` };
-  }
-  if (relevant.some((step) => step.state === "queued")) {
-    return { ...base, status: "working", detail: "Waiting for a free slot" };
-  }
-  const waiting = relevant.find((step) => step.state === "waiting");
-  if (waiting !== undefined) {
-    return {
-      ...base,
-      status: "queued",
-      detail: "Starts after an earlier step finishes",
-      blocker: { label: waiting.reason ?? "Waiting on an earlier step." },
-    };
-  }
-  if (relevant.length > 0 && relevant.every((step) => step.state === "succeeded")) {
-    return { ...base, status: "done", detail: `${joinTitles(relevant.map((step) => step.title))} done` };
-  }
-  const reason = owned.find((step) => step.reason !== undefined)?.reason;
-  return { ...base, status: "coming_soon", detail: reason ?? "Nothing to do in this beta yet." };
-}
-
-/** Status for every hired role, in roster order. */
-export function employeeStatuses(
-  hired: readonly Pick<TeamHired, "role" | "name">[],
-  steps: readonly TeamStep[],
-  reviews: readonly TeamReview[],
-): EmployeeStatusEntry[] {
-  return hired.map((entry) => employeeStatus(entry, steps, reviews));
-}
 
 export type HeadCounts = Record<TeamCardStatus, number> & { all: number };
 
@@ -266,10 +130,11 @@ export type TeamHeaderInput = {
   readonly statuses: readonly EmployeeStatusEntry[];
   /** Open (unexpired) reviews: the one "need you" count (`lib/workspace/needsYou.ts`). Paused steps are not counted. */
   readonly reviewCount: number;
+  readonly spendCount?: number;
 };
 
 export function teamHeaderCopy(input: TeamHeaderInput): TeamHeaderCopy {
-  const { launch, lead, statuses, reviewCount } = input;
+  const { launch, lead, statuses, reviewCount, spendCount = 0 } = input;
   switch (launch.state) {
     case "not_started":
       return { lead: "Team HQ", summary: TEAM_NOT_STARTED_COPY, showWhy: false };
@@ -295,6 +160,7 @@ export function teamHeaderCopy(input: TeamHeaderInput): TeamHeaderCopy {
       const parts: string[] = [
         reviewCount === 0 ? `${lead} has no reviews waiting.` : `${lead} is routing ${reviewsPhrase(reviewCount)}.`,
       ];
+      if (spendCount > 0) parts.push(`${spendCount} paid change ${spendCount === 1 ? "round needs" : "rounds need"} your approval.`);
       if (specialists.length > 0) {
         // "Need you" lives only in the h1 tail (open reviews, `needsYou.ts`), so no second count can disagree.
         const clauses: string[] = [];
@@ -310,7 +176,7 @@ export function teamHeaderCopy(input: TeamHeaderInput): TeamHeaderCopy {
       parts.push("Nothing sends, posts or spends without your OK.");
       return {
         lead: `${counts.all} on the team.`,
-        tail: needsYouTail(reviewCount),
+        tail: needsYouTail(reviewCount + spendCount),
         summary: parts.join(" "),
         showWhy: true,
       };
@@ -379,15 +245,26 @@ export function launchErrorMessage(error: unknown): string {
 // Plan by owner
 // ---------------------------------------------------------------------------
 
-/** The step pill set: running reads Working, succeeded Done, an unbuilt step Coming soon, a roster-skipped one Skipped. */
-export function stepPillStatus(step: Pick<TeamStep, "state" | "notBuilt">):
-  "waiting" | "queued" | "working" | "paused" | "done" | "failed" | "coming_soon" | "skipped" {
+/** The review kind a launch step's draft goes to (the roster step's review is the roster plan). */
+export function stepReviewKind(stepKey: string): string {
+  return stepKey === "roster" ? "roster_plan" : stepKey;
+}
+
+/**
+ * The step pill set: running reads Working, succeeded Done, an unbuilt step Coming soon, a roster-skipped one Skipped.
+ * A succeeded step whose draft still has an open review reads Waiting on you, not Done (L1 F5), when the caller
+ * passes the open review kinds.
+ */
+export function stepPillStatus(
+  step: Pick<TeamStep, "state" | "notBuilt"> & { readonly key?: string },
+  openReviewKinds?: ReadonlySet<string>,
+): "waiting" | "queued" | "working" | "paused" | "needs_you" | "done" | "failed" | "coming_soon" | "skipped" {
   if (step.notBuilt) return "coming_soon";
   switch (step.state) {
     case "running":
       return "working";
     case "succeeded":
-      return "done";
+      return step.key !== undefined && openReviewKinds?.has(stepReviewKind(step.key)) === true ? "needs_you" : "done";
     default:
       return step.state;
   }
@@ -418,28 +295,55 @@ export function planSummary(steps: readonly Pick<TeamStep, "state" | "notBuilt">
 // Why this team
 // ---------------------------------------------------------------------------
 
+/**
+ * - `core`: Lead, Brand, Email or Social, on every team.
+ * - `lead`: hired because the Crew Lead chose it for this idea (roster per idea, WP91).
+ * - `added`: hired by a rule (a paid push, a course) or by the founder.
+ * - `skipped`: not on the team for now.
+ */
+export type WhyDecision = "core" | "lead" | "added" | "skipped";
+
 export type WhyRow = {
   readonly role: RoleKey;
   readonly roleLabel: string;
-  readonly decision: "always" | "added" | "skipped";
+  readonly decision: WhyDecision;
+  /** The pill text, for example "Hired · Juno chose". */
+  readonly label: string;
   readonly reason: string;
 };
 
-export const DECISION_LABELS = { always: "Hired · always", added: "Hired · added", skipped: "Skipped" } as const;
+const CORE: ReadonlySet<RoleKey> = new Set<RoleKey>(CORE_ROLE_KEYS);
 
-const ALWAYS: ReadonlySet<RoleKey> = new Set<RoleKey>(ALWAYS_HIRED_ROLE_KEYS);
+/** The hired role's decision: core, the lead's call, or added. */
+export function hiredDecision(role: RoleKey, decidedBy: "lead" | undefined): Exclude<WhyDecision, "skipped"> {
+  if (CORE.has(role)) return "core";
+  return decidedBy === "lead" ? "lead" : "added";
+}
+
+/** The Crew Lead's name on this team, or a plain fallback. */
+export function leadNameOf(hired: readonly TeamHired[]): string {
+  return hired.find((entry) => entry.role === "lead")?.name ?? "Your Crew Lead";
+}
 
 /** Every role the roster decided on, hired or skipped, in catalogue order. */
 export function whyRows(hired: readonly TeamHired[], skipped: readonly TeamSkipped[]): WhyRow[] {
+  const leadName = leadNameOf(hired);
+  const labels: Readonly<Record<WhyDecision, string>> = {
+    core: "Hired · core",
+    lead: `Hired · ${leadName} chose`,
+    added: "Hired · added",
+    skipped: "Skipped",
+  };
   const rows: WhyRow[] = [];
   for (const role of ROLE_KEYS) {
     const h = hired.find((entry) => entry.role === role);
     if (h !== undefined) {
-      rows.push({ role, roleLabel: h.roleLabel, decision: ALWAYS.has(role) ? "always" : "added", reason: h.reason });
+      const decision = hiredDecision(role, h.decidedBy);
+      rows.push({ role, roleLabel: h.roleLabel, decision, label: labels[decision], reason: h.reason });
       continue;
     }
     const s = skipped.find((entry) => entry.role === role);
-    if (s !== undefined) rows.push({ role, roleLabel: s.roleLabel, decision: "skipped", reason: s.reason });
+    if (s !== undefined) rows.push({ role, roleLabel: s.roleLabel, decision: "skipped", label: labels.skipped, reason: s.reason });
   }
   return rows;
 }

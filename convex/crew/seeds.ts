@@ -28,6 +28,10 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { soleActiveSuperAdminUserId } from "../admin/superAdmin";
+import { readGlobalBudget } from "../ai/budgets";
+import { AI_PROVIDER_MODE_ENV, PROVIDER_KEY_ENV, providerMode } from "../ai/providers/mode";
+import { getOpsSettings } from "../ops/settings";
+import { int64ToMicroUsd, utcDayKey } from "../../lib/workspace/contracts/metering";
 import { ideaIsValidated, seedColumns } from "../../lib/workspace/contracts/seeds";
 import { auditSeedDraft } from "../../lib/workspace/crew/seedAudit";
 import { SeedSourceError, seedSourceFromJson, seedSourceHash, type SeedSource } from "../../lib/workspace/crew/seedSource";
@@ -77,6 +81,26 @@ async function platformSeedAt(
     .withIndex("by_ideaSlug_and_seedVersion", (q) => q.eq("ideaSlug", ideaSlug).eq("seedVersion", seedVersion))
     .take(SEED_ROWS_READ_MAX);
   return rows.find((row) => row.projectId === undefined) ?? null;
+}
+
+/** Open runs (preparing or submitted) read per status; there is normally at most one per version. */
+const OPEN_RUNS_READ_MAX = 100;
+
+/**
+ * Whether a run at this version is still preparing or submitted. Reads the
+ * open statuses through `by_status`, not the version's history, so finished
+ * runs at a long-lived version can never hide an open one (PR #280 review).
+ */
+async function hasOpenRunAt(ctx: Pick<QueryCtx, "db">, seedVersion: string): Promise<boolean> {
+  for (const status of ["preparing", "submitted"] as const) {
+    const open = await ctx.db
+      .query("idea_seed_runs")
+      .withIndex("by_status", (q) => q.eq("status", status))
+      .take(OPEN_RUNS_READ_MAX);
+    if (open.length >= OPEN_RUNS_READ_MAX) throw new Error(`${OPEN_RUNS_READ_MAX} or more seed runs are ${status}; finish or fail them first`);
+    if (open.some((run) => run.seedVersion === seedVersion)) return true;
+  }
+  return false;
 }
 
 function assertSeedVersion(seedVersion: string): void {
@@ -141,6 +165,46 @@ export const estimateItems = internalQuery({
 });
 
 // ---------------------------------------------------------------------------
+// Unattended runs (WP92)
+// ---------------------------------------------------------------------------
+
+/**
+ * What an unattended run (`crew:seeds --auto`) needs before it may submit,
+ * fed to `decideSeedAutoRun` (`lib/workspace/crew/seedAutoRun.ts`):
+ * - `openRun`: a run at this version is still preparing or submitted, so its
+ *   ideas have no seed row yet and would be sent twice;
+ * - `providerLive`: `AI_PROVIDER_MODE=live` with an Anthropic key set (only
+ *   whether one is set; the key never leaves the deployment);
+ * - today's (UTC) free global pool: its budget and what is spent or in flight.
+ * Reads only.
+ */
+export const autoRunState = internalQuery({
+  args: { seedVersion: v.string() },
+  returns: v.object({
+    openRun: v.boolean(),
+    providerLive: v.boolean(),
+    freePoolBudgetMicroUsd: v.number(),
+    freePoolUsedMicroUsd: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    assertSeedVersion(args.seedVersion);
+    const openRun = await hasOpenRunAt(ctx, args.seedVersion);
+    const env = {
+      [AI_PROVIDER_MODE_ENV]: process.env[AI_PROVIDER_MODE_ENV],
+    };
+    const keySet = (process.env[PROVIDER_KEY_ENV.anthropic] ?? "").trim().length > 0;
+    const settings = await getOpsSettings(ctx);
+    const pool = await readGlobalBudget(ctx, "free", utcDayKey(Date.now()));
+    return {
+      openRun,
+      providerLive: providerMode(env) === "live" && keySet,
+      freePoolBudgetMicroUsd: int64ToMicroUsd(settings.globalDailyBudgetMicroUsd),
+      freePoolUsedMicroUsd: pool.spentTodayMicroUsd + pool.inFlightMicroUsd,
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
 // Preparing a run
 // ---------------------------------------------------------------------------
 
@@ -150,11 +214,7 @@ export const createRun = internalMutation({
   handler: async (ctx, args) => {
     assertSeedVersion(args.seedVersion);
     const ownerId = await soleSuperAdmin(ctx);
-    const open = await ctx.db
-      .query("idea_seed_runs")
-      .withIndex("by_seedVersion", (q) => q.eq("seedVersion", args.seedVersion))
-      .take(SEED_ROWS_READ_MAX);
-    if (open.some((run) => run.status === "preparing" || run.status === "submitted")) {
+    if (await hasOpenRunAt(ctx, args.seedVersion)) {
       throw new Error(`a run at ${args.seedVersion} is still open; let it finish first`);
     }
     return await ctx.db.insert("idea_seed_runs", {
@@ -380,7 +440,12 @@ export const markPolled = internalMutation({
 
 const resultInput = v.union(
   v.object({ kind: v.literal("succeeded"), replyText: v.string(), costMicroUsd: v.number() }),
-  v.object({ kind: v.literal("failed"), errorKind: v.string(), costMicroUsd: v.optional(v.number()) }),
+  v.object({
+    kind: v.literal("failed"),
+    errorKind: v.string(),
+    errorDetail: v.optional(v.string()),
+    costMicroUsd: v.optional(v.number()),
+  }),
 );
 
 /** The largest reply the audit reads: the seed's bounds keep a valid draft far below this. */
@@ -404,6 +469,7 @@ export const recordResult = internalMutation({
       await ctx.db.patch("idea_seed_items", item._id, {
         status: "failed",
         errorKind: args.result.errorKind,
+        ...(args.result.errorDetail === undefined ? {} : { errorDetail: args.result.errorDetail }),
         ...(args.result.costMicroUsd === undefined ? {} : { costMicroUsd: args.result.costMicroUsd }),
         updatedAt: now,
       });
@@ -504,14 +570,16 @@ export const runSummary = internalQuery({
     costMicroUsd: v.number(),
     counts: v.record(v.string(), v.number()),
     auditFindings: v.array(v.object({ ideaSlug: v.string(), code: v.string(), path: v.string() })),
-    failures: v.array(v.object({ ideaSlug: v.string(), status: v.string(), errorKind: v.string() })),
+    failures: v.array(
+      v.object({ ideaSlug: v.string(), status: v.string(), errorKind: v.string(), errorDetail: v.optional(v.string()) }),
+    ),
   }),
   handler: async (ctx, args) => {
     const run = await requireRun(ctx, args.runId);
     const counts: Record<string, number> = {};
     let costMicroUsd = 0;
     const auditFindings: { ideaSlug: string; code: string; path: string }[] = [];
-    const failures: { ideaSlug: string; status: string; errorKind: string }[] = [];
+    const failures: { ideaSlug: string; status: string; errorKind: string; errorDetail?: string }[] = [];
     for (const status of ITEM_STATUSES) {
       const items = await ctx.db
         .query("idea_seed_items")
@@ -524,7 +592,12 @@ export const runSummary = internalQuery({
           if (auditFindings.length < 100) auditFindings.push({ ideaSlug: item.ideaSlug, code: issue.code, path: issue.path });
         }
         if ((status === "failed" || status === "not_reserved") && failures.length < 100) {
-          failures.push({ ideaSlug: item.ideaSlug, status, errorKind: item.errorKind ?? "unknown" });
+          failures.push({
+            ideaSlug: item.ideaSlug,
+            status,
+            errorKind: item.errorKind ?? "unknown",
+            ...(item.errorDetail === undefined ? {} : { errorDetail: item.errorDetail }),
+          });
         }
       }
     }

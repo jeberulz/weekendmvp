@@ -27,6 +27,7 @@ export const STEP_STATUS_STYLES: Record<StepStatus, PillStyle> = {
   queued: { label: "Queued", classes: NEUTRAL },
   working: { label: "Working", classes: SKY },
   paused: { label: "Paused", classes: OCHRE },
+  needs_you: { label: "Waiting on you", classes: EMBER },
   done: { label: "Done", classes: SAGE },
   failed: { label: "Failed", classes: CLAY },
   coming_soon: { label: "Coming soon", classes: NOT_BUILT },

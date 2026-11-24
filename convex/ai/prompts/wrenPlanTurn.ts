@@ -1,5 +1,5 @@
 /**
- * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory). A plan-changing Wren turn: the `draft` tier (`02` §5.2: "Wren
+ * WP77-S3 (version 2: WP77-S4 cards; version 3: WP77-S5 memory; version 4: the founder's lead name). A plan-changing Wren turn: the `draft` tier (`02` §5.2: "Wren
  * turns that change the plan"). Chosen only by the routing rule in
  * `lib/workspace/wren.ts`, and only while the business has an escalation left
  * today (`WREN_ESCALATIONS_PER_BUSINESS_PER_DAY`). Thinking stays off
@@ -24,7 +24,7 @@ import {
 
 export const wrenPlanTurnSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>({
   id: "wren-plan-turn",
-  version: 3,
+  version: 5,
   tier: "draft",
   effort: "low",
   thinking: { type: "between_tools" },
@@ -35,7 +35,7 @@ export const wrenPlanTurnSpec = definePromptSpec<WrenTurnInput, WrenReplyOutput>
       inputs,
       "The founder wants to change their weekend plan. Work out what they are asking for, then propose the change " +
         "as a short, concrete suggestion: what moves, what it affects, and what stays the same. You cannot change " +
-        "the plan yourself; say they can make the change in the launch plan.",
+        "the launch schedule yourself. Only suggest next steps that are available in the current workspace.",
     ),
   outputSchema: wrenReplyOutput,
   cacheLayout: { system: "stable", business: "per_business", ttl: "5m" },

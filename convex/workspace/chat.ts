@@ -10,7 +10,7 @@ import {
   type MutationCtx,
   type QueryCtx,
 } from "../_generated/server";
-import { assertFeatureEnabled } from "../ops/settings";
+import { approvalKindSwitchedOn, assertFeatureEnabled, getOpsSettings } from "../ops/settings";
 import { requireBusinessAccess, requireBusinessForOwner } from "../platform/authz";
 import { checkLimit } from "../platform/limits";
 import { wrenChatSpec } from "../ai/prompts/wrenChat";
@@ -30,6 +30,15 @@ import {
   readWrenMemory,
   wrenMemoryProposalValidator,
 } from "./wrenMemory";
+import { readEmailSequenceDraft } from "../growth/drafts/emailSequence";
+import { readWrenHandoffReceipt } from "./wrenHandoffReceipt";
+import { readCrewApprovalAnswer } from "./crewApprovalAnswer";
+import { readConsultationRoster } from "./consultationRoster";
+import { consultationAttemptsAvailable, consultationMember, crewConsultationIntent } from "../../lib/workspace/crew/consultation";
+import { readCrewStatus } from "./crewStatus";
+import { requestCrewRevision } from "./approvals";
+import { answerOnlyRequest, artifactReviewQuestion, capabilityQuestion, handoffGuide, crewAssignmentIntent, REVISION_TARGETS, declinedRevisionMessage, emailPreviewRequest, specialistStatusAnswer } from "../../lib/workspace/crewAssignment";
+import { ROLE_KEYS } from "../../lib/workspace/contracts/roster";
 import { sliceWellFormed } from "../../lib/workspace/plainText";
 import { parsePromptRef, promptRef } from "../../lib/workspace/contracts/prompts";
 import { WREN_CARDS_PER_TURN } from "../../lib/workspace/contracts/wrenTools";
@@ -72,7 +81,8 @@ import {
  * 4. Inserts the `founder` row (`done`) and the `wren` row (`streaming`,
  *    empty), then schedules `internal.workspace.chatActions.runWrenTurn`.
  *
- * The turn (`chatActions.ts`) calls the gateway with the chat attempt key
+ * Explicit founder assignments go through the revision broker at finish, and specialist
+ * status questions use the shared Team HQ projection. Other turns call the gateway with the chat attempt key
  * `chat:{projectId}:{wrenMessageId}:{attempt}`; the gateway writes the reply
  * so far through `writeWrenDraft` (throttled) and the action ends it with
  * `finishWrenTurn`: `done` with the schema-checked reply, or `failed` with an
@@ -246,7 +256,7 @@ async function scheduleTurn(
 // ---------------------------------------------------------------------------
 
 export const sendWrenMessage = mutation({
-  args: { projectId: v.id("projects"), body: v.string() },
+  args: { projectId: v.id("projects"), body: v.string(), focusRole: v.optional(v.string()) },
   returns: sendWrenMessageResultValidator,
   handler: async (ctx, args): Promise<SendWrenMessageResult> => {
     await assertFeatureEnabled(ctx, "workspace");
@@ -255,10 +265,11 @@ export const sendWrenMessage = mutation({
     if (body === null) refuse("WREN_MESSAGE_INVALID");
     const now = Date.now();
 
+    const focusRole = ROLE_KEYS.find((role) => role !== "lead" && role === args.focusRole);
     const inFlight = await replyInFlight(ctx, project._id, now);
     if (inFlight !== null) {
       const founder = await pairedFounderMessage(ctx, inFlight);
-      if (founder !== null && founder.body === body) {
+      if (founder !== null && founder.body === body && founder.focusRole === focusRole) {
         return { kind: "duplicate", founderMessageId: founder._id, wrenMessageId: inFlight._id };
       }
       return { kind: "busy", wrenMessageId: inFlight._id };
@@ -275,10 +286,11 @@ export const sendWrenMessage = mutation({
     const decision = await routeFor(ctx, project._id, body, now);
     const founderMessageId = await ctx.db.insert("chat_messages", {
       ownerId: project.ownerId, projectId: project._id, author: "founder", body, status: "done",
+      ...(focusRole === undefined ? {} : { focusRole }),
       cardApprovalIds: [], createdAt: now, updatedAt: now,
     });
     const wrenMessageId = await ctx.db.insert("chat_messages", {
-      ownerId: project.ownerId, projectId: project._id, author: "wren", body: "", status: "streaming",
+      ownerId: project.ownerId, projectId: project._id, author: "wren", body: "", status: "streaming", replyTo: founderMessageId,
       cardApprovalIds: [], createdAt: now, updatedAt: now,
     });
     await scheduleTurn(ctx, project, founderMessageId, wrenMessageId, decision.route, 1);
@@ -310,8 +322,12 @@ export const retryWrenReply = mutation({
     const founder = await pairedFounderMessage(ctx, current);
     if (founder === null) refuse("WREN_RETRY_NOT_AVAILABLE");
 
-    const attempt = await nextChatAttempt(ctx, project._id, current._id);
-    if (attempt > WREN_MAX_ATTEMPTS_PER_MESSAGE) return { kind: "exhausted" as const };
+    const attempt = Math.max(await nextChatAttempt(ctx, project._id, current._id), (current.crewConsultation?.attempt ?? 0) + 1);
+    const claim = current.crewConsultation;
+    if (attempt > WREN_MAX_ATTEMPTS_PER_MESSAGE || (claim !== undefined &&
+      !consultationAttemptsAvailable(attempt, claim.colleague !== undefined && claim.colleagueAnswer === undefined))) {
+      return { kind: "exhausted" as const };
+    }
     const decision = await routeFor(ctx, project._id, founder.body, now);
     await ctx.db.patch("chat_messages", current._id, { status: "streaming", body: "", updatedAt: now });
     await scheduleTurn(ctx, project, founder._id, current._id, decision.route, attempt);
@@ -328,17 +344,23 @@ export const listWrenThread = query({
     const rows = await newestMessages(ctx, project._id, WREN_THREAD_PAGE);
     const business = { ownerId: project.ownerId, projectId: project._id };
     const own = rows.filter((row) => row.ownerId === project.ownerId).reverse();
-    return await Promise.all(own.map(async (row) => ({
-      _id: row._id,
-      author: row.author,
-      body: row.body,
-      status: row.status,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      cards: row.author === "wren" && row.status === "done"
-        ? await approvalCardViews(ctx, business, row.cardApprovalIds.slice(0, WREN_CARDS_PER_TURN))
-        : [],
-    })));
+    return await Promise.all(own.map(async (row) => {
+      const handoff = await readWrenHandoffReceipt(ctx, row);
+      const route = handoff?.route ?? row.focusRole;
+      return {
+        _id: row._id,
+        author: row.author,
+        body: handoff?.body ?? row.body,
+        status: row.status,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        cards: row.author === "wren" && row.status === "done"
+          ? [...await approvalCardViews(ctx, business, row.cardApprovalIds.slice(0, WREN_CARDS_PER_TURN)),
+            ...(route !== undefined && (route === "team" || Object.hasOwn(REVISION_TARGETS, route))
+              ? [{ kind: "navigate" as const, route }] : [])]
+          : [],
+      };
+    }));
   },
 });
 
@@ -353,6 +375,8 @@ const turnArgs = {
   wrenMessageId: v.id("chat_messages"),
 };
 
+const answerRoute = v.union(v.literal("brand"), v.literal("email"), v.literal("social"), v.literal("team"));
+
 export const loadedTurnValidator = v.union(
   v.object({
     status: v.literal("ready"),
@@ -362,6 +386,9 @@ export const loadedTurnValidator = v.union(
     /** WP77-S5: `wrenMemoryVersion` of the memory read here; `finishWrenTurn` skips Wren's summary if it moved. */
     memoryVersion: v.string(),
   }),
+  v.object({ status: v.literal("assignment") }),
+  v.object({ status: v.literal("consultation") }),
+  v.object({ status: v.literal("answer"), body: v.string(), route: v.optional(answerRoute) }),
   v.object({ status: v.literal("skip") }),
 );
 
@@ -390,8 +417,16 @@ const SEQUENCE_SCAN_MAX = 50;
  * the newest `ready` site versions, draft sequences and `copy_ready` social
  * posts of this business, a few of each. Server-read and bounded. The model
  * may still name any id; `resolveWrenCards` checks it against the business.
+ * A kind whose action is switched off (`approvalKindSwitchedOn`: publish, send
+ * or post while that kill switch is on) is left out, so Wren never offers the
+ * founder an approval for something that cannot happen (L1 F1).
  */
 export async function approvableSubjects(ctx: QueryCtx, project: Project): Promise<ApprovableSubject[]> {
+  const settings = await getOpsSettings(ctx);
+  return (await approvableRows(ctx, project)).filter((subject) => approvalKindSwitchedOn(settings, subject.kind));
+}
+
+async function approvableRows(ctx: QueryCtx, project: Project): Promise<ApprovableSubject[]> {
   const versions = await ctx.db.query("site_versions")
     .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", "ready"))
     .order("desc")
@@ -445,53 +480,6 @@ export const WREN_REVIEW_TARGETS: ReadonlyMap<string, WaitingReview> = new Map([
   ["build_pack", { review: "Build pack", page: "team" }],
 ]);
 
-/** Pending cards read to find the crew's open reviews. */
-const PENDING_SCAN_MAX = 50;
-
-/**
- * How long a pending review card stays open: `APPROVAL_PENDING_TTL_MS`
- * (`lib/workspace/contracts/approvals.ts`), which this module may not import
- * (the WP77 import allowlist). `tests/platform/workspace-wren-fixture.test.ts`
- * keeps the two equal. A card past it can still be stored as `pending` (the
- * expiry action is not scheduled by a cron yet), but Team HQ hides it and
- * `decideApproval` refuses it, so Wren must not point the founder at it.
- */
-export const WREN_REVIEW_OPEN_MS = 7 * 24 * 60 * 60 * 1_000;
-
-/** Most open reviews Wren is told about. */
-const WAITING_REVIEWS_MAX = 10;
-
-/**
- * L1 beta. The crew's open reviews, newest first: this business's pending
- * `artifact_review` cards on its live artifact documents, the same set as the
- * Team HQ "Waiting on you" list (`api.workspace.reviews.pendingReviews`
- * filtered by `openReviews`): a card past its seven days is left out, by the
- * turn's own `now` (queries never read the clock).
- * Wren cannot raise or attach these cards (they are not in
- * `WREN_APPROVAL_SUBJECTS`); it names them and the page to review them on.
- * No ids are passed, so the model has nothing to put on an approval card.
- */
-export async function waitingReviews(ctx: QueryCtx, project: Project, now: number): Promise<WaitingReview[]> {
-  const pending = await ctx.db.query("approvals")
-    .withIndex("by_projectId_and_status", (q) => q.eq("projectId", project._id).eq("status", "pending"))
-    .order("desc")
-    .take(PENDING_SCAN_MAX);
-  const reviews: WaitingReview[] = [];
-  for (const card of pending) {
-    if (reviews.length >= WAITING_REVIEWS_MAX) break;
-    if (card.ownerId !== project.ownerId || card.kind !== "artifact_review" || card.subjectTable !== "documents") continue;
-    // Expired (Team HQ's `openReviews` rule: open while `createdAt + TTL > now`).
-    if (card.createdAt + WREN_REVIEW_OPEN_MS <= now) continue;
-    const documentId = ctx.db.normalizeId("documents", card.subjectId);
-    const document = documentId === null ? null : await ctx.db.get("documents", documentId);
-    if (document === null || document.ownerId !== project.ownerId || document.projectId !== project._id ||
-      document.archivedAt !== undefined) continue;
-    const target = WREN_REVIEW_TARGETS.get(document.kind);
-    if (target !== undefined) reviews.push(target);
-  }
-  return reviews;
-}
-
 /**
  * The business context block (`02` §5.4) for Wren: the business, the partner,
  * Wren's memory, (S4) what Wren may raise an approval card for and (L1) the
@@ -503,6 +491,8 @@ export function wrenBusinessContext(
   memory: Doc<"wren_memory"> | null,
   approvable: readonly ApprovableSubject[] = [],
   waitingOnYou: readonly WaitingReview[] = [],
+  crew?: Awaited<ReturnType<typeof readCrewStatus>>,
+  focusRole?: string,
 ): string {
   const workspace = project.workspace;
   const data = {
@@ -518,6 +508,8 @@ export function wrenBusinessContext(
     memory: memoryForPrompt(memory),
     approvable,
     waitingOnYou,
+    ...(crew === undefined ? {} : { crew }),
+    ...(focusRole === undefined ? {} : { focusRole }),
   };
   return [
     "<business_context>",
@@ -540,9 +532,60 @@ export const loadWrenTurn = internalQuery({
     const belongs = (row: ChatRow | null): row is ChatRow =>
       row !== null && row.projectId === project._id && row.ownerId === project.ownerId;
     if (!belongs(founder) || !belongs(wren) || founder.author !== "founder" || wren.author !== "wren" ||
-      wren.status !== "streaming" || founder.createdAt !== wren.createdAt) {
+      wren.status !== "streaming" || founder.createdAt !== wren.createdAt ||
+      (wren.replyTo !== undefined && wren.replyTo !== founder._id)) {
       return { status: "skip" as const };
     }
+    const focus = founder.focusRole;
+    if (handoffGuide(founder.body)) {
+      return {
+        status: "answer" as const, route: "team" as const,
+        body: "Tell me the brand change for Iris and the email change for Elle in one request. I queue Iris’s revision first. Follow her work in Team HQ, then open Brand kit and approve the revised kit in Your review. That approval passes the exact kit and your email brief to Elle. Follow Elle in Team HQ, then open Email to read and review her draft. If either revision needs credits, you’ll get a separate spend decision before that work starts. This explanation hasn’t queued any work.",
+      };
+    }
+    const intent = crewAssignmentIntent(founder.body, focus);
+    if (intent !== null) {
+      return intent.type === "revision"
+        ? { status: "assignment" as const }
+        : { status: "answer" as const, body: intent.question };
+    }
+    const capability = capabilityQuestion(founder.body);
+    if (capability) {
+      const members = await readConsultationRoster(ctx, project);
+      if (!members.length) return { status: "answer" as const, route: "team" as const, body: "This business has no hired specialists to answer questions yet. Team HQ shows when the roster is ready." };
+      const selected = capability.target ? consultationMember(capability.target, members) : undefined;
+      const first = selected ?? members[0];
+      const second = members.find((member) => member._id !== first._id);
+      const opening = capability.target && !selected
+        ? `I couldn’t find a hired specialist called “${capability.target}” here. Your specialists are ${members.map((member) => member.displayName).join(", ")}.`
+        : `Yes. I can pass a question to ${first.displayName} and bring their answer back to this chat.`;
+      const example = `For example, “Ask ${first.displayName}: what is blocking your work?”`;
+      const joint = second ? ` To involve two specialists, try “Ask ${first.displayName} to consult with ${second.displayName} about the next draft.” I’ll show who answered.` : "";
+      return { status: "answer" as const, route: "team" as const, body: `${opening} ${example}${joint}` };
+    }
+    if (crewConsultationIntent(founder.body, focus)) return { status: "consultation" as const };
+    const review = artifactReviewQuestion(founder.body, focus);
+    if (review !== null) return await readCrewApprovalAnswer(ctx, project, review, args.now);
+    const crew = await readCrewStatus(ctx, project, args.now);
+    const preview = emailPreviewRequest(founder.body);
+    if (preview) {
+      const draft = await readEmailSequenceDraft(ctx, project);
+      const round = draft.state === "ready" ? draft.card?.changeRound : undefined;
+      const welcome = draft.state === "ready" ? draft.emails.find((entry) => entry.kind === "welcome") : undefined;
+      const worker = crew.specialists.find((entry) => entry.role === "email");
+      const body = welcome && (!preview.revised || (round !== undefined && round > 0n))
+        ? `Latest saved welcome email${round && round > 0n ? ` · change round ${round}` : ""}\n\nSubject: ${welcome.subject}\n\n${welcome.body}`
+        : `There is no ${preview.revised ? "revised " : ""}welcome email ready to show.`;
+      return { status: "answer" as const, route: "email" as const, body: worker ? `${body}\n\n${worker.name}: ${worker.detail}` : body };
+    }
+    const statusAnswer = specialistStatusAnswer(founder.body, focus, crew);
+    if (statusAnswer !== null) {
+      return { status: "answer" as const, body: statusAnswer };
+    }
+    const waiting = crew.reviews.flatMap((review) => {
+      const target = WREN_REVIEW_TARGETS.get(review.kind);
+      return target === undefined ? [] : [target];
+    });
     const earlier = await ctx.db.query("chat_messages")
       .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", project._id).lt("createdAt", founder.createdAt))
       .order("desc")
@@ -559,7 +602,7 @@ export const loadWrenTurn = internalQuery({
       message: founder.body,
       history,
       businessContext: wrenBusinessContext(
-        project, memory, await approvableSubjects(ctx, project), await waitingReviews(ctx, project, args.now),
+        project, memory, await approvableSubjects(ctx, project), waiting, crew, focus,
       ),
       memoryVersion: memoryVersionOf(memory),
     };
@@ -575,7 +618,7 @@ async function streamingRow(
 ): Promise<ChatRow | null> {
   const row = await ctx.db.get("chat_messages", messageId);
   if (row === null || row.ownerId !== ownerId || row.projectId !== projectId || row.author !== "wren" ||
-    row.status !== "streaming") return null;
+    row.status !== "streaming" || row.crewConsultation !== undefined) return null;
   return row;
 }
 
@@ -592,9 +635,11 @@ export const writeWrenDraft = internalMutation({
 });
 
 export const finishOutcomeValidator = v.union(
+  v.object({ status: v.literal("assignment"), founderMessageId: v.id("chat_messages") }),
   v.object({
     status: v.literal("done"),
     body: v.string(),
+    route: v.optional(answerRoute),
     usageId: v.optional(v.string()),
     /** WP77-S4: the model's proposed cards, untrusted; `resolveWrenCards` decides. */
     cards: v.optional(v.array(wrenCardProposalValidator)),
@@ -625,12 +670,48 @@ export const finishWrenTurn = internalMutation({
     // reserved is not visible here; an action ends within 10 minutes and the
     // stale rule waits 12 before a retry can start, so that window is closed.
     if ((await nextChatAttempt(ctx, args.projectId, args.messageId)) - 1 > args.attempt) return false;
+    if (args.outcome.status === "assignment") {
+      const founder = await ctx.db.get("chat_messages", args.outcome.founderMessageId);
+      if (founder === null || founder.author !== "founder" || founder.ownerId !== row.ownerId ||
+          founder.projectId !== row.projectId || founder.createdAt !== row.createdAt ||
+          (row.replyTo !== undefined && row.replyTo !== founder._id)) return false;
+      const intent = crewAssignmentIntent(founder.body, founder.focusRole);
+      if (intent?.type !== "revision") return false;
+      const project = await requireBusinessForOwner(ctx, row.projectId, row.ownerId);
+      const target = REVISION_TARGETS[intent.target];
+      const receipt = await requestCrewRevision(ctx, project, {
+        kind: target.kind, note: intent.note, requestId: founder._id, followUpEmail: intent.followUpEmail, ...(intent.emailNote ? { emailNote: intent.emailNote } : {}),
+      });
+      const pendingSpend = receipt.outcome === "spend_required" && receipt.approvalId !== undefined
+        ? await ctx.db.get("approvals", receipt.approvalId) : null;
+      const spend = pendingSpend?.kind === "spend" && pendingSpend.ownerId === row.ownerId &&
+        pendingSpend.projectId === row.projectId ? pendingSpend : null;
+      let body: string;
+      if (receipt.outcome === "queued") {
+        body = `I've queued the ${target.artifact} revision for ${target.name}.`;
+        if (intent.followUpEmail) body += " I've requested an email follow-up for Elle after you approve the new brand kit.";
+      } else if (receipt.outcome === "spend_required" && spend !== null) {
+        body = `This ${target.artifact} revision needs your approval${spend.costCredits === undefined ? "" : ` for ${spend.costCredits.toString()} credits`}. ${target.name} can start once you approve the cost.`;
+      } else {
+        body = declinedRevisionMessage(target.artifact, receipt.reason);
+      }
+      await ctx.db.patch("chat_messages", row._id, {
+        body, status: "done", focusRole: intent.target, updatedAt: Date.now(),
+        cardApprovalIds: spend === null ? [] : [spend._id],
+        ...(intent.followUpEmail && receipt.taskId ? { crewRevisionTaskId: receipt.taskId } : {}),
+      });
+      return true;
+    }
     const usageId = args.outcome.usageId === undefined ? null : ctx.db.normalizeId("ai_usage", args.outcome.usageId);
     const body = args.outcome.status === "done"
       ? sliceWellFormed(args.outcome.body, WREN_REPLY_MAX_CHARS)
       : WREN_FAILURE_COPY[args.outcome.cause satisfies WrenFailureCause];
     // Cards only on a finished reply, in this transaction, from this row's own business.
-    const cards = args.outcome.status === "done" && args.outcome.cards !== undefined && args.outcome.cards.length > 0
+    const proposedChanges = args.outcome.status === "done" &&
+      ((args.outcome.cards?.length ?? 0) > 0 || args.outcome.memory !== undefined);
+    const founder = proposedChanges ? await pairedFounderMessage(ctx, row) : null;
+    const mayApply = founder !== null && !answerOnlyRequest(founder.body);
+    const cards = mayApply && args.outcome.status === "done" && args.outcome.cards !== undefined && args.outcome.cards.length > 0
       ? await resolveWrenCards(ctx, { ownerId: row.ownerId, projectId: row.projectId }, row._id, args.outcome.cards)
       : null;
     await ctx.db.patch("chat_messages", row._id, {
@@ -638,10 +719,11 @@ export const finishWrenTurn = internalMutation({
       body,
       updatedAt: Date.now(),
       cardApprovalIds: cards === null ? [] : [...cards.approvalIds],
+      ...(args.outcome.status === "done" && args.outcome.route ? { focusRole: args.outcome.route } : {}),
       ...(usageId === null ? {} : { usageId }),
     });
     // Memory only on a finished reply, in this transaction, for this row's own business.
-    if (args.outcome.status === "done" && args.outcome.memory !== undefined) {
+    if (mayApply && args.outcome.status === "done" && args.outcome.memory !== undefined) {
       await applyWrenMemoryProposal(ctx, { ownerId: row.ownerId, projectId: row.projectId }, row, args.outcome.memory);
     }
     return true;

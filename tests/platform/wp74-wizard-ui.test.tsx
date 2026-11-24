@@ -102,6 +102,19 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     expect(clicks).toBeLessThanOrEqual(2);
   });
 
+  test("a 'fill this in first' error clears once the founder picks a valid choice", async () => {
+    const { user } = setup("platform");
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByRole("alert").textContent).toMatch(/Describe the platform first/);
+    await user.click(screen.getByRole("radio", { name: /Mobile web, installable/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    // Back to "Something else" with the field still empty: the error stays hidden until the next Continue.
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByLabelText("Describe the platform").getAttribute("aria-invalid")).toBeNull();
+  });
+
   test("a custom platform reveals a labelled field; empty text is an announced error, then it is sent as the founder's words", async () => {
     const { container, handlers, user } = setup("platform");
     await user.click(screen.getByRole("radio", { name: /Something else/ }));
@@ -120,12 +133,13 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
   test("the keyboard alone can pick another goal, a deadline pill and the paid test", async () => {
     const { handlers, user } = setup("goal");
     const goal = screen.getByRole("group", { name: "Goal" });
-    within(goal).getByRole("radio", { name: /First 50 waitlist signups/ }).focus();
+    within(goal).getByRole("radio", { name: /First 50 signups/ }).focus();
     await user.keyboard("{ArrowDown}");
     expect((within(goal).getByRole("radio", { name: /First sale/ }) as HTMLInputElement).checked).toBe(true);
     const when = screen.getByRole("group", { name: /By when/ });
     expect(within(when).getAllByRole("radio")).toHaveLength(4);
-    expect(within(when).getByRole("radio", { name: /This weekend/ }).closest("label")?.textContent).toContain("Suggested");
+    // One chip per view: the suggested pill keeps the hairline and says so to screen readers only.
+    expect(within(when).getByRole("radio", { name: /This weekend \(suggested\)/ })).toBeTruthy();
     within(when).getByRole("radio", { name: /This weekend/ }).focus();
     await user.keyboard("{ArrowRight}");
     expect((within(when).getByRole("radio", { name: /In two weeks/ }) as HTMLInputElement).checked).toBe(true);
@@ -139,7 +153,7 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     });
   });
 
-  test("an own idea's blueprint is a dashed card labelled Not yet validated, with Looks good and I'd change some things", async () => {
+  test("an own idea's blueprint is labelled Not yet validated, with Looks good and I'd change some things", async () => {
     const { container, handlers, user } = setup("blueprint", {
       ideaTitle: "A packing list",
       ideaSlug: null,
@@ -159,13 +173,98 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     await user.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(screen.queryByRole("button", { name: "Looks good" })).toBeNull();
+    // Opening the notes field puts the cursor in it.
+    expect(document.activeElement).toBe(screen.getByLabelText("What should change?"));
     // Empty notes are caught before any call.
-    await user.click(screen.getByRole("button", { name: "Rework it" }));
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
     expect(screen.getByRole("alert").textContent).toMatch(/Say what should change/);
     await user.type(screen.getByLabelText("What should change?"), "Drop one feature");
-    await user.click(screen.getByRole("button", { name: "Rework it" }));
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
     expect(handlers.onRewrite).toHaveBeenCalledWith("Drop one feature");
     await expectNoAxeViolations(container);
+  });
+
+  test("saved rework notes close the field, show under the outline, return focus to Looks good and can be edited", async () => {
+    const props = {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: { idea: own.defaults.idea },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    };
+    const { container, handlers, rerender, user } = setup("blueprint", props);
+    await user.click(screen.getByRole("button", { name: "I\u2019d change some things" }));
+    await user.type(screen.getByLabelText("What should change?"), "Drop one feature");
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
+    expect(handlers.onRewrite).toHaveBeenCalledWith("Drop one feature");
+
+    // The server saved the rework: the session stays on the blueprint with the notes.
+    rerender(
+      <WizardStepPanel
+        step="blueprint"
+        {...props}
+        answers={{ idea: own.defaults.idea, blueprintDecision: { decision: "rework", notes: "Drop one feature" } }}
+        pending={false}
+        error={null}
+        {...handlers}
+      />,
+    );
+    const looksGood = screen.getByRole("button", { name: "Looks good" });
+    expect(document.activeElement).toBe(looksGood);
+    expect(screen.queryByLabelText("What should change?")).toBeNull();
+    expect(container.textContent).toMatch(/Your notes\s*Drop one feature/);
+    expect(screen.getByRole("status").textContent).toBe("Notes saved. Your crew will read them.");
+    await expectNoAxeViolations(container);
+
+    // Editing starts from the saved notes.
+    const edit = screen.getByRole("button", { name: "Edit my notes" });
+    await user.click(edit);
+    expect((screen.getByLabelText("What should change?") as HTMLTextAreaElement).value).toBe("Drop one feature");
+    expect(screen.getByRole("status").textContent).toBe("");
+
+    await user.click(edit);
+    await user.click(screen.getByRole("button", { name: "Looks good" }));
+    expect(handlers.onAccept).toHaveBeenCalledTimes(1);
+  });
+
+  test("notes already carried in the blueprint signal (Back after Looks good) still show", () => {
+    setup("blueprint", {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: {
+        idea: own.defaults.idea,
+        blueprintDecision: { decision: "looks_good" },
+        signals: { blueprint: { signal: "edited", note: "Approved blueprint with notes: Drop one feature" } },
+      },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    });
+    expect(screen.getByText("Drop one feature")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Edit my notes" })).toBeTruthy();
+    // Nothing was just saved, so focus is not moved and nothing is announced.
+    expect(screen.getByRole("status").textContent).toBe("");
+  });
+
+  test("saving the notes unchanged closes the editor without a server call", async () => {
+    const { handlers, user } = setup("blueprint", {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: { idea: own.defaults.idea, blueprintDecision: { decision: "rework", notes: "Drop one feature" } },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    });
+    await user.click(screen.getByRole("button", { name: "Edit my notes" }));
+    // Only trailing whitespace added: still the same notes.
+    await user.type(screen.getByLabelText("What should change?"), "   ");
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
+    expect(handlers.onRewrite).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("What should change?")).toBeNull();
+    const looksGood = screen.getByRole("button", { name: "Looks good" });
+    expect(document.activeElement).toBe(looksGood);
+    expect(screen.getByRole("status").textContent).toBe("Notes saved. Your crew will read them.");
   });
 
   test("a previous, different answer is preselected and kept with Continue", async () => {
@@ -191,14 +290,14 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     const { container, handlers, user } = setup("idea");
     // textContent, not the computed name: jsdom pads inline <i> with spaces in the name.
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("What are we building?");
-    expect(screen.getByText("FROM THE LIBRARY")).toBeTruthy();
+    expect(screen.getByText("From the library")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Read the research" }).getAttribute("href")).toBe("/ideas/hydrotrail");
-    expect(screen.getByRole("link", { name: "Pick a different idea from the library" }).getAttribute("href")).toBe("/ideas");
+    expect(screen.getByRole("link", { name: "Pick a different idea" }).getAttribute("href")).toBe("/ideas");
     expect(container.textContent).not.toMatch(/I already run a business|N°/);
     await user.click(screen.getByRole("button", { name: "Use this idea · Continue" }));
     expect(handlers.onAccept).toHaveBeenCalledTimes(1);
 
-    const toggle = screen.getByRole("button", { name: "Write my own idea instead" });
+    const toggle = screen.getByRole("button", { name: "Write my own instead" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     await user.click(toggle);
     await user.type(screen.getByLabelText("Your idea in one sentence"), "A packing list for campers");
@@ -216,10 +315,12 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
       ideaSlug: null,
       defaults: own.defaults,
       answers: { idea: own.defaults.idea },
-      showResumeHint: true,
     });
-    expect(screen.getByText("Your answers save as you go. Bookmark this page to come back.")).toBeTruthy();
-    expect(screen.queryByText("FROM THE LIBRARY")).toBeNull();
+    // The shared own-idea surface (OwnIdeaForm): the save note and the example chips, never the old boxed card.
+    expect(screen.getByText("Your answers save as you go.")).toBeTruthy();
+    expect(screen.getByText("Try one of these")).toBeTruthy();
+    expect((screen.getByLabelText("Your idea in one sentence") as HTMLInputElement).value).toBe(own.defaults.idea?.source === "own_idea" ? own.defaults.idea.text : "");
+    expect(screen.queryByText("From the library")).toBeNull();
     const field = screen.getByLabelText("Your idea in one sentence");
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(handlers.onAccept).toHaveBeenCalledTimes(1);
@@ -398,5 +499,9 @@ describe("WP74-S1 wizard error copy", () => {
     expect(wizardErrorMessage(new ConvexError({ code: "INVALID_ANSWER", message: "name.chosen: Too big" })))
       .toBe("That answer cannot be saved (name.chosen: Too big).");
     expect(wizardErrorMessage(new Error("stack trace"))).toBe("Something went wrong. Try again.");
+    // AI switched off (or no budget): a new start is refused with words, not the generic line.
+    expect(wizardErrorMessage(new ConvexError({ code: "AI_DISABLED" }))).toBe(
+      "Starting new builds is paused right now. Builds you already started still open. Try again later.",
+    );
   });
 });

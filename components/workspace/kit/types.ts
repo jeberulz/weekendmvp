@@ -10,7 +10,7 @@ export const TEAM_CARD_EXTRA_STATUSES = ["coming_soon", "failed"] as const;
 export type TeamCardStatus = EmployeeStatus | (typeof TEAM_CARD_EXTRA_STATUSES)[number];
 
 /** Launch step status set (display names; the data layer maps running to working, succeeded to done). */
-export const STEP_STATUSES = ["waiting", "queued", "working", "paused", "done", "failed", "coming_soon", "skipped"] as const;
+export const STEP_STATUSES = ["waiting", "queued", "working", "paused", "needs_you", "done", "failed", "coming_soon", "skipped"] as const;
 export type StepStatus = (typeof STEP_STATUSES)[number];
 
 /** Output status set (workstream panel). */

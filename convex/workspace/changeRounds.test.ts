@@ -22,6 +22,12 @@ const modules = import.meta.glob("/convex/**/*.ts");
 type T = TestConvex<typeof schema>;
 type DocKind = "brand_kit" | "seo_pack" | "landing_spec" | "social_pack";
 
+/** Exercise legacy spend terms independently of the WP94 funded-dispatch path. */
+async function useLegacySpendCard(t: T, id: Id<"approvals">) {
+  await t.run(async (ctx) => ctx.db.patch("approvals", id, { crewRevision: undefined }));
+}
+
+
 async function seed(options: { workspaceEnabled?: boolean; aiEnabled?: boolean } = {}) {
   const t = convexTest(schema, modules);
   // WP75-S2b: a free round spends one `crewJob` token (C-LIMITS), which needs the limiter and the `ai` feature.
@@ -140,6 +146,30 @@ async function spendCards(t: T, projectId: Id<"projects">) {
 }
 
 describe("WP77-S2 free rounds", () => {
+  test("the explicit platform owner grant keeps later rounds free and revocation restores the spend card", async () => {
+    const seeded = await seed();
+    const { t, ids } = seeded;
+    await t.run(async ctx => {
+      await ctx.db.patch("users", ids.ownerId, {
+        emailVerificationTime: 1,
+        platformOwnerAccess: { enabled: true, bypassAiBudget: true, updatedAt: 1 },
+      });
+      await ctx.db.insert("super_admins", {
+        userId: ids.ownerId, role: "super_admin", boundAt: 1, boundVia: "deployment_bootstrap",
+      });
+    });
+    const { cardId } = await throughTwoFreeRounds(seeded);
+    const third = await askForChanges(seeded, cardId);
+    expect(third.changeRound).toMatchObject({ outcome: "free", changeRound: 3, unlimited: true });
+    if (third.changeRound?.outcome !== "free") throw new Error("owner round must be free");
+    const next = await finishRound(t, ids, third.changeRound.taskId, "brand_kit", 3);
+    await t.run(ctx => ctx.db.patch("users", ids.ownerId, {
+      platformOwnerAccess: { enabled: false, bypassAiBudget: false, updatedAt: 2 },
+    }));
+    const fourth = await askForChanges(seeded, next.cardId);
+    expect(fourth.changeRound).toMatchObject({ outcome: "spend_required", changeRound: 4 });
+  });
+
   test("rounds 1 and 2 are free: the card records the round and note; a free revision task is queued", async () => {
     const seeded = await seed();
     const { t, owner, ids } = seeded;
@@ -320,6 +350,7 @@ describe("WP77-S2 the count cannot be reset", () => {
     const second = await askForChanges(seeded, again);
     expect(second.changeRound).toMatchObject({ outcome: "spend_required", spendApprovalId: spendId });
 
+    await useLegacySpendCard(t, spendId);
     // Approved but not yet debited: a repeat reuses the approved card instead of revoking it.
     await owner.mutation(api.workspace.approvals.decideApproval, {
       projectId: ids.projectId, approvalId: spendId, decision: "approve",
@@ -394,6 +425,7 @@ describe("WP77-S2 owner-only and dormant", () => {
     const raised = await askForChanges(seeded, cardId);
     if (raised.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
     const spendId = raised.changeRound.spendApprovalId;
+    await useLegacySpendCard(t, spendId);
     await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: spendId, decision: "approve" });
     const next = await reviewCard(t, ids, docId, 2n);
 
@@ -417,6 +449,7 @@ describe("WP77-S2 spend terms (the later debit site)", () => {
     const spendId = raised.changeRound.spendApprovalId;
     const subject = { projectId: ids.projectId, kind: "spend" as const, subjectTable: "documents" as const, subjectId: docId };
 
+    await useLegacySpendCard(t, spendId);
     // Pending: not approved yet.
     await expect(t.run(async (ctx) => await assertPaidRevisionApproved(ctx, spendId, { projectId: ids.projectId, documentId: docId })))
       .rejects.toThrow("APPROVAL_NOT_APPROVED");
@@ -570,6 +603,7 @@ describe("WP77-S2 review fixes", () => {
     const first = await askForChanges(seeded, cardId, "note");
     if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
     const stale = first.changeRound.spendApprovalId;
+    await useLegacySpendCard(t, stale);
     await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: stale, decision: "approve" });
     const staleRow = await t.run(async (ctx) => ctx.db.get("approvals", stale));
     await t.run(async (ctx) => ctx.db.patch("documents", docId, { body: "{\"edited\":true}", updatedAt: (staleRow?.createdAt ?? 0) + 1 }));

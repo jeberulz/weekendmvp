@@ -271,6 +271,15 @@ describe("workstream links, plan, why rows", () => {
     expect(stepPillStatus({ state: "paused", notBuilt: false })).toBe("paused");
   });
 
+  test("L1 F5: a written step whose review is still open reads Waiting on you, not Done", () => {
+    const open = new Set(["brand_kit", "roster_plan"]);
+    expect(stepPillStatus({ key: "brand_kit", state: "succeeded", notBuilt: false }, open)).toBe("needs_you");
+    expect(stepPillStatus({ key: "roster", state: "succeeded", notBuilt: false }, open)).toBe("needs_you");
+    expect(stepPillStatus({ key: "email_sequence", state: "succeeded", notBuilt: false }, open)).toBe("done");
+    expect(stepPillStatus({ key: "brand_kit", state: "running", notBuilt: false }, open)).toBe("working");
+    expect(stepPillStatus({ key: "brand_kit", state: "succeeded", notBuilt: false })).toBe("done");
+  });
+
   test("planGroups puts built steps first, grouped by owner, then coming later", () => {
     const steps = [
       step("blueprint", "lead", "succeeded"),
@@ -296,18 +305,20 @@ describe("workstream links, plan, why rows", () => {
     expect(planSummary([step("a", "lead", "succeeded"), step("b", "brand", "skipped")])).toBe("1 of 1 steps done. 1 skipped for this team.");
   });
 
-  test("whyRows covers hired (always or added) and skipped roles in catalogue order", () => {
+  test("whyRows covers hired (core, the lead's call or added) and skipped roles in catalogue order", () => {
     const rows = whyRows(
       [
-        { role: "lead", name: "Wren", roleLabel: "Crew Lead", reason: "r1" },
+        { role: "lead", name: "Juno", roleLabel: "Crew Lead", reason: "r1" },
+        { role: "seo", name: "Sol", roleLabel: "SEO", reason: "r4", decidedBy: "lead" },
         { role: "ads", name: "Ada", roleLabel: "Ads", reason: "r2" },
       ],
-      [{ role: "outbound", roleLabel: "Outbound", reason: "r3" }],
+      [{ role: "outbound", roleLabel: "Outbound", reason: "r3", decidedBy: "lead" }],
     );
-    expect(rows.map((row) => [row.role, row.decision])).toEqual([
-      ["lead", "always"],
-      ["ads", "added"],
-      ["outbound", "skipped"],
+    expect(rows.map((row) => [row.role, row.decision, row.label])).toEqual([
+      ["lead", "core", "Hired · core"],
+      ["seo", "lead", "Hired · Juno chose"],
+      ["ads", "added", "Hired · added"],
+      ["outbound", "skipped", "Skipped"],
     ]);
   });
 });

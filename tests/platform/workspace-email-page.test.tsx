@@ -26,7 +26,7 @@ import {
   splitMergeTags,
 } from "@/lib/workspace/emailPage";
 
-const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+const FREE_PREVIEW = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
 const live: { view: unknown; preview: unknown; previewThrows: boolean } = {
   view: undefined,
   preview: FREE_PREVIEW,
@@ -173,6 +173,25 @@ describe("helpers", () => {
     expect(emailDecisionErrorCopy("APPROVAL_SUBJECT_CHANGED", false)).not.toMatch(/reload/i);
     expect(emailDecisionErrorCopy("APPROVAL_INVALID_NOTE", false)).toMatch(/2,000/);
     expect(emailDecisionErrorCopy("APPROVAL_ALREADY_DECIDED", false)).toBeNull();
+  });
+});
+
+describe("handoff recovery", () => {
+  test("a retry uses this failed task and surfaces a spending decision", async () => {
+    live.view = { ...ready(null), failedHandoff: { taskId: "failed-elle", canRetry: true, reason: "Elle returned the same email copy." } };
+    decideMock.mockResolvedValue("spend_required");
+    show();
+    expect(screen.getByText("Elle returned the same email copy.")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Retry Elle’s rewrite" }));
+    expect(decideMock).toHaveBeenCalledExactlyOnceWith({ projectId: PROJECT, taskId: "failed-elle" });
+    expect(screen.getByRole("status").textContent).toMatch(/credit cost in Team HQ/);
+  });
+
+  test("a handoff for an older brand kit points the founder to the lead", () => {
+    live.view = { ...ready(null), failedHandoff: { taskId: "failed-elle", canRetry: false, reason: "The brand kit changed." } };
+    show();
+    expect(screen.queryByRole("button", { name: "Retry Elle’s rewrite" })).toBeNull();
+    expect(screen.getByText(/new rewrite using the current brand kit/i)).toBeTruthy();
   });
 });
 
@@ -597,8 +616,8 @@ describe("card", () => {
     expect(screen.queryByText(/working on your changes/)).toBeNull();
   });
 
-  test("a free preview shows the free rounds left", () => {
-    live.preview = { outcome: "free", changeRound: 1, freeRoundsLeft: 2 };
+  test("a free preview shows the free rounds left before asking (L1 F2: the server counts after the round)", () => {
+    live.preview = { outcome: "free", changeRound: 1, freeRoundsLeft: 1 };
     live.view = ready();
     show();
     expect(screen.getByText("2 free rounds of changes left.")).toBeTruthy();
@@ -626,7 +645,7 @@ describe("card", () => {
 
   test("the team is working only while the preview says busy", async () => {
     live.view = ready({ approvalId: APPROVAL, status: "changes_requested", changeRound: 1n, expiresAt: Date.now() + 1000 });
-    live.preview = { outcome: "free", changeRound: 2, freeRoundsLeft: 1 };
+    live.preview = { outcome: "free", changeRound: 2, freeRoundsLeft: 0 };
     const { unmount } = show();
     expect(screen.queryByText("Your team is working on your changes.")).toBeNull();
     expect(screen.getByText(/You can ask for changes again\. 1 free round of changes left\./)).toBeTruthy();
@@ -651,7 +670,7 @@ describe("card", () => {
     live.preview = { outcome: "not_available", reason: "busy" };
     const { rerender } = show();
     expect(screen.getByText("Your team is working on your changes.")).toBeTruthy();
-    live.preview = { outcome: "free", changeRound: 2, freeRoundsLeft: 1 };
+    live.preview = { outcome: "free", changeRound: 2, freeRoundsLeft: 0 };
     rerender(<EmailSequencePanel projectId={PROJECT} />);
     expect(screen.queryByText("Your team is working on your changes.")).toBeNull();
     expect(screen.getByRole("button", { name: "Ask for changes" })).toBeTruthy();
