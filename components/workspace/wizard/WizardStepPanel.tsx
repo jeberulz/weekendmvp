@@ -521,7 +521,11 @@ export function WizardStepPanel({
   }
 
   const decision = decide();
-  const invalid = localError !== null;
+  // A "fill this in first" error clears as soon as the founder fixes it (picks a choice or types),
+  // and does not come back on its own: only the next Continue shows it again.
+  if (decision.kind !== "missing" && localError !== null) setLocalError(null);
+  const shownLocalError = decision.kind === "missing" ? localError : null;
+  const invalid = shownLocalError !== null;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -870,9 +874,9 @@ export function WizardStepPanel({
         {pending ? "Saving…" : notesStatus}
       </p>
 
-      {localError ? (
+      {shownLocalError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
-          {localError}
+          {shownLocalError}
         </p>
       ) : null}
 

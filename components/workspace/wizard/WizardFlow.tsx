@@ -53,6 +53,8 @@ const ERROR_COPY: Record<string, string> = {
   INVALID_STEP: "This step has fixed choices. Pick one of them instead.",
   RESOURCE_NOT_FOUND: "We could not find this build. Start again from the idea page.",
   WORKSPACE_DISABLED: "Building is switched off right now. Try again later.",
+  // checkLimit("wizardStart") when AI is switched off or has no budget: a new start is refused, resuming still works.
+  AI_DISABLED: "Starting new builds is paused right now. Builds you already started still open. Try again later.",
   UNAUTHENTICATED: "Your session ended. Sign in again to carry on.",
   // WP74-S4 "Create my business" refusals.
   SESSION_INCOMPLETE: "Finish every step and accept the blueprint before you create your business.",
