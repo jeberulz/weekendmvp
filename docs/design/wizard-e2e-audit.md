@@ -39,7 +39,7 @@ business and Meet your co-founder.
 | F15 | The own-idea name step offers a single option | Low | Open, part of the blueprint enrichment plan |
 | F16 | The Create screen has no answer summary | Low | Open (design) |
 | F17 | The Step 1 library link goes to `/ideas`; the dashboard's library is `/dashboard/explore` | Low | Open, needs decision D5 |
-| F18 | The crew preview lags a step (it reads saved answers) | Low | Noted (design, from #309) |
+| F18 | The crew preview lags a step (it reads saved answers) | Low | In-step part covered by #315 (live goal line); rail still updates after Continue |
 
 File and line references are to `main` at `f0b94bdd` unless a fix PR is named.
 
@@ -169,6 +169,8 @@ Handed over by #309 (§2.4).
   `MeetCofounder.tsx` and the signal note use `timeframe`. No crew prompt or launch plan reads it.
 - Either wire it into the launch plan's schedule, or stop asking. #309 decision 2 recommends keeping it and wiring it
   in.
+- #315 (the Step 5 redesign) leaves out the "Sets the pace of your launch plan" line until something reads the
+  timeframe, so the step doesn't promise what the plan ignores.
 
 ### F10. Business limit learned late (Low–Medium)
 
@@ -231,6 +233,8 @@ Handed over by #309 (§2.4).
 - From #309 (§2.7.3). The crew preview reads saved answers, so a choice (for example the paid test that hires Ads)
   shows in the preview only after Continue.
 - #309 §5 proposes a client-side consequence line instead.
+- #315 adds that live line under the goal options, so the in-step part is covered for Step 5. The crew rail and the
+  preview on other steps still update only after Continue.
 
 ## Verified working
 
