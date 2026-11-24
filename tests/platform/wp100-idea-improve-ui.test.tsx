@@ -109,7 +109,7 @@ describe("Improve with AI on Step 1", () => {
     await user.click(await screen.findByRole("button", { name: "Keep mine" }));
     expect(field.value).toBe(ROUGH);
     expect(decide).toHaveBeenCalledWith({ improvementId: ID, outcome: "dismissed" });
-    await act(async () => await new Promise((done) => requestAnimationFrame(() => done(null))));
+    await act(async () => await new Promise<void>((done) => requestAnimationFrame(() => done())));
     expect(document.activeElement).toBe(field);
   });
 
