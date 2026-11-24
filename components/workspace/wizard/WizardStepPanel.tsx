@@ -586,8 +586,8 @@ export function WizardStepPanel({
   const describeAccept =
     step === "blueprint" && !blueprint.validated ? noteId : hint !== undefined && step !== "blueprint" ? reasonId : undefined;
   const nameDiffers = customName.length > 0 || (defaultName !== undefined && chosenName !== defaultName);
-  // Step 5's full choice is taller than a phone screen: there, Continue stays in view at the bottom.
-  const stickyPrimary = step === "goal" && !quick;
+  // Step 5's full choice and Step 6 run past a phone screen: there, Continue stays in view at the bottom.
+  const stickyPrimary = (step === "goal" && !quick) || step === "name";
 
   let body: ReactNode;
   switch (step) {
@@ -931,7 +931,7 @@ export function WizardStepPanel({
       noValidate
       className={cn(
         "flex w-full max-w-[672px] flex-col gap-6",
-        // Keep a focused option clear of the sticky Continue bar when it scrolls into view.
+        // Keep a focused option or the typed-name field clear of the sticky Continue bar when it scrolls into view.
         stickyPrimary && "max-sm:[&_input]:scroll-mb-28",
       )}
     >

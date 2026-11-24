@@ -134,3 +134,17 @@ describe("Step 5 goal: Continue on a phone", () => {
     expect(screen.getByRole("button", { name: "Looks right" }).parentElement?.className).not.toContain("sticky");
   });
 });
+
+describe("Step 6 name: Continue on a phone", () => {
+  test("Step 6 puts Continue in the same sticky bar; Step 7 does not", () => {
+    setup(fixture, { step: "name" });
+    const bar = document.querySelector('button[type="submit"]')?.parentElement;
+    expect(bar?.className).toContain("max-sm:sticky");
+    expect(bar?.className).toContain("max-sm:bottom-0");
+    expect(document.querySelector("form")?.className).toContain("max-sm:[&_input]:scroll-mb-28");
+    cleanup();
+    setup(fixture, { step: "partner_personality" });
+    expect(document.querySelector('button[type="submit"]')?.parentElement?.className ?? "").not.toContain("sticky");
+    expect(document.querySelector("form")?.className).not.toContain("scroll-mb-28");
+  });
+});
