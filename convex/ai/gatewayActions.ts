@@ -9,7 +9,8 @@
  *    a model. The spec comes from the registry (`getEntry`), and the gateway
  *    re-validates and routes it (`routeSpec`) before anything is reserved;
  * 2. builds the attempt key from a C-METER form (`jobAttemptKey`,
- *    `chatAttemptKey`, `wizardAttemptKey`, or `eval:{runId}:{caseId}:{attempt}`),
+ *    `chatAttemptKey`, `wizardAttemptKey`, `ideaImproveAttemptKey` (WP100), or
+ *    `eval:{runId}:{caseId}:{attempt}`),
  *    never a raw key;
  * 3. binds `MeterPort` to `internal.ai.metering.{reserve,markSent,settle,fail}`
  *    through `ctx.runMutation` (`meterPortFor`), so every gate and budget is
@@ -83,6 +84,7 @@ import type { Id } from "../_generated/dataModel";
 import { internalAction, type ActionCtx } from "../_generated/server";
 import {
   chatAttemptKey,
+  ideaImproveAttemptKey,
   jobAttemptKey,
   wizardAttemptKey,
   type FailArgs,
@@ -143,7 +145,19 @@ export const attemptKeyFormValidator = v.union(
    *   reuses `wizard:{id}:{step}:1` and comes back `duplicate_attempt`.
    */
   v.object({ kind: v.literal("wizard"), wizardSessionId: v.id("wizard_sessions"), step: v.string() }),
+  /**
+   * WP100. "Improve with AI" on wizard Step 1, before the session exists:
+   * `idea-improve:{improvementId}:{attempt}`. Owner-scoped exactly like the
+   * wizard form (no business, task, debit or business context), and it runs
+   * only the `wizard-idea-improve` prompt (`IDEA_IMPROVE_KEY_PROMPT_ID`). The
+   * caller (`convex/workspace/ideaImprove.ts`) creates the row for the
+   * authenticated owner before it calls `runPrompt`.
+   */
+  v.object({ kind: v.literal("idea_improve"), improvementId: v.id("wizard_idea_improvements") }),
 );
+
+/** The only prompt id the `idea_improve` key form may run. */
+export const IDEA_IMPROVE_KEY_PROMPT_ID = "wizard-idea-improve";
 
 export const runPromptArgs = {
   promptRef: v.string(),
@@ -405,6 +419,10 @@ export function attemptKeyBuilder(
       wizardAttemptKey(form.wizardSessionId, form.step, 1);
       return (attempt) => wizardAttemptKey(form.wizardSessionId, form.step, attempt);
     }
+    case "idea_improve": {
+      ideaImproveAttemptKey(form.improvementId, 1);
+      return (attempt) => ideaImproveAttemptKey(form.improvementId, attempt);
+    }
     case "eval": {
       if (!KEY_PART.test(form.runId) || !KEY_PART.test(form.caseId)) {
         throw new RangeError("eval runId and caseId must be 1-96 characters without ':' or spaces");
@@ -457,7 +475,8 @@ function isAttemptNumber(value: number): boolean {
  * with no project (the session's ownership is the caller's check).
  */
 export function keyFormMismatch(
-  args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId" | "businessContext">,
+  args: Pick<RunPromptArgs, "attemptKey" | "ownerId" | "projectId" | "taskId" | "creditDebitId" | "businessContext"> &
+    Partial<Pick<RunPromptArgs, "promptRef">>,
 ): string | null {
   switch (args.attemptKey.kind) {
     case "eval": {
@@ -476,6 +495,14 @@ export function keyFormMismatch(
       if (args.ownerId === undefined) return "a wizard attempt key needs the run's ownerId";
       const given = (["projectId", "taskId", "creditDebitId", "businessContext"] as const).filter((name) => args[name] !== undefined);
       return given.length === 0 ? null : `a wizard attempt key is pre-business; got ${given.join(", ")}`;
+    }
+    case "idea_improve": {
+      if (args.ownerId === undefined) return "an idea_improve attempt key needs the run's ownerId";
+      if (args.promptRef !== undefined && args.promptRef.split("@")[0] !== IDEA_IMPROVE_KEY_PROMPT_ID) {
+        return `an idea_improve attempt key runs only ${IDEA_IMPROVE_KEY_PROMPT_ID}`;
+      }
+      const given = (["projectId", "taskId", "creditDebitId", "businessContext"] as const).filter((name) => args[name] !== undefined);
+      return given.length === 0 ? null : `an idea_improve attempt key is pre-business; got ${given.join(", ")}`;
     }
   }
 }
