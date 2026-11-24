@@ -166,19 +166,19 @@ export function rejectReason(source: string, candidate: string): IdeaImproveReje
   if ((candidate.match(MID_SENTENCE_END) ?? []).length > (source.match(MID_SENTENCE_END) ?? []).length) {
     return "more_sentences";
   }
+  // Most specific first, so the stored reason says what actually went wrong.
+  if (hasMarketClaim(candidate) && !hasMarketClaim(source)) return "new_market_claim";
   const sourceNumbers = new Set(numbersIn(source));
   if (numbersIn(candidate).some((n) => !sourceNumbers.has(n))) return "new_number";
-  if (hasMarketClaim(candidate) && !hasMarketClaim(source)) return "new_market_claim";
+  if (EMOJI.test(candidate) || candidate.includes("!")) return "hype";
+  if (hasHype(candidate) && !hasHype(source)) return "hype";
+  if (!/\bai\b/iu.test(source) && /\bai[-\s]?(powered|driven|based)\b/iu.test(candidate)) return "hype";
   const sourceWords = new Set(normalised(source).split(" "));
   const newNames = properNouns(candidate).filter((word) => {
     const lower = word.toLowerCase();
     return !sourceWords.has(lower) && !CALENDAR.has(lower);
   });
   if (newNames.length > 0) return "new_proper_noun";
-  if (EMOJI.test(candidate) || candidate.includes("!")) return "hype";
-  const sourceSaidAi = /\bai\b/iu.test(source);
-  if (hasHype(candidate) && !hasHype(source)) return "hype";
-  if (!sourceSaidAi && /\bai[-\s]?(powered|driven|based)\b/iu.test(candidate)) return "hype";
   const kept = contentWords(source);
   if (kept.length > 0) {
     const candidateWords = contentWords(candidate);

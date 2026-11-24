@@ -290,9 +290,9 @@ export async function improveWith(
   }
   const usage = usageOf(run);
   if (!run.ok) {
-    const refused = run.failure.kind === "meter_refused";
-    const reason = refused && run.failure.kind === "meter_refused" ? `meter_refused:${run.failure.error.code}` : run.failure.kind;
-    await finish({ status: "failed", reason, ...usage });
+    const { failure } = run;
+    const refused = failure.kind === "meter_refused";
+    await finish({ status: "failed", reason: refused ? `meter_refused:${failure.error.code}` : failure.kind, ...usage });
     // A meter refusal (AI off, budget spent) is a calm "not now", like the switch being off.
     return refused ? { status: "unavailable" } : { status: "failed", improvementId };
   }

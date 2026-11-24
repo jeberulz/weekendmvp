@@ -30,6 +30,7 @@ import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
 import { crewConsultationSpec } from "@/convex/ai/prompts/crewConsultation";
+import { ideaImproveSpec } from "@/convex/ai/prompts/ideaImprove.v1";
 import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v5";
 import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v3";
 import { wrenChatSpec } from "@/convex/ai/prompts/wrenChat";
@@ -100,6 +101,7 @@ describe("fixture-output registry", () => {
         promptRef(crewConsultationSpec),
         promptRef(blueprintPersonaliseSpec),
         promptRef(blueprintOwnIdeaSpec),
+        promptRef(ideaImproveSpec),
       ].sort(),
     );
   });
@@ -216,5 +218,6 @@ describe("fixture-output registry", () => {
     expect(importersOf("wrenFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
     expect(importersOf("blueprintFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
     expect(importersOf("seedFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
+    expect(importersOf("ideaImproveFixtureReply")).toEqual(["convex/ai/providers/fixtureOutputs.ts"]);
   });
 });
