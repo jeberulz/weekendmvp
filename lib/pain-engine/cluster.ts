@@ -57,22 +57,51 @@ function overlap(a: Set<string>, b: Set<string>): number {
 /** Similarity at or above which two findings join one cluster. */
 export const CLUSTER_SIMILARITY_THRESHOLD = 0.3;
 
+/**
+ * Stable identity of one report: the source item it came from. The HN
+ * listener runs one query per pain phrase, so the same story can arrive
+ * once per query — and Product Hunt comments and Idea 4 requests share
+ * one URL per product / per list, so the URL alone is NOT the identity.
+ * The full (source, url, title, text) tuple is: identical copies of one
+ * report collapse to one, while genuinely different reports that happen
+ * to share a URL stay separate.
+ */
+export function findingIdentity(finding: PainFinding): string {
+  return [finding.source, finding.url, finding.title, finding.text].join("\n");
+}
+
+/**
+ * Drop exact-duplicate reports, keeping the first copy. Without this,
+ * one HN story returned by three queries counts as three reports and
+ * triples the frequency/agreement a cluster scores on.
+ */
+export function dedupeFindings(findings: PainFinding[]): PainFinding[] {
+  const seen = new Set<string>();
+  return findings.filter((finding) => {
+    const key = findingIdentity(finding);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** Group findings into clusters of near-duplicate pains. */
 export function clusterFindings(findings: PainFinding[]): PainCluster[] {
-  const tokenSets = findings.map(tokensOf);
-  const assigned = new Array<boolean>(findings.length).fill(false);
+  const unique = dedupeFindings(findings);
+  const tokenSets = unique.map(tokensOf);
+  const assigned = new Array<boolean>(unique.length).fill(false);
   const clusters: PainCluster[] = [];
   let n = 0;
 
-  for (let i = 0; i < findings.length; i++) {
+  for (let i = 0; i < unique.length; i++) {
     if (assigned[i]) continue;
     assigned[i] = true;
-    const members: PainFinding[] = [findings[i]];
-    for (let j = i + 1; j < findings.length; j++) {
+    const members: PainFinding[] = [unique[i]];
+    for (let j = i + 1; j < unique.length; j++) {
       if (assigned[j]) continue;
       if (overlap(tokenSets[i], tokenSets[j]) >= CLUSTER_SIMILARITY_THRESHOLD) {
         assigned[j] = true;
-        members.push(findings[j]);
+        members.push(unique[j]);
       }
     }
     n += 1;

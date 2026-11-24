@@ -13,7 +13,12 @@
 import { createFetcher } from "./fetch.ts";
 import { createIdeaRequestsListener, PHASE1_LISTENERS } from "./listeners.ts";
 import { clusterFindings } from "./cluster.ts";
-import { decideReview, listReviewRecords, saveReviewRecord } from "./review.ts";
+import {
+  decideReview,
+  listReviewRecords,
+  loadReviewRecordIfExists,
+  saveReviewRecord,
+} from "./review.ts";
 import { writeDraft } from "./writer.ts";
 import type {
   IdeaRequestRow,
@@ -106,6 +111,17 @@ export async function runPainEngine(options: RunOptions): Promise<PainRunReport>
       draft,
       runCostUsd: 0,
     };
+    // Never re-enqueue a slug that already has a decision: a rerun that
+    // produces the same deterministic slug must not wipe the approval or
+    // rejection (saveReviewRecord also guards this, this keeps the report
+    // honest about what was actually enqueued).
+    const existing = loadReviewRecordIfExists(options.rootDir, draft.slug);
+    if (existing && existing.status !== "pending") {
+      log(
+        `draft ${draft.slug} already ${existing.status} — keeping the existing decision, not re-enqueueing`,
+      );
+      continue;
+    }
     saveReviewRecord(options.rootDir, record);
     drafts.push(record);
   }

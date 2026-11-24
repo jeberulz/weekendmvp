@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clusterFindings, scoreCluster } from "../../lib/pain-engine/cluster";
+import { clusterFindings, dedupeFindings, scoreCluster } from "../../lib/pain-engine/cluster";
 import type { PainFinding } from "../../lib/pain-engine/types";
 
 function finding(overrides: Partial<PainFinding> = {}): PainFinding {
@@ -50,6 +50,45 @@ describe("clusterFindings", () => {
     ]);
     expect(clusters[0].findings.length).toBeGreaterThan(0);
     expect(clusters[0].score.total).toBeGreaterThanOrEqual(clusters[1].score.total);
+  });
+});
+
+describe("dedupeFindings", () => {
+  it("counts one HN story returned by three queries as one report", () => {
+    const story = finding({
+      source: "hacker-news",
+      url: "https://news.ycombinator.com/item?id=40000001",
+      title: "Invoicing is the worst part of freelancing",
+      text: "Invoicing is the worst part of freelancing. I waste a whole afternoon copying line items. I would pay for a tool that did it.",
+      agreementCount: 96,
+    });
+    const clusters = clusterFindings([story, { ...story }, { ...story }]);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].findings).toHaveLength(1);
+    expect(clusters[0].score.rationale).toContain("1 finding");
+    expect(dedupeFindings([story, { ...story }, { ...story }])).toHaveLength(1);
+  });
+
+  it("keeps distinct reports that share a URL as separate reports", () => {
+    const clusters = clusterFindings([
+      finding({
+        source: "idea-requests",
+        url: "https://www.weekendmvp.app/ideas/requests",
+        title: "Automatic invoicing from emails",
+        text: "I waste hours copying invoice details from emails. I hate it.",
+        agreementCount: 31,
+      }),
+      finding({
+        source: "idea-requests",
+        url: "https://www.weekendmvp.app/ideas/requests",
+        title: "Meeting notes cleanup",
+        text: "I spend hours cleaning up meeting notes every week. I wish there was a tool.",
+        agreementCount: 12,
+      }),
+    ]);
+    // Same list URL, different requests: each is its own report.
+    expect(clusters).toHaveLength(2);
+    expect(clusters.every((c) => c.findings.length === 1)).toBe(true);
   });
 });
 

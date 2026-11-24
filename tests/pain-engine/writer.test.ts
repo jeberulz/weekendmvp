@@ -1,3 +1,4 @@
+import { compile } from "@mdx-js/mdx";
 import { describe, expect, it } from "vitest";
 
 import { clusterFindings } from "../../lib/pain-engine/cluster";
@@ -121,5 +122,29 @@ describe("writeDraft — house MDX format", () => {
   it("keeps the real quote in highlights within the 190-char limit", () => {
     const highlights = draft.manifestRow.highlights as { problemQuote: string };
     expect(highlights.problemQuote.length).toBeLessThanOrEqual(190);
+  });
+});
+
+describe("writeDraft — source text is escaped for MDX", () => {
+  it("compiles MDX from a finding with braces, HTML and link-breaking text", async () => {
+    const tricky: PainFinding = {
+      source: "github-issues",
+      url: "https://github.com/example/billing/issues/42",
+      title: "Invoicing breaks on { unfinished JSON",
+      text: "Invoicing breaks on { unfinished JSON and <div> markup. I spend hours fixing invoices by hand and I hate it. I would pay for a tool that did it.",
+      context: "GitHub issue · @fixture-dev [team]",
+      date: "2026-10-20",
+      agreementCount: 58,
+      quote: "Invoicing breaks on { unfinished JSON — see <div> example ] here.",
+    };
+    const [cluster] = clusterFindings([...findings(), tricky]);
+    const draft = writeDraft(cluster);
+    // The raw evidence stays verbatim in the review record…
+    expect(draft.evidence.some((f) => f.text.includes("{ unfinished JSON"))).toBe(true);
+    expect(draft.evidence.some((f) => f.text.includes("<div>"))).toBe(true);
+    // …while the MDX renders it as text and still compiles.
+    expect(draft.mdx).toContain("\\{ unfinished JSON");
+    expect(draft.mdx).toContain("\\<div>");
+    await expect(compile(draft.mdx)).resolves.toBeDefined();
   });
 });

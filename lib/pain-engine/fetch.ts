@@ -49,9 +49,11 @@ export function createFetcher(config: FetcherConfig) {
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
-        let response: Response;
         try {
-          response = await doFetch(url, {
+          // The timeout stays armed until the body is fully read: clearing
+          // it after the headers arrive would leave a stalled body
+          // unbounded, and a stalled listener could hang the run forever.
+          const response = await doFetch(url, {
             method,
             headers: {
               Accept: "application/json, text/plain, */*",
@@ -61,24 +63,24 @@ export function createFetcher(config: FetcherConfig) {
             body: opts.body,
             signal: controller.signal,
           });
+          if (!response.ok) {
+            const retryAfter = response.headers.get("retry-after");
+            if ((response.status === 429 || response.status >= 500) && attempt < maxAttempts) {
+              const waitMs = retryAfter
+                ? Number(retryAfter) * 1000
+                : 1000 * 2 ** (attempt - 1);
+              log(`retry ${attempt}/${maxAttempts} for ${url} (HTTP ${response.status})`);
+              await sleep(Math.min(waitMs, 30_000));
+              continue;
+            }
+            throw new Error(`HTTP ${response.status} for ${url}`);
+          }
+          const body = await response.text();
+          if (useCache) writeCache(config.cacheDir, key, url, ttlSeconds, body);
+          return body;
         } finally {
           clearTimeout(timer);
         }
-        if (!response.ok) {
-          const retryAfter = response.headers.get("retry-after");
-          if ((response.status === 429 || response.status >= 500) && attempt < maxAttempts) {
-            const waitMs = retryAfter
-              ? Number(retryAfter) * 1000
-              : 1000 * 2 ** (attempt - 1);
-            log(`retry ${attempt}/${maxAttempts} for ${url} (HTTP ${response.status})`);
-            await sleep(Math.min(waitMs, 30_000));
-            continue;
-          }
-          throw new Error(`HTTP ${response.status} for ${url}`);
-        }
-        const body = await response.text();
-        if (useCache) writeCache(config.cacheDir, key, url, ttlSeconds, body);
-        return body;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         if (attempt < maxAttempts) {

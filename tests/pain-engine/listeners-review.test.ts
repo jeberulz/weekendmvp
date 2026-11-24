@@ -9,6 +9,7 @@ import { ideaRequestsToFindings } from "../../lib/pain-engine/listeners";
 import {
   decideReview,
   listReviewRecords,
+  loadReviewRecord,
   saveReviewRecord,
 } from "../../lib/pain-engine/review";
 import { runPainEngine } from "../../lib/pain-engine/run";
@@ -147,5 +148,89 @@ describe("review queue — single approval", () => {
     const rejected = decideReview(root, rec.slug, "rejected", "Too thin.");
     expect(rejected.status).toBe("rejected");
     expect(rejected.decisionReason).toBe("Too thin.");
+  });
+
+  it("a decided record survives a rerun that produces the same slug", () => {
+    const root = tmpDir();
+    const rec = record();
+    saveReviewRecord(root, rec);
+    decideReview(root, rec.slug, "approved", "Good evidence, ship it.");
+    // A later run produces a fresh pending record for the same slug.
+    const fresh: ReviewRecord = {
+      ...rec,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      decidedAt: undefined,
+      decisionReason: undefined,
+    };
+    saveReviewRecord(root, fresh);
+    const kept = loadReviewRecord(root, rec.slug);
+    expect(kept.status).toBe("approved");
+    expect(kept.decidedAt).toBeDefined();
+    expect(kept.decisionReason).toBe("Good evidence, ship it.");
+  });
+
+  it("a rerun does not re-enqueue an already decided slug", async () => {
+    const root = tmpDir();
+    const findings: PainFinding[] = [
+      {
+        source: "fixture",
+        url: "https://example.com/fixture-1",
+        title: "Invoicing by hand takes hours",
+        text: "I spend hours doing invoices by hand and I hate it. I would pay for a tool that did it.",
+        context: "fixture",
+        date: "2026-11-01",
+        agreementCount: 5,
+        quote: "I spend hours doing invoices by hand.",
+      },
+    ];
+    const options = {
+      rootDir: root,
+      cacheDir: path.join(root, "cache"),
+      topN: 1,
+      extraListeners: [
+        {
+          source: "fixture",
+          listen: async (): Promise<PainFinding[]> => findings,
+        },
+      ],
+      fetchImpl: (async () => new Response("{}")) as typeof fetch,
+    };
+    const first = await runPainEngine(options);
+    expect(first.drafts).toHaveLength(1);
+    const slug = first.drafts[0].slug;
+    decideReview(root, slug, "approved", "Ship it.");
+    const second = await runPainEngine(options);
+    expect(second.drafts).toHaveLength(0);
+    expect(loadReviewRecord(root, slug).status).toBe("approved");
+  });
+});
+
+describe("fetch timeout covers body consumption", () => {
+  it("aborts a stalled body instead of hanging", async () => {
+    const dir = tmpDir();
+    const { fetchText } = createFetcher({
+      cacheDir: dir,
+      maxAttempts: 1,
+      timeoutMs: 50,
+      fetchImpl: (async (_url: string, init?: { signal?: AbortSignal }) => {
+        return {
+          ok: true,
+          headers: { get: () => null },
+          text: () =>
+            new Promise<string>((_resolve, reject) => {
+              // Only the abort signal ever settles this body: if the
+              // timeout is cleared after the headers arrive (the old bug),
+              // this promise never settles and the fetch hangs forever.
+              init?.signal?.addEventListener("abort", () =>
+                reject(new Error("aborted by timeout")),
+              );
+            }),
+        };
+      }) as unknown as typeof fetch,
+    });
+    const started = Date.now();
+    await expect(fetchText("https://example.com/stalled")).rejects.toThrow(/abort/i);
+    expect(Date.now() - started).toBeLessThan(2000);
   });
 });

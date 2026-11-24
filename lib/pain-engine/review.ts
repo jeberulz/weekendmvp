@@ -23,6 +23,12 @@ export function saveReviewRecord(rootDir: string, record: ReviewRecord): string 
   const dir = reviewDir(rootDir);
   fs.mkdirSync(dir, { recursive: true });
   const file = reviewPath(rootDir, record.slug);
+  // A rerun that produces the same deterministic slug must never erase a
+  // decision: an approved/rejected record is final, so a fresh "pending"
+  // record for the same slug is dropped and the decided record is kept.
+  // Only a still-pending record may be replaced by a later run.
+  const existing = loadReviewRecordIfExists(rootDir, record.slug);
+  if (existing && existing.status !== "pending") return file;
   fs.writeFileSync(file, JSON.stringify(record, null, 2));
   return file;
 }
@@ -30,6 +36,18 @@ export function saveReviewRecord(rootDir: string, record: ReviewRecord): string 
 export function loadReviewRecord(rootDir: string, slug: string): ReviewRecord {
   const raw = fs.readFileSync(reviewPath(rootDir, slug), "utf8");
   return JSON.parse(raw) as ReviewRecord;
+}
+
+/** The record for a slug, or null when no record exists (or it is unreadable). */
+export function loadReviewRecordIfExists(
+  rootDir: string,
+  slug: string,
+): ReviewRecord | null {
+  try {
+    return loadReviewRecord(rootDir, slug);
+  } catch {
+    return null;
+  }
 }
 
 export function listReviewRecords(rootDir: string): ReviewRecord[] {

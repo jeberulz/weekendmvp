@@ -131,9 +131,46 @@ function countWords(text: string): number {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
+/**
+ * Escape source-derived text for inline MDX prose. A `{` would open an
+ * MDX expression and a `<` would open a JSX element, so both are escaped
+ * — a source post containing `{ unfinished JSON` or `<div>` must render
+ * as text, not break compilation. The original text stays verbatim in
+ * the review record's evidence; only the MDX rendering is escaped.
+ */
+export function escapeMdxProse(text: string): string {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/\{/g, "\\{")
+    .replace(/\}/g, "\\}")
+    .replace(/</g, "\\<");
+}
+
+/**
+ * Escape source-derived text used as a Markdown link label: `[` / `]`
+ * would end the label early, and `{` / `<` are still MDX syntax inside
+ * a label, so they are escaped too.
+ */
+export function escapeMdxLinkLabel(text: string): string {
+  return escapeMdxProse(text).replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+}
+
+/**
+ * Escape a source URL used as a Markdown link destination: parens and
+ * braces would end the destination early, so they are percent-encoded.
+ */
+export function escapeMdxLinkUrl(url: string): string {
+  return url
+    .replace(/\(/g, "%28")
+    .replace(/\)/g, "%29")
+    .replace(/\{/g, "%7B")
+    .replace(/\}/g, "%7D")
+    .replace(/ /g, "%20");
+}
+
 function quoteLink(finding: PainFinding): string {
   const quote = finding.quote || finding.title;
-  return `["${quote}"](${finding.url})`;
+  return `["${escapeMdxLinkLabel(quote)}"](${escapeMdxLinkUrl(finding.url)})`;
 }
 
 function evidenceLinks(findings: PainFinding[]): string[] {
@@ -141,7 +178,9 @@ function evidenceLinks(findings: PainFinding[]): string[] {
   for (const f of findings) {
     if (!seen.has(f.url)) seen.set(f.url, f.context);
   }
-  return [...seen.entries()].map(([url, context]) => `- [${context}](${url})`);
+  return [...seen.entries()].map(
+    ([url, context]) => `- [${escapeMdxLinkLabel(context)}](${escapeMdxLinkUrl(url)})`,
+  );
 }
 
 /** Community-signal counts by platform: reports + agreement per source. */
@@ -331,7 +370,7 @@ export function writeDraft(cluster: PainCluster): PainDraft {
       const who = intros[i % intros.length];
       const closer = closers[i % closers.length];
       return (
-        `${who} ${f.context}: ${f.text} ` +
+        `${who} ${escapeMdxProse(f.context)}: ${escapeMdxProse(f.text)} ` +
         `That account is backed by ${f.agreementCount} upvote${f.agreementCount === 1 ? "" : "s"} / reactions / votes. ` +
         (f.quote ? `In their own words: ${quoteLink(f)}. ` : "") +
         closer
@@ -346,13 +385,13 @@ export function writeDraft(cluster: PainCluster): PainDraft {
 
   const blockquotes = quotable
     .slice(0, 3)
-    .map((f) => `> "${f.quote}"\n>\n> — [${f.context}](${f.url})`)
+    .map((f) => `> "${escapeMdxProse(f.quote)}"\n>\n> — [${escapeMdxLinkLabel(f.context)}](${escapeMdxLinkUrl(f.url)})`)
     .join("\n\n");
 
   const mdx = [
     "---",
     `slug: "${slug}"`,
-    `title: "${title.replace(/"/g, "")}"`,
+    `title: "${title.replace(/\\/g, "\\\\").replace(/"/g, "")}"`,
     "---",
     "",
     "## The Problem",
@@ -424,7 +463,7 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     // list, and repeating the same four URLs in both lists trips the repo's
     // near-duplicate-paragraph audit (word-set Jaccard ≥ 0.82).
     ...findings.map(
-      (f) => `- ${f.agreementCount} agreement — ${f.context}.`,
+      (f) => `- ${f.agreementCount} agreement — ${escapeMdxProse(f.context)}.`,
     ),
     "",
     "### Scorecard",
@@ -454,7 +493,7 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     `No competitor pricing was verified from the evidence for this cluster, so none is asserted here. ` +
       `The reports name the workaround, not a vendor price list, and inventing a competitor's price would fail the evidence rule. ` +
       (statusQuoCompetitor
-        ? `One report names ${statusQuoCompetitor} as the tool people compare against, so that is the status quo to beat — but no price for it was quoted in the evidence, so none is asserted here. `
+        ? `One report names ${escapeMdxProse(statusQuoCompetitor)} as the tool people compare against, so that is the status quo to beat — but no price for it was quoted in the evidence, so none is asserted here. `
         : `What the reports do show is that people are solving this today with manual work, spreadsheets, or a patchwork of tools — which means the competition for version one is the status quo, not a named rival. `) +
       `${productName} should not compete by reproducing every capability of a broad platform. Its differentiation is workflow compression for a small, specific job: take the input as it already exists, do the manual step, and return a checkable result. ` +
       `The landing experience should begin with the task itself, not an empty dashboard. Before publish, name the two or three closest products here, with their published pricing linked, if the reviewer wants that section strengthened.`,
@@ -478,7 +517,8 @@ export function writeDraft(cluster: PainCluster): PainDraft {
           "Real prices found in the evidence — use them to anchor the tiers above:",
           "",
           ...prices.map(
-            (p) => `- **${p.amount} ${p.cadence}** — as written in [${p.context}](${p.url})`,
+            (p) =>
+              `- **${p.amount} ${p.cadence}** — as written in [${escapeMdxLinkLabel(p.context)}](${escapeMdxLinkUrl(p.url)})`,
           ),
         ]
       : [
@@ -492,7 +532,7 @@ export function writeDraft(cluster: PainCluster): PainDraft {
     `- **Time to first revenue:** ${demands.timeToFirstRevenue}`,
     `- **Capital to start:** ${demands.capital}`,
     `- **Difficulty:** ${demands.difficulty} (${demands.difficultyScore}/10)`,
-    `- **Status quo to beat:** ${statusQuoCompetitor ? `${statusQuoCompetitor} — named in a source report as the tool people compare against.` : "Manual work — no status-quo tool was named in the evidence."}`,
+    `- **Status quo to beat:** ${statusQuoCompetitor ? `${escapeMdxProse(statusQuoCompetitor)} — named in a source report as the tool people compare against.` : "Manual work — no status-quo tool was named in the evidence."}`,
     `- **Biggest risk:** ${biggestRisk}`,
     "",
     "**Unit Economics**",
