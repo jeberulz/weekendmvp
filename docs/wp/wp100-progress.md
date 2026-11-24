@@ -65,3 +65,16 @@ Append-only progress log. Do not rely on chat history for project state.
 - a11y-check: one fix, so the diff is no longer shown by colour alone (an underline on the changed words).
 - Not done yet (WP100-S5): storing the accepted improvement on the session (`startOrResume` / `rewriteStep`
   `improvementId`, `ownIdeaAi`) and the `ai_improved` founder signal. Today the accepted text is saved like typed text.
+
+## 2026-11-24 - Step 1 slot (#316)
+
+- `wizard-e2e-audit` added `renderFieldAction?: (field: OwnIdeaFieldApi) => ReactNode` to `OwnIdeaForm` in PR #316
+  (open). It renders under the field and before the chips. The API is `text`, `setText`, `fieldId`, `getSelection()`
+  and `pending`.
+- Plan: once #311 and #316 are on main, rebase this branch onto main. Drop the `improve` prop and the
+  `useIdeaImprove` call inside `OwnIdeaForm`. `WizardFlow` and `WizardStepPanel` pass `renderFieldAction`, which
+  renders `IdeaImprove` with a hook that reads and writes through `OwnIdeaFieldApi` (`getSelection()` replaces the
+  DOM selection read). Then open the UI PR.
+- S5: `improvementId` goes from the hook to the `onSubmit` callers (`WizardFlow` → `startOrResume`,
+  `WizardStepPanel` → `onRewrite`). The blueprint reads the stored `ownIdeaAi.hints` as quoted data (the #314 plan),
+  so the extract-only prompt mode is needed only if the owner picks option B alone.
