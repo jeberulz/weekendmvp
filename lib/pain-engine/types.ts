@@ -184,6 +184,30 @@ export interface PainDraft {
   costUsd: number;
 }
 
+/** Title / product-name override recorded at submission time (human edit). */
+export interface PublishOverrides {
+  title?: string;
+  productName?: string;
+  appliedAt: string;
+}
+
+/** Submission bookkeeping for the editorial bridge. Written by the bridge
+ * only; it never changes `status` or `decidedAt` (the once-only decision). */
+export interface EditorialSubmissionMarker {
+  /** "prepared" = dry-run artifacts built; "submitted" = accepted by Convex. */
+  status: "prepared" | "submitted";
+  submissionId: string;
+  artifactHash: string;
+  recordHash: string;
+  /** The writer's highlights block is dropped before submission (it fails
+   * tagging validation without stats); recorded here so the drop is auditable. */
+  highlightsDropped: boolean;
+  preparedAt: string;
+  submittedAt?: string;
+  /** Server-assigned editorial idea id; null until an apply succeeds. */
+  ideaId: string | null;
+}
+
 /** One record in the single-approval review queue. */
 export interface ReviewRecord {
   slug: string;
@@ -191,6 +215,8 @@ export interface ReviewRecord {
   createdAt: string;
   decidedAt?: string;
   decisionReason?: string;
+  publishOverrides?: PublishOverrides;
+  submission?: EditorialSubmissionMarker;
   cluster: PainCluster;
   draft: PainDraft;
   /** Cost of the whole run that produced this draft (USD). */

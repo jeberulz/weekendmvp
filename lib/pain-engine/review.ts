@@ -77,3 +77,25 @@ export function decideReview(
   saveReviewRecord(rootDir, record);
   return record;
 }
+
+/**
+ * Bookkeeping write for the editorial bridge (publish overrides + submission
+ * marker). It may only record bridge bookkeeping on an already-decided
+ * record: `status` and `decidedAt` are immutable here, so a bridge write
+ * can never re-decide a review. Use `decideReview` for the decision itself.
+ */
+export function updateReviewRecordBookkeeping(
+  rootDir: string,
+  record: ReviewRecord,
+): string {
+  const existing = loadReviewRecord(rootDir, record.slug);
+  if (existing.status !== record.status || existing.decidedAt !== record.decidedAt) {
+    throw new Error(
+      `Refusing bookkeeping write for ${record.slug}: status/decidedAt changed ` +
+        `(was ${existing.status}, now ${record.status}). Decide the review with decideReview instead.`,
+    );
+  }
+  const file = reviewPath(rootDir, record.slug);
+  fs.writeFileSync(file, JSON.stringify(record, null, 2));
+  return file;
+}
