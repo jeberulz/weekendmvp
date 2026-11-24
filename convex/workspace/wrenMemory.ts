@@ -77,6 +77,11 @@ export function memoryVersionOf(row: MemoryRow | null): string {
  * matcher for the pair: `convex/workspace/chat.ts` uses it too.
  */
 export async function pairedFounderMessage(ctx: QueryCtx, reply: ChatRow): Promise<ChatRow | null> {
+  if (reply.replyTo !== undefined) {
+    const founder = await ctx.db.get("chat_messages", reply.replyTo);
+    return founder?.author === "founder" && founder.ownerId === reply.ownerId &&
+      founder.projectId === reply.projectId && founder.createdAt === reply.createdAt ? founder : null;
+  }
   const rows = await ctx.db.query("chat_messages")
     .withIndex("by_projectId_and_createdAt", (q) => q.eq("projectId", reply.projectId).eq("createdAt", reply.createdAt))
     .take(8);

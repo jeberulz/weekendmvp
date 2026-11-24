@@ -225,7 +225,7 @@ export function approvalCardTitle(kind: string, subjectTable: string): string {
 export const WREN_EXPLAIN_COPY: Readonly<Record<WrenExplainTopic, { readonly title: string; readonly body: string }>> = {
   approvals: {
     title: "How approval cards work",
-    body: "Nothing is sent, posted, published or spent until you approve its card. Wren and the crew can only put cards in front of you. You can approve, ask for changes, or say not now, and an approved card can be cancelled before it is used.",
+    body: "Nothing is sent, posted, published or spent until you approve its card. Wren can queue internal draft revisions. You can approve, ask for changes, or say not now, and an approved card can be cancelled before it is used.",
   },
   change_rounds: {
     title: "Asking for changes",
@@ -484,6 +484,10 @@ export function approvalDecisionErrorCopy(code: string | null, partnerName: stri
     return `This changed since ${partnerName} raised it. Ask ${partnerName} again for a fresh card.`;
   }
   switch (code) {
+    case "INSUFFICIENT_CREDITS":
+      return "Your credit balance is too low for this revision. The request is still waiting for your approval.";
+    case "INSUFFICIENT_ALLOWANCE":
+      return "This revision exceeds your remaining allowance. The request is still waiting for your approval.";
     case "APPROVAL_ALREADY_DECIDED":
       return "This card was already decided.";
     case "RESOURCE_NOT_FOUND":

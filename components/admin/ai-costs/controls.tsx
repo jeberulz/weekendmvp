@@ -25,18 +25,18 @@ import { cn } from "@/lib/utils";
 import { buttonClass, controlClass } from "./interactive";
 import { Notice, StatusBadge, TableRegion, td, th } from "./primitives";
 
-type Feedback = { tone: "good" | "critical"; text: string } | null;
+export type Feedback = { tone: "good" | "critical"; text: string } | null;
 
-const primaryButton = cn(buttonClass, "border-(--ed-text) bg-(--ed-text) text-white hover:bg-(--ed-primary-hover) disabled:cursor-not-allowed disabled:opacity-50");
+export const primaryButton = cn(buttonClass, "border-(--ed-text) bg-(--ed-text) text-white hover:bg-(--ed-primary-hover) disabled:cursor-not-allowed disabled:opacity-50");
 
-const STEP_UP_MECHANISM = "A fresh sign-in with this account's own sign-in method within the last 10 minutes. Risky control changes ask for it.";
+export const STEP_UP_MECHANISM = "A fresh sign-in with this account's own sign-in method within the last 10 minutes. Risky control changes ask for it.";
 
-async function simulate(): Promise<{ ok: true } | { ok: false; message: string }> {
+export async function simulate(): Promise<{ ok: true } | { ok: false; message: string }> {
   const result = await simulateSignInAction();
   return result.ok ? { ok: true } : { ok: false, message: result.message };
 }
 
-function FeedbackLine({ feedback }: { feedback: Feedback }) {
+export function FeedbackLine({ feedback }: { feedback: Feedback }) {
   return (
     <p role={feedback?.tone === "critical" ? "alert" : "status"} className={cn("text-sm", feedback?.tone === "critical" ? "text-(--ed-danger)" : "text-(--ed-success)")}>
       {feedback?.text ?? ""}
@@ -44,7 +44,7 @@ function FeedbackLine({ feedback }: { feedback: Feedback }) {
   );
 }
 
-function dollars(microUsd: number): string {
+export function dollars(microUsd: number): string {
   return (microUsd / MICRO_USD_PER_USD).toFixed(2);
 }
 

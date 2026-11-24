@@ -6,6 +6,10 @@ import Link from "next/link";
 import { Logo } from "@/components/primitives/Logo";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
+import { ErrorReporterMount } from "@/components/workspace/feedback/ErrorReporterMount";
+import { FeedbackControl } from "@/components/workspace/feedback/FeedbackControl";
+import { ReportingBoundary } from "@/components/workspace/feedback/ReportingBoundary";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import { LoadingState } from "@/components/workspace/kit";
 import { BTN_PRIMARY, FOCUS } from "@/components/workspace/kit/styles";
 import { api } from "@/convex/_generated/api";
@@ -17,13 +21,17 @@ import {
   type WizardAnswersProgress,
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
+import { trackWorkspaceEvent } from "@/lib/track";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
+import { OwnIdeaExamples } from "./OwnIdeaExamples";
+import { OwnIdeaLibraryLink } from "./OwnIdeaLibraryLink";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
 import { Field, ScreenHead } from "./wizard-ui";
@@ -34,6 +42,11 @@ export type WizardFlowProps = {
   readonly ideaTitle: string | null;
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
+  /**
+   * WP99: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
+   * (`own-idea-examples.server.ts`). Omitted, the static fallback lines show.
+   */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
 };
 
 const ERROR_COPY: Record<string, string> = {
@@ -155,6 +168,21 @@ function BusinessLimitNotice({
   );
 }
 
+/**
+ * WP95-S4. A move forward is a finished step (never Back): `wizard_step_finished` with the step
+ * left behind. Moving from "done" to the business is `business_created`. Enums only.
+ */
+function trackWizardMove(from: string, to: string, source: "library" | "own_idea" | undefined): void {
+  const order = (position: string) =>
+    position === "business" ? WIZARD_STEPS.length + 1 : position === "done" ? WIZARD_STEPS.length : WIZARD_STEPS.indexOf(position as WizardStep);
+  if (order(to) <= order(from)) return;
+  if (to === "business") {
+    trackWorkspaceEvent({ name: "business_created", props: { source: source === "own_idea" ? "own_idea" : "library" } });
+    return;
+  }
+  if (from !== "done") trackWorkspaceEvent({ name: "wizard_step_finished", props: { step: from } });
+}
+
 /** The own-idea route for a session; `?session=` makes a reload resume it. */
 export function ownIdeaUrl(sessionId: string): string {
   return `/start/own?session=${encodeURIComponent(sessionId)}`;
@@ -165,23 +193,19 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-/** A few concrete example ideas, to lower the blank-page cost on the own path. */
-const OWN_IDEA_EXAMPLES = [
-  "A packing list that builds itself from your trip",
-  "Invoice reminders for freelancers",
-  "A meal-prep planner for lifters",
-] as const;
-
 function OwnIdeaStart({
   pending,
   error,
   headingRef,
   onStart,
+  examples,
 }: {
   pending: boolean;
   error: string | null;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onStart: (text: string) => void;
+  /** Concrete example ideas, to lower the blank-page cost on the own path (WP99). */
+  examples: readonly OwnIdeaExample[];
 }) {
   const base = useId();
   const [text, setText] = useState("");
@@ -230,24 +254,8 @@ function OwnIdeaStart({
         invalid={shownError !== null}
         serif
       />
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] text-home-ink-3">Try one of these</p>
-        <div className="flex flex-wrap gap-2">
-          {OWN_IDEA_EXAMPLES.map((example) => (
-            <button
-              key={example}
-              type="button"
-              onClick={() => applyExample(example)}
-              className={cn(
-                "rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-[13px] text-home-ink-2 hover:bg-home-sunk",
-                FOCUS,
-              )}
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
+      <OwnIdeaExamples examples={examples} value={text} onApply={applyExample} />
+      <OwnIdeaLibraryLink />
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
           {shownError}
@@ -270,7 +278,7 @@ function OwnIdeaStart({
  * aside. Each screen owns the page's single h1, and focus moves to it when the
  * step changes.
  */
-export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
+function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = OWN_IDEA_FALLBACK_EXAMPLES }: WizardFlowProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<Id<"wizard_sessions"> | null>(
     initialSessionId === null ? null : (initialSessionId as Id<"wizard_sessions">),
@@ -310,6 +318,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     startOrResume({ idea })
       .then((id) => setSessionId(id))
       .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught });
         setRefusal(businessRefusal(caught));
         setError(wizardErrorMessage(caught));
       });
@@ -338,6 +347,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     if (lastPosition.current !== null && lastPosition.current !== position) {
       setAnnouncement(label);
       headingRef.current?.focus();
+      trackWizardMove(lastPosition.current, position, view.answers.idea?.source);
     }
     lastPosition.current = position;
   }, [position, view]);
@@ -350,6 +360,7 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
     try {
       await action();
     } catch (caught) {
+      reportClientError({ source: "action", error: caught });
       setError(wizardErrorMessage(caught));
     } finally {
       setPending(false);
@@ -359,6 +370,8 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   async function startOwn(text: string) {
     await run(async () => {
       const id = await startOrResume({ idea: { source: "own_idea", text } });
+      // The own-idea sentence is step 1; the session (and so the position tracking) starts after it.
+      trackWorkspaceEvent({ name: "wizard_step_finished", props: { step: "idea" } });
       setSessionId(id);
       router.replace(ownIdeaUrl(id), { scroll: false });
     });
@@ -369,6 +382,10 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const businessExists = view !== undefined && view.business !== null;
   const ownIdea = view !== undefined ? view.answers.idea?.source === "own_idea" : idea === null;
   const ideaSlug = view?.answers.idea?.source === "library" ? view.answers.idea.ideaSlug : (idea?.ideaSlug ?? null);
+
+  // Where the founder is, for feedback: the step name, or "done" before the business exists. A plain token.
+  const wizardStepStates =
+    view === undefined || view.business !== null ? [] : [{ key: "wizard_step", state: view.completed ? "done" : view.step }];
 
   // "Save & exit" only where the session can be resumed: a library idea resumes by its slug; an own idea
   // resumes by the `?session=` the URL carries once the first sentence started it.
@@ -398,7 +415,15 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
   if (sessionId === null && idea === null) {
-    body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
+    body = (
+      <OwnIdeaStart
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        onStart={(text) => void startOwn(text)}
+        examples={ownIdeaExamples}
+      />
+    );
   } else if (view === undefined || parsed === null) {
     body = (
       <>
@@ -504,14 +529,22 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
       <header className="flex items-center justify-between gap-4 px-6 py-3">
         {/* The one brand wordmark (WP67-S6), not linked: leaving mid-wizard goes through "Save & exit". */}
         <Logo className="h-4 w-32 text-home-ink" />
-        {saveExit ? (
-          <Link
-            href={saveExit.href}
-            className={cn("inline-flex min-h-11 items-center text-[13px] text-home-ink-3 underline-offset-2 hover:underline", FOCUS)}
-          >
-            Save &amp; exit
-          </Link>
-        ) : null}
+        <div className="flex items-center gap-3">
+          <FeedbackControl
+            surface="wizard"
+            variant="header"
+            projectId={view?.business?.projectId}
+            extraStates={wizardStepStates}
+          />
+          {saveExit ? (
+            <Link
+              href={saveExit.href}
+              className={cn("inline-flex min-h-11 items-center text-[13px] text-home-ink-3 underline-offset-2 hover:underline", FOCUS)}
+            >
+              Save &amp; exit
+            </Link>
+          ) : null}
+        </div>
       </header>
       <main
         id="main-content"
@@ -549,5 +582,18 @@ export function WizardFlow({ idea, ideaTitle, initialSessionId }: WizardFlowProp
         )}
       </main>
     </>
+  );
+}
+
+/**
+ * The wizard, with the private error log wired in (WP95-S3): a render error is reported (class and
+ * route only) and handed up, so `app/start/error.tsx` still shows its message.
+ */
+export function WizardFlow(props: WizardFlowProps) {
+  return (
+    <ReportingBoundary>
+      <ErrorReporterMount />
+      <WizardFlowInner {...props} />
+    </ReportingBoundary>
   );
 }

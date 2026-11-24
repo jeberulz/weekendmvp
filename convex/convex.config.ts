@@ -75,5 +75,7 @@ app.use(workflow);
 app.use(workpool, { name: "crewWorkpool" });
 app.use(shardedCounter);
 app.use(resend);
+// Resend batches share credentials and retry settings within each mount.
+app.use(resend, { name: "ownerSpendResend" });
 
 export default app;

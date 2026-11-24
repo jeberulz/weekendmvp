@@ -34,6 +34,7 @@ import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import { workspaceTables } from "./schema/workspace";
 import { aiTables } from "./schema/ai";
 import { growthTables } from "./schema/growth";
+import { feedbackTables } from "./feedback/tables";
 import {
   auditActorValidator,
   briefStatusValidator,
@@ -63,6 +64,7 @@ export default defineSchema({
   ...workspaceTables,
   ...aiTables,
   ...growthTables,
+  ...feedbackTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),
@@ -537,6 +539,16 @@ export default defineSchema({
     creditCost: v.optional(v.int64()),
     changeRound: v.optional(v.int64()),
     revisionOfTaskId: v.optional(v.id("tasks")),
+    revisionNote: v.optional(v.string()),
+    requiresBrandDocumentId: v.optional(v.id("documents")),
+    emailHandoff: v.optional(v.object({
+      state: v.union(v.literal("requested"), v.literal("queued"), v.literal("spend_required"), v.literal("not_available")),
+      note: v.optional(v.string()),
+      taskId: v.optional(v.id("tasks")),
+      approvalId: v.optional(v.id("approvals")),
+      reason: v.optional(v.string()),
+    })),
+    crewFailureReason: v.optional(v.string()),
     approvalId: v.optional(v.id("approvals")),
     jobKey: v.optional(v.string()),
     idempotencyKey: v.string(),
@@ -578,6 +590,9 @@ export default defineSchema({
     format: documentFormatValidator,
     title: v.string(),
     supersedesDocumentId: v.optional(v.id("documents")),
+    briefDocumentId: v.optional(v.id("documents")),
+    brandKitDocumentId: v.optional(v.id("documents")),
+    changedFields: v.optional(v.array(v.string())),
     schemaVersion: v.optional(v.string()),
     promptRef: v.optional(v.string()),
     body: v.optional(v.string()),

@@ -19,6 +19,7 @@ import {
   approvedBlueprint,
   approvedBrandKit,
   ensureLaunchStepTasks,
+  failStaleHandoff,
   insertCrewTask,
   isSupersededLaunchWork,
   launchDraftBlueprint,
@@ -51,6 +52,7 @@ import {
   type LaunchStepKey,
   type StepRunResult,
 } from "./steps";
+import { lastCrewFailure } from "./failure";
 import { crewWorkpool } from "./workpool";
 
 /**
@@ -300,6 +302,43 @@ async function enqueueLaunchStep(
   );
 }
 
+const REVISION_SCAN_MAX = 32;
+
+function revisionStep(task: Doc<"tasks">) {
+  return task.revisionOfTaskId === undefined
+    ? undefined
+    : LAUNCH_STEPS.find((step) => isPoolStep(step) && step.jobType === task.type);
+}
+
+async function projectRevisions(ctx: ReadCtx, project: Doc<"projects">, status: "queued" | "running" | "blocked") {
+  const tasks = await ctx.db.query("tasks")
+    .withIndex("by_projectId_and_status_and_createdAt", (q) => q.eq("projectId", project._id).eq("status", status))
+    .filter((q) => q.and(
+      q.neq(q.field("revisionOfTaskId"), undefined),
+      q.eq(q.field("archivedAt"), undefined),
+      q.eq(q.field("ownerId"), project.ownerId),
+    ))
+    .take(REVISION_SCAN_MAX);
+  return tasks.flatMap((task) => {
+    const step = revisionStep(task);
+    return step === undefined ? [] : [{ task, step }];
+  });
+}
+
+export async function revisionBlocker(
+  ctx: ReadCtx,
+  project: Doc<"projects">,
+  task: Doc<"tasks">,
+): Promise<"blueprint" | "brand_kit" | null> {
+  if (task.type === "crew_blueprint") return null;
+  if (await approvedBlueprint(ctx, project) === null) return "blueprint";
+  if (task.type !== "crew_email_sequence" && task.type !== "crew_social_pack") return null;
+  const kit = await approvedBrandKit(ctx, project);
+  return kit === null || (task.requiresBrandDocumentId !== undefined && kit._id !== task.requiresBrandDocumentId)
+    ? "brand_kit"
+    : null;
+}
+
 /**
  * Fills the owner's free slots, oldest launch first. Inserts a written
  * roster's missing step tasks, skips a launch with a paused step (no new work
@@ -325,6 +364,21 @@ export async function advanceOwner(ctx: MutationCtx, ownerId: Id<"users">, now: 
   launches.sort((a, b) => a.rosterTask.createdAt - b.rosterTask.createdAt);
 
   let enqueued = 0;
+  for (const project of projects) {
+    if (inFlight.size >= OWNER_CREW_CAP) return enqueued;
+    for (const { task, step } of await projectRevisions(ctx, project, "queued")) {
+      if (inFlight.size >= OWNER_CREW_CAP) return enqueued;
+      if (inFlight.has(task._id)) continue;
+      if (task.requiresBrandDocumentId !== undefined && (await approvedBrandKit(ctx, project))?._id !== task.requiresBrandDocumentId) {
+        await failStaleHandoff(ctx, task, now);
+        continue;
+      }
+      if (await revisionBlocker(ctx, project, task) !== null) continue;
+      await enqueueLaunchStep(ctx, task, step.key, { actionFailures: 0 }, now);
+      inFlight.add(task._id);
+      enqueued += 1;
+    }
+  }
   for (const { project, rosterTask } of launches) {
     if (rosterTask.status === "succeeded") {
       const plan = await rosterPlanRow(ctx, ownerId, project._id);
@@ -430,16 +484,20 @@ export async function resumeLaunchSteps(
   options: { readonly tokenSpent?: boolean } = {},
 ): Promise<ResumeResult> {
   const read = await readLaunchFacts(ctx, project, rosterTask);
-  const parked = LAUNCH_STEPS.filter((step) => isPoolStep(step) && read.tasks[step.key]?.status === "blocked");
+  const parked = [
+    ...LAUNCH_STEPS.flatMap((step) => {
+      const task = read.tasks[step.key];
+      return isPoolStep(step) && task?.status === "blocked" ? [{ step, task }] : [];
+    }),
+    ...await projectRevisions(ctx, project, "blocked"),
+  ];
   if (parked.length === 0) return { resumed: 0, paused: 0, waitingForSlot: false };
   const projects = await ownerProjects(ctx, project.ownerId, project);
   const free = OWNER_CREW_CAP - (await ownerInFlight(ctx, project.ownerId, projects)).size;
   if (free <= 0) return { resumed: 0, paused: parked.length, waitingForSlot: true };
   if (options.tokenSpent !== true) await checkLimit(ctx, "crewJob", project.ownerId);
   let resumed = 0;
-  for (const step of parked.slice(0, free)) {
-    const task = read.tasks[step.key];
-    if (task === undefined) continue;
+  for (const { step, task } of parked.slice(0, free)) {
     const running = await resumeParkedTask(ctx, task, now);
     await enqueueLaunchStep(ctx, running, step.key, { resume: true, actionFailures: 0 }, now);
     resumed += 1;
@@ -564,11 +622,11 @@ export const BRAND_KIT_CHANGED_REASON =
 
 /** WP76-S2a: a failed social pack with no blueprint brief it may use now. */
 export const SOCIAL_BRIEF_CHANGED_REASON =
-  "The blueprint changed. Approve it, or finish its changes, before the social pack can try again.";
+  "Approve the blueprint or finish its requested changes before retrying the social pack.";
 
 /** WP76-S2a: a failed social pack with no brand kit it may use now (approved, or the launch rule). */
 export const SOCIAL_BRAND_KIT_CHANGED_REASON =
-  "The brand kit changed. Approve it, or finish its changes, before the social pack can try again.";
+  "Approve the brand kit or finish its requested changes before retrying the social pack.";
 
 /** What each step that briefs from the blueprint says when no brief exists for it now. */
 const BRIEF_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> = {
@@ -587,6 +645,40 @@ const BRAND_KIT_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> 
 export const WAITING_FOR_SLOT_REASON = "Waiting for a free slot: your team is busy with other work.";
 
 type FailedStep = { readonly step: LaunchStep; readonly retryable: boolean; readonly reason: string };
+
+async function retryEligibility(ctx: ReadCtx, project: Doc<"projects">, step: LaunchStep, now?: number): Promise<FailedStep> {
+  if (step.jobType === "crew_email_sequence" && !(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
+    return { step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON };
+  }
+  const briefReason = BRIEF_CHANGED_REASONS[step.jobType];
+  if (briefReason !== undefined) {
+    const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
+    if (brief === null) {
+      return { step, retryable: false, reason: briefReason };
+    }
+  }
+  // WP76-S1a/S2a: the email sequence and the social pack also need a brand kit they may brief from, under the same rule.
+  const kitReason = BRAND_KIT_CHANGED_REASONS[step.jobType];
+  if (kitReason !== undefined &&
+    (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
+    return { step, retryable: false, reason: kitReason };
+  }
+  return { step, retryable: true, reason: STEP_FAILED_REASON };
+}
+
+/** Only used when the Social page has no draft, so normal draft reads incur no extra lookups. */
+export async function socialDraftFailure(ctx: ReadCtx, project: Doc<"projects">) {
+  const task = await stepTask(ctx, project, "social_pack");
+  if (task?.status !== "failed") return null;
+  const [lastFailure, retry] = await Promise.all([
+    lastCrewFailure(ctx, task), retryEligibility(ctx, project, launchStep("social_pack")),
+  ]);
+  return {
+    detail: lastFailure?.detail ?? "The last run ended before a draft could be saved.",
+    ...(lastFailure ? { failureClass: lastFailure.failureClass } : {}),
+    ...(retry.retryable ? {} : { retryBlocker: retry.reason }),
+  };
+}
 
 /**
  * The launch's failed pool steps after the blueprint, in registry order, and
@@ -609,26 +701,7 @@ async function failedLaunchSteps(
   for (const step of LAUNCH_STEPS) {
     if (!isPoolStep(step) || step.key === "blueprint" || read.tasks[step.key] === undefined) continue;
     if (evaluated.find((entry) => entry.key === step.key)?.state !== "failed") continue;
-    if (step.jobType === "crew_email_sequence" && !(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
-      out.push({ step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON });
-      continue;
-    }
-    const briefReason = BRIEF_CHANGED_REASONS[step.jobType];
-    if (briefReason !== undefined) {
-      const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
-      if (brief === null) {
-        out.push({ step, retryable: false, reason: briefReason });
-        continue;
-      }
-    }
-    // WP76-S1a/S2a: the email sequence and the social pack also need a brand kit they may brief from, under the same rule.
-    const kitReason = BRAND_KIT_CHANGED_REASONS[step.jobType];
-    if (kitReason !== undefined &&
-      (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
-      out.push({ step, retryable: false, reason: kitReason });
-      continue;
-    }
-    out.push({ step, retryable: true, reason: STEP_FAILED_REASON });
+    out.push(await retryEligibility(ctx, project, step, now));
   }
   return out;
 }
@@ -673,10 +746,8 @@ export async function retryFailedLaunchSteps(
 // ---------------------------------------------------------------------------
 
 /**
- * A WP77 change-round revision runs through the scheduler, not the pool, but
- * counts toward the owner's cap while it is `running`. `jobs.ts` schedules
- * this when a revision leaves `running` (finished, failed, parked or
- * cancelled), so the slot it held is filled. No token.
+ * Re-evaluate queued revisions after a request or prerequisite approval.
+ * Legacy revision executions also use this to release their slot.
  */
 export const advanceAfterRevision = internalMutation({
   args: { ownerId: v.id("users") },
@@ -855,11 +926,18 @@ export const recoverStalledOwner = internalMutation({
       return { ...out, gated: true };
     }
     for (const project of await ownerProjects(ctx, args.ownerId)) {
-      if ((await launchRosterTask(ctx, args.ownerId, project._id)) === null) continue;
-      for (const step of LAUNCH_STEPS) {
-        if (!isPoolStep(step)) continue;
-        const task = await stepTask(ctx, project, step.key);
-        if (task === null) continue;
+      const steps = [
+        ...await projectRevisions(ctx, project, "queued"),
+        ...await projectRevisions(ctx, project, "running"),
+      ];
+      if (await launchRosterTask(ctx, args.ownerId, project._id) !== null) {
+        for (const step of LAUNCH_STEPS) {
+          if (!isPoolStep(step)) continue;
+          const task = await stepTask(ctx, project, step.key);
+          if (task !== null) steps.push({ task, step });
+        }
+      }
+      for (const { task, step } of steps) {
         if (await settleLeftoverMarker(ctx, task, now)) {
           out.settled += 1;
           continue;
@@ -963,7 +1041,7 @@ const stepStateValidator = v.union(
   v.literal("skipped"),
 );
 
-const launchProgressValidator = v.object({
+export const launchProgressValidator = v.object({
   started: v.boolean(),
   /** A failed step a Try again (`retryLaunch`) would run again now. */
   retryable: v.boolean(),
@@ -976,6 +1054,7 @@ const launchProgressValidator = v.object({
     notBuilt: v.boolean(),
     state: stepStateValidator,
     reason: v.optional(v.string()),
+    lastFailure: v.optional(v.object({ failureClass: v.string(), detail: v.string() })),
     /** Set on a failed step: whether a Try again can help it now. */
     retryable: v.optional(v.boolean()),
   })),
@@ -988,6 +1067,7 @@ export type LaunchProgressStep = {
   notBuilt: boolean;
   state: EvaluatedStep["state"];
   reason?: string;
+  lastFailure?: { failureClass: string; detail: string };
   retryable?: boolean;
 };
 
@@ -1005,40 +1085,47 @@ export const launchProgress = query({
     await assertFeatureEnabled(ctx, "workspace");
     await assertFeatureEnabled(ctx, "ai");
     const project = await requireBusinessAccess(ctx, args.projectId, "owner");
-    const rosterTask = await launchRosterTask(ctx, project.ownerId, project._id);
-    if (rosterTask === null) return { started: false, retryable: false, steps: [] };
-    const read = await readLaunchFacts(ctx, project, rosterTask);
-    const evaluated = evaluateLaunch(read.facts);
-    const failed = new Map((await failedLaunchSteps(ctx, project, read, evaluated)).map((entry) => [entry.step.key, entry]));
-    // Before the team exists, the blueprint (or the unplanned team) carries the same retry rule as `launchStatus`.
-    const open = rosterTask.status === "succeeded" ? null : await openLaunchRetry(ctx, project);
-    const openKey: LaunchStepKey | null = open?.failed === true ? (open.blueprintDone ? "roster" : "blueprint") : null;
-    if (open?.failed === true && openKey !== null) {
-      const evaluatedOpen = evaluated.find((entry) => entry.key === openKey);
-      failed.set(openKey, {
-        step: launchStep(openKey),
-        retryable: open.retryable,
-        reason: open.paused
-          ? (evaluatedOpen?.reason ?? STEP_FAILED_REASON)
-          : open.retryable ? STEP_FAILED_REASON : LAUNCH_STUCK_REASON,
-      });
-    }
-    const steps = evaluated.map((entry): LaunchProgressStep => {
-      const failure = failed.get(entry.key);
-      const reason = failure?.reason ?? entry.reason ?? (entry.state === "queued" ? WAITING_FOR_SLOT_REASON : undefined);
-      // An unplanned team reads `waiting` from the facts; it has failed, as `launchStatus` says.
-      const state = entry.key === openKey && open?.failed === true && !open.paused ? "failed" : entry.state;
-      const definition = launchStep(entry.key);
-      return {
-        key: entry.key,
-        title: definition.title,
-        employee: definition.employee,
-        notBuilt: definition.status !== "built",
-        state,
-        ...(reason === undefined ? {} : { reason }),
-        ...(failure === undefined ? {} : { retryable: failure.retryable }),
-      };
-    });
-    return { started: true, retryable: [...failed.values()].some((entry) => entry.retryable), steps };
+    return await readLaunchProgress(ctx, project);
   },
 });
+
+export async function readLaunchProgress(ctx: ReadCtx, project: Doc<"projects">): Promise<LaunchProgress> {
+  const rosterTask = await launchRosterTask(ctx, project.ownerId, project._id);
+  if (rosterTask === null) return { started: false, retryable: false, steps: [] };
+  const read = await readLaunchFacts(ctx, project, rosterTask);
+  const evaluated = evaluateLaunch(read.facts);
+  const failed = new Map((await failedLaunchSteps(ctx, project, read, evaluated)).map((entry) => [entry.step.key, entry]));
+  // Before the team exists, the blueprint (or the unplanned team) carries the same retry rule as `launchStatus`.
+  const open = rosterTask.status === "succeeded" ? null : await openLaunchRetry(ctx, project);
+  const openKey: LaunchStepKey | null = open?.failed === true ? (open.blueprintDone ? "roster" : "blueprint") : null;
+  if (open?.failed === true && openKey !== null) {
+    const evaluatedOpen = evaluated.find((entry) => entry.key === openKey);
+    failed.set(openKey, {
+      step: launchStep(openKey),
+      retryable: open.retryable,
+      reason: open.paused
+        ? (evaluatedOpen?.reason ?? STEP_FAILED_REASON)
+        : open.retryable ? STEP_FAILED_REASON : LAUNCH_STUCK_REASON,
+    });
+  }
+  const steps = await Promise.all(evaluated.map(async (entry): Promise<LaunchProgressStep> => {
+    const failure = failed.get(entry.key);
+    const reason = failure?.reason ?? entry.reason ?? (entry.state === "queued" ? WAITING_FOR_SLOT_REASON : undefined);
+    // An unplanned team reads `waiting` from the facts; it has failed, as `launchStatus` says.
+    const state = entry.key === openKey && open?.failed === true && !open.paused ? "failed" : entry.state;
+    const definition = launchStep(entry.key);
+    const task = read.tasks[entry.key];
+    const lastFailure = task?.status === "failed" ? await lastCrewFailure(ctx, task) : null;
+    return {
+      key: entry.key,
+      title: definition.title,
+      employee: definition.employee,
+      notBuilt: definition.status !== "built",
+      state,
+      ...(reason === undefined ? {} : { reason }),
+      ...(lastFailure ? { lastFailure } : {}),
+      ...(failure === undefined ? {} : { retryable: failure.retryable }),
+    };
+  }));
+  return { started: true, retryable: [...failed.values()].some((entry) => entry.retryable), steps };
+}

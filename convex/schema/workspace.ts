@@ -50,6 +50,12 @@ const wizardAnswers = v.object({
   })),
 });
 
+export const consultationParticipant = v.object({
+  employeeId: v.id("crew_members"),
+  name: v.string(),
+  role: v.string(),
+});
+
 export const workspaceTables = {
   wizard_sessions: defineTable({
     ownerId: v.id("users"),
@@ -145,6 +151,12 @@ export const workspaceTables = {
     // WP77 C-APPROVAL: content fingerprint, stable across status-only changes.
     // Optional so existing approvals remain valid under their existing rules.
     subjectVersion: v.optional(v.string()),
+    crewRevision: v.optional(v.object({
+      requestId: v.optional(v.string()),
+      followUpEmail: v.optional(v.boolean()),
+      emailNote: v.optional(v.string()),
+      requiresBrandDocumentId: v.optional(v.id("documents")),
+    })),
     status: v.union(v.literal("pending"), v.literal("approved"), v.literal("changes_requested"), v.literal("expired"), v.literal("cancelled")),
     changeRound: v.int64(),
     costCredits: v.optional(v.int64()),
@@ -162,9 +174,20 @@ export const workspaceTables = {
     ownerId: v.id("users"),
     projectId: v.id("projects"),
     author: v.union(v.literal("wren"), v.literal("founder"), v.literal("system")),
+    focusRole: v.optional(v.string()),
+    replyTo: v.optional(v.id("chat_messages")),
     body: v.string(),
     status: v.union(v.literal("streaming"), v.literal("done"), v.literal("failed")),
     cardApprovalIds: v.array(v.id("approvals")),
+    crewRevisionTaskId: v.optional(v.id("tasks")),
+    crewConsultation: v.optional(v.object({
+      attempt: v.number(),
+      recipient: consultationParticipant,
+      colleague: v.optional(consultationParticipant),
+      colleagueAnswer: v.optional(v.string()),
+      recipientAnswer: v.optional(v.string()),
+      state: v.union(v.literal("working"), v.literal("answered"), v.literal("failed")),
+    })),
     usageId: v.optional(v.id("ai_usage")),
     createdAt: v.number(),
     updatedAt: v.number(),

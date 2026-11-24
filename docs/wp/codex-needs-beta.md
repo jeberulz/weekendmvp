@@ -1,7 +1,7 @@
 # Codex brief: beta readiness (2026-11-20)
 
 Lane: Codex. Requested by the Claude orchestrator for the L1 private beta (`docs/wp/l1-release-plan.md`).
-This file is the one place for the Codex work the beta needs. New needs from WP94–WP96 get added under
+This file is the one place for the Codex work the beta needs. Needs from WP94–WP96 are listed under
 "Schema needs from parallel WPs" as their PRs land, so the schema changes can go out in one pass.
 
 Context: production is `www.weekendmvp.app` with Convex `first-squirrel-244`, `AI_PROVIDER_MODE=live`. The workspace
@@ -52,8 +52,8 @@ Already specified by WP93: **`docs/wp/wp93-codex-cap-override.md`**. That covers
 - the Free lifetime ceiling and pool budgets never lifted;
 - tests.
 
-The console UI (a `setCapOverride` mutation with step-up, a $25 a day ceiling, and a founder form) is built in the
-Claude lane once this lands.
+Done. Codex landed the storage and meter change in #296. WP93 (#303) added the console's Convex functions
+(`setCapOverride`, `clearCapOverride`, `capOverrides`) and turned the founder form on live.
 
 ## C3. Testers' Free lifetime ceiling (waiting on an owner decision; do nothing yet)
 
@@ -80,6 +80,17 @@ The failure cause is not stored in the schema, so no Codex change is needed.
 
 ## Schema needs from parallel WPs (added as their PRs land)
 
-- WP94 (tester panel): pending. #291 already shipped the controls and cohort, so expect nothing beyond C2.
-- WP95 (tester feedback, error tracking): pending.
-- WP96 (account deletion): pending.
+- **WP94 (tester panel): none.** It was dropped because #291 shipped the controls and the cohort, and C2 covers the
+  cap raise.
+- **WP95 (tester feedback and error log, PR #298): required, and #298 waits on it.**
+  - Two additive tables, defined once in `convex/feedback/tables.ts` as `feedbackTables`:
+    - `feedback_entries`: indexes `by_createdAt`, `by_ownerId_and_createdAt`;
+    - `client_errors`: indexes `by_createdAt`, `by_ownerId_and_createdAt`, `by_ownerId_and_dedupeKey`.
+  - Codex spreads `...feedbackTables` into `defineSchema` in `convex/schema.ts`. No backfill is needed.
+  - #298 carries a stand-in commit, `chore(wp95): wire feedbackTables into the schema (stand-in for Codex)`. Codex
+    either takes it as is or lands the same line in its own PR, and the stand-in commit is then dropped from #298.
+- **WP96 (account deletion, #294 merged): optional.** See `docs/wp/wp96-progress.md` § Codex needs.
+  - A cron, or a guard in the sweeper, that restarts a stopped deletion chain. Today an operator must rerun
+    `account/deletion:step` by hand. This is the most useful of the three.
+  - An optional `users.deletedAt`.
+  - A `stripe_events.by_email` index, only if the owner wants legacy payment rows scrubbed.

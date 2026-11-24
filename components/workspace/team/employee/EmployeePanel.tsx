@@ -39,11 +39,12 @@ import { openReviews } from "@/lib/workspace/needsYou";
 import { changeRoundNote, expiresInWords, TEAM_UNAVAILABLE_COPY, WAITING_EMPTY_COPY } from "@/lib/workspace/reviewPages";
 import { workspacePath } from "@/lib/workspace/routes";
 import {
-  employeeStatus,
+  employeeStatuses,
   readyRoster,
   REVIEW_OWNER,
   stepPillStatus,
   workstreamFor,
+  type EmployeeStatusEntry,
   type TeamHired,
   type TeamStep,
 } from "@/lib/workspace/teamHq";
@@ -51,8 +52,7 @@ import { askWren } from "@/lib/workspace/wrenPrefill";
 
 /**
  * WP67 employee page, the live part (`docs/wp/employee-pages/BRIEF.md`). It
- * reads the queries Team HQ reads (`launchStatus`, `launchProgress`,
- * `pendingReviews`), so status and "waiting on you" agree with Team HQ, plus
+ * reads the shared crew snapshot for status and "waiting on you", plus
  * `employeeActivity` for this employee's jobs and drafts. The server-rendered
  * "job, in full" arrives as `job` and is placed between the record and the
  * voice. An employee whose work is coming soon, or who was not hired, gets
@@ -82,7 +82,7 @@ function HiredStatus({
   profile,
   lead,
   reason,
-  steps,
+  sharedStatus,
   open,
   activity,
   reach,
@@ -90,13 +90,13 @@ function HiredStatus({
   profile: EmployeeProfile;
   lead: string;
   reason: string;
-  steps: readonly TeamStep[];
+  sharedStatus?: EmployeeStatusEntry;
   open: readonly PendingReview[];
   activity: EmployeeActivity;
   reach: Availability;
 }) {
-  const status = reach.kind === "available"
-    ? employeeStatus({ role: profile.role, name: profile.name }, steps, open)
+  const status = reach.kind === "available" && sharedStatus !== undefined
+    ? sharedStatus
     : { status: "coming_soon" as const, detail: startsWhenCopy(profile.name, reach), blocker: undefined };
   const mine = open.filter((review) => REVIEW_OWNER[review.kind] === profile.role);
   const counts = deliverableCounts(activity.deliverables);
@@ -440,13 +440,11 @@ function Live({
   job: ReactNode;
 }) {
   const profile = employeeProfile(role);
-  const launch = useQuery(api.crew.roster.launchStatus, { projectId });
-  const progress = useQuery(api.crew.launch.launchProgress, { projectId });
-  const reviews = useQuery(api.workspace.reviews.pendingReviews, { projectId });
+  const snapshot = useQuery(api.workspace.crewStatus.snapshot, { projectId });
   const activity = useQuery(api.workspace.employees.employeeActivity, { projectId, roleKey: role });
   const now = useNow();
 
-  if (launch === undefined || progress === undefined || reviews === undefined || activity === undefined) {
+  if (snapshot === undefined || activity === undefined) {
     return (
       <div className={SHELL}>
         <SkeletonBlock label={`Loading ${profile.name}'s work…`} />
@@ -455,6 +453,7 @@ function Live({
     );
   }
 
+  const { launch, progress, reviews, assignments, spend } = snapshot;
   const roster = launch.state === "ready" ? readyRoster(launch) : { hired: [], skipped: [] };
   const state = employeePageState(role, launch, roster.hired, roster.skipped);
   const ask = <AskLead profile={profile} lead={lead} question={askLeadPrompt(profile.name, profile.roleLabel)} />;
@@ -502,8 +501,10 @@ function Live({
   const open = openReviews(reviews, now);
   const openKinds = new Set<string>(open.map((review) => review.kind));
   const reach = availability(role);
+  const sharedStatus = employeeStatuses(roster.hired, steps, open, assignments, openReviews(spend, now), now)
+    .find((entry) => entry.role === role);
   const statusBox = (
-    <HiredStatus profile={profile} lead={lead} reason={state.reason} steps={steps} open={open} activity={activity} reach={reach} />
+    <HiredStatus profile={profile} lead={lead} reason={state.reason} sharedStatus={sharedStatus} open={open} activity={activity} reach={reach} />
   );
 
   if (reach.kind !== "available") {

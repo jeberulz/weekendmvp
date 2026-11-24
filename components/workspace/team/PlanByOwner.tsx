@@ -21,6 +21,7 @@ import {
   TRY_COST_COPY,
 } from "@/lib/workspace/reviewPages";
 import { employeeHref } from "@/lib/workspace/employeePage";
+import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import {
   launchErrorMessage,
   planGroups,
@@ -85,6 +86,7 @@ function StepRow({
         <span className="text-sm font-medium text-home-ink">{step.title}</span>
         <span className="flex flex-wrap items-center gap-1.5">
           <OwnerChip step={step} roster={roster} projectId={projectId} />
+          {step.lastFailure ? <span className="text-xs text-home-ink-2">{step.lastFailure.detail}</span> : null}
           {step.reason === undefined ? null : <span className="text-xs text-home-ink-3">{step.reason}</span>}
         </span>
       </span>
@@ -142,7 +144,10 @@ export function PlanByOwner({
       : resumeLaunch({ projectId }).then(resumeMessage);
     action
       .then(setMessage)
-      .catch((caught: unknown) => setError(launchErrorMessage(caught)))
+      .catch((caught: unknown) => {
+        reportClientError({ source: "action", error: caught, projectId });
+        setError(launchErrorMessage(caught));
+      })
       .finally(() => {
         inFlight.current = false;
         setWorking(null);

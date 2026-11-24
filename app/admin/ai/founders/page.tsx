@@ -6,6 +6,7 @@ import { AI_COSTS_BASE, ConsoleFallback, ConsoleShell, focusRing } from "@/compo
 import { CsvButton } from "@/components/admin/ai-costs/interactive";
 import { RangeNotices } from "@/components/admin/ai-costs/RangeNotices";
 import { PageTitle, Section, StatusBadge, TableRegion, td, tdNum, th, thNum } from "@/components/admin/ai-costs/primitives";
+import { readCapOverrides } from "@/lib/admin/ai-costs/controls-server";
 import { foundersCsv } from "@/lib/admin/ai-costs/exports";
 import { formatCount, formatUsd } from "@/lib/admin/ai-costs/money";
 import { PLAN_LABELS, formatUtc } from "@/lib/admin/ai-costs/labels";
@@ -41,6 +42,9 @@ async function Founders({ searchParams }: { searchParams: SearchParams }) {
   const view = await loadRangeView(rangeId);
   const rows = view.founders;
   const day = view.range.dayKeys.at(-1);
+  // Phase 3: founders whose daily cap is raised right now.
+  const { caps } = await readCapOverrides(view.mode, rows.flatMap((row) => (row.ownerId === null ? [] : [row.ownerId])));
+  const raised = new Map(caps.overrides.map((override) => [override.ownerId, override]));
 
   return (
     <ConsoleShell mode={view.mode} active="founders" range={rangeId}>
@@ -77,6 +81,8 @@ async function Founders({ searchParams }: { searchParams: SearchParams }) {
                   const summary = row.summary;
                   const href = `${AI_COSTS_BASE}/founders/${row.ownerId ?? "platform"}`;
                   const name = row.ownerId === null ? "Platform (ownerless work)" : summary?.email ?? "No email on account";
+                  const override = row.ownerId === null ? undefined : raised.get(row.ownerId);
+                  const cap = override?.capMicroUsd ?? summary?.dayCapMicroUsd ?? 0;
                   return (
                     <tr key={row.ownerId ?? "platform"}>
                       <th scope="row" className={`${td} text-left font-normal`}>
@@ -89,16 +95,21 @@ async function Founders({ searchParams }: { searchParams: SearchParams }) {
                       <td className={td}>{PLAN_LABELS[row.plan]}</td>
                       <td className={tdNum}>{formatUsd(row.chargedMicroUsd)}</td>
                       <td className={td}>
-                        {summary ? (
+                        {summary ? (<>
                           <span className="flex items-center gap-2 tabular-nums">
-                            {formatUsd(summary.daySpentMicroUsd)} of {formatUsd(summary.dayCapMicroUsd)}
-                            {capTone(summary.daySpentMicroUsd, summary.dayCapMicroUsd) === "critical"
+                            {formatUsd(summary.daySpentMicroUsd)} of {formatUsd(cap)}
+                            {capTone(summary.daySpentMicroUsd, cap) === "critical"
                               ? <StatusBadge tone="critical">At cap</StatusBadge>
-                              : capTone(summary.daySpentMicroUsd, summary.dayCapMicroUsd) === "warning"
+                              : capTone(summary.daySpentMicroUsd, cap) === "warning"
                                 ? <StatusBadge tone="warning">Past 80%</StatusBadge>
                                 : null}
                           </span>
-                        ) : <span className="text-(--ed-text-2)">—</span>}
+                          {override ? (
+                            <span className="block text-xs text-(--ed-text-2)">
+                              Raised until {formatUtc(override.expiresAt)} (plan cap {formatUsd(summary.dayCapMicroUsd)})
+                            </span>
+                          ) : null}
+                        </>) : <span className="text-(--ed-text-2)">—</span>}
                       </td>
                       <td className={td}>
                         {summary && summary.plan === "free" ? (

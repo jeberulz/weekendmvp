@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useId, useState } from "react";
@@ -10,6 +11,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/workspace/kit
 import { BTN_SECONDARY, CARD, EYEBROW, FOCUS } from "@/components/workspace/kit/styles";
 import { type ReviewDecide } from "@/components/workspace/review/ArtifactReviewCard";
 import { LiveArtifactReview } from "@/components/workspace/review/LiveArtifactReview";
+import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { SOCIAL_PLATFORMS, type SocialPlatform } from "@/lib/workspace/contracts/artifacts";
 import {
@@ -66,7 +68,7 @@ type PostView = ReadyView["posts"][number];
 
 export type SocialDecide = ReviewDecide;
 
-const SOCIAL_ARTIFACT = { plural: "posts", approvedNote: SOCIAL_APPROVED_NOTE, approvalKind: "post" } as const;
+const SOCIAL_ARTIFACT = { plural: "posts", approvedNote: SOCIAL_APPROVED_NOTE, approvalKind: "post", piece: "social_pack" } as const;
 
 function CopyButton({
   post,
@@ -382,6 +384,14 @@ function SocialReady({
 
 function SocialPackView({ projectId, view }: { projectId: Id<"projects">; view: SocialDraftView }) {
   if (view.state === "none") return <EmptyState>{SOCIAL_NONE_COPY}</EmptyState>;
+  if (view.state === "failed") {
+    return <EmptyState title="The social pack could not be saved">
+      {view.detail} {view.retryBlocker}{" "}
+      <Link href={workspacePath(projectId, "team")} className={cn("text-home-ink underline underline-offset-2", FOCUS)}>
+        {view.retryBlocker ? "Review on Team HQ" : "Open Team HQ to try again"}
+      </Link>
+    </EmptyState>;
+  }
   if (view.state === "unavailable") return <EmptyState>{SOCIAL_UNAVAILABLE_COPY}</EmptyState>;
   return <SocialReady projectId={projectId} view={view} />;
 }

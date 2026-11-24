@@ -31,10 +31,11 @@ import {
 import { SPECIALIST_ROLE_KEYS } from "@/lib/workspace/employees";
 import { onWrenPrefill } from "@/lib/workspace/wrenPrefill";
 
-const live: { status: unknown; progress: unknown; reviews: unknown; activity: unknown; brandKit: unknown } = {
+const live: { status: unknown; progress: unknown; reviews: unknown; assignments: unknown; activity: unknown; brandKit: unknown } = {
   status: undefined,
   progress: undefined,
   reviews: [],
+  assignments: [],
   activity: undefined,
   brandKit: { state: "none" },
 };
@@ -49,9 +50,10 @@ vi.mock("convex/react", async () => {
         if (live.activity === "throw") throw new Error("boom");
         return live.activity;
       }
-      if (name.includes("launchStatus")) return live.status;
-      if (name.includes("launchProgress")) return live.progress;
-      if (name.includes("pendingReviews")) return live.reviews;
+      if (name.includes("crewStatus")) {
+        if (live.status === undefined || live.progress === undefined || live.reviews === undefined) return undefined;
+        return { launch: live.status, progress: live.progress, reviews: live.reviews, assignments: live.assignments, spend: [] };
+      }
       if (name.includes("brandKitDraft")) return live.brandKit;
       throw new Error(`unexpected query ${name}`);
     },
@@ -173,11 +175,12 @@ const REVIEW = {
 
 function show(
   roleKey: "brand" | "seo" | "outbound" | "ads",
-  options: { status?: unknown; progress?: unknown; reviews?: unknown; activity?: unknown; brandKit?: unknown } = {},
+  options: { status?: unknown; progress?: unknown; reviews?: unknown; assignments?: unknown; activity?: unknown; brandKit?: unknown } = {},
 ) {
   live.status = "status" in options ? options.status : READY;
   live.progress = "progress" in options ? options.progress : PROGRESS;
   live.reviews = "reviews" in options ? options.reviews : [];
+  live.assignments = options.assignments ?? [];
   live.activity = "activity" in options ? options.activity : EMPTY;
   live.brandKit = "brandKit" in options ? options.brandKit : { state: "none" };
   const profile = employeeProfile(roleKey);
@@ -279,6 +282,12 @@ describe("helpers", () => {
 });
 
 describe("a working employee (Iris, Brand)", () => {
+  test("a queued revision takes precedence over completed launch work", () => {
+    show("brand", { assignments: [{ role: "brand", title: "Brand kit", round: 1, status: "queued", blocker: "blueprint" }] });
+    const status = screen.getByRole("region", { name: "Iris's status" });
+    expect(status.textContent).toMatch(/blueprint approval/i);
+  });
+
   test("profile, status, waiting on you, now and next, deliverables, trail, the job and the voice; no axe violations", async () => {
     const { container } = show("brand", { activity: IRIS, reviews: [REVIEW] });
     expect(headings(1)).toEqual(["Iris · Brand"]);

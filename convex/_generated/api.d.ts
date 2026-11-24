@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as account_deletion from "../account/deletion.js";
+import type * as account_purge from "../account/purge.js";
 import type * as accountBeehiiv from "../accountBeehiiv.js";
 import type * as admin_aiControls from "../admin/aiControls.js";
 import type * as admin_aiCosts from "../admin/aiCosts.js";
@@ -17,6 +19,7 @@ import type * as ai_gateway from "../ai/gateway.js";
 import type * as ai_gatewayActions from "../ai/gatewayActions.js";
 import type * as ai_metering from "../ai/metering.js";
 import type * as ai_pricing from "../ai/pricing.js";
+import type * as ai_prompts_crewConsultation from "../ai/prompts/crewConsultation.js";
 import type * as ai_prompts_crewShared from "../ai/prompts/crewShared.js";
 import type * as ai_prompts_entry from "../ai/prompts/entry.js";
 import type * as ai_prompts_index from "../ai/prompts/index.js";
@@ -44,6 +47,7 @@ import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
 import type * as buildCta from "../buildCta.js";
+import type * as crew_failure from "../crew/failure.js";
 import type * as crew_generators from "../crew/generators.js";
 import type * as crew_jobs from "../crew/jobs.js";
 import type * as crew_launch from "../crew/launch.js";
@@ -74,6 +78,10 @@ import type * as editorial_session from "../editorial/session.js";
 import type * as editorial_store from "../editorial/store.js";
 import type * as editorial_validators from "../editorial/validators.js";
 import type * as editorial_worker from "../editorial/worker.js";
+import type * as feedback_admin from "../feedback/admin.js";
+import type * as feedback_entries from "../feedback/entries.js";
+import type * as feedback_errors from "../feedback/errors.js";
+import type * as feedback_tables from "../feedback/tables.js";
 import type * as growth_connectors_types from "../growth/connectors/types.js";
 import type * as growth_drafts_blueprint from "../growth/drafts/blueprint.js";
 import type * as growth_drafts_brandKit from "../growth/drafts/brandKit.js";
@@ -99,6 +107,7 @@ import type * as live_workshopQueries from "../live/workshopQueries.js";
 import type * as newsletter from "../newsletter.js";
 import type * as ops_settings from "../ops/settings.js";
 import type * as ops_spend from "../ops/spend.js";
+import type * as ops_spendAlerts from "../ops/spendAlerts.js";
 import type * as payments from "../payments.js";
 import type * as paymentsBridge from "../paymentsBridge.js";
 import type * as platform_accountClosureGuard from "../platform/accountClosureGuard.js";
@@ -183,12 +192,18 @@ import type * as workspace_business from "../workspace/business.js";
 import type * as workspace_changeRounds from "../workspace/changeRounds.js";
 import type * as workspace_chat from "../workspace/chat.js";
 import type * as workspace_chatActions from "../workspace/chatActions.js";
+import type * as workspace_consultationRoster from "../workspace/consultationRoster.js";
+import type * as workspace_crewApprovalAnswer from "../workspace/crewApprovalAnswer.js";
+import type * as workspace_crewConsultation from "../workspace/crewConsultation.js";
+import type * as workspace_crewConsultationActions from "../workspace/crewConsultationActions.js";
+import type * as workspace_crewStatus from "../workspace/crewStatus.js";
 import type * as workspace_employees from "../workspace/employees.js";
 import type * as workspace_memory from "../workspace/memory.js";
 import type * as workspace_reviews from "../workspace/reviews.js";
 import type * as workspace_signals from "../workspace/signals.js";
 import type * as workspace_wizard from "../workspace/wizard.js";
 import type * as workspace_wrenCards from "../workspace/wrenCards.js";
+import type * as workspace_wrenHandoffReceipt from "../workspace/wrenHandoffReceipt.js";
 import type * as workspace_wrenMemory from "../workspace/wrenMemory.js";
 
 import type {
@@ -198,6 +213,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "account/deletion": typeof account_deletion;
+  "account/purge": typeof account_purge;
   accountBeehiiv: typeof accountBeehiiv;
   "admin/aiControls": typeof admin_aiControls;
   "admin/aiCosts": typeof admin_aiCosts;
@@ -207,6 +224,7 @@ declare const fullApi: ApiFromModules<{
   "ai/gatewayActions": typeof ai_gatewayActions;
   "ai/metering": typeof ai_metering;
   "ai/pricing": typeof ai_pricing;
+  "ai/prompts/crewConsultation": typeof ai_prompts_crewConsultation;
   "ai/prompts/crewShared": typeof ai_prompts_crewShared;
   "ai/prompts/entry": typeof ai_prompts_entry;
   "ai/prompts/index": typeof ai_prompts_index;
@@ -234,6 +252,7 @@ declare const fullApi: ApiFromModules<{
   authEmail: typeof authEmail;
   authUser: typeof authUser;
   buildCta: typeof buildCta;
+  "crew/failure": typeof crew_failure;
   "crew/generators": typeof crew_generators;
   "crew/jobs": typeof crew_jobs;
   "crew/launch": typeof crew_launch;
@@ -264,6 +283,10 @@ declare const fullApi: ApiFromModules<{
   "editorial/store": typeof editorial_store;
   "editorial/validators": typeof editorial_validators;
   "editorial/worker": typeof editorial_worker;
+  "feedback/admin": typeof feedback_admin;
+  "feedback/entries": typeof feedback_entries;
+  "feedback/errors": typeof feedback_errors;
+  "feedback/tables": typeof feedback_tables;
   "growth/connectors/types": typeof growth_connectors_types;
   "growth/drafts/blueprint": typeof growth_drafts_blueprint;
   "growth/drafts/brandKit": typeof growth_drafts_brandKit;
@@ -289,6 +312,7 @@ declare const fullApi: ApiFromModules<{
   newsletter: typeof newsletter;
   "ops/settings": typeof ops_settings;
   "ops/spend": typeof ops_spend;
+  "ops/spendAlerts": typeof ops_spendAlerts;
   payments: typeof payments;
   paymentsBridge: typeof paymentsBridge;
   "platform/accountClosureGuard": typeof platform_accountClosureGuard;
@@ -373,12 +397,18 @@ declare const fullApi: ApiFromModules<{
   "workspace/changeRounds": typeof workspace_changeRounds;
   "workspace/chat": typeof workspace_chat;
   "workspace/chatActions": typeof workspace_chatActions;
+  "workspace/consultationRoster": typeof workspace_consultationRoster;
+  "workspace/crewApprovalAnswer": typeof workspace_crewApprovalAnswer;
+  "workspace/crewConsultation": typeof workspace_crewConsultation;
+  "workspace/crewConsultationActions": typeof workspace_crewConsultationActions;
+  "workspace/crewStatus": typeof workspace_crewStatus;
   "workspace/employees": typeof workspace_employees;
   "workspace/memory": typeof workspace_memory;
   "workspace/reviews": typeof workspace_reviews;
   "workspace/signals": typeof workspace_signals;
   "workspace/wizard": typeof workspace_wizard;
   "workspace/wrenCards": typeof workspace_wrenCards;
+  "workspace/wrenHandoffReceipt": typeof workspace_wrenHandoffReceipt;
   "workspace/wrenMemory": typeof workspace_wrenMemory;
 }>;
 
@@ -414,4 +444,5 @@ export declare const components: {
   crewWorkpool: import("@convex-dev/workpool/_generated/component.js").ComponentApi<"crewWorkpool">;
   shardedCounter: import("@convex-dev/sharded-counter/_generated/component.js").ComponentApi<"shardedCounter">;
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+  ownerSpendResend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"ownerSpendResend">;
 };

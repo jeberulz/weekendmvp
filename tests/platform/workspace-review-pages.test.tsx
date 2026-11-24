@@ -41,6 +41,11 @@ vi.mock("convex/react", async () => {
     useQuery: (ref: Parameters<typeof getFunctionName>[0], args: unknown) => {
       if (args === "skip") return undefined;
       const name = getFunctionName(ref);
+      if (name === "workspace/crewStatus:snapshot") {
+        if (live.progress === "throw") throw new Error("boom");
+        if (live.status === undefined || live.progress === undefined || live.pending === undefined) return undefined;
+        return { launch: live.status, progress: live.progress, reviews: live.pending, assignments: [], spend: [] };
+      }
       if (name.includes("previewChangeRound")) return live.preview;
       if (name.includes("launchStatus")) return live.status;
       if (name.includes("launchProgress")) return live.progress;

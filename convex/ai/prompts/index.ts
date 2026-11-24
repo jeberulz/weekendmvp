@@ -24,11 +24,13 @@
 import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v3.ts";
 import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v3.ts";
 import { brandKitSpec } from "./brandKit.v3.ts";
+import { crewConsultationSpec } from "./crewConsultation.ts";
 import { emailSequenceSpec } from "./emailSequence.v3.ts";
 import { ideaSeedSpec } from "./ideaSeed.v3.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
-import { socialPackSpec } from "./socialPack.v4.ts";
+import { socialPackSpec as socialPackV4 } from "./socialPack.v4.ts";
+import { socialPackSpec } from "./socialPack.v5.ts";
 import { wrenChatSpec } from "./wrenChat.ts";
 import { wrenPlanTurnSpec } from "./wrenPlanTurn.ts";
 
@@ -50,6 +52,13 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     module: "convex/ai/prompts/registryProbe.ts",
     sampleInputs: { label: "registry probe sample" },
     internal: true,
+  }),
+  promptEntry(crewConsultationSpec, {
+    module: "convex/ai/prompts/crewConsultation.ts",
+    sampleInputs: {
+      specialist: "Iris", role: "brand", question: "Does the welcome email match the kit?",
+      evidence: '{"voice":"calm and practical"}', colleague: "Elle", colleagueAnswer: "The welcome email uses short sentences.",
+    },
   }),
   promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),
   promptEntry(wrenPlanTurnSpec, { module: "convex/ai/prompts/wrenPlanTurn.ts", sampleInputs: WREN_SAMPLE }),
@@ -101,8 +110,16 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       }),
     },
   }),
-  promptEntry(socialPackSpec, {
+  promptEntry(socialPackV4, {
     module: "convex/ai/prompts/socialPack.v4.ts",
+    sampleInputs: {
+      blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
+      brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),
+      ideaAngles: JSON.stringify({ socialAngles: [{ angle: "Running dry", hook: "The last climb is the thirsty one.", channel: "Instagram" }], buyerWords: [] }),
+    },
+  }),
+  promptEntry(socialPackSpec, {
+    module: "convex/ai/prompts/socialPack.v5.ts",
     sampleInputs: {
       blueprint: JSON.stringify({ source: "library", ideaSlug: "hydrotrail", pitch: "A hydration planner for solo hikers." }),
       brand: JSON.stringify({ name: "HydroTrail", tagline: "Drink before you're thirsty.", voice: { traits: ["Calm", "Practical"] } }),

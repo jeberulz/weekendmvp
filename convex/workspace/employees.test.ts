@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
+import { brandKitSchema } from "../../lib/workspace/contracts/artifacts";
 import { hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { EMPLOYEE_TASKS_MAX, isSpecialistRoleKey, type SpecialistRoleKey } from "../../lib/workspace/employees";
 import type { CrewStepOutcome } from "../crew/runner";
@@ -270,4 +271,77 @@ describe("WP67 employeeActivity", () => {
   // "every specialist owns the artifact kinds Team HQ routes to them" lives in
   // tests/platform/workspace-team-hq-helpers.test.ts: `lib/workspace/teamHq.ts`
   // uses `@/` imports, which the Convex deploy typecheck (convex/tsconfig.json) cannot resolve.
+});
+
+describe("current crew assignments", () => {
+  test("the lead follows the spend decision attached to a brand-to-email handoff", async () => {
+    const w = await world();
+    const founder = as(w);
+    const args = { projectId: w.projectId };
+    await founder.mutation(api.crew.roster.startLaunch, args);
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    const initial = await founder.query(api.workspace.crewStatus.snapshot, args);
+    const brand = initial.assignments.find((entry) => entry.role === "brand");
+    const email = initial.assignments.find((entry) => entry.role === "email");
+    if (!brand || !email?.documentId) throw new Error("Missing brand task or email draft");
+    const documentId = email.documentId;
+    const approvalId = await w.t.run(async (ctx) => {
+      const id = await ctx.db.insert("approvals", {
+        ownerId: w.owner.userId, projectId: w.projectId, kind: "spend", subjectTable: "documents",
+        subjectId: documentId, changeRound: 3n, costCredits: 5n, crewRevision: {}, status: "pending",
+        createdAt: Date.now(), updatedAt: Date.now(),
+      });
+      await ctx.db.patch("tasks", brand.taskId, { emailHandoff: { state: "spend_required", approvalId: id } });
+      return id;
+    });
+    const read = async () => (await founder.query(api.workspace.crewStatus.snapshot, args)).assignments
+      .find((entry) => entry.role === "brand");
+    expect(await read()).toMatchObject({ handoff: "spend_required", handoffSpendExpiresAt: expect.any(Number) });
+    for (const [status, shown] of [["cancelled", "not_available"], ["expired", "not_available"], ["approved", "queued"]] as const) {
+      await w.t.run(async (ctx) => await ctx.db.patch("approvals", approvalId, { status }));
+      expect((await read())?.handoff).toBe(shown);
+    }
+  });
+
+  test("only changes to consumed brand fields make an existing email draft stale", async () => {
+    const w = await world();
+    const founder = as(w);
+    const args = { projectId: w.projectId };
+    await founder.mutation(api.crew.roster.startLaunch, args);
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    const first = await founder.query(api.workspace.crewStatus.snapshot, args);
+    const email = first.assignments.find((item) => item.role === "email")?.documentId;
+    const brand = first.assignments.find((item) => item.role === "brand")?.documentId;
+    const card = first.reviews.find((item) => item.kind === "brand_kit");
+    if (!email || !brand || !card) throw new Error("Missing fixture brand, approval or email");
+    await founder.mutation(api.workspace.approvals.decideApproval, { ...args, approvalId: card.approvalId, decision: "approve" });
+    const readSource = async () => (await founder.query(api.workspace.crewStatus.snapshot, args))
+      .assignments.find((item) => item.role === "email")?.source;
+    expect(await readSource()).toBe("current");
+
+    const baseline = await w.t.run(async (ctx) => {
+      const row = await ctx.db.get("documents", brand);
+      if (!row?.body) throw new Error("Missing brand body");
+      return brandKitSchema.parse(JSON.parse(row.body));
+    });
+    const previousKit = structuredClone(baseline);
+    previousKit.palette.primary.hex = baseline.palette.primary.hex === "#557755" ? "#553344" : "#557755";
+    const previous = await w.t.run(async (ctx) => {
+      const id = await ctx.db.insert("documents", {
+        ownerId: w.owner.userId, projectId: w.projectId, title: "Earlier brand", format: "json", kind: "brand_kit",
+        body: JSON.stringify(previousKit), createdAt: 1, updatedAt: 1,
+      });
+      await ctx.db.patch("documents", email, { brandKitDocumentId: id });
+      return id;
+    });
+    expect(await readSource()).toBe("current");
+    previousKit.voice.say = "A different voice for the launch copy.";
+    await w.t.run(async (ctx) => await ctx.db.patch("documents", previous, { body: JSON.stringify(previousKit) }));
+    expect(await readSource()).toBe("stale");
+    await w.t.run(async (ctx) => await ctx.db.patch("documents", email, { brandKitDocumentId: undefined }));
+    expect(await readSource()).toBe("unknown");
+
+    const outsider = await person(w.t, "outsider@example.test");
+    await expect(as(w, outsider).query(api.workspace.crewStatus.snapshot, args)).rejects.toThrow(/RESOURCE_NOT_FOUND/);
+  });
 });

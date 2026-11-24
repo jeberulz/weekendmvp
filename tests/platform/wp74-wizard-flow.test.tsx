@@ -109,6 +109,19 @@ describe("WP74-S1 WizardFlow", () => {
     expect(state.calls[0]?.args).toEqual({ idea: { source: "own_idea", text: "A packing list for campers" } });
   });
 
+  test("own idea: a quiet link offers the library instead, as real navigation to /ideas", async () => {
+    const { container } = render(<WizardFlow idea={null} ideaTitle={null} initialSessionId={null} />);
+    const link = screen.getByRole("link", { name: "Pick one from the library instead" });
+    expect(link.getAttribute("href")).toBe("/ideas");
+    expect(link.tagName).toBe("A");
+    // Under the suggestions, above Continue.
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    expect(link.compareDocumentPosition(continueButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(link.className).toContain("focus-visible:");
+    const results = await axe(container);
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  });
+
   test("a library session rewritten as an own idea moves to the own-idea URL, carrying the session", async () => {
     state.view = { ...view("blueprint", 1), ideaTitle: "Trail water refill map", answers: { idea: { source: "own_idea", text: "Trail water refill map" } } };
     const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };
@@ -123,6 +136,46 @@ describe("WP74-S1 WizardFlow", () => {
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
     await waitFor(() => expect(state.calls.length).toBeGreaterThan(0));
     expect(state.replace).not.toHaveBeenCalled();
+  });
+
+  test("own idea: the example chips are the ones passed in; a tap fills and focuses the field", async () => {
+    const examples = [
+      { text: "Widget that picks your top 3 tasks each morning", ideaSlug: "top-three-widget" },
+      { text: "Safe meetup tracker for marketplace sellers", ideaSlug: "safe-meetups" },
+      { text: "Invoice reminders for freelancers", ideaSlug: null },
+    ];
+    const { container } = render(
+      <WizardFlow idea={null} ideaTitle={null} initialSessionId={null} ownIdeaExamples={examples} />,
+    );
+    const user = userEvent.setup();
+    const field = screen.getByLabelText("Your idea in one sentence") as HTMLTextAreaElement;
+    expect(screen.queryByRole("button", { name: "A meal-prep planner for lifters" })).toBeNull();
+    // A library chip: filled, focused, and the researched version is offered.
+    await user.click(screen.getByRole("button", { name: examples[0].text }));
+    expect(field.value).toBe(examples[0].text);
+    expect(document.activeElement).toBe(field);
+    const researched = screen.getByRole("link", { name: "Build the researched version" });
+    expect(researched.getAttribute("href")).toBe("/start/top-three-widget");
+    const offer = researched.closest("[role=status]");
+    expect(offer?.textContent).toContain("already researched in the library");
+    expect((await axe(container)).violations.map((violation) => violation.id)).toEqual([]);
+    // An edit makes it the founder's idea: the offer goes.
+    await user.type(field, " for nurses");
+    expect(screen.queryByRole("link", { name: "Build the researched version" })).toBeNull();
+    // A fallback chip has no library version to offer.
+    await user.click(screen.getByRole("button", { name: examples[2].text }));
+    expect(field.value).toBe(examples[2].text);
+    expect(screen.queryByRole("link", { name: "Build the researched version" })).toBeNull();
+    // Continue still starts an own-idea session from the field.
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(state.calls[0]?.args).toEqual({ idea: { source: "own_idea", text: examples[2].text } }));
+  });
+
+  test("own idea: with no examples passed in, the static fallback lines show", () => {
+    render(<WizardFlow idea={null} ideaTitle={null} initialSessionId={null} />);
+    expect(screen.getByRole("button", { name: "A packing list that builds itself from your trip" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Invoice reminders for freelancers" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "A meal-prep planner for lifters" })).toBeTruthy();
   });
 
   test("the finished session offers Create my business and creates nothing until clicked", () => {

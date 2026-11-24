@@ -98,6 +98,16 @@
         "module": "sha256:fd1098b25305b6c4cb4d1972b6163e08ad207cbad52297fe55dfb69b8c1b6440"
       }
     },
+    "crew-consultation@1": {
+      "hash": "sha256:3569ce36139923a0e8a0f1d42a79eca0945f9f40d1783f1432329e8a06bfec6c",
+      "parts": {
+        "system": "sha256:1109b5bf63c295e7696930d2a5202ab20684cbe1353af7a34e519392e07da27d",
+        "task": "sha256:5bbd854819c612cd925d9ad871a66f5d86d78deafb2ecdba834cc5a983f54edd",
+        "outputSchema": "sha256:85cfdccfccfeb67cb90667470afdab9da07cbd6642e260dc47cdb0f32aee8c60",
+        "run": "sha256:3f7915b2f6660e2e3b4e4f3f62292228f034a523b643d3dfc4b1e2c5e05c4a9f",
+        "module": "sha256:ad08af0d634bed955e4391d87c5e0fba584ac0974d5a7069f8cd9d387811b160"
+      }
+    },
     "crew-email-sequence@1": {
       "hash": "sha256:766729f2c5237750413ebf9ddcfa73a36d132870204182042561e0b4affca0c5",
       "parts": {
@@ -205,6 +215,16 @@
         "module": "sha256:c88b9ee77eac73b1a676033fd23a3b3a8060461632a782ee12b7abe7d9716021"
       }
     },
+    "crew-social-pack@5": {
+      "hash": "sha256:67e9e69dbcf5f24bffbdd3e2085655813e60a78be38ffd1abf22600ff4d8a0ca",
+      "parts": {
+        "system": "sha256:18cee888cb39a6e0856954efb2066e628890bf97117e52001a1ef179d45d4f3f",
+        "task": "sha256:6156cfc77b7c73c01ba57f42240247ac5e0bc13feda5a9edadeb69f1da292f5c",
+        "outputSchema": "sha256:11787241abf88f0e68ec0f8f2e7c3aa24aff192d30e0d740b5fa51eca17df41f",
+        "run": "sha256:d1fa67a2e9b029738f1a1424118651cdce7cb48b21b3714e7c4b2dc6636d2f11",
+        "module": "sha256:a84fa3cb1d870d84e3bb506435071c8ccaf85f70de46146a570d65fb5c603631"
+      }
+    },
     "internal-registry-probe@1": {
       "hash": "sha256:b34ba1b7eadd841842e5547f18663869185a995e22e88bd1caae1c324ba02659",
       "parts": {
@@ -266,6 +286,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
         "module": "sha256:d7f3ba24b97f02ecabfa215eee8dac3e8a0c696204022c50ce0f724908d51e20"
+      },
+      "retired": "WP94 grounds the lead in current crew status and routes internal draft revisions."
+    },
+    "wren-chat@5": {
+      "hash": "sha256:3aa0161ff9ed161248f8b64bd5956c1528563510eac4ebcba25348013be2bf33",
+      "parts": {
+        "system": "sha256:7b2ffc9c6c0e991d41c8dae5cae252c6c61bd799de23e808bdc2e42b7be9d6a0",
+        "task": "sha256:ca515edbd2d65379e4bf571abd7351dc4adbf5e7e4955980936b75799be81b98",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:1c9620caa077618712ed4d74fe43213eb4da8823592fd474a90e8795f1df9947",
+        "module": "sha256:0497dd22eebadaf7be043228c514848b2e08a7fee216b3f0760f4b8015e4cf38"
       }
     },
     "wren-plan-turn@1": {
@@ -309,6 +340,17 @@
         "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
         "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
         "module": "sha256:5f576ba81391b54c3cab311dfc1753e6ef9f5f5121d5f22f457fd87740ac9ad7"
+      },
+      "retired": "WP94 grounds the lead in current crew status and routes internal draft revisions."
+    },
+    "wren-plan-turn@5": {
+      "hash": "sha256:8243a2b986a745dc60448a840e56ede2b111184f1fe16f4745aaf7ba0573ba67",
+      "parts": {
+        "system": "sha256:7b2ffc9c6c0e991d41c8dae5cae252c6c61bd799de23e808bdc2e42b7be9d6a0",
+        "task": "sha256:54b22ac25836d5b8909e08d360b051e1f40b09107fcd0b27c868d672764bc856",
+        "outputSchema": "sha256:01825c1a0c4b9a11ea1d1ea0d9770213f0b22e10668d64593a0da795c2479618",
+        "run": "sha256:8e5705e545bd87d4d52a0f3076255f4d38908480b4518da7ec057c7733fc23db",
+        "module": "sha256:d896eebafc013ed9fd5e87d64a8d97fb4062b04a6c9245ca2e12320b41b3c8ec"
       }
     }
   }

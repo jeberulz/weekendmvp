@@ -176,6 +176,25 @@ describe("helpers", () => {
   });
 });
 
+describe("handoff recovery", () => {
+  test("a retry uses this failed task and surfaces a spending decision", async () => {
+    live.view = { ...ready(null), failedHandoff: { taskId: "failed-elle", canRetry: true, reason: "Elle returned the same email copy." } };
+    decideMock.mockResolvedValue("spend_required");
+    show();
+    expect(screen.getByText("Elle returned the same email copy.")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Retry Elle’s rewrite" }));
+    expect(decideMock).toHaveBeenCalledExactlyOnceWith({ projectId: PROJECT, taskId: "failed-elle" });
+    expect(screen.getByRole("status").textContent).toMatch(/credit cost in Team HQ/);
+  });
+
+  test("a handoff for an older brand kit points the founder to the lead", () => {
+    live.view = { ...ready(null), failedHandoff: { taskId: "failed-elle", canRetry: false, reason: "The brand kit changed." } };
+    show();
+    expect(screen.queryByRole("button", { name: "Retry Elle’s rewrite" })).toBeNull();
+    expect(screen.getByText(/new rewrite using the current brand kit/i)).toBeTruthy();
+  });
+});
+
 describe("states", () => {
   test("loading", () => {
     show();

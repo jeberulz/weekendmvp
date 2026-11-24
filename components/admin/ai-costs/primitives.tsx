@@ -94,11 +94,16 @@ export function StatusBadge({ tone, children }: { tone: Tone; children: ReactNod
   );
 }
 
-/** A scrollable, keyboard-reachable table region. */
+/**
+ * A scrollable, keyboard-reachable table region. Its name is the heading it
+ * points at plus "table", so it never repeats the name of the section around it.
+ */
 export function TableRegion({ labelledBy, children }: { labelledBy: string; children: ReactNode }) {
+  const suffixId = `${labelledBy}-table-suffix`;
   return (
     // A focusable scroll container so keyboard users can scroll wide tables.
-    <div role="region" aria-labelledby={labelledBy} tabIndex={0} className="overflow-x-auto rounded-lg border border-(--ed-border) bg-(--ed-surface) focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-(--ed-focus)">
+    <div role="region" aria-labelledby={`${labelledBy} ${suffixId}`} tabIndex={0} className="overflow-x-auto rounded-lg border border-(--ed-border) bg-(--ed-surface) focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-(--ed-focus)">
+      <span id={suffixId} hidden>table</span>
       {children}
     </div>
   );

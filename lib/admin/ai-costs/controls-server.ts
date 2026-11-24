@@ -20,8 +20,9 @@ import {
   type KillSwitches,
   type SpendControls,
 } from "./controls";
+import { CAP_OVERRIDE_LIVE, capOverrideRefusal, expiryFor, isActive, type CapOverride, type ExpiryChoice } from "./cap-override";
 import { utcDayKeyOf } from "./ranges";
-import type { ControlRoom } from "./types";
+import type { ControlRoom, OwnerSummary } from "./types";
 
 /**
  * WP93 Phase 2. The ops controls' data and writes, live or on local fixtures.
@@ -62,14 +63,35 @@ export type SpendInput = {
   confirm: string | null;
 };
 
+export type CapOverrideInput = {
+  ownerId: string;
+  capMicroUsd: number;
+  expiry: ExpiryChoice;
+  reason: string | null;
+  confirm: string | null;
+};
+
+/** `available` is false while `CAP_OVERRIDE_LIVE` is off: the console then shows a note, not the form. */
+export type CapOverrides = { available: boolean; overrides: readonly CapOverride[] };
+
 export type ControlResult<T> = { ok: true; value: T } | { ok: false; code: ControlErrorCode; message: string };
+
+export type StepUpState = Pick<ControlsView, "signedInRecently" | "stepUp">;
 
 export type ControlsBackend = {
   readonly mode: "fixture" | "live";
   view(): Promise<ControlsView>;
+  /** The sign-in facts a risky form needs, without the rest of the view. */
+  stepUpState(): Promise<StepUpState>;
   findAccount(email: string): Promise<FoundAccount>;
   setCohort(ownerId: string, allowed: boolean, reason: string | null): Promise<ControlResult<{ changed: boolean }>>;
   updateSpend(input: SpendInput): Promise<ControlResult<{ risky: boolean }>>;
+  /** These founders' overrides that are in force now (expired ones are left out). */
+  capOverrides(ownerIds: readonly string[]): Promise<CapOverrides>;
+  /** Always a risky change: a recent sign-in and the typed confirm. */
+  setCapOverride(input: CapOverrideInput): Promise<ControlResult<{ override: CapOverride }>>;
+  /** Ends an override early. One click, audited. */
+  clearCapOverride(ownerId: string): Promise<ControlResult<{ changed: boolean }>>;
   /** Fixtures only: the simulated "confirm it's you". */
   simulateSignIn(): Promise<void>;
 };
@@ -90,6 +112,9 @@ function fromError<T>(error: unknown): ControlResult<T> {
 
 /* Live ------------------------------------------------------------------- */
 
+/** The Convex read takes at most this many founders per call. */
+const CAP_OVERRIDE_READ_CHUNK = 200;
+
 function liveBackend(token: string): ControlsBackend {
   return {
     mode: "live",
@@ -108,6 +133,17 @@ function liveBackend(token: string): ControlsBackend {
         cohort: state.cohort,
         cohortTruncated: state.cohortTruncated,
         recent: state.recent,
+        signedInRecently: signedInRecently(state.sessionCreatedAt, nowMs),
+        stepUp: session.editor ? { method: session.editor.signInMethod, email: session.editor.email } : null,
+      };
+    },
+    async stepUpState() {
+      const nowMs = Date.now();
+      const [state, session] = await Promise.all([
+        fetchQuery(api.admin.aiControls.controlsState, {}, { token }),
+        fetchQuery(api.editorial.reads.session, { nowMs }, { token }),
+      ]);
+      return {
         signedInRecently: signedInRecently(state.sessionCreatedAt, nowMs),
         stepUp: session.editor ? { method: session.editor.signInMethod, email: session.editor.email } : null,
       };
@@ -141,6 +177,39 @@ function liveBackend(token: string): ControlsBackend {
         return fromError(error);
       }
     },
+    async capOverrides(ownerIds) {
+      if (!CAP_OVERRIDE_LIVE) return { available: false, overrides: [] };
+      const ids = [...new Set(ownerIds)];
+      const nowMs = Date.now();
+      const chunks: string[][] = [];
+      for (let start = 0; start < ids.length; start += CAP_OVERRIDE_READ_CHUNK) chunks.push(ids.slice(start, start + CAP_OVERRIDE_READ_CHUNK));
+      const pages = await Promise.all(chunks.map((chunk) => fetchQuery(api.admin.aiControls.capOverrides, { ownerIds: chunk, nowMs }, { token })));
+      return { available: true, overrides: pages.flatMap((page) => page.overrides) };
+    },
+    async setCapOverride(input) {
+      if (!CAP_OVERRIDE_LIVE) return refused("NOT_AVAILABLE");
+      try {
+        const result = await fetchMutation(api.admin.aiControls.setCapOverride, {
+          ownerId: input.ownerId as Id<"users">,
+          capMicroUsd: BigInt(input.capMicroUsd),
+          expiry: input.expiry,
+          ...(input.reason === null ? {} : { reason: input.reason }),
+          ...(input.confirm === null ? {} : { confirm: input.confirm }),
+        }, { token });
+        return { ok: true, value: { override: result.override } };
+      } catch (error) {
+        return fromError(error);
+      }
+    },
+    async clearCapOverride(ownerId) {
+      if (!CAP_OVERRIDE_LIVE) return refused("NOT_AVAILABLE");
+      try {
+        const result = await fetchMutation(api.admin.aiControls.clearCapOverride, { ownerId: ownerId as Id<"users"> }, { token });
+        return { ok: true, value: { changed: result.changed } };
+      } catch (error) {
+        return fromError(error);
+      }
+    },
     async simulateSignIn() {
       // Live sign-in is a real Convex Auth sign-in, started in the browser.
     },
@@ -157,12 +226,14 @@ type FixtureControls = {
   recent: RecentChange[];
   signedInAt: number;
   sequence: number;
+  /** Optional so a store made by an older dev-server build still loads. */
+  overrides?: Map<string, CapOverride>;
 };
 
 const STORE_KEY = Symbol.for("weekendmvp.wp93.fixtureControls");
 type StoreHolder = { [STORE_KEY]?: FixtureControls };
 
-async function fixtureStore(nowMs: number): Promise<{ store: FixtureControls; control: ControlRoom }> {
+async function fixtureStore(nowMs: number): Promise<{ store: FixtureControls; control: ControlRoom; summaries: readonly OwnerSummary[] }> {
   const { fixtureData } = await import("./fixtures");
   const data = fixtureData(nowMs);
   const holder = globalThis as StoreHolder;
@@ -192,8 +263,10 @@ async function fixtureStore(nowMs: number): Promise<{ store: FixtureControls; co
     };
   }
   const store = holder[STORE_KEY];
+  store.overrides ??= new Map();
   return {
     store,
+    summaries: data.summaries,
     control: {
       ...data.controlRoom,
       freeBudgetMicroUsd: store.settings.freeBudgetMicroUsd,
@@ -235,6 +308,11 @@ function fixtureBackend(): ControlsBackend {
         signedInRecently: signedInRecently(store.signedInAt, nowMs),
         stepUp: null,
       };
+    },
+    async stepUpState() {
+      const nowMs = Date.now();
+      const { store } = await fixtureStore(nowMs);
+      return { signedInRecently: signedInRecently(store.signedInAt, nowMs), stepUp: null };
     },
     async findAccount(email) {
       const { store } = await fixtureStore(Date.now());
@@ -288,6 +366,53 @@ function fixtureBackend(): ControlsBackend {
       });
       return { ok: true, value: { risky: risks.length > 0 } };
     },
+    async capOverrides(ownerIds) {
+      const nowMs = Date.now();
+      const { store } = await fixtureStore(nowMs);
+      const wanted = new Set(ownerIds);
+      const overrides = [...(store.overrides?.values() ?? [])].filter((override) => wanted.has(override.ownerId) && isActive(override, nowMs));
+      return { available: true, overrides };
+    },
+    async setCapOverride(input) {
+      const nowMs = Date.now();
+      const { store, summaries } = await fixtureStore(nowMs);
+      const summary = summaries.find((candidate) => candidate.ownerId === input.ownerId);
+      if (!summary) return refused("RESOURCE_NOT_FOUND");
+      const reason = cleanReason(input.reason);
+      if (reason === null) return refused("CAP_REASON_REQUIRED");
+      const refusal = capOverrideRefusal(input.capMicroUsd, summary.dayCapMicroUsd);
+      if (refusal !== null) return refused(refusal);
+      // Raising a cap spends more: always the step-up and the typed confirm.
+      if (!signedInRecently(store.signedInAt, nowMs)) return refused("REAUTH_REQUIRED");
+      if (!confirmMatches(input.confirm)) return refused("CONFIRM_REQUIRED");
+      const override: CapOverride = {
+        ownerId: input.ownerId,
+        capMicroUsd: input.capMicroUsd,
+        expiresAt: expiryFor(input.expiry, nowMs),
+        setAt: nowMs,
+        reason,
+      };
+      store.overrides?.set(input.ownerId, override);
+      record(store, nowMs, "ops.cap_override.set", input.ownerId, summary.email, {
+        capMicroUsd: String(override.capMicroUsd),
+        planCapMicroUsd: String(summary.dayCapMicroUsd),
+        expiresAt: override.expiresAt,
+        reason,
+        via: "ai-console",
+        risky: true,
+      });
+      return { ok: true, value: { override } };
+    },
+    async clearCapOverride(ownerId) {
+      const nowMs = Date.now();
+      const { store, summaries } = await fixtureStore(nowMs);
+      const current = store.overrides?.get(ownerId);
+      if (!current || !isActive(current, nowMs)) return { ok: true, value: { changed: false } };
+      store.overrides?.delete(ownerId);
+      const email = summaries.find((candidate) => candidate.ownerId === ownerId)?.email ?? null;
+      record(store, nowMs, "ops.cap_override.cleared", ownerId, email, { capMicroUsd: String(current.capMicroUsd), via: "ai-console" });
+      return { ok: true, value: { changed: true } };
+    },
     async simulateSignIn() {
       const { store } = await fixtureStore(Date.now());
       store.signedInAt = Date.now();
@@ -312,4 +437,19 @@ export async function resolveControlsBackend(): Promise<ControlsBackend | null> 
     return null;
   }
   return backend;
+}
+
+/**
+ * These founders' raises for the founder pages. With `CAP_OVERRIDE_LIVE` off,
+ * live mode skips the extra Convex reads.
+ */
+export async function readCapOverrides(
+  mode: "fixture" | "live",
+  ownerIds: readonly string[],
+): Promise<{ caps: CapOverrides; backend: ControlsBackend | null }> {
+  const none: CapOverrides = { available: false, overrides: [] };
+  if (mode === "live" && !CAP_OVERRIDE_LIVE) return { caps: none, backend: null };
+  const backend = await resolveControlsBackend();
+  if (!backend) return { caps: none, backend: null };
+  return { caps: await backend.capOverrides(ownerIds), backend };
 }

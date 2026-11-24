@@ -22,6 +22,12 @@ const modules = import.meta.glob("/convex/**/*.ts");
 type T = TestConvex<typeof schema>;
 type DocKind = "brand_kit" | "seo_pack" | "landing_spec" | "social_pack";
 
+/** Exercise legacy spend terms independently of the WP94 funded-dispatch path. */
+async function useLegacySpendCard(t: T, id: Id<"approvals">) {
+  await t.run(async (ctx) => ctx.db.patch("approvals", id, { crewRevision: undefined }));
+}
+
+
 async function seed(options: { workspaceEnabled?: boolean; aiEnabled?: boolean } = {}) {
   const t = convexTest(schema, modules);
   // WP75-S2b: a free round spends one `crewJob` token (C-LIMITS), which needs the limiter and the `ai` feature.
@@ -344,6 +350,7 @@ describe("WP77-S2 the count cannot be reset", () => {
     const second = await askForChanges(seeded, again);
     expect(second.changeRound).toMatchObject({ outcome: "spend_required", spendApprovalId: spendId });
 
+    await useLegacySpendCard(t, spendId);
     // Approved but not yet debited: a repeat reuses the approved card instead of revoking it.
     await owner.mutation(api.workspace.approvals.decideApproval, {
       projectId: ids.projectId, approvalId: spendId, decision: "approve",
@@ -418,6 +425,7 @@ describe("WP77-S2 owner-only and dormant", () => {
     const raised = await askForChanges(seeded, cardId);
     if (raised.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
     const spendId = raised.changeRound.spendApprovalId;
+    await useLegacySpendCard(t, spendId);
     await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: spendId, decision: "approve" });
     const next = await reviewCard(t, ids, docId, 2n);
 
@@ -441,6 +449,7 @@ describe("WP77-S2 spend terms (the later debit site)", () => {
     const spendId = raised.changeRound.spendApprovalId;
     const subject = { projectId: ids.projectId, kind: "spend" as const, subjectTable: "documents" as const, subjectId: docId };
 
+    await useLegacySpendCard(t, spendId);
     // Pending: not approved yet.
     await expect(t.run(async (ctx) => await assertPaidRevisionApproved(ctx, spendId, { projectId: ids.projectId, documentId: docId })))
       .rejects.toThrow("APPROVAL_NOT_APPROVED");
@@ -594,6 +603,7 @@ describe("WP77-S2 review fixes", () => {
     const first = await askForChanges(seeded, cardId, "note");
     if (first.changeRound?.outcome !== "spend_required") throw new Error("expected spend");
     const stale = first.changeRound.spendApprovalId;
+    await useLegacySpendCard(t, stale);
     await owner.mutation(api.workspace.approvals.decideApproval, { projectId: ids.projectId, approvalId: stale, decision: "approve" });
     const staleRow = await t.run(async (ctx) => ctx.db.get("approvals", stale));
     await t.run(async (ctx) => ctx.db.patch("documents", docId, { body: "{\"edited\":true}", updatedAt: (staleRow?.createdAt ?? 0) + 1 }));
