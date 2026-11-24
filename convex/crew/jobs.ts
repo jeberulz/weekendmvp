@@ -7,11 +7,15 @@ import { assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireBusinessForOwner } from "../platform/authz";
 import { assertTaskTransition } from "../platform/transitions";
 import { assertGeneratedDocumentBody } from "../platform/validators";
-import { assertApproved, createApprovalRecord, readSubjectState, releaseFailedRevisionSpend, subjectRefusal } from "../workspace/approvals";
+import { createApprovalRecord, readSubjectState, releaseFailedRevisionSpend, subjectRefusal } from "../workspace/approvals";
 import { revisionNoteFor } from "../workspace/changeRounds";
 import type { LineageTask } from "../../lib/workspace/changeRounds";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
-import { parseArtifact, parseModelOutput } from "../../lib/workspace/contracts/artifacts";
+import { parseDraftBody } from "../growth/drafts/documentDraft";
+import { brandKitSchema, parseArtifact, parseModelOutput } from "../../lib/workspace/contracts/artifacts";
+import { writePrivateLandingVersion } from "../growth/drafts/landing";
+import { APPROVALS_PER_DOCUMENT_MAX, approvedBlueprint, approvedBrandKit, isApprovedBlueprint, type BriefKind } from "./approvedBriefs";
+export { approvedBlueprint, approvedBrandKit } from "./approvedBriefs";
 import { emailCopyChanged, handoffEmailBrief, handoffEmailKind, reviseSingleEmail } from "../../lib/workspace/crew/emailHandoff";
 import { parseEmailSequenceBody } from "../../lib/workspace/growth/emailDraft";
 import { socialSchemaFailure } from "../../lib/workspace/crew/socialFailure";
@@ -498,78 +502,13 @@ export async function qualityContextFor(
   };
 }
 
-/** Blueprint (or brand kit) documents looked at for an approved one, newest first. */
-const APPROVED_BLUEPRINT_SCAN_MAX = 20;
-/** Cards read per blueprint document. */
-const APPROVALS_PER_DOCUMENT_MAX = 20;
-
 /**
  * The artifacts a later step briefs from, and the job type whose first draft
  * writes each. WP76-S1a: the email sequence reads the brand kit's name and
  * voice under the same rules as the blueprint brief.
  */
 const BRIEF_WRITERS = { blueprint: "crew_blueprint", brand_kit: "crew_brand_kit" } as const satisfies Record<string, CrewStepJobType>;
-type BriefKind = keyof typeof BRIEF_WRITERS;
 
-/**
- * A blueprint (or brand kit) document of the project whose `artifact_review`
- * card is approved and still valid for it (`assertApproved`: same business and
- * owner, unchanged since the card).
- */
-async function isApprovedBlueprint(
-  ctx: Pick<QueryCtx, "db">,
-  project: Pick<Doc<"projects">, "_id" | "ownerId">,
-  row: Doc<"documents">,
-  kind: BriefKind = "blueprint",
-): Promise<boolean> {
-  if (row.projectId !== project._id || row.kind !== kind) return false;
-  if (row.ownerId !== project.ownerId || row.archivedAt !== undefined || row.body === undefined) return false;
-  const cards = await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", row._id)).take(APPROVALS_PER_DOCUMENT_MAX);
-  for (const card of cards) {
-    if (card.kind !== "artifact_review" || card.status !== "approved" || card.subjectTable !== "documents") continue;
-    try {
-      await assertApproved(ctx, card._id, {
-        kind: "artifact_review",
-        projectId: project._id,
-        ownerId: project.ownerId,
-        subjectTable: "documents",
-        subjectId: row._id,
-      });
-      return true;
-    } catch {
-      // Not valid for this document (changed since, wrong business): try the next card.
-    }
-  }
-  return false;
-}
-
-/**
- * The newest blueprint the founder approved (`isApprovedBlueprint`). A draft
- * is never the brand kit's brief (S3a review minor 1).
- */
-export async function approvedBlueprint(
-  ctx: Pick<QueryCtx, "db">,
-  project: Pick<Doc<"projects">, "_id" | "ownerId">,
-  kind: BriefKind = "blueprint",
-): Promise<Doc<"documents"> | null> {
-  const rows = await ctx.db
-    .query("documents")
-    .withIndex("by_projectId_and_kind_and_updatedAt", (q) => q.eq("projectId", project._id).eq("kind", kind))
-    .order("desc")
-    .take(APPROVED_BLUEPRINT_SCAN_MAX);
-  for (const row of rows) {
-    if (await isApprovedBlueprint(ctx, project, row, kind)) return row;
-  }
-  return null;
-}
-
-/** WP76-S1a: the newest brand kit the founder approved (`approvedBlueprint` for the brand kit kind). */
-export async function approvedBrandKit(
-  ctx: Pick<QueryCtx, "db">,
-  project: Pick<Doc<"projects">, "_id" | "ownerId">,
-): Promise<Doc<"documents"> | null> {
-  return await approvedBlueprint(ctx, project, "brand_kit");
-}
 
 /**
  * WP75-S2b (generalised in WP76-S1a): whether a crew step's task is a launch's
@@ -773,7 +712,7 @@ export async function ensureLaunchStepTasks(
 ): Promise<number> {
   let inserted = 0;
   for (const step of LAUNCH_STEPS) {
-    if (step.key === "blueprint" || !isPoolStep(step) || step.jobType === "crew_roster") continue;
+    if (step.key === "blueprint" || step.founderStarts || !isPoolStep(step) || step.jobType === "crew_roster") continue;
     if (step.employee !== "lead" && !hired.has(step.employee)) continue;
     const key = jobKey(project._id, step.jobType, JOB_SUBJECT_MAIN, 0);
     const holders = await ctx.db.query("tasks")
@@ -840,7 +779,7 @@ async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskSta
  * interrupted action, a missing payment, or a draft that failed the quality
  * checks (S3a).
  */
-type FailCause = "failed" | "interrupted" | "unpaid" | "quality" | "no_change" | "email_copy_unchanged" | "stale_input" | "spend_revoked";
+type FailCause = "failed" | "interrupted" | "unpaid" | "quality" | "no_change" | "email_copy_unchanged" | "stale_input" | "stale_landing" | "spend_revoked";
 
 function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: boolean): string {
   if (hasDebit && !refundScheduled) return FAILED_STEP_ARCHIVED_REASON;
@@ -855,6 +794,9 @@ function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: bool
       return refundScheduled ? FAILED_STEP_QUALITY_REFUNDED_REASON : FAILED_STEP_QUALITY_REASON;
     case "spend_revoked":
       return refundScheduled ? "The spend approval was revoked. Credits are being returned." : "The spend approval was revoked.";
+    case "stale_landing":
+      return "The approved blueprint or brand kit changed before Leo finished the landing draft." +
+        (refundScheduled ? " Credits are being returned." : "");
     case "stale_input":
       return refundScheduled
         ? "The approved brand changed before this email revision finished. Credits are being returned."
@@ -891,7 +833,7 @@ async function failTask(
   }
   const defaultReason = failedReason(cause, refundScheduled, debit !== null);
   const reason = diagnosis === undefined ? defaultReason : debit !== null ? `${diagnosis} ${defaultReason}` : diagnosis;
-  if (failed.revisionOfTaskId !== undefined || diagnosis !== undefined || (failed.type === "crew_social_pack" && cause !== "failed")) {
+  if (failed.revisionOfTaskId !== undefined || diagnosis !== undefined || failed.type === "crew_landing" || (failed.type === "crew_social_pack" && cause !== "failed")) {
     await ctx.db.patch("tasks", failed._id, { crewFailureReason: reason });
   }
   await setCrewStatus(ctx, failed, {
@@ -1090,6 +1032,7 @@ const startCrewRunResult = v.union(
     creditDebitId: v.optional(v.id("credit_ledger")),
     /** The revised draft's stored artifact (JSON), for a revision task. */
     previousArtifactJson: v.optional(v.string()),
+    irisAnswer: v.optional(v.string()),
     /** The founder's note from the revision's card (`revisionNoteFor`); never from caller args. */
     revisionNote: v.optional(v.string()),
     /** What the quality gate needs from the project (S3a), read on the server. */
@@ -1173,6 +1116,13 @@ export const startCrewRun = internalMutation({
       return { kind: "skip", reason: "unpaid" };
     }
 
+    const project = await ctx.db.get("projects", task.projectId);
+    if (task.type === "crew_landing" && (!project || !task.landingBrief ||
+        (await approvedBlueprint(ctx, project))?._id !== task.landingBrief.blueprintId ||
+        (await approvedBrandKit(ctx, project))?._id !== task.landingBrief.brandKitId)) {
+      await failTask(ctx, task, now, "stale_landing");
+      return { kind: "skip", reason: "missing" };
+    }
     const attempt = await nextAttemptForJobKey(ctx, task.ownerId, taskJobKey);
     const runNumber = runs.length + 1;
     const runId = await ctx.db.insert("workflow_runs", {
@@ -1190,7 +1140,6 @@ export const startCrewRun = internalMutation({
     await setCrewStatus(ctx, task, { member: "working", workstream: "working", blocker: null }, now);
 
     const note = task.revisionOfTaskId === undefined ? null : await revisionNoteFor(ctx, task._id);
-    const project = await ctx.db.get("projects", task.projectId);
     return {
       kind: "run",
       runId,
@@ -1202,6 +1151,7 @@ export const startCrewRun = internalMutation({
       projectId: task.projectId,
       changeRound: Number(task.changeRound ?? 0n),
       ...(debit === null ? {} : { creditDebitId: debit._id }),
+      ...(task.landingBrief?.irisAnswer ? { irisAnswer: task.landingBrief.irisAnswer } : {}),
       ...(previous?.body === undefined ? {} : { previousArtifactJson: previous.body }),
       ...(note === null ? {} : { revisionNote: task.requiresBrandDocumentId && jobType === "crew_email_sequence" ? handoffEmailBrief(note) : note }),
       quality: await qualityContextFor(ctx, project, args.seedId),
@@ -1220,6 +1170,24 @@ async function openRun(
   if (task === null || !isCrewStepJobType(task.type) || task.ownerId !== run.ownerId) return null;
   return { run, task, jobType: task.type };
 }
+
+/** Commit Iris's answer before Leo spends a second metered call. A stale run can never replace the answer. */
+export const recordLandingHandoff = internalMutation({
+  args: { runId: v.id("workflow_runs"), answer: v.string(), nextAttempt: v.number() }, returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const open = await openRun(ctx, args.runId);
+    const brief = open?.task.landingBrief;
+    if (!open || open.jobType !== "crew_landing" || open.task.status !== "running" || !brief ||
+        !args.answer.trim() || args.answer.length > 1_000 || isStale(open.run, Date.now())) return false;
+    const project = await ctx.db.get("projects", open.task.projectId);
+    if (!project || project.archivedAt !== undefined || project.ownerId !== open.task.ownerId ||
+        (await approvedBlueprint(ctx, project))?._id !== brief.blueprintId || (await approvedBrandKit(ctx, project))?._id !== brief.brandKitId) return false;
+    if (brief.irisAnswer) return brief.irisAnswer === args.answer;
+    await ctx.db.patch("tasks", open.task._id, { landingBrief: { ...brief, irisAnswer: args.answer }, updatedAt: Date.now() });
+    await ctx.db.patch("workflow_runs", open.run._id, { attempt: BigInt(validNextAttempt(args.nextAttempt)), updatedAt: Date.now() });
+    return true;
+  },
+});
 
 // ---------------------------------------------------------------------------
 // Finish (success)
@@ -1309,6 +1277,13 @@ export const finishCrewStep = internalMutation({
     // the same way; an email finish without either one fails as permanent (review m1). WP76-S2a: so does the
     // social pack.
     let briefsValid = true;
+    const landingKit = kind === "landing_spec" ? await approvedBrandKit(ctx, project) : null;
+    const parsedLandingKit = parseDraftBody(landingKit?.body, brandKitSchema);
+    if (kind === "landing_spec") {
+      const brief = task.landingBrief;
+      briefsValid = Boolean(brief?.irisAnswer && brief.blueprintId === args.briefDocumentId && brief.brandKitId === args.brandKitDocumentId &&
+        (await approvedBlueprint(ctx, project))?._id === brief.blueprintId && landingKit?._id === brief.brandKitId && parsedLandingKit);
+    }
     if (kind === "brand_kit" && args.briefDocumentId !== undefined) {
       briefsValid = await briefStillValid(ctx, project, task, args.briefDocumentId, now);
     } else if (kind === "email_sequence" || kind === "social_pack") {
@@ -1322,7 +1297,8 @@ export const finishCrewStep = internalMutation({
     }
     if (!briefsValid) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
-      return { kind: "failed", ...(await failTask(ctx, task, now, task.requiresBrandDocumentId === undefined ? "failed" : "stale_input")) };
+      const cause = kind === "landing_spec" ? "stale_landing" : task.requiresBrandDocumentId === undefined ? "failed" : "stale_input";
+      return { kind: "failed", ...(await failTask(ctx, task, now, cause)) };
     }
     const previous = await revisedDocument(ctx, task, kind);
     if (task.revisionOfTaskId !== undefined && (previous === null || previous.body === undefined)) {
@@ -1354,7 +1330,7 @@ export const finishCrewStep = internalMutation({
       const parsed = parseModelOutput(kind, raw, stored?.success === true ? stored.data : null);
       if (parsed.success) {
         // S3a: the deterministic quality gate (S4a checks plus the server's facts) decides what is stored.
-        gate = gateCrewArtifact(kind, parsed.data, await qualityContextFor(ctx, project, args.seedId));
+        gate = gateCrewArtifact(kind, parsed.data, { ...await qualityContextFor(ctx, project, args.seedId), ...(parsedLandingKit ? { brandKit: parsedLandingKit } : {}) });
         if (gate.artifact !== null) body = assertGeneratedDocumentBody(JSON.stringify(gate.artifact));
       }
     } catch {
@@ -1423,6 +1399,7 @@ export const finishCrewStep = internalMutation({
       createdAt: now,
       updatedAt: now,
     });
+    if (kind === "landing_spec") await writePrivateLandingVersion(ctx, documentId);
     const succeeded = await setTaskStatus(ctx, task, "succeeded", now);
     await closeRun(ctx, run, "succeeded", undefined, nextAttempt, now);
     const { approvalId } = await createApprovalRecord(ctx, {

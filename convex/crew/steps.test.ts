@@ -62,7 +62,7 @@ describe("the registry", () => {
   });
 
   test("the blueprint, the brand kit, (WP76-S1a) the email sequence and (S2a) the social pack run on the pool; the roster is written by the blueprint's finish", () => {
-    expect(LAUNCH_STEPS.filter(isPoolStep).map((step) => step.key)).toEqual(["blueprint", "brand_kit", "email_sequence", "social_pack"]);
+    expect(LAUNCH_STEPS.filter(isPoolStep).map((step) => step.key)).toEqual(["blueprint", "brand_kit", "landing_spec", "email_sequence", "social_pack"]);
     // The email sequence and the social pack run under the brand kit, never without its voice.
     expect(launchStep("email_sequence")).toMatchObject({ parents: ["brand_kit"], status: "built", runner: "generator" });
     // S2a: the social pack reads the blueprint and the kit only (no wizard answers).
@@ -124,7 +124,7 @@ describe("evaluateLaunch", () => {
     expect(byKey.get("brand_kit")).toMatchObject({ state: "skipped", reason: "No brand" });
     // Logo marks are the brand designer's too, so they carry the roster's reason; the landing page below them cascades.
     expect(byKey.get("logo_marks")).toMatchObject({ state: "skipped", skippedByRoster: true, reason: "No brand" });
-    expect(byKey.get("landing_spec")).toMatchObject({ state: "skipped", skippedByRoster: true, reason: "Needs the logo marks, which this team skips." });
+    expect(byKey.get("landing_spec")).toMatchObject({ state: "skipped", skippedByRoster: true, reason: "Needs the brand kit, which this team skips." });
     expect(readySteps(evaluated)).toEqual([]);
   });
 
@@ -159,7 +159,7 @@ describe("evaluateLaunch", () => {
 
   test("a child of a pending slot runs once the slot's own parents are done", () => {
     const steps = LAUNCH_STEPS.map((step) => step.key === "landing_spec"
-      ? { ...step, status: "built" as const, runner: "generator" as const }
+      ? { ...step, status: "built" as const, runner: "generator" as const, parents: ["logo_marks" as const] }
       : step);
     const evaluated = evaluateLaunch(facts({
       rosterWritten: true,

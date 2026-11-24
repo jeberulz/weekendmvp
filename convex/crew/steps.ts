@@ -73,6 +73,7 @@ export type LaunchStep = {
    * - `roster`: never enqueued; written inside the blueprint step's finish (S1).
    */
   readonly runner?: "generator" | "roster";
+  readonly founderStarts?: boolean;
   /** The story that builds a slot. */
   readonly pendingStory?: string;
 };
@@ -125,9 +126,10 @@ export const LAUNCH_STEPS: readonly LaunchStep[] = [
     jobType: "crew_landing",
     employee: "landing",
     inputs: [{ step: "blueprint" }, { step: "brand_kit" }, { source: "landing_icons" }],
-    parents: ["logo_marks"],
-    status: "pending_story",
-    pendingStory: "WP75-S3c",
+    parents: ["brand_kit"],
+    status: "built",
+    runner: "generator",
+    founderStarts: true,
   },
   {
     key: "build_pack",
@@ -330,6 +332,10 @@ export function evaluateLaunch(facts: LaunchFacts, steps: readonly LaunchStep[] 
       add(blocking === undefined
         ? { key: step.key, state: "skipped", done: true, skippedByRoster: false, reason: pendingStepReason(step) }
         : { key: step.key, state: "waiting", done: false, skippedByRoster: false, reason: waitingOnReason(launchStep(blocking.key)) });
+      continue;
+    }
+    if (step.founderStarts && !facts.tasks[step.key] && parentsDone) {
+      add({ key: step.key, state: "waiting", done: false, skippedByRoster: false, reason: "Request a private landing draft after approving the blueprint and brand kit." });
       continue;
     }
     const state = parentsDone ? taskState(facts.tasks[step.key]) : "waiting";

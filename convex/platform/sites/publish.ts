@@ -217,7 +217,10 @@ export const publishCore = internalMutation({
     await assertHostnameAvailable(ctx, hostname, site._id);
 
     const latest = await latestVersion(ctx, site._id);
-    if (latest === null || latest.documentId === undefined) {
+    const content = latest?.privateLanding ? await ctx.db.query("site_versions")
+      .withIndex("by_siteConfigId_and_version", (q) => q.eq("siteConfigId", site._id))
+      .order("desc").filter((q) => q.eq(q.field("privateLanding"), undefined)).first() : latest;
+    if (latest === null || content === null || content.documentId === undefined) {
       // Nothing to publish: no version row, or a version with no content.
       throw new ConvexError({ code: PUBLISH_ERROR.notPublishable });
     }
@@ -232,7 +235,7 @@ export const publishCore = internalMutation({
       if (
         current !== null &&
         current.status === "published" &&
-        current.documentId === latest.documentId
+        current.documentId === content.documentId
       ) {
         return { hostname, version: current.version, created: false };
       }
@@ -246,7 +249,7 @@ export const publishCore = internalMutation({
       siteConfigId: site._id,
       status: "published",
       version,
-      documentId: latest.documentId,
+      documentId: content.documentId,
       createdAt: now,
       publishedAt: now,
     });
@@ -304,7 +307,7 @@ export const rollbackCore = internalMutation({
         q.eq("siteConfigId", site._id).eq("version", args.toVersion),
       )
       .unique();
-    if (target === null || target.documentId === undefined) denyNotFound();
+    if (target === null || target.privateLanding !== undefined || target.documentId === undefined) denyNotFound();
     // A version row that somehow points at another site must never be
     // promotable here.
     if (target.siteConfigId !== site._id || target.ownerId !== site.ownerId) {

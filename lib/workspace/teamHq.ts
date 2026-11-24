@@ -93,6 +93,7 @@ export function filterEmptyCopy(filter: TeamFilter, lead: string): string {
 
 const WORKSTREAM_PAGES: Partial<Record<RoleKey, { slug: string; label: string }>> = {
   brand: { slug: "brand", label: "Open Brand kit" },
+  landing: { slug: "landing", label: "Open Landing page" },
   email: { slug: "email", label: "Open Email" },
   social: { slug: "social", label: "Open Social" },
 };

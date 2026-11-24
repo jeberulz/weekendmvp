@@ -5,7 +5,7 @@ import type { Doc } from "../_generated/dataModel";
 import { internalAction, internalQuery, type ActionCtx } from "../_generated/server";
 import { memoryForPrompt } from "../workspace/wrenMemory";
 import { emailDraftTarget } from "../growth/drafts/emailSequence";
-import { blueprintSchema, brandKitSchema } from "../../lib/workspace/contracts/artifacts";
+import { blueprintSchema, brandKitSchema, DIRECTION_LAYOUTS } from "../../lib/workspace/contracts/artifacts";
 import { seedFromColumns } from "../../lib/workspace/contracts/seeds";
 import { wizardAnswersSchema, type WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { crewBusinessContext, type CrewBusinessFacts } from "../../lib/workspace/crew/context";
@@ -111,6 +111,7 @@ const STEP_PROMPT_REFS: Partial<Record<Doc<"tasks">["type"], string>> = {
   crew_brand_kit: BRAND_KIT_PROMPT_REF,
   crew_email_sequence: EMAIL_SEQUENCE_PROMPT_REF,
   crew_social_pack: SOCIAL_PACK_PROMPT_REF,
+  crew_landing: "crew-landing@1",
 };
 
 export const prepareCrewStep = internalQuery({
@@ -124,8 +125,8 @@ export const prepareCrewStep = internalQuery({
     const task = await ctx.db.get("tasks", args.taskId);
     const fallbackRef = task === null ? BLUEPRINT_LIBRARY_PROMPT_REF : (STEP_PROMPT_REFS[task.type] ?? BLUEPRINT_LIBRARY_PROMPT_REF);
     if (task === null || (task.type !== "crew_blueprint" && task.type !== "crew_brand_kit" && task.type !== "crew_email_sequence" &&
-      task.type !== "crew_social_pack")) {
-      return refuse(fallbackRef, "this task is not a blueprint, brand kit, email sequence or social pack step");
+      task.type !== "crew_social_pack" && task.type !== "crew_landing")) {
+      return refuse(fallbackRef, "this task has no crew generator");
     }
     const project = await ctx.db.get("projects", task.projectId);
     const workspace = project?.workspace;
@@ -187,7 +188,7 @@ export const prepareCrewStep = internalQuery({
     } else {
       // S2b: a launch's own kit (and, WP76-S1a/S2a, its own email sequence and social pack) may brief from the
       // launch's first draft while no blueprint is approved.
-      const inLaunch = await isLaunchFirstDraftTask(ctx, task);
+      const inLaunch = task.type !== "crew_landing" && await isLaunchFirstDraftTask(ctx, task);
       const stored = (await approvedBlueprint(ctx, project)) ??
         (inLaunch ? await launchDraftBlueprint(ctx, project, args.now) : null);
       const blueprint = stored?.body === undefined ? null : blueprintSchema.safeParse(parseJson(stored.body));
@@ -203,6 +204,23 @@ export const prepareCrewStep = internalQuery({
       const seedRead = seedSlug === undefined ? null : await platformSeedRow(ctx, seedSlug);
       const ideaSeed =
         seedSlug !== undefined && seedRead?.ok === true && seedRead.row !== null ? seedFromColumns(seedSlug, seedRead.row) : null;
+      if (task.type === "crew_landing") {
+        const pinned = task.landingBrief;
+        const kit = await approvedBrandKit(ctx, project);
+        if (!pinned || !stored || stored._id !== pinned.blueprintId ||
+            kit?._id !== pinned.brandKitId || !kit.body) return refuse(promptRef, "the landing draft needs its exact approved blueprint and brand kit");
+        const brand = brandKitSchema.safeParse(parseJson(kit.body));
+        if (!brand.success) return refuse(promptRef, "the approved brand kit is unreadable");
+        return {
+          ok: true, promptRef, businessContext: crewBusinessContext({ ...facts, blueprint: blueprint.data }),
+          inputs: {
+            blueprint: JSON.stringify(blueprint.data), brandKit: JSON.stringify(brand.data),
+            layouts: JSON.stringify(DIRECTION_LAYOUTS[brand.data.visualSystem.direction]),
+            research: ideaSeed ? JSON.stringify({ ...ideaSeed.landingSeeds, buyerWords: ideaSeed.landingSeeds.buyerWords.map((word) => word.quote) }) : null,
+          },
+          briefDocumentId: stored._id, brandKitDocumentId: kit._id,
+        };
+      }
       if (task.type === "crew_email_sequence" || task.type === "crew_social_pack") {
         const kitRow = (await approvedBrandKit(ctx, project)) ?? (inLaunch ? await launchDraftBrandKit(ctx, project, args.now) : null);
         const kit = kitRow?.body === undefined ? null : brandKitSchema.safeParse(parseJson(kitRow.body));

@@ -8,7 +8,7 @@
  * file may not import it), and `tests/platform/workspace-wren-cards.test.ts`
  * keeps the two equal.
  *
- * Only pages that ship a review (Brand kit, Email, Social) get their own
+ * Only pages that ship a review (Brand kit, Landing page, Email, Social) get their own
  * route. Everything else, the blueprint included, is reviewed on Team HQ,
  * which lists every pending card with its approve and ask-for-changes actions
  * and holds the blueprint's read-only view.
@@ -16,14 +16,14 @@
 import { ARTIFACT_KINDS, type ArtifactKind } from "./contracts/artifacts";
 
 /** A route segment under `/dashboard/b/{projectId}` (a subset of `WorkspaceRouteSlug`). */
-export type ReviewRouteSlug = "team" | "brand" | "email" | "social";
+export type ReviewRouteSlug = "team" | "brand" | "email" | "social" | "landing";
 
 export const REVIEW_TARGETS: Readonly<Record<ArtifactKind, { readonly title: string; readonly slug: ReviewRouteSlug }>> =
   Object.freeze({
     blueprint: { title: "Blueprint", slug: "team" },
     roster_plan: { title: "Team plan", slug: "team" },
     brand_kit: { title: "Brand kit", slug: "brand" },
-    landing_spec: { title: "Landing page", slug: "team" },
+    landing_spec: { title: "Landing page", slug: "landing" },
     email_sequence: { title: "Waitlist emails", slug: "email" },
     social_pack: { title: "Social posts", slug: "social" },
     seo_pack: { title: "SEO pack", slug: "team" },

@@ -182,6 +182,16 @@
         "module": "sha256:04735227a580958602166d89afde36f83d4f31f6f1a6f2485a3b6e553c470e07"
       }
     },
+    "crew-landing@1": {
+      "hash": "sha256:097fa0d7505afe98e69c6cde67aa684c93abbb49e429b67a33815feedb7b0315",
+      "parts": {
+        "system": "sha256:45c961c34daa9869d153307d6a5d8a579868b4c4737fdf5602a93746ca44fbdf",
+        "task": "sha256:ee027aa2dd8346859b631774f9aa0611ca51f17d16db46115c8b89f39a7b716f",
+        "outputSchema": "sha256:eb54c1bb6cefaa22df7eb11ba5b7111e7b8da15941c31e1a1fd770eb0c4f2b71",
+        "run": "sha256:5f0e0edc7440fc081fb960a5bd79334ca3527cdf515c6ebcc863a345f22ae0ce",
+        "module": "sha256:54b8cb14c2e55234dba4b86bd83027370e113d70e5279734e32555634140e646"
+      }
+    },
     "crew-social-pack@1": {
       "hash": "sha256:ef8c01259a9a61de2662d5312539501487376cb9e1375bdecfe66152e407e47e",
       "parts": {

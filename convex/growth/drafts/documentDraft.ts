@@ -3,7 +3,7 @@ import type { ZodType } from "zod";
 
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { QueryCtx } from "../../_generated/server";
-import { approvalStatusValidator } from "../../workspace/approvals";
+import { approvalStatusValidator } from "../../workspace/approvalValidators";
 import { approvalExpiresAt } from "../../../lib/workspace/contracts/approvals";
 
 /**

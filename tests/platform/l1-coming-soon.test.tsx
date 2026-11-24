@@ -27,7 +27,7 @@ const root = path.resolve(__dirname, "../..");
 const routeRoot = path.join(root, "app", "(launch-workspace)", "dashboard", "b", "[projectId]");
 
 /** The L1 plan (`docs/wp/l1-release-plan.md`): what ships Monday. */
-const BUILT: readonly WorkspaceRouteSlug[] = ["team", "brand", "", "email", "social", "files"];
+const BUILT: readonly WorkspaceRouteSlug[] = ["team", "brand", "landing", "", "email", "social", "files"];
 const COMING_SOON: readonly WorkspaceRouteSlug[] = ["launch", "build-pack", "tasks", "ads", "studio", "outbound", "settings", "billing"];
 
 /** Claims a placeholder cannot make: it checks nothing. */

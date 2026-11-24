@@ -257,7 +257,8 @@ describe("workstream links, plan, why rows", () => {
     expect(workstreamFor("brand", "p1")).toEqual({ href: "/dashboard/b/p1/brand", label: "Open Brand kit" });
     expect(workstreamFor("email", "p1")).toEqual({ href: "/dashboard/b/p1/email", label: "Open Email" });
     expect(workstreamFor("social", "p1")).toEqual({ href: "/dashboard/b/p1/social", label: "Open Social" });
-    for (const role of ["seo", "landing", "ads", "marketing", "engineering", "curriculum"] as const) {
+    expect(workstreamFor("landing", "p1")).toEqual({ href: "/dashboard/b/p1/landing", label: "Open Landing page" });
+    for (const role of ["seo", "ads", "marketing", "engineering", "curriculum"] as const) {
       expect(workstreamFor(role, "p1")).toBeNull();
     }
   });

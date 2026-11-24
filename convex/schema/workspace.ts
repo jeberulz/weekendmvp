@@ -195,6 +195,7 @@ export const workspaceTables = {
     // Optional so existing approvals remain valid under their existing rules.
     subjectVersion: v.optional(v.string()),
     crewRevision: v.optional(v.object({
+      landingSources: v.optional(v.object({ blueprintId: v.id("documents"), brandKitId: v.id("documents") })),
       requestId: v.optional(v.string()),
       followUpEmail: v.optional(v.boolean()),
       emailNote: v.optional(v.string()),

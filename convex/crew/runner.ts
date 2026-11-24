@@ -1,4 +1,6 @@
 import { v } from "convex/values";
+import { LANDING_DESIGN_QUESTION } from "../../lib/workspace/crew/landingBrief";
+import { crewConsultationSpec } from "../ai/prompts/crewConsultation.v2";
 import { decodeSocialPackReply } from "../../lib/workspace/crew/socialPackReply";
 
 import { internal } from "../_generated/api";
@@ -221,22 +223,41 @@ export async function runCrewStepWith(
 
   const runPrompt: CrewRunPrompt = deps.runPrompt ??
     (async (promptArgs) => await ctx.runAction(internal.ai.gatewayActions.runPrompt, promptArgs));
+  const call = {
+    ownerId: start.ownerId, projectId: start.projectId, taskId: args.taskId,
+    ...(start.creditDebitId === undefined ? {} : { creditDebitId: start.creditDebitId }),
+    attemptKey: { kind: "job" as const, jobKey: start.jobKey },
+    ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),
+  };
+  let attempt = start.attempt;
   let result: GatewayRunResult;
   try {
+    if (start.jobType === "crew_landing") {
+      let answer = start.irisAnswer;
+      if (!answer) {
+        const { blueprint, brandKit, layouts, research } = prepared.inputs;
+        const handoff = await runPrompt({
+          ...call, attempt, promptRef: "crew-consultation@2",
+          inputs: { specialist: "Iris", role: "Brand", question: LANDING_DESIGN_QUESTION,
+            evidence: JSON.stringify({ blueprint, brandKit, layouts, research }), colleague: null, colleagueAnswer: null },
+        });
+        if (!handoff.ok) return await settle(handoff.failure, handoff.nextAttempt);
+        attempt = handoff.nextAttempt;
+        const checked = crewConsultationSpec.outputSchema.safeParse(JSON.parse(handoff.outputJson));
+        if (!checked.success) return await settle({ kind: "schema_invalid", issues: ["Iris returned no design brief"] }, attempt);
+        answer = checked.data.answer;
+        if (!await ctx.runMutation(internal.crew.jobs.recordLandingHandoff, { runId: start.runId, answer, nextAttempt: attempt })) {
+          return await settle({ kind: "config", message: "The approved landing inputs changed during Iris's handoff." }, attempt);
+        }
+      }
+      prepared.inputs.irisAnswer = answer;
+    }
     result = await runPrompt({
-      promptRef: args.promptRef,
-      inputs: prepared.inputs,
+      ...call, attempt, promptRef: args.promptRef, inputs: prepared.inputs,
       ...(args.businessContext === undefined ? {} : { businessContext: args.businessContext }),
-      ownerId: start.ownerId,
-      projectId: start.projectId,
-      taskId: args.taskId,
-      ...(start.creditDebitId === undefined ? {} : { creditDebitId: start.creditDebitId }),
-      attemptKey: { kind: "job", jobKey: start.jobKey },
-      attempt: start.attempt,
-      ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),
     });
   } catch (error) {
-    return await settle(unknownOutcome(error, "the gateway call did not return"), start.attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
+    return await settle(unknownOutcome(error, "the gateway call did not return"), attempt + UNKNOWN_OUTCOME_ATTEMPT_STRIDE);
   }
 
   // v4 tasks already in flight still return the keyed artifact. Only v5 uses the row grammar.

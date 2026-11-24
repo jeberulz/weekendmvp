@@ -36,6 +36,7 @@ const assignmentValidator = v.object({
   handoff: v.optional(v.union(v.literal("requested"), v.literal("queued"), v.literal("spend_required"), v.literal("not_available"))),
   handoffReason: v.optional(v.string()),
   handoffSpendExpiresAt: v.optional(v.number()),
+  landingHandoff: v.optional(v.union(v.literal("waiting"), v.literal("received"))),
   source: v.optional(v.union(v.literal("current"), v.literal("stale"), v.literal("unknown"))),
 });
 const snapshotValidator = v.object({
@@ -151,6 +152,7 @@ async function readAssignment(
     ...(blocker ? { blocker } : {}),
     ...(failure ? { failure } : {}),
     ...(lastFailure ? { failureClass: lastFailure.failureClass } : {}),
+    ...(task.landingBrief ? { landingHandoff: task.landingBrief.irisAnswer ? "received" as const : "waiting" as const } : {}),
     ...await emailHandoff(ctx, task),
   };
 }

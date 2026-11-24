@@ -198,6 +198,7 @@ export type CrewAssignment = {
   handoff?: "requested" | "queued" | "spend_required" | "not_available";
   handoffReason?: string;
   handoffSpendExpiresAt?: number;
+  landingHandoff?: "waiting" | "received";
   source?: "current" | "stale" | "unknown";
 };
 
@@ -254,6 +255,8 @@ export function employeeStatus(
   if (assignment?.source === "stale") detail.push("This draft uses earlier brand copy.");
   if (assignment?.changedFields?.length) detail.push(`Changed ${assignment.changedFields.join(", ")}.`);
   if (assignment?.changePreview?.length) detail.push(...assignment.changePreview);
+  if (assignment?.landingHandoff === "received") detail.push("Iris shared her design direction with Leo.");
+  if (assignment?.landingHandoff === "waiting" && assignment.status === "running") detail.push("Leo is waiting for Iris’s design direction.");
   if (assignment?.handoff !== undefined) {
     if (assignment.handoff === "spend_required" && now !== undefined &&
         assignment.handoffSpendExpiresAt !== undefined && now >= assignment.handoffSpendExpiresAt) {

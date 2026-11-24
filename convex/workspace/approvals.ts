@@ -21,7 +21,6 @@ import {
   APPROVAL_EXPIRY_MAX_BATCHES_PER_RUN,
   APPROVAL_KINDS,
   APPROVAL_LIST_LIMIT,
-  APPROVAL_STATUSES,
   APPROVAL_SUBJECT_TABLE_NAMES,
   MAX_SEQUENCE_STEPS,
   approvalCostFitsKind,
@@ -39,10 +38,12 @@ import {
 } from "../../lib/workspace/contracts/approvals";
 import { jobKey, parseJobKey, type CreditActionKey, type JobType } from "../../lib/workspace/contracts/jobs";
 import { spendTermsFor, type ChangeRoundDecision } from "../../lib/workspace/changeRounds";
+import { approvalStatusValidator, changeRoundOutcomeValidator } from "./approvalValidators";
+export { approvalStatusValidator } from "./approvalValidators";
 import {
   cardRoundWasReleased,
-  changeRoundOutcomeValidator,
   crewRequestKey,
+  landingRevisionBrief,
   insertRevisionTask,
   resolveChangeRound,
   type ArtifactLineage,
@@ -117,7 +118,6 @@ function literals<T extends string>(values: readonly [T, T, ...T[]]) {
 }
 
 export const approvalKindValidator = literals(APPROVAL_KINDS);
-export const approvalStatusValidator = literals(APPROVAL_STATUSES);
 export const approvalDecisionValidator = literals(APPROVAL_DECISIONS);
 export const approvalSubjectTableValidator = literals(APPROVAL_SUBJECT_TABLE_NAMES);
 
@@ -264,7 +264,7 @@ export async function readSubjectState(
       return {
         found: true,
         writeTimes: [version.createdAt, ...docTimes],
-        publishable: isPublishableSiteVersion(version.status, site?.takedownAt),
+        publishable: !version.privateLanding && isPublishableSiteVersion(version.status, site?.takedownAt),
       };
     }
     case "sequences": {
@@ -674,6 +674,7 @@ async function liveSpendCard(
 }
 
 const CREW_REVISION_TYPES = {
+  landing_spec: "crew_landing",
   brand_kit: "crew_brand_kit",
   email_sequence: "crew_email_sequence",
   social_pack: "crew_social_pack",
@@ -715,9 +716,11 @@ async function raiseSpendCard(
 ): Promise<{ spendApprovalId: Id<"approvals">; created: boolean; conflictingRequest?: boolean }> {
   const terms = spendTermsFor(decision);
   const existing = await liveSpendCard(ctx, lineage, terms.expectedChangeRound, terms.expectedCostCredits, now);
+  // Legacy site-version reviews keep their existing spend flow. Only a founder-started private landing task joins the crew queue.
+  const runnable = Object.values(CREW_REVISION_TYPES).some((type) => type === lineage.jobType) &&
+    (lineage.jobType !== "crew_landing" || lineage.reviewedTask.landingBrief !== undefined);
   if (existing !== null && (request === undefined || existing.status === "pending" || existing.crewRevision !== undefined)) {
-    if (existing.status === "pending" && existing.crewRevision === undefined &&
-        Object.values(CREW_REVISION_TYPES).some((type) => type === lineage.jobType)) {
+    if (existing.status === "pending" && existing.crewRevision === undefined && runnable) {
       // Expose the original confirmed terms in HQ. A new brief cannot replace
       // them while the founder could still approve the older request.
       await ctx.db.patch("approvals", existing._id, { crewRevision: {} });
@@ -739,8 +742,10 @@ async function raiseSpendCard(
     ...(note === undefined ? {} : { note }),
   });
   if (created) {
-    if (Object.values(CREW_REVISION_TYPES).some((type) => type === lineage.jobType)) {
+    if (runnable) {
+      const brief = await landingRevisionBrief(ctx, lineage);
       await ctx.db.patch("approvals", approvalId, { crewRevision: {
+        ...(brief ? { landingSources: { blueprintId: brief.blueprintId, brandKitId: brief.brandKitId } } : {}),
         ...(request === undefined ? {} : { requestId: request.requestId }),
         ...(request?.followUpEmail === true ? { followUpEmail: true } : {}),
         ...(request?.emailNote === undefined ? {} : { emailNote: request.emailNote }),
@@ -859,7 +864,7 @@ export async function requestCrewRevision(
   const resolution = await resolveChangeRound(ctx, project.ownerId, project._id, "documents", document._id);
   if (!resolution.ok) return unavailable(resolution.reason);
   const { decision, lineage } = resolution;
-  if (lineage.jobType !== CREW_REVISION_TYPES[request.kind]) return unavailable("untracked");
+  if (lineage.jobType !== CREW_REVISION_TYPES[request.kind] || (lineage.jobType === "crew_landing" && !lineage.reviewedTask.landingBrief)) return unavailable("untracked");
   if (decision.decision === "not_available") return unavailable(decision.reason);
 
   const cards = (await ctx.db.query("approvals")

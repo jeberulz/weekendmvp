@@ -353,7 +353,7 @@ export function approvalSubjectLine(facts: ApprovalSubjectFacts): string {
  * key). Every key is a built page, never a coming-soon one
  * (`tests/platform/workspace-wren-cards.test.ts` checks it).
  */
-export const APPROVAL_REVIEW_ROUTES = ["team", "brand", "email", "social", "files"] as const;
+export const APPROVAL_REVIEW_ROUTES = ["team", "brand", "email", "social", "files", "landing"] as const;
 export type ApprovalReviewRoute = (typeof APPROVAL_REVIEW_ROUTES)[number];
 
 /**
@@ -372,9 +372,10 @@ function documentReviewRoute(kind: string): ApprovalReviewRoute | null {
       return "email";
     case "social_pack":
       return "social";
+    case "landing_spec":
+      return "landing";
     case "blueprint":
     case "roster_plan":
-    case "landing_spec":
     case "seo_pack":
     case "launch_plan":
     case "ads_drafts":
@@ -416,6 +417,7 @@ export const APPROVAL_REVIEW_LABELS: Readonly<Record<ApprovalReviewRoute, string
   email: "Review it in email",
   social: "Review it in social",
   files: "Review it in files",
+  landing: "Review it on the landing page",
 };
 
 /**

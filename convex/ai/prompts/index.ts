@@ -29,6 +29,7 @@ import { crewConsultationSpec } from "./crewConsultation.v2.ts";
 import { emailSequenceSpec } from "./emailSequence.v3.ts";
 import { ideaImproveSpec } from "./ideaImprove.v1.ts";
 import { ideaSeedSpec } from "./ideaSeed.v3.ts";
+import { landingSpecPrompt } from "./landing.v1.ts";
 import { promptEntry, type PromptEntry } from "./entry.ts";
 import { registryProbeSpec } from "./registryProbe.ts";
 import { socialPackSpec as socialPackV4 } from "./socialPack.v4.ts";
@@ -95,6 +96,16 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
       answers: CREW_SAMPLE_ANSWERS,
       design: JSON.stringify({ productType: "Micro SaaS", palettes: [], typePairs: [], landingPattern: { id: "minimal-single-column" } }),
       ideaAngles: JSON.stringify({ positioning: "Water planning for solo hikers.", voiceCues: ["Calm", "Practical"], avoid: [], imagery: "A bottle on a ridge." }),
+    },
+  }),
+  promptEntry(landingSpecPrompt, {
+    module: "convex/ai/prompts/landing.v1.ts",
+    sampleInputs: {
+      blueprint: '{"pitch":"A hydration plan for solo hikers."}',
+      brandKit: '{"visualSystem":{"direction":"warm_utility"},"type":{"pair":"bricolage_figtree"}}',
+      layouts: '{"hero":["split_photo","product_frame"]}',
+      research: null,
+      irisAnswer: "Show a packing decision the visitor already makes.",
     },
   }),
   promptEntry(emailSequenceSpec, {

@@ -21,9 +21,10 @@ import type { Doc, Id } from "../_generated/dataModel";
 import schema from "../schema";
 import type { AnthropicFixtureResponder } from "../ai/providers/fixtures";
 import { ProviderError } from "../ai/providers/types";
-import { hydrotrailBrandKit, hydrotrailEmailSequence, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
+import { hydrotrailBrandKit, hydrotrailEmailSequence, hydrotrailLandingSpec, hydrotrailWizardAnswers } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { CREDIT_ACTIONS, jobKey } from "../../lib/workspace/contracts/jobs";
 import type { WizardAnswers } from "../../lib/workspace/contracts/wizard";
+import { requestCrewRevision } from "../workspace/approvals";
 import { RUN_LEASE_MS, abandonCrewTask, ensureLaunchStepTasks } from "./jobs";
 import { handoffEmailKind } from "../../lib/workspace/crew/emailHandoff";
 import { FAILED_STEP_INTERRUPTED_REASON } from "../../lib/workspace/crew/retry";
@@ -275,7 +276,7 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
       ["roster", "succeeded"],
       ["brand_kit", "succeeded"],
       ["logo_marks", "skipped"],
-      ["landing_spec", "skipped"],
+      ["landing_spec", "waiting"],
       ["build_pack", "skipped"],
       ["launch_plan", "skipped"],
       ["seo_pack", "skipped"],
@@ -289,7 +290,7 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
       ["roster", "lead", false],
       ["brand_kit", "brand", false],
       ["logo_marks", "brand", true],
-      ["landing_spec", "landing", true],
+      ["landing_spec", "landing", false],
       ["build_pack", "engineering", true],
       ["launch_plan", "marketing", true],
       ["seo_pack", "seo", true],
@@ -303,26 +304,181 @@ describe("WP75-S2b HydroTrail launch through the pool", () => {
   });
 });
 
-describe("WP94 founder-requested revisions", () => {
-  async function launchedBrand(approveBlueprint = true) {
-    const w = await world();
-    const founder = as(w);
-    const [projectId] = w.projectIds;
-    if (!projectId) throw new Error("Missing business");
-    await start(w);
-    await drain(w);
-    const initial = await rows(w);
-    const original = initial.documents.find((doc) => doc.kind === "brand_kit");
-    const pending = await founder.query(api.workspace.reviews.pendingReviews, { projectId });
-    const blueprint = pending.find((review) => review.kind === "blueprint");
-    const brand = pending.find((review) => review.kind === "brand_kit");
-    if (!original?.taskId || !original.contentSha256 || !blueprint || !brand) throw new Error("Missing launch artifacts");
-    if (approveBlueprint) await founder.mutation(api.workspace.approvals.decideApproval, {
-      projectId, approvalId: blueprint.approvalId, decision: "approve",
-    });
-    return { w, founder, projectId, original, brand, blueprint, originalTaskId: original.taskId };
-  }
+async function launchedBrand(approveBlueprint = true) {
+  const w = await world();
+  const founder = as(w);
+  const [projectId] = w.projectIds;
+  if (!projectId) throw new Error("Missing business");
+  await start(w);
+  await drain(w);
+  const initial = await rows(w);
+  const original = initial.documents.find((doc) => doc.kind === "brand_kit");
+  const pending = await founder.query(api.workspace.reviews.pendingReviews, { projectId });
+  const blueprint = pending.find((review) => review.kind === "blueprint");
+  const brand = pending.find((review) => review.kind === "brand_kit");
+  if (!original?.taskId || !original.contentSha256 || !blueprint || !brand) throw new Error("Missing launch artifacts");
+  if (approveBlueprint) await founder.mutation(api.workspace.approvals.decideApproval, {
+    projectId, approvalId: blueprint.approvalId, decision: "approve",
+  });
+  return { w, founder, projectId, original, brand, blueprint, originalTaskId: original.taskId };
+}
 
+describe("WP101 private landing dispatch and feedback", () => {
+  test("an explicit private landing request records Iris once and delivers her brief to Leo through retries and revisions", async () => {
+    const { w, founder, projectId, original, brand, blueprint } = await launchedBrand(false);
+    const args = { projectId };
+    const startLeo = () => founder.mutation(api.crew.launch.startPrivateLanding, args);
+    const status = () => founder.query(api.crew.launch.privateLandingStatus, args);
+    expect(await startLeo()).toEqual({ state: "blocked", reason: "blueprint" });
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: blueprint.approvalId, decision: "approve" });
+    expect(await startLeo()).toEqual({ state: "blocked", reason: "brand_kit" });
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: brand.approvalId, decision: "approve" });
+    expect(await status()).toMatchObject({ state: "not_started" });
+    expect(ofType(await rows(w), "crew_landing")).toEqual([]);
+
+    const answer = "Lead with the hiker’s next water stop. Use a single waitlist CTA beside the product moment.";
+    const prompts: string[] = [];
+    let fail = true;
+    hooks.plan = ({ type }) => type !== "crew_landing" ? {} : { reply: (request) => {
+      const message = JSON.stringify(request.messages);
+      prompts.push(message);
+      if (message.includes("<consultation>")) return { json: { answer } };
+      if (fail) return { refusal: { category: null, explanation: "fixture refusal" } };
+      return undefined;
+    } };
+    const result = await startLeo();
+    expect(result.state).toBe("queued");
+    expect(await startLeo()).toMatchObject({ state: "existing" });
+    await drain(w);
+    expect(await status()).toMatchObject({ state: "failed", irisAnswer: answer, failure: expect.any(String) });
+    expect((await rows(w)).documents.filter((doc) => doc.kind === "landing_spec")).toEqual([]);
+    fail = false;
+    expect(await startLeo()).toMatchObject({ state: "queued" });
+    await drain(w);
+    expect(await status()).toMatchObject({ state: "ready", irisAnswer: answer });
+    const first = (await rows(w)).documents.find((doc) => doc.kind === "landing_spec");
+    expect(first).toMatchObject({ brandKitDocumentId: original._id, briefDocumentId: expect.any(String) });
+    expect(prompts.filter((message) => message.includes("<consultation>"))).toHaveLength(1);
+    expect(prompts.filter((message) => message.includes("<iris_handoff>"))).toHaveLength(2);
+    expect(prompts.filter((message) => message.includes("<iris_handoff>")).every((message) => message.includes(answer))).toBe(true);
+    const review = first && await w.t.run(async (ctx) => await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", first._id)).first());
+    if (!review) throw new Error("Missing private landing review");
+    hooks.plan = ({ type }) => type !== "crew_landing" ? {} : { reply: (request) => {
+      const message = JSON.stringify(request.messages);
+      prompts.push(message);
+      const draft = { ...hydrotrailLandingSpec };
+      delete draft.proofSlots;
+      return { json: { ...draft, hero: { ...draft.hero, headline: { text: "Find the next refill before you run dry" } } } };
+    } };
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: review._id, decision: "request_changes", note: "Lead with finding a refill." });
+    await drain(w);
+    expect(await status()).toMatchObject({ state: "ready", irisAnswer: answer });
+    expect(prompts.at(-1)).toContain("Lead with finding a refill.");
+    expect(prompts.filter((message) => message.includes("<consultation>"))).toHaveLength(1);
+    expect((await rows(w)).documents.filter((doc) => doc.kind === "landing_spec")).toEqual([
+      expect.objectContaining({ _id: first?._id }), expect.objectContaining({ supersedesDocumentId: first?._id }),
+    ]);
+  });
+
+  test("a new revision briefs Iris on the latest kit, and later spend approval freezes that exact pair", async () => {
+    const { w, founder, projectId, brand } = await launchedBrand();
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: brand.approvalId, decision: "approve" });
+    await w.t.mutation(internal.platform.billing.grants.grantStarter, { ownerId: w.owner.userId, projectId });
+    const briefings: string[] = [];
+    let headline = "Find your next water stop";
+    const voice = "Check your bottle before the next climb.";
+    hooks.plan = ({ type }) => ({
+      reply: (request) => {
+        if (type === "crew_brand_kit") return { json: { ...hydrotrailBrandKit, voice: { ...hydrotrailBrandKit.voice, say: voice } } };
+        if (type !== "crew_landing") return undefined;
+        const input = JSON.stringify(request.messages);
+        if (input.includes("<consultation>")) {
+          briefings.push(input);
+          return { json: { answer: input.includes(voice) ? "Show a bottle check before the climb." : "Show the next water stop." } };
+        }
+        const draft = { ...hydrotrailLandingSpec, hero: { ...hydrotrailLandingSpec.hero, headline: { text: headline } } };
+        delete draft.proofSlots;
+        return { json: draft };
+      },
+    });
+    await founder.mutation(api.crew.launch.startPrivateLanding, { projectId });
+    await drain(w);
+    const askForEdits = async (text: string) => {
+      const latest = (await rows(w)).documents.filter((doc) => doc.kind === "landing_spec").at(-1);
+      if (!latest) throw new Error("Missing landing draft");
+      const card = await w.t.run(async (ctx) => await ctx.db.query("approvals").withIndex("by_subjectId", (q) => q.eq("subjectId", latest._id)).first());
+      if (!card) throw new Error("Missing review card");
+      headline = text;
+      return await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: card._id, decision: "request_changes", note: text });
+    };
+    const freshBrand = await w.t.run(async (ctx) => {
+      const project = await ctx.db.get("projects", projectId);
+      if (!project) throw new Error("Missing project");
+      return await requestCrewRevision(ctx, project, { kind: "brand_kit", note: voice, requestId: "brand-refresh" });
+    });
+    expect(freshBrand.outcome).toBe("queued");
+    await drain(w);
+    const kit = await founder.query(api.growth.drafts.brandKit.brandKitDraft, { projectId });
+    if (kit.state !== "ready" || !kit.card) throw new Error("Missing revised kit");
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: kit.card.approvalId, decision: "approve" });
+    expect((await askForEdits("Check your bottle before the climb")).changeRound?.outcome).toBe("free");
+    await drain(w);
+    expect(briefings).toHaveLength(2);
+    expect(briefings[1]).toContain(voice);
+    expect(await founder.query(api.crew.launch.privateLandingStatus, { projectId })).toMatchObject({ state: "ready", irisAnswer: "Show a bottle check before the climb." });
+    expect((await askForEdits("Refill before the ridge")).changeRound?.outcome).toBe("free");
+    await drain(w);
+    expect(briefings).toHaveLength(2);
+    const paid = (await askForEdits("Plan the last refill")).changeRound;
+    if (paid?.outcome !== "spend_required") throw new Error("Missing paid round");
+    const card = await w.t.run(async (ctx) => await ctx.db.get("approvals", paid.spendApprovalId));
+    expect(card?.crewRevision?.landingSources).toEqual({
+      brandKitId: expect.any(String), blueprintId: expect.any(String),
+    });
+    await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: kit.card.approvalId, decision: "cancel" });
+    await expect(founder.mutation(api.workspace.approvals.decideApproval, {
+      projectId, approvalId: paid.spendApprovalId, decision: "approve",
+    })).rejects.toThrow("APPROVAL_SUBJECT_CHANGED");
+    expect(ofType(await rows(w), "crew_landing")).toHaveLength(3);
+    expect((await w.t.run(async (ctx) => await ctx.db.get("approvals", paid.spendApprovalId)))?.status).toBe("pending");
+  });
+
+  test.each(["before_dispatch", "during_generation", "wrong_layout"] as const)(
+    "a private draft rejects stale approvals and a layout outside the brand direction: %s",
+    async (fault) => {
+      const { w, founder, projectId, brand } = await launchedBrand();
+      const args = { projectId };
+      await founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: brand.approvalId, decision: "approve" });
+      const revoke = () => founder.mutation(api.workspace.approvals.decideApproval, { projectId, approvalId: brand.approvalId, decision: "cancel" });
+      let calls = 0;
+      hooks.plan = ({ type }) => type !== "crew_landing" ? {} : {
+        before: async () => { if (fault === "during_generation" && calls === 1) await revoke(); },
+        reply: () => {
+          calls++;
+          if (calls === 2 && fault === "wrong_layout") {
+            const draft = { ...hydrotrailLandingSpec, hero: { ...hydrotrailLandingSpec.hero, layout: "type_led" as const } };
+            delete draft.proofSlots;
+            return { json: draft };
+          }
+          return undefined;
+        },
+      };
+      expect((await founder.mutation(api.crew.launch.startPrivateLanding, args)).state).toBe("queued");
+      if (fault === "before_dispatch") await revoke();
+      await drain(w);
+      expect(calls).toBe(fault === "before_dispatch" ? 0 : 2);
+      expect(await founder.query(api.crew.launch.privateLandingStatus, args)).toMatchObject({
+        state: "failed", failure: expect.stringMatching(fault === "wrong_layout" ? /quality|checks/i : /approved blueprint or brand kit changed/i),
+      });
+      expect((await rows(w)).documents.filter((doc) => doc.kind === "landing_spec")).toHaveLength(0);
+      const versions = await w.t.run(async (ctx) => await ctx.db.query("site_versions").take(2));
+      expect(versions).toHaveLength(0);
+    },
+  );
+
+});
+
+describe("WP94 founder-requested revisions", () => {
   test("a review decision schedules one real revision and the brand page shows its changed draft", async () => {
     const { w, founder, projectId, original, brand, originalTaskId } = await launchedBrand();
     const tagline = "Pack enough water for the next ridge.";

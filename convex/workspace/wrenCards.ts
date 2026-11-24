@@ -84,13 +84,7 @@ export const wrenCardProposalValidator = v.object({
   route: v.optional(v.string()),
 });
 
-const reviewRouteValidator = v.union(
-  v.literal(APPROVAL_REVIEW_ROUTES[0]),
-  v.literal(APPROVAL_REVIEW_ROUTES[1]),
-  v.literal(APPROVAL_REVIEW_ROUTES[2]),
-  v.literal(APPROVAL_REVIEW_ROUTES[3]),
-  v.literal(APPROVAL_REVIEW_ROUTES[4]),
-);
+const reviewRouteValidator = v.union(...APPROVAL_REVIEW_ROUTES.map((route) => v.literal(route)));
 
 /** What the thread shows for one card. Built by the server; no model text. */
 export const wrenCardViewValidator = v.union(
