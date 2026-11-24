@@ -42,7 +42,9 @@ library: real ideas, no spend, no schema.
   - Verification: `npx vitest run tests/platform/wp97-own-idea-examples.test.ts`.
 
 - [x] `WP97-S3` - Chips and the researched-version line on Step 1
-  - Scope: `components/workspace/wizard/WizardFlow.tsx` (`OwnIdeaStart`), `app/start/WizardPage.tsx` pass-through.
+  - Scope: `components/workspace/wizard/OwnIdeaExamples.tsx` (chips + researched-version line, data passed in, so
+    every Step 1 own-idea surface can render it), used by `OwnIdeaStart` in `WizardFlow.tsx`; `ownIdeaExamples` prop on
+    `WizardFlow`.
   - Acceptance criteria:
     - The chips render the drawn examples. A tap fills the field and focuses it.
     - While the field holds a library chip's exact text, a polite status line offers "Build the researched version" →

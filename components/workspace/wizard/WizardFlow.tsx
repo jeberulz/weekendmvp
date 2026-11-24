@@ -22,7 +22,6 @@ import {
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
 import { trackWorkspaceEvent } from "@/lib/track";
-import { wizardPath } from "@/lib/workspace/build-cta";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
 import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
@@ -31,6 +30,7 @@ import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
+import { OwnIdeaExamples } from "./OwnIdeaExamples";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
 import { Field, ScreenHead } from "./wizard-ui";
@@ -209,9 +209,6 @@ function OwnIdeaStart({
   const base = useId();
   const [text, setText] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
-  const [tapped, setTapped] = useState<OwnIdeaExample | null>(null);
-  // A library chip left exactly as tapped is a researched idea: offer that version. Any edit makes it the founder's.
-  const researched = tapped !== null && tapped.ideaSlug !== null && text === tapped.text ? tapped.ideaSlug : null;
   const errorId = `${base}-error`;
   const shownError = localError ?? error;
 
@@ -229,9 +226,8 @@ function OwnIdeaStart({
 
   const fieldId = `${base}-idea`;
   // A tapped example fills the field and hands focus back to it, ready to edit.
-  function applyExample(example: OwnIdeaExample) {
-    setText(example.text);
-    setTapped(example);
+  function applyExample(example: string) {
+    setText(example);
     setLocalError(null);
     document.getElementById(fieldId)?.focus();
   }
@@ -257,39 +253,7 @@ function OwnIdeaStart({
         invalid={shownError !== null}
         serif
       />
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] text-home-ink-3">Try one of these</p>
-        <div className="flex flex-wrap gap-2">
-          {examples.map((example) => (
-            <button
-              key={example.text}
-              type="button"
-              onClick={() => applyExample(example)}
-              className={cn(
-                "rounded-full border border-home-rule bg-home-card px-3 py-1.5 text-[13px] text-home-ink-2 hover:bg-home-sunk",
-                FOCUS,
-              )}
-            >
-              {example.text}
-            </button>
-          ))}
-        </div>
-        {/* Always mounted and in the accessibility tree, so screen readers hear the line when it appears.
-            Empty, it takes no space: the negative margin cancels the column gap. */}
-        <p role="status" className="text-[13px] text-home-ink-2 empty:-mt-2">
-          {researched ? (
-            <>
-              That one is already researched in the library.{" "}
-              <Link
-                href={wizardPath(researched)}
-                className={cn("whitespace-nowrap text-home-orange-ink underline underline-offset-2", FOCUS)}
-              >
-                Build the researched version
-              </Link>
-            </>
-          ) : null}
-        </p>
-      </div>
+      <OwnIdeaExamples examples={examples} value={text} onApply={applyExample} />
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
           {shownError}
