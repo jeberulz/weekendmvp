@@ -28,7 +28,7 @@ export const STEP_HEADS = {
     before: "Here's how I'd ",
     italic: "build",
     after: " it.",
-    sub: "Skim it. If something's off, tell me and I'll rework it right here.",
+    sub: "Skim it. If something's off, leave a note and your crew will work from it.",
   },
   platform: {
     before: "Where should it ",

@@ -34,6 +34,7 @@ import {
 } from "@/lib/workspace/wizard/defaults";
 import {
   COMMERCIAL_MODEL_OPTIONS,
+  carriedBlueprintNotes,
   GOAL_KIND_OPTIONS,
   GOAL_TIMEFRAME_OPTIONS,
   PAID_PUSH_DAILY_USD,
@@ -82,6 +83,7 @@ type Decision =
 const USE_SUGGESTED = "Use suggested · Continue";
 const LOOKS_RIGHT = "Looks right";
 const CONTINUE = "Continue";
+const SAVE_NOTES = "Save notes";
 const PRIMARY = `${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`;
 
 /** Key-order independent equality for plain answer objects. */
@@ -184,6 +186,17 @@ function NotValidatedNote({ id, blueprint }: { id: string; blueprint: WizardBlue
           the idea is researched.
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** The founder's saved rework notes, shown under the outline until they edit them. */
+function SavedNotes({ notes }: { notes: string }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
+      <p className={EYEBROW}>Your notes</p>
+      <p className="text-[15px] text-home-ink">{notes}</p>
+      <p className="text-[13px] text-home-ink-2">Saved. Your crew reads these before it builds. The outline stays as it is.</p>
     </div>
   );
 }
@@ -389,6 +402,31 @@ export function WizardStepPanel({
   );
   const toggleRef = useRef<HTMLButtonElement>(null);
 
+  // Blueprint rework notes: saved notes show under the outline. A fresh save
+  // closes the field, returns to "Looks good" and says so.
+  const savedNotes = step === "blueprint" ? carriedBlueprintNotes(answers) : null;
+  const primaryRef = useRef<HTMLButtonElement>(null);
+  const [lastNotes, setLastNotes] = useState(savedNotes);
+  const [notesSaves, setNotesSaves] = useState(0);
+  const [notesStatus, setNotesStatus] = useState("");
+  if (savedNotes !== lastNotes) {
+    setLastNotes(savedNotes);
+    if (savedNotes !== null) {
+      setDisclosure(false);
+      setDisclosureText("");
+      setLocalError(null);
+      setNotesStatus("Notes saved. Your crew will read them.");
+      setNotesSaves((count) => count + 1);
+    }
+  }
+  useEffect(() => {
+    if (notesSaves > 0) primaryRef.current?.focus();
+  }, [notesSaves]);
+  // Opening the notes field puts the cursor in it.
+  useEffect(() => {
+    if (step === "blueprint" && disclosure) document.getElementById(textId)?.focus();
+  }, [step, disclosure, textId]);
+
   const defaultName = defaults.name?.chosen;
   const customName = nameText.trim();
   const customPartner = partnerText.trim();
@@ -413,8 +451,8 @@ export function WizardStepPanel({
       case "blueprint": {
         if (!disclosure) return { kind: "accept", label: "Looks good" };
         const text = disclosureText.trim();
-        if (text.length === 0) return { kind: "missing", label: "Rework it", message: "Say what should change first." };
-        return { kind: "rewrite", label: "Rework it", text };
+        if (text.length === 0) return { kind: "missing", label: SAVE_NOTES, message: "Say what should change first." };
+        return { kind: "rewrite", label: SAVE_NOTES, text };
       }
       case "platform": {
         if (platformKind === "custom") {
@@ -546,6 +584,7 @@ export function WizardStepPanel({
       body = (
         <>
           <BlueprintCard blueprint={blueprint} ideaTitle={ideaTitle} isOwn={isOwn} noteId={noteId} />
+          {savedNotes !== null && !disclosure ? <SavedNotes notes={savedNotes} /> : null}
           <div id={`${base}-rework`} hidden={!disclosure}>
             {disclosure ? (
               <div className="flex flex-col gap-1.5">
@@ -553,7 +592,8 @@ export function WizardStepPanel({
                   What should change?
                 </label>
                 <p id={`${textId}-hint`} className="text-[13px] text-home-ink-2">
-                  Your notes go back with the blueprint. You can still choose &ldquo;Looks good&rdquo; afterwards.
+                  Your crew reads these before it builds. The outline above stays as it is, and you can still choose
+                  &ldquo;Looks good&rdquo; afterwards.
                 </p>
                 <textarea
                   id={textId}
@@ -796,6 +836,7 @@ export function WizardStepPanel({
 
   const primary = (
     <button
+      ref={primaryRef}
       type="submit"
       className={step === "blueprint" || quick ? `${BTN_PRIMARY} min-h-12 flex-[1_1_240px] text-[15px]` : PRIMARY}
       aria-disabled={pending || undefined}
@@ -821,7 +862,7 @@ export function WizardStepPanel({
       {body}
 
       <p role="status" aria-live="polite" className="sr-only">
-        {pending ? "Saving…" : ""}
+        {pending ? "Saving…" : notesStatus}
       </p>
 
       {localError ? (
@@ -847,11 +888,14 @@ export function WizardStepPanel({
             aria-expanded={disclosure}
             aria-controls={`${base}-rework`}
             onClick={() => {
+              // Editing starts from the saved notes.
+              if (!disclosure && savedNotes !== null && disclosureText.length === 0) setDisclosureText(savedNotes);
               setDisclosure((open) => !open);
               setLocalError(null);
+              setNotesStatus("");
             }}
           >
-            I&rsquo;d change some things
+            {savedNotes !== null ? "Edit my notes" : <>I&rsquo;d change some things</>}
           </button>
         </div>
       ) : quick ? (

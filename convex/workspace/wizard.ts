@@ -35,7 +35,12 @@ import {
   type WizardIdea,
   type WizardSeed,
 } from "../../lib/workspace/wizard/defaults";
-import { summarizeStep, type FounderSignalAction } from "../../lib/workspace/wizard/labels";
+import {
+  blueprintNotesSummary,
+  carriedBlueprintNotes,
+  summarizeStep,
+  type FounderSignalAction,
+} from "../../lib/workspace/wizard/labels";
 import { mirrorSignal, recordFounderSignal } from "./signals";
 import { businessLimitFor } from "./business";
 
@@ -402,11 +407,21 @@ async function commitStep(
 
   // Classify against the seed the session had before this decision.
   const { seed } = await seedFor(ctx, sessionIdea(current), session._id);
+  // "Looks good" after rework notes keeps the notes: the completed answers only
+  // hold `looks_good`, so the blueprint signal (which the crew reads) carries them.
+  const approvedNotes =
+    step === "blueprint" && merged.blueprintDecision?.decision === "looks_good" ? carriedBlueprintNotes(current) : null;
   const action: FounderSignalAction =
     forcedAction ??
-    (isDefaultAnswer(step, merged, seed) ? "kept" : isRewrittenAnswer(step, merged, seed) ? "rewrote" : "changed");
+    (approvedNotes !== null
+      ? "changed"
+      : isDefaultAnswer(step, merged, seed)
+        ? "kept"
+        : isRewrittenAnswer(step, merged, seed)
+          ? "rewrote"
+          : "changed");
   const before = options.hadSuggestion ? summarizeStep(step, seed.defaults) : undefined;
-  const after = summarizeStep(step, merged);
+  const after = approvedNotes !== null ? blueprintNotesSummary(approvedNotes) : summarizeStep(step, merged);
   const now = Date.now();
 
   await recordFounderSignal(ctx, { ownerId: session.ownerId, session, step, action, before, after, now });

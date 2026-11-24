@@ -135,6 +135,34 @@ function rawSummary(step: WizardStep, answers: WizardAnswersProgress): string | 
 
 export type FounderSignalAction = "kept" | "changed" | "skipped" | "rewrote";
 
+/** How a blueprint approved after rework notes is recorded, so the crew still reads the notes. */
+export const BLUEPRINT_NOTES_PREFIX = "Approved blueprint with notes: ";
+
+/** The `after` summary (and signal note) for a blueprint approved with the founder's notes. */
+export function blueprintNotesSummary(notes: string): string {
+  return truncateText(`${BLUEPRINT_NOTES_PREFIX}${notes}`, WIZARD_LIMITS.signalNote);
+}
+
+/**
+ * The founder's rework notes this session still carries: the saved rework
+ * decision's notes, else the notes an earlier "Looks good" already folded into
+ * the blueprint signal (so Back and "Looks good" again keeps them). Null when
+ * there are none.
+ */
+export function carriedBlueprintNotes(answers: Pick<WizardAnswersProgress, "blueprintDecision" | "signals">): string | null {
+  const decision = answers.blueprintDecision;
+  if (decision?.decision === "rework") {
+    const notes = decision.notes?.trim();
+    return notes ? notes : null;
+  }
+  const note = answers.signals?.blueprint?.note;
+  if (note?.startsWith(BLUEPRINT_NOTES_PREFIX)) {
+    const notes = note.slice(BLUEPRINT_NOTES_PREFIX.length).trim();
+    return notes ? notes : null;
+  }
+  return null;
+}
+
 /**
  * The `answers.signals` note for one decision, in the canvas's words
  * ("Approved suggested platform: …", "Changed goal: A → B"). Single-line and
@@ -146,6 +174,8 @@ export function signalNote(
   before: string | undefined,
   after: string | undefined,
 ): string {
+  // A blueprint approved with notes reads as itself: the notes are the point, not "Looks good → …".
+  if (step === "blueprint" && after?.startsWith(BLUEPRINT_NOTES_PREFIX)) return truncateText(after, WIZARD_LIMITS.signalNote);
   const noun = STEP_NOUNS[step];
   const chosen = after ?? "no answer";
   const note =

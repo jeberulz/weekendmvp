@@ -159,13 +159,78 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     await user.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(screen.queryByRole("button", { name: "Looks good" })).toBeNull();
+    // Opening the notes field puts the cursor in it.
+    expect(document.activeElement).toBe(screen.getByLabelText("What should change?"));
     // Empty notes are caught before any call.
-    await user.click(screen.getByRole("button", { name: "Rework it" }));
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
     expect(screen.getByRole("alert").textContent).toMatch(/Say what should change/);
     await user.type(screen.getByLabelText("What should change?"), "Drop one feature");
-    await user.click(screen.getByRole("button", { name: "Rework it" }));
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
     expect(handlers.onRewrite).toHaveBeenCalledWith("Drop one feature");
     await expectNoAxeViolations(container);
+  });
+
+  test("saved rework notes close the field, show under the outline, return focus to Looks good and can be edited", async () => {
+    const props = {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: { idea: own.defaults.idea },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    };
+    const { container, handlers, rerender, user } = setup("blueprint", props);
+    await user.click(screen.getByRole("button", { name: "I\u2019d change some things" }));
+    await user.type(screen.getByLabelText("What should change?"), "Drop one feature");
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
+    expect(handlers.onRewrite).toHaveBeenCalledWith("Drop one feature");
+
+    // The server saved the rework: the session stays on the blueprint with the notes.
+    rerender(
+      <WizardStepPanel
+        step="blueprint"
+        {...props}
+        answers={{ idea: own.defaults.idea, blueprintDecision: { decision: "rework", notes: "Drop one feature" } }}
+        pending={false}
+        error={null}
+        {...handlers}
+      />,
+    );
+    const looksGood = screen.getByRole("button", { name: "Looks good" });
+    expect(document.activeElement).toBe(looksGood);
+    expect(screen.queryByLabelText("What should change?")).toBeNull();
+    expect(container.textContent).toMatch(/Your notes\s*Drop one feature/);
+    expect(screen.getByRole("status").textContent).toBe("Notes saved. Your crew will read them.");
+    await expectNoAxeViolations(container);
+
+    // Editing starts from the saved notes.
+    const edit = screen.getByRole("button", { name: "Edit my notes" });
+    await user.click(edit);
+    expect((screen.getByLabelText("What should change?") as HTMLTextAreaElement).value).toBe("Drop one feature");
+    expect(screen.getByRole("status").textContent).toBe("");
+
+    await user.click(edit);
+    await user.click(screen.getByRole("button", { name: "Looks good" }));
+    expect(handlers.onAccept).toHaveBeenCalledTimes(1);
+  });
+
+  test("notes already carried in the blueprint signal (Back after Looks good) still show", () => {
+    setup("blueprint", {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: {
+        idea: own.defaults.idea,
+        blueprintDecision: { decision: "looks_good" },
+        signals: { blueprint: { signal: "edited", note: "Approved blueprint with notes: Drop one feature" } },
+      },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    });
+    expect(screen.getByText("Drop one feature")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Edit my notes" })).toBeTruthy();
+    // Nothing was just saved, so focus is not moved and nothing is announced.
+    expect(screen.getByRole("status").textContent).toBe("");
   });
 
   test("a previous, different answer is preselected and kept with Continue", async () => {
