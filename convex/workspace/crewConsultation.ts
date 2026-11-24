@@ -89,7 +89,8 @@ export const start = internalMutation({
     ]);
     if (!founder || !reply || founder.ownerId !== args.ownerId || founder.projectId !== args.projectId ||
       reply.ownerId !== args.ownerId || reply.projectId !== args.projectId || founder.author !== "founder" ||
-      reply.author !== "wren" || reply.replyTo !== founder._id || reply.status !== "streaming" ||
+      reply.author !== "wren" || reply.status !== "streaming" ||
+      (reply.replyTo !== undefined && reply.replyTo !== founder._id) ||
       founder.status !== "done" || founder.createdAt !== reply.createdAt ||
       (reply.crewConsultation?.attempt ?? 0) >= args.attempt) return null;
 

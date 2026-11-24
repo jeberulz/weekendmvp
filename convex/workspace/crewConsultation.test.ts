@@ -112,6 +112,8 @@ describe("Crew discussions", () => {
     expect(await read(unknown)).toMatchObject({ status: "done", body: expect.stringContaining("“Brian”") });
     expect((await read(unknown))?.crewConsultation).toBeUndefined();
     const direct = await send("Ask the brand specialist: What should we review first?");
+    // Existing chats predate replyTo. Their already-paired founder turn still works when retried.
+    await t.run((ctx) => ctx.db.patch("chat_messages", direct.wrenMessageId, { replyTo: undefined }));
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect(await read(direct)).toMatchObject({ status: "done", crewConsultation: { recipient: { name: "Iris" } } });
     expect((await read(direct))?.crewConsultation?.colleague).toBeUndefined();
