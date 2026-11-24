@@ -29,6 +29,7 @@ import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
+import { OwnIdeaLibraryLink } from "./OwnIdeaLibraryLink";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
 import { Field, ScreenHead } from "./wizard-ui";
@@ -268,6 +269,7 @@ function OwnIdeaStart({
           ))}
         </div>
       </div>
+      <OwnIdeaLibraryLink />
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
           {shownError}
