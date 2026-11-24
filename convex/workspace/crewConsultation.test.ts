@@ -123,8 +123,8 @@ describe("Crew discussions", () => {
 
   test("gives both specialists the complete requested welcome email, its CTA and the approved Brand Kit", async () => {
     const { t, send } = await setup();
-    const turn = await send(duo);
-    const body = `${"Choose a dry section to plan your water stops. ".repeat(18)}Reply with the length of your next hike.`;
+    const turn = await send("Ask Iris to consult with Elle about whether the welcome email matches the brand voice and the rest of the sequence.");
+    const body = `${"Choose a dry section to plan your water stops. ".repeat(76)}Reply with the length of your next hike.`;
     await t.run(async (ctx) => {
       const scope = { ownerId: turn.ownerId, projectId: turn.projectId, format: "json" as const, createdAt: 1, updatedAt: 1 };
       const brandId = await ctx.db.insert("documents", {
@@ -152,9 +152,12 @@ describe("Crew discussions", () => {
       expect(JSON.parse(worker?.evidence ?? "{}")).toMatchObject({
         artifacts: [
           { kind: "brand_kit", review: "approved", voice: hydrotrailBrandKit.voice },
-          { kind: "email_sequence", coverage: "requested_email", emails: [{
-            kind: "welcome", body: { format: "full", text: body }, cta: { target: "reply" },
-          }] },
+          { kind: "email_sequence", coverage: "email_sequence", focusEmail: "welcome", emails: [
+            { kind: "welcome", body: { format: "full", text: body }, cta: { target: "reply" } },
+            { kind: "value", body: { format: "full", text: hydrotrailEmailSequence.emails.value.body } },
+            { kind: "offer", body: { format: "full", text: hydrotrailEmailSequence.emails.offer.body } },
+            { kind: "follow_up", body: { format: "full", text: hydrotrailEmailSequence.emails.follow_up.body } },
+          ] },
         ],
       });
     }

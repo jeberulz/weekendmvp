@@ -65,14 +65,18 @@ async function readDraftEvidence(ctx: MutationCtx, project: Doc<"projects">, rol
     const sequence = parseDraftBody(document.body, emailSequenceSchema);
     if (!sequence) return null;
     const requested = handoffEmailKind(question);
-    const items = requested
-      ? [[requested, sequence.emails[requested]] as const]
-      : Object.entries(sequence.emails);
-    const maxBodyBytes = Math.max(0, Math.floor(maxBytes / items.length) - 720);
+    const emails = Object.entries(sequence.emails);
+    const bodyBudget = Math.max(0, maxBytes - 720 * emails.length);
+    const share = Math.floor(bodyBudget / emails.length);
+    // Give a named email more room while preserving the rest of the sequence
+    // for questions that compare it with the other messages.
+    const peerShare = requested ? Math.floor(share / 2) : share;
+    const requestedShare = bodyBudget - peerShare * (emails.length - 1);
     return bounded({
-      coverage: requested ? "requested_email" : "email_sequence",
-      emails: items.map(([kind, { subject, preview, body, cta }]) => ({
-        kind, subject, preview, body: draftText(body, maxBodyBytes), cta,
+      coverage: "email_sequence",
+      focusEmail: requested,
+      emails: emails.map(([kind, { subject, preview, body, cta }]) => ({
+        kind, subject, preview, body: draftText(body, kind === requested ? requestedShare : peerShare), cta,
       })),
     });
   }
