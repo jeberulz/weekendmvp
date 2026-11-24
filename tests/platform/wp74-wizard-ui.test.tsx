@@ -233,6 +233,26 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     expect(screen.getByRole("status").textContent).toBe("");
   });
 
+  test("saving the notes unchanged closes the editor without a server call", async () => {
+    const { handlers, user } = setup("blueprint", {
+      ideaTitle: "A packing list",
+      ideaSlug: null,
+      answers: { idea: own.defaults.idea, blueprintDecision: { decision: "rework", notes: "Drop one feature" } },
+      defaults: own.defaults,
+      blueprint: own.blueprint,
+      suggestedNames: own.suggestedNames,
+    });
+    await user.click(screen.getByRole("button", { name: "Edit my notes" }));
+    // Only trailing whitespace added: still the same notes.
+    await user.type(screen.getByLabelText("What should change?"), "   ");
+    await user.click(screen.getByRole("button", { name: "Save notes" }));
+    expect(handlers.onRewrite).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("What should change?")).toBeNull();
+    const looksGood = screen.getByRole("button", { name: "Looks good" });
+    expect(document.activeElement).toBe(looksGood);
+    expect(screen.getByRole("status").textContent).toBe("Notes saved. Your crew will read them.");
+  });
+
   test("a previous, different answer is preselected and kept with Continue", async () => {
     const { handlers, user } = setup("platform", {
       answers: { idea: hydro.defaults.idea, platform: { kind: "native" } },

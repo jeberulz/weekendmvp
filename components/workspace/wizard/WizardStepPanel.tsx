@@ -516,7 +516,13 @@ export function WizardStepPanel({
     setLocalError(null);
     if (decision.kind === "accept") onAccept();
     else if (decision.kind === "choose") onChoose(decision.answer);
-    else onRewrite(decision.text);
+    else if (step === "blueprint" && decision.text === savedNotes) {
+      // Unchanged notes: nothing to save, but confirm and close like a real save.
+      setDisclosure(false);
+      setDisclosureText("");
+      setNotesStatus("Notes saved. Your crew will read them.");
+      setNotesSaves((count) => count + 1);
+    } else onRewrite(decision.text);
   }
 
   /** Escape closes an open disclosure and hands focus back to the button that opened it. */
