@@ -215,14 +215,35 @@ export function nameFromTitle(title: string): string {
 const OWN_IDEA_LEAD_IN =
   /^\s*i(?:\s+want\s+to|\s+wanna|\s+plan\s+to|(?:\s+would|\s*['’]d)\s+like\s+to|(?:\s+am|\s*['’]m)\s+going\s+to)\s+/iu;
 
-/** A short name from an own idea's first words: "A packing list that adapts to the forecast" → "Packing List". */
+/**
+ * Words that say what kind of thing it is, not what it is called. A suggested
+ * name made only of these ("App", "Mobile App", "Web Platform") is not a name.
+ */
+const GENERIC_NAME_WORDS: ReadonlySet<string> = new Set([
+  "app", "apps", "application", "tool", "tools", "platform", "service", "services", "website", "site", "webapp",
+  "web", "mobile", "online", "product", "software", "saas", "startup", "business", "company", "system", "solution",
+  "solutions", "thing", "idea", "ai", "simple", "new", "small", "little",
+]);
+
+/** True when every word of a suggested name is a generic product word. */
+export function isGenericName(name: string): boolean {
+  const words = name.toLowerCase().split(/[\s-]+/u).filter((word) => word.length > 0);
+  return words.length > 0 && words.every((word) => GENERIC_NAME_WORDS.has(word));
+}
+
+/**
+ * A short name from an own idea's first words: "A packing list that adapts to the forecast" → "Packing List".
+ * When the first words are only a generic noun ("An app that helps nurses…" → "App"), it suggests the plain
+ * fallback name instead; the founder can type their own.
+ */
 export function nameFromOwnIdea(text: string): string {
   const head = text.split(/[.!?\n]|[,;:(]|\s[–—-]\s/u, 1)[0] ?? text;
   const trimmed = head
     .replace(OWN_IDEA_LEAD_IN, "")
     .replace(/^\s*(build|make|create|launch|start)\s+/iu, "")
     .replace(/^\s*(an?|the)\s+/iu, "");
-  return shortBusinessName(trimmed, 3);
+  const name = shortBusinessName(trimmed, 3);
+  return isGenericName(name) ? FALLBACK_NAME : name;
 }
 
 function baseDefaults(

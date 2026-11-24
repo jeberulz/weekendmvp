@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { WIZARD_LIMITS, wizardAnswersProgressSchema } from "@/lib/workspace/contracts/wizard";
-import { nameFromOwnIdea, nameFromTitle, shortBusinessName, wizardSeedFor } from "@/lib/workspace/wizard/defaults";
+import { isGenericName, nameFromOwnIdea, nameFromTitle, shortBusinessName, wizardSeedFor } from "@/lib/workspace/wizard/defaults";
 
 // L1-C7. The suggested business name is a short, clean, title-cased phrase:
 // whole words only, no trailing hyphen, no dangling article or preposition,
@@ -62,13 +62,17 @@ describe("L1-C7 nameFromTitle", () => {
 describe("L1-C7 nameFromOwnIdea", () => {
   test.each([
     ["A packing list that adapts to the forecast", "Packing List"],
-    ["I want to build an app that helps nurses swap shifts", "App"],
+    // Only a generic noun ("App") is not a name: the plain fallback instead.
+    ["I want to build an app that helps nurses swap shifts", "Weekend Launch"],
+    ["An app that helps freelance designers chase late invoices politely", "Weekend Launch"],
+    ["A mobile app for dog walkers", "Weekend Launch"],
+    ["A web platform, for tutors", "Weekend Launch"],
     ["the cheapest way to rent camping gear for a weekend", "Cheapest Way"],
     ["Tutoring marketplace. Parents book local tutors near them", "Tutoring Marketplace"],
     ["help freelancers chase late invoices", "Help Freelancers Chase"],
     ["Dog walking app for busy city workers", "Dog Walking App"],
     // Lead-ins are stripped, straight or curly apostrophe, with or without a build verb.
-    ["I'd like to build an app that helps nurses swap shifts", "App"],
+    ["I'd like to build an app that helps nurses swap shifts", "Weekend Launch"],
     ["I’d like to build a recipe swap site for neighbours", "Recipe Swap Site"],
     ["I'd like to help freelancers chase late invoices", "Help Freelancers Chase"],
     ["I would like to make a habit tracker", "Habit Tracker"],
@@ -86,6 +90,21 @@ describe("L1-C7 nameFromOwnIdea", () => {
     const name = nameFromOwnIdea(text);
     expect(name).toBe(expected);
     expectClean(name);
+  });
+});
+
+describe("isGenericName", () => {
+  test.each([
+    ["App", true],
+    ["Mobile App", true],
+    ["AI Tool", true],
+    ["Web-App", true],
+    ["Dog Walking App", false],
+    ["Packing List", false],
+    ["Tutoring Marketplace", false],
+    ["", false],
+  ])("%j → %j", (name, expected) => {
+    expect(isGenericName(name)).toBe(expected);
   });
 });
 
