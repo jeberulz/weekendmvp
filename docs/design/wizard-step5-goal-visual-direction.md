@@ -282,9 +282,16 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 
 ## 7. Decisions for you
 
-> **Settled 2026-11-24: John accepted 1A to 6A, as drawn in the mockup.** Nothing is wired into production yet. That
-> starts only when John asks. 2A also needs the launch plan to read the deadline. That is the "timeframe has no
-> consumer" finding already handed to the wizard end-to-end audit (§2.7).
+> **Settled 2026-11-24: John accepted 1A to 6A, as drawn in the mockup, and asked for them to be wired in.**
+> Built in `WizardStepPanel.tsx` (goal body and quick confirm), `wizard-ui.tsx` (no chip on a pill),
+> `labels.ts` (`FIRST_WIN_GOALS`, rewritten hints), `copy.ts` (sub line) and `goal-line.ts` (the live crew line).
+> Two things differ from the mockup on purpose:
+> - **No deadline reason line yet.** Nothing reads the timeframe today, so "Sets the pace of your launch plan" would
+>   be untrue. Add it when the launch plan reads the deadline (the "timeframe has no consumer" finding handed to the
+>   wizard end-to-end audit, §2.7).
+> - **Continue still falls below the first 812px screen at 375px.** The goal panel alone measures about 794px there,
+>   before the header and progress bar. Getting it on screen needs a further choice, such as a sticky Continue or
+>   shorter hints on small screens.
 
 1. **The goal options.**
    **(A, recommended)** Three first wins (First 50 signups, First sale, Test the idea). Hide `mrr_500` and
