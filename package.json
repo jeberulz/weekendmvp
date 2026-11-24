@@ -55,6 +55,7 @@
     "publish:ideas": "bash scripts/run-engine-node.sh scripts/publish-ideas-batch.mjs",
     "pain-engine:run": "bash scripts/run-engine-node.sh scripts/pain-engine-run.mjs",
     "pain-engine:fixture": "bash scripts/run-engine-node.sh scripts/pain-engine-run.mjs --fixture",
+    "pain-engine:submit-editorial": "bash scripts/run-engine-node.sh scripts/pain-engine-submit-editorial.mjs",
     "test:pain-engine": "vitest run lib/pain-engine tests/pain-engine",
     "editorial:submit-engine": "node scripts/editorial-submit-engine.mjs",
     "membership:import-cohorts": "node scripts/membership-import-cohorts.mjs",
