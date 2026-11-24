@@ -289,9 +289,11 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 > - **No deadline reason line yet.** Nothing reads the timeframe today, so "Sets the pace of your launch plan" would
 >   be untrue. Add it when the launch plan reads the deadline (the "timeframe has no consumer" finding handed to the
 >   wizard end-to-end audit, §2.7).
-> - **Continue still falls below the first 812px screen at 375px.** The goal panel alone measures about 794px there,
->   before the header and progress bar. Getting it on screen needs a further choice, such as a sticky Continue or
->   shorter hints on small screens.
+> - **A sticky Continue on phones (John's call, 2026-11-24).** The goal panel alone measures about 794px at 375px,
+>   so with the header and progress bar Continue fell below the first 812px screen. Below `sm`, Continue now sits in a
+>   bar stuck to the bottom of the screen until the form ends (a paper fill and a hairline on top). It is on the
+>   first screen at 748–800px. Focused options keep a scroll margin so the bar never hides them. Desktop is unchanged,
+>   and so is the quick confirm, which already fits.
 
 1. **The goal options.**
    **(A, recommended)** Three first wins (First 50 signups, First sale, Test the idea). Hide `mrr_500` and
