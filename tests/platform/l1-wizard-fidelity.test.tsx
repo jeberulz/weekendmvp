@@ -224,7 +224,7 @@ describe("L1 wizard: Save & exit only when a session can be resumed", () => {
   test("an own idea's first step tells the founder the answers save as they go", () => {
     state.view = view(0, { answers: { idea: { source: "own_idea", text: "A packing list" } }, defaults: wizardSeedFor({ idea: { source: "own_idea", text: "A packing list" } }).defaults });
     render(<WizardFlow idea={null} ideaTitle={null} initialSessionId="session123" />);
-    expect(screen.getByText("Your answers save as you go. Bookmark this page to come back.")).toBeTruthy();
+    expect(screen.getByText("Your answers save as you go.")).toBeTruthy();
   });
 
   test("there is nothing to save once the business exists", () => {

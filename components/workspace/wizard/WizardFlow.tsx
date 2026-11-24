@@ -5,17 +5,16 @@ import { ConvexError } from "convex/values";
 import Link from "next/link";
 import { Logo } from "@/components/primitives/Logo";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
 import { ErrorReporterMount } from "@/components/workspace/feedback/ErrorReporterMount";
 import { FeedbackControl } from "@/components/workspace/feedback/FeedbackControl";
 import { ReportingBoundary } from "@/components/workspace/feedback/ReportingBoundary";
 import { reportClientError } from "@/components/workspace/feedback/clientErrors";
 import { LoadingState } from "@/components/workspace/kit";
-import { BTN_PRIMARY, FOCUS } from "@/components/workspace/kit/styles";
+import { FOCUS } from "@/components/workspace/kit/styles";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import {
-  WIZARD_LIMITS,
   WIZARD_STEPS,
   wizardAnswersProgressSchema,
   type WizardAnswersProgress,
@@ -30,11 +29,10 @@ import { CreateBusiness } from "./CreateBusiness";
 import { CrewPreview } from "./CrewPreview";
 import { FounderSignals } from "./FounderSignals";
 import { LiveMeetCofounder } from "./MeetCofounder";
-import { OwnIdeaExamples } from "./OwnIdeaExamples";
-import { OwnIdeaLibraryLink } from "./OwnIdeaLibraryLink";
+import { OwnIdeaForm } from "./OwnIdeaForm";
 import { WizardProgress, progressLabel } from "./WizardProgress";
 import { WizardStepPanel } from "./WizardStepPanel";
-import { Field, ScreenHead } from "./wizard-ui";
+import { ScreenHead } from "./wizard-ui";
 
 export type WizardFlowProps = {
   /** A library idea from `/start/[ideaSlug]`, or null for `/start/own`. */
@@ -193,81 +191,6 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-function OwnIdeaStart({
-  pending,
-  error,
-  headingRef,
-  onStart,
-  examples,
-}: {
-  pending: boolean;
-  error: string | null;
-  headingRef: RefObject<HTMLHeadingElement | null>;
-  onStart: (text: string) => void;
-  /** Concrete example ideas, to lower the blank-page cost on the own path (WP99). */
-  examples: readonly OwnIdeaExample[];
-}) {
-  const base = useId();
-  const [text, setText] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
-  const errorId = `${base}-error`;
-  const shownError = localError ?? error;
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (pending) return;
-    const trimmed = text.trim();
-    if (trimmed.length === 0) {
-      setLocalError("Write your idea in one sentence first.");
-      return;
-    }
-    setLocalError(null);
-    onStart(trimmed);
-  }
-
-  const fieldId = `${base}-idea`;
-  // A tapped example fills the field and hands focus back to it, ready to edit.
-  function applyExample(example: string) {
-    setText(example);
-    setLocalError(null);
-    document.getElementById(fieldId)?.focus();
-  }
-
-  return (
-    <form onSubmit={submit} noValidate className="flex w-full max-w-[600px] flex-col gap-6">
-      <ScreenHead
-        headingId={`${base}-heading`}
-        headingRef={headingRef}
-        lead="What are we "
-        italic="building"
-        tail="?"
-        sub="One sentence is plenty. I'll suggest everything else."
-      />
-      <Field
-        id={fieldId}
-        label="Your idea in one sentence"
-        hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
-        value={text}
-        onChange={setText}
-        maxLength={WIZARD_LIMITS.ownIdea}
-        errorId={errorId}
-        invalid={shownError !== null}
-        serif
-      />
-      <OwnIdeaExamples examples={examples} value={text} onApply={applyExample} />
-      <OwnIdeaLibraryLink />
-      {shownError ? (
-        <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
-          {shownError}
-        </p>
-      ) : null}
-      <button type="submit" className={`${BTN_PRIMARY} min-h-[52px] w-full text-[15px]`} aria-disabled={pending || undefined}>
-        Continue
-      </button>
-    </form>
-  );
-}
-
 /**
  * The eight-step wizard as one client flow. Progress lives on the server
  * (`wizard_sessions`): every decision is a mutation and the view is a live
@@ -370,8 +293,10 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
   async function startOwn(text: string) {
     await run(async () => {
       const id = await startOrResume({ idea: { source: "own_idea", text } });
-      // The own-idea sentence is step 1; the session (and so the position tracking) starts after it.
-      trackWorkspaceEvent({ name: "wizard_step_finished", props: { step: "idea" } });
+      // The own-idea sentence is step 1, answered before the session exists. Starting the position
+      // tracking at "idea" makes the session's first view a step change: it is announced, focus moves
+      // to its h1, and `trackWizardMove` logs step 1 as finished (once, there).
+      lastPosition.current = "idea";
       setSessionId(id);
       router.replace(ownIdeaUrl(id), { scroll: false });
     });
@@ -416,11 +341,11 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
   let body;
   if (sessionId === null && idea === null) {
     body = (
-      <OwnIdeaStart
+      <OwnIdeaForm
         pending={pending}
         error={error}
         headingRef={headingRef}
-        onStart={(text) => void startOwn(text)}
+        onSubmit={(text) => void startOwn(text)}
         examples={ownIdeaExamples}
       />
     );
@@ -513,7 +438,7 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = 
         pending={pending}
         error={error}
         headingRef={headingRef}
-        showResumeHint={ownIdea && sessionId !== null}
+        ownIdeaExamples={ownIdeaExamples}
         onAccept={() => {
           const answer = stepAnswerOf(step, parsed.defaults);
           if (answer !== undefined) void run(() => saveStep({ ...ids, answer }));

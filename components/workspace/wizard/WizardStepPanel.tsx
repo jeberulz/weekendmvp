@@ -43,6 +43,8 @@ import {
 } from "@/lib/workspace/wizard/labels";
 import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
+import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
+import { OwnIdeaForm } from "./OwnIdeaForm";
 import { Field, OptionCard, StepHeadView, SuggestedChip } from "./wizard-ui";
 
 export type WizardStepPanelProps = {
@@ -62,8 +64,8 @@ export type WizardStepPanelProps = {
   readonly pending: boolean;
   readonly error: string | null;
   readonly headingRef?: Ref<HTMLHeadingElement>;
-  /** Own idea with a pinned session: tell the founder the answers save as they go. */
-  readonly showResumeHint?: boolean;
+  /** WP99: the own-idea Step 1 example chips, the same ones the first visit shows. */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
   /** Use the suggested default. */
   readonly onAccept: () => void;
   /** Pick a different offered choice (or keep a previous answer). */
@@ -327,7 +329,7 @@ export function WizardStepPanel({
   pending,
   error,
   headingRef,
-  showResumeHint = false,
+  ownIdeaExamples,
   onAccept,
   onChoose,
   onRewrite,
@@ -365,7 +367,6 @@ export function WizardStepPanel({
   const isOwn = ideaAnswer?.source === "own_idea";
 
   const [localError, setLocalError] = useState<string | null>(null);
-  const [ideaText, setIdeaText] = useState(ideaAnswer?.source === "own_idea" ? ideaAnswer.text : "");
   const [disclosure, setDisclosure] = useState(false);
   const [disclosureText, setDisclosureText] = useState("");
   const [platformKind, setPlatformKind] = useState<"native" | "web" | "custom">(current.platform?.kind ?? "web");
@@ -397,12 +398,7 @@ export function WizardStepPanel({
     if (quick) return { kind: "accept", label: LOOKS_RIGHT };
     switch (step) {
       case "idea": {
-        if (isOwn) {
-          const text = ideaText.trim();
-          if (text.length === 0) return { kind: "missing", label: CONTINUE, message: "Write your idea in one sentence first." };
-          const unchanged = defaults.idea?.source === "own_idea" && defaults.idea.text === text;
-          return unchanged ? { kind: "accept", label: CONTINUE } : { kind: "rewrite", label: CONTINUE, text };
-        }
+        // An own idea's step 1 is `OwnIdeaForm` (returned below); this is the library idea.
         if (disclosure) {
           const text = disclosureText.trim();
           if (text.length === 0) return { kind: "missing", label: "Use my idea", message: "Write your idea in one sentence first." };
@@ -465,6 +461,27 @@ export function WizardStepPanel({
     }
   }
 
+  // Step 1 for an own idea is the one shared surface, the same before the
+  // session exists and after Back or a reload. Unchanged text keeps the idea;
+  // edited text rewrites it (and so the blueprint the next step shows).
+  if (step === "idea" && isOwn) {
+    const savedText = ideaAnswer.text;
+    return (
+      <OwnIdeaForm
+        initialText={savedText}
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        examples={ownIdeaExamples}
+        onSubmit={(text) => {
+          const unchanged = defaults.idea?.source === "own_idea" ? defaults.idea.text === text : text === savedText;
+          if (unchanged) onAccept();
+          else onRewrite(text);
+        }}
+      />
+    );
+  }
+
   const decision = decide();
   const invalid = localError !== null;
 
@@ -498,21 +515,7 @@ export function WizardStepPanel({
   let body: ReactNode;
   switch (step) {
     case "idea":
-      body = isOwn ? (
-        <div className="flex flex-col gap-2 rounded-[10px] border border-home-rule bg-home-card px-[18px] py-4">
-          <Field
-            id={textId}
-            label="Your idea in one sentence"
-            hint={`Up to ${WIZARD_LIMITS.ownIdea} characters. Your own idea gets a light blueprint, marked "Not yet validated".`}
-            value={ideaText}
-            onChange={setIdeaText}
-            maxLength={WIZARD_LIMITS.ownIdea}
-            errorId={errorId}
-            invalid={invalid}
-            serif
-          />
-        </div>
-      ) : (
+      body = (
         <>
           <LibraryIdea
             ideaTitle={ideaTitle}
@@ -812,11 +815,7 @@ export function WizardStepPanel({
       noValidate
       className="flex w-full max-w-[672px] flex-col gap-6"
     >
-      <StepHeadView step={step} headingId={headingId} headingRef={headingRef}>
-        {showResumeHint && step === "idea" ? (
-          <p className="mt-2 text-[13px] text-home-ink-3">Your answers save as you go. Bookmark this page to come back.</p>
-        ) : null}
-      </StepHeadView>
+      <StepHeadView step={step} headingId={headingId} headingRef={headingRef} />
 
       {body}
 
