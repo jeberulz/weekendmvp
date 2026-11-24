@@ -109,6 +109,22 @@ describe("WP74-S1 WizardFlow", () => {
     expect(state.calls[0]?.args).toEqual({ idea: { source: "own_idea", text: "A packing list for campers" } });
   });
 
+  test("a library session rewritten as an own idea moves to the own-idea URL, carrying the session", async () => {
+    state.view = { ...view("blueprint", 1), ideaTitle: "Trail water refill map", answers: { idea: { source: "own_idea", text: "Trail water refill map" } } };
+    const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };
+    const { rerender } = render(<WizardFlow {...props} />);
+    await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/start/own?session=session123", { scroll: false }));
+    rerender(<WizardFlow {...props} />);
+    expect(state.replace).toHaveBeenCalledTimes(1);
+  });
+
+  test("a library session that stays a library idea keeps its URL", async () => {
+    state.view = view("blueprint", 1);
+    render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
+    await waitFor(() => expect(state.calls.length).toBeGreaterThan(0));
+    expect(state.replace).not.toHaveBeenCalled();
+  });
+
   test("own idea: the example chips are the ones passed in; a tap fills and focuses the field", async () => {
     const examples = [
       { text: "Widget that picks your top 3 tasks each morning", ideaSlug: "top-three-widget" },
@@ -147,22 +163,6 @@ describe("WP74-S1 WizardFlow", () => {
     expect(screen.getByRole("button", { name: "A packing list that builds itself from your trip" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Invoice reminders for freelancers" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "A meal-prep planner for lifters" })).toBeTruthy();
-  });
-
-  test("a library session rewritten as an own idea moves to the own-idea URL, carrying the session", async () => {
-    state.view = { ...view("blueprint", 1), ideaTitle: "Trail water refill map", answers: { idea: { source: "own_idea", text: "Trail water refill map" } } };
-    const props = { idea: { source: "library" as const, ideaSlug: "hydrotrail" }, ideaTitle: "HydroTrail", initialSessionId: null };
-    const { rerender } = render(<WizardFlow {...props} />);
-    await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/start/own?session=session123", { scroll: false }));
-    rerender(<WizardFlow {...props} />);
-    expect(state.replace).toHaveBeenCalledTimes(1);
-  });
-
-  test("a library session that stays a library idea keeps its URL", async () => {
-    state.view = view("blueprint", 1);
-    render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);
-    await waitFor(() => expect(state.calls.length).toBeGreaterThan(0));
-    expect(state.replace).not.toHaveBeenCalled();
   });
 
   test("the finished session offers Create my business and creates nothing until clicked", () => {
