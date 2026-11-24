@@ -305,6 +305,7 @@ export const appStoreListener: PainListener = {
             "im:rating"?: { label: string };
             updated?: { label: string };
             id?: { label: string };
+            link?: { attributes?: { href?: string } };
           }[];
         };
       }>(`https://itunes.apple.com/rss/customerreviews/page=1/id=${id}/sortBy=mostRecent/json`);
@@ -314,7 +315,11 @@ export const appStoreListener: PainListener = {
         findings.push(
           normaliseFinding({
             source: "app-store",
-            url: entry.id?.label ?? `https://apps.apple.com/app/id${id}`,
+            // `entry.id` is the bare numeric review id, not a URL — using it
+            // as the finding URL produced envelopes the editorial schema
+            // refuses ("URL could not be parsed"). The feed's `link` is the
+            // app's review page, the honest canonical link for the review.
+            url: entry.link?.attributes?.href ?? `https://apps.apple.com/app/id${id}`,
             title: entry.title?.label ?? "App Store review",
             text,
             context: `App Store review · ${entry.author?.name?.label ?? "anonymous"} · ${entry["im:rating"]?.label ?? "?"}★`,

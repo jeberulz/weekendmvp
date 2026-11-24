@@ -375,7 +375,13 @@ export function appendAudit(
 }
 
 export function producerLabel(producer: SubmissionProducer): string {
-  return producer === "engine" ? "Engine" : producer === "legacy-import" ? "Legacy importer" : "Manual";
+  return producer === "engine"
+    ? "Engine"
+    : producer === "pain-engine"
+      ? "Pain Engine"
+      : producer === "legacy-import"
+        ? "Legacy importer"
+        : "Manual";
 }
 
 /** " (simulated)" in the local demo, nothing in live mode. */
