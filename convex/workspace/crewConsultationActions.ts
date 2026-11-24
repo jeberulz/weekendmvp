@@ -1,7 +1,7 @@
 import { v, type ObjectType } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction, type ActionCtx } from "../_generated/server";
-import { crewConsultationOutput, crewConsultationSpec } from "../ai/prompts/crewConsultation";
+import { crewConsultationSpec } from "../ai/prompts/crewConsultation.v2";
 import type { GatewayRunResult, RunPromptArgs } from "../ai/gatewayActions";
 import { promptRef } from "../../lib/workspace/contracts/prompts";
 import { dropLoneSurrogates } from "../../lib/workspace/plainText";
@@ -42,7 +42,7 @@ export async function runCrewConsultationWith(
       },
     });
     if (!result.ok) return { ok: false as const, fault: failed(result) };
-    const parsed = crewConsultationOutput.safeParse(JSON.parse(result.outputJson));
+    const parsed = crewConsultationSpec.outputSchema.safeParse(JSON.parse(result.outputJson));
     const answer = parsed.success ? dropLoneSurrogates(parsed.data.answer).trim() : "";
     return answer.length > 0
       ? { ok: true as const, answer, nextAttempt: result.nextAttempt }

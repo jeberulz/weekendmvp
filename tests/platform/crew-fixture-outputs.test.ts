@@ -29,7 +29,8 @@ import {
 import { TIER_MODELS, promptRef } from "@/lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "@/convex/ai/prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
-import { crewConsultationSpec } from "@/convex/ai/prompts/crewConsultation";
+import { crewConsultationSpec as consultationV1 } from "@/convex/ai/prompts/crewConsultation";
+import { crewConsultationSpec } from "@/convex/ai/prompts/crewConsultation.v2";
 import { ideaImproveSpec } from "@/convex/ai/prompts/ideaImprove.v1";
 import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v5";
 import { ideaSeedSpec } from "@/convex/ai/prompts/ideaSeed.v3";
@@ -98,6 +99,7 @@ describe("fixture-output registry", () => {
         promptRef(wrenPlanTurnSpec),
         promptRef(ideaSeedSpec),
         promptRef(socialPackSpec),
+        promptRef(consultationV1),
         promptRef(crewConsultationSpec),
         promptRef(blueprintPersonaliseSpec),
         promptRef(blueprintOwnIdeaSpec),

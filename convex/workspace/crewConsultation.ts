@@ -6,8 +6,11 @@ import { requireBusinessForOwner } from "../platform/authz";
 import { readConsultationRoster } from "./consultationRoster";
 import { consultationParticipant } from "../schema/workspace";
 import { readCrewStatus } from "./crewStatus";
+import { quotedData } from "../ai/prompts/crewShared";
+import { utf8Bytes } from "../ai/providers/transport";
 import { newestDraftDocument, newestReviewCard, parseDraftBody } from "../growth/drafts/documentDraft";
 import { brandKitSchema, emailSequenceSchema, socialPackSchema } from "../../lib/workspace/contracts/artifacts";
+import { handoffEmailKind } from "../../lib/workspace/crew/emailHandoff";
 import { consultationAttemptsAvailable, consultationMember, crewConsultationIntent } from "../../lib/workspace/crew/consultation";
 import { sliceWellFormed } from "../../lib/workspace/plainText";
 
@@ -26,7 +29,22 @@ function participant(member: Doc<"crew_members">): Participant {
   return { employeeId: member._id, name: member.displayName, role: member.roleKey };
 }
 
-async function excerpts(ctx: MutationCtx, project: Doc<"projects">, role: string) {
+// The fast prompt has a 40,000-byte upper bound. Leave room for the prompt,
+// business status and a second specialist's answer even after JSON escaping.
+const DRAFT_AND_QUESTION_BYTES = 24_000;
+
+function evidenceBytes(value: unknown): number {
+  return utf8Bytes(quotedData(value));
+}
+
+function draftText(text: string, maxBytes: number) {
+  if (evidenceBytes(text) <= maxBytes) return { format: "full", text };
+  // A code unit can cost at most six bytes in the quoted block. Keep the
+  // original text boundary explicit, including when the budget is very small.
+  return { format: "excerpt", text: sliceWellFormed(text, Math.max(0, Math.floor((maxBytes - 2) / 6))) };
+}
+
+async function readDraftEvidence(ctx: MutationCtx, project: Doc<"projects">, role: string, question: string, maxBytes: number) {
   const kind = role === "brand" ? "brand_kit" : role === "email" ? "email_sequence" : role === "social" ? "social_pack" : null;
   if (!kind) return null;
   const business = { ownerId: project.ownerId, projectId: project._id };
@@ -34,28 +52,53 @@ async function excerpts(ctx: MutationCtx, project: Doc<"projects">, role: string
   if (!document) return null;
   const card = await newestReviewCard(ctx, business, document._id);
   const review = card?.status === "pending" && card.expiresAt <= Date.now() ? "expired" : card?.status ?? null;
-  const shorten = (value: string) => sliceWellFormed(value, 400);
+  const header = { kind, review };
+  const bounded = (fields: object) => evidenceBytes({ ...header, ...fields }) <= maxBytes
+    ? { ...header, ...fields }
+    : { ...header, coverage: "status_only" };
+
   if (kind === "brand_kit") {
     const kit = parseDraftBody(document.body, brandKitSchema);
-    return kit ? { kind, review, tagline: kit.tagline.text, voice: kit.voice, palette: kit.palette } : null;
+    return kit ? bounded({ coverage: "selected_fields", tagline: kit.tagline.text, voice: kit.voice, palette: kit.palette }) : null;
   }
   if (kind === "email_sequence") {
     const sequence = parseDraftBody(document.body, emailSequenceSchema);
-    return sequence ? { kind, review, emails: Object.entries(sequence.emails).map(([kind, { subject, body }]) => ({ kind, subject, body: shorten(body) })) } : null;
+    if (!sequence) return null;
+    const requested = handoffEmailKind(question);
+    const items = requested
+      ? [[requested, sequence.emails[requested]] as const]
+      : Object.entries(sequence.emails);
+    const maxBodyBytes = Math.max(0, Math.floor(maxBytes / items.length) - 720);
+    return bounded({
+      coverage: requested ? "requested_email" : "email_sequence",
+      emails: items.map(([kind, { subject, preview, body, cta }]) => ({
+        kind, subject, preview, body: draftText(body, maxBodyBytes), cta,
+      })),
+    });
   }
   const pack = parseDraftBody(document.body, socialPackSchema);
-  return pack ? { kind, review, posts: Object.entries(pack.posts).map(([day, post]) => ({ day, caption: shorten(post.caption) })) } : null;
+  if (!pack) return null;
+  const posts = Object.entries(pack.posts);
+  const maxCaptionBytes = Math.max(0, Math.floor(maxBytes / posts.length) - 160);
+  return bounded({
+    coverage: "social_captions",
+    posts: posts.map(([day, { caption }]) => ({ day, caption: draftText(caption, maxCaptionBytes) })),
+  });
 }
 
-async function specialistEvidence(ctx: MutationCtx, project: Doc<"projects">, crew: CrewStatus, worker: Participant) {
+function specialistEvidence(
+  project: Doc<"projects">,
+  crew: CrewStatus,
+  worker: Participant,
+  artifacts: readonly NonNullable<Awaited<ReturnType<typeof readDraftEvidence>>>[],
+) {
   const status = crew.specialists.find((role) => role.role === worker.role);
-  const artifact = await excerpts(ctx, project, worker.role);
   return JSON.stringify({
     business: project.workspace?.name ?? project.title,
     description: sliceWellFormed(project.workspace?.ownIdeaText ?? "", 800),
     goal: project.workspace?.goal ?? null,
     specialistStatus: status ? { status: status.status, detail: status.detail } : null,
-    artifact,
+    artifacts,
   });
 }
 
@@ -131,15 +174,15 @@ export const start = internalMutation({
       ...(colleague ? { colleague } : {}),
       ...(colleagueAnswer ? { colleagueAnswer } : {}),
     };
-    const [recipientEvidence, colleagueEvidence] = await Promise.all([
-      specialistEvidence(ctx, project, crew, recipient),
-      colleague && !colleagueAnswer ? specialistEvidence(ctx, project, crew, colleague) : null,
-    ]);
+    const roles = new Set(colleague ? [recipient.role, colleague.role] : [recipient.role]);
+    const maxArtifactBytes = Math.floor(Math.max(0, DRAFT_AND_QUESTION_BYTES - evidenceBytes(intent.question)) / roles.size);
+    const artifacts = (await Promise.all([...roles].map((role) => readDraftEvidence(ctx, project, role, intent.question, maxArtifactBytes))))
+      .filter((artifact) => artifact !== null);
     await ctx.db.patch("chat_messages", reply._id, { crewConsultation: state, body: consultationBody(state), updatedAt: Date.now() });
     return {
       question: intent.question,
-      recipient: { participant: recipient, evidence: recipientEvidence },
-      ...(colleague ? { colleague: { participant: colleague, evidence: colleagueEvidence ?? "" } } : {}),
+      recipient: { participant: recipient, evidence: specialistEvidence(project, crew, recipient, artifacts) },
+      ...(colleague ? { colleague: { participant: colleague, evidence: colleagueAnswer ? "" : specialistEvidence(project, crew, colleague, artifacts) } } : {}),
       ...(colleagueAnswer ? { colleagueAnswer } : {}),
     };
   },
