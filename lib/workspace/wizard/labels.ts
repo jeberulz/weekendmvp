@@ -50,13 +50,29 @@ export const COMMERCIAL_MODEL_OPTIONS = {
   one_time: { label: "One-time price", hint: "People pay once." },
 } as const satisfies Record<CommercialModel, { label: string; hint: string }>;
 
+/**
+ * Step 5 options. Each hint says what the crew builds for that goal, in the
+ * roster's terms (`landingReason` / `emailReason` in `convex/crew/roles.ts`).
+ */
 export const GOAL_KIND_OPTIONS = {
-  waitlist: { label: "First 50 waitlist signups", hint: "Right for a free app." },
-  first_sale: { label: "First sale", hint: "One paying customer." },
-  mrr_500: { label: "$500 a month", hint: "A real side income." },
-  replace_income: { label: "Replace my income", hint: "The long game." },
-  just_testing: { label: "Just testing the idea", hint: "See if anyone cares." },
+  waitlist: { label: "First 50 signups", hint: "A site and a waitlist. People ask to hear when it's live." },
+  first_sale: { label: "First sale", hint: "A sales page that takes a real order or pre-order." },
+  mrr_500: { label: "$500 a month", hint: "A sales page and launch emails, aimed at $500 a month." },
+  replace_income: { label: "Replace my income", hint: "A sales page and launch emails, with no set number yet." },
+  just_testing: { label: "Test the idea", hint: "A site and a short welcome email. No target." },
 } as const satisfies Record<GoalKind, { label: string; hint: string }>;
+
+/**
+ * The first wins Step 5 offers (owner decision 1A, 2026-11-24). `mrr_500` and
+ * `replace_income` stay valid answers: the step still shows one when it is
+ * the suggested or saved answer, so a seed or an earlier answer never vanishes.
+ */
+export const FIRST_WIN_GOALS = ["waitlist", "first_sale", "just_testing"] as const satisfies readonly GoalKind[];
+
+/** The goals Step 5 lists: the first wins, plus a suggested or saved goal outside them, in `kinds` order. */
+export function goalKindsToOffer(kinds: readonly GoalKind[], ...keep: readonly (GoalKind | undefined)[]): GoalKind[] {
+  return kinds.filter((kind) => (FIRST_WIN_GOALS as readonly GoalKind[]).includes(kind) || keep.includes(kind));
+}
 
 export const GOAL_TIMEFRAME_OPTIONS = {
   weekend: { label: "This weekend" },

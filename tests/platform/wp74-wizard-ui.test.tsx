@@ -133,12 +133,13 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
   test("the keyboard alone can pick another goal, a deadline pill and the paid test", async () => {
     const { handlers, user } = setup("goal");
     const goal = screen.getByRole("group", { name: "Goal" });
-    within(goal).getByRole("radio", { name: /First 50 waitlist signups/ }).focus();
+    within(goal).getByRole("radio", { name: /First 50 signups/ }).focus();
     await user.keyboard("{ArrowDown}");
     expect((within(goal).getByRole("radio", { name: /First sale/ }) as HTMLInputElement).checked).toBe(true);
     const when = screen.getByRole("group", { name: /By when/ });
     expect(within(when).getAllByRole("radio")).toHaveLength(4);
-    expect(within(when).getByRole("radio", { name: /This weekend/ }).closest("label")?.textContent).toContain("Suggested");
+    // One chip per view: the suggested pill keeps the hairline and says so to screen readers only.
+    expect(within(when).getByRole("radio", { name: /This weekend \(suggested\)/ })).toBeTruthy();
     within(when).getByRole("radio", { name: /This weekend/ }).focus();
     await user.keyboard("{ArrowRight}");
     expect((within(when).getByRole("radio", { name: /In two weeks/ }) as HTMLInputElement).checked).toBe(true);

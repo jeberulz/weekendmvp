@@ -41,7 +41,9 @@ import {
   PARTNER_PERSONALITY_OPTIONS,
   PLATFORM_OPTIONS,
   STEP_TITLES,
+  goalKindsToOffer,
 } from "@/lib/workspace/wizard/labels";
+import { goalLine, type GoalLineCrew } from "@/lib/workspace/wizard/goal-line";
 import { NOT_VALIDATED_LABEL, NOT_VALIDATED_MEANING } from "@/lib/workspace/wizard/light-blueprint";
 import { cn } from "@/lib/utils";
 import type { OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
@@ -67,6 +69,8 @@ export type WizardStepPanelProps = {
   readonly headingRef?: Ref<HTMLHeadingElement>;
   /** WP99: the own-idea Step 1 example chips, the same ones the first visit shows. */
   readonly ownIdeaExamples?: readonly OwnIdeaExample[];
+  /** The crew preview's hires, for Step 5's live consequence line; null or omitted, the line names no one. */
+  readonly crew?: GoalLineCrew;
   /** Use the suggested default. */
   readonly onAccept: () => void;
   /** Pick a different offered choice (or keep a previous answer). */
@@ -136,7 +140,9 @@ function quickSummary(step: QuickStep, defaults: WizardAnswersProgress): { title
     case "goal": {
       const goal = defaults.goal;
       if (goal === undefined || goal.paidPush !== undefined) return null;
-      return { title: GOAL_KIND_OPTIONS[goal.kind].label, detail: GOAL_TIMEFRAME_OPTIONS[goal.timeframe].label };
+      // The goal and its deadline read as one line; the hint says what the crew builds.
+      const when = goal.timeframe === "weekend" ? "by this weekend" : GOAL_TIMEFRAME_OPTIONS[goal.timeframe].label.toLowerCase();
+      return { title: `${GOAL_KIND_OPTIONS[goal.kind].label} · ${when}`, detail: GOAL_KIND_OPTIONS[goal.kind].hint };
     }
   }
 }
@@ -146,10 +152,13 @@ function QuickConfirm({
   summary,
   reasonId,
   hint,
+  children,
 }: {
   summary: { title: string; detail?: string };
   reasonId: string;
   hint: WizardStepHint;
+  /** A quiet line under the reason (Step 5: the paid test left out). */
+  children?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3 border-y border-home-rule py-6">
@@ -160,6 +169,7 @@ function QuickConfirm({
       <p className="font-editorial text-2xl font-normal leading-tight text-home-ink">{summary.title}</p>
       {summary.detail ? <p className="text-[15px] text-home-ink-2">{summary.detail}</p> : null}
       <ReasonLine id={reasonId} reason={hint.reason} />
+      {children}
     </div>
   );
 }
@@ -343,6 +353,7 @@ export function WizardStepPanel({
   error,
   headingRef,
   ownIdeaExamples,
+  crew = null,
   onAccept,
   onChoose,
   onRewrite,
@@ -367,12 +378,17 @@ export function WizardStepPanel({
   const [choosing, setChoosing] = useState(!quickEligible);
   const quick = quickEligible && !choosing;
   const choiceRef = useRef<HTMLDivElement>(null);
-  const focusChoice = useRef(false);
+  // Where focus lands when the quick confirm opens the full choice: the selected option, or the paid test.
+  const focusChoice = useRef<"selected" | "paid" | null>(null);
   useEffect(() => {
-    if (!choosing || !focusChoice.current) return;
-    focusChoice.current = false;
-    // "Change" opened the full choice: focus lands on the selected option.
-    const target = choiceRef.current?.querySelector<HTMLInputElement>("input:checked") ?? choiceRef.current?.querySelector<HTMLInputElement>("input");
+    const where = focusChoice.current;
+    if (!choosing || where === null) return;
+    focusChoice.current = null;
+    const root = choiceRef.current;
+    const target =
+      where === "paid"
+        ? root?.querySelector<HTMLInputElement>("input[type=checkbox]")
+        : (root?.querySelector<HTMLInputElement>("input:checked") ?? root?.querySelector<HTMLInputElement>("input"));
     target?.focus();
   }, [choosing]);
 
@@ -682,12 +698,13 @@ export function WizardStepPanel({
         </fieldset>
       );
       break;
-    case "goal":
+    case "goal": {
+      const line = goalLine(goalKind, paidPush, crew);
       body = (
         <>
           <fieldset className="flex flex-col gap-2.5">
             <legend className="sr-only">{STEP_TITLES.goal}</legend>
-            {GOAL_KINDS.map((kind) => (
+            {goalKindsToOffer(GOAL_KINDS, defaults.goal?.kind, answers.goal?.kind).map((kind) => (
               <OptionCard
                 key={kind}
                 name={`${group}-goal`}
@@ -700,35 +717,51 @@ export function WizardStepPanel({
               />
             ))}
           </fieldset>
-          <fieldset className="flex flex-col gap-2.5">
-            <legend className="text-sm font-medium text-home-ink">
-              By when? <span className="font-normal text-home-ink-2">(optional)</span>
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {GOAL_TIMEFRAMES.map((value) => (
-                <OptionCard
-                  key={value}
-                  variant="pill"
-                  name={`${group}-when`}
-                  value={value}
-                  checked={timeframe === value}
-                  onChange={() => setTimeframe(value)}
-                  label={GOAL_TIMEFRAME_OPTIONS[value].label}
-                  suggested={defaults.goal?.timeframe === value}
-                />
-              ))}
-            </div>
-          </fieldset>
-          <OptionCard
-            type="checkbox"
-            checked={paidPush}
-            onChange={setPaidPush}
-            label={`Add a $${PAID_PUSH_DAILY_USD} a day paid test`}
-            hint="Your own ad budget. Nothing runs without your approval."
-          />
+          {/* What the choice makes the crew do, updated as the founder picks. */}
+          <p aria-live="polite" className="text-sm text-home-ink-2">
+            {line.lead}
+            <b className="font-semibold text-home-ink">{line.target}</b>
+            {line.rest}
+          </p>
+          {/* The details: the deadline and the paid test, visibly secondary to the goal. */}
+          <div className="flex flex-col gap-5 border-t border-home-rule pt-5">
+            <fieldset className="flex flex-col gap-2.5">
+              <legend className="text-sm font-medium text-home-ink">By when?</legend>
+              <div className="flex flex-wrap gap-2">
+                {GOAL_TIMEFRAMES.map((value) => (
+                  <OptionCard
+                    key={value}
+                    variant="pill"
+                    name={`${group}-when`}
+                    value={value}
+                    checked={timeframe === value}
+                    onChange={() => setTimeframe(value)}
+                    label={GOAL_TIMEFRAME_OPTIONS[value].label}
+                    suggested={defaults.goal?.timeframe === value}
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={paidPush}
+                onChange={(event) => setPaidPush(event.target.checked)}
+                aria-describedby={`${base}-paid-hint`}
+                className={cn("mt-0.5 size-5 shrink-0 cursor-pointer accent-home-ink", FOCUS)}
+              />
+              <span className="flex flex-col">
+                <span className="font-medium text-home-ink">Add a ${PAID_PUSH_DAILY_USD} a day paid test</span>
+                <span id={`${base}-paid-hint`} className="text-home-ink-2">
+                  Your own ad budget. Nothing runs without your approval.
+                </span>
+              </span>
+            </label>
+          </div>
         </>
       );
       break;
+    }
     case "name":
       body = (
         <>
@@ -836,7 +869,26 @@ export function WizardStepPanel({
 
   if (isHintStep(step) && hint !== undefined) {
     if (quick && summary !== null) {
-      body = <QuickConfirm summary={summary} reasonId={reasonId} hint={hint} />;
+      body = (
+        <QuickConfirm summary={summary} reasonId={reasonId} hint={hint}>
+          {step === "goal" ? (
+            // Confirming says the paid test is left out; the link opens the full choice on the checkbox.
+            <p className="text-sm text-home-ink-2">
+              <span className="font-medium text-home-ink">No paid ads.</span>{" "}
+              <button
+                type="button"
+                className={cn("text-home-orange-ink underline underline-offset-2", FOCUS)}
+                onClick={() => {
+                  focusChoice.current = "paid";
+                  setChoosing(true);
+                }}
+              >
+                Add a ${PAID_PUSH_DAILY_USD} a day test
+              </button>
+            </p>
+          ) : null}
+        </QuickConfirm>
+      );
     } else {
       body = (
         <div id={choiceId} ref={choiceRef} className="flex flex-col gap-6">
@@ -916,7 +968,7 @@ export function WizardStepPanel({
             type="button"
             className={cn(BTN_SECONDARY, "min-h-12 px-5 text-sm")}
             onClick={() => {
-              focusChoice.current = true;
+              focusChoice.current = "selected";
               setChoosing(true);
             }}
           >

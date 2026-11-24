@@ -103,7 +103,7 @@ export function OptionCard({
   label: string;
   hint?: string;
   suggested?: boolean;
-  /** `pill` is the compact radio used for the goal's deadline. */
+  /** `pill` is the compact radio used for the goal's deadline (no chip, only the hairline). */
   variant?: "card" | "pill";
 }) {
   const indicator =
@@ -145,7 +145,9 @@ export function OptionCard({
         <span className="font-medium">{label}</span>
         {hint ? <span className="text-sm text-home-ink-2">{hint}</span> : null}
       </span>
-      {suggested ? <SuggestedChip /> : null}
+      {/* One chip per view: a suggested pill keeps only the ember hairline. */}
+      {suggested && variant === "card" ? <SuggestedChip /> : null}
+      {suggested && variant === "pill" ? <span className="sr-only">(suggested)</span> : null}
     </label>
   );
 }

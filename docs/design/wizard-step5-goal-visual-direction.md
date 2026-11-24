@@ -214,6 +214,14 @@ commit.
 - **[Hotjar: "What would you like to do first?"](https://mobbin.com/screens/877c3a34-857f-43aa-8933-7a1938617769)**.
   The sub line says what the answer is for ("used to personalize your next steps"), which is honest framing for a
   question that configures the product.
+- **[Asana: "How would you group these tasks?"](https://mobbin.com/screens/ecbaca38-1db4-4034-a02d-2b9dc4fa872f)**.
+  The question sits on the left and a preview of the project on the right updates from your answers. It's the
+  desktop version of the live crew line: you see what your answer builds while you give it.
+- **[Airwallex: "What is your primary area of interest?"](https://mobbin.com/screens/f8a9374e-acec-4346-b630-61841b86d93e)**.
+  One question, one short sub line, and six hairline rows that each say in plain words what you'll do. The options
+  describe outcomes, not internal names, which is what decision 6 asks of our hints.
+- **[Klook: "Select your plan"](https://mobbin.com/screens/fd4bec09-be4d-45ee-a2ae-6c11f5e2d5c3)**. Three plan
+  cards with one "Best Value" badge on one card and nothing else accented. That's the one-chip rule (decision 5).
 
 **What they share:** one question leads. Secondary details are visibly secondary. The consequence of the choice sits
 beside it, not a step later.
@@ -274,6 +282,17 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 
 ## 7. Decisions for you
 
+> **Settled 2026-11-24: John accepted 1A to 6A, as drawn in the mockup, and asked for them to be wired in.**
+> Built in `WizardStepPanel.tsx` (goal body and quick confirm), `wizard-ui.tsx` (no chip on a pill),
+> `labels.ts` (`FIRST_WIN_GOALS`, rewritten hints), `copy.ts` (sub line) and `goal-line.ts` (the live crew line).
+> Two things differ from the mockup on purpose:
+> - **No deadline reason line yet.** Nothing reads the timeframe today, so "Sets the pace of your launch plan" would
+>   be untrue. Add it when the launch plan reads the deadline (the "timeframe has no consumer" finding handed to the
+>   wizard end-to-end audit, §2.7).
+> - **Continue still falls below the first 812px screen at 375px.** The goal panel alone measures about 794px there,
+>   before the header and progress bar. Getting it on screen needs a further choice, such as a sticky Continue or
+>   shorter hints on small screens.
+
 1. **The goal options.**
    **(A, recommended)** Three first wins (First 50 signups, First sale, Test the idea). Hide `mrr_500` and
    `replace_income` from the step but keep them valid in the schema.
@@ -296,5 +315,6 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 6. **The hint copy.**
    **(A, recommended)** Rewrite the hints to say what the crew will build (§5.1), and drop "Right for a free app."
    (B) Keep today's hints.
-7. Want a **clickable mockup** of the full choice (desktop and 375px) and the quick confirm with the paid-test line,
-   so you can judge the density and whether Continue lands on the first mobile screen?
+7. **Clickable mockup: built.** [Wizard Step 5 Goal mockup](https://claude.ai/artifact/Ds1CzSghxC5N3DTKknGxtS)
+   (private until shared) has the full choice and the quick confirm, each at desktop and 375px. It applies options
+   1A to 6A, the options now settled.
