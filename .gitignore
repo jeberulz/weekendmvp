@@ -76,3 +76,6 @@ tsconfig.tsbuildinfo
 
 # Agentic workflow worktrees
 .worktrees/
+
+# Pain Engine cache (fetched pages; regenerated on demand)
+engine/pain/cache/
