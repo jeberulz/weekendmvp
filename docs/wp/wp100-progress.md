@@ -42,3 +42,26 @@ Append-only progress log. Do not rely on chat history for project state.
   codegen's own order. `npx convex codegen` on a linked checkout reproduces it.
 - Next: UI PR (`IdeaImprove` control and `useIdeaImprove` hook) on the unified Step 1, then `startOrResume` storing the
   accepted improvement and the `ai_improved` signal.
+
+## 2026-11-24 - WP100-S4 (UI)
+
+- Branch: `claude/wp100-idea-ai-improve-ui`, on top of the backend branch. Its PR opens once #311 is merged
+  (no stacked PRs).
+- Actions taken:
+  - `useIdeaImproveApi` (Convex binding, called only in `WizardFlow`) and `useIdeaImprove` (the state machine).
+    `OwnIdeaForm` and `WizardStepPanel` take an optional `improve` prop, so they still render without a Convex client.
+  - `IdeaImprove`: the Improve button (it reads "Improve selection" when words are selected; Ctrl or ⌘ + Shift + Enter),
+    Stop while loading with the field read-only, the "A sharper version" card with a word diff (`<mark>`, underline and
+    an sr-only "changed:"), Use this / Try again / Keep mine, the "Sharpened with AI · Undo" line, Back to my words
+    after two rounds, calm notices, and one live region.
+  - Typing after asking keeps the card and marks it "Based on your earlier text"; typing after Use this drops Undo.
+- Checks run: `tests/platform/wp100-idea-improve-ui.test.tsx` (20, axe included); the wizard suites
+  (`l1-wizard-fidelity`, `wp74-*`, `wp75-*`, `wp90-*`, `wp99*`: 312); typecheck; eslint.
+- Browser: a temporary harness page in this worktree rendered the real `OwnIdeaForm` with a scripted API at desktop
+  and 375 px. Checked the suggest, use, undo and shortcut paths, tab order, no horizontal scroll, 44 px targets, and
+  contrast of at least 5.7:1. The harness was deleted and is not committed. The end-to-end flow against Convex has not
+  been run in a browser yet, because this worktree has no deployment and pushing to the shared local backend would
+  disturb other sessions.
+- a11y-check: one fix, so the diff is no longer shown by colour alone (an underline on the changed words).
+- Not done yet (WP100-S5): storing the accepted improvement on the session (`startOrResume` / `rewriteStep`
+  `improvementId`, `ownIdeaAi`) and the `ai_improved` founder signal. Today the accepted text is saved like typed text.
