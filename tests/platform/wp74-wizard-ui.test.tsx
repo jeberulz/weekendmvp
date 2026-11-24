@@ -168,6 +168,19 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     await expectNoAxeViolations(container);
   });
 
+  test("a 'fill this in first' error clears once the founder picks a valid choice", async () => {
+    const { user } = setup("platform");
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByRole("alert").textContent).toMatch(/Describe the platform first/);
+    await user.click(screen.getByRole("radio", { name: /Mobile web, installable/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    // Back to "Something else" with the field still empty: the error stays hidden until the next Continue.
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByLabelText("Describe the platform").getAttribute("aria-invalid")).toBeNull();
+  });
+
   test("a previous, different answer is preselected and kept with Continue", async () => {
     const { handlers, user } = setup("platform", {
       answers: { idea: hydro.defaults.idea, platform: { kind: "native" } },
@@ -400,5 +413,9 @@ describe("WP74-S1 wizard error copy", () => {
     expect(wizardErrorMessage(new ConvexError({ code: "INVALID_ANSWER", message: "name.chosen: Too big" })))
       .toBe("That answer cannot be saved (name.chosen: Too big).");
     expect(wizardErrorMessage(new Error("stack trace"))).toBe("Something went wrong. Try again.");
+    // AI switched off (or no budget): a new start is refused with words, not the generic line.
+    expect(wizardErrorMessage(new ConvexError({ code: "AI_DISABLED" }))).toBe(
+      "Starting new builds is paused right now. Builds you already started still open. Try again later.",
+    );
   });
 });
