@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { requireWizardAccess } from "@/lib/workspace/wizard-access";
 import { NotInvited } from "../NotInvited";
 import { WizardPage } from "../WizardPage";
@@ -21,6 +22,9 @@ export default async function StartIdeaPage({
   params: Promise<{ ideaSlug: string }>;
   searchParams: Promise<{ session?: string | string[] }>;
 }) {
+  // Render at request time, not a prerendered/edge-cached shell: this is an
+  // auth-gated flow, and a cached shell pins the client bundle to an old deploy.
+  await connection();
   const { ideaSlug } = await params;
   const access = await requireWizardAccess(ideaSlug);
   if (access.kind === "not-invited") return <NotInvited ideaSlug={ideaSlug} />;
