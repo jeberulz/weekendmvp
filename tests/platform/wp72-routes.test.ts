@@ -50,9 +50,9 @@ describe("WP72-S1 workspace route manifest", () => {
     expect(pageSegments(routeRoot).sort()).toEqual(expected);
   });
 
-  test("ships exactly the boarded pages from extract §9.5, in canvas nav order", () => {
+  test("ships the workspace pages in canvas nav order", () => {
     expect(workspaceRoutesInGroup("This weekend").map((entry) => entry.label)).toEqual([
-      "Team HQ", "Launch plan", "Build pack", "Brand kit",
+      "Team HQ", "Launch plan", "Build pack", "Brand kit", "Landing page",
     ]);
     expect(workspaceRoutesInGroup("Workspace").map((entry) => entry.label)).toEqual([
       "Dashboard", "Tasks", "Email", "Ads", "Studio", "Outbound", "Social", "Files", "Settings",

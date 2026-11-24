@@ -6,6 +6,9 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { assertFeatureEnabled, assertFeatureEnabledForOwner } from "../ops/settings";
 import { requireBusinessAccess } from "../platform/authz";
+import { requestCrewRevision } from "../workspace/approvals";
+import { revisionNoteFor } from "../workspace/changeRounds";
+import { LANDING_DESIGN_QUESTION } from "../../lib/workspace/crew/landingBrief";
 import { checkLimit } from "../platform/limits";
 import { assertStepTransition } from "../platform/transitions";
 import { JOB_SUBJECT_MAIN, jobKey } from "../../lib/workspace/contracts/jobs";
@@ -15,6 +18,7 @@ import { isCrewStepJobType } from "../../lib/workspace/crew/tasks";
 import {
   RUN_LEASE_MS,
   RUN_SCAN_MAX,
+  CREW_LINEAGE_MAX,
   abandonCrewTask,
   approvedBlueprint,
   approvedBrandKit,
@@ -187,7 +191,7 @@ async function readLaunchFacts(ctx: ReadCtx, project: Doc<"projects">, rosterTas
   for (const step of LAUNCH_STEPS) {
     if (!isPoolStep(step)) continue;
     const task = await stepTask(ctx, project, step.key);
-    if (task === null) continue;
+    if (task === null || (step.founderStarts && !task.landingBrief)) continue;
     const marker = await newestMarker(ctx, task);
     tasks[step.key] = task;
     facts[step.key] = { status: task.status, enqueued: marker?.status === "running" };
@@ -305,7 +309,7 @@ async function enqueueLaunchStep(
 const REVISION_SCAN_MAX = 32;
 
 function revisionStep(task: Doc<"tasks">) {
-  return task.revisionOfTaskId === undefined
+  return task.revisionOfTaskId === undefined || (task.type === "crew_landing" && !task.landingBrief)
     ? undefined
     : LAUNCH_STEPS.find((step) => isPoolStep(step) && step.jobType === task.type);
 }
@@ -330,7 +334,7 @@ export async function revisionBlocker(
   project: Doc<"projects">,
   task: Doc<"tasks">,
 ): Promise<"blueprint" | "brand_kit" | null> {
-  if (task.type === "crew_blueprint") return null;
+  if (task.type === "crew_blueprint" || task.type === "crew_landing") return null;
   if (await approvedBlueprint(ctx, project) === null) return "blueprint";
   if (task.type !== "crew_email_sequence" && task.type !== "crew_social_pack") return null;
   const kit = await approvedBrandKit(ctx, project);
@@ -507,6 +511,93 @@ export async function resumeLaunchSteps(
 }
 
 const resumeResultValidator = v.object({ resumed: v.number(), paused: v.number(), waitingForSlot: v.boolean() });
+
+const landingBlocker = v.union(v.literal("blueprint"), v.literal("brand_kit"), v.literal("roster"), v.literal("conflict"));
+
+async function landingInputs(ctx: ReadCtx, project: Doc<"projects">) {
+  const roster = await rosterPlanRow(ctx, project.ownerId, project._id);
+  if (!roster?.hired.includes("landing") || !roster.hired.includes("brand")) return { blockedOn: "roster" as const };
+  const blueprint = await approvedBlueprint(ctx, project);
+  if (!blueprint) return { blockedOn: "blueprint" as const };
+  const kit = await approvedBrandKit(ctx, project);
+  if (!kit || (kit.briefDocumentId && kit.briefDocumentId !== blueprint._id)) return { blockedOn: "brand_kit" as const };
+  return { blueprintId: blueprint._id, brandKitId: kit._id };
+}
+
+async function latestLandingTask(ctx: ReadCtx, project: Doc<"projects">) {
+  const prefix = jobKey(project._id, "crew_landing", JOB_SUBJECT_MAIN, 0).slice(0, -1);
+  const tasks = await ctx.db.query("tasks").withIndex("by_ownerId_and_jobKey", (q) =>
+    q.eq("ownerId", project.ownerId).gte("jobKey", prefix).lt("jobKey", `${prefix.slice(0, -1)};`)).take(CREW_LINEAGE_MAX + 1);
+  if (tasks.length > CREW_LINEAGE_MAX) throw new ConvexError({ code: "CREW_TASK_CONFLICT" });
+  return tasks.filter((task) => task.projectId === project._id && task.type === "crew_landing" && task.archivedAt === undefined)
+    .sort((a, b) => b._creationTime - a._creationTime)[0] ?? null;
+}
+
+export const privateLandingStatus = query({
+  args: { projectId: v.id("projects") },
+  returns: v.object({
+    state: v.union(v.literal("not_started"), v.literal("queued"), v.literal("working"), v.literal("failed"), v.literal("ready")),
+    taskId: v.optional(v.id("tasks")), blockedOn: v.optional(landingBlocker),
+    irisQuestion: v.optional(v.string()), irisAnswer: v.optional(v.string()), failure: v.optional(v.string()),
+  }),
+  handler: async (ctx, { projectId }) => {
+    await assertFeatureEnabled(ctx, "workspace");
+    const project = await requireBusinessAccess(ctx, projectId, "owner");
+    const task = await latestLandingTask(ctx, project);
+    if (!task || !task.landingBrief) {
+      if (task) return { state: "not_started" as const, blockedOn: "conflict" as const };
+      const inputs = await landingInputs(ctx, project);
+      return { state: "not_started" as const, ...(inputs.blockedOn ? { blockedOn: inputs.blockedOn } : {}) };
+    }
+    const state = { queued: "queued", running: "working", blocked: "working", failed: "failed", cancelled: "failed", succeeded: "ready" } as const;
+    return { state: state[task.status], taskId: task._id, irisQuestion: LANDING_DESIGN_QUESTION,
+      ...(task.status === "blocked" ? { failure: "Generation paused. Resume the crew in Team HQ when its AI allowance is available." } : {}),
+      ...(task.landingBrief?.irisAnswer ? { irisAnswer: task.landingBrief.irisAnswer } : {}),
+      ...(task.crewFailureReason ? { failure: task.crewFailureReason } : {}) };
+  },
+});
+
+const landingStartResult = v.union(
+  v.object({ state: v.union(v.literal("queued"), v.literal("existing")), taskId: v.id("tasks") }),
+  v.object({ state: v.literal("blocked"), reason: landingBlocker }),
+  v.object({ state: v.literal("spend_required"), approvalId: v.id("approvals") }),
+);
+
+/** Private landing generation starts only after an explicit founder request. */
+export const startPrivateLanding = mutation({
+  args: { projectId: v.id("projects") }, returns: landingStartResult,
+  handler: async (ctx, { projectId }): Promise<Infer<typeof landingStartResult>> => {
+    await assertFeatureEnabled(ctx, "workspace");
+    await assertFeatureEnabled(ctx, "ai");
+    const project = await requireBusinessAccess(ctx, projectId, "owner");
+    const previous = await latestLandingTask(ctx, project);
+    if (previous && !previous.landingBrief) return { state: "blocked", reason: "conflict" };
+    if (previous && previous.status !== "failed" && previous.status !== "cancelled") return { state: "existing", taskId: previous._id };
+    const inputs = await landingInputs(ctx, project);
+    if (inputs.blockedOn) return { state: "blocked", reason: inputs.blockedOn };
+    if (previous?.revisionOfTaskId) {
+      const note = await revisionNoteFor(ctx, previous._id);
+      const source = previous.approvalId && await ctx.db.get("approvals", previous.approvalId);
+      const documentId = source && source.ownerId === project.ownerId && source.projectId === projectId &&
+        source.subjectTable === "documents" ? ctx.db.normalizeId("documents", source.subjectId) : null;
+      if (!note || !documentId || previous.landingBrief?.blueprintId !== inputs.blueprintId ||
+          previous.landingBrief.brandKitId !== inputs.brandKitId) return { state: "blocked", reason: "conflict" };
+      const receipt = await requestCrewRevision(ctx, project, { kind: "landing_spec", expectedDocumentId: documentId,
+        requestId: `retry-landing:${previous._id}`, note });
+      if (receipt.outcome === "queued" && receipt.taskId) return { state: "queued", taskId: receipt.taskId };
+      if (receipt.outcome === "spend_required" && receipt.approvalId) return { state: "spend_required", approvalId: receipt.approvalId };
+      return { state: "blocked", reason: "conflict" };
+    }
+    const task = await insertCrewTask(ctx, { ownerId: project.ownerId, projectId, jobType: "crew_landing", employeeKey: "landing" });
+    if (!task.created) return { state: "existing", taskId: task.taskId };
+    await checkLimit(ctx, "crewJob", project.ownerId);
+    const old = previous?.landingBrief;
+    await ctx.db.patch("tasks", task.taskId, { landingBrief: old?.blueprintId === inputs.blueprintId && old.brandKitId === inputs.brandKitId
+      ? old : inputs });
+    await advanceOwner(ctx, project.ownerId, Date.now(), project);
+    return { state: "queued", taskId: task.taskId };
+  },
+});
 
 /**
  * The founder's Resume on a launch step that was paused (the gateway refused
@@ -699,7 +790,7 @@ async function failedLaunchSteps(
 ): Promise<FailedStep[]> {
   const out: FailedStep[] = [];
   for (const step of LAUNCH_STEPS) {
-    if (!isPoolStep(step) || step.key === "blueprint" || read.tasks[step.key] === undefined) continue;
+    if (!isPoolStep(step) || step.founderStarts || step.key === "blueprint" || read.tasks[step.key] === undefined) continue;
     if (evaluated.find((entry) => entry.key === step.key)?.state !== "failed") continue;
     out.push(await retryEligibility(ctx, project, step, now));
   }

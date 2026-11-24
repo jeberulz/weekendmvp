@@ -83,7 +83,7 @@
 .promises[data-layout="split"] .promise:first-child .h3 { font-size: clamp(1.7rem, 5cqi, 2.4rem); line-height: 1.05; }
 .promises[data-layout="split"] .promise:first-child p { font-size: 1.2rem; }
 .promises[data-layout="feature_rows"] .promise { padding-block: 2.25rem; grid-template-columns: 4.25rem 1fr; align-items: start; }
-.promises[data-layout="feature_rows"] .icon { width: 1.85rem; height: 1.85rem; padding: 0.7rem; background: var(--t-surface); border-radius: var(--t-rc); box-sizing: content-box;
+.promises[data-layout="feature_rows"] .icon { width: 1.85rem; height: 1.85rem; padding: 0.7rem; background: var(--t-surface); border-radius: var(--t-rc); box-sizing: content-box; }
 .promises[data-layout="feature_rows"] .h3 { font-size: 1.55rem; }
 
 /* How it works */

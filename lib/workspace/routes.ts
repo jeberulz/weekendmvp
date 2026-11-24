@@ -28,6 +28,7 @@ export type WorkspaceRouteSlug =
   | "launch"
   | "build-pack"
   | "brand"
+  | "landing"
   | "tasks"
   | "email"
   | "ads"
@@ -45,6 +46,7 @@ export type WorkspaceNavId =
   | "launch"
   | "pack"
   | "brand"
+  | "landing"
   | "tasks"
   | "email"
   | "ads"
@@ -104,6 +106,7 @@ export const WORKSPACE_ROUTES: readonly WorkspaceRoute[] = Object.freeze([
   route("launch", "launch", "Launch plan", "This weekend", "coming_soon"),
   route("pack", "build-pack", "Build pack", "This weekend", "coming_soon"),
   route("brand", "brand", "Brand kit", "This weekend", "built"),
+  route("landing", "landing", "Landing page", "This weekend", "built"),
   route("dashboard", "", "Dashboard", "Workspace", "built"),
   route("tasks", "tasks", "Tasks", "Workspace", "coming_soon"),
   route("email", "email", "Email", "Workspace", "built"),

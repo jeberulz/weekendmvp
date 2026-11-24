@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { query, type MutationCtx, type QueryCtx } from "../_generated/server";
+import { approvedBlueprint, approvedBrandKit } from "../crew/approvedBriefs";
+import { changeRoundUnavailableValidator } from "./approvalValidators";
 import { assertFeatureEnabled } from "../ops/settings";
 import { requireBusinessAccess } from "../platform/authz";
 import { resolvePlan } from "../platform/planResolver";
@@ -187,6 +189,22 @@ export async function resolveChangeRound(
 // The revision job
 // ---------------------------------------------------------------------------
 
+type LandingSources = Pick<NonNullable<Doc<"tasks">["landingBrief"]>, "blueprintId" | "brandKitId">;
+
+/** Each new founder request takes the current approved pair. A paid confirmation or retry must match its accepted pair. */
+export async function landingRevisionBrief(ctx: Pick<QueryCtx, "db">, lineage: ArtifactLineage, expected?: LandingSources) {
+  const prior = lineage.reviewedTask.landingBrief;
+  if (lineage.jobType !== "crew_landing" || !prior) return undefined;
+  const project = { _id: lineage.projectId, ownerId: lineage.ownerId };
+  const [blueprint, kit] = await Promise.all([approvedBlueprint(ctx, project), approvedBrandKit(ctx, project)]);
+  if (!blueprint || !kit || (kit.briefDocumentId && kit.briefDocumentId !== blueprint._id) ||
+      (expected && (expected.blueprintId !== blueprint._id || expected.brandKitId !== kit._id))) {
+    throw new ConvexError({ code: "APPROVAL_SUBJECT_CHANGED" });
+  }
+  return prior.blueprintId === blueprint._id && prior.brandKitId === kit._id
+    ? prior : { blueprintId: blueprint._id, brandKitId: kit._id };
+}
+
 export type RevisionTaskInput = {
   readonly lineage: ArtifactLineage;
   readonly changeRound: number;
@@ -203,6 +221,7 @@ export type RevisionTaskInput = {
   readonly followUpEmail?: boolean;
   readonly emailNote?: string;
   readonly requiresBrandDocumentId?: Id<"documents">;
+  readonly landingSources?: LandingSources;
 };
 
 export function revisionTitle(jobType: JobType, changeRound: number): string {
@@ -240,6 +259,13 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
   const idempotencyKey = holders.length === 0
     ? `change-round:${approvalId}:${key}`
     : `change-round:${approvalId}:${key}:retry:${holders.length}`;
+  let landingBrief = await landingRevisionBrief(ctx, lineage, input.landingSources);
+  if (landingBrief && !landingBrief.irisAnswer) {
+    const saved = holders.find((holder) => holder.projectId === lineage.projectId && holder.type === "crew_landing" &&
+      holder.landingBrief?.irisAnswer && holder.landingBrief.blueprintId === landingBrief?.blueprintId &&
+      holder.landingBrief.brandKitId === landingBrief?.brandKitId);
+    if (saved?.landingBrief) landingBrief = saved.landingBrief;
+  }
   const taskId = await ctx.db.insert("tasks", {
     ownerId: lineage.ownerId,
     projectId: lineage.projectId,
@@ -250,6 +276,7 @@ export async function insertRevisionTask(ctx: MutationCtx, input: RevisionTaskIn
     creditCost,
     changeRound: BigInt(changeRound),
     revisionOfTaskId: lineage.reviewedTask._id,
+    ...(landingBrief ? { landingBrief } : {}),
     approvalId,
     jobKey: key,
     idempotencyKey: input.requestId === undefined ? idempotencyKey : crewRequestKey(lineage.projectId, input.requestId),
@@ -327,31 +354,6 @@ export const CHANGE_ROUND_UNAVAILABLE_REASONS = [
 ] as const;
 export type ChangeRoundUnavailable = (typeof CHANGE_ROUND_UNAVAILABLE_REASONS)[number];
 
-const unavailableReasonValidator = v.union(
-  v.literal("price_not_set"),
-  v.literal("plan_gated"),
-  v.literal("not_revisable"),
-  v.literal("untracked"),
-  v.literal("busy"),
-  v.literal("stale"),
-  v.literal("conflict"),
-);
-
-/**
- * What an "Ask for changes" did. `not_available` leaves the card pending and
- * starts nothing: `price_not_set` is the "not available yet" answer.
- */
-export const changeRoundOutcomeValidator = v.union(
-  v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number(), unlimited: v.optional(v.boolean()), taskId: v.id("tasks") }),
-  v.object({
-    outcome: v.literal("spend_required"),
-    changeRound: v.number(),
-    costCredits: v.number(),
-    spendApprovalId: v.id("approvals"),
-  }),
-  v.object({ outcome: v.literal("not_available"), reason: unavailableReasonValidator, changeRound: v.optional(v.number()) }),
-);
-
 export type ChangeRoundOutcome =
   | { outcome: "free"; changeRound: number; freeRoundsLeft: number; unlimited?: boolean; taskId: Id<"tasks"> }
   | { outcome: "spend_required"; changeRound: number; costCredits: number; spendApprovalId: Id<"approvals"> }
@@ -360,7 +362,7 @@ export type ChangeRoundOutcome =
 const changeRoundPreviewValidator = v.union(
   v.object({ outcome: v.literal("free"), changeRound: v.number(), freeRoundsLeft: v.number(), unlimited: v.optional(v.boolean()) }),
   v.object({ outcome: v.literal("spend_required"), changeRound: v.number(), costCredits: v.number() }),
-  v.object({ outcome: v.literal("not_available"), reason: unavailableReasonValidator, changeRound: v.optional(v.number()) }),
+  v.object({ outcome: v.literal("not_available"), reason: changeRoundUnavailableValidator, changeRound: v.optional(v.number()) }),
 );
 
 /**

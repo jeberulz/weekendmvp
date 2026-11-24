@@ -225,10 +225,9 @@ describe("helpers", () => {
     expect(availability("brand")).toEqual({ kind: "available", later: ["Logo marks"] });
     expect(availability("email")).toEqual({ kind: "available", later: [] });
     expect(availability("seo").kind).toBe("coming_soon");
-    expect(availability("landing").kind).toBe("coming_soon");
+    expect(availability("landing")).toEqual({ kind: "available", later: [] });
     for (const key of ["curriculum", "community", "merch", "outbound"] as const) expect(availability(key).kind).toBe("not_in_beta");
     expect(startsWhenCopy("Sana", availability("seo"))).toBe("Sana starts when the SEO pack ships in a later update. Until then there is no work to show.");
-    expect(startsWhenCopy("Leo", availability("landing"))).toMatch(/^Leo starts when the landing /);
     expect(startsWhenCopy("Oli", availability("outbound"))).toMatch(/not part of this beta yet/);
   });
 
@@ -249,8 +248,8 @@ describe("helpers", () => {
     const after = handsOffTo("brand", team);
     expect(after.map((entry) => entry.name)).toContain("Elle");
     expect(after.every((entry) => team.some((member) => member.name === entry.name))).toBe(true);
-    // Leo's landing page is not built: hired or not, it never "starts" here.
-    expect(handsOffTo("brand", [...team, { role: "landing" as const, name: "Leo" }]).map((entry) => entry.name)).not.toContain("Leo");
+    expect(handsOffTo("brand", team).map((entry) => entry.name)).not.toContain("Leo");
+    expect(handsOffTo("brand", [...team, { role: "landing" as const, name: "Leo" }]).map((entry) => entry.name)).toContain("Leo");
     expect(worksFrom("email", team, "Wren").join(" ")).toMatch(/Iris/);
   });
 

@@ -441,7 +441,7 @@ async function approvableRows(ctx: QueryCtx, project: Project): Promise<Approvab
     .take(APPROVABLE_PER_TABLE);
   const own = <R extends { ownerId: Id<"users"> }>(row: R) => row.ownerId === project.ownerId;
   return [
-    ...versions.filter(own).map((row) => ({
+    ...versions.filter((row) => own(row) && !row.privateLanding).map((row) => ({
       kind: "publish" as const, subjectTable: "site_versions" as const, subjectId: row._id,
       label: `Landing page version ${row.version.toString()}`,
     })),
@@ -464,8 +464,8 @@ export type WaitingReview = {
 /**
  * Where each artifact kind is reviewed. Mirrors `REVIEW_TARGETS`
  * (`lib/workspace/reviews.ts`), which this module may not import (the WP77
- * import allowlist); `tests/platform/workspace-wren-fixture.test.ts` keeps the
- * two equal.
+ * import allowlist). Landing reviews also appear in Team HQ, an existing
+ * navigate route for the lead.
  */
 export const WREN_REVIEW_TARGETS: ReadonlyMap<string, WaitingReview> = new Map([
   ["blueprint", { review: "Blueprint", page: "team" }],

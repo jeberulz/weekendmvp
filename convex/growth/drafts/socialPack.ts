@@ -5,7 +5,7 @@ import { socialDraftFailure } from "../../crew/launch";
 import { query } from "../../_generated/server";
 import { assertFeatureEnabled } from "../../ops/settings";
 import { requireBusinessAccess } from "../../platform/authz";
-import { approvalStatusValidator } from "../../workspace/approvals";
+import { approvalStatusValidator } from "../../workspace/approvalValidators";
 import { approvalExpiresAt } from "../../../lib/workspace/contracts/approvals";
 import {
   SOCIAL_DAYS,

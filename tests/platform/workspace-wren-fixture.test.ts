@@ -173,11 +173,13 @@ describe("Wren fixture reply", () => {
 });
 
 describe("Wren's business context lists the crew's open reviews", () => {
-  test("WREN_REVIEW_TARGETS mirrors REVIEW_TARGETS, and every page is a navigate route", () => {
+  test("Wren routes reviews to their workspace page or the Team HQ landing review", () => {
     const mirrored = Object.fromEntries(
       Object.entries(REVIEW_TARGETS).map(([kind, target]) => [kind, { review: target.title, page: target.slug }]),
     );
-    expect(Object.fromEntries(WREN_REVIEW_TARGETS)).toEqual(mirrored);
+    expect(Object.fromEntries(WREN_REVIEW_TARGETS)).toEqual({
+      ...mirrored, landing_spec: { review: mirrored.landing_spec.review, page: "team" },
+    });
     for (const target of WREN_REVIEW_TARGETS.values()) expect(Object.hasOwn(WREN_NAVIGATE_ROUTES, target.page)).toBe(true);
   });
 

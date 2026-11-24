@@ -97,7 +97,7 @@ async function resolvePublished(
   // The pointer must agree with the version's own parent. A dangling or
   // cross-site pointer serves another site's content under this hostname.
   if (version.siteConfigId !== site._id) return null;
-  if (version.status !== "published") return null;
+  if (version.status !== "published" || version.privateLanding !== undefined) return null;
 
   const project = await ctx.db.get(site.projectId);
   if (project === null || project.archivedAt !== undefined) return null;

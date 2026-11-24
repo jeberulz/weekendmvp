@@ -541,6 +541,11 @@ export default defineSchema({
     revisionOfTaskId: v.optional(v.id("tasks")),
     revisionNote: v.optional(v.string()),
     requiresBrandDocumentId: v.optional(v.id("documents")),
+    landingBrief: v.optional(v.object({
+      blueprintId: v.id("documents"),
+      brandKitId: v.id("documents"),
+      irisAnswer: v.optional(v.string()),
+    })),
     emailHandoff: v.optional(v.object({
       state: v.union(v.literal("requested"), v.literal("queued"), v.literal("spend_required"), v.literal("not_available")),
       note: v.optional(v.string()),
@@ -630,6 +635,11 @@ export default defineSchema({
     status: siteStatusValidator,
     hostname: v.optional(v.string()),
     currentVersionId: v.optional(v.id("site_versions")),
+    privateLandingTest: v.optional(v.object({
+      versionId: v.id("site_versions"),
+      count: v.number(),
+      lastReceipt: v.object({ leadId: v.id("leads"), createdAt: v.number() }),
+    })),
     takedownAt: v.optional(v.number()),
     takedownReason: v.optional(v.string()),
     createdAt: v.number(),
@@ -652,11 +662,18 @@ export default defineSchema({
     version: v.int64(),
     documentId: v.optional(v.id("documents")),
     landingSpec: v.optional(v.string()),
+    // Crew previews keep their approved art direction even after another brand revision.
+    privateLanding: v.optional(v.object({
+      blueprintId: v.id("documents"),
+      brandKitId: v.id("documents"),
+      brandKitSnapshot: v.string(),
+    })),
     storageId: v.optional(v.id("_storage")),
     createdAt: v.number(),
     publishedAt: v.optional(v.number()),
     retiredAt: v.optional(v.number()),
   })
+    .index("by_documentId", ["documentId"])
     .index("by_siteConfigId_and_version", ["siteConfigId", "version"])
     .index("by_projectId_and_status_and_createdAt", [
       "projectId",
@@ -671,6 +688,8 @@ export default defineSchema({
     email: v.optional(v.string()),
     payload: v.optional(v.string()),
     synthetic: v.boolean(),
+    privateLandingVersionId: v.optional(v.id("site_versions")),
+    privateRequestId: v.optional(v.string()),
     consentText: v.optional(v.string()),
     consentVersion: v.optional(v.string()),
     doubleOptInAt: v.optional(v.number()),
@@ -682,6 +701,7 @@ export default defineSchema({
   })
     .index("by_projectId_and_createdAt", ["projectId", "createdAt"])
     .index("by_siteConfigId_and_createdAt", ["siteConfigId", "createdAt"])
+    .index("by_privateLandingVersionId_and_privateRequestId", ["privateLandingVersionId", "privateRequestId"])
     .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"]),
 
   audit_events: defineTable({

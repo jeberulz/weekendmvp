@@ -36,7 +36,7 @@ import { checkArtifact, issue, mergeResults, toResult, type CheckResult } from "
 import { checkEmailSequenceLinks } from "./checks/emailLinks";
 import { checkSocialPackLinks } from "./checks/socialLinks";
 
-export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit", "email_sequence", "social_pack"] as const satisfies readonly ArtifactKind[];
+export const QUALITY_GATED_KINDS = ["blueprint", "brand_kit", "email_sequence", "social_pack", "landing_spec"] as const satisfies readonly ArtifactKind[];
 export type QualityGatedKind = (typeof QUALITY_GATED_KINDS)[number];
 
 export function isQualityGatedKind(kind: string): kind is QualityGatedKind {
@@ -53,6 +53,7 @@ export type QualityContext = {
   readonly businessName?: string;
   /** A library business's market from its idea seed; absent when the seed has none (or there is no seed). */
   readonly seedMarket?: BlueprintMarket;
+  readonly brandKit?: ArtifactByKind["brand_kit"];
 };
 
 export type BlueprintMarket = z.infer<typeof blueprintMarketSchema>;
@@ -124,6 +125,15 @@ export function gateCrewArtifact<K extends ArtifactKind>(
   context: QualityContext,
 ): QualityGateResult<K> {
   if (!isQualityGatedKind(kind)) return { artifact, result: { hard: [], soft: [] } };
+  if (kind === "landing_spec") {
+    const landing = artifact as ArtifactByKind["landing_spec"];
+    if (context.brandKit && landing.nav.brandName !== context.brandKit.name) {
+      return { artifact: null, result: blocked("landing_brand_mismatch", ["nav", "brandName"], "Use the approved brand name in the navigation.") };
+    }
+    if (landing.hero.primaryCta.target !== "#waitlist") {
+      return { artifact: null, result: blocked("landing_primary_cta", ["hero", "primaryCta", "target"], "The private landing page’s main CTA must open its waitlist.") };
+    }
+  }
   let subject: ArtifactByKind[K] = artifact;
   if (kind === "blueprint") {
     const normalised = normaliseBlueprint(artifact as ArtifactByKind["blueprint"], context);
@@ -137,7 +147,7 @@ export function gateCrewArtifact<K extends ArtifactKind>(
   // The exemption for "{brandName} costs $79" or "founder of {brandName}" uses
   // the server's name, so a model-written name can never widen it.
   const brandName = context.businessName;
-  const checked = checkArtifact(kind, subject, { ownIdea: context.ownIdea, ...(brandName === undefined ? {} : { brandName }) });
+  const checked = checkArtifact(kind, subject, { ownIdea: context.ownIdea, ...(context.brandKit ? { brandKit: context.brandKit } : {}), ...(brandName === undefined ? {} : { brandName }) });
   const result = kind === "email_sequence"
     ? mergeResults(checked, toResult(checkEmailSequenceLinks(subject as ArtifactByKind["email_sequence"])))
     : kind === "social_pack"
