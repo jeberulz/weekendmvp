@@ -101,3 +101,12 @@ Append-only progress log. Do not rely on chat history for project state.
 - Checks: typecheck, eslint on the changed files, `tests/platform` plus `convex/workspace/ideaImprove.test.ts` (125
   files, 3057 tests), `test:security` (121), `git diff --check`. The control's markup and place are unchanged, so the
   browser pass from S4 was not repeated.
+
+## 2026-11-24 - #317 review (Codex)
+
+- Undo and Back to my words now stay while the field holds accepted AI text: after a later round ends in a notice or
+  Stop, not only right after Use this.
+- The read-only and `aria-busy` state on the field is set in an effect with a cleanup, so the field is handed back
+  when the control unmounts mid-request (AI switched off, the step moving on).
+- Two regression tests. `tests/platform` plus `convex/workspace/ideaImprove.test.ts`: 125 files, 3059 tests;
+  typecheck and eslint pass.

@@ -39,13 +39,17 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
     if (state.phase === "suggestion") cardRef.current?.scrollIntoView?.({ block: "nearest" });
   }, [state.phase]);
 
-  // The field is read-only while a request runs.
+  // The field is read-only while a request runs. The cleanup hands it back even
+  // when the control unmounts mid-request (AI switched off, the step moving on).
   useEffect(() => {
     const field = document.getElementById(fieldId);
-    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
-    field.readOnly = loading;
-    if (loading) field.setAttribute("aria-busy", "true");
-    else field.removeAttribute("aria-busy");
+    if (!loading || !(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    field.readOnly = true;
+    field.setAttribute("aria-busy", "true");
+    return () => {
+      field.readOnly = false;
+      field.removeAttribute("aria-busy");
+    };
   }, [fieldId, loading]);
 
   // Ctrl/⌘ + Shift + Enter in the field runs Improve.
@@ -140,7 +144,8 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
         </section>
       ) : null}
 
-      {state.phase === "accepted" && rounds > 0 ? (
+      {/* Undo stays while the field holds accepted AI text: after a notice, after Stop, not only right after Use this. */}
+      {rounds > 0 && (state.phase === "accepted" || state.phase === "idle" || state.phase === "notice") ? (
         <p className="flex flex-wrap items-center gap-x-2 text-[13px] text-home-ink-2">
           <span>Sharpened with AI.</span>
           <button type="button" onClick={controller.undo} className={TEXT_BTN}>

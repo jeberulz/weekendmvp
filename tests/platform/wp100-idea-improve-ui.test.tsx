@@ -220,6 +220,39 @@ describe("Improve with AI on Step 1", () => {
     expect(improve).not.toHaveBeenCalled();
   });
 
+  test("Undo stays after a later round ends in a notice or Stop", async () => {
+    const pending = deferred<IdeaImproveResult>();
+    const replies: Array<() => Promise<IdeaImproveResult>> = [
+      async () => ({ status: "suggested", improvementId: ID, mode: "whole", text: SHARP, changeNote: "" }),
+      async () => ({ status: "already_clear", improvementId: ID2 }),
+      () => pending.promise,
+    ];
+    const { field, user } = setup(() => (replies.shift() ?? (async () => ({ status: "unavailable" })))());
+    await user.click(screen.getByRole("button", { name: "Improve" }));
+    await user.click(await screen.findByRole("button", { name: "Use this" }));
+    await user.click(screen.getByRole("button", { name: "Improve" }));
+    expect(await screen.findByText(/already clear/u, { selector: "span" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Undo" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Improve" }));
+    await user.click(screen.getByRole("button", { name: "Stop" }));
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    expect(field.value).toBe(ROUGH);
+  });
+
+  test("unmounting mid-request hands the field back", async () => {
+    const pending = deferred<IdeaImproveResult>();
+    const decide = vi.fn<IdeaImproveApi["decide"]>(async () => null);
+    const api: IdeaImproveApi = { enabled: true, improve: () => pending.promise, decide };
+    const props = { pending: false, error: null, onSubmit: vi.fn(), initialText: ROUGH } as const;
+    const { rerender } = render(<OwnIdeaForm {...props} renderFieldAction={ideaImproveAction(api)} />);
+    const field = screen.getByLabelText("Your idea in one sentence") as HTMLInputElement;
+    await userEvent.setup().click(screen.getByRole("button", { name: "Improve" }));
+    expect(field.readOnly).toBe(true);
+    rerender(<OwnIdeaForm {...props} renderFieldAction={ideaImproveAction({ ...api, enabled: false })} />);
+    expect(field.readOnly).toBe(false);
+    expect(field.hasAttribute("aria-busy")).toBe(false);
+  });
+
   test("the button names its shortcut and hint for assistive tech", () => {
     setup([]);
     const button = screen.getByRole("button", { name: "Improve" });
