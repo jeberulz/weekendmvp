@@ -22,7 +22,9 @@ import {
   type WizardStep,
 } from "@/lib/workspace/contracts/wizard";
 import { trackWorkspaceEvent } from "@/lib/track";
+import { wizardPath } from "@/lib/workspace/build-cta";
 import { stepAnswerOf } from "@/lib/workspace/wizard/defaults";
+import { OWN_IDEA_FALLBACK_EXAMPLES, type OwnIdeaExample } from "@/lib/workspace/wizard/own-idea-examples";
 import { workspacePath } from "@/lib/workspace/routes";
 import { cn } from "@/lib/utils";
 import { CreateBusiness } from "./CreateBusiness";
@@ -39,6 +41,11 @@ export type WizardFlowProps = {
   readonly ideaTitle: string | null;
   /** `/start/own?session=…`, so a reload resumes an own-idea session. */
   readonly initialSessionId: string | null;
+  /**
+   * WP97: the "Try one of these" chips on `/start/own`, drawn per visit from the live library
+   * (`own-idea-examples.server.ts`). Omitted, the static fallback lines show.
+   */
+  readonly ownIdeaExamples?: readonly OwnIdeaExample[];
 };
 
 const ERROR_COPY: Record<string, string> = {
@@ -185,27 +192,26 @@ export function libraryIdeaUrl(ideaSlug: string, sessionId: string): string {
   return `/start/${encodeURIComponent(ideaSlug)}?session=${encodeURIComponent(sessionId)}`;
 }
 
-/** A few concrete example ideas, to lower the blank-page cost on the own path. */
-const OWN_IDEA_EXAMPLES = [
-  "A packing list that builds itself from your trip",
-  "Invoice reminders for freelancers",
-  "A meal-prep planner for lifters",
-] as const;
-
 function OwnIdeaStart({
   pending,
   error,
   headingRef,
   onStart,
+  examples,
 }: {
   pending: boolean;
   error: string | null;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onStart: (text: string) => void;
+  /** Concrete example ideas, to lower the blank-page cost on the own path (WP97). */
+  examples: readonly OwnIdeaExample[];
 }) {
   const base = useId();
   const [text, setText] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [tapped, setTapped] = useState<OwnIdeaExample | null>(null);
+  // A library chip left exactly as tapped is a researched idea: offer that version. Any edit makes it the founder's.
+  const researched = tapped !== null && tapped.ideaSlug !== null && text === tapped.text ? tapped.ideaSlug : null;
   const errorId = `${base}-error`;
   const shownError = localError ?? error;
 
@@ -223,8 +229,9 @@ function OwnIdeaStart({
 
   const fieldId = `${base}-idea`;
   // A tapped example fills the field and hands focus back to it, ready to edit.
-  function applyExample(example: string) {
-    setText(example);
+  function applyExample(example: OwnIdeaExample) {
+    setText(example.text);
+    setTapped(example);
     setLocalError(null);
     document.getElementById(fieldId)?.focus();
   }
@@ -253,9 +260,9 @@ function OwnIdeaStart({
       <div className="flex flex-col gap-2">
         <p className="text-[13px] text-home-ink-3">Try one of these</p>
         <div className="flex flex-wrap gap-2">
-          {OWN_IDEA_EXAMPLES.map((example) => (
+          {examples.map((example) => (
             <button
-              key={example}
+              key={example.text}
               type="button"
               onClick={() => applyExample(example)}
               className={cn(
@@ -263,10 +270,25 @@ function OwnIdeaStart({
                 FOCUS,
               )}
             >
-              {example}
+              {example.text}
             </button>
           ))}
         </div>
+        {/* Always mounted and in the accessibility tree, so screen readers hear the line when it appears.
+            Empty, it takes no space: the negative margin cancels the column gap. */}
+        <p role="status" className="text-[13px] text-home-ink-2 empty:-mt-2">
+          {researched ? (
+            <>
+              That one is already researched in the library.{" "}
+              <Link
+                href={wizardPath(researched)}
+                className={cn("whitespace-nowrap text-home-orange-ink underline underline-offset-2", FOCUS)}
+              >
+                Build the researched version
+              </Link>
+            </>
+          ) : null}
+        </p>
       </div>
       {shownError ? (
         <p id={errorId} role="alert" className="text-sm text-home-clay-ink">
@@ -290,7 +312,7 @@ function OwnIdeaStart({
  * aside. Each screen owns the page's single h1, and focus moves to it when the
  * step changes.
  */
-function WizardFlowInner({ idea, ideaTitle, initialSessionId }: WizardFlowProps) {
+function WizardFlowInner({ idea, ideaTitle, initialSessionId, ownIdeaExamples = OWN_IDEA_FALLBACK_EXAMPLES }: WizardFlowProps) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<Id<"wizard_sessions"> | null>(
     initialSessionId === null ? null : (initialSessionId as Id<"wizard_sessions">),
@@ -427,7 +449,15 @@ function WizardFlowInner({ idea, ideaTitle, initialSessionId }: WizardFlowProps)
   const crewVisible = view !== undefined && (view.completed || view.stepIndex > WIZARD_STEPS.indexOf("blueprint"));
   let body;
   if (sessionId === null && idea === null) {
-    body = <OwnIdeaStart pending={pending} error={error} headingRef={headingRef} onStart={(text) => void startOwn(text)} />;
+    body = (
+      <OwnIdeaStart
+        pending={pending}
+        error={error}
+        headingRef={headingRef}
+        onStart={(text) => void startOwn(text)}
+        examples={ownIdeaExamples}
+      />
+    );
   } else if (view === undefined || parsed === null) {
     body = (
       <>
