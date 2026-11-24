@@ -282,6 +282,10 @@ reacting to Step 4 is backend logic, handed off (§2.7).
 
 ## 7. Decisions for you
 
+> **Settled 2026-11-24: John accepted 1A to 6A, as drawn in the mockup.** Nothing is wired into production yet. That
+> starts only when John asks. 2A also needs the launch plan to read the deadline. That is the "timeframe has no
+> consumer" finding already handed to the wizard end-to-end audit (§2.7).
+
 1. **The goal options.**
    **(A, recommended)** Three first wins (First 50 signups, First sale, Test the idea). Hide `mrr_500` and
    `replace_income` from the step but keep them valid in the schema.
@@ -306,4 +310,4 @@ reacting to Step 4 is backend logic, handed off (§2.7).
    (B) Keep today's hints.
 7. **Clickable mockup: built.** [Wizard Step 5 Goal mockup](https://claude.ai/artifact/Ds1CzSghxC5N3DTKknGxtS)
    (private until shared) has the full choice and the quick confirm, each at desktop and 375px. It applies options
-   1A to 6A, so use it to judge the density and whether Continue lands on the first mobile screen before settling them.
+   1A to 6A, the options now settled.
