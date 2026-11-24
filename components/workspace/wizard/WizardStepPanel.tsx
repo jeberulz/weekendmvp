@@ -586,6 +586,8 @@ export function WizardStepPanel({
   const describeAccept =
     step === "blueprint" && !blueprint.validated ? noteId : hint !== undefined && step !== "blueprint" ? reasonId : undefined;
   const nameDiffers = customName.length > 0 || (defaultName !== undefined && chosenName !== defaultName);
+  // Step 5's full choice is taller than a phone screen: there, Continue stays in view at the bottom.
+  const stickyPrimary = step === "goal" && !quick;
 
   let body: ReactNode;
   switch (step) {
@@ -927,7 +929,11 @@ export function WizardStepPanel({
       onSubmit={submit}
       onKeyDown={onKeyDown}
       noValidate
-      className="flex w-full max-w-[672px] flex-col gap-6"
+      className={cn(
+        "flex w-full max-w-[672px] flex-col gap-6",
+        // Keep a focused option clear of the sticky Continue bar when it scrolls into view.
+        stickyPrimary && "max-sm:[&_input]:scroll-mb-28",
+      )}
     >
       <StepHeadView step={step} headingId={headingId} headingRef={headingRef} />
 
@@ -985,6 +991,11 @@ export function WizardStepPanel({
           >
             Change
           </button>
+        </div>
+      ) : stickyPrimary ? (
+        // Below sm the bar sticks to the bottom of the screen until the form ends, edge to edge on the paper.
+        <div className="max-sm:sticky max-sm:bottom-0 max-sm:z-10 max-sm:-mx-6 max-sm:border-t max-sm:border-home-rule max-sm:bg-home-paper max-sm:px-6 max-sm:pb-[max(12px,env(safe-area-inset-bottom))] max-sm:pt-3">
+          {primary}
         </div>
       ) : (
         primary

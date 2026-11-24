@@ -122,3 +122,15 @@ describe("Step 5 goal: the quick confirm (decisions 3A, 5A)", () => {
     expect(handlers.onChoose).toHaveBeenCalledWith({ kind: "waitlist", timeframe: "weekend", paidPush: { dailyBudgetUsd: 7 } });
   });
 });
+
+describe("Step 5 goal: Continue on a phone", () => {
+  test("the full choice puts Continue in a bar that sticks below sm; the quick confirm does not", () => {
+    setup(fixture);
+    const bar = screen.getByRole("button", { name: /Continue/ }).parentElement;
+    expect(bar?.className).toContain("max-sm:sticky");
+    expect(bar?.className).toContain("max-sm:bottom-0");
+    cleanup();
+    setup(seeded);
+    expect(screen.getByRole("button", { name: "Looks right" }).parentElement?.className).not.toContain("sticky");
+  });
+});
